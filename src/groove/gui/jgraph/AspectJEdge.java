@@ -3,6 +3,12 @@ package groove.gui.jgraph;
 import static groove.grammar.aspect.AspectKind.ARGUMENT;
 import static groove.grammar.aspect.AspectKind.DEFAULT;
 import static groove.gui.look.VisualKey.COLOR;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Set;
+
 import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.AspectKind;
@@ -22,16 +28,11 @@ import groove.gui.look.VisualKey;
 import groove.io.HTMLConverter;
 import groove.util.parse.FormatError;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Set;
-
 /**
  * Specialized j-edge for rule graphs, with its own tool tip text.
  */
 public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,AspectJVertex>
-        implements AspectJCell {
+    implements AspectJCell {
     /**
      * Creates an uninitialised instance.
      */
@@ -56,12 +57,14 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
 
     /** Indicates if this is the incoming part of a nodified edge. */
     public boolean isNodeEdgeIn() {
-        return getTargetVertex() != null && getTargetVertex().isNodeEdge();
+        AspectJVertex target = getTargetVertex();
+        return target != null && target.isNodeEdge();
     }
 
     /** Indicates if this is the incoming pars of a nodified edge. */
     public boolean isNodeEdgeOut() {
-        return getSourceVertex() != null && getSourceVertex().isNodeEdge();
+        AspectJVertex source = getSourceVertex();
+        return source != null && source.isNodeEdge();
     }
 
     @SuppressWarnings("unchecked")
@@ -76,7 +79,7 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
     }
 
     @Override
-    protected void initialise() {
+    public void initialise() {
         super.initialise();
         this.aspect = DEFAULT;
     }
@@ -107,9 +110,8 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
         if (edge.getRole() != EdgeRole.BINARY) {
             error = new FormatError("Node label '%s' not allowed on edges", edge.label(), this);
         } else if (oldEdge != null && !edge.isCompatible(oldEdge)) {
-            error =
-                new FormatError("Conflicting aspects in edge labels %s and %s", oldEdge.label(),
-                    edge.label(), this);
+            error = new FormatError("Conflicting aspects in edge labels %s and %s", oldEdge.label(),
+                edge.label(), this);
         }
         if (error != null) {
             edge = new AspectEdge(edge.source(), edge.label(), edge.target(), edge.getNumber());
@@ -126,8 +128,9 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
         // maybe update the look
         RuleLabel ruleLabel = edge.getRuleLabel();
         if (ruleLabel != null) {
-            if (ruleLabel.isEmpty() && this.aspect != AspectKind.CREATOR || ruleLabel.isNeg()
-                && ruleLabel.getNegOperand().isEmpty()) {
+            if (ruleLabel.isEmpty() && this.aspect != AspectKind.CREATOR
+                || ruleLabel.isNeg() && ruleLabel.getNegOperand()
+                    .isEmpty()) {
                 // remove edge arrow
                 setLook(Look.NO_ARROW, true);
             } else if (!ruleLabel.isAtom()) {
@@ -200,7 +203,8 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
     }
 
     private TypeModelMap getTypeMap() {
-        return getJModel().getResourceModel().getTypeMap();
+        return getJModel().getResourceModel()
+            .getTypeMap();
     }
 
     /**
@@ -210,20 +214,24 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
      * and value nodes are not shown.
      */
     public boolean isSourceLabel() {
-        if (getJGraph().isShowValueNodes()) {
+        AspectJGraph graph = getJGraph();
+        if (graph != null && graph.isShowValueNodes()) {
             return false;
         }
-        if (getSourceNode().getAttrKind().hasSignature()) {
+        if (getSourceNode().getAttrKind()
+            .hasSignature()) {
             return false;
         }
-        if (!getTargetNode().getAttrKind().hasSignature()) {
+        if (!getTargetNode().getAttrKind()
+            .hasSignature()) {
             return false;
         }
         if (getTargetNode().hasParam()) {
             return false;
         }
-        if (getJGraph().getGraphRole() != GraphRole.TYPE
-            && !getTargetNode().getAttrAspect().hasContent()) {
+        if (graph != null && graph.getGraphRole() != GraphRole.TYPE
+            && !getTargetNode().getAttrAspect()
+                .hasContent()) {
             return false;
         }
         return true;
@@ -295,7 +303,8 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
             if (result != 0) {
                 return result;
             }
-            return EdgeComparator.instance().compare(o1, o2);
+            return EdgeComparator.instance()
+                .compare(o1, o2);
         }
 
         private AspectKind getKind(Edge e) {

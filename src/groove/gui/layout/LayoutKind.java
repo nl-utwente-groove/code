@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -61,8 +61,8 @@ public enum LayoutKind {
     /** Tilts the nodes of the graph by a few points. */
     SIMPLE_TILT("Simple Tilt", new JGraphSimpleLayout(JGraphSimpleLayout.TYPE_TILT)),
     /** Random placement of nodes.  */
-    SIMPLE_RANDOM("Simple Randomized", new JGraphSimpleLayout(JGraphSimpleLayout.TYPE_RANDOM, 500,
-        500)),
+    SIMPLE_RANDOM("Simple Randomized",
+        new JGraphSimpleLayout(JGraphSimpleLayout.TYPE_RANDOM, 500, 500)),
     /** Grid alignment. */
     SIMPLE_GRID("Simple Grid", new SimpleGridLayout()),
     /** Compact tree representation. */
@@ -147,14 +147,24 @@ public enum LayoutKind {
 
     private static JPanel createLayoutPanel(LayouterItem item, SimpleGridLayout layout) {
         LayoutPanel panel = new LayoutPanel(layout, item);
-        panel.createSlider(getMethod(layout, "setNumCellsPerRow", Integer.TYPE), 0, 20, 0,
+        panel.createSlider(getMethod(layout, "setNumCellsPerRow", Integer.TYPE),
+            0,
+            20,
+            0,
             "Nodes per row");
-        panel.createSlider(getMethod(layout, "setHeightSpacing", Integer.TYPE), 0, 100, 20,
+        panel.createSlider(getMethod(layout, "setHeightSpacing", Integer.TYPE),
+            0,
+            100,
+            20,
             "Height space between nodes");
-        panel.createSlider(getMethod(layout, "setWidthSpacing", Integer.TYPE), 0, 100, 20,
+        panel.createSlider(getMethod(layout, "setWidthSpacing", Integer.TYPE),
+            0,
+            100,
+            20,
             "Width space between nodes");
         panel.createCheckBox(getMethod(layout, "setActOnUnconnectedVerticesOnly", Boolean.TYPE),
-            "Act on unconnected vertices only", true);
+            "Act on unconnected vertices only",
+            true);
         panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         return panel;
     }
@@ -163,11 +173,22 @@ public enum LayoutKind {
         LayoutPanel panel = new LayoutPanel(layout, item);
         String labels[] = {"North", "West"};
         int values[] = {SwingConstants.NORTH, SwingConstants.WEST};
-        panel.createRadioButtonGroup(getMethod(layout, "setOrientation", Integer.TYPE), labels,
-            values, 1, "Orientation");
-        panel.createSpinner(getMethod(layout, "setLevelDistance", Double.TYPE), 30.0, 1.0, 100.0,
-            1.0, "Level distance");
-        panel.createSpinner(getMethod(layout, "setNodeBorder", Double.TYPE), 5.0, 1.0, 100.0, 1.0,
+        panel.createRadioButtonGroup(getMethod(layout, "setOrientation", Integer.TYPE),
+            labels,
+            values,
+            1,
+            "Orientation");
+        panel.createSpinner(getMethod(layout, "setLevelDistance", Double.TYPE),
+            30.0,
+            1.0,
+            100.0,
+            1.0,
+            "Level distance");
+        panel.createSpinner(getMethod(layout, "setNodeBorder", Double.TYPE),
+            5.0,
+            1.0,
+            100.0,
+            1.0,
             "Node distance");
         panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         return panel;
@@ -175,15 +196,33 @@ public enum LayoutKind {
 
     private static JPanel createLayoutPanel(LayouterItem item, JGraphRadialTreeLayout layout) {
         LayoutPanel panel = new LayoutPanel(layout, item);
-        panel.createCheckBox(getMethod(layout, "setAutoRadius", Boolean.TYPE), "Auto radius", false);
-        panel.createSpinner(getMethod(layout, "setMinradiusx", Double.TYPE), 80.0, 1.0, 2000.0,
-            1.0, "Minimum radius X");
-        panel.createSpinner(getMethod(layout, "setMinradiusy", Double.TYPE), 80.0, 1.0, 2000.0,
-            1.0, "Minimum radius Y");
-        panel.createSpinner(getMethod(layout, "setMaxradiusx", Double.TYPE), 1000.0, 1.0, 2000.0,
-            1.0, "Maximum radius X");
-        panel.createSpinner(getMethod(layout, "setMaxradiusy", Double.TYPE), 1000.0, 1.0, 2000.0,
-            1.0, "Maximum radius Y");
+        panel.createCheckBox(getMethod(layout, "setAutoRadius", Boolean.TYPE),
+            "Auto radius",
+            false);
+        panel.createSpinner(getMethod(layout, "setMinradiusx", Double.TYPE),
+            80.0,
+            1.0,
+            2000.0,
+            1.0,
+            "Minimum radius X");
+        panel.createSpinner(getMethod(layout, "setMinradiusy", Double.TYPE),
+            80.0,
+            1.0,
+            2000.0,
+            1.0,
+            "Minimum radius Y");
+        panel.createSpinner(getMethod(layout, "setMaxradiusx", Double.TYPE),
+            1000.0,
+            1.0,
+            2000.0,
+            1.0,
+            "Maximum radius X");
+        panel.createSpinner(getMethod(layout, "setMaxradiusy", Double.TYPE),
+            1000.0,
+            1.0,
+            2000.0,
+            1.0,
+            "Maximum radius Y");
         panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         return panel;
     }
@@ -192,62 +231,113 @@ public enum LayoutKind {
         LayoutPanel panel = new LayoutPanel(layout, item);
         String labels[] = {"Top", "Center", "Bottom"};
         int values[] = {SwingConstants.TOP, SwingConstants.CENTER, SwingConstants.BOTTOM};
-        panel.createRadioButtonGroup(getMethod(layout, "setAlignment", Integer.TYPE), labels,
-            values, 0, "Alignment");
+        panel.createRadioButtonGroup(getMethod(layout, "setAlignment", Integer.TYPE),
+            labels,
+            values,
+            0,
+            "Alignment");
         panel.createCheckBox(getMethod(layout, "setCombineLevelNodes", Boolean.TYPE),
-            "Combine level nodes", true);
+            "Combine level nodes",
+            true);
         panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         return panel;
     }
 
     private static JPanel createLayoutPanel(LayouterItem item, JGraphOrganicLayout layout) {
         LayoutPanel panel = new LayoutPanel(layout, item);
-        panel.createCheckBox(getMethod(layout, "setDeterministic", Boolean.TYPE), "Deterministic",
+        panel.createCheckBox(getMethod(layout, "setDeterministic", Boolean.TYPE),
+            "Deterministic",
             true);
-        panel.createSlider(getMethod(layout, "setMaxIterations", Integer.TYPE), 1, 1000, 100,
+        panel.createSlider(getMethod(layout, "setMaxIterations", Integer.TYPE),
+            1,
+            1000,
+            100,
             "Width space between nodes");
         panel.createCheckBox(getMethod(layout, "setOptimizeNodeDistribution", Boolean.TYPE),
-            "Optimize node distribution", true);
+            "Optimize node distribution",
+            true);
         panel.createSpinner(getMethod(layout, "setNodeDistributionCostFactor", Double.TYPE),
-            300000.0, 1.0, 10000000.0, 10.0, "Node distribution cost factor");
+            300000.0,
+            1.0,
+            10000000.0,
+            10.0,
+            "Node distribution cost factor");
         panel.createCheckBox(getMethod(layout, "setOptimizeEdgeCrossing", Boolean.TYPE),
-            "Optimize edge crossing", true);
-        panel.createSpinner(getMethod(layout, "setEdgeCrossingCostFactor", Double.TYPE), 2000.0,
-            1.0, 20000.0, 1.0, "Edge crossing cost factor");
+            "Optimize edge crossing",
+            true);
+        panel.createSpinner(getMethod(layout, "setEdgeCrossingCostFactor", Double.TYPE),
+            2000.0,
+            1.0,
+            20000.0,
+            1.0,
+            "Edge crossing cost factor");
         panel.createCheckBox(getMethod(layout, "setOptimizeEdgeDistance", Boolean.TYPE),
-            "Optimize edge distance", true);
-        panel.createSpinner(getMethod(layout, "setEdgeDistanceCostFactor", Double.TYPE), 4000.0,
-            1.0, 20000.0, 1.0, "Edge distance cost factor");
+            "Optimize edge distance",
+            true);
+        panel.createSpinner(getMethod(layout, "setEdgeDistanceCostFactor", Double.TYPE),
+            4000.0,
+            1.0,
+            20000.0,
+            1.0,
+            "Edge distance cost factor");
         panel.createCheckBox(getMethod(layout, "setOptimizeEdgeLength", Boolean.TYPE),
-            "Optimize edge length", true);
-        panel.createSpinner(getMethod(layout, "setEdgeLengthCostFactor", Double.TYPE), 0.02, 0.01,
-            1.0, 0.01, "Edge length cost factor");
+            "Optimize edge length",
+            true);
+        panel.createSpinner(getMethod(layout, "setEdgeLengthCostFactor", Double.TYPE),
+            0.02,
+            0.01,
+            1.0,
+            0.01,
+            "Edge length cost factor");
         panel.createCheckBox(getMethod(layout, "setOptimizeBorderLine", Boolean.TYPE),
-            "Optimize border line", true);
-        panel.createSpinner(getMethod(layout, "setBorderLineCostFactor", Double.TYPE), 5.0, 0.1,
-            100.0, 1.0, "Border line cost factor");
+            "Optimize border line",
+            true);
+        panel.createSpinner(getMethod(layout, "setBorderLineCostFactor", Double.TYPE),
+            5.0,
+            0.1,
+            100.0,
+            1.0,
+            "Border line cost factor");
         panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         return panel;
     }
 
     private static JPanel createLayoutPanel(LayouterItem item, JGraphFastOrganicLayout layout) {
         LayoutPanel panel = new LayoutPanel(layout, item);
-        panel.createSpinner(getMethod(layout, "setForceConstant", Double.TYPE), 50.0, 0.001, 500.0,
-            1.0, "Force constant");
-        panel.createSpinner(getMethod(layout, "setInitialTemp", Double.TYPE), 200.0, 1, 1000.0,
-            1.0, "Initial temperature");
-        panel.createSlider(getMethod(layout, "setMaxIterations", Integer.TYPE), 0, 500, 100,
+        panel.createSpinner(getMethod(layout, "setForceConstant", Double.TYPE),
+            50.0,
+            0.001,
+            500.0,
+            1.0,
+            "Force constant");
+        panel.createSpinner(getMethod(layout, "setInitialTemp", Double.TYPE),
+            200.0,
+            1,
+            1000.0,
+            1.0,
+            "Initial temperature");
+        panel.createSlider(getMethod(layout, "setMaxIterations", Integer.TYPE),
+            0,
+            500,
+            100,
             "Maximum number of interations");
         panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         return panel;
     }
 
     private static JPanel createLayoutPanel(LayouterItem item,
-            JGraphSelfOrganizingOrganicLayout layout) {
+        JGraphSelfOrganizingOrganicLayout layout) {
         LayoutPanel panel = new LayoutPanel(layout, item);
-        panel.createSpinner(getMethod(layout, "setCoolingFactor", Double.TYPE), 1.0, 0.01, 10.0,
-            0.01, "Cooling factor");
-        panel.createSlider(getMethod(layout, "setStartRadius", Integer.TYPE), 0, 100, 0,
+        panel.createSpinner(getMethod(layout, "setCoolingFactor", Double.TYPE),
+            1.0,
+            0.01,
+            10.0,
+            0.01,
+            "Cooling factor");
+        panel.createSlider(getMethod(layout, "setStartRadius", Integer.TYPE),
+            0,
+            100,
+            0,
             "Start radius");
         panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         return panel;
@@ -255,25 +345,47 @@ public enum LayoutKind {
 
     private static JPanel createLayoutPanel(LayouterItem item, JGraphHierarchicalLayout layout) {
         LayoutPanel panel = new LayoutPanel(layout, item);
-        panel.createCheckBox(getMethod(layout, "setDeterministic", Boolean.TYPE), "Deterministic",
+        panel.createCheckBox(getMethod(layout, "setDeterministic", Boolean.TYPE),
+            "Deterministic",
             false);
         panel.createCheckBox(getMethod(layout, "setLayoutFromSinks", Boolean.TYPE),
-            "Layout from sinks", true);
-        panel.createCheckBox(getMethod(layout, "setCompactLayout", Boolean.TYPE), "Compact layout",
+            "Layout from sinks",
+            true);
+        panel.createCheckBox(getMethod(layout, "setCompactLayout", Boolean.TYPE),
+            "Compact layout",
             false);
-        panel.createSpinner(getMethod(layout, "setInterHierarchySpacing", Double.TYPE), 60.0, 1.0,
-            200.0, 1.0, "Space between unconnected hierarchies");
-        panel.createSpinner(getMethod(layout, "setInterRankCellSpacing", Double.TYPE), 50.0, 1.0,
-            200.0, 1.0, "Space between cell on adjacent layers");
-        panel.createSpinner(getMethod(layout, "setIntraCellSpacing", Double.TYPE), 30.0, 1.0,
-            200.0, 1.0, "Space between cell on same layer");
-        panel.createSpinner(getMethod(layout, "setParallelEdgeSpacing", Double.TYPE), 10.0, 1.0,
-            200.0, 1.0, "Parallel edge spacing");
+        panel.createSpinner(getMethod(layout, "setInterHierarchySpacing", Double.TYPE),
+            60.0,
+            1.0,
+            200.0,
+            1.0,
+            "Space between unconnected hierarchies");
+        panel.createSpinner(getMethod(layout, "setInterRankCellSpacing", Double.TYPE),
+            50.0,
+            1.0,
+            200.0,
+            1.0,
+            "Space between cell on adjacent layers");
+        panel.createSpinner(getMethod(layout, "setIntraCellSpacing", Double.TYPE),
+            30.0,
+            1.0,
+            200.0,
+            1.0,
+            "Space between cell on same layer");
+        panel.createSpinner(getMethod(layout, "setParallelEdgeSpacing", Double.TYPE),
+            10.0,
+            1.0,
+            200.0,
+            1.0,
+            "Parallel edge spacing");
         String labels[] = {"North", "South", "East", "West"};
         int values[] =
             {SwingConstants.NORTH, SwingConstants.SOUTH, SwingConstants.EAST, SwingConstants.WEST};
-        panel.createRadioButtonGroup(getMethod(layout, "setOrientation", Integer.TYPE), labels,
-            values, 0, "Orientation");
+        panel.createRadioButtonGroup(getMethod(layout, "setOrientation", Integer.TYPE),
+            labels,
+            values,
+            0,
+            "Orientation");
         panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         return panel;
     }
@@ -281,15 +393,16 @@ public enum LayoutKind {
     private static Method getMethod(JGraphLayout layout, String name, Class<?>... parameterTypes) {
         Method method = null;
         try {
-            method = layout.getClass().getMethod(name, parameterTypes);
+            method = layout.getClass()
+                .getMethod(name, parameterTypes);
         } catch (NoSuchMethodException e) {
             throw new IllegalStateException(e);
         }
         return method;
     }
 
-    private static class LayoutPanel extends JPanel implements ChangeListener, ItemListener,
-            ActionListener {
+    private static class LayoutPanel extends JPanel
+        implements ChangeListener, ItemListener, ActionListener {
 
         final JGraphLayout layout;
         final LayouterItem item;
@@ -318,7 +431,7 @@ public enum LayoutKind {
         void createSlider(Method methodToCall, int min, int max, int init, String label) {
             JSlider slider = new MyJSlider(methodToCall, min, max, init, this.layout, this.item);
             slider.addChangeListener(this);
-            JLabel sliderLabel = new JLabel(label, JLabel.LEFT);
+            JLabel sliderLabel = new JLabel(label, SwingConstants.LEFT);
             this.add(sliderLabel);
             this.add(slider);
         }
@@ -331,7 +444,7 @@ public enum LayoutKind {
         }
 
         void createRadioButtonGroup(Method methodToCall, String[] label, int[] value,
-                int selectedValue, String title) {
+            int selectedValue, String title) {
             ButtonGroup group = new ButtonGroup();
             JPanel radioPanel = new JPanel(new GridLayout(0, 4));
             assert label.length == value.length;
@@ -346,13 +459,13 @@ public enum LayoutKind {
                     group.setSelected(button.getModel(), true);
                 }
             }
-            radioPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), title));
+            radioPanel.setBorder(
+                BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), title));
             add(radioPanel, BorderLayout.LINE_START);
         }
 
         void createSpinner(Method methodToCall, double value, double min, double max, double step,
-                String label) {
+            String label) {
             JSpinner spinner =
                 new MySpinner(methodToCall, this.layout, this.item, value, min, max, step);
             spinner.addChangeListener(this);
@@ -374,8 +487,8 @@ public enum LayoutKind {
         final LayouterItem item;
 
         MyJSlider(Method methodToCall, int min, int max, int init, JGraphLayout layout,
-                LayouterItem item) {
-            super(JSlider.HORIZONTAL, min, max, init);
+            LayouterItem item) {
+            super(SwingConstants.HORIZONTAL, min, max, init);
             this.methodToCall = methodToCall;
             this.layout = layout;
             this.item = item;
@@ -415,7 +528,7 @@ public enum LayoutKind {
         final LayouterItem item;
 
         MyCheckBox(Method methodToCall, JGraphLayout layout, LayouterItem item, String label,
-                boolean selected) {
+            boolean selected) {
             super(label);
             this.methodToCall = methodToCall;
             this.layout = layout;
@@ -448,7 +561,7 @@ public enum LayoutKind {
         final int value;
 
         MyRadioButton(Method methodToCall, JGraphLayout layout, LayouterItem item, String label,
-                int value) {
+            int value) {
             super(label);
             this.methodToCall = methodToCall;
             this.layout = layout;
@@ -480,7 +593,7 @@ public enum LayoutKind {
         final LayouterItem item;
 
         MySpinner(Method methodToCall, JGraphLayout layout, LayouterItem item, double value,
-                double min, double max, double step) {
+            double min, double max, double step) {
             super(new SpinnerNumberModel(value, min, max, step));
             this.methodToCall = methodToCall;
             this.layout = layout;
@@ -500,7 +613,9 @@ public enum LayoutKind {
 
         void invoke() {
             try {
-                this.methodToCall.invoke(this.layout, this.getModel().getNumber().doubleValue());
+                this.methodToCall.invoke(this.layout, this.getModel()
+                    .getNumber()
+                    .doubleValue());
             } catch (IllegalAccessException e) {
                 throw new IllegalStateException(e);
             } catch (InvocationTargetException e) {

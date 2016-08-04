@@ -16,25 +16,6 @@
  */
 package groove.io.conceptual.lang.gxl;
 
-import groove.io.conceptual.type.BoolType;
-import groove.io.conceptual.type.Container;
-import groove.io.conceptual.type.DataType;
-import groove.io.conceptual.type.IntType;
-import groove.io.conceptual.type.RealType;
-import groove.io.conceptual.type.StringType;
-import groove.io.conceptual.type.Tuple;
-import groove.io.conceptual.type.Type;
-import groove.io.conceptual.value.BoolValue;
-import groove.io.conceptual.value.ContainerValue;
-import groove.io.conceptual.value.CustomDataValue;
-import groove.io.conceptual.value.EnumValue;
-import groove.io.conceptual.value.IntValue;
-import groove.io.conceptual.value.RealValue;
-import groove.io.conceptual.value.StringValue;
-import groove.io.conceptual.value.TupleValue;
-import groove.io.conceptual.value.Value;
-import groove.util.Exceptions;
-
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,7 +49,26 @@ import de.gupro.gxl.gxl_1_0.SetType;
 import de.gupro.gxl.gxl_1_0.TupType;
 import de.gupro.gxl.gxl_1_0.TypeType;
 import de.gupro.gxl.gxl_1_0.TypedElementType;
+import groove.io.conceptual.type.BoolType;
+import groove.io.conceptual.type.Container;
+import groove.io.conceptual.type.DataType;
+import groove.io.conceptual.type.IntType;
+import groove.io.conceptual.type.RealType;
+import groove.io.conceptual.type.StringType;
+import groove.io.conceptual.type.Tuple;
+import groove.io.conceptual.type.Type;
+import groove.io.conceptual.value.BoolValue;
+import groove.io.conceptual.value.ContainerValue;
+import groove.io.conceptual.value.CustomDataValue;
+import groove.io.conceptual.value.EnumValue;
+import groove.io.conceptual.value.IntValue;
+import groove.io.conceptual.value.RealValue;
+import groove.io.conceptual.value.StringValue;
+import groove.io.conceptual.value.TupleValue;
+import groove.io.conceptual.value.Value;
+import groove.util.Exceptions;
 
+@SuppressWarnings("javadoc")
 public class GxlUtil {
     public static class GraphWrapper {
         private GraphType m_graph;
@@ -79,7 +79,7 @@ public class GxlUtil {
         public GraphWrapper(GraphType graph) {
             this.m_graph = graph;
             this.m_type = GxlUtil.getElemType(graph);
-            assert (this.m_type != null);
+            assert(this.m_type != null);
         }
 
         protected void addNode(NodeWrapper node) {
@@ -109,16 +109,16 @@ public class GxlUtil {
         public NodeWrapper(NodeType node) {
             this.m_node = node;
             this.m_type = GxlUtil.getElemType(node);
-            assert (this.m_type != null);
+            assert(this.m_type != null);
         }
 
         protected void addEdge(EdgeWrapper edge) {
-            assert (edge.getSource() == this);
+            assert(edge.getSource() == this);
             this.m_edges.add(edge);
         }
 
         protected void addIncomingEdge(EdgeWrapper edge) {
-            assert (edge.getTarget() == this);
+            assert(edge.getTarget() == this);
             this.m_incomingEdges.add(edge);
         }
 
@@ -184,7 +184,7 @@ public class GxlUtil {
         public EdgeWrapper(EdgeType edge) {
             this.m_edge = edge;
             this.m_type = GxlUtil.getElemType(edge);
-            assert (this.m_type != null);
+            assert(this.m_type != null);
         }
 
         public EdgeType getEdge() {
@@ -228,12 +228,12 @@ public class GxlUtil {
         }
 
         protected void addEdge(EdgeWrapper edge) {
-            assert (edge.getSourceEdge() == this);
+            assert(edge.getSourceEdge() == this);
             this.m_edges.add(edge);
         }
 
         protected void addIncomingEdge(EdgeWrapper edge) {
-            assert (edge.getTargetEdge() == this);
+            assert(edge.getTargetEdge() == this);
             this.m_incomingEdges.add(edge);
         }
 
@@ -251,6 +251,7 @@ public class GxlUtil {
     public static final JAXBContext g_context;
     public static final Marshaller g_marshaller;
     public static final Unmarshaller g_unmarshaller;
+
     static {
         try {
             g_context = JAXBContext.newInstance(GxlType.class.getPackage()
@@ -262,6 +263,7 @@ public class GxlUtil {
             throw new RuntimeException(e);
         }
     }
+
     public static final ObjectFactory g_objectFactory = new ObjectFactory();
 
     public static String getElemType(TypedElementType elem) {
@@ -270,8 +272,9 @@ public class GxlUtil {
             .getOtherAttributes();
         for (QName attr : attrMap.keySet()) {
             if (attr.getPrefix()
-                .equals("xlink") && attr.getLocalPart()
-                .equals("href")) {
+                .equals("xlink")
+                && attr.getLocalPart()
+                    .equals("href")) {
                 if (attrMap.get(attr)
                     .startsWith(g_gxlTypeGraphURI)) {
                     //Found a type attribute
@@ -439,10 +442,11 @@ public class GxlUtil {
                 case TUP:
                     value = attr.getTup();
                     return value;
+                default:
+                    throw Exceptions.UNREACHABLE;
                 }
             }
         }
-
         return null;
     }
 
@@ -518,9 +522,9 @@ public class GxlUtil {
         case TUP:
             attr.setTup((TupType) value);
             return;
+        default:
+            throw Exceptions.UNREACHABLE;
         }
-
-        return;
     }
 
     public static Object getAttrObject(AttrType attr) {
@@ -555,8 +559,8 @@ public class GxlUtil {
             return null;
         }
         // Wrap in JAXBElement for getTypedValue
-        @SuppressWarnings({"rawtypes", "unchecked"})
-        JAXBElement<?> elem = new JAXBElement(new QName("attr"), o.getClass(), o);
+        @SuppressWarnings({"rawtypes", "unchecked"}) JAXBElement<?> elem =
+            new JAXBElement(new QName("attr"), o.getClass(), o);
         return getTypedValue(elem, type);
     }
 

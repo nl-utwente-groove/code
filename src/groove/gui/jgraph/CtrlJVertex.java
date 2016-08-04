@@ -20,7 +20,7 @@ public class CtrlJVertex extends AJVertex<ControlGraph,CtrlJGraph,JModel<Control
     }
 
     @Override
-    protected void initialise() {
+    public void initialise() {
         super.initialise();
         if (isFinal()) {
             setLook(Look.FINAL, true);
@@ -34,17 +34,19 @@ public class CtrlJVertex extends AJVertex<ControlGraph,CtrlJGraph,JModel<Control
 
     /** Indicates if this jVertex represents the start state of the control automaton. */
     public boolean isStart() {
-        return getNode() != null && getNode().getNumber() == 0;
+        return getNode().getNumber() == 0;
     }
 
     /** Indicates if this jVertex represents the start state of the control automaton. */
     public boolean isFinal() {
-        return getNode() != null && getNode().getPosition().isFinal();
+        return getNode().getPosition()
+            .isFinal();
     }
 
     /** Indicates if this jVertex corresponds to a transient control state. */
     public boolean isTransient() {
-        return getNode() != null && getNode().getPosition().getTransience() > 0;
+        return getNode().getPosition()
+            .getTransience() > 0;
     }
 
     @Override

@@ -35,6 +35,7 @@ import groove.grammar.Rule;
 import groove.grammar.aspect.GraphConverter;
 import groove.grammar.host.HostGraph;
 import groove.grammar.model.GrammarModel;
+import groove.grammar.model.HostModel;
 import groove.graph.iso.IsoChecker;
 import groove.io.FileType;
 import groove.transform.Proof;
@@ -171,11 +172,11 @@ public class RuleApplicationTest {
             for (int j = 0; cont; j++) {
                 QualName resultName = startName.parent()
                     .extend(startName.last() + "-" + j);
-                cont = grammarModel.getNames(HOST)
-                    .contains(resultName);
-                if (cont) {
-                    results.add(grammarModel.getHostModel(resultName)
-                        .toResource()
+                HostModel hostModel = grammarModel.getHostModel(resultName);
+                if (hostModel == null) {
+                    cont = false;
+                } else {
+                    results.add(hostModel.toResource()
                         .clone(family));
                 }
             }

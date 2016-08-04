@@ -118,7 +118,7 @@ public class DeltaSet<T> extends AbstractSet<T> {
              * Latest element returned by <code>next()</code>. This is the
              * element removed by {@link #remove()}.
              */
-            private T latestNext = null;
+            private T latestNext;
         };
     }
 

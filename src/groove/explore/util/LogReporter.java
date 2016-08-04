@@ -115,27 +115,24 @@ public class LogReporter extends AExplorationReporter {
                     .replace(' ', '_')
                     .replace(':', '-');
             String logFileName = FileType.LOG.addExtension(logId);
-            PrintWriter logFile = new PrintWriter(new File(this.logDir, logFileName));
-            try {
+            try (PrintWriter logFile = new PrintWriter(new File(this.logDir, logFileName))) {
                 // copy the initial messages
                 logFile.print(this.log.toString());
                 // copy the garbage collector log, if any, to the log file
                 File gcLogFile = new File(GC_LOG_NAME);
                 if (gcLogFile.exists()) {
-                    BufferedReader gcLog = new BufferedReader(new FileReader(gcLogFile));
-                    List<String> gcList = new ArrayList<String>();
-                    String nextLine = gcLog.readLine();
-                    while (nextLine != null) {
-                        gcList.add(nextLine);
-                        nextLine = gcLog.readLine();
+                    try (BufferedReader gcLog = new BufferedReader(new FileReader(gcLogFile))) {
+                        List<String> gcList = new ArrayList<String>();
+                        String nextLine = gcLog.readLine();
+                        while (nextLine != null) {
+                            gcList.add(nextLine);
+                            nextLine = gcLog.readLine();
+                        }
+                        for (int i = 1; i < gcList.size() - 2; i++) {
+                            logFile.println(gcList.get(i));
+                        }
                     }
-                    for (int i = 1; i < gcList.size() - 2; i++) {
-                        logFile.println(gcList.get(i));
-                    }
-                    gcLog.close();
                 }
-            } finally {
-                logFile.close();
             }
         }
         emit("%s%n", getExploration().getLastMessage());

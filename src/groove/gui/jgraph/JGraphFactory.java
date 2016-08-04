@@ -87,7 +87,7 @@ abstract public class JGraphFactory<G extends Graph> {
         case ERROR:
             return new ErrorValue();
         case LABEL:
-            return new LabelValue(this.jGraph);
+            return new LabelValue();
         case NODE_SIZE:
             // this cannot be computed; instead it is refreshed
             // in the vertex view, when the UI is around

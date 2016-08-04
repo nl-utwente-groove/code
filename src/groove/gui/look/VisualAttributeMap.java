@@ -253,6 +253,9 @@ public class VisualAttributeMap extends AttributeMap {
                 break;
             case EDGE_TARGET_POS:
                 this.visuals.remove(VisualKey.EDGE_SOURCE_POS, false);
+                break;
+            default:
+                // nothing to be done
             }
             this.visuals.remove(vKey, false);
         }
@@ -360,6 +363,9 @@ public class VisualAttributeMap extends AttributeMap {
             break;
         case POINTS:
             value = new ArrayList<Object>((List<?>) value);
+            break;
+        default:
+            // nothing to be done
         }
         String attrKey = getAttrKey(key);
         if (attrKey != null) {

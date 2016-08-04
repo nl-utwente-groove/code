@@ -16,20 +16,6 @@
  */
 package groove.gui.layout;
 
-import groove.control.graph.ControlGraph;
-import groove.control.graph.ControlNode;
-import groove.graph.Edge;
-import groove.graph.EdgeComparator;
-import groove.graph.NodeComparator;
-import groove.gui.jgraph.CtrlJGraph;
-import groove.gui.jgraph.JEdge;
-import groove.gui.jgraph.JGraph;
-import groove.gui.jgraph.JModel;
-import groove.gui.jgraph.JVertex;
-import groove.gui.jgraph.LTSJGraph;
-import groove.gui.jgraph.LTSJModel;
-import groove.util.Pair;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,6 +31,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+
+import groove.control.graph.ControlGraph;
+import groove.control.graph.ControlNode;
+import groove.graph.Edge;
+import groove.graph.EdgeComparator;
+import groove.graph.NodeComparator;
+import groove.gui.jgraph.CtrlJGraph;
+import groove.gui.jgraph.JEdge;
+import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JModel;
+import groove.gui.jgraph.JVertex;
+import groove.gui.jgraph.LTSJGraph;
+import groove.gui.jgraph.LTSJModel;
+import groove.util.Pair;
 
 /**
  * Layout action for JGraphs that creates a top-to-bottom forest layout.
@@ -103,7 +103,8 @@ public class ForestLayouter extends AbstractLayouter {
         BranchMap branchMap = new BranchMap();
         // compose the branch map
         for (JVertex<?> key : this.layoutMap.keySet()) {
-            assert key.getVisuals().isVisible();
+            assert key.getVisuals()
+                .isVisible();
             // add the layoutable to the leaves and the branch map
             Set<LayoutNode> branchSet = new LinkedHashSet<LayoutNode>();
             branchMap.put(key, branchSet);
@@ -127,10 +128,12 @@ public class ForestLayouter extends AbstractLayouter {
             // calculate the incoming edge count and (deterministic) outgoing edge map
             Set<JEdge<?>> outEdges = new TreeSet<JEdge<?>>(edgeComparator);
             // iterate over the incident edges
-            Iterator<?> edgeIter = key.getPort().edges();
+            Iterator<?> edgeIter = key.getPort()
+                .edges();
             while (edgeIter.hasNext()) {
                 JEdge<?> edge = (JEdge<?>) edgeIter.next();
-                if (!edge.getVisuals().isVisible()) {
+                if (!edge.getVisuals()
+                    .isVisible()) {
                     continue;
                 }
                 if (edge.isGrayedOut()) {
@@ -139,7 +142,7 @@ public class ForestLayouter extends AbstractLayouter {
                 // the edge source is a node for sure
                 JVertex<?> sourceVertex = edge.getSourceVertex();
                 // the edge target may be a point only
-                if (sourceVertex.equals(key)) {
+                if (sourceVertex != null && sourceVertex.equals(key)) {
                     if (!fixed.contains(edge.getTargetVertex())) {
                         outEdges.add(edge);
                     }
@@ -179,8 +182,8 @@ public class ForestLayouter extends AbstractLayouter {
                 }
                 LayoutNode layoutable = ForestLayouter.this.layoutMap.get(root);
                 if (layoutable == null) {
-                    throw new IllegalArgumentException("Suggested root " + root
-                        + " is not a known graph cell");
+                    throw new IllegalArgumentException(
+                        "Suggested root " + root + " is not a known graph cell");
                 }
                 remaining.add(layoutable);
             }
@@ -202,10 +205,12 @@ public class ForestLayouter extends AbstractLayouter {
         JGraph<?> jGraph = getJGraph();
         if (jGraph instanceof LTSJGraph) {
             LTSJModel jModel = ((LTSJGraph) jGraph).getModel();
-            result = Collections.singleton(jModel.getJCellForNode(jModel.getGraph().startState()));
+            result = Collections.singleton(jModel.getJCellForNode(jModel.getGraph()
+                .startState()));
         } else if (jGraph instanceof CtrlJGraph) {
             JModel<ControlGraph> jModel = ((CtrlJGraph) jGraph).getModel();
-            ControlNode start = jModel.getGraph().getStart();
+            ControlNode start = jModel.getGraph()
+                .getStart();
             result = Collections.singleton(jModel.getJCellForNode(start));
         } else {
             result = Arrays.asList(jGraph.getSelectionCells());
@@ -228,13 +233,11 @@ public class ForestLayouter extends AbstractLayouter {
             Layout left = result;
             Layout right = layout(branch, height);
             result = new Layout(Math.max(left.count, right.count));
-            int fit =
-                (left.count == 0) ? 0 : left.rightIndents[0] + right.leftIndents[0]
-                    - MIN_CHILD_DISTANCE;
+            int fit = (left.count == 0) ? 0
+                : left.rightIndents[0] + right.leftIndents[0] - MIN_CHILD_DISTANCE;
             for (int level = 0; level < Math.min(left.count, right.count); level++) {
-                fit =
-                    Math.min(fit, left.rightIndents[level] + right.leftIndents[level]
-                        - MIN_NODE_DISTANCE);
+                fit = Math.min(fit,
+                    left.rightIndents[level] + right.leftIndents[level] - MIN_NODE_DISTANCE);
             }
             for (int level = 0; level < result.count; level++) {
                 if (level < left.count) {

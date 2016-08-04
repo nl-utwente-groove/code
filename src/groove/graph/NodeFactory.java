@@ -16,10 +16,13 @@
  */
 package groove.graph;
 
+import java.util.NoSuchElementException;
+
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import groove.util.Dispenser;
 import groove.util.SingleDispenser;
-
-import java.util.NoSuchElementException;
 
 /**
  * Abstract implementation preparing some of the functionality
@@ -33,7 +36,7 @@ public abstract class NodeFactory<N extends Node> {
      * unused according to this factory.
      * @see #createNode(Dispenser)
      */
-    public N createNode() {
+    public @NonNull N createNode() {
         return createNode(getNodeNrDispenser());
     }
 
@@ -46,7 +49,7 @@ public abstract class NodeFactory<N extends Node> {
      * @throws NoSuchElementException if the number is unsuitable
      * @see #createNode(Dispenser)
      */
-    public N createNode(int nr) {
+    public @NonNull N createNode(int nr) {
         return createNode(Dispenser.single(nr));
     }
 
@@ -57,8 +60,8 @@ public abstract class NodeFactory<N extends Node> {
      * the dispenser may be invoked multiple times.
      * @throws NoSuchElementException if the dispenser runs out of numbers
      */
-    public N createNode(Dispenser dispenser) {
-        N result = null;
+    public @NonNull N createNode(Dispenser dispenser) {
+        @Nullable N result = null;
         do {
             int nr = dispenser.getNext();
             result = getNode(nr);
@@ -80,7 +83,7 @@ public abstract class NodeFactory<N extends Node> {
      * @return a previously created node with number {@code nr},
      * or {@code null} if there is no such node
      */
-    abstract protected N getNode(int nr);
+    abstract protected @Nullable N getNode(int nr);
 
     /**
      * Callback method from {@link #createNode()} to register a given node
@@ -97,7 +100,7 @@ public abstract class NodeFactory<N extends Node> {
     abstract protected boolean isAllowed(N node);
 
     /** Callback factory method to create a node of the right type. */
-    protected abstract N newNode(int nr);
+    protected abstract @NonNull N newNode(int nr);
 
     /** Returns the fresh node number dispenser of this factory. */
     protected abstract Dispenser getNodeNrDispenser();

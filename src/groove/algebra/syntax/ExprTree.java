@@ -148,8 +148,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         if (!hasConstant()) {
             throw new FormatException("'%s' does not represent a constant", getParseString());
         }
-        Constant result = getConstant();
-        return result;
+        return getConstant();
     }
 
     /**
@@ -317,6 +316,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
             return false;
         }
         ExprTree other = (ExprTree) obj;
+        assert other != null; // guaranteed by !super.equals
         if (this.sort == null) {
             if (other.sort != null) {
                 return false;
@@ -337,7 +337,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
     }
 
     /** Auxiliary operator to represent assignment. */
-    public static ExprOp ASSIGN = new ExprOp(OpKind.ASSIGN, "=", 2);
+    public static final ExprOp ASSIGN = new ExprOp(OpKind.ASSIGN, "=", 2);
 
     private static class MultiExpression extends EnumMap<Sort,Expression> {
         /** Creates an empty instance. */

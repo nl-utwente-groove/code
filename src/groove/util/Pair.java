@@ -22,6 +22,11 @@ package groove.util;
  * @version $Revision $
  */
 public class Pair<T,U> implements Fixable {
+    /** Constructs a pair with initially {@code null} fields. */
+    public Pair() {
+        // empty
+    }
+
     /** Constructs a pair with given first and second fields. */
     public Pair(final T one, final U two) {
         this.one = one;
@@ -44,7 +49,7 @@ public class Pair<T,U> implements Fixable {
 
     /** Changes the first value of the pair. */
     public T setOne(T one) {
-        assert !isFixed() : "Can't set a value after the pair is fixed.";
+        assert!isFixed() : "Can't set a value after the pair is fixed.";
         T result = this.one;
         this.one = one;
         return result;
@@ -52,7 +57,7 @@ public class Pair<T,U> implements Fixable {
 
     /** Changes the second value of the pair. */
     public U setTwo(U two) {
-        assert !isFixed() : "Can't set a value after the pair is fixed.";
+        assert!isFixed() : "Can't set a value after the pair is fixed.";
         U result = this.two;
         this.two = two;
         return result;

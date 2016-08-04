@@ -17,6 +17,20 @@
 package groove.control;
 
 import static groove.io.FileType.CONTROL;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.TreeMap;
+
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.TokenRewriteStream;
+
 import groove.control.parse.CtrlLexer;
 import groove.control.parse.CtrlTree;
 import groove.control.parse.Namespace;
@@ -33,19 +47,6 @@ import groove.util.Groove;
 import groove.util.parse.FormatError;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.TreeMap;
-
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.TokenRewriteStream;
 
 /**
  * Wrapper for the ANTLR control parser and builder.
@@ -187,7 +188,7 @@ public class CtrlLoader {
                 CtrlTree prioTree = recipeTree.getChild(2);
                 int oldPriority = Integer.parseInt(prioTree.getText());
                 if (oldPriority != newPriority) {
-                    rewriter.replace(prioTree.getToken(), "" + newPriority);
+                    rewriter.replace(prioTree.getToken(), Integer.toString(newPriority));
                     changed = true;
                 }
             }
@@ -274,10 +275,10 @@ public class CtrlLoader {
             control = new File(control, part);
         }
         File inputFile = CONTROL.addExtension(control);
-        Scanner scanner = new Scanner(inputFile);
-        scanner.useDelimiter("\\A");
-        instance.addControl(qualName, scanner.next());
-        scanner.close();
+        try (Scanner scanner = new Scanner(inputFile)) {
+            scanner.useDelimiter("\\A");
+            instance.addControl(qualName, scanner.next());
+        }
         Program result = instance.buildProgram(Collections.singleton(qualName));
         result.setFixed();
         return result;

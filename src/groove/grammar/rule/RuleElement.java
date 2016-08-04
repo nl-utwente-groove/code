@@ -16,15 +16,15 @@
  */
 package groove.grammar.rule;
 
-import groove.grammar.type.TypeElement;
-import groove.grammar.type.TypeGuard;
-import groove.graph.Element;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
+
+import groove.grammar.type.TypeElement;
+import groove.grammar.type.TypeGuard;
+import groove.graph.Element;
 
 /**
  * Type of (node and edge) elements that may appear in a {@link RuleGraph}.
@@ -51,7 +51,8 @@ public interface RuleElement extends Element, AnchorKey {
     public @NonNull Set<? extends TypeElement> getMatchingTypes();
 
     /** Fixed global empty set of label variables. */
-    final static Set<LabelVar> EMPTY_VAR_SET = Collections.emptySet();
+    @SuppressWarnings("null")
+    final static @NonNull Set<LabelVar> EMPTY_VAR_SET = Collections.emptySet();
     /** Fixed global empty set of label variables. */
     final static List<TypeGuard> EMPTY_GUARD_LIST = Collections.emptyList();
 }

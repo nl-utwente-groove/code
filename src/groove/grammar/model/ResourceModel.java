@@ -23,6 +23,9 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import groove.grammar.Rule;
 import groove.grammar.aspect.AspectGraph;
 import groove.graph.GraphInfo;
@@ -93,9 +96,10 @@ abstract public class ResourceModel<R> {
      * @throws FormatException if there are syntax errors in the model that
      *         prevent it from being translated to a resource
      */
-    public final R toResource() throws FormatException {
+    public final @NonNull R toResource() throws FormatException {
         synchronise();
         getErrors().throwException();
+        assert this.resource != null; // guaranteed by the absence of errors
         return this.resource;
     }
 
@@ -126,7 +130,7 @@ abstract public class ResourceModel<R> {
     /**
      * Synchronises the resource with the model source.
      * After invocation of this method, the status is either
-     * {@link Status#DONE} or {@link Status#ERROR}.
+     * {@link Status#DONE} (in which case the resource is built) or {@link Status#ERROR}.
      * @see #getStatus()
      */
     final void synchronise() {
@@ -178,7 +182,7 @@ abstract public class ResourceModel<R> {
      * errors.
      * @see #toResource()
      */
-    final R getResource() {
+    final @Nullable R getResource() {
         synchronise();
         return this.resource;
     }
@@ -214,7 +218,7 @@ abstract public class ResourceModel<R> {
     /** Status of the construction of the resource. */
     private Status status = Status.START;
     /** The constructed resource, if {@link #status} equals {@link Status#DONE}. */
-    private R resource;
+    private @Nullable R resource;
     /** The errors found during resource construction. */
     private final FormatErrorSet errors = new FormatErrorSet();
     /** Grammar modification tracker. */

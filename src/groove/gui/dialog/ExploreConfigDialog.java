@@ -17,15 +17,6 @@
 package groove.gui.dialog;
 
 import static groove.io.FileType.PROPERTY;
-import groove.explore.ExploreConfig;
-import groove.explore.config.ExploreKey;
-import groove.explore.config.Setting;
-import groove.explore.config.SettingKey;
-import groove.gui.action.Refreshable;
-import groove.gui.dialog.config.EditorFactory;
-import groove.gui.dialog.config.SettingEditor;
-import groove.gui.dialog.config.SettingsPanel;
-import groove.util.parse.FormatException;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -49,6 +40,16 @@ import javax.swing.JTextField;
 
 import com.itextpdf.text.Font;
 
+import groove.explore.ExploreConfig;
+import groove.explore.config.ExploreKey;
+import groove.explore.config.Setting;
+import groove.explore.config.SettingKey;
+import groove.gui.action.Refreshable;
+import groove.gui.dialog.config.EditorFactory;
+import groove.gui.dialog.config.SettingEditor;
+import groove.gui.dialog.config.SettingsPanel;
+import groove.util.parse.FormatException;
+
 /**
  * Dialog to manage exploration configurations.
  * @author Arend Rensink
@@ -64,11 +65,9 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
         if (configDir.isDirectory()) {
             this.storing = false;
             for (File file : configDir.listFiles(PROPERTY.getFilter())) {
-                try {
+                try (InputStream in = new FileInputStream(file)) {
                     Properties props = new Properties();
-                    InputStream in = new FileInputStream(file);
                     props.load(in);
-                    in.close();
                     addConfig(PROPERTY.stripExtension(file.getName()), new ExploreConfig(props));
                 } catch (IOException exc) {
                     // skip this file
@@ -134,8 +133,8 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
         panel.add(getEditorMap().get(key));
     }
 
-    private final Map<ExploreKey,SettingsPanel> panelMap = new EnumMap<ExploreKey,SettingsPanel>(
-        ExploreKey.class);
+    private final Map<ExploreKey,SettingsPanel> panelMap =
+        new EnumMap<ExploreKey,SettingsPanel>(ExploreKey.class);
 
     private Map<ExploreKey,SettingEditor> getEditorMap() {
         if (this.editorMap == null) {
@@ -204,18 +203,20 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
     @Override
     protected boolean testDirty() {
         boolean result = false;
-        for (SettingEditor editor : getEditorMap().values()) {
-            try {
-                Setting<?,?> selectedValue = getSelectedConfig().get(editor.getKey());
-                Setting<?,?> editedValue = editor.getSetting();
-                result =
-                    selectedValue == null ? editedValue != null
+        ExploreConfig config = getSelectedConfig();
+        if (config != null) {
+            for (SettingEditor editor : getEditorMap().values()) {
+                try {
+                    Setting<?,?> selectedValue = config.get(editor.getKey());
+                    Setting<?,?> editedValue = editor.getSetting();
+                    result = selectedValue == null ? editedValue != null
                         : !selectedValue.equals(editedValue);
-                if (result) {
-                    break;
+                    if (result) {
+                        break;
+                    }
+                } catch (FormatException exc) {
+                    // do nothing
                 }
-            } catch (FormatException exc) {
-                // do nothing
             }
         }
         return result;
@@ -264,10 +265,9 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
         if (!this.storing) {
             return;
         }
-        try {
-            OutputStream out = new FileOutputStream(getFile(name));
-            config.getProperties().store(out, "Exploration configuration '" + name + "'");
-            out.close();
+        try (OutputStream out = new FileOutputStream(getFile(name))) {
+            config.getProperties()
+                .store(out, "Exploration configuration '" + name + "'");
         } catch (IOException exc) {
             // give up
         }

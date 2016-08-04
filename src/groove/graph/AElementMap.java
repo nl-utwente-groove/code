@@ -21,6 +21,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * Default implementation of a generic node-edge-map. The implementation is
  * based on two internally stored hash maps.
@@ -173,8 +175,8 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
      * If no edge image is stored, this implementation invokes
      * {@link #createImage(Edge)}.
      */
-    public TE mapEdge(SE key) {
-        TE result = getEdge(key);
+    public @Nullable TE mapEdge(SE key) {
+        @Nullable TE result = getEdge(key);
         if (result == null) {
             result = createImage(key);
             if (result != null) {
@@ -189,7 +191,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
      * implementation creates a @link DefaultEdge} if
      * the map contains images for the key's end nodes.
      */
-    protected TE createImage(SE key) {
+    protected @Nullable TE createImage(SE key) {
         TN sourceImage = getNode(key.source());
         if (sourceImage == null) {
             return null;

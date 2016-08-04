@@ -19,6 +19,22 @@ package groove.grammar.type;
 import static groove.graph.EdgeRole.FLAG;
 import static groove.graph.EdgeRole.NODE_TYPE;
 import static groove.graph.GraphRole.TYPE;
+
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+import org.eclipse.jdt.annotation.NonNull;
+
 import groove.automaton.RegExpr;
 import groove.automaton.RegExprTyper;
 import groove.automaton.RegExprTyper.Result;
@@ -50,26 +66,13 @@ import groove.util.parse.FormatError;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
-
 /**
  * Extends a standard graph with some useful functionality for querying a type
  * graph.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements TypeChecker {
+public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge>implements TypeChecker {
     /** Constructs a fresh type graph.
      * @param name the (non-{@code null}) name of the type graph
      */
@@ -129,10 +132,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
             otherToThis.put(otherTypeNode, image);
         }
         for (TypeEdge otherEdge : other.edgeSet()) {
-            TypeEdge image =
-                addEdge(otherToThis.get(otherEdge.source()),
-                    otherEdge.label(),
-                    otherToThis.get(otherEdge.target()));
+            TypeEdge image = addEdge(otherToThis.get(otherEdge.source()),
+                otherEdge.label(),
+                otherToThis.get(otherEdge.target()));
             image.setInMult(otherEdge.getInMult());
             image.setOutMult(otherEdge.getOutMult());
             image.setAbstract(otherEdge.isAbstract());
@@ -229,10 +231,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
         }
         if (this.nodeSupertypeMap.get(supertype)
             .contains(subtype)) {
-            throw new FormatException(
-                String.format("The relation '%s -> %s' introduces a cyclic type dependency",
-                    subtype,
-                    supertype));
+            throw new FormatException(String.format(
+                "The relation '%s -> %s' introduces a cyclic type dependency", subtype, supertype));
         }
         this.nodeDirectSubtypeMap.get(supertype)
             .add(subtype);
@@ -518,11 +518,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
             VariableNode newTarget = (VariableNode) result.getNode(opNode.getTarget());
             imageOk &= newTarget != null;
             if (imageOk) {
-                RuleNode image =
-                    ruleFactory.createOperatorNode(opNode.getNumber(),
-                        opNode.getOperator(),
-                        newArgs,
-                        newTarget);
+                RuleNode image = ruleFactory.createOperatorNode(opNode.getNumber(),
+                    opNode.getOperator(),
+                    newArgs,
+                    newTarget);
                 result.putNode(opNode, image);
             }
         }
@@ -537,8 +536,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
             // only consider edges for which source and target are typed
             // which may fail to hold due to a previous error
             if (result.nodeMap()
-                .containsKey(edge.source()) && result.nodeMap()
-                .containsKey(edge.target()) && !isNodeType(edge)) {
+                .containsKey(edge.source())
+                && result.nodeMap()
+                    .containsKey(edge.target())
+                && !isNodeType(edge)) {
                 RuleLabel edgeLabel = edge.label();
                 if (edgeLabel.isAtom() || edgeLabel.isSharp()) {
                     simpleEdges.add(edge);
@@ -551,10 +552,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
         }
         // process the wildcard edges
         for (RuleEdge varEdge : varEdges) {
-            RuleEdge image =
-                ruleFactory.createEdge(result.getNode(varEdge.source()),
-                    varEdge.label(),
-                    result.getNode(varEdge.target()));
+            RuleEdge image = ruleFactory.createEdge(result.getNode(varEdge.source()),
+                varEdge.label(),
+                result.getNode(varEdge.target()));
             Set<? extends TypeElement> matchingTypes = image.getMatchingTypes();
             for (TypeGuard guard : image.getTypeGuards()) {
                 matchingTypes.retainAll(result.addVarTypes(guard.getVar(), matchingTypes));
@@ -573,11 +573,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
             RuleNode sourceImage = result.getNode(edge.source());
             RuleNode targetImage = result.getNode(edge.target());
             TypeNode sourceType = sourceImage.getType();
-            TypeEdge typeEdge =
-                getTypeEdge(sourceImage.getType(),
-                    edgeLabel.getTypeLabel(),
-                    targetImage.getType(),
-                    false);
+            TypeEdge typeEdge = getTypeEdge(sourceImage.getType(),
+                edgeLabel.getTypeLabel(),
+                targetImage.getType(),
+                false);
             if (typeEdge == null) {
                 // if the source type is the top type, we must be in a
                 // graph editor where a new edge label has been used and
@@ -619,9 +618,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                 if (checkLabel.isAtom() && (isImplicit() || checkLabel.getRole() != NODE_TYPE)) {
                     // (negated) atoms have to correspond to an edge type
                     Set<TypeNode> resultSourceTypes = typeResult.getAll(sourceImage.getType());
-                    fit =
-                        resultSourceTypes != null
-                            && resultSourceTypes.contains(targetImage.getType());
+                    fit = resultSourceTypes != null
+                        && resultSourceTypes.contains(targetImage.getType());
                 } else {
                     // for all other regular expressions, the matching path may start and
                     // end in a subtype of the regexpr edge source/target
@@ -725,8 +723,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                         errors.add("Duplicate node types %s and %s", type.label(), typeLabel, node);
                     } else {
                         type = parentNode == null ? newType : parentNode.getType();
-                        types.retainAll(sharp ? Collections.singleton(newType)
-                            : newType.getSubtypes());
+                        types.retainAll(
+                            sharp ? Collections.singleton(newType) : newType.getSubtypes());
                         if (sharp) {
                             sharpNodes.add(node);
                         }
@@ -859,7 +857,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                                 nodeTypeEdge);
                         }
                         if (type.isAbstract()) {
-                            throw new FormatException("Abstract node type '%s'", type, nodeTypeEdge);
+                            throw new FormatException("Abstract node type '%s'", type,
+                                nodeTypeEdge);
                         }
                         image = hostFactory.nodes(type)
                             .createNode(node.getNumber());
@@ -1140,7 +1139,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
     private final NodeTypeMap nodeDirectSubtypeMap = new NodeTypeMap(false);
 
     /** Returns the set of subtypes of a given node type. */
-    public Set<TypeNode> getSubtypes(TypeNode node) {
+    public @NonNull Set<TypeNode> getSubtypes(TypeNode node) {
         Set<TypeNode> result;
         if (isImplicit()) {
             result = Collections.singleton(node);
@@ -1160,7 +1159,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
     private final NodeTypeMap nodeSubtypeMap = new NodeTypeMap(true);
 
     /** Returns the set of subtypes of a given edge type. */
-    public Set<TypeEdge> getSubtypes(TypeEdge edge) {
+    public @NonNull Set<TypeEdge> getSubtypes(TypeEdge edge) {
         Set<TypeEdge> result;
         if (isImplicit()) {
             result = Collections.singleton(edge);
@@ -1180,7 +1179,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
         new HashMap<TypeEdge,Set<TypeEdge>>();
 
     /** Returns the set of supertypes of a given node type. */
-    public Set<TypeNode> getSupertypes(TypeNode node) {
+    public @NonNull Set<TypeNode> getSupertypes(TypeNode node) {
         Set<TypeNode> result;
         if (isImplicit()) {
             result = Collections.singleton(node);
@@ -1200,7 +1199,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
     private final NodeTypeMap nodeSupertypeMap = new NodeTypeMap(true);
 
     /** Returns the set of supertypes of a given edge type. */
-    public Set<TypeEdge> getSupertypes(TypeEdge edge) {
+    public @NonNull Set<TypeEdge> getSupertypes(TypeEdge edge) {
         Set<TypeEdge> result;
         if (isImplicit()) {
             result = Collections.singleton(edge);

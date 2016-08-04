@@ -18,6 +18,8 @@ package groove.graph;
 
 import java.util.Set;
 
+import groove.util.Exceptions;
+
 /**
  * Edge direction in a graph.
  * @author Arend Rensink
@@ -48,8 +50,7 @@ public enum Direction {
         case INCOMING:
             return edge.target();
         default:
-            assert false;
-            return null;
+            throw Exceptions.UNREACHABLE;
         }
     }
 
@@ -61,14 +62,13 @@ public enum Direction {
         case INCOMING:
             return edge.source();
         default:
-            assert false;
-            return null;
+            throw Exceptions.UNREACHABLE;
         }
     }
 
     /** Returns the set of edges connected to a given node, according to this direction. */
-    public <N extends Node,E extends GEdge<N>,G extends GGraph<N,E>> Set<? extends E> edges(
-        G graph, N node) {
+    public <N extends Node,E extends GEdge<N>,G extends GGraph<N,E>> Set<? extends E> edges(G graph,
+        N node) {
         switch (this) {
         case OUTGOING:
             return graph.outEdgeSet(node);

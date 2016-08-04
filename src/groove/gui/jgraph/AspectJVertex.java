@@ -2,6 +2,13 @@ package groove.gui.jgraph;
 
 import static groove.grammar.aspect.AspectKind.REMARK;
 import static groove.gui.look.VisualKey.COLOR;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 import groove.algebra.syntax.Expression;
 import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectGraph;
@@ -24,17 +31,11 @@ import groove.gui.look.VisualKey;
 import groove.io.HTMLConverter;
 import groove.util.parse.FormatError;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
 /**
  * Specialized j-vertex for rule graphs, with its own tool tip text.
  */
 public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJModel,AspectJEdge>
-implements AspectJCell {
+    implements AspectJCell {
     /**
      * Creates a fresh, uninitialised JVertex.
      * Call {@link #setJModel} and {@link #setNode(Node)}
@@ -59,16 +60,28 @@ implements AspectJCell {
     public Set<AspectEdge> getEdges() {
         return (Set<AspectEdge>) super.getEdges();
     }
+    //
+    //    @Override
+    //    public void setNode(Node node) {
+    //        AspectNode aspectNode = (AspectNode) node;
+    //        this.aspect = aspectNode.getKind();
+    //        super.setNode(node);
+    //        if (aspectNode.hasAttrAspect()) {
+    //            setLook(Look.getLookFor(getNode().getAttrKind()), true);
+    //        }
+    //        getErrors().addErrors(aspectNode.getErrors(), true);
+    //        refreshVisual(COLOR);
+    //    }
 
     @Override
-    public void setNode(Node node) {
-        AspectNode aspectNode = (AspectNode) node;
-        this.aspect = aspectNode.getKind();
-        super.setNode(node);
-        if (aspectNode.hasAttrAspect()) {
+    public void initialise() {
+        super.initialise();
+        AspectNode node = getNode();
+        this.aspect = node.getKind();
+        if (node.hasAttrAspect()) {
             setLook(Look.getLookFor(getNode().getAttrKind()), true);
         }
-        getErrors().addErrors(aspectNode.getErrors(), true);
+        getErrors().addErrors(node.getErrors(), true);
         refreshVisual(COLOR);
     }
 
@@ -124,7 +137,8 @@ implements AspectJCell {
             AspectKind attrKind = getNode().getAttrKind();
             if (attrKind.hasSignature()) {
                 // this is a constant or variable node
-                Object content = getNode().getAttrAspect().getContent();
+                Object content = getNode().getAttrAspect()
+                    .getContent();
                 if (content == null) {
                     return VariableNode.TO_STRING_PREFIX + getNode().getNumber();
                 } else if (content instanceof Expression) {
@@ -158,8 +172,10 @@ implements AspectJCell {
             }
             HTMLConverter.EMBARGO_TAG.on(result);
         } else {
-            if (getNode().getAttrKind().hasSignature()) {
-                if (getNode().getAttrAspect().hasContent()) {
+            if (getNode().getAttrKind()
+                .hasSignature()) {
+                if (getNode().getAttrAspect()
+                    .hasContent()) {
                     result.append("Constant node");
                 } else {
                     result.append("Variable node");
@@ -221,14 +237,16 @@ implements AspectJCell {
     }
 
     private TypeModelMap getTypeMap() {
-        return getJModel().getResourceModel().getTypeMap();
+        return getJModel().getResourceModel()
+            .getTypeMap();
     }
 
     @Override
     protected Look getStructuralLook() {
         if (isNodeEdge()) {
             return Look.NODIFIED;
-        } else if (getNode().getGraphRole() == GraphRole.TYPE && getAspect() == AspectKind.DEFAULT) {
+        } else
+            if (getNode().getGraphRole() == GraphRole.TYPE && getAspect() == AspectKind.DEFAULT) {
             return Look.TYPE;
         } else {
             return Look.getLookFor(getAspect());
@@ -237,7 +255,9 @@ implements AspectJCell {
 
     /** Indicates if this vertex is in fact a nodified edge. */
     public boolean isNodeEdge() {
-        return getJGraph().getMode() != JGraphMode.EDIT_MODE && getEdgeLabelPattern() != null;
+        JGraph<?> jGraph = getJGraph();
+        return jGraph != null && jGraph.getMode() != JGraphMode.EDIT_MODE
+            && getEdgeLabelPattern() != null;
     }
 
     /**

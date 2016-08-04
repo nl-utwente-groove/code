@@ -19,6 +19,12 @@ package groove.gui.look;
 import static groove.graph.EdgeRole.NODE_TYPE;
 import static groove.util.line.Line.Style.ITALIC;
 import static groove.util.line.Line.Style.UNDERLINE;
+
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+
 import groove.algebra.Sort;
 import groove.control.CtrlVar;
 import groove.control.Position;
@@ -39,10 +45,12 @@ import groove.grammar.rule.VariableNode;
 import groove.grammar.type.LabelPattern;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
-import groove.graph.GraphRole;
+import groove.graph.Graph;
 import groove.graph.Label;
 import groove.gui.jgraph.AspectJEdge;
+import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJVertex;
+import groove.gui.jgraph.CtrlJGraph;
 import groove.gui.jgraph.CtrlJVertex;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JEdge;
@@ -63,95 +71,94 @@ import groove.util.line.Line;
 import groove.util.line.Line.Style;
 import groove.util.parse.FormatException;
 
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-
 /**
  * Visual value refresher for the {@link VisualKey#LABEL}.
  * @author Arend Rensink
  * @version $Revision $
  */
 public class LabelValue implements VisualValue<MultiLabel> {
-    /** Constructs a value strategy for a given JGraph. */
-    public LabelValue(JGraph<?> jGraph) {
-        this.jGraph = jGraph;
-        this.role = jGraph.getGraphRole();
-    }
-
     @Override
-    public MultiLabel get(JCell<?> cell) {
+    public <G extends Graph> MultiLabel get(JGraph<G> jGraph, JCell<G> cell) {
         MultiLabel result = null;
         if (cell instanceof JVertex) {
-            result = getJVertexLabel((JVertex<?>) cell);
+            result = getJVertexLabel(jGraph, (JVertex<G>) cell);
         } else if (cell instanceof JEdge) {
-            result = getJEdgeLabel((JEdge<?>) cell);
+            result = getJEdgeLabel(jGraph, (JEdge<G>) cell);
         }
         return result;
     }
 
-    /** Returns a list of lines together making up the label text of a vertex. */
-    protected MultiLabel getJVertexLabel(JVertex<?> jVertex) {
+    /** Returns a list of lines together making up the label text of a vertex.
+     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
+     */
+    protected <G extends Graph> MultiLabel getJVertexLabel(JGraph<G> jGraph, JVertex<G> jVertex) {
         MultiLabel result;
-        switch (this.role) {
+        switch (jGraph.getGraphRole()) {
         case HOST:
-            result = getHostNodeLabel((AspectJVertex) jVertex);
+            result = getHostNodeLabel((AspectJGraph) jGraph, (AspectJVertex) jVertex);
             break;
         case RULE:
-            result = getRuleNodeLabel((AspectJVertex) jVertex);
+            result = getRuleNodeLabel((AspectJGraph) jGraph, (AspectJVertex) jVertex);
             break;
         case TYPE:
-            result = getTypeNodeLabel((AspectJVertex) jVertex);
+            result = getTypeNodeLabel((AspectJGraph) jGraph, (AspectJVertex) jVertex);
             break;
         case LTS:
-            result = getLTSJVertexLabel((LTSJVertex) jVertex);
+            result = getLTSJVertexLabel((LTSJGraph) jGraph, (LTSJVertex) jVertex);
             break;
         case CTRL:
-            result = getCtrlJVertexLabel((CtrlJVertex) jVertex);
+            result = getCtrlJVertexLabel((CtrlJGraph) jGraph, (CtrlJVertex) jVertex);
             break;
         default:
-            result = getBasicVertexLabel(jVertex);
+            result = getBasicVertexLabel(jGraph, jVertex);
         }
         return result;
     }
 
-    /** This implementation adds the data edges to the super result. */
-    private MultiLabel getBasicVertexLabel(JVertex<?> jVertex) {
+    /** This implementation adds the data edges to the super result.
+     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
+     */
+    private <G extends Graph> MultiLabel getBasicVertexLabel(JGraph<G> jGraph, JVertex<G> jVertex) {
         MultiLabel result = new MultiLabel();
         // show the node identity if required
-        if (jVertex.getJGraph().isShowNodeIdentities()) {
-            result.add(getIdLine(jVertex.getNode().toString()));
+        if (jGraph.isShowNodeIdentities()) {
+            result.add(getIdLine(jVertex.getNode()
+                .toString()));
         }
         // only add edges that have an unfiltered label
-        addEdgeLabels(jVertex, result);
+        addEdgeLabels(jGraph, jVertex, result);
         return result;
     }
 
-    /** Recomputes the set of node lines for this aspect node. */
-    private MultiLabel getHostNodeLabel(AspectJVertex jVertex) {
+    /** Recomputes the set of node lines for this aspect node.
+     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
+     */
+    private MultiLabel getHostNodeLabel(AspectJGraph jGraph, AspectJVertex jVertex) {
         AspectNode node = jVertex.getNode();
         node.testFixed(true);
         MultiLabel result = new MultiLabel();
-        if (!jVertex.getLooks().contains(Look.NODIFIED)) {
+        if (!jVertex.getLooks()
+            .contains(Look.NODIFIED)) {
             // show the node identity
-            if (jVertex.getJGraph().isShowNodeIdentities() && !node.hasId()) {
+            if (jGraph.isShowNodeIdentities() && !node.hasId()) {
                 result.add(getNodeIdLine(node));
             }
             // the following used to include hasError() as a disjunct
-            if (jVertex.getJGraph().isShowAspects()) {
-                result.add(jVertex.getUserObject().toLines());
+            if (jGraph.isShowAspects()) {
+                result.add(jVertex.getUserObject()
+                    .toLines());
             } else {
                 // show data constants and variables correctly
-                result.add(getDataLines(node));
+                result.add(getDataLines(jGraph, node));
                 // show the visible self-edges
                 Line id = getIdLine(node);
                 for (AspectEdge edge : jVertex.getEdges()) {
-                    if (!isFiltered(jVertex, edge)) {
+                    if (!isFiltered(jGraph, jVertex, edge)) {
                         Line line = edge.toLine(true, jVertex.getAspect());
                         if (id != null) {
                             if (edge.getRole() == NODE_TYPE) {
-                                line = id.append(" : ").append(line);
+                                line = id.append(" : ")
+                                    .append(line);
                             } else {
                                 // we're not going to have any node types:
                                 // add the node id on a separate line
@@ -167,7 +174,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 }
             }
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
-                if (!isFiltered(jVertex, edge)) {
+                if (!isFiltered(jGraph, jVertex, edge)) {
                     result.add(edge.toLine(true, jVertex.getAspect()));
                 }
             }
@@ -179,29 +186,38 @@ public class LabelValue implements VisualValue<MultiLabel> {
      * Constructs a node ID line for an aspect node.
      */
     private Line getIdLine(AspectNode node) {
-        return node.hasId() ? getIdLine(node.getId().getContentString()) : null;
+        return node.hasId() ? getIdLine(node.getId()
+            .getContentString()) : null;
     }
 
     /**
      * Constructs a node ID line from agiven string.
      */
     private Line getIdLine(String id) {
-        return Line.atom(id).style(ITALIC).style(UNDERLINE);
+        return Line.atom(id)
+            .style(ITALIC)
+            .style(UNDERLINE);
     }
 
-    /** Recomputes the set of node lines for this aspect node. */
-    private MultiLabel getTypeNodeLabel(AspectJVertex jVertex) {
+    /** Recomputes the set of node lines for this aspect node.
+     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
+     */
+    private MultiLabel getTypeNodeLabel(AspectJGraph jGraph, AspectJVertex jVertex) {
         AspectNode node = jVertex.getNode();
         node.testFixed(true);
         MultiLabel result = new MultiLabel();
-        if (jVertex.getJGraph().isShowAspects()) {
-            result.add(jVertex.getUserObject().toLines());
+        if (jGraph.isShowAspects()) {
+            result.add(jVertex.getUserObject()
+                .toLines());
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
-                if (!isFiltered(jVertex, edge)) {
-                    Line line = edge.label().toLine();
+                if (!isFiltered(jGraph, jVertex, edge)) {
+                    Line line = edge.label()
+                        .toLine();
                     // check for primitive type edges
                     if (!edge.isLoop()) {
-                        Sort type = edge.target().getAttrKind().getSignature();
+                        Sort type = edge.target()
+                            .getAttrKind()
+                            .getSignature();
                         line = line.append(Line.atom(type.getName()));
                     }
                     result.add(line);
@@ -212,10 +228,10 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 result.add(IMPORT_LINE);
             }
             // show data constants and variables correctly
-            result.add(getDataLines(node));
+            result.add(getDataLines(jGraph, node));
             // show the visible self-edges
             for (AspectEdge edge : jVertex.getEdges()) {
-                if (!isFiltered(jVertex, edge)) {
+                if (!isFiltered(jGraph, jVertex, edge)) {
                     Line line = edge.toLine(true, jVertex.getAspect());
                     if (showLoopSuffix(jVertex, edge)) {
                         line = line.append(LOOP_SUFFIX);
@@ -224,7 +240,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 }
             }
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
-                if (!isFiltered(jVertex, edge)) {
+                if (!isFiltered(jGraph, jVertex, edge)) {
                     result.add(edge.toLine(true, jVertex.getAspect()));
                 }
             }
@@ -232,55 +248,63 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 StringBuilder line = new StringBuilder();
                 LabelPattern pattern = node.getEdgePattern();
                 line.append(">> ");
-                line.append(pattern.getLabel(pattern.getArgNames().toArray()));
+                line.append(pattern.getLabel(pattern.getArgNames()
+                    .toArray()));
                 result.add(Line.atom(line.toString()));
             }
         }
         return result;
     }
 
-    /** Recomputes the set of node lines for this aspect node. */
-    private MultiLabel getRuleNodeLabel(AspectJVertex jVertex) {
+    /** Recomputes the set of node lines for this aspect node.
+     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}     */
+    private MultiLabel getRuleNodeLabel(AspectJGraph jGraph, AspectJVertex jVertex) {
         AspectNode node = jVertex.getNode();
         node.testFixed(true);
         MultiLabel result = new MultiLabel();
         // show the node identity
-        if (jVertex.getJGraph().isShowNodeIdentities() && !node.hasId()) {
+        if (jGraph.isShowNodeIdentities() && !node.hasId()) {
             result.add(getNodeIdLine(node));
         }
         // the following used to include hasError() as a disjunct
-        if (jVertex.getJGraph().isShowAspects()) {
-            result.add(jVertex.getUserObject().toLines());
+        if (jGraph.isShowAspects()) {
+            result.add(jVertex.getUserObject()
+                .toLines());
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
-                if (!isFiltered(jVertex, edge)) {
-                    Line line = edge.label().toLine();
+                if (!isFiltered(jGraph, jVertex, edge)) {
+                    Line line = edge.label()
+                        .toLine();
                     // check for assignment edges
                     if (!edge.isLoop()) {
-                        line =
-                            line.append(" = " + edge.target().getAttrAspect().getContentString());
+                        line = line.append(" = " + edge.target()
+                            .getAttrAspect()
+                            .getContentString());
                     }
                     result.add(line);
                 }
             }
             if (node.hasColor()) {
-                result.add(Line.atom(node.getColor().toString()));
+                result.add(Line.atom(node.getColor()
+                    .toString()));
             }
         } else {
             Line idLine = getIdLine(node);
             // show the quantifier aspect correctly
-            if (node.getKind().isQuantifier()) {
+            if (node.getKind()
+                .isQuantifier()) {
                 result.add(getQuantifierLines(node, idLine));
                 idLine = null;
             }
             // show data constants and variables correctly
-            result.add(getDataLines(node));
+            result.add(getDataLines(jGraph, node));
             // show the visible self-edges
             for (AspectEdge edge : jVertex.getEdges()) {
-                if (!isFiltered(jVertex, edge)) {
+                if (!isFiltered(jGraph, jVertex, edge)) {
                     Line line = edge.toLine(true, jVertex.getAspect());
                     if (idLine != null) {
                         if (edge.getRole() == NODE_TYPE) {
-                            line = idLine.append(" : ").append(line);
+                            line = idLine.append(" : ")
+                                .append(line);
                         } else {
                             result.add(idLine);
                         }
@@ -298,15 +322,15 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 result.add(idLine);
             }
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
-                if (!isFiltered(jVertex, edge)) {
+                if (!isFiltered(jGraph, jVertex, edge)) {
                     result.add(edge.toLine(true, jVertex.getAspect()));
                 }
             }
             if (node.hasColor()) {
                 StringBuilder text = new StringBuilder("& ");
                 text.append(AspectKind.COLOR.getName());
-                Line colorLine =
-                    Line.atom(text.toString()).color(Colors.findColor(node.getColor()
+                Line colorLine = Line.atom(text.toString())
+                    .color(Colors.findColor(node.getColor()
                         .getContentString()));
                 result.add(colorLine);
             }
@@ -321,7 +345,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
         if (jVertex.hasErrors() || edge.hasErrors()) {
             return false;
         }
-        if (jVertex.getJModel().getTypeGraph().isImplicit()) {
+        if (jVertex.getJModel()
+            .getTypeGraph()
+            .isImplicit()) {
             return false;
         }
         if (edge.getRole() != EdgeRole.BINARY) {
@@ -340,7 +366,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
     private MultiLabel getQuantifierLines(AspectNode node, Line id) {
         Line line = Line.empty();
         if (id != null) {
-            line = line.append(id).append(" : ");
+            line = line.append(id)
+                .append(" : ");
         }
         switch (node.getKind()) {
         case FORALL:
@@ -354,41 +381,49 @@ public class LabelValue implements VisualValue<MultiLabel> {
             break;
         case EXISTS_OPT:
             line = line.append(EXISTS_OPT_LINE);
+            break;
+        default:
+            // no special line
         }
         return MultiLabel.singleton(line, Direct.NONE);
     }
 
-    /** This implementation adds the data edges to the super result. */
-    private MultiLabel getLTSJVertexLabel(LTSJVertex jVertex) {
+    /** This implementation adds the data edges to the super result.
+     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
+     */
+    private MultiLabel getLTSJVertexLabel(LTSJGraph jGraph, LTSJVertex jVertex) {
         MultiLabel result = new MultiLabel();
         // show the node identity if required
         Line idLine = null;
-        if (jVertex.getJGraph().isShowStateIdentities()) {
+        if (jGraph.isShowStateIdentities()) {
             GraphState state = jVertex.getNode();
             StringBuilder id = new StringBuilder(state.toString());
             idLine = getIdLine(id.toString());
         }
-        if (jVertex.getJGraph().isShowStateStatus()) {
-            Line statusLine = getStatus(jVertex.getNode());
+        if (jGraph.isShowStateStatus()) {
+            Line statusLine = getStatus(jGraph, jVertex.getNode());
             if (idLine == null) {
                 idLine = statusLine;
             } else {
-                idLine = idLine.append(" : ").append(statusLine);
+                idLine = idLine.append(" : ")
+                    .append(statusLine);
             }
         }
         if (idLine != null) {
             result.add(idLine);
         }
         boolean hasControl = false;
-        if (jVertex.getJGraph().isShowControlStates()) {
+        if (jGraph.isShowControlStates()) {
             GraphState state = jVertex.getNode();
             Frame frame = state.getActualFrame();
             Object[] values = state.getPrimeValues();
             if (!frame.isStart() || values.length > 0) {
-                result.add(getStackLine(frame.getPrime().getLocation(), values));
+                result.add(getStackLine(frame.getPrime()
+                    .getLocation(), values));
                 hasControl = true;
             }
-            Stack<Switch> stack = frame.getPrime().getSwitchStack();
+            Stack<Switch> stack = frame.getPrime()
+                .getSwitchStack();
             for (int i = stack.size() - 1; i >= 0; i--) {
                 values = Valuator.pop(values);
                 Switch sw = stack.get(i);
@@ -398,19 +433,21 @@ public class LabelValue implements VisualValue<MultiLabel> {
         }
         MultiLabel transLabels = new MultiLabel();
         // only add edges that have an unfiltered label
-        boolean isShowAnchors = jVertex.getJGraph().isShowAnchors();
-        boolean isShowInvariants = jVertex.getJGraph().isShowInvariants();
+        boolean isShowAnchors = jGraph.isShowAnchors();
+        boolean isShowInvariants = jGraph.isShowInvariants();
         for (Edge edge : jVertex.getEdges()) {
             GraphTransition trans = (GraphTransition) edge;
-            if (trans.getAction().getRole() == Role.INVARIANT && !isShowInvariants) {
+            if (trans.getAction()
+                .getRole() == Role.INVARIANT && !isShowInvariants) {
                 continue;
             }
-            if (!isFiltered(jVertex, edge)) {
+            if (!isFiltered(jGraph, jVertex, edge)) {
                 Line line;
                 if (isShowAnchors) {
                     line = Line.atom(((GraphTransition) edge).text(isShowAnchors));
                 } else {
-                    line = edge.label().toLine();
+                    line = edge.label()
+                        .toLine();
                 }
                 if (edge.getRole() == EdgeRole.BINARY) {
                     line = line.append(LOOP_SUFFIX);
@@ -430,10 +467,12 @@ public class LabelValue implements VisualValue<MultiLabel> {
         return result;
     }
 
-    /** Returns the status line for a given state. */
-    private Line getStatus(GraphState state) {
+    /** Returns the status line for a given state.
+     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
+     */
+    private Line getStatus(LTSJGraph jGraph, GraphState state) {
         Line result;
-        if (isResult(state)) {
+        if (isResult(jGraph, state)) {
             result = this.resultLine;
         } else if (state instanceof StartGraphState && !state.isError() && !state.isFinal()) {
             result = this.startLine;
@@ -460,8 +499,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
         return result;
     }
 
-    private boolean isResult(GraphState state) {
-        return ((LTSJGraph) getJGraph()).isResult(state);
+    private boolean isResult(LTSJGraph jGraph, GraphState state) {
+        return jGraph.isResult(state);
     }
 
     /** Returns the status line for a given status flag. */
@@ -490,9 +529,12 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 case TRANSIENT:
                     text = "transient";
                     break;
+                default:
+                    // no annotation value
                 }
                 if (text != null) {
-                    this.statusMap.put(f, Line.atom(text).style(Style.BOLD));
+                    this.statusMap.put(f, Line.atom(text)
+                        .style(Style.BOLD));
                 }
             }
         }
@@ -502,11 +544,14 @@ public class LabelValue implements VisualValue<MultiLabel> {
     /** Map from flags to corresponding lines on state. */
     private Map<Flag,Line> statusMap;
     /** State line for the start state. */
-    private final Line startLine = Line.atom("start").style(Style.BOLD);
+    private final Line startLine = Line.atom("start")
+        .style(Style.BOLD);
     /** State line result states. */
-    private final Line resultLine = Line.atom("result").style(Style.BOLD);
+    private final Line resultLine = Line.atom("result")
+        .style(Style.BOLD);
     /** State line for an open state. */
-    private final Line openLine = Line.atom("open").style(Style.BOLD);
+    private final Line openLine = Line.atom("open")
+        .style(Style.BOLD);
 
     private Line getStackLine(Location loc, Object[] values) {
         Line result = Line.empty();
@@ -520,7 +565,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
                     if (i > 0) {
                         content.append(',');
                     }
-                    content.append(vars.get(i).getName());
+                    content.append(vars.get(i)
+                        .getName());
                     content.append('=');
                     HostNode val = (HostNode) values[i];
                     if (val instanceof ValueNode) {
@@ -538,11 +584,14 @@ public class LabelValue implements VisualValue<MultiLabel> {
 
     /**
      * Appends the bound variables to the lines, if this list is not empty
+     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
      */
-    private MultiLabel getCtrlJVertexLabel(CtrlJVertex jVertex) {
+    private MultiLabel getCtrlJVertexLabel(CtrlJGraph jGraph, CtrlJVertex jVertex) {
         MultiLabel result = new MultiLabel();
-        result.add(getIdLine(jVertex.getNode().toString()));
-        Position<?,?> state = jVertex.getNode().getPosition();
+        result.add(getIdLine(jVertex.getNode()
+            .toString()));
+        Position<?,?> state = jVertex.getNode()
+            .getPosition();
         // add start/final/depth qualifiers
         Line qualifiers = Line.empty();
         if (state.isStart()) {
@@ -562,53 +611,58 @@ public class LabelValue implements VisualValue<MultiLabel> {
         }
         // add location variables
         for (CtrlVar var : state.getVars()) {
-            Line line =
-                Line.atom(var.getName())
-                    .append(" : ")
-                    .append(Line.atom(var.getType().toString()).style(Style.BOLD));
+            Line line = Line.atom(var.getName())
+                .append(" : ")
+                .append(Line.atom(var.getType()
+                    .toString())
+                    .style(Style.BOLD));
             result.add(line);
         }
         // add self-edges
-        addEdgeLabels(jVertex, result);
+        addEdgeLabels(jGraph, jVertex, result);
         return result;
     }
 
-    /** Returns a list of lines together making up the label text of a jEdge. */
-    protected MultiLabel getJEdgeLabel(JEdge<?> jEdge) {
+    /** Returns a list of lines together making up the label text of a jEdge.
+     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
+     */
+    protected <G extends Graph> MultiLabel getJEdgeLabel(JGraph<G> jGraph, JEdge<G> jEdge) {
         MultiLabel result;
-        switch (this.role) {
+        switch (jGraph.getGraphRole()) {
         case HOST:
         case RULE:
         case TYPE:
-            result = getAspectJEdgeLabel((AspectJEdge) jEdge);
+            result = getAspectJEdgeLabel((AspectJGraph) jGraph, (AspectJEdge) jEdge);
             break;
         case LTS:
-            result = getLTSJEdgeLabel((LTSJEdge) jEdge);
+            result = getLTSJEdgeLabel((LTSJGraph) jGraph, (LTSJEdge) jEdge);
             break;
         default:
-            result = getBasicJEdgeLabel(jEdge);
+            result = getBasicJEdgeLabel(jGraph, jEdge);
         }
         return result;
     }
 
-    private MultiLabel getBasicJEdgeLabel(JEdge<?> jEdge) {
+    private MultiLabel getBasicJEdgeLabel(JGraph<?> jGraph, JEdge<?> jEdge) {
         MultiLabel result = new MultiLabel();
-        addEdgeLabels(jEdge, result);
+        addEdgeLabels(jGraph, jEdge, result);
         return result;
     }
 
     /**
      * Adds the labels of all edges of a given cell to a multi-label.
+     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JCell}
      * @param jCell the cell from which the edges are added
      * @param result the resulting multi-label; modified by this call
      */
-    private void addEdgeLabels(JCell<?> jCell, MultiLabel result) {
+    private void addEdgeLabels(JGraph<?> jGraph, JCell<?> jCell, MultiLabel result) {
         boolean onVertex = jCell instanceof JVertex;
         for (Edge edge : jCell.getEdges()) {
             // only add edges that have an unfiltered label
-            if (!isFiltered(jCell, edge)) {
+            if (!isFiltered(jGraph, jCell, edge)) {
                 Direct dir = onVertex ? Direct.NONE : ((JEdge<?>) jCell).getDirect(edge);
-                Line line = edge.label().toLine();
+                Line line = edge.label()
+                    .toLine();
                 if (onVertex && edge.getRole() == EdgeRole.BINARY) {
                     line = line.append(LOOP_SUFFIX);
                 }
@@ -617,7 +671,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         }
     }
 
-    private MultiLabel getAspectJEdgeLabel(AspectJEdge jEdge) {
+    private MultiLabel getAspectJEdgeLabel(AspectJGraph jGraph, AspectJEdge jEdge) {
         MultiLabel result = null;
         // if both source and target nodes are nodified,
         // test for source node first
@@ -625,12 +679,15 @@ public class LabelValue implements VisualValue<MultiLabel> {
             result = new MultiLabel();
         } else if (jEdge.isNodeEdgeIn()) {
             result = new MultiLabel();
-            LabelPattern pattern = jEdge.getTargetVertex().getEdgeLabelPattern();
-            @SuppressWarnings({"unchecked", "rawtypes"})
-            GraphBasedModel<HostGraph> resourceModel =
-                (GraphBasedModel) jEdge.getJModel().getResourceModel();
+            AspectJVertex targetVertex = jEdge.getTargetVertex();
+            assert targetVertex != null; // model has been initialised by now
+            LabelPattern pattern = targetVertex.getEdgeLabelPattern();
+            @SuppressWarnings({"unchecked", "rawtypes"}) GraphBasedModel<HostGraph> resourceModel =
+                (GraphBasedModel) jEdge.getJModel()
+                    .getResourceModel();
             try {
-                HostNode target = (HostNode) resourceModel.getMap().getNode(jEdge.getTargetNode());
+                HostNode target = (HostNode) resourceModel.getMap()
+                    .getNode(jEdge.getTargetNode());
                 String label = pattern.getLabel(resourceModel.toResource(), target);
                 result.add(Line.atom(label), jEdge.getDirect(null));
             } catch (FormatException e) {
@@ -642,10 +699,11 @@ public class LabelValue implements VisualValue<MultiLabel> {
             result = new MultiLabel();
             for (AspectEdge edge : jEdge.getEdges()) {
                 // only add edges that have an unfiltered label
-                if (!isFiltered(jEdge, edge)) {
+                if (!isFiltered(jGraph, jEdge, edge)) {
                     Line line;
-                    if (jEdge.getJGraph().isShowAspects()) {
-                        line = edge.label().toLine();
+                    if (jGraph.isShowAspects()) {
+                        line = edge.label()
+                            .toLine();
                     } else {
                         line = edge.toLine(false, jEdge.getAspect());
                     }
@@ -656,13 +714,15 @@ public class LabelValue implements VisualValue<MultiLabel> {
         return result;
     }
 
-    /** Computes the multi-line label for a given LSTJEdge. */
-    private MultiLabel getLTSJEdgeLabel(LTSJEdge jEdge) {
+    /** Computes the multi-line label for a given LSTJEdge.
+     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
+     */
+    private MultiLabel getLTSJEdgeLabel(LTSJGraph jGraph, LTSJEdge jEdge) {
         MultiLabel result = new MultiLabel();
-        boolean isShowAnchors = jEdge.getJGraph().isShowAnchors();
+        boolean isShowAnchors = jGraph.isShowAnchors();
         for (Edge edge : jEdge.getEdges()) {
             // only add edges that have an unfiltered label
-            if (!isFiltered(jEdge, edge)) {
+            if (!isFiltered(jGraph, jEdge, edge)) {
                 GraphTransition trans = (GraphTransition) edge;
                 result.add(Line.atom(trans.text(isShowAnchors)), jEdge.getDirect(edge));
             }
@@ -678,12 +738,14 @@ public class LabelValue implements VisualValue<MultiLabel> {
     private MultiLabel getNodeIdLine(AspectNode node) {
         MultiLabel result = new MultiLabel();
         String id;
-        if (node.getKind().isMeta()) {
+        if (node.getKind()
+            .isMeta()) {
             id = null;
         } else if (node.hasAttrAspect()) {
             AspectKind attrKind = node.getAttrKind();
             if (attrKind.hasSignature()) {
-                Object content = node.getAttrAspect().getContent();
+                Object content = node.getAttrAspect()
+                    .getContent();
                 if (content == null) {
                     id = VariableNode.TO_STRING_PREFIX + node.getNumber();
                 } else {
@@ -697,19 +759,24 @@ public class LabelValue implements VisualValue<MultiLabel> {
             id = node.toString();
         }
         if (id != null) {
-            result.add(Line.atom(id).style(Style.ITALIC));
+            result.add(Line.atom(id)
+                .style(Style.ITALIC));
         }
         return result;
     }
 
-    /** Returns lines describing any data content of the JVertex. */
-    private MultiLabel getDataLines(AspectNode node) {
+    /** Returns lines describing any data content of the JVertex.
+     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
+     */
+    private MultiLabel getDataLines(AspectJGraph jGraph, AspectNode node) {
         MultiLabel result = new MultiLabel();
         Aspect attrAspect = node.getAttrAspect();
-        if (attrAspect.getKind().hasSignature()) {
+        if (attrAspect.getKind()
+            .hasSignature()) {
             if (!attrAspect.hasContent()) {
-                result.add(getSignatureLine(attrAspect.getKind().getSignature()));
-            } else if (!this.jGraph.isShowNodeIdentities()) {
+                result.add(getSignatureLine(attrAspect.getKind()
+                    .getSignature()));
+            } else if (!jGraph.isShowNodeIdentities()) {
                 // show constants only if they are not already shown as node identities
                 result.add(Line.atom(attrAspect.getContentString()));
             }
@@ -719,10 +786,11 @@ public class LabelValue implements VisualValue<MultiLabel> {
 
     /**
      * Tests if a given edge is currently being filtered.
+     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
      */
-    private boolean isFiltered(JCell<?> jCell, Edge edge) {
+    private boolean isFiltered(JGraph<?> jGraph, JCell<?> jCell, Edge edge) {
         boolean result = false;
-        LabelTree<?> labelTree = jCell.getJGraph().getLabelTree();
+        LabelTree<?> labelTree = jGraph.getLabelTree();
         if (edge != null && labelTree != null) {
             Label key = jCell.getKey(edge);
             result = key != null && labelTree.isFiltered(key);
@@ -730,32 +798,26 @@ public class LabelValue implements VisualValue<MultiLabel> {
         return result;
     }
 
-    /** Returns the JGraph on which this label refresher is based. */
-    public JGraph<?> getJGraph() {
-        return this.jGraph;
-    }
-
-    private final JGraph<?> jGraph;
-    private final GraphRole role;
-
     /** Returns the label prefix associated with a given role. */
     private static Line getSignatureLine(Sort kind) {
         return sigLineMap.get(kind);
     }
 
     static private final Map<Sort,Line> sigLineMap;
+
     static {
         Map<Sort,Line> map = new EnumMap<Sort,Line>(Sort.class);
         for (Sort kind : Sort.values()) {
-            map.put(kind, Line.atom(kind.getName()).style(Style.BOLD));
+            map.put(kind, Line.atom(kind.getName())
+                .style(Style.BOLD));
         }
         sigLineMap = map;
     }
 
-    static private final String IMPORT_TEXT = String.format("%simport%s",
-        Util.FRENCH_QUOTES_OPEN,
-        Util.FRENCH_QUOTES_CLOSED);
-    static private final Line IMPORT_LINE = Line.atom(IMPORT_TEXT).style(Style.ITALIC);
+    static private final String IMPORT_TEXT =
+        String.format("%simport%s", Util.FRENCH_QUOTES_OPEN, Util.FRENCH_QUOTES_CLOSED);
+    static private final Line IMPORT_LINE = Line.atom(IMPORT_TEXT)
+        .style(Style.ITALIC);
     static private final Line EXISTS_LINE = Line.atom("" + Util.EXISTS);
     static private final Line EXISTS_OPT_LINE = EXISTS_LINE.append(Line.atom("?")
         .style(Style.SUPER));

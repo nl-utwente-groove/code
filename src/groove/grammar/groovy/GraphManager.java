@@ -82,7 +82,7 @@ public class GraphManager {
      * @return A copy of the graph that can be modified, will overwrite existing graph upon calling doneGraph.
      */
     public AspectGraph loadGraph(String name, GraphRole role) {
-        AspectGraph result = null;
+        AspectGraph result;
         switch (role) {
         case HOST:
         case RULE:
@@ -90,6 +90,9 @@ public class GraphManager {
             result = this.simulatorModel.getStore()
                 .getGraphs(ResourceKind.toResource(role))
                 .get(QualName.parse(name));
+            break;
+        default:
+            result = null;
         }
         return result == null ? null : result.clone();
     }

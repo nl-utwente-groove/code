@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import groove.algebra.Constant;
 import groove.algebra.Sort;
 import groove.grammar.QualName;
@@ -320,7 +322,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
      * @param context the priority level and association direction within which parsing takes place
      */
     protected X parse(OpKind context) throws FormatException {
-        X result = null;
+        X result;
         Token nextToken = next();
         // first parse for prefix operators to accommodate casts
         if (nextToken.has(PRE_OP)) {
@@ -376,7 +378,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
      * correspond to a bracketed expression
      */
     protected X parseBracketed() throws FormatException {
-        X result = null;
+        X result;
         Token lparToken = consume(LPAR);
         assert lparToken != null;
         result = parse(OpKind.NONE);
@@ -410,8 +412,10 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
      * guaranteed to contain a prefix operator
      */
     protected X parsePrefixed(Token opToken) throws FormatException {
+        @Nullable
         O op = opToken.type(TokenClaz.PRE_OP)
             .op();
+        assert op != null; // never for pre-ops
         X result = createTree(op);
         if (op.getKind() == OpKind.CALL) {
             if (consume(LPAR) == null) {
@@ -907,7 +911,10 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
          * one in this token. */
         public <O extends Op> O op(TokenClaz claz) {
             assert claz == TokenClaz.PRE_OP || claz == TokenClaz.LATE_OP;
-            return type(claz).op();
+            @Nullable
+            O result = type(claz).op();
+            assert result != null; // never null for pre- or late-ops
+            return result;
         }
 
         /** Returns the start position of this token. */
@@ -993,13 +1000,13 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
     static class OpFamily<O extends Op> extends Duo<O> {
         /** Returns an operator family, initialised with a given operator. */
         OpFamily(O op) {
-            super(null, null);
             this.symbol = op.getSymbol();
             add(op);
         }
 
         /** Adds an operator to this family. */
         public void add(O value) {
+            @Nullable
             O oldValue;
             if (value.getKind()
                 .getPlace() == Placement.PREFIX) {
@@ -1116,7 +1123,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
 
         /** Returns the operator wrapped in this token type, if any. */
         @SuppressWarnings("unchecked")
-        public <O extends Op> O op() {
+        public <O extends Op> @Nullable O op() {
             return claz() == TokenClaz.PRE_OP || claz() == TokenClaz.LATE_OP ? (O) two() : null;
         }
 
@@ -1141,7 +1148,10 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
             switch (claz()) {
             case PRE_OP:
             case LATE_OP:
-                result = op().getSymbol();
+                @Nullable
+                Op op = op();
+                assert op != null; // never null for pre- or late-ops
+                result = op.getSymbol();
                 break;
             case SORT:
                 result = sort().getName();

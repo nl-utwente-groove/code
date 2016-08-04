@@ -16,6 +16,8 @@
  */
 package groove.control.term;
 
+import groove.util.Exceptions;
+
 /**
  * Until-do term.
  * @author Arend Rensink
@@ -31,26 +33,37 @@ public class UntilTerm extends Term {
 
     @Override
     protected DerivationAttempt computeAttempt(boolean nested) {
-        DerivationAttempt result = null;
+        DerivationAttempt result;
         switch (arg0().getType()) {
         case TRIAL:
             result = createAttempt();
             DerivationAttempt ders0 = arg0().getAttempt(nested);
             result.addAll(ders0);
             result.setSuccess(ders0.onSuccess());
-            result.setFailure(ders0.onFailure().ifElse(epsilon(), arg1().seq(this)));
+            result.setFailure(ders0.onFailure()
+                .ifElse(epsilon(), arg1().seq(this)));
             break;
         case DEAD:
             if (arg1().isTrial()) {
                 result = createAttempt();
                 DerivationAttempt ders1 = arg1().getAttempt(nested);
                 for (Derivation deriv : ders1) {
-                    result.add(deriv.newInstance(deriv.onFinish().seq(this), false));
+                    result.add(deriv.newInstance(deriv.onFinish()
+                        .seq(this), false));
                 }
-                result.setSuccess(ders1.onSuccess().seq(this));
-                result.setFailure(ders1.onFailure().seq(this));
+                result.setSuccess(ders1.onSuccess()
+                    .seq(this));
+                result.setFailure(ders1.onFailure()
+                    .seq(this));
+            } else {
+                result = null;
             }
             break;
+        case FINAL:
+            result = null;
+            break;
+        default:
+            throw Exceptions.UNREACHABLE;
         }
         return result;
     }

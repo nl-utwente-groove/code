@@ -45,7 +45,7 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
     protected ATermTree(O op) {
         assert op != null && op.getKind() != OpKind.NONE;
         this.op = op;
-        this.args = new ArrayList<T>();
+        this.args = new ArrayList<>();
         this.errors = new FormatErrorSet();
     }
 

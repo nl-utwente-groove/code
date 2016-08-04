@@ -36,6 +36,7 @@ import groove.io.conceptual.graph.AbsGraph;
 import groove.io.conceptual.lang.ExportException;
 import groove.io.conceptual.lang.ExportableResource;
 
+@SuppressWarnings("javadoc")
 public class GrooveResource extends ExportableResource {
     protected Config m_cfg;
     protected SimulatorModel m_simModel;
@@ -98,32 +99,11 @@ public class GrooveResource extends ExportableResource {
                     .toAspectGraph();
 
                 try {
-                    switch (graph.getGraphRole()) {
-                    case TYPE:
-                        //m_simModel.doAddGraph(ResourceKind.TYPE, aspectGraph, false);
-                        this.m_simModel.getGrammar()
-                            .getStore()
-                            .putGraphs(ResourceKind.TYPE,
-                                Collections.singleton(aspectGraph),
-                                false);
-                        break;
-                    case HOST:
-                        //m_simModel.doAddGraph(ResourceKind.HOST, aspectGraph, false);
-                        this.m_simModel.getGrammar()
-                            .getStore()
-                            .putGraphs(ResourceKind.HOST,
-                                Collections.singleton(aspectGraph),
-                                false);
-                        break;
-                    case RULE:
-                        //m_simModel.doAddGraph(ResourceKind.RULE, aspectGraph, false);
-                        this.m_simModel.getGrammar()
-                            .getStore()
-                            .putGraphs(ResourceKind.RULE,
-                                Collections.singleton(aspectGraph),
-                                false);
-                        break;
-                    }
+                    this.m_simModel.getGrammar()
+                        .getStore()
+                        .putGraphs(ResourceKind.toResource(graph.getGraphRole()),
+                            Collections.singleton(aspectGraph),
+                            false);
 
                     //Timer.stop(timer);
                     this.m_simModel.doRefreshGrammar();

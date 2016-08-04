@@ -91,8 +91,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             }
         };
         // move -g to the final position
-        @SuppressWarnings("rawtypes")
-        List<OptionHandler> handlers = result.getOptions();
+        @SuppressWarnings("rawtypes") List<OptionHandler> handlers = result.getOptions();
         OptionHandler<?> genHandler = null;
         for (OptionHandler<?> handler : handlers) {
             if (handler instanceof GeneratorHandler) {
@@ -174,26 +173,21 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             + "  r - result state label (default: 'result')\n" //
             + "Specify the label to be used by appending flag with 'label' (single-quoted)\n"
             + "Example: -ef s'begin'f'end' specifies that the start state is labelled 'begin' and final states are labelled 'end'",
-        handler = LTSLabelsHandler.class)
-    private LTSLabels ltsLabels;
+        handler = LTSLabelsHandler.class) private LTSLabels ltsLabels;
 
     @Option(name = "-ltl", metaVar = "prop",
         usage = "Check the LTL property <prop> (multiple allowed)",
-        handler = CLTFormulaHandler.class)
-    private List<gov.nasa.ltl.trans.Formula<String>> ltlProps;
+        handler = CLTFormulaHandler.class) private List<gov.nasa.ltl.trans.Formula<String>> ltlProps;
     @Option(name = "-ctl", metaVar = "prop",
         usage = "Check the CTL property <prop> (multiple allowed)",
-        handler = CLTFormulaHandler.class)
-    private List<Formula> ctlProps;
+        handler = CLTFormulaHandler.class) private List<Formula> ctlProps;
     @Option(name = "-g", metaVar = "args",
         usage = "Invoke the generator using <args> as options + arguments",
-        handler = GeneratorHandler.class)
-    private GeneratorArgs genArgs;
+        handler = GeneratorHandler.class) private GeneratorArgs genArgs;
 
     @Argument(metaVar = "model",
         usage = "File name of GXL graph or production system to be checked",
-        handler = FileOptionHandler.class)
-    private File modelGraph;
+        handler = FileOptionHandler.class) private File modelGraph;
 
     /**
      * Main method.
@@ -386,7 +380,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         @Override
         public boolean isSpecial(Node node, Flag flag) {
             GraphState state = (GraphState) node;
-            boolean result = false;
+            boolean result;
             switch (flag) {
             case FINAL:
                 result = state.isFinal();
@@ -399,6 +393,9 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
                 break;
             case RESULT:
                 result = this.result != null && this.result.containsState(state);
+                break;
+            default:
+                result = false;
             }
             return result;
         }

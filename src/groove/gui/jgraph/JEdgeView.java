@@ -377,8 +377,7 @@ public class JEdgeView extends EdgeView {
         @Override
         protected ConnectionSet createConnectionSet(EdgeView view, boolean verbose) {
             if (view.getTarget() == null) {
-                @SuppressWarnings("unchecked")
-                List<Object> points = view.getPoints();
+                @SuppressWarnings("unchecked") List<Object> points = view.getPoints();
                 points.add(points.get(points.size() - 1));
                 view.setTarget(view.getSource());
             }
@@ -502,8 +501,7 @@ public class JEdgeView extends EdgeView {
             if (this.lineStyle == Values.STYLE_MANHATTAN && this.view.getPointCount() > 2) {
                 result = createManhattanShape();
             } else if (this.view.isLoop() && this.view.getPointCount() == 3) {
-                @SuppressWarnings({"unchecked"})
-                List<Object> points = this.view.getPoints();
+                @SuppressWarnings({"unchecked"}) List<Object> points = this.view.getPoints();
                 List<Object> oldPoints = new ArrayList<Object>(points);
                 List<Object> newPoints = new ArrayList<Object>(points);
                 Point2D first = this.view.getPoint(0);
@@ -696,9 +694,10 @@ public class JEdgeView extends EdgeView {
             } else if (lines != this.jLabelLines || foreground != this.jLabelColor) {
                 // no, the text or colour have changed; reload the jLabel component
                 StringBuilder text;
-                if (view.getCell()
-                    .getJGraph()
-                    .isShowArrowsOnLabels()) {
+                JGraph<?> jGraph = view.getCell()
+                    .getJGraph();
+                assert jGraph != null; // guaranteed by now
+                if (jGraph.isShowArrowsOnLabels()) {
                     Point2D start = view.getPoint(0);
                     Point2D end = view.getPoint(view.getPointCount() - 1);
                     text = lines.toString(HTMLLineFormat.instance(), start, end);

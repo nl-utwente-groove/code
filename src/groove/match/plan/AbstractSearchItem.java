@@ -17,18 +17,20 @@
 
 package groove.match.plan;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import groove.grammar.host.HostGraph;
 import groove.grammar.rule.LabelVar;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleNode;
 import groove.match.plan.PlanSearchStrategy.Search;
 import groove.util.Exceptions;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Abstract implementation of a search item, offering some basic search
@@ -316,8 +318,8 @@ abstract class AbstractSearchItem implements SearchItem {
             }
             assert this.state.getNext()
                 .contains(nextState) : String.format("Illegal transition %s -next-> %s",
-                this.state,
-                nextState);
+                    this.state,
+                    nextState);
             this.state = nextState;
             return nextState.isWritten();
         }
@@ -420,7 +422,7 @@ abstract class AbstractSearchItem implements SearchItem {
                 nextState = State.FULL_REPEAT;
                 break;
             case PART:
-                E image = find();
+                @Nullable E image = find();
                 if (image == null) {
                     erase();
                     nextState = State.FULL_START;
@@ -463,8 +465,8 @@ abstract class AbstractSearchItem implements SearchItem {
             }
             assert this.state.getNext()
                 .contains(nextState) : String.format("Illegal transition %s -next-> %s",
-                this.state,
-                nextState);
+                    this.state,
+                    nextState);
             this.state = nextState;
             return nextState.isWritten();
         }
@@ -497,15 +499,15 @@ abstract class AbstractSearchItem implements SearchItem {
          * The return value is the image found, or {@code null} if the find
          * has not succeeded
          */
-        final E find() {
-            E result = null;
+        final @Nullable E find() {
+            @Nullable E result = null;
             if (this.imageIter == null) {
                 init();
             }
             while (result == null && this.imageIter.hasNext()) {
-                result = this.imageIter.next();
-                if (!write(result)) {
-                    result = null;
+                E next = this.imageIter.next();
+                if (write(next)) {
+                    result = next;
                 }
             }
             return result;

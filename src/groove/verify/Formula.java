@@ -35,6 +35,10 @@ import static groove.verify.LogicOp.S_RELEASE;
 import static groove.verify.LogicOp.TRUE;
 import static groove.verify.LogicOp.UNTIL;
 import static groove.verify.LogicOp.W_UNTIL;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import groove.algebra.syntax.Expression;
 import groove.grammar.QualName;
 import groove.util.Exceptions;
@@ -43,9 +47,6 @@ import groove.util.parse.ATermTree;
 import groove.util.parse.FormatException;
 import groove.util.parse.IdValidator;
 import groove.verify.Proposition.Arg;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Data structure for temporal formulae.
@@ -83,7 +84,7 @@ public class Formula extends ATermTree<LogicOp,Formula> {
     }
 
     void setProp(Proposition prop) {
-        assert !isFixed();
+        assert!isFixed();
         this.prop = prop;
     }
 
@@ -413,8 +414,9 @@ public class Formula extends ATermTree<LogicOp,Formula> {
             return or(getArg1(), not(getArg2())).toLtlFormula();
         case IMPLIES:
             return or(not(getArg1()), getArg2()).toLtlFormula();
+        default:
+            throw new FormatException("Unknown temporal operator %s", getOp());
         }
-        throw new FormatException("Unknown temporal operator %s", getOp());
     }
 
     @Override

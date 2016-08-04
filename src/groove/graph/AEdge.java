@@ -16,6 +16,8 @@
  */
 package groove.graph;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 /**
  * Defines an abstract edge class by extending the abstract composite.
  * @author Arend Rensink
@@ -47,11 +49,12 @@ public abstract class AEdge<N extends Node,L extends Label> implements GEdge<N> 
      * Only for subclasses that overwrite {@link #label()} to
      * return a non-{@code null} value
      */
+    @SuppressWarnings("unchecked")
     protected AEdge(N source, N target) {
         assert source != null && target != null;
         this.source = source;
         this.target = target;
-        this.label = null;
+        this.label = (L) this;
         this.number = 0;
         assert isSimple() : "Non-simple edges should have a proper edge number";
         assert label() != null;
@@ -84,7 +87,7 @@ public abstract class AEdge<N extends Node,L extends Label> implements GEdge<N> 
      * The label of this edge.
      * @invariant label != null
      */
-    protected final L label;
+    private final @NonNull L label;
 
     /** Indicates if this edge is uniquely
      * identified by source, target and label.
@@ -154,9 +157,8 @@ public abstract class AEdge<N extends Node,L extends Label> implements GEdge<N> 
         int labelCode = label().hashCode();
         int sourceCode = 3 * this.source.hashCode();
         int targetCode = (labelCode + 2) * this.target.hashCode();
-        int result =
-                labelCode // + 3 * sourceCode - 2 * targetCode;
-                ^ ((sourceCode << SOURCE_SHIFT) + (sourceCode >>> SOURCE_RIGHT_SHIFT))
+        int result = labelCode // + 3 * sourceCode - 2 * targetCode;
+            ^ ((sourceCode << SOURCE_SHIFT) + (sourceCode >>> SOURCE_RIGHT_SHIFT))
                 + ((targetCode << TARGET_SHIFT) + (targetCode >>> TARGET_RIGHT_SHIFT));
         if (!isSimple()) {
             result = 31 * result + getNumber();

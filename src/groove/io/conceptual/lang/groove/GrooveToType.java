@@ -40,6 +40,7 @@ import groove.io.conceptual.type.StringType;
 import groove.io.conceptual.type.Tuple;
 import groove.io.conceptual.type.Type;
 
+@SuppressWarnings("javadoc")
 public class GrooveToType extends TypeImporter {
     private TypeModel m_typeModel;
     private GraphNodeTypes m_types;
@@ -62,8 +63,7 @@ public class GrooveToType extends TypeImporter {
 
     private Map<TypeNode,Type> m_intermediateFields = new HashMap<TypeNode,Type>();
 
-    public GrooveToType(TypeGraph grooveTypeGraph, GraphNodeTypes types, Config cfg)
-        throws ImportException {
+    public GrooveToType(TypeGraph grooveTypeGraph, GraphNodeTypes types, Config cfg) {
         this.m_types = types;
         this.m_cfg = cfg;
 
@@ -72,7 +72,7 @@ public class GrooveToType extends TypeImporter {
         Timer.stop(timer);
     }
 
-    private void buildTypeModel(TypeGraph grooveTypeGraph) throws ImportException {
+    private void buildTypeModel(TypeGraph grooveTypeGraph) {
         this.m_typeModel = new TypeModel(grooveTypeGraph.getQualName());
 
         // Set of Nodes that need to be classified (inverse of m_nodeTypes)
@@ -544,6 +544,8 @@ public class GrooveToType extends TypeImporter {
             Container cSeq = new Container(Kind.SEQ, t);
             setNodeType(interNode, cSeq);
             return cSeq;
+        default:
+            // there is nothing in the metamodel
         }
 
         // No luxury of metamodel, maybe postfixes were used

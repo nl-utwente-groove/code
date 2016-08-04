@@ -25,6 +25,7 @@ import groove.io.conceptual.Acceptor;
 import groove.io.conceptual.graph.AbsGraph;
 import groove.io.conceptual.graph.AbsNode;
 
+@SuppressWarnings("javadoc")
 public class GrammarGraph {
     private final AbsGraph m_graph;
     private final QualName m_graphName;

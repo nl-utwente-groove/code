@@ -317,6 +317,7 @@ public class IsoChecker {
             }
             Edge edgeKey = domEdgeCert.getElement();
             Edge edgeImage = image.getSingleton();
+            assert edgeImage != null; // image is known to be a singleton
             // add the source mapping to the result, and test for compatibility
             Node imageSource = edgeImage.source();
             Node oldSourceImage = result.putNode(edgeKey.source(), imageSource);
@@ -933,8 +934,8 @@ public class IsoChecker {
      * partition maps in {@link PartitionRefiner}.
      */
     static public long getCertifyingTime() {
-        return PartitionRefiner.computeCertReporter.getTotalTime()
-            + PartitionRefiner.getPartitionReporter.getTotalTime();
+        return CertificateStrategy.computeCertReporter.getTotalTime()
+            + CertificateStrategy.getPartitionReporter.getTotalTime();
     }
 
     /**

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package groove.util.cache;
 
@@ -7,6 +7,8 @@ import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Reference subclass with the following features:
@@ -22,7 +24,7 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class CacheReference<C> extends SoftReference<C> {
+public class CacheReference<C> extends SoftReference<@Nullable C> {
     /**
      * Constructs a new reference, for a given cache and cache holder, on the
      * basis of an existing template. All data except the cache are shared from
@@ -31,8 +33,7 @@ public class CacheReference<C> extends SoftReference<C> {
      * @param referent the cache to be held; non-<code>null</code>
      * @param template the template reference; not <code>null</code>
      */
-    protected CacheReference(CacheHolder<C> holder, C referent,
-            CacheReference<C> template) {
+    protected CacheReference(CacheHolder<C> holder, C referent, CacheReference<C> template) {
         super(referent, queue);
         this.holder = holder;
         this.incarnation = template.incarnation + 1;
@@ -45,11 +46,11 @@ public class CacheReference<C> extends SoftReference<C> {
         this.softNull = template.softNull;
         // see if there is any post-clearing up to be done for caches
         // that have been collected by the gc
-        CacheReference<?> reference = (CacheReference<?>) queue.poll();
+        CacheReference<@Nullable ?> reference = (CacheReference<@Nullable ?>) queue.poll();
         while (reference != null) {
             reference.updateCleared();
             cacheCollectCount++;
-            reference = (CacheReference<?>) queue.poll();
+            reference = (CacheReference<@Nullable ?>) queue.poll();
         }
         if (holder != null) {
             createCount++;
@@ -64,15 +65,14 @@ public class CacheReference<C> extends SoftReference<C> {
      *        references from; if <code>null</code>, the lists are freshly
      *        created
      */
-    protected CacheReference(boolean strong, int incarnation,
-            CacheReference<C> template) {
+    protected CacheReference(boolean strong, int incarnation, CacheReference<C> template) {
         super(null, queue);
         this.holder = null;
         this.incarnation = incarnation;
         this.strong = strong;
         if (template == null) {
-            this.strongNull = new ArrayList<CacheReference<C>>();
-            this.softNull = new ArrayList<CacheReference<C>>();
+            this.strongNull = new ArrayList<>();
+            this.softNull = new ArrayList<>();
         } else {
             this.strongNull = template.strongNull;
             this.softNull = template.softNull;
@@ -96,7 +96,8 @@ public class CacheReference<C> extends SoftReference<C> {
      */
     final public void setSoft() {
         if (this.holder != null) {
-            assert !this.strong || this.referent != null : "Referent cannot be null for strong reference";
+            assert!this.strong
+                || this.referent != null : "Referent cannot be null for strong reference";
             this.strong = false;
             this.referent = null;
         }
@@ -165,8 +166,7 @@ public class CacheReference<C> extends SoftReference<C> {
      * Callback factory method to create a <code>null</code> reference with a
      * given strength and incarnation count.
      */
-    protected CacheReference<C> createNullInstance(boolean strong,
-            int incarnation) {
+    protected CacheReference<C> createNullInstance(boolean strong, int incarnation) {
         return new CacheReference<C>(strong, incarnation, this);
     }
 
@@ -179,8 +179,7 @@ public class CacheReference<C> extends SoftReference<C> {
         if (this.holder != null) {
             synchronized (this.holder) {
                 if (this.holder.getCacheReference() == this) {
-                    this.holder.setCacheReference(getNullInstance(this.strong,
-                        this.incarnation));
+                    this.holder.setCacheReference(getNullInstance(this.strong, this.incarnation));
                     cacheClearCount++;
                 }
             }
@@ -192,7 +191,7 @@ public class CacheReference<C> extends SoftReference<C> {
     /** Flag set as long as the reference is tied. */
     private boolean strong;
     /** Strong reference to the referent, set only if the reference is strong. */
-    private C referent;
+    private @Nullable C referent;
     /** The incarnation count of this reference. */
     private final int incarnation;
 
@@ -201,13 +200,13 @@ public class CacheReference<C> extends SoftReference<C> {
      * <code>true</code>.
      */
     private final List<CacheReference<C>> strongNull; // = new
-                                                      // CacheReference<Object>(true);
+    // CacheReference<Object>(true);
     /**
      * Constant null reference, with {@link #isStrong()} set to
      * <code>false</code>.
      */
     private final List<CacheReference<C>> softNull; // = new
-                                                    // CacheReference<Object>(false);
+    // CacheReference<Object>(false);
 
     /**
      * Factory method for an uninitialised strong reference, i.e., with referent
@@ -257,8 +256,7 @@ public class CacheReference<C> extends SoftReference<C> {
      * number of caches that have reached this incarnation.
      */
     static public int getFrequency(int incarnation) {
-        return incarnation >= frequencies.size() ? 0
-                : frequencies.get(incarnation);
+        return incarnation >= frequencies.size() ? 0 : frequencies.get(incarnation);
     }
 
     /**
@@ -293,13 +291,11 @@ public class CacheReference<C> extends SoftReference<C> {
     static private List<Integer> frequencies = new ArrayList<Integer>();
 
     /** The singleton null instance for strong references. */
-    @SuppressWarnings("rawtypes")
-    static private final CacheReference strongInstance =
-        new CacheReference<Object>(true, 0, null);
+    @SuppressWarnings("rawtypes") static private final CacheReference strongInstance =
+        new CacheReference<>(true, 0, null);
     /** The singleton null instance for weak references. */
-    @SuppressWarnings("rawtypes")
-    static private final CacheReference softInstance =
-        new CacheReference<Object>(false, 0, null);
+    @SuppressWarnings("rawtypes") static private final CacheReference softInstance =
+        new CacheReference<>(false, 0, null);
 
     /**
      * Global counter of the total number of cache reincarnations.
@@ -321,6 +317,5 @@ public class CacheReference<C> extends SoftReference<C> {
     /**
      * Queue for garbage collected {@link CacheReference} objects.
      */
-    static final private ReferenceQueue<Object> queue =
-        new ReferenceQueue<Object>();
+    static final private ReferenceQueue<@Nullable Object> queue = new ReferenceQueue<>();
 }

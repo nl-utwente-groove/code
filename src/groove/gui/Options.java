@@ -16,6 +16,7 @@
  */
 package groove.gui;
 
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.event.InputEvent;
@@ -45,7 +46,6 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
@@ -290,7 +290,7 @@ public class Options implements Cloneable {
             }
         };
         result.setFloatable(false);
-        result.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+        result.setAlignmentX(Component.LEFT_ALIGNMENT);
         // make sure tool tips get displayed
         ToolTipManager.sharedInstance()
             .registerComponent(result);

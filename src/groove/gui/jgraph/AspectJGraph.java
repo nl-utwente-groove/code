@@ -191,6 +191,8 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
             result.add(getActions().getApplyMatchAction());
             result.addSeparator();
             break;
+        default:
+            // do nothing
         }
         Action editAction;
         if (isForState()) {

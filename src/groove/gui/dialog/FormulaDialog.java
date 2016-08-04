@@ -44,6 +44,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ToolTipManager;
+import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
@@ -136,7 +137,7 @@ abstract public class FormulaDialog {
         JOptionPane panel = new JOptionPane(main, JOptionPane.PLAIN_MESSAGE,
             JOptionPane.OK_CANCEL_OPTION, null, buttons);
         JDialog result = panel.createDialog(frame, this.title);
-        result.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        result.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         result.addWindowListener(this.closeListener);
         return result;
     }
@@ -178,9 +179,11 @@ abstract public class FormulaDialog {
                 .setPrototypeDisplayValue("The longest value we want to display completely");
             this.choiceBox.setModel(createModel());
             this.choiceBox.setEditable(true);
-            JTextField editor = (JTextField) this.choiceBox.getEditor().getEditorComponent();
+            JTextField editor = (JTextField) this.choiceBox.getEditor()
+                .getEditorComponent();
             editor.addActionListener(this.closeListener);
-            editor.getDocument().addDocumentListener(this.changeListener);
+            editor.getDocument()
+                .addDocumentListener(this.changeListener);
         }
         return this.choiceBox;
     }
@@ -196,7 +199,8 @@ abstract public class FormulaDialog {
 
     /** Returns the editor currently used in the {@link #choiceBox}. */
     private JTextField getEditor() {
-        return (JTextField) getChoiceBox().getEditor().getEditorComponent();
+        return (JTextField) getChoiceBox().getEditor()
+            .getEditorComponent();
     }
 
     /** Returns the model currently used in the {@link #choiceBox}. */

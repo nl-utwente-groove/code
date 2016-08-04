@@ -34,6 +34,7 @@ import groove.graph.GraphProperties.Key;
 import groove.gui.Icons;
 import groove.gui.display.ResourceDisplay;
 import groove.io.HTMLConverter;
+import groove.util.Exceptions;
 import groove.util.Groove;
 
 /**
@@ -225,8 +226,8 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         Map<Role,Icon> injectiveIconMap = roleInjectiveIconMap = new EnumMap<Role,Icon>(Role.class);
         for (Role role : Role.values()) {
             suffixMap.put(role, " : " + HTMLConverter.STRONG_TAG.on(role.toString()));
-            Icon normalIcon = null;
-            Icon injectiveIcon = null;
+            Icon normalIcon;
+            Icon injectiveIcon;
             switch (role) {
             case CONDITION:
                 normalIcon = Icons.CONDITION_TREE_ICON;
@@ -240,6 +241,12 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
                 normalIcon = Icons.INVARIANT_TREE_ICON;
                 injectiveIcon = Icons.INVARIANT_I_TREE_ICON;
                 break;
+            case TRANSFORMER:
+                normalIcon = null;
+                injectiveIcon = null;
+                break;
+            default:
+                throw Exceptions.UNREACHABLE;
             }
             if (normalIcon != null) {
                 normalIconMap.put(role, normalIcon);

@@ -26,6 +26,7 @@ import groove.io.conceptual.type.Container;
 import groove.io.conceptual.type.Container.Kind;
 import groove.io.conceptual.type.StringType;
 
+@SuppressWarnings("javadoc")
 public class GraphvizUtil {
     private static final Id g_dotId = Id.getId(Id.ROOT, Name.getName("DOT"));
 

@@ -34,6 +34,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SpringLayout;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -108,7 +109,8 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
     @Override
     public A parse(Grammar rules, Serialized source) throws FormatException {
         for (Template<A> template : this.templates) {
-            if (template.getKeyword().equals(source.getKeyword())) {
+            if (template.getKeyword()
+                .equals(source.getKeyword())) {
                 return template.parse(rules, source);
             }
         }
@@ -146,7 +148,8 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
     public String toParsableString(Serialized source) {
         source = source.clone();
         for (Template<A> template : this.templates) {
-            if (template.getKeyword().equals(source.getKeyword())) {
+            if (template.getKeyword()
+                .equals(source.getKeyword())) {
                 return template.toParsableString(source);
             }
         }
@@ -202,9 +205,11 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
             int nrTemplates = TemplateList.this.templates.size();
             List<String> templateNames = new ArrayList<String>(nrTemplates);
             for (Template<A> template : TemplateList.this.templates) {
-                if (Version.isDevelopmentVersion() || !template.getValue().isDevelopment()) {
+                if (Version.isDevelopmentVersion() || !template.getValue()
+                    .isDevelopment()) {
                     String templateName = template.getName();
-                    if (template.getValue().isDefault(getGrammar())) {
+                    if (template.getValue()
+                        .isDefault(getGrammar())) {
                         templateName = HTML_TAG.on(STRONG_TAG.on(templateName + " (default)"));
                     }
                     templateNames.add(templateName);
@@ -223,7 +228,8 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
             int nrTemplates = TemplateList.this.templates.size();
             this.templateKeywords = new ArrayList<String>(nrTemplates);
             for (Template<A> template : TemplateList.this.templates) {
-                if (Version.isDevelopmentVersion() || !template.getValue().isDevelopment()) {
+                if (Version.isDevelopmentVersion() || !template.getValue()
+                    .isDevelopment()) {
                     this.templateKeywords.add(template.getKeyword());
                     this.editors.put(template.getKeyword(), template.createEditor(getGrammar()));
                 }
@@ -250,7 +256,8 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
             this.infoPanel = new JPanel(new CardLayout());
             this.infoPanel.setBorder(BorderFactory.createLineBorder(new Color(150, 150, 255)));
             JScrollPane infoScroller = new JScrollPane(this.infoPanel);
-            infoScroller.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            infoScroller
+                .setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
             infoScroller.setPreferredSize(new Dimension(350, 200));
             for (String keyword : this.templateKeywords) {
                 this.infoPanel.add(this.editors.get(keyword), keyword);
@@ -293,7 +300,8 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
             int selectedIndex = this.nameSelector.getSelectedIndex();
             if (selectedIndex >= 0) {
                 String selectedKeyword = this.templateKeywords.get(selectedIndex);
-                result = this.editors.get(selectedKeyword).getCurrentValue();
+                result = this.editors.get(selectedKeyword)
+                    .getCurrentValue();
             }
             return result;
         }

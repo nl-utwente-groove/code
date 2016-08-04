@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import groove.algebra.AlgebraFamily;
 import groove.grammar.type.TypeLabel;
 import groove.graph.AGraph;
@@ -303,8 +305,8 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>implements Ho
      * Computes the label-to-edgeset map from the node and edge sets. This
      * method is only used if the map could not be obtained from the basis.
      */
-    private HostEdgeStore<TypeLabel> computeLabelEdgeStore() {
-        HostEdgeStore<TypeLabel> result = new HostEdgeStore<TypeLabel>();
+    private HostEdgeStore<@NonNull TypeLabel> computeLabelEdgeStore() {
+        HostEdgeStore<@NonNull TypeLabel> result = new HostEdgeStore<>();
         for (HostEdge edge : edgeSet()) {
             HostEdgeSet edges = result.get(edge.label());
             if (edges == null) {
@@ -465,7 +467,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>implements Ho
     /** The map from nodes to sets of outgoing edges. */
     HostEdgeStore<HostNode> nodeOutEdgeStore;
     /** Mapping from labels to sets of edges with that label. */
-    HostEdgeStore<TypeLabel> labelEdgeStore;
+    HostEdgeStore<@NonNull TypeLabel> labelEdgeStore;
     /** The certificate strategy of this graph, set on demand. */
     private Reference<CertificateStrategy> certifier;
     /**
@@ -670,7 +672,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>implements Ho
         /** Node/outgoing edge map to be filled by this target. */
         HostEdgeStore<HostNode> nodeOutEdgeStore;
         /** Label/edge map to be filled by this target. */
-        HostEdgeStore<TypeLabel> labelEdgeStore;
+        HostEdgeStore<@NonNull TypeLabel> labelEdgeStore;
     }
 
     /** Delta target to initialise the data structures. */

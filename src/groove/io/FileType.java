@@ -1,20 +1,28 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2010 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.io;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 
 import groove.graph.GraphRole;
 import groove.io.external.format.DotPorter;
@@ -26,18 +34,10 @@ import groove.io.graph.ConceptualIO;
 import groove.io.graph.GraphIO;
 import groove.io.graph.GxlIO;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-
 /**
  * Enumeration of file types supported by Groove.
- * Each element of the enumeration has an associated file filter. 
- * 
+ * Each element of the enumeration has an associated file filter.
+ *
  * @author Eduardo Zambon
  */
 public enum FileType {
@@ -119,21 +119,22 @@ public enum FileType {
     /** Arbitrary host graph formats ({@link #STATE} or {@link #GXL}). */
     HOSTS("Host graphs", STATE, GXL),
     /** Arbitrary Prolog files ({@link #PROLOG1} or {@link #PROLOG2}). */
-    PROLOG("Prolog files", PROLOG1, PROLOG2), ;
+    PROLOG("Prolog files", PROLOG1, PROLOG2),;
 
     /** Constructs a singular file type. */
     private FileType(String description, String extension) {
-        assert description != null && description.length() > 0 : String.format(
-            "Badly formatted file type description: %s", description);
-        assert extension != null && extension.length() > 1 && extension.charAt(0) == SEPARATOR : String.format(
-            "Badly formatted file type extension: %s", extension);
+        assert description != null && description.length() > 0 : String
+            .format("Badly formatted file type description: %s", description);
+        assert extension != null && extension.length() > 1
+            && extension.charAt(0) == SEPARATOR : String
+                .format("Badly formatted file type extension: %s", extension);
         this.extension = extension;
         this.description = description;
         this.subTypes = new ArrayList<FileType>();
     }
 
-    /** 
-     * Constructs a composed file type from a 
+    /**
+     * Constructs a composed file type from a
      * series of predefined file sub-types.
      * The first of the sub-types will be the primary file type.
      */
@@ -148,9 +149,9 @@ public enum FileType {
         return this.extension;
     }
 
-    /** 
+    /**
      * Returns the primary extension of this file type, without {@link #SEPARATOR} prefix.
-     * @see #getExtension() 
+     * @see #getExtension()
      */
     public String getExtensionName() {
         return this.extension.substring(1);
@@ -265,7 +266,7 @@ public enum FileType {
         return hasExtension(file.getName());
     }
 
-    /** Indicates if this file format has an associated loader/saver for graphs. 
+    /** Indicates if this file format has an associated loader/saver for graphs.
      * @see #getGraphIO()
      */
     public boolean hasGraphIO() {
@@ -273,7 +274,7 @@ public enum FileType {
     }
 
     /** Returns the default loader/saver for graphs to and from this file type, if any.
-     * Note that this only applies to structural graph formats, not image or vector formats. 
+     * Note that this only applies to structural graph formats, not image or vector formats.
      */
     public GraphIO<?> getGraphIO() {
         if (this.io == null) {
@@ -284,7 +285,7 @@ public enum FileType {
 
     /**
      * Computes the default loader/saver for graphs to and from this file type, if any.
-     * Note that this only applies to structural graph formats, not image or vector formats. 
+     * Note that this only applies to structural graph formats, not image or vector formats.
      */
     public GraphIO<?> computeGraphIO() {
         switch (this) {
@@ -309,8 +310,9 @@ public enum FileType {
         case TYPE:
         case STATE:
             return GxlIO.instance();
+        default:
+            return null;
         }
-        return null;
     }
 
     private GraphIO<?> io;
@@ -357,14 +359,14 @@ public enum FileType {
         }
     }
 
-    /** 
+    /**
      * Returns the set of possible file types of a given file, going by its filename extension.
      */
     static public Set<FileType> getType(File file) {
         return getType(file.getName());
     }
 
-    /** 
+    /**
      * Returns the set of possible file types for a given file, going by its filename extension.
      */
     static public Set<FileType> getType(String filename) {
@@ -443,7 +445,8 @@ public enum FileType {
      * (not necessarily of this filter).
      */
     public static boolean hasAnyExtension(File file) {
-        return file.getName().indexOf(SEPARATOR) >= 0;
+        return file.getName()
+            .indexOf(SEPARATOR) >= 0;
     }
 
     /**

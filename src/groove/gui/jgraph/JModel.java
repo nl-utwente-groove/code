@@ -17,18 +17,6 @@
 
 package groove.gui.jgraph;
 
-import groove.graph.Edge;
-import groove.graph.Element;
-import groove.graph.Graph;
-import groove.graph.GraphInfo;
-import groove.graph.Node;
-import groove.gui.layout.JCellLayout;
-import groove.gui.layout.JEdgeLayout;
-import groove.gui.layout.JVertexLayout;
-import groove.gui.layout.LayoutMap;
-import groove.gui.look.VisualKey;
-import groove.util.collect.NestedIterator;
-
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
@@ -48,6 +36,18 @@ import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.DefaultGraphModel;
 import org.jgraph.graph.ParentMap;
+
+import groove.graph.Edge;
+import groove.graph.Element;
+import groove.graph.Graph;
+import groove.graph.GraphInfo;
+import groove.graph.Node;
+import groove.gui.layout.JCellLayout;
+import groove.gui.layout.JEdgeLayout;
+import groove.gui.layout.JVertexLayout;
+import groove.gui.layout.LayoutMap;
+import groove.gui.look.VisualKey;
+import groove.util.collect.NestedIterator;
 
 /**
  * Implements JGraph's GraphModel interface on top of a GROOVE graph.
@@ -200,7 +200,8 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
         this.graph = graph;
         this.layoutMap = GraphInfo.getLayoutMap(graph);
         if (this.layoutMap == null) {
-            this.layoutMap = graph.getInfo().getLayoutMap();
+            this.layoutMap = graph.getInfo()
+                .getLayoutMap();
         }
         this.nodeJCellMap.clear();
         this.edgeJCellMap.clear();
@@ -283,7 +284,8 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
         Map<Node,Color> result = new HashMap<Node,Color>();
         for (JCell<G> jCell : getRoots()) {
             if (jCell instanceof JVertex) {
-                Color foreground = jCell.getVisuals().getForeground();
+                Color foreground = jCell.getVisuals()
+                    .getForeground();
                 if (foreground != null) {
                     result.put(((JVertex<G>) jCell).getNode(), foreground);
                 }
@@ -299,8 +301,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
             // so no synchronisation is necessary
             for (Object jCell : edit.getChanged()) {
                 if (jCell instanceof JCell) {
-                    @SuppressWarnings("unchecked")
-                    JCell<G> graphJCell = (JCell<G>) jCell;
+                    @SuppressWarnings("unchecked") JCell<G> graphJCell = (JCell<G>) jCell;
                     synchroniseLayout(graphJCell);
                 }
             }
@@ -452,9 +453,8 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      * @param node graph node for which a corresponding j-vertex is to be
      *        created
      */
-    protected JVertex<G> computeJVertex(Node node) {
+    final protected JVertex<G> computeJVertex(Node node) {
         JVertex<G> result = createJVertex(node);
-        result.setNode(node);
         JVertexLayout layout = getLayoutMap().getLayout(node);
         if (layout != null) {
             result.putVisuals(layout.toVisuals());
@@ -475,8 +475,10 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      * @return a fresh JEedge wrapping <tt>edge</tt>, initialised on this model
      */
     protected JEdge<G> createJEdge(Edge edge) {
-        JEdge<G> result = getJGraph().getFactory().newJEdge(edge);
+        JEdge<G> result = getJGraph().getFactory()
+            .newJEdge(edge);
         result.setJModel(this);
+        result.initialise();
         if (edge != null) {
             result.addEdge(edge);
         }
@@ -486,10 +488,12 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
     /**
      * Factory method for JVertices initialised on this JModel.
      */
-    protected JVertex<G> createJVertex(Node node) {
-        JVertex<G> result = getJGraph().getFactory().newJVertex(node);
+    final protected JVertex<G> createJVertex(Node node) {
+        JVertex<G> result = getJGraph().getFactory()
+            .newJVertex(node);
         result.setJModel(this);
         result.setNode(node);
+        result.initialise();
         return result;
     }
 
@@ -521,7 +525,8 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
             addedCells[edgeCount + i] = this.addedJVertices.get(i);
         }
         Object[] removedCells = replace ? getRoots().toArray() : null;
-        createEdit(addedCells, removedCells, null, this.connections, getParentMap(), null).execute();
+        createEdit(addedCells, removedCells, null, this.connections, getParentMap(), null)
+            .execute();
         List<JEdge<G>> edges = new ArrayList<JEdge<G>>();
         for (Object jCell : addedCells) {
             if (jCell instanceof JEdge) {
@@ -548,10 +553,12 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
         Rectangle2D bounds = new Rectangle();
         for (Object cell : getJGraph().getSelectionCells()) {
             if (cell instanceof JVertex) {
-                bounds.add(((JVertex<G>) cell).getVisuals().getNodePos());
+                bounds.add(((JVertex<G>) cell).getVisuals()
+                    .getNodePos());
             }
         }
-        return 25 + randomGenerator.nextInt((this.nodeJCellMap.size() + this.edgeJCellMap.size()) * 5 + 1);
+        return 25 + randomGenerator
+            .nextInt((this.nodeJCellMap.size() + this.edgeJCellMap.size()) * 5 + 1);
     }
 
     /** The JGraph to which this model belongs. */

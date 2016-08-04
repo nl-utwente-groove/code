@@ -16,10 +16,10 @@
  */
 package groove.graph;
 
-import groove.util.Fixable;
-
 import java.util.Collection;
 import java.util.Set;
+
+import groove.util.Fixable;
 
 /**
  * Generically typed specialisation of the {@link Graph} interface.
@@ -77,7 +77,7 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
      */
     default N addNode(int nr) {
         N freshNode = getFactory().createNode(nr);
-        assert !nodeSet().contains(freshNode) : String.format("Fresh node %s already in node set %s",
+        assert!nodeSet().contains(freshNode) : String.format("Fresh node %s already in node set %s",
             freshNode,
             nodeSet());
         addNode(freshNode);
@@ -170,7 +170,7 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
      * @see #addNode(Node)
      */
     default boolean addEdgeContext(E edge) {
-        assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
+        assert!isFixed() : "Trying to add " + edge + " to unmodifiable graph";
         boolean added = !containsEdge(edge);
         if (added) {
             addNode(edge.source());
@@ -220,7 +220,6 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
      * @return <tt>true</tt> if the graph changed as a result of this call
      * @see #isFixed()
      * @see #removeEdge
-     * @see #removeNodeSetContext(Collection)
      */
     default boolean removeEdgeSet(Collection<? extends E> edgeSet) {
         boolean removed = false;
@@ -235,7 +234,6 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
      * The node is assumed to have no incident edges.
      * @param node the (non-{@code null}) node to be removed from the graph
      * @return <tt>true</tt> if the graph changed as a result of this call
-     * @see #removeNodeContext(Node)
      */
     boolean removeNode(N node);
 
@@ -246,7 +244,6 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
      * for every element of {@code nodeSet}.
      * @param nodeSet the (non-{@code null}) set of nodes to be removed from the graph
      * @return <tt>true</tt> if the graph changed as a result of this call
-     * @see #removeNodeSetContext(Collection)
      */
     default boolean removeNodeSet(Collection<? extends N> nodeSet) {
         boolean removed = false;

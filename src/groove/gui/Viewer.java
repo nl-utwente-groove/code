@@ -1,31 +1,20 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.gui;
-
-import groove.grammar.model.GrammarModel;
-import groove.graph.Graph;
-import groove.gui.dialog.GraphPreviewDialog;
-import groove.gui.dialog.GraphPreviewDialog.GraphPreviewPanel;
-import groove.io.FileType;
-import groove.io.graph.GraphIO;
-import groove.util.Groove;
-import groove.util.cli.ExistingFileHandler;
-import groove.util.cli.GrooveCmdLineTool;
-import groove.util.parse.FormatException;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -37,8 +26,20 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.WindowConstants;
 
 import org.kohsuke.args4j.Argument;
+
+import groove.grammar.model.GrammarModel;
+import groove.graph.Graph;
+import groove.gui.dialog.GraphPreviewDialog;
+import groove.gui.dialog.GraphPreviewDialog.GraphPreviewPanel;
+import groove.io.FileType;
+import groove.io.graph.GraphIO;
+import groove.util.Groove;
+import groove.util.cli.ExistingFileHandler;
+import groove.util.cli.GrooveCmdLineTool;
+import groove.util.parse.FormatException;
 
 /**
  * Command-line tool to load and view a graph.
@@ -65,7 +66,8 @@ public class Viewer extends GrooveCmdLineTool<Object> {
     public void show(File file, boolean modal) throws IOException, FormatException {
         GraphIO<?> io = null;
         for (FileType type : FileType.getType(file)) {
-            if (type.hasGraphIO() && type.getGraphIO().canLoad()) {
+            if (type.hasGraphIO() && type.getGraphIO()
+                .canLoad()) {
                 io = type.getGraphIO();
                 break;
             }
@@ -92,7 +94,7 @@ public class Viewer extends GrooveCmdLineTool<Object> {
         JOptionPane optionPane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE);
         JDialog dialog = optionPane.createDialog(graph.getName());
         dialog.setModal(modal);
-        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         dialog.setVisible(true);
     }
 
@@ -100,7 +102,8 @@ public class Viewer extends GrooveCmdLineTool<Object> {
      * Tries to find the enclosing grammar of the graph file
      */
     private GrammarModel getGrammar() throws IOException {
-        File dir = this.inFile.getCanonicalFile().getParentFile();
+        File dir = this.inFile.getCanonicalFile()
+            .getParentFile();
         while (dir != null && !FileType.GRAMMAR.hasExtension(dir)) {
             dir = dir.getParentFile();
         }
@@ -113,9 +116,8 @@ public class Viewer extends GrooveCmdLineTool<Object> {
 
     /** The location of the file to be viewer. */
     @Argument(metaVar = "input",
-            usage = "Graph file to be viewed. Its extension is used to guess its format and type",
-            required = true, handler = ExistingFileHandler.class)
-    private File inFile;
+        usage = "Graph file to be viewed. Its extension is used to guess its format and type",
+        required = true, handler = ExistingFileHandler.class) private File inFile;
 
     /**
      * Invokes the viewer for a given list of command-line arguments.
@@ -163,12 +165,14 @@ public class Viewer extends GrooveCmdLineTool<Object> {
 
     private class NodeIdsButton extends JButton {
         NodeIdsButton(GraphPreviewPanel panel) {
-            this.nodeIdsItem = panel.getOptions().getItem(Options.SHOW_NODE_IDS_OPTION);
+            this.nodeIdsItem = panel.getOptions()
+                .getItem(Options.SHOW_NODE_IDS_OPTION);
             setText();
             addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    NodeIdsButton.this.nodeIdsItem.setSelected(!NodeIdsButton.this.nodeIdsItem.isSelected());
+                    NodeIdsButton.this.nodeIdsItem
+                        .setSelected(!NodeIdsButton.this.nodeIdsItem.isSelected());
                     setText();
                 }
             });

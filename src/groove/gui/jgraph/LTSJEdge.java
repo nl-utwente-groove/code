@@ -26,7 +26,7 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex>implemen
     }
 
     @Override
-    protected void initialise() {
+    public void initialise() {
         super.initialise();
         this.visibleFlag = true;
     }
@@ -35,7 +35,9 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex>implemen
     public void setSource(Object port) {
         super.setSource(port);
         if (port != null) {
-            getSourceVertex().changeOutVisible(true, getEdges().size());
+            LTSJVertex sourceVertex = getSourceVertex();
+            assert sourceVertex != null; // because port != null
+            sourceVertex.changeOutVisible(true, getEdges().size());
         }
     }
 
@@ -43,9 +45,11 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex>implemen
     public void setTarget(Object port) {
         super.setTarget(port);
         if (port != null) {
-            GraphState target = getTargetVertex().getNode();
+            LTSJVertex targetVertex = getTargetVertex();
+            assert targetVertex != null; // because port != null
+            GraphState target = targetVertex.getNode();
             if (target instanceof GraphNextState && getEdges().contains(target)) {
-                getTargetVertex().setParentEdge(this);
+                targetVertex.setParentEdge(this);
             }
         }
     }
@@ -74,8 +78,9 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex>implemen
         // updates the look on the basis of the edge
         setLook(Look.RECIPE, isInternal());
         setLook(Look.ABSENT, isAbsent());
-        if (getSource() != null && getVisuals().isVisible()) {
-            getSourceVertex().changeOutVisible(true, 1);
+        LTSJVertex sourceVertex = getSourceVertex();
+        if (sourceVertex != null && getVisuals().isVisible()) {
+            sourceVertex.changeOutVisible(true, 1);
         }
     }
 
@@ -97,7 +102,9 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex>implemen
         for (Object part : getEdges()) {
             RuleTransition trans = (RuleTransition) part;
             String description;
-            if (getJGraph().isShowAnchors()) {
+            JGraph<?> jGraph = getJGraph();
+            assert jGraph != null; // guaranteed by now
+            if (jGraph.isShowAnchors()) {
                 description = trans.getEvent()
                     .toString();
             } else {
@@ -143,8 +150,9 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex>implemen
             this.visibleFlag = visible;
             if (visible != oldVisible) {
                 setStale(VisualKey.VISIBLE);
-                if (visible == getVisuals().isVisible()) {
-                    getSourceVertex().changeOutVisible(visible, getEdges().size());
+                LTSJVertex sourceVertex = getSourceVertex();
+                if (sourceVertex != null && visible == getVisuals().isVisible()) {
+                    sourceVertex.changeOutVisible(visible, getEdges().size());
                 }
             }
         }

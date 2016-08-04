@@ -1,22 +1,28 @@
 /*
  * Groove Prolog Interface
  * Copyright (C) 2009 Michiel Hendriks, University of Twente
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package groove.prolog;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import gnu.prolog.database.PrologTextLoaderError;
 import gnu.prolog.io.ParseException;
@@ -31,15 +37,9 @@ import groove.prolog.util.TermConverter;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Interface to the prolog engine
- * 
+ *
  * @author Michiel Hendriks
  */
 public class PrologEngine {
@@ -76,7 +76,7 @@ public class PrologEngine {
 
     /**
      * Initialises the environment, loading an initial program.
-     * 
+     *
      * @throws FormatException list of syntax errors discovered during initialisation
      */
     private void init() throws FormatException {
@@ -104,13 +104,11 @@ public class PrologEngine {
             }
         }
         ReadOptions readOpts = new ReadOptions(getEnvironment().getOperatorSet());
-        TermReader termReader = new TermReader(new StringReader(term), getEnvironment());
-        try {
+        try (TermReader termReader = new TermReader(new StringReader(term), getEnvironment())) {
             Term goalTerm = termReader.readTermEof(readOpts);
             Goal goal = this.interpreter.prepareGoal(goalTerm);
             this.currentResult = new InternalQueryResult(goal, term);
             this.currentResult.rawVars = readOpts.variableNames;
-            termReader.close();
             return next();
         } catch (ParseException e) {
             throw new FormatException("Parse error in Prolog program: %s", e.getMessage());
@@ -128,7 +126,7 @@ public class PrologEngine {
 
     /**
      * Get the next results
-     * 
+     *
      * @return Null if there is no next result
      * @throws PrologException if there was an error during execution
      */
@@ -186,7 +184,7 @@ public class PrologEngine {
     /**
      * The result object returned on {@link PrologEngine#newQuery(String)} and
      * {@link PrologEngine#next()}
-     * 
+     *
      * @author Michiel Hendriks
      */
     protected static class InternalQueryResult implements QueryResult {

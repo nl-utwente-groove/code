@@ -17,9 +17,6 @@
 package groove.gui.display;
 
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
-import groove.graph.Graph;
-import groove.gui.jgraph.JGraph;
-import groove.gui.jgraph.JModel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -30,6 +27,10 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+
+import groove.graph.Graph;
+import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JModel;
 
 /**
  * A panel that combines a {@link groove.gui.jgraph.JGraph}and (optionally) a
@@ -76,14 +77,14 @@ public class JGraphPanel<G extends Graph> extends JPanel {
                 getScrollPane().setWheelScrollingEnabled(evt.getNewValue() != PAN_MODE);
             }
         });
-        getJGraph().addPropertyChangeListener(JGraph.GRAPH_MODEL_PROPERTY,
+        getJGraph().addPropertyChangeListener(org.jgraph.JGraph.GRAPH_MODEL_PROPERTY,
             new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                JModel<?> jModel = (JModel<?>) evt.getNewValue();
-                setEnabled(jModel != null);
-            }
-        });
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    JModel<?> jModel = (JModel<?>) evt.getNewValue();
+                    setEnabled(jModel != null);
+                }
+            });
     }
 
     /**
@@ -94,7 +95,8 @@ public class JGraphPanel<G extends Graph> extends JPanel {
         JScrollPane result = this.scrollPane;
         if (result == null) {
             result = this.scrollPane = new JScrollPane(getJGraph());
-            result.getVerticalScrollBar().setUnitIncrement(10);
+            result.getVerticalScrollBar()
+                .setUnitIncrement(10);
             result.setDoubleBuffered(false);
             result.setPreferredSize(new Dimension(500, 400));
         }
@@ -163,8 +165,10 @@ public class JGraphPanel<G extends Graph> extends JPanel {
     @Override
     public void setEnabled(boolean enabled) {
         this.jGraph.setEnabled(enabled);
-        getScrollPane().getHorizontalScrollBar().setEnabled(enabled);
-        getScrollPane().getVerticalScrollBar().setEnabled(enabled);
+        getScrollPane().getHorizontalScrollBar()
+            .setEnabled(enabled);
+        getScrollPane().getVerticalScrollBar()
+            .setEnabled(enabled);
         if (hasStatusBar()) {
             getStatusBar().setEnabled(enabled);
         }
@@ -186,7 +190,7 @@ public class JGraphPanel<G extends Graph> extends JPanel {
     protected void setEnabledBackground(Color enabledBackground) {
         // only do something when it actually changes the background colour
         if (enabledBackground == null ? this.enabledBackground != null
-                : !enabledBackground.equals(this.enabledBackground)) {
+            : !enabledBackground.equals(this.enabledBackground)) {
             this.enabledBackground = enabledBackground;
             if (isEnabled()) {
                 getJGraph().setBackground(enabledBackground);

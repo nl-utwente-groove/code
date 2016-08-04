@@ -1,22 +1,20 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.gui.look;
-
-import groove.gui.jgraph.JEdge;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -30,8 +28,11 @@ import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphLayoutCache;
 import org.jgraph.graph.VertexView;
 
+import groove.gui.jgraph.JEdge;
+import groove.gui.jgraph.JGraph;
+
 /**
- * Edge routing class that only touches loops with fewer than two 
+ * Edge routing class that only touches loops with fewer than two
  * intermediate control points.
  * @author Arend Rensink
  * @version $Revision $
@@ -52,11 +53,14 @@ final class LoopRouting implements Routing {
         if (isRoutable(edgeView)) {
             JEdge<?> jEdge = (JEdge<?>) edgeView.getCell();
             // find out the source bounds
-            VertexView sourceView = (VertexView) edgeView.getSource().getParentView();
+            VertexView sourceView = (VertexView) edgeView.getSource()
+                .getParentView();
             // first refresh the source view, otherwise the view bounds
             // might be out of date
             sourceView.refresh(cache, cache, true);
-            jEdge.getJGraph().updateAutoSize(sourceView);
+            JGraph<?> jGraph = jEdge.getJGraph();
+            assert jGraph != null; // guaranteed by now
+            jGraph.updateAutoSize(sourceView);
             Rectangle2D sourceBounds = sourceView.getBounds();
             VisualMap visuals = jEdge.getVisuals();
             Point2D startPoint = edgeView.getPoint(0);
@@ -84,8 +88,9 @@ final class LoopRouting implements Routing {
         if (!edgeView.isLoop()) {
             return false;
         }
-        JEdge<?> jEdge = (JEdge<?>) edgeView.getCell();
-        if (jEdge.getJGraph().isLayouting()) {
+        JGraph<?> jGraph = ((JEdge<?>) edgeView.getCell()).getJGraph();
+        assert jGraph != null; // known by now
+        if (jGraph.isLayouting()) {
             return false;
         }
         return edgeView.getPointCount() <= 2;

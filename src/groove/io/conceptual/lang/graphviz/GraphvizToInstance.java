@@ -53,26 +53,21 @@ import groove.io.conceptual.value.ContainerValue;
 import groove.io.conceptual.value.Object;
 import groove.io.conceptual.value.StringValue;
 
+@SuppressWarnings("javadoc")
 public class GraphvizToInstance extends InstanceImporter {
     private Map<Node,Object> m_nodeMap = new HashMap<Node,Object>();
 
     public GraphvizToInstance(String filename) throws ImportException {
         ArrayList<Graph> graphs = null;
         File file = new File(filename);
-        try {
-            FileReader in = new FileReader(file);
+        try (FileReader in = new FileReader(file)) {
             Parser p = new Parser();
-
-            try {
-                int timer = Timer.start("Load DOT");
-                p.parse(in);
-                graphs = p.getGraphs();
-                Timer.stop(timer);
-            } catch (ParseException e) {
-                throw new ImportException(e);
-            } finally {
-                in.close();
-            }
+            int timer = Timer.start("Load DOT");
+            p.parse(in);
+            graphs = p.getGraphs();
+            Timer.stop(timer);
+        } catch (ParseException e) {
+            throw new ImportException(e);
         } catch (FileNotFoundException e) {
             throw new ImportException(e);
         } catch (IOException e) {

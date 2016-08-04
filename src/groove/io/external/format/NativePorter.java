@@ -141,20 +141,10 @@ public class NativePorter extends AbstractExporter implements Importer {
             }
         } else {
             TextBasedModel<?> textModel = (TextBasedModel<?>) exportable.getModel();
-            Writer writer = null;
-            try {
-                writer = new FileWriter(file);
+            try (Writer writer = new FileWriter(file)) {
                 writer.write(textModel.getSource());
             } catch (IOException e) {
                 throw new PortException(e);
-            } finally {
-                try {
-                    if (writer != null) {
-                        writer.close();
-                    }
-                } catch (IOException e) {
-                    throw new PortException(e);
-                }
             }
         }
     }

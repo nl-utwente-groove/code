@@ -16,6 +16,11 @@
  */
 package groove.io.conceptual.lang;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import groove.io.conceptual.Acceptor;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.InstanceModel;
@@ -43,11 +48,7 @@ import groove.io.conceptual.value.StringValue;
 import groove.io.conceptual.value.TupleValue;
 import groove.io.external.PortException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+@SuppressWarnings("javadoc")
 public abstract class InstanceExporter<E> implements Messenger, Visitor {
     public abstract void addInstanceModel(InstanceModel instanceModel) throws PortException;
 
@@ -69,7 +70,7 @@ public abstract class InstanceExporter<E> implements Messenger, Visitor {
     }
 
     protected void setElement(Acceptor acceptor, E element) {
-        assert !(this.m_elements.containsKey(acceptor));
+        assert!(this.m_elements.containsKey(acceptor));
         this.m_elements.put(acceptor, element);
     }
 
@@ -87,8 +88,8 @@ public abstract class InstanceExporter<E> implements Messenger, Visitor {
         }
 
         if (!this.m_elements.containsKey(acceptor)) {
-            throw new IllegalArgumentException("Cannot get element for acceptor "
-                + acceptor.toString());
+            throw new IllegalArgumentException(
+                "Cannot get element for acceptor " + acceptor.toString());
         }
 
         return this.m_elements.get(acceptor);

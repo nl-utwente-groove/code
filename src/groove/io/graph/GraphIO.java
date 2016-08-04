@@ -16,15 +16,15 @@
  */
 package groove.io.graph;
 
-import groove.graph.Graph;
-import groove.graph.GraphRole;
-import groove.io.FileType;
-import groove.util.parse.FormatException;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import groove.graph.Graph;
+import groove.graph.GraphRole;
+import groove.io.FileType;
+import groove.util.parse.FormatException;
 
 /**
  * Class for saving and loading graphs.
@@ -32,9 +32,9 @@ import java.io.InputStream;
  * @version $Revision$
  */
 public abstract class GraphIO<G extends Graph> {
-    /** Indicates if this IO implementation can save graphs. 
+    /** Indicates if this IO implementation can save graphs.
      * If {@code false}, {@link #saveGraph(Graph, File)} and {@link #doSaveGraph(Graph, File)}
-     * will throw {@link UnsupportedOperationException}s. 
+     * will throw {@link UnsupportedOperationException}s.
      */
     abstract public boolean canSave();
 
@@ -54,16 +54,15 @@ public abstract class GraphIO<G extends Graph> {
     }
 
     /**
-     * Callback method to save a graph to a file, after all 
+     * Callback method to save a graph to a file, after all
      * necessary directories have been created.
      */
-    protected abstract void doSaveGraph(Graph graph, File file)
-        throws IOException;
+    protected abstract void doSaveGraph(Graph graph, File file) throws IOException;
 
-    /** 
+    /**
      * Indicates if this IO implementation can load graphs.
      * If {@code false}, {@link #loadGraph(File)} and {@link #loadGraph(InputStream)}
-     * will throw {@link UnsupportedOperationException}s. 
+     * will throw {@link UnsupportedOperationException}s.
      */
     public abstract boolean canLoad();
 
@@ -73,14 +72,15 @@ public abstract class GraphIO<G extends Graph> {
      */
     public G loadGraph(File file) throws FormatException, IOException {
         setGraphName(FileType.getPureName(file));
-        return loadGraph(new FileInputStream(file));
+        try (FileInputStream in = new FileInputStream(file)) {
+            return loadGraph(in);
+        }
     }
 
     /**
      * Loads a graph from an input stream.
      */
-    abstract public G loadGraph(InputStream in) throws FormatException,
-        IOException;
+    abstract public G loadGraph(InputStream in) throws FormatException, IOException;
 
     /** Deletes a file together with further information (such as layout info). */
     public void deleteGraph(File file) {
@@ -96,7 +96,7 @@ public abstract class GraphIO<G extends Graph> {
         }
     }
 
-    /** 
+    /**
      * Sets the name for the next graph to be loaded.
      * This is only used for formats which do not store the graph name.
      * The default graph name is "graph".

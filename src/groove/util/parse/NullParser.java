@@ -16,8 +16,10 @@
  */
 package groove.util.parse;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 /** Parser for an arbitrary type, only recognising the {@code null} value. */
-public class NullParser<O> implements Parser<O> {
+public class NullParser<@Nullable O> implements Parser<@Nullable O> {
     /** Instantiates this parser for a given class. */
     private NullParser(Class<? extends O> valueType) {
         this.valueType = valueType;
@@ -59,7 +61,7 @@ public class NullParser<O> implements Parser<O> {
     }
 
     /** Returns a {@link groove.util.parse.NullParser} instance for a given type. */
-    public static <O> NullParser<O> instance(Class<? extends O> type) {
-        return new NullParser<O>(type);
+    public static <O> NullParser<@Nullable O> instance(Class<? extends O> type) {
+        return new NullParser<@Nullable O>(type);
     }
 }

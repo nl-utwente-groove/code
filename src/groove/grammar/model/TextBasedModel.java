@@ -61,8 +61,8 @@ public abstract class TextBasedModel<M> extends NamedResourceModel<M> {
      * @param out the output stream to write the control program to.
      */
     public static void store(String controlProgram, OutputStream out) {
-        PrintWriter pw = new PrintWriter(out);
-        pw.write(controlProgram);
-        pw.close();
+        try (PrintWriter pw = new PrintWriter(out)) {
+            pw.write(controlProgram);
+        }
     }
 }

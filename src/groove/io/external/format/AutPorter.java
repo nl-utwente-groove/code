@@ -51,11 +51,9 @@ public final class AutPorter extends AbstractExporter implements Importer {
     public Set<Resource> doImport(File file, FileType fileType, GrammarModel grammar)
         throws PortException {
         Set<Resource> resources;
-        try {
-            FileInputStream stream = new FileInputStream(file);
+        try (FileInputStream stream = new FileInputStream(file)) {
             QualName name = QualName.name(fileType.stripExtension(file.getName()));
             resources = doImport(name, stream, fileType, grammar);
-            stream.close();
         } catch (IOException e) {
             throw new PortException(e);
         }

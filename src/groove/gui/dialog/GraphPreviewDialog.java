@@ -1,5 +1,21 @@
 package groove.gui.dialog;
 
+import java.awt.Dialog;
+import java.awt.Point;
+import java.awt.Window;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import javax.swing.JDialog;
+import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
+
 import groove.control.graph.ControlGraph;
 import groove.grammar.aspect.GraphConverter;
 import groove.grammar.model.GrammarModel;
@@ -16,21 +32,6 @@ import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.PlainJGraph;
-
-import java.awt.Dialog;
-import java.awt.Point;
-import java.awt.Window;
-import java.awt.event.HierarchyEvent;
-import java.awt.event.HierarchyListener;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import javax.swing.JDialog;
-import javax.swing.SwingUtilities;
 
 /**
  * Dialog showing an given graph in the most appropriate
@@ -55,13 +56,14 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
         this.graph = graph;
         setTitle(graph.getName());
         if (simulator != null) {
-            Point p = simulator.getFrame().getLocation();
+            Point p = simulator.getFrame()
+                .getLocation();
             setLocation(new Point(p.x + 50, p.y + 50));
         }
         add(getContent());
         setSize(600, 700);
         if (simulator == null) {
-            setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+            setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         }
         pack();
     }
@@ -104,12 +106,14 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
     /** Returns the proper jGraph for the graph set in the constructor. */
     @SuppressWarnings({"rawtypes", "unchecked"})
     protected JGraph<G> createJGraph() {
-        JGraph jGraph = null;
+        JGraph jGraph;
         Graph shownGraph = this.graph;
         switch (this.graph.getRole()) {
         case CTRL:
             if (shownGraph instanceof ControlGraph) {
                 jGraph = new CtrlJGraph(this.simulator);
+            } else {
+                jGraph = null;
             }
             break;
         case HOST:
@@ -124,11 +128,15 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
                     aspectJGraph.setGrammar(this.grammar);
                 }
                 jGraph = aspectJGraph;
+            } else {
+                jGraph = null;
             }
             break;
         case LTS:
             jGraph = new LTSJGraph(this.simulator);
             break;
+        default:
+            jGraph = null;
         }
         if (jGraph == null) {
             jGraph = PlainJGraph.newInstance(this.simulator);
@@ -171,7 +179,8 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
         final GraphRole role = graph.getRole();
         final String name = graph.getName();
         synchronized (recentPreviews) {
-            if (!TIMER || recentPreviews.get(role).add(name)) {
+            if (!TIMER || recentPreviews.get(role)
+                .add(name)) {
                 new GraphPreviewDialog<G>(simulator, graph).setVisible(true);
                 if (TIMER) {
                     final Timer timer = new Timer();
@@ -179,7 +188,8 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
                         @Override
                         public void run() {
                             synchronized (recentPreviews) {
-                                recentPreviews.get(role).remove(name);
+                                recentPreviews.get(role)
+                                    .remove(name);
                             }
                             timer.cancel();
                         }
@@ -195,13 +205,15 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
     }
 
     private static Simulator globalSimulator;
-    private static Map<GraphRole,Set<String>> recentPreviews = new EnumMap<GraphRole,Set<String>>(
-        GraphRole.class);
+    private static Map<GraphRole,Set<String>> recentPreviews =
+        new EnumMap<GraphRole,Set<String>>(GraphRole.class);
+
     static {
         for (GraphRole role : GraphRole.values()) {
             recentPreviews.put(role, new HashSet<String>());
         }
     }
+
     private static final boolean TIMER = true;
 
     /** A panel showing a JGraph, with functionality te retrieve the rendering options. */

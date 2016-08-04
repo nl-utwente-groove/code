@@ -76,15 +76,10 @@ public class EcoreToInstance extends InstanceImporter {
 
         // Load the XMI model containing Ecore instance model
         File file = new File(filename);
-        try {
+        try (FileInputStream in = new FileInputStream(file)) {
             this.m_resource = rs.createResource(URI.createURI(filename));
-            FileInputStream in = new FileInputStream(file);
             int timer = Timer.cont("Load Ecore");
-            try {
-                this.m_resource.load(in, null);
-            } finally {
-                in.close();
-            }
+            this.m_resource.load(in, null);
             Timer.stop(timer);
         } catch (FileNotFoundException e) {
             throw new ImportException("Cannot find file " + typeModel, e);

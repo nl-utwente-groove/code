@@ -16,6 +16,13 @@
  */
 package groove.lts;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 import groove.control.instance.Assignment;
 import groove.control.instance.Frame;
 import groove.grammar.Action.Role;
@@ -32,13 +39,6 @@ import groove.util.cache.AbstractCacheHolder;
 import groove.util.cache.CacheReference;
 import groove.util.parse.FormatErrorSet;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
 /**
  * Combination of graph and node functionality, used to store the state of a
  * graph transition system.
@@ -46,8 +46,8 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-20 09:25:29 $
  */
-abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache> implements
-    GraphState {
+abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
+    implements GraphState {
     /**
      * Constructs a an abstract graph state.
      * @param number the number of the state; required to be non-negative
@@ -183,7 +183,8 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
                 setFrame(getActualFrame().onPolicy(typePolicy));
             }
         }
-        getCache().getMatches().checkConstraints();
+        getCache().getMatches()
+            .checkConstraints();
     }
 
     /**
@@ -197,7 +198,8 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         if (isRealState() && getActualFrame().isDead() && getGTS().isCheckDeadlock()) {
             boolean alive = false;
             for (GraphTransition trans : getTransitions()) {
-                if (trans.getAction().getRole() == Role.TRANSFORMER) {
+                if (trans.getAction()
+                    .getRole() == Role.TRANSFORMER) {
                     alive = true;
                     break;
                 }
@@ -213,12 +215,14 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     @Override
     public List<MatchResult> getMatches() {
         // copy the match set to prevent sharing errors
-        return new ArrayList<MatchResult>(getCache().getMatches().getAll());
+        return new ArrayList<MatchResult>(getCache().getMatches()
+            .getAll());
     }
 
     @Override
     public MatchResult getMatch() {
-        return getCache().getMatches().getOne();
+        return getCache().getMatches()
+            .getOne();
     }
 
     @Override
@@ -231,7 +235,8 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
             }
         }
         if (result == null) {
-            result = getGTS().getMatchApplier().apply(this, match);
+            result = getGTS().getMatchApplier()
+                .apply(this, match);
         }
         return result;
     }
@@ -422,7 +427,8 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         if (obj instanceof GraphState) {
             return getNumber() - ((GraphState) obj).getNumber();
         } else if (obj instanceof GraphTransition) {
-            return getNumber() - ((GraphTransition) obj).source().getNumber();
+            return getNumber() - ((GraphTransition) obj).source()
+                .getNumber();
         } else {
             throw new UnsupportedOperationException(
                 String.format("Classes %s and %s cannot be compared", getClass(), obj.getClass()));

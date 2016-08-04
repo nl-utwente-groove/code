@@ -16,6 +16,8 @@
  */
 package groove.lts;
 
+import java.util.Set;
+
 import groove.algebra.Constant;
 import groove.control.Binding;
 import groove.control.Call;
@@ -40,8 +42,6 @@ import groove.util.Pair;
 import groove.util.Visitor;
 import groove.util.collect.KeySet;
 
-import java.util.Set;
-
 /**
  * Algorithm to create the set of current match results for a given state.
  * @author Arend Rensink
@@ -54,13 +54,17 @@ public class MatchCollector {
      */
     public MatchCollector(GraphState state) {
         this.state = state;
-        this.record = state.getGTS().getRecord();
-        this.checkDiamonds = state.getGTS().checkDiamonds();
+        this.record = state.getGTS()
+            .getRecord();
+        this.checkDiamonds = state.getGTS()
+            .checkDiamonds();
         if (state instanceof GraphNextState) {
             GraphState parent = ((GraphNextState) state).source();
             this.parentClosed = parent.isClosed();
-            this.parentTransMap = parent.getCache().getTransitionMap();
-            Rule lastRule = ((GraphNextState) state).getEvent().getRule();
+            this.parentTransMap = parent.getCache()
+                .getTransitionMap();
+            Rule lastRule = ((GraphNextState) state).getEvent()
+                .getRule();
             this.enabledRules = this.record.getEnabledRules(lastRule);
             this.disabledRules = this.record.getDisabledRules(lastRule);
         } else {
@@ -91,7 +95,9 @@ public class MatchCollector {
             for (GraphTransition trans : this.parentTransMap) {
                 if (trans instanceof RuleTransition) {
                     RuleTransition ruleTrans = (RuleTransition) trans;
-                    if (ruleTrans.getEvent().getRule().equals(step.getRule())) {
+                    if (ruleTrans.getEvent()
+                        .getRule()
+                        .equals(step.getRule())) {
                         MatchResult match = ruleTrans.getKey();
                         if (isModifying) {
                             // we can reuse the event but not the control step
@@ -131,7 +137,8 @@ public class MatchCollector {
                         return true;
                     }
                 };
-                step.getRule().traverseMatches(this.state.getGraph(), boundMap, eventCollector);
+                step.getRule()
+                    .traverseMatches(this.state.getGraph(), boundMap, eventCollector);
             }
         }
         if (DEBUG) {
@@ -147,22 +154,29 @@ public class MatchCollector {
                 checkEvent(subEvent);
             }
         } else {
-            for (int i = 0; i < event.getRule().getAnchor().size(); i++) {
+            for (int i = 0; i < event.getRule()
+                .getAnchor()
+                .size(); i++) {
                 AnchorValue anchorImage = event.getAnchorImage(i);
                 HostGraph host = MatchCollector.this.state.getGraph();
                 switch (anchorImage.getAnchorKind()) {
                 case EDGE:
                     if (!host.containsEdge((HostEdge) anchorImage)) {
                         assert false : String.format("Edge %s does not occur in graph %s",
-                            anchorImage, host);
+                            anchorImage,
+                            host);
                     }
                     break;
                 case NODE:
                     if (!(anchorImage instanceof ValueNode)
                         && !host.containsNode((HostNode) anchorImage)) {
                         assert false : String.format("Node %s does not occur in graph %s",
-                            anchorImage, host);
+                            anchorImage,
+                            host);
                     }
+                    break;
+                default:
+                    // nothing to be checked
                 }
             }
         }
@@ -179,12 +193,15 @@ public class MatchCollector {
         }
         // since enabledRules != null, it is now certain that this is a NextState
         GraphNextState state = (GraphNextState) this.state;
-        if (state.getStep().isModifying()) {
+        if (state.getStep()
+            .isModifying()) {
             return true;
         }
         // there may be new matches only if the rule call was untried in
         // the parent state
-        Set<Call> triedCalls = state.source().getActualFrame().getPastCalls();
+        Set<Call> triedCalls = state.source()
+            .getActualFrame()
+            .getPastCalls();
         return triedCalls == null || !triedCalls.contains(call);
     }
 
@@ -198,7 +215,8 @@ public class MatchCollector {
         }
         // since disabledRules != null, it is now certain that this is a NextState
         GraphNextState state = (GraphNextState) this.state;
-        if (state.getStep().isModifying()) {
+        if (state.getStep()
+            .isModifying()) {
             return true;
         }
         return false;
@@ -210,12 +228,15 @@ public class MatchCollector {
      * so the rule cannot match
      */
     private RuleToHostMap extractBinding(Step step) {
-        RuleToHostMap result = this.state.getGraph().getFactory().createRuleToHostMap();
+        RuleToHostMap result = this.state.getGraph()
+            .getFactory()
+            .createRuleToHostMap();
         Object[] sourceValues = this.state.getActualValues();
         for (Assignment assign : step.getEnterAssignments()) {
             sourceValues = assign.compute(sourceValues);
         }
-        for (Pair<Var,Binding> entry : step.getRuleSwitch().getCallBinding()) {
+        for (Pair<Var,Binding> entry : step.getRuleSwitch()
+            .getCallBinding()) {
             Binding bind = entry.two();
             HostNode value;
             if (bind == null) {
@@ -224,7 +245,8 @@ public class MatchCollector {
             }
             switch (bind.getSource()) {
             case CONST:
-                value = bind.getValue().getNode();
+                value = bind.getValue()
+                    .getNode();
                 break;
             case VAR:
                 value = Valuator.get(sourceValues, bind);
@@ -233,7 +255,8 @@ public class MatchCollector {
                 assert false;
                 value = null;
             }
-            RuleNode ruleNode = entry.one().getRuleNode();
+            RuleNode ruleNode = entry.one()
+                .getRuleNode();
             if (isCompatible(ruleNode, value)) {
                 result.putNode(ruleNode, value);
             } else {
@@ -249,12 +272,14 @@ public class MatchCollector {
         if (hostNode == null) {
             return false;
         }
-        if (!ruleNode.getType().subsumes(hostNode.getType(), ruleNode.isSharp())) {
+        if (!ruleNode.getType()
+            .subsumes(hostNode.getType(), ruleNode.isSharp())) {
             return false;
         }
         if (ruleNode instanceof VariableNode && ((VariableNode) ruleNode).hasConstant()) {
             Constant constant = ((VariableNode) ruleNode).getConstant();
-            Object value = this.record.getFamily().toValue(constant);
+            Object value = this.record.getFamily()
+                .toValue(constant);
             if (!value.equals(((ValueNode) hostNode).getValue())) {
                 return false;
             }

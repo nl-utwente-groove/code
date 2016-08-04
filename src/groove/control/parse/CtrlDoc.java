@@ -17,12 +17,6 @@
 package groove.control.parse;
 
 import static org.antlr.works.ate.syntax.generic.ATESyntaxLexer.TOKEN_SINGLE_COMMENT;
-import groove.annotation.Help;
-import groove.io.FileType;
-import groove.util.Groove;
-import groove.util.Pair;
-import groove.util.parse.FormatException;
-import groove.util.parse.StringHandler;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -42,6 +36,13 @@ import org.antlr.works.ate.syntax.misc.ATEToken;
 import org.antlr.works.grammar.element.ElementRule;
 import org.antlr.works.grammar.syntax.GrammarSyntaxLexer;
 import org.antlr.works.grammar.syntax.GrammarSyntaxParser;
+
+import groove.annotation.Help;
+import groove.io.FileType;
+import groove.util.Groove;
+import groove.util.Pair;
+import groove.util.parse.FormatException;
+import groove.util.parse.StringHandler;
 
 /** Class retrieving documentation lines from the Control grammar. */
 public class CtrlDoc {
@@ -84,9 +85,10 @@ public class CtrlDoc {
                 // We are running from a JAR file so we cannot read the file
                 // directly because it is compressed.
                 JarURLConnection conn = ((JarURLConnection) url.openConnection());
-                ZipFile zipFile = conn.getJarFile();
-                InputStream in = zipFile.getInputStream(conn.getJarEntry());
-                grammarText = groove.io.Util.readInputStreamToString(in);
+                try (ZipFile zipFile = conn.getJarFile();
+                    InputStream in = zipFile.getInputStream(conn.getJarEntry());) {
+                    grammarText = groove.io.Util.readInputStreamToString(in);
+                }
             } else {
                 // We can read the file directly.
                 File file = new File(url.getFile());
@@ -99,10 +101,9 @@ public class CtrlDoc {
                 }
             }
         } catch (IOException e) {
-            throw new IllegalStateException(
-                String.format("Error while reading grammar file %s: %s",
-                    CTRL_GRAMMAR_FILE,
-                    e.getMessage()));
+            throw new IllegalStateException(String.format("Error while reading grammar file %s: %s",
+                CTRL_GRAMMAR_FILE,
+                e.getMessage()));
         }
 
         return grammarText;

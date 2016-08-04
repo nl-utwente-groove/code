@@ -167,7 +167,9 @@ public final class SaveAction extends SimulatorAction {
                 QualName nameInGrammar = getNameInGrammar(selectedFile);
                 if (nameInGrammar == null) {
                     // store as external file
-                    TextBasedModel.store(text, new FileOutputStream(selectedFile));
+                    try (FileOutputStream out = new FileOutputStream(selectedFile)) {
+                        TextBasedModel.store(text, out);
+                    }
                 } else {
                     // store in grammar
                     result = doSaveText(nameInGrammar, text);

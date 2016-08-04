@@ -23,6 +23,8 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * Implements a set on top of another set. The underlying set is not affected by
  * any operations upon this one. The implementation is based on a lower set, and
@@ -106,7 +108,7 @@ public class StackedSet<T> extends AbstractSet<T> {
                     return true;
                 } else {
                     Iterator<? extends T> lowerIter = this.lowerIter;
-                    T next = this.lowerNext;
+                    @Nullable T next = this.lowerNext;
                     // look for the first acceptable element
                     while (next == null && lowerIter.hasNext()) {
                         next = lowerIter.next();
@@ -154,7 +156,7 @@ public class StackedSet<T> extends AbstractSet<T> {
              * Next element to be retrieved from the lower set. Guaranteed not
              * to be in the removed set.
              */
-            private T lowerNext = null;
+            private @Nullable T lowerNext = null;
             /**
              * Latest element from the lowerIter actually returned by next
              */

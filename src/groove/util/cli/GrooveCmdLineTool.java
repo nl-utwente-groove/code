@@ -1,29 +1,30 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.util.cli;
 
-import groove.explore.Verbosity;
-
 import java.awt.Window;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
+
+import groove.explore.Verbosity;
 
 /**
  * Command-line tool superclass that implements help and verbosity options.
@@ -32,7 +33,7 @@ import org.kohsuke.args4j.Option;
    static public void main(String[] args) {
        GrooveCmdLineTool.tryExecute(MyClass.class, args);
    }
-   
+
    static public T execute(String[] args) throws Exception {
        return new MyClass(args).start();
    }
@@ -43,7 +44,7 @@ import org.kohsuke.args4j.Option;
  */
 public abstract class GrooveCmdLineTool<T> {
     /**
-     * Constructs an instance of a tool, 
+     * Constructs an instance of a tool,
      * with a given application name.
      */
     public GrooveCmdLineTool(String appName) {
@@ -51,10 +52,10 @@ public abstract class GrooveCmdLineTool<T> {
     }
 
     /**
-     * Constructs an instance of a tool, 
+     * Constructs an instance of a tool,
      * with a given application name and list of arguments.
      * Parsing the arguments is deferred to {@link #start()},
-     * in order to avoid that they are overridden by 
+     * in order to avoid that they are overridden by
      * default initialisers in the field declarations.
      */
     public GrooveCmdLineTool(String appName, String... args) {
@@ -71,7 +72,7 @@ public abstract class GrooveCmdLineTool<T> {
      * @throws CmdLineException if such an exception occurred while parsing the arguments
      * @throws Exception if the exception is thrown by {@link #run()}.
      */
-    public final T start() throws Exception {
+    public final @Nullable T start() throws Exception {
         parseArguments();
         if (isHelp()) {
             getParser().printHelp();
@@ -81,7 +82,7 @@ public abstract class GrooveCmdLineTool<T> {
         }
     }
 
-    /** 
+    /**
      * Callback method implementing the actual functionality of the tool.
      * This method can be invoked instead of {@link #start()} to bypass the
      * help option.
@@ -94,8 +95,7 @@ public abstract class GrooveCmdLineTool<T> {
     }
 
     @Option(name = HelpHandler.NAME, usage = HelpHandler.USAGE,
-            handler = HelpHandler.class)
-    private boolean help;
+        handler = HelpHandler.class) private boolean help;
 
     /** Returns the verbosity of the tool. */
     protected final Verbosity getVerbosity() {
@@ -108,10 +108,10 @@ public abstract class GrooveCmdLineTool<T> {
     }
 
     @Option(name = VerbosityHandler.NAME, metaVar = VerbosityHandler.VAR,
-            usage = VerbosityHandler.USAGE, handler = VerbosityHandler.class)
-    private Verbosity verbosity = Verbosity.MEDIUM;
+        usage = VerbosityHandler.USAGE,
+        handler = VerbosityHandler.class) private Verbosity verbosity = Verbosity.MEDIUM;
 
-    /** 
+    /**
      * Returns the parser used for parsing the command-line arguments
      * passed in to the constructor.
      */
@@ -127,7 +127,7 @@ public abstract class GrooveCmdLineTool<T> {
     }
 
     /**
-     * Callback method to apply the parser of this tool 
+     * Callback method to apply the parser of this tool
      * to the list of arguments passed in at construction time.
      * Calling this method more than once will have no effect.
      * @throws CmdLineException if such an exception occurred while parsing
@@ -173,8 +173,7 @@ public abstract class GrooveCmdLineTool<T> {
      * @throws IllegalArgumentException if the class passed in does not have a
      * static method with the right signature
      */
-    public static void tryExecute(Class<?> claz, String... args)
-        throws IllegalArgumentException {
+    public static void tryExecute(Class<?> claz, String... args) throws IllegalArgumentException {
         try {
             Method execute = claz.getMethod("execute", String[].class);
             execute.invoke(null, (Object) args);

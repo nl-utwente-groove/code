@@ -43,6 +43,7 @@ import groove.util.parse.IdValidator;
 
 //separate different graphs for various elements where applicable.
 //TODO: add translate messages here as well?
+@SuppressWarnings("javadoc")
 public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
     private GrammarGraph m_currentGraph;
     private GrooveResource m_grooveResource;

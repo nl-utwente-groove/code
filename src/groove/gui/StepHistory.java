@@ -1,20 +1,26 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.gui;
+
+import java.awt.event.ActionEvent;
+import java.util.Set;
+
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 
 import groove.gui.SimulatorModel.Change;
 import groove.lts.GraphState;
@@ -22,12 +28,6 @@ import groove.lts.GraphTransition;
 import groove.lts.RuleTransition;
 import groove.util.Groove;
 import groove.util.History;
-
-import java.awt.event.ActionEvent;
-import java.util.Set;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 
 /**
  * History of simulation steps.
@@ -83,7 +83,8 @@ public class StepHistory implements SimulatorListener {
     private synchronized void setStateUpdate(GraphState state) {
         if (!this.ignoreSimulationUpdates) {
             HistoryAction newAction = new SetStateAction(state);
-            if (this.history.isEmpty() || !state.equals(this.history.current().getState())) {
+            if (this.history.isEmpty() || !state.equals(this.history.current()
+                .getState())) {
                 this.history.add(newAction);
             } else {
                 this.history.replace(newAction);
@@ -103,8 +104,9 @@ public class StepHistory implements SimulatorListener {
             HistoryAction newAction = new SetTransitionAction(transition);
             // test if the previous history action was setting the source state
             // of this transition
-            if (this.history.isEmpty()
-                || !transition.source().equals(this.history.current().getState())) {
+            if (this.history.isEmpty() || !transition.source()
+                .equals(this.history.current()
+                    .getState())) {
                 this.history.add(newAction);
             } else {
                 this.history.replace(newAction);
@@ -257,6 +259,11 @@ public class StepHistory implements SimulatorListener {
          */
         GraphTransition getTransition() {
             return this.transition;
+        }
+
+        @Override
+        public int hashCode() {
+            return this.state == null ? 0 : this.state.hashCode();
         }
 
         /**

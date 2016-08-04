@@ -16,6 +16,25 @@
  */
 package groove.gui.menu;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
+import javax.swing.AbstractAction;
+import javax.swing.JFileChooser;
+import javax.swing.JMenu;
+import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+
 import groove.automaton.NodeRelation;
 import groove.automaton.RegExpr;
 import groove.automaton.RelationCalculator;
@@ -35,25 +54,6 @@ import groove.io.GrooveFileChooser;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.util.parse.FormatException;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
-import javax.swing.AbstractAction;
-import javax.swing.JFileChooser;
-import javax.swing.JMenu;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
 
 /**
  * Menu to control the visibility of nodes and edges in a jgraph.
@@ -298,7 +298,8 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
         public void actionPerformed(ActionEvent e) {
             Set<JCell<G>> hiddenCells = new HashSet<JCell<G>>();
             Set<JCell<G>> shownCells = new HashSet<JCell<G>>();
-            for (JCell<G> jCell : this.jgraph.getModel().getRoots()) {
+            for (JCell<G> jCell : this.jgraph.getModel()
+                .getRoots()) {
                 if (isHiding(jCell)) {
                     hiddenCells.add(jCell);
                 } else if (isShowing(jCell)) {
@@ -462,16 +463,17 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
             if (cell instanceof JEdge) {
                 JEdge<G> edge = (JEdge<G>) cell;
                 JCell<G> sourceVertex = edge.getSourceVertex();
+                assert sourceVertex != null; // model has been initialised by now
                 JCell<G> targetVertex = edge.getTargetVertex();
+                assert targetVertex != null; // model has been initialised by now
                 Object[] selectedCellArray = this.jgraph.getSelectionCells();
                 if (selectedCellArray.length == 0) {
                     result = !sourceVertex.isGrayedOut() || !targetVertex.isGrayedOut();
                 } else {
                     Set<Object> selectedCells =
                         new HashSet<Object>(Arrays.asList(selectedCellArray));
-                    result =
-                        selectedCells.contains(sourceVertex)
-                            || selectedCells.contains(targetVertex);
+                    result = selectedCells.contains(sourceVertex)
+                        || selectedCells.contains(targetVertex);
                 }
             }
             return result;
@@ -495,8 +497,10 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
         protected LabelAction(JGraph<G> jgraph, int showMode, Label label)
             throws IllegalArgumentException {
             super(jgraph, showMode, "");
-            putValue(NAME, label.text().length() == 0 ? Options.EMPTY_LABEL_TEXT
-                    : HTMLConverter.HTML_TAG.on(label.toLine().toHTMLString()));
+            putValue(NAME, label.text()
+                .length() == 0 ? Options.EMPTY_LABEL_TEXT
+                    : HTMLConverter.HTML_TAG.on(label.toLine()
+                        .toHTMLString()));
             this.label = label;
         }
 
@@ -508,7 +512,8 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
         protected boolean isInvolved(JCell<G> cell) {
             // return getLabel(cell) != null && getLabel(cell).equals(label) ==
             // include;
-            return cell.getKeys().contains(this.label);
+            return cell.getKeys()
+                .contains(this.label);
         }
 
         /**
@@ -536,7 +541,8 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
 
         @Override
         public void actionPerformed(ActionEvent evt) {
-            Graph graph = this.jgraph.getModel().getGraph();
+            Graph graph = this.jgraph.getModel()
+                .getGraph();
             String exprText = exprDialog.showDialog(null);
             if (exprText != null) {
                 try {
@@ -554,8 +560,8 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
                     }
                     super.actionPerformed(evt);
                 } catch (FormatException exc) {
-                    JOptionPane.showMessageDialog(null, "Error in regular expression '" + exprText
-                        + "': " + exc.getMessage());
+                    JOptionPane.showMessageDialog(null,
+                        "Error in regular expression '" + exprText + "': " + exc.getMessage());
                 }
             }
         }
@@ -611,7 +617,8 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
          */
         @Override
         protected boolean isInvolved(JCell<G> jCell) {
-            return this.jgraph.getSelectionModel().isCellSelected(jCell);
+            return this.jgraph.getSelectionModel()
+                .isCellSelected(jCell);
         }
     }
 
@@ -640,16 +647,13 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
                 File labelsFile = fileChooser.getSelectedFile();
                 String fileLine;
                 Set<String> labels = new HashSet<String>();
-                try {
-                    BufferedReader in = new BufferedReader(new FileReader(labelsFile));
+                try (BufferedReader in = new BufferedReader(new FileReader(labelsFile))) {
                     if (!in.ready()) {
-                        in.close();
                         throw new IOException();
                     }
                     while ((fileLine = in.readLine()) != null) {
                         labels.add(fileLine);
                     }
-                    in.close();
                 } catch (IOException e) {
                     // Well, bad things can happen... :P Carry on.
                 }
@@ -747,7 +751,8 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
             if (isIncluded) {
                 // now (re-)fill the menu
                 removeAll();
-                for (Label labelAction : getJGraph().getLabelTree().getLabels()) {
+                for (Label labelAction : getJGraph().getLabelTree()
+                    .getLabels()) {
                     add(new LabelAction<G>(getJGraph(), this.showMode, labelAction));
                 }
             }

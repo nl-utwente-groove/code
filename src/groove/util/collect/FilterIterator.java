@@ -16,10 +16,12 @@
  */
 package groove.util.collect;
 
-import groove.util.Groove;
-
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+
+import org.eclipse.jdt.annotation.Nullable;
+
+import groove.util.Groove;
 
 /**
  * Iterator constructed by filtering elements from some existing iterator. The
@@ -60,7 +62,8 @@ public abstract class FilterIterator<T> implements Iterator<T> {
     @Override
     public T next() {
         if (hasNext()) {
-            T result = this.next;
+            @Nullable T result = this.next;
+            assert result != null; // because hasNext() holds
             this.next = null;
             this.removeAllowed = true;
             if (ITERATE_DEBUG) {
@@ -95,7 +98,7 @@ public abstract class FilterIterator<T> implements Iterator<T> {
      * @throws NoSuchElementException if {@link #next()} has not been invoked,
      *         or {@link #hasNext()} has been invoked afterwards.
      */
-    public T latest() {
+    public @Nullable T latest() {
         if (!this.removeAllowed) {
             throw new IllegalStateException();
         } else {
@@ -120,7 +123,7 @@ public abstract class FilterIterator<T> implements Iterator<T> {
     /**
      * The element to be returned by {@link #next()}, if not <code>null</code>.
      */
-    private T next = null;
+    private @Nullable T next = null;
     /**
      * Flag indicating that the last invocation was {@link #next()}, so that
      * {@link #remove()} can be delegated to the inner iterator.

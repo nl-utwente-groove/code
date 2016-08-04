@@ -1,5 +1,29 @@
 package groove.gui.action;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import javax.swing.Action;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.plaf.basic.BasicSliderUI;
+
 import groove.explore.AcceptorValue;
 import groove.explore.Exploration;
 import groove.explore.ExploreType;
@@ -19,29 +43,6 @@ import groove.lts.GTSChangeListener;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.util.parse.FormatException;
-
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-
-import javax.swing.Action;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
-import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.plaf.basic.BasicSliderUI;
 
 /**
  * The 'default exploration' action (class).
@@ -127,9 +128,8 @@ public class ExploreAction extends SimulatorAction {
     public void refresh() {
         GrammarModel grammar = getSimulatorModel().getGrammar();
         ExploreType exploreType = getSimulatorModel().getExploreType();
-        boolean enabled =
-            grammar != null && grammar.getStartGraphModel() != null && !grammar.hasErrors()
-                && grammar.hasRules();
+        boolean enabled = grammar != null && grammar.getStartGraphModel() != null
+            && !grammar.hasErrors() && grammar.hasRules();
         FormatException compatibilityError = null;
         if (enabled && !isEnabled()) {
             // enabling changed from false to true
@@ -142,14 +142,12 @@ public class ExploreAction extends SimulatorAction {
             }
         }
         setEnabled(enabled);
-        String toolTipText =
-            String.format("%s (%s)",
-                this.animated ? Options.ANIMATE_ACTION_NAME : Options.EXPLORE_ACTION_NAME,
-                HTMLConverter.STRONG_TAG.on(exploreType.getIdentifier()));
+        String toolTipText = String.format("%s (%s)",
+            this.animated ? Options.ANIMATE_ACTION_NAME : Options.EXPLORE_ACTION_NAME,
+            HTMLConverter.STRONG_TAG.on(exploreType.getIdentifier()));
         if (compatibilityError != null) {
-            toolTipText +=
-                HTMLConverter.HTML_LINEBREAK
-                    + HTMLConverter.EMBARGO_TAG.on(HTMLConverter.toHtml(compatibilityError.getMessage()));
+            toolTipText += HTMLConverter.HTML_LINEBREAK + HTMLConverter.EMBARGO_TAG
+                .on(HTMLConverter.toHtml(compatibilityError.getMessage()));
         }
         putValue(Action.SHORT_DESCRIPTION, HTMLConverter.HTML_TAG.on(toolTipText));
     }
@@ -220,7 +218,7 @@ public class ExploreAction extends SimulatorAction {
         if (this.animationPanel == null) {
             JLabel label = new JLabel("Animation Speed");
             label.setAlignmentX(Component.CENTER_ALIGNMENT);
-            final JSlider slider = new JSlider(JSlider.HORIZONTAL, 1, 10, 2) {
+            final JSlider slider = new JSlider(SwingConstants.HORIZONTAL, 1, 10, 2) {
                 @Override
                 public void updateUI() {
                     setUI(BasicSliderUI.createUI(this));
@@ -422,9 +420,10 @@ public class ExploreAction extends SimulatorAction {
         private JDialog createCancelDialog() {
             JDialog result;
             // create message dialog
-            JOptionPane message =
-                new JOptionPane(isAnimated() ? getAnimationPanel() : new Object[] {
-                    getStateCountLabel(), getTransitionCountLabel()}, JOptionPane.PLAIN_MESSAGE);
+            JOptionPane message = new JOptionPane(
+                isAnimated() ? getAnimationPanel()
+                    : new Object[] {getStateCountLabel(), getTransitionCountLabel()},
+                JOptionPane.PLAIN_MESSAGE);
             message.setOptions(new Object[] {getCancelButton()});
             result = message.createDialog(getFrame(), "Exploring state space");
             result.pack();
@@ -444,7 +443,7 @@ public class ExploreAction extends SimulatorAction {
          * May only be invoked from the exploration thread.
          */
         private void disposeCancelDialog() {
-            assert !SwingUtilities.isEventDispatchThread();
+            assert!SwingUtilities.isEventDispatchThread();
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
                     @Override

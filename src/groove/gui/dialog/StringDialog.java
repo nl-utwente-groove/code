@@ -44,6 +44,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -125,7 +126,7 @@ abstract public class StringDialog {
         JOptionPane panel = new JOptionPane(main, JOptionPane.PLAIN_MESSAGE,
             JOptionPane.OK_CANCEL_OPTION, null, buttons);
         JDialog result = panel.createDialog(frame, this.title);
-        result.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        result.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         result.addWindowListener(this.closeListener);
         return result;
     }
@@ -155,7 +156,8 @@ abstract public class StringDialog {
     private JTextArea getTextArea() {
         if (this.textArea == null) {
             this.textArea = new JTextArea();
-            this.textArea.getDocument().addDocumentListener(this.changeListener);
+            this.textArea.getDocument()
+                .addDocumentListener(this.changeListener);
         }
         return this.textArea;
     }

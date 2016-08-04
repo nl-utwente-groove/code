@@ -16,6 +16,19 @@
  */
 package groove.io.conceptual.lang.gxl;
 
+import java.math.BigInteger;
+import java.util.Map.Entry;
+
+import javax.xml.bind.JAXBElement;
+
+import de.gupro.gxl.gxl_1_0.BagType;
+import de.gupro.gxl.gxl_1_0.CompositeValueType;
+import de.gupro.gxl.gxl_1_0.EdgeType;
+import de.gupro.gxl.gxl_1_0.GraphType;
+import de.gupro.gxl.gxl_1_0.NodeType;
+import de.gupro.gxl.gxl_1_0.SeqType;
+import de.gupro.gxl.gxl_1_0.SetType;
+import de.gupro.gxl.gxl_1_0.TupType;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.InstanceModel;
@@ -39,20 +52,7 @@ import groove.io.conceptual.value.Value;
 import groove.io.external.PortException;
 import groove.util.Exceptions;
 
-import java.math.BigInteger;
-import java.util.Map.Entry;
-
-import javax.xml.bind.JAXBElement;
-
-import de.gupro.gxl.gxl_1_0.BagType;
-import de.gupro.gxl.gxl_1_0.CompositeValueType;
-import de.gupro.gxl.gxl_1_0.EdgeType;
-import de.gupro.gxl.gxl_1_0.GraphType;
-import de.gupro.gxl.gxl_1_0.NodeType;
-import de.gupro.gxl.gxl_1_0.SeqType;
-import de.gupro.gxl.gxl_1_0.SetType;
-import de.gupro.gxl.gxl_1_0.TupType;
-
+@SuppressWarnings("javadoc")
 public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
     private TypeToGxl m_typeToGxl;
 
@@ -74,8 +74,9 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
     @Override
     public void addInstanceModel(InstanceModel instanceModel) throws PortException {
         this.m_instanceGraph = this.m_gxlResource.getInstanceGraph(instanceModel.getQualName()
-            .toString(), "graph_" + instanceModel.getTypeModel()
-            .getQualName());
+            .toString(),
+            "graph_" + instanceModel.getTypeModel()
+                .getQualName());
 
         int timer = Timer.start("IM to GXL");
         visitInstanceModel(instanceModel);
@@ -118,9 +119,8 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
                 String fieldEdgeId = "#" + this.m_typeToGxl.getId(fieldEntry.getKey());
                 if (fieldValue instanceof ContainerValue) {
                     ContainerValue cv = (ContainerValue) fieldValue;
-                    boolean isordered =
-                        ((Container) cv.getType()).getContainerType() == Kind.ORD
-                            || ((Container) cv.getType()).getContainerType() == Kind.SEQ;
+                    boolean isordered = ((Container) cv.getType()).getContainerType() == Kind.ORD
+                        || ((Container) cv.getType()).getContainerType() == Kind.SEQ;
                     int index = 0;
                     for (Value subValue : cv.getValue()) {
                         NodeType valueNode = (NodeType) getElement(subValue);
@@ -297,13 +297,13 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
             subGraph.setEdgemode(EdgemodeType.DEFAULTDIRECTED);
             GxlUtil.setElemType(subGraph, "#" + m_typeToGxl.getId(packageId));
             m_packageGraphs.put(packageId, subGraph);
-
+    
             if (packageId != Id.ROOT) {// && packageId.getNamespace() != Id.ROOT) {
                 // Create intermediate node
                 NodeType intermediateNode = new NodeType();
                 intermediateNode.setId(packageId.toString());
                 GxlUtil.setElemType(intermediateNode, "#" + (packageId.getNamespace() == Id.ROOT ? "ROOT" : packageId.getNamespace().toString()));
-
+    
                 // Insert node into parent graph, and subgraph into node
                 GraphType parentGraph = getPackageGraph(packageId.getNamespace());
                 parentGraph.getNodeOrEdgeOrRel().add(intermediateNode);
@@ -311,7 +311,7 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
             } else {
                 //m_instanceGraph.getNodeOrEdgeOrRel().add(subGraph);
             }
-
+    
             return subGraph;
         }
     }
