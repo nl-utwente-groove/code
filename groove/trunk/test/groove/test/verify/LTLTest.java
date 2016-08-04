@@ -18,8 +18,12 @@
 package groove.test.verify;
 
 import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
+
 import groove.explore.AcceptorValue;
 import groove.explore.Exploration;
+import groove.explore.ExploreResult;
 import groove.explore.ExploreType;
 import groove.explore.Generator;
 import groove.explore.StrategyValue;
@@ -28,10 +32,9 @@ import groove.explore.encode.Template;
 import groove.explore.strategy.GraphNodeSizeBoundary;
 import groove.explore.strategy.Strategy;
 import groove.lts.GTS;
+import groove.util.Exceptions;
 import groove.util.parse.FormatException;
 import junit.framework.Assert;
-
-import org.junit.Test;
 
 /**
  * Tests the CTLStarFormula class.
@@ -121,8 +124,10 @@ public class LTLTest {
     private void prepare(String grammarName) {
         try {
             Generator generator = new Generator("-v", "0", "junit/samples/" + grammarName);
-            this.gts = generator.start()
-                .getGTS();
+            ExploreResult result = generator.start();
+            if (result != null) {
+                this.gts = result.getGTS();
+            }
         } catch (Exception e) {
             Assert.fail(e.toString());
         }
@@ -139,6 +144,9 @@ public class LTLTest {
         case LTL_BOUNDED:
         case LTL_POCKET:
             strategy = this.strategyTemplate.toSerialized(formula, new GraphNodeSizeBoundary(0, 1));
+            break;
+        default:
+            throw Exceptions.UNREACHABLE; // there are no other LTL strategies
         }
         ExploreType exploreType = new ExploreType(strategy, AcceptorValue.CYCLE.toSerialized(), 1);
         try {

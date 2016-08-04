@@ -16,12 +16,13 @@
  */
 package groove.gui.jgraph;
 
-import groove.graph.Graph;
-import groove.graph.Node;
-
 import java.util.Iterator;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.jgraph.graph.DefaultPort;
+
+import groove.graph.Graph;
+import groove.graph.Node;
 
 /**
  * JGraph vertex wrapping a single graph node and a set of graph edges.
@@ -42,7 +43,7 @@ public interface JVertex<G extends Graph> extends JCell<G> {
     /**
      * Returns the graph node wrapped by this {@link JVertex}.
      */
-    public Node getNode();
+    public @NonNull Node getNode();
 
     /**
      * Returns this graph node's one and only port.

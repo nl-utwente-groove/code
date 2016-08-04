@@ -16,8 +16,6 @@
  */
 package groove.io;
 
-import groove.util.Groove;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import au.com.bytecode.opencsv.CSVReader;
+import groove.util.Groove;
 
 /**
  * Useful file system functionalities for performing I/O.
@@ -80,8 +79,8 @@ public class Util {
         }
         if (srcDir.getCanonicalPath()
             .equals(destDir.getCanonicalPath())) {
-            throw new IOException("Source '" + srcDir + "' and destination '" + destDir
-                + "' are the same");
+            throw new IOException(
+                "Source '" + srcDir + "' and destination '" + destDir + "' are the same");
         }
 
         // Cater for destination being directory within the source directory (see IO-141)
@@ -119,7 +118,8 @@ public class Util {
         }
         if (destDir.exists()) {
             if (destDir.isDirectory() == false) {
-                throw new IOException("Destination '" + destDir + "' exists but is not a directory");
+                throw new IOException(
+                    "Destination '" + destDir + "' exists but is not a directory");
             }
         } else {
             if (destDir.mkdirs() == false) {
@@ -174,8 +174,8 @@ public class Util {
         }
 
         if (srcFile.length() != destFile.length()) {
-            throw new IOException("Failed to copy full contents from '" + srcFile + "' to '"
-                + destFile + "'");
+            throw new IOException(
+                "Failed to copy full contents from '" + srcFile + "' to '" + destFile + "'");
         }
         if (preserveFileDate) {
             destFile.setLastModified(srcFile.lastModified());
@@ -190,13 +190,13 @@ public class Util {
      */
     public static String readFileToString(File file) throws IOException {
         StringBuffer fileData = new StringBuffer(1000);
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        char[] buf = new char[1024];
-        int numRead = 0;
-        while ((numRead = reader.read(buf)) != -1) {
-            fileData.append(buf, 0, numRead);
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            char[] buf = new char[1024];
+            int numRead = 0;
+            while ((numRead = reader.read(buf)) != -1) {
+                fileData.append(buf, 0, numRead);
+            }
         }
-        reader.close();
         return fileData.toString();
     }
 
@@ -207,15 +207,15 @@ public class Util {
      * @throws IOException in case of an I/O error
      */
     public static String readInputStreamToString(InputStream in) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         StringBuilder result = new StringBuilder();
-        String nextLine = reader.readLine();
-        while (nextLine != null) {
-            result.append(nextLine);
-            result.append("\n");
-            nextLine = reader.readLine();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+            String nextLine = reader.readLine();
+            while (nextLine != null) {
+                result.append(nextLine);
+                result.append("\n");
+                nextLine = reader.readLine();
+            }
         }
-        reader.close();
         return result.toString();
     }
 
@@ -269,12 +269,10 @@ public class Util {
     /** Reads a CSV file from the resources dir and returns its contents as a String matrix. */
     public final static List<String[]> readCSV(String name, char sep) {
         List<String[]> result = null;
-        try {
-            CSVReader reader =
-                new CSVReader(new InputStreamReader(Groove.getResource(name + ".csv")
-                    .openStream()), sep);
+        try (
+            CSVReader reader = new CSVReader(new InputStreamReader(Groove.getResource(name + ".csv")
+                .openStream()), sep)) {
             result = reader.readAll();
-            reader.close();
         } catch (IOException e) {
             // no result
         }

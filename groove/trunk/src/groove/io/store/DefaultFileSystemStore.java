@@ -723,11 +723,8 @@ public class DefaultFileSystemStore extends SystemStore {
         }
         if (propertiesFile.exists()) {
             Properties grammarProperties = new Properties();
-            InputStream s = new FileInputStream(propertiesFile);
-            try {
+            try (InputStream s = new FileInputStream(propertiesFile)) {
                 grammarProperties.load(s);
-            } finally {
-                s.close();
             }
             properties.putAll(grammarProperties);
             this.hasSystemPropertiesFile = true;
@@ -751,11 +748,8 @@ public class DefaultFileSystemStore extends SystemStore {
 
     private void saveText(ResourceKind kind, QualName name, String program) throws IOException {
         File file = createFile(kind, name);
-        Writer writer = new FileWriter(file);
-        try {
+        try (Writer writer = new FileWriter(file)) {
             writer.write(program);
-        } finally {
-            writer.close();
         }
     }
 
@@ -765,11 +759,8 @@ public class DefaultFileSystemStore extends SystemStore {
 
     private void saveProperties(GrammarProperties properties) throws IOException {
         File propertiesFile = getDefaultPropertiesFile();
-        Writer propertiesWriter = new FileWriter(propertiesFile);
-        try {
+        try (Writer propertiesWriter = new FileWriter(propertiesFile)) {
             properties.store(propertiesWriter, null);
-        } finally {
-            propertiesWriter.close();
         }
         // delete the old-style properties file, if any
         File oldPropertiesFile = getOldDefaultPropertiesFile();

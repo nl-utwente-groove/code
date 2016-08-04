@@ -26,6 +26,7 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.WindowConstants;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -44,6 +45,7 @@ import groove.util.parse.FormatException;
 
 //ActionListener: change selection
 //TODO: add area for exception messages, many errors are silently dropped
+@SuppressWarnings("javadoc")
 public abstract class ConfigDialog extends JDialog implements ActionListener {
     protected final Simulator m_simulator;
 
@@ -57,7 +59,7 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
 
     public ConfigDialog(Simulator simulator) {
         super(simulator.getFrame(), "Config Dialog", true);
-        setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         // Make sure that closeDialog is called whenever the dialog is closed.
         addWindowListener(new WindowAdapter() {

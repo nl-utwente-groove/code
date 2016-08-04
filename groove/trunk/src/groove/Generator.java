@@ -26,7 +26,12 @@ public class Generator {
     /**
      * Invokes the Generator with a set of command-line parameters.
      */
-    static public void main(String[] args) {
+    public static void main(String[] args) {
         groove.explore.Generator.main(args);
+    }
+
+    /** Private constructor to avoid this static class from being instantiated. */
+    private Generator() {
+        // empty
     }
 }

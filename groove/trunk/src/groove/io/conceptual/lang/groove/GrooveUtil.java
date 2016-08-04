@@ -20,10 +20,10 @@ import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 
 //TODO: this thing and its usage is a mess
+@SuppressWarnings("javadoc")
 public class GrooveUtil {
     private static final String s_invalidRegex = "[^A-Za-z0-9_-]";
     private static final String s_reservedRegex = "[A-Za-z][0-9]*";
-    private static final String s_invalidResourceStartRegex = "[^A-Za-z_].*";
     private static final String s_safeString = "_";
 
     /**

@@ -1,5 +1,27 @@
 package groove.io.conceptual.lang.ecore;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.ecore.EAttribute;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EClassifier;
+import org.eclipse.emf.ecore.EDataType;
+import org.eclipse.emf.ecore.EEnum;
+import org.eclipse.emf.ecore.EEnumLiteral;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EReference;
+import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.ETypedElement;
+import org.eclipse.emf.ecore.EcoreFactory;
+import org.eclipse.emf.ecore.EcorePackage;
+import org.eclipse.emf.ecore.resource.Resource;
+
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
@@ -28,27 +50,7 @@ import groove.io.conceptual.type.Tuple;
 import groove.io.conceptual.type.Type;
 import groove.io.external.PortException;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.ecore.EAttribute;
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EClassifier;
-import org.eclipse.emf.ecore.EDataType;
-import org.eclipse.emf.ecore.EEnum;
-import org.eclipse.emf.ecore.EEnumLiteral;
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EReference;
-import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.ecore.EcoreFactory;
-import org.eclipse.emf.ecore.EcorePackage;
-import org.eclipse.emf.ecore.resource.Resource;
-
+@SuppressWarnings("javadoc")
 public class TypeToEcore extends TypeExporter<EObject> {
     private static final EcoreFactory g_EcoreFactory = EcoreFactory.eINSTANCE;
     private static final EcorePackage g_EcorePackage = EcorePackage.eINSTANCE;
@@ -147,14 +149,18 @@ public class TypeToEcore extends TypeExporter<EObject> {
 
         // No package yet. If not toplevel Id, recursively get that package
         EPackage idPackage = g_EcoreFactory.createEPackage();
-        idPackage.setName(id.getName().toString());
-        idPackage.setNsPrefix(id.getName().toString());
-        idPackage.setNsURI(id.getName().toString());
+        idPackage.setName(id.getName()
+            .toString());
+        idPackage.setNsPrefix(id.getName()
+            .toString());
+        idPackage.setNsURI(id.getName()
+            .toString());
         this.m_packages.put(id, idPackage);
 
         if (id.getNamespace() != Id.ROOT) {
             EPackage topLevel = packageFromId(id.getNamespace());
-            topLevel.getESubpackages().add(idPackage);
+            topLevel.getESubpackages()
+                .add(idPackage);
         } else {
             this.m_rootPackages.add(idPackage);
         }
@@ -181,12 +187,16 @@ public class TypeToEcore extends TypeExporter<EObject> {
             setElement(t, eDataType);
 
             CustomDataType cmDataType = (CustomDataType) t;
-            eDataType.setName(cmDataType.getId().getName().toString());
+            eDataType.setName(cmDataType.getId()
+                .getName()
+                .toString());
             // Forcing to the string class, as it always has a string representation.
             // This is a limitation of the conceptual model (doesn't store other type information)
             eDataType.setInstanceClass(String.class);
-            EPackage typePackage = packageFromId(cmDataType.getId().getNamespace());
-            typePackage.getEClassifiers().add(eDataType);
+            EPackage typePackage = packageFromId(cmDataType.getId()
+                .getNamespace());
+            typePackage.getEClassifiers()
+                .add(eDataType);
         }
     }
 
@@ -207,20 +217,26 @@ public class TypeToEcore extends TypeExporter<EObject> {
         EClass eClass = g_EcoreFactory.createEClass();
         setElement(cmClass, eClass);
 
-        eClass.setName(cmClass.getId().getName().toString());
+        eClass.setName(cmClass.getId()
+            .getName()
+            .toString());
 
-        EPackage classPackage = packageFromId(cmClass.getId().getNamespace());
-        classPackage.getEClassifiers().add(eClass);
+        EPackage classPackage = packageFromId(cmClass.getId()
+            .getNamespace());
+        classPackage.getEClassifiers()
+            .add(eClass);
 
         // Map supertypes to ecore supertypes
         for (Class superClass : cmClass.getSuperClasses()) {
             EObject eObj = getElement(superClass);
-            eClass.getESuperTypes().add((EClass) eObj);
+            eClass.getESuperTypes()
+                .add((EClass) eObj);
         }
 
         for (Field field : cmClass.getFields()) {
             EStructuralFeature eStructFeat = (EStructuralFeature) getElement(field);
-            eClass.getEStructuralFeatures().add(eStructFeat);
+            eClass.getEStructuralFeatures()
+                .add(eStructFeat);
         }
     }
 
@@ -261,7 +277,8 @@ public class TypeToEcore extends TypeExporter<EObject> {
         }
         setElement(field, eFieldFeature);
 
-        eFieldFeature.setName(field.getName().toString());
+        eFieldFeature.setName(field.getName()
+            .toString());
         eFieldFeature.setOrdered(ordered);
         eFieldFeature.setUnique(unique);
 
@@ -269,7 +286,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
         eFieldFeature.setEType((EClassifier) eType);
 
         if (field.getUpperBound() == -1) {
-            eFieldFeature.setUpperBound(EStructuralFeature.UNBOUNDED_MULTIPLICITY);
+            eFieldFeature.setUpperBound(ETypedElement.UNBOUNDED_MULTIPLICITY);
         } else {
             eFieldFeature.setUpperBound(field.getUpperBound());
         }
@@ -307,7 +324,8 @@ public class TypeToEcore extends TypeExporter<EObject> {
         } else {
             containerPackage = packageFromId(Id.ROOT);
         }
-        containerPackage.getEClassifiers().add(eContainerClass);
+        containerPackage.getEClassifiers()
+            .add(eContainerClass);
 
         // Create value reference
         EStructuralFeature eContainerFeature = null;
@@ -323,10 +341,10 @@ public class TypeToEcore extends TypeExporter<EObject> {
         eContainerFeature.setName("value");
         if (container.getType() instanceof Container) {
             Container subType = (Container) container.getType();
-            eContainerFeature.setOrdered(subType.getContainerType() == Kind.ORD
-                || subType.getContainerType() == Kind.SEQ);
-            eContainerFeature.setUnique(subType.getContainerType() == Kind.SET
-                || subType.getContainerType() == Kind.ORD);
+            eContainerFeature.setOrdered(
+                subType.getContainerType() == Kind.ORD || subType.getContainerType() == Kind.SEQ);
+            eContainerFeature.setUnique(
+                subType.getContainerType() == Kind.SET || subType.getContainerType() == Kind.ORD);
         } else {
             eContainerFeature.setOrdered(false);
             eContainerFeature.setUnique(true);
@@ -335,10 +353,11 @@ public class TypeToEcore extends TypeExporter<EObject> {
         EObject eType = getElement(container.getType());
         eContainerFeature.setEType((EClassifier) eType);
 
-        eContainerFeature.setUpperBound(EStructuralFeature.UNBOUNDED_MULTIPLICITY);
+        eContainerFeature.setUpperBound(ETypedElement.UNBOUNDED_MULTIPLICITY);
         eContainerFeature.setLowerBound(0);
 
-        eContainerClass.getEStructuralFeatures().add(eContainerFeature);
+        eContainerClass.getEStructuralFeatures()
+            .add(eContainerFeature);
     }
 
     @Override
@@ -350,10 +369,14 @@ public class TypeToEcore extends TypeExporter<EObject> {
         EEnum eEnum = g_EcoreFactory.createEEnum();
         setElement(enum1, eEnum);
 
-        eEnum.setName(enum1.getId().getName().toString());
+        eEnum.setName(enum1.getId()
+            .getName()
+            .toString());
 
-        EPackage enumPackage = packageFromId(enum1.getId().getNamespace());
-        enumPackage.getEClassifiers().add(eEnum);
+        EPackage enumPackage = packageFromId(enum1.getId()
+            .getNamespace());
+        enumPackage.getEClassifiers()
+            .add(eEnum);
 
         List<EEnumLiteral> eLiterals = eEnum.getELiterals();
         for (Name litName : enum1.getLiterals()) {
@@ -371,20 +394,23 @@ public class TypeToEcore extends TypeExporter<EObject> {
             return;
         }
 
-        EPackage firstRoot = this.m_rootPackages.iterator().next();
+        EPackage firstRoot = this.m_rootPackages.iterator()
+            .next();
         EClass eClass = g_EcoreFactory.createEClass();
         setElement(tuple, eClass);
 
         eClass.setName(getTupleName(tuple));
 
-        firstRoot.getEClassifiers().add(eClass);
+        firstRoot.getEClassifiers()
+            .add(eClass);
 
         int typeIndex = 1;
         for (Type type : tuple.getTypes()) {
             Field typeField =
                 new Field(Name.getName(getTupleElementName(tuple, typeIndex++)), type, 1, 1);
             EStructuralFeature eStructFeat = (EStructuralFeature) getElement(typeField);
-            eClass.getEStructuralFeatures().add(eStructFeat);
+            eClass.getEStructuralFeatures()
+                .add(eStructFeat);
         }
     }
 
@@ -504,7 +530,8 @@ public class TypeToEcore extends TypeExporter<EObject> {
         }
 
         EAttribute eAttr = (EAttribute) obj;
-        eAttr.setDefaultValueLiteral(defaultValueProperty.getDefaultValue().toString());
+        eAttr.setDefaultValueLiteral(defaultValueProperty.getDefaultValue()
+            .toString());
 
         setElement(defaultValueProperty, null);
     }

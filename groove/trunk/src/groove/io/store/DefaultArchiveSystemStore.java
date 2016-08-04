@@ -223,72 +223,70 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
 
     @Override
     public void reload() throws IOException {
-        ZipFile zipFile;
-        if (this.file == null) {
-            zipFile = ((JarURLConnection) this.url.openConnection()).getJarFile();
-        } else {
-            zipFile = new ZipFile(this.file);
-        }
-        // collect the relevant entries
-        Map<ResourceKind,Map<String,ZipEntry>> zipEntryMap =
-            new EnumMap<ResourceKind,Map<String,ZipEntry>>(ResourceKind.class);
-        for (ResourceKind kind : ResourceKind.values()) {
-            zipEntryMap.put(kind, new HashMap<String,ZipEntry>());
-        }
-        ZipEntry properties = null;
-        for (Enumeration<? extends ZipEntry> entries = zipFile.entries(); entries
-            .hasMoreElements();) {
-            ZipEntry entry = entries.nextElement();
-            String entryName = entry.getName();
-            int entryPrefixLength = this.entryName.length() + 1;
-            if (entryName.startsWith(this.entryName) && entryName.length() > entryPrefixLength) {
-                // strip off prefix + 1 to take case of file separator
-                String restName = entryName.substring(entryPrefixLength);
-                // find out the resource kind by testing the extension
-                ResourceKind kind = null;
-                for (ResourceKind tryKind : ResourceKind.values()) {
-                    if (restName.endsWith(tryKind.getFileType()
-                        .getExtension())) {
-                        kind = tryKind;
-                        break;
+        try (ZipFile zipFile =
+            this.file == null ? ((JarURLConnection) this.url.openConnection()).getJarFile()
+                : new ZipFile(this.file)) {
+            // collect the relevant entries
+            Map<ResourceKind,Map<String,ZipEntry>> zipEntryMap =
+                new EnumMap<ResourceKind,Map<String,ZipEntry>>(ResourceKind.class);
+            for (ResourceKind kind : ResourceKind.values()) {
+                zipEntryMap.put(kind, new HashMap<String,ZipEntry>());
+            }
+            ZipEntry properties = null;
+            for (Enumeration<? extends ZipEntry> entries = zipFile.entries(); entries
+                .hasMoreElements();) {
+                ZipEntry entry = entries.nextElement();
+                String entryName = entry.getName();
+                int entryPrefixLength = this.entryName.length() + 1;
+                if (entryName.startsWith(this.entryName)
+                    && entryName.length() > entryPrefixLength) {
+                    // strip off prefix + 1 to take case of file separator
+                    String restName = entryName.substring(entryPrefixLength);
+                    // find out the resource kind by testing the extension
+                    ResourceKind kind = null;
+                    for (ResourceKind tryKind : ResourceKind.values()) {
+                        if (restName.endsWith(tryKind.getFileType()
+                            .getExtension())) {
+                            kind = tryKind;
+                            break;
+                        }
+                    }
+                    if (kind == PROPERTIES) {
+                        String propertiesName = PROPERTIES.getFileType()
+                            .stripExtension(restName);
+                        if (propertiesName.equals(Groove.PROPERTY_NAME)) {
+                            // preferably take the one with the default name
+                            properties = entry;
+                        } else if (properties == null && propertiesName.equals(this.grammarName)) {
+                            // otherwise, take the one with the grammar name
+                            properties = entry;
+                        }
+                    } else if (kind == null) {
+                        // must be a layout file
+                        if (LAYOUT.hasExtension(restName)) {
+                            String objectName = LAYOUT.stripExtension(restName);
+                            this.layoutEntryMap.put(objectName, entry);
+                        }
+                    } else {
+                        Object oldEntry = zipEntryMap.get(kind)
+                            .put(restName, entry);
+                        assert oldEntry == null : String.format("Duplicate %s name '%s'",
+                            kind.getName(),
+                            restName);
                     }
                 }
-                if (kind == PROPERTIES) {
-                    String propertiesName = PROPERTIES.getFileType()
-                        .stripExtension(restName);
-                    if (propertiesName.equals(Groove.PROPERTY_NAME)) {
-                        // preferably take the one with the default name
-                        properties = entry;
-                    } else if (properties == null && propertiesName.equals(this.grammarName)) {
-                        // otherwise, take the one with the grammar name
-                        properties = entry;
-                    }
-                } else if (kind == null) {
-                    // must be a layout file
-                    if (LAYOUT.hasExtension(restName)) {
-                        String objectName = LAYOUT.stripExtension(restName);
-                        this.layoutEntryMap.put(objectName, entry);
-                    }
-                } else {
-                    Object oldEntry = zipEntryMap.get(kind)
-                        .put(restName, entry);
-                    assert oldEntry == null : String.format("Duplicate %s name '%s'",
-                        kind.getName(),
-                        restName);
+            }
+            // now process the entries
+            // first load the properties, as they are necessary for loading types
+            loadProperties(zipFile, properties);
+            for (ResourceKind kind : ResourceKind.values()) {
+                if (kind.isTextBased()) {
+                    loadTexts(kind, zipFile, zipEntryMap.get(kind));
+                } else if (kind.isGraphBased()) {
+                    loadGraphs(kind, zipFile, zipEntryMap.get(kind));
                 }
             }
         }
-        // now process the entries
-        // first load the properties, as they are necessary for loading types
-        loadProperties(zipFile, properties);
-        for (ResourceKind kind : ResourceKind.values()) {
-            if (kind.isTextBased()) {
-                loadTexts(kind, zipFile, zipEntryMap.get(kind));
-            } else if (kind.isGraphBased()) {
-                loadGraphs(kind, zipFile, zipEntryMap.get(kind));
-            }
-        }
-        zipFile.close();
         notify(EnumSet.allOf(ResourceKind.class));
         this.initialised = true;
     }
@@ -355,9 +353,10 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
         for (Map.Entry<String,ZipEntry> textEntry : texts.entrySet()) {
             QualName controlName = createQualName(kind.getFileType()
                 .stripExtension(textEntry.getKey()));
-            InputStream in = file.getInputStream(textEntry.getValue());
-            String program = groove.io.Util.readInputStreamToString(in);
-            getTextMap(kind).put(controlName, program);
+            try (InputStream in = file.getInputStream(textEntry.getValue())) {
+                String program = groove.io.Util.readInputStreamToString(in);
+                getTextMap(kind).put(controlName, program);
+            }
         }
     }
 
@@ -389,9 +388,9 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
         this.properties = new GrammarProperties();
         if (entry != null) {
             Properties grammarProperties = new Properties();
-            InputStream s = file.getInputStream(entry);
-            grammarProperties.load(s);
-            s.close();
+            try (InputStream s = file.getInputStream(entry)) {
+                grammarProperties.load(s);
+            }
             this.properties.putAll(grammarProperties);
             this.hasSystemPropertiesFile = true;
         } else {
@@ -411,8 +410,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
         Map<QualName,AspectGraph> result = new HashMap<>();
         for (Map.Entry<String,ZipEntry> graphEntry : graphs.entrySet()) {
             String graphName = filter.stripExtension(graphEntry.getKey());
-            InputStream in = file.getInputStream(graphEntry.getValue());
-            try {
+            try (InputStream in = file.getInputStream(graphEntry.getValue())) {
                 AttrGraph xmlGraph = GxlIO.instance()
                     .loadGraph(in);
                 /*

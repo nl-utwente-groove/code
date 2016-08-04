@@ -16,19 +16,22 @@
  */
 package groove.explore.config;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * Default implementation of {@link Setting}
  * @author Arend Rensink
  */
-public class DefaultSetting<K extends Enum<K> & SettingKey,C> implements Setting<K,C> {
+public class DefaultSetting<K extends Enum<K> & SettingKey,C> implements Setting<K,@Nullable C> {
     /** Constructs a value with a given value kind and {@code null} content. */
     protected DefaultSetting(K kind) {
         this(kind, null);
     }
 
     /** Constructs a value with given value kind and content. */
-    protected DefaultSetting(K kind, C content) {
-        assert kind.parser().isValue(content);
+    protected DefaultSetting(K kind, @Nullable C content) {
+        assert kind.parser()
+            .isValue(content);
         this.kind = kind;
         this.content = content;
     }
@@ -50,14 +53,15 @@ public class DefaultSetting<K extends Enum<K> & SettingKey,C> implements Setting
         return this.content;
     }
 
-    private final C content;
+    private final @Nullable C content;
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + this.kind.hashCode();
-        result = prime * result + ((this.content == null) ? 0 : this.content.hashCode());
+        @Nullable C content = this.content;
+        result = prime * result + ((content == null) ? 0 : content.hashCode());
         return result;
     }
 
@@ -73,11 +77,12 @@ public class DefaultSetting<K extends Enum<K> & SettingKey,C> implements Setting
             return false;
         }
         Setting<?,?> other = (Setting<?,?>) obj;
-        if (this.content == null) {
+        @Nullable C content = this.content;
+        if (content == null) {
             if (other.getContent() != null) {
                 return false;
             }
-        } else if (!this.content.equals(other.getContent())) {
+        } else if (!content.equals(other.getContent())) {
             return false;
         }
         return this.kind.equals(other.getKind());

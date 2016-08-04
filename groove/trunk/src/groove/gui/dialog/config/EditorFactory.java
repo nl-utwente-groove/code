@@ -16,6 +16,8 @@
  */
 package groove.gui.dialog.config;
 
+import javax.swing.JPanel;
+
 import groove.explore.config.AcceptorKind;
 import groove.explore.config.CheckingKind;
 import groove.explore.config.CountKind;
@@ -24,8 +26,7 @@ import groove.explore.config.MatchKind;
 import groove.explore.config.SettingKey;
 import groove.explore.config.TraverseKind;
 import groove.gui.dialog.ExploreConfigDialog;
-
-import javax.swing.JPanel;
+import groove.util.Exceptions;
 
 /**
  * Class that can create editor for a given exploration key,
@@ -69,7 +70,7 @@ public class EditorFactory {
      * setting kind.
      */
     public SettingEditor createEditor(JPanel holder, ExploreKey key, SettingKey kind) {
-        SettingEditor result = null;
+        SettingEditor result;
         switch (key) {
         case ACCEPTOR:
             switch ((AcceptorKind) kind) {
@@ -78,25 +79,36 @@ public class EditorFactory {
                 break;
             case FORMULA:
                 result = new TextFieldEditor(getDialog(), holder, key, kind);
+                break;
+            default:
+                result = null;
             }
             break;
         case COUNT:
             switch ((CountKind) kind) {
             case COUNT:
                 result = new TextFieldEditor(getDialog(), holder, key, kind);
+                break;
+            default:
+                result = null;
             }
             break;
         case MATCHER:
             switch ((MatchKind) kind) {
             case PLAN:
                 result = new TextFieldEditor(getDialog(), holder, key, kind);
+                break;
+            default:
+                result = null;
             }
             break;
         case TRAVERSE:
             switch ((TraverseKind) kind) {
-            case BEST_FIRST:
+            default:
+                result = null;
+                //case BEST_FIRST:
                 //result = new TextFieldEditor(getDialog(), holder, key, kind);
-                break;
+                //break;
             }
             break;
         case CHECKING:
@@ -104,6 +116,9 @@ public class EditorFactory {
             case LTL_CHECK:
             case CTL_CHECK:
                 result = new TextFieldEditor(getDialog(), holder, key, kind);
+                break;
+            default:
+                result = null;
             }
             break;
         case ALGEBRA:
@@ -111,6 +126,9 @@ public class EditorFactory {
         case RANDOM:
             // these keys do not have content, hence no holder
             result = new NullEditor(getDialog(), null, key, kind);
+            break;
+        default:
+            throw Exceptions.UNREACHABLE; // all cases covered
         }
         if (result == null) {
             result = new NullEditor(getDialog(), holder, key, kind);

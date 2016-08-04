@@ -20,6 +20,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * An iterator constructed by transforming the results from another ("inner")
  * iterator. Inner results can also be filtered out. The abstract
@@ -74,9 +77,10 @@ abstract public class TransformIterator<T,U> implements Iterator<U> {
      * <tt>transform(Object)</tt> to it, and returns the result.
      */
     @Override
-    public U next() {
+    public @NonNull U next() {
         if (hasNext()) {
-            U result = this.next;
+            @Nullable U result = this.next;
+            assert result != null; // because hasNext is true
             this.next = null;
             return result;
         } else {
@@ -106,5 +110,5 @@ abstract public class TransformIterator<T,U> implements Iterator<U> {
      * The precomputed (transformed) next element to be returned by
      * <tt>next()</tt>.
      */
-    private U next;
+    private @Nullable U next;
 }

@@ -1,18 +1,19 @@
 package groove.io.conceptual.graph;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectLabel;
 import groove.grammar.aspect.AspectParser;
 import groove.graph.GraphRole;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Edge class for wrapper around AspectGraph. Unidirectional and attaches itself to both source and target nodes.
  * @author Harold Bruijntjes
  *
  */
+@SuppressWarnings("javadoc")
 public class AbsEdge {
     String m_name;
     AbsNode m_source, m_target;
@@ -62,12 +63,11 @@ public class AbsEdge {
 
         String[] labels = this.m_name.split("\n");
         for (String sublabel : labels) {
-            AspectLabel alabel =
-                AspectParser.getInstance().parse(sublabel, role);
+            AspectLabel alabel = AspectParser.getInstance()
+                .parse(sublabel, role);
             if (alabel.isEdgeOnly()) {
                 AspectEdge newEdge =
-                    new AspectEdge(this.m_source.getAspect(), alabel,
-                        this.m_target.getAspect());
+                    new AspectEdge(this.m_source.getAspect(), alabel, this.m_target.getAspect());
                 this.m_aspectEdges.add(newEdge);
             } else {
                 // error

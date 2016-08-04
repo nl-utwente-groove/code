@@ -16,6 +16,16 @@
  */
 package groove.io.conceptual.lang.graphviz;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import com.alexmerz.graphviz.objects.Edge;
+import com.alexmerz.graphviz.objects.Graph;
+import com.alexmerz.graphviz.objects.Node;
+import com.alexmerz.graphviz.objects.PortNode;
+
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
@@ -34,16 +44,7 @@ import groove.io.conceptual.type.Tuple;
 import groove.io.conceptual.type.Type;
 import groove.io.external.PortException;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import com.alexmerz.graphviz.objects.Edge;
-import com.alexmerz.graphviz.objects.Graph;
-import com.alexmerz.graphviz.objects.Node;
-import com.alexmerz.graphviz.objects.PortNode;
-
+@SuppressWarnings("javadoc")
 public class TypeToGraphviz extends TypeExporter<Node> {
     private Map<Id,Graph> m_packageGraphs = new HashMap<Id,Graph>();
     private Map<TypeModel,Graph> m_typeGraphs = new HashMap<TypeModel,Graph>();
@@ -97,11 +98,13 @@ public class TypeToGraphviz extends TypeExporter<Node> {
             return;
         }
 
-        Graph classGraph = getPackageGraph(class1.getId().getNamespace());
+        Graph classGraph = getPackageGraph(class1.getId()
+            .getNamespace());
         Node classNode = new Node();
         classGraph.addNode(classNode);
         classNode.setId(new com.alexmerz.graphviz.objects.Id());
-        classNode.getId().setId(getNodeId());
+        classNode.getId()
+            .setId(getNodeId());
 
         for (Property p : this.m_currentTypeModel.getProperties()) {
             if (p instanceof AbstractProperty) {
@@ -130,7 +133,8 @@ public class TypeToGraphviz extends TypeExporter<Node> {
                 Edge fieldEdge = new Edge();
                 fieldEdge.setSource(new PortNode(classNode));
                 fieldEdge.setTarget(new PortNode(fieldNode));
-                fieldEdge.setAttribute("label", f.getName().toString());
+                fieldEdge.setAttribute("label", f.getName()
+                    .toString());
                 fieldEdge.setType(Graph.DIRECTED);
 
                 fieldEdge.setAttribute("headlabel", f.getLowerBound() + ".." + f.getUpperBound());
@@ -148,7 +152,8 @@ public class TypeToGraphviz extends TypeExporter<Node> {
             }
         }
 
-        String label = class1.getId().getName() + "\\n";
+        String label = class1.getId()
+            .getName() + "\\n";
         for (Field f : class1.getFields()) {
             if (!edgeFields.contains(f)) {
                 label += f.getName();
@@ -191,14 +196,17 @@ public class TypeToGraphviz extends TypeExporter<Node> {
             return;
         }
 
-        Graph enumGraph = getPackageGraph(enum1.getId().getNamespace());
+        Graph enumGraph = getPackageGraph(enum1.getId()
+            .getNamespace());
         Node enumNode = new Node();
         enumGraph.addNode(enumNode);
         enumNode.setId(new com.alexmerz.graphviz.objects.Id());
-        enumNode.getId().setId(getNodeId());
+        enumNode.getId()
+            .setId(getNodeId());
 
         enumNode.setAttribute("shape", "record");
-        String label = "{" + enum1.getId().getName();
+        String label = "{" + enum1.getId()
+            .getName();
 
         for (Name literal : enum1.getLiterals()) {
             label += " | " + literal;
@@ -220,7 +228,8 @@ public class TypeToGraphviz extends TypeExporter<Node> {
         Node tupleNode = new Node();
         tupleGraph.addNode(tupleNode);
         tupleNode.setId(new com.alexmerz.graphviz.objects.Id());
-        tupleNode.getId().setId(getNodeId());
+        tupleNode.getId()
+            .setId(getNodeId());
 
         tupleNode.setAttribute("shape", "record");
         String label = "";
@@ -249,8 +258,10 @@ public class TypeToGraphviz extends TypeExporter<Node> {
         parent.addSubgraph(packageGraph);
 
         com.alexmerz.graphviz.objects.Id graphId = new com.alexmerz.graphviz.objects.Id();
-        graphId.setId("\"cluster_" + namespace.getName().toString() + "\"");
-        packageGraph.addAttribute("label", namespace.getName().toString());
+        graphId.setId("\"cluster_" + namespace.getName()
+            .toString() + "\"");
+        packageGraph.addAttribute("label", namespace.getName()
+            .toString());
         packageGraph.setId(graphId);
 
         this.m_packageGraphs.put(namespace, packageGraph);

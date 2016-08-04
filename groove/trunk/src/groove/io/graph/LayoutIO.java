@@ -64,10 +64,9 @@ public class LayoutIO {
      * @throws IOException if an error occurred in reading the layout file
      */
     public void loadLayout(AttrGraph graph, InputStream in) throws IOException {
-        BufferedReader layoutReader = new BufferedReader(new InputStreamReader(in));
         LayoutMap result = new LayoutMap();
         FormatErrorSet errors = new FormatErrorSet();
-        try {
+        try (BufferedReader layoutReader = new BufferedReader(new InputStreamReader(in))) {
             int version = 1;
             // read in from the layout file until done
             for (String nextLine = layoutReader.readLine(); nextLine != null; nextLine =
@@ -96,9 +95,6 @@ public class LayoutIO {
                     }
                 }
             }
-        } finally {
-            layoutReader.close();
-            in.close();
         }
         GraphInfo.addErrors(graph, errors);
         GraphInfo.setLayoutMap(graph, result);

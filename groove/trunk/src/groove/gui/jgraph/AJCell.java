@@ -16,6 +16,15 @@
  */
 package groove.gui.jgraph;
 
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.Set;
+import java.util.TreeSet;
+
+import org.jgraph.graph.AttributeMap;
+import org.jgraph.graph.DefaultGraphCell;
+
 import groove.graph.Edge;
 import groove.graph.EdgeComparator;
 import groove.graph.Graph;
@@ -28,22 +37,13 @@ import groove.gui.look.VisualKey.Nature;
 import groove.gui.look.VisualMap;
 import groove.gui.look.VisualValue;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.Set;
-import java.util.TreeSet;
-
-import org.jgraph.graph.AttributeMap;
-import org.jgraph.graph.DefaultGraphCell;
-
 /**
  * Abstract JCell implementation, providing some of the basic functionality.
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JModel<G>> extends
-DefaultGraphCell implements JCell<G> {
+public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JModel<G>>
+    extends DefaultGraphCell implements JCell<G> {
     /**
      * Constructs a new, uninitialised cell.
      * Call {@link #setJModel(JModel)} to initialise to a given model.
@@ -64,7 +64,6 @@ DefaultGraphCell implements JCell<G> {
     @SuppressWarnings("unchecked")
     public void setJModel(JModel<G> jModel) {
         this.jModel = (JM) jModel;
-        initialise();
     }
 
     @Override
@@ -80,7 +79,8 @@ DefaultGraphCell implements JCell<G> {
      * a given graph node.
      */
     final protected JVertexLayout getLayout(Node node) {
-        return getJModel().getLayoutMap().getLayout(node);
+        return getJModel().getLayoutMap()
+            .getLayout(node);
     }
 
     /**
@@ -88,11 +88,13 @@ DefaultGraphCell implements JCell<G> {
      * a given graph edge.
      */
     final protected JEdgeLayout getLayout(Edge edge) {
-        return getJModel().getLayoutMap().getLayout(edge);
+        return getJModel().getLayoutMap()
+            .getLayout(edge);
     }
 
     /** Sets or resets all auxiliary data structures to their initial values. */
-    protected void initialise() {
+    @Override
+    public void initialise() {
         this.edges = null;
         this.looks = null;
         VisualMap oldVisuals = this.visuals;
@@ -110,8 +112,7 @@ DefaultGraphCell implements JCell<G> {
     public void addEdge(Edge edge) {
         // the edge should be compatible, but don't assert this
         // as subclasses may choose to add incompatible edges while flagging an error
-        @SuppressWarnings("unchecked")
-        Set<Edge> edges = (Set<Edge>) getEdges();
+        @SuppressWarnings("unchecked") Set<Edge> edges = (Set<Edge>) getEdges();
         // there may be an edge already present which is equal (according to equals)
         // but not the same as the new one; the new edge should override the old
         // To achieve this, we first remove the edge
@@ -135,7 +136,7 @@ DefaultGraphCell implements JCell<G> {
     /** Sets or resets a look value. */
     @Override
     public boolean setLook(Look look, boolean set) {
-        assert !look.isStructural();
+        assert!look.isStructural();
         boolean change = set ? getLooks().add(look) : getLooks().remove(look);
         if (change) {
             this.looksChanged = true;
@@ -186,7 +187,7 @@ DefaultGraphCell implements JCell<G> {
     final protected void refreshVisual(VisualKey key) {
         VisualValue<?> refresher = getRefresher(key);
         if (refresher != null) {
-            this.visuals.put(key, refresher.get(this));
+            this.visuals.put(key, refresher.get(getJGraph(), this));
             this.staleKeys.remove(key);
         }
     }

@@ -1,5 +1,28 @@
 package groove.io.conceptual.lang.ecore;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EAttribute;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EDataType;
+import org.eclipse.emf.ecore.EEnum;
+import org.eclipse.emf.ecore.EEnumLiteral;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EReference;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
+
 import groove.grammar.QualName;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
@@ -27,29 +50,7 @@ import groove.io.conceptual.type.Type;
 import groove.io.conceptual.value.EnumValue;
 import groove.io.conceptual.value.Value;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EAttribute;
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EDataType;
-import org.eclipse.emf.ecore.EEnum;
-import org.eclipse.emf.ecore.EEnumLiteral;
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EReference;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
-
+@SuppressWarnings("javadoc")
 public class EcoreToType extends TypeImporter {
     // Resource containing Ecore type model
     private Resource r = null;
@@ -74,15 +75,10 @@ public class EcoreToType extends TypeImporter {
             .put("*", new XMIResourceFactoryImpl());
 
         // Load the XMI model containing Ecore type model
-        try {
+        try (FileInputStream in = new FileInputStream(typeModel)) {
             this.r = this.rs.createResource(URI.createURI(typeModel));
-            FileInputStream in = new FileInputStream(typeModel);
             int timer = Timer.start("Load Ecore");
-            try {
-                this.r.load(in, null);
-            } finally {
-                in.close();
-            }
+            this.r.load(in, null);
             org.eclipse.emf.ecore.util.EcoreUtil.resolveAll(this.rs);
             Timer.stop(timer);
         } catch (FileNotFoundException e) {
@@ -97,7 +93,7 @@ public class EcoreToType extends TypeImporter {
         if (!it.hasNext() || !(topObject = it.next()).eClass().getName().equals("EPackage")) {
             throw new ImportException("Ecore type model has no root package");
         }
-
+        
         m_typeName = ((EPackage) topObject).getName();
         */
 
@@ -121,8 +117,6 @@ public class EcoreToType extends TypeImporter {
 
     private void buildTypeModel() {
         TypeModel tm = new TypeModel(this.m_typeName);
-        int count = 0;
-
         Iterator<EObject> it = this.r.getAllContents();
         // It can happen that the same entry is visit multiple times when browsing the tree of dependent elements
         // The TypeModel ought to keep track of all elements and return the proper reference if this happens
@@ -131,12 +125,10 @@ public class EcoreToType extends TypeImporter {
             if (obj.eClass()
                 .getName()
                 .equals("EClass")) {
-                count++;
                 visitClass(tm, (EClass) obj);
             } else if (obj.eClass()
                 .getName()
                 .equals("EEnum")) {
-                count++;
                 visitEnum(tm, (EEnum) obj);
             } else if (obj.eClass()
                 .getName()
@@ -145,7 +137,6 @@ public class EcoreToType extends TypeImporter {
             } else if (obj.eClass()
                 .getName()
                 .equals("EDataType")) {
-                count++;
                 visitDataType(tm, (EDataType) obj);
             }
         }
@@ -277,8 +268,9 @@ public class EcoreToType extends TypeImporter {
                 try {
                     Value defaultVal = objectToDataType(mm, attribType, value);
                     if (!attribType.acceptValue(defaultVal)) {
-                        addMessage(new Message("Incorrect value type of default value "
-                            + defaultVal, MessageType.ERROR));
+                        addMessage(
+                            new Message("Incorrect value type of default value " + defaultVal,
+                                MessageType.ERROR));
                     } else {
                         mm.addProperty(new DefaultValueProperty(cmClass, attrName, defaultVal));
                     }
@@ -313,9 +305,8 @@ public class EcoreToType extends TypeImporter {
                 keyNames.add(Name.getName(attr.getName()));
             }
 
-            KeysetProperty p =
-                new KeysetProperty(cmClass, refName, (Class) fieldType,
-                    keyNames.toArray(new Name[keyNames.size()]));
+            KeysetProperty p = new KeysetProperty(cmClass, refName, (Class) fieldType,
+                keyNames.toArray(new Name[keyNames.size()]));
             mm.addProperty(p);
         }
 
@@ -348,8 +339,8 @@ public class EcoreToType extends TypeImporter {
         }
 
         // Add the reference to the class
-        cmClass.addField(new Field(refName, fieldType, eReference.getLowerBound(),
-            eReference.getUpperBound()));
+        cmClass.addField(
+            new Field(refName, fieldType, eReference.getLowerBound(), eReference.getUpperBound()));
     }
 
     // Inserts the package in the resourceset, so it can be used to load instance models

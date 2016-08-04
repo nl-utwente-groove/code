@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package groove.util.cache;
 

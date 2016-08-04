@@ -16,6 +16,17 @@
  */
 package groove.io.conceptual.lang.gxl;
 
+import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.xml.bind.JAXBElement;
+
+import de.gupro.gxl.gxl_1_0.EdgeType;
+import de.gupro.gxl.gxl_1_0.GraphType;
+import de.gupro.gxl.gxl_1_0.NodeType;
+import de.gupro.gxl.gxl_1_0.TupType;
 import groove.grammar.QualName;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
@@ -55,22 +66,11 @@ import groove.io.conceptual.value.TupleValue;
 import groove.io.conceptual.value.Value;
 import groove.io.external.PortException;
 
-import java.math.BigInteger;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.xml.bind.JAXBElement;
-
-import de.gupro.gxl.gxl_1_0.EdgeType;
-import de.gupro.gxl.gxl_1_0.GraphType;
-import de.gupro.gxl.gxl_1_0.NodeType;
-import de.gupro.gxl.gxl_1_0.TupType;
-
 //Thing to note here: Instance graphs are referred to by their ID, since they dont have a name attribute.
 //Type graphs are referred to by the ID (often coinciding with the name) of the GraphClass node. The actual ID
 // of the graph in which this node is contained is ignored. This also means one type graph graph can be used
 //in one GXL document , but multiple GraphClass nodes are allowed (each resulting in a TypeModel)
+@SuppressWarnings("javadoc")
 public class TypeToGxl extends TypeExporter<NodeType> {
 
     private GxlResource m_gxlResource;
@@ -208,12 +208,11 @@ public class TypeToGxl extends TypeExporter<NodeType> {
         if (isAttribute(field)) {
             NodeType typeNode = getElement(field.getType());
 
-            NodeType attrNode =
-                createNode(getId(field),
-                    GxlUtil.g_gxlTypeGraphURI + "#AttributeClass",
-                    field.getDefiningClass()
-                        .getId()
-                        .getNamespace());
+            NodeType attrNode = createNode(getId(field),
+                GxlUtil.g_gxlTypeGraphURI + "#AttributeClass",
+                field.getDefiningClass()
+                    .getId()
+                    .getNamespace());
             GxlUtil.setAttribute(attrNode, "name", field.getName()
                 .toString(), AttrTypeEnum.STRING);
 
@@ -225,12 +224,11 @@ public class TypeToGxl extends TypeExporter<NodeType> {
                 NodeType edgeNode = getElement(field.getType());
                 fieldNode = edgeNode;
             } else {
-                NodeType edgeNode =
-                    createNode(getId(field),
-                        GxlUtil.g_gxlTypeGraphURI + "#EdgeClass",
-                        field.getDefiningClass()
-                            .getId()
-                            .getNamespace());
+                NodeType edgeNode = createNode(getId(field),
+                    GxlUtil.g_gxlTypeGraphURI + "#EdgeClass",
+                    field.getDefiningClass()
+                        .getId()
+                        .getNamespace());
                 GxlUtil.setAttribute(edgeNode, "name", field.getName()
                     .toString(), AttrTypeEnum.STRING);
                 GxlUtil.setAttribute(edgeNode, "isdirected", true, AttrTypeEnum.BOOL);
@@ -623,20 +621,18 @@ public class TypeToGxl extends TypeExporter<NodeType> {
                 AttrTypeEnum.STRING);
             return valNode;
         } else if (v instanceof EnumValue) {
-            valNode =
-                createNode(getValueId(v),
-                    GxlUtil.g_gxlTypeGraphURI + "#EnumVal",
-                    ((Enum) v.getType()).getId()
-                        .getNamespace());
+            valNode = createNode(getValueId(v),
+                GxlUtil.g_gxlTypeGraphURI + "#EnumVal",
+                ((Enum) v.getType()).getId()
+                    .getNamespace());
             GxlUtil.setAttribute(valNode, "value", ((EnumValue) v).getValue()
                 .toString(), AttrTypeEnum.STRING);
             return valNode;
         } else if (v instanceof CustomDataValue) {
-            valNode =
-                createNode(getValueId(v),
-                    GxlUtil.g_gxlTypeGraphURI + "#StringVal",
-                    ((CustomDataType) v.getType()).getId()
-                        .getNamespace());
+            valNode = createNode(getValueId(v),
+                GxlUtil.g_gxlTypeGraphURI + "#StringVal",
+                ((CustomDataType) v.getType()).getId()
+                    .getNamespace());
             GxlUtil.setAttribute(valNode, "value", ((CustomDataValue) v).getValue()
                 .toString(), AttrTypeEnum.STRING);
             return valNode;
@@ -662,9 +658,9 @@ public class TypeToGxl extends TypeExporter<NodeType> {
             int index = 0;
             for (Value subVal : cv.getValue()) {
                 NodeType subValNode = getValueElement(subVal);
-                EdgeType valEdge =
-                    createEdge(valNode, subValNode, GxlUtil.g_gxlTypeGraphURI
-                        + "#hasComponentValue");
+                EdgeType valEdge = createEdge(valNode,
+                    subValNode,
+                    GxlUtil.g_gxlTypeGraphURI + "#hasComponentValue");
                 valEdge.setToorder(BigInteger.valueOf(index++));
             }
 
@@ -677,9 +673,9 @@ public class TypeToGxl extends TypeExporter<NodeType> {
             for (Entry<Integer,Value> subEntry : tv.getValue()
                 .entrySet()) {
                 NodeType subValNode = getValueElement(subEntry.getValue());
-                EdgeType valEdge =
-                    createEdge(valNode, subValNode, GxlUtil.g_gxlTypeGraphURI
-                        + "#hasComponentValue");
+                EdgeType valEdge = createEdge(valNode,
+                    subValNode,
+                    GxlUtil.g_gxlTypeGraphURI + "#hasComponentValue");
                 valEdge.setToorder(BigInteger.valueOf(subEntry.getKey()));
             }
 
@@ -696,9 +692,11 @@ public class TypeToGxl extends TypeExporter<NodeType> {
             NodeType graphNode = new NodeType();
             graphNode.setId("graph_" + (packageId == Id.ROOT ? this.m_currentTypeName : packageId));
             GxlUtil.setElemType(graphNode, GxlUtil.g_gxlTypeGraphURI + "#GraphClass");
-            GxlUtil.setAttribute(graphNode, "name", packageId == Id.ROOT ? this.m_currentTypeName
-                : packageId.getName()
-                    .toString(), AttrTypeEnum.STRING);
+            GxlUtil.setAttribute(graphNode,
+                "name",
+                packageId == Id.ROOT ? this.m_currentTypeName : packageId.getName()
+                    .toString(),
+                AttrTypeEnum.STRING);
             this.m_typeGraph.getNodeOrEdgeOrRel()
                 .add(graphNode);
             this.m_packageNodes.put(packageId, graphNode);
@@ -717,13 +715,15 @@ public class TypeToGxl extends TypeExporter<NodeType> {
                     intermediateNode = new NodeType();
                     intermediateNode.setId("graphnode_" + packageId.getNamespace());
                     GxlUtil.setElemType(graphNode, GxlUtil.g_gxlTypeGraphURI + "#NodeClass");
-                    createEdge(parentNode, intermediateNode, GxlUtil.g_gxlTypeGraphURI
-                        + "#contains");
+                    createEdge(parentNode,
+                        intermediateNode,
+                        GxlUtil.g_gxlTypeGraphURI + "#contains");
                     this.m_typeGraph.getNodeOrEdgeOrRel()
                         .add(intermediateNode);
                 }
-                createEdge(intermediateNode, graphNode, GxlUtil.g_gxlTypeGraphURI
-                    + "#hasAsComponentGraph");
+                createEdge(intermediateNode,
+                    graphNode,
+                    GxlUtil.g_gxlTypeGraphURI + "#hasAsComponentGraph");
             }
 
             return graphNode;

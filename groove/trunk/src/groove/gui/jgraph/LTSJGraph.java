@@ -24,6 +24,23 @@ import static groove.gui.Options.SHOW_RECIPE_STEPS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.Options.SHOW_STATE_STATUS_OPTION;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
+
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JMenu;
+import javax.swing.SwingUtilities;
+
+import org.jgraph.graph.GraphModel;
+
 import groove.explore.ExploreResult;
 import groove.graph.Edge;
 import groove.graph.Element;
@@ -44,28 +61,12 @@ import groove.lts.GraphTransition.Claz;
 import groove.lts.RecipeTransition;
 import groove.lts.RuleTransition;
 
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JMenu;
-import javax.swing.SwingUtilities;
-
-import org.jgraph.graph.GraphModel;
-
 /**
  * Implementation of MyJGraph that provides the proper popup menu. To construct
  * an instance, setupPopupMenu() should be called after all global final
  * variables have been set.
  */
-public class LTSJGraph extends JGraph<GTS> implements Serializable {
+public class LTSJGraph extends JGraph<GTS>implements Serializable {
     /** Constructs an instance of the j-graph for a given simulator. */
     public LTSJGraph(Simulator simulator) {
         super(simulator);
@@ -338,7 +339,8 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
         }
         if (activeTrans != null) {
             for (LTSJCell jCell : getTransitionCells(activeTrans)) {
-                if (jCell.getVisuals().isVisible()) {
+                if (jCell.getVisuals()
+                    .isVisible()) {
                     activeCells.add(jCell);
                 }
                 changed |= jCell.setActive(true);
@@ -358,7 +360,8 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
             }
             if (jCell != null) {
                 changed |= jCell.setActive(true);
-                if (jCell.getVisuals().isVisible()) {
+                if (jCell.getVisuals()
+                    .isVisible()) {
                     activeCells.add(jCell);
                 }
             }
@@ -467,7 +470,8 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
 
     /** Convenience method to test if there is a non-empty result object. */
     private boolean hasResult() {
-        return getSimulatorModel() != null && !getSimulatorModel().getExploreResult().isEmpty();
+        return getSimulatorModel() != null && !getSimulatorModel().getExploreResult()
+            .isEmpty();
     }
 
     /** Convenience method to returns the result object from the simulator model, if any. */
@@ -525,7 +529,9 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
                 boolean visible;
                 switch (getFilter()) {
                 case SPANNING:
-                    visible = jEdge.getTargetVertex().getParentEdge() == jEdge;
+                    LTSJVertex target = jEdge.getTargetVertex();
+                    assert target != null; // ensured by now
+                    visible = target.getParentEdge() == jEdge;
                     break;
                 case RESULT:
                     visible = traces == null || traces.contains(root);

@@ -16,6 +16,14 @@
  */
 package groove.io.graph;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.AspectNode;
@@ -31,12 +39,6 @@ import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.plain.PlainGraph;
 import groove.graph.plain.PlainLabel;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Intermediate graph format used for loading and saving graphs.
@@ -103,13 +105,14 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
      * @return the existing or freshly created node
      */
     public AttrNode addNode(String id) {
-        assert !hasNode(id);
+        assert!hasNode(id);
         // detect a suffix that represents a number
         boolean digitFound = false;
         int nodeNr = 0;
         int unit = 1;
         int charIx;
-        for (charIx = id.length() - 1; charIx >= 0 && Character.isDigit(id.charAt(charIx)); charIx--) {
+        for (charIx = id.length() - 1; charIx >= 0
+            && Character.isDigit(id.charAt(charIx)); charIx--) {
             nodeNr += unit * (id.charAt(charIx) - '0');
             unit *= 10;
             digitFound = true;
@@ -156,7 +159,11 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
     public AttrEdge getEdge(AttrNode source, String text, AttrNode target) {
         AttrEdge result = null;
         for (AttrEdge edge : outEdgeSet(source)) {
-            if (edge.label().text().equals(text) && edge.target().equals(target)) {
+            if (edge.label()
+                .text()
+                .equals(text)
+                && edge.target()
+                    .equals(target)) {
                 result = edge;
                 break;
             }
@@ -237,7 +244,8 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
             map.putNode(node, nodeImage);
         }
         for (AttrEdge edge : edgeSet()) {
-            E edgeImage = map.mapEdge(edge);
+            @Nullable E edgeImage = map.mapEdge(edge);
+            assert edgeImage != null; // map is constructed to be total on nodes
             target.addEdge(edgeImage);
         }
         GraphInfo.transfer(this, target, map);
@@ -290,8 +298,8 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
     // Static fields
     // ------------------------------------------------------------------------
 
-    private static class AspectToAttrMap extends
-        AElementMap<AspectNode,AspectEdge,AttrNode,AttrEdge> {
+    private static class AspectToAttrMap
+        extends AElementMap<AspectNode,AspectEdge,AttrNode,AttrEdge> {
         /** Constructs a new, empty map. */
         public AspectToAttrMap() {
             super(AttrFactory.instance());
@@ -311,8 +319,8 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
         }
     }
 
-    private static class AttrToGraphMap<N extends Node,E extends Edge> extends
-        AElementMap<AttrNode,AttrEdge,N,E> {
+    private static class AttrToGraphMap<N extends Node,E extends Edge>
+        extends AElementMap<AttrNode,AttrEdge,N,E> {
         /** Constructs a new, empty map. */
         public AttrToGraphMap(ElementFactory<N,E> factory) {
             super(factory);

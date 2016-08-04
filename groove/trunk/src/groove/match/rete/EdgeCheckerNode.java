@@ -377,7 +377,9 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
                 ReteSimpleMatch m1 = m;
                 m = this.memory.put(m);
                 this.memory.remove(m1);
-                m.dominoDelete(null);
+                if (m != null) {
+                    m.dominoDelete(null);
+                }
             }
         }
     }

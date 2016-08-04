@@ -1,20 +1,26 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.grammar.rule;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+import org.eclipse.jdt.annotation.NonNull;
 
 import groove.algebra.Constant;
 import groove.algebra.Sort;
@@ -24,10 +30,6 @@ import groove.grammar.AnchorKind;
 import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeNode;
 import groove.graph.ANode;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Nodes used to represent attribute variables in rules and conditions.
@@ -104,7 +106,7 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
     }
 
     /**
-     * Returns the constant of the variable node 
+     * Returns the constant of the variable node
      * if its wrapped term is a constant; otherwise returns {@code null}.
      */
     public Constant getConstant() {
@@ -112,7 +114,7 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
     }
 
     /**
-     * Returns the variable of the variable node 
+     * Returns the variable of the variable node
      * if its wrapped term is a variable; otherwise returns {@code null}.
      */
     public Variable getVariable() {
@@ -141,7 +143,7 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
 
     @Override
     public Set<TypeNode> getMatchingTypes() {
-        return Collections.singleton(this.type);
+        return EMPTY_NODES_SET;
     }
 
     @Override
@@ -156,8 +158,13 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
 
     /** returns the string preceding the node number in the default variable node id. */
     static public final String TO_STRING_PREFIX = "x";
+    /** Predefined empty list of matching types. */
+    @SuppressWarnings("null") static private final @NonNull Set<TypeNode> EMPTY_NODES_SET =
+        Collections.emptySet();
     /** Predefined empty list of type guards. */
-    static private final List<TypeGuard> EMPTY_GUARD_LIST = Collections.emptyList();
+    @SuppressWarnings("null") static private final @NonNull List<TypeGuard> EMPTY_GUARD_LIST =
+        Collections.emptyList();
     /** Predefined empty list of type guards. */
-    static private final Set<LabelVar> EMPTY_VAR_SET = Collections.emptySet();
+    @SuppressWarnings("null") static private final @NonNull Set<LabelVar> EMPTY_VAR_SET =
+        Collections.emptySet();
 }

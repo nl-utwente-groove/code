@@ -1,5 +1,7 @@
 package groove.gui.jgraph;
 
+import java.util.Iterator;
+
 import groove.control.instance.Frame;
 import groove.graph.Edge;
 import groove.graph.Node;
@@ -10,14 +12,12 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.StartGraphState;
 
-import java.util.Iterator;
-
 /**
  * JVertex class that describes the underlying node as a graph state.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> implements LTSJCell {
+public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge>implements LTSJCell {
     /**
      * Creates a new, uninitialised instance.
      * Call {@link #setJModel(JModel)} and {@link #setNode(Node)} to initialise.
@@ -32,20 +32,18 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
     }
 
     @Override
-    protected void initialise() {
+    public void initialise() {
         super.initialise();
         this.visibleFlag = true;
         this.outCount = -1;
         GraphState state = getNode();
-        if (state != null) {
-            setLook(Look.OPEN, !state.isClosed());
-            setLook(Look.ABSENT, state.isAbsent());
-            setLook(Look.RECIPE, state.isInternalState());
-            setLook(Look.TRANSIENT, state.isTransient());
-            setLook(Look.FINAL, state.isFinal());
-            setLook(Look.RESULT, isResult());
-            setLook(Look.ERROR, state.isError());
-        }
+        setLook(Look.OPEN, !state.isClosed());
+        setLook(Look.ABSENT, state.isAbsent());
+        setLook(Look.RECIPE, state.isInternalState());
+        setLook(Look.TRANSIENT, state.isTransient());
+        setLook(Look.FINAL, state.isFinal());
+        setLook(Look.RESULT, isResult());
+        setLook(Look.ERROR, state.isError());
     }
 
     @Override
@@ -80,8 +78,11 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
 
     /** Returns the number of outgoing transitions that are in principle shown on the LTS panel. */
     private int getOutCount() {
+        LTSJGraph jGraph = getJGraph();
+        assert jGraph != null; // guaranteed by now
         if (this.outCount < 0) {
-            this.outCount = getNode().getTransitions(getJGraph().getTransitionClass()).size();
+            this.outCount = getNode().getTransitions(jGraph.getTransitionClass())
+                .size();
         }
         return this.outCount;
     }
@@ -152,7 +153,9 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
      * Returns {@code true} if the state is a result state.
      */
     public boolean isResult() {
-        return getJGraph().isResult(getNode());
+        LTSJGraph jGraph = getJGraph();
+        assert jGraph != null; // guaranteed by now
+        return jGraph.isResult(getNode());
     }
 
     @Override
@@ -165,7 +168,8 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> imple
      */
     public boolean isStart() {
         GTS gts = getNode().getGTS();
-        return gts.startState().equals(getNode());
+        return gts.startState()
+            .equals(getNode());
     }
 
     /**

@@ -16,6 +16,16 @@
  */
 package groove.explore.strategy;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Set;
+
 import groove.explore.result.Acceptor;
 import groove.grammar.Rule;
 import groove.grammar.host.AnchorValue;
@@ -27,16 +37,6 @@ import groove.lts.GraphTransition;
 import groove.lts.RuleTransition;
 import groove.lts.Status.Flag;
 import groove.transform.RuleEvent;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Set;
 
 /**
  * An exploration strategy which calculates the Minimax value of the starting state and all states reachable from it.
@@ -78,7 +78,7 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
      * @param enabledrules a collection of enabled rules, duplicates will be removed
      */
     public MinimaxStrategy(int heuristicparam, int maxdepth, Collection<Rule> enabledrules,
-            Rule evalrule, int minmaxparam) {
+        Rule evalrule, int minmaxparam) {
         super();
 
         //parameters
@@ -177,7 +177,8 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
         AnchorValue result = null;
         Rule r = s.getAction();
         RuleEvent ev = s.getEvent();
-        result = ev.getAnchorImage(r.getParBinding(num).getIndex());
+        result = ev.getAnchorImage(r.getParBinding(num)
+            .getIndex());
         return result;
     }
 
@@ -188,7 +189,8 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
      */
     private int getHeuristicScore(RuleTransition s) {
         try {
-            return (Integer) ((ValueNode) MinimaxStrategy.getParameter(s, this.heuristicparam)).toJavaValue();
+            return (Integer) ((ValueNode) MinimaxStrategy.getParameter(s, this.heuristicparam))
+                .toJavaValue();
         } catch (ArrayIndexOutOfBoundsException e) {
             throw new RuntimeException("Parameter does not exist");
         } catch (ClassCastException e) {
@@ -203,7 +205,8 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
      */
     private Boolean getMinMaxParam(RuleTransition s) {
         try {
-            return (Boolean) ((ValueNode) MinimaxStrategy.getParameter(s, this.minmaxparam)).toJavaValue();
+            return (Boolean) ((ValueNode) MinimaxStrategy.getParameter(s, this.minmaxparam))
+                .toJavaValue();
         } catch (ArrayIndexOutOfBoundsException e) {
             throw new RuntimeException("Parameter does not exist");
         } catch (ClassCastException e) {
@@ -216,17 +219,18 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
      * The file is overwritten by this method
      */
     public void printMinimaxDebugTree(File out) {
-        MinimaxTree mt = getNodeValue(this.getStartState().getNumber());
+        MinimaxTree mt = getNodeValue(this.getStartState()
+            .getNumber());
         try { //write to a file, as tree representations can get quite large (10MB for tic-tac-toe)
             File f = out;
             if (f.exists()) {
                 f.delete();
                 f.createNewFile();
             }
-            PrintWriter pw = new PrintWriter(f);
-            pw.println(mt.toString());
-            pw.flush();
-            pw.close();
+            try (PrintWriter pw = new PrintWriter(f)) {
+                pw.println(mt.toString());
+                pw.flush();
+            }
             System.out.println("Wrote tree to file: " + f.getAbsolutePath());
         } catch (IOException e) {
             e.printStackTrace();
@@ -270,7 +274,7 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
      */
     private boolean isRuleEnabled(String r) {
         return this.enabledrules == null || this.enabledrules.size() == 0
-                || this.enabledrules.contains(r);
+            || this.enabledrules.contains(r);
     }
 
     private boolean isMinMaxrule(String r) {
@@ -282,7 +286,7 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
         super.finish();
         if (DEBUG) {
             System.out.println("Exploration Finished! It took "
-                    + (System.currentTimeMillis() - this.timer) + "ms");
+                + (System.currentTimeMillis() - this.timer) + "ms");
             printMinimaxDebugTree(new File("tree.txt"));
         }
     }
@@ -295,7 +299,8 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
         MinimaxTree mts = getNodeValue(source.getNumber());
         MinimaxTree mtt = getNodeValue(target.getNumber());
         if (mts == null) {
-            assert source.getNumber() == this.getStartState().getNumber(); //the source node only exists at the first node
+            assert source.getNumber() == this.getStartState()
+                .getNumber(); //the source node only exists at the first node
             mts = new MinimaxTree(source.getNumber());
             setNodeValue(mts.getNodeno(), mts);
         }
@@ -304,16 +309,20 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
             setNodeValue(mtt.getNodeno(), mtt);
         }
         if (VERBOSE) {
-            System.out.println("State added: " + transition.target().getNumber());
+            System.out.println("State added: " + transition.target()
+                .getNumber());
         }
         //if we have a minmax rule, update the variable in the tree, and dont add tree nodes
-        if (isMinMaxrule(transition.label().getAction().getLastName())) {
+        if (isMinMaxrule(transition.label()
+            .getAction()
+            .getLastName())) {
             Boolean minmax = getMinMaxParam((RuleTransition) transition);
             mts.setMinMax(minmax);
         } else {
             //update the score
-            if (isRuleEnabled(transition.label().getAction().getLastName())
-                    && target.getMatch() == null) {
+            if (isRuleEnabled(transition.label()
+                .getAction()
+                .getLastName()) && target.getMatch() == null) {
                 int score = getHeuristicScore((RuleTransition) transition);
                 mtt.setScore(score);
             }
@@ -486,7 +495,7 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
         @Override
         public String toString() {
             String result =
-                    "[" + getNodeno() + ";" + (getMinMax() ? "min()" : "max()") + ":" + getText() + "]";
+                "[" + getNodeno() + ";" + (getMinMax() ? "min()" : "max()") + ":" + getText() + "]";
             return result;
         }
 

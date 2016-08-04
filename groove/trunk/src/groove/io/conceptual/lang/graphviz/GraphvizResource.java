@@ -31,6 +31,7 @@ import groove.io.conceptual.Timer;
 import groove.io.conceptual.lang.ExportException;
 import groove.io.conceptual.lang.ExportableResource;
 
+@SuppressWarnings("javadoc")
 public class GraphvizResource extends ExportableResource {
     private Map<QualName,Graph> m_typeGraphs = new HashMap<>();
     private Map<QualName,Graph> m_instanceGraphs = new HashMap<>();
@@ -80,12 +81,10 @@ public class GraphvizResource extends ExportableResource {
     @Override
     public boolean export() throws ExportException {
         for (Graph typeGraph : this.m_typeGraphs.values()) {
-            try {
-                BufferedWriter out = new BufferedWriter(new FileWriter(this.m_typeFile));
+            try (BufferedWriter out = new BufferedWriter(new FileWriter(this.m_typeFile))) {
                 int timer = Timer.start("Save DOT");
                 out.write(typeGraph.toString());
                 Timer.stop(timer);
-                out.close();
             } catch (IOException e) {
                 throw new ExportException(e);
             }
@@ -93,12 +92,10 @@ public class GraphvizResource extends ExportableResource {
 
         if (this.m_instanceFile != null) {
             for (Graph instanceGraph : this.m_instanceGraphs.values()) {
-                try {
-                    BufferedWriter out = new BufferedWriter(new FileWriter(this.m_instanceFile));
+                try (BufferedWriter out = new BufferedWriter(new FileWriter(this.m_instanceFile))) {
                     int timer = Timer.start("Save DOT");
                     out.write(instanceGraph.toString());
                     Timer.stop(timer);
-                    out.close();
                 } catch (IOException e) {
                     throw new ExportException(e);
                 }

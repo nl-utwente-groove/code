@@ -16,24 +16,6 @@
  */
 package groove.gui.dialog;
 
-import groove.explore.AcceptorEnumerator;
-import groove.explore.AcceptorValue;
-import groove.explore.ExploreType;
-import groove.explore.StrategyEnumerator;
-import groove.explore.StrategyValue;
-import groove.explore.encode.EncodedTypeEditor;
-import groove.explore.encode.Serialized;
-import groove.explore.encode.TemplateListener;
-import groove.explore.result.Acceptor;
-import groove.explore.strategy.Strategy;
-import groove.grammar.model.GrammarModel;
-import groove.gui.Options;
-import groove.gui.Simulator;
-import groove.gui.SimulatorModel;
-import groove.gui.layout.SpringUtilities;
-import groove.io.HTMLConverter;
-import groove.util.parse.FormatException;
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -61,6 +43,25 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SpringLayout;
 import javax.swing.ToolTipManager;
+import javax.swing.WindowConstants;
+
+import groove.explore.AcceptorEnumerator;
+import groove.explore.AcceptorValue;
+import groove.explore.ExploreType;
+import groove.explore.StrategyEnumerator;
+import groove.explore.StrategyValue;
+import groove.explore.encode.EncodedTypeEditor;
+import groove.explore.encode.Serialized;
+import groove.explore.encode.TemplateListener;
+import groove.explore.result.Acceptor;
+import groove.explore.strategy.Strategy;
+import groove.grammar.model.GrammarModel;
+import groove.gui.Options;
+import groove.gui.Simulator;
+import groove.gui.SimulatorModel;
+import groove.gui.layout.SpringUtilities;
+import groove.io.HTMLConverter;
+import groove.util.parse.FormatException;
 
 /**
  * <!=========================================================================>
@@ -77,11 +78,11 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
     private static final String EXPLORE_COMMAND = "Run";
     private static final String CANCEL_COMMAND = "Cancel";
 
-    private static final String RESULT_TOOLTIP = "<HTML>"
-        + "Exploration can be interrupted between atomic steps of the " + "strategy.<BR> "
-        + "The size of the atomic steps depends on the chosen " + "strategy.<BR> "
-        + "The interruption condition is determined by the indicated "
-        + "number of times that the acceptor succeeds." + "</HTML>";
+    private static final String RESULT_TOOLTIP =
+        "<HTML>" + "Exploration can be interrupted between atomic steps of the " + "strategy.<BR> "
+            + "The size of the atomic steps depends on the chosen " + "strategy.<BR> "
+            + "The interruption condition is determined by the indicated "
+            + "number of times that the acceptor succeeds." + "</HTML>";
     private static final String START_TOOLTIP = "Restart with the customized exploration";
     private static final String DEFAULT_TOOLTIP =
         "Set the currently selected exploration as the default for this grammar";
@@ -114,7 +115,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
 
         // Open a modal dialog, which cannot be resized or closed.
         super(owner, Options.EXPLORATION_DIALOG_ACTION_NAME, true);
-        setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         setResizable(false);
 
         // Override DismissDelay of the ToolTipManager.
@@ -231,8 +232,8 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
      * by parsing an (invalid) exploration.
      */
     private void showError(FormatException exc) {
-        new ErrorDialog(this.simulator.getFrame(), "<HTML><B>Invalid exploration.</B><BR> "
-            + exc.getMessage(), exc).setVisible(true);
+        new ErrorDialog(this.simulator.getFrame(),
+            "<HTML><B>Invalid exploration.</B><BR> " + exc.getMessage(), exc).setVisible(true);
     }
 
     /** Returns an exploration created on the basis of the current settings in this dialog.
@@ -475,8 +476,8 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
                 } catch (FormatException exc) {
                     enabled = false;
                     toolTip.append(HTMLConverter.HTML_LINEBREAK);
-                    toolTip.append(HTMLConverter.EMBARGO_TAG.on(HTMLConverter.toHtml(new StringBuilder(
-                        exc.getMessage()))));
+                    toolTip.append(HTMLConverter.EMBARGO_TAG
+                        .on(HTMLConverter.toHtml(new StringBuilder(exc.getMessage()))));
                 }
             }
             setEnabled(enabled);
@@ -524,10 +525,9 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
             this.customNumber.addKeyListener(new OnlyListenToNumbers());
             this.customNumber.setEnabled(initialValue >= 2);
 
-            JLabel leadingLabel =
-                new JLabel("<HTML><FONT color=" + ExplorationDialog.HEADER_COLOR
-                    + "><B>Interrupt exploration when the following number "
-                    + "of accepted results have been found: </HTML>");
+            JLabel leadingLabel = new JLabel("<HTML><FONT color=" + ExplorationDialog.HEADER_COLOR
+                + "><B>Interrupt exploration when the following number "
+                + "of accepted results have been found: </HTML>");
             leadingLabel.setToolTipText(tooltip);
             this.add(leadingLabel);
             ButtonGroup options = new ButtonGroup();

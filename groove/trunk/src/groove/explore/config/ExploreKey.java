@@ -41,7 +41,7 @@ public enum ExploreKey implements PropertyKey<Setting<?,?>> {
     /** Conditions for where to stop exploring. */
     //BOUNDARY("bound", "Boundary conditions for exploration", null, false),
     /** Number of results after which to stop exploring. */
-    COUNT("count", "Result count before exploration halts", CountKind.ALL, true), ;
+    COUNT("count", "Result count before exploration halts", CountKind.ALL, true),;
 
     private ExploreKey(String name, String explanation, SettingKey defaultKind, boolean singular) {
         this.name = name;
@@ -135,6 +135,9 @@ public enum ExploreKey implements PropertyKey<Setting<?,?>> {
             case RANDOM:
                 this.kindMap.put("yes", BooleanKey.TRUE);
                 this.kindMap.put("no", BooleanKey.FALSE);
+                break;
+            default:
+                // no mappings
             }
         }
         return this.kindMap;

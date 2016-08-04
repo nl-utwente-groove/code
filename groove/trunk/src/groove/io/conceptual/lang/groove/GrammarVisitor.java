@@ -27,6 +27,7 @@ import groove.io.conceptual.lang.ImportException;
 import groove.util.Pair;
 import groove.util.parse.FormatException;
 
+@SuppressWarnings("javadoc")
 public class GrammarVisitor {
     private GraphNodeTypes m_types;
     private Config m_cfg;
@@ -262,7 +263,7 @@ public class GrammarVisitor {
         return true;
     }
 
-    private void setMetaGraph(TypeGraph typeGraph) throws ImportException {
+    private void setMetaGraph(TypeGraph typeGraph) {
         // Adds meta model information to m_types
         new GrooveToMeta(typeGraph, this.m_types, this.m_cfg);
     }
@@ -272,8 +273,7 @@ public class GrammarVisitor {
         this.m_typeModel = gtt.getTypeModel();
     }
 
-    private void setRuleGraphs(Collection<groove.grammar.model.RuleModel> ruleModels)
-        throws ImportException {
+    private void setRuleGraphs(Collection<groove.grammar.model.RuleModel> ruleModels) {
         /*GrooveToConstraint gtc = */new GrooveToConstraint(ruleModels, this.m_types, this.m_cfg,
             this.m_typeModel);
     }

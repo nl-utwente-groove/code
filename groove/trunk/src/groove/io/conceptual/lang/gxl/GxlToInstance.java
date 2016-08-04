@@ -49,6 +49,7 @@ import groove.io.conceptual.value.ContainerValue;
 import groove.io.conceptual.value.Object;
 import groove.io.conceptual.value.Value;
 
+@SuppressWarnings("javadoc")
 public class GxlToInstance extends InstanceImporter {
     private Map<QualName,GraphType> m_instanceGraphs = new HashMap<>();
 
@@ -63,25 +64,19 @@ public class GxlToInstance extends InstanceImporter {
         this.m_gxlToType = gxlToType;
 
         // Load the GXL
-        try {
-            FileInputStream in = new FileInputStream(instanceModel);
-            try {
-                int timer = Timer.cont("Load GXL");
-                @SuppressWarnings("unchecked")
-                JAXBElement<GxlType> doc =
-                    (JAXBElement<GxlType>) GxlUtil.g_unmarshaller.unmarshal(in);
-                in.close();
-                for (GraphType g : doc.getValue()
-                    .getGraph()) {
-                    String type = GxlUtil.getElemType(g);
-                    if (!("gxl-1.0".equals(type))) {
-                        this.m_instanceGraphs.put(QualName.parse(g.getId()), g);
-                    }
+        try (FileInputStream in = new FileInputStream(instanceModel)) {
+            int timer = Timer.cont("Load GXL");
+            @SuppressWarnings("unchecked") JAXBElement<GxlType> doc =
+                (JAXBElement<GxlType>) GxlUtil.g_unmarshaller.unmarshal(in);
+            in.close();
+            for (GraphType g : doc.getValue()
+                .getGraph()) {
+                String type = GxlUtil.getElemType(g);
+                if (!("gxl-1.0".equals(type))) {
+                    this.m_instanceGraphs.put(QualName.parse(g.getId()), g);
                 }
-                Timer.stop(timer);
-            } finally {
-                in.close();
             }
+            Timer.stop(timer);
         } catch (JAXBException e) {
             throw new ImportException(e);
         } catch (FileNotFoundException e) {

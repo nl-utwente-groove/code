@@ -31,6 +31,8 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import groove.util.parse.FormatException;
 
 /**
@@ -233,19 +235,19 @@ abstract public class FreshNameDialog<Name> {
      * return value is guaranteed to be distinct from any of the existing names
      * entered at construction time.
      */
-    public final Name getName() {
+    public final @Nullable Name getName() {
         return this.name;
     }
 
     /**
      * Sets the value of the chosen name field.
      */
-    private final void setName(Name name) {
+    private final void setName(@Nullable Name name) {
         this.name = name;
     }
 
     /** The rule name selected by the user. */
-    private Name name;
+    private @Nullable Name name;
 
     /**
      * Action listener that closes the dialog and sets the option pane's value

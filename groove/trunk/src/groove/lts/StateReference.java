@@ -1,20 +1,23 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.lts;
+
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 import groove.util.cache.CacheHolder;
 import groove.util.cache.CacheReference;
@@ -25,12 +28,12 @@ import groove.util.cache.CacheReference;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class StateReference extends CacheReference<StateCache> {
+public class StateReference extends CacheReference<@Nullable StateCache> {
     /**
      * Copies the system record from the template.
      */
-    protected StateReference(CacheHolder<StateCache> holder,
-            StateCache referent, StateReference template) {
+    protected StateReference(CacheHolder<@Nullable StateCache> holder, StateCache referent,
+        StateReference template) {
         super(holder, referent, template);
         this.gts = template.gts;
     }
@@ -39,8 +42,7 @@ public class StateReference extends CacheReference<StateCache> {
      * Creates a reference with an explicitly given (non-<code>null</code>)
      * system record.
      */
-    protected StateReference(boolean strong, int incarnation,
-            StateReference template, GTS gts) {
+    protected StateReference(boolean strong, int incarnation, StateReference template, GTS gts) {
         super(strong, incarnation, template);
         this.gts = gts;
     }
@@ -51,14 +53,14 @@ public class StateReference extends CacheReference<StateCache> {
     }
 
     @Override
-    protected CacheReference<StateCache> createNullInstance(boolean strong,
-            int incarnation) {
+    protected @NonNull CacheReference<@Nullable StateCache> createNullInstance(boolean strong,
+        int incarnation) {
         return new StateReference(strong, incarnation, this, this.gts);
     }
 
     @Override
-    public CacheReference<StateCache> newReference(
-            CacheHolder<StateCache> holder, StateCache cache) {
+    public CacheReference<@Nullable StateCache> newReference(
+        CacheHolder<@Nullable StateCache> holder, StateCache cache) {
         return new StateReference(holder, cache, this);
     }
 

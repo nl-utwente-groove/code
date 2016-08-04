@@ -38,6 +38,7 @@ import groove.io.conceptual.type.Tuple;
 import groove.io.conceptual.type.Type;
 import groove.util.parse.FormatException;
 
+@SuppressWarnings("javadoc")
 public class Config {
     private QualName m_xmlPath;
 

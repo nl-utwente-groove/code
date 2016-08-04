@@ -1,26 +1,20 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.util;
-
-import groove.algebra.Operator;
-import groove.algebra.Signature.OpValue;
-import groove.algebra.Sort;
-import groove.io.FileType;
-import groove.util.cli.GrooveCmdLineTool;
 
 import java.io.FileWriter;
 import java.util.ArrayList;
@@ -30,6 +24,11 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
 import au.com.bytecode.opencsv.CSVWriter;
+import groove.algebra.Operator;
+import groove.algebra.Signature.OpValue;
+import groove.algebra.Sort;
+import groove.io.FileType;
+import groove.util.cli.GrooveCmdLineTool;
 
 /**
  * Command-line tool to list the available operators in a format that
@@ -49,10 +48,10 @@ public class OperatorLister extends GrooveCmdLineTool<List<String[]>> {
     protected List<String[]> run() throws Exception {
         List<String[]> result = collectOperators();
         String outFileName = FileType.CSV.addExtension(this.outFileName);
-        CSVWriter writer = new CSVWriter(new FileWriter(outFileName));
-        writer.writeAll(result);
-        writer.flush();
-        writer.close();
+        try (CSVWriter writer = new CSVWriter(new FileWriter(outFileName))) {
+            writer.writeAll(result);
+            writer.flush();
+        }
         return result;
     }
 
@@ -68,9 +67,10 @@ public class OperatorLister extends GrooveCmdLineTool<List<String[]>> {
                     }
                     argTypes.append(argType.getName());
                 }
-                String[] line =
-                    {sig.getName(), op.getName(), op.getSymbol(), op.getDescription(),
-                        op.getResultType().getName(), argTypes.toString()};
+                String[] line = {sig.getName(), op.getName(), op.getSymbol(), op.getDescription(),
+                    op.getResultType()
+                        .getName(),
+                    argTypes.toString()};
                 result.add(line);
             }
         }

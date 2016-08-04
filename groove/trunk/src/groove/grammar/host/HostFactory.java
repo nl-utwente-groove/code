@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import groove.algebra.Algebra;
 import groove.grammar.rule.RuleToHostMap;
 import groove.grammar.type.TypeEdge;
@@ -74,7 +76,8 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
 
     @Override
     protected boolean isAllowed(HostNode node) {
-        return node.getType().isTopType();
+        return node.getType()
+            .isTopType();
     }
 
     /** Returns a node factory for typed default host nodes. */
@@ -143,7 +146,7 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
      * This should then be compared with the edge store to replace it by its
      * canonical representative.
      */
-    protected HostEdge newEdge(HostNode source, TypeEdge type, HostNode target, int nr) {
+    protected @NonNull HostEdge newEdge(HostNode source, TypeEdge type, HostNode target, int nr) {
         assert type.getGraph() == getTypeGraph();
         return new DefaultHostEdge(source, type, target, nr, isSimple());
     }

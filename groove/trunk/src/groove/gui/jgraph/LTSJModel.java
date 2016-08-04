@@ -16,6 +16,12 @@
  */
 package groove.gui.jgraph;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
 import groove.graph.Edge;
 import groove.graph.Node;
 import groove.gui.look.Look;
@@ -26,19 +32,13 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.Status.Flag;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
 /**
  * Graph model adding a concept of active state and transition, with special
  * visual characteristics.
  * @author Arend Rensink
  * @version $Revision$
  */
-final public class LTSJModel extends JModel<GTS> implements GTSListener {
+final public class LTSJModel extends JModel<GTS>implements GTSListener {
     /** Creates a new model from a given LTS and set of display options. */
     LTSJModel(LTSJGraph jGraph) {
         super(jGraph);
@@ -124,11 +124,14 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
                 jCell.setLook(Look.TRANSIENT, explored.isTransient());
                 jCell.setLook(Look.FINAL, explored.isFinal());
                 break;
+            default:
+                // no special look
             }
             if (explored.isAbsent() && !Flag.ABSENT.test(oldStatus)) {
                 Iterator<? extends JEdge<GTS>> iter = jCell.getContext();
                 while (iter.hasNext()) {
-                    iter.next().setLook(Look.ABSENT, true);
+                    iter.next()
+                        .setLook(Look.ABSENT, true);
                 }
                 jCell.setLook(Look.ABSENT, true);
             }
@@ -214,14 +217,16 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
         if (edgeSet == null) {
             for (Node node : this.nodeJCellMap.keySet()) {
                 GraphState state = (GraphState) node;
-                for (GraphTransition trans : state.getTransitions(getJGraph().getTransitionClass())) {
+                for (GraphTransition trans : state
+                    .getTransitions(getJGraph().getTransitionClass())) {
                     result |= addTransition(trans);
                 }
             }
         } else {
             for (Edge edge : edgeSet) {
                 GraphTransition trans = (GraphTransition) edge;
-                if (getJGraph().getTransitionClass().admits(trans)) {
+                if (getJGraph().getTransitionClass()
+                    .admits(trans)) {
                     result |= addTransition((GraphTransition) edge);
                 }
             }
@@ -231,7 +236,8 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
 
     /** Tests if a given graph transition is acceptable for addition to the LTS panel. */
     private boolean isAcceptTransition(GraphTransition trans) {
-        return getJGraph().getTransitionClass().admits(trans);
+        return getJGraph().getTransitionClass()
+            .admits(trans);
     }
 
     /**

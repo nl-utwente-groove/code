@@ -18,12 +18,20 @@ package groove.explore.util;
 
 import static groove.explore.Verbosity.HIGH;
 import static groove.explore.Verbosity.MEDIUM;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Formatter;
+import java.util.List;
+
 import groove.explore.Exploration;
 import groove.explore.ExploreResult;
 import groove.explore.Verbosity;
 import groove.grammar.Rule;
 import groove.grammar.host.HostFactory;
 import groove.graph.AGraph;
+import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.IsoChecker;
 import groove.graph.iso.PartitionRefiner;
 import groove.lts.AbstractGraphState;
@@ -40,12 +48,6 @@ import groove.util.Groove;
 import groove.util.Reporter;
 import groove.util.cache.AbstractCacheHolder;
 import groove.util.cache.CacheReference;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Formatter;
-import java.util.List;
 
 /**
  * @author Eduardo Zambon
@@ -199,8 +201,10 @@ public class StatisticsReporter extends AExplorationReporter {
         emit(MEDIUM, "%n");
         emit(MEDIUM, formatString, "States:", getGTS().getStateCount());
         if (getGTS().hasOpenStates()) {
-            emit(HIGH, subFormatString, "Closed:", getGTS().getStateCount()
-                - getGTS().getOpenStateCount());
+            emit(HIGH,
+                subFormatString,
+                "Closed:",
+                getGTS().getStateCount() - getGTS().getOpenStateCount());
         }
         ExploreResult result = getExploration().getResult();
         if (!result.isEmpty()) {
@@ -259,14 +263,20 @@ public class StatisticsReporter extends AExplorationReporter {
         String percFormat = "   " + format + "%-6d(%4.1f%%)%n";
         emit(HIGH, "%nIsomorphism statistics%n");
         emit(HIGH, intIntFormat, "Predicted:", predicted, intCertOverlap);
-        emit(HIGH, percFormat, "False pos 1:", falsePos1, (double) 100 * falsePos1
-            / (predicted - intCertOverlap));
-        emit(HIGH, percFormat, "False pos 2:", falsePos2, (double) 100 * falsePos2
-            / (predicted - intCertOverlap));
+        emit(HIGH,
+            percFormat,
+            "False pos 1:",
+            falsePos1,
+            (double) 100 * falsePos1 / (predicted - intCertOverlap));
+        emit(HIGH,
+            percFormat,
+            "False pos 2:",
+            falsePos2,
+            (double) 100 * falsePos2 / (predicted - intCertOverlap));
         emit(HIGH, intFormat, "Equal graphs:", equalGraphCount);
         emit(HIGH, intFormat, "Equal certificates:", equalCertsCount);
         emit(HIGH, intFormat, "Equal simulation:", equalSimCount);
-        emit(HIGH, stringFormat, "Iterations:", PartitionRefiner.getIterateCount());
+        emit(HIGH, stringFormat, "Iterations:", CertificateStrategy.getIterateCount());
         emit(HIGH, intFormat, "Symmetry breaking:", PartitionRefiner.getSymmetryBreakCount());
     }
 
@@ -330,7 +340,11 @@ public class StatisticsReporter extends AExplorationReporter {
         long certCheck = IsoChecker.getCertCheckTime();
         long simCheck = IsoChecker.getSimCheckTime();
         emit(HIGH, longFormat, "Certifying:", certifying, 100 * certifying / (double) isoChecking);
-        emit(HIGH, longFormat, "Equals check:", equalCheck, 100 * equalCheck / (double) isoChecking);
+        emit(HIGH,
+            longFormat,
+            "Equals check:",
+            equalCheck,
+            100 * equalCheck / (double) isoChecking);
         emit(HIGH, longFormat, "Cert check:", certCheck, 100 * certCheck / (double) isoChecking);
         emit(HIGH, longFormat, "Sim check:", simCheck, 100 * simCheck / (double) isoChecking);
 
@@ -401,7 +415,8 @@ public class StatisticsReporter extends AExplorationReporter {
         public void statusUpdate(GTS graph, GraphState explored, Flag flag, int oldStatus) {
             switch (flag) {
             case CLOSED:
-                if (explored.getPrimeFrame().isInternal()) {
+                if (explored.getPrimeFrame()
+                    .isInternal()) {
                     this.openRecipeStateCount--;
                 }
                 if (explored.isInternalState()) {
@@ -415,6 +430,9 @@ public class StatisticsReporter extends AExplorationReporter {
                 if (explored.isAbsent()) {
                     this.absentStateCount++;
                 }
+                break;
+            default:
+                // no action
             }
         }
 
@@ -459,8 +477,10 @@ public class StatisticsReporter extends AExplorationReporter {
 
         @Override
         public void addUpdate(GTS gts, GraphState state) {
-            this.nodeCount += state.getGraph().nodeCount();
-            this.edgeCount += state.getGraph().edgeCount();
+            this.nodeCount += state.getGraph()
+                .nodeCount();
+            this.edgeCount += state.getGraph()
+                .edgeCount();
         }
 
         /** Returns the number of nodes in the added states. */

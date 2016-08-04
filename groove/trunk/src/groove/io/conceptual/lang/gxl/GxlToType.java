@@ -59,6 +59,7 @@ import groove.io.conceptual.value.Value;
  * @author s0141844
  * @version $Revision $
  */
+@SuppressWarnings("javadoc")
 public class GxlToType extends TypeImporter {
 
     // GXL type graph to use to use (select the first one form the document)
@@ -106,26 +107,20 @@ public class GxlToType extends TypeImporter {
     public GxlToType(String typeModel, boolean useComplex) throws ImportException {
         this.m_useComplex = useComplex;
         // Load the GXL
-        try {
-            FileInputStream in = new FileInputStream(typeModel);
-            try {
-                int timer = Timer.start("Load GXL");
-                @SuppressWarnings("unchecked")
-                JAXBElement<GxlType> doc =
-                    (JAXBElement<GxlType>) GxlUtil.g_unmarshaller.unmarshal(in);
-                in.close();
-                for (GraphType g : doc.getValue()
-                    .getGraph()) {
-                    String type = GxlUtil.getElemType(g);
-                    if ("gxl-1.0".equals(type)) {
-                        this.m_gxlTypeGraphs.add(g);
-                        break;
-                    }
+        try (FileInputStream in = new FileInputStream(typeModel)) {
+            int timer = Timer.start("Load GXL");
+            @SuppressWarnings("unchecked") JAXBElement<GxlType> doc =
+                (JAXBElement<GxlType>) GxlUtil.g_unmarshaller.unmarshal(in);
+            in.close();
+            for (GraphType g : doc.getValue()
+                .getGraph()) {
+                String type = GxlUtil.getElemType(g);
+                if ("gxl-1.0".equals(type)) {
+                    this.m_gxlTypeGraphs.add(g);
+                    break;
                 }
-                Timer.stop(timer);
-            } finally {
-                in.close();
             }
+            Timer.stop(timer);
         } catch (JAXBException e) {
             throw new ImportException(e);
         } catch (FileNotFoundException e) {

@@ -1,20 +1,21 @@
 package groove.io.conceptual.graph;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectLabel;
 import groove.grammar.aspect.AspectNode;
 import groove.grammar.aspect.AspectParser;
 import groove.graph.GraphRole;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * Node representation for wrapper around AspectGraph. Keeps track of incoming and outgoing edges (references set by AbsEdge).
  * @author Harold Bruijntjes
- * 
+ *
  */
+@SuppressWarnings("javadoc")
 public class AbsNode {
     private String[] m_names;
 
@@ -98,8 +99,7 @@ public class AbsNode {
      */
     public void addToGraph(AbsGraph g, int id) {
         if (this.m_parent != null && this.m_parent != g) {
-            throw new IllegalArgumentException(
-                "AbsNode already element of a graph");
+            throw new IllegalArgumentException("AbsNode already element of a graph");
         }
 
         this.m_parent = g;
@@ -135,12 +135,11 @@ public class AbsNode {
         this.m_aspectNode = new AspectNode(this.m_id, role);
 
         for (String sublabel : labels) {
-            AspectLabel alabel =
-                AspectParser.getInstance().parse(sublabel, role);
+            AspectLabel alabel = AspectParser.getInstance()
+                .parse(sublabel, role);
             // add self edge
             if (alabel.isEdgeOnly()) {
-                AspectEdge newEdge =
-                    new AspectEdge(this.m_aspectNode, alabel, this.m_aspectNode);
+                AspectEdge newEdge = new AspectEdge(this.m_aspectNode, alabel, this.m_aspectNode);
                 this.m_aspectEdges.add(newEdge);
             } else {
                 this.m_aspectNode.setAspects(alabel);

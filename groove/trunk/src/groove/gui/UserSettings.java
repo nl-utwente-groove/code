@@ -1,11 +1,11 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -14,17 +14,18 @@
  */
 package groove.gui;
 
-import groove.gui.display.DisplayKind;
-import groove.gui.display.LTSDisplay;
-import groove.io.store.SystemStore;
-import groove.io.store.SystemStoreFactory;
-
+import java.awt.Frame;
 import java.io.IOException;
 import java.util.prefs.Preferences;
 
 import javax.swing.JFrame;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
+
+import groove.gui.display.DisplayKind;
+import groove.gui.display.LTSDisplay;
+import groove.io.store.SystemStore;
+import groove.io.store.SystemStoreFactory;
 
 /**
  * Class that saves some basic information on the status of the Simulator.
@@ -47,7 +48,7 @@ public class UserSettings {
         if (!simMax.isEmpty() && !simWidth.isEmpty() && !simHeight.isEmpty()) {
             JFrame frame = simulator.getFrame();
             if (Boolean.parseBoolean(simMax)) {
-                frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+                frame.setExtendedState(Frame.MAXIMIZED_BOTH);
             } else {
                 int w = Integer.parseInt(simWidth);
                 int h = Integer.parseInt(simHeight);
@@ -75,7 +76,7 @@ public class UserSettings {
     }
 
     private static boolean isFrameMaximized(JFrame frame) {
-        return frame.getExtendedState() == JFrame.MAXIMIZED_BOTH;
+        return frame.getExtendedState() == Frame.MAXIMIZED_BOTH;
     }
 
     private static int getFrameWidth(JFrame frame) {
@@ -99,8 +100,9 @@ public class UserSettings {
                     @Override
                     public void run() {
                         try {
-                            simulator.getActions().getLoadGrammarAction().load(
-                                store);
+                            simulator.getActions()
+                                .getLoadGrammarAction()
+                                .load(store);
                         } catch (IOException e) {
                             // don't load if we're going to be difficult
                         }
@@ -124,8 +126,7 @@ public class UserSettings {
         }
         int stateBoundValue;
         try {
-            stateBoundValue =
-                Integer.parseInt(userPrefs.get(STATE_BOUND_KEY, "1000"));
+            stateBoundValue = Integer.parseInt(userPrefs.get(STATE_BOUND_KEY, "1000"));
         } catch (NumberFormatException e) {
             stateBoundValue = 1000;
         }
@@ -135,9 +136,10 @@ public class UserSettings {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    simulator.getModel().setDisplay(kind);
-                    ((LTSDisplay) simulator.getDisplaysPanel().getDisplay(
-                        DisplayKind.LTS)).setStateBound(stateBound);
+                    simulator.getModel()
+                        .setDisplay(kind);
+                    ((LTSDisplay) simulator.getDisplaysPanel()
+                        .getDisplay(DisplayKind.LTS)).setStateBound(stateBound);
                 }
             });
         }
@@ -160,12 +162,14 @@ public class UserSettings {
         userPrefs.put(SIM_MAX_KEY, simMax);
         userPrefs.put(SIM_WIDTH_KEY, simWidth);
         userPrefs.put(SIM_HEIGHT_KEY, simHeight);
-        int grammarPos = simulator.getGrammarPanel().getDividerLocation();
+        int grammarPos = simulator.getGrammarPanel()
+            .getDividerLocation();
         userPrefs.put(GRAMMAR_DIV_POS_KEY, "" + grammarPos);
-        int displaysInfoPos =
-            simulator.getDisplaysInfoPanel().getDividerLocation();
+        int displaysInfoPos = simulator.getDisplaysInfoPanel()
+            .getDividerLocation();
         userPrefs.put(DISPLAYS_INFO_DIV_POS_KEY, "" + displaysInfoPos);
-        int listsPos = simulator.getListsPanel().getDividerLocation();
+        int listsPos = simulator.getListsPanel()
+            .getDividerLocation();
         userPrefs.put(LISTS_DIV_POS_KEY, "" + listsPos);
     }
 
@@ -183,11 +187,12 @@ public class UserSettings {
 
     /** Persists the selected display. */
     private static void syncDisplaySettings(Simulator simulator) {
-        Object display = simulator.getModel().getDisplay().name();
+        Object display = simulator.getModel()
+            .getDisplay()
+            .name();
         userPrefs.put(DISPLAY_KEY, display.toString());
-        Integer stateBound =
-            ((LTSDisplay) simulator.getDisplaysPanel().getDisplay(
-                DisplayKind.LTS)).getStateBound();
+        Integer stateBound = ((LTSDisplay) simulator.getDisplaysPanel()
+            .getDisplay(DisplayKind.LTS)).getStateBound();
         userPrefs.put(STATE_BOUND_KEY, stateBound.toString());
     }
 
@@ -196,14 +201,11 @@ public class UserSettings {
     /** Key for the selected display. */
     private static final String DISPLAY_KEY = "Selected display";
     /** Key for the divider position in the grammar panel. */
-    static private final String DISPLAYS_INFO_DIV_POS_KEY =
-        "Displays+info panel divider position";
+    static private final String DISPLAYS_INFO_DIV_POS_KEY = "Displays+info panel divider position";
     /** Key for the divider position in the main panel. */
-    static private final String GRAMMAR_DIV_POS_KEY =
-        "Main panel divider position";
+    static private final String GRAMMAR_DIV_POS_KEY = "Main panel divider position";
     /** Key for the divider position in the lists panel. */
-    static private final String LISTS_DIV_POS_KEY =
-        "Rule-Graph divider position";
+    static private final String LISTS_DIV_POS_KEY = "Rule-Graph divider position";
     /** Key for the grammar location. */
     private static final String LOCATION_KEY = "Grammar location";
     static private final String SIM_HEIGHT_KEY = "Simulator height";

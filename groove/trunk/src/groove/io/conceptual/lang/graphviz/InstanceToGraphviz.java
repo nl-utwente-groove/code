@@ -16,6 +16,15 @@
  */
 package groove.io.conceptual.lang.graphviz;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import com.alexmerz.graphviz.objects.Edge;
+import com.alexmerz.graphviz.objects.Graph;
+import com.alexmerz.graphviz.objects.Node;
+import com.alexmerz.graphviz.objects.PortNode;
+
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.InstanceModel;
@@ -37,15 +46,7 @@ import groove.io.conceptual.value.TupleValue;
 import groove.io.conceptual.value.Value;
 import groove.io.external.PortException;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import com.alexmerz.graphviz.objects.Edge;
-import com.alexmerz.graphviz.objects.Graph;
-import com.alexmerz.graphviz.objects.Node;
-import com.alexmerz.graphviz.objects.PortNode;
-
+@SuppressWarnings("javadoc")
 public class InstanceToGraphviz extends InstanceExporter<Node> {
     private Map<Id,Graph> m_packageGraphs = new HashMap<Id,Graph>();
     private Map<InstanceModel,Graph> m_instanceGraphs = new HashMap<InstanceModel,Graph>();
@@ -77,30 +78,38 @@ public class InstanceToGraphviz extends InstanceExporter<Node> {
             return;
         }
 
-        Graph objectGraph = getPackageGraph(((Class) object.getType()).getId().getNamespace());
+        Graph objectGraph = getPackageGraph(((Class) object.getType()).getId()
+            .getNamespace());
         Node objectNode = new Node();
         objectGraph.addNode(objectNode);
 
         setElement(object, objectNode);
 
         objectNode.setId(new com.alexmerz.graphviz.objects.Id());
-        objectNode.getId().setId(getElementId());
+        objectNode.getId()
+            .setId(getElementId());
 
         String objectLabel = object.getName();
         if (objectLabel == null) {
-            objectLabel = ((Class) object.getType()).getId().getName().toString();
+            objectLabel = ((Class) object.getType()).getId()
+                .getName()
+                .toString();
         }
         objectNode.setAttribute("label", objectLabel);
 
-        for (Entry<Field,Value> entry : object.getValue().entrySet()) {
-            Type fieldType = entry.getKey().getType();
+        for (Entry<Field,Value> entry : object.getValue()
+            .entrySet()) {
+            Type fieldType = entry.getKey()
+                .getType();
             boolean isContainer = false;
             if (fieldType instanceof Container) {
                 fieldType = ((Container) fieldType).getType();
                 isContainer = true;
             }
 
-            String fieldName = entry.getKey().getName().toString();
+            String fieldName = entry.getKey()
+                .getName()
+                .toString();
             // For edges, replace fieldname with empty if it has been generated
             if (fieldType instanceof Class || fieldType instanceof Tuple) {
                 if (fieldName.matches("edge[0-9]*")) {
@@ -153,7 +162,8 @@ public class InstanceToGraphviz extends InstanceExporter<Node> {
                     }
                     valueLabel += "]";
                 } else {
-                    valueLabel += entry.getValue().toString();
+                    valueLabel += entry.getValue()
+                        .toString();
                 }
                 objectNode.setAttribute(fieldName, valueLabel);
             }
@@ -170,14 +180,17 @@ public class InstanceToGraphviz extends InstanceExporter<Node> {
         Node tupleNode = new Node();
         tupleGraph.addNode(tupleNode);
         tupleNode.setId(new com.alexmerz.graphviz.objects.Id());
-        tupleNode.getId().setId(getElementId());
+        tupleNode.getId()
+            .setId(getElementId());
 
         tupleNode.setAttribute("shape", "record");
         String label = "";
 
         boolean first = true;
-        for (Entry<Integer,Value> entry : tupleval.getValue().entrySet()) {
-            Type type = ((Tuple) tupleval.getType()).getTypes().get(entry.getKey());
+        for (Entry<Integer,Value> entry : tupleval.getValue()
+            .entrySet()) {
+            Type type = ((Tuple) tupleval.getType()).getTypes()
+                .get(entry.getKey());
             boolean isContainer = type instanceof Container;
 
             if (!first) {
@@ -209,7 +222,8 @@ public class InstanceToGraphviz extends InstanceExporter<Node> {
                     getPackageGraph(Id.ROOT).addEdge(valueEdge);
                 }
             } else {
-                label += entry.getValue().toString();
+                label += entry.getValue()
+                    .toString();
             }
             label += type.toString();
             first = false;
@@ -263,11 +277,14 @@ public class InstanceToGraphviz extends InstanceExporter<Node> {
 
         Graph parent = getPackageGraph(namespace.getNamespace());
         Graph packageGraph = new Graph();
-        parent.getSubgraphs().add(packageGraph);
+        parent.getSubgraphs()
+            .add(packageGraph);
 
         com.alexmerz.graphviz.objects.Id graphId = new com.alexmerz.graphviz.objects.Id();
-        graphId.setId("\"cluster_" + namespace.getName().toString() + "\"");
-        packageGraph.addAttribute("label", namespace.getName().toString());
+        graphId.setId("\"cluster_" + namespace.getName()
+            .toString() + "\"");
+        packageGraph.addAttribute("label", namespace.getName()
+            .toString());
         packageGraph.setId(graphId);
 
         this.m_packageGraphs.put(namespace, packageGraph);

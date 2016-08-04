@@ -20,6 +20,10 @@ import groove.algebra.Constant;
 import groove.grammar.QualName;
 
 /**
+ * Abstract expression tree, to be instantiated with an operator type.
+ * @param <O> the operator type for the expressions
+ * @param <T> should be set to the implementing type itself (this is the closes you can get to
+ * a MyType in Java)
  * @author rensink
  * @version $Revision $
  */
@@ -110,6 +114,7 @@ public abstract class AExprTree<O extends Op,T extends AExprTree<O,T>> extends A
             return false;
         }
         AExprTree<?,?> other = (AExprTree<?,?>) obj;
+        assert other != null; // guaranteed by !super.equals
         if (this.constant == null) {
             if (other.constant != null) {
                 return false;

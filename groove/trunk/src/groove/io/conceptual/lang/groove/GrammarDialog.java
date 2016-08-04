@@ -39,9 +39,12 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 
 import groove.grammar.QualName;
 
+@SuppressWarnings("javadoc")
 public class GrammarDialog extends JDialog {
     private Frame m_parent;
     private JComboBox<String> m_typeList;
@@ -54,7 +57,7 @@ public class GrammarDialog extends JDialog {
         super(parent, "Select graphs to export", true);
         this.m_parent = parent;
 
-        setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent we) {
@@ -86,11 +89,11 @@ public class GrammarDialog extends JDialog {
         this.m_metaList = new JComboBox<>();
         this.m_instanceList = new JComboBox<>();
 
-        JLabel typeLabel = new JLabel("Select type graph:", JLabel.TRAILING);
+        JLabel typeLabel = new JLabel("Select type graph:", SwingConstants.TRAILING);
         typeLabel.setLabelFor(this.m_typeList);
-        JLabel metaLabel = new JLabel("Select meta graph:", JLabel.TRAILING);
+        JLabel metaLabel = new JLabel("Select meta graph:", SwingConstants.TRAILING);
         metaLabel.setLabelFor(this.m_metaList);
-        JLabel instanceLabel = new JLabel("Select instance graph:", JLabel.TRAILING);
+        JLabel instanceLabel = new JLabel("Select instance graph:", SwingConstants.TRAILING);
         instanceLabel.setLabelFor(this.m_instanceList);
 
         JPanel form = new JPanel(new GridBagLayout());

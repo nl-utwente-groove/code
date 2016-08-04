@@ -16,6 +16,14 @@
  */
 package groove.io.conceptual.lang.groove;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.AspectLabel;
@@ -48,14 +56,7 @@ import groove.io.conceptual.value.CustomDataValue;
 import groove.io.conceptual.value.EnumValue;
 import groove.io.conceptual.value.Value;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+@SuppressWarnings("javadoc")
 public class GrooveToConstraint implements Messenger {
     private Collection<RuleModel> m_ruleModels;
     private Config m_cfg;
@@ -292,9 +293,8 @@ public class GrooveToConstraint implements Messenger {
         }
         if (fieldNames.size() > 0) {
             Class c = (Class) this.m_types.getType(getType(classNode));
-            KeysetProperty kp =
-                new KeysetProperty(relClass, relField, c,
-                    fieldNames.toArray(new Name[fieldNames.size()]));
+            KeysetProperty kp = new KeysetProperty(relClass, relField, c,
+                fieldNames.toArray(new Name[fieldNames.size()]));
             this.m_typeModel.addProperty(kp);
         }
     }

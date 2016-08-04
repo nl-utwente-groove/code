@@ -18,11 +18,6 @@ package groove.gui.jgraph;
 
 import static groove.graph.EdgeRole.BINARY;
 import static groove.io.HTMLConverter.ITALIC_TAG;
-import groove.graph.Edge;
-import groove.graph.Graph;
-import groove.graph.Label;
-import groove.graph.Node;
-import groove.io.HTMLConverter;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,6 +26,12 @@ import java.util.Iterator;
 
 import org.jgraph.graph.DefaultPort;
 
+import groove.graph.Edge;
+import groove.graph.Graph;
+import groove.graph.Label;
+import groove.graph.Node;
+import groove.io.HTMLConverter;
+
 /**
  * Generic abstract JCell subclass implementing the {@link JVertex} interface.
  * @param <G> the graph type for which the JVertex is intended
@@ -38,7 +39,7 @@ import org.jgraph.graph.DefaultPort;
  * @version $Revision $
  */
 public abstract class AJVertex<G extends Graph,JG extends JGraph<G>,JM extends JModel<G>,JE extends JEdge<G>>
-    extends AJCell<G,JG,JM> implements JVertex<G> {
+    extends AJCell<G,JG,JM>implements JVertex<G> {
     /**
      * Constructs a fresh, uninitialised JVertex.
      * Call {@link #setJModel(JModel)} and {@link #setNode(Node)}
@@ -61,11 +62,11 @@ public abstract class AJVertex<G extends Graph,JG extends JGraph<G>,JM extends J
     @Override
     public void setNode(Node node) {
         this.node = node;
-        initialise();
     }
 
     @Override
     public Node getNode() {
+        assert this.node != null; // should be the case by the time this method is called
         return this.node;
     }
 
@@ -109,8 +110,8 @@ public abstract class AJVertex<G extends Graph,JG extends JGraph<G>,JM extends J
      */
     @Override
     public JVertex<G> clone() {
-        @SuppressWarnings("unchecked")
-        AJVertex<G,JG,JM,JE> clone = (AJVertex<G,JG,JM,JE>) super.clone();
+        @SuppressWarnings("unchecked") AJVertex<G,JG,JM,JE> clone =
+            (AJVertex<G,JG,JM,JE>) super.clone();
         clone.initialise();
         return clone;
     }
@@ -123,7 +124,9 @@ public abstract class AJVertex<G extends Graph,JG extends JGraph<G>,JM extends J
         if (getLayout(edge) != null) {
             return false;
         }
-        return getJGraph().isShowLoopsAsNodeLabels() && edge.source() == edge.target()
+        JGraph<?> jGraph = getJGraph();
+        assert jGraph != null; // should be by the time this method is called
+        return jGraph.isShowLoopsAsNodeLabels() && edge.source() == edge.target()
             && edge.source() == getNode();
     }
 
@@ -184,7 +187,9 @@ public abstract class AJVertex<G extends Graph,JG extends JGraph<G>,JM extends J
 
     @Override
     public String toString() {
-        return String.format("%s %d with labels %s", getClass().getSimpleName(), getNumber(),
+        return String.format("%s %d with labels %s",
+            getClass().getSimpleName(),
+            getNumber(),
             getKeys());
     }
 
@@ -193,6 +198,7 @@ public abstract class AJVertex<G extends Graph,JG extends JGraph<G>,JM extends J
      */
     @Override
     public String getToolTipText() {
-        return HTMLConverter.HTML_TAG.on(getNodeDescription()).toString();
+        return HTMLConverter.HTML_TAG.on(getNodeDescription())
+            .toString();
     }
 }

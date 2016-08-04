@@ -22,16 +22,17 @@ import static groove.gui.look.MultiLabel.Orient.LEFT;
 import static groove.gui.look.MultiLabel.Orient.RIGHT;
 import static groove.gui.look.MultiLabel.Orient.UP_LEFT;
 import static groove.gui.look.MultiLabel.Orient.UP_RIGHT;
-import groove.io.Util;
-import groove.util.line.Line;
-import groove.util.line.LineFormat;
-import groove.util.line.LineFormat.Builder;
 
 import java.awt.geom.Point2D;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import groove.io.Util;
+import groove.util.line.Line;
+import groove.util.line.LineFormat;
+import groove.util.line.LineFormat.Builder;
 
 /**
  * Class wrapping the functionality to convert a multi-line label
@@ -68,6 +69,8 @@ public class MultiLabel {
                 dirs = dirs.dec(Direct.FORWARD);
             }
             break;
+        default:
+            // nothing to be done
         }
         dirs = dirs.inc(direct);
         this.parts.put(line, dirs);
@@ -100,7 +103,10 @@ public class MultiLabel {
 
     /** Indicates if the list of lines contains only an Empty line. */
     public boolean isEmptyLine() {
-        return this.parts.size() == 1 && this.parts.keySet().iterator().next().isEmpty();
+        return this.parts.size() == 1 && this.parts.keySet()
+            .iterator()
+            .next()
+            .isEmpty();
     }
 
     /**
@@ -369,8 +375,8 @@ public class MultiLabel {
         }
 
         /** Counts for each of the directions in this multiset. */
-        private final Map<Direct,Integer> values = new EnumMap<MultiLabel.Direct,Integer>(
-            Direct.class);
+        private final Map<Direct,Integer> values =
+            new EnumMap<MultiLabel.Direct,Integer>(Direct.class);
         /** Successor multisets after increasing one of the directions. */
         private final Map<Direct,DirectBag> incMap =
             new EnumMap<MultiLabel.Direct,MultiLabel.DirectBag>(Direct.class);

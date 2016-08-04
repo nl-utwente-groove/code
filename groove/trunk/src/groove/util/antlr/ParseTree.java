@@ -44,7 +44,7 @@ abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo> ex
      */
     @SuppressWarnings("unchecked")
     final T newNode(CommonTokenStream tokenStream, I info) {
-        T result = null;
+        T result;
         try {
             result = (T) getClass().newInstance();
             ((ParseTree<T,I>) result).tokenStream = tokenStream;
@@ -178,10 +178,10 @@ abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo> ex
         try {
             // find the lexer type
             String parserName = parserType.getName();
-            String lexerName =
-                parserName.substring(0, parserName.indexOf("Parser")).concat("Lexer");
-            @SuppressWarnings("unchecked")
-            Class<? extends Lexer> lexerType = (Class<? extends Lexer>) Class.forName(lexerName);
+            String lexerName = parserName.substring(0, parserName.indexOf("Parser"))
+                .concat("Lexer");
+            @SuppressWarnings("unchecked") Class<? extends Lexer> lexerType =
+                (Class<? extends Lexer>) Class.forName(lexerName);
             Lexer lexer = createLexer(lexerType, info, term);
             // instantiate the parser
             CommonTokenStream tokenStream = new CommonTokenStream(lexer);
@@ -217,7 +217,8 @@ abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo> ex
      */
     private void callInitialise(BaseRecognizer recognizer, I info) {
         try {
-            Method initialise = recognizer.getClass().getMethod("initialise", ParseInfo.class);
+            Method initialise = recognizer.getClass()
+                .getMethod("initialise", ParseInfo.class);
             initialise.invoke(recognizer, info);
         } catch (NoSuchMethodException e) {
             // the method does not exist; do nothing

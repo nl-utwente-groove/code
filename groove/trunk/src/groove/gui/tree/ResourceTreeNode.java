@@ -84,6 +84,8 @@ public class ResourceTreeNode extends DisplayTreeNode {
         case TYPE:
             result.append("Type graph ");
             break;
+        default:
+            // nothing to be done
         }
         result.append(HTMLConverter.STRONG_TAG.on(getQualName()));
         HTMLConverter.HTML_TAG.on(result);

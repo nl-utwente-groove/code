@@ -18,6 +18,21 @@ package groove.io.external.util;
 
 import static groove.grammar.aspect.AspectKind.DEFAULT;
 import static groove.grammar.aspect.AspectKind.PRODUCT;
+
+import java.awt.Color;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Formatter;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
+import org.jgraph.graph.GraphConstants;
+import org.jgraph.util.Bezier;
+
 import groove.grammar.aspect.AspectKind;
 import groove.graph.Edge;
 import groove.graph.Graph;
@@ -35,20 +50,6 @@ import groove.gui.layout.LayoutMap;
 import groove.gui.look.Look;
 import groove.gui.look.MultiLabel;
 import groove.io.external.util.TikzStylesExtractor.Style;
-
-import java.awt.Color;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Formatter;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-
-import org.jgraph.graph.GraphConstants;
-import org.jgraph.util.Bezier;
 
 /**
  * Class to perform the conversion from Groove graphs to Tikz format.
@@ -93,7 +94,7 @@ public final class GraphToTikz<G extends Graph> {
     // ------------------------------------------------------------------------
 
     /** Writes a graph in LaTeX <code>Tikz</code> format to a print writer. */
-    static public <N extends Node,E extends Edge> void export(JGraph<?> graph, PrintWriter writer) {
+    public static void export(JGraph<?> graph, PrintWriter writer) {
         writer.print(GraphToTikz.convert(graph));
     }
 
@@ -289,16 +290,19 @@ public final class GraphToTikz<G extends Graph> {
     }
 
     private static boolean hasParameter(JVertex<?> node) {
-        return node instanceof AspectJVertex ? ((AspectJVertex) node).getNode().hasParam() : false;
+        return node instanceof AspectJVertex ? ((AspectJVertex) node).getNode()
+            .hasParam() : false;
     }
 
     private static boolean hasNonEmptyLabel(JEdge<?> edge) {
-        return !edge.getVisuals().getLabel().isEmptyLine();
+        return !edge.getVisuals()
+            .getLabel()
+            .isEmptyLine();
     }
 
     private static AspectKind getAttributeKind(JVertex<?> node) {
-        return node instanceof AspectJVertex ? ((AspectJVertex) node).getNode().getAttrKind()
-            : DEFAULT;
+        return node instanceof AspectJVertex ? ((AspectJVertex) node).getNode()
+            .getAttrKind() : DEFAULT;
     }
 
     private static boolean isProductNode(JVertex<?> node) {
@@ -374,7 +378,8 @@ public final class GraphToTikz<G extends Graph> {
      * @param layout information regarding layout of the node.
     */
     private void appendTikzNode(JVertex<G> node, JVertexLayout layout) {
-        if (!node.getVisuals().isVisible()) {
+        if (!node.getVisuals()
+            .isVisible()) {
             return;
         }
 
@@ -391,7 +396,8 @@ public final class GraphToTikz<G extends Graph> {
         }
 
         // Node Labels.
-        MultiLabel lines = node.getVisuals().getLabel();
+        MultiLabel lines = node.getVisuals()
+            .getLabel();
         if (lines.isEmpty() || isNodifiedEdge(node)) {
             append(EMPTY_NODE_LAB);
         } else {
@@ -407,8 +413,10 @@ public final class GraphToTikz<G extends Graph> {
     }
 
     private void appendParameterNode(AspectJVertex node) {
-        String nodeId = node.getNode().toString();
-        String nr = node.getNode().getParamNr() + "";
+        String nodeId = node.getNode()
+            .toString();
+        String nr = node.getNode()
+            .getParamNr() + "";
         // New node line.
         append(BEGIN_NODE + encloseBrack(PAR_NODE_STYLE));
         // Node name.
@@ -429,9 +437,11 @@ public final class GraphToTikz<G extends Graph> {
         styles.add(""); // Placeholder for the main style.
         for (Look look : node.getLooks()) {
             if (TikzStylesExtractor.mainLooks.contains(look)) {
-                styles.set(0, look.name().toLowerCase() + TikzStylesExtractor.NODE_SUFFIX);
+                styles.set(0, look.name()
+                    .toLowerCase() + TikzStylesExtractor.NODE_SUFFIX);
             } else if (!TikzStylesExtractor.unusedLooks.contains(look)) {
-                styles.add(look.name().toLowerCase());
+                styles.add(look.name()
+                    .toLowerCase());
             }
         }
         addAdditionalStyles(node, styles);
@@ -441,17 +451,20 @@ public final class GraphToTikz<G extends Graph> {
     private void addAdditionalStyles(JVertex<G> node, List<String> styles) {
         // Check if there are some extra styles, for now we just look for
         // a color.
-        Color color = node.getVisuals().getColor();
+        Color color = node.getVisuals()
+            .getColor();
         if (color != null) {
             Style.getForegroundColor(color, styles);
-            Style.getBackgroundColor(node.getVisuals().getBackground(), styles);
+            Style.getBackgroundColor(node.getVisuals()
+                .getBackground(), styles);
         }
     }
 
     private void addAdditionalStyles(JEdge<G> edge, List<String> styles) {
         // Check if there are some extra styles, for now we just look for
         // a color.
-        Color color = edge.getVisuals().getColor();
+        Color color = edge.getVisuals()
+            .getColor();
         if (color != null) {
             Style.getEdgeColor(color, styles);
         }
@@ -459,7 +472,8 @@ public final class GraphToTikz<G extends Graph> {
 
     /** Appends the node name to the result string. */
     private void appendNode(JVertex<G> node) {
-        append(encloseSpace(enclosePar(node.getNode().toString())));
+        append(encloseSpace(enclosePar(node.getNode()
+            .toString())));
     }
 
     /**
@@ -474,7 +488,8 @@ public final class GraphToTikz<G extends Graph> {
             appendNode(node);
         } else {
             String coord = getCoordString(side);
-            String nodeName = node.getNode().toString();
+            String nodeName = node.getNode()
+                .toString();
             append(enclosePar(nodeName + coord + getPointString(point, false)));
         }
     }
@@ -510,12 +525,13 @@ public final class GraphToTikz<G extends Graph> {
         double adjX = x / scale;
         double adjY = -1.0 * (y / scale);
         String format = "%5.3f, %5.3f";
-        Formatter f = new Formatter();
-        if (usePar) {
-            format = enclosePar(format);
+        try (Formatter f = new Formatter()) {
+            if (usePar) {
+                format = enclosePar(format);
+            }
+            s.append(f.format(Locale.US, format, adjX, adjY)
+                .toString());
         }
-        s.append(f.format(Locale.US, format, adjX, adjY).toString());
-        f.close();
     }
 
     /**
@@ -572,7 +588,8 @@ public final class GraphToTikz<G extends Graph> {
      * @param layout information regarding layout of the edge.
      */
     private void appendTikzEdge(JEdge<G> edge, JEdgeLayout layout) {
-        if (!edge.getVisuals().isVisible()) {
+        if (!edge.getVisuals()
+            .isVisible()) {
             return;
         }
 
@@ -612,9 +629,11 @@ public final class GraphToTikz<G extends Graph> {
         styles.add(""); // Placeholder for the main style.
         for (Look look : edge.getLooks()) {
             if (TikzStylesExtractor.mainLooks.contains(look)) {
-                styles.set(0, look.name().toLowerCase() + TikzStylesExtractor.EDGE_SUFFIX);
+                styles.set(0, look.name()
+                    .toLowerCase() + TikzStylesExtractor.EDGE_SUFFIX);
             } else if (!TikzStylesExtractor.unusedLooks.contains(look)) {
-                styles.add(look.name().toLowerCase());
+                styles.add(look.name()
+                    .toLowerCase());
             }
         }
         addAdditionalStyles(edge, styles);
@@ -703,7 +722,9 @@ public final class GraphToTikz<G extends Graph> {
      */
     private void appendBezierLayout(JEdge<G> edge, JEdgeLayout layout) {
         JVertex<G> srcVertex = edge.getSourceVertex();
+        assert srcVertex != null; // model has been fully initialised by now
         JVertex<G> tgtVertex = edge.getTargetVertex();
+        assert tgtVertex != null; // model has been fully initialised by now
         List<Point2D> points = layout.getPoints();
 
         // Compute the bezier line.
@@ -723,7 +744,8 @@ public final class GraphToTikz<G extends Graph> {
             // This is needed to make the Tikz figure look similar to what
             // is shown in Groove. Otherwise, the bezier curve in Tikz is not
             // smooth enough.
-            boolean isLoop = srcVertex.getNode().equals(tgtVertex.getNode());
+            boolean isLoop = srcVertex.getNode()
+                .equals(tgtVertex.getNode());
             appendNode(srcVertex);
             int i = 1; // Index for edge points.
             int j = 0; // Index for bezier points. Always j = i - 1;
@@ -803,8 +825,8 @@ public final class GraphToTikz<G extends Graph> {
      * @param layout information regarding layout of the edge.
      */
     private void appendSplineLayout(JEdge<G> edge, JEdgeLayout layout) {
-        System.err.println("Sorry, the SPLINE line style is not yet "
-            + "supported, using BEZIER style...");
+        System.err.println(
+            "Sorry, the SPLINE line style is not yet " + "supported, using BEZIER style...");
         appendBezierLayout(edge, layout);
     }
 
@@ -878,8 +900,10 @@ public final class GraphToTikz<G extends Graph> {
 
     private void appendEdgeLabel(JEdge<G> edge) {
         if (hasNonEmptyLabel(edge)) {
-            MultiLabel lines = edge.getVisuals().getLabel();
-            List<Point2D> points = edge.getVisuals().getPoints();
+            MultiLabel lines = edge.getVisuals()
+                .getLabel();
+            List<Point2D> points = edge.getVisuals()
+                .getPoints();
             StringBuilder text;
             if (this.jGraph.isShowArrowsOnLabels()) {
                 Point2D start = points.get(0);
@@ -924,7 +948,10 @@ public final class GraphToTikz<G extends Graph> {
             JVertexLayout layout = this.layoutMap.getLayout(tgtVertex.getNode());
             if (layout != null) {
                 Rectangle2D tgtBounds = layout.getBounds();
-                if (points.get(index).getY() == points.get(index + 1).getY()
+                if (Math.abs(points.get(index)
+                    .getY()
+                    - points.get(index + 1)
+                        .getY()) < 0.0001
                     || getSide(tgtBounds, points.get(index)) != 0) {
                     result = true;
                 }

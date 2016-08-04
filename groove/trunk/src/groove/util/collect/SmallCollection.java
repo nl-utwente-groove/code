@@ -22,6 +22,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * Collection built either on a singleton element or on an inner collection.
  * Saves space with respect to an ordinary collection implementation if the
@@ -49,7 +51,9 @@ public class SmallCollection<E> extends AbstractCollection<E> {
             return true;
         } else {
             this.inner = createCollection();
-            this.inner.add(this.singleton);
+            assert this.singleton != null; // just tested
+            E singleton = this.singleton;
+            this.inner.add(singleton);
             this.singleton = null;
             return this.inner.add(obj);
         }
@@ -83,7 +87,9 @@ public class SmallCollection<E> extends AbstractCollection<E> {
             return Collections.<E>emptyList()
                 .iterator();
         } else {
-            return Collections.singleton(this.singleton)
+            assert this.singleton != null; // tested just above
+            E singleton = this.singleton;
+            return Collections.singleton(singleton)
                 .iterator();
         }
     }
@@ -124,11 +130,11 @@ public class SmallCollection<E> extends AbstractCollection<E> {
     /**
      * Returns the unique element in this collection, or <code>null</code> if
      * the collection is not a singleton.
-     * @return the unique element in this collection, of <code>null</code>
+     * @return the unique element in this collection, or <code>null</code>
      * @see #isSingleton()
      */
-    public E getSingleton() {
-        E result = this.singleton;
+    public @Nullable E getSingleton() {
+        @Nullable E result = this.singleton;
         if (result == null && this.inner != null && this.inner.size() == 1) {
             result = this.inner.iterator()
                 .next();
@@ -142,7 +148,7 @@ public class SmallCollection<E> extends AbstractCollection<E> {
     }
 
     /** The singleton element, if the collection is a singleton. */
-    private E singleton;
+    private @Nullable E singleton;
     /** The inner (non-singular) collection. */
     private Collection<E> inner;
 }

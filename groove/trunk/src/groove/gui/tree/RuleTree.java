@@ -78,6 +78,7 @@ import groove.lts.GraphTransitionKey;
 import groove.lts.MatchResult;
 import groove.lts.RecipeEvent;
 import groove.util.Duo;
+import groove.util.Exceptions;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
@@ -842,6 +843,9 @@ public class RuleTree extends AbstractResourceTree {
                     case REMOVE:
                         result
                             .append("<br>which, when violated, will cause the state to be removed");
+                        break;
+                    default:
+                        // no special text
                     }
                 }
             }
@@ -874,6 +878,11 @@ public class RuleTree extends AbstractResourceTree {
                 case REMOVE:
                     result.append("Enforced constraints");
                     break;
+                case OFF:
+                    // no special text
+                    break;
+                default:
+                    throw Exceptions.UNREACHABLE;
                 }
             }
             return HTMLConverter.UNDERLINE_TAG.on(result)

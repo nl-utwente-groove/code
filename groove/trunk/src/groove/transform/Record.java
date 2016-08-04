@@ -7,6 +7,8 @@ import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import groove.algebra.AlgebraFamily;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
@@ -133,7 +135,7 @@ public class Record {
     /**
      * Normalises a given transition label.
      */
-    public RuleTransitionLabel normaliseLabel(RuleTransitionLabel prototype) {
+    public @NonNull RuleTransitionLabel normaliseLabel(@NonNull RuleTransitionLabel prototype) {
         return this.labelPool.canonical(prototype);
     }
 

@@ -27,13 +27,14 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.xmi.XMIResource;
+import org.eclipse.emf.ecore.xmi.XMLResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
 import groove.grammar.QualName;
 import groove.io.conceptual.Timer;
 import groove.io.conceptual.lang.ExportException;
 
+@SuppressWarnings("javadoc")
 public class EcoreResource extends groove.io.conceptual.lang.ExportableResource {
     private ResourceSet m_resourceSet;
     private Map<QualName,Resource> m_typeResources = new HashMap<>();
@@ -99,35 +100,28 @@ public class EcoreResource extends groove.io.conceptual.lang.ExportableResource 
         try {
             if (this.m_typeFile != null) {
                 for (Entry<QualName,Resource> resourceEntry : this.m_typeResources.entrySet()) {
-
-                    FileOutputStream out = new FileOutputStream(this.m_typeFile);
-                    try {
+                    try (FileOutputStream out = new FileOutputStream(this.m_typeFile)) {
                         int timer = Timer.cont("Ecore save");
                         resourceEntry.getValue()
                             .save(out, null);
                         Timer.stop(timer);
-                    } finally {
-                        out.close();
                     }
                 }
             }
 
             if (this.m_instanceFile != null) {
                 for (Entry<QualName,Resource> resourceEntry : this.m_instanceResources.entrySet()) {
-                    FileOutputStream out = new FileOutputStream(this.m_instanceFile);
-                    try {
+                    try (FileOutputStream out = new FileOutputStream(this.m_instanceFile)) {
                         Map<Object,Object> opts = new HashMap<Object,Object>();
                         if (this.m_typeFile != null) {
                             // If a target type resource has been defined, use schemaLocation. Otherwise don't, because it will point to nothing
-                            opts.put(XMIResource.OPTION_SCHEMA_LOCATION, true);
+                            opts.put(XMLResource.OPTION_SCHEMA_LOCATION, true);
                         }
 
                         int timer = Timer.cont("Ecore save");
                         resourceEntry.getValue()
                             .save(out, opts);
                         Timer.stop(timer);
-                    } finally {
-                        out.close();
                     }
                 }
             }

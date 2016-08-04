@@ -19,6 +19,8 @@ package groove.lts;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import groove.control.Binding;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Wild;
@@ -277,9 +279,9 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
      * @param addedNodes the nodes added by the transition; possibly {@code null} if
      * the added nodes are not specified
      */
-    public static final RuleTransitionLabel createLabel(GraphState source, MatchResult match,
-        HostNode[] addedNodes) {
-        RuleTransitionLabel result = new RuleTransitionLabel(source, match, addedNodes);
+    public static final @NonNull RuleTransitionLabel createLabel(GraphState source,
+        MatchResult match, HostNode[] addedNodes) {
+        @NonNull RuleTransitionLabel result = new RuleTransitionLabel(source, match, addedNodes);
         if (REUSE_LABELS) {
             Record record = source.getGTS()
                 .getRecord();

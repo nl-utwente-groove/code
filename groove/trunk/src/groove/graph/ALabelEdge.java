@@ -23,7 +23,7 @@ import groove.util.line.Line;
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class ALabelEdge<N extends Node> extends AEdge<N,ALabelEdge<N>> implements Label {
+public abstract class ALabelEdge<N extends Node> extends AEdge<N,ALabelEdge<N>>implements Label {
     /**
      * Constructs a new instance, for a given source and target node.
      */
@@ -67,11 +67,6 @@ public abstract class ALabelEdge<N extends Node> extends AEdge<N,ALabelEdge<N>> 
             return result;
         }
         return text().compareTo(o.text());
-    }
-
-    @Override
-    public ALabelEdge<N> label() {
-        return this;
     }
 
     @Override

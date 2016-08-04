@@ -35,6 +35,7 @@ import groove.io.conceptual.value.Object;
 import groove.io.external.PortException;
 
 //separate different graphs for various elements where applicable.
+@SuppressWarnings("javadoc")
 public class TypeToGroove extends TypeExporter<AbsNode> {
     private GrooveResource m_grooveResource;
     private Config m_cfg;

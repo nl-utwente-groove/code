@@ -16,15 +16,15 @@
  */
 package groove.graph;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.PartitionRefiner;
 import groove.util.Dispenser;
 import groove.util.Groove;
 import groove.util.cache.AbstractCacheHolder;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Partial implementation of a graph. Adds to the AbstractGraphShape the ability
@@ -32,8 +32,8 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class AGraph<N extends Node,E extends GEdge<N>> extends
-    AbstractCacheHolder<GraphCache<N,E>> implements GGraph<N,E> {
+public abstract class AGraph<N extends Node,E extends GEdge<N>>
+    extends AbstractCacheHolder<GraphCache<N,E>>implements GGraph<N,E> {
     /**
      * Constructs an abstract named graph.
      * @param name the (non-{@code null}) name of the graph.
@@ -242,7 +242,7 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>> extends
     @Override
     public N addNode() {
         N freshNode = getFactory().createNode(getNodeCounter());
-        assert !nodeSet().contains(freshNode) : String.format("Fresh node %s already in node set %s",
+        assert!nodeSet().contains(freshNode) : String.format("Fresh node %s already in node set %s",
             freshNode,
             nodeSet());
         addNode(freshNode);
@@ -330,7 +330,7 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>> extends
 
     @Override
     public void setName(String name) {
-        assert !isFixed();
+        assert!isFixed();
         assert name != null;
         this.name = name;
     }
@@ -387,8 +387,8 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>> extends
      * The current strategy for computing isomorphism certificates.
      * @see #getCertifier(boolean)
      */
-    static private CertificateStrategy certificateFactory = new PartitionRefiner(
-        (GGraph<Node,GEdge<Node>>) null);
+    static private CertificateStrategy certificateFactory =
+        new PartitionRefiner((GGraph<Node,GEdge<Node>>) null);
 
     /**
      * Changes the strategy for computing isomorphism certificates.

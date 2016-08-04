@@ -16,6 +16,9 @@
  */
 package groove.graph;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import groove.grammar.host.HostEdge;
 import groove.graph.plain.PlainEdge;
 import groove.util.Dispenser;
@@ -27,8 +30,8 @@ import groove.util.collect.TreeHashSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label> extends
-    ElementFactory<N,E> {
+abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label>
+    extends ElementFactory<N,E> {
     /** Constructor for a fresh factory. */
     @SuppressWarnings("unchecked")
     protected StoreFactory() {
@@ -74,12 +77,11 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
     protected void registerNode(N node) {
         super.registerNode(node);
         int nr = node.getNumber();
-        assert !isUsed(nr);
+        assert!isUsed(nr);
         if (nr >= this.nodes.length) {
             // extend the nodes array
             int newSize = Math.max((int) (this.nodes.length * GROWTH_FACTOR), nr + 1);
-            @SuppressWarnings("unchecked")
-            N[] newNodes = (N[]) new Node[newSize];
+            @SuppressWarnings("unchecked") N[] newNodes = (N[]) new Node[newSize];
             System.arraycopy(this.nodes, 0, newNodes, 0, this.nodes.length);
             this.nodes = newNodes;
         }
@@ -140,8 +142,8 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
     }
 
     /** Puts an edge in the store and returns its canonical representative. */
-    protected E storeEdge(E edge) {
-        E result = this.edgeStore.put(edge);
+    protected E storeEdge(@NonNull E edge) {
+        @Nullable E result = this.edgeStore.put(edge);
         if (result == null) {
             result = edge;
         }
@@ -153,7 +155,7 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
      * This will then be compared with the edge store to replace it by its
      * canonical representative.
      */
-    abstract protected E newEdge(N source, Label label, N target, int nr);
+    abstract protected @NonNull E newEdge(N source, Label label, N target, int nr);
 
     /** Callback factory method to initialise the edge store. */
     protected TreeHashSet<E> createEdgeStore() {
@@ -164,8 +166,12 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
              */
             @Override
             final protected boolean areEqual(E o1, E o2) {
-                return o1.source().equals(o2.source()) && o1.target().equals(o2.target())
-                    && o1.label().equals(o2.label());
+                return o1.source()
+                    .equals(o2.source())
+                    && o1.target()
+                        .equals(o2.target())
+                    && o1.label()
+                        .equals(o2.label());
             }
 
             @Override

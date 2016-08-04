@@ -47,11 +47,14 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.ToolTipManager;
+import javax.swing.WindowConstants;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 import groove.gui.Icons;
 import groove.gui.action.Refreshable;
@@ -78,7 +81,7 @@ abstract public class ConfigDialog<C> extends JDialog {
      */
     public Object getConfiguration() {
         // construct the window
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Exploration configurations");
         JPanel contentPanel = new JPanel(new BorderLayout(3, 3));
         contentPanel.setBorder(createEmptyBorder());
@@ -345,7 +348,7 @@ abstract public class ConfigDialog<C> extends JDialog {
     }
 
     /** Returns the currently selected configuration, if any. */
-    protected final C getSelectedConfig() {
+    protected final @Nullable C getSelectedConfig() {
         return hasSelectedName() ? getConfigMap().get(getSelectedName()) : null;
     }
 

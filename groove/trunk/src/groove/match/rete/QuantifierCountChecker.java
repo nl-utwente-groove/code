@@ -34,6 +34,7 @@ import groove.grammar.rule.VariableNode;
 import groove.graph.NodeComparator;
 import groove.match.TreeMatch;
 import groove.match.rete.ReteSimpleMatch.ReteCountMatch;
+import groove.util.Visitor;
 import groove.util.Visitor.Collector;
 import groove.util.collect.TreeHashSet;
 
@@ -273,7 +274,7 @@ public class QuantifierCountChecker extends ReteNetworkNode implements ReteState
     private ReteCountMatch getCountMatch(RuleToHostMap anchor) {
         ReteCountMatch countMatch = null;
         List<TreeMatch> matchList = new ArrayList<TreeMatch>();
-        Collector<TreeMatch,?> collector = Collector.newCollector(matchList);
+        Collector<TreeMatch,?> collector = Visitor.newCollector(matchList);
         this.conditionMatcher.traverse(this.getOwner()
             .getOwnerEngine()
             .getNetwork()

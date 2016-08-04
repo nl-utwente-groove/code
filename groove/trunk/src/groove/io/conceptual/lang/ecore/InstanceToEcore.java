@@ -52,6 +52,7 @@ import groove.io.conceptual.value.TupleValue;
 import groove.io.conceptual.value.Value;
 import groove.io.external.PortException;
 
+@SuppressWarnings("javadoc")
 public class InstanceToEcore extends InstanceExporter<java.lang.Object>implements Visitor {
     private TypeToEcore m_typeToEcore;
 
@@ -125,8 +126,8 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>implement
             if (eFeature.isMany()) {
                 // Expecting a container value, which will be iterated with all elements added to the (implicit) ELIST
                 ContainerValue cv = (ContainerValue) fieldValue.getValue();
-                @SuppressWarnings("unchecked")
-                EList<Object> objectList = (EList<Object>) eObject.eGet(eFeature);
+                @SuppressWarnings("unchecked") EList<Object> objectList =
+                    (EList<Object>) eObject.eGet(eFeature);
                 for (Value subValue : cv.getValue()) {
                     Object eSubValue = getElement(subValue);
                     assert(eSubValue != null);
@@ -236,8 +237,8 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>implement
         this.m_eObjects.add(containerObject);
 
         EStructuralFeature eFeature = containerClass.getEStructuralFeature("value");
-        @SuppressWarnings("unchecked")
-        EList<Object> objectList = (EList<Object>) containerObject.eGet(eFeature);
+        @SuppressWarnings("unchecked") EList<Object> objectList =
+            (EList<Object>) containerObject.eGet(eFeature);
         for (Value val : containerval.getValue()) {
             Object eSubValue = getElement(val);
             objectList.add(eSubValue);
@@ -267,8 +268,8 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>implement
             if (eFeature.isMany()) {
                 // Expecting a container value, which will be iterated with all elements added to the (implicit) ELIST
                 ContainerValue cv = (ContainerValue) tupValue;
-                @SuppressWarnings("unchecked")
-                EList<Object> objectList = (EList<Object>) tupleObject.eGet(eFeature);
+                @SuppressWarnings("unchecked") EList<Object> objectList =
+                    (EList<Object>) tupleObject.eGet(eFeature);
                 for (Value subValue : cv.getValue()) {
                     Object eSubValue = getElement(subValue);
                     objectList.add(eSubValue);

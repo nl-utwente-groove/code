@@ -1,26 +1,20 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2010 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.gui.display;
-
-import groove.gui.Icons;
-import groove.gui.Options;
-import groove.gui.list.ListTabbedPane;
-import groove.gui.look.Values;
-import groove.io.HTMLConverter;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -43,14 +37,21 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
 import javax.swing.plaf.basic.BasicButtonUI;
+
+import groove.gui.Icons;
+import groove.gui.Options;
+import groove.gui.list.ListTabbedPane;
+import groove.gui.look.Values;
+import groove.io.HTMLConverter;
 
 /**
  * Component to be used as tabComponent;
- * Contains a JLabel to show the text and 
+ * Contains a JLabel to show the text and
  * a JButton to close the tab it belongs to.
  * This is modified from a Java Swing demo.
- * 
+ *
  * Copyright (c) 1995, 2008, Oracle and/or its affiliates. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -93,11 +94,12 @@ public class TabLabel extends JPanel {
         setBorder(null);
         this.kind = tabKind;
         this.hasButton = button;
-        this.iconLabel = new JLabel(title, icon, JLabel.LEFT);
+        this.iconLabel = new JLabel(title, icon, SwingConstants.LEFT);
         this.iconLabel.setBackground(Values.ERROR_COLOR);
         this.iconLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, tabKind.getHGap()));
         if (tabKind != Kind.RESOURCE) {
-            this.iconLabel.setFont(this.iconLabel.getFont().deriveFont(Font.BOLD));
+            this.iconLabel.setFont(this.iconLabel.getFont()
+                .deriveFont(Font.BOLD));
         }
         add(this.iconLabel);
         if (button && title != null) {
@@ -105,16 +107,16 @@ public class TabLabel extends JPanel {
         }
     }
 
-    /** 
-     * Creates a new component, for a given resource tab. 
+    /**
+     * Creates a new component, for a given resource tab.
      */
     public TabLabel(ResourceTab tab, Icon icon, String title) {
         this(Kind.RESOURCE, icon, title, tab.isEditor());
         this.tab = tab;
     }
 
-    /** 
-     * Creates a new component, for a given display. 
+    /**
+     * Creates a new component, for a given display.
      */
     public TabLabel(DisplaysPanel parent, Display display, Icon icon, String title) {
         this(Kind.DISPLAY, icon, title, true);
@@ -122,16 +124,16 @@ public class TabLabel extends JPanel {
         this.parent = parent;
     }
 
-    /** 
-     * Creates new component for the state tab. 
+    /**
+     * Creates new component for the state tab.
      */
     public TabLabel(Display display, ResourceTab tab, Icon icon, String title) {
         this(Kind.STATE, icon, title, false);
         this.display = display;
     }
 
-    /** 
-     * Creates new component for the state tab. 
+    /**
+     * Creates new component for the state tab.
      */
     public TabLabel(ListTabbedPane parent, Icon icon, String title) {
         this(Kind.LIST, icon, title, true);
@@ -184,6 +186,8 @@ public class TabLabel extends JPanel {
         case LIST:
             ((ListTabbedPane) this.parent).closeSearchTab();
             break;
+        default:
+            // do nothing
         }
     }
 

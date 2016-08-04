@@ -1,30 +1,31 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2010 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.grammar.aspect;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import groove.algebra.Constant;
 import groove.algebra.syntax.Expression;
 import groove.grammar.aspect.AspectKind.ContentKind;
 import groove.grammar.type.TypeLabel;
 import groove.graph.GraphRole;
+import groove.util.Exceptions;
 import groove.util.parse.FormatException;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Parsed aspect, as used in an aspect graph to represent features
@@ -54,12 +55,8 @@ public class Aspect {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result =
-            prime * result
-                + ((this.aspectKind == null) ? 0 : this.aspectKind.hashCode());
-        result =
-            prime * result
-                + ((this.content == null) ? 0 : this.content.hashCode());
+        result = prime * result + ((this.aspectKind == null) ? 0 : this.aspectKind.hashCode());
+        result = prime * result + ((this.content == null) ? 0 : this.content.hashCode());
         return result;
     }
 
@@ -102,14 +99,12 @@ public class Aspect {
      * @throws FormatException if the text cannot be correctly parsed as content
      * for this aspect
      */
-    public Aspect newInstance(String text, GraphRole role)
-        throws FormatException {
+    public Aspect newInstance(String text, GraphRole role) throws FormatException {
         if (!this.prototype) {
             throw new UnsupportedOperationException(
                 "New aspects can only be created from prototypes");
         }
-        return new Aspect(getKind(), this.contentKind,
-            this.contentKind.parseContent(text, role));
+        return new Aspect(getKind(), this.contentKind, this.contentKind.parseContent(text, role));
     }
 
     /**
@@ -123,8 +118,7 @@ public class Aspect {
     public Aspect relabel(TypeLabel oldLabel, TypeLabel newLabel) {
         Aspect result = this;
         if (hasContent()) {
-            Object newContent =
-                this.contentKind.relabel(getContent(), oldLabel, newLabel);
+            Object newContent = this.contentKind.relabel(getContent(), oldLabel, newLabel);
             if (newContent != getContent()) {
                 result = new Aspect(getKind(), this.contentKind, newContent);
             }
@@ -137,23 +131,23 @@ public class Aspect {
         return this.aspectKind;
     }
 
-    /** 
-     * Indicates if this aspect wraps a text. 
+    /**
+     * Indicates if this aspect wraps a text.
      */
     public boolean hasContent() {
         return this.content != null;
     }
 
-    /** 
+    /**
      * Returns the text wrapped by this aspect, or {@code null} if it does
-     * not wrap a text. 
+     * not wrap a text.
      */
     public Object getContent() {
         return this.content;
     }
 
-    /** 
-     * Returns a string description of the aspect content, 
+    /**
+     * Returns a string description of the aspect content,
      * or the empty string if the aspect has no content
      */
     public String getContentString() {
@@ -162,8 +156,8 @@ public class Aspect {
 
     /** Indicates that this aspect kind is allowed to appear on edges of a particular graph kind. */
     public boolean isForEdge(GraphRole role) {
-        boolean result =
-            AspectKind.allowedEdgeKinds.get(role).contains(getKind());
+        boolean result = AspectKind.allowedEdgeKinds.get(role)
+            .contains(getKind());
         if (result && getKind().hasSignature()) {
             result = !(getContent() instanceof Constant);
         }
@@ -172,8 +166,8 @@ public class Aspect {
 
     /** Indicates that this aspect kind is allowed to appear on nodes of a particular graph kind. */
     public boolean isForNode(GraphRole role) {
-        boolean result =
-            AspectKind.allowedNodeKinds.get(role).contains(getKind());
+        boolean result = AspectKind.allowedNodeKinds.get(role)
+            .contains(getKind());
         if (result && getKind().hasSignature()) {
             switch (role) {
             case TYPE:
@@ -184,8 +178,10 @@ public class Aspect {
                 break;
             case HOST:
                 result =
-                    (getContent() instanceof Expression)
-                        && ((Expression) getContent()).isTerm();
+                    (getContent() instanceof Expression) && ((Expression) getContent()).isTerm();
+                break;
+            default:
+                throw Exceptions.UNREACHABLE;
             }
         }
         return result;
@@ -206,8 +202,7 @@ public class Aspect {
     }
 
     /** Mapping from aspect names to canonical aspects (with that name). */
-    private final static Map<String,Aspect> aspectNameMap =
-        new HashMap<String,Aspect>();
+    private final static Map<String,Aspect> aspectNameMap = new HashMap<String,Aspect>();
 
     static {
         for (AspectKind kind : AspectKind.values()) {

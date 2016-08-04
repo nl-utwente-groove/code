@@ -19,26 +19,6 @@ package groove.io.graph;
 import static groove.grammar.aspect.AspectKind.ABSTRACT;
 import static groove.grammar.aspect.AspectKind.SUBTYPE;
 import static groove.io.FileType.LAYOUT;
-import groove.grammar.host.ValueNode;
-import groove.grammar.type.TypeEdge;
-import groove.grammar.type.TypeGraph;
-import groove.grammar.type.TypeLabel;
-import groove.grammar.type.TypeNode;
-import groove.graph.Edge;
-import groove.graph.Graph;
-import groove.graph.GraphInfo;
-import groove.graph.GraphProperties;
-import groove.graph.GraphRole;
-import groove.graph.Node;
-import groove.gui.layout.JEdgeLayout;
-import groove.gui.layout.JVertexLayout;
-import groove.gui.layout.LayoutMap;
-import groove.io.FileType;
-import groove.util.Groove;
-import groove.util.Version;
-import groove.util.line.LineStyle;
-import groove.util.parse.FormatErrorSet;
-import groove.util.parse.FormatException;
 
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
@@ -69,9 +49,29 @@ import de.gupro.gxl.gxl_1_0.ObjectFactory;
 import de.gupro.gxl.gxl_1_0.RelType;
 import de.gupro.gxl.gxl_1_0.RelendType;
 import de.gupro.gxl.gxl_1_0.TypedElementType;
+import groove.grammar.host.ValueNode;
+import groove.grammar.type.TypeEdge;
+import groove.grammar.type.TypeGraph;
+import groove.grammar.type.TypeLabel;
+import groove.grammar.type.TypeNode;
+import groove.graph.Edge;
+import groove.graph.Graph;
+import groove.graph.GraphInfo;
+import groove.graph.GraphProperties;
+import groove.graph.GraphRole;
+import groove.graph.Node;
+import groove.gui.layout.JEdgeLayout;
+import groove.gui.layout.JVertexLayout;
+import groove.gui.layout.LayoutMap;
+import groove.io.FileType;
+import groove.util.Groove;
+import groove.util.Version;
+import groove.util.line.LineStyle;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
 
 /**
- * Class to convert graphs to GXL format and back. 
+ * Class to convert graphs to GXL format and back.
  * This class is implemented using JAXB data binding.
  * @author Arend Rensink
  * @version $Revision$
@@ -118,7 +118,8 @@ public class GxlIO extends GraphIO<AttrGraph> {
         // now marshal the attribute graph
         try {
             GxlType document = new GxlType();
-            document.getGraph().add(gxlGraph);
+            document.getGraph()
+                .add(gxlGraph);
             this.marshaller.marshal(this.factory.createGxl(document), file);
         } catch (JAXBException e) {
             throw new IOException(e);
@@ -127,7 +128,7 @@ public class GxlIO extends GraphIO<AttrGraph> {
 
     /**
      * Converts a graph to an untyped GXL graph.
-     * Node types and flag labels as well as {@link ValueNode}s are converted 
+     * Node types and flag labels as well as {@link ValueNode}s are converted
      * to prefixed form.
      * If the graph is a {@link TypeGraph}, subtype edges are also added.
      */
@@ -136,7 +137,8 @@ public class GxlIO extends GraphIO<AttrGraph> {
         gxlGraph.setEdgeids(false);
         gxlGraph.setEdgemode(EdgemodeType.DIRECTED);
         gxlGraph.setId(graph.getName());
-        gxlGraph.setRole(graph.getRole().toString());
+        gxlGraph.setRole(graph.getRole()
+            .toString());
         List<GraphElementType> nodesEdges = gxlGraph.getNodeOrEdgeOrRel();
         Map<Node,NodeType> nodeMap = new HashMap<Node,NodeType>();
         Map<Edge,EdgeType> edgeMap = new HashMap<Edge,EdgeType>();
@@ -158,8 +160,7 @@ public class GxlIO extends GraphIO<AttrGraph> {
             // add appropriate edges for value nodes
             if (node instanceof ValueNode) {
                 EdgeType gxlEdge =
-                    createGxlEdge(nodeMap, node, ((ValueNode) node).toString(),
-                        node);
+                    createGxlEdge(nodeMap, node, ((ValueNode) node).toString(), node);
                 nodesEdges.add(gxlEdge);
             }
             // add attributes of XML nodes
@@ -170,16 +171,16 @@ public class GxlIO extends GraphIO<AttrGraph> {
         // add the edges
         for (Edge edge : graph.edgeSet()) {
             // create an xml element for this edge
-            String prefixedLabel = edge.label().text();
+            String prefixedLabel = edge.label()
+                .text();
             if (edge.label() instanceof TypeLabel) {
-                prefixedLabel = edge.getRole().getPrefix() + prefixedLabel;
+                prefixedLabel = edge.getRole()
+                    .getPrefix() + prefixedLabel;
             }
             if (edge instanceof TypeEdge && ((TypeEdge) edge).isAbstract()) {
                 prefixedLabel = ABSTRACT_PREFIX + prefixedLabel;
             }
-            EdgeType gxlEdge =
-                createGxlEdge(nodeMap, edge.source(), prefixedLabel,
-                    edge.target());
+            EdgeType gxlEdge = createGxlEdge(nodeMap, edge.source(), prefixedLabel, edge.target());
             edgeMap.put(edge, gxlEdge);
             nodesEdges.add(gxlEdge);
             if (layoutMap != null) {
@@ -203,7 +204,8 @@ public class GxlIO extends GraphIO<AttrGraph> {
                 for (AttrNode node : tuple.getNodes()) {
                     RelendType relEnd = this.factory.createRelendType();
                     relEnd.setId(node.toString());
-                    gxlRel.getRelend().add(relEnd);
+                    gxlRel.getRelend()
+                        .add(relEnd);
                 }
                 nodesEdges.add(gxlRel);
             }
@@ -211,32 +213,31 @@ public class GxlIO extends GraphIO<AttrGraph> {
         // add subtype edges if the graph is a type graph
         if (graph instanceof TypeGraph) {
             TypeGraph typeGraph = (TypeGraph) graph;
-            Map<TypeNode,Set<TypeNode>> subtypeMap =
-                typeGraph.getDirectSubtypeMap();
+            Map<TypeNode,Set<TypeNode>> subtypeMap = typeGraph.getDirectSubtypeMap();
             for (Map.Entry<TypeNode,Set<TypeNode>> subtypeEntry : subtypeMap.entrySet()) {
                 for (TypeNode subtype : subtypeEntry.getValue()) {
                     TypeNode supertype = subtypeEntry.getKey();
-                    nodesEdges.add(createGxlEdge(nodeMap, subtype,
-                        SUBTYPE_PREFIX, supertype));
+                    nodesEdges.add(createGxlEdge(nodeMap, subtype, SUBTYPE_PREFIX, supertype));
                 }
             }
         }
         // add the graph info
         if (graph.hasInfo()) {
             gxlGraph.setId(graph.getName());
-            gxlGraph.setRole(graph.getRole().toString());
+            gxlGraph.setRole(graph.getRole()
+                .toString());
             // add the graph attributes, if any
             GraphProperties properties = GraphInfo.getProperties(graph);
             for (Map.Entry<Object,Object> entry : properties.entrySet()) {
                 // EZ: Removed this conversion because it causes problems
                 // with rule properties keys.
                 // String attrName = ((String) entry.getKey()).toLowerCase();
-                storeAttribute(gxlGraph, (String) entry.getKey(),
-                    (String) entry.getValue());
+                storeAttribute(gxlGraph, (String) entry.getKey(), (String) entry.getValue());
             }
             // Add version info
             if (!properties.containsKey(GraphProperties.Key.VERSION.getName())) {
-                storeAttribute(gxlGraph, GraphProperties.Key.VERSION.getName(),
+                storeAttribute(gxlGraph,
+                    GraphProperties.Key.VERSION.getName(),
                     Version.GXL_VERSION);
             }
         }
@@ -248,12 +249,11 @@ public class GxlIO extends GraphIO<AttrGraph> {
      * @param map the map providing the layout info; non-{@code null}
      */
     private void storeNodeLayout(LayoutMap map, Node node, NodeType gxl) {
-        JVertexLayout layout = map.nodeMap().get(node);
+        JVertexLayout layout = map.nodeMap()
+            .get(node);
         if (layout != null) {
             Rectangle bounds = Groove.toRectangle(layout.getBounds());
-            String value =
-                bounds.x + " " + bounds.y + " " + bounds.width + " "
-                    + bounds.height;
+            String value = bounds.x + " " + bounds.y + " " + bounds.width + " " + bounds.height;
             storeAttribute(gxl, LAYOUT_ATTR_NAME, value);
         }
     }
@@ -263,12 +263,12 @@ public class GxlIO extends GraphIO<AttrGraph> {
      * @param map the map providing the layout info; non-{@code null}
      */
     private void storeEdgeLayout(LayoutMap map, Edge edge, EdgeType gxl) {
-        JEdgeLayout layout = map.edgeMap().get(edge);
+        JEdgeLayout layout = map.edgeMap()
+            .get(edge);
         if (layout != null) {
-            String value =
-                toString(layout.getLabelPosition()) + " "
-                    + toString(layout.getPoints()) + " "
-                    + layout.getLineStyle().getCode();
+            String value = toString(layout.getLabelPosition()) + " " + toString(layout.getPoints())
+                + " " + layout.getLineStyle()
+                    .getCode();
             storeAttribute(gxl, LAYOUT_ATTR_NAME, value);
         }
     }
@@ -298,8 +298,7 @@ public class GxlIO extends GraphIO<AttrGraph> {
     /**
      * Adds attributes from an attribute map to a given graph element.
      */
-    private void saveAttributes(TypedElementType gxlElem,
-            Map<String,String> attrs) {
+    private void saveAttributes(TypedElementType gxlElem, Map<String,String> attrs) {
         for (Map.Entry<String,String> e : attrs.entrySet()) {
             storeAttribute(gxlElem, e.getKey(), e.getValue());
         }
@@ -308,16 +307,16 @@ public class GxlIO extends GraphIO<AttrGraph> {
     /**
      * Adds a single key-value pair to the attributes of a given graph element.
      */
-    private void storeAttribute(TypedElementType gxlElem, String key,
-            String value) {
+    private void storeAttribute(TypedElementType gxlElem, String key, String value) {
         AttrType nodeMultAttr = this.factory.createAttrType();
         nodeMultAttr.setName(key);
         nodeMultAttr.setString(value);
-        gxlElem.getAttr().add(nodeMultAttr);
+        gxlElem.getAttr()
+            .add(nodeMultAttr);
     }
 
-    private EdgeType createGxlEdge(Map<Node,NodeType> nodeMap, Node source,
-            String labelText, Node target) {
+    private EdgeType createGxlEdge(Map<Node,NodeType> nodeMap, Node source, String labelText,
+        Node target) {
         EdgeType result = this.factory.createEdgeType();
         result.setFrom(nodeMap.get(source));
         result.setTo(nodeMap.get(target));
@@ -334,16 +333,14 @@ public class GxlIO extends GraphIO<AttrGraph> {
     public AttrGraph loadGraph(File file) throws IOException {
         // first get the non-layed out result
         AttrGraph result;
-        try {
-            InputStream in = new FileInputStream(file);
+        try (InputStream in = new FileInputStream(file)) {
             result = loadGraph(in);
         } catch (FormatException exc) {
             throw new IOException(
-                String.format("Format error while loading '%s':\n%s", file,
-                    exc.getMessage()), exc);
+                String.format("Format error while loading '%s':\n%s", file, exc.getMessage()), exc);
         } catch (IOException exc) {
-            throw new IOException(String.format(
-                "Error while loading '%s':\n%s", file, exc.getMessage()), exc);
+            throw new IOException(
+                String.format("Error while loading '%s':\n%s", file, exc.getMessage()), exc);
         }
         // set the graph name from the file name
         result.setName(FileType.getPureName(file));
@@ -355,9 +352,9 @@ public class GxlIO extends GraphIO<AttrGraph> {
         // add old-style layout information, if there is a separate layout file
         File layoutFile = toLayoutFile(file);
         if (layoutFile.exists()) {
-            try {
-                InputStream in = new FileInputStream(layoutFile);
-                LayoutIO.getInstance().loadLayout(result, in);
+            try (InputStream in = new FileInputStream(layoutFile)) {
+                LayoutIO.getInstance()
+                    .loadLayout(result, in);
             } catch (IOException e) {
                 // we do nothing when there is no layout found
             }
@@ -370,15 +367,13 @@ public class GxlIO extends GraphIO<AttrGraph> {
      * <code>loadGraphWithMap(in).first()</code>.
      */
     @Override
-    public AttrGraph loadGraph(InputStream in) throws IOException,
-        FormatException {
+    public AttrGraph loadGraph(InputStream in) throws IOException, FormatException {
         try {
             GraphType gxlGraph = unmarshal(in);
             AttrGraph graph = gxlToGraph(gxlGraph);
             String version = GraphInfo.getVersion(graph);
             if (!Version.isKnownGxlVersion(version)) {
-                GraphInfo.addErrors(
-                    graph,
+                GraphInfo.addErrors(graph,
                     new FormatErrorSet(
                         "GXL file format version '%s' is higher than supported version '%s'",
                         version, Version.GXL_VERSION));
@@ -406,8 +401,8 @@ public class GxlIO extends GraphIO<AttrGraph> {
                 // Extract the node id and create the node out of it.
                 String nodeId = gxlElement.getId();
                 if (graph.hasNode(nodeId)) {
-                    throw new FormatException("The node " + nodeId
-                        + " is declared more than once.");
+                    throw new FormatException(
+                        "The node " + nodeId + " is declared more than once.");
                 }
                 AttrNode node = graph.addNode(nodeId);
                 Map<String,String> attrs = loadAttributes(gxlElement);
@@ -442,26 +437,22 @@ public class GxlIO extends GraphIO<AttrGraph> {
                 // Find the source node of the edge.
                 NodeType gxlSource = (NodeType) gxlEdge.getFrom();
                 if (gxlSource == null) {
-                    throw new FormatException(
-                        "Unable to find source node of %s", gxlEdge);
+                    throw new FormatException("Unable to find source node of %s", gxlEdge);
                 }
                 String sourceId = gxlSource.getId();
                 AttrNode sourceNode = graph.getNode(sourceId);
                 if (sourceNode == null) {
-                    throw new FormatException(
-                        "Unable to find edge source node %s", sourceId);
+                    throw new FormatException("Unable to find edge source node %s", sourceId);
                 }
                 // Find the target node of the edge.
                 NodeType gxlTarget = (NodeType) gxlEdge.getTo();
                 if (gxlTarget == null) {
-                    throw new FormatException(
-                        "Unable to find target node of %s", gxlEdge);
+                    throw new FormatException("Unable to find target node of %s", gxlEdge);
                 }
                 String targetId = ((NodeType) gxlEdge.getTo()).getId();
                 AttrNode targetNode = graph.getNode(targetId);
                 if (targetNode == null) {
-                    throw new FormatException(
-                        "Unable to find edge target node %s", targetId);
+                    throw new FormatException("Unable to find edge target node %s", targetId);
                 }
 
                 // Extract the gxlElement attributes.
@@ -469,13 +460,11 @@ public class GxlIO extends GraphIO<AttrGraph> {
                 // check for the presence of a label
                 String labelText = attrs.remove(LABEL_ATTR_NAME);
                 if (labelText == null) {
-                    throw new FormatException(
-                        "Edge %s -> %s must have a %s attribute ", sourceId,
+                    throw new FormatException("Edge %s -> %s must have a %s attribute ", sourceId,
                         targetId, LABEL_ATTR_NAME);
                 }
                 // Create the edge object.
-                AttrEdge edge =
-                    graph.addEdge(sourceNode, labelText, targetNode);
+                AttrEdge edge = graph.addEdge(sourceNode, labelText, targetNode);
                 // check for the presence of layout information
                 String layoutText = attrs.remove(LAYOUT_ATTR_NAME);
                 if (layoutText != null) {
@@ -508,8 +497,7 @@ public class GxlIO extends GraphIO<AttrGraph> {
         }
         GraphInfo.setProperties(graph, properties);
         String roleName = gxlGraph.getRole();
-        graph.setRole(roleName == null ? GraphRole.HOST
-                : GraphRole.roles.get(roleName));
+        graph.setRole(roleName == null ? GraphRole.HOST : GraphRole.roles.get(roleName));
         GraphInfo.setLayoutMap(graph, layoutMap);
         return graph;
     }
@@ -529,20 +517,19 @@ public class GxlIO extends GraphIO<AttrGraph> {
         return result;
     }
 
-    private void loadNodeLayout(LayoutMap layoutMap, AttrNode node,
-            String layoutText) throws FormatException {
+    private void loadNodeLayout(LayoutMap layoutMap, AttrNode node, String layoutText)
+        throws FormatException {
         // extract layout
         String[] parts = layoutText.split(" ");
         Rectangle bounds = LayoutIO.toBounds(parts, 0);
         if (bounds == null) {
-            throw new FormatException("Bounds for " + parts[1]
-                + " cannot be parsed");
+            throw new FormatException("Bounds for " + parts[1] + " cannot be parsed");
         }
         layoutMap.putNode(node, new JVertexLayout(bounds));
     }
 
-    private void loadEdgeLayout(LayoutMap layoutMap, AttrEdge edge,
-            String layout) throws FormatException {
+    private void loadEdgeLayout(LayoutMap layoutMap, AttrEdge edge, String layout)
+        throws FormatException {
         String[] parts = layout.split(" ");
         if (parts.length > 2) {
             List<Point2D> points = LayoutIO.toPoints(parts, 2);
@@ -559,12 +546,12 @@ public class GxlIO extends GraphIO<AttrGraph> {
             if (sourceLayout != null && targetLayout != null) {
                 LayoutIO.correctPoints(points, sourceLayout, targetLayout);
             }
-            Point2D labelPosition =
-                LayoutIO.calculateLabelPosition(LayoutIO.toPoint(parts, 0),
-                    points, LayoutIO.VERSION2, edge.isLoop());
+            Point2D labelPosition = LayoutIO.calculateLabelPosition(LayoutIO.toPoint(parts, 0),
+                points,
+                LayoutIO.VERSION2,
+                edge.isLoop());
             JEdgeLayout result =
-                new JEdgeLayout(points, labelPosition,
-                    LineStyle.getStyle(lineStyle));
+                new JEdgeLayout(points, labelPosition, LineStyle.getStyle(lineStyle));
             layoutMap.putEdge(edge, result);
         }
     }
@@ -575,10 +562,11 @@ public class GxlIO extends GraphIO<AttrGraph> {
             JAXBElement<GxlType> doc =
                 (JAXBElement<GxlType>) this.unmarshaller.unmarshal(inputStream);
             inputStream.close();
-            return doc.getValue().getGraph().get(0);
+            return doc.getValue()
+                .getGraph()
+                .get(0);
         } catch (JAXBException e) {
-            throw new IOException(String.format("Error in %s: %s", inputStream,
-                e.getMessage()));
+            throw new IOException(String.format("Error in %s: %s", inputStream, e.getMessage()));
         }
     }
 
@@ -588,18 +576,19 @@ public class GxlIO extends GraphIO<AttrGraph> {
     private final javax.xml.bind.Marshaller marshaller;
     /** Reusable unmarshaller. */
     private final javax.xml.bind.Unmarshaller unmarshaller;
+
     {
         try {
-            this.context =
-                JAXBContext.newInstance(GxlType.class.getPackage().getName());
+            this.context = JAXBContext.newInstance(GxlType.class.getPackage()
+                .getName());
             this.unmarshaller = this.context.createUnmarshaller();
             this.marshaller = this.context.createMarshaller();
-            this.marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT,
-                Boolean.TRUE);
+            this.marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
         } catch (JAXBException e) {
             throw new IllegalStateException();
         }
     }
+
     /** Object factory used for marshalling. */
     private final ObjectFactory factory = new ObjectFactory();
 
@@ -615,7 +604,8 @@ public class GxlIO extends GraphIO<AttrGraph> {
     /** Attribute name for layout information. */
     static private final String LAYOUT_ATTR_NAME = "layout";
     /** Subtype label. */
-    static private final String ABSTRACT_PREFIX =
-        ABSTRACT.getAspect().toString();
-    static private final String SUBTYPE_PREFIX = SUBTYPE.getAspect().toString();
+    static private final String ABSTRACT_PREFIX = ABSTRACT.getAspect()
+        .toString();
+    static private final String SUBTYPE_PREFIX = SUBTYPE.getAspect()
+        .toString();
 }

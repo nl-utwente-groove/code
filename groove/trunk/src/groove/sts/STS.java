@@ -391,6 +391,7 @@ public class STS {
         for (RuleEdge le : lhs.edgeSet()) {
             if (le.getType() != null && le.target() instanceof VariableNode) {
                 HostEdge hostEdge = ruleMap.mapEdge(le);
+                assert hostEdge != null; // ruleMap should be total
                 LocationVariable var = getLocationVariable(hostEdge);
                 if (var == null && !isFinal(sourceGraph, hostEdge.source())) {
                     throw new STSException(

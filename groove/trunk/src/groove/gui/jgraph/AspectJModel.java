@@ -414,15 +414,19 @@ final public class AspectJModel extends JModel<AspectGraph> {
         // we reuse the JCells to keep their connection and user object intact;
         // however, all auxiliary structures need to be cleared
         List<AspectJVertex> newJVertices = new ArrayList<AspectJVertex>();
-        for (Object jCell : result.values()) {
-            if (jCell instanceof AspectJVertex) {
-                AspectJVertex jVertex = ((AspectJVertex) jCell);
-                jVertex.setJModel(this);
+        for (Object cell : result.values()) {
+            AspectJCell jCell = null;
+            if (cell instanceof AspectJVertex) {
+                AspectJVertex jVertex = ((AspectJVertex) cell);
                 jVertex.setNode(createAspectNode());
                 newJVertices.add(jVertex);
-            } else if (jCell instanceof AspectJEdge) {
-                AspectJEdge jEdge = (AspectJEdge) jCell;
-                jEdge.setJModel(this);
+                jCell = jVertex;
+            } else if (cell instanceof AspectJEdge) {
+                jCell = (AspectJEdge) cell;
+            }
+            if (jCell != null) {
+                jCell.setJModel(this);
+                jCell.initialise();
             }
         }
         for (AspectJVertex jVertex : newJVertices) {

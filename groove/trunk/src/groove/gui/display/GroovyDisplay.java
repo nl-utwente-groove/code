@@ -84,63 +84,58 @@ final public class GroovyDisplay extends ResourceDisplay {
         GraphManager manager = new GraphManager(getSimulatorModel());
         Binding binding = new Binding();
 
-        PipedOutputStream output = new PipedOutputStream();
-        PrintStream newstream = new PrintStream(output);
         PaneWriter writer;
-        try {
+        try (PipedOutputStream output = new PipedOutputStream();
+            PrintStream newstream = new PrintStream(output);) {
             writer = new PaneWriter(getEditorPane(), output);
+            getEditorPane().setText("");
+
+            writer.start();
+
+            binding.setVariable("simulator", getSimulator());
+            binding.setVariable("simulatorModel", getSimulatorModel());
+            binding.setVariable("manager", manager);
+            binding.setVariable("out", newstream);
+            GroovyShell shell = new GroovyShell(binding);
+            try {
+                shell.evaluate(program);
+            } catch (CompilationFailedException e) {
+                newstream.println("Failed to compile Groovy script");
+                newstream.println(e.getMessage());
+            } catch (GroovyRuntimeException e) {
+                newstream.println("Error during execution of Groovy script");
+                String loc = "";
+                for (StackTraceElement elem : e.getStackTrace()) {
+                    if (elem.getFileName()
+                        .endsWith(FileType.GROOVY.getExtension())) {
+                        loc = elem.getFileName() + ":" + elem.getLineNumber() + " : ";
+                        break;
+                    }
+                }
+                newstream.println(loc + e.getMessage());
+            } catch (Exception e) {
+                newstream.println(e.getClass()
+                    .getSimpleName() + " during execution of Groovy script");
+                newstream.println(e.getMessage());
+                for (StackTraceElement elem : e.getStackTrace()) {
+                    newstream.println(elem.toString());
+                }
+            } catch (Error e) {
+                newstream.println("!" + e.getClass()
+                    .getSimpleName() + " during execution of Groovy script!");
+                newstream.println(e.getMessage());
+            }
+
+            // Stop thread, ignore any errors
+            try {
+                writer.join();
+            } catch (InterruptedException e) {
+                // Ignore
+            }
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
 
-        getEditorPane().setText("");
-
-        writer.start();
-
-        binding.setVariable("simulator", getSimulator());
-        binding.setVariable("simulatorModel", getSimulatorModel());
-        binding.setVariable("manager", manager);
-        binding.setVariable("out", newstream);
-        GroovyShell shell = new GroovyShell(binding);
-        try {
-            shell.evaluate(program);
-        } catch (CompilationFailedException e) {
-            newstream.println("Failed to compile Groovy script");
-            newstream.println(e.getMessage());
-        } catch (GroovyRuntimeException e) {
-            newstream.println("Error during execution of Groovy script");
-            String loc = "";
-            for (StackTraceElement elem : e.getStackTrace()) {
-                if (elem.getFileName()
-                    .endsWith(FileType.GROOVY.getExtension())) {
-                    loc = elem.getFileName() + ":" + elem.getLineNumber() + " : ";
-                    break;
-                }
-            }
-            newstream.println(loc + e.getMessage());
-        } catch (Exception e) {
-            newstream.println(e.getClass()
-                .getSimpleName() + " during execution of Groovy script");
-            newstream.println(e.getMessage());
-            for (StackTraceElement elem : e.getStackTrace()) {
-                newstream.println(elem.toString());
-            }
-        } catch (Error e) {
-            newstream.println("!" + e.getClass()
-                .getSimpleName() + " during execution of Groovy script!");
-            newstream.println(e.getMessage());
-        }
-
-        // Close streams and stop thread, ignore any errors
-        try {
-            newstream.close();
-            output.close();
-            writer.join();
-        } catch (IOException e) {
-            // Ignore
-        } catch (InterruptedException e) {
-            // Ignore
-        }
     }
 
     /** Lazily creates and returns the editor pane. */

@@ -16,16 +16,6 @@
  */
 package groove.gui.display;
 
-import groove.grammar.QualName;
-import groove.grammar.model.GrammarModel;
-import groove.grammar.model.ResourceKind;
-import groove.gui.Options;
-import groove.gui.Simulator;
-import groove.gui.SimulatorListener;
-import groove.gui.SimulatorModel;
-import groove.gui.SimulatorModel.Change;
-import groove.gui.display.Display.ListPanel;
-
 import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -46,6 +36,16 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
+import groove.grammar.QualName;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
+import groove.gui.Options;
+import groove.gui.Simulator;
+import groove.gui.SimulatorListener;
+import groove.gui.SimulatorModel;
+import groove.gui.SimulatorModel.Change;
+import groove.gui.display.Display.ListPanel;
 
 /**
  * The main panel of the simulator.
@@ -254,9 +254,8 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                 assert listsTabPane != null; // implied by changeList
                 DisplayKind oldListDisplayKind =
                     ((ListPanel) listsTabPane.getSelectedComponent()).getDisplayKind();
-                changeList =
-                    oldListDisplayKind != newDisplayKind && newListPanel != null
-                        && listsTabPane.indexOfComponent(newListPanel) >= 0;
+                changeList = oldListDisplayKind != newDisplayKind && newListPanel != null
+                    && listsTabPane.indexOfComponent(newListPanel) >= 0;
                 // do not automatically switch lists panel between state and rule mode
                 switch (oldListDisplayKind) {
                 case RULE:
@@ -265,6 +264,8 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                 case STATE:
                     changeList &= newDisplayKind != DisplayKind.RULE;
                     break;
+                default:
+                    // no special conditions
                 }
                 if (changeList) {
                     listsTabPane.setSelectedComponent(newListPanel);

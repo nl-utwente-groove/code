@@ -17,19 +17,20 @@
 package groove.grammar.type;
 
 import static groove.graph.EdgeRole.BINARY;
+
+import java.util.Set;
+
 import groove.grammar.AnchorKind;
 import groove.graph.AEdge;
 import groove.graph.Label;
 import groove.util.line.Line;
-
-import java.util.Set;
 
 /**
  * Edges used in type graphs.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TypeEdge extends AEdge<TypeNode,TypeLabel> implements TypeElement {
+public class TypeEdge extends AEdge<TypeNode,TypeLabel>implements TypeElement {
     /**
      * Constructs a new type edge, with explicit multiplicity.
      * Don't call directly; use {@link TypeFactory} methods instead.
@@ -38,11 +39,9 @@ public class TypeEdge extends AEdge<TypeNode,TypeLabel> implements TypeElement {
     TypeEdge(TypeNode source, TypeLabel label, TypeNode target, TypeGraph graph) {
         super(source, label, target);
         assert graph != null;
-        assert source.equals(target) || label.getRole() == BINARY : String.format("Can't create %s label %s between distinct nodes %s and %s",
-            label.getRole().getDescription(false),
-            label,
-            source,
-            target);
+        assert source.equals(target) || label.getRole() == BINARY : String
+            .format("Can't create %s label %s between distinct nodes %s and %s", label.getRole()
+                .getDescription(false), label, source, target);
         this.graph = graph;
     }
 

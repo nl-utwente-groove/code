@@ -576,6 +576,8 @@ public class GrammarModel implements Observer {
             break;
         case PROPERTIES:
             return;
+        default:
+            // proceed
         }
         // update the set of resource models
         Map<QualName,NamedResourceModel<?>> modelMap = this.resourceMap.get(kind);

@@ -1,6 +1,9 @@
 /* $Id$ */
 package groove.util.cache;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * Abstract implementation of the {@link CacheHolder} interface. Provides a
  * {@link CacheReference} field with the required get and set method, and a hook
@@ -27,8 +30,10 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
      * @see #getCache(boolean)
      * @see #hasCache()
      */
-    public C getCache() {
-        return getCache(true);
+    public @NonNull C getCache() {
+        @Nullable C result = getCache(true);
+        assert result != null; // due to create parameter
+        return result;
     }
 
     /**
@@ -36,11 +41,11 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
      * optionally creates a fresh one.
      * @param create if {@code true}, the cache is created if it was cleared
      * before the call
-     * @return the pre-existing cache, or a fresh cache if there was no 
+     * @return the pre-existing cache, or a fresh cache if there was no
      * pre-existing one and {@code create} is set, or {@code null} otherwise
      */
-    final public C getCache(boolean create) {
-        C result = getCacheReference().get();
+    final public @Nullable C getCache(boolean create) {
+        @Nullable C result = getCacheReference().get();
         if (result == null && create) {
             result = createCache();
             setCacheReference(getCacheReference().newReference(this, result));
@@ -69,7 +74,7 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
      * object.
      * @see #getCache()
      */
-    abstract protected C createCache();
+    abstract protected @NonNull C createCache();
 
     /**
      * Sets the cache to garbage collectable. This is done by making the cache

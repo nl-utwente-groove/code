@@ -24,6 +24,7 @@ import groove.io.external.PortException;
 import groove.util.Exceptions;
 
 // Generates meta schema for type graph
+@SuppressWarnings("javadoc")
 public class MetaToGroove extends TypeExporter<AbsNode> {
     private GrooveResource m_grooveResource;
     private Config m_cfg;

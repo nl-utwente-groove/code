@@ -18,15 +18,6 @@ package groove.gui.jgraph;
 
 import static groove.gui.jgraph.JAttr.ADORNMENT_FONT;
 import static groove.gui.jgraph.JAttr.EXTRA_BORDER_SPACE;
-import groove.gui.Options;
-import groove.gui.look.Look;
-import groove.gui.look.MultiLabel;
-import groove.gui.look.Values;
-import groove.gui.look.VisualKey;
-import groove.gui.look.VisualMap;
-import groove.util.NodeShape;
-import groove.util.line.HTMLLineFormat;
-import groove.util.line.LineStyle;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -58,6 +49,16 @@ import org.jgraph.graph.GraphCellEditor;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.PortView;
 import org.jgraph.graph.VertexView;
+
+import groove.gui.Options;
+import groove.gui.look.Look;
+import groove.gui.look.MultiLabel;
+import groove.gui.look.Values;
+import groove.gui.look.VisualKey;
+import groove.gui.look.VisualMap;
+import groove.util.NodeShape;
+import groove.util.line.HTMLLineFormat;
+import groove.util.line.LineStyle;
 
 /**
  * A multi-lined vertex view that caches the label text. The functionality for
@@ -134,9 +135,8 @@ public class JVertexView extends VertexView {
         // revert to the actual borders by subtracting the
         // extra border space
         float extra = EXTRA_BORDER_SPACE - getCellVisuals().getLineWidth();
-        bounds =
-            new Rectangle2D.Double(bounds.getMinX() + extra, bounds.getMinY() + extra,
-                bounds.getWidth() - 2 * extra, bounds.getHeight() - 2 * extra);
+        bounds = new Rectangle2D.Double(bounds.getMinX() + extra, bounds.getMinY() + extra,
+            bounds.getWidth() - 2 * extra, bounds.getHeight() - 2 * extra);
         double left = bounds.getMinX();
         double right = bounds.getMaxX();
         double top = bounds.getMinY();
@@ -155,16 +155,14 @@ public class JVertexView extends VertexView {
                     // move qy into horizontal reach
                     double dy = qy - cy;
                     double room = bounds.getHeight() * (1 - 2 / DROP_FRACTION) * 0.5;
-                    qy =
-                        cy + room * Math.signum(dy)
-                            * Math.min(Math.abs(dy) / MAX_RATIO_DISTANCE, 1);
+                    qy = cy
+                        + room * Math.signum(dy) * Math.min(Math.abs(dy) / MAX_RATIO_DISTANCE, 1);
                 } else {
                     // move qx into vertical reach
                     double dx = qx - cx;
                     double room = bounds.getWidth() * (1 - 2 / DROP_FRACTION) * 0.5;
-                    qx =
-                        cx + room * Math.signum(dx)
-                            * Math.min(Math.abs(dx) / MAX_RATIO_DISTANCE, 1);
+                    qx = cx
+                        + room * Math.signum(dx) * Math.min(Math.abs(dx) / MAX_RATIO_DISTANCE, 1);
                 }
                 q = new Point2D.Double(qx, qy);
             }
@@ -223,9 +221,8 @@ public class JVertexView extends VertexView {
             result = getBounds();
             MyRenderer renderer =
                 ((MyRenderer) getRendererComponent(this.jGraph, false, false, false));
-            result =
-                new Rectangle2D.Double(result.getX(), result.getY(), renderer.adornWidth,
-                    renderer.adornHeight);
+            result = new Rectangle2D.Double(result.getX(), result.getY(), renderer.adornWidth,
+                renderer.adornHeight);
         }
         return result;
     }
@@ -348,12 +345,12 @@ public class JVertexView extends VertexView {
             background = (background != null) ? background : graph.getBackground();
             if (emph) {
                 float darken = .95f;
-                background =
-                    new Color(Math.max((int) (background.getRed() * darken), 0),
-                        Math.max((int) (background.getGreen() * darken), 0),
-                        Math.max((int) (background.getBlue() * darken), 0), background.getAlpha());
+                background = new Color(Math.max((int) (background.getRed() * darken), 0),
+                    Math.max((int) (background.getGreen() * darken), 0),
+                    Math.max((int) (background.getBlue() * darken), 0), background.getAlpha());
             }
-            if (background == null ? getBackground() != null : !background.equals(getBackground())) {
+            if (background == null ? getBackground() != null
+                : !background.equals(getBackground())) {
                 setBackground(background);
             }
             Font font = Options.getLabelFont()
@@ -460,10 +457,11 @@ public class JVertexView extends VertexView {
          */
         private Border createEmptyBorder() {
             Insets i = computeInsets();
-            return i == null ? null : BorderFactory.createEmptyBorder(i.top + EXTRA_BORDER_SPACE,
-                i.left + EXTRA_BORDER_SPACE,
-                i.bottom + EXTRA_BORDER_SPACE,
-                i.right + EXTRA_BORDER_SPACE);
+            return i == null ? null
+                : BorderFactory.createEmptyBorder(i.top + EXTRA_BORDER_SPACE,
+                    i.left + EXTRA_BORDER_SPACE,
+                    i.bottom + EXTRA_BORDER_SPACE,
+                    i.right + EXTRA_BORDER_SPACE);
         }
 
         /**
@@ -480,9 +478,8 @@ public class JVertexView extends VertexView {
             Dimension result = getTextSize();
             // adjust for view insets
             Insets i = computeInsets(result.width, result.height);
-            result =
-                new Dimension(result.width + i.left + i.right + 2 * EXTRA_BORDER_SPACE,
-                    result.height + i.top + i.bottom + 2 * EXTRA_BORDER_SPACE);
+            result = new Dimension(result.width + i.left + i.right + 2 * EXTRA_BORDER_SPACE,
+                result.height + i.top + i.bottom + 2 * EXTRA_BORDER_SPACE);
             return result;
         }
 
@@ -607,6 +604,8 @@ public class JVertexView extends VertexView {
                 result.top += textHeight / 3;
                 result.bottom += textHeight / 3;
                 break;
+            default:
+                // no adjustments
             }
             return result;
         }

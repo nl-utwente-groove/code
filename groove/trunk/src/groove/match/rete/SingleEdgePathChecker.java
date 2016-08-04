@@ -16,13 +16,13 @@
  */
 package groove.match.rete;
 
+import java.util.List;
+
 import groove.automaton.RegExpr;
 import groove.automaton.RegExpr.Atom;
 import groove.automaton.RegExpr.Wildcard;
 import groove.grammar.host.HostEdge;
 import groove.util.collect.TreeHashSet;
-
-import java.util.List;
 
 /**
  * The abstract class for all path checkers that match against one host edge.
@@ -31,8 +31,8 @@ import java.util.List;
  * @author Arash Jalali
  * @version $Revision $
  */
-public abstract class SingleEdgePathChecker extends AbstractPathChecker implements
-    ReteStateSubscriber {
+public abstract class SingleEdgePathChecker extends AbstractPathChecker
+    implements ReteStateSubscriber {
 
     /**
      * edge path-checkers have memories to store their single-edge
@@ -50,8 +50,10 @@ public abstract class SingleEdgePathChecker extends AbstractPathChecker implemen
      */
     public SingleEdgePathChecker(ReteNetwork network, RegExpr expression, boolean isLoop) {
         super(network, expression, isLoop);
-        this.getOwner().getState().subscribe(this);
-        assert (expression instanceof Atom) || (expression instanceof Wildcard);
+        this.getOwner()
+            .getState()
+            .subscribe(this);
+        assert(expression instanceof Atom) || (expression instanceof Wildcard);
     }
 
     /**
@@ -69,7 +71,7 @@ public abstract class SingleEdgePathChecker extends AbstractPathChecker implemen
 
         if (action == Action.ADD) {
 
-            assert !this.memory.contains(m);
+            assert!this.memory.contains(m);
             this.memory.add(m);
             passDownMatchToSuccessors(m);
 
@@ -79,7 +81,9 @@ public abstract class SingleEdgePathChecker extends AbstractPathChecker implemen
                 RetePathMatch m1 = m;
                 m = this.memory.put(m);
                 this.memory.remove(m1);
-                m.dominoDelete(null);
+                if (m != null) {
+                    m.dominoDelete(null);
+                }
             }
         }
 
