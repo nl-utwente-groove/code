@@ -87,7 +87,7 @@ public enum CtrlType {
     private static final Map<String,CtrlType> typeMap;
 
     static {
-        typeMap = new HashMap<String,CtrlType>();
+        typeMap = new HashMap<>();
         for (CtrlType type : CtrlType.values()) {
             typeMap.put(type.toString(), type);
         }

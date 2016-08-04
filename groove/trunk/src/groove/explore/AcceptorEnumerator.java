@@ -94,7 +94,7 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
 
     /** Map from parsable strategies to the corresponding instance of this class. */
     private final static Map<EnumSet<AcceptorValue>,AcceptorEnumerator> instanceMap =
-        new HashMap<EnumSet<AcceptorValue>,AcceptorEnumerator>();
+        new HashMap<>();
 
     private static final String ACCEPTOR_TOOLTIP = "<HTML>"
         + "An acceptor is a predicate that is applied each time the LTS is "

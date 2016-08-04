@@ -47,7 +47,7 @@ public class SettingsPanel extends JPanel {
         setName(name);
         this.dialog = dialog;
         this.helpFactory = new HelpFactory();
-        this.knownHelp = new HashSet<String>();
+        this.knownHelp = new HashSet<>();
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         add(getEditorPanel());
         add(getHelpPanel());

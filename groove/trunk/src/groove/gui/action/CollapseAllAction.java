@@ -28,7 +28,7 @@ public class CollapseAllAction extends SimulatorAction {
     @Override
     public void execute() {
         TreeNode root = (TreeNode) this.tree.getModel().getRoot();
-        List<DefaultMutableTreeNode> collapsableNodes = new ArrayList<DefaultMutableTreeNode>();
+        List<DefaultMutableTreeNode> collapsableNodes = new ArrayList<>();
         for (int i = 0; i < root.getChildCount(); i++) {
             TreeNode child = root.getChildAt(i);
             if (isDirectoryNode(child)) {

@@ -684,7 +684,7 @@ public class Simulator implements SimulatorListener {
 
     private List<RefreshableMenuItem> getRefreshableMenuItems() {
         if (this.refreshableMenuItems == null) {
-            this.refreshableMenuItems = new ArrayList<Simulator.RefreshableMenuItem>();
+            this.refreshableMenuItems = new ArrayList<>();
             this.refreshableMenuItems.add(getEditMenuItem());
             this.refreshableMenuItems.add(getCopyMenuItem());
             this.refreshableMenuItems.add(getDeleteMenuItem());

@@ -42,7 +42,7 @@ public abstract class Properties extends java.util.Properties implements Fixable
     /** Constructs a properties object with keys of a given type. */
     protected Properties(Class<? extends PropertyKey<?>> keyType) {
         this.keyType = keyType;
-        this.keyMap = new LinkedHashMap<String,PropertyKey<?>>();
+        this.keyMap = new LinkedHashMap<>();
         for (PropertyKey<?> key : keyType.getEnumConstants()) {
             this.keyMap.put(key.getName(), key);
         }

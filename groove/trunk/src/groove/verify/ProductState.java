@@ -202,7 +202,7 @@ public class ProductState {
     private final BuchiLocation buchiLocation;
     /** The incoming graph transition along which this product state was found. */
     private final GraphTransition origin;
-    private final List<ProductTransition> outTransitions = new ArrayList<ProductTransition>();
+    private final List<ProductTransition> outTransitions = new ArrayList<>();
     /** the colour of this graph state (used in the nested DFS algorithm) */
     private int colour;
     /**

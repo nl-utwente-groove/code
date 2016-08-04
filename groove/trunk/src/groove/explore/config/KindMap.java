@@ -43,5 +43,5 @@ public class KindMap {
         return this.map.get(name.toLowerCase());
     }
 
-    private final Map<String,SettingKey> map = new HashMap<String,SettingKey>();
+    private final Map<String,SettingKey> map = new HashMap<>();
 }

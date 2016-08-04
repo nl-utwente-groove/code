@@ -164,7 +164,7 @@ public class BoundedLTLStrategy extends LTLStrategy {
         ProductState result = null;
         // pick a transition to an unexplored state
         RandomChooserInSequence<ProductTransition> chooser =
-            new RandomChooserInSequence<ProductTransition>();
+            new RandomChooserInSequence<>();
         for (ProductTransition p : state.outTransitions()) {
             ProductState buchiState = p.target();
             if (isUnexplored(buchiState)) {

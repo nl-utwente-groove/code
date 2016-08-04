@@ -250,9 +250,9 @@ public class NegativeFilterSubgraphCheckerNode<LeftMatchType extends AbstractRet
      */
     protected class BidirectionalInhibitionMap {
         private HashMap<AbstractReteMatch,Set<AbstractReteMatch>> positiveToNegative =
-            new HashMap<AbstractReteMatch,Set<AbstractReteMatch>>();
+            new HashMap<>();
         private HashMap<AbstractReteMatch,Set<AbstractReteMatch>> negativeToPositive =
-            new HashMap<AbstractReteMatch,Set<AbstractReteMatch>>();
+            new HashMap<>();
 
         /**
          * Records an inhibiter-inhibited relationship between two matches.
@@ -263,14 +263,14 @@ public class NegativeFilterSubgraphCheckerNode<LeftMatchType extends AbstractRet
         public void add(AbstractReteMatch inhibitor, AbstractReteMatch inhibited) {
             Set<AbstractReteMatch> inhibitorSet = this.positiveToNegative.get(inhibited);
             if (inhibitorSet == null) {
-                inhibitorSet = new TreeHashSet<AbstractReteMatch>();
+                inhibitorSet = new TreeHashSet<>();
                 this.positiveToNegative.put(inhibited, inhibitorSet);
             }
             inhibitorSet.add(inhibitor);
 
             Set<AbstractReteMatch> inhibitedSet = this.negativeToPositive.get(inhibitor);
             if (inhibitedSet == null) {
-                inhibitedSet = new TreeHashSet<AbstractReteMatch>();
+                inhibitedSet = new TreeHashSet<>();
                 this.negativeToPositive.put(inhibitor, inhibitedSet);
             }
             inhibitedSet.add(inhibited);

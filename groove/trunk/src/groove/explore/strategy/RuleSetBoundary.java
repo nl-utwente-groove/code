@@ -48,7 +48,7 @@ public class RuleSetBoundary extends Boundary {
      */
     private RuleSetBoundary(Set<Rule> rules, Record record) {
         super(record);
-        this.rules = new HashSet<Rule>(rules);
+        this.rules = new HashSet<>(rules);
     }
 
     @Override

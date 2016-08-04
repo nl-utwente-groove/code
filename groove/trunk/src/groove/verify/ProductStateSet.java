@@ -129,7 +129,7 @@ public class ProductStateSet {
     private int closedCount = 0;
 
     private final Set<ProductListener> listeners =
-        new HashSet<ProductListener>();
+        new HashSet<>();
 
     /** Specialised set implementation for storing product states. */
     private class TreeHashStateSet extends TreeHashSet<ProductState> {

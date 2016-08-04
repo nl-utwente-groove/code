@@ -412,9 +412,9 @@ public enum Look {
         return result;
     }
 
-    private final static Map<Set<Look>,VisualMap> looksMap = new HashMap<Set<Look>,VisualMap>();
+    private final static Map<Set<Look>,VisualMap> looksMap = new HashMap<>();
 
-    private final static Map<AspectKind,Look> aspectLookMap = new EnumMap<AspectKind,Look>(
+    private final static Map<AspectKind,Look> aspectLookMap = new EnumMap<>(
         AspectKind.class);
 
     static {

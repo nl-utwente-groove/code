@@ -36,11 +36,11 @@ public class HashBagTest {
 
     @Before
     public void setUp() {
-        this.bag122 = new HashBag<Integer>();
+        this.bag122 = new HashBag<>();
         this.bag122.add(i1);
         this.bag122.add(i2);
         this.bag122.add(i2);
-        this.bag233444 = new HashBag<Integer>();
+        this.bag233444 = new HashBag<>();
         this.bag233444.add(i2);
         this.bag233444.add(i3);
         this.bag233444.add(i3);
@@ -103,7 +103,7 @@ public class HashBagTest {
      */
     @Test
     public void testIterator() {
-        Set<Integer> set122 = new HashSet<Integer>();
+        Set<Integer> set122 = new HashSet<>();
         Iterator<Integer> iter = this.bag122.iterator();
         while (iter.hasNext()) {
             set122.add(iter.next());
@@ -117,7 +117,7 @@ public class HashBagTest {
             }
         }
         assertEquals(2, this.bag122.multiplicity(i2));
-        HashBag<Integer> bag22 = new HashBag<Integer>();
+        HashBag<Integer> bag22 = new HashBag<>();
         bag22.add(new Integer(2));
         bag22.add(i2);
         assertEquals(bag22, this.bag122);

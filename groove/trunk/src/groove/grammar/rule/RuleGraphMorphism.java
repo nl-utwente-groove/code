@@ -52,7 +52,7 @@ public class RuleGraphMorphism extends Morphism<RuleNode,RuleEdge> {
     public RuleGraphMorphism clone() {
         RuleGraphMorphism result = (RuleGraphMorphism) super.clone();
         // deep copy the variable typing
-        result.varTyping = new HashMap<LabelVar,Set<? extends TypeElement>>();
+        result.varTyping = new HashMap<>();
         result.copyVarTyping(this);
         return result;
     }
@@ -103,5 +103,5 @@ public class RuleGraphMorphism extends Morphism<RuleNode,RuleEdge> {
     }
 
     private Map<LabelVar,Set<? extends TypeElement>> varTyping =
-        new HashMap<LabelVar,Set<? extends TypeElement>>();
+        new HashMap<>();
 }

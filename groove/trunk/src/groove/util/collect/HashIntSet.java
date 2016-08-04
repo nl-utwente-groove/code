@@ -56,5 +56,5 @@ final public class HashIntSet implements IntSet {
     /**
      * The underlying set.
      */
-    private final Set<Integer> store = new HashSet<Integer>();
+    private final Set<Integer> store = new HashSet<>();
 }

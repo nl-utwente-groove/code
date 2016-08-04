@@ -50,7 +50,7 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
      */
     protected HostFactory(TypeFactory typeFactory, boolean simple) {
         this.typeFactory = typeFactory;
-        this.valueMaps = new HashMap<String,Map<Object,ValueNode>>();
+        this.valueMaps = new HashMap<>();
         this.simple = simple;
     }
 
@@ -107,7 +107,7 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
     Map<Object,ValueNode> getValueMap(Algebra<?> algebra) {
         Map<Object,ValueNode> result = this.valueMaps.get(algebra.getName());
         if (result == null) {
-            result = new HashMap<Object,ValueNode>();
+            result = new HashMap<>();
             this.valueMaps.put(algebra.getName(), result);
         }
         return result;
@@ -186,7 +186,7 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
      */
     public HostNode[] normalise(HostNode[] nodes) {
         if (this.normalHostNodeMap == null) {
-            this.normalHostNodeMap = new HashMap<List<HostNode>,HostNode[]>();
+            this.normalHostNodeMap = new HashMap<>();
         }
         List<HostNode> nodeList = Arrays.asList(nodes);
         HostNode[] result = this.normalHostNodeMap.get(nodeList);

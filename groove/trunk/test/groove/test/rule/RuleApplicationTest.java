@@ -165,7 +165,7 @@ public class RuleApplicationTest {
     private void test(GrammarModel grammarModel, QualName ruleName, QualName startName) {
         try {
             grammarModel.setLocalActiveNames(HOST, startName);
-            List<HostGraph> results = new ArrayList<HostGraph>();
+            List<HostGraph> results = new ArrayList<>();
             AlgebraFamily family = grammarModel.getProperties()
                 .getAlgebraFamily();
             boolean cont = true;
@@ -200,7 +200,7 @@ public class RuleApplicationTest {
     private void test(HostGraph start, Rule rule, List<HostGraph> results) {
         IsoChecker checker = IsoChecker.getInstance(true);
         BitSet found = new BitSet();
-        Set<RuleEvent> eventSet = new HashSet<RuleEvent>();
+        Set<RuleEvent> eventSet = new HashSet<>();
         for (Proof proof : rule.getAllMatches(start, null)) {
             eventSet.add(proof.newEvent(null));
         }

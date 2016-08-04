@@ -418,7 +418,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
             file = kind.getFileType()
                 .stripExtension(file);
             // break the filename into fragments, up to the containing grammar
-            List<String> fragments = new LinkedList<String>();
+            List<String> fragments = new LinkedList<>();
             while (file != null && !GRAMMAR.hasExtension(file)) {
                 fragments.add(0, file.getName());
                 file = file.getParentFile();
@@ -439,7 +439,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
     public static Map<String,FileType> getFormatMap() {
         Map<String,FileType> result = formatMap;
         if (result == null) {
-            result = formatMap = new HashMap<String,FileType>();
+            result = formatMap = new HashMap<>();
             for (Exporter exporter : Exporters.getExporters()) {
                 if (exporter.getFormatKinds()
                     .contains(Kind.RESOURCE)) {
@@ -756,7 +756,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
         private final JTextArea logArea = new JTextArea();
 
         /** Combo box for the available image formats. */
-        final JComboBox<String> formatBox = new JComboBox<String>(Imager.getFormatMap()
+        final JComboBox<String> formatBox = new JComboBox<>(Imager.getFormatMap()
             .keySet()
             .toArray(new String[] {}));
     }

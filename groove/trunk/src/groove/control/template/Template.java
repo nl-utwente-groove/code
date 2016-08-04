@@ -59,7 +59,7 @@ public class Template {
         this.name = name;
         this.maxNodeNr = -1;
         this.owner = proc;
-        this.locations = new LinkedHashSet<Location>();
+        this.locations = new LinkedHashSet<>();
         this.start = addLocation(0);
     }
 
@@ -136,9 +136,9 @@ public class Template {
      * either on this level or recursively within function calls.
      */
     public Set<Action> getActions() {
-        Set<Action> result = new LinkedHashSet<Action>();
-        Set<Function> seen = new HashSet<Function>();
-        Queue<Template> todo = new LinkedList<Template>();
+        Set<Action> result = new LinkedHashSet<>();
+        Set<Function> seen = new HashSet<>();
+        Queue<Template> todo = new LinkedList<>();
         todo.add(this);
         while (!todo.isEmpty()) {
             Template t = todo.poll();
@@ -171,7 +171,7 @@ public class Template {
      */
     void initVars() {
         // mapping from locations to be processed to the variable sets to be added
-        Map<Location,Set<CtrlVar>> changeMap = new LinkedHashMap<Location,Set<CtrlVar>>();
+        Map<Location,Set<CtrlVar>> changeMap = new LinkedHashMap<>();
         // compute the map of incoming transitions
         for (Location loc : getLocations()) {
             if (loc.isFinal() && hasOwner()) {
@@ -211,7 +211,7 @@ public class Template {
             }
         }
         // propagate variables forward along verdict transitions
-        Set<Location> forward = new LinkedHashSet<Location>(getLocations());
+        Set<Location> forward = new LinkedHashSet<>(getLocations());
         while (!forward.isEmpty()) {
             Iterator<Location> iter = forward.iterator();
             Location loc = iter.next();
@@ -244,11 +244,11 @@ public class Template {
             Location pred = link.getKey();
             Set<CtrlVar> newPredVars = changeMap.get(pred);
             if (newPredVars == null) {
-                changeMap.put(pred, newPredVars = new HashSet<CtrlVar>());
+                changeMap.put(pred, newPredVars = new HashSet<>());
             }
             Set<CtrlVar> outVars = link.getValue();
             if (!outVars.isEmpty()) {
-                newVars = new HashSet<CtrlVar>(newVars);
+                newVars = new HashSet<>(newVars);
                 newVars.removeAll(outVars);
             }
             newPredVars.addAll(newVars);
@@ -376,7 +376,7 @@ public class Template {
             assert targetRecord != null;
             Set<CtrlVar> linkVars = targetRecord.get(source);
             if (linkVars == null) {
-                targetRecord.put(source, new HashSet<CtrlVar>(outVars));
+                targetRecord.put(source, new HashSet<>(outVars));
             } else {
                 linkVars.retainAll(outVars);
             }

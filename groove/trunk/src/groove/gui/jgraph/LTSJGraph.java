@@ -328,7 +328,7 @@ public class LTSJGraph extends JGraph<GTS>implements Serializable {
      */
     public boolean setActive(GraphState activeState, GraphTransition activeTrans) {
         boolean result = false;
-        List<JCell<GTS>> activeCells = new ArrayList<JCell<GTS>>();
+        List<JCell<GTS>> activeCells = new ArrayList<>();
         boolean changed = false;
         GraphTransition oldActiveTrans = getActiveTransition();
         this.activeTransition = activeTrans;
@@ -374,8 +374,8 @@ public class LTSJGraph extends JGraph<GTS>implements Serializable {
 
     private boolean addToModel(GraphState state) {
         // add the state and its parents and successors to the jModel
-        Set<GraphState> newStates = new HashSet<GraphState>();
-        Set<GraphTransition> newTransitions = new HashSet<GraphTransition>();
+        Set<GraphState> newStates = new HashSet<>();
+        Set<GraphTransition> newTransitions = new HashSet<>();
         newStates.add(state);
         GraphState parent = state;
         while (parent instanceof GraphNextState) {
@@ -404,7 +404,7 @@ public class LTSJGraph extends JGraph<GTS>implements Serializable {
      * This is necessary after reloading the LTS.
      */
     void reactivate() {
-        List<JCell<GTS>> activeCells = new ArrayList<JCell<GTS>>();
+        List<JCell<GTS>> activeCells = new ArrayList<>();
         GraphState activeState = getActiveState();
         if (activeState != null) {
             LTSJCell activeCell = (LTSJCell) getModel().getJCellForNode(activeState);
@@ -429,7 +429,7 @@ public class LTSJGraph extends JGraph<GTS>implements Serializable {
 
     /** Collects all cells for a given transition and its subtransitions. */
     private Collection<LTSJCell> getTransitionCells(GraphTransition trans) {
-        Collection<LTSJCell> result = new ArrayList<LTSJCell>();
+        Collection<LTSJCell> result = new ArrayList<>();
         LTSJCell jCell = (LTSJCell) getModel().getJCellForEdge(trans);
         if (jCell != null) {
             result.add(jCell);
@@ -451,8 +451,8 @@ public class LTSJGraph extends JGraph<GTS>implements Serializable {
 
     /** Returns the traces from the given set of states to the start state. */
     public Set<LTSJCell> findTraces(Iterable<GraphState> states) {
-        Set<GraphTransition> simulatorTrace = new HashSet<GraphTransition>();
-        Set<LTSJCell> result = new HashSet<LTSJCell>();
+        Set<GraphTransition> simulatorTrace = new HashSet<>();
+        Set<LTSJCell> result = new HashSet<>();
         LTSJModel model = getModel();
         for (GraphState state : states) {
             while (state instanceof GraphNextState) {
@@ -490,7 +490,7 @@ public class LTSJGraph extends JGraph<GTS>implements Serializable {
         Set<LTSJCell> result;
         ExploreResult answer = getResult();
         if (getResult().storesTransitions()) {
-            result = new HashSet<LTSJCell>();
+            result = new HashSet<>();
             LTSJModel model = getModel();
             for (GraphState state : answer) {
                 result.add((LTSJCell) model.getJCellForNode(state));

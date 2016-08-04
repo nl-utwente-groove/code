@@ -140,7 +140,7 @@ public class Pair<T,U> implements Fixable {
      * @return a new typed pair for with the given values
      */
     public static <TT,UU> Pair<TT,UU> newPair(TT one, UU two) {
-        return new Pair<TT,UU>(one, two);
+        return new Pair<>(one, two);
     }
 
     /** The precomputed hash code. The pair is fixed iff this value is not 0. */

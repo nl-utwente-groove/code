@@ -110,7 +110,7 @@ public class CtrlHelper {
      */
     @SuppressWarnings("unchecked")
     void startBranch() {
-        this.initVarScopes.push(new Set[] {new HashSet<CtrlVar>(this.initVars), null});
+        this.initVarScopes.push(new Set[] {new HashSet<>(this.initVars), null});
     }
 
     /**
@@ -119,11 +119,11 @@ public class CtrlHelper {
     void nextBranch() {
         Set<CtrlVar>[] topInitVarScope = this.initVarScopes.peek();
         if (topInitVarScope[1] == null) {
-            topInitVarScope[1] = new HashSet<CtrlVar>(this.initVars);
+            topInitVarScope[1] = new HashSet<>(this.initVars);
         } else {
             topInitVarScope[1].retainAll(this.initVars);
         }
-        this.initVars = new HashSet<CtrlVar>(topInitVarScope[0]);
+        this.initVars = new HashSet<>(topInitVarScope[0]);
     }
 
     /**
@@ -304,7 +304,7 @@ public class CtrlHelper {
      */
     private List<CtrlPar.Var> getPars(QualName procName, CtrlTree parListTree) {
         assert parListTree.getType() == CtrlChecker.PARS;
-        List<CtrlPar.Var> result = new ArrayList<CtrlPar.Var>();
+        List<CtrlPar.Var> result = new ArrayList<>();
         if (!this.namespace.hasErrors()) {
             for (int i = 0; i < parListTree.getChildCount(); i++) {
                 CtrlTree parTree = parListTree.getChild(i);
@@ -503,7 +503,7 @@ public class CtrlHelper {
         for (Callable unit : collectActions(callTree)) {
             if (checkAssign(callTree, unit, args, targets)) {
                 List<CtrlPar> unitArgs;
-                unitArgs = new ArrayList<CtrlPar>();
+                unitArgs = new ArrayList<>();
                 int argCount = 0, targetCount = 0;
                 for (CtrlPar.Var par : unit.getSignature()) {
                     CtrlPar arg;
@@ -537,7 +537,7 @@ public class CtrlHelper {
         if (targetTree.getType() == CtrlParser.ARGS) {
             result = collectArgs(targetTree);
         } else {
-            result = new ArrayList<CtrlPar>();
+            result = new ArrayList<>();
             assert targetTree.getType() == CtrlParser.VAR;
             // skip the first child: it is the declared type
             for (int i = 1; i < targetTree.getChildCount(); i++) {
@@ -573,7 +573,7 @@ public class CtrlHelper {
                 if (args == null && callTree.getChild(0)
                     .getType() != ID) {
                     // this is a group call, for which we create artificial output parameters
-                    unitArgs = new ArrayList<CtrlPar>();
+                    unitArgs = new ArrayList<>();
                     for (CtrlPar.Var par : unit.getSignature()) {
                         assert!par.isInOnly();
                         unitArgs.add(new CtrlPar.Var(par.getVar(), false));
@@ -614,7 +614,7 @@ public class CtrlHelper {
     private List<CtrlPar> collectArgs(CtrlTree argsTree) throws PreviousErrorException {
         assert argsTree.getType() == CtrlParser.ARGS;
         List<CtrlPar> result;
-        result = new ArrayList<CtrlPar>();
+        result = new ArrayList<>();
         // stop at the closing RPAR
         for (int i = 0; i < argsTree.getChildCount() - 1; i++) {
             CtrlPar arg = argsTree.getChild(i)
@@ -638,7 +638,7 @@ public class CtrlHelper {
         assert callTree.getType() == CtrlParser.CALL;
         CtrlTree nameTree = callTree.getChild(0);
         QualName unitName = nameTree.getQualName();
-        List<Callable> result = new ArrayList<Callable>();
+        List<Callable> result = new ArrayList<>();
         if (nameTree.getType() == ID) {
             Callable unit = this.namespace.getCallable(unitName);
             Action action = unit instanceof Action ? (Action) unit : null;
@@ -708,8 +708,8 @@ public class CtrlHelper {
         assert targets != null;
         List<CtrlPar.Var> sig = unit.getSignature();
         // extract the output-only arguments
-        List<CtrlPar.Var> inPars = new ArrayList<CtrlPar.Var>();
-        List<CtrlPar.Var> outPars = new ArrayList<CtrlPar.Var>();
+        List<CtrlPar.Var> inPars = new ArrayList<>();
+        List<CtrlPar.Var> outPars = new ArrayList<>();
         for (CtrlPar.Var par : sig) {
             if (par.isOutOnly()) {
                 outPars.add(par);
@@ -868,14 +868,14 @@ public class CtrlHelper {
     /** The symbol table holding the local variable declarations. */
     private final SymbolTable symbolTable = new SymbolTable();
     /** Set of currently initialised variables. */
-    private Set<CtrlVar> initVars = new HashSet<CtrlVar>();
+    private Set<CtrlVar> initVars = new HashSet<>();
     /**
      * Stack of checkpointed initialised variables. Each stack record consists
      * of two sets of variables. The first element is the set of variables
      * initialised at the start of the branch, the second is the set of
      * variables initialised in each case of the branch.
      */
-    private final Stack<Set<CtrlVar>[]> initVarScopes = new Stack<Set<CtrlVar>[]>();
+    private final Stack<Set<CtrlVar>[]> initVarScopes = new Stack<>();
 
     /** Name of the module in which all declared names should be placed. */
     private ModuleName packageName = ModuleName.TOP;

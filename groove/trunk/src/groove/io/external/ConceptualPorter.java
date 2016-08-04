@@ -191,7 +191,7 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
      */
     private Set<Resource> loadModel(Config cfg, TypeModel tm, InstanceModel im)
         throws PortException {
-        Set<Resource> result = new HashSet<Resource>();
+        Set<Resource> result = new HashSet<>();
         SimulatorModel simulatorModel = getSimulator() == null ? null : getSimulator().getModel();
         GrooveResource grooveResource = new GrooveResource(cfg, simulatorModel);
         if (tm != null) {

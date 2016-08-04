@@ -35,7 +35,7 @@ public class EncodedRuleList implements EncodedType<List<Rule>,String> {
 
     @Override
     public EncodedTypeEditor<List<Rule>,String> createEditor(GrammarModel grammar) {
-        return new StringEditor<List<Rule>>(grammar, "[rulename [; rulename]*]?", "", 20);
+        return new StringEditor<>(grammar, "[rulename [; rulename]*]?", "", 20);
     }
 
     @Override

@@ -147,15 +147,15 @@ class ConditionSearchItem extends AbstractSearchItem {
             this.condIx = strategy.getCondIx(this.condition);
         }
         if (this.condition.hasPattern()) {
-            this.nodeIxMap = new HashMap<RuleNode,Integer>();
+            this.nodeIxMap = new HashMap<>();
             for (RuleNode node : this.rootGraph.nodeSet()) {
                 this.nodeIxMap.put(node, strategy.getNodeIx(node));
             }
-            this.edgeIxMap = new HashMap<RuleEdge,Integer>();
+            this.edgeIxMap = new HashMap<>();
             for (RuleEdge edge : this.rootGraph.edgeSet()) {
                 this.edgeIxMap.put(edge, strategy.getEdgeIx(edge));
             }
-            this.varIxMap = new HashMap<LabelVar,Integer>();
+            this.varIxMap = new HashMap<>();
             for (LabelVar var : this.rootGraph.varSet()) {
                 this.varIxMap.put(var, strategy.getVarIx(var));
             }

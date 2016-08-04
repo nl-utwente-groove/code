@@ -51,7 +51,6 @@ public interface RuleElement extends Element, AnchorKey {
     public @NonNull Set<? extends TypeElement> getMatchingTypes();
 
     /** Fixed global empty set of label variables. */
-    @SuppressWarnings("null")
     final static @NonNull Set<LabelVar> EMPTY_VAR_SET = Collections.emptySet();
     /** Fixed global empty set of label variables. */
     final static List<TypeGuard> EMPTY_GUARD_LIST = Collections.emptyList();

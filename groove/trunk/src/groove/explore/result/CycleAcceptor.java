@@ -151,7 +151,7 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
     static private class CycleResult extends ExploreResult {
         public CycleResult(GTS gts) {
             super(gts);
-            this.transitions = new ArrayList<GraphTransition>();
+            this.transitions = new ArrayList<>();
         }
 
         @Override
@@ -174,7 +174,7 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
 
         @Override
         protected Collection<GraphState> createResultSet() {
-            return new ArrayList<GraphState>();
+            return new ArrayList<>();
         }
 
         @Override

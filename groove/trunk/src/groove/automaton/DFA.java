@@ -135,8 +135,8 @@ public class DFA {
             return false;
         }
         boolean result = true;
-        Map<DFAState,DFAState> isoMap = new HashMap<DFAState,DFAState>();
-        Set<Duo<DFAState>> newPairs = new HashSet<Duo<DFAState>>();
+        Map<DFAState,DFAState> isoMap = new HashMap<>();
+        Set<Duo<DFAState>> newPairs = new HashSet<>();
         isoMap.put(getStartState(), other.getStartState());
         newPairs.add(Duo.newDuo(getStartState(), other.getStartState()));
         do {
@@ -175,7 +175,7 @@ public class DFA {
      * between the transitions.
      */
     private Set<Duo<DFAState>> compareStates(Duo<DFAState> statePair) {
-        Set<Duo<DFAState>> result = new HashSet<Duo<DFAState>>();
+        Set<Duo<DFAState>> result = new HashSet<>();
         DFAState one = statePair.one();
         DFAState two = statePair.two();
         if (one.isFinal() != two.isFinal()) {
@@ -204,18 +204,18 @@ public class DFA {
      * based on the states incoming and outgoing label and variable transitions.
      */
     private Set<Set<DFAState>> computeEquivalence() {
-        Set<Set<DFAState>> result = new HashSet<Set<DFAState>>();
+        Set<Set<DFAState>> result = new HashSet<>();
         // declare and initialise the dependencies 
         // for each state pair, this records the previous state pairs
         // that are distinct if this state pair is distinct.
         Map<Set<DFAState>,Set<Set<DFAState>>> depMap =
-            new HashMap<Set<DFAState>,Set<Set<DFAState>>>();
+            new HashMap<>();
         for (DFAState i : getStates()) {
             for (DFAState j : getStates()) {
                 if (i.getNumber() < j.getNumber()) {
                     Set<DFAState> ijPair =
-                        new HashSet<DFAState>(Arrays.asList(i, j));
-                    Set<Set<DFAState>> depSet = new HashSet<Set<DFAState>>();
+                        new HashSet<>(Arrays.asList(i, j));
+                    Set<Set<DFAState>> depSet = new HashSet<>();
                     depSet.add(ijPair);
                     depMap.put(ijPair, depSet);
                     // states are equivalent until proven otherwise
@@ -227,7 +227,7 @@ public class DFA {
             for (DFAState j : getStates()) {
                 if (i.getNumber() < j.getNumber()) {
                     Set<DFAState> ijPair =
-                        new HashSet<DFAState>(Arrays.asList(i, j));
+                        new HashSet<>(Arrays.asList(i, j));
                     Set<Set<DFAState>> depSet = depMap.remove(ijPair);
                     assert depSet != null;
                     boolean distinct = i.isFinal() != j.isFinal();
@@ -265,7 +265,7 @@ public class DFA {
                 DFAState iSucc = iEntry.getValue();
                 DFAState jSucc = iMap.get(iEntry.getKey());
                 Set<DFAState> ijTargetPair =
-                    new HashSet<DFAState>(Arrays.asList(iSucc, jSucc));
+                    new HashSet<>(Arrays.asList(iSucc, jSucc));
                 Set<Set<DFAState>> ijTargetDep = depMap.get(ijTargetPair);
                 if (ijTargetDep == null) {
                     result = true;
@@ -281,10 +281,10 @@ public class DFA {
     private Map<DFAState,Set<DFAState>> computePartition(
             Set<Set<DFAState>> equivalence) {
         Map<DFAState,Set<DFAState>> result =
-            new HashMap<DFAState,Set<DFAState>>();
+            new HashMap<>();
         // initially the partition is discrete
         for (DFAState state : getStates()) {
-            Set<DFAState> cell = new HashSet<DFAState>();
+            Set<DFAState> cell = new HashSet<>();
             cell.add(state);
             result.put(state, cell);
         }
@@ -309,7 +309,7 @@ public class DFA {
     /** Computes the quotient of this automaton, based on a given state partition. */
     private DFA computeQuotient(Map<DFAState,Set<DFAState>> partition) {
         Map<Set<DFAState>,DFAState> newStateMap =
-            new HashMap<Set<DFAState>,DFAState>();
+            new HashMap<>();
         // create an image for the start cell
         Set<DFAState> startCell = partition.remove(getStartState());
         Set<RegNode> startNodes = flatten(startCell);
@@ -341,7 +341,7 @@ public class DFA {
     }
 
     private Set<RegNode> flatten(Set<DFAState> stateSet) {
-        Set<RegNode> result = new HashSet<RegNode>();
+        Set<RegNode> result = new HashSet<>();
         for (DFAState state : stateSet) {
             result.addAll(state.getNodes());
         }
@@ -354,7 +354,7 @@ public class DFA {
     private final DFAState startState;
     /** Mapping from regular automaton nodes to states. */
     private final Map<Set<RegNode>,DFAState> stateMap =
-        new LinkedHashMap<Set<RegNode>,DFAState>();
+        new LinkedHashMap<>();
     /** Currently instantiated recogniser for this automaton. */
     private Recogniser recogniser;
 }

@@ -205,7 +205,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     }
 
     private final List<Pair<JMenuItem,RefreshListener>> optionListeners =
-        new LinkedList<Pair<JMenuItem,RefreshListener>>();
+        new LinkedList<>();
 
     /**
      * Returns the refresh listener for a given option.
@@ -345,7 +345,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
      */
     @Override
     public Object[] getDescendants(Object[] cells) {
-        List<Object> res = new LinkedList<Object>();
+        List<Object> res = new LinkedList<>();
         for (Object element : cells) {
             res.add(element);
             if (element instanceof DefaultGraphCell
@@ -422,8 +422,8 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     public void refreshCells(Collection<? extends JCell<G>> jCellSet) {
         if (!jCellSet.isEmpty()) {
             JGraphLayoutCache cache = getGraphLayoutCache();
-            Collection<JCell<G>> visibleCells = new HashSet<JCell<G>>(jCellSet.size());
-            Collection<JCell<G>> hiddenCells = new HashSet<JCell<G>>(jCellSet.size());
+            Collection<JCell<G>> visibleCells = new HashSet<>(jCellSet.size());
+            Collection<JCell<G>> hiddenCells = new HashSet<>(jCellSet.size());
             for (JCell<G> jCell : jCellSet) {
                 CellView jView = cache.getMapping(jCell, false);
                 boolean wasVisible = jView != null;
@@ -480,7 +480,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
      * @see JCell#isGrayedOut()
      */
     public void changeGrayedOut(Set<JCell<G>> jCells, boolean grayedOut) {
-        Set<JCell<G>> changedJCells = new HashSet<JCell<G>>();
+        Set<JCell<G>> changedJCells = new HashSet<>();
         for (JCell<G> jCell : jCells) {
             if (jCell.setGrayedOut(grayedOut)) {
                 changedJCells.add(jCell);
@@ -1161,7 +1161,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
      * Creates and returns a fresh show/hide menu upon this jgraph.
      */
     public ShowHideMenu<G> createShowHideMenu() {
-        return new ShowHideMenu<G>(this);
+        return new ShowHideMenu<>(this);
     }
 
     private Action getShowLayoutDialogAction() {
@@ -1192,7 +1192,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
      */
     public Action getModeAction(JGraphMode mode) {
         if (this.modeActionMap == null) {
-            this.modeActionMap = new EnumMap<JGraphMode,Action>(JGraphMode.class);
+            this.modeActionMap = new EnumMap<>(JGraphMode.class);
             for (final JGraphMode any : JGraphMode.values()) {
                 Action action = new AbstractAction(any.getName(), any.getIcon()) {
                     @Override
@@ -1223,7 +1223,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
 
     private Map<JGraphMode,JToggleButton> getModeButtonMap() {
         if (this.modeButtonMap == null) {
-            this.modeButtonMap = new EnumMap<JGraphMode,JToggleButton>(JGraphMode.class);
+            this.modeButtonMap = new EnumMap<>(JGraphMode.class);
             ButtonGroup modeButtonGroup = new ButtonGroup();
             for (JGraphMode any : JGraphMode.values()) {
                 JToggleButton button = new JToggleButton(getModeAction(any));
@@ -1256,7 +1256,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
 
     /** Clear all intermediate points from all edges. */
     public void clearAllEdgePoints() {
-        Map<JCell<G>,AttributeMap> change = new HashMap<JCell<G>,AttributeMap>();
+        Map<JCell<G>,AttributeMap> change = new HashMap<>();
         for (JCell<G> jCell : getModel().getRoots()) {
             if (jCell instanceof JEdge) {
                 VisualMap visuals = jCell.getVisuals();
@@ -1317,7 +1317,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     }
 
     private final Map<VisualKey,VisualValue<?>> visualValueMap =
-        new EnumMap<VisualKey,VisualValue<?>>(VisualKey.class);
+        new EnumMap<>(VisualKey.class);
 
     /** Simulator tool to which this JGraph belongs. */
     private final Simulator simulator;

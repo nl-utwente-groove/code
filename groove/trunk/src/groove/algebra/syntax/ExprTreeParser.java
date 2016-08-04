@@ -205,9 +205,9 @@ public class ExprTreeParser extends groove.util.parse.ATermTreeParser<ExprTree.E
 
     /** Returns the mapping from operator symbols to arity-indexed lists of operators. */
     static private List<ExprOp> createOpList() {
-        List<ExprOp> result = new ArrayList<ExprOp>();
+        List<ExprOp> result = new ArrayList<>();
         // register all operators
-        Map<String,Map<OpKind,ExprOp>> opMapMap = new TreeMap<String,Map<OpKind,ExprOp>>();
+        Map<String,Map<OpKind,ExprOp>> opMapMap = new TreeMap<>();
         for (Operator sortOp : Operator.getOps()) {
             // register the operator by name, as a call operator
             registerOp(opMapMap, result, sortOp, OpKind.CALL, sortOp.getName());
@@ -230,7 +230,7 @@ public class ExprTreeParser extends groove.util.parse.ATermTreeParser<ExprTree.E
         Operator sortOp, OpKind opKind, String symbol) {
         Map<OpKind,ExprOp> opMap = mapMap.get(symbol);
         if (opMap == null) {
-            mapMap.put(symbol, opMap = new EnumMap<OpKind,ExprTree.ExprOp>(OpKind.class));
+            mapMap.put(symbol, opMap = new EnumMap<>(OpKind.class));
         }
         ExprOp result = opMap.get(opKind);
         if (result == null) {

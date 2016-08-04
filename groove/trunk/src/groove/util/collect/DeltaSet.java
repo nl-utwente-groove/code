@@ -198,7 +198,7 @@ public class DeltaSet<T> extends AbstractSet<T> {
      * returns a {@link HashSet}.
      */
     protected Set<T> createAddedSet() {
-        return new HashSet<T>();
+        return new HashSet<>();
     }
 
     /**
@@ -206,7 +206,7 @@ public class DeltaSet<T> extends AbstractSet<T> {
      * returns a {@link HashSet}.
      */
     protected Set<T> createRemovedSet() {
-        return new HashSet<T>();
+        return new HashSet<>();
     }
 
     /**

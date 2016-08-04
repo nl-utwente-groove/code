@@ -1,21 +1,9 @@
 // $ANTLR 3.4 E:\\Eclipse\\groove-formula\\src\\groove\\control\\parse\\CtrlChecker.g 2016-06-29 23:28:20
 
 package groove.control.parse;
-import groove.control.*;
-import groove.algebra.AlgebraFamily;
-import groove.util.antlr.ParseTreeAdaptor;
 import groove.util.antlr.ParseInfo;
-import java.util.LinkedList;
-import java.util.Stack;
-import java.util.HashSet;
-import java.util.HashMap;
-
-
 import org.antlr.runtime.*;
 import org.antlr.runtime.tree.*;
-import java.util.Stack;
-import java.util.List;
-import java.util.ArrayList;
 
 
 @SuppressWarnings({"all", "warnings", "unchecked"})
@@ -119,13 +107,16 @@ public void setTreeAdaptor(TreeAdaptor adaptor) {
 public TreeAdaptor getTreeAdaptor() {
     return adaptor;
 }
+    @Override
     public String[] getTokenNames() { return CtrlChecker.tokenNames; }
+    @Override
     public String getGrammarFileName() { return "E:\\Eclipse\\groove-formula\\src\\groove\\control\\parse\\CtrlChecker.g"; }
 
 
         /** Helper class to convert AST trees to namespace. */
         private CtrlHelper helper;
         
+        @Override
         public void displayRecognitionError(String[] tokenNames,
                 RecognitionException e) {
             String hdr = getErrorHeader(e);
@@ -141,6 +132,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class program_return extends TreeRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -241,7 +233,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
 
 
-            retval.tree = (CtrlTree)_first_0;
+            retval.tree = _first_0;
             if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -263,6 +255,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class package_decl_return extends TreeRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -324,7 +317,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
 
 
-            retval.tree = (CtrlTree)_first_0;
+            retval.tree = _first_0;
             if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -346,6 +339,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class imports_return extends TreeRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -408,7 +402,7 @@ public TreeAdaptor getTreeAdaptor() {
                 	    if ( _first_1==null ) _first_1 = import_decl11.tree;
 
 
-                	    retval.tree = (CtrlTree)_first_0;
+                	    retval.tree = _first_0;
                 	    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 	        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -427,7 +421,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
 
 
-            retval.tree = (CtrlTree)_first_0;
+            retval.tree = _first_0;
             if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -449,6 +443,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class import_decl_return extends TreeRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -510,7 +505,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
 
 
-            retval.tree = (CtrlTree)_first_0;
+            retval.tree = _first_0;
             if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -532,6 +527,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class recipes_return extends TreeRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -594,7 +590,7 @@ public TreeAdaptor getTreeAdaptor() {
                 	    if ( _first_1==null ) _first_1 = recipe16.tree;
 
 
-                	    retval.tree = (CtrlTree)_first_0;
+                	    retval.tree = _first_0;
                 	    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 	        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -613,7 +609,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
 
 
-            retval.tree = (CtrlTree)_first_0;
+            retval.tree = _first_0;
             if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -635,6 +631,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class recipe_return extends TreeRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -723,7 +720,7 @@ public TreeAdaptor getTreeAdaptor() {
                 	    if ( _first_2==null ) _first_2 = par_decl20.tree;
 
 
-                	    retval.tree = (CtrlTree)_first_0;
+                	    retval.tree = _first_0;
                 	    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 	        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -759,7 +756,7 @@ public TreeAdaptor getTreeAdaptor() {
                     if ( _first_1==null ) _first_1 = INT_LIT21;
 
 
-                    retval.tree = (CtrlTree)_first_0;
+                    retval.tree = _first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                         retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -786,7 +783,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
 
 
-            retval.tree = (CtrlTree)_first_0;
+            retval.tree = _first_0;
             if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -808,6 +805,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class functions_return extends TreeRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -870,7 +868,7 @@ public TreeAdaptor getTreeAdaptor() {
                 	    if ( _first_1==null ) _first_1 = function24.tree;
 
 
-                	    retval.tree = (CtrlTree)_first_0;
+                	    retval.tree = _first_0;
                 	    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 	        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -889,7 +887,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
 
 
-            retval.tree = (CtrlTree)_first_0;
+            retval.tree = _first_0;
             if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -911,6 +909,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class function_return extends TreeRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -997,7 +996,7 @@ public TreeAdaptor getTreeAdaptor() {
                 	    if ( _first_2==null ) _first_2 = par_decl28.tree;
 
 
-                	    retval.tree = (CtrlTree)_first_0;
+                	    retval.tree = _first_0;
                 	    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 	        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -1033,7 +1032,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
 
 
-            retval.tree = (CtrlTree)_first_0;
+            retval.tree = _first_0;
             if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -1055,6 +1054,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class par_decl_return extends TreeRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -1112,7 +1112,7 @@ public TreeAdaptor getTreeAdaptor() {
                     if ( _first_1==null ) _first_1 = OUT31;
 
 
-                    retval.tree = (CtrlTree)_first_0;
+                    retval.tree = _first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                         retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -1145,7 +1145,7 @@ public TreeAdaptor getTreeAdaptor() {
 
              helper.declarePar(ID33, (type32!=null?((CtrlTree)type32.tree):null), OUT31); 
 
-            retval.tree = (CtrlTree)_first_0;
+            retval.tree = _first_0;
             if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -1167,6 +1167,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class block_return extends TreeRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -1231,7 +1232,7 @@ public TreeAdaptor getTreeAdaptor() {
                 	    if ( _first_1==null ) _first_1 = stat35.tree;
 
 
-                	    retval.tree = (CtrlTree)_first_0;
+                	    retval.tree = _first_0;
                 	    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 	        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -1252,7 +1253,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
 
 
-            retval.tree = (CtrlTree)_first_0;
+            retval.tree = _first_0;
             if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -1274,6 +1275,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class stat_return extends TreeRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -1468,7 +1470,7 @@ public TreeAdaptor getTreeAdaptor() {
                     if ( _first_0==null ) _first_0 = block36.tree;
 
 
-                    retval.tree = (CtrlTree)_first_0;
+                    retval.tree = _first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                         retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -1502,7 +1504,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
 
 
-                    retval.tree = (CtrlTree)_first_0;
+                    retval.tree = _first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                         retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -1536,7 +1538,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
 
 
-                    retval.tree = (CtrlTree)_first_0;
+                    retval.tree = _first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                         retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -1570,7 +1572,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
 
 
-                    retval.tree = (CtrlTree)_first_0;
+                    retval.tree = _first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                         retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -1604,7 +1606,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
 
 
-                    retval.tree = (CtrlTree)_first_0;
+                    retval.tree = _first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                         retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -1654,7 +1656,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
 
 
-                    retval.tree = (CtrlTree)_first_0;
+                    retval.tree = _first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                         retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -1704,7 +1706,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
 
 
-                    retval.tree = (CtrlTree)_first_0;
+                    retval.tree = _first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                         retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -1758,7 +1760,7 @@ public TreeAdaptor getTreeAdaptor() {
                             if ( _first_1==null ) _first_1 = stat53.tree;
 
 
-                            retval.tree = (CtrlTree)_first_0;
+                            retval.tree = _first_0;
                             if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                                 retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -1775,7 +1777,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
 
 
-                    retval.tree = (CtrlTree)_first_0;
+                    retval.tree = _first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                         retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -1839,7 +1841,7 @@ public TreeAdaptor getTreeAdaptor() {
                             if ( _first_1==null ) _first_1 = stat57.tree;
 
 
-                            retval.tree = (CtrlTree)_first_0;
+                            retval.tree = _first_0;
                             if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                                 retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -1856,7 +1858,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
 
 
-                    retval.tree = (CtrlTree)_first_0;
+                    retval.tree = _first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                         retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -1914,7 +1916,7 @@ public TreeAdaptor getTreeAdaptor() {
                     	    if ( _first_1==null ) _first_1 = stat60.tree;
 
 
-                    	    retval.tree = (CtrlTree)_first_0;
+                    	    retval.tree = _first_0;
                     	    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                     	        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -1934,7 +1936,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
 
 
-                    retval.tree = (CtrlTree)_first_0;
+                    retval.tree = _first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                         retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -1972,7 +1974,7 @@ public TreeAdaptor getTreeAdaptor() {
                     }
 
 
-                    retval.tree = (CtrlTree)_first_0;
+                    retval.tree = _first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                         retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -1991,7 +1993,7 @@ public TreeAdaptor getTreeAdaptor() {
                     if ( _first_0==null ) _first_0 = call63.tree;
 
 
-                    retval.tree = (CtrlTree)_first_0;
+                    retval.tree = _first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                         retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -2010,7 +2012,7 @@ public TreeAdaptor getTreeAdaptor() {
                     if ( _first_0==null ) _first_0 = assign64.tree;
 
 
-                    retval.tree = (CtrlTree)_first_0;
+                    retval.tree = _first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                         retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -2025,7 +2027,7 @@ public TreeAdaptor getTreeAdaptor() {
                     if ( _first_0==null ) _first_0 = TRUE65;
 
 
-                    retval.tree = (CtrlTree)_first_0;
+                    retval.tree = _first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                         retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -2049,6 +2051,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class call_return extends TreeRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -2118,7 +2121,7 @@ public TreeAdaptor getTreeAdaptor() {
                     if ( _first_1==null ) _first_1 = arg_list68.tree;
 
 
-                    retval.tree = (CtrlTree)_first_0;
+                    retval.tree = _first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                         retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -2133,13 +2136,13 @@ public TreeAdaptor getTreeAdaptor() {
             }
 
 
-            retval.tree = (CtrlTree)_first_0;
+            retval.tree = _first_0;
             if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
             }
 
-             helper.checkGroupCall(((CtrlTree)retval.tree)); 
+             helper.checkGroupCall((retval.tree)); 
         }
         catch (RecognitionException re) {
             reportError(re);
@@ -2156,6 +2159,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class assign_return extends TreeRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -2231,7 +2235,7 @@ public TreeAdaptor getTreeAdaptor() {
                     if ( _first_1==null ) _first_1 = var_decl70.tree;
 
 
-                    retval.tree = (CtrlTree)_first_0;
+                    retval.tree = _first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                         retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -2250,7 +2254,7 @@ public TreeAdaptor getTreeAdaptor() {
                     if ( _first_1==null ) _first_1 = arg_list71.tree;
 
 
-                    retval.tree = (CtrlTree)_first_0;
+                    retval.tree = _first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                         retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -2301,7 +2305,7 @@ public TreeAdaptor getTreeAdaptor() {
                     if ( _first_2==null ) _first_2 = arg_list74.tree;
 
 
-                    retval.tree = (CtrlTree)_first_0;
+                    retval.tree = _first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                         retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -2321,13 +2325,13 @@ public TreeAdaptor getTreeAdaptor() {
             }
 
 
-            retval.tree = (CtrlTree)_first_0;
+            retval.tree = _first_0;
             if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
             }
 
-             helper.checkAssign(((CtrlTree)retval.tree)); 
+             helper.checkAssign((retval.tree)); 
         }
         catch (RecognitionException re) {
             reportError(re);
@@ -2344,6 +2348,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class var_decl_return extends TreeRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -2416,7 +2421,7 @@ public TreeAdaptor getTreeAdaptor() {
 
             	     helper.declareVar(ID77, (type76!=null?((CtrlTree)type76.tree):null)); 
 
-            	    retval.tree = (CtrlTree)_first_0;
+            	    retval.tree = _first_0;
             	    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
             	        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -2438,7 +2443,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
 
 
-            retval.tree = (CtrlTree)_first_0;
+            retval.tree = _first_0;
             if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -2460,6 +2465,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class qual_id_return extends TreeRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -2515,7 +2521,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
 
 
-            retval.tree = (CtrlTree)_first_0;
+            retval.tree = _first_0;
             if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -2537,6 +2543,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class type_return extends TreeRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -2806,6 +2813,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class arg_list_return extends TreeRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -2869,7 +2877,7 @@ public TreeAdaptor getTreeAdaptor() {
             	    if ( _first_1==null ) _first_1 = arg86.tree;
 
 
-            	    retval.tree = (CtrlTree)_first_0;
+            	    retval.tree = _first_0;
             	    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
             	        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -2893,7 +2901,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
 
 
-            retval.tree = (CtrlTree)_first_0;
+            retval.tree = _first_0;
             if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -2915,6 +2923,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class arg_return extends TreeRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -3009,7 +3018,7 @@ public TreeAdaptor getTreeAdaptor() {
                             if ( _first_1==null ) _first_1 = OUT89;
 
 
-                            retval.tree = (CtrlTree)_first_0;
+                            retval.tree = _first_0;
                             if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                                 retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -3027,7 +3036,7 @@ public TreeAdaptor getTreeAdaptor() {
 
                      helper.checkVarArg(ARG88); 
 
-                    retval.tree = (CtrlTree)_first_0;
+                    retval.tree = _first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                         retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -3044,7 +3053,7 @@ public TreeAdaptor getTreeAdaptor() {
 
                      helper.checkDontCareArg(ARG88); 
 
-                    retval.tree = (CtrlTree)_first_0;
+                    retval.tree = _first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                         retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -3065,7 +3074,7 @@ public TreeAdaptor getTreeAdaptor() {
 
                      helper.checkConstArg(ARG88); 
 
-                    retval.tree = (CtrlTree)_first_0;
+                    retval.tree = _first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                         retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -3080,7 +3089,7 @@ public TreeAdaptor getTreeAdaptor() {
             }
 
 
-            retval.tree = (CtrlTree)_first_0;
+            retval.tree = _first_0;
             if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
@@ -3102,6 +3111,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class literal_return extends TreeRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -3138,7 +3148,7 @@ public TreeAdaptor getTreeAdaptor() {
                 throw mse;
             }
 
-            retval.tree = (CtrlTree)_first_0;
+            retval.tree = _first_0;
             if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
              

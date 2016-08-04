@@ -45,6 +45,6 @@ public class SnapToGridAction extends SimulatorAction {
     }
 
     private final Set<GraphEditorTab> observers =
-        new HashSet<GraphEditorTab>();
+        new HashSet<>();
     private boolean snapToGrid;
 }

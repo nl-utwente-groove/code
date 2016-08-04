@@ -92,7 +92,7 @@ public enum EdgeEnd {
         return result;
     }
 
-    private static Map<Integer,EdgeEnd> codeMap = new HashMap<Integer,EdgeEnd>();
+    private static Map<Integer,EdgeEnd> codeMap = new HashMap<>();
 
     static {
         for (EdgeEnd style : EdgeEnd.values()) {

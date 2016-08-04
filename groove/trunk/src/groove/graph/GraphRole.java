@@ -88,7 +88,7 @@ public enum GraphRole {
     private final String name;
 
     /** Map from graph role names to graph roles. */
-    static public final Map<String,GraphRole> roles = new HashMap<String,GraphRole>();
+    static public final Map<String,GraphRole> roles = new HashMap<>();
     static {
         for (GraphRole role : GraphRole.values()) {
             roles.put(role.toString(), role);

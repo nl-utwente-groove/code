@@ -56,9 +56,9 @@ public class AutIO extends GraphIO<PlainGraph> {
             // list marking which node numbers have been used
             BitSet nodeList = new BitSet(nodeCount);
             // mapping from nodes to node numbers
-            Map<Node,Integer> nodeNrMap = new HashMap<Node,Integer>();
+            Map<Node,Integer> nodeNrMap = new HashMap<>();
             // nodes that do not have a valid number (in the range 0..nodeCount-1)
-            Set<Node> restNodes = new HashSet<Node>();
+            Set<Node> restNodes = new HashSet<>();
             // iterate over the existing nodes
             for (Node node : graph.nodeSet()) {
                 int nodeNr = node.getNumber();
@@ -106,7 +106,7 @@ public class AutIO extends GraphIO<PlainGraph> {
             String line = reader.readLine();
             int rootStart = line.indexOf('(') + 1;
             int edgeCountStart = line.indexOf(',') + 1;
-            Map<Integer,PlainNode> nodeMap = new HashMap<Integer,PlainNode>();
+            Map<Integer,PlainNode> nodeMap = new HashMap<>();
             int root = Integer.parseInt(line.substring(rootStart, edgeCountStart - 1)
                 .trim());
             PlainNode rootNode = result.addNode(root);

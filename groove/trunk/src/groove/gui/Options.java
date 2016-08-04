@@ -221,7 +221,7 @@ public class Options implements Cloneable {
     /** Returns a map from option keys to the enabled status of the option. */
     @Override
     public String toString() {
-        Map<String,Boolean> result = new HashMap<String,Boolean>();
+        Map<String,Boolean> result = new HashMap<>();
         for (Map.Entry<String,JMenuItem> entry : this.itemMap.entrySet()) {
             result.put(entry.getKey(), entry.getValue()
                 .isSelected());
@@ -232,7 +232,7 @@ public class Options implements Cloneable {
     /**
      * Map from option names to menu items.
      */
-    private final Map<String,JMenuItem> itemMap = new LinkedHashMap<String,JMenuItem>();
+    private final Map<String,JMenuItem> itemMap = new LinkedHashMap<>();
 
     /**
      * Tests if the font used for rendering labels supports
@@ -876,9 +876,9 @@ public class Options implements Cloneable {
     static public final String VERIFY_ALL_STATES_OPTION = "Check CTL on all states?";
 
     /** Default value map for the boolean options. */
-    static private final Map<String,Boolean> boolOptionDefaults = new HashMap<String,Boolean>();
+    static private final Map<String,Boolean> boolOptionDefaults = new HashMap<>();
     /** Default value map for the behaviour options. */
-    static private final Map<String,Integer> intOptionDefaults = new HashMap<String,Integer>();
+    static private final Map<String,Integer> intOptionDefaults = new HashMap<>();
 
     static {
         for (ResourceKind optionalTab : optionalTabs) {
@@ -950,7 +950,7 @@ public class Options implements Cloneable {
         try {
             // add those default user option values that do not yet exist to the
             // preferences
-            Set<String> keys = new HashSet<String>(Arrays.asList(userPrefs.keys()));
+            Set<String> keys = new HashSet<>(Arrays.asList(userPrefs.keys()));
             for (Map.Entry<String,Boolean> defaultsEntry : boolOptionDefaults.entrySet()) {
                 if (!keys.contains(defaultsEntry.getKey())) {
                     userPrefs.putBoolean(defaultsEntry.getKey(), defaultsEntry.getValue());

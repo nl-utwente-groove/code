@@ -25,8 +25,8 @@ import java.util.Set;
 public class Class extends Type implements Identifiable {
     private Id m_id;
 
-    private Map<Name,Field> m_fields = new HashMap<Name,Field>();
-    private List<Class> m_superClasses = new ArrayList<Class>();
+    private Map<Name,Field> m_fields = new HashMap<>();
+    private List<Class> m_superClasses = new ArrayList<>();
 
     private boolean m_proper;
 
@@ -150,7 +150,7 @@ public class Class extends Type implements Identifiable {
         if (!this.m_proper) {
             return this.m_properClass.getAllFields();
         }
-        Set<Field> fields = new HashSet<Field>(this.m_fields.values());
+        Set<Field> fields = new HashSet<>(this.m_fields.values());
         for (Class sup : this.m_superClasses) {
             fields.addAll(sup.getAllFields());
         }
@@ -171,7 +171,7 @@ public class Class extends Type implements Identifiable {
         if (!this.m_proper) {
             return this.m_properClass.getAllSuperClasses();
         }
-        Set<Class> superClasses = new HashSet<Class>(this.m_superClasses);
+        Set<Class> superClasses = new HashSet<>(this.m_superClasses);
         superClasses.add(this);
         for (Class sup : this.m_superClasses) {
             superClasses.addAll(sup.getAllSuperClasses());

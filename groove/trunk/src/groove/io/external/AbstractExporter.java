@@ -34,8 +34,8 @@ public abstract class AbstractExporter implements Exporter {
     protected AbstractExporter(Kind... formatKinds) {
         this.formatKinds = EnumSet.copyOf(Arrays.asList(formatKinds));
         this.fileTypes = EnumSet.noneOf(FileType.class);
-        this.fileTypeMap = new EnumMap<ResourceKind,FileType>(ResourceKind.class);
-        this.resourceKindMap = new EnumMap<FileType,ResourceKind>(FileType.class);
+        this.fileTypeMap = new EnumMap<>(ResourceKind.class);
+        this.resourceKindMap = new EnumMap<>(FileType.class);
     }
 
     @Override

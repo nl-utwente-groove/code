@@ -394,7 +394,7 @@ public class IsoChecker {
             // there's sure to be an isomorphism, but we have to add the
             // isolated nodes
             PartitionMap<Node> codPartitionMap = codCertifier.getNodePartitionMap();
-            Set<Node> usedNodeImages = new HashSet<Node>();
+            Set<Node> usedNodeImages = new HashSet<>();
             NodeCertificate[] nodeCerts = domCertifier.getNodeCertificates();
             for (NodeCertificate nodeCert : nodeCerts) {
                 Node node = nodeCert.getElement();
@@ -472,7 +472,7 @@ public class IsoChecker {
                 // there are no more results to be found
                 return null;
             } else {
-                usedNodeImages = new HashSet<Node>(state.usedNodeImages);
+                usedNodeImages = new HashSet<>(state.usedNodeImages);
                 result = state.result.clone();
             }
         } else {
@@ -480,7 +480,7 @@ public class IsoChecker {
             result = (Morphism<Node,Edge>) domCertifier.getGraph()
                 .getFactory()
                 .createMorphism();
-            usedNodeImages = new HashSet<Node>();
+            usedNodeImages = new HashSet<>();
             plan = computePlan(domCertifier, codCertifier, result, usedNodeImages);
         }
         if (plan == null) {
@@ -617,7 +617,7 @@ public class IsoChecker {
             if (state != null) {
                 state.plan = plan;
                 state.result = result.clone();
-                state.usedNodeImages = new HashSet<Node>(usedNodeImages);
+                state.usedNodeImages = new HashSet<>(usedNodeImages);
                 state.sourceImages = sourceImages;
                 state.targetImages = targetImages;
                 state.records = records;
@@ -640,12 +640,12 @@ public class IsoChecker {
     private List<IsoSearchItem> computePlan(CertificateStrategy domCertifier,
         CertificateStrategy codCertifier, Morphism<Node,Edge> resultMap, Set<Node> usedNodeImages) {
         Graph dom = domCertifier.getGraph();
-        List<IsoSearchItem> result = new ArrayList<IsoSearchItem>();
+        List<IsoSearchItem> result = new ArrayList<>();
         PartitionMap<Edge> codPartitionMap = codCertifier.getEdgePartitionMap();
-        Map<Edge,Collection<Edge>> remainingEdgeSet = new HashMap<Edge,Collection<Edge>>();
+        Map<Edge,Collection<Edge>> remainingEdgeSet = new HashMap<>();
         // the set of dom nodes that have an image in result, but whose incident
         // images possibly don't
-        Set<Node> connectedNodes = new HashSet<Node>();
+        Set<Node> connectedNodes = new HashSet<>();
         ElementCertificate<Edge>[] edgeCerts = domCertifier.getEdgeCertificates();
         // collect the pairs of edge keys and edge image sets
         int edgeCount = edgeCerts.length;
@@ -673,7 +673,7 @@ public class IsoChecker {
                     .iterator();
             Map.Entry<Edge,Collection<Edge>> first = remainingEdgeIter.next();
             remainingEdgeIter.remove();
-            TreeSet<IsoSearchItem> subPlan = new TreeSet<IsoSearchItem>();
+            TreeSet<IsoSearchItem> subPlan = new TreeSet<>();
             subPlan.add(new IsoSearchItem(first.getKey(), first.getValue()));
             // repeatedly pick an edge from the component
             while (!subPlan.isEmpty()) {
@@ -832,7 +832,7 @@ public class IsoChecker {
             }
         }
         if (map.nodeMap()
-            .size() != new HashSet<Node>(map.nodeMap()
+            .size() != new HashSet<>(map.nodeMap()
                 .values()).size()) {
             for (Map.Entry<Node,Node> first : map.nodeMap()
                 .entrySet()) {
@@ -857,26 +857,26 @@ public class IsoChecker {
             CertificateStrategy domBis = new PartitionRefiner(dom, isStrong());
             CertificateStrategy codBis = new PartitionRefiner(cod, isStrong());
             Bag<NodeCertificate> domNodes =
-                new HashBag<NodeCertificate>(Arrays.asList(domBis.getNodeCertificates()));
+                new HashBag<>(Arrays.asList(domBis.getNodeCertificates()));
             Bag<EdgeCertificate> domEdges =
-                new HashBag<EdgeCertificate>(Arrays.asList(domBis.getEdgeCertificates()));
+                new HashBag<>(Arrays.asList(domBis.getEdgeCertificates()));
             Bag<NodeCertificate> codNodes =
-                new HashBag<NodeCertificate>(Arrays.asList(codBis.getNodeCertificates()));
+                new HashBag<>(Arrays.asList(codBis.getNodeCertificates()));
             Bag<EdgeCertificate> codEdges =
-                new HashBag<EdgeCertificate>(Arrays.asList(codBis.getEdgeCertificates()));
-            Bag<NodeCertificate> domMinCodNodes = new HashBag<NodeCertificate>(domNodes);
+                new HashBag<>(Arrays.asList(codBis.getEdgeCertificates()));
+            Bag<NodeCertificate> domMinCodNodes = new HashBag<>(domNodes);
             domMinCodNodes.removeAll(codNodes);
             assert domMinCodNodes.isEmpty() : String
                 .format("Node certificates %s in dom but not cod", domMinCodNodes);
-            Bag<NodeCertificate> codMinDomNodes = new HashBag<NodeCertificate>(codNodes);
+            Bag<NodeCertificate> codMinDomNodes = new HashBag<>(codNodes);
             codMinDomNodes.removeAll(domNodes);
             assert codMinDomNodes.isEmpty() : String
                 .format("Node certificates %s in cod but not cod", codMinDomNodes);
-            Bag<EdgeCertificate> domMinCodEdges = new HashBag<EdgeCertificate>(domEdges);
+            Bag<EdgeCertificate> domMinCodEdges = new HashBag<>(domEdges);
             domMinCodEdges.removeAll(codEdges);
             assert domMinCodEdges.isEmpty() : String
                 .format("Edge certificates %s in dom but not cod", domMinCodEdges);
-            Bag<EdgeCertificate> codMinDomEdges = new HashBag<EdgeCertificate>(codEdges);
+            Bag<EdgeCertificate> codMinDomEdges = new HashBag<>(codEdges);
             codMinDomEdges.removeAll(domEdges);
             assert codMinDomEdges.isEmpty() : String
                 .format("Edge certificates %s in cod but not cod", codMinDomEdges);

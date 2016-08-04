@@ -502,8 +502,8 @@ public class JEdgeView extends EdgeView {
                 result = createManhattanShape();
             } else if (this.view.isLoop() && this.view.getPointCount() == 3) {
                 @SuppressWarnings({"unchecked"}) List<Object> points = this.view.getPoints();
-                List<Object> oldPoints = new ArrayList<Object>(points);
-                List<Object> newPoints = new ArrayList<Object>(points);
+                List<Object> oldPoints = new ArrayList<>(points);
+                List<Object> newPoints = new ArrayList<>(points);
                 Point2D first = this.view.getPoint(0);
                 Point2D second = this.view.getPoint(1);
                 Point2D leftPoint = createPointPerpendicular(first, second, true);

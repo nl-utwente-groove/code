@@ -153,7 +153,7 @@ public class PrologChecker extends GrooveCmdLineTool<Object> {
 
         @Override
         public int parseArguments(Parameters params) throws CmdLineException {
-            ArrayList<String> genArgs = new ArrayList<String>();
+            ArrayList<String> genArgs = new ArrayList<>();
             for (int ix = 0; ix < params.size(); ix++) {
                 genArgs.add(params.getParameter(ix));
             }
@@ -173,7 +173,7 @@ public class PrologChecker extends GrooveCmdLineTool<Object> {
      */
     private static class GeneratorArgs {
         GeneratorArgs(Parameters params) throws CmdLineException {
-            this.args = new ArrayList<String>();
+            this.args = new ArrayList<>();
             for (int ix = 0; ix < params.size(); ix++) {
                 this.args.add(params.getParameter(ix));
             }

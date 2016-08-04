@@ -105,7 +105,7 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
     @Override
     public void valueChanged(TreeSelectionEvent e) {
         synchroniseJModel();
-        Set<AspectJCell> emphSet = new HashSet<AspectJCell>();
+        Set<AspectJCell> emphSet = new HashSet<>();
         TreePath[] selectionPaths = getSelectionPaths();
         if (selectionPaths != null) {
             for (TreePath selectedPath : selectionPaths) {
@@ -128,7 +128,7 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
         clearSelection();
         // clear the list
         getTopNode().removeAllChildren();
-        Set<LevelNode> newNodes = new HashSet<LevelNode>();
+        Set<LevelNode> newNodes = new HashSet<>();
         Map<Index,Set<AspectElement>> levelTree =
             this.rule == null ? null : this.rule.getLevelTree();
         boolean enabled = levelTree != null && levelTree.size() > 1;
@@ -148,7 +148,7 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
                 }
                 this.levelNodeMap.put(index, levelNode);
                 AspectJModel jModel = getJGraph().getModel();
-                Set<AspectJCell> levelCells = new HashSet<AspectJCell>();
+                Set<AspectJCell> levelCells = new HashSet<>();
                 // add all cells for this level according to the rule level tree
                 for (AspectElement elem : levelEntry.getValue()) {
                     AspectJCell jCell = jModel.getJCell(elem);
@@ -194,8 +194,8 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
      * @return the set of changed cells
      */
     private Set<AspectJCell> updateVisibleCells(Collection<LevelNode> changedNodes) {
-        Set<AspectJCell> selecteds = new HashSet<AspectJCell>();
-        Set<AspectJCell> unselecteds = new HashSet<AspectJCell>();
+        Set<AspectJCell> selecteds = new HashSet<>();
+        Set<AspectJCell> unselecteds = new HashSet<>();
         for (LevelNode node : changedNodes) {
             Set<AspectJCell> levelCells = this.levelCellMap.get(node.getIndex());
             if (node.isSelected()) {
@@ -207,7 +207,7 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
         this.selectedSet.removeAll(unselecteds);
         this.selectedSet.addAll(selecteds);
         // Collect the changed cells
-        Set<AspectJCell> result = new HashSet<AspectJCell>(selecteds.size() + unselecteds.size());
+        Set<AspectJCell> result = new HashSet<>(selecteds.size() + unselecteds.size());
         result.addAll(selecteds);
         result.addAll(unselecteds);
         // now refresh the changed cells
@@ -240,20 +240,20 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
     /** Rule of which this tree shows the levels. */
     private RuleModel rule;
     /** Mapping from level indices to level tree nodes. */
-    private final Map<Index,LevelNode> levelNodeMap = new TreeMap<RuleModel.Index,LevelNode>();
+    private final Map<Index,LevelNode> levelNodeMap = new TreeMap<>();
     /**
      * Model for which {@link #levelNodeMap} {@link #levelCellMap} and
      * {@link #selectedSet} are currently computed.
      */
     private AspectJModel jModel;
     /** Set of all rule elements. */
-    private final Set<AspectJCell> allCellSet = new HashSet<AspectJCell>();
+    private final Set<AspectJCell> allCellSet = new HashSet<>();
     /** Set of rule elements that are visible according to the currently selected
      * level nodes.
      */
-    private final Set<AspectJCell> selectedSet = new HashSet<AspectJCell>();
+    private final Set<AspectJCell> selectedSet = new HashSet<>();
     /** Mapping from level indices to jCells. */
-    private final Map<Index,Set<AspectJCell>> levelCellMap = new TreeMap<Index,Set<AspectJCell>>();
+    private final Map<Index,Set<AspectJCell>> levelCellMap = new TreeMap<>();
 
     private class LevelNode extends TreeNode {
         /** Creates an instance for a given level index. */

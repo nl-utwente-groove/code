@@ -408,8 +408,8 @@ public class VisualAttributeMap extends AttributeMap {
     private final static Map<VisualKey,String> visualToAttrKeyMap;
 
     static {
-        Map<Object,VisualKey> a2v = new HashMap<Object,VisualKey>();
-        Map<VisualKey,String> v2a = new EnumMap<VisualKey,String>(VisualKey.class);
+        Map<Object,VisualKey> a2v = new HashMap<>();
+        Map<VisualKey,String> v2a = new EnumMap<>(VisualKey.class);
         for (VisualKey vKey : VisualKey.values()) {
             String aKey;
             switch (vKey) {

@@ -200,8 +200,8 @@ final public class AspectJModel extends JModel<AspectGraph> {
             return;
         }
         GraphRole role = getGraph().getRole();
-        Map<AspectNode,AspectJVertex> nodeJVertexMap = new HashMap<AspectNode,AspectJVertex>();
-        Map<AspectEdge,AspectJCell> edgeJCellMap = new HashMap<AspectEdge,AspectJCell>();
+        Map<AspectNode,AspectJVertex> nodeJVertexMap = new HashMap<>();
+        Map<AspectEdge,AspectJCell> edgeJCellMap = new HashMap<>();
         AspectGraph graph = new AspectGraph(getName(), role);
         for (AspectJCell jCell : getRoots()) {
             if (jCell instanceof AspectJVertex) {
@@ -359,7 +359,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
     @SuppressWarnings("unchecked")
     @Override
     public void remove(Object[] roots) {
-        List<Object> removables = new LinkedList<Object>(Arrays.asList(roots));
+        List<Object> removables = new LinkedList<>(Arrays.asList(roots));
         for (Object element : roots) {
             if (element instanceof AspectJVertex) {
                 AspectJVertex cell = (AspectJVertex) element;
@@ -374,7 +374,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
     @Override
     public void insert(Object[] roots, Map attributes, ConnectionSet cs, ParentMap pm,
         UndoableEdit[] edits) {
-        Set<Object> insertables = new LinkedHashSet<Object>();
+        Set<Object> insertables = new LinkedHashSet<>();
         // only copy edges whose source and target ports are connected
         for (Object root : roots) {
             boolean insert = true;
@@ -413,7 +413,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
         collectNodeNrs();
         // we reuse the JCells to keep their connection and user object intact;
         // however, all auxiliary structures need to be cleared
-        List<AspectJVertex> newJVertices = new ArrayList<AspectJVertex>();
+        List<AspectJVertex> newJVertices = new ArrayList<>();
         for (Object cell : result.values()) {
             AspectJCell jCell = null;
             if (cell instanceof AspectJVertex) {
@@ -507,7 +507,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
     private boolean collectNodeNrs() {
         boolean result = this.usedNrs == null;
         if (result) {
-            this.usedNrs = new HashSet<Integer>();
+            this.usedNrs = new HashSet<>();
             for (Object root : getRoots()) {
                 if (root instanceof AspectJVertex) {
                     this.usedNrs.add(((AspectJVertex) root).getNumber());
@@ -563,7 +563,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
     /** Properties map of the graph being displayed or edited. */
     private GraphProperties properties;
     /** Mapping from errors to affected cells. */
-    private Map<FormatError,AspectJCell> errorMap = new HashMap<FormatError,AspectJCell>();
+    private Map<FormatError,AspectJCell> errorMap = new HashMap<>();
     /** The set of used node numbers. */
     private Set<Integer> usedNrs;
     /** Flag indicating that we are loading a new aspect graph,
@@ -573,10 +573,10 @@ final public class AspectJModel extends JModel<AspectGraph> {
 
     /** Role names (for the tool tips). */
     static final Map<AspectKind,String> ROLE_NAMES =
-        new EnumMap<AspectKind,String>(AspectKind.class);
+        new EnumMap<>(AspectKind.class);
     /** Role descriptions (for the tool tips). */
     static final Map<AspectKind,String> ROLE_DESCRIPTIONS =
-        new EnumMap<AspectKind,String>(AspectKind.class);
+        new EnumMap<>(AspectKind.class);
 
     static private final boolean GUI_DEBUG = false;
 

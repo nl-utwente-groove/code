@@ -5,10 +5,6 @@ import groove.util.parse.FormatErrorSet;
 
 
 import org.antlr.runtime.*;
-import java.util.Stack;
-import java.util.List;
-import java.util.ArrayList;
-
 import org.antlr.runtime.tree.*;
 
 
@@ -78,12 +74,15 @@ public void setTreeAdaptor(TreeAdaptor adaptor) {
 public TreeAdaptor getTreeAdaptor() {
     return adaptor;
 }
+    @Override
     public String[] getTokenNames() { return FormulaParser.tokenNames; }
+    @Override
     public String getGrammarFileName() { return "E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g"; }
 
 
         private FormatErrorSet errors = new FormatErrorSet();
         
+        @Override
         public void displayRecognitionError(String[] tokenNames,
                 RecognitionException e) {
             String hdr = getErrorHeader(e);
@@ -98,6 +97,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class formula_return extends ParserRuleReturnScope {
         FormulaTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -159,6 +159,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class or_expr_return extends ParserRuleReturnScope {
         FormulaTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -209,14 +210,14 @@ public TreeAdaptor getTreeAdaptor() {
             	case 1 :
             	    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:51:15: ( BAR | OR ) ^ and_expr
             	    {
-            	    set4=(Token)input.LT(1);
+            	    set4=input.LT(1);
 
-            	    set4=(Token)input.LT(1);
+            	    set4=input.LT(1);
 
             	    if ( input.LA(1)==BAR||input.LA(1)==OR ) {
             	        input.consume();
             	        root_0 = (FormulaTree)adaptor.becomeRoot(
-            	        (FormulaTree)adaptor.create(set4)
+            	        adaptor.create(set4)
             	        , root_0);
             	        state.errorRecovery=false;
             	    }
@@ -268,6 +269,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class and_expr_return extends ParserRuleReturnScope {
         FormulaTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -318,14 +320,14 @@ public TreeAdaptor getTreeAdaptor() {
             	case 1 :
             	    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:56:16: ( AMP | AND ) ^ impl_expr
             	    {
-            	    set7=(Token)input.LT(1);
+            	    set7=input.LT(1);
 
-            	    set7=(Token)input.LT(1);
+            	    set7=input.LT(1);
 
             	    if ( (input.LA(1) >= AMP && input.LA(1) <= AND) ) {
             	        input.consume();
             	        root_0 = (FormulaTree)adaptor.becomeRoot(
-            	        (FormulaTree)adaptor.create(set7)
+            	        adaptor.create(set7)
             	        , root_0);
             	        state.errorRecovery=false;
             	    }
@@ -377,6 +379,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class impl_expr_return extends ParserRuleReturnScope {
         FormulaTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -427,14 +430,14 @@ public TreeAdaptor getTreeAdaptor() {
             	case 1 :
             	    // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:61:15: ( IMPL | IMPL_BY | EQUIV ) ^ not_expr
             	    {
-            	    set10=(Token)input.LT(1);
+            	    set10=input.LT(1);
 
-            	    set10=(Token)input.LT(1);
+            	    set10=input.LT(1);
 
             	    if ( input.LA(1)==EQUIV||(input.LA(1) >= IMPL && input.LA(1) <= IMPL_BY) ) {
             	        input.consume();
             	        root_0 = (FormulaTree)adaptor.becomeRoot(
-            	        (FormulaTree)adaptor.create(set10)
+            	        adaptor.create(set10)
             	        , root_0);
             	        state.errorRecovery=false;
             	    }
@@ -486,6 +489,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class not_expr_return extends ParserRuleReturnScope {
         FormulaTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -589,6 +593,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class atom_expr_return extends ParserRuleReturnScope {
         FormulaTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -731,6 +736,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class par_expr_return extends ParserRuleReturnScope {
         FormulaTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -806,6 +812,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class call_return extends ParserRuleReturnScope {
         FormulaTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -932,7 +939,7 @@ public TreeAdaptor getTreeAdaptor() {
                 {
                 FormulaTree root_1 = (FormulaTree)adaptor.nil();
                 root_1 = (FormulaTree)adaptor.becomeRoot(
-                (FormulaTree)adaptor.create(CALL, "CALL")
+                adaptor.create(CALL, "CALL")
                 , root_1);
 
                 adaptor.addChild(root_1, stream_qual_name.nextTree());
@@ -945,7 +952,7 @@ public TreeAdaptor getTreeAdaptor() {
                 stream_arg.reset();
 
                 adaptor.addChild(root_1, 
-                (FormulaTree)adaptor.create(RPAR, close, "")
+                adaptor.create(RPAR, close, "")
                 );
 
                 adaptor.addChild(root_0, root_1);
@@ -982,6 +989,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class qual_name_return extends ParserRuleReturnScope {
         FormulaTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -1081,6 +1089,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class arg_return extends ParserRuleReturnScope {
         FormulaTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 

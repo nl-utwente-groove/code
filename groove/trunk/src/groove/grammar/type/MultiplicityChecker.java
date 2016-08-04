@@ -42,7 +42,7 @@ public class MultiplicityChecker implements TypeChecker {
     public MultiplicityChecker(TypeGraph type) {
         assert type != null;
         this.typeGraph = type;
-        this.checks = new HashMap<TypeNode,List<Check>>();
+        this.checks = new HashMap<>();
         for (TypeEdge edge : type.edgeSet()) {
             if (edge.getInMult() != null) {
                 addCheck(edge, Direction.INCOMING);
@@ -58,7 +58,7 @@ public class MultiplicityChecker implements TypeChecker {
         for (TypeNode node : dir.origin(edge).getSubtypes()) {
             List<Check> nodeChecks = this.checks.get(node);
             if (nodeChecks == null) {
-                this.checks.put(node, nodeChecks = new ArrayList<Check>());
+                this.checks.put(node, nodeChecks = new ArrayList<>());
             }
             nodeChecks.add(check);
         }

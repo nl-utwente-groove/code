@@ -272,7 +272,7 @@ public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JMo
 
     /** Returns a label-sorted set of edges. */
     protected <E extends Edge> Set<E> createEdgeSet() {
-        return new TreeSet<E>(edgeComparator());
+        return new TreeSet<>(edgeComparator());
     }
 
     /** Returns the comparator for the edge set wrapped in this jCell. */

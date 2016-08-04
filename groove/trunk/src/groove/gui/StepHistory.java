@@ -41,7 +41,7 @@ public class StepHistory implements SimulatorListener {
      * @param simulator the "parent" simulator
      */
     public StepHistory(Simulator simulator) {
-        this.history = new History<HistoryAction>();
+        this.history = new History<>();
         this.simulator = simulator;
         this.simulatorModel = simulator.getModel();
         this.undoAction = new BackAction();

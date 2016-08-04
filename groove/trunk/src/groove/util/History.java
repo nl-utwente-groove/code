@@ -193,7 +193,7 @@ public class History<T> {
     /**
      * The log of elements.
      */
-    protected final List<T> log = new ArrayList<T>();
+    protected final List<T> log = new ArrayList<>();
     /**
      * Index in <tt>log</tt> to the element to be returned by <tt>next()</tt>
      * (if any).

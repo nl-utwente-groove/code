@@ -161,7 +161,7 @@ abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo> ex
     public <P extends TreeParser> P createTreeParser(Class<P> parserType, I info) {
         try {
             // instantiate the parser
-            ParseTreeAdaptor<T,I> adaptor = new ParseTreeAdaptor<T,I>(this);
+            ParseTreeAdaptor<T,I> adaptor = new ParseTreeAdaptor<>(this);
             Constructor<P> parserConstructor = parserType.getConstructor(TreeNodeStream.class);
             P result = parserConstructor.newInstance(adaptor.createTreeNodeStream(this));
             Method adaptorSetter = parserType.getMethod("setTreeAdaptor", TreeAdaptor.class);
@@ -188,7 +188,7 @@ abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo> ex
             Constructor<P> parserConstructor = parserType.getConstructor(TokenStream.class);
             P result = parserConstructor.newInstance(tokenStream);
             Method adaptorSetter = parserType.getMethod("setTreeAdaptor", TreeAdaptor.class);
-            adaptorSetter.invoke(result, new ParseTreeAdaptor<T,I>(this, info, tokenStream));
+            adaptorSetter.invoke(result, new ParseTreeAdaptor<>(this, info, tokenStream));
             callInitialise(result, info);
             return result;
         } catch (Exception e) {

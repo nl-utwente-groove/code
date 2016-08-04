@@ -62,8 +62,8 @@ public class TypeToEcore extends TypeExporter<EObject> {
     private TypeModel m_currentTypeModel;
 
     // To keep track of generated packages
-    private Map<Id,EPackage> m_packages = new HashMap<Id,EPackage>();
-    private Set<EPackage> m_rootPackages = new HashSet<EPackage>();
+    private Map<Id,EPackage> m_packages = new HashMap<>();
+    private Set<EPackage> m_rootPackages = new HashSet<>();
 
     private int nrContainer = 0;
 

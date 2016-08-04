@@ -273,7 +273,7 @@ public class Program implements Fixable {
 
     /** Recursively collects the initial calls of a term, after zero or more verdicts. */
     private Set<Call> getInitCalls(Term term) {
-        Set<Call> result = new HashSet<Call>();
+        Set<Call> result = new HashSet<>();
         int arity = term.getOp()
             .getArity();
         Term arg0 = arity >= 1 ? term.getArgs()[0] : null;
@@ -374,7 +374,7 @@ public class Program implements Fixable {
      * Computes the termination map.
      */
     private Map<Procedure,Finality> computeFinalityMap() {
-        Map<Procedure,Finality> result = new HashMap<Procedure,Program.Finality>();
+        Map<Procedure,Finality> result = new HashMap<>();
         for (Procedure proc : this.procs.values()) {
             result.put(proc, new Finality(false, false));
         }
@@ -527,9 +527,9 @@ public class Program implements Fixable {
      * largest fixpoint computation for {@code G(F final)}
      */
     private Set<Procedure> computeTerminationSet() {
-        Set<Procedure> result = new HashSet<Procedure>();
+        Set<Procedure> result = new HashSet<>();
         // the set of procedures not yet known to satisfy F final
-        Set<Procedure> remaining = new HashSet<Procedure>(getProcs().values());
+        Set<Procedure> remaining = new HashSet<>(getProcs().values());
         // iterate as long as procedures keep being added to the result set
         boolean modified = true;
         while (modified) {

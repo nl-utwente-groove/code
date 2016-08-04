@@ -62,7 +62,7 @@ public class GrooveToConstraint implements Messenger {
     private Config m_cfg;
     private TypeModel m_typeModel;
 
-    List<Message> m_messages = new ArrayList<Message>();
+    List<Message> m_messages = new ArrayList<>();
 
     private GraphNodeTypes m_types;
 
@@ -225,7 +225,7 @@ public class GrooveToConstraint implements Messenger {
 
         if (classNode != null) {
             assert idClass != null; // implied by classNode != null
-            Set<Name> fieldNames = new HashSet<Name>();
+            Set<Name> fieldNames = new HashSet<>();
             for (AbsEdge e : classNode.getEdges()) {
                 Name fieldName = Name.getName(e.getName());
                 if (idClass.getField(fieldName) != null) {
@@ -284,7 +284,7 @@ public class GrooveToConstraint implements Messenger {
             return;
         }
 
-        Set<Name> fieldNames = new HashSet<Name>();
+        Set<Name> fieldNames = new HashSet<>();
         for (AbsEdge e : classNode.getEdges()) {
             Name fieldName = Name.getName(e.getName());
             if (keyClass.getField(fieldName) != null) {
@@ -400,7 +400,7 @@ public class GrooveToConstraint implements Messenger {
         AspectGraph sourceGraph = rule.getSource();
         AbsGraph resultGraph = new AbsGraph(rule.getQualName(), GraphRole.RULE);
 
-        Map<AspectNode,AbsNode> nodeMap = new HashMap<AspectNode,AbsNode>();
+        Map<AspectNode,AbsNode> nodeMap = new HashMap<>();
 
         for (AspectNode node : sourceGraph.nodeSet()) {
             AbsNode aNode = new AbsNode();

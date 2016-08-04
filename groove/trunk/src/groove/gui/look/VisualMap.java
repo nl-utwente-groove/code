@@ -40,7 +40,7 @@ import org.jgraph.graph.AttributeMap;
 public class VisualMap extends DefaultFixable {
     /** Constructs a new, empty attribute map. */
     public VisualMap() {
-        this.map = new EnumMap<VisualKey,Object>(VisualKey.class);
+        this.map = new EnumMap<>(VisualKey.class);
         this.attrMap = new VisualAttributeMap(this);
     }
 

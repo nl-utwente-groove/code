@@ -95,7 +95,7 @@ public class GrooveEnvironment extends Environment {
      * TokenMakerMaker, to allow syntax highlighting of predefined tags.
      */
     private void printFunctors(Collection<CompoundTermTag> tags) {
-        TreeSet<String> functors = new TreeSet<String>();
+        TreeSet<String> functors = new TreeSet<>();
         HTMLTag functionTag = new HTMLConverter.HTMLTag("function");
         for (CompoundTermTag tag : tags) {
             String functor = tag.functor.value;
@@ -277,7 +277,7 @@ public class GrooveEnvironment extends Environment {
      * Mapping from Groove built-in predicates to
      * corresponding tool tip text.
      */
-    private final Map<CompoundTermTag,String> toolTipMap = new HashMap<CompoundTermTag,String>();
+    private final Map<CompoundTermTag,String> toolTipMap = new HashMap<>();
 
     /**
      * The current groove state
@@ -346,6 +346,6 @@ public class GrooveEnvironment extends Environment {
             return this.predicates;
         }
 
-        private Set<CompoundTermTag> predicates = new HashSet<CompoundTermTag>();
+        private Set<CompoundTermTag> predicates = new HashSet<>();
     }
 }

@@ -156,7 +156,7 @@ public class DefaultDeltaApplier implements StoredDeltaApplier {
      */
     protected <E extends HostElement> DeltaSet<E> createDeltaSet(Set<E> lower, Set<E> added,
         Set<E> removed) {
-        return new DeltaSet<E>(lower, added, removed);
+        return new DeltaSet<>(lower, added, removed);
     }
 
     /**
@@ -164,7 +164,7 @@ public class DefaultDeltaApplier implements StoredDeltaApplier {
      */
     protected <E extends HostElement> StackedSet<E> createStackedSet(Set<? extends E> lower,
         Set<E> added, Set<E> removed) {
-        return new StackedSet<E>(lower, added, removed);
+        return new StackedSet<>(lower, added, removed);
     }
 
     @Override

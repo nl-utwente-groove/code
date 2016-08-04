@@ -96,17 +96,17 @@ public class ForestLayouter extends AbstractLayouter {
     private Forest computeForest(Forest oldForest) {
         BranchMap oldBranchMap = oldForest.two();
         // Collect the layout nodes whose position in the forest should remain fixed
-        Set<JVertex<?>> fixed = new HashSet<JVertex<?>>();
+        Set<JVertex<?>> fixed = new HashSet<>();
         fixed.retainAll(oldBranchMap.keySet());
         // clear the indegree- and branch maps
-        Map<Integer,Set<LayoutNode>> inDegreeMap = new TreeMap<Integer,Set<LayoutNode>>();
+        Map<Integer,Set<LayoutNode>> inDegreeMap = new TreeMap<>();
         BranchMap branchMap = new BranchMap();
         // compose the branch map
         for (JVertex<?> key : this.layoutMap.keySet()) {
             assert key.getVisuals()
                 .isVisible();
             // add the layoutable to the leaves and the branch map
-            Set<LayoutNode> branchSet = new LinkedHashSet<LayoutNode>();
+            Set<LayoutNode> branchSet = new LinkedHashSet<>();
             branchMap.put(key, branchSet);
             // copy the immovable children from the old branch set to the new
             Set<LayoutNode> oldBranchSet = oldBranchMap.get(key);
@@ -126,7 +126,7 @@ public class ForestLayouter extends AbstractLayouter {
             // Initialise the incoming edge count
             int inEdgeCount = 0;
             // calculate the incoming edge count and (deterministic) outgoing edge map
-            Set<JEdge<?>> outEdges = new TreeSet<JEdge<?>>(edgeComparator);
+            Set<JEdge<?>> outEdges = new TreeSet<>(edgeComparator);
             // iterate over the incident edges
             Iterator<?> edgeIter = key.getPort()
                 .edges();
@@ -161,11 +161,11 @@ public class ForestLayouter extends AbstractLayouter {
             // add the cell to the count map
             Set<LayoutNode> inDegreeSet = inDegreeMap.get(inEdgeCount);
             if (inDegreeSet == null) {
-                inDegreeMap.put(inEdgeCount, inDegreeSet = new LinkedHashSet<LayoutNode>());
+                inDegreeMap.put(inEdgeCount, inDegreeSet = new LinkedHashSet<>());
             }
             inDegreeSet.add(layoutEntry.getValue());
         }
-        Set<LayoutNode> remaining = new LinkedHashSet<LayoutNode>();
+        Set<LayoutNode> remaining = new LinkedHashSet<>();
         // Transfer immovable old roots
         for (LayoutNode oldRoot : oldForest.one()) {
             JVertex<?> oldVertex = oldRoot.getVertex();
@@ -228,7 +228,7 @@ public class ForestLayouter extends AbstractLayouter {
      */
     private Layout layout(Collection<LayoutNode> branches, int height) {
         Layout result = new Layout(0);
-        LinkedList<LayoutNode> previousBranches = new LinkedList<LayoutNode>();
+        LinkedList<LayoutNode> previousBranches = new LinkedList<>();
         for (LayoutNode branch : branches) {
             Layout left = result;
             Layout right = layout(branch, height);
@@ -395,7 +395,7 @@ public class ForestLayouter extends AbstractLayouter {
         public void prune() {
             Collection<LayoutNode> remaining = one();
             // Add real roots one by one
-            List<LayoutNode> roots = new ArrayList<LayoutNode>();
+            List<LayoutNode> roots = new ArrayList<>();
             while (!remaining.isEmpty()) {
                 Iterator<LayoutNode> remainingIter = remaining.iterator();
                 LayoutNode root = remainingIter.next();
@@ -403,7 +403,7 @@ public class ForestLayouter extends AbstractLayouter {
                 remainingIter.remove();
                 // compute reachable children and take them from remaining candidate roots
                 // also adjust the branch sets of the reachable leaves
-                Set<LayoutNode> children = new LinkedHashSet<LayoutNode>();
+                Set<LayoutNode> children = new LinkedHashSet<>();
                 children.add(root);
                 while (!children.isEmpty()) {
                     Iterator<LayoutNode> childIter = children.iterator();

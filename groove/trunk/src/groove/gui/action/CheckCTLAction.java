@@ -79,7 +79,7 @@ public class CheckCTLAction extends SimulatorAction {
         Formula formula = Formula.parse(property).toCtlFormula();
         CTLMarker modelChecker = new CTLMarker(formula, CTLModelChecker.newModel(result));
         int counterExampleCount = modelChecker.getCount(false);
-        List<GraphState> counterExamples = new ArrayList<GraphState>(counterExampleCount);
+        List<GraphState> counterExamples = new ArrayList<>(counterExampleCount);
         String message;
         if (counterExampleCount == 0) {
             message = String.format("The property '%s' holds for all states", property);

@@ -31,7 +31,7 @@ import java.util.Set;
 public class DFAState {
     DFAState(int number, Set<RegNode> nodes, boolean initial, boolean isFinal) {
         this.number = number;
-        this.nodes = new HashSet<RegNode>(nodes);
+        this.nodes = new HashSet<>(nodes);
         this.initial = initial;
         this.isFinal = isFinal;
         for (Direction dir : Direction.values()) {
@@ -84,5 +84,5 @@ public class DFAState {
     private final Set<RegNode> nodes;
     /** Mapping per direction from outgoing labels to successors states. */
     private final Map<Direction,Map<TypeLabel,DFAState>> labelSuccMap =
-        new EnumMap<Direction,Map<TypeLabel,DFAState>>(Direction.class);
+        new EnumMap<>(Direction.class);
 }

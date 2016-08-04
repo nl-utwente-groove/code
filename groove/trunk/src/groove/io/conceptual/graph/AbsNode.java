@@ -19,11 +19,11 @@ import groove.graph.GraphRole;
 public class AbsNode {
     private String[] m_names;
 
-    private List<AbsEdge> m_edges = new ArrayList<AbsEdge>();
-    private List<AbsEdge> m_targetEdges = new ArrayList<AbsEdge>();
+    private List<AbsEdge> m_edges = new ArrayList<>();
+    private List<AbsEdge> m_targetEdges = new ArrayList<>();
 
     private AspectNode m_aspectNode;
-    private List<AspectEdge> m_aspectEdges = new ArrayList<AspectEdge>();
+    private List<AspectEdge> m_aspectEdges = new ArrayList<>();
 
     private AbsGraph m_parent = null;
     private int m_id = 0;

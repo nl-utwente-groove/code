@@ -108,7 +108,7 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
             }
             block.append(nodeCert);
         }
-        Queue<Block> splitters = new LinkedList<Block>();
+        Queue<Block> splitters = new LinkedList<>();
         Iterator<MyNodeCert> iter = certStore.sortedIterator();
         while (iter.hasNext()) {
             splitters.add(iter.next().getBlock());
@@ -117,7 +117,7 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
         // result.values().toArray(resultArray);
         // Arrays.sort(resultArray);
         if (RECORD) {
-            this.partitionRecord = new ArrayList<Queue<Block>>();
+            this.partitionRecord = new ArrayList<>();
         }
         this.nodePartitionCount = splitters.size();
         // first iteration
@@ -141,7 +141,7 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
 
     private void splitNext(Block splitter, Queue<Block> splitterList) {
         if (RECORD) {
-            Queue<Block> clone = new LinkedList<Block>();
+            Queue<Block> clone = new LinkedList<>();
             clone.add(splitter.clone());
             for (Block block : splitterList) {
                 clone.add(block.clone());
@@ -149,7 +149,7 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
             this.partitionRecord.add(clone);
         }
         // update the node certificates related to the splitter nodes
-        TreeHashSet<Block> splitBlocks = new TreeHashSet<Block>();
+        TreeHashSet<Block> splitBlocks = new TreeHashSet<>();
         for (MyNodeCert splitterNode : splitter.getNodes()) {
             for (MyEdge2Cert outEdge : splitterNode.outEdges) {
                 Block splitBlock = outEdge.getTarget().getBlock();
@@ -185,7 +185,7 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
         splitter.setSplitter(false);
         // process the split blocks
         if (RECORD) {
-            Queue<Block> clone = new LinkedList<Block>();
+            Queue<Block> clone = new LinkedList<>();
             Iterator<Block> splitBlockIter = splitBlocks.sortedIterator();
             while (splitBlockIter.hasNext()) {
                 clone.add(splitBlockIter.next());
@@ -197,7 +197,7 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
             Block block = splitBlockIter.next();
             Block[] newBlocks = block.split();
             if (RECORD) {
-                Queue<Block> clone = new LinkedList<Block>();
+                Queue<Block> clone = new LinkedList<>();
                 for (Block newBlock : newBlocks) {
                     clone.add(newBlock.clone());
                 }
@@ -434,9 +434,9 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
         /** Potentially {@code null} node label. */
         private final TypeLabel label;
         /** List of certificates of incoming edges. */
-        private final List<MyEdge2Cert> inEdges = new ArrayList<MyEdge2Cert>();
+        private final List<MyEdge2Cert> inEdges = new ArrayList<>();
         /** List of certificates of outgoing edges. */
-        private final List<MyEdge2Cert> outEdges = new ArrayList<MyEdge2Cert>();
+        private final List<MyEdge2Cert> outEdges = new ArrayList<>();
         /** Current enclosing block. */
         private Block container;
 
@@ -609,7 +609,7 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
     static class Block implements Comparable<Block>, Cloneable {
         Block(SimplePaigeTarjanMcKay strategy, int value) {
             // this.head = new NodeCertificate(this);
-            this.nodes = new LinkedList<MyNodeCert>();
+            this.nodes = new LinkedList<>();
             this.value = value;
             this.strategy = strategy;
             strategy.graphCertificate += value;
@@ -651,7 +651,7 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
                 this.splitting = false;
                 return EMPTY_BLOCK_ARRAY;
             } else {
-                Map<Integer,Block> blockMap = new HashMap<Integer,Block>();
+                Map<Integer,Block> blockMap = new HashMap<>();
                 Block block = null;
                 for (MyNodeCert node : this.nodes) {
                     node.setNewValue();
@@ -731,7 +731,7 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
 
         @Override
         public String toString() {
-            List<Node> content = new ArrayList<Node>();
+            List<Node> content = new ArrayList<>();
             for (MyNodeCert nodeCert : this.nodes) {
                 content.add(nodeCert.getElement());
             }
@@ -742,7 +742,7 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
         public Block clone() {
             try {
                 Block result = (Block) super.clone();
-                result.nodes = new ArrayList<MyNodeCert>(this.nodes);
+                result.nodes = new ArrayList<>(this.nodes);
                 return result;
             } catch (CloneNotSupportedException e) {
                 return null;

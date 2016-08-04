@@ -235,7 +235,7 @@ public class STSTest extends TestCase {
             SwitchRelation higherPriorityRelation =
                 new SwitchRelation(new Gate("gate", new HashSet()), "x > 3", "");
             Set<SwitchRelation> higherPriorityRelations =
-                new HashSet<SwitchRelation>();
+                new HashSet<>();
             higherPriorityRelations.add(higherPriorityRelation);
             sr =
                 this.sts.ruleMatchToSwitchRelation(sourceGraph, match,

@@ -368,7 +368,7 @@ public class TermDerivationTest {
 
     private void setSource(Term term) {
         this.source = term;
-        this.edges = new ArrayList<Derivation>();
+        this.edges = new ArrayList<>();
         if (term.isTrial()) {
             this.edges.addAll(term.getAttempt());
         }

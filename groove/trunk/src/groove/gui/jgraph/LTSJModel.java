@@ -323,11 +323,11 @@ final public class LTSJModel extends JModel<GTS>implements GTSListener {
 
     private boolean exploring;
     /** Set of nodes added during the last exploration. */
-    private final List<Node> addedNodes = new ArrayList<Node>();
+    private final List<Node> addedNodes = new ArrayList<>();
     /** Set of edges added during the last exploration. */
-    private final List<Edge> addedEdges = new ArrayList<Edge>();
+    private final List<Edge> addedEdges = new ArrayList<>();
     /** Set of JCells with status changes during the last exploration. */
-    private final List<JCell<GTS>> changedCells = new ArrayList<JCell<GTS>>();
+    private final List<JCell<GTS>> changedCells = new ArrayList<>();
 
     /** Default name of an LTS model. */
     static public final String DEFAULT_LTS_NAME = "lts";

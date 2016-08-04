@@ -43,7 +43,7 @@ public class ImagerTest {
 
     @Before
     public void setUp() {
-        this.graphFiles = new TreeSet<String>();
+        this.graphFiles = new TreeSet<>();
         for (File file : new File(TEST_DIR).listFiles(FileType.GRAPHS.getFilter())) {
             this.graphFiles.add(file.getName());
         }
@@ -82,7 +82,7 @@ public class ImagerTest {
             exc.printStackTrace();
             Assert.fail(exc.getMessage());
         }
-        Set<String> imageFiles = new TreeSet<String>();
+        Set<String> imageFiles = new TreeSet<>();
         for (File file : new File(OUTPUT_DIR).listFiles()) {
             imageFiles.add(type.stripExtension(file.getName()));
         }

@@ -53,7 +53,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     public NodeTypeSearchItem(RuleNode node, TypeNode type) {
         this.node = node;
         this.type = type;
-        this.boundVars = new ArrayList<LabelVar>(node.getVars());
+        this.boundVars = new ArrayList<>(node.getVars());
         this.boundNodes = Collections.singleton(node);
         this.matchingTypes = node.getMatchingTypes();
     }

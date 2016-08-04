@@ -104,7 +104,7 @@ public class RuleDependencies {
 
     /** Returns the set of enabled rules that do not have errors. */
     static private List<Rule> getRules(GrammarModel grammar) {
-        List<Rule> result = new ArrayList<Rule>();
+        List<Rule> result = new ArrayList<>();
         // set rules
         for (NamedResourceModel<?> ruleModel : grammar.getResourceSet(RULE)) {
             try {
@@ -263,14 +263,14 @@ public class RuleDependencies {
      */
     void collectCharacteristics() {
         for (Rule rule : this.rules) {
-            Set<TypeElement> consumedSet = new HashSet<TypeElement>();
+            Set<TypeElement> consumedSet = new HashSet<>();
             this.consumedMap.put(rule, Collections.unmodifiableSet(consumedSet));
-            Set<TypeElement> producedSet = new HashSet<TypeElement>();
+            Set<TypeElement> producedSet = new HashSet<>();
             this.producedMap.put(rule, Collections.unmodifiableSet(producedSet));
             collectRuleCharacteristics(rule, consumedSet, producedSet);
-            Set<TypeElement> positiveSet = new HashSet<TypeElement>();
+            Set<TypeElement> positiveSet = new HashSet<>();
             this.positiveMap.put(rule, Collections.unmodifiableSet(positiveSet));
-            Set<TypeElement> negativeSet = new HashSet<TypeElement>();
+            Set<TypeElement> negativeSet = new HashSet<>();
             this.negativeMap.put(rule, Collections.unmodifiableSet(negativeSet));
             collectConditionCharacteristics(rule.getCondition(), positiveSet, negativeSet);
         }
@@ -288,7 +288,7 @@ public class RuleDependencies {
                 // labels
                 // that this one needs
                 Set<TypeElement> depProduces =
-                    new HashSet<TypeElement>(this.producedMap.get(depRule));
+                    new HashSet<>(this.producedMap.get(depRule));
                 if (depProduces.removeAll(positives)) {
                     addEnabling(depRule, rule);
                 }
@@ -296,7 +296,7 @@ public class RuleDependencies {
                 // labels
                 // that this one forbids
                 Set<TypeElement> depConsumes =
-                    new HashSet<TypeElement>(this.consumedMap.get(depRule));
+                    new HashSet<>(this.consumedMap.get(depRule));
                 if (depConsumes.removeAll(negatives)) {
                     addEnabling(depRule, rule);
                 }
@@ -311,14 +311,14 @@ public class RuleDependencies {
                 // labels
                 // that this one forbids, or if the other rule contains mergers
                 // HARMEN: what is the point with mergers?
-                depProduces = new HashSet<TypeElement>(this.producedMap.get(depRule));
+                depProduces = new HashSet<>(this.producedMap.get(depRule));
                 if (depProduces.removeAll(negatives)) {
                     addDisabling(depRule, rule);
                 }
                 // a negative dependency exists if the other rule consumes
                 // labels
                 // that this one needs
-                depConsumes = new HashSet<TypeElement>(this.consumedMap.get(depRule));
+                depConsumes = new HashSet<>(this.consumedMap.get(depRule));
                 if (depConsumes.removeAll(positives)) {
                     addDisabling(depRule, rule);
                 }
@@ -366,7 +366,7 @@ public class RuleDependencies {
 
     private void addEraserNode(Set<TypeElement> consumed, RuleNode eraserNode, RuleGraph lhs) {
         TypeNode eraserType = eraserNode.getType();
-        Set<TypeNode> sharpEraserTypes = new HashSet<TypeNode>();
+        Set<TypeNode> sharpEraserTypes = new HashSet<>();
         if (eraserNode.isSharp()) {
             sharpEraserTypes.add(eraserType);
         } else {
@@ -390,11 +390,11 @@ public class RuleDependencies {
     private void addSharpEraserTypes(Set<TypeElement> consumed, Set<TypeNode> nodeTypes) {
         consumed.addAll(nodeTypes);
         if (!this.properties.isCheckDangling()) {
-            Set<TypeNode> superTypes = new HashSet<TypeNode>();
+            Set<TypeNode> superTypes = new HashSet<>();
             for (TypeNode type : nodeTypes) {
                 superTypes.addAll(type.getSupertypes());
             }
-            Set<TypeEdge> incidentEdgeTypes = new HashSet<TypeEdge>();
+            Set<TypeEdge> incidentEdgeTypes = new HashSet<>();
             for (TypeNode superType : superTypes) {
                 incidentEdgeTypes.addAll(this.typeGraph.inEdgeSet(superType));
                 incidentEdgeTypes.addAll(this.typeGraph.outEdgeSet(superType));
@@ -424,8 +424,8 @@ public class RuleDependencies {
             collectPatternCharacteristics(cond, positive, negative);
         }
         for (Condition subCond : cond.getSubConditions()) {
-            Set<TypeElement> subPositives = new HashSet<TypeElement>();
-            Set<TypeElement> subNegatives = new HashSet<TypeElement>();
+            Set<TypeElement> subPositives = new HashSet<>();
+            Set<TypeElement> subNegatives = new HashSet<>();
             collectConditionCharacteristics(subCond, subPositives, subNegatives);
             Op subOp = subCond.getOp();
             if (subOp != Op.NOT) {
@@ -443,11 +443,11 @@ public class RuleDependencies {
         Set<TypeElement> negative) {
         RuleGraph pattern = cond.getPattern();
         // collected the isolated fresh nodes
-        Set<RuleNode> isolatedNodes = new HashSet<RuleNode>(pattern.nodeSet());
+        Set<RuleNode> isolatedNodes = new HashSet<>(pattern.nodeSet());
         isolatedNodes.removeAll(cond.getRoot()
             .nodeSet());
         // iterate over the edges that are new in the target
-        Set<RuleEdge> freshTargetEdges = new HashSet<RuleEdge>(pattern.edgeSet());
+        Set<RuleEdge> freshTargetEdges = new HashSet<>(pattern.edgeSet());
         freshTargetEdges.removeAll(cond.getRoot()
             .edgeSet());
         for (RuleEdge edge : freshTargetEdges) {
@@ -476,7 +476,7 @@ public class RuleDependencies {
                 .rhs();
             for (RuleNode lhsNode : pattern.nodeSet()) {
                 if (!rhs.containsNode(lhsNode)) {
-                    Set<TypeEdge> danglingEdges = new HashSet<TypeEdge>();
+                    Set<TypeEdge> danglingEdges = new HashSet<>();
                     danglingEdges.addAll(this.typeGraph.inEdgeSet(lhsNode.getType()));
                     danglingEdges.addAll(this.typeGraph.outEdgeSet(lhsNode.getType()));
                     for (RuleEdge rhsEdge : pattern.edgeSet(lhsNode)) {
@@ -552,7 +552,7 @@ public class RuleDependencies {
      * The label may not wrap {@link groove.automaton.RegExpr.Neg}.
      */
     private Set<TypeElement> getMatchingTypes(RuleEdge edge) {
-        Set<TypeElement> result = new HashSet<TypeElement>();
+        Set<TypeElement> result = new HashSet<>();
         TypeEdge edgeType = edge.getType();
         if (edgeType == null) {
             RuleLabel label = edge.label();
@@ -575,7 +575,7 @@ public class RuleDependencies {
      * Factory method to create a set of rules.
      */
     protected Set<Rule> createRuleSet() {
-        return new HashSet<Rule>();
+        return new HashSet<>();
     }
 
     /** The set of rules for which the analysis is done. */
@@ -588,28 +588,28 @@ public class RuleDependencies {
      * Mapping from rules to sets of enablers, i.e., rules that may increase
      * their applicability.
      */
-    private final Map<Rule,Set<Rule>> enablerMap = new HashMap<Rule,Set<Rule>>();
+    private final Map<Rule,Set<Rule>> enablerMap = new HashMap<>();
     /**
      * Mapping from rules to sets of disablers, i.e., rules that may decrease
      * their applicability.
      */
-    private final Map<Rule,Set<Rule>> disablerMap = new HashMap<Rule,Set<Rule>>();
+    private final Map<Rule,Set<Rule>> disablerMap = new HashMap<>();
     /**
      * Mapping from rules to sets of enabled rules, i.e., rules that may be
      * increased in their applicability.
      */
-    private final Map<Rule,Set<Rule>> enabledMap = new HashMap<Rule,Set<Rule>>();
+    private final Map<Rule,Set<Rule>> enabledMap = new HashMap<>();
     /**
      * Mapping from rules to sets of disabled rules, i.e., rules that may be
      * decreased in their applicability.
      */
-    private final Map<Rule,Set<Rule>> disabledMap = new HashMap<Rule,Set<Rule>>();
+    private final Map<Rule,Set<Rule>> disabledMap = new HashMap<>();
     /** Mapping from rules to the sets of labels tested for positively. */
-    private final Map<Rule,Set<TypeElement>> positiveMap = new HashMap<Rule,Set<TypeElement>>();
+    private final Map<Rule,Set<TypeElement>> positiveMap = new HashMap<>();
     /** Mapping from rules to the sets of labels tested for negatively. */
-    private final Map<Rule,Set<TypeElement>> negativeMap = new HashMap<Rule,Set<TypeElement>>();
+    private final Map<Rule,Set<TypeElement>> negativeMap = new HashMap<>();
     /** Mapping from rules to the sets of labels consumed by those rules. */
-    private final Map<Rule,Set<TypeElement>> consumedMap = new HashMap<Rule,Set<TypeElement>>();
+    private final Map<Rule,Set<TypeElement>> consumedMap = new HashMap<>();
     /** Mapping from rules to the sets of labels produced by those rules. */
-    private final Map<Rule,Set<TypeElement>> producedMap = new HashMap<Rule,Set<TypeElement>>();
+    private final Map<Rule,Set<TypeElement>> producedMap = new HashMap<>();
 }

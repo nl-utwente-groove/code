@@ -190,7 +190,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
         }
 
         private LinkedList<String> computeCompletions() {
-            LinkedList<String> result = new LinkedList<String>();
+            LinkedList<String> result = new LinkedList<>();
             Caret caret = getEditorComponent().getCaret();
             int dot = caret.getDot();
             int mark = caret.getMark();
@@ -245,7 +245,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
         /** The component actually doing the editing. */
         private JTextArea editorComponent;
         /** The existing labels of the current graph. */
-        private final SortedSet<String> labels = new TreeSet<String>();
+        private final SortedSet<String> labels = new TreeSet<>();
         /** List of autocompletions. */
         private LinkedList<String> completions = null;
 
@@ -264,7 +264,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             0);
 
         /** The existing aspect prefixes. */
-        private final static List<String> prefixes = new LinkedList<String>();
+        private final static List<String> prefixes = new LinkedList<>();
         static {
             for (AspectKind aspectKind : AspectKind.values()) {
                 String prefix = aspectKind.getPrefix();

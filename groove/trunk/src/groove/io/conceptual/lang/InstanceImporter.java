@@ -12,7 +12,7 @@ import groove.io.conceptual.InstanceModel;
 /** Abstract superclass for importers from an external format to the conceptual instance model. */
 public abstract class InstanceImporter implements Messenger {
     private final Map<QualName,InstanceModel> m_instanceModels = new HashMap<>();
-    private final List<Message> m_messages = new ArrayList<Message>();
+    private final List<Message> m_messages = new ArrayList<>();
 
     /** Adds an instance model to the set of imported models. */
     protected void addInstanceModel(InstanceModel model) {

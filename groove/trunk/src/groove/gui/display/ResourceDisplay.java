@@ -413,7 +413,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      */
     public boolean saveAllEditors(boolean dispose) {
         boolean result = true;
-        for (ResourceTab editor : new ArrayList<ResourceTab>(getEditors().values())) {
+        for (ResourceTab editor : new ArrayList<>(getEditors().values())) {
             result = editor.saveEditor(true, dispose);
             if (!result) {
                 break;
@@ -508,7 +508,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         result.add(new AbstractAction(Options.CLOSE_OTHER_ACTION_NAME) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                for (ResourceTab editor : new ArrayList<ResourceTab>(getEditors().values())) {
+                for (ResourceTab editor : new ArrayList<>(getEditors().values())) {
                     if (editor != tab && !editor.saveEditor(true, true)) {
                         break;
                     }

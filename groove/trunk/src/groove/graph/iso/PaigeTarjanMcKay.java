@@ -98,7 +98,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
     void iterateCertificates() {
         this.partition = new NodePartition(this.nodeCerts);
         // initially all blocks are splitters
-        Queue<Block> splitters = new LinkedList<Block>();
+        Queue<Block> splitters = new LinkedList<>();
         Iterator<Block> iter = this.partition.sortedIterator();
         while (iter.hasNext()) {
             Block block = iter.next();
@@ -106,7 +106,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
             splitters.add(block);
         }
         if (RECORD) {
-            this.partitionRecord = new ArrayList<List<Block>>();
+            this.partitionRecord = new ArrayList<>();
         }
         // first iteration
         split(splitters);
@@ -137,7 +137,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
                 for (MyNodeCert duplicate : nontrivialBlock.getNodes()
                     .toArray()) {
                     duplicate.breakSymmetry();
-                    split(new LinkedList<Block>(duplicate.getBlock()
+                    split(new LinkedList<>(duplicate.getBlock()
                         .split()));
                     rollBackCertificates();
                     this.partition = new NodePartition(this.nodeCerts);
@@ -190,7 +190,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
 
     private void splitNext(Queue<Block> splitterList) {
         if (RECORD) {
-            List<Block> clone = new ArrayList<Block>();
+            List<Block> clone = new ArrayList<>();
             for (Block block : splitterList) {
                 clone.add(block.clone());
             }
@@ -207,7 +207,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
         }
         // process the split blocks
         if (RECORD) {
-            List<Block> clone = new ArrayList<Block>();
+            List<Block> clone = new ArrayList<>();
             Iterator<Block> splitBlockIter = splitBlocks.sortedIterator();
             while (splitBlockIter.hasNext()) {
                 clone.add(splitBlockIter.next());
@@ -219,7 +219,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
             Block block = splitBlockIter.next();
             Collection<Block> newBlocks = block.split();
             if (RECORD) {
-                List<Block> clone = new ArrayList<Block>();
+                List<Block> clone = new ArrayList<>();
                 for (Block newBlock : newBlocks) {
                     clone.add(newBlock.clone());
                 }
@@ -634,9 +634,9 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
         /** Potentially {@code null} node label. */
         private final TypeLabel label;
         /** List of certificates of incoming edges. */
-        private final List<MyEdge2Cert> inEdges = new ArrayList<MyEdge2Cert>();
+        private final List<MyEdge2Cert> inEdges = new ArrayList<>();
         /** List of certificates of outgoing edges. */
-        private final List<MyEdge2Cert> outEdges = new ArrayList<MyEdge2Cert>();
+        private final List<MyEdge2Cert> outEdges = new ArrayList<>();
         /** Current enclosing block. */
         private Block block;
         /** Next and previous node certificates in the list. */
@@ -991,7 +991,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
                 PaigeTarjanMcKay.this.partition.add(this, oldValue);
                 return Collections.emptySet();
             } else {
-                Map<Integer,Block> blockMap = new TreeMap<Integer,Block>();
+                Map<Integer,Block> blockMap = new TreeMap<>();
                 Block lastBlock = null;
                 // keep track of the largest block
                 Block largestBlock = null;
@@ -1118,7 +1118,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
 
         @Override
         public String toString() {
-            List<Node> content = new ArrayList<Node>();
+            List<Node> content = new ArrayList<>();
             for (MyNodeCert nodeCert : getNodes()) {
                 content.add(nodeCert.getElement());
             }

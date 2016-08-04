@@ -202,7 +202,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
      */
     @Override
     public Object clone() {
-        HashBag<T> result = new HashBag<T>();
+        HashBag<T> result = new HashBag<>();
         for (Map.Entry<T,MyMultiplicity> entry : this.bag.entrySet()) {
             result.bag.put(entry.getKey(), entry.getValue().clone());
         }
@@ -283,7 +283,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
      * The underlying mapping from elements to multiplicities.
      * @invariant <tt>bag : Object --> Multiplicity</tt>
      */
-    protected final Map<T,MyMultiplicity> bag = new HashMap<T,MyMultiplicity>();
+    protected final Map<T,MyMultiplicity> bag = new HashMap<>();
     /**
      * The number of element (occurrences) in this bag.
      * @invariant <tt>size == computeSize()</tt>

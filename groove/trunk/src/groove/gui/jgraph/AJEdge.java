@@ -51,7 +51,7 @@ import groove.util.parse.FormatError;
  * @version $Revision $
  */
 abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JModel<G>,JV extends JVertex<G>>
-    extends AJCell<G,JG,JM>implements org.jgraph.graph.Edge, JEdge<G> {
+    extends AJCell<G,JG,JM> implements org.jgraph.graph.Edge, JEdge<G> {
     /**
      * Constructs an uninitialised model edge.
      */
@@ -275,7 +275,7 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
      */
     @Override
     public Collection<? extends Label> getKeys() {
-        List<Label> result = new ArrayList<Label>();
+        List<Label> result = new ArrayList<>();
         for (Edge edge : getEdges()) {
             Label entry = getKey(edge);
             if (entry != null) {
@@ -366,8 +366,8 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
     @Override
     public Iterator<JV> getContext() {
         Iterator<JV> result;
-        @SuppressWarnings("null") JV source = (JV) getSourceVertex();
-        @SuppressWarnings("null") JV target = (JV) getTargetVertex();
+        JV source = getSourceVertex();
+        JV target = getTargetVertex();
         assert source != null && target != null; // should not be invoked otherwise
         if (isLoop()) {
             return Collections.singletonList(source)

@@ -185,7 +185,7 @@ public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition>implements 
     }
 
     /** The set of all locations. */
-    private final Set<BuchiLocation> locations = new HashSet<BuchiLocation>();
+    private final Set<BuchiLocation> locations = new HashSet<>();
     /** The initial location. */
     private BuchiLocation initial;
 
@@ -222,7 +222,7 @@ public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition>implements 
 
         @Override
         public Iterator<BuchiTransition> iterator() {
-            return new NestedIterator<BuchiTransition>(
+            return new NestedIterator<>(
                 new TransformIterator<BuchiLocation,Iterator<BuchiTransition>>(
                     nodeSet().iterator()) {
                     @Override

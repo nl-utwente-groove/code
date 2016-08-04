@@ -389,7 +389,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
     private RuleLevelTree levelTree;
     /** Map from line style names to corresponding actions. */
     private final Map<LineStyle,JCellEditAction> setLineStyleActionMap =
-        new EnumMap<LineStyle,JCellEditAction>(LineStyle.class);
+        new EnumMap<>(LineStyle.class);
 
     /** Returns the grammar that has manually been set for this JGraph. */
     public GrammarModel getGrammar() {
@@ -420,7 +420,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
             super(name);
             this.allCells = true;
             this.vertexOnly = true;
-            this.jCells = new ArrayList<AspectJCell>();
+            this.jCells = new ArrayList<>();
             refresh();
             addGraphSelectionListener(this);
         }
@@ -435,7 +435,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
             super(name);
             this.allCells = false;
             this.vertexOnly = vertexOnly;
-            this.jCells = new ArrayList<AspectJCell>();
+            this.jCells = new ArrayList<>();
             refresh();
             addGraphSelectionListener(this);
         }
@@ -480,7 +480,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
          * @return a copy of the points of the underlying j-edge with a point added
          */
         protected List<Point2D> addPointAt(List<Point2D> points, Point2D location) {
-            List<Point2D> result = new LinkedList<Point2D>(points);
+            List<Point2D> result = new LinkedList<>(points);
             if (location == null) {
                 result.add(1, createPointBetween(result.get(0), result.get(1)));
             } else {
@@ -688,7 +688,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
          *         point removed
          */
         private List<Point2D> removePointAt(List<Point2D> points, Point2D location) {
-            LinkedList<Point2D> result = new LinkedList<Point2D>(points);
+            LinkedList<Point2D> result = new LinkedList<>(points);
             if (result.size() > 2 && (!result.getFirst()
                 .equals(result.getLast()) || result.size() > 3)) {
                 int ix = location == null ? 1 : getClosestIndex(points, location);

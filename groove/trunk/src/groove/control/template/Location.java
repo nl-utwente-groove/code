@@ -166,7 +166,7 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
         if (!isDead() && this.vars == null) {
             // this may only happen before the variables have been
             // properly initialised; use the empty list as initial value.
-            this.vars = new ArrayList<CtrlVar>(getVarSet());
+            this.vars = new ArrayList<>(getVarSet());
             Collections.sort(this.vars);
         }
         return this.vars;
@@ -176,7 +176,7 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
     Set<CtrlVar> getVarSet() {
         if (!isDead() && this.varSet == null) {
             assert this.vars == null;
-            this.varSet = new HashSet<CtrlVar>();
+            this.varSet = new HashSet<>();
         }
         return this.varSet;
     }
@@ -210,7 +210,7 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
     }
 
     private Map<CtrlVar,Integer> computeVarIxMap() {
-        Map<CtrlVar,Integer> result = new LinkedHashMap<CtrlVar,Integer>();
+        Map<CtrlVar,Integer> result = new LinkedHashMap<>();
         for (int i = 0; i < getVars().size(); i++) {
             result.put(getVars().get(i), i);
         }
@@ -265,7 +265,7 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
     }
 
     /** Global list of error locations of given transience. */
-    private static final List<Location> errorLocations = new ArrayList<Location>();
+    private static final List<Location> errorLocations = new ArrayList<>();
     /** Global list of absence locations of given transience. */
-    private static final List<Location> removeLocations = new ArrayList<Location>();
+    private static final List<Location> removeLocations = new ArrayList<>();
 }

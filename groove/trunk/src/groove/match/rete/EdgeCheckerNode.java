@@ -59,7 +59,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
      * inside the edge-checker rather than
      * relegating it to subgraph checkers.
      */
-    private TreeHashSet<ReteSimpleMatch> memory = new TreeHashSet<ReteSimpleMatch>();
+    private TreeHashSet<ReteSimpleMatch> memory = new TreeHashSet<>();
 
     /**
      * The reporter.

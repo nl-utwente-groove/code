@@ -350,7 +350,7 @@ public class LayoutIO {
      * @param i index from which the string array will be converted to points
      */
     public static List<Point2D> toPoints(String[] s, int i) {
-        List<Point2D> result = new LinkedList<Point2D>();
+        List<Point2D> result = new LinkedList<>();
         for (int j = i; j < s.length - 1; j += 2) {
             result.add(toPoint(s, j));
         }

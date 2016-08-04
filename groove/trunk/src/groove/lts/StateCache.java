@@ -194,7 +194,7 @@ public class StateCache {
             // make sure states get reconstructed sequentially rather than
             // recursively
             AbstractGraphState backward = state.source();
-            List<DefaultGraphNextState> stateChain = new LinkedList<DefaultGraphNextState>();
+            List<DefaultGraphNextState> stateChain = new LinkedList<>();
             while (backward instanceof GraphNextState && !backward.hasCache()
                 && backward.getFrozenGraph() == null) {
                 stateChain.add(0, (DefaultGraphNextState) backward);
@@ -227,7 +227,7 @@ public class StateCache {
             // check for liveness
             boolean alive = false;
             // collect all property matches
-            Set<Action> erroneous = new HashSet<Action>(gts.getGrammar()
+            Set<Action> erroneous = new HashSet<>(gts.getGrammar()
                 .getActions(Role.INVARIANT));
             for (GraphTransition trans : getTransitions(GraphTransition.Claz.REAL)) {
                 Action action = trans.getAction();

@@ -144,7 +144,7 @@ public class SmallCollection<E> extends AbstractCollection<E> {
 
     /** Factory method to create the inner (non-singular) collection. */
     protected Collection<E> createCollection() {
-        return new ArrayList<E>();
+        return new ArrayList<>();
     }
 
     /** The singleton element, if the collection is a singleton. */

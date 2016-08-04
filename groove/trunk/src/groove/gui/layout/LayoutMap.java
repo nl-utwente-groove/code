@@ -77,7 +77,7 @@ public class LayoutMap implements Cloneable {
      * Turns this groove layout map into a jgraph attributes map.
      */
     public Map<Object,AttributeMap> toJAttrMap() {
-        Map<Object,AttributeMap> result = new HashMap<Object,AttributeMap>();
+        Map<Object,AttributeMap> result = new HashMap<>();
         for (Map.Entry<Node,JVertexLayout> layoutEntry : nodeMap().entrySet()) {
             JCellLayout layout = layoutEntry.getValue();
             result.put(layoutEntry.getKey(), layout.toJAttr());
@@ -141,7 +141,7 @@ public class LayoutMap implements Cloneable {
         JEdgeLayout oldLayout = oldLayoutMap.edgeMap.get(oldKey);
         if (oldLayout != null) {
             List<Point2D> oldPoints = oldLayout.getPoints();
-            List<Point2D> newPoints = new ArrayList<Point2D>();
+            List<Point2D> newPoints = new ArrayList<>();
             for (Point2D oldPoint : oldPoints) {
                 newPoints.add(new Point2D.Double(oldPoint.getX() + offsetX, oldPoint.getY()
                     + offsetY));
@@ -243,9 +243,9 @@ public class LayoutMap implements Cloneable {
     }
 
     /** Mapping from node keys to <tt>NT</tt>s. */
-    private final Map<Node,JVertexLayout> nodeMap = new HashMap<Node,JVertexLayout>();
+    private final Map<Node,JVertexLayout> nodeMap = new HashMap<>();
     /** Mapping from edge keys to <tt>ET</tt>s. */
-    private final Map<Edge,JEdgeLayout> edgeMap = new HashMap<Edge,JEdgeLayout>();
+    private final Map<Edge,JEdgeLayout> edgeMap = new HashMap<>();
 
     /**
      * Tests if a given object is a jgraph vertex, a jgraph vertex view or a
@@ -319,7 +319,7 @@ public class LayoutMap implements Cloneable {
 
     /** Main method to test the functionality of this class. */
     static public void main(String[] args) {
-        List<Point2D> points = new LinkedList<Point2D>();
+        List<Point2D> points = new LinkedList<>();
         Point2D relPosition1 = new Point(100, 900);
         Point2D relPosition2 = new Point(1200, 50);
         points.add(new Point(100, 200));

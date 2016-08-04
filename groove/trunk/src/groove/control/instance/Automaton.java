@@ -44,7 +44,7 @@ public class Automaton {
         assert program.isFixed();
         this.program = program;
         this.template = program.getTemplate();
-        this.framePool = new Pool<Frame>();
+        this.framePool = new Pool<>();
         Frame start = new Frame(this, getTemplate().getStart(), new SwitchStack(), null);
         start.setFixed();
         this.start = addFrame(start);
@@ -130,8 +130,8 @@ public class Automaton {
 
     /** Fully explores this automaton. */
     public void explore() {
-        Queue<Frame> fresh = new LinkedList<Frame>();
-        Set<Frame> nodes = new HashSet<Frame>();
+        Queue<Frame> fresh = new LinkedList<>();
+        Set<Frame> nodes = new HashSet<>();
         nodes.add(getStart());
         fresh.add(getStart());
         while (!fresh.isEmpty()) {

@@ -93,7 +93,7 @@ abstract public class AbstractLayouter implements Layouter {
         //        this.jGraph.clearAllEdgePoints();
         // copy the old layout map
         Map<JVertex<?>,LayoutNode> oldLayoutMap =
-            new LinkedHashMap<JVertex<?>,LayoutNode>(this.layoutMap);
+            new LinkedHashMap<>(this.layoutMap);
         // clear the transient information
         this.layoutMap.clear();
         this.immovableMap.clear();
@@ -133,7 +133,7 @@ abstract public class AbstractLayouter implements Layouter {
      * the node bounds and edge points.
      */
     protected void finish() {
-        final Map<JCell<?>,AttributeMap> change = new HashMap<JCell<?>,AttributeMap>();
+        final Map<JCell<?>,AttributeMap> change = new HashMap<>();
         for (LayoutNode layout : this.layoutMap.values()) {
             VisualMap visuals = new VisualMap();
             JVertex<?> jVertex = layout.getVertex();
@@ -217,14 +217,14 @@ abstract public class AbstractLayouter implements Layouter {
      * Map from graph nodes to layoutables.
      */
     protected final Map<JVertex<?>,LayoutNode> layoutMap =
-        new LinkedHashMap<JVertex<?>,LayoutNode>();
+        new LinkedHashMap<>();
 
     /**
      * Map from vertices whose position should not be changed
      * to a point representing the shift between the position determined for them at the
      * last layout action, and their position at the start of the current layout action.
      */
-    protected final Map<JVertex<?>,Point2D> immovableMap = new HashMap<JVertex<?>,Point2D>();
+    protected final Map<JVertex<?>,Point2D> immovableMap = new HashMap<>();
 
     @Override
     public Layouter getIncremental() {

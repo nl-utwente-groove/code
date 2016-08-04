@@ -32,7 +32,7 @@ import java.util.TreeSet;
 class OrderedCriticalPairSet implements Set<CriticalPair> {
 
     private HashMap<Integer,LinkedHashSet<CriticalPair>> pairMap =
-        new HashMap<Integer,LinkedHashSet<CriticalPair>>();
+        new HashMap<>();
 
     /**
      * Creates a new set of CriticalPairs for rules
@@ -50,7 +50,7 @@ class OrderedCriticalPairSet implements Set<CriticalPair> {
         int size = e.getHostGraph().nodeCount();
         LinkedHashSet<CriticalPair> pairSet = this.pairMap.get(size);
         if (pairSet == null) {
-            pairSet = new LinkedHashSet<CriticalPair>();
+            pairSet = new LinkedHashSet<>();
             this.pairMap.put(size, pairSet);
         }
         return pairSet.add(e);
@@ -121,7 +121,7 @@ class OrderedCriticalPairSet implements Set<CriticalPair> {
             //this is needed to implement remove() correctly
             private boolean currentItReplaced = false;
 
-            Iterator<Integer> keyIt = new TreeSet<Integer>(
+            Iterator<Integer> keyIt = new TreeSet<>(
                 OrderedCriticalPairSet.this.pairMap.keySet()).descendingIterator();
 
             Iterator<CriticalPair> currentIt = this.keyIt.hasNext()
@@ -220,7 +220,7 @@ class OrderedCriticalPairSet implements Set<CriticalPair> {
     }
 
     Set<CriticalPair> toSingleSet() {
-        Set<CriticalPair> result = new HashSet<CriticalPair>();
+        Set<CriticalPair> result = new HashSet<>();
         for (Set<CriticalPair> pairSet : this.pairMap.values()) {
             result.addAll(pairSet);
         }

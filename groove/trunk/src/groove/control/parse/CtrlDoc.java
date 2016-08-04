@@ -115,7 +115,7 @@ public class CtrlDoc {
      * no associated comment.
      */
     private Map<ElementRule,ATEToken> getRules(String text) {
-        Map<ElementRule,ATEToken> result = new LinkedHashMap<ElementRule,ATEToken>();
+        Map<ElementRule,ATEToken> result = new LinkedHashMap<>();
         GrammarSyntaxLexer lexer = new GrammarSyntaxLexer();
         lexer.tokenize(text);
         GrammarSyntaxParser parser = new GrammarSyntaxParser();
@@ -143,7 +143,7 @@ public class CtrlDoc {
 
     /** Extracts all documentation information for a single nonterminal. */
     private void processRule(ElementRule rule, ATEToken comment) {
-        List<Pair<String,Help>> content = new ArrayList<Pair<String,Help>>();
+        List<Pair<String,Help>> content = new ArrayList<>();
         Help currentHelp = null;
         List<ATEToken> tokens = rule.getTokens();
         for (int i = 0; i < tokens.size(); i++) {
@@ -181,7 +181,7 @@ public class CtrlDoc {
             }
         }
         // put the rule in the rule maps and tool tip map
-        List<Line> entries = new ArrayList<Line>();
+        List<Line> entries = new ArrayList<>();
         for (Pair<String,Help> help : content) {
             Line line = createLine(help.two());
             if (help.one()
@@ -215,7 +215,7 @@ public class CtrlDoc {
             remove(text, MULTI_PREFIX);
             remove(text, MULTI_SUFFIX);
             String header = null;
-            List<String> body = new ArrayList<String>();
+            List<String> body = new ArrayList<>();
             for (String line : text.toString()
                 .split("\n")) {
                 if (header == null) {
@@ -292,10 +292,10 @@ public class CtrlDoc {
     /**
      * Map from constant token names to token content.
      */
-    private final Map<String,String> tokenMap = new HashMap<String,String>();
-    private final Map<String,List<Line>> nameToEntriesMap = new HashMap<String,List<Line>>();
-    private final Map<Line,List<Line>> ruleToEntriesMap = new LinkedHashMap<Line,List<Line>>();
-    private final Map<Line,String> toolTipMap = new HashMap<Line,String>();
+    private final Map<String,String> tokenMap = new HashMap<>();
+    private final Map<String,List<Line>> nameToEntriesMap = new HashMap<>();
+    private final Map<Line,List<Line>> ruleToEntriesMap = new LinkedHashMap<>();
+    private final Map<Line,String> toolTipMap = new HashMap<>();
 
     /** Tests the class by printing out the resulting documentation. */
     public static void main(String[] args) {

@@ -136,7 +136,7 @@ public class Grammar {
     /** Returns the actions with a given role in this grammar. */
     public Collection<Action> getActions(Role role) {
         if (this.roleActionMap == null) {
-            this.roleActionMap = new EnumMap<Role,List<Action>>(Role.class);
+            this.roleActionMap = new EnumMap<>(Role.class);
             for (Role r : Role.values()) {
                 this.roleActionMap.put(r, new ArrayList<Action>());
             }
@@ -400,7 +400,7 @@ public class Grammar {
      * returns a {@link TreeSet}.
      */
     private Set<Action> createActionSet() {
-        return new TreeSet<Action>(Action.ACTION_COMPARATOR);
+        return new TreeSet<>(Action.ACTION_COMPARATOR);
     }
 
     /**

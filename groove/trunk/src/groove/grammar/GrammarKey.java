@@ -53,7 +53,7 @@ public enum GrammarKey implements PropertyKey<Object>,GrammarChecker {
             + AlgebraFamily.BIG.getExplanation() + "<li>- <i>point</i>: "
             + AlgebraFamily.POINT.getExplanation() + "<li>- <i>term</i>: "
             + AlgebraFamily.TERM.getExplanation(),
-        new Parser.EnumParser<AlgebraFamily>(AlgebraFamily.class, AlgebraFamily.DEFAULT)),
+        new Parser.EnumParser<>(AlgebraFamily.class, AlgebraFamily.DEFAULT)),
 
     /**
      * Flag determining the injectivity of the rule system. If <code>true</code>,
@@ -135,7 +135,7 @@ public enum GrammarKey implements PropertyKey<Object>,GrammarChecker {
             + "<li>- <i>off</i>: dynamic type constraints are not checked"
             + "<li>- <i>error</i> (default): dynamic type violations are flagged as errors"
             + "<li>- <i>remove</i>: dynamic type violations cause the state to be removed from the state space",
-        new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, CheckPolicy.ERROR, "off", null,
+        new Parser.EnumParser<>(CheckPolicy.class, CheckPolicy.ERROR, "off", null,
             "error", "remove")),
 
     /** Policy for dealing with deadlocks. */
@@ -144,7 +144,7 @@ public enum GrammarKey implements PropertyKey<Object>,GrammarChecker {
             + "<br>(A state is considered deadlocked if no scheduled transformer is applicable.)"
             + "<li>- <i>off</i> (default): deadlocks are not checked"
             + "<li>- <i>error</i>: deadlocks are flagged as errors",
-        new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, CheckPolicy.OFF, "off", null, "error",
+        new Parser.EnumParser<>(CheckPolicy.class, CheckPolicy.OFF, "off", null, "error",
             null)),
 
     /**
@@ -176,7 +176,7 @@ public enum GrammarKey implements PropertyKey<Object>,GrammarChecker {
      */
     TRANSITION_PARAMETERS("transitionParameters", false, "Show parameters",
         "Flag controlling if transition labels should include rule parameters",
-        new Parser.EnumParser<ThreeValued>(ThreeValued.class, ThreeValued.SOME), null),
+        new Parser.EnumParser<>(ThreeValued.class, ThreeValued.SOME), null),
 
     /**
      * Flag that determines if (binary) loops can be shown as vertex labels.
@@ -312,7 +312,7 @@ public enum GrammarKey implements PropertyKey<Object>,GrammarChecker {
     static private final Map<String,GrammarKey> keyMap;
 
     static {
-        Map<String,GrammarKey> defaultKeys = new LinkedHashMap<String,GrammarKey>();
+        Map<String,GrammarKey> defaultKeys = new LinkedHashMap<>();
         for (GrammarKey key : GrammarKey.values()) {
             defaultKeys.put(key.getName(), key);
         }
@@ -339,7 +339,7 @@ public enum GrammarKey implements PropertyKey<Object>,GrammarChecker {
 
         @Override
         public FormatErrorSet check(GrammarModel grammar, Object value) {
-            List<Object> unknowns = new ArrayList<Object>((Collection<?>) value);
+            List<Object> unknowns = new ArrayList<>((Collection<?>) value);
             FormatErrorSet result = new FormatErrorSet();
             unknowns.removeAll(grammar.getResourceMap(getKind())
                 .keySet());

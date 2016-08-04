@@ -51,5 +51,5 @@ public class DFSStrategy extends ClosingStrategy {
         this.stack.clear();
     }
 
-    private final Stack<GraphState> stack = new Stack<GraphState>();
+    private final Stack<GraphState> stack = new Stack<>();
 }

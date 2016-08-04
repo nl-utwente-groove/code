@@ -509,10 +509,10 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
 
     private final Simulator simulator;
     /** Mapping from display kinds to the corresponding panels. */
-    private final Map<DisplayKind,Display> displaysMap = new HashMap<DisplayKind,Display>();
+    private final Map<DisplayKind,Display> displaysMap = new HashMap<>();
     /** Mapping of currently detached displays. */
     private final Map<DisplayKind,DisplayWindow> detachedMap =
-        new HashMap<DisplayKind,DisplayWindow>();
+        new HashMap<>();
     /** Panel with the rules and states lists. */
     private JTabbedPane upperListsPanel;
     /** Panel with the other resource lists. */

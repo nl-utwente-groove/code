@@ -45,5 +45,5 @@ public class BFSStrategy extends ClosingStrategy {
      * parent state is included with each state.
      */
     private final LinkedList<GraphState> stateQueue =
-        new LinkedList<GraphState>();
+        new LinkedList<>();
 }

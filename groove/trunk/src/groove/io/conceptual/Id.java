@@ -20,7 +20,7 @@ public class Id implements Serializable {
 
     private Id m_namespace;
     private Name m_name;
-    private Map<Name,Id> m_subIds = new HashMap<Name,Id>();
+    private Map<Name,Id> m_subIds = new HashMap<>();
 
     private int m_depth;
 
@@ -132,7 +132,7 @@ public class Id implements Serializable {
      */
     public Id removePrefix(Id prefix) {
         Id newId = this;
-        Stack<Name> namestack = new Stack<Name>();
+        Stack<Name> namestack = new Stack<>();
         // Push names onto stack that are not part of the prefix. Stack is used as Ids are technically a linked list
         while (newId.m_depth > prefix.m_depth) {
             namestack.push(newId.getName());

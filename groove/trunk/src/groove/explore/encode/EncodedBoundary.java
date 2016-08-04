@@ -56,7 +56,7 @@ public class EncodedBoundary implements EncodedType<Boundary,String> {
         assert units.length > 0;
         if (Character.isLetter(units[0].charAt(0))) {
             // this is a list of names making up a rule set boundary
-            Set<Rule> ruleSet = new HashSet<Rule>();
+            Set<Rule> ruleSet = new HashSet<>();
             for (int i = 0; i < units.length; i++) {
                 Rule rule = rules.getRule(QualName.parse(units[i]));
                 if (rule == null) {

@@ -65,7 +65,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
         this.acceptor.setStrategy(this);
         this.result = acceptor.getResult();
         this.stateSet.addListener(this.acceptor);
-        this.stateStack = new Stack<ProductState>();
+        this.stateStack = new Stack<>();
         assert(this.startLocation != null) : "The property automaton should have an initial state";
         ProductState startState = createState(gts.startState(), null, this.startLocation);
         this.startState = startState;
@@ -279,7 +279,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
      * otherwise.
      */
     protected ProductState getNextSuccessor(ProductState state) {
-        RandomChooserInSequence<ProductState> chooser = new RandomChooserInSequence<ProductState>();
+        RandomChooserInSequence<ProductState> chooser = new RandomChooserInSequence<>();
         for (ProductTransition trans : state.outTransitions()) {
             ProductState s = trans.target();
             if (!s.isClosed()) {

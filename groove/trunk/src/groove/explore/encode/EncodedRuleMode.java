@@ -47,7 +47,7 @@ public class EncodedRuleMode extends EncodedFixedEnumeratedType<Boolean> {
 
     @Override
     public Map<String,String> fixedOptions() {
-        Map<String,String> result = new LinkedHashMap<String,String>();
+        Map<String,String> result = new LinkedHashMap<>();
         result.put(POSITIVE, POSITIVE_TEXT);
         result.put(NEGATIVE, NEGATIVE_TEXT);
         return result;
@@ -55,7 +55,7 @@ public class EncodedRuleMode extends EncodedFixedEnumeratedType<Boolean> {
 
     @Override
     public Map<String,Boolean> fixedValues() {
-        Map<String,Boolean> result = new LinkedHashMap<String,Boolean>();
+        Map<String,Boolean> result = new LinkedHashMap<>();
         result.put(POSITIVE, true);
         result.put(NEGATIVE, false);
         return result;

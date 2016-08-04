@@ -21,9 +21,9 @@ import groove.io.conceptual.lang.groove.GraphNodeTypes.ModelType;
 public class GrooveToMeta implements Messenger {
     private Config m_cfg;
 
-    List<Message> m_messages = new ArrayList<Message>();
+    List<Message> m_messages = new ArrayList<>();
 
-    private Map<TypeNode,MetaType> m_metaNodes = new HashMap<TypeNode,MetaType>();
+    private Map<TypeNode,MetaType> m_metaNodes = new HashMap<>();
     private GraphNodeTypes m_types;
 
     public GrooveToMeta(TypeGraph grooveTypeGraph, GraphNodeTypes types, Config cfg) {

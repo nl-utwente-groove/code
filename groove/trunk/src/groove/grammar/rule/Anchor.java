@@ -98,9 +98,9 @@ public class Anchor extends ArrayList<AnchorKey> implements Comparable<Anchor> {
 
     /** Initialises the node, edge and label sets. */
     private void initSets() {
-        this.nodeSet = new HashSet<RuleNode>();
-        this.edgeSet = new HashSet<RuleEdge>();
-        this.varSet = new HashSet<LabelVar>();
+        this.nodeSet = new HashSet<>();
+        this.edgeSet = new HashSet<>();
+        this.varSet = new HashSet<>();
         for (AnchorKey key : this) {
             switch (key.getAnchorKind()) {
             case NODE:

@@ -132,7 +132,7 @@ public abstract class AJVertex<G extends Graph,JG extends JGraph<G>,JM extends J
 
     @Override
     public Collection<? extends Label> getKeys() {
-        Collection<Label> result = new ArrayList<Label>();
+        Collection<Label> result = new ArrayList<>();
         for (Edge edge : getEdges()) {
             Label key = getKey(edge);
             if (key != null) {

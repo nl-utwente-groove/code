@@ -55,10 +55,10 @@ public class PlanSearchStrategy implements SearchStrategy {
      * @param oracle the oracle to obtain values for unbound variable nodes
      */
     public PlanSearchStrategy(PlanSearchEngine engine, SearchPlan plan, ValueOracle oracle) {
-        this.nodeIxMap = new HashMap<RuleNode,Integer>();
-        this.edgeIxMap = new HashMap<RuleEdge,Integer>();
-        this.varIxMap = new HashMap<LabelVar,Integer>();
-        this.condIxMap = new HashMap<Condition,Integer>();
+        this.nodeIxMap = new HashMap<>();
+        this.edgeIxMap = new HashMap<>();
+        this.varIxMap = new HashMap<>();
+        this.condIxMap = new HashMap<>();
         this.engine = engine;
         this.oracle = oracle;
         this.plan = plan;

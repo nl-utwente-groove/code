@@ -35,19 +35,19 @@ import java.util.Set;
 public class RootNode extends ReteNetworkNode {
 
     private Map<String,Set<EdgeCheckerNode>> positiveEdgeCheckers =
-        new HashMap<String,Set<EdgeCheckerNode>>();
+        new HashMap<>();
 
     private Set<EdgeCheckerNode> openEdgeCheckers =
-        new TreeHashSet<EdgeCheckerNode>();
+        new TreeHashSet<>();
 
     private Set<EdgeCheckerNode> otherEdgeCheckers =
-        new TreeHashSet<EdgeCheckerNode>();
+        new TreeHashSet<>();
 
     private Map<String,Set<SingleEdgePathChecker>> positivePathCheckers =
-        new HashMap<String,Set<SingleEdgePathChecker>>();
+        new HashMap<>();
 
     private Set<SingleEdgePathChecker> otherPathCheckers =
-        new TreeHashSet<SingleEdgePathChecker>();
+        new TreeHashSet<>();
 
     private HashMap<TypeNode,Collection<DefaultNodeChecker>> defaultNodeCheckers =
         null;
@@ -117,12 +117,12 @@ public class RootNode extends ReteNetworkNode {
     private void addDefaultNodeChecker(DefaultNodeChecker nnode) {
         if (this.defaultNodeCheckers == null) {
             this.defaultNodeCheckers =
-                new HashMap<TypeNode,Collection<DefaultNodeChecker>>();
+                new HashMap<>();
         }
         Collection<DefaultNodeChecker> nodeCheckers =
             this.defaultNodeCheckers.get(nnode.getType());
         if (nodeCheckers == null) {
-            nodeCheckers = new TreeHashSet<DefaultNodeChecker>();
+            nodeCheckers = new TreeHashSet<>();
             //copy the node checkers of supertypes here
             for (TypeNode superType : nnode.getType().getSubtypes()) {
                 Collection<DefaultNodeChecker> ncs =
@@ -255,7 +255,7 @@ public class RootNode extends ReteNetworkNode {
             String atomLabel = edgeChecker.getEdge().label().text();
             Set<EdgeCheckerNode> s = this.positiveEdgeCheckers.get(atomLabel);
             if (s == null) {
-                s = new TreeHashSet<EdgeCheckerNode>();
+                s = new TreeHashSet<>();
                 this.positiveEdgeCheckers.put(atomLabel, s);
             }
             s.add(edgeChecker);
@@ -269,7 +269,7 @@ public class RootNode extends ReteNetworkNode {
                 Set<EdgeCheckerNode> s =
                     this.positiveEdgeCheckers.get(atomLabel);
                 if (s == null) {
-                    s = new TreeHashSet<EdgeCheckerNode>();
+                    s = new TreeHashSet<>();
                     this.positiveEdgeCheckers.put(atomLabel, s);
                 }
                 s.add(edgeChecker);
@@ -283,7 +283,7 @@ public class RootNode extends ReteNetworkNode {
         assert atomLabel != null;
         Set<SingleEdgePathChecker> s = this.positivePathCheckers.get(atomLabel);
         if (s == null) {
-            s = new TreeHashSet<SingleEdgePathChecker>();
+            s = new TreeHashSet<>();
             this.positivePathCheckers.put(atomLabel, s);
         }
         s.add(pathChecker);

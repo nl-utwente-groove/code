@@ -428,7 +428,7 @@ public class JGraphUI<G extends Graph> extends BasicGraphUI {
                 // adapt the bound to the scale
                 bounds = getJGraph().fromScreen(bounds).getBounds();
                 // collect the cells that are entirely in the bounds
-                ArrayList<JCell<G>> list = new ArrayList<JCell<G>>();
+                ArrayList<JCell<G>> list = new ArrayList<>();
                 CellView[] views = getJGraph().getGraphLayoutCache().getRoots();
                 for (int i = 0; i < views.length; i++) {
                     if (bounds.contains(views[i].getBounds())) {

@@ -368,7 +368,7 @@ public class DefaultFileSystemStore extends SystemStore {
         Set<QualName> newNames = new HashSet<>();
         // if we're relabelling, it may be that there are already graphs
         // under the names of the new ones
-        Set<AspectGraph> oldGraphs = new HashSet<AspectGraph>();
+        Set<AspectGraph> oldGraphs = new HashSet<>();
         for (AspectGraph newGraph : newGraphs) {
             QualName name = newGraph.getQualName();
             this.marshaller.saveGraph(newGraph.toPlainGraph(), createFile(kind, name));
@@ -412,7 +412,7 @@ public class DefaultFileSystemStore extends SystemStore {
     private GraphBasedEdit doDeleteGraphs(ResourceKind kind, Collection<QualName> names)
         throws IOException {
         testInit();
-        List<AspectGraph> deletedGraphs = new ArrayList<AspectGraph>(names.size());
+        List<AspectGraph> deletedGraphs = new ArrayList<>(names.size());
         Set<QualName> activeNames =
             kind == RULE ? null : new TreeSet<>(getProperties().getActiveNames(kind));
         boolean activeChanged = false;
@@ -489,7 +489,7 @@ public class DefaultFileSystemStore extends SystemStore {
         MyCompoundEdit result = new MyCompoundEdit(Options.REPLACE_ACTION_NAME);
         for (ResourceKind kind : ResourceKind.values()) {
             if (kind.isGraphBased()) {
-                List<AspectGraph> newGraphs = new ArrayList<AspectGraph>(getGraphs(kind).size());
+                List<AspectGraph> newGraphs = new ArrayList<>(getGraphs(kind).size());
                 for (AspectGraph graph : getGraphs(kind).values()) {
                     AspectGraph newGraph = graph.relabel(oldLabel, newLabel);
                     if (newGraph != graph) {
@@ -528,7 +528,7 @@ public class DefaultFileSystemStore extends SystemStore {
         MyCompoundEdit result = new MyCompoundEdit(Options.RENUMBER_ACTION_NAME);
         for (ResourceKind kind : ResourceKind.values()) {
             if (kind.isGraphBased()) {
-                List<AspectGraph> newGraphs = new ArrayList<AspectGraph>(getGraphs(kind).size());
+                List<AspectGraph> newGraphs = new ArrayList<>(getGraphs(kind).size());
                 for (AspectGraph graph : getGraphs(kind).values()) {
                     AspectGraph newGraph = graph.renumber();
                     if (newGraph != graph) {
@@ -676,7 +676,7 @@ public class DefaultFileSystemStore extends SystemStore {
      */
     private Map<QualName,File> collectResources(ResourceKind kind, File path, ModuleName pathName)
         throws IOException, FormatException {
-        Map<QualName,File> result = new HashMap<QualName,File>();
+        Map<QualName,File> result = new HashMap<>();
         // find all files in the current path
         File[] curfiles = path.listFiles(kind.getFileType()
             .getFilter());

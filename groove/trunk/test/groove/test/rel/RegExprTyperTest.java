@@ -100,7 +100,7 @@ public class RegExprTyperTest {
         xFlag = "xFlag";
         xType = "xType";
         Map<LabelVar,Set<? extends TypeElement>> implicitVars =
-            new HashMap<LabelVar,Set<? extends TypeElement>>();
+            new HashMap<>();
         for (TypeEdge edge : implicitType.edgeSet()) {
             String label = edge.label()
                 .toString();
@@ -115,7 +115,7 @@ public class RegExprTyperTest {
         }
         implicitTyper = new RegExprTyper(implicitType, implicitVars);
         Map<LabelVar,Set<? extends TypeElement>> explicitVars =
-            new HashMap<LabelVar,Set<? extends TypeElement>>();
+            new HashMap<>();
         for (TypeEdge edge : explicitType.edgeSet()) {
             String label = edge.label()
                 .toString();
@@ -286,12 +286,12 @@ public class RegExprTyperTest {
     }
 
     private Map<TypeNode,Set<TypeNode>> r(TypeNode[][] m) {
-        Map<TypeNode,Set<TypeNode>> result = new HashMap<TypeNode,Set<TypeNode>>();
+        Map<TypeNode,Set<TypeNode>> result = new HashMap<>();
         for (TypeNode[] p : m) {
             assert p.length == 2;
             Set<TypeNode> image = result.get(p[0]);
             if (image == null) {
-                result.put(p[0], image = new HashSet<TypeNode>());
+                result.put(p[0], image = new HashSet<>());
             }
             image.add(p[1]);
         }

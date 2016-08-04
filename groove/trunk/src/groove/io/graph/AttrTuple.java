@@ -33,7 +33,7 @@ public class AttrTuple {
      * The nodes in the tuple are stored in iteration order.
      */
     public AttrTuple(Collection<AttrNode> nodes) {
-        this.nodes = new ArrayList<AttrNode>(nodes);
+        this.nodes = new ArrayList<>(nodes);
     }
 
     /** Returns an unmodifiable view on nodes in this tuple. */

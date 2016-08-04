@@ -96,7 +96,7 @@ public class TemplateBuilder {
         //            builder.build();
         //        }
         final Queue<Triple<Template,Template,Map<Location,Location>>> normQ =
-            new ConcurrentLinkedQueue<Triple<Template,Template,Map<Location,Location>>>();
+            new ConcurrentLinkedQueue<>();
         for (final Builder template : this.builderMap.values()) {
             threads.start(new Runnable() {
                 @Override
@@ -132,7 +132,7 @@ public class TemplateBuilder {
         return result;
     }
 
-    private final Map<Template,Builder> builderMap = new HashMap<Template,Builder>();
+    private final Map<Template,Builder> builderMap = new HashMap<>();
 
     /**
      * Returns the switch corresponding to a given derivation,
@@ -156,11 +156,11 @@ public class TemplateBuilder {
             TermKey initKey = new TermKey(init, new HashSet<Term>(), new HashSet<CtrlVar>());
             Location start = this.result.getStart();
             Map<TermKey,Location> locMap =
-                this.locMap = new HashMap<TemplateBuilder.TermKey,Location>();
+                this.locMap = new HashMap<>();
             locMap.put(initKey, start);
-            Deque<TermKey> fresh = this.freshSwitch = new LinkedList<TermKey>();
+            Deque<TermKey> fresh = this.freshSwitch = new LinkedList<>();
             fresh.add(initKey);
-            this.freshVerdict = new LinkedList<TermKey>();
+            this.freshVerdict = new LinkedList<>();
         }
 
         Template getResult() {
@@ -201,7 +201,7 @@ public class TemplateBuilder {
             Term term = next.one();
             Type locType = term.getType();
             // property switches
-            Set<SwitchStack> switches = new LinkedHashSet<SwitchStack>();
+            Set<SwitchStack> switches = new LinkedHashSet<>();
             // see if we need a property test
             // start states of procedures are exempt
             boolean isProcStartOrFinal =
@@ -256,7 +256,7 @@ public class TemplateBuilder {
          */
         private Location addLocation(Term term, TermKey predKey, Call incoming) {
             Map<TermKey,Location> locMap = getLocMap();
-            Set<Term> predTerms = new HashSet<Term>();
+            Set<Term> predTerms = new HashSet<>();
             Set<CtrlVar> vars;
             if (incoming == null) {
                 // this is due to a verdict transition
@@ -357,7 +357,7 @@ public class TemplateBuilder {
 
         /** For each template, a mapping from derivations to switches. */
         private final List<Map<Derivation,SwitchStack>> switchMaps =
-            new ArrayList<Map<Derivation,SwitchStack>>();
+            new ArrayList<>();
     }
 
     /** Computes the quotient of a given template under bisimilarity,
@@ -368,14 +368,14 @@ public class TemplateBuilder {
     private Triple<Template,Template,Map<Location,Location>> computeQuotient(Template template) {
         Template result = template.newInstance();
         /** Mapping from locations to their records, in terms of target locations. */
-        List<Record<Location>> locRecords = new ArrayList<Record<Location>>();
+        List<Record<Location>> locRecords = new ArrayList<>();
         // build the coarsest partition respecting the switch attempts
         Partition part = initPartition(template, locRecords);
         while (!part.isSingular() && refinePartition(part, locRecords)) {
             // repeat
         }
         // create map from original locations to their representatives
-        Map<Location,Location> locMap = new HashMap<Location,Location>();
+        Map<Location,Location> locMap = new HashMap<>();
         for (Cell cell : part) {
             // representative location of the cell
             Location repr;
@@ -403,7 +403,7 @@ public class TemplateBuilder {
      */
     private Partition initPartition(Template template, List<Record<Location>> locRecords) {
         Partition result = new Partition(template);
-        Map<LocationKey,Cell> cellMap = new LinkedHashMap<LocationKey,Cell>();
+        Map<LocationKey,Cell> cellMap = new LinkedHashMap<>();
         for (Location loc : template.getLocations()) {
             for (int i = locRecords.size(); i <= loc.getNumber(); i++) {
                 locRecords.add(null);
@@ -429,7 +429,7 @@ public class TemplateBuilder {
     private boolean refinePartition(Partition orig, List<Record<Location>> locRecords) {
         boolean result = false;
         for (Cell cell : orig.iterateMultiples()) {
-            Map<Record<Cell>,Cell> split = new LinkedHashMap<Record<Cell>,Cell>();
+            Map<Record<Cell>,Cell> split = new LinkedHashMap<>();
             for (Location loc : cell) {
                 Record<Cell> rec = append(locRecords.get(loc.getNumber()), orig);
                 Cell locCell = split.get(rec);
@@ -446,7 +446,7 @@ public class TemplateBuilder {
 
     /** Computes the record of the choice and call switches for a given location. */
     private Record<Location> computeRecord(Location loc) {
-        List<Location> targets = new ArrayList<Location>();
+        List<Location> targets = new ArrayList<>();
         Location onSuccess = null;
         Location onFailure = null;
         if (loc.isTrial()) {
@@ -458,18 +458,18 @@ public class TemplateBuilder {
             onSuccess = attempt.onSuccess();
             onFailure = attempt.onFailure();
         }
-        return new Record<Location>(onSuccess, onFailure, targets);
+        return new Record<>(onSuccess, onFailure, targets);
     }
 
     /** Converts a record pointing to locations, to a record pointing to cells. */
     private Record<Cell> append(Record<Location> record, Partition part) {
         Cell success = part.getCell(record.getSuccess());
         Cell failure = part.getCell(record.getFailure());
-        List<Cell> targets = new ArrayList<Cell>();
+        List<Cell> targets = new ArrayList<>();
         for (Location targetLoc : record.getTargets()) {
             targets.add(part.getCell(targetLoc));
         }
-        return new Record<Cell>(success, failure, targets);
+        return new Record<>(success, failure, targets);
     }
 
     /** Returns the an instance of this class.
@@ -516,7 +516,7 @@ public class TemplateBuilder {
         }
 
         private List<Location> getNested(SwitchStack sw) {
-            List<Location> result = new ArrayList<Location>(sw.size() - 1);
+            List<Location> result = new ArrayList<>(sw.size() - 1);
             for (int i = 1; i < sw.size(); i++) {
                 result.add(sw.get(i)
                     .onFinish());
@@ -564,7 +564,7 @@ public class TemplateBuilder {
 
         @Override
         public Iterator<Cell> iterator() {
-            return new NestedIterator<TemplateBuilder.Cell>(this.singles.iterator(),
+            return new NestedIterator<>(this.singles.iterator(),
                 this.multiples.iterator());
         }
 
@@ -574,17 +574,17 @@ public class TemplateBuilder {
         }
 
         /** List of single-element cells. */
-        private final List<Cell> singles = new ArrayList<Cell>();
+        private final List<Cell> singles = new ArrayList<>();
 
         /** Returns the current list of multiples, and reinitialises the set. */
         List<Cell> iterateMultiples() {
             List<Cell> result = this.multiples;
-            this.multiples = new ArrayList<Cell>(result.size());
+            this.multiples = new ArrayList<>(result.size());
             return result;
         }
 
         /** List of multiple-element cells. */
-        private List<Cell> multiples = new LinkedList<Cell>();
+        private List<Cell> multiples = new LinkedList<>();
 
         Cell getCell(Location loc) {
             return loc == null ? null : this.locCells[loc.getNumber()];

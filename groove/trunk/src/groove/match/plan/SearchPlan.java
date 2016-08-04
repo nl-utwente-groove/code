@@ -58,9 +58,9 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
         boolean result = super.add(e);
         // collection of direct dependencies of the new search item
         int depend = -1;
-        Set<RuleNode> usedNodes = new HashSet<RuleNode>(e.needsNodes());
+        Set<RuleNode> usedNodes = new HashSet<>(e.needsNodes());
         usedNodes.addAll(e.bindsNodes());
-        Set<LabelVar> usedVars = new HashSet<LabelVar>(e.needsVars());
+        Set<LabelVar> usedVars = new HashSet<>(e.needsVars());
         usedVars.addAll(e.bindsVars());
         for (int i = 0; i < position; i++) {
             // set a dependency if the item at position i binds a required node or variable
@@ -74,7 +74,7 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
         // add dependencies due to injective matching
         if (this.injective) {
             // cumulative set of nodes bound by search items up to i
-            Set<RuleNode> boundNodes = new HashSet<RuleNode>();
+            Set<RuleNode> boundNodes = new HashSet<>();
             // for each item, whether it binds new nodes
             BitSet bindsNewNodes = new BitSet();
             for (int i = 0; i <= position; i++) {
@@ -102,7 +102,7 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
 
     /** Tests if two sets are disjoint. */
     private <X> boolean areDisjoint(Collection<X> set1, Collection<X> set2) {
-        Set<X> copy = new HashSet<X>(set1);
+        Set<X> copy = new HashSet<>(set1);
         return !copy.removeAll(set2);
     }
 
@@ -144,7 +144,7 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
     /** The subgraph whose image is pre-matched before invoking the search plan. */
     private final Anchor seed;
     /** Direct dependencies of all search plan items. */
-    private final List<Integer> dependencies = new ArrayList<Integer>();
+    private final List<Integer> dependencies = new ArrayList<>();
     /** Flag indicating that the search should be injective on non-attribute nodes. */
     private final boolean injective;
 }

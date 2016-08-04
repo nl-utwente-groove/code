@@ -175,7 +175,7 @@ public class GrooveFileChooser extends JFileChooser {
 
     // Maps from filters to choosers.
     private static final Map<Set<FileType>,GrooveFileChooser> listMap =
-        new HashMap<Set<FileType>,GrooveFileChooser>();
+        new HashMap<>();
 
     /** Returns a file chooser object for selecting directories. */
     public static GrooveFileChooser getInstance() {

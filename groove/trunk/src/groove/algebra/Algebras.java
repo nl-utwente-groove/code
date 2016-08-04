@@ -62,9 +62,9 @@ public class Algebras {
     }
 
     private static Map<String,String> computeDocMap() {
-        Map<String,String> result = new TreeMap<String,String>();
+        Map<String,String> result = new TreeMap<>();
         for (Sort sigKind : Sort.values()) {
-            Map<String,String> sigMap = new HashMap<String,String>(tokenMap);
+            Map<String,String> sigMap = new HashMap<>(tokenMap);
             for (Method method : sigKind.getSignatureClass().getMethods()) {
                 sigMap.put("Q" + method.getName(),
                     sigKind + ":" + method.getName());
@@ -85,7 +85,7 @@ public class Algebras {
     static private final Map<String,String> tokenMap;
 
     static {
-        tokenMap = new HashMap<String,String>();
+        tokenMap = new HashMap<>();
         tokenMap.put("LPAR", "(");
         tokenMap.put("RPAR", ")");
         tokenMap.put("COMMA", ",");

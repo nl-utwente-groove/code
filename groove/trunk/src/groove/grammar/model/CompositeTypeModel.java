@@ -86,8 +86,8 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
             result = new TypeGraph(QualName.name(NAME));
             // There are no errors in each of the models, try to compose the
             // type graph.
-            Map<TypeNode,TypeNode> importNodes = new HashMap<TypeNode,TypeNode>();
-            Map<TypeNode,TypeModel> importModels = new HashMap<TypeNode,TypeModel>();
+            Map<TypeNode,TypeNode> importNodes = new HashMap<>();
+            Map<TypeNode,TypeModel> importModels = new HashMap<>();
             for (TypeModel model : this.typeModelMap.values()) {
                 try {
                     TypeGraph graph = model.toResource();
@@ -143,7 +143,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
      * if no type graphs are enabled.
      */
     private Set<TypeLabel> getLabels() {
-        Set<TypeLabel> result = new HashSet<TypeLabel>();
+        Set<TypeLabel> result = new HashSet<>();
         // get the labels from the rules and host graphs
         for (ResourceKind kind : EnumSet.of(RULE, HOST)) {
             for (ResourceModel<?> model : getGrammar().getResourceSet(kind)) {

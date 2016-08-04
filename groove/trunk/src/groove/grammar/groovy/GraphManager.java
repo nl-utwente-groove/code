@@ -45,7 +45,7 @@ public class GraphManager {
      */
     public GraphManager(SimulatorModel simulatorModel) {
         this.simulatorModel = simulatorModel;
-        this.layouts = new HashMap<AspectGraph,LayoutMap>();
+        this.layouts = new HashMap<>();
     }
 
     /**

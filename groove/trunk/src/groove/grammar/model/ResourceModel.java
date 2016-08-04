@@ -53,7 +53,7 @@ abstract public class ResourceModel<R> {
         this.grammar = grammar;
         this.kind = kind;
         this.grammarTracker = grammar == null ? null : grammar.createChangeTracker();
-        this.resourceTrackers = new EnumMap<ResourceKind,ChangeCount.Tracker>(ResourceKind.class);
+        this.resourceTrackers = new EnumMap<>(ResourceKind.class);
         for (ResourceKind rk : ResourceKind.values()) {
             this.resourceTrackers.put(rk,
                 grammar == null ? ChangeCount.DUMMY_TRACKER : grammar.createChangeTracker(rk));
@@ -196,7 +196,7 @@ abstract public class ResourceModel<R> {
     /** Returns the set of error-free, enabled rules. */
     Collection<Rule> getRules() {
         Collection<NamedResourceModel<?>> ruleModels = getGrammar().getResourceSet(RULE);
-        Collection<Rule> result = new ArrayList<Rule>(ruleModels.size());
+        Collection<Rule> result = new ArrayList<>(ruleModels.size());
         // set rules
         for (ResourceModel<?> model : ruleModels) {
             RuleModel ruleModel = (RuleModel) model;

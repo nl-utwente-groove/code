@@ -96,13 +96,13 @@ public class NodeSetEdgeSetGraph<N extends Node,E extends GEdge<N>> extends AGra
 
     @Override
     public NodeSetEdgeSetGraph<N,E> clone() {
-        NodeSetEdgeSetGraph<N,E> result = new NodeSetEdgeSetGraph<N,E>(this);
+        NodeSetEdgeSetGraph<N,E> result = new NodeSetEdgeSetGraph<>(this);
         return result;
     }
 
     @Override
     public NodeSetEdgeSetGraph<N,E> newGraph(String name) {
-        return new NodeSetEdgeSetGraph<N,E>(getName());
+        return new NodeSetEdgeSetGraph<>(getName());
     }
 
     @Override

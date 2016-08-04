@@ -332,7 +332,7 @@ public class TemplateBuildTest extends CtrlTester {
     }
 
     private Set<Location> getNexts(Location loc, Call call) {
-        Set<Location> result = new HashSet<Location>();
+        Set<Location> result = new HashSet<>();
         for (SwitchStack swit : loc.getAttempt()) {
             if (swit.getBottomCall()
                 .equals(call)) {

@@ -76,7 +76,7 @@ public class JGraphLayoutCache extends GraphLayoutCache {
     protected void reloadRoots() {
         // Reorder roots
         Object[] orderedCells = DefaultGraphModel.getAll(this.graphModel);
-        List<CellView> newRoots = new ArrayList<CellView>();
+        List<CellView> newRoots = new ArrayList<>();
         for (Object element : orderedCells) {
             CellView view = getMapping(element, true);
             if (view != null) {
@@ -96,9 +96,9 @@ public class JGraphLayoutCache extends GraphLayoutCache {
      */
     @Override
     public synchronized void reload() {
-        List<CellView> newRoots = new ArrayList<CellView>();
+        List<CellView> newRoots = new ArrayList<>();
         @SuppressWarnings("unchecked")
-        Map<?,?> oldMapping = new Hashtable<Object,Object>(this.mapping);
+        Map<?,?> oldMapping = new Hashtable<>(this.mapping);
         this.mapping.clear();
         @SuppressWarnings("unchecked")
         Set<Object> rootsSet = new HashSet<Object>(this.roots);

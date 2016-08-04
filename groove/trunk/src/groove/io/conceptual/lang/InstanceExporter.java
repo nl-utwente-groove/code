@@ -52,8 +52,8 @@ import groove.io.external.PortException;
 public abstract class InstanceExporter<E> implements Messenger, Visitor {
     public abstract void addInstanceModel(InstanceModel instanceModel) throws PortException;
 
-    private List<Message> m_messages = new ArrayList<Message>();
-    private Map<Acceptor,E> m_elements = new HashMap<Acceptor,E>();
+    private List<Message> m_messages = new ArrayList<>();
+    private Map<Acceptor,E> m_elements = new HashMap<>();
 
     protected void addMessage(Message m) {
         this.m_messages.add(m);

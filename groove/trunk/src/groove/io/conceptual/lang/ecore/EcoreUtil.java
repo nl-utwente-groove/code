@@ -33,7 +33,7 @@ import groove.io.conceptual.type.Type;
 @SuppressWarnings("javadoc")
 public class EcoreUtil {
     // Static table of 'known' types in Ecore that can be mapped to the conceptual model
-    public static final Map<String,Type> g_knownTypes = new HashMap<String,Type>();
+    public static final Map<String,Type> g_knownTypes = new HashMap<>();
 
     static {
         g_knownTypes.put("EBoolean", BoolType.instance());
@@ -60,7 +60,7 @@ public class EcoreUtil {
     // Static table of 'known' instance types in Ecore that can be mapped to Ecore DataTypes
     // which can be mapped to the conceptual model (see EcoreType class)
     // Also used for default values
-    public static final Map<String,String> g_knownInstanceTypes = new HashMap<String,String>();
+    public static final Map<String,String> g_knownInstanceTypes = new HashMap<>();
 
     static {
         g_knownInstanceTypes.put("java.lang.Boolean", "EBoolean");

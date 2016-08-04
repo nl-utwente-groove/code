@@ -159,7 +159,7 @@ public class StateMatches extends MatchResultSet {
             boolean matchImpliesSuccessor = !this.removePolicies;
             // keep track of property violations
             CheckPolicy violated = CheckPolicy.SILENT;
-            List<MatchResult> outstanding = new LinkedList<MatchResult>();
+            List<MatchResult> outstanding = new LinkedList<>();
             for (Step step : attempt) {
                 MatchResultSet matches = getMatchCollector().computeMatches(step);
                 Rule action = step.getRule();

@@ -167,49 +167,49 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
      * Factory method for <tt>AllAction</tt>s.
      */
     protected ShowHideAction<G> createAllAction(int showMode) {
-        return new AllAction<G>(this.jgraph, showMode);
+        return new AllAction<>(this.jgraph, showMode);
     }
 
     /**
      * Factory method for <tt>InvertAction</tt>s.
      */
     protected ShowHideAction<G> createInvertAction(int showMode) {
-        return new InvertAction<G>(this.jgraph, showMode);
+        return new InvertAction<>(this.jgraph, showMode);
     }
 
     /**
      * Factory method for <tt>RegExprAction</tt>s.
      */
     protected ShowHideAction<G> createAddRegExprAction(int showMode) {
-        return new RegExprAction<G>(this.jgraph, showMode);
+        return new RegExprAction<>(this.jgraph, showMode);
     }
 
     /**
      * Factory method for <tt>RegExprAction</tt>s.
      */
     protected ShowHideAction<G> createShowRegExprAction(int showMode) {
-        return new RegExprAction<G>(this.jgraph, showMode);
+        return new RegExprAction<>(this.jgraph, showMode);
     }
 
     /**
      * Factory method for <tt>ContextAction</tt>s.
      */
     protected ShowHideAction<G> createContextAction(int showMode) {
-        return new ContextAction<G>(this.jgraph, showMode);
+        return new ContextAction<>(this.jgraph, showMode);
     }
 
     /**
      * Factory method for {@link ShowHideMenu.SelectedAction}s.
      */
     protected ShowHideAction<G> createSelectedAction(int showMode) {
-        return new SelectedAction<G>(this.jgraph, showMode);
+        return new SelectedAction<>(this.jgraph, showMode);
     }
 
     /**
      * Factory method for {@link ShowHideMenu.FromFileAction}s.
      */
     protected ShowHideAction<G> createFromFileAction(int showMode) {
-        return new FromFileAction<G>(this.jgraph, showMode);
+        return new FromFileAction<>(this.jgraph, showMode);
     }
 
     /**
@@ -223,7 +223,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
      * Factory method for <tt>LabelAction</tt>s.
      */
     protected ShowHideAction<G> createLabelAction(int showMode, Label label) {
-        return new LabelAction<G>(this.jgraph, showMode, label);
+        return new LabelAction<>(this.jgraph, showMode, label);
     }
 
     /**
@@ -296,8 +296,8 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
          */
         @Override
         public void actionPerformed(ActionEvent e) {
-            Set<JCell<G>> hiddenCells = new HashSet<JCell<G>>();
-            Set<JCell<G>> shownCells = new HashSet<JCell<G>>();
+            Set<JCell<G>> hiddenCells = new HashSet<>();
+            Set<JCell<G>> shownCells = new HashSet<>();
             for (JCell<G> jCell : this.jgraph.getModel()
                 .getRoots()) {
                 if (isHiding(jCell)) {
@@ -471,7 +471,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
                     result = !sourceVertex.isGrayedOut() || !targetVertex.isGrayedOut();
                 } else {
                     Set<Object> selectedCells =
-                        new HashSet<Object>(Arrays.asList(selectedCellArray));
+                        new HashSet<>(Arrays.asList(selectedCellArray));
                     result = selectedCells.contains(sourceVertex)
                         || selectedCells.contains(targetVertex);
                 }
@@ -646,7 +646,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
             if (result == JFileChooser.APPROVE_OPTION) {
                 File labelsFile = fileChooser.getSelectedFile();
                 String fileLine;
-                Set<String> labels = new HashSet<String>();
+                Set<String> labels = new HashSet<>();
                 try (BufferedReader in = new BufferedReader(new FileReader(labelsFile))) {
                     if (!in.ready()) {
                         throw new IOException();
@@ -753,7 +753,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
                 removeAll();
                 for (Label labelAction : getJGraph().getLabelTree()
                     .getLabels()) {
-                    add(new LabelAction<G>(getJGraph(), this.showMode, labelAction));
+                    add(new LabelAction<>(getJGraph(), this.showMode, labelAction));
                 }
             }
             super.menuSelectionChanged(isIncluded);

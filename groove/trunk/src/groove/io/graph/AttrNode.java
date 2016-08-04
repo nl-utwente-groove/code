@@ -33,7 +33,7 @@ public class AttrNode extends ANode {
     /** Constructs a node with a given number. */
     public AttrNode(int nr) {
         super(nr);
-        this.attributeMap = new LinkedHashMap<String,String>();
+        this.attributeMap = new LinkedHashMap<>();
     }
 
     /**

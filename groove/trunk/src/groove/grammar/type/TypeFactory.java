@@ -118,7 +118,7 @@ public class TypeFactory extends ElementFactory<TypeNode,TypeEdge> {
     }
 
     /** Mapping from signatures to corresponding type nodes. */
-    private final Map<Sort,TypeNode> dataTypeMap = new EnumMap<Sort,TypeNode>(Sort.class);
+    private final Map<Sort,TypeNode> dataTypeMap = new EnumMap<>(Sort.class);
 
     /**
      * Returns a label with the given text, reusing previously created
@@ -142,14 +142,14 @@ public class TypeFactory extends ElementFactory<TypeNode,TypeEdge> {
     private TypeNode topNode;
 
     /** Auxiliary map from type labels to type nodes */
-    private Map<TypeLabel,TypeNode> typeNodeMap = new HashMap<TypeLabel,TypeNode>();
+    private Map<TypeLabel,TypeNode> typeNodeMap = new HashMap<>();
 
     /**
      * The internal translation table from strings to type labels,
      * per edge role.
      */
     private final Map<EdgeRole,Map<String,TypeLabel>> labelMaps =
-        new EnumMap<EdgeRole,Map<String,TypeLabel>>(EdgeRole.class);
+        new EnumMap<>(EdgeRole.class);
 
     {
         for (EdgeRole kind : EdgeRole.values()) {

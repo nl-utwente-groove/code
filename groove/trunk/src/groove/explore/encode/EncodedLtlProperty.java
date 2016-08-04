@@ -40,7 +40,7 @@ public class EncodedLtlProperty implements EncodedType<String,String> {
 
     @Override
     public EncodedTypeEditor<String,String> createEditor(GrammarModel grammar) {
-        return new StringEditor<String>(grammar, "", 20);
+        return new StringEditor<>(grammar, "", 20);
     }
 
     @Override

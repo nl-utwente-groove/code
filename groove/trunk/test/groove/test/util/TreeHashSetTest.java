@@ -45,7 +45,7 @@ public class TreeHashSetTest {
             int value = i * i - INT_LIST_COUNT * INT_LIST_COUNT / 2;
             this.intList1[i] = new Integer(value);
             this.intList2[i] = new Integer(value);
-            this.longList[i] = new HashSet<Integer>();
+            this.longList[i] = new HashSet<>();
             this.longList[i].add(new Integer(value));
         }
     }
@@ -54,7 +54,7 @@ public class TreeHashSetTest {
 
     @Before
     public void setUp() {
-        this.defaultSet = new TreeHashSet<Object>();
+        this.defaultSet = new TreeHashSet<>();
         this.identitySet =
             new TreeHashSet<Object>(TreeHashSet.IDENTITY_EQUATOR);
         this.hashcodeSet =
@@ -71,7 +71,7 @@ public class TreeHashSetTest {
     private void testClone(TreeHashSet<Object> original) {
         fill(original, this.intList1);
         fill(original, this.longList);
-        TreeHashSet<Object> clone = new TreeHashSet<Object>(original);
+        TreeHashSet<Object> clone = new TreeHashSet<>(original);
         assertEquals(clone, original);
         Iterator<Object> iter;
         while ((iter = clone.iterator()).hasNext()) {
@@ -126,10 +126,10 @@ public class TreeHashSetTest {
      */
     @Test
     public void testIterator() {
-        Set<Object> testSet = new HashSet<Object>();
+        Set<Object> testSet = new HashSet<>();
         for (int i = 0; i < INT_LIST_COUNT; i++) {
             this.defaultSet.add(this.intList1[i]);
-            testSet = new HashSet<Object>();
+            testSet = new HashSet<>();
             Iterator<Object> iter = this.defaultSet.iterator();
             while (iter.hasNext()) {
                 Object element = iter.next();
@@ -269,7 +269,7 @@ public class TreeHashSetTest {
      */
     @Test
     public void testEquals() {
-        TreeHashSet<Object> clone = new TreeHashSet<Object>();
+        TreeHashSet<Object> clone = new TreeHashSet<>();
         fill(this.defaultSet, this.intList1);
         fill(this.defaultSet, this.longList);
         fill(clone, this.longList);

@@ -1,18 +1,8 @@
 // $ANTLR 3.4 E:\\Eclipse\\groove-formula\\src\\groove\\control\\parse\\Ctrl.g 2016-06-29 23:28:19
 
 package groove.control.parse;
-import groove.control.*;
 import groove.util.antlr.*;
-import java.util.LinkedList;
-
-
 import org.antlr.runtime.*;
-import java.util.Stack;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-
 import org.antlr.runtime.tree.*;
 
 
@@ -117,13 +107,16 @@ public void setTreeAdaptor(TreeAdaptor adaptor) {
 public TreeAdaptor getTreeAdaptor() {
     return adaptor;
 }
+    @Override
     public String[] getTokenNames() { return CtrlParser.tokenNames; }
+    @Override
     public String getGrammarFileName() { return "E:\\Eclipse\\groove-formula\\src\\groove\\control\\parse\\Ctrl.g"; }
 
 
         /** Helper class to convert AST trees to namespace. */
         private CtrlHelper helper;
         
+        @Override
         public void displayRecognitionError(String[] tokenNames,
                 RecognitionException e) {
             String hdr = getErrorHeader(e);
@@ -138,6 +131,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class program_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -324,7 +318,7 @@ public TreeAdaptor getTreeAdaptor() {
                 {
                 CtrlTree root_1 = (CtrlTree)adaptor.nil();
                 root_1 = (CtrlTree)adaptor.becomeRoot(
-                (CtrlTree)adaptor.create(PROGRAM, "PROGRAM")
+                adaptor.create(PROGRAM, "PROGRAM")
                 , root_1);
 
                 adaptor.addChild(root_1, stream_package_decl.nextTree());
@@ -333,7 +327,7 @@ public TreeAdaptor getTreeAdaptor() {
                 {
                 CtrlTree root_2 = (CtrlTree)adaptor.nil();
                 root_2 = (CtrlTree)adaptor.becomeRoot(
-                (CtrlTree)adaptor.create(IMPORTS, "IMPORTS")
+                adaptor.create(IMPORTS, "IMPORTS")
                 , root_2);
 
                 // E:\\Eclipse\\groove-formula\\src\\groove\\control\\parse\\Ctrl.g:87:21: ( import_decl )*
@@ -350,7 +344,7 @@ public TreeAdaptor getTreeAdaptor() {
                 {
                 CtrlTree root_2 = (CtrlTree)adaptor.nil();
                 root_2 = (CtrlTree)adaptor.becomeRoot(
-                (CtrlTree)adaptor.create(FUNCTIONS, "FUNCTIONS")
+                adaptor.create(FUNCTIONS, "FUNCTIONS")
                 , root_2);
 
                 // E:\\Eclipse\\groove-formula\\src\\groove\\control\\parse\\Ctrl.g:88:23: ( function )*
@@ -367,7 +361,7 @@ public TreeAdaptor getTreeAdaptor() {
                 {
                 CtrlTree root_2 = (CtrlTree)adaptor.nil();
                 root_2 = (CtrlTree)adaptor.becomeRoot(
-                (CtrlTree)adaptor.create(RECIPES, "RECIPES")
+                adaptor.create(RECIPES, "RECIPES")
                 , root_2);
 
                 // E:\\Eclipse\\groove-formula\\src\\groove\\control\\parse\\Ctrl.g:89:21: ( recipe )*
@@ -384,7 +378,7 @@ public TreeAdaptor getTreeAdaptor() {
                 {
                 CtrlTree root_2 = (CtrlTree)adaptor.nil();
                 root_2 = (CtrlTree)adaptor.becomeRoot(
-                (CtrlTree)adaptor.create(BLOCK, "BLOCK")
+                adaptor.create(BLOCK, "BLOCK")
                 , root_2);
 
                 // E:\\Eclipse\\groove-formula\\src\\groove\\control\\parse\\Ctrl.g:90:19: ( stat )*
@@ -416,7 +410,7 @@ public TreeAdaptor getTreeAdaptor() {
             retval.tree = (CtrlTree)adaptor.rulePostProcessing(root_0);
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
             }
-            if ( state.backtracking==0 ) { helper.declareProgram(((CtrlTree)retval.tree)); }
+            if ( state.backtracking==0 ) { helper.declareProgram((retval.tree)); }
         }
         catch (RecognitionException re) {
             reportError(re);
@@ -435,6 +429,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class package_decl_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -520,13 +515,13 @@ public TreeAdaptor getTreeAdaptor() {
                         {
                         CtrlTree root_1 = (CtrlTree)adaptor.nil();
                         root_1 = (CtrlTree)adaptor.becomeRoot(
-                        (CtrlTree)adaptor.create(PACKAGE, key)
+                        adaptor.create(PACKAGE, key)
                         , root_1);
 
                         adaptor.addChild(root_1, stream_qual_name.nextTree());
 
                         adaptor.addChild(root_1, 
-                        (CtrlTree)adaptor.create(SEMI, close)
+                        adaptor.create(SEMI, close)
                         );
 
                         adaptor.addChild(root_0, root_1);
@@ -600,6 +595,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class import_decl_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -682,6 +678,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class qual_name_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -946,6 +943,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class recipe_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -1071,6 +1069,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class function_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -1165,6 +1164,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class par_list_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -1283,7 +1283,7 @@ public TreeAdaptor getTreeAdaptor() {
                 {
                 CtrlTree root_1 = (CtrlTree)adaptor.nil();
                 root_1 = (CtrlTree)adaptor.becomeRoot(
-                (CtrlTree)adaptor.create(PARS, "PARS")
+                adaptor.create(PARS, "PARS")
                 , root_1);
 
                 // E:\\Eclipse\\groove-formula\\src\\groove\\control\\parse\\Ctrl.g:171:15: ( par )*
@@ -1330,6 +1330,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class par_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -1414,7 +1415,7 @@ public TreeAdaptor getTreeAdaptor() {
                         {
                         CtrlTree root_1 = (CtrlTree)adaptor.nil();
                         root_1 = (CtrlTree)adaptor.becomeRoot(
-                        (CtrlTree)adaptor.create(PAR, "PAR")
+                        adaptor.create(PAR, "PAR")
                         , root_1);
 
                         adaptor.addChild(root_1, 
@@ -1471,7 +1472,7 @@ public TreeAdaptor getTreeAdaptor() {
                         {
                         CtrlTree root_1 = (CtrlTree)adaptor.nil();
                         root_1 = (CtrlTree)adaptor.becomeRoot(
-                        (CtrlTree)adaptor.create(PAR, "PAR")
+                        adaptor.create(PAR, "PAR")
                         , root_1);
 
                         adaptor.addChild(root_1, stream_var_type.nextTree());
@@ -1519,6 +1520,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class block_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -1604,7 +1606,7 @@ public TreeAdaptor getTreeAdaptor() {
                 {
                 CtrlTree root_1 = (CtrlTree)adaptor.nil();
                 root_1 = (CtrlTree)adaptor.becomeRoot(
-                (CtrlTree)adaptor.create(BLOCK, open)
+                adaptor.create(BLOCK, open)
                 , root_1);
 
                 // E:\\Eclipse\\groove-formula\\src\\groove\\control\\parse\\Ctrl.g:193:23: ( stat )*
@@ -1615,7 +1617,7 @@ public TreeAdaptor getTreeAdaptor() {
                 stream_stat.reset();
 
                 adaptor.addChild(root_1, 
-                (CtrlTree)adaptor.create(TRUE, close)
+                adaptor.create(TRUE, close)
                 );
 
                 adaptor.addChild(root_0, root_1);
@@ -1655,6 +1657,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class stat_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -1968,14 +1971,14 @@ public TreeAdaptor getTreeAdaptor() {
                         {
                         CtrlTree root_1 = (CtrlTree)adaptor.nil();
                         root_1 = (CtrlTree)adaptor.becomeRoot(
-                        (CtrlTree)adaptor.create(ATOM, open)
+                        adaptor.create(ATOM, open)
                         , root_1);
 
                         // E:\\Eclipse\\groove-formula\\src\\groove\\control\\parse\\Ctrl.g:211:21: ^( BLOCK ( stat )* TRUE[$close] )
                         {
                         CtrlTree root_2 = (CtrlTree)adaptor.nil();
                         root_2 = (CtrlTree)adaptor.becomeRoot(
-                        (CtrlTree)adaptor.create(BLOCK, "BLOCK")
+                        adaptor.create(BLOCK, "BLOCK")
                         , root_2);
 
                         // E:\\Eclipse\\groove-formula\\src\\groove\\control\\parse\\Ctrl.g:211:29: ( stat )*
@@ -1986,7 +1989,7 @@ public TreeAdaptor getTreeAdaptor() {
                         stream_stat.reset();
 
                         adaptor.addChild(root_2, 
-                        (CtrlTree)adaptor.create(TRUE, close)
+                        adaptor.create(TRUE, close)
                         );
 
                         adaptor.addChild(root_1, root_2);
@@ -2145,7 +2148,7 @@ public TreeAdaptor getTreeAdaptor() {
                                 {
                                 CtrlTree root_1 = (CtrlTree)adaptor.nil();
                                 root_1 = (CtrlTree)adaptor.becomeRoot(
-                                (CtrlTree)adaptor.create(BLOCK, "BLOCK")
+                                adaptor.create(BLOCK, "BLOCK")
                                 , root_1);
 
                                 adaptor.addChild(root_1, stream_stat.nextTree());
@@ -2216,7 +2219,7 @@ public TreeAdaptor getTreeAdaptor() {
                                 {
                                 CtrlTree root_1 = (CtrlTree)adaptor.nil();
                                 root_1 = (CtrlTree)adaptor.becomeRoot(
-                                (CtrlTree)adaptor.create(BLOCK, "BLOCK")
+                                adaptor.create(BLOCK, "BLOCK")
                                 , root_1);
 
                                 adaptor.addChild(root_1, stream_stat.nextTree());
@@ -2488,6 +2491,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class var_decl_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -2652,6 +2656,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class var_decl_pure_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -2743,7 +2748,7 @@ public TreeAdaptor getTreeAdaptor() {
                 {
                 CtrlTree root_1 = (CtrlTree)adaptor.nil();
                 root_1 = (CtrlTree)adaptor.becomeRoot(
-                (CtrlTree)adaptor.create(VAR, "VAR")
+                adaptor.create(VAR, "VAR")
                 , root_1);
 
                 adaptor.addChild(root_1, stream_var_type.nextTree());
@@ -2796,6 +2801,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class cond_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -2911,7 +2917,7 @@ public TreeAdaptor getTreeAdaptor() {
                         {
                         CtrlTree root_1 = (CtrlTree)adaptor.nil();
                         root_1 = (CtrlTree)adaptor.becomeRoot(
-                        (CtrlTree)adaptor.create(CHOICE, "CHOICE")
+                        adaptor.create(CHOICE, "CHOICE")
                         , root_1);
 
                         adaptor.addChild(root_1, stream_cond_atom.nextTree());
@@ -2996,6 +3002,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class cond_atom_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -3094,6 +3101,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class expr_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -3209,7 +3217,7 @@ public TreeAdaptor getTreeAdaptor() {
                         {
                         CtrlTree root_1 = (CtrlTree)adaptor.nil();
                         root_1 = (CtrlTree)adaptor.becomeRoot(
-                        (CtrlTree)adaptor.create(CHOICE, "CHOICE")
+                        adaptor.create(CHOICE, "CHOICE")
                         , root_1);
 
                         adaptor.addChild(root_1, stream_expr2.nextTree());
@@ -3294,6 +3302,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class expr2_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -3409,7 +3418,7 @@ public TreeAdaptor getTreeAdaptor() {
                                 {
                                 CtrlTree root_1 = (CtrlTree)adaptor.nil();
                                 root_1 = (CtrlTree)adaptor.becomeRoot(
-                                (CtrlTree)adaptor.create(BLOCK, "BLOCK")
+                                adaptor.create(BLOCK, "BLOCK")
                                 , root_1);
 
                                 adaptor.addChild(root_1, stream_e.nextTree());
@@ -3418,7 +3427,7 @@ public TreeAdaptor getTreeAdaptor() {
                                 {
                                 CtrlTree root_2 = (CtrlTree)adaptor.nil();
                                 root_2 = (CtrlTree)adaptor.becomeRoot(
-                                (CtrlTree)adaptor.create(STAR, plus)
+                                adaptor.create(STAR, plus)
                                 , root_2);
 
                                 adaptor.addChild(root_2, stream_e.nextTree());
@@ -3464,7 +3473,7 @@ public TreeAdaptor getTreeAdaptor() {
                                 {
                                 CtrlTree root_1 = (CtrlTree)adaptor.nil();
                                 root_1 = (CtrlTree)adaptor.becomeRoot(
-                                (CtrlTree)adaptor.create(STAR, ast)
+                                adaptor.create(STAR, ast)
                                 , root_1);
 
                                 adaptor.addChild(root_1, stream_e.nextTree());
@@ -3548,7 +3557,7 @@ public TreeAdaptor getTreeAdaptor() {
                         {
                         CtrlTree root_1 = (CtrlTree)adaptor.nil();
                         root_1 = (CtrlTree)adaptor.becomeRoot(
-                        (CtrlTree)adaptor.create(ALAP, op)
+                        adaptor.create(ALAP, op)
                         , root_1);
 
                         adaptor.addChild(root_1, stream_expr_atom.nextTree());
@@ -3592,6 +3601,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class expr_atom_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -3702,13 +3712,13 @@ public TreeAdaptor getTreeAdaptor() {
                         {
                         CtrlTree root_1 = (CtrlTree)adaptor.nil();
                         root_1 = (CtrlTree)adaptor.becomeRoot(
-                        (CtrlTree)adaptor.create(BLOCK, open)
+                        adaptor.create(BLOCK, open)
                         , root_1);
 
                         adaptor.addChild(root_1, stream_expr.nextTree());
 
                         adaptor.addChild(root_1, 
-                        (CtrlTree)adaptor.create(TRUE, close)
+                        adaptor.create(TRUE, close)
                         );
 
                         adaptor.addChild(root_0, root_1);
@@ -3780,6 +3790,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class assign_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -3891,7 +3902,7 @@ public TreeAdaptor getTreeAdaptor() {
                 {
                 CtrlTree root_2 = (CtrlTree)adaptor.nil();
                 root_2 = (CtrlTree)adaptor.becomeRoot(
-                (CtrlTree)adaptor.create(ARGS, "ARGS")
+                adaptor.create(ARGS, "ARGS")
                 , root_2);
 
                 if ( !(stream_target.hasNext()) ) {
@@ -3904,7 +3915,7 @@ public TreeAdaptor getTreeAdaptor() {
                 stream_target.reset();
 
                 adaptor.addChild(root_2, 
-                (CtrlTree)adaptor.create(RPAR, "RPAR")
+                adaptor.create(RPAR, "RPAR")
                 );
 
                 adaptor.addChild(root_1, root_2);
@@ -3949,6 +3960,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class target_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -3994,11 +4006,11 @@ public TreeAdaptor getTreeAdaptor() {
                 {
                 CtrlTree root_1 = (CtrlTree)adaptor.nil();
                 root_1 = (CtrlTree)adaptor.becomeRoot(
-                (CtrlTree)adaptor.create(ARG, "ARG")
+                adaptor.create(ARG, "ARG")
                 , root_1);
 
                 adaptor.addChild(root_1, 
-                (CtrlTree)adaptor.create(OUT, "OUT")
+                adaptor.create(OUT, "OUT")
                 );
 
                 adaptor.addChild(root_1, 
@@ -4042,6 +4054,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class call_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -4118,7 +4131,7 @@ public TreeAdaptor getTreeAdaptor() {
                 {
                 CtrlTree root_1 = (CtrlTree)adaptor.nil();
                 root_1 = (CtrlTree)adaptor.becomeRoot(
-                (CtrlTree)adaptor.create(CALL, (rule_name106!=null?((Token)rule_name106.start):null))
+                adaptor.create(CALL, (rule_name106!=null?((Token)rule_name106.start):null))
                 , root_1);
 
                 adaptor.addChild(root_1, stream_rule_name.nextTree());
@@ -4167,6 +4180,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class rule_name_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -4246,6 +4260,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class arg_list_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -4364,7 +4379,7 @@ public TreeAdaptor getTreeAdaptor() {
                 {
                 CtrlTree root_1 = (CtrlTree)adaptor.nil();
                 root_1 = (CtrlTree)adaptor.becomeRoot(
-                (CtrlTree)adaptor.create(ARGS, open)
+                adaptor.create(ARGS, open)
                 , root_1);
 
                 // E:\\Eclipse\\groove-formula\\src\\groove\\control\\parse\\Ctrl.g:384:22: ( arg )*
@@ -4375,7 +4390,7 @@ public TreeAdaptor getTreeAdaptor() {
                 stream_arg.reset();
 
                 adaptor.addChild(root_1, 
-                (CtrlTree)adaptor.create(RPAR, close)
+                adaptor.create(RPAR, close)
                 );
 
                 adaptor.addChild(root_0, root_1);
@@ -4415,6 +4430,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class arg_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -4511,7 +4527,7 @@ public TreeAdaptor getTreeAdaptor() {
                         {
                         CtrlTree root_1 = (CtrlTree)adaptor.nil();
                         root_1 = (CtrlTree)adaptor.becomeRoot(
-                        (CtrlTree)adaptor.create(ARG, "ARG")
+                        adaptor.create(ARG, "ARG")
                         , root_1);
 
                         adaptor.addChild(root_1, 
@@ -4559,7 +4575,7 @@ public TreeAdaptor getTreeAdaptor() {
                         {
                         CtrlTree root_1 = (CtrlTree)adaptor.nil();
                         root_1 = (CtrlTree)adaptor.becomeRoot(
-                        (CtrlTree)adaptor.create(ARG, "ARG")
+                        adaptor.create(ARG, "ARG")
                         , root_1);
 
                         adaptor.addChild(root_1, 
@@ -4603,7 +4619,7 @@ public TreeAdaptor getTreeAdaptor() {
                         {
                         CtrlTree root_1 = (CtrlTree)adaptor.nil();
                         root_1 = (CtrlTree)adaptor.becomeRoot(
-                        (CtrlTree)adaptor.create(ARG, "ARG")
+                        adaptor.create(ARG, "ARG")
                         , root_1);
 
                         adaptor.addChild(root_1, 
@@ -4650,7 +4666,7 @@ public TreeAdaptor getTreeAdaptor() {
                         {
                         CtrlTree root_1 = (CtrlTree)adaptor.nil();
                         root_1 = (CtrlTree)adaptor.becomeRoot(
-                        (CtrlTree)adaptor.create(ARG, "ARG")
+                        adaptor.create(ARG, "ARG")
                         , root_1);
 
                         adaptor.addChild(root_1, stream_literal.nextTree());
@@ -4694,6 +4710,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class literal_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -4718,12 +4735,12 @@ public TreeAdaptor getTreeAdaptor() {
             root_0 = (CtrlTree)adaptor.nil();
 
 
-            set117=(Token)input.LT(1);
+            set117=input.LT(1);
 
             if ( input.LA(1)==FALSE||input.LA(1)==INT_LIT||input.LA(1)==REAL_LIT||(input.LA(1) >= STRING_LIT && input.LA(1) <= TRUE) ) {
                 input.consume();
                 if ( state.backtracking==0 ) adaptor.addChild(root_0, 
-                (CtrlTree)adaptor.create(set117)
+                adaptor.create(set117)
                 );
                 state.errorRecovery=false;
                 state.failed=false;
@@ -4763,6 +4780,7 @@ public TreeAdaptor getTreeAdaptor() {
 
     public static class var_type_return extends ParserRuleReturnScope {
         CtrlTree tree;
+        @Override
         public Object getTree() { return tree; }
     };
 
@@ -4787,12 +4805,12 @@ public TreeAdaptor getTreeAdaptor() {
             root_0 = (CtrlTree)adaptor.nil();
 
 
-            set118=(Token)input.LT(1);
+            set118=input.LT(1);
 
             if ( input.LA(1)==BOOL||input.LA(1)==INT||input.LA(1)==NODE||input.LA(1)==REAL||input.LA(1)==STRING ) {
                 input.consume();
                 if ( state.backtracking==0 ) adaptor.addChild(root_0, 
-                (CtrlTree)adaptor.create(set118)
+                adaptor.create(set118)
                 );
                 state.errorRecovery=false;
                 state.failed=false;

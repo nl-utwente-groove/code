@@ -216,7 +216,7 @@ public class Transformer {
     private AspectGraph computeStartGraph(List<String> startGraphNames) throws IOException {
         AspectGraph result = null;
         if (startGraphNames != null && !startGraphNames.isEmpty()) {
-            List<AspectGraph> graphs = new ArrayList<AspectGraph>();
+            List<AspectGraph> graphs = new ArrayList<>();
             for (String startGraphName : startGraphNames) {
                 graphs.add(computeStartGraph(startGraphName));
             }
@@ -438,7 +438,7 @@ public class Transformer {
         return this.gtsListeners;
     }
 
-    private final List<ExplorationListener> gtsListeners = new ArrayList<ExplorationListener>();
+    private final List<ExplorationListener> gtsListeners = new ArrayList<>();
     private Serialized strategy;
     private Serialized acceptor;
     private int resultCount;

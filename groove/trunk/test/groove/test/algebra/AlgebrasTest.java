@@ -31,7 +31,7 @@ public class AlgebrasTest {
     /** Tests consistency of the algebras. */
     @Test
     public void testConsistency() {
-        Set<String> names = new HashSet<String>();
+        Set<String> names = new HashSet<>();
         for (AlgebraFamily family : AlgebraFamily.values()) {
             for (Sort kind : Sort.values()) {
                 Algebra<?> algebra = family.getAlgebra(kind);

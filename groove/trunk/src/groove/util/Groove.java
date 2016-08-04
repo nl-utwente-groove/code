@@ -401,7 +401,7 @@ public class Groove {
     /** Converts an action map to a string representation. */
     static public String toString(ActionMap am) {
         StringBuilder result = new StringBuilder();
-        LinkedHashMap<Object,Object> map = new LinkedHashMap<Object,Object>();
+        LinkedHashMap<Object,Object> map = new LinkedHashMap<>();
         for (Object key : am.allKeys()) {
             map.put(key, am.get(key));
         }
@@ -418,7 +418,7 @@ public class Groove {
     /** Converts an action map to a string representation. */
     static public String toString(InputMap im) {
         StringBuilder result = new StringBuilder();
-        LinkedHashMap<Object,Object> map = new LinkedHashMap<Object,Object>();
+        LinkedHashMap<Object,Object> map = new LinkedHashMap<>();
         for (KeyStroke key : im.allKeys()) {
             map.put(key, im.get(key));
         }

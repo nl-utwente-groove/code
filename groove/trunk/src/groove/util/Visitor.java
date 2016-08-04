@@ -149,7 +149,7 @@ abstract public class Visitor<T,R> {
         if (property == null) {
             return prototypeCollector.newInstance(collection, property);
         } else {
-            return new Collector<T,C>(collection, property);
+            return new Collector<>(collection, property);
         }
     }
 
@@ -207,7 +207,7 @@ abstract public class Visitor<T,R> {
                 resurrect();
                 return this;
             } else {
-                return new Finder<T>(property);
+                return new Finder<>(property);
             }
         }
 
@@ -288,7 +288,7 @@ abstract public class Visitor<T,R> {
          * in case this is not yet disposed.
          */
         protected Collector<T,C> createInstance(C collection, Property<T> property) {
-            return new Collector<T,C>(collection, property);
+            return new Collector<>(collection, property);
         }
 
         /** Filtering property. */

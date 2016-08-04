@@ -106,7 +106,7 @@ public class RuleInspector {
             Map<VariableNode,InteractionVariable> iVarMap,
             Map<VariableNode,LocationVariable> lVarMap) {
 
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (RuleNode node : pattern.nodeSet()) {
             if (node instanceof OperatorNode) {
                 OperatorNode opNode = (OperatorNode) node;
@@ -141,7 +141,7 @@ public class RuleInspector {
             Map<VariableNode,InteractionVariable> iVarMap,
             Map<VariableNode,LocationVariable> lVarMap) {
 
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (RuleNode node : pattern.nodeSet()) {
             if (node instanceof OperatorNode) {
                 OperatorNode opNode = (OperatorNode) node;
@@ -187,7 +187,7 @@ public class RuleInspector {
             Map<VariableNode,InteractionVariable> iVarMap,
             Map<VariableNode,LocationVariable> lVarMap) {
 
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (RuleEdge e : pattern.inEdgeSet(variableResult)) {
             if (isBooleanEdge(e)) {
                 String expr =

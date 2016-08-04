@@ -108,7 +108,7 @@ public class ButtonEditor extends SettingEditor {
      * Computes and returns a mapping from keys to buttons.
      */
     private Map<SettingKey,SettingButton> createButtonMap() {
-        Map<SettingKey,SettingButton> buttonMap = new HashMap<SettingKey,SettingButton>();
+        Map<SettingKey,SettingButton> buttonMap = new HashMap<>();
         for (SettingKey kind : getKey().getKindType().getEnumConstants()) {
             SettingButton button = new SettingButton(kind, getEditor(kind));
             getButtonGroup().add(button);
@@ -154,7 +154,7 @@ public class ButtonEditor extends SettingEditor {
     private Map<SettingKey,SettingEditor> editorMap;
 
     private Map<SettingKey,SettingEditor> createEditorMap() {
-        Map<SettingKey,SettingEditor> result = new HashMap<SettingKey,SettingEditor>();
+        Map<SettingKey,SettingEditor> result = new HashMap<>();
         for (SettingKey kind : getKey().getKindType().getEnumConstants()) {
             result.put(kind, this.factory.createEditor(getContentPanel(), getKey(), kind));
         }

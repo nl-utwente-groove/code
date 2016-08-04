@@ -51,7 +51,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
         this.aut = ctrl;
         this.nr = ctrl.getFrames()
             .size();
-        List<Assignment> pops = new ArrayList<Assignment>();
+        List<Assignment> pops = new ArrayList<>();
         this.pred = pred;
         if (pred == null) {
             this.prime = this;
@@ -76,7 +76,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
         this.aut = ctrl;
         this.nr = ctrl.getFrames()
             .size();
-        List<Assignment> pops = new ArrayList<Assignment>();
+        List<Assignment> pops = new ArrayList<>();
         // avoid sharing
         this.pred = pred;
         if (pred == null) {
@@ -183,7 +183,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
     public Set<CallStack> getPastAttempts() {
         Set<CallStack> result = this.pastAttempts;
         if (result == null) {
-            result = new HashSet<CallStack>();
+            result = new HashSet<>();
             if (!isPrime()) {
                 result.addAll(getPred().getPastAttempts());
             }
@@ -202,7 +202,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
     /** Returns the set of rule calls that have been tried since the prime frame. */
     public Set<Call> getPastCalls() {
         if (this.pastCalls == null) {
-            Set<Call> result = this.pastCalls = new HashSet<Call>();
+            Set<Call> result = this.pastCalls = new HashSet<>();
             for (CallStack attempt : getPastAttempts()) {
                 result.add(attempt.peek());
             }
@@ -264,8 +264,8 @@ public class Frame implements Position<Frame,Step>, Fixable {
         SwitchAttempt locAttempt = getLocation().getAttempt();
         // divide the switches of the control location
         // into constraints and "proper" calls
-        List<SwitchStack> constraintCalls = new ArrayList<SwitchStack>();
-        List<SwitchStack> properCalls = new ArrayList<SwitchStack>();
+        List<SwitchStack> constraintCalls = new ArrayList<>();
+        List<SwitchStack> properCalls = new ArrayList<>();
         for (SwitchStack sw : locAttempt) {
             if (sw.peek()
                 .getCall()

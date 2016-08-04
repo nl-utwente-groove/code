@@ -76,21 +76,21 @@ public class ReteNetwork {
     //Due to typing, RETE now can have many node checkers, one for each
     //type of node occurring as an isolated node
     private final HashMap<TypeNode,DefaultNodeChecker> defaultNodeCheckers =
-        new HashMap<TypeNode,DefaultNodeChecker>();
+        new HashMap<>();
 
-    private final HashMap<Rule,ProductionNode> productionNodes = new HashMap<Rule,ProductionNode>();
+    private final HashMap<Rule,ProductionNode> productionNodes = new HashMap<>();
 
     private final HashMap<Condition,ConditionChecker> conditionCheckerNodes =
-        new HashMap<Condition,ConditionChecker>();
+        new HashMap<>();
 
     private final ArrayList<CompositeConditionChecker> compositeConditionCheckerNodes =
-        new ArrayList<CompositeConditionChecker>();
+        new ArrayList<>();
 
     private final HashMap<Constant,ValueNodeChecker> valueNodeCheckerNodes =
-        new HashMap<Constant,ValueNodeChecker>();
+        new HashMap<>();
 
     private final HashMap<Condition,QuantifierCountChecker> quantifierCountCheckerNodes =
-        new HashMap<Condition,QuantifierCountChecker>();
+        new HashMap<>();
 
     private final PathCheckerFactory pathCheckerFactory = new PathCheckerFactory(this);
 
@@ -153,8 +153,8 @@ public class ReteNetwork {
          */
         StaticMap openList = new StaticMap();
 
-        Set<RuleEdge> emptyAndNegativePathEdges = new TreeHashSet<RuleEdge>();
-        Set<OperatorNode> operatorNodes = new TreeHashSet<OperatorNode>();
+        Set<RuleEdge> emptyAndNegativePathEdges = new TreeHashSet<>();
+        Set<OperatorNode> operatorNodes = new TreeHashSet<>();
         mapQuantifierCountNodes(openList, condition);
         mapEdgesAndNodes(openList,
             condition.getPattern(),
@@ -177,7 +177,7 @@ public class ReteNetwork {
             //in the open list (disconnected islands in the lhs of this rule)
             //that can no longer be merged with other connected
             //checkers in the open list
-            HashSet<ReteStaticMapping> isolatedComponents = new HashSet<ReteStaticMapping>();
+            HashSet<ReteStaticMapping> isolatedComponents = new HashSet<>();
             while (((openList.size() > 1) && (isolatedComponents.size() < openList.size()))
                 || !operatorNodes.isEmpty()) {
 
@@ -265,7 +265,7 @@ public class ReteNetwork {
                         isolatedComponents.add(m1);
                     } else if (!operatorNodes.isEmpty()) {
                         List<ReteStaticMapping> argumentSources =
-                            new ArrayList<ReteStaticMapping>();
+                            new ArrayList<>();
                         OperatorNode opNode =
                             pickOneOperatorNode(openList, operatorNodes, argumentSources);
                         ReteStaticMapping inputAntecedent = null;
@@ -342,8 +342,8 @@ public class ReteNetwork {
         }
         if (condition.getSubConditions()
             .size() > 0) {
-            Set<Condition> nacs = new HashSet<Condition>();
-            Set<Condition> positiveSubConditions = new HashSet<Condition>();
+            Set<Condition> nacs = new HashSet<>();
+            Set<Condition> positiveSubConditions = new HashSet<>();
             for (Condition c : condition.getSubConditions()) {
                 if (c.getOp() == Op.NOT) {
                     nacs.add(c);
@@ -389,7 +389,7 @@ public class ReteNetwork {
         ReteStaticMapping disjointMerge = null;
 
         //Make a copy so that we could sort the list
-        List<ReteStaticMapping> scratchList = new ArrayList<ReteStaticMapping>(antecedents);
+        List<ReteStaticMapping> scratchList = new ArrayList<>(antecedents);
 
         //we sort the antecedents in descending order of size
         //so that during the merging of the matches
@@ -456,10 +456,10 @@ public class ReteNetwork {
         OperatorNode result = null;
 
         final HashMap<OperatorNode,List<ReteStaticMapping>> candidates =
-            new HashMap<OperatorNode,List<ReteStaticMapping>>();
+            new HashMap<>();
         for (OperatorNode node : operatorNodes) {
             boolean allArgumentsFound = true;
-            List<ReteStaticMapping> argumentComponents = new ArrayList<ReteStaticMapping>();
+            List<ReteStaticMapping> argumentComponents = new ArrayList<>();
             for (VariableNode vn : node.getArguments()) {
                 boolean found = false;
                 for (ReteStaticMapping component : openList) {
@@ -529,12 +529,12 @@ public class ReteNetwork {
             ReteStaticMapping m2 = new ReteStaticMapping(pc, new RuleElement[] {e});
             if (exp.isNeg()) {
                 NegativeFilterSubgraphCheckerNode<ReteSimpleMatch,RetePathMatch> sg =
-                    new NegativeFilterSubgraphCheckerNode<ReteSimpleMatch,RetePathMatch>(this, m1,
+                    new NegativeFilterSubgraphCheckerNode<>(this, m1,
                         m2, keepPrefix);
                 m1 = ReteStaticMapping.combine(m1, m2, sg);
             } else {
                 SubgraphCheckerNode<ReteSimpleMatch,RetePathMatch> sg =
-                    new SubgraphCheckerNode<ReteSimpleMatch,RetePathMatch>(this, m1, m2,
+                    new SubgraphCheckerNode<>(this, m1, m2,
                         keepPrefix);
                 m1 = ReteStaticMapping.combine(m1, m2, sg);
             }
@@ -551,7 +551,7 @@ public class ReteNetwork {
      * @return A collection of edges of the given condition.
      */
     protected Collection<RuleEdge> getEdgeCollection(Condition c) {
-        List<RuleEdge> result = new ArrayList<RuleEdge>(c.getPattern()
+        List<RuleEdge> result = new ArrayList<>(c.getPattern()
             .edgeSet());
         Collections.sort(result, EdgeComparator.instance());
         return result;
@@ -610,7 +610,7 @@ public class ReteNetwork {
     private void mapEdgesAndNodes(StaticMap openList, RuleGraph ruleGraph,
         Set<RuleEdge> emptyAndNegativePathEdges, Set<OperatorNode> operatorNodes) {
 
-        Collection<RuleNode> mappedLHSNodes = new HashSet<RuleNode>();
+        Collection<RuleNode> mappedLHSNodes = new HashSet<>();
         Collection<RuleEdge> edgeSet = ruleGraph.edgeSet();
         Collection<RuleNode> nodeSet = ruleGraph.nodeSet();
 
@@ -775,7 +775,7 @@ public class ReteNetwork {
 
         StaticMap openList = new StaticMap();
 
-        List<ReteStaticMapping> byPassList = new ArrayList<ReteStaticMapping>();
+        List<ReteStaticMapping> byPassList = new ArrayList<>();
         for (Condition nac : nacs) {
             byPassList.clear();
             openList.clear();
@@ -799,8 +799,8 @@ public class ReteNetwork {
                 openList.add(m1);
             }
 
-            Set<RuleEdge> emptyAcceptingAndNegativeEdges = new TreeHashSet<RuleEdge>();
-            Set<OperatorNode> operatorNode = new TreeHashSet<OperatorNode>();
+            Set<RuleEdge> emptyAcceptingAndNegativeEdges = new TreeHashSet<>();
+            Set<OperatorNode> operatorNode = new TreeHashSet<>();
             mapEdgesAndNodes(openList, newNacGraph, emptyAcceptingAndNegativeEdges, operatorNode);
             if (m1 == null) {
                 m1 = openList.get(0);
@@ -1091,7 +1091,7 @@ public class ReteNetwork {
     /** Creates and returns a graph showing the structure of this RETE network. */
     public PlainGraph toPlainGraph() {
         PlainGraph graph = new PlainGraph(this.grammarName + "-rete", GraphRole.RETE);
-        Map<ReteNetworkNode,PlainNode> map = new HashMap<ReteNetworkNode,PlainNode>();
+        Map<ReteNetworkNode,PlainNode> map = new HashMap<>();
         PlainNode rootNode = graph.addNode();
         map.put(this.getRoot(), rootNode);
         graph.addEdge(rootNode, "ROOT", rootNode);
@@ -1200,7 +1200,7 @@ public class ReteNetwork {
     }
 
     private PlainEdge[] makeNNodeLabels(ReteNetworkNode nnode, PlainNode source) {
-        ArrayList<PlainEdge> result = new ArrayList<PlainEdge>();
+        ArrayList<PlainEdge> result = new ArrayList<>();
         if (nnode instanceof RootNode) {
             result.add(PlainEdge.createEdge(source, "ROOT", source));
         } else if (nnode instanceof DefaultNodeChecker) {
@@ -1361,7 +1361,7 @@ public class ReteNetwork {
         // inside the <code>elements</code> array and the integer at index  1
         // is -1 for node element, 0 for the source of edge elements and 1
         // for the target of edge elements.
-        private HashMap<RuleNode,LookupEntry> nodeLookupMap = new HashMap<RuleNode,LookupEntry>();
+        private HashMap<RuleNode,LookupEntry> nodeLookupMap = new HashMap<>();
 
         /**
          *
@@ -1429,7 +1429,7 @@ public class ReteNetwork {
         public static ReteStaticMapping combine(List<ReteStaticMapping> maps,
             DisconnectedSubgraphChecker suc) {
 
-            List<RuleElement> tempElementsList = new ArrayList<RuleElement>();
+            List<RuleElement> tempElementsList = new ArrayList<>();
             for (int i = 0; i < maps.size(); i++) {
                 RuleElement[] elems = maps.get(i)
                     .getElements();
@@ -1463,9 +1463,9 @@ public class ReteNetwork {
 
         public static boolean properlyOverlap(ReteStaticMapping one, ReteStaticMapping theOther) {
             boolean result = false;
-            Set<RuleNode> nodes1 = new TreeHashSet<RuleNode>();
+            Set<RuleNode> nodes1 = new TreeHashSet<>();
             nodes1.addAll(one.getLhsNodes());
-            Set<RuleNode> nodes2 = new TreeHashSet<RuleNode>();
+            Set<RuleNode> nodes2 = new TreeHashSet<>();
             nodes2.addAll(theOther.getLhsNodes());
 
             if ((one.getNNode() instanceof QuantifierCountChecker)
@@ -1598,8 +1598,8 @@ public class ReteNetwork {
 
         private ReteNetwork owner;
         private HostGraph hostGraph;
-        private Set<ReteStateSubscriber> subscribers = new HashSet<ReteStateSubscriber>();
-        private Set<ReteStateSubscriber> updateSubscribers = new HashSet<ReteStateSubscriber>();
+        private Set<ReteStateSubscriber> subscribers = new HashSet<>();
+        private Set<ReteStateSubscriber> updateSubscribers = new HashSet<>();
         private ReteUpdateMode updateMode = ReteUpdateMode.NORMAL;
 
         protected ReteState(ReteNetwork owner) {

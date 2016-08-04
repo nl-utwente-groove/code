@@ -51,10 +51,10 @@ public class Config {
     public static final String CONFIG_SCHEMA =
         "groove/io/conceptual/configuration/ConfigSchema.xsd";
 
-    private HashMap<Id,String> m_mappedIds = new HashMap<Id,String>();
-    private HashMap<String,Id> m_mappedNames = new HashMap<String,Id>();
+    private HashMap<Id,String> m_mappedIds = new HashMap<>();
+    private HashMap<String,Id> m_mappedNames = new HashMap<>();
 
-    private Set<String> m_suffixList = new HashSet<String>();
+    private Set<String> m_suffixList = new HashSet<>();
 
     // Current TypeModel to consider for shorter Ids and opposite edges
     // and whatever else requires the type model to be known

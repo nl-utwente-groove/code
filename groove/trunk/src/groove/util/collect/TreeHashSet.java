@@ -354,11 +354,11 @@ public class TreeHashSet<T> extends AbstractSet<T> {
             /** Tree index where the last key was taken from. */
             private int lastTreeIx = -1;
             /** Stack of parent indices. */
-            private final Stack<Integer> treeIxStack = new Stack<Integer>();
+            private final Stack<Integer> treeIxStack = new Stack<>();
             /** Maximum tree index of the current record. */
             private int maxTreeIx = TreeHashSet.this.rootMask;
             /** Stack of parent index bounds. */
-            private final Stack<Integer> maxIxStack = new Stack<Integer>();
+            private final Stack<Integer> maxIxStack = new Stack<>();
             /**
              * Points to the entry where last next value of #next was be taken
              * from, if any.
@@ -925,7 +925,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
                 return oldKey;
             } else {
                 // it's really a new key
-                MyListEntry<T> newEntry = new MyListEntry<T>(oldKey, newKeyIx(code, newKey));
+                MyListEntry<T> newEntry = new MyListEntry<>(oldKey, newKeyIx(code, newKey));
                 this.keys[keyIndex] = newEntry;
                 return null;
             }
@@ -978,7 +978,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     }
 
     private void testConsistent() {
-        Set<Integer> freeRecordNrs = new HashSet<Integer>();
+        Set<Integer> freeRecordNrs = new HashSet<>();
         int freeRecordNr = this.freeRecordNr;
         while (freeRecordNr > 0) {
             if (freeRecordNr >= this.recordCount) {

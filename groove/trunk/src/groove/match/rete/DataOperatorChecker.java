@@ -43,7 +43,7 @@ public class DataOperatorChecker extends ReteNetworkNode {
     private Operator operator;
     private Operation operation;
     private boolean dataCreator = false;
-    private List<LookupEntry> argumentLocator = new ArrayList<LookupEntry>();
+    private List<LookupEntry> argumentLocator = new ArrayList<>();
 
     /**
      * Creates a data operator checker that takes a match from its antecedent
@@ -120,7 +120,7 @@ public class DataOperatorChecker extends ReteNetworkNode {
             AbstractReteMatch subgraph) {
         Object[] matchUnits = subgraph.getAllUnits();
         //
-        List<Object> arguments = new ArrayList<Object>();
+        List<Object> arguments = new ArrayList<>();
         for (int i = 0; i < this.argumentLocator.size(); i++) {
             LookupEntry entry = this.argumentLocator.get(i);
             ValueNode vn = (ValueNode) entry.lookup(matchUnits);

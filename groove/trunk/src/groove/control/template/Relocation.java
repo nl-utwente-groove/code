@@ -38,7 +38,7 @@ public class Relocation extends HashMap<Location,Location> {
         return this.templates.containsKey(template);
     }
 
-    private final Map<Template,Template> templates = new HashMap<Template,Template>();
+    private final Map<Template,Template> templates = new HashMap<>();
 
     /**
      * Builds the target templates, by

@@ -52,7 +52,7 @@ public class RuleEffect extends DefaultFixable {
     public RuleEffect(HostGraph host, Fragment fragment) {
         this.source = host;
         this.fragment = fragment;
-        this.createdNodeList = new ArrayList<HostNode>();
+        this.createdNodeList = new ArrayList<>();
         this.nodesPredefined = false;
     }
 
@@ -128,7 +128,7 @@ public class RuleEffect extends DefaultFixable {
         Map<RuleNode,HostNode> createdNodeMap = this.createdNodeMap;
         if (createdNodeMap == null) {
             this.createdNodeMap =
-                createdNodeMap = new HashMap<RuleNode,HostNode>();
+                createdNodeMap = new HashMap<>();
         }
         int createdNodeStart = this.createdNodeIndex;
         int creatorCount = creatorNodes.length;
@@ -153,7 +153,7 @@ public class RuleEffect extends DefaultFixable {
             Map<RuleNode,HostNode> oldCreatedNodeMap = this.createdNodeMap;
             if (oldCreatedNodeMap == null) {
                 this.createdNodeMap =
-                    oldCreatedNodeMap = new HashMap<RuleNode,HostNode>();
+                    oldCreatedNodeMap = new HashMap<>();
             }
             List<HostNode> oldCreatedNodes = this.createdNodeList;
             for (int i = 0; i < createdNodeCount; i++) {

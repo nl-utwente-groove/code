@@ -179,7 +179,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
         if (this.filterChooser == null) {
             this.filterListening = true;
             final JComboBox<Filter> result =
-                this.filterChooser = new JComboBox<Filter>(Filter.values());
+                this.filterChooser = new JComboBox<>(Filter.values());
             result.setMaximumSize(new Dimension(result.getPreferredSize().width, 1000));
             result.addItemListener(new ItemListener() {
                 @Override
@@ -310,7 +310,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
         if (getJModel() == null) {
             return;
         }
-        Set<JCell<GTS>> jCells = new HashSet<JCell<GTS>>();
+        Set<JCell<GTS>> jCells = new HashSet<>();
         for (int i = 0; i < counterExamples.size(); i++) {
             GraphState state = counterExamples.get(i);
             jCells.add(getJModel().getJCellForNode(state));
@@ -424,7 +424,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
     private LabelTree<GTS> getLabelTree() {
         LabelTree<GTS> result = this.labelTree;
         if (result == null) {
-            result = this.labelTree = new LabelTree<GTS>(getJGraph(), true);
+            result = this.labelTree = new LabelTree<>(getJGraph(), true);
         }
         return result;
     }

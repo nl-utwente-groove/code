@@ -61,7 +61,7 @@ public class AspectJCellErrors implements Iterable<FormatError> {
 
     @Override
     public Iterator<FormatError> iterator() {
-        return new NestedIterator<FormatError>(getErrors(true).iterator(),
+        return new NestedIterator<>(getErrors(true).iterator(),
             getErrors(false).iterator());
     }
 
@@ -76,6 +76,6 @@ public class AspectJCellErrors implements Iterable<FormatError> {
     }
 
     private final AspectJCell jCell;
-    private final List<FormatError> aspectErrors = new ArrayList<FormatError>();
-    private final List<FormatError> extraErrors = new ArrayList<FormatError>();
+    private final List<FormatError> aspectErrors = new ArrayList<>();
+    private final List<FormatError> extraErrors = new ArrayList<>();
 }

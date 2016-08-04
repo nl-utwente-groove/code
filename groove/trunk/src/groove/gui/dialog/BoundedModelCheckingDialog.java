@@ -258,7 +258,7 @@ public class BoundedModelCheckingDialog {
                 int delta = Integer.parseInt(aDialog.deltaField.getText());
                 aDialog.boundary = new GraphNodeSizeBoundary(graphBound, delta);
             } else if (aDialog.ruleSetBoundButton.isSelected()) {
-                Set<Rule> selectedRules = new HashSet<Rule>();
+                Set<Rule> selectedRules = new HashSet<>();
                 Iterator<QualName> selectedRuleNamesIter = aDialog.selectedRuleNames.iterator();
                 while (selectedRuleNamesIter.hasNext()) {
                     QualName ruleName = selectedRuleNamesIter.next();

@@ -39,7 +39,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
      * Keep visibility protected to allow constructions from {@link ParseTree}.
      */
     public CtrlTree() {
-        this.calls = new ArrayList<Call>();
+        this.calls = new ArrayList<>();
     }
 
     /** Creates a tree wrapping a given token. */
@@ -132,7 +132,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
 
     /** Returns a list of all rule ID tokens in this tree with a given name. */
     public List<CtrlTree> getRuleIdTokens(QualName name) {
-        List<CtrlTree> result = new ArrayList<CtrlTree>();
+        List<CtrlTree> result = new ArrayList<>();
         collectRuleIdTokens(result, name);
         return result;
     }
@@ -258,7 +258,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
                 result = prot.call(getCalls().get(0));
             } else {
                 // it's a group call
-                SortedMap<Integer,List<Call>> prioMap = new TreeMap<Integer,List<Call>>();
+                SortedMap<Integer,List<Call>> prioMap = new TreeMap<>();
                 for (Call call : getCalls()) {
                     Action action = (Action) call.getUnit();
                     if (action.getPolicy() == CheckPolicy.OFF) {
@@ -267,7 +267,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
                     // the action list to which this action should be added
                     List<Call> actions = prioMap.get(action.getPriority());
                     if (actions == null) {
-                        prioMap.put(action.getPriority(), actions = new ArrayList<Call>());
+                        prioMap.put(action.getPriority(), actions = new ArrayList<>());
                     }
                     actions.add(call);
                 }

@@ -121,7 +121,7 @@ public class CtrlLoader {
      * processing all control files since the construction of this loader.
      */
     public Collection<Recipe> getRecipes() {
-        Collection<Recipe> result = new ArrayList<Recipe>();
+        Collection<Recipe> result = new ArrayList<>();
         for (Callable unit : this.namespace.getCallables()) {
             if (unit instanceof Recipe && ((Recipe) unit).isFixed()) {
                 result.add((Recipe) unit);

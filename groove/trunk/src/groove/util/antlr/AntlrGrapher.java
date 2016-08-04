@@ -94,9 +94,9 @@ public class AntlrGrapher {
     /** Returns the graph representing a given AST. */
     public HostGraph getGraph(CommonTree tree) {
         DefaultHostGraph result = new DefaultHostGraph("ast");
-        Map<CommonTree,HostNode> treeNodeMap = new HashMap<CommonTree,HostNode>();
+        Map<CommonTree,HostNode> treeNodeMap = new HashMap<>();
         treeNodeMap.put(tree, createNode(result, tree));
-        Set<CommonTree> pool = new HashSet<CommonTree>();
+        Set<CommonTree> pool = new HashSet<>();
         pool.add(tree);
         while (!pool.isEmpty()) {
             CommonTree next = pool.iterator()

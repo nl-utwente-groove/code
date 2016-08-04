@@ -34,7 +34,7 @@ public class AttrEdge extends AEdge<AttrNode,PlainLabel> {
     /** Construct a new edge. */
     AttrEdge(AttrNode source, PlainLabel label, AttrNode target, int number) {
         super(source, label, target, number);
-        this.attributeMap = new LinkedHashMap<String,String>();
+        this.attributeMap = new LinkedHashMap<>();
     }
 
     @Override

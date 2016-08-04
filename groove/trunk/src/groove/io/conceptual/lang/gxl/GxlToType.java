@@ -63,21 +63,21 @@ import groove.io.conceptual.value.Value;
 public class GxlToType extends TypeImporter {
 
     // GXL type graph to use to use (select the first one form the document)
-    private List<GraphType> m_gxlTypeGraphs = new ArrayList<GraphType>();
+    private List<GraphType> m_gxlTypeGraphs = new ArrayList<>();
 
     // Map to keep track of nodes and their tm objects
-    private Map<NodeType,Object> m_nodeValues = new HashMap<NodeType,Object>();
+    private Map<NodeType,Object> m_nodeValues = new HashMap<>();
 
     // Because IDs are unique in the ENTIRE document, this map will suffice for all specified typegraphs
-    private Map<String,Type> m_idToType = new HashMap<String,Type>();
-    private Map<String,Field> m_idToField = new HashMap<String,Field>();
-    private Set<String> m_complexEdgeIds = new HashSet<String>();
+    private Map<String,Type> m_idToType = new HashMap<>();
+    private Map<String,Field> m_idToField = new HashMap<>();
+    private Set<String> m_complexEdgeIds = new HashSet<>();
 
-    private Map<String,Id> m_graphNamespaces = new HashMap<String,Id>();
+    private Map<String,Id> m_graphNamespaces = new HashMap<>();
 
     private boolean m_useComplex;
 
-    private static final Map<String,Type> g_simpleTypeMap = new HashMap<String,Type>();
+    private static final Map<String,Type> g_simpleTypeMap = new HashMap<>();
 
     static {
         g_simpleTypeMap.put("Locator", StringType.instance());
@@ -87,7 +87,7 @@ public class GxlToType extends TypeImporter {
         g_simpleTypeMap.put("String", StringType.instance());
     }
 
-    private static final Set<String> g_complexTypeSet = new HashSet<String>();
+    private static final Set<String> g_complexTypeSet = new HashSet<>();
 
     static {
         g_complexTypeSet.add("Bag");
@@ -96,7 +96,7 @@ public class GxlToType extends TypeImporter {
         g_complexTypeSet.add("Tup");
     }
 
-    private static final Set<String> g_edgeTypes = new HashSet<String>();
+    private static final Set<String> g_edgeTypes = new HashSet<>();
 
     static {
         g_edgeTypes.add("EdgeClass");
@@ -145,7 +145,7 @@ public class GxlToType extends TypeImporter {
             TypeModel typeModel = new TypeModel(QualName.name(graph.getId()));
 
             // Maps all graph elements in graph to a specific GraphClass node
-            Map<NodeType,Set<NodeWrapper>> graphElements = new HashMap<NodeType,Set<NodeWrapper>>();
+            Map<NodeType,Set<NodeWrapper>> graphElements = new HashMap<>();
             for (GraphElementType elem : graph.getNodeOrEdgeOrRel()) {
                 if (elem instanceof NodeType) {
                     if ("GraphClass".equals(GxlUtil.getElemType(elem))) {
@@ -166,7 +166,7 @@ public class GxlToType extends TypeImporter {
             }
 
             // Child -> Parent
-            Map<NodeType,NodeType> graphHierachy = new HashMap<NodeType,NodeType>();
+            Map<NodeType,NodeType> graphHierachy = new HashMap<>();
 
             // Fix graph hierarchy
             for (NodeType graphNode : graphElements.keySet()) {
@@ -495,7 +495,7 @@ public class GxlToType extends TypeImporter {
 
         assert(sourceClass != null && targetClass != null);
 
-        List<Class> superClasses = new ArrayList<Class>();
+        List<Class> superClasses = new ArrayList<>();
         Boolean isAbstract =
             (Boolean) GxlUtil.getAttribute(nodeWrapper.getNode(), "isabstract", AttrTypeEnum.BOOL);
         boolean hasAttributes = false;
@@ -639,7 +639,7 @@ public class GxlToType extends TypeImporter {
         }
 
         if (g_complexTypeSet.contains(type)) {
-            List<Type> components = new ArrayList<Type>();
+            List<Type> components = new ArrayList<>();
             // sort the edges, as they are ordered for composite types
             nodeWrapper.sortEdges();
             //Should have hasComponent attributes
@@ -701,7 +701,7 @@ public class GxlToType extends TypeImporter {
             .getId();
         Id enumId = Id.getId(graphNamespace, Name.getName(name));
 
-        List<Name> values = new ArrayList<Name>();
+        List<Name> values = new ArrayList<>();
         for (EdgeWrapper ew : nodeWrapper.getEdges()) {
             if (ew.getType()
                 .equals("containsValue")) {
@@ -840,7 +840,7 @@ public class GxlToType extends TypeImporter {
         } else if (nodeType.equals("TupVal")) {
             if (type instanceof Tuple) {
                 Tuple tupleType = (Tuple) type;
-                List<Value> values = new ArrayList<Value>();
+                List<Value> values = new ArrayList<>();
                 int size = tupleType.getTypes()
                     .size();
                 assert size == nodeWrapper.getEdges()

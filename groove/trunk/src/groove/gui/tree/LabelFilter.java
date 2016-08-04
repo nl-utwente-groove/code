@@ -60,7 +60,7 @@ public class LabelFilter<G extends Graph> extends Observable {
 
     /** Computes the filter entries for a given jCell. */
     private Set<Entry> computeEntries(JCell<G> jCell) {
-        Set<Entry> result = new HashSet<LabelFilter.Entry>();
+        Set<Entry> result = new HashSet<>();
         for (Label key : jCell.getKeys()) {
             result.add(getEntry(key));
         }
@@ -190,7 +190,7 @@ public class LabelFilter<G extends Graph> extends Observable {
      * the observers of the changed {@link JCell}s.
      */
     public void setSelected(Collection<Entry> entries, boolean selected) {
-        Set<JCell<G>> changedCells = new HashSet<JCell<G>>();
+        Set<JCell<G>> changedCells = new HashSet<>();
         for (Entry label : entries) {
             changedCells.addAll(getSelection(label, selected));
         }
@@ -211,7 +211,7 @@ public class LabelFilter<G extends Graph> extends Observable {
      * the observers of the changed {@link JCell}s.
      */
     public void changeSelected(Collection<Entry> entries) {
-        Set<JCell<G>> changedCells = new HashSet<JCell<G>>();
+        Set<JCell<G>> changedCells = new HashSet<>();
         for (Entry entry : entries) {
             changedCells.addAll(getSelection(entry, !isSelected(entry)));
         }
@@ -322,13 +322,13 @@ public class LabelFilter<G extends Graph> extends Observable {
     }
 
     /** Set of currently selected (i.e., visible) labels. */
-    private final Set<Entry> selected = new HashSet<Entry>();
+    private final Set<Entry> selected = new HashSet<>();
     /** Mapping from entries to {@link JCell}s with that entry. */
-    private final Map<Entry,Set<JCell<G>>> entryJCellMap = new HashMap<Entry,Set<JCell<G>>>();
+    private final Map<Entry,Set<JCell<G>>> entryJCellMap = new HashMap<>();
     /** Inverse mapping of {@link #entryJCellMap}. */
-    private final Map<JCell<G>,Set<Entry>> jCellEntryMap = new HashMap<JCell<G>,Set<Entry>>();
+    private final Map<JCell<G>,Set<Entry>> jCellEntryMap = new HashMap<>();
     /** Mapping from known labels to corresponding label entries. */
-    private final Map<Label,LabelEntry> labelEntryMap = new HashMap<Label,LabelEntry>();
+    private final Map<Label,LabelEntry> labelEntryMap = new HashMap<>();
     /** The keys that may change if a filter is (de)selected. */
     private static VisualKey[] changedKeys = new VisualKey[] {VisualKey.VISIBLE, VisualKey.LABEL,
         VisualKey.NODE_SIZE, VisualKey.TEXT_SIZE};

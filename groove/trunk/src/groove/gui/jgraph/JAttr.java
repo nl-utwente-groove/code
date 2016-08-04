@@ -158,5 +158,5 @@ public class JAttr {
     }
 
     /** Mapping from colours to colour gradients for {@link #createPaint(Rectangle, Color)}. */
-    static private Map<Color,Color[]> gradientMap = new HashMap<Color,Color[]>();
+    static private Map<Color,Color[]> gradientMap = new HashMap<>();
 }

@@ -34,7 +34,7 @@ public class SymbolTable {
      * Creates a new SymbolTable
      */
     public SymbolTable() {
-        this.scopes = new ArrayDeque<Scope>();
+        this.scopes = new ArrayDeque<>();
     }
 
     /**
@@ -131,8 +131,8 @@ public class SymbolTable {
          * Creates a new Scope with empty declared and initialised sets
          */
         public Scope() {
-            this.declared = new HashMap<String,CtrlType>();
-            this.outPars = new LinkedHashSet<String>();
+            this.declared = new HashMap<>();
+            this.outPars = new LinkedHashSet<>();
         }
 
         /**

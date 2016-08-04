@@ -133,7 +133,7 @@ public class LinearStrategy extends GTSStrategy {
      */
     private final boolean closeFast;
 
-    private final Stack<GraphState> pool = new Stack<GraphState>();
+    private final Stack<GraphState> pool = new Stack<>();
 
     /** Listener to keep track of states added to the GTS. */
     private final ExploreListener exploreListener = new ExploreListener();

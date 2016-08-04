@@ -437,7 +437,7 @@ public class RuleApplication implements DeltaApplier {
      */
     private HostEdgeSet getValueNodeEdges(ValueNode node) {
         if (this.valueNodeEdgesMap == null) {
-            this.valueNodeEdgesMap = new HashMap<ValueNode,HostEdgeSet>();
+            this.valueNodeEdgesMap = new HashMap<>();
         }
         HostEdgeSet result = this.valueNodeEdgesMap.get(node);
         if (result == null) {
@@ -459,7 +459,7 @@ public class RuleApplication implements DeltaApplier {
      */
     private void addIsolatedValueNode(ValueNode node) {
         if (this.isolatedValueNodes == null) {
-            this.isolatedValueNodes = new HashSet<ValueNode>();
+            this.isolatedValueNodes = new HashSet<>();
         }
         this.isolatedValueNodes.add(node);
     }
@@ -482,7 +482,7 @@ public class RuleApplication implements DeltaApplier {
      */
     private boolean registerAddedValueNode(ValueNode node) {
         if (this.addedValueNodes == null) {
-            this.addedValueNodes = new HashSet<ValueNode>();
+            this.addedValueNodes = new HashSet<>();
         }
         return this.addedValueNodes.add(node);
     }
@@ -500,7 +500,7 @@ public class RuleApplication implements DeltaApplier {
 
     /** Computes the relation between rule nodes and target graph nodes. */
     private Map<RuleNode,HostNodeSet> computeComatch() {
-        Map<RuleNode,HostNodeSet> result = new HashMap<RuleNode,HostNodeSet>();
+        Map<RuleNode,HostNodeSet> result = new HashMap<>();
         RuleEvent event = getEvent();
         if (event instanceof BasicEvent) {
             collectComatch(result, (BasicEvent) event);

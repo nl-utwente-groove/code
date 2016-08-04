@@ -145,7 +145,7 @@ public enum AcceptorValue implements ParsableValue {
                 public Acceptor create(Rule rule, Boolean mode) {
                     Predicate<GraphState> P = new Predicate.RuleApplicable(rule);
                     if (!mode) {
-                        P = new Predicate.Not<GraphState>(P);
+                        P = new Predicate.Not<>(P);
                     }
                     return new PredicateAcceptor(P);
                 }

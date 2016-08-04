@@ -292,7 +292,7 @@ public abstract class GraphTest {
 
     @Test
     final public void testOutEdgeSet() {
-        Set<PlainEdge> abEdgeSet = new HashSet<PlainEdge>();
+        Set<PlainEdge> abEdgeSet = new HashSet<>();
         abEdgeSet.add(this.aEdge);
         abEdgeSet.add(this.bEdge);
         assertEquals(abEdgeSet, this.graph.outEdgeSet(this.source));
@@ -308,18 +308,18 @@ public abstract class GraphTest {
         }
         // if we add an edge to the graph, that should be visible
         PlainEdge cEdge = this.graph.addEdge(this.bTarget, this.cLabel, this.aTarget);
-        bOutEdges = new HashSet<PlainEdge>();
+        bOutEdges = new HashSet<>();
         bOutEdges.add(cEdge);
         assertEquals(bOutEdges, this.graph.outEdgeSet(this.bTarget));
     }
 
     @Test
     final public void testLabelEdgeSet() {
-        Set<PlainEdge> aEdgeSet = new HashSet<PlainEdge>();
+        Set<PlainEdge> aEdgeSet = new HashSet<>();
         aEdgeSet.add(this.aEdge);
-        Set<PlainEdge> bEdgeSet = new HashSet<PlainEdge>();
+        Set<PlainEdge> bEdgeSet = new HashSet<>();
         bEdgeSet.add(this.bEdge);
-        Set<PlainEdge> cEdgeSet = new HashSet<PlainEdge>();
+        Set<PlainEdge> cEdgeSet = new HashSet<>();
         assertEquals(aEdgeSet, this.graph.edgeSet(this.aLabel));
         assertEquals(bEdgeSet, this.graph.edgeSet(this.bLabel));
         assertEquals(cEdgeSet, this.graph.edgeSet(this.cLabel));
@@ -394,7 +394,7 @@ public abstract class GraphTest {
 
     @Test
     final public void testAddNodeSet() {
-        Set<PlainNode> nodeSet = new HashSet<PlainNode>();
+        Set<PlainNode> nodeSet = new HashSet<>();
         assertFalse(this.graph.addNodeSet(nodeSet));
         nodeSet.add(this.source);
         assertFalse(this.graph.addNodeSet(nodeSet));
@@ -437,7 +437,7 @@ public abstract class GraphTest {
 
     @Test
     final public void testRemoveNodeSet() {
-        Set<PlainNode> nodeSet = new HashSet<PlainNode>();
+        Set<PlainNode> nodeSet = new HashSet<>();
         assertFalse(this.graph.removeNodeSet(nodeSet));
         PlainNode newNode = this.graph.addNode();
         nodeSet.add(newNode);
@@ -449,7 +449,7 @@ public abstract class GraphTest {
 
     @Test
     final public void testRemoveEdgeSet() {
-        Set<PlainEdge> edgeSet = new HashSet<PlainEdge>();
+        Set<PlainEdge> edgeSet = new HashSet<>();
         assertFalse(this.graph.removeEdgeSet(edgeSet));
         PlainNode newNode = this.graph.addNode();
         PlainEdge newEdge = this.graph.getFactory()

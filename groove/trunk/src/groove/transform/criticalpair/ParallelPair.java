@@ -60,10 +60,10 @@ class ParallelPair {
 
     //A map wich gives Sets of RuleNodes a number these ruleNodes are combined in the match that will be constructed
     //Every RuleNode in rule1 occurs in at most one of the Sets
-    private Map<Long,Set<RuleNode>> nodeMatch1 = new LinkedHashMap<Long,Set<RuleNode>>();
+    private Map<Long,Set<RuleNode>> nodeMatch1 = new LinkedHashMap<>();
 
     //Similar to nodeMatch1, if the same Long value is used, then ruleNodes from rule1 and rule2 are combined
-    private Map<Long,Set<RuleNode>> nodeMatch2 = new LinkedHashMap<Long,Set<RuleNode>>();
+    private Map<Long,Set<RuleNode>> nodeMatch2 = new LinkedHashMap<>();
 
     //prevents recomputing of the critical pair
     private boolean criticalPairComputed = false;
@@ -139,9 +139,9 @@ class ParallelPair {
      * @return a new Map<Long,Set<T>>, the results can be modified without modifying match
      */
     private static <T> Map<Long,Set<T>> copyMatch(Map<Long,Set<T>> match) {
-        Map<Long,Set<T>> result = new LinkedHashMap<Long,Set<T>>();
+        Map<Long,Set<T>> result = new LinkedHashMap<>();
         for (Entry<Long,Set<T>> entry : match.entrySet()) {
-            LinkedHashSet<T> newSet = new LinkedHashSet<T>();
+            LinkedHashSet<T> newSet = new LinkedHashSet<>();
             newSet.addAll(entry.getValue());
             result.put(entry.getKey(), newSet);
         }
@@ -175,7 +175,7 @@ class ParallelPair {
      * @return a set of all Long values which have been used for combinations in this ParallelPair
      */
     public Set<Long> getCombinationGroups() {
-        Set<Long> result = new TreeSet<Long>();
+        Set<Long> result = new TreeSet<>();
         result.addAll(this.nodeMatch1.keySet());
         result.addAll(this.nodeMatch2.keySet());
         return result;
@@ -185,7 +185,7 @@ class ParallelPair {
      * Returns a List of all ruleNodes which have been combined under the number "group"
      */
     public List<RuleNode> getCombination(Long group) {
-        List<RuleNode> result = new ArrayList<RuleNode>();
+        List<RuleNode> result = new ArrayList<>();
         if (this.nodeMatch1.containsKey(group)) {
             result.addAll(this.nodeMatch1.get(group));
         }
@@ -200,7 +200,7 @@ class ParallelPair {
      */
     public Set<RuleNode> getCombination(Long group, MatchNumber matchnum) {
         Map<Long,Set<RuleNode>> nodeMatch = getNodeMatch(matchnum);
-        Set<RuleNode> result = new LinkedHashSet<RuleNode>();
+        Set<RuleNode> result = new LinkedHashSet<>();
         if (nodeMatch.containsKey(group)) {
             result.addAll(nodeMatch.get(group));
         }
@@ -246,7 +246,7 @@ class ParallelPair {
     private RuleToHostMap createRuleToHostMap(Map<Long,Set<RuleNode>> nodeMatch,
         DefaultHostGraph host, RuleGraph ruleGraph) {
         if (this.hostNodes == null) {
-            this.hostNodes = new LinkedHashMap<Long,HostNode>();
+            this.hostNodes = new LinkedHashMap<>();
         }
         Set<RuleEdge> edges = ruleGraph.edgeSet();
         RuleToHostMap result = new RuleToHostMap(host.getFactory());
@@ -393,8 +393,8 @@ class ParallelPair {
     @Override
     public String toString() {
         String result = "";
-        Map<RuleNode,String> nodeName1 = new LinkedHashMap<RuleNode,String>();
-        Map<RuleNode,String> nodeName2 = new LinkedHashMap<RuleNode,String>();
+        Map<RuleNode,String> nodeName1 = new LinkedHashMap<>();
+        Map<RuleNode,String> nodeName2 = new LinkedHashMap<>();
         int counter = 1;
         for (RuleNode rn : this.rule1.lhs().nodeSet()) {
             if (rn instanceof OperatorNode) {

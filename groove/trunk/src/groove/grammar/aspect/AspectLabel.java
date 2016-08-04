@@ -184,7 +184,7 @@ public class AspectLabel extends ALabel implements Fixable {
     public AspectLabel relabel(TypeLabel oldLabel, TypeLabel newLabel) {
         AspectLabel result = this;
         boolean isNew = false;
-        List<Aspect> newAspects = new ArrayList<Aspect>();
+        List<Aspect> newAspects = new ArrayList<>();
         for (Aspect aspect : getAspects()) {
             Aspect newAspect = aspect.relabel(oldLabel, newLabel);
             isNew |= newAspect != aspect;
@@ -237,7 +237,7 @@ public class AspectLabel extends ALabel implements Fixable {
     }
 
     /** The mapping from aspects to (declared or inferred) aspect values. */
-    private final List<Aspect> aspects = new ArrayList<Aspect>();
+    private final List<Aspect> aspects = new ArrayList<>();
 
     /** Tests if this label contains an aspect of a given kind. */
     public boolean containsAspect(AspectKind kind) {
@@ -358,7 +358,7 @@ public class AspectLabel extends ALabel implements Fixable {
     }
 
     /** The set of all allowed nesting labels. */
-    private static final Map<GraphRole,String> roleDescription = new EnumMap<GraphRole,String>(
+    private static final Map<GraphRole,String> roleDescription = new EnumMap<>(
         GraphRole.class);
     static {
         roleDescription.put(GraphRole.HOST, "host graph");

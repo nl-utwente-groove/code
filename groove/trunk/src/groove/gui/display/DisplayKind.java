@@ -113,7 +113,7 @@ public enum DisplayKind {
     }
 
     private static final Map<ResourceKind,DisplayKind> resourceMap =
-        new EnumMap<ResourceKind,DisplayKind>(ResourceKind.class);
+        new EnumMap<>(ResourceKind.class);
 
     static {
         for (DisplayKind kind : DisplayKind.values()) {

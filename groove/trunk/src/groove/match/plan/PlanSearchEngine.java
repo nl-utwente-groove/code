@@ -75,7 +75,7 @@ public class PlanSearchEngine extends SearchEngine {
 
     @Override
     public PlanSearchStrategy createMatcher(Condition condition, Anchor seed, ValueOracle oracle) {
-        Set<AnchorKey> anchorKeys = new HashSet<AnchorKey>();
+        Set<AnchorKey> anchorKeys = new HashSet<>();
         if (condition.hasRule()) {
             anchorKeys.addAll(condition.getRule().getAnchor());
         }
@@ -161,9 +161,9 @@ public class PlanSearchEngine extends SearchEngine {
             this.condition = condition;
             this.simple = simple;
             this.typeGraph = condition.getTypeGraph();
-            this.remainingNodes = new LinkedHashSet<RuleNode>();
-            this.remainingEdges = new LinkedHashSet<RuleEdge>();
-            this.remainingVars = new LinkedHashSet<LabelVar>();
+            this.remainingNodes = new LinkedHashSet<>();
+            this.remainingEdges = new LinkedHashSet<>();
+            this.remainingVars = new LinkedHashSet<>();
             if (condition.hasPattern()) {
                 RuleGraph graph = condition.getPattern();
                 // compute the set of remaining (unmatched) nodes
@@ -243,7 +243,7 @@ public class PlanSearchEngine extends SearchEngine {
          * @param seed the pre-matched subgraph
          */
         private Collection<AbstractSearchItem> computeSearchItems(Anchor seed) {
-            Collection<AbstractSearchItem> result = new ArrayList<AbstractSearchItem>();
+            Collection<AbstractSearchItem> result = new ArrayList<>();
             if (this.condition.hasPattern()) {
                 result.addAll(computePatternSearchItems(seed));
             }
@@ -281,17 +281,17 @@ public class PlanSearchEngine extends SearchEngine {
          * @param seed the set of pre-matched nodes
          */
         Collection<AbstractSearchItem> computePatternSearchItems(Anchor seed) {
-            Collection<AbstractSearchItem> result = new ArrayList<AbstractSearchItem>();
-            Map<RuleNode,RuleNode> unmatchedNodes = new LinkedHashMap<RuleNode,RuleNode>();
+            Collection<AbstractSearchItem> result = new ArrayList<>();
+            Map<RuleNode,RuleNode> unmatchedNodes = new LinkedHashMap<>();
             for (RuleNode node : this.remainingNodes) {
                 unmatchedNodes.put(node, node);
             }
-            Set<RuleEdge> unmatchedEdges = new LinkedHashSet<RuleEdge>(this.remainingEdges);
+            Set<RuleEdge> unmatchedEdges = new LinkedHashSet<>(this.remainingEdges);
             // first a single search item for the pre-matched elements
             if (seed == null) {
                 seed = new Anchor();
             }
-            Set<RuleNode> constraint = new HashSet<RuleNode>();
+            Set<RuleNode> constraint = new HashSet<>();
             if (!seed.isEmpty()) {
                 AbstractSearchItem seedItem = new SeedSearchItem(seed);
                 result.add(seedItem);
@@ -361,7 +361,7 @@ public class PlanSearchEngine extends SearchEngine {
          */
         Collection<Comparator<SearchItem>> computeComparators() {
             Collection<Comparator<SearchItem>> result =
-                new TreeSet<Comparator<SearchItem>>(new ItemComparatorComparator());
+                new TreeSet<>(new ItemComparatorComparator());
             result.add(new NeededPartsComparator(this.remainingNodes, this.remainingVars));
             result.add(new ItemTypeComparator());
             result.add(new ConnectedPartsComparator(this.remainingNodes, this.remainingVars));
@@ -515,7 +515,7 @@ public class PlanSearchEngine extends SearchEngine {
          */
         IndegreeComparator(Set<? extends RuleEdge> remainingEdges) {
             // compute indegrees
-            Bag<RuleNode> indegrees = new HashBag<RuleNode>();
+            Bag<RuleNode> indegrees = new HashBag<>();
             for (RuleEdge edge : remainingEdges) {
                 if (!edge.target().equals(edge.source())) {
                     indegrees.add(edge.target());
@@ -763,7 +763,7 @@ public class PlanSearchEngine extends SearchEngine {
          *        may be <code>null</code>
          */
         FrequencyComparator(List<String> rare, List<String> common) {
-            this.priorities = new HashMap<Label,Integer>();
+            this.priorities = new HashMap<>();
             if (rare != null) {
                 for (int i = 0; i < rare.size(); i++) {
                     Label label = TypeLabel.createLabel(rare.get(i));

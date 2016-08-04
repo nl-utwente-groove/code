@@ -48,8 +48,8 @@ public class LabelPattern {
     public LabelPattern(String format, List<String> argNames) throws FormatException {
         this.format = format;
         this.argNames.addAll(argNames);
-        List<Object> testValues1 = new ArrayList<Object>();
-        List<Object> testValues2 = new ArrayList<Object>();
+        List<Object> testValues1 = new ArrayList<>();
+        List<Object> testValues2 = new ArrayList<>();
         for (int i = 0; i < argNames.size(); i++) {
             this.argPositions.put(argNames.get(i), i);
             testValues1.add(null);
@@ -153,7 +153,7 @@ public class LabelPattern {
     public LabelPattern relabel(TypeLabel oldLabel, TypeLabel newLabel) {
         LabelPattern result = this;
         if (oldLabel.getRole() == EdgeRole.BINARY) {
-            List<String> newArgNames = new ArrayList<String>();
+            List<String> newArgNames = new ArrayList<>();
             boolean isNew = false;
             for (int i = 0; i < getArgNames().size(); i++) {
                 String oldArgName = getArgNames().get(i);
@@ -174,8 +174,8 @@ public class LabelPattern {
     }
 
     private final String format;
-    private final List<String> argNames = new ArrayList<String>();
-    private final Map<String,Integer> argPositions = new HashMap<String,Integer>();
+    private final List<String> argNames = new ArrayList<>();
+    private final Map<String,Integer> argPositions = new HashMap<>();
 
     /**
      * Parses a string of the form {@code "format",id1,id2,...'} into a
@@ -195,7 +195,7 @@ public class LabelPattern {
         if (split.length == 0 || split[0].length() != 1) {
             throw new FormatException("Incorrect label pattern %s", text);
         }
-        List<String> argNames = new ArrayList<String>();
+        List<String> argNames = new ArrayList<>();
         for (int i = 1; i < split.length; i++) {
             if (isIdentifier(split[i])) {
                 argNames.add(split[i]);

@@ -434,7 +434,7 @@ final public class GraphEditorTab extends ResourceTab
     protected JGraphPanel<?> getEditArea() {
         JGraphPanel<?> result = this.editArea;
         if (result == null) {
-            result = this.editArea = new JGraphPanel<AspectGraph>(getJGraph());
+            result = this.editArea = new JGraphPanel<>(getJGraph());
             result.setEnabledBackground(JAttr.EDITOR_BACKGROUND);
             result.initialise();
             result.setEnabled(true);
@@ -578,7 +578,7 @@ final public class GraphEditorTab extends ResourceTab
      * @param data the data for the {@link JList}
      */
     private JComponent createSyntaxList(Collection<String> data) {
-        final JList<String> list = new JList<String>();
+        final JList<String> list = new JList<>();
         list.setCellRenderer(new SyntaxCellRenderer());
         list.setBackground(JAttr.EDITOR_BACKGROUND);
         list.setListData(data.toArray(new String[data.size()]));
@@ -622,9 +622,9 @@ final public class GraphEditorTab extends ResourceTab
         if (this.nodeKeys != null) {
             return;
         }
-        this.nodeKeys = new TreeSet<String>(AspectKind.getNodeDocMap(this.role)
+        this.nodeKeys = new TreeSet<>(AspectKind.getNodeDocMap(this.role)
             .keySet());
-        this.edgeKeys = new TreeSet<String>(AspectKind.getEdgeDocMap(this.role)
+        this.edgeKeys = new TreeSet<>(AspectKind.getEdgeDocMap(this.role)
             .keySet());
         // the edge role description for binary edges in rule graphs is inappropriate
         Help extra = null;
@@ -654,7 +654,7 @@ final public class GraphEditorTab extends ResourceTab
                 assert false;
             }
         }
-        this.docMap = new HashMap<String,String>();
+        this.docMap = new HashMap<>();
         this.docMap.putAll(AspectKind.getNodeDocMap(this.role));
         this.docMap.putAll(AspectKind.getEdgeDocMap(this.role));
         this.docMap.putAll(EdgeRole.getDocMap());

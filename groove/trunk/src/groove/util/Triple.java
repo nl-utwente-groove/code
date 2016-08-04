@@ -169,7 +169,7 @@ public class Triple<T,U,V> implements Fixable {
      * @return a new typed triple with the given values
      */
     public static <TT,UU,VV> Triple<TT,UU,VV> newTriple(TT one, UU two, VV three) {
-        return new Triple<TT,UU,VV>(one, two, three);
+        return new Triple<>(one, two, three);
     }
 
     /** The precomputed hash code. The triple is fixed iff this value is not 0. */

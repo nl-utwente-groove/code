@@ -52,8 +52,8 @@ abstract public class GroovePredicates {
      */
     public Map<CompoundTermTag,String> getDefinitions() {
         if (this.definitions == null) {
-            this.toolTipMap = new HashMap<CompoundTermTag,String>();
-            this.definitions = new HashMap<CompoundTermTag,String>();
+            this.toolTipMap = new HashMap<>();
+            this.definitions = new HashMap<>();
             for (Method method : getClass().getMethods()) {
                 if (method.isAnnotationPresent(Signature.class)) {
                     try {
@@ -173,7 +173,7 @@ abstract public class GroovePredicates {
                 result.setBody(toolTip.value());
             }
             // collect the parameter names
-            List<String> parNames = new ArrayList<String>();
+            List<String> parNames = new ArrayList<>();
             for (int p = 0; p < arity; p++) {
                 parNames.add(sigValue[p]);
             }

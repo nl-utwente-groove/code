@@ -55,7 +55,7 @@ import groove.io.conceptual.value.StringValue;
 
 @SuppressWarnings("javadoc")
 public class GraphvizToInstance extends InstanceImporter {
-    private Map<Node,Object> m_nodeMap = new HashMap<Node,Object>();
+    private Map<Node,Object> m_nodeMap = new HashMap<>();
 
     public GraphvizToInstance(String filename) throws ImportException {
         ArrayList<Graph> graphs = null;

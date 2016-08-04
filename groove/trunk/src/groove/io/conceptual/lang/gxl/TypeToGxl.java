@@ -79,14 +79,14 @@ public class TypeToGxl extends TypeExporter<NodeType> {
     private GraphType m_typeGraph;
 
     // Packages are mapped to subgraphs in instance models
-    private Map<Id,NodeType> m_packageNodes = new HashMap<Id,NodeType>();
-    private Map<Id,NodeType> m_packageIntermediateNodes = new HashMap<Id,NodeType>();
+    private Map<Id,NodeType> m_packageNodes = new HashMap<>();
+    private Map<Id,NodeType> m_packageIntermediateNodes = new HashMap<>();
     private QualName m_currentTypeName;
 
-    private Map<java.lang.Object,String> m_objectIDs = new HashMap<java.lang.Object,String>();
+    private Map<java.lang.Object,String> m_objectIDs = new HashMap<>();
 
     // Some tuples must be represented by classes, this map keeps track of them
-    private Map<Tuple,Class> m_tupleClasses = new HashMap<Tuple,Class>();
+    private Map<Tuple,Class> m_tupleClasses = new HashMap<>();
 
     // To keep track of node Ids
     private int m_nextType = 1;

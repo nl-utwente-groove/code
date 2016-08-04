@@ -36,7 +36,7 @@ public abstract class ReteNetworkNode {
 
     private ReteNetwork owner;
     private ArrayList<ReteNetworkNode> antecedents =
-        new ArrayList<ReteNetworkNode>();
+        new ArrayList<>();
 
     /**
      * A look up table that allows fast querying about the 
@@ -75,7 +75,7 @@ public abstract class ReteNetworkNode {
      */
     public ReteNetworkNode(ReteNetwork network) {
         this.owner = network;
-        this.successors = new ArrayList<ReteNetworkNode>();
+        this.successors = new ArrayList<>();
     }
 
     /**

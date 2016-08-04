@@ -281,7 +281,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      * as stored in the corresponding {@link JVertex} attributes.
      */
     public Map<Node,Color> getColorMap() {
-        Map<Node,Color> result = new HashMap<Node,Color>();
+        Map<Node,Color> result = new HashMap<>();
         for (JCell<G> jCell : getRoots()) {
             if (jCell instanceof JVertex) {
                 Color foreground = jCell.getVisuals()
@@ -416,7 +416,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
         if (outJEdges == null) {
             result = jVertex.getContext();
         } else {
-            result = new NestedIterator<JEdge<G>>(outJEdges.iterator(), jVertex.getContext());
+            result = new NestedIterator<>(outJEdges.iterator(), jVertex.getContext());
         }
         return result;
     }
@@ -427,7 +427,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
     private void addFreshOutJEdge(JVertex<G> jVertex, JEdge<G> jEdge) {
         Set<JEdge<G>> jEdges = this.freshOutJEdges.get(jVertex);
         if (jEdges == null) {
-            this.freshOutJEdges.put(jVertex, jEdges = new HashSet<JEdge<G>>());
+            this.freshOutJEdges.put(jVertex, jEdges = new HashSet<>());
         }
         jEdges.add(jEdge);
     }
@@ -527,7 +527,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
         Object[] removedCells = replace ? getRoots().toArray() : null;
         createEdit(addedCells, removedCells, null, this.connections, getParentMap(), null)
             .execute();
-        List<JEdge<G>> edges = new ArrayList<JEdge<G>>();
+        List<JEdge<G>> edges = new ArrayList<>();
         for (Object jCell : addedCells) {
             if (jCell instanceof JEdge) {
                 edges.add((JEdge<G>) jCell);
@@ -590,28 +590,28 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
     /**
      * Map from graph nodes to JGraph cells.
      */
-    protected Map<Node,JVertex<G>> nodeJCellMap = new HashMap<Node,JVertex<G>>();
+    protected Map<Node,JVertex<G>> nodeJCellMap = new HashMap<>();
     /**
      * Map from graph edges to JGraph cells.
      */
-    protected Map<Edge,JCell<G>> edgeJCellMap = new HashMap<Edge,JCell<G>>();
+    protected Map<Edge,JCell<G>> edgeJCellMap = new HashMap<>();
 
     /**
      * Mapping from jVertices to incident jEdges.
      * Used in the process of constructing a GraphJModel.
      */
     protected final Map<JVertex<G>,Set<JEdge<G>>> freshOutJEdges =
-        new HashMap<JVertex<G>,Set<JEdge<G>>>();
+        new HashMap<>();
     /**
      * Set of added jEdges. Used in the process of constructing a
      * GraphJModel.
      */
-    protected final List<JEdge<G>> addedJEdges = new ArrayList<JEdge<G>>();
+    protected final List<JEdge<G>> addedJEdges = new ArrayList<>();
     /**
      * Set of added jVertices. Used in the process of constructing a
      * GraphJModel.
      */
-    protected final List<JVertex<G>> addedJVertices = new ArrayList<JVertex<G>>();
+    protected final List<JVertex<G>> addedJVertices = new ArrayList<>();
     /**
      * Set of GraphModel connections. Used in the process of constructing a
      * GraphJModel.

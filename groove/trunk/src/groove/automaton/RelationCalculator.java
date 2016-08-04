@@ -209,7 +209,7 @@ public class RelationCalculator extends GTSAdapter implements RegExprCalculator<
     }
 
     private Map<String,Set<Edge>> computeLabelEdgeMap() {
-        Map<String,Set<Edge>> result = new HashMap<String,Set<Edge>>();
+        Map<String,Set<Edge>> result = new HashMap<>();
         for (Edge edge : this.graph.edgeSet()) {
             addToLabelEdgeMap(edge, result);
         }
@@ -221,7 +221,7 @@ public class RelationCalculator extends GTSAdapter implements RegExprCalculator<
         String text = edge.label().text();
         Set<Edge> edges = result.get(text);
         if (edges == null) {
-            result.put(text, edges = new HashSet<Edge>());
+            result.put(text, edges = new HashSet<>());
         }
         edges.add(edge);
     }

@@ -40,7 +40,7 @@ public class ExploreConfig {
 
     /** Creates a configuration with all default values. */
     public ExploreConfig() {
-        this.pars = new EnumMap<ExploreKey,Setting<?,?>>(ExploreKey.class);
+        this.pars = new EnumMap<>(ExploreKey.class);
         for (ExploreKey key : ExploreKey.values()) {
             this.pars.put(key, key.getDefaultValue());
         }

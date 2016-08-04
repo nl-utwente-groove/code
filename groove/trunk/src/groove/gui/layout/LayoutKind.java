@@ -108,7 +108,7 @@ public enum LayoutKind {
         return result;
     }
 
-    private static Map<LayoutKind,LayouterItem> map = new HashMap<LayoutKind,LayouterItem>();
+    private static Map<LayoutKind,LayouterItem> map = new HashMap<>();
 
     /** Creates the panel with the options of the given layouter. */
     public static JPanel createLayoutPanel(LayouterItem item) {

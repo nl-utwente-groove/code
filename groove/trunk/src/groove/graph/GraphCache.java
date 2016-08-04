@@ -194,7 +194,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * sets of edges.
      */
     private Map<Label,Set<E>> computeLabelEdgeMap() {
-        Map<Label,Set<E>> result = new HashMap<Label,Set<E>>();
+        Map<Label,Set<E>> result = new HashMap<>();
         for (E edge : this.graph.edgeSet()) {
             addToLabelEdgeMap(result, edge);
         }
@@ -208,7 +208,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
     private Map<N,Set<E>> computeNodeInEdgeMap() {
         Map<N,Set<E>> result;
         if (this.nodeEdgeMap == null) {
-            result = new HashMap<N,Set<E>>();
+            result = new HashMap<>();
             for (N node : this.graph.nodeSet()) {
                 result.put(node, createEdgeSet(null));
             }
@@ -217,7 +217,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
             }
         } else {
             // reuse the precomputed node-edge-map
-            result = new HashMap<N,Set<E>>(this.nodeEdgeMap);
+            result = new HashMap<>(this.nodeEdgeMap);
             for (Map.Entry<N,Set<E>> resultEntry : result.entrySet()) {
                 N node = resultEntry.getKey();
                 Set<E> inEdges = createEdgeSet(null);
@@ -239,7 +239,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
     private Map<N,Set<E>> computeNodeOutEdgeMap() {
         Map<N,Set<E>> result;
         if (this.nodeEdgeMap == null) {
-            result = new HashMap<N,Set<E>>();
+            result = new HashMap<>();
             for (N node : this.graph.nodeSet()) {
                 result.put(node, createEdgeSet(null));
             }
@@ -248,7 +248,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
             }
         } else {
             // reuse the precomputed node-edge-map
-            result = new HashMap<N,Set<E>>(this.nodeEdgeMap);
+            result = new HashMap<>(this.nodeEdgeMap);
             for (Map.Entry<N,Set<E>> resultEntry : result.entrySet()) {
                 N node = resultEntry.getKey();
                 Set<E> inEdges = createEdgeSet(null);
@@ -268,7 +268,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * edge sets.
      */
     private Map<N,Set<E>> computeNodeEdgeMap() {
-        Map<N,Set<E>> result = new HashMap<N,Set<E>>();
+        Map<N,Set<E>> result = new HashMap<>();
         for (E edge : this.graph.edgeSet()) {
             addToNodeEdgeMap(result, edge);
         }
@@ -451,7 +451,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * only be added if it is certain that it is not already in the set.
      */
     private Set<E> createSmallEdgeSet() {
-        return new TreeHashSet<E>();
+        return new TreeHashSet<>();
     }
 
     /** Indicates if the precomputed data should be permanently stored. */

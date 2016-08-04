@@ -353,7 +353,7 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
         String result = null;
         String formatString = trans.getAction().getFormatString();
         if (formatString != null && !formatString.isEmpty()) {
-            List<Object> args = new ArrayList<Object>();
+            List<Object> args = new ArrayList<>();
             for (HostNode arg : trans.label().getArguments()) {
                 if (arg instanceof ValueNode) {
                     args.add(((ValueNode) arg).getValue());
@@ -378,7 +378,7 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
             result = EMPTY_ARGS;
         } else {
             List<? extends CtrlPar> args = trans.getSwitch().getArgs();
-            result = new ArrayList<HostNode>();
+            result = new ArrayList<>();
             for (int i = 0; i < args.size(); i++) {
                 CtrlPar par = args.get(i);
                 if (par instanceof Var) {

@@ -37,9 +37,9 @@ class NegatedSearchItem extends AbstractSearchItem {
      */
     public NegatedSearchItem(SearchItem item) {
         this.inner = item;
-        this.neededNodes = new HashSet<RuleNode>(item.needsNodes());
+        this.neededNodes = new HashSet<>(item.needsNodes());
         this.neededNodes.addAll(item.bindsNodes());
-        this.neededVars = new HashSet<LabelVar>(item.needsVars());
+        this.neededVars = new HashSet<>(item.needsVars());
         this.neededVars.addAll(item.bindsVars());
     }
 

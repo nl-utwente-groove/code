@@ -192,7 +192,7 @@ public class Assignment {
      */
     static Assignment modify(Switch swit) {
         assert swit.getKind() == Callable.Kind.RULE;
-        List<Binding> result = new ArrayList<Binding>();
+        List<Binding> result = new ArrayList<>();
         List<CtrlVar> sourceVars = swit.getSource().getVars();
         Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
         for (CtrlVar var : swit.onFinish().getVars()) {
@@ -220,7 +220,7 @@ public class Assignment {
      */
     static Assignment enter(Switch swit) {
         assert swit.getKind().isProcedure();
-        List<Binding> result = new ArrayList<Binding>();
+        List<Binding> result = new ArrayList<>();
         List<CtrlVar> sourceVars = swit.getSource().getVars();
         Procedure proc = (Procedure) swit.getUnit();
         Map<CtrlVar,Integer> sig = proc.getInPars();
@@ -250,7 +250,7 @@ public class Assignment {
      */
     static Assignment exit(Location top, Switch swit) {
         assert swit.getKind().isProcedure();
-        List<Binding> result = new ArrayList<Binding>();
+        List<Binding> result = new ArrayList<>();
         List<CtrlPar.Var> sig = swit.getUnit().getSignature();
         List<CtrlVar> callerVars = swit.getSource().getVars();
         Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
@@ -281,7 +281,7 @@ public class Assignment {
      * @param remaining number of switches in the target frame switch stack
      */
     static public List<Assignment> computePops(SwitchStack stack, Location top, int remaining) {
-        List<Assignment> result = new ArrayList<Assignment>();
+        List<Assignment> result = new ArrayList<>();
         for (int i = stack.size() - 1; i >= remaining; i--) {
             assert top.isFinal();
             result.add(Assignment.exit(top, stack.get(i)));

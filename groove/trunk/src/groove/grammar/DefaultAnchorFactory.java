@@ -54,8 +54,8 @@ public class DefaultAnchorFactory implements AnchorFactory {
     @Override
     public Anchor newAnchor(Rule rule) {
         RuleGraph lhs = rule.lhs();
-        Set<AnchorKey> result = new LinkedHashSet<AnchorKey>();
-        Set<RuleNode> colorNodes = new HashSet<RuleNode>(rule.getColorMap().keySet());
+        Set<AnchorKey> result = new LinkedHashSet<>();
+        Set<RuleNode> colorNodes = new HashSet<>(rule.getColorMap().keySet());
         colorNodes.retainAll(lhs.nodeSet());
         result.addAll(colorNodes);
         result.addAll(Arrays.asList(rule.getEraserNodes()));
@@ -94,7 +94,7 @@ public class DefaultAnchorFactory implements AnchorFactory {
 
     /** Returns the collection of all potential anchor keys in a given rule graph. */
     private Collection<Object> getAnchorKeys(RuleGraph graph) {
-        return new CollectionOfCollections<Object>(graph.nodeSet(), graph.edgeSet(),
+        return new CollectionOfCollections<>(graph.nodeSet(), graph.edgeSet(),
             graph.varSet());
     }
 

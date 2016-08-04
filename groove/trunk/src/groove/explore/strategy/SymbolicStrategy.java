@@ -102,8 +102,8 @@ public class SymbolicStrategy extends GTSStrategy {
         if (!matchSet.isEmpty()) {
             // Sort the matches in priority groups
             List<Collection<? extends MatchResult>> priorityGroups = createPriorityGroups(matchSet);
-            Set<SwitchRelation> higherPriorityRelations = new HashSet<SwitchRelation>();
-            Set<SwitchRelation> temp = new HashSet<SwitchRelation>();
+            Set<SwitchRelation> higherPriorityRelations = new HashSet<>();
+            Set<SwitchRelation> temp = new HashSet<>();
             boolean emptyGuard = false;
             for (Collection<? extends MatchResult> matches : priorityGroups) {
                 for (MatchResult next : matches) {
@@ -156,19 +156,19 @@ public class SymbolicStrategy extends GTSStrategy {
      */
     private List<Collection<? extends MatchResult>> createPriorityGroups(
         Collection<? extends MatchResult> matches) {
-        List<MatchResult> sortedMatches = new ArrayList<MatchResult>(matches);
+        List<MatchResult> sortedMatches = new ArrayList<>(matches);
         Collections.sort(sortedMatches, new PriorityComparator());
         List<Collection<? extends MatchResult>> priorityGroups =
-            new ArrayList<Collection<? extends MatchResult>>();
+            new ArrayList<>();
         int priority = sortedMatches.get(0)
             .getAction()
             .getPriority();
-        Collection<MatchResult> current = new HashSet<MatchResult>();
+        Collection<MatchResult> current = new HashSet<>();
         for (MatchResult match : sortedMatches) {
             if (match.getAction()
                 .getPriority() != priority) {
                 priorityGroups.add(current);
-                current = new HashSet<MatchResult>();
+                current = new HashSet<>();
                 priority = match.getAction()
                     .getPriority();
             }

@@ -55,7 +55,7 @@ public final class FsmExporter extends AbstractExporter {
 
     private void save(Graph graph, PrintWriter writer) {
         // mapping from nodes of graphs to integers
-        Map<Node,Integer> nodeMap = new HashMap<Node,Integer>();
+        Map<Node,Integer> nodeMap = new HashMap<>();
         writer.println("NodeNumber(0)");
         writer.println("---");
         int nr = 1;

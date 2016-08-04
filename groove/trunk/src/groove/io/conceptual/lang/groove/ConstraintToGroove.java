@@ -47,7 +47,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     private GrooveResource m_grooveResource;
     private Config m_cfg;
 
-    private Set<Property> m_properties = new HashSet<Property>();
+    private Set<Property> m_properties = new HashSet<>();
     private GrammarGraph m_currentGraph;
 
     // If true, hasElement always returns false

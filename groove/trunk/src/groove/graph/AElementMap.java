@@ -128,7 +128,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
      */
     @Override
     public boolean isInjective() {
-        Set<TN> nodeValues = new HashSet<TN>(nodeMap().values());
+        Set<TN> nodeValues = new HashSet<>(nodeMap().values());
         return nodeMap().size() == nodeValues.size();
     }
 
@@ -235,7 +235,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
      * @see #nodeMap()
      */
     protected Map<SN,TN> createNodeMap() {
-        return new HashMap<SN,TN>();
+        return new HashMap<>();
     }
 
     /**
@@ -244,7 +244,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
      * @see #edgeMap()
      */
     protected Map<SE,TE> createEdgeMap() {
-        return new HashMap<SE,TE>();
+        return new HashMap<>();
     }
 
     /** Mapping from node keys to <tt>NT</tt>s. */

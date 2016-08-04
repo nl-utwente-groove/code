@@ -38,7 +38,7 @@ public class Predicate_state_next_set extends LtsPrologCode {
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         GraphState graphState = getGraphState(args[0]);
-        Collection<GraphState> nextStateSet = new ArrayList<GraphState>();
+        Collection<GraphState> nextStateSet = new ArrayList<>();
         for (GraphTransition trans : graphState.getTransitions()) {
             nextStateSet.add(trans.target());
         }

@@ -61,7 +61,7 @@ public class EcoreToType extends TypeImporter {
 
     // Map to keep track of Java class names for custom data types. Used when importing instance models
     // Strictly speaking this should be linked to a single TypeModel, but since only one Ecore type model exists per instance of this class, this should be fine.
-    private Map<String,Id> m_customDatatypeInstances = new HashMap<String,Id>();
+    private Map<String,Id> m_customDatatypeInstances = new HashMap<>();
 
     /**
      * Handler for Ecore type models to be converted to the conceptual model
@@ -300,7 +300,7 @@ public class EcoreToType extends TypeImporter {
         // Handle keyset
         if (eReference.getEKeys()
             .size() > 0) {
-            List<Name> keyNames = new ArrayList<Name>();
+            List<Name> keyNames = new ArrayList<>();
             for (EAttribute attr : eReference.getEKeys()) {
                 keyNames.add(Name.getName(attr.getName()));
             }

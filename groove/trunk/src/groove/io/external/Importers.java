@@ -77,7 +77,7 @@ public class Importers {
         Set<Resource> resources = ri.doImport(file, fileType, grammar);
         if (resources != null) {
             Map<ResourceKind,Collection<AspectGraph>> newGraphs =
-                new EnumMap<ResourceKind,Collection<AspectGraph>>(ResourceKind.class);
+                new EnumMap<>(ResourceKind.class);
             Map<ResourceKind,Map<QualName,String>> newTexts = new EnumMap<>(ResourceKind.class);
             for (Resource resource : resources) {
                 QualName name = resource.getQualName();
@@ -88,7 +88,7 @@ public class Importers {
                         AspectGraph graph = resource.getGraphResource();
                         Collection<AspectGraph> graphs = newGraphs.get(kind);
                         if (graphs == null) {
-                            newGraphs.put(kind, graphs = new ArrayList<AspectGraph>());
+                            newGraphs.put(kind, graphs = new ArrayList<>());
                         }
                         graphs.add(graph);
                     } else {
@@ -136,7 +136,7 @@ public class Importers {
     }
 
     private static List<Importer> createImporters() {
-        List<Importer> result = new ArrayList<Importer>();
+        List<Importer> result = new ArrayList<>();
         result.add(NativePorter.getInstance());
         result.add(AutPorter.instance());
         result.add(ColImporter.getInstance());
@@ -164,7 +164,7 @@ public class Importers {
 
     /** Creates the mapping from file types to importers supporting them. */
     private static Map<FileType,Importer> createImporterMap() {
-        Map<FileType,Importer> result = new EnumMap<FileType,Importer>(FileType.class);
+        Map<FileType,Importer> result = new EnumMap<>(FileType.class);
         for (Importer ri : getImporters()) {
             for (FileType fileType : ri.getSupportedFileTypes()) {
                 result.put(fileType, ri);

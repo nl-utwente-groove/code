@@ -45,5 +45,5 @@ public class RandomNewStateChooser implements ProductListener {
     }
 
     private final RandomChooserInSequence<ProductState> rc =
-        new RandomChooserInSequence<ProductState>();
+        new RandomChooserInSequence<>();
 }

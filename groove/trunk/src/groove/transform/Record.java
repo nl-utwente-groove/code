@@ -182,7 +182,7 @@ public class Record {
      */
     private final RuleEventSet eventMap = new RuleEventSet();
     /** Identity map of normal transition labels. */
-    private final Pool<RuleTransitionLabel> labelPool = new Pool<RuleTransitionLabel>();
+    private final Pool<RuleTransitionLabel> labelPool = new Pool<>();
 
     /**
      * Sets the policy of the GTS in determining state equivalence. This is only

@@ -202,7 +202,7 @@ public class Aspect {
     }
 
     /** Mapping from aspect names to canonical aspects (with that name). */
-    private final static Map<String,Aspect> aspectNameMap = new HashMap<String,Aspect>();
+    private final static Map<String,Aspect> aspectNameMap = new HashMap<>();
 
     static {
         for (AspectKind kind : AspectKind.values()) {

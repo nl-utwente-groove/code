@@ -334,7 +334,7 @@ public class GTS extends AGraph<GraphState,GraphTransition>implements Cloneable 
     private Collection<GraphState> getStates(Flag flag) {
         List<GraphState> result = this.statesMap.get(flag);
         if (result == null) {
-            this.statesMap.put(flag, result = new ArrayList<GraphState>());
+            this.statesMap.put(flag, result = new ArrayList<>());
             for (GraphState state : getStates()) {
                 if (state.hasFlag(flag)) {
                     result.add(state);
@@ -346,7 +346,7 @@ public class GTS extends AGraph<GraphState,GraphTransition>implements Cloneable 
     }
 
     private final Map<Flag,List<GraphState>> statesMap =
-        new EnumMap<Status.Flag,List<GraphState>>(Flag.class);
+        new EnumMap<>(Flag.class);
 
     /**
      * Indicates if there are states with a given flag.
@@ -617,7 +617,7 @@ public class GTS extends AGraph<GraphState,GraphTransition>implements Cloneable 
                 states = answer.getStates();
             } else {
                 transitions = getSpanningTransitions(answer.getStates(), flags.showRecipes());
-                Set<GraphState> traces = new LinkedHashSet<GraphState>();
+                Set<GraphState> traces = new LinkedHashSet<>();
                 traces.add(startState());
                 for (GraphTransition trans : transitions) {
                     traces.add(trans.target());
@@ -628,7 +628,7 @@ public class GTS extends AGraph<GraphState,GraphTransition>implements Cloneable 
         default:
             throw new RuntimeException();//groove.util.Exceptions.UNREACHABLE;
         }
-        Map<GraphState,MultiNode> nodeMap = new HashMap<GraphState,MultiNode>();
+        Map<GraphState,MultiNode> nodeMap = new HashMap<>();
         for (GraphState state : states) {
             // don't include transient states unless forced to
             if (state.isInternalState() && !flags.showRecipes()) {
@@ -689,9 +689,9 @@ public class GTS extends AGraph<GraphState,GraphTransition>implements Cloneable 
      */
     private Set<GraphTransition> getSpanningTransitions(Collection<? extends GraphState> targets,
         boolean internal) {
-        Set<GraphTransition> result = new LinkedHashSet<GraphTransition>();
-        Queue<GraphState> queue = new LinkedList<GraphState>(targets);
-        Set<GraphState> reached = new HashSet<GraphState>();
+        Set<GraphTransition> result = new LinkedHashSet<>();
+        Queue<GraphState> queue = new LinkedList<>(targets);
+        Set<GraphState> reached = new HashSet<>();
         while (!queue.isEmpty()) {
             GraphState target = queue.poll();
             if (!reached.add(target)) {
@@ -823,7 +823,7 @@ public class GTS extends AGraph<GraphState,GraphTransition>implements Cloneable 
      * Set of {@link GTSListener} s to be identified of changes in this graph.
      * Set to <tt>null</tt> when the graph is fixed.
      */
-    private Set<GTSListener> listeners = new HashSet<GTSListener>();
+    private Set<GTSListener> listeners = new HashSet<>();
 
     /** Set of all flags of which state sets are recorded. */
     private static final Set<Flag> FLAG_SET = EnumSet.of(Flag.CLOSED, Flag.FINAL, Flag.ERROR);
@@ -1032,7 +1032,7 @@ public class GTS extends AGraph<GraphState,GraphTransition>implements Cloneable 
                         return outEdgeSet(state).iterator();
                     }
                 };
-            return new NestedIterator<GraphTransition>(stateOutTransitionIter);
+            return new NestedIterator<>(stateOutTransitionIter);
         }
 
         @Override

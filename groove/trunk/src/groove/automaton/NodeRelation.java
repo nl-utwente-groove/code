@@ -100,7 +100,7 @@ public class NodeRelation implements Cloneable {
      * @return <tt>this</tt>
      */
     public NodeRelation doThen(NodeRelation other) {
-        Set<Entry> oldRelatedSet = new HashSet<Entry>(getAllRelated());
+        Set<Entry> oldRelatedSet = new HashSet<>(getAllRelated());
         clear();
         for (Entry oldRel : oldRelatedSet) {
             Set<Entry> otherEntries = other.getEntries(oldRel.two());
@@ -139,7 +139,7 @@ public class NodeRelation implements Cloneable {
      * <code>(post,pre)</code> is in this relation.
      */
     public void doInverse() {
-        Set<Entry> relatedSet = new HashSet<Entry>(getAllRelated());
+        Set<Entry> relatedSet = new HashSet<>(getAllRelated());
         clear();
         for (Entry entry : relatedSet) {
             addRelated(entry.invert());
@@ -214,7 +214,7 @@ public class NodeRelation implements Cloneable {
      */
     protected boolean doOrThen(NodeRelation other) {
         boolean result = false;
-        Set<Entry> oldRelatedSet = new HashSet<Entry>(getAllRelated());
+        Set<Entry> oldRelatedSet = new HashSet<>(getAllRelated());
         for (Entry oldRel : oldRelatedSet) {
             Set<Entry> otherEntries = other.getEntries(oldRel.two());
             if (otherEntries != null) {
@@ -265,7 +265,7 @@ public class NodeRelation implements Cloneable {
 
     /** Constructs the one-to-entry-map. */
     private Map<Node,Set<Entry>> computeOneToEntryMap() {
-        Map<Node,Set<Entry>> result = new HashMap<Node,Set<Entry>>();
+        Map<Node,Set<Entry>> result = new HashMap<>();
         for (Entry entry : getAllRelated()) {
             addToOneToEntryMap(entry, result);
         }
@@ -276,7 +276,7 @@ public class NodeRelation implements Cloneable {
     private boolean addToOneToEntryMap(Entry entry, Map<Node,Set<Entry>> result) {
         Set<Entry> entries = result.get(entry.one());
         if (entries == null) {
-            result.put(entry.one(), entries = new HashSet<Entry>());
+            result.put(entry.one(), entries = new HashSet<>());
         }
         return entries.add(entry);
     }
@@ -289,9 +289,9 @@ public class NodeRelation implements Cloneable {
      * mapping from edges (which encode the related pairs) to collections of
      * elements justifying them.
      */
-    private Map<Entry,Entry> supportMap = new HashMap<Entry,Entry>();
+    private Map<Entry,Entry> supportMap = new HashMap<>();
     /** The set of all support elements. */
-    private Set<Element> allSupport = new HashSet<Element>();
+    private Set<Element> allSupport = new HashSet<>();
 
     /** Entry in the relation. */
     static class Entry extends Duo<Node> {
@@ -349,6 +349,6 @@ public class NodeRelation implements Cloneable {
             return super.toString() + ", support: " + this.support.toString();
         }
 
-        final private Set<Element> support = new HashSet<Element>();
+        final private Set<Element> support = new HashSet<>();
     }
 }

@@ -152,19 +152,19 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
      * @see #isCyclic(int)
      */
     private void initNodeEdgeIndices() {
-        this.nodeIndexMap = new HashMap<RegNode,Integer>();
-        this.edgeIndexMap = new HashMap<RegEdge,Integer>();
-        Set<RegNode> cyclicNodeSet = new HashSet<RegNode>();
+        this.nodeIndexMap = new HashMap<>();
+        this.edgeIndexMap = new HashMap<>();
+        Set<RegNode> cyclicNodeSet = new HashSet<>();
         this.cyclicNodes = new BitSet(nodeCount());
         // the nodeList is a precursor to the nodes array
-        List<RegNode> nodeList = new ArrayList<RegNode>();
+        List<RegNode> nodeList = new ArrayList<>();
         nodeList.add(getStartNode());
         // the set of nodes already investigated
-        Set<RegNode> visitedNodes = new HashSet<RegNode>();
+        Set<RegNode> visitedNodes = new HashSet<>();
         // the following lists are precursors to the corresponding arrays
-        List<RegNode> sourceList = new ArrayList<RegNode>();
-        List<RegNode> targetList = new ArrayList<RegNode>();
-        List<RuleLabel> labelList = new ArrayList<RuleLabel>();
+        List<RegNode> sourceList = new ArrayList<>();
+        List<RegNode> targetList = new ArrayList<>();
+        List<RuleLabel> labelList = new ArrayList<>();
         // set the index of the first node and edge
         int nodeIndex = 0;
         int edgeIndex = 0;
@@ -208,13 +208,13 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
      */
     @SuppressWarnings("unchecked")
     private void initNodeLabelEdgeMaps() {
-        Set<TypeLabel> initPosLabelSet = new HashSet<TypeLabel>();
-        Set<TypeLabel> initInvLabelSet = new HashSet<TypeLabel>();
+        Set<TypeLabel> initPosLabelSet = new HashSet<>();
+        Set<TypeLabel> initInvLabelSet = new HashSet<>();
         int indexedNodeCount = this.nodes.length;
         Map<Direction,Map<TypeLabel,Set<RegEdge>>[]> nodeInvLabelEdgeMap =
-            new EnumMap<Direction,Map<TypeLabel,Set<RegEdge>>[]>(Direction.class);
+            new EnumMap<>(Direction.class);
         Map<Direction,Map<TypeLabel,Set<RegEdge>>[]> nodePosLabelEdgeMap =
-            new EnumMap<Direction,Map<TypeLabel,Set<RegEdge>>[]>(Direction.class);
+            new EnumMap<>(Direction.class);
         for (Direction dir : Direction.values()) {
             nodeInvLabelEdgeMap.put(dir, new Map[indexedNodeCount]);
             nodePosLabelEdgeMap.put(dir, new Map[indexedNodeCount]);
@@ -226,7 +226,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
             if (isInverse) {
                 label = label.getInvLabel();
             }
-            Set<TypeLabel> derivedLabels = new HashSet<TypeLabel>();
+            Set<TypeLabel> derivedLabels = new HashSet<>();
             for (TypeElement element : this.typeGraph.getMatches(label)) {
                 derivedLabels.add(element.label());
             }
@@ -254,9 +254,9 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
         this.initInvLabels = new TypeLabel[initInvLabelSet.size()];
         initInvLabelSet.toArray(this.initInvLabels);
         this.nodePosLabelEdgeIndicesMap =
-            new EnumMap<Direction,Map<TypeLabel,int[]>[]>(Direction.class);
+            new EnumMap<>(Direction.class);
         this.nodeInvLabelEdgeIndicesMap =
-            new EnumMap<Direction,Map<TypeLabel,int[]>[]>(Direction.class);
+            new EnumMap<>(Direction.class);
         for (Direction direction : Direction.values()) {
             Map<TypeLabel,int[]>[] posLabelEdgeIndices = new Map[indexedNodeCount];
             Map<TypeLabel,int[]>[] invLabelEdgeIndices = new Map[indexedNodeCount];
@@ -279,10 +279,10 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
      */
     private void initVarSets() {
         // traverse the automaton
-        Set<RegNode> remainingNodes = new HashSet<RegNode>();
+        Set<RegNode> remainingNodes = new HashSet<>();
         remainingNodes.add(getStartNode());
         // keep maps from automaton nodes to all vars and bound vars
-        Map<RegNode,Set<LabelVar>> allVarMap = new HashMap<RegNode,Set<LabelVar>>();
+        Map<RegNode,Set<LabelVar>> allVarMap = new HashMap<>();
         allVarMap.put(getStartNode(), new HashSet<LabelVar>());
         while (!remainingNodes.isEmpty()) {
             RegNode source = remainingNodes.iterator()
@@ -291,7 +291,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
             Set<LabelVar> sourceAllVarSet = allVarMap.get(source);
             for (RegEdge outEdge : outEdgeSet(source)) {
                 RegNode target = outEdge.target();
-                Set<LabelVar> targetAllVarSet = new HashSet<LabelVar>(sourceAllVarSet);
+                Set<LabelVar> targetAllVarSet = new HashSet<>(sourceAllVarSet);
                 RegExpr expr = outEdge.label()
                     .getMatchExpr();
                 targetAllVarSet.addAll(expr.allVarSet());
@@ -329,7 +329,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
                 boolean lastIndex = index == word.size() - 1;
                 TypeEdge letter = getLetter(word.get(index));
                 Map<RegNode,HashMap<LabelVar,TypeElement>> newMatchSet =
-                    new HashMap<RegNode,HashMap<LabelVar,TypeElement>>();
+                    new HashMap<>();
                 Iterator<? extends Map.Entry<RegNode,HashMap<LabelVar,TypeElement>>> matchIter =
                     matchSet.entrySet()
                         .iterator();
@@ -348,7 +348,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
                             TypeGuard guard = label.getWildcardGuard();
                             labelOK = guard.isSatisfied(letter);
                             if (guard.isNamed()) {
-                                idMap = new HashMap<LabelVar,TypeElement>(idMap);
+                                idMap = new HashMap<>(idMap);
                                 TypeElement oldIdValue = idMap.put(guard.getVar(), letter);
                                 labelOK = oldIdValue == null || oldIdValue.equals(letter);
                             }
@@ -430,7 +430,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
     @Override
     public Set<TypeElement> getAlphabet() {
         assert isFixed();
-        Set<TypeElement> result = new HashSet<TypeElement>();
+        Set<TypeElement> result = new HashSet<>();
         for (RegEdge edge : edgeSet()) {
             result.addAll(this.typeGraph.getMatches(edge.label()));
         }
@@ -459,7 +459,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
      */
     final MatchingAlgorithm getMatchingAlgorithm(Direction direction) {
         if (this.algorithm == null) {
-            this.algorithm = new EnumMap<Direction,MatchingAlgorithm>(Direction.class);
+            this.algorithm = new EnumMap<>(Direction.class);
             this.algorithm.put(OUTGOING, createMatchingAlgorithm(OUTGOING));
             this.algorithm.put(INCOMING, createMatchingAlgorithm(INCOMING));
         }
@@ -535,11 +535,11 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
         Map<TypeLabel,Set<RegEdge>> labelEdgeMap = nodeLabelEdgeSetMap[getIndex(node)];
         if (labelEdgeMap == null) {
             nodeLabelEdgeSetMap[getIndex(node)] =
-                labelEdgeMap = new HashMap<TypeLabel,Set<RegEdge>>();
+                labelEdgeMap = new HashMap<>();
         }
         Set<RegEdge> edgeSet = labelEdgeMap.get(label);
         if (edgeSet == null) {
-            labelEdgeMap.put(label, edgeSet = new HashSet<RegEdge>());
+            labelEdgeMap.put(label, edgeSet = new HashSet<>());
         }
         edgeSet.add(edge);
     }
@@ -630,7 +630,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
     final Map<TypeLabel,int[]> toIntArrayMap(
         Map<TypeLabel,? extends Collection<? extends Element>> labelSetMap) {
         if (labelSetMap != null) {
-            Map<TypeLabel,int[]> result = new HashMap<TypeLabel,int[]>();
+            Map<TypeLabel,int[]> result = new HashMap<>();
             for (Map.Entry<TypeLabel,? extends Collection<? extends Element>> entry : labelSetMap.entrySet()) {
                 result.put(entry.getKey(), toIntArray(entry.getValue()));
             }
@@ -754,7 +754,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
      * Array of dummy labels for each label kind.
      * Can be used to match wildcards in case there is no proper match for them.
      */
-    private static final Map<EdgeRole,TypeLabel> DUMMY_LABELS = new EnumMap<EdgeRole,TypeLabel>(
+    private static final Map<EdgeRole,TypeLabel> DUMMY_LABELS = new EnumMap<>(
         EdgeRole.class);
     static {
         for (EdgeRole kind : EdgeRole.values()) {
@@ -799,7 +799,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
                 this.image = image;
                 this.valuation = valuation;
                 if (dependent != null) {
-                    this.dependents = new HashSet<MatchingComputation>();
+                    this.dependents = new HashSet<>();
                     addDependents(dependent);
                 }
             }
@@ -1000,7 +1000,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
                         // add the valuations to those stored for the image
                         Set<Valuation> currentValuations = get(image);
                         if (currentValuations == null) {
-                            put(image, currentValuations = new HashSet<Valuation>());
+                            put(image, currentValuations = new HashSet<>());
                         }
                         return currentValuations.add(valuation);
                     } else {
@@ -1030,7 +1030,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
                         // add the valuations to those stored for the image
                         Set<Valuation> currentValuations = get(image);
                         if (currentValuations == null) {
-                            put(image, currentValuations = new HashSet<Valuation>());
+                            put(image, currentValuations = new HashSet<>());
                         }
                         currentValuations.addAll(valuations);
                     }
@@ -1069,7 +1069,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
                 if (matched == null) {
                     matched =
                         MatchingAlgorithm.this.auxResults[result.keyIndex] =
-                            new HashMap<HostNode,MatchingComputation>();
+                            new HashMap<>();
                 }
                 matched.put(result.image, result);
             }
@@ -1089,7 +1089,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
                 if (matched == null) {
                     matched =
                         MatchingAlgorithm.this.auxResults[keyIndex] =
-                            new HashMap<HostNode,MatchingComputation>();
+                            new HashMap<>();
                 }
                 matched.put(image, MatchingAlgorithm.this.MATCH_DUMMY);
             }
@@ -1191,7 +1191,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
             }
             this.endImages = endImage == null ? graph.nodeSet() : Collections.singleton(endImage);
             this.storeIntermediates = !hasVars();
-            this.result = new HashSet<Result>();
+            this.result = new HashSet<>();
             Set<? extends HostNode> startImages =
                 startImage == null ? graph.nodeSet() : Collections.singleton(startImage);
             for (HostNode start : startImages) {

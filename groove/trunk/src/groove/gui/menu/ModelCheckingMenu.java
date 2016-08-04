@@ -98,5 +98,5 @@ public class ModelCheckingMenu extends JMenu implements SimulatorListener {
      * strategy.
      */
     private final Map<StrategyValue,SimulatorAction> scenarioActionMap =
-            new HashMap<StrategyValue,SimulatorAction>();
+            new HashMap<>();
 }

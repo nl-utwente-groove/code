@@ -106,7 +106,7 @@ public class TreeMatch implements Fixable {
         // test a HashBag would be more appropriate, but this collapses
         // matches to a canonical representative which upon union gives
         // the wrong result.
-        return op.isConjunctive() ? new ArrayList<TreeMatch>() : new HashSet<TreeMatch>();
+        return op.isConjunctive() ? new ArrayList<>() : new HashSet<>();
     }
 
     /** Adds a sub-match to this tree match. */
@@ -224,7 +224,7 @@ public class TreeMatch implements Fixable {
         List<Proof> result;
         int subMatchCount = getSubMatches().size();
         if (subMatchCount == 0) {
-            result = new ArrayList<Proof>(1);
+            result = new ArrayList<>(1);
             result.add(createProof());
         } else {
             @SuppressWarnings("unchecked")
@@ -234,7 +234,7 @@ public class TreeMatch implements Fixable {
             if (resultSize == 0) {
                 result = Collections.emptyList();
             } else {
-                result = new ArrayList<Proof>(resultSize);
+                result = new ArrayList<>(resultSize);
                 Visitor<Proof,?> collector = Visitor.newCollector(result);
                 traverseMatrix(matrix, rowSize, collector);
                 collector.dispose();
@@ -248,7 +248,7 @@ public class TreeMatch implements Fixable {
      * if the operator of this tree match is disjunctive.
      */
     private List<Proof> toOrProofSet() {
-        List<Proof> result = new ArrayList<Proof>();
+        List<Proof> result = new ArrayList<>();
         Visitor<Proof,?> collector = this.collector.newInstance(result);
         for (TreeMatch subMatch : this.subMatches) {
             subMatch.traverseProofs(collector);
@@ -551,7 +551,7 @@ public class TreeMatch implements Fixable {
                 resurrect();
                 return this;
             } else {
-                return new ProofWrapperVisitor<R>(visitor);
+                return new ProofWrapperVisitor<>(visitor);
             }
         }
 

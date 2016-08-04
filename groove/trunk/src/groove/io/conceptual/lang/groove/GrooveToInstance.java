@@ -64,9 +64,9 @@ public class GrooveToInstance extends InstanceImporter {
 
     private TypeModel m_typeModel;
 
-    private Map<HostNode,Object> m_objectNodes = new HashMap<HostNode,Object>();
-    private Map<HostNode,Value> m_nodeValues = new HashMap<HostNode,Value>();
-    private HostEdgeStore<HostNode> m_nodeEdges = new HostEdgeStore<HostNode>();
+    private Map<HostNode,Object> m_objectNodes = new HashMap<>();
+    private Map<HostNode,Value> m_nodeValues = new HashMap<>();
+    private HostEdgeStore<HostNode> m_nodeEdges = new HostEdgeStore<>();
 
     private int m_nodeCounter = 1;
 
@@ -276,7 +276,7 @@ public class GrooveToInstance extends InstanceImporter {
             ContainerValue cv = new ContainerValue(ct);
             String valueEdge = this.m_cfg.getStrings()
                 .getValueEdge();
-            SortedMap<Integer,Value> containerValues = new TreeMap<Integer,Value>();
+            SortedMap<Integer,Value> containerValues = new TreeMap<>();
             for (HostEdge e : this.m_nodeEdges.get(node)) {
                 if (e.label()
                     .text()
@@ -347,7 +347,7 @@ public class GrooveToInstance extends InstanceImporter {
     // For container field w/o intermediate
     private ContainerValue getFieldContainerValue(HostNode fieldNode, String fieldName,
         Container containerType) {
-        Set<HostEdge> nodeEdges = new HashSet<HostEdge>();
+        Set<HostEdge> nodeEdges = new HashSet<>();
         for (HostEdge e : this.m_nodeEdges.get(fieldNode)) {
             if (e.label()
                 .text()
@@ -359,7 +359,7 @@ public class GrooveToInstance extends InstanceImporter {
             return null;
         }
 
-        SortedMap<Integer,Value> containerValues = new TreeMap<Integer,Value>();
+        SortedMap<Integer,Value> containerValues = new TreeMap<>();
         for (HostEdge e : nodeEdges) {
             Value subVal = getNodeValue(e.target());
             int index = 0;
@@ -381,7 +381,7 @@ public class GrooveToInstance extends InstanceImporter {
 
     // For intermediate nodes for containers
     private Value getContainerValue(HostNode node, String edgeName) {
-        Set<HostEdge> nodeEdges = new HashSet<HostEdge>();
+        Set<HostEdge> nodeEdges = new HashSet<>();
         for (HostEdge e : this.m_nodeEdges.get(node)) {
             if (e.label()
                 .text()
@@ -413,7 +413,7 @@ public class GrooveToInstance extends InstanceImporter {
         String valueName = this.m_cfg.getStrings()
             .getValueEdge();
 
-        SortedMap<Integer,Value> containerValues = new TreeMap<Integer,Value>();
+        SortedMap<Integer,Value> containerValues = new TreeMap<>();
         for (HostEdge e : nodeEdges) {
             Type checkType = getNodeType(e.target());
             if (!nextType.equals(checkType)) {

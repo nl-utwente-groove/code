@@ -62,7 +62,7 @@ public class SaveLTSAsAction extends SimulatorAction {
         StateExport exportStates, LTSLabels flags) {
         GTS gts = getSimulatorModel().getGTS();
 
-        Iterable<? extends GraphState> export = new HashSet<GraphState>(0);
+        Iterable<? extends GraphState> export = new HashSet<>(0);
         switch (exportStates) {
         case ALL:
             export = gts.nodeSet();

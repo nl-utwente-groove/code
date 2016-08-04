@@ -39,7 +39,7 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
      * The set of critical pair which have already been computed
      */
     private Map<RuleTuple,LinkedHashSet<CriticalPair>> pairMap =
-        new LinkedHashMap<RuleTuple,LinkedHashSet<CriticalPair>>();
+        new LinkedHashMap<>();
 
     /**
      * Set of ruleTuples for which the critical pairs still need to be computed
@@ -66,8 +66,8 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
      * @param rules the rules for which critical pairs should be computed
      */
     LazyCriticalPairSet(Set<Rule> rules) {
-        List<Rule> ruleList = new ArrayList<Rule>(rules);
-        this.ruleTuplesToProcess = new LinkedHashSet<RuleTuple>();
+        List<Rule> ruleList = new ArrayList<>(rules);
+        this.ruleTuplesToProcess = new LinkedHashSet<>();
         for (int i = 0; i < ruleList.size(); i++) {
             for (int j = i; j < ruleList.size(); j++) {
                 RuleTuple tuple = new RuleTuple(ruleList.get(i), ruleList.get(j));
@@ -83,7 +83,7 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
      * Otherwise an empty set (this means that this.ruleTuples.isEmpty after this call)
      */
     private Set<CriticalPair> computeMorePairs() {
-        LinkedHashSet<CriticalPair> result = new LinkedHashSet<CriticalPair>(0);
+        LinkedHashSet<CriticalPair> result = new LinkedHashSet<>(0);
         if (!this.ruleTuplesToProcess.isEmpty()) {
             Iterator<RuleTuple> it = this.ruleTuplesToProcess.iterator();
             while (result.isEmpty() && it.hasNext()) {
@@ -341,7 +341,7 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
 
     Set<CriticalPair> toSingleSet() {
         this.computeAllPairs();
-        Set<CriticalPair> result = new LinkedHashSet<CriticalPair>();
+        Set<CriticalPair> result = new LinkedHashSet<>();
         for (Set<CriticalPair> pairSet : this.pairMap.values()) {
             result.addAll(pairSet);
         }

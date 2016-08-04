@@ -40,7 +40,7 @@ import java.util.Stack;
 public class PathCheckerFactory {
     private ReteNetwork owner;
     private HashMap<String,Set<AbstractPathChecker>> pathCheckers =
-        new HashMap<String,Set<AbstractPathChecker>>();
+        new HashMap<>();
 
     /**
      * Creates a path-checker factory for a given RETE network
@@ -58,7 +58,7 @@ public class PathCheckerFactory {
         Set<AbstractPathChecker> candidates = this.pathCheckers.get(exp.toString());
         AbstractPathChecker result = null;
         if (candidates == null) {
-            candidates = new HashSet<AbstractPathChecker>();
+            candidates = new HashSet<>();
             result = create(exp, loop);
             candidates.add(result);
             this.pathCheckers.put(exp.toString(), candidates);
@@ -89,13 +89,13 @@ public class PathCheckerFactory {
             operands = ((Choice) exp).getChoiceOperands();
             result = new ChoicePathChecker(this.owner, (RegExpr.Choice) exp, isLoop);
         } else if (exp.isInv()) {
-            operands = new ArrayList<RegExpr>();
+            operands = new ArrayList<>();
             operands.add(exp.getInvOperand());
             result = new InversionPathChecker(this.owner, (Inv) exp, isLoop);
         } else if (exp.isNeg()) {
             throw new UnsupportedOperationException("Negation is not supported by this factory.");
         } else if (exp.isPlus() || exp.isStar()) {
-            operands = new ArrayList<RegExpr>();
+            operands = new ArrayList<>();
             operands.add(exp.isPlus() ? exp.getPlusOperand() : exp.getStarOperand());
             result = new ClosurePathChecker(this.owner, exp, isLoop);
         } else if (exp.isSeq()) {
@@ -149,14 +149,14 @@ public class PathCheckerFactory {
     private AbstractPathChecker buildBinaryTree(RegExpr exp, boolean isLoop) {
         List<RegExpr> operands = exp.getOperands();
         assert (exp.isSeq()) || (exp.isChoice()) && (operands.size() >= 2);
-        Stack<AbstractPathChecker> checkers = new Stack<AbstractPathChecker>();
+        Stack<AbstractPathChecker> checkers = new Stack<>();
         for (RegExpr op : operands) {
             checkers.push(getPathCheckerFor(op, false));
         }
         while (checkers.size() > 1) {
             AbstractPathChecker pc2 = checkers.pop();
             AbstractPathChecker pc1 = checkers.pop();
-            List<RegExpr> ops = new ArrayList<RegExpr>();
+            List<RegExpr> ops = new ArrayList<>();
             ops.add(pc1.getExpression());
             ops.add(pc2.getExpression());
             RegExpr e = (exp.isSeq()) ? new RegExpr.Seq(ops) : new RegExpr.Choice(ops);

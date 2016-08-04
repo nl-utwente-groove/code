@@ -176,5 +176,5 @@ public class GTSCounter implements GTSListener {
     private int ruleTransitionCount;
     private int absentTransitionCount;
     private final Map<GraphState,List<RuleTransition>> inTransMap =
-            new HashMap<GraphState,List<RuleTransition>>();
+            new HashMap<>();
 }

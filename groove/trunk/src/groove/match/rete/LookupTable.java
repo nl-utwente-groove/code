@@ -31,10 +31,10 @@ import java.util.HashMap;
  */
 public class LookupTable {
     final private HashMap<RuleNode,LookupEntry> nodeTable =
-        new HashMap<RuleNode,LookupEntry>();
+        new HashMap<>();
 
     final private HashMap<RuleEdge,Integer> edgeTable =
-        new HashMap<RuleEdge,Integer>();
+        new HashMap<>();
 
     /**
      * Creates a lookup table from the pattern of elements of a RETE node

@@ -35,7 +35,7 @@ public class EmptyPathChecker extends AbstractPathChecker implements
      * maintains singleton instances per network.
      */
     protected static HashMap<ReteNetwork,EmptyPathChecker> instances =
-        new HashMap<ReteNetwork,EmptyPathChecker>();
+        new HashMap<>();
 
     /**
      * Used internally for creating the singleton instance 

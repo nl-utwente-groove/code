@@ -136,7 +136,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
             result.append("Scheduled in this state, but has no matches");
         }
         GraphProperties properties = GraphInfo.getProperties(source);
-        Map<String,String> filteredProps = new LinkedHashMap<String,String>();
+        Map<String,String> filteredProps = new LinkedHashMap<>();
         // collect the non-system, non-remark properties
         for (Key key : Key.values()) {
             if (key == Key.REMARK) {
@@ -221,9 +221,9 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     private final static Map<Role,Icon> roleInjectiveIconMap;
 
     static {
-        Map<Role,String> suffixMap = roleSuffixMap = new EnumMap<Role,String>(Role.class);
-        Map<Role,Icon> normalIconMap = roleNormalIconMap = new EnumMap<Role,Icon>(Role.class);
-        Map<Role,Icon> injectiveIconMap = roleInjectiveIconMap = new EnumMap<Role,Icon>(Role.class);
+        Map<Role,String> suffixMap = roleSuffixMap = new EnumMap<>(Role.class);
+        Map<Role,Icon> normalIconMap = roleNormalIconMap = new EnumMap<>(Role.class);
+        Map<Role,Icon> injectiveIconMap = roleInjectiveIconMap = new EnumMap<>(Role.class);
         for (Role role : Role.values()) {
             suffixMap.put(role, " : " + HTMLConverter.STRONG_TAG.on(role.toString()));
             Icon normalIcon;

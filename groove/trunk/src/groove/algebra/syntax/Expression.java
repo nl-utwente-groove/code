@@ -191,7 +191,7 @@ public abstract class Expression {
     }
 
     static private final Map<Class<? extends Expression>,Kind> kindMap =
-        new HashMap<Class<? extends Expression>,Expression.Kind>();
+        new HashMap<>();
 
     static {
         kindMap.put(Constant.class, Kind.CONST);

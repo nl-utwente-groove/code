@@ -827,7 +827,7 @@ public class JVertexView extends VertexView {
         private int adornHeight;
         private int adornWidth;
         /** Mapping from (HTML) text to the preferred size for that text. */
-        private final Map<String,Dimension> sizeMap = new HashMap<String,Dimension>();
-        private final Map<String,Integer> adornWidthMap = new HashMap<String,Integer>();
+        private final Map<String,Dimension> sizeMap = new HashMap<>();
+        private final Map<String,Integer> adornWidthMap = new HashMap<>();
     }
 }

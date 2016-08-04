@@ -47,7 +47,7 @@ public class Reporter {
         this.parent = null;
         this.type = type;
         this.name = null;
-        this.subreporters = new TreeMap<String,Reporter>();
+        this.subreporters = new TreeMap<>();
     }
 
     /**
@@ -359,7 +359,7 @@ public class Reporter {
     static private final boolean TIME_TOP_ONLY = TIME_METHODS && false;
     static private final boolean REPORT = true;
     /** Sorted map of all registered reporters */
-    static private Map<Class<?>,Reporter> reporters = new TreeMap<Class<?>,Reporter>(
+    static private Map<Class<?>,Reporter> reporters = new TreeMap<>(
         new Comparator<Class<?>>() {
             @Override
             public int compare(Class<?> o1, Class<?> o2) {

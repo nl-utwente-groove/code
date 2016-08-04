@@ -49,7 +49,7 @@ public class EqualitySearchItem extends AbstractSearchItem {
             this.node2 = edge.source();
         }
         this.equals = equals;
-        this.neededNodes = new HashSet<RuleNode>();
+        this.neededNodes = new HashSet<>();
         this.neededNodes.add(this.node1);
         this.neededNodes.add(this.node2);
         this.boundEdges = Collections.singleton(edge);

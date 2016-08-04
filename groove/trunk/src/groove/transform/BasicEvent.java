@@ -576,7 +576,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
      */
     private List<List<HostNode>> createFreshNodeList() {
         int creatorNodeCount = getRule().getCreatorNodes().length;
-        List<List<HostNode>> result = new ArrayList<List<HostNode>>();
+        List<List<HostNode>> result = new ArrayList<>();
         for (int i = 0; i < creatorNodeCount; i++) {
             result.add(new ArrayList<HostNode>());
         }
@@ -642,7 +642,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
     /** Global empty set of nodes. */
     static private final HostNodeSet EMPTY_NODE_SET = new HostNodeSet(0);
     /** Value for {@link #freshNodeList} that indicates {@link #NONE} mode. */
-    static private List<List<HostNode>> NO_REUSE_LIST = new ArrayList<List<HostNode>>();
+    static private List<List<HostNode>> NO_REUSE_LIST = new ArrayList<>();
     /** Template reference to create empty caches. */
     static private final CacheReference<BasicEventCache> reference =
         CacheReference.<BasicEventCache>newInstance(false);
@@ -692,7 +692,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
         Set<AnchorValue> getAnchorImageSet() {
             if (this.anchorImageSet == null) {
                 RuleToHostMap anchorMap = getAnchorMap();
-                this.anchorImageSet = new HashSet<AnchorValue>(anchorMap.nodeMap()
+                this.anchorImageSet = new HashSet<>(anchorMap.nodeMap()
                     .values());
                 this.anchorImageSet.addAll(anchorMap.edgeMap()
                     .values());

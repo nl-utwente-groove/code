@@ -70,8 +70,8 @@ abstract public class ConfigDialog<C> extends JDialog {
      * Constructs a new dialog instance.
      */
     public ConfigDialog() {
-        this.refreshables = new ArrayList<Refreshable>();
-        this.configMap = new UncasedStringMap<C>();
+        this.refreshables = new ArrayList<>();
+        this.configMap = new UncasedStringMap<>();
     }
 
     /**
@@ -118,7 +118,7 @@ abstract public class ConfigDialog<C> extends JDialog {
 
     private JList<String> getConfigList() {
         if (this.configList == null) {
-            this.configList = new JList<String>();
+            this.configList = new JList<>();
             this.configList.setEnabled(true);
             this.configList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             this.configList.setPreferredSize(new Dimension(100, 100));
@@ -184,7 +184,7 @@ abstract public class ConfigDialog<C> extends JDialog {
 
     private DefaultListModel<String> getConfigListModel() {
         if (this.configListModel == null) {
-            this.configListModel = new DefaultListModel<String>();
+            this.configListModel = new DefaultListModel<>();
         }
         return this.configListModel;
     }
@@ -896,7 +896,7 @@ abstract public class ConfigDialog<C> extends JDialog {
     private class ErrorField extends JLabel implements Refreshable {
         public ErrorField() {
             setForeground(Color.RED);
-            this.errorMap = new LinkedHashMap<Object,String>();
+            this.errorMap = new LinkedHashMap<>();
             addRefreshable(this);
         }
 

@@ -181,7 +181,7 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
         synchronized (recentPreviews) {
             if (!TIMER || recentPreviews.get(role)
                 .add(name)) {
-                new GraphPreviewDialog<G>(simulator, graph).setVisible(true);
+                new GraphPreviewDialog<>(simulator, graph).setVisible(true);
                 if (TIMER) {
                     final Timer timer = new Timer();
                     timer.schedule(new TimerTask() {
@@ -201,12 +201,12 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
 
     /** Creates a panel showing a preview of a given graph. */
     static public GraphPreviewPanel createPanel(GrammarModel grammar, Graph graph) {
-        return new GraphPreviewDialog<Graph>(grammar, graph).getContent();
+        return new GraphPreviewDialog<>(grammar, graph).getContent();
     }
 
     private static Simulator globalSimulator;
     private static Map<GraphRole,Set<String>> recentPreviews =
-        new EnumMap<GraphRole,Set<String>>(GraphRole.class);
+        new EnumMap<>(GraphRole.class);
 
     static {
         for (GraphRole role : GraphRole.values()) {

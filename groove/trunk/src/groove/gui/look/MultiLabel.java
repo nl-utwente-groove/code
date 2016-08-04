@@ -153,7 +153,7 @@ public class MultiLabel {
         return this.parts.toString();
     }
 
-    private final Map<Line,DirectBag> parts = new LinkedHashMap<Line,DirectBag>();
+    private final Map<Line,DirectBag> parts = new LinkedHashMap<>();
     /** The combined direction of this label. */
     private Direct direct = Direct.NONE;
 
@@ -376,13 +376,13 @@ public class MultiLabel {
 
         /** Counts for each of the directions in this multiset. */
         private final Map<Direct,Integer> values =
-            new EnumMap<MultiLabel.Direct,Integer>(Direct.class);
+            new EnumMap<>(Direct.class);
         /** Successor multisets after increasing one of the directions. */
         private final Map<Direct,DirectBag> incMap =
-            new EnumMap<MultiLabel.Direct,MultiLabel.DirectBag>(Direct.class);
+            new EnumMap<>(Direct.class);
         /** Successor multisets after decreasing one of the directions. */
         private final Map<Direct,DirectBag> decMap =
-            new EnumMap<MultiLabel.Direct,MultiLabel.DirectBag>(Direct.class);
+            new EnumMap<>(Direct.class);
 
         /** Returns a normalised representation of a given multiset. */
         public static DirectBag norm(DirectBag bag) {
@@ -395,7 +395,7 @@ public class MultiLabel {
 
         /** Pool of representatives. */
         private final static Map<DirectBag,DirectBag> pool =
-            new HashMap<MultiLabel.DirectBag,MultiLabel.DirectBag>();
+            new HashMap<>();
         /** The zero element. */
         public final static DirectBag ZERO = norm(new DirectBag());
     }

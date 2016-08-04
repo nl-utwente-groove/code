@@ -49,7 +49,7 @@ public class MultiFactory extends ElementFactory<MultiNode,MultiEdge> {
 
     @Override
     public Morphism<MultiNode,MultiEdge> createMorphism() {
-        return new Morphism<MultiNode,MultiEdge>(this);
+        return new Morphism<>(this);
     }
 
     /** Returns the singleton instance of this factory. */

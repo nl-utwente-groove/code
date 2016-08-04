@@ -173,7 +173,7 @@ public class Condition implements Fixable {
     Set<RuleNode> computeInputNodes() {
         if (hasRule() && getRule().isTop()) {
             // collect the input parameters
-            Set<RuleNode> result = new HashSet<RuleNode>();
+            Set<RuleNode> result = new HashSet<>();
             for (Var var : getRule().getSignature()) {
                 if (var.isInOnly()) {
                     result.add(var.getRuleNode());
@@ -181,7 +181,7 @@ public class Condition implements Fixable {
             }
             return result;
         } else {
-            return new HashSet<RuleNode>(this.root.nodeSet());
+            return new HashSet<>(this.root.nodeSet());
         }
     }
 
@@ -279,7 +279,7 @@ public class Condition implements Fixable {
      * @return the collection of top-level (sub)rules of this condition
      */
     private List<Rule> getTopRules() {
-        List<Rule> result = new ArrayList<Rule>();
+        List<Rule> result = new ArrayList<>();
         if (getRule() == null) {
             for (Condition subCond : getSubConditions()) {
                 result.addAll(subCond.getTopRules());
@@ -360,9 +360,9 @@ public class Condition implements Fixable {
      */
     private Map<VariableNode,List<Set<VariableNode>>> createResolvers() {
         Map<VariableNode,List<Set<VariableNode>>> result =
-            new HashMap<VariableNode,List<Set<VariableNode>>>();
+            new HashMap<>();
         // Set of variable nodes already found to have been resolved
-        Set<VariableNode> resolved = new HashSet<VariableNode>();
+        Set<VariableNode> resolved = new HashSet<>();
         for (RuleNode node : getInputNodes()) {
             if (node instanceof VariableNode) {
                 resolved.add((VariableNode) node);
@@ -396,7 +396,7 @@ public class Condition implements Fixable {
                 // check if the condition has a non-constant count node
                 if (countNode != null && countNode.getConstant() == null
                     && !resolved.contains(countNode)) {
-                    Set<VariableNode> resolver = new HashSet<VariableNode>();
+                    Set<VariableNode> resolver = new HashSet<>();
                     // add the unresolved root nodes of the subcondition to the resolver
                     for (RuleNode rootNode : subCondition.getInputNodes()) {
                         if (rootNode instanceof VariableNode
@@ -420,7 +420,7 @@ public class Condition implements Fixable {
                 VariableNode target = opNode.getTarget();
                 if (result.containsKey(target) && !resolved.contains(target)) {
                     // collect the argument nodes
-                    Set<VariableNode> resolver = new HashSet<VariableNode>();
+                    Set<VariableNode> resolver = new HashSet<>();
                     for (VariableNode arg : opNode.getArguments()) {
                         if (!arg.hasConstant()) {
                             resolver.add(arg);
@@ -446,7 +446,7 @@ public class Condition implements Fixable {
     private <K,V> void addResolver(Map<K,List<V>> map, K key, V value) {
         List<V> entry = map.get(key);
         if (entry == null) {
-            map.put(key, entry = new ArrayList<V>());
+            map.put(key, entry = new ArrayList<>());
         }
         entry.add(value);
     }
@@ -677,7 +677,7 @@ public class Condition implements Fixable {
     private Rule rule;
 
     /** The collection of sub-conditions of this condition. */
-    private final Collection<Condition> subConditions = new ArrayList<Condition>();
+    private final Collection<Condition> subConditions = new ArrayList<>();
 
     /** Number of disjunctively interpreted subconditions. */
     private int disjunctCount;

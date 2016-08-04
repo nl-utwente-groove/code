@@ -43,7 +43,7 @@ public class Predicate_state_next extends LtsPrologCode {
             return bi.nextSolution(interpreter);
         } else {
             GraphState graphState = getGraphState(args[0]);
-            Collection<GraphState> nextStateSet = new ArrayList<GraphState>();
+            Collection<GraphState> nextStateSet = new ArrayList<>();
             for (GraphTransition trans : graphState.getTransitions()) {
                 nextStateSet.add(trans.target());
             }
