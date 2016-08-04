@@ -244,14 +244,17 @@ public class Template {
             Location pred = link.getKey();
             Set<CtrlVar> newPredVars = changeMap.get(pred);
             if (newPredVars == null) {
-                changeMap.put(pred, newPredVars = new HashSet<>());
+                newPredVars = new HashSet<>();
+                changeMap.put(pred, newPredVars);
             }
             Set<CtrlVar> outVars = link.getValue();
             if (!outVars.isEmpty()) {
-                newVars = new HashSet<>(newVars);
-                newVars.removeAll(outVars);
+                Set<CtrlVar> freshNewVars = new HashSet<>(newVars);
+                freshNewVars.removeAll(outVars);
+                newPredVars.addAll(freshNewVars);
+            } else {
+                newPredVars.addAll(newVars);
             }
-            newPredVars.addAll(newVars);
         }
     }
 
@@ -371,7 +374,8 @@ public class Template {
         private void addBackLink(Location source, Location target, Set<CtrlVar> outVars) {
             BackRecord targetRecord = get(target);
             if (targetRecord == null) {
-                put(target, targetRecord = new BackRecord());
+                targetRecord = new BackRecord();
+                put(target, targetRecord);
             }
             assert targetRecord != null;
             Set<CtrlVar> linkVars = targetRecord.get(source);
