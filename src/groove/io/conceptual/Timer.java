@@ -33,7 +33,7 @@ public class Timer {
     public static boolean PRINT_MSG = true;
 
     // Probably list suffices but this works too
-    private static Map<Integer,String> messages = new HashMap<Integer,String>();
+    private static Map<Integer,String> messages = new HashMap<>();
 
     /** Starts the timer for a given message. */
     public static int start(String message) {

@@ -1,15 +1,8 @@
 // $ANTLR 3.4 E:\\Eclipse\\groove-formula\\src\\groove\\control\\parse\\Ctrl.g 2016-06-29 23:28:19
 
 package groove.control.parse;
-import groove.control.*;
 import groove.util.antlr.*;
-import java.util.LinkedList;
-
-
 import org.antlr.runtime.*;
-import java.util.Stack;
-import java.util.List;
-import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked"})
 public class CtrlLexer extends Lexer {
@@ -92,6 +85,7 @@ public class CtrlLexer extends Lexer {
             this.namespace = (Namespace) namespace;
         }
         
+        @Override
         public void displayRecognitionError(String[] tokenNames,
                 RecognitionException e) {
             String hdr = getErrorHeader(e);
@@ -113,6 +107,7 @@ public class CtrlLexer extends Lexer {
     public CtrlLexer(CharStream input, RecognizerSharedState state) {
         super(input,state);
     }
+    @Override
     public String getGrammarFileName() { return "E:\\Eclipse\\groove-formula\\src\\groove\\control\\parse\\Ctrl.g"; }
 
     // $ANTLR start "ALAP"
@@ -1859,6 +1854,7 @@ public class CtrlLexer extends Lexer {
     }
     // $ANTLR end "WS"
 
+    @Override
     public void mTokens() throws RecognitionException {
         // E:\\Eclipse\\groove-formula\\src\\groove\\control\\parse\\Ctrl.g:1:8: ( ALAP | ANY | ATOM | BOOL | CHOICE | DO | ELSE | FALSE | FUNCTION | IF | IMPORT | INT | NODE | OR | OTHER | OUT | REAL | PACKAGE | PRIORITY | RECIPE | STAR | STRING | TRY | TRUE | UNTIL | WHILE | INT_LIT | REAL_LIT | STRING_LIT | ID | AMP | BECOMES | DOT | NOT | BAR | SHARP | PLUS | ASTERISK | DONT_CARE | MINUS | QUOTE | BQUOTE | BSLASH | COMMA | SEMI | LPAR | RPAR | LANGLE | RANGLE | LCURLY | RCURLY | ML_COMMENT | SL_COMMENT | WS )
         int alt14=54;
@@ -2557,9 +2553,11 @@ public class CtrlLexer extends Lexer {
             this.special = DFA14_special;
             this.transition = DFA14_transition;
         }
+        @Override
         public String getDescription() {
             return "1:1: Tokens : ( ALAP | ANY | ATOM | BOOL | CHOICE | DO | ELSE | FALSE | FUNCTION | IF | IMPORT | INT | NODE | OR | OTHER | OUT | REAL | PACKAGE | PRIORITY | RECIPE | STAR | STRING | TRY | TRUE | UNTIL | WHILE | INT_LIT | REAL_LIT | STRING_LIT | ID | AMP | BECOMES | DOT | NOT | BAR | SHARP | PLUS | ASTERISK | DONT_CARE | MINUS | QUOTE | BQUOTE | BSLASH | COMMA | SEMI | LPAR | RPAR | LANGLE | RANGLE | LCURLY | RCURLY | ML_COMMENT | SL_COMMENT | WS );";
         }
+        @Override
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             IntStream input = _input;
         	int _s = s;

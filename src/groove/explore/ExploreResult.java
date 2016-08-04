@@ -108,6 +108,6 @@ public class ExploreResult implements Iterable<GraphState> {
 
     /** Callback factory method for the result set. */
     protected Collection<GraphState> createResultSet() {
-        return new LinkedHashSet<GraphState>();
+        return new LinkedHashSet<>();
     }
 }

@@ -154,7 +154,7 @@ public class Exploration {
     }
 
     /** List of currently active exploration listeners. */
-    private List<ExplorationListener> listeners = new ArrayList<ExplorationListener>();
+    private List<ExplorationListener> listeners = new ArrayList<>();
 
     /** Returns the result of a default-type exploration (see {@link ExploreType#DEFAULT}) of a given GTS.
      * @param gts the GTS on which the exploration is to be performed

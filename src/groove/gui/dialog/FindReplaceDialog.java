@@ -326,7 +326,7 @@ public class FindReplaceDialog {
 
     /** Returns the combo box for the label in the given type graph. */
     private JComboBox<TypeLabel> getLabelComboBox(TypeGraph typeGraph) {
-        final JComboBox<TypeLabel> result = new JComboBox<TypeLabel>();
+        final JComboBox<TypeLabel> result = new JComboBox<>();
         result.setFocusable(false);
         result.setRenderer(new DefaultListCellRenderer() {
             @SuppressWarnings("rawtypes")
@@ -352,10 +352,10 @@ public class FindReplaceDialog {
     }
 
     private List<TypeLabel> sortLabels(Set<TypeLabel> labels) {
-        List<TypeLabel> result = new ArrayList<TypeLabel>(labels.size());
-        List<TypeLabel> nodeTypes = new ArrayList<TypeLabel>();
-        List<TypeLabel> flags = new ArrayList<TypeLabel>();
-        List<TypeLabel> binary = new ArrayList<TypeLabel>();
+        List<TypeLabel> result = new ArrayList<>(labels.size());
+        List<TypeLabel> nodeTypes = new ArrayList<>();
+        List<TypeLabel> flags = new ArrayList<>();
+        List<TypeLabel> binary = new ArrayList<>();
         for (TypeLabel label : labels) {
             switch (label.getRole()) {
             case NODE_TYPE:
@@ -380,7 +380,7 @@ public class FindReplaceDialog {
     /** Returns the combobox for the new label's type. */
     private JComboBox<String> getNewTypeCombobox() {
         if (this.newTypeChoice == null) {
-            final JComboBox<String> result = this.newTypeChoice = new JComboBox<String>();
+            final JComboBox<String> result = this.newTypeChoice = new JComboBox<>();
             for (EdgeRole kind : EdgeRole.values()) {
                 result.addItem(kind.getDescription(true));
             }

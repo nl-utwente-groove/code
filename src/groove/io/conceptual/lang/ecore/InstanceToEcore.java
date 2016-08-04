@@ -59,7 +59,7 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>implement
     private EcoreResource m_ecoreResource;
 
     // Set of generated Ecore objects. Used to find those objects which are root
-    private Set<EObject> m_eObjects = new HashSet<EObject>();
+    private Set<EObject> m_eObjects = new HashSet<>();
 
     public InstanceToEcore(TypeToEcore typeToEcore) {
         this.m_ecoreResource = (EcoreResource) typeToEcore.getResource();
@@ -73,7 +73,7 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>implement
 
         visitInstanceModel(instanceModel);
 
-        List<EObject> rootObjects = new ArrayList<EObject>();
+        List<EObject> rootObjects = new ArrayList<>();
         for (EObject object : this.m_eObjects) {
             if (object.eContainer() != null) {
                 continue;

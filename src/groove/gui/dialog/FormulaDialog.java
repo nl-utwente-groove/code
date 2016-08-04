@@ -65,7 +65,7 @@ abstract public class FormulaDialog {
      * @param docMap mapping from syntax documentation lines to (possibly {@code null}) associated tool tips.
      */
     public FormulaDialog(String title, Map<String,String> docMap) {
-        this.history = new ArrayList<String>();
+        this.history = new ArrayList<>();
         this.title = title;
         this.docMap = docMap;
         this.parsed = docMap != null;
@@ -143,8 +143,8 @@ abstract public class FormulaDialog {
     }
 
     private JComponent createSyntaxPanel() {
-        final JList<String> list = new JList<String>();
-        DefaultListModel<String> model = new DefaultListModel<String>();
+        final JList<String> list = new JList<>();
+        DefaultListModel<String> model = new DefaultListModel<>();
         for (Map.Entry<String,String> entry : this.docMap.entrySet()) {
             model.addElement(entry.getKey());
         }
@@ -468,9 +468,9 @@ abstract public class FormulaDialog {
         /** Text determining which part of the history should be included in the model. */
         private String filterText;
         /** The actual model. */
-        private final List<String> contents = new ArrayList<String>();
+        private final List<String> contents = new ArrayList<>();
         /** The listeners for this model. */
-        private final List<ListDataListener> listeners = new ArrayList<ListDataListener>();
+        private final List<ListDataListener> listeners = new ArrayList<>();
         /**
          * The currently selected item. Note that there is no connection
          * between this and the model.

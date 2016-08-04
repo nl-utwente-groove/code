@@ -25,14 +25,14 @@ import groove.io.conceptual.type.Tuple;
 public class TypeModel implements Serializable {
     private QualName m_name;
 
-    private Map<Id,Class> m_classes = new HashMap<Id,Class>();
-    private Map<Id,Enum> m_enums = new HashMap<Id,Enum>();
-    private Map<Id,CustomDataType> m_datatypes = new HashMap<Id,CustomDataType>();
-    private List<Property> m_properties = new ArrayList<Property>();
+    private Map<Id,Class> m_classes = new HashMap<>();
+    private Map<Id,Enum> m_enums = new HashMap<>();
+    private Map<Id,CustomDataType> m_datatypes = new HashMap<>();
+    private List<Property> m_properties = new ArrayList<>();
     /** Map of tuple to unique name of tuple in type model. This is to help exporting. */
-    private Map<Tuple,String> m_tupleNames = new HashMap<Tuple,String>();
+    private Map<Tuple,String> m_tupleNames = new HashMap<>();
 
-    private Set<Id> m_usedIds = new HashSet<Id>();
+    private Set<Id> m_usedIds = new HashSet<>();
     private Id m_commonPrefix;
 
     /** Constructs a new, named type model. */
@@ -258,7 +258,7 @@ public class TypeModel implements Serializable {
      * @return See description
      */
     public Map<Id,Id> getShortIds() {
-        HashMap<Id,Id> mappedIds = new HashMap<Id,Id>();
+        HashMap<Id,Id> mappedIds = new HashMap<>();
 
         if (this.m_usedIds.size() == 0) {
             return mappedIds;

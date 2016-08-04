@@ -112,7 +112,7 @@ public class ExploreAction extends SimulatorAction {
             if (emphasise) {
                 Collection<GraphState> states = result.getResult()
                     .getStates();
-                getLtsDisplay().emphasiseStates(new ArrayList<GraphState>(states), true);
+                getLtsDisplay().emphasiseStates(new ArrayList<>(states), true);
             }
         } catch (FormatException exc) {
             // this should not occur, as the exploration and the

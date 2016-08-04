@@ -317,7 +317,7 @@ public class GrammarVisitor {
             TypeGraph tg = tm.getTypeGraph();
             HostGraph hg = (hm != null) ? hm.toHost() : null;
 
-            result = new Pair<TypeGraph,HostGraph>(tg, hg);
+            result = new Pair<>(tg, hg);
         } catch (FormatException e) {
             throw new ImportException(e);
         } finally {

@@ -95,7 +95,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
 
     /** Callback factory method for the label filter. */
     LabelFilter<G> createLabelFilter() {
-        return new LabelFilter<G>();
+        return new LabelFilter<>();
     }
 
     void installListeners() {
@@ -177,7 +177,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
      * tree.
      */
     public SortedSet<Label> getLabels() {
-        TreeSet<Label> result = new TreeSet<Label>();
+        TreeSet<Label> result = new TreeSet<>();
         for (Entry entry : getFilter().getEntries()) {
             result.add(entry.getLabel());
         }
@@ -249,7 +249,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
         // temporarily remove this component as selection listener
         removeTreeSelectionListener(this);
         // remember the collapsed paths
-        Set<TreeNode> collapsedNodes = new HashSet<TreeNode>();
+        Set<TreeNode> collapsedNodes = new HashSet<>();
         for (int i = 0; i < getRowCount(); i++) {
             if (isCollapsed(i)) {
                 TreeNode child = (TreeNode) getPathForRow(i).getLastPathComponent();
@@ -286,8 +286,8 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
 
     /** Updates the tree from the labels in the filter. */
     List<TreeNode> fillTree() {
-        List<TreeNode> result = new ArrayList<TreeNode>();
-        Set<Entry> entries = new TreeSet<Entry>(getFilter().getEntries());
+        List<TreeNode> result = new ArrayList<>();
+        Set<Entry> entries = new TreeSet<>(getFilter().getEntries());
         for (Entry entry : entries) {
             if (getFilter().hasJCells(entry)) {
                 EntryNode labelNode = new EntryNode(this, entry, true);
@@ -316,7 +316,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
     private boolean processEdit(GraphModelEvent.GraphModelChange change, boolean changed) {
         // insertions double as changes, so we do insertions first
         // and remove them from the change map
-        Map<Object,Object> changeMap = new HashMap<Object,Object>();
+        Map<Object,Object> changeMap = new HashMap<>();
         Map<?,?> storedChange = change.getAttributes();
         if (storedChange != null) {
             changeMap.putAll(storedChange);
@@ -365,7 +365,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
      */
     @Override
     public void valueChanged(TreeSelectionEvent e) {
-        Set<JCell<?>> emphSet = new HashSet<JCell<?>>();
+        Set<JCell<?>> emphSet = new HashSet<>();
         TreePath[] selectionPaths = getSelectionPaths();
         if (selectionPaths != null) {
             for (TreePath selectedPath : selectionPaths) {
@@ -599,7 +599,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
         FilterAction(Object[] cells) {
             super(Options.FILTER_ACTION_NAME);
             this.filter = true;
-            this.entries = new ArrayList<Entry>();
+            this.entries = new ArrayList<>();
             for (Object cell : cells) {
                 @SuppressWarnings("unchecked")
                 JCell<G> jCell = (JCell<G>) cell;
@@ -610,7 +610,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
         FilterAction(TreePath[] cells, boolean filter) {
             super(filter ? Options.FILTER_ACTION_NAME : Options.UNFILTER_ACTION_NAME);
             this.filter = filter;
-            this.entries = new ArrayList<Entry>();
+            this.entries = new ArrayList<>();
             for (TreePath path : cells) {
                 Object treeNode = path.getLastPathComponent();
                 if (treeNode instanceof LabelTree.EntryNode) {

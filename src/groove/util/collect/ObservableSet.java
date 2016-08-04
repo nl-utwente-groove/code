@@ -39,7 +39,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     public boolean add(T o) {
         if (this.set.add(o)) {
             setChanged();
-            notifyObservers(new AddUpdate<T>(o));
+            notifyObservers(new AddUpdate<>(o));
             return true;
         } else {
             return false;
@@ -52,7 +52,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
      */
     @Override
     public boolean addAll(Collection<? extends T> c) {
-        Set<T> addedElements = new HashSet<T>();
+        Set<T> addedElements = new HashSet<>();
         boolean result = false;
         for (T element : c) {
             if (this.set.add(element)) {
@@ -62,7 +62,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
         }
         if (result) {
             setChanged();
-            notifyObservers(new AddUpdate<T>(addedElements));
+            notifyObservers(new AddUpdate<>(addedElements));
         }
         return result;
     }
@@ -74,10 +74,10 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     @Override
     public void clear() {
         if (!this.set.isEmpty()) {
-            Set<T> elements = new HashSet<T>(this.set);
+            Set<T> elements = new HashSet<>(this.set);
             this.set.clear();
             setChanged();
-            notifyObservers(new RemoveUpdate<T>(elements));
+            notifyObservers(new RemoveUpdate<>(elements));
         }
     }
 
@@ -145,7 +145,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
             public void remove() {
                 iter.remove();
                 setChanged();
-                notifyObservers(new RemoveUpdate<T>(this.last));
+                notifyObservers(new RemoveUpdate<>(this.last));
             }
 
             /** The last element returned by #next(). */
@@ -161,7 +161,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     public boolean remove(Object o) {
         if (this.set.remove(o)) {
             setChanged();
-            notifyObservers(new RemoveUpdate<T>((T) o));
+            notifyObservers(new RemoveUpdate<>((T) o));
             return true;
         } else {
             return false;
@@ -174,7 +174,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     @Override
     @SuppressWarnings("unchecked")
     public boolean removeAll(Collection<?> c) {
-        Set<T> removedElements = new HashSet<T>();
+        Set<T> removedElements = new HashSet<>();
         boolean result = false;
         for (Object element : c) {
             if (this.set.remove(element)) {
@@ -184,7 +184,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
         }
         if (result) {
             setChanged();
-            notifyObservers(new RemoveUpdate<T>(removedElements));
+            notifyObservers(new RemoveUpdate<>(removedElements));
         }
         return result;
 
@@ -196,7 +196,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     @Override
     public boolean retainAll(Collection<?> c) {
         boolean result = false;
-        Set<T> removedSet = new HashSet<T>();
+        Set<T> removedSet = new HashSet<>();
         Iterator<T> iter = this.set.iterator();
         while (iter.hasNext()) {
             T element = iter.next();
@@ -208,7 +208,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
         }
         if (result) {
             setChanged();
-            notifyObservers(new RemoveUpdate<T>(removedSet));
+            notifyObservers(new RemoveUpdate<>(removedSet));
         }
         return result;
     }

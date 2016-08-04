@@ -71,7 +71,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
      * Creates an empty list of held templates.
      */
     public TemplateList(String typeIdentifier, String typeToolTip) {
-        this.templates = new ArrayList<Template<A>>(15);
+        this.templates = new ArrayList<>(15);
         this.typeIdentifier = typeIdentifier;
         this.typeToolTip = typeToolTip;
     }
@@ -99,7 +99,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
      */
     @Override
     public EncodedTypeEditor<A,Serialized> createEditor(GrammarModel grammar) {
-        return new TemplateListEditor<A>(grammar);
+        return new TemplateListEditor<>(grammar);
     }
 
     /**
@@ -185,7 +185,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
         implements ListSelectionListener {
 
         private final Map<String,EncodedTypeEditor<A,Serialized>> editors =
-            new TreeMap<String,EncodedTypeEditor<A,Serialized>>();
+            new TreeMap<>();
         private ArrayList<String> templateKeywords;
         private JList<String> nameSelector;
         private JPanel infoPanel;
@@ -203,7 +203,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
         @Override
         public void refresh() {
             int nrTemplates = TemplateList.this.templates.size();
-            List<String> templateNames = new ArrayList<String>(nrTemplates);
+            List<String> templateNames = new ArrayList<>(nrTemplates);
             for (Template<A> template : TemplateList.this.templates) {
                 if (Version.isDevelopmentVersion() || !template.getValue()
                     .isDevelopment()) {
@@ -226,7 +226,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
 
         private void extractFromTemplates() {
             int nrTemplates = TemplateList.this.templates.size();
-            this.templateKeywords = new ArrayList<String>(nrTemplates);
+            this.templateKeywords = new ArrayList<>(nrTemplates);
             for (Template<A> template : TemplateList.this.templates) {
                 if (Version.isDevelopmentVersion() || !template.getValue()
                     .isDevelopment()) {
@@ -244,7 +244,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
         }
 
         private void addListPanel() {
-            this.nameSelector = new JList<String>();
+            this.nameSelector = new JList<>();
             this.nameSelector.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             this.nameSelector.setSelectedIndex(0);
             JScrollPane listScroller = new JScrollPane(this.nameSelector);

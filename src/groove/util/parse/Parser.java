@@ -489,8 +489,8 @@ abstract public interface Parser<T> {
          */
         public EnumParser(Class<T> enumType, T defaultValue, String... texts) {
             this.defaultValue = defaultValue;
-            this.toStringMap = new EnumMap<T,String>(enumType);
-            this.toValueMap = new HashMap<String,T>();
+            this.toStringMap = new EnumMap<>(enumType);
+            this.toValueMap = new HashMap<>();
             this.valueType = enumType;
             T[] values = enumType.getEnumConstants();
             assert values.length == texts.length;

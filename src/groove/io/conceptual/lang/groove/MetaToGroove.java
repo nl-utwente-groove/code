@@ -29,7 +29,7 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
     private GrooveResource m_grooveResource;
     private Config m_cfg;
     private GrammarGraph m_currentGraph;
-    private Map<MetaType,AbsNode> m_metaNodes = new HashMap<MetaType,AbsNode>();
+    private Map<MetaType,AbsNode> m_metaNodes = new HashMap<>();
 
     public MetaToGroove(GrooveResource grooveResource) {
         this.m_grooveResource = grooveResource;

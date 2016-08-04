@@ -250,7 +250,7 @@ public abstract class AbstractPathChecker extends ReteNetworkNode implements
     public static class PathMatchCache implements DominoEventListener {
 
         private HashMap<Object,CacheEntry> entries =
-            new HashMap<Object,CacheEntry>();
+            new HashMap<>();
 
         @Override
         public void matchRemoved(AbstractReteMatch match) {

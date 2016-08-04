@@ -138,7 +138,7 @@ public class SimulatorModel implements Cloneable {
     private void setEnabled(ResourceKind kind, Set<QualName> names) throws IOException {
         switch (kind) {
         case RULE:
-            Collection<AspectGraph> newRules = new ArrayList<AspectGraph>(names.size());
+            Collection<AspectGraph> newRules = new ArrayList<>(names.size());
             for (QualName ruleName : names) {
                 AspectGraph oldRule = getStore().getGraphs(ResourceKind.RULE)
                     .get(ruleName);
@@ -274,7 +274,7 @@ public class SimulatorModel implements Cloneable {
      */
     public boolean doSetPriority(Map<QualName,Integer> priorityMap) throws IOException {
         start();
-        Set<AspectGraph> newGraphs = new HashSet<AspectGraph>();
+        Set<AspectGraph> newGraphs = new HashSet<>();
         for (Map.Entry<QualName,Integer> entry : priorityMap.entrySet()) {
             AspectGraph oldGraph = getStore().getGraphs(ResourceKind.RULE)
                 .get(entry.getKey());
@@ -718,7 +718,7 @@ public class SimulatorModel implements Cloneable {
     }
 
     /** Currently selected trace (set of transitions). */
-    private final Set<GraphTransition> trace = new HashSet<GraphTransition>();
+    private final Set<GraphTransition> trace = new HashSet<>();
 
     /** Indicates if there is currently a transition selected.
      */
@@ -902,7 +902,7 @@ public class SimulatorModel implements Cloneable {
 
     /** Returns a list of search results for the given label. */
     public final List<SearchResult> searchLabel(TypeLabel label) {
-        List<SearchResult> searchResults = new ArrayList<SearchResult>();
+        List<SearchResult> searchResults = new ArrayList<>();
         for (ResourceKind kind : ResourceKind.values()) {
             if (!kind.isGraphBased()) {
                 continue;
@@ -1187,9 +1187,9 @@ public class SimulatorModel implements Cloneable {
      * transaction.
      */
     private void fireUpdate() {
-        Set<SimulatorListener> notified = new HashSet<SimulatorListener>();
+        Set<SimulatorListener> notified = new HashSet<>();
         for (Change change : this.changes) {
-            for (SimulatorListener listener : new ArrayList<SimulatorListener>(
+            for (SimulatorListener listener : new ArrayList<>(
                 this.listeners.get(change))) {
                 if (notified.add(listener)) {
                     listener.update(this, this.old, this.changes);
@@ -1249,7 +1249,7 @@ public class SimulatorModel implements Cloneable {
 
     /** Array of listeners. */
     private final Map<Change,List<SimulatorListener>> listeners =
-        new EnumMap<Change,List<SimulatorListener>>(Change.class);
+        new EnumMap<>(Change.class);
 
     { // initialise the listener map to empty listener lists
         for (Change change : Change.values()) {
@@ -1353,7 +1353,7 @@ public class SimulatorModel implements Cloneable {
         }
 
         private static Map<ResourceKind,Change> resourceToChangeMap =
-            new EnumMap<ResourceKind,Change>(ResourceKind.class);
+            new EnumMap<>(ResourceKind.class);
 
         static {
             for (Change change : Change.values()) {

@@ -246,7 +246,7 @@ public class StateTree extends JTree implements SimulatorListener {
             }
             RuleModel ruleModel = (RuleModel) source.getResource(RULE);
             if (changes.contains(Change.TRACE)) {
-                Set<GraphState> refreshables = new HashSet<GraphState>();
+                Set<GraphState> refreshables = new HashSet<>();
                 if (!changes.contains(Change.GTS)) {
                     for (GraphTransition trans : oldModel.getTrace()) {
                         refreshables.add(trans.source());
@@ -350,7 +350,7 @@ public class StateTree extends JTree implements SimulatorListener {
     private void fill(DefaultMutableTreeNode parent) {
         if (parent.getChildCount() <= 1) {
             parent.removeAllChildren();
-            List<StateTreeNode> stateNodes = new ArrayList<StateTreeNode>(RANGE_SIZE);
+            List<StateTreeNode> stateNodes = new ArrayList<>(RANGE_SIZE);
             int lower = parent instanceof RangeTreeNode ? ((RangeTreeNode) parent).getLower() : 0;
             int upper = Math.min(this.states.length, lower + RANGE_SIZE);
             for (int s = lower; s < upper; s++) {
@@ -383,20 +383,20 @@ public class StateTree extends JTree implements SimulatorListener {
     private StateTreeNode createStateNode(GraphState state) {
         boolean isExpanded = this.expanded.contains(state);
         StateTreeNode result = new StateTreeNode(state, isExpanded);
-        Collection<GraphTransitionKey> matches = new ArrayList<GraphTransitionKey>();
+        Collection<GraphTransitionKey> matches = new ArrayList<>();
         Claz claz = Claz.getClass(isShowInternal(), isShowAbsent());
         for (GraphTransition trans : state.getTransitions(claz)) {
             matches.add(trans.getKey());
         }
         matches.addAll(state.getMatches());
         Map<Action,Set<GraphTransitionKey>> matchMap =
-            new TreeMap<Action,Set<GraphTransitionKey>>(Action.PARTIAL_COMPARATOR);
+            new TreeMap<>(Action.PARTIAL_COMPARATOR);
         for (GraphTransitionKey match : matches) {
             Action action = match.getAction();
             Set<GraphTransitionKey> ruleMatches = matchMap.get(action);
             if (ruleMatches == null) {
                 matchMap.put(action,
-                    ruleMatches = new TreeSet<GraphTransitionKey>(GraphTransitionKey.COMPARATOR));
+                    ruleMatches = new TreeSet<>(GraphTransitionKey.COMPARATOR));
             }
             ruleMatches.add(match);
         }
@@ -567,7 +567,7 @@ public class StateTree extends JTree implements SimulatorListener {
     /** List of states in the most recently loaded GTS. */
     private GraphState[] states = new GraphState[0];
     /** State that should be expanded. */
-    private Queue<GraphState> expanded = new LinkedList<GraphState>();
+    private Queue<GraphState> expanded = new LinkedList<>();
     /** Flag indicating if listeners should be active. */
     private boolean listening;
 

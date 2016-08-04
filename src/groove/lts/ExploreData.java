@@ -43,13 +43,13 @@ class ExploreData {
         this.absence = this.state.getActualFrame().getTransience();
         this.inRecipe = state.isInternalState();
         if (!state.isClosed()) {
-            this.recipeTargets = new ArrayList<GraphState>();
+            this.recipeTargets = new ArrayList<>();
             if (!state.isInternalState()) {
                 this.recipeTargets.add(state);
             }
         }
         this.recipeInits =
-            state.isInternalState() ? new ArrayList<Pair<ExploreData,RuleTransition>>() : null;
+            state.isInternalState() ? new ArrayList<>() : null;
     }
 
     private final AbstractGraphState state;
@@ -244,7 +244,7 @@ class ExploreData {
     /** List of reachable top-level states, which can serve as recipe targets
      * if this state appears as target of an in-recipe transition.
      */
-    private List<GraphState> recipeTargets = new ArrayList<GraphState>();
+    private List<GraphState> recipeTargets = new ArrayList<>();
 
     /**
      * Collection of direct parent top-level states, with transitions from parent to this.
@@ -254,11 +254,11 @@ class ExploreData {
     /**
      * Collection of direct parent transient states.
      */
-    private final List<ExploreData> rawParents = new ArrayList<ExploreData>();
+    private final List<ExploreData> rawParents = new ArrayList<>();
     /** Set of reachable transient open states (transitively closed). */
-    private final Set<GraphState> transientOpens = new HashSet<GraphState>();
+    private final Set<GraphState> transientOpens = new HashSet<>();
     /** Set of states reachable through a non-empty sequence of partial transitions. */
-    private final Set<GraphState> reachables = new HashSet<GraphState>();
+    private final Set<GraphState> reachables = new HashSet<>();
 
     private final static boolean DEBUG = false;
 
@@ -297,7 +297,7 @@ class ExploreData {
          * Propagates the reachables backward.
          */
         private void propagate() {
-            Set<ExploreData> changed = new LinkedHashSet<ExploreData>(this.resultMap.keySet());
+            Set<ExploreData> changed = new LinkedHashSet<>(this.resultMap.keySet());
             while (!changed.isEmpty()) {
                 Iterator<ExploreData> it = changed.iterator();
                 ExploreData next = it.next();
@@ -316,7 +316,7 @@ class ExploreData {
          */
         private void fill() {
             for (Pair<ExploreData,Set<GraphState>> entry : this.resultList) {
-                List<GraphState> topLevelReachables = new ArrayList<GraphState>(entry.two());
+                List<GraphState> topLevelReachables = new ArrayList<>(entry.two());
                 entry.one().recipeTargets = topLevelReachables;
                 if (DEBUG) {
                     System.out.printf("Top-level reachables of %s determined at %s", entry.one(),
@@ -328,9 +328,9 @@ class ExploreData {
         /** Adds an {@link ExploreData} item to the data structures}. */
         private void addData(ExploreData data) {
             if (!this.backward.containsKey(data)) {
-                Set<ExploreData> targetBackward = new HashSet<ExploreData>();
+                Set<ExploreData> targetBackward = new HashSet<>();
                 this.backward.put(data, targetBackward);
-                Set<GraphState> resultEntry = new LinkedHashSet<GraphState>();
+                Set<GraphState> resultEntry = new LinkedHashSet<>();
                 this.resultMap.put(data, resultEntry);
                 if (data.recipeTargets == null) {
                     // we're going to traverse further
@@ -349,15 +349,15 @@ class ExploreData {
 
         /** backward map from states to direct predecessors. */
         private final Map<ExploreData,Set<ExploreData>> backward =
-            new LinkedHashMap<ExploreData,Set<ExploreData>>();
+            new LinkedHashMap<>();
         /** map from states to top level reachables. */
         private final Map<ExploreData,Set<GraphState>> resultMap =
-            new LinkedHashMap<ExploreData,Set<GraphState>>();
+            new LinkedHashMap<>();
         /** List of pairs that are actually being built. */
         private final List<Pair<ExploreData,Set<GraphState>>> resultList =
-            new ArrayList<Pair<ExploreData,Set<GraphState>>>();
+            new ArrayList<>();
         // queue of outstanding states to be explored
-        private final Queue<ExploreData> queue = new LinkedList<ExploreData>();
+        private final Queue<ExploreData> queue = new LinkedList<>();
     }
 
     /** Type of propagated change. */

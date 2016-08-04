@@ -110,7 +110,7 @@ abstract public class ClosingStrategy extends GTSStrategy {
     private final ExploreListener exploreListener = new ExploreListener();
 
     /** Local stack of transient states; these should be explored first. */
-    private final Stack<GraphState> transientStack = new Stack<GraphState>();
+    private final Stack<GraphState> transientStack = new Stack<>();
 
     /** A queue with states to be explored, used as a FIFO. */
     private class ExploreListener extends GTSAdapter {

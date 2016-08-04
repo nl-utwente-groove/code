@@ -44,7 +44,7 @@ public final class TermConverter {
      * Converts a map of VariableTerms into a map of java objects
      */
     public static Map<String,Object> convert(Map<String,VariableTerm> rawVars) {
-        HashMap<String,Object> result = new HashMap<String,Object>();
+        HashMap<String,Object> result = new HashMap<>();
         for (Entry<String,VariableTerm> entry : rawVars.entrySet()) {
             if (entry.getKey().charAt(0) != '_') {
                 result.put(entry.getKey(), convert(entry.getValue()));
@@ -69,7 +69,7 @@ public final class TermConverter {
         } else if (value instanceof CompoundTerm) {
             CompoundTerm ct = (CompoundTerm) value;
             if (ct.tag == TermConstants.listTag) {
-                List<Object> compound = new ArrayList<Object>();
+                List<Object> compound = new ArrayList<>();
                 while (true) {
                     value = ct.args[0].dereference();
                     if (value == TermConstants.emptyListAtom) {

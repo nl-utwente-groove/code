@@ -83,7 +83,7 @@ public class ProductionNode extends ConditionChecker {
         if (this.getProductionRule().isModifying() || this.isEmpty()) {
             result = super.getConflictSet();
         } else {
-            result = new TreeHashSet<ReteSimpleMatch>();
+            result = new TreeHashSet<>();
             Set<ReteSimpleMatch> cs = this.conflictSet;
             if (this.hasNacs()) {
                 this.demandUpdateOnlyIfNecessary();

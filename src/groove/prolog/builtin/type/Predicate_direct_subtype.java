@@ -54,7 +54,7 @@ public class Predicate_direct_subtype extends GraphPrologCode {
                     (TypeGraph) ((JavaObjectTerm) args[0]).value;
                 TypeLabel l1 = (TypeLabel) ((JavaObjectTerm) args[1]).value;
                 TypeNode type1 = typeGraph.getNode(l1);
-                List<TypeLabel> supertypes1 = new ArrayList<TypeLabel>();
+                List<TypeLabel> supertypes1 = new ArrayList<>();
                 if (type1 != null) {
                     collectLabels(supertypes1,
                         typeGraph.getDirectSupertypeMap().get(type1));
@@ -69,7 +69,7 @@ public class Predicate_direct_subtype extends GraphPrologCode {
                         (TypeGraph) ((JavaObjectTerm) args[0]).value;
                     TypeLabel l2 = (TypeLabel) ((JavaObjectTerm) args[2]).value;
                     TypeNode type2 = typeGraph.getNode(l2);
-                    List<TypeLabel> subtypes2 = new ArrayList<TypeLabel>();
+                    List<TypeLabel> subtypes2 = new ArrayList<>();
                     if (type2 != null) {
                         collectLabels(subtypes2,
                             typeGraph.getDirectSubtypeMap().get(type2));

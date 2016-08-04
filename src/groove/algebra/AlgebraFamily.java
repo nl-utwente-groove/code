@@ -152,7 +152,7 @@ public enum AlgebraFamily {
             return ((PointAlgebra<?>) getAlgebra(term.getSort())).getPointValue();
         case CALL:
             CallExpr call = (CallExpr) term;
-            List<Object> args = new ArrayList<Object>();
+            List<Object> args = new ArrayList<>();
             for (Expression arg : call.getArgs()) {
                 args.add(toValue(arg));
             }
@@ -189,9 +189,9 @@ public enum AlgebraFamily {
      * Returns a mapping from operation names to operations for a given algebra.
      */
     private Map<String,Operation> createOperationsMap(Algebra<?> algebra) {
-        Map<String,Operation> result = new HashMap<String,Operation>();
+        Map<String,Operation> result = new HashMap<>();
         // first find out what methods were declared in the signature
-        Set<String> methodNames = new HashSet<String>();
+        Set<String> methodNames = new HashSet<>();
         Method[] signatureMethods = algebra.getSort().getSignatureClass().getDeclaredMethods();
         for (Method method : signatureMethods) {
             if (Modifier.isAbstract(method.getModifiers())
@@ -227,11 +227,11 @@ public enum AlgebraFamily {
     }
 
     /** A map from signature kinds to algebras registered for that name. */
-    private final Map<Sort,Algebra<?>> algebraMap = new EnumMap<Sort,Algebra<?>>(
+    private final Map<Sort,Algebra<?>> algebraMap = new EnumMap<>(
         Sort.class);
     /** Store of operations created from the algebras. */
     private final Map<Algebra<?>,Map<String,Operation>> operationsMap =
-        new HashMap<Algebra<?>,Map<String,Operation>>();
+        new HashMap<>();
 
     /** Returns the algebra register with the family of default algebras. */
     static public AlgebraFamily getInstance() {
@@ -247,7 +247,7 @@ public enum AlgebraFamily {
     }
 
     /** Mapping from names to algebra families. */
-    private static Map<String,AlgebraFamily> familyMap = new HashMap<String,AlgebraFamily>();
+    private static Map<String,AlgebraFamily> familyMap = new HashMap<>();
     static {
         for (AlgebraFamily family : values()) {
             familyMap.put(family.getName(), family);

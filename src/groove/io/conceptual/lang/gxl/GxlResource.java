@@ -45,7 +45,7 @@ public class GxlResource extends ExportableResource {
     private GxlType m_gxlTypeInstance;
     // For temp resource (type for instance that does not export type as well)
     private GxlType m_gxlTypeTemp;
-    private Map<String,GraphType> m_graphs = new HashMap<String,GraphType>();
+    private Map<String,GraphType> m_graphs = new HashMap<>();
 
     private File m_typeFile;
     private File m_instanceFile;

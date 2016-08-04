@@ -56,7 +56,7 @@ public class Exporters {
      */
     public static void doExport(Exportable exportable, Simulator simulator) {
         // determine the set of suitable file types and exporters
-        Map<FileType,Exporter> exporters = new EnumMap<FileType,Exporter>(FileType.class);
+        Map<FileType,Exporter> exporters = new EnumMap<>(FileType.class);
         for (Exporter exporter : getExporters()) {
             for (FileType fileType : exporter.getFileTypes(exportable)) {
                 exporters.put(fileType, exporter);
@@ -130,7 +130,7 @@ public class Exporters {
 
     /** Creates the list of all known exporters. */
     private static List<Exporter> createExporters() {
-        List<Exporter> result = new ArrayList<Exporter>();
+        List<Exporter> result = new ArrayList<>();
         result.add(NativePorter.getInstance());
         result.add(RasterExporter.getInstance());
         result.add(VectorExporter.getInstance());
@@ -155,7 +155,7 @@ public class Exporters {
 
     /** Creates the list of all known dedicated exporters. */
     private static Map<FileType,Exporter> createExporterMap() {
-        Map<FileType,Exporter> result = new EnumMap<FileType,Exporter>(FileType.class);
+        Map<FileType,Exporter> result = new EnumMap<>(FileType.class);
         for (Exporter exporter : getExporters()) {
             for (FileType fileType : exporter.getSupportedFileTypes()) {
                 Exporter oldValue = result.put(fileType, exporter);

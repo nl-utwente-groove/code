@@ -20,7 +20,7 @@ public class Object extends Value {
     /** The name of this object. */
     private Name m_name;
 
-    private Map<Field,Value> m_fieldValues = new HashMap<Field,Value>();
+    private Map<Field,Value> m_fieldValues = new HashMap<>();
 
     /** Constructor for the singleton {@link #NIL} object. */
     private Object(Name name) {

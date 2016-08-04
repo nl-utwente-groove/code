@@ -104,8 +104,8 @@ public class GraphCreationTest extends TestCase {
      */
 
     public void testAddRemoveContains() {
-        Set<PlainNode> nodeSet = new HashSet<PlainNode>(this.g.nodeSet());
-        Set<PlainEdge> edgeSet = new HashSet<PlainEdge>(this.g.edgeSet());
+        Set<PlainNode> nodeSet = new HashSet<>(this.g.nodeSet());
+        Set<PlainEdge> edgeSet = new HashSet<>(this.g.edgeSet());
 
         for (int i = 0; i < NR_EDGES; i++) {
             assertTrue(this.g.containsEdge(this.e[i]));
@@ -129,7 +129,7 @@ public class GraphCreationTest extends TestCase {
     }
 
     public void testGetOutEdges() {
-        Set<PlainEdge> outEdges = new HashSet<PlainEdge>();
+        Set<PlainEdge> outEdges = new HashSet<>();
         outEdges.add(this.e[0]);
         outEdges.add(this.e[1]);
 
@@ -150,7 +150,7 @@ public class GraphCreationTest extends TestCase {
     }
 
     public void testGetInEdges() {
-        Set<PlainEdge> inEdges = new HashSet<PlainEdge>();
+        Set<PlainEdge> inEdges = new HashSet<>();
         inEdges.add(this.e[5]);
         inEdges.add(this.e[6]);
 
@@ -168,7 +168,7 @@ public class GraphCreationTest extends TestCase {
     }
 
     public void testGetEdgesWithLabel() {
-        Set<PlainEdge> edges = new HashSet<PlainEdge>();
+        Set<PlainEdge> edges = new HashSet<>();
         edges.add(this.e[0]);
         edges.add(this.e[2]);
         edges.add(this.e[5]);
@@ -183,7 +183,7 @@ public class GraphCreationTest extends TestCase {
     }
 
     private Set<PlainEdge> labelEdgeSet(PlainGraph g, Label label) {
-        Set<PlainEdge> labelEdges = new HashSet<PlainEdge>();
+        Set<PlainEdge> labelEdges = new HashSet<>();
         for (PlainEdge edge : g.edgeSet()) {
             if (edge.label()
                 .equals(label)) {
@@ -194,7 +194,7 @@ public class GraphCreationTest extends TestCase {
     }
 
     private Set<PlainEdge> inEdgeSet(PlainGraph g, PlainNode target) {
-        Set<PlainEdge> inEdges = new HashSet<PlainEdge>();
+        Set<PlainEdge> inEdges = new HashSet<>();
         for (PlainEdge edge : g.edgeSet()) {
             if (edge.target()
                 .equals(target)) {

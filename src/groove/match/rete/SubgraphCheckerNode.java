@@ -41,22 +41,22 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
     /**
      * left on-demand buffer
      */
-    protected HashSet<LeftMatchType> leftOnDemandBuffer = new HashSet<LeftMatchType>();
+    protected HashSet<LeftMatchType> leftOnDemandBuffer = new HashSet<>();
 
     /**
      * memory containing the matches received from the left antecedent
      */
-    protected HashSet<LeftMatchType> leftMemory = new HashSet<LeftMatchType>();
+    protected HashSet<LeftMatchType> leftMemory = new HashSet<>();
 
     /**
      * left on-demand buffer
      */
-    protected HashSet<RightMatchType> rightOnDemandBuffer = new HashSet<RightMatchType>();
+    protected HashSet<RightMatchType> rightOnDemandBuffer = new HashSet<>();
 
     /**
      * memory containing the matches received from the right antecedent
      */
-    protected HashSet<RightMatchType> rightMemory = new HashSet<RightMatchType>();
+    protected HashSet<RightMatchType> rightMemory = new HashSet<>();
 
     /**
      * This is a fast lookup table for equality checking of left and
@@ -232,7 +232,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
     private void staticJoin(ReteStaticMapping leftMap, ReteStaticMapping rightMap) {
         Set<RuleNode> s1 = leftMap.getLhsNodes();
         Set<RuleNode> s2 = rightMap.getLhsNodes();
-        HashSet<RuleNode> intersection = new HashSet<RuleNode>();
+        HashSet<RuleNode> intersection = new HashSet<>();
         for (RuleNode n1 : s1) {
             if (s2.contains(n1)) {
                 intersection.add(n1);
@@ -461,7 +461,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
         }
         boolean result = true;
 
-        Set<RuleEdge> s1 = new HashSet<RuleEdge>();
+        Set<RuleEdge> s1 = new HashSet<>();
         for (RuleElement e : oneMapping.getElements()) {
             if (e instanceof RuleEdge) {
                 s1.add((RuleEdge) e);
@@ -479,7 +479,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
         }
 
         Set<RuleNode> nodes1 = oneMapping.getLhsNodes();
-        Set<RuleNode> sharedNodes = new HashSet<RuleNode>();
+        Set<RuleNode> sharedNodes = new HashSet<>();
         for (RuleNode n : otherMapping.getLhsNodes()) {
             if (nodes1.contains(n)) {
                 sharedNodes.add(n);

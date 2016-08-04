@@ -11,7 +11,7 @@ import groove.io.conceptual.TypeModel;
 
 @SuppressWarnings("javadoc")
 public abstract class TypeImporter implements Messenger {
-    private List<Message> m_messages = new ArrayList<Message>();
+    private List<Message> m_messages = new ArrayList<>();
     protected Map<QualName,TypeModel> m_typeModels = new HashMap<>();
 
     /**

@@ -278,7 +278,7 @@ public class HTMLConverter {
     static public final String HTML_HORIZONTAL_LINE = createHtmlTag("hr").tagBegin;
 
     /** Map from colours to HTML tags imposing the colour on a text. */
-    private static final Map<Color,HTMLTag> colorTagMap = new HashMap<Color,HTMLTag>();
+    private static final Map<Color,HTMLTag> colorTagMap = new HashMap<>();
     /** The maximum alpha value according to {@link Color#getAlpha()}. */
     private static final int MAX_ALPHA = 255;
 

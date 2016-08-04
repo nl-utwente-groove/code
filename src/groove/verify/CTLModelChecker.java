@@ -129,7 +129,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         }
         long mcStartTime = System.currentTimeMillis();
         int maxWidth = 0;
-        Map<Formula,Boolean> outcome = new HashMap<Formula,Boolean>();
+        Map<Formula,Boolean> outcome = new HashMap<>();
         for (Formula property : this.ctlProps) {
             maxWidth = Math.max(maxWidth, property.getParseString()
                 .length());
@@ -261,7 +261,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
 
         @Override
         public int parseArguments(Parameters params) throws CmdLineException {
-            ArrayList<String> genArgs = new ArrayList<String>();
+            ArrayList<String> genArgs = new ArrayList<>();
             for (int ix = 0; ix < params.size(); ix++) {
                 genArgs.add(params.getParameter(ix));
             }
@@ -281,7 +281,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
      */
     private static class GeneratorArgs {
         GeneratorArgs(Parameters params) throws CmdLineException {
-            this.args = new ArrayList<String>();
+            this.args = new ArrayList<>();
             for (int ix = 0; ix < params.size(); ix++) {
                 this.args.add(params.getParameter(ix));
             }
@@ -347,7 +347,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             this.gts = result.getGTS();
             this.result = result;
             if (this.gts.hasAbsentStates() || this.gts.hasTransientStates()) {
-                this.nodeIdxMap = new HashMap<GraphState,Integer>();
+                this.nodeIdxMap = new HashMap<>();
                 int nr = 0;
                 for (GraphState state : this.gts.getStates()) {
                     this.nodeIdxMap.put(state, nr);

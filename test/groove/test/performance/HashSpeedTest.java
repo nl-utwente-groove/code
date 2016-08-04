@@ -57,7 +57,7 @@ public class HashSpeedTest {
     static private final Map<Integer,Integer> elementMap;
     static {
         // initialize the test data
-        elementMap = new HashMap<Integer,Integer>();
+        elementMap = new HashMap<>();
         for (int i = 0; i < elementArray.length; i++) {
             Integer element = new Integer(i);
             elementArray[i] = element;
@@ -67,11 +67,11 @@ public class HashSpeedTest {
     }
 
     static public void createVersusClear(boolean create) {
-        Set<Integer> testSet = new HashSet<Integer>();
+        Set<Integer> testSet = new HashSet<>();
         for (int i = 0; i < CREATE_TRY_COUNT; i++) {
             if (create) {
                 CREATE.start();
-                testSet = new HashSet<Integer>();
+                testSet = new HashSet<>();
                 CREATE.stop();
             } else {
                 CLEAR.start();
@@ -89,15 +89,15 @@ public class HashSpeedTest {
             switch (kind) {
             case LINKED_KIND:
                 (measure = LINKED_FILL).start();
-                testSet = new LinkedList<Integer>();
+                testSet = new LinkedList<>();
                 break;
             case ARRAY_KIND:
                 (measure = ARRAY_FILL).start();
-                testSet = new ArrayList<Integer>();
+                testSet = new ArrayList<>();
                 break;
             case HASH_KIND:
                 (measure = HASH_FILL).start();
-                testSet = new HashSet<Integer>();
+                testSet = new HashSet<>();
                 break;
             default:
                 (measure = HACK_FILL).start();
@@ -157,10 +157,10 @@ public class HashSpeedTest {
             List<Integer> testSet;
             switch (kind) {
             case LINKED_KIND:
-                testSet = new LinkedList<Integer>();
+                testSet = new LinkedList<>();
                 break;
             default: // case ARRAY_KIND:
-                testSet = new ArrayList<Integer>();
+                testSet = new ArrayList<>();
                 break;
             }
             for (int j = 0; j < ELEM_COUNT; j++) {
@@ -185,7 +185,7 @@ public class HashSpeedTest {
     }
 
     static public void keyVersusEntry(boolean key) {
-        Map<Integer,Integer> testMap = new HashMap<Integer,Integer>(elementMap);
+        Map<Integer,Integer> testMap = new HashMap<>(elementMap);
         int sum = 0;
         for (int i = 0; i < KEY_TRY_COUNT; i++) {
             Reporter measure;

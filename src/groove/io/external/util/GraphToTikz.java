@@ -104,7 +104,7 @@ public final class GraphToTikz<G extends Graph> {
      * @return a string with the Tikz encoding of the graph.
      */
     public static <G extends Graph> String convert(JGraph<G> jGraph) {
-        return new GraphToTikz<G>(jGraph).doConvert();
+        return new GraphToTikz<>(jGraph).doConvert();
     }
 
     // BEGIN
@@ -339,7 +339,7 @@ public final class GraphToTikz<G extends Graph> {
 
         append(ENTER);
 
-        Set<JCell<G>> consumedEdges = new HashSet<JCell<G>>();
+        Set<JCell<G>> consumedEdges = new HashSet<>();
         for (Edge edge : this.graph.edgeSet()) {
             JEdgeLayout layout = null;
             if (this.layoutMap != null) {
@@ -433,7 +433,7 @@ public final class GraphToTikz<G extends Graph> {
      * @param node the node to be converted.
      */
     private void appendNodeStyles(JVertex<G> node) {
-        ArrayList<String> styles = new ArrayList<String>();
+        ArrayList<String> styles = new ArrayList<>();
         styles.add(""); // Placeholder for the main style.
         for (Look look : node.getLooks()) {
             if (TikzStylesExtractor.mainLooks.contains(look)) {
@@ -625,7 +625,7 @@ public final class GraphToTikz<G extends Graph> {
      * @param edge the edge to be analysed.
      */
     private void appendEdgeStyles(JEdge<G> edge) {
-        ArrayList<String> styles = new ArrayList<String>();
+        ArrayList<String> styles = new ArrayList<>();
         styles.add(""); // Placeholder for the main style.
         for (Look look : edge.getLooks()) {
             if (TikzStylesExtractor.mainLooks.contains(look)) {

@@ -221,7 +221,7 @@ public class PrologEngine {
         /**
          * The variables
          */
-        protected Map<String,Object> variables = new HashMap<String,Object>();
+        protected Map<String,Object> variables = new HashMap<>();
 
         /**
          * Unprocessed variables
@@ -284,7 +284,7 @@ public class PrologEngine {
          *            the variables to set
          */
         public void setVariables(Map<String,Object> values) {
-            this.variables = new HashMap<String,Object>(values);
+            this.variables = new HashMap<>(values);
         }
 
         /*

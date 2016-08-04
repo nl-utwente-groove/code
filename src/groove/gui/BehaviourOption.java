@@ -123,7 +123,7 @@ public class BehaviourOption extends JMenu implements ItemListener {
 
     private List<String> getDialogOptions() {
         if (this.dialogOptions == null) {
-            this.dialogOptions = new ArrayList<String>();
+            this.dialogOptions = new ArrayList<>();
             this.dialogOptions.add(YES_TEXT);
             this.dialogOptions.add(NO_TEXT);
             Iterator<String> answerIter = getAnswers().iterator();

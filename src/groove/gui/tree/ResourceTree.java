@@ -116,7 +116,7 @@ public class ResourceTree extends AbstractResourceTree {
      */
     private Set<DisplayTreeNode> loadGrammar(GrammarModel grammar) {
         // allocate result
-        Set<DisplayTreeNode> result = new HashSet<DisplayTreeNode>();
+        Set<DisplayTreeNode> result = new HashSet<>();
 
         // get all resources, and store them in the sorted FolderTree
         FolderTree ftree = new FolderTree();

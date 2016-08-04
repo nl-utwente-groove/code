@@ -195,7 +195,7 @@ public enum Sort {
 
     /** Creates content for {@link #operatorMap}. */
     private SortedMap<String,Operator> computeOperatorMap() {
-        SortedMap<String,Operator> result = new TreeMap<String,Operator>();
+        SortedMap<String,Operator> result = new TreeMap<>();
         for (OpValue op : this.opValues) {
             Operator operator = op.getOperator();
             result.put(operator.getName(), operator);
@@ -237,10 +237,10 @@ public enum Sort {
     }
 
     /** Inverse mapping from signature names to sorts. */
-    private static Map<String,Sort> sigNameMap = new HashMap<String,Sort>();
+    private static Map<String,Sort> sigNameMap = new HashMap<>();
     /** Inverse mapping from signature classes to sorts. */
     private static Map<Class<? extends Signature>,Sort> sigClassMap =
-        new HashMap<Class<? extends Signature>,Sort>();
+        new HashMap<>();
 
     static {
         for (Sort kind : Sort.values()) {

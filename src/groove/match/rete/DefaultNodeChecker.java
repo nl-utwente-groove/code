@@ -42,7 +42,7 @@ public class DefaultNodeChecker extends NodeChecker implements ReteStateSubscrib
      * inside the node-checker rather than
      * relegating it to subgraph checkers.
      */
-    private TreeHashSet<ReteSimpleMatch> memory = new TreeHashSet<ReteSimpleMatch>();
+    private TreeHashSet<ReteSimpleMatch> memory = new TreeHashSet<>();
 
     /** Flag indicating if the node type has non-trivial subtypes. */
     final boolean sharpType;

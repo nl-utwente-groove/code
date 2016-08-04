@@ -266,9 +266,9 @@ public class Help {
     /** Header of the tool tip. */
     private String header;
     /** List of parameter names. */
-    private final List<String> parNames = new ArrayList<String>();
+    private final List<String> parNames = new ArrayList<>();
     /** List of parameter documentation lines. */
-    private final List<String> parDocs = new ArrayList<String>();
+    private final List<String> parDocs = new ArrayList<>();
 
     /**
      * Turns text into boldface by putting
@@ -375,7 +375,7 @@ public class Help {
     static private Pair<String,List<String>> processTokensAndArgs(String text,
         Map<String,String> tokenMap, boolean getArgs) {
         StringBuilder result = new StringBuilder(text);
-        List<String> args = new ArrayList<String>();
+        List<String> args = new ArrayList<>();
         for (int i = 0; i < result.length(); i++) {
             char first = result.charAt(i);
             if (getArgs && first == '.') {

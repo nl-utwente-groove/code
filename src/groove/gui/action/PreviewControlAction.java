@@ -1,7 +1,17 @@
 package groove.gui.action;
 
+import java.awt.MouseInfo;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import javax.swing.AbstractAction;
+import javax.swing.JDialog;
+import javax.swing.JPopupMenu;
+
 import groove.control.Procedure;
-import groove.control.graph.ControlGraph;
 import groove.control.template.Program;
 import groove.control.template.Template;
 import groove.grammar.QualName;
@@ -13,17 +23,6 @@ import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.GraphPreviewDialog;
 import groove.util.parse.FormatException;
-
-import java.awt.MouseInfo;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import javax.swing.AbstractAction;
-import javax.swing.JDialog;
-import javax.swing.JPopupMenu;
 
 /**
  * Creates a dialog showing the control automaton.
@@ -105,7 +104,7 @@ public class PreviewControlAction extends SimulatorAction {
     }
 
     private JDialog getDialog(Template template) {
-        return new GraphPreviewDialog<ControlGraph>(getSimulator(), template.toGraph(true));
+        return new GraphPreviewDialog<>(getSimulator(), template.toGraph(true));
     }
 
     /** Convenience method to obtain the currently selected (fixed) control program. */

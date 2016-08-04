@@ -38,7 +38,7 @@ public class PrologUtils {
      * Create a list of JavaObjectTerms from the given collection
      */
     public static final List<Term> createJOTlist(Collection<?> elements) {
-        List<Term> result = new ArrayList<Term>();
+        List<Term> result = new ArrayList<>();
         for (Object o : elements) {
             result.add(new JavaObjectTerm(o));
         }
@@ -49,7 +49,7 @@ public class PrologUtils {
      * Create a list of JavaObjectTerms from the given collection
      */
     public static final List<Term> createJOTlist(Object[] elements) {
-        List<Term> result = new ArrayList<Term>();
+        List<Term> result = new ArrayList<>();
         for (Object o : elements) {
             result.add(new JavaObjectTerm(o));
         }

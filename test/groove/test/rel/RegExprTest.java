@@ -186,13 +186,13 @@ public class RegExprTest {
         testBasic(e);
         assertEquals(e, wildcard(BINARY, null, false, "a", "b"));
         Set<TypeLabel> abFlags =
-            new HashSet<TypeLabel>(Arrays.asList(this.aLabel, this.bLabel));
+            new HashSet<>(Arrays.asList(this.aLabel, this.bLabel));
         assertEquals(abFlags, e.getTypeLabels());
         e = parse("type:?[^a,b]");
         testBasic(e);
         assertEquals(e, wildcard(NODE_TYPE, null, true, "a", "b"));
         Set<TypeLabel> abTypes =
-            new HashSet<TypeLabel>(Arrays.asList(this.aType, this.bType));
+            new HashSet<>(Arrays.asList(this.aType, this.bType));
         assertEquals(abTypes, e.getTypeLabels());
         // relabelling
         assertEquals(e, e.relabel(this.cLabel, this.aLabel));

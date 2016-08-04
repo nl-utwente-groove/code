@@ -52,7 +52,7 @@ public class ReteRandomLinearStrategy extends ReteLinearStrategy {
     protected MatchResult getMatch() {
         // collect all matches
         List<MatchResult> matches =
-            new ArrayList<MatchResult>(getNextState().getMatches());
+            new ArrayList<>(getNextState().getMatches());
         // select a random match
         int matchCount = matches.size();
         if (matchCount == 0) {

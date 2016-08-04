@@ -58,8 +58,8 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
      */
     public AttrGraph(String name) {
         super(name);
-        this.nodeMap = new LinkedHashMap<String,AttrNode>();
-        this.tuples = new ArrayList<AttrTuple>();
+        this.nodeMap = new LinkedHashMap<>();
+        this.tuples = new ArrayList<>();
     }
 
     @Override
@@ -201,7 +201,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
      * @param nodeIds a non-{@code null}, non-empty list of known node identifiers
      */
     public void addTuple(List<String> nodeIds) {
-        List<AttrNode> nodes = new ArrayList<AttrNode>(nodeIds.size());
+        List<AttrNode> nodes = new ArrayList<>(nodeIds.size());
         for (String id : nodeIds) {
             AttrNode node = getNode(id);
             assert node != null : String.format("Unknown node id %s", id);
@@ -238,7 +238,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
      * @param target the target of the copy operation; non-{@code null}
      */
     public <N extends Node,E extends GEdge<N>,G extends GGraph<N,E>> void copyTo(G target) {
-        AttrToGraphMap<N,E> map = new AttrToGraphMap<N,E>(target.getFactory());
+        AttrToGraphMap<N,E> map = new AttrToGraphMap<>(target.getFactory());
         for (AttrNode node : nodeSet()) {
             N nodeImage = target.addNode(node.getNumber());
             map.putNode(node, nodeImage);

@@ -506,7 +506,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
     /** Returns the status line for a given status flag. */
     private Line getStatus(Flag flag) {
         if (this.statusMap == null) {
-            this.statusMap = new EnumMap<Flag,Line>(Flag.class);
+            this.statusMap = new EnumMap<>(Flag.class);
             for (Flag f : Flag.values()) {
                 String text = null;
                 switch (f) {
@@ -806,7 +806,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
     static private final Map<Sort,Line> sigLineMap;
 
     static {
-        Map<Sort,Line> map = new EnumMap<Sort,Line>(Sort.class);
+        Map<Sort,Line> map = new EnumMap<>(Sort.class);
         for (Sort kind : Sort.values()) {
             map.put(kind, Line.atom(kind.getName())
                 .style(Style.BOLD));

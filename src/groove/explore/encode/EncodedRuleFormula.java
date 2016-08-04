@@ -43,7 +43,7 @@ public class EncodedRuleFormula implements EncodedType<Predicate<GraphState>,Str
 
     @Override
     public EncodedTypeEditor<Predicate<GraphState>,String> createEditor(GrammarModel grammar) {
-        return new StringEditor<Predicate<GraphState>>(grammar, "ruleName; !P; P||Q; P&&Q; P->Q",
+        return new StringEditor<>(grammar, "ruleName; !P; P||Q; P&&Q; P->Q",
             "", 30);
     }
 
@@ -144,7 +144,7 @@ public class EncodedRuleFormula implements EncodedType<Predicate<GraphState>,Str
         if (parseLiteral("!")) {
             skipSpaces();
             Predicate<GraphState> predicate = parseFormula();
-            return new Predicate.Not<GraphState>(predicate);
+            return new Predicate.Not<>(predicate);
         }
 
         // rule
@@ -154,13 +154,13 @@ public class EncodedRuleFormula implements EncodedType<Predicate<GraphState>,Str
         // + <operator> formula
         if (parseLiteral("&&") || parseLiteral("&")) {
             Predicate<GraphState> Q = parseFormula();
-            return new Predicate.And<GraphState>(P, Q);
+            return new Predicate.And<>(P, Q);
         } else if (parseLiteral("||") || parseLiteral("|")) {
             Predicate<GraphState> Q = parseFormula();
-            return new Predicate.Or<GraphState>(P, Q);
+            return new Predicate.Or<>(P, Q);
         } else if (parseLiteral("->")) {
             Predicate<GraphState> Q = parseFormula();
-            return new Predicate.Implies<GraphState>(P, Q);
+            return new Predicate.Implies<>(P, Q);
         } else {
             return P;
         }

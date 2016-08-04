@@ -93,7 +93,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     @Override
     public Set<TypeLabel> getLabels() {
         if (this.labelSet == null) {
-            this.labelSet = new HashSet<TypeLabel>();
+            this.labelSet = new HashSet<>();
             for (AspectEdge edge : getNormalSource().edgeSet()) {
                 TypeLabel label = edge.getTypeLabel();
                 if (label != null) {
@@ -226,7 +226,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                 }
             } catch (FormatException e) {
                 // compute inverse element map
-                Map<Element,Element> inverseMap = new HashMap<Element,Element>();
+                Map<Element,Element> inverseMap = new HashMap<>();
                 for (Map.Entry<AspectNode,HostNode> nodeEntry : elementMap.nodeMap().entrySet()) {
                     inverseMap.put(nodeEntry.getValue(), nodeEntry.getKey());
                 }
@@ -242,7 +242,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         GraphInfo.transfer(normalSource, result, elementMap);
         GraphInfo.setErrors(result, errors);
         result.setFixed();
-        return new Pair<DefaultHostGraph,HostModelMap>(result, elementMap);
+        return new Pair<>(result, elementMap);
     }
 
     /**

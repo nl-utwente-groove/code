@@ -57,7 +57,7 @@ public class Morphism<N extends Node,E extends Edge> extends AElementMap<N,E,N,E
      * Returns a fresh map of the type of this map.
      */
     protected Morphism<N,E> newMap() {
-        return new Morphism<N,E>(getFactory());
+        return new Morphism<>(getFactory());
     }
 
     /** This implementation is the identity on labels. */

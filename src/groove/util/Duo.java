@@ -34,6 +34,6 @@ public class Duo<O> extends Pair<O,O> {
 
     /** Constructs and returns a new duo. */
     public static <O> Duo<O> newDuo(O one, O two) {
-        return new Duo<O>(one, two);
+        return new Duo<>(one, two);
     }
 }

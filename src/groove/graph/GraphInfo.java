@@ -43,7 +43,7 @@ import java.util.Map;
 public class GraphInfo extends DefaultFixable {
     /** Constructs an empty information object. */
     public GraphInfo() {
-        this.data = new HashMap<String,Object>();
+        this.data = new HashMap<>();
         this.data.put(LAYOUT_KEY, new LayoutMap());
         this.data.put(PROPERTIES_KEY, new GraphProperties());
         this.data.put(ERRORS_KEY, new FormatErrorSet());

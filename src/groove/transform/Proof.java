@@ -123,7 +123,7 @@ public class Proof {
      */
     public RuleEvent newEvent(Record record) {
         assert hasRule();
-        Collection<BasicEvent> eventSet = new ArrayList<BasicEvent>();
+        Collection<BasicEvent> eventSet = new ArrayList<>();
         collectEvents(eventSet, record);
         assert !eventSet.isEmpty();
         if (eventSet.size() == 1 && !getRule().hasSubRules()) {
@@ -264,7 +264,7 @@ public class Proof {
 
     /** The proofs of the sub-conditions. */
     private final Collection<Proof> subProofs =
-        new java.util.LinkedHashSet<Proof>();
+        new java.util.LinkedHashSet<>();
     /** The (pre-computed) hash code of this match. */
     private int hashCode;
 

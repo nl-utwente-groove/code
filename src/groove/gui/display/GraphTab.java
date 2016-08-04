@@ -74,7 +74,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     public JGraphPanel<AspectGraph> getEditArea() {
         JGraphPanel<AspectGraph> result = this.editArea;
         if (result == null) {
-            this.editArea = result = new JGraphPanel<AspectGraph>(getJGraph());
+            this.editArea = result = new JGraphPanel<>(getJGraph());
             result.setFocusable(false);
             result.setEnabled(false);
             result.initialise();

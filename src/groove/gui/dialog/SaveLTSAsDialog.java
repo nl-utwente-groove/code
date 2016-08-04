@@ -281,7 +281,7 @@ public class SaveLTSAsDialog {
 
     private Map<StateExport,JRadioButton> computeExportButtonMap() {
         Map<StateExport,JRadioButton> result =
-            new EnumMap<StateExport,JRadioButton>(StateExport.class);
+            new EnumMap<>(StateExport.class);
         ButtonGroup group = new ButtonGroup();
         for (StateExport mode : StateExport.values()) {
             String text = null;
@@ -324,7 +324,7 @@ public class SaveLTSAsDialog {
     }
 
     private Map<Flag,JCheckBox> computeFlagCheckMap() {
-        Map<Flag,JCheckBox> result = new EnumMap<Flag,JCheckBox>(Flag.class);
+        Map<Flag,JCheckBox> result = new EnumMap<>(Flag.class);
         for (Flag flag : Flag.values()) {
             String text = null;
             String tip = null;
@@ -395,7 +395,7 @@ public class SaveLTSAsDialog {
     }
 
     private Map<Flag,JTextField> computeFlagTextMap() {
-        Map<Flag,JTextField> result = new EnumMap<Flag,JTextField>(Flag.class);
+        Map<Flag,JTextField> result = new EnumMap<>(Flag.class);
         for (Flag flag : Flag.values()) {
             JTextField textField = new JTextField(flag.getDefault());
             FieldListener listener = null;
@@ -447,7 +447,7 @@ public class SaveLTSAsDialog {
         getOkButton().setEnabled(this.errors.isEmpty());
     }
 
-    private Map<JComponent,String> errors = new LinkedHashMap<JComponent,String>();
+    private Map<JComponent,String> errors = new LinkedHashMap<>();
 
     private JLabel getErrorLabel() {
         if (this.errorLabel == null) {
@@ -515,7 +515,7 @@ public class SaveLTSAsDialog {
 
     /** Returns the LTS labelling specification. */
     public LTSLabels getLTSLabels() {
-        EnumMap<Flag,String> flags = new EnumMap<LTSLabels.Flag,String>(Flag.class);
+        EnumMap<Flag,String> flags = new EnumMap<>(Flag.class);
         for (Flag flag : Flag.values()) {
             if (getFlagCheckBox(flag).isSelected()) {
                 flags.put(flag, getFlagTextField(flag).getText());

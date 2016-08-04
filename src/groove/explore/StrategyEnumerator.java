@@ -94,7 +94,7 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
 
     /** Map from parsable strategies to the corresponding instance of this class. */
     private final static Map<EnumSet<StrategyValue>,StrategyEnumerator> instanceMap =
-        new HashMap<EnumSet<StrategyValue>,StrategyEnumerator>();
+        new HashMap<>();
     private static final String STRATEGY_TOOLTIP = "<HTML>"
         + "The exploration strategy determines at each state:<BR>"
         + "<B>1.</B> Which of the applicable transitions will be taken; " + "and<BR>"

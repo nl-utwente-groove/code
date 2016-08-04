@@ -216,7 +216,7 @@ public class Namespace implements ParseInfo, Fallible {
                     }
                 }
             }
-            result = this.actions = new TreeSet<Action>();
+            result = this.actions = new TreeSet<>();
             for (Callable unit : this.callableMap.values()) {
                 if (!(unit instanceof Action)) {
                     continue;
@@ -239,7 +239,7 @@ public class Namespace implements ParseInfo, Fallible {
     public Set<Action> getProperties() {
         Set<Action> result = this.properties;
         if (result == null) {
-            result = this.properties = new TreeSet<Action>();
+            result = this.properties = new TreeSet<>();
             for (Action action : getActions()) {
                 if (action.isProperty()) {
                     result.add(action);
@@ -260,7 +260,7 @@ public class Namespace implements ParseInfo, Fallible {
     public Set<Action> getTransformers() {
         Set<Action> result = this.transformers;
         if (result == null) {
-            result = this.transformers = new TreeSet<Action>(getActions());
+            result = this.transformers = new TreeSet<>(getActions());
             result.removeAll(getProperties());
         }
         return result;

@@ -128,7 +128,7 @@ public class Colors {
      * A map from string keys to colors.
      */
     private static final Map<String,Color> colorMap =
-        new TreeMap<String,Color>();
+        new TreeMap<>();
 
     /** Returns a normalised value, within the range 0..{@link #MAX}. */
     private static int norm(int val) {

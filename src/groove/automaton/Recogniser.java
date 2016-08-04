@@ -46,8 +46,8 @@ public class Recogniser {
     public Recogniser(DFA aut, HostGraph graph) {
         this.aut = aut;
         this.graph = graph;
-        this.nextMap = new HashMap<Tuple,TupleSet>();
-        this.reachMap = new HashMap<Tuple,HostNodeSet>();
+        this.nextMap = new HashMap<>();
+        this.reachMap = new HashMap<>();
     }
 
     /** Returns the host graph on which this recogniser works. */
@@ -67,7 +67,7 @@ public class Recogniser {
      */
     public Set<Result> getMatches(HostNode from, HostNode to) {
         assert to == null || from != null;
-        Set<Result> result = new HashSet<RegAut.Result>();
+        Set<Result> result = new HashSet<>();
         if (from == null) {
             for (HostNode hn : this.graph.nodeSet()) {
                 augmentReachMap(hn);
@@ -91,10 +91,10 @@ public class Recogniser {
      */
     private void augmentReachMap(HostNode fromNode) {
         Tuple from = createStartTuple(fromNode);
-        Set<Tuple> fresh = new HashSet<Tuple>();
+        Set<Tuple> fresh = new HashSet<>();
         // Map from explored tuples to all their predecessors
         // found during this exploration
-        Map<Tuple,TupleSet> predMap = new HashMap<Tuple,TupleSet>();
+        Map<Tuple,TupleSet> predMap = new HashMap<>();
         fresh.add(from);
         predMap.put(from, new TupleSet());
         // compute the predecessor map
@@ -115,7 +115,7 @@ public class Recogniser {
             }
         }
         // Set of all tuples with known reachable host nodes
-        Map<Tuple,HostNodeSet> newReachMap = new HashMap<Tuple,HostNodeSet>();
+        Map<Tuple,HostNodeSet> newReachMap = new HashMap<>();
         for (Tuple p : predMap.keySet()) {
             HostNodeSet ns = this.reachMap.get(p);
             if (ns == null) {

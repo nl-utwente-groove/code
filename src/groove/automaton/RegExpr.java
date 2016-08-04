@@ -255,7 +255,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      */
     public Choice choice(RegExpr other) {
         if (other instanceof Choice) {
-            List<RegExpr> operands = new ArrayList<RegExpr>();
+            List<RegExpr> operands = new ArrayList<>();
             operands.add(this);
             operands.addAll(other.getOperands());
             return new Choice(operands);
@@ -271,7 +271,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      */
     public Seq seq(RegExpr other) {
         if (other instanceof Seq) {
-            List<RegExpr> operands = new ArrayList<RegExpr>();
+            List<RegExpr> operands = new ArrayList<>();
             operands.add(this);
             operands.addAll(other.getOperands());
             return new Seq(operands);
@@ -362,7 +362,7 @@ abstract public class RegExpr { // implements VarSetSupport {
     public Set<LabelVar> allVarSet() {
         // by making a linked set we make sure the order is preserved
         // and yet no identifier occurs more than once
-        Set<LabelVar> result = new LinkedHashSet<LabelVar>();
+        Set<LabelVar> result = new LinkedHashSet<>();
         if (getWildcardId() != null && getWildcardId().hasName()) {
             result.add(getWildcardId());
         } else {
@@ -380,7 +380,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      * @see #allVarSet()
      */
     public Set<LabelVar> boundVarSet() {
-        Set<LabelVar> result = new LinkedHashSet<LabelVar>();
+        Set<LabelVar> result = new LinkedHashSet<>();
         if (getWildcardId() != null && getWildcardId().hasName()) {
             result.add(getWildcardId());
         }
@@ -877,8 +877,8 @@ abstract public class RegExpr { // implements VarSetSupport {
     static private final Map<String,String> tokenMap;
 
     static {
-        operators = new LinkedList<String>();
-        tokenMap = new HashMap<String,String>();
+        operators = new LinkedList<>();
+        tokenMap = new HashMap<>();
         for (RegExpr prototype : prototypes) {
             if (!(prototype instanceof Atom)) {
                 operators.add(prototype.getOperator());
@@ -910,7 +910,7 @@ abstract public class RegExpr { // implements VarSetSupport {
     }
 
     private static Map<String,String> computeDocMap() {
-        Map<String,String> result = new TreeMap<String,String>();
+        Map<String,String> result = new TreeMap<>();
         for (Class<?> subClass : RegExpr.class.getClasses()) {
             Help help = Help.createHelp(subClass, tokenMap);
             if (help != null) {
@@ -980,7 +980,7 @@ abstract public class RegExpr { // implements VarSetSupport {
             if (operands.length < 2) {
                 return null;
             }
-            List<RegExpr> operandList = new LinkedList<RegExpr>();
+            List<RegExpr> operandList = new LinkedList<>();
             for (String element : operands) {
                 operandList.add(parse(element));
             }
@@ -1036,7 +1036,7 @@ abstract public class RegExpr { // implements VarSetSupport {
          */
         @Override
         public <Result> Result apply(RegExprCalculator<Result> calculator) {
-            List<Result> argsList = new ArrayList<Result>();
+            List<Result> argsList = new ArrayList<>();
             for (RegExpr operand : getOperands()) {
                 argsList.add(operand.apply(calculator));
             }
@@ -1045,7 +1045,7 @@ abstract public class RegExpr { // implements VarSetSupport {
 
         @Override
         public RegExpr relabel(TypeLabel oldLabel, TypeLabel newLabel) {
-            List<RegExpr> newOperands = new ArrayList<RegExpr>();
+            List<RegExpr> newOperands = new ArrayList<>();
             boolean hasChanged = false;
             for (RegExpr operand : getOperands()) {
                 RegExpr newOperand = operand.relabel(oldLabel, newLabel);
@@ -1057,7 +1057,7 @@ abstract public class RegExpr { // implements VarSetSupport {
 
         @Override
         public Set<TypeLabel> getTypeLabels() {
-            Set<TypeLabel> result = new HashSet<TypeLabel>();
+            Set<TypeLabel> result = new HashSet<>();
             for (RegExpr operand : getOperands()) {
                 result.addAll(operand.getTypeLabels());
             }
@@ -1697,7 +1697,7 @@ abstract public class RegExpr { // implements VarSetSupport {
             if (constraintParts.length == 0) {
                 throw new FormatException("Invalid constraint parameter '%s'", parameter);
             }
-            final List<String> constrainedLabels = new ArrayList<String>();
+            final List<String> constrainedLabels = new ArrayList<>();
             for (String part : constraintParts) {
                 RegExpr atom;
                 try {
@@ -1782,7 +1782,7 @@ abstract public class RegExpr { // implements VarSetSupport {
 
         @Override
         public Set<TypeLabel> getTypeLabels() {
-            Set<TypeLabel> result = new HashSet<TypeLabel>();
+            Set<TypeLabel> result = new HashSet<>();
             result.add(getTypeLabel());
             return result;
         }
@@ -1954,7 +1954,7 @@ abstract public class RegExpr { // implements VarSetSupport {
 
         @Override
         public Set<TypeLabel> getTypeLabels() {
-            Set<TypeLabel> result = new HashSet<TypeLabel>();
+            Set<TypeLabel> result = new HashSet<>();
             result.add(toTypeLabel());
             return result;
         }

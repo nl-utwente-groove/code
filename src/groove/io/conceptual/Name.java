@@ -13,7 +13,7 @@ public class Name implements Serializable {
     private String m_name;
     // The global set of names. Names are unique within the entire application,
     // so they are safe to reuse in different models
-    private static Map<String,Name> g_nameMap = new HashMap<String,Name>();
+    private static Map<String,Name> g_nameMap = new HashMap<>();
 
     // Create new name
     private Name(String name) {

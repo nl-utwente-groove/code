@@ -85,10 +85,10 @@ class ConfluenceAnalyzer {
      */
     private static ConfluentPair getConfluentPair(CriticalPair pair, Grammar grammar,
         int searchDepth) {
-        Set<HostGraphWithMorphism> oldStates1 = new HashSet<HostGraphWithMorphism>();
-        Set<HostGraphWithMorphism> oldStates2 = new HashSet<HostGraphWithMorphism>();
-        Set<HostGraphWithMorphism> newStates1 = new HashSet<HostGraphWithMorphism>();
-        Set<HostGraphWithMorphism> newStates2 = new HashSet<HostGraphWithMorphism>();
+        Set<HostGraphWithMorphism> oldStates1 = new HashSet<>();
+        Set<HostGraphWithMorphism> oldStates2 = new HashSet<>();
+        Set<HostGraphWithMorphism> newStates1 = new HashSet<>();
+        Set<HostGraphWithMorphism> newStates2 = new HashSet<>();
 
         RuleApplication app1 = pair.getRuleApplication1();
         RuleApplication app2 = pair.getRuleApplication2();
@@ -180,7 +180,7 @@ class ConfluenceAnalyzer {
     private static Set<HostGraphWithMorphism> computeNewStates(Set<HostGraphWithMorphism> states,
         Grammar grammar) {
         Set<Rule> rules = grammar.getAllRules();
-        Set<HostGraphWithMorphism> result = new HashSet<HostGraphWithMorphism>();
+        Set<HostGraphWithMorphism> result = new HashSet<>();
         for (HostGraphWithMorphism state : states) {
             Record record = new Record(grammar, state.getHostGraph()
                 .getFactory());
@@ -289,7 +289,7 @@ class ConfluenceAnalyzer {
         OrderedCriticalPairSet orderedSet = new OrderedCriticalPairSet(pairs);
 
         //Set containing all pairs which were confluent, together with a transformation morphism that made the pair confluent
-        LinkedHashSet<ConfluentPair> confluentPairs = new LinkedHashSet<ConfluentPair>();
+        LinkedHashSet<ConfluentPair> confluentPairs = new LinkedHashSet<>();
 
         for (CriticalPair pair : orderedSet) {
 
@@ -433,7 +433,7 @@ class ConfluenceAnalyzer {
      * @return true if match is injective on all elements which are deleted in transformation
      */
     private static boolean isDInjective(HostGraphMorphism match, HostGraphMorphism transformation) {
-        ArrayList<HostNode> nodeList = new ArrayList<HostNode>(match.nodeMap()
+        ArrayList<HostNode> nodeList = new ArrayList<>(match.nodeMap()
             .keySet());
         for (int i = 0; i < nodeList.size(); i++) {
             for (int j = i + 1; j < nodeList.size(); j++) {
@@ -452,7 +452,7 @@ class ConfluenceAnalyzer {
             }
         }
         //repeat the same for the edges
-        ArrayList<HostEdge> edgeList = new ArrayList<HostEdge>(match.edgeMap()
+        ArrayList<HostEdge> edgeList = new ArrayList<>(match.edgeMap()
             .keySet());
         for (int i = 0; i < edgeList.size(); i++) {
             for (int j = i + 1; j < edgeList.size(); j++) {

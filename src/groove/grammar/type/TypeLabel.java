@@ -205,7 +205,7 @@ public final class TypeLabel extends ALabel {
     }
 
     static private final Map<Sort,TypeLabel> sigLabelMap =
-        new EnumMap<Sort,TypeLabel>(Sort.class);
+        new EnumMap<>(Sort.class);
     static {
         for (Sort sigKind : Sort.values()) {
             sigLabelMap.put(sigKind, new TypeLabel(sigKind.getName(), EdgeRole.NODE_TYPE));

@@ -70,7 +70,7 @@ public class ShiftPriorityAction extends SimulatorAction {
         Set<QualName> selectedRules = new HashSet<>(getSimulatorModel().getSelectSet(RULE));
         selectedRules.removeAll(frozen);
         // now shift rules to higher or lower priority classes
-        List<Integer> priorities = new ArrayList<Integer>();
+        List<Integer> priorities = new ArrayList<>();
         List<Set<QualName>> remainingRules = new ArrayList<>();
         List<Set<QualName>> shiftedRules = new ArrayList<>();
         Set<QualName> oldShifted = Collections.<QualName>emptySet();

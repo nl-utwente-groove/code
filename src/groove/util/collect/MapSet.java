@@ -70,7 +70,7 @@ abstract public class MapSet<K,E> extends AbstractSet<E> implements Set<E> {
         K key = getKey(e);
         Set<E> set = this.map.get(key);
         if (set == null) {
-            this.map.put(key, set = new HashSet<E>());
+            this.map.put(key, set = new HashSet<>());
         }
         boolean result = set.add(e);
         if (result) {
@@ -113,6 +113,6 @@ abstract public class MapSet<K,E> extends AbstractSet<E> implements Set<E> {
      */
     abstract protected K getKey(Object value);
 
-    private final Map<K,Set<E>> map = new HashMap<K,Set<E>>();
+    private final Map<K,Set<E>> map = new HashMap<>();
     private int size;
 }

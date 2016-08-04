@@ -43,7 +43,7 @@ public class GroovePrologLoadingException extends GroovePrologException {
      */
     public GroovePrologLoadingException(
             List<PrologTextLoaderError> loadingErrors) {
-        this.errors = new ArrayList<PrologTextLoaderError>(loadingErrors);
+        this.errors = new ArrayList<>(loadingErrors);
     }
 
     /**

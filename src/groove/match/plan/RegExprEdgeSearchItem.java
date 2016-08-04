@@ -40,7 +40,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         this.target = edge.target();
         this.selfEdge = this.source == this.target;
         this.boundEdges = Collections.singleton(edge);
-        this.boundNodes = new HashSet<RuleNode>();
+        this.boundNodes = new HashSet<>();
         this.boundNodes.add(edge.source());
         this.boundNodes.add(edge.target());
         RuleLabel label = edge.label();
@@ -48,7 +48,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         this.edgeExpr = label.getMatchExpr();
         this.boundVars = label.getMatchExpr().boundVarSet();
         this.allVars = label.getMatchExpr().allVarSet();
-        this.neededVars = new HashSet<LabelVar>(this.allVars);
+        this.neededVars = new HashSet<>(this.allVars);
         this.neededVars.removeAll(this.boundVars);
     }
 
@@ -141,8 +141,8 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
             this.targetFound = strategy.isNodeFound(this.target);
             this.targetIx = strategy.getNodeIx(this.target);
         }
-        this.varIxMap = new HashMap<LabelVar,Integer>();
-        this.prematchedVars = new HashSet<LabelVar>();
+        this.varIxMap = new HashMap<>();
+        this.prematchedVars = new HashSet<>();
         for (LabelVar var : this.allVars) {
             assert strategy.isVarFound(var);
             this.prematchedVars.add(var);

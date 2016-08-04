@@ -74,7 +74,7 @@ public class GxlUtil {
         private GraphType m_graph;
         private String m_type;
 
-        private Set<NodeWrapper> m_nodes = new HashSet<NodeWrapper>();
+        private Set<NodeWrapper> m_nodes = new HashSet<>();
 
         public GraphWrapper(GraphType graph) {
             this.m_graph = graph;
@@ -103,8 +103,8 @@ public class GxlUtil {
         private NodeType m_node;
         private String m_type;
 
-        private List<EdgeWrapper> m_edges = new ArrayList<EdgeWrapper>();
-        private List<EdgeWrapper> m_incomingEdges = new ArrayList<EdgeWrapper>();
+        private List<EdgeWrapper> m_edges = new ArrayList<>();
+        private List<EdgeWrapper> m_incomingEdges = new ArrayList<>();
 
         public NodeWrapper(NodeType node) {
             this.m_node = node;
@@ -175,8 +175,8 @@ public class GxlUtil {
         private EdgeWrapper m_edgeFrom;
         private EdgeWrapper m_edgeTo;
 
-        private List<EdgeWrapper> m_edges = new ArrayList<EdgeWrapper>();
-        private List<EdgeWrapper> m_incomingEdges = new ArrayList<EdgeWrapper>();
+        private List<EdgeWrapper> m_edges = new ArrayList<>();
+        private List<EdgeWrapper> m_incomingEdges = new ArrayList<>();
 
         // True if connecting nodes, false if connecting edges
         private boolean m_nodeEdge;
@@ -311,8 +311,8 @@ public class GxlUtil {
     }
 
     public static Map<NodeType,NodeWrapper> wrapGraph(GraphType graph) {
-        Map<NodeType,NodeWrapper> nodes = new HashMap<NodeType,NodeWrapper>();
-        Map<EdgeType,EdgeWrapper> edges = new HashMap<EdgeType,EdgeWrapper>();
+        Map<NodeType,NodeWrapper> nodes = new HashMap<>();
+        Map<EdgeType,EdgeWrapper> edges = new HashMap<>();
 
         for (GraphElementType elem : graph.getNodeOrEdgeOrRel()) {
             if (elem instanceof NodeType) {
@@ -629,7 +629,7 @@ public class GxlUtil {
                 .size()) {
                 return null;
             }
-            List<Value> values = new ArrayList<Value>();
+            List<Value> values = new ArrayList<>();
             int i = 0;
             for (JAXBElement<?> subElem : elems) {
                 Value v = getTypedValue(subElem, tup.getTypes()

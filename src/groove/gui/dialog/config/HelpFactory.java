@@ -144,8 +144,8 @@ public class HelpFactory {
     }
 
     private JComponent createSyntaxPanel(Logic logic) {
-        final JList<String> list = new JList<String>();
-        DefaultListModel<String> model = new DefaultListModel<String>();
+        final JList<String> list = new JList<>();
+        DefaultListModel<String> model = new DefaultListModel<>();
         Map<String,String> docMap = FormulaParser.getDocMap(logic);
         for (Map.Entry<String,String> entry : docMap.entrySet()) {
             model.addElement(entry.getKey());

@@ -151,7 +151,7 @@ public class PrologDisplay extends ResourceDisplay {
      */
     private JComboBox<String> getQueryField() {
         if (this.queryField == null) {
-            this.queryField = new JComboBox<String>(PREFS.get("queryHistory", "").split("\\n"));
+            this.queryField = new JComboBox<>(PREFS.get("queryHistory", "").split("\\n"));
             this.queryField.setFont(EDIT_FONT);
             this.queryField.setEditable(true);
             this.queryField.setEnabled(true);
@@ -223,7 +223,7 @@ public class PrologDisplay extends ResourceDisplay {
     private void loadSyntaxHelpTree(JTree tree, Set<CompoundTermTag> tags) {
         DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) tree.getModel().getRoot();
         rootNode.removeAllChildren();
-        Map<AtomTerm,DefaultMutableTreeNode> nodes = new HashMap<AtomTerm,DefaultMutableTreeNode>();
+        Map<AtomTerm,DefaultMutableTreeNode> nodes = new HashMap<>();
         for (CompoundTermTag tag : tags) {
             DefaultMutableTreeNode baseNode = nodes.get(tag.functor);
             if (baseNode == null) {

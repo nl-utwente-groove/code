@@ -38,7 +38,7 @@ public class PartitionMap<E extends Element> {
         SmallCollection<E> oldPartition = this.partitionMap.get(certificate);
         if (oldPartition == null) {
             // no, the certificate did not yet exist; create an entry for it
-            this.partitionMap.put(certificate, new SmallCollection<E>(elem));
+            this.partitionMap.put(certificate, new SmallCollection<>(elem));
         } else {
             oldPartition.add(elem);
             this.oneToOne = false;
@@ -76,7 +76,7 @@ public class PartitionMap<E extends Element> {
 
     /** The actual mapping. */
     private final Map<ElementCertificate<? extends E>,SmallCollection<E>> partitionMap =
-        new HashMap<ElementCertificate<? extends E>,SmallCollection<E>>();
+        new HashMap<>();
     /** Flag indicating if the partition map contains non-singleton images. */
     private boolean oneToOne = true;
 }

@@ -45,7 +45,7 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
      * that they belong to.
      */
     protected HashMap<ReteNetworkNode,TreeHashSet<AbstractReteMatch>> partialMatches =
-        new HashMap<ReteNetworkNode,TreeHashSet<AbstractReteMatch>>();
+        new HashMap<>();
 
     /**
      * Creates a subgraph-checker from a list of antecedents, each of which
@@ -63,7 +63,7 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
     }
 
     private void connectToAntecedents(List<ReteStaticMapping> antecedents) {
-        List<RuleElement> tempPatternList = new ArrayList<RuleElement>();
+        List<RuleElement> tempPatternList = new ArrayList<>();
         //We sort the mappings based on the associated n-nodes 
         //so that those with the same n-node would be next to 
         //one another and so identically repeating antecedents
@@ -180,7 +180,7 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
         }
 
         if (isPossible) {
-            result = new ArrayList<AbstractReteMatch>();
+            result = new ArrayList<>();
             Iterator<AbstractReteMatch>[] partialMatchIterators =
                 new Iterator[this.getAntecedents().size()];
             for (int i = 0; i < partialMatchIterators.length; i++) {
@@ -243,7 +243,7 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
         TreeHashSet<AbstractReteMatch> result =
             this.partialMatches.get(antecedent);
         if (result == null) {
-            result = new TreeHashSet<AbstractReteMatch>();
+            result = new TreeHashSet<>();
             this.partialMatches.put(antecedent, result);
         }
         return result;

@@ -76,11 +76,11 @@ public class BinaryEdgeTest {
     public void testHashSetEquals() {
         PlainEdge e2 = PlainEdge.createEdge(n1, "a", n2);
 
-        Set<PlainEdge> s1 = new HashSet<PlainEdge>();
+        Set<PlainEdge> s1 = new HashSet<>();
         s1.add(e);
         assertTrue(s1.contains(e2));
 
-        Set<PlainEdge> s2 = new HashSet<PlainEdge>();
+        Set<PlainEdge> s2 = new HashSet<>();
         s2.add(e2);
         assertEquals(s1, s2);
     }

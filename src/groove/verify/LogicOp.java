@@ -192,7 +192,7 @@ public enum LogicOp implements Op {
     /** Returns the logic operator corresponding to a given one-character symbol. */
     public static LogicOp getCompareOp(char c) {
         if (compareOpMap == null) {
-            compareOpMap = new HashMap<Character,LogicOp>();
+            compareOpMap = new HashMap<>();
             registerOp(compareOpMap, EVENTUALLY);
             registerOp(compareOpMap, ALWAYS);
             registerOp(compareOpMap, EXISTS);

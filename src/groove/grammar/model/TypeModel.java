@@ -128,7 +128,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         }
         errors.throwException();
         // check if there are untyped, non-virtual nodes
-        Set<AspectNode> untypedNodes = new HashSet<AspectNode>(getSource().nodeSet());
+        Set<AspectNode> untypedNodes = new HashSet<>(getSource().nodeSet());
         untypedNodes.removeAll(this.modelMap.nodeMap()
             .keySet());
         Iterator<AspectNode> untypedNodeIter = untypedNodes.iterator();

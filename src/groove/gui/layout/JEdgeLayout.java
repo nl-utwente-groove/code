@@ -45,7 +45,7 @@ public class JEdgeLayout implements JCellLayout {
      * @param attr the attribute map
      */
     static public JEdgeLayout newInstance(AttributeMap attr) {
-        List<Point2D> points = new ArrayList<Point2D>();
+        List<Point2D> points = new ArrayList<>();
         List<?> attrPoints = GraphConstants.getPoints(attr);
         if (attrPoints == null) {
             points.add(new Point());
@@ -96,7 +96,7 @@ public class JEdgeLayout implements JCellLayout {
      *         <code>getLineStyle() == lineStyle</code>
      */
     public JEdgeLayout(List<Point2D> points, Point2D labelPosition, LineStyle lineStyle) {
-        this.points = new LinkedList<Point2D>(points);
+        this.points = new LinkedList<>(points);
         if (labelPosition == null) {
             this.labelPosition = defaultLabelPosition;
         } else {

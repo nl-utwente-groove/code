@@ -232,7 +232,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>implements Ho
      * method is only used if the map could not be obtained from the basis.
      */
     private HostEdgeStore<HostNode> computeInEdgeStore() {
-        HostEdgeStore<HostNode> result = new HostEdgeStore<HostNode>();
+        HostEdgeStore<HostNode> result = new HostEdgeStore<>();
         for (Map.Entry<HostNode,HostEdgeSet> nodeEdgeEntry : this.nodeEdgeStore.entrySet()) {
             HostNode key = nodeEdgeEntry.getKey();
             HostEdgeSet inEdges = createEdgeSet(null);
@@ -269,7 +269,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>implements Ho
      * method is only used if the map could not be obtained from the basis.
      */
     private HostEdgeStore<HostNode> computeOutEdgeStore() {
-        HostEdgeStore<HostNode> result = new HostEdgeStore<HostNode>();
+        HostEdgeStore<HostNode> result = new HostEdgeStore<>();
         for (Map.Entry<HostNode,HostEdgeSet> nodeEdgeEntry : this.nodeEdgeStore.entrySet()) {
             HostNode key = nodeEdgeEntry.getKey();
             HostEdgeSet inEdges = createEdgeSet(null);
@@ -340,14 +340,14 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>implements Ho
             assert this.labelEdgeStore == null;
             if (this.basis == null) {
                 this.edgeSet = createEdgeSet(null);
-                this.nodeEdgeStore = new HostEdgeStore<HostNode>();
+                this.nodeEdgeStore = new HostEdgeStore<>();
                 // apply the delta to fill the structures;
                 // the swing target actually shares this graph's structures
                 this.delta.applyDelta(new SwingTarget());
             } else {
                 // back up to the first initialised graph
                 // or the first graph without a basis
-                Stack<DeltaHostGraph> basisChain = new Stack<DeltaHostGraph>();
+                Stack<DeltaHostGraph> basisChain = new Stack<>();
                 basisChain.push(this);
                 DeltaHostGraph backward = this.basis;
                 while (backward.basis != null && !backward.isDataInitialised()) {
@@ -430,7 +430,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>implements Ho
         if (result == null || result.getStrength() != strong) {
             result = AGraph.getCertificateFactory()
                 .newInstance(this, strong);
-            this.certifier = new WeakReference<CertificateStrategy>(result);
+            this.certifier = new WeakReference<>(result);
         }
         return result;
     }
@@ -738,7 +738,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>implements Ho
             this.freshTargetKeys = createNodeSet(deepCopy ? this.nodeEdgeStore.keySet() : null);
             if (graph.labelEdgeStore != null) {
                 this.labelEdgeStore = copy(graph.labelEdgeStore, deepCopy);
-                this.freshLabelKeys = new HashSet<TypeLabel>();
+                this.freshLabelKeys = new HashSet<>();
                 if (deepCopy) {
                     this.freshLabelKeys.addAll(this.labelEdgeStore.keySet());
                 }
@@ -754,7 +754,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>implements Ho
         }
 
         private <K> HostEdgeStore<K> copy(HostEdgeStore<K> source, boolean deepCopy) {
-            return new HostEdgeStore<K>(source, deepCopy);
+            return new HostEdgeStore<>(source, deepCopy);
         }
 
         /**

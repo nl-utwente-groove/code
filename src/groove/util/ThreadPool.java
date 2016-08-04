@@ -28,7 +28,7 @@ public class ThreadPool {
     private ThreadPool() {
         int threadCount = (Runtime.getRuntime().availableProcessors() + 1) / 2;
         this.exec = Executors.newFixedThreadPool(threadCount);
-        this.futures = new ArrayList<Future<?>>();
+        this.futures = new ArrayList<>();
     }
 
     /** Schedules a runnable for execution by this thread pool. */

@@ -64,8 +64,8 @@ public class ClosurePathChecker extends AbstractPathChecker implements ReteState
         if (expression.isStar()) {
             this.getOwner().getState().subscribe(this);
         }
-        this.leftMemory = new HashSet<RetePathMatch>();
-        this.rightMemory = new HashSet<RetePathMatch>();
+        this.leftMemory = new HashSet<>();
+        this.rightMemory = new HashSet<>();
     }
 
     @Override
@@ -104,7 +104,7 @@ public class ClosurePathChecker extends AbstractPathChecker implements ReteState
 
     private void receiveLoopBackMatches(Collection<RetePathMatch> loopBackMatches,
         int recursionCounter) {
-        List<RetePathMatch> resultingNewMatches = new LinkedList<RetePathMatch>();
+        List<RetePathMatch> resultingNewMatches = new LinkedList<>();
         for (RetePathMatch loopBackMatch : loopBackMatches) {
             this.rightMemory.add(loopBackMatch);
             loopBackMatch.addContainerCollection(this.rightMemory);
@@ -127,7 +127,7 @@ public class ClosurePathChecker extends AbstractPathChecker implements ReteState
     }
 
     private void receiveNewIncomingMatch(ReteNetworkNode source, RetePathMatch newMatch) {
-        List<RetePathMatch> resultingMatches = new LinkedList<RetePathMatch>();
+        List<RetePathMatch> resultingMatches = new LinkedList<>();
         RetePathMatch m = new RetePathMatch(this, newMatch);
         m.setClosureInfo(new ClosureInfo(m));
         resultingMatches.add(m);

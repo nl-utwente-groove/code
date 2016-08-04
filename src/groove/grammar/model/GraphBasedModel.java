@@ -98,7 +98,7 @@ abstract public class GraphBasedModel<R> extends NamedResourceModel<R> {
 
     /** Convenience method to return the inverse of a given model map. */
     private final Map<Element,Element> getInverseMap(ElementMap map) {
-        Map<Element,Element> result = new HashMap<Element,Element>();
+        Map<Element,Element> result = new HashMap<>();
         for (Map.Entry<? extends Node,? extends Node> nodeEntry : map.nodeMap()
             .entrySet()) {
             result.put(nodeEntry.getValue(), nodeEntry.getKey());

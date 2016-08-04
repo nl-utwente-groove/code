@@ -216,7 +216,7 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
          */
         @Override
         public void valueChanged(TreeSelectionEvent evt) {
-            List<TreeNode> selected = new ArrayList<TreeNode>();
+            List<TreeNode> selected = new ArrayList<>();
             suspendListeners();
             TreePath[] paths = getSelectionPaths();
             for (int i = 0; paths != null && i < paths.length; i++) {

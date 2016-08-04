@@ -11,7 +11,7 @@ import java.util.List;
 
 /** Enumerated types. */
 public class Enum extends DataType {
-    private List<Name> m_values = new ArrayList<Name>();
+    private List<Name> m_values = new ArrayList<>();
 
     /** Constructs an initially empty enumerated type with a given identifier. */
     public Enum(Id id) {

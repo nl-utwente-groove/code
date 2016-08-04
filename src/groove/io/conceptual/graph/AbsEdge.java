@@ -18,7 +18,7 @@ public class AbsEdge {
     String m_name;
     AbsNode m_source, m_target;
 
-    List<AspectEdge> m_aspectEdges = new ArrayList<AspectEdge>();
+    List<AspectEdge> m_aspectEdges = new ArrayList<>();
 
     public AbsEdge(AbsNode source, AbsNode target, String name) {
         if (target == null) {

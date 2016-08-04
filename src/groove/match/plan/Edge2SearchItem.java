@@ -61,7 +61,7 @@ class Edge2SearchItem extends AbstractSearchItem {
             this.target.isSharp() || this.type == null || targetType != this.type.target()
                 ? targetType : null;
         this.selfEdge = this.source == this.target;
-        this.boundNodes = new HashSet<RuleNode>();
+        this.boundNodes = new HashSet<>();
         this.boundNodes.add(this.source);
         this.boundNodes.add(this.target);
     }

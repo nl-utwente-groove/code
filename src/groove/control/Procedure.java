@@ -159,8 +159,8 @@ public abstract class Procedure implements Callable, Fixable {
     }
 
     private void initParMaps() {
-        this.inParMap = new LinkedHashMap<CtrlVar,Integer>();
-        this.outParMap = new LinkedHashMap<CtrlVar,Integer>();
+        this.inParMap = new LinkedHashMap<>();
+        this.outParMap = new LinkedHashMap<>();
         for (int i = 0; i < getSignature().size(); i++) {
             CtrlPar.Var par = getSignature().get(i);
             if (par.isInOnly()) {

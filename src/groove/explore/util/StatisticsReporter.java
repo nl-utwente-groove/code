@@ -182,7 +182,7 @@ public class StatisticsReporter extends AExplorationReporter {
      * counts.
      */
     private String getCacheReconstructionDistribution() {
-        List<Integer> sizes = new ArrayList<Integer>();
+        List<Integer> sizes = new ArrayList<>();
         boolean finished = false;
         for (int incarnation = 1; !finished; incarnation++) {
             int size = CacheReference.getFrequency(incarnation);

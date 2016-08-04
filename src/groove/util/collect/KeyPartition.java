@@ -38,7 +38,7 @@ abstract public class KeyPartition<T,U> {
      */
     public KeyPartition(boolean emptyCells) {
         this.emptyCells = emptyCells;
-        this.partitionMap = new HashMap<T,Set<U>>();
+        this.partitionMap = new HashMap<>();
         this.valueSet = new ValueSetView();
     }
 
@@ -180,7 +180,7 @@ abstract public class KeyPartition<T,U> {
 
     /** Callback factory method to create a partition cell. */
     protected Set<U> createCell() {
-        return new HashSet<U>();
+        return new HashSet<>();
     }
 
     /**

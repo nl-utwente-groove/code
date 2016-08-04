@@ -46,8 +46,8 @@ import groove.io.external.PortException;
 
 @SuppressWarnings("javadoc")
 public class TypeToGraphviz extends TypeExporter<Node> {
-    private Map<Id,Graph> m_packageGraphs = new HashMap<Id,Graph>();
-    private Map<TypeModel,Graph> m_typeGraphs = new HashMap<TypeModel,Graph>();
+    private Map<Id,Graph> m_packageGraphs = new HashMap<>();
+    private Map<TypeModel,Graph> m_typeGraphs = new HashMap<>();
     private TypeModel m_currentTypeModel;
 
     private int m_nodeId;
@@ -116,7 +116,7 @@ public class TypeToGraphviz extends TypeExporter<Node> {
 
         setElement(class1, classNode);
 
-        Set<Field> edgeFields = new HashSet<Field>();
+        Set<Field> edgeFields = new HashSet<>();
         for (Field f : class1.getFields()) {
             Node fieldNode = null;
             Type fieldType = f.getType();

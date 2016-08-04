@@ -30,7 +30,7 @@ import java.util.List;
 public class CtrlVarSet {
     /** Constructs an initially empty variable set. */
     public CtrlVarSet() {
-        this.modified = new HashSet<CtrlVar>();
+        this.modified = new HashSet<>();
     }
 
     /** Creates a collection on the basis of a given sorted list. */
@@ -42,7 +42,7 @@ public class CtrlVarSet {
     public List<CtrlVar> getAll() {
         List<CtrlVar> result = this.init;
         if (result == null) {
-            result = new ArrayList<CtrlVar>(this.modified);
+            result = new ArrayList<>(this.modified);
             Collections.sort(result);
         }
         return result;
@@ -51,7 +51,7 @@ public class CtrlVarSet {
     /** Adds a set of variables to this set. */
     public boolean addAll(Collection<CtrlVar> vars) {
         if (this.modified == null && !vars.isEmpty()) {
-            this.modified = new HashSet<CtrlVar>(this.init);
+            this.modified = new HashSet<>(this.init);
         }
         boolean changed = !vars.isEmpty() && this.modified.addAll(vars);
         if (changed) {
@@ -63,7 +63,7 @@ public class CtrlVarSet {
     /** Removes a set of variables from this set. */
     public boolean removeAll(Collection<CtrlVar> vars) {
         if (this.modified == null && !vars.isEmpty()) {
-            this.modified = new HashSet<CtrlVar>(this.init);
+            this.modified = new HashSet<>(this.init);
         }
         boolean changed = !vars.isEmpty() && this.modified.removeAll(vars);
         if (changed) {

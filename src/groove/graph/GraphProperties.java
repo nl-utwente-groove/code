@@ -76,7 +76,7 @@ public class GraphProperties extends Properties {
                 + "<li>- <i>property</i>: unmodifying, parameterless action, checked at every state"
                 + "<li>- <i>forbidden</i>: forbidden graph pattern, dealt with as dictated by the violation policy"
                 + "<li>- <i>invariant</i>: invariant graph property, dealt with as dictated by the violation policy",
-            new Parser.EnumParser<Role>(Role.class, null)),
+            new Parser.EnumParser<>(Role.class, null)),
 
         /** Output line format. */
         FORMAT(
@@ -189,7 +189,7 @@ public class GraphProperties extends Properties {
         private final static Map<String,Key> keyMap;
 
         static {
-            Map<String,Key> keys = new LinkedHashMap<String,Key>();
+            Map<String,Key> keys = new LinkedHashMap<>();
             for (Key key : Key.values()) {
                 keys.put(key.getName(), key);
             }

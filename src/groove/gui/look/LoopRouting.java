@@ -70,7 +70,7 @@ final class LoopRouting implements Routing {
                 midPoint.setLocation(sourceBounds.getMaxX() + DEFAULT_LOOP_SIZE, midPoint.getY());
             }
             Point2D endPoint = edgeView.getPoint(edgeView.getPointCount() - 1);
-            result = new ArrayList<Point2D>(3);
+            result = new ArrayList<>(3);
             result.add(startPoint);
             result.add(midPoint);
             result.add(endPoint);

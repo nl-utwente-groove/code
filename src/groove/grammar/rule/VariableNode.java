@@ -159,12 +159,9 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
     /** returns the string preceding the node number in the default variable node id. */
     static public final String TO_STRING_PREFIX = "x";
     /** Predefined empty list of matching types. */
-    @SuppressWarnings("null") static private final @NonNull Set<TypeNode> EMPTY_NODES_SET =
-        Collections.emptySet();
+    static private final @NonNull Set<TypeNode> EMPTY_NODES_SET = Collections.emptySet();
     /** Predefined empty list of type guards. */
-    @SuppressWarnings("null") static private final @NonNull List<TypeGuard> EMPTY_GUARD_LIST =
-        Collections.emptyList();
+    static private final @NonNull List<TypeGuard> EMPTY_GUARD_LIST = Collections.emptyList();
     /** Predefined empty list of type guards. */
-    @SuppressWarnings("null") static private final @NonNull Set<LabelVar> EMPTY_VAR_SET =
-        Collections.emptySet();
+    static private final @NonNull Set<LabelVar> EMPTY_VAR_SET = Collections.emptySet();
 }

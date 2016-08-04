@@ -69,11 +69,11 @@ public class STS {
      * Creates a new instance.
      */
     public STS() {
-        this.locationMap = new HashMap<HostGraph,Location>();
-        this.switchRelationMap = new HashMap<Object,SwitchRelation>();
-        this.gates = new HashSet<Gate>();
-        this.interactionVariables = new HashMap<Pair<VariableNode,Rule>,InteractionVariable>();
-        this.locationVariables = new HashMap<Pair<Integer,TypeLabel>,LocationVariable>();
+        this.locationMap = new HashMap<>();
+        this.switchRelationMap = new HashMap<>();
+        this.gates = new HashSet<>();
+        this.interactionVariables = new HashMap<>();
+        this.locationVariables = new HashMap<>();
         this.ruleInspector = RuleInspector.getInstance();
     }
 
@@ -84,7 +84,7 @@ public class STS {
      * @return The location variable.
      */
     public LocationVariable getLocationVariable(HostEdge edge) {
-        return this.locationVariables.get(new Pair<Integer,TypeLabel>(edge.source()
+        return this.locationVariables.get(new Pair<>(edge.source()
             .getNumber(), edge.label()));
     }
 
@@ -100,7 +100,7 @@ public class STS {
         ValueNode node = (ValueNode) edge.target();
         String label = LocationVariable.createLocationVariableLabel(edge);
         LocationVariable v = new LocationVariable(label, node.getSignature(), init);
-        this.locationVariables.put(new Pair<Integer,TypeLabel>(edge.source()
+        this.locationVariables.put(new Pair<>(edge.source()
             .getNumber(), edge.label()), v);
         return v;
     }
@@ -126,7 +126,7 @@ public class STS {
      * @return The location variables.
      */
     public Set<LocationVariable> getLocationVariables() {
-        return new HashSet<LocationVariable>(this.locationVariables.values());
+        return new HashSet<>(this.locationVariables.values());
     }
 
     /**
@@ -153,7 +153,7 @@ public class STS {
      * @return The interaction variable.
      */
     public InteractionVariable getInteractionVariable(VariableNode node, Rule rule) {
-        return this.interactionVariables.get(new Pair<VariableNode,Rule>(node, rule));
+        return this.interactionVariables.get(new Pair<>(node, rule));
     }
 
     /**
@@ -174,7 +174,7 @@ public class STS {
     public InteractionVariable addInteractionVariable(VariableNode node, Rule rule) {
         String label = InteractionVariable.createInteractionVariableLabel(rule, node);
         InteractionVariable v = new InteractionVariable(label, node.getSignature());
-        this.interactionVariables.put(new Pair<VariableNode,Rule>(node, rule), v);
+        this.interactionVariables.put(new Pair<>(node, rule), v);
         return v;
     }
 
@@ -240,12 +240,12 @@ public class STS {
         // Map variable nodes to interaction variables in the LHS of this rule
         // (datatype node labeled as parameter in lhs).
         Map<VariableNode,InteractionVariable> iVarMap =
-            new HashMap<VariableNode,InteractionVariable>();
+            new HashMap<>();
         mapInteractionVariables(event, iVarMap);
 
         // Map variable nodes to location variables in the LHS of this rule
-        Map<VariableNode,LocationVariable> lVarMap = new HashMap<VariableNode,LocationVariable>();
-        Map<VariableNode,LocationVariable> lValueMap = new HashMap<VariableNode,LocationVariable>();
+        Map<VariableNode,LocationVariable> lVarMap = new HashMap<>();
+        Map<VariableNode,LocationVariable> lValueMap = new HashMap<>();
         mapLocationVariables(event, sourceGraph, lVarMap, lValueMap);
 
         // Create the guard
@@ -256,7 +256,7 @@ public class STS {
 
         // Create the gate and the switch relation
         Gate gate = addGate(event.getRule()
-            .getTransitionLabel(), new HashSet<InteractionVariable>(iVarMap.values()));
+            .getTransitionLabel(), new HashSet<>(iVarMap.values()));
         Object obj = SwitchRelation.getSwitchIdentifier(gate, guard, update);
         SwitchRelation switchRelation = this.switchRelationMap.get(obj);
         if (switchRelation == null) {
@@ -533,12 +533,12 @@ public class STS {
         // first find the location variables undergoing an update, by finding
         // eraser edges to these variables
         Map<Pair<RuleNode,RuleLabel>,RuleEdge> possibleUpdates =
-            new HashMap<Pair<RuleNode,RuleLabel>,RuleEdge>();
+            new HashMap<>();
         for (RuleEdge e : rule.getEraserEdges()) {
             if (e.target()
                 .getType()
                 .isDataType() && !isFinal(rule.lhs(), e.source())) {
-                possibleUpdates.put(new Pair<RuleNode,RuleLabel>(e.source(), e.label()), e);
+                possibleUpdates.put(new Pair<>(e.source(), e.label()), e);
             }
         }
 
@@ -549,7 +549,7 @@ public class STS {
                 // A creator edge has been detected to a data node,
                 // this indicates an update for a location variable.
                 RuleEdge eraserEdge = possibleUpdates.remove(
-                    new Pair<RuleNode,RuleLabel>(creatorEdge.source(), creatorEdge.label()));
+                    new Pair<>(creatorEdge.source(), creatorEdge.label()));
                 if (eraserEdge == null) {
                     // Modeling constraint, updates have to be done in
                     // eraser/creator pairs.

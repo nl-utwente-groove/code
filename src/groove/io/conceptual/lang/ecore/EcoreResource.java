@@ -112,7 +112,7 @@ public class EcoreResource extends groove.io.conceptual.lang.ExportableResource 
             if (this.m_instanceFile != null) {
                 for (Entry<QualName,Resource> resourceEntry : this.m_instanceResources.entrySet()) {
                     try (FileOutputStream out = new FileOutputStream(this.m_instanceFile)) {
-                        Map<Object,Object> opts = new HashMap<Object,Object>();
+                        Map<Object,Object> opts = new HashMap<>();
                         if (this.m_typeFile != null) {
                             // If a target type resource has been defined, use schemaLocation. Otherwise don't, because it will point to nothing
                             opts.put(XMLResource.OPTION_SCHEMA_LOCATION, true);

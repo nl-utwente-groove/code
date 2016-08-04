@@ -85,7 +85,7 @@ public class Global {
      */
     public List<Global.IdOverrides> getIdOverrides() {
         if (this.idOverrides == null) {
-            this.idOverrides = new ArrayList<Global.IdOverrides>();
+            this.idOverrides = new ArrayList<>();
         }
         return this.idOverrides;
     }

@@ -240,7 +240,7 @@ public class Proposition {
         Line result;
         switch (getKind()) {
         case CALL:
-            List<Line> lines = new ArrayList<Line>();
+            List<Line> lines = new ArrayList<>();
             lines.add(getId().toLine());
             lines.add(Line.atom("("));
             boolean firstArg = true;

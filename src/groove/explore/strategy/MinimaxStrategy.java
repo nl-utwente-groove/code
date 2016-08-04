@@ -50,10 +50,10 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
     private long timer;
 
     //internal storage
-    private final LinkedList<MinimaxTree> nodes = new LinkedList<MinimaxTree>(); //contains the heuristic values for Minimax
+    private final LinkedList<MinimaxTree> nodes = new LinkedList<>(); //contains the heuristic values for Minimax
 
     //exploration stack (DFS)
-    private final ArrayDeque<GraphState> explorationStack = new ArrayDeque<GraphState>(); //unsynchronized stack
+    private final ArrayDeque<GraphState> explorationStack = new ArrayDeque<>(); //unsynchronized stack
 
     //configurable parameters
     private final int heuristicparam; //index of the heuristic parameter used
@@ -94,14 +94,14 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
 
         //enabled rules list
         if (enabledrules == null) {
-            this.enabledrules = new ArrayList<String>(0);
+            this.enabledrules = new ArrayList<>(0);
         } else {
             //trim double entries
-            HashSet<String> temp = new HashSet<String>();
+            HashSet<String> temp = new HashSet<>();
             for (Rule r : enabledrules) {
                 temp.add(r.getTransitionLabel());
             }
-            this.enabledrules = new ArrayList<String>(temp);
+            this.enabledrules = new ArrayList<>(temp);
 
             //prevent potential errors by not allowing null rule names
             if (enabledrules.contains(null)) {
@@ -504,7 +504,7 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
          */
         private void ensureChildren() {
             if (this.children == null) {
-                this.children = new HashSet<MinimaxTree>();
+                this.children = new HashSet<>();
                 this.score = null;
             }
         }

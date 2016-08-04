@@ -139,7 +139,7 @@ public class Valuator {
 
     /** Turns a given valuation into a nested list of objects. */
     static public List<Object> asList(Object[] val) {
-        List<Object> result = new ArrayList<Object>(Arrays.asList(val));
+        List<Object> result = new ArrayList<>(Arrays.asList(val));
         if (isNested(val)) {
             result.set(val.length - 1, asList(pop(val)));
         }

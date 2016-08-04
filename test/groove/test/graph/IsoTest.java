@@ -44,7 +44,7 @@ public class IsoTest {
     /** Setup method loading all comparable graphs. */
     @Before
     public void setUp() {
-        this.graphMap = new HashMap<String,List<PlainGraph>>();
+        this.graphMap = new HashMap<>();
         for (File stateFile : new File(INPUT_DIR).listFiles(STATE.getFilter())) {
             if (stateFile.isDirectory()) {
                 continue;
@@ -71,7 +71,7 @@ public class IsoTest {
             List<PlainGraph> record = this.graphMap.get(actualName);
             if (record == null) {
                 this.graphMap.put(actualName, record =
-                    new LinkedList<PlainGraph>());
+                    new LinkedList<>());
             }
             record.add(graph);
         }

@@ -4,9 +4,6 @@ package groove.explore.syntax;
 
 
 import org.antlr.runtime.*;
-import java.util.Stack;
-import java.util.List;
-import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked"})
 public class FormulaLexer extends Lexer {
@@ -60,6 +57,7 @@ public class FormulaLexer extends Lexer {
     public FormulaLexer(CharStream input, RecognizerSharedState state) {
         super(input,state);
     }
+    @Override
     public String getGrammarFileName() { return "E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g"; }
 
     // $ANTLR start "TRUE"
@@ -958,6 +956,7 @@ public class FormulaLexer extends Lexer {
     }
     // $ANTLR end "WS"
 
+    @Override
     public void mTokens() throws RecognitionException {
         // E:\\Eclipse\\groove-formula\\src\\groove\\explore\\syntax\\Formula.g:1:8: ( TRUE | FALSE | STRING_LIT | NAT_LIT | REAL_LIT | ID | AMP | AND | BAR | BSLASH | COMMA | DONT_CARE | DOT | EQUIV | MINUS | LPAR | RPAR | IMPL | IMPL_BY | OR | NOT | QUOTE | WS )
         int alt10=23;
@@ -1252,9 +1251,11 @@ public class FormulaLexer extends Lexer {
             this.special = DFA10_special;
             this.transition = DFA10_transition;
         }
+        @Override
         public String getDescription() {
             return "1:1: Tokens : ( TRUE | FALSE | STRING_LIT | NAT_LIT | REAL_LIT | ID | AMP | AND | BAR | BSLASH | COMMA | DONT_CARE | DOT | EQUIV | MINUS | LPAR | RPAR | IMPL | IMPL_BY | OR | NOT | QUOTE | WS );";
         }
+        @Override
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             IntStream input = _input;
         	int _s = s;

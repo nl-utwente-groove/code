@@ -385,7 +385,7 @@ public class GrammarProperties extends Properties {
         // change the control labels
         List<String> controlLabels = getControlLabels();
         if (controlLabels != null && controlLabels.contains(oldText)) {
-            List<String> newControlLabels = new ArrayList<String>(controlLabels);
+            List<String> newControlLabels = new ArrayList<>(controlLabels);
             int index = controlLabels.indexOf(oldText);
             newControlLabels.set(index, newLabel.text());
             result.setControlLabels(newControlLabels);
@@ -394,7 +394,7 @@ public class GrammarProperties extends Properties {
         // change the common labels
         List<String> commonLabels = getControlLabels();
         if (commonLabels != null && commonLabels.contains(oldText)) {
-            List<String> newCommonLabels = new ArrayList<String>(commonLabels);
+            List<String> newCommonLabels = new ArrayList<>(commonLabels);
             int index = commonLabels.indexOf(oldText);
             newCommonLabels.set(index, newLabel.text());
             result.setCommonLabels(newCommonLabels);
@@ -464,7 +464,7 @@ public class GrammarProperties extends Properties {
 
     /** Mapping from resource kinds to corresponding property keys. */
     static private final Map<ResourceKind,GrammarKey> resourceKeyMap =
-        new EnumMap<ResourceKind,GrammarKey>(ResourceKind.class);
+        new EnumMap<>(ResourceKind.class);
 
     static {
         resourceKeyMap.put(ResourceKind.TYPE, GrammarKey.TYPE_NAMES);

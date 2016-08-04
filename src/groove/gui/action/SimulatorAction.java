@@ -290,10 +290,10 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
         Duo<TypeLabel> result;
         switch (dialogResult) {
         case FindReplaceDialog.FIND:
-            result = new Duo<TypeLabel>(dialog.getOldLabel(), null);
+            result = new Duo<>(dialog.getOldLabel(), null);
             break;
         case FindReplaceDialog.REPLACE:
-            result = new Duo<TypeLabel>(dialog.getOldLabel(), dialog.getNewLabel());
+            result = new Duo<>(dialog.getOldLabel(), dialog.getNewLabel());
             break;
         case FindReplaceDialog.CANCEL:
         default:

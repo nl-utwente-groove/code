@@ -8,7 +8,7 @@ import java.util.Map;
 
 /** Conceptual tuple values. */
 public class TupleValue extends Value {
-    private Map<Integer,Value> m_values = new HashMap<Integer,Value>();
+    private Map<Integer,Value> m_values = new HashMap<>();
 
     /** Constructs an initialised tuple value. */
     public TupleValue(Tuple type, Value[] values) {

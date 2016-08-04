@@ -46,7 +46,7 @@ public class GrooveToType extends TypeImporter {
     private GraphNodeTypes m_types;
     private Config m_cfg;
 
-    private static Map<Id,Type> g_primitiveIds = new HashMap<Id,Type>();
+    private static Map<Id,Type> g_primitiveIds = new HashMap<>();
 
     static {
         g_primitiveIds.put(Id.getId(Id.ROOT, Name.getName("bool")), BoolType.instance());
@@ -56,12 +56,12 @@ public class GrooveToType extends TypeImporter {
     }
 
     // Map TypeNode to Id (each typenode in graph should have one)
-    private Map<TypeNode,Id> m_typeIds = new HashMap<TypeNode,Id>();
+    private Map<TypeNode,Id> m_typeIds = new HashMap<>();
 
     // Map graph nodes to edges
-    private Map<TypeNode,Set<TypeEdge>> m_nodeEdges = new HashMap<TypeNode,Set<TypeEdge>>();
+    private Map<TypeNode,Set<TypeEdge>> m_nodeEdges = new HashMap<>();
 
-    private Map<TypeNode,Type> m_intermediateFields = new HashMap<TypeNode,Type>();
+    private Map<TypeNode,Type> m_intermediateFields = new HashMap<>();
 
     public GrooveToType(TypeGraph grooveTypeGraph, GraphNodeTypes types, Config cfg) {
         this.m_types = types;
@@ -80,7 +80,7 @@ public class GrooveToType extends TypeImporter {
         // Set of edges in the TypeModel
         Set<? extends TypeEdge> edges = grooveTypeGraph.edgeSet();
         // Set of IDs for enums. These need to be known to find their value children
-        Map<Id,Enum> enumIds = new HashMap<Id,Enum>();
+        Map<Id,Enum> enumIds = new HashMap<>();
 
         // Map nodes to edges
         for (TypeNode n : grooveTypeGraph.nodeSet()) {
@@ -247,8 +247,8 @@ public class GrooveToType extends TypeImporter {
         // Now all the node types are known, create conceptual model types from these nodes, also in multiple passes
 
         // Keep track of tuple and intermediate nodes, for performance (used to find their edges)
-        Set<TypeNode> tupleNodes = new HashSet<TypeNode>();
-        Set<TypeNode> interNodes = new HashSet<TypeNode>();
+        Set<TypeNode> tupleNodes = new HashSet<>();
+        Set<TypeNode> interNodes = new HashSet<>();
 
         // Instantiate Classes, Enums
         for (TypeNode n : grooveTypeGraph.nodeSet()) {

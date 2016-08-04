@@ -96,7 +96,7 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
 
     static {
         Map<Style,Pair<Duo<String>,Mode>> result =
-            new EnumMap<Style,Pair<Duo<String>,Mode>>(Style.class);
+            new EnumMap<>(Style.class);
         for (Style style : Style.values()) {
             String start, end;
             Mode mode;
@@ -153,7 +153,7 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
     private static final Map<ColorType,String> colorMap;
 
     static {
-        Map<ColorType,String> result = new EnumMap<ColorType,String>(ColorType.class);
+        Map<ColorType,String> result = new EnumMap<>(ColorType.class);
         for (ColorType type : ColorType.values()) {
             String color;
             switch (type) {
@@ -186,7 +186,7 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
     }
 
     private static Map<Character,Pair<String,Mode>> charMap =
-        new HashMap<Character,Pair<String,Mode>>();
+        new HashMap<>();
 
     static {
         addChar(Util.EXISTS, "\\exists", Mode.MATH);

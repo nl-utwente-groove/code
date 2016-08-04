@@ -58,7 +58,7 @@ public class GraphReporter extends GrooveCmdLineTool<String> {
     public StringBuilder getReport(Graph graph) {
         StringBuilder result = new StringBuilder();
         // count the labels
-        Bag<Label> labels = new TreeBag<Label>();
+        Bag<Label> labels = new TreeBag<>();
         for (Edge edge : graph.edgeSet()) {
             labels.add(edge.label());
         }

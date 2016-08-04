@@ -35,7 +35,7 @@ public class IdentityHashMapTest {
     @Test
     public void testIdentityHashMap() {
         for (int i = 0; i < 100000; i++) {
-            Map<Integer,String> test = new IdentityHashMap<Integer,String>();
+            Map<Integer,String> test = new IdentityHashMap<>();
             for (int k = 0; k < 7; k++) {
                 test.put(new Integer(k), "");
             }

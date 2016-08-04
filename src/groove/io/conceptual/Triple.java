@@ -69,7 +69,7 @@ public class Triple<L,M,R> {
      * @return new Triple with left, middle and right elements
      */
     public static <A,B,C> Triple<A,B,C> create(A left, B middle, C right) {
-        return new Triple<A,B,C>(left, middle, right);
+        return new Triple<>(left, middle, right);
     }
 
     @Override

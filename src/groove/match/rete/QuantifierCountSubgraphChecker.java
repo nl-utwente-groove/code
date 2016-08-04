@@ -72,7 +72,7 @@ public class QuantifierCountSubgraphChecker
      * faster.
      */
     protected HashMap<ReteCountMatch,Set<AbstractReteMatch>> countBindings =
-        new HashMap<ReteCountMatch,Set<AbstractReteMatch>>();
+        new HashMap<>();
 
     /**
      * @param network The RETE network to which this n-node is to belong to.
@@ -101,7 +101,7 @@ public class QuantifierCountSubgraphChecker
         assert!this.countBindings.containsKey(countMatch);
         int result = 0;
         countMatch.addDominoListener(this);
-        Set<AbstractReteMatch> toBeDeletedFromLeft = new TreeHashSet<AbstractReteMatch>();
+        Set<AbstractReteMatch> toBeDeletedFromLeft = new TreeHashSet<>();
         if (!countMatch.isDummy()) {
             this.rightMemory.add(countMatch);
             countMatch.addContainerCollection(this.rightMemory);
@@ -167,7 +167,7 @@ public class QuantifierCountSubgraphChecker
     private void mapToCountMatch(AbstractReteMatch left, ReteCountMatch countMatch) {
         Set<AbstractReteMatch> boundMatches = this.countBindings.get(countMatch);
         if (boundMatches == null) {
-            boundMatches = new TreeHashSet<AbstractReteMatch>();
+            boundMatches = new TreeHashSet<>();
             this.countBindings.put(countMatch, boundMatches);
         }
         boundMatches.add(left);
@@ -178,7 +178,7 @@ public class QuantifierCountSubgraphChecker
     protected void selectJoinStrategy(ReteStaticMapping left, ReteStaticMapping right) {
         if (!(left.getNNode() instanceof QuantifierCountChecker)
             && (right.getNNode() instanceof QuantifierCountChecker)) {
-            this.joinStrategy = new JoinWithCountStrategy<AbstractReteMatch>(this);
+            this.joinStrategy = new JoinWithCountStrategy<>(this);
         } else if ((left.getNNode() instanceof QuantifierCountChecker)
             && !(right.getNNode() instanceof QuantifierCountChecker)) {
             throw new UnsupportedOperationException(

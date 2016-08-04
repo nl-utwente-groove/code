@@ -228,7 +228,7 @@ abstract public class CertificateStrategy {
         // check if the map has been computed before
         if (this.certificateMap == null) {
             getGraphCertificate();
-            this.certificateMap = new HashMap<Element,ElementCertificate<?>>();
+            this.certificateMap = new HashMap<>();
             // add the node certificates to the certificate map
             for (NodeCertificate nodeCert : this.nodeCerts) {
                 this.certificateMap.put(nodeCert.getElement(), nodeCert);
@@ -264,7 +264,7 @@ abstract public class CertificateStrategy {
      */
     private PartitionMap<Node> computeNodePartitionMap() {
         getPartitionReporter.start();
-        PartitionMap<Node> result = new PartitionMap<Node>();
+        PartitionMap<Node> result = new PartitionMap<>();
         // invert the certificate map
         for (NodeCertificate cert : this.nodeCerts) {
             result.add(cert);
@@ -296,7 +296,7 @@ abstract public class CertificateStrategy {
      */
     private PartitionMap<Edge> computeEdgePartitionMap() {
         getPartitionReporter.start();
-        PartitionMap<Edge> result = new PartitionMap<Edge>();
+        PartitionMap<Edge> result = new PartitionMap<>();
         // invert the certificate map
         int bound = this.edgeCerts.length;
         for (int i = 0; i < bound; i++) {
@@ -365,7 +365,7 @@ abstract public class CertificateStrategy {
      * the index.
      */
     static public List<Integer> getIterateCount() {
-        List<Integer> result = new ArrayList<Integer>();
+        List<Integer> result = new ArrayList<>();
         for (int element : iterateCountArray) {
             result.add(element);
         }

@@ -144,7 +144,7 @@ public class Switch implements Comparable<Switch>, Relocatable {
      * The binding is {@code null} for a non-input-parameter.
      */
     private List<Pair<Var,Binding>> computeCallBinding() {
-        List<Pair<Var,Binding>> result = new LinkedList<Pair<Var,Binding>>();
+        List<Pair<Var,Binding>> result = new LinkedList<>();
         List<? extends CtrlPar> args = getArgs();
         List<Var> sig = getUnit().getSignature();
         int size = args == null ? 0 : args.size();

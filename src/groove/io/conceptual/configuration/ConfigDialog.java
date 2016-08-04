@@ -205,7 +205,7 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
     }
 
     private final Map<ConfigAction.Type,ConfigAction> actionMap =
-        new EnumMap<ConfigAction.Type,ConfigAction>(ConfigAction.Type.class);
+        new EnumMap<>(ConfigAction.Type.class);
 
     private void refreshGUI() {
         getAction(ConfigAction.Type.RENAME).setEnabled(hasModels());

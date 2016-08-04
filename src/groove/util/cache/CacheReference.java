@@ -130,7 +130,7 @@ public class CacheReference<C> extends SoftReference<@Nullable C> {
      *         if the current reference is strong
      */
     public CacheReference<C> newReference(CacheHolder<C> holder, C cache) {
-        return new CacheReference<C>(holder, cache, this);
+        return new CacheReference<>(holder, cache, this);
     }
 
     /**
@@ -167,7 +167,7 @@ public class CacheReference<C> extends SoftReference<@Nullable C> {
      * given strength and incarnation count.
      */
     protected CacheReference<C> createNullInstance(boolean strong, int incarnation) {
-        return new CacheReference<C>(strong, incarnation, this);
+        return new CacheReference<>(strong, incarnation, this);
     }
 
     /**
@@ -288,7 +288,7 @@ public class CacheReference<C> extends SoftReference<@Nullable C> {
     /**
      * Array of frequency counters for each incarnation count.
      */
-    static private List<Integer> frequencies = new ArrayList<Integer>();
+    static private List<Integer> frequencies = new ArrayList<>();
 
     /** The singleton null instance for strong references. */
     @SuppressWarnings("rawtypes") static private final CacheReference strongInstance =

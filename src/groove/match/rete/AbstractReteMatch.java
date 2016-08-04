@@ -58,7 +58,7 @@ public abstract class AbstractReteMatch implements VarMap {
     private boolean deleted = false;
 
     private final List<AbstractReteMatch> superMatches =
-        new ArrayList<AbstractReteMatch>();
+        new ArrayList<>();
     /**
      * These are the matches that have participated in
      * building this one. We need these
@@ -67,12 +67,12 @@ public abstract class AbstractReteMatch implements VarMap {
      * of those who have not participated in a domino delete.
      */
     private final List<AbstractReteMatch> subMatches =
-        new ArrayList<AbstractReteMatch>();
+        new ArrayList<>();
 
     private final Collection<Collection<? extends AbstractReteMatch>> containerCollections =
-        new ArrayList<Collection<? extends AbstractReteMatch>>();
+        new ArrayList<>();
     private final List<DominoEventListener> dominoListeners =
-        new ArrayList<DominoEventListener>();
+        new ArrayList<>();
 
     /**
      * Variable bindings

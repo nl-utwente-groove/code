@@ -203,7 +203,7 @@ public class TestDeleteUse {
             match.putEdge(re, hostEdge);
         }
 
-        Set<RuleNode> nodeSet = new HashSet<RuleNode>(lhs.nodeSet());
+        Set<RuleNode> nodeSet = new HashSet<>(lhs.nodeSet());
         nodeSet.remove(ruleSource);
         nodeSet.remove(ruleTarget);
 

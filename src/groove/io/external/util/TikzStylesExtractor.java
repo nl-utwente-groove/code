@@ -225,7 +225,7 @@ public final class TikzStylesExtractor {
     /** Appends the modifying styles definitions. */
     private void appendModifyingStyles() {
         append(MOD_STYLE_COMMENT);
-        List<StyleDuo> styles = new ArrayList<StyleDuo>();
+        List<StyleDuo> styles = new ArrayList<>();
         for (Look modifyingLook : modifyingLooks) {
             styles.clear();
             append(BEGIN_TIKZ_STYLE);
@@ -377,8 +377,8 @@ public final class TikzStylesExtractor {
 
         Style(Look look) {
             this.look = look;
-            this.nodes = new ArrayList<StyleDuo>();
-            this.edges = new ArrayList<StyleDuo>();
+            this.nodes = new ArrayList<>();
+            this.edges = new ArrayList<>();
         }
 
         @Override

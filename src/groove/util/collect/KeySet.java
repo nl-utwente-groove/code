@@ -91,5 +91,5 @@ abstract public class KeySet<K,E> extends AbstractSet<E> implements Set<E> {
      */
     abstract protected K getKey(Object value);
 
-    private final Map<K,E> map = new LinkedHashMap<K,E>();
+    private final Map<K,E> map = new LinkedHashMap<>();
 }

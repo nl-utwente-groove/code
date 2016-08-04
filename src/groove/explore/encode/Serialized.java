@@ -38,7 +38,7 @@ public class Serialized implements Cloneable {
      */
     public Serialized(String keyword) {
         this.keyword = keyword;
-        this.arguments = new TreeMap<String,String>();
+        this.arguments = new TreeMap<>();
     }
 
     /**

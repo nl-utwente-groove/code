@@ -56,7 +56,7 @@ public class OperatorLister extends GrooveCmdLineTool<List<String[]>> {
     }
 
     private List<String[]> collectOperators() {
-        List<String[]> result = new ArrayList<String[]>();
+        List<String[]> result = new ArrayList<>();
         for (Sort sig : Sort.values()) {
             for (OpValue opValue : sig.getOpValues()) {
                 Operator op = opValue.getOperator();

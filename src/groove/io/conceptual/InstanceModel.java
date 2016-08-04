@@ -18,7 +18,7 @@ public class InstanceModel implements Serializable {
     private TypeModel m_tm;
     private QualName m_name;
 
-    private Set<Object> m_objects = new HashSet<Object>();
+    private Set<Object> m_objects = new HashSet<>();
 
     /**
      * Create new instance model, based on given type model and with the given name

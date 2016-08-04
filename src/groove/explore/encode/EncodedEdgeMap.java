@@ -41,7 +41,7 @@ public class EncodedEdgeMap implements EncodedType<Map<TypeLabel,Integer>,String
      */
     @Override
     public EncodedTypeEditor<Map<TypeLabel,Integer>,String> createEditor(GrammarModel grammar) {
-        return new StringEditor<Map<TypeLabel,Integer>>(grammar, "label>num,[label>num]*", "", 30);
+        return new StringEditor<>(grammar, "label>num,[label>num]*", "", 30);
     }
 
     /**
@@ -84,7 +84,7 @@ public class EncodedEdgeMap implements EncodedType<Map<TypeLabel,Integer>,String
         }
 
         // Allocate the result map.
-        Map<TypeLabel,Integer> edgeMap = new TreeMap<TypeLabel,Integer>();
+        Map<TypeLabel,Integer> edgeMap = new TreeMap<>();
 
         // Get the type graph from the GTS.
         TypeGraph typeGraph = rules.getTypeGraph();

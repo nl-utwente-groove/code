@@ -37,7 +37,7 @@ public class Operator {
         this.opValue = opValue;
         this.arity = methodParameterTypes.length;
         this.name = method.getName();
-        this.parameterTypes = new ArrayList<Sort>();
+        this.parameterTypes = new ArrayList<>();
         for (int i = 0; i < this.arity; i++) {
             if (!(methodParameterTypes[i] instanceof TypeVariable<?>)) {
                 throw new IllegalArgumentException(String.format(
@@ -244,7 +244,7 @@ public class Operator {
         return ops;
     }
 
-    static private final List<Operator> ops = new ArrayList<Operator>();
+    static private final List<Operator> ops = new ArrayList<>();
 
     /** Returns the operators for a given (prefix or infix) operator symbol or name. */
     public static List<Operator> getOps(String symbol) {
@@ -268,19 +268,19 @@ public class Operator {
         if (symbol != null) {
             List<Operator> ops = opLookupMap.get(symbol);
             if (ops == null) {
-                opLookupMap.put(symbol, ops = new ArrayList<Operator>());
+                opLookupMap.put(symbol, ops = new ArrayList<>());
             }
             ops.add(op);
         }
         String opName = op.getName();
         List<Operator> ops = opLookupMap.get(opName);
         if (ops == null) {
-            opLookupMap.put(opName, ops = new ArrayList<Operator>());
+            opLookupMap.put(opName, ops = new ArrayList<>());
         }
         ops.add(op);
     }
 
     /** Mapping from operator names and symbols to lists of operators with that symbol. */
     private static final Map<String,List<Operator>> opLookupMap =
-        new HashMap<String,List<Operator>>();
+        new HashMap<>();
 }

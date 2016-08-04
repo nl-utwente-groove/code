@@ -39,7 +39,7 @@ public class PlainFactory extends StoreFactory<PlainNode,PlainEdge,PlainLabel> {
 
     @Override
     public Morphism<PlainNode,PlainEdge> createMorphism() {
-        return new Morphism<PlainNode,PlainEdge>(this);
+        return new Morphism<>(this);
     }
 
     @Override

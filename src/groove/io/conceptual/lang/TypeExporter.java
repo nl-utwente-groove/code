@@ -53,8 +53,8 @@ import groove.io.external.PortException;
 public abstract class TypeExporter<E> implements Messenger, Visitor {
     public abstract void addTypeModel(TypeModel typeModel) throws PortException;
 
-    private List<Message> m_messages = new ArrayList<Message>();
-    protected Map<Acceptor,E> m_elements = new HashMap<Acceptor,E>();
+    private List<Message> m_messages = new ArrayList<>();
+    protected Map<Acceptor,E> m_elements = new HashMap<>();
 
     protected void addMessage(Message m) {
         this.m_messages.add(m);

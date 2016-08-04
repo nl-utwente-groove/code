@@ -137,7 +137,7 @@ abstract public class AbstractAutomatonTest {
         nC34 = new HostNodeSet();
         nC34.add(nC3);
         nC34.add(nC4);
-        reflexive = new HashSet<Result>();
+        reflexive = new HashSet<>();
         addRelated(reflexive, nList, nList);
         addRelated(reflexive, nC1, nC1);
         addRelated(reflexive, nC2, nC2);
@@ -463,7 +463,7 @@ abstract public class AbstractAutomatonTest {
     @Test
     public void testStarMatch() {
         RegAut aut = createAutomaton("next*");
-        Set<RegAut.Result> results = new HashSet<RegAut.Result>();
+        Set<RegAut.Result> results = new HashSet<>();
         addRelated(results, nC1, nC2);
         addRelated(results, nC1, nC3);
         addRelated(results, nC1, nC4);
@@ -495,7 +495,7 @@ abstract public class AbstractAutomatonTest {
     @Test
     public void testPlusMatch() {
         RegAut aut = createAutomaton("next+");
-        Set<Result> results = new HashSet<Result>();
+        Set<Result> results = new HashSet<>();
         addRelated(results, nC1, nC2);
         addRelated(results, nC1, nC3);
         addRelated(results, nC1, nC4);
@@ -521,7 +521,7 @@ abstract public class AbstractAutomatonTest {
     @Test
     public void testWildcardMatch() {
         RegAut aut = createAutomaton("?.3");
-        Set<Result> result = new HashSet<Result>();
+        Set<Result> result = new HashSet<>();
         addRelated(result, nI3, nI3);
         addRelated(result, nC3, nI3);
         addRelated(result, nC4, nI3);
@@ -558,7 +558,7 @@ abstract public class AbstractAutomatonTest {
     @Test
     public void testInvMatch() {
         RegAut aut = createAutomaton("-(?.3)");
-        Set<Result> result = new HashSet<Result>();
+        Set<Result> result = new HashSet<>();
         addRelated(result, nI3, nI3);
         addRelated(result, nI3, nC3);
         addRelated(result, nI3, nC4);
@@ -643,7 +643,7 @@ abstract public class AbstractAutomatonTest {
     }
 
     private Set<Result> createRelated(HostNode... nodes) {
-        Set<Result> result = new HashSet<Result>();
+        Set<Result> result = new HashSet<>();
         for (int i = 0; i < nodes.length; i += 2) {
             result.add(new Result(nodes[i], nodes[i + 1]));
         }

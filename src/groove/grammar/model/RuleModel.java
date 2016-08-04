@@ -108,7 +108,7 @@ import groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleModel> {
+public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleModel> {
     /**
      * Constructs a rule model from an aspect graph. The rule properties are
      * explicitly given.
@@ -203,6 +203,9 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
                     return new FormatError("anonymous parameter not allowed", node);
                 }
             }
+            if (node.hasColor()) {
+                return new FormatError("colour change not allowed", node);
+            }
             switch (node.getKind()) {
             case ERASER:
                 return new FormatError("erased not allowed", node);
@@ -286,7 +289,7 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
     @Override
     public Set<TypeLabel> getLabels() {
         if (this.labelSet == null) {
-            this.labelSet = new HashSet<TypeLabel>();
+            this.labelSet = new HashSet<>();
             for (AspectEdge edge : getNormalSource().edgeSet()) {
                 RuleLabel label = edge.getRuleLabel();
                 if (label != null) {
@@ -321,13 +324,12 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
         if (this.levelTree == null) {
             return null;
         }
-        TreeMap<Index,Set<AspectElement>> result =
-            new TreeMap<RuleModel.Index,Set<AspectElement>>();
+        TreeMap<Index,Set<AspectElement>> result = new TreeMap<>();
         for (Map.Entry<Index,Level1> levelEntry : this.levelTree.getLevel1Map()
             .entrySet()) {
             Index index = levelEntry.getKey();
             Level1 level = levelEntry.getValue();
-            Set<AspectElement> elements = new HashSet<AspectElement>();
+            Set<AspectElement> elements = new HashSet<>();
             result.put(index, elements);
             elements.addAll(level.modelNodes);
             elements.addAll(level.modelEdges);
@@ -392,7 +394,7 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
             System.out.println("");
         }
         // store the derived subrules in order
-        TreeMap<Index,Condition> conditionTree = new TreeMap<Index,Condition>();
+        TreeMap<Index,Condition> conditionTree = new TreeMap<>();
         // construct the rule tree and add parent rules
         try {
             for (Level4 level : levelTree.getLevel4Map()
@@ -535,7 +537,7 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
             testFixed(false);
             assert this.parent == null && parent.isFixed();
             this.parent = parent;
-            this.index = new ArrayList<Integer>(parent.index.size() + 1);
+            this.index = new ArrayList<>(parent.index.size() + 1);
             this.index.addAll(parent.index);
             this.index.add(nr);
             setFixed();
@@ -726,13 +728,13 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
         /** Builds the level data maps. */
         private SortedSet<Index> buildTree() {
             // First build an explicit tree of level nodes
-            Map<Index,List<Index>> indexTree = new HashMap<Index,List<Index>>();
+            Map<Index,List<Index>> indexTree = new HashMap<>();
             this.topLevelIndex = createIndex(Op.EXISTS, false, null, indexTree);
             // initialise the data structures
-            this.metaIndexMap = new HashMap<AspectNode,Index>();
-            this.nameIndexMap = new HashMap<String,Index>();
+            this.metaIndexMap = new HashMap<>();
+            this.nameIndexMap = new HashMap<>();
             // Mapping from levels to match count nodes
-            this.matchCountMap = new HashMap<Index,AspectNode>();
+            this.matchCountMap = new HashMap<>();
             // build the index tree
             indexTree.put(this.topLevelIndex, new ArrayList<Index>());
             for (AspectNode node : this.source.nodeSet()) {
@@ -759,8 +761,8 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
                 }
             }
             // insert the children into the indices themselves and build the index set
-            SortedSet<Index> indexSet = new TreeSet<Index>();
-            Queue<Index> indexQueue = new LinkedList<Index>();
+            SortedSet<Index> indexSet = new TreeSet<>();
+            Queue<Index> indexQueue = new LinkedList<>();
             indexQueue.add(this.topLevelIndex);
             while (!indexQueue.isEmpty()) {
                 Index next = indexQueue.poll();
@@ -842,7 +844,7 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
             // Set the parentage in tree preorder
             // Build the level data map,
             // in the tree-order of the indices
-            SortedMap<Index,Level1> result = new TreeMap<Index,Level1>();
+            SortedMap<Index,Level1> result = new TreeMap<>();
             for (Index index : indexSet) {
                 Level1 parentLevel = index.isTopLevel() ? null : result.get(index.getParent());
                 Level1 level = new Level1(index, parentLevel);
@@ -886,11 +888,11 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
                     errors.addAll(exc.getErrors());
                 }
             }
-            Map<LabelVar,Set<AspectEdge>> modelVarMap = new HashMap<LabelVar,Set<AspectEdge>>();
+            Map<LabelVar,Set<AspectEdge>> modelVarMap = new HashMap<>();
             for (Level1 level : result.values()) {
                 modelVarMap.putAll(level.modelVars);
             }
-            Map<String,LabelVar> nameVarMap = new HashMap<String,LabelVar>();
+            Map<String,LabelVar> nameVarMap = new HashMap<>();
             for (Map.Entry<LabelVar,Set<AspectEdge>> varEntry : modelVarMap.entrySet()) {
                 LabelVar var = varEntry.getKey();
                 LabelVar oldVar = nameVarMap.put(var.getName(), var);
@@ -984,7 +986,7 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
          */
         private Map<AspectNode,Level1> getNodeLevelMap() {
             if (this.nodeLevelMap == null) {
-                this.nodeLevelMap = new HashMap<AspectNode,Level1>();
+                this.nodeLevelMap = new HashMap<>();
             }
             return this.nodeLevelMap;
         }
@@ -992,7 +994,7 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
         /** Constructs the level2 map. */
         private SortedMap<Index,Level2> buildLevels2(SortedMap<Index,Level1> level1Map,
             RuleModelMap modelMap) throws FormatException {
-            SortedMap<Index,Level2> result = new TreeMap<Index,Level2>();
+            SortedMap<Index,Level2> result = new TreeMap<>();
             FormatErrorSet errors = createErrors();
             for (Level1 level1 : level1Map.values()) {
                 try {
@@ -1010,7 +1012,7 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
         /** Constructs the level3 map. */
         private SortedMap<Index,Level3> buildLevels3(SortedMap<Index,Level2> level2Map,
             RuleGraphMorphism typingMap) throws FormatException {
-            SortedMap<Index,Level3> result = new TreeMap<Index,Level3>();
+            SortedMap<Index,Level3> result = new TreeMap<>();
             FormatErrorSet errors = createErrors();
             for (Level2 level2 : level2Map.values()) {
                 Index index = level2.getIndex();
@@ -1024,7 +1026,7 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
 
         /** Constructs the level4 map. */
         private SortedMap<Index,Level4> build4From3(SortedMap<Index,Level3> level3Map) {
-            SortedMap<Index,Level4> result = new TreeMap<Index,Level4>();
+            SortedMap<Index,Level4> result = new TreeMap<>();
             for (Level3 level3 : level3Map.values()) {
                 Index index = level3.getIndex();
                 Level4 parent = index.isTopLevel() ? null : result.get(index.getParent());
@@ -1160,7 +1162,7 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
                 for (LabelVar var : ruleLabel.allVarSet()) {
                     Set<AspectEdge> binders = this.modelVars.get(var);
                     if (binders == null) {
-                        this.modelVars.put(var, binders = new HashSet<AspectEdge>());
+                        this.modelVars.put(var, binders = new HashSet<>());
                     }
                     binders.add(modelEdge);
                 }
@@ -1178,7 +1180,7 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
         private void addNodeToParents(AspectNode modelNode) {
             Level1 ascendingLevel = this;
             while (ascendingLevel.modelNodes.add(modelNode)) {
-                assert!ascendingLevel.index.isTopLevel() : String
+                assert !ascendingLevel.index.isTopLevel() : String
                     .format("Node not found at any level");
                 ascendingLevel = ascendingLevel.parent;
                 assert ascendingLevel.modelNodes != null : String
@@ -1278,13 +1280,13 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
         /** Parent level; {@code null} if this is the top level. */
         private final Level1 parent;
         /** Children level data. */
-        private final List<Level1> children = new ArrayList<Level1>();
+        private final List<Level1> children = new ArrayList<>();
         /** Set of model nodes on this level. */
-        final Set<AspectNode> modelNodes = new HashSet<AspectNode>();
+        final Set<AspectNode> modelNodes = new HashSet<>();
         /** Set of model edges on this level. */
-        final Set<AspectEdge> modelEdges = new HashSet<AspectEdge>();
+        final Set<AspectEdge> modelEdges = new HashSet<>();
         /** Set of label variables used on this level. */
-        final Map<LabelVar,Set<AspectEdge>> modelVars = new HashMap<LabelVar,Set<AspectEdge>>();
+        final Map<LabelVar,Set<AspectEdge>> modelVars = new HashMap<>();
         /** The model node registering the match count. */
         AspectNode matchCountNode;
     }
@@ -1456,7 +1458,7 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
         private void addConnect(AspectEdge connectEdge) throws FormatException {
             RuleNode node1 = getNodeImage(connectEdge.source());
             RuleNode node2 = getNodeImage(connectEdge.target());
-            Set<RuleNode> nodeSet = new HashSet<RuleNode>(Arrays.asList(node1, node2));
+            Set<RuleNode> nodeSet = new HashSet<>(Arrays.asList(node1, node2));
             this.connectMap.put(connectEdge, nodeSet);
         }
 
@@ -1464,7 +1466,7 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
             AspectNode productNode = operatorEdge.source();
             boolean embargo = productNode.getKind()
                 .inNAC();
-            List<VariableNode> arguments = new ArrayList<VariableNode>();
+            List<VariableNode> arguments = new ArrayList<>();
             for (AspectNode argModelNode : productNode.getArgNodes()) {
                 VariableNode argument = (VariableNode) getNodeImage(argModelNode);
                 if (!(this.lhs.nodeSet()
@@ -1497,7 +1499,7 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
 
         /** Constructs the NACs for this rule. */
         private List<RuleGraph> computeNacs() throws FormatException {
-            List<RuleGraph> result = new ArrayList<RuleGraph>();
+            List<RuleGraph> result = new ArrayList<>();
             // add the nacs to the rule
             // find connected sets of NAC nodes, taking the
             // connection edges into account
@@ -1529,7 +1531,7 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
          */
         private SortedSet<Cell> getConnectedSets() throws FormatException {
             // mapping from nodes of elementSet to sets of connected elements
-            Map<Element,Cell> result = new HashMap<Element,Cell>();
+            Map<Element,Cell> result = new HashMap<>();
             for (RuleNode node : this.nacNodeSet) {
                 Cell nodeCell = new Cell();
                 nodeCell.add(node);
@@ -1588,10 +1590,10 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
                     result.put(elem, newCell);
                 }
             }
-            return new TreeSet<Cell>(result.values());
+            return new TreeSet<>(result.values());
         }
 
-        private class Cell extends HashSet<RuleElement>implements Comparable<Cell>, Fixable {
+        private class Cell extends HashSet<RuleElement> implements Comparable<Cell>, Fixable {
             public Cell() {
                 // empty
             }
@@ -1639,7 +1641,7 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
             }
 
             private SortedSet<RuleNode> computeNodes() {
-                TreeSet<RuleNode> result = new TreeSet<RuleNode>(NodeComparator.instance());
+                TreeSet<RuleNode> result = new TreeSet<>(NodeComparator.instance());
                 for (RuleElement elem : this) {
                     if (elem instanceof RuleNode) {
                         result.add((RuleNode) elem);
@@ -1661,7 +1663,7 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
             }
 
             private SortedSet<RuleEdge> computeEdges() {
-                TreeSet<RuleEdge> result = new TreeSet<RuleEdge>(EdgeComparator.instance());
+                TreeSet<RuleEdge> result = new TreeSet<>(EdgeComparator.instance());
                 for (RuleElement elem : this) {
                     if (elem instanceof RuleEdge) {
                         result.add((RuleEdge) elem);
@@ -1748,13 +1750,13 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
          * Checks if all label variables are bound
          */
         private void checkVariables(FormatErrorSet errors) {
-            Map<LabelVar,Set<RuleElement>> allVars = new HashMap<LabelVar,Set<RuleElement>>();
+            Map<LabelVar,Set<RuleElement>> allVars = new HashMap<>();
             allVars.putAll(this.lhs.varMap());
             allVars.putAll(this.rhs.varMap());
             for (RuleGraph nac : this.nacs) {
                 allVars.putAll(nac.varMap());
             }
-            Map<String,LabelVar> varNames = new HashMap<String,LabelVar>();
+            Map<String,LabelVar> varNames = new HashMap<>();
             for (Map.Entry<LabelVar,Set<RuleElement>> varEntry : allVars.entrySet()) {
                 LabelVar var = varEntry.getKey();
                 LabelVar oldVar = varNames.put(var.getKey(), var);
@@ -1896,12 +1898,11 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
         /** Index of this level. */
         private final Index index;
         /** Map of all connect edges on this level. */
-        private final Map<AspectEdge,Set<RuleNode>> connectMap =
-            new HashMap<AspectEdge,Set<RuleNode>>();
+        private final Map<AspectEdge,Set<RuleNode>> connectMap = new HashMap<>();
         /** The rule node registering the match count. */
         private VariableNode matchCountImage;
         /** Map from rule nodes to declared colours. */
-        private final Map<RuleNode,Color> colorMap = new HashMap<RuleNode,Color>();
+        private final Map<RuleNode,Color> colorMap = new HashMap<>();
         /** Flag indicating that modifiers have been found at this level. */
         private boolean isRule;
         /** The left hand side graph of the rule. */
@@ -1911,13 +1912,13 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
         /** Rule morphism (from LHS to RHS). */
         private final RuleGraph mid;
         /** The set of nodes appearing in NACs. */
-        private final Set<RuleNode> nacNodeSet = new HashSet<RuleNode>();
+        private final Set<RuleNode> nacNodeSet = new HashSet<>();
         /** The set of edges appearing in NACs. */
-        private final Set<RuleEdge> nacEdgeSet = new HashSet<RuleEdge>();
+        private final Set<RuleEdge> nacEdgeSet = new HashSet<>();
         /** Collection of NAC graphs. */
-        private final List<RuleGraph> nacs = new ArrayList<RuleGraph>();
+        private final List<RuleGraph> nacs = new ArrayList<>();
         /** Variables bound at the parent level. */
-        private final Set<LabelVar> parentVars = new HashSet<LabelVar>();
+        private final Set<LabelVar> parentVars = new HashSet<>();
     }
 
     /**
@@ -1971,7 +1972,7 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
             // check for correct type specialisation
             // this has to be done after the NACs have been added
             try {
-                Set<RuleNode> parentNodes = new HashSet<RuleNode>();
+                Set<RuleNode> parentNodes = new HashSet<>();
                 for (RuleNode origParentNode : parentTypeMap.nodeMap()
                     .keySet()) {
                     parentNodes.add(this.typeMap.getNode(origParentNode));
@@ -2058,8 +2059,8 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
                 }
             }
             // check for ambiguous mergers
-            List<RuleEdge> mergers = new ArrayList<RuleEdge>();
-            Set<RuleNode> mergedNodes = new HashSet<RuleNode>();
+            List<RuleEdge> mergers = new ArrayList<>();
+            Set<RuleNode> mergedNodes = new HashSet<>();
             for (RuleEdge edge : this.rhs.edgeSet()) {
                 if (isMerger(edge)) {
                     mergers.add(edge);
@@ -2141,7 +2142,7 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
         private boolean injective(RuleNode n1, RuleNode n2) {
             boolean result = false;
             // check for type overlap
-            Set<TypeNode> types = new HashSet<TypeNode>(n1.getMatchingTypes());
+            Set<TypeNode> types = new HashSet<>(n1.getMatchingTypes());
             types.retainAll(n2.getMatchingTypes());
             result = types.isEmpty();
             if (!result) {
@@ -2212,7 +2213,7 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
                 } else {
                     for (RuleNode node : mergeTargets) {
                         if (allTypes == null) {
-                            allTypes = new HashSet<TypeNode>(node.getMatchingTypes());
+                            allTypes = new HashSet<>(node.getMatchingTypes());
                         } else {
                             allTypes.addAll(node.getMatchingTypes());
                         }
@@ -2264,7 +2265,7 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
         /** Combined type map for this level. */
         private final RuleGraphMorphism typeMap;
         /** Map from rule nodes to declared colours. */
-        private final Map<RuleNode,Color> colorMap = new HashMap<RuleNode,Color>();
+        private final Map<RuleNode,Color> colorMap = new HashMap<>();
         /** Flag indicating that modifiers have been found at this level. */
         private final boolean isRule;
         /** The left hand side graph of the rule. */
@@ -2272,7 +2273,7 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
         /** The right hand side graph of the rule. */
         private final RuleGraph rhs;
         /** List of NAC graphs. */
-        private final List<RuleGraph> nacs = new ArrayList<RuleGraph>();
+        private final List<RuleGraph> nacs = new ArrayList<>();
         /** List of typing errors. */
         private final FormatErrorSet errors = createErrors();
     }
@@ -2389,8 +2390,8 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
                 RuleEdge embargoEdge = nac.edgeSet()
                     .iterator()
                     .next();
-                Set<RuleNode> ends = new HashSet<RuleNode>(
-                    Arrays.asList(embargoEdge.source(), embargoEdge.target()));
+                Set<RuleNode> ends =
+                    new HashSet<>(Arrays.asList(embargoEdge.source(), embargoEdge.target()));
                 if (nac.nodeSet()
                     .equals(ends)
                     && lhs.nodeSet()
@@ -2505,9 +2506,9 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
         /** Initialises the internal data structures. */
         public Parameters() throws FormatException {
             FormatErrorSet errors = createErrors();
-            this.hiddenPars = new HashSet<RuleNode>();
+            this.hiddenPars = new HashSet<>();
             // Mapping from parameter position to parameter
-            Map<Integer,CtrlPar.Var> parMap = new HashMap<Integer,CtrlPar.Var>();
+            Map<Integer,CtrlPar.Var> parMap = new HashMap<>();
             int parCount = 0;
             // collect parameter nodes
             for (AspectNode node : getSource().nodeSet()) {
@@ -2542,7 +2543,7 @@ public class RuleModel extends GraphBasedModel<Rule>implements Comparable<RuleMo
             errors.throwException();
             // construct the signature
             // test if parameters form a consecutive sequence
-            Set<Integer> missingPars = new TreeSet<Integer>();
+            Set<Integer> missingPars = new TreeSet<>();
             for (int i = 0; i < parCount; i++) {
                 missingPars.add(i);
             }

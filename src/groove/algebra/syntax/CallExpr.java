@@ -42,7 +42,7 @@ public class CallExpr extends Expression {
     public CallExpr(boolean prefixed, Operator op, List<Expression> args) {
         super(prefixed);
         this.op = op;
-        this.args = new ArrayList<Expression>(args);
+        this.args = new ArrayList<>(args);
         assert isTypeCorrect() : String.format("%s is not a type correct term", toString());
     }
 
@@ -71,7 +71,7 @@ public class CallExpr extends Expression {
 
     @Override
     protected Map<String,Sort> computeVarMap() {
-        Map<String,Sort> result = new HashMap<String,Sort>();
+        Map<String,Sort> result = new HashMap<>();
         for (Expression arg : getArgs()) {
             result.putAll(arg.getVariables());
         }
@@ -97,7 +97,7 @@ public class CallExpr extends Expression {
     public Expression relabel(TypeLabel oldLabel, TypeLabel newLabel) {
         CallExpr result = this;
         if (oldLabel.getRole() == BINARY) {
-            List<Expression> newArgs = new ArrayList<Expression>();
+            List<Expression> newArgs = new ArrayList<>();
             boolean isNew = false;
             for (int i = 0; i < getArgs().size(); i++) {
                 Expression oldArg = getArgs().get(i);
@@ -153,7 +153,7 @@ public class CallExpr extends Expression {
 
     /** Builds a display string for an operator without symbol. */
     private Line toCallLine() {
-        List<Line> result = new ArrayList<Line>();
+        List<Line> result = new ArrayList<>();
         result.add(Line.atom(this.op.getName() + '('));
         boolean firstArg = true;
         for (Expression arg : getArgs()) {
@@ -170,7 +170,7 @@ public class CallExpr extends Expression {
 
     /** Builds a display string for an operator with an infix or prefix symbol. */
     private Line toFixLine(OpKind context) {
-        List<Line> result = new ArrayList<Line>();
+        List<Line> result = new ArrayList<>();
         OpKind me = getOperator().getKind();
         boolean addPars = me.compareTo(context) < 0;
         boolean addSpaces = me.compareTo(OpKind.MULT) < 0;

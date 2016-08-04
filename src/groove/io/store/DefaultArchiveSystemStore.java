@@ -228,7 +228,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
                 : new ZipFile(this.file)) {
             // collect the relevant entries
             Map<ResourceKind,Map<String,ZipEntry>> zipEntryMap =
-                new EnumMap<ResourceKind,Map<String,ZipEntry>>(ResourceKind.class);
+                new EnumMap<>(ResourceKind.class);
             for (ResourceKind kind : ResourceKind.values()) {
                 zipEntryMap.put(kind, new HashMap<String,ZipEntry>());
             }
@@ -489,7 +489,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
 
     private GrammarProperties properties;
     /** Map from entry name to layout entry. */
-    private final Map<String,ZipEntry> layoutEntryMap = new HashMap<String,ZipEntry>();
+    private final Map<String,ZipEntry> layoutEntryMap = new HashMap<>();
     /**
      * The location from which the source is loaded. If <code>null</code>, the
      * location was specified by file rather than url.

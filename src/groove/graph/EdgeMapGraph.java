@@ -49,7 +49,7 @@ abstract public class EdgeMapGraph<N extends Node,E extends GEdge<N>> extends AG
     protected EdgeMapGraph(EdgeMapGraph<N,E> graph) {
         this(graph.getName(), graph.getRole());
         for (Map.Entry<N,Set<E>> edgeEntry : graph.edgeMap.entrySet()) {
-            this.edgeMap.put(edgeEntry.getKey(), new LinkedHashSet<E>(edgeEntry.getValue()));
+            this.edgeMap.put(edgeEntry.getKey(), new LinkedHashSet<>(edgeEntry.getValue()));
         }
     }
 
@@ -66,7 +66,7 @@ abstract public class EdgeMapGraph<N extends Node,E extends GEdge<N>> extends AG
 
     @Override
     public Set<? extends E> edgeSet() {
-        Set<E> result = new LinkedHashSet<E>();
+        Set<E> result = new LinkedHashSet<>();
         for (Map.Entry<N,Set<E>> edgeEntry : this.edgeMap.entrySet()) {
             result.addAll(edgeEntry.getValue());
         }
@@ -144,7 +144,7 @@ abstract public class EdgeMapGraph<N extends Node,E extends GEdge<N>> extends AG
      * edges.
      * @invariant <tt>edgeMap: DefaultNode -> 2^DefaultEdge</tt>
      */
-    private final Map<N,Set<E>> edgeMap = new LinkedHashMap<N,Set<E>>();
+    private final Map<N,Set<E>> edgeMap = new LinkedHashMap<>();
 
     /** The role of this default graph. */
     private final GraphRole role;

@@ -155,7 +155,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         // mapping from states to sets of incoming transitions
         Map<GraphState,Set<RuleTransition>> inMap = new HashMap<>();
         // build the incoming transition map
-        Stack<GraphState> pool = new Stack<GraphState>();
+        Stack<GraphState> pool = new Stack<>();
         pool.add(getInitial().target());
         while (!pool.isEmpty()) {
             GraphState next = pool.pop();
@@ -178,7 +178,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         assert getInitial().target()
             .equals(target()) || inMap.containsKey(target());
         // backward reachability to build up the result set
-        Set<RuleTransition> result = new HashSet<RuleTransition>();
+        Set<RuleTransition> result = new HashSet<>();
         result.add(getInitial());
         pool.add(target());
         while (!pool.isEmpty()) {
@@ -198,11 +198,11 @@ public class RecipeTransition extends ALabelEdge<GraphState>
     public List<RuleTransition> getPath() {
         List<RuleTransition> result = null;
         // all paths of the current length
-        List<List<RuleTransition>> paths = new ArrayList<List<RuleTransition>>();
+        List<List<RuleTransition>> paths = new ArrayList<>();
         paths.add(Arrays.asList(getInitial()));
         // do the following for paths of increasing length
         while (result == null) {
-            List<List<RuleTransition>> newPaths = new ArrayList<List<RuleTransition>>();
+            List<List<RuleTransition>> newPaths = new ArrayList<>();
             for (List<RuleTransition> path : paths) {
                 GraphState target = path.get(path.size() - 1)
                     .target();
@@ -214,7 +214,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
                     // otherwise, extend the path in all possible ways
                     for (RuleTransition next : target.getRuleTransitions()) {
                         if (getSteps().contains(next)) {
-                            List<RuleTransition> newPath = new ArrayList<RuleTransition>(path);
+                            List<RuleTransition> newPath = new ArrayList<>(path);
                             newPath.add(next);
                             newPaths.add(newPath);
                         }

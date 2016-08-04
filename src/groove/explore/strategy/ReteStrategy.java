@@ -57,7 +57,7 @@ public class ReteStrategy extends GTSStrategy {
         GraphState state = getNextState();
         ReteStrategyNextReporter.start();
         Collection<? extends MatchResult> ruleMatches = state.getMatches();
-        Collection<GraphState> outTransitions = new ArrayList<GraphState>(ruleMatches.size());
+        Collection<GraphState> outTransitions = new ArrayList<>(ruleMatches.size());
 
         for (MatchResult nextMatch : ruleMatches) {
             RuleTransition trans = getNextState().applyMatch(nextMatch);
@@ -135,7 +135,7 @@ public class ReteStrategy extends GTSStrategy {
     /** Internal store of newly generated state. */
 
     /** Internal store of newly generated states. */
-    private final Collection<GraphState> newStates = new ArrayList<GraphState>();
+    private final Collection<GraphState> newStates = new ArrayList<>();
 
     /** Listener to keep track of states added to the GTS. */
     private final ExploreListener exploreListener = new ExploreListener();
@@ -150,7 +150,7 @@ public class ReteStrategy extends GTSStrategy {
         }
     }
 
-    private final Stack<GraphState> stack = new Stack<GraphState>();
+    private final Stack<GraphState> stack = new Stack<>();
 
     private ReteSearchEngine rete;
 

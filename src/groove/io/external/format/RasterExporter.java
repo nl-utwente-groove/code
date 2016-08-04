@@ -48,7 +48,7 @@ public class RasterExporter extends AbstractExporter {
         this.formats.put(fileType, descr);
     }
 
-    private final Map<FileType,String> formats = new EnumMap<FileType,String>(
+    private final Map<FileType,String> formats = new EnumMap<>(
         FileType.class);
 
     @Override

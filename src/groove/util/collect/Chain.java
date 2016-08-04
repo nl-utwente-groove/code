@@ -55,7 +55,7 @@ public class Chain<E> implements Iterable<E> {
      * consisting of a given value followed by this chain.
      */
     public Chain<E> prefix(E value) {
-        return new Chain<E>(value, this);
+        return new Chain<>(value, this);
     }
 
     /** Returns an iterator over the elements of the chain. */
@@ -117,6 +117,6 @@ public class Chain<E> implements Iterable<E> {
 
     /** Creates a new singleton chain, consisting of a given value. */
     public static final <E> Chain<E> singleton(E value) {
-        return new Chain<E>(value);
+        return new Chain<>(value);
     }
 }

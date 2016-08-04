@@ -103,7 +103,7 @@ class SimulatorHistory implements SimulatorListener {
     private final JMenu menu = new JMenu();
     /** List of load actions corresponding to the history items. */
     private final ArrayList<LoadGrammarFromHistoryAction> history =
-        new ArrayList<LoadGrammarFromHistoryAction>();
+        new ArrayList<>();
     /**
      * (User) Property that holds the grammar history (max 10 separated by ',')
      * *

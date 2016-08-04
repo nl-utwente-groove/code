@@ -158,7 +158,7 @@ public enum ThreeValued {
             return getText(TRUE);
         }
 
-        private final Map<ThreeValued,String> textMap = new EnumMap<ThreeValued,String>(
+        private final Map<ThreeValued,String> textMap = new EnumMap<>(
             ThreeValued.class);
 
         @Override

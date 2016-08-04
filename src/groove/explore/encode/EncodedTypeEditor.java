@@ -40,7 +40,7 @@ public abstract class EncodedTypeEditor<A,B> extends JPanel {
     public EncodedTypeEditor(GrammarModel grammar, LayoutManager layout) {
         super(layout);
         this.grammar = grammar;
-        this.listeners = new ArrayList<TemplateListener>();
+        this.listeners = new ArrayList<>();
     }
 
     /**

@@ -191,12 +191,12 @@ public class RuleToHostMap extends AElementMap<RuleNode,RuleEdge,HostNode,HostEd
 
     @Override
     protected Map<RuleEdge,HostEdge> createEdgeMap() {
-        return new LinkedHashMap<RuleEdge,HostEdge>();
+        return new LinkedHashMap<>();
     }
 
     @Override
     protected Map<RuleNode,HostNode> createNodeMap() {
-        return new LinkedHashMap<RuleNode,HostNode>();
+        return new LinkedHashMap<>();
     }
 
     /** The internal map from variables to labels. */

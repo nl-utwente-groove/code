@@ -71,7 +71,7 @@ public class VectorExporter extends AbstractExporter {
     }
 
     private final Map<FileType,GraphToVector> formats =
-        new EnumMap<FileType,GraphToVector>(FileType.class);
+        new EnumMap<>(FileType.class);
 
     /** Returns the singleton instance of this class. */
     public static final VectorExporter getInstance() {

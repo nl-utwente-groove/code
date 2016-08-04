@@ -43,7 +43,7 @@ public abstract class EncodedEnumeratedType<A> implements EncodedType<A,String> 
      */
     @Override
     public EncodedTypeEditor<A,String> createEditor(GrammarModel grammar) {
-        return new EnumeratedEditor<A>(grammar, generateOptions(grammar));
+        return new EnumeratedEditor<>(grammar, generateOptions(grammar));
     }
 
     /**
@@ -69,7 +69,7 @@ public abstract class EncodedEnumeratedType<A> implements EncodedType<A,String> 
         public EnumeratedEditor(GrammarModel grammar, Map<String,String> options) {
             super(grammar, new FlowLayout(FlowLayout.LEFT, 0, 0));
             setBackground(ExplorationDialog.INFO_BG_COLOR);
-            this.selector = new JComboBox<String>();
+            this.selector = new JComboBox<>();
             // MdM - line below causes selector not to appear at all
             // this.selector.setMinimumSize(new Dimension(50, 20));
             this.selector.setBackground(ExplorationDialog.INFO_BOX_BG_COLOR);

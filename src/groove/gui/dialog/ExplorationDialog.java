@@ -330,7 +330,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
     }
 
     private List<RefreshButton> createButtons() {
-        List<RefreshButton> result = new ArrayList<RefreshButton>();
+        List<RefreshButton> result = new ArrayList<>();
         result.add(getDefaultButton());
         result.add(getStartButton());
         result.add(getExploreButton());

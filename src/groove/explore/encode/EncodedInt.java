@@ -48,7 +48,7 @@ public class EncodedInt implements EncodedType<Integer,String> {
 
     @Override
     public EncodedTypeEditor<Integer,String> createEditor(GrammarModel grammar) {
-        return new StringEditor<Integer>(grammar, Integer.toString(this.lowerBound), 4);
+        return new StringEditor<>(grammar, Integer.toString(this.lowerBound), 4);
     }
 
     @Override

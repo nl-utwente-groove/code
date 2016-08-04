@@ -142,7 +142,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleEdge> {
 
     /** Mapping from label variables to rule elements that bind them. */
     private final Map<LabelVar,Set<RuleElement>> binderMap =
-        new HashMap<LabelVar,Set<RuleElement>>();
+        new HashMap<>();
 
     /** Adds a variable to those known in this graph. */
     public boolean addVar(LabelVar var) {
@@ -176,13 +176,13 @@ public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleEdge> {
     }
 
     /** Set of all known variables. */
-    private final Map<LabelVar,Set<RuleElement>> varMap = new HashMap<LabelVar,Set<RuleElement>>();
+    private final Map<LabelVar,Set<RuleElement>> varMap = new HashMap<>();
 
     /** Lazily creates and returns the set of binders for a given label variable. */
     private Set<RuleElement> addKey(Map<LabelVar,Set<RuleElement>> map, LabelVar var) {
         Set<RuleElement> result = map.get(var);
         if (result == null) {
-            map.put(var, result = new HashSet<RuleElement>());
+            map.put(var, result = new HashSet<>());
         }
         return result;
     }

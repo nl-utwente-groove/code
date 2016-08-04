@@ -75,8 +75,8 @@ public class Predicate_node_self_edges extends GraphPrologCode {
             if (args[2] instanceof VariableTerm) {
                 bi.argList = args[2];
             } else if (args[2] instanceof CompoundTerm) {
-                bi.labels = new ArrayList<String>();
-                Set<Term> termSet = new LinkedHashSet<Term>();
+                bi.labels = new ArrayList<>();
+                Set<Term> termSet = new LinkedHashSet<>();
                 PrologUtils.getTermSet(args[2], termSet);
                 for (Term term : termSet) {
                     if (term instanceof AtomTerm) {
@@ -99,7 +99,7 @@ public class Predicate_node_self_edges extends GraphPrologCode {
             SelfEdgesBacktrackInfo bi) throws PrologException {
         while (bi.nodes.hasNext()) {
             Node n = bi.nodes.next();
-            List<String> edgeLabels = new ArrayList<String>();
+            List<String> edgeLabels = new ArrayList<>();
             for (Edge edge : bi.graph.outEdgeSet(n)) {
                 if (edge.target() == n && edge.source() == n) {
                     edgeLabels.add(edge.label().text());

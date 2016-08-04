@@ -225,7 +225,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     }
 
     /** List of erroneous elements. */
-    private final List<Element> elements = new ArrayList<Element>();
+    private final List<Element> elements = new ArrayList<>();
 
     /** Returns a list of numbers associated with the error; typically,
      * line and column numbers. May be empty. */
@@ -234,7 +234,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     }
 
     /** List of numbers; typically the line and column number in a textual program. */
-    private final List<Integer> numbers = new ArrayList<Integer>();
+    private final List<Integer> numbers = new ArrayList<>();
 
     /** Returns the resource kind for which this error occurs. */
     @Override
@@ -286,7 +286,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
 
     /** Returns the relevant contextual arguments of this error. */
     private Object[] getArguments() {
-        List<Object> newArguments = new ArrayList<Object>();
+        List<Object> newArguments = new ArrayList<>();
         newArguments.addAll(this.elements);
         if (this.control != null) {
             newArguments.add(this.control);

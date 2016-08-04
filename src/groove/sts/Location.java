@@ -19,7 +19,7 @@ public class Location {
      */
     public Location(String label) {
         this.label = label;
-        this.relations = new HashMap<SwitchRelation,Set<Location>>();
+        this.relations = new HashMap<>();
     }
 
     /**
@@ -47,7 +47,7 @@ public class Location {
     public void addSwitchRelation(SwitchRelation sr, Location l) {
         Set<Location> set = this.relations.get(sr);
         if (set == null) {
-            set = new HashSet<Location>();
+            set = new HashSet<>();
             this.relations.put(sr, set);
         }
         set.add(l);

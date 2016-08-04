@@ -186,9 +186,9 @@ public enum VisualKey {
     private static final VisualKey[] CONTROLLEDS;
 
     static {
-        List<VisualKey> deriveds = new ArrayList<VisualKey>();
-        List<VisualKey> refreshables = new ArrayList<VisualKey>();
-        List<VisualKey> controlleds = new ArrayList<VisualKey>();
+        List<VisualKey> deriveds = new ArrayList<>();
+        List<VisualKey> refreshables = new ArrayList<>();
+        List<VisualKey> controlleds = new ArrayList<>();
         for (VisualKey key : VisualKey.values()) {
             switch (key.getNature()) {
             case CONTROLLED:

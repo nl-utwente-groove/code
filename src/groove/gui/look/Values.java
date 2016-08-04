@@ -236,7 +236,7 @@ public class Values {
             return colors.get(Mode.toMode(selected, focused));
         }
 
-        private final Map<Mode,Color> foreColors = new EnumMap<Mode,Color>(Mode.class);
-        private final Map<Mode,Color> backColors = new EnumMap<Mode,Color>(Mode.class);
+        private final Map<Mode,Color> foreColors = new EnumMap<>(Mode.class);
+        private final Map<Mode,Color> backColors = new EnumMap<>(Mode.class);
     }
 }

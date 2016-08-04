@@ -54,7 +54,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
     private Collection<Property> m_properties;
     // This is used to generate opposite edges
     private Map<Triple<Object,Field,Object>,AbsNode> m_objectNodes =
-        new HashMap<Triple<Object,Field,Object>,AbsNode>();
+        new HashMap<>();
 
     public InstanceToGroove(GrooveResource grooveResource) {
         this.m_grooveResource = grooveResource;
@@ -145,7 +145,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
         setElement(object, objectNode);
 
         // Set default values for those fields not set in the object
-        Set<Field> defaultFields = new HashSet<Field>();
+        Set<Field> defaultFields = new HashSet<>();
         if (this.m_cfg.getConfig()
             .getTypeModel()
             .getFields()
@@ -189,7 +189,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
                     if (cv.getValue()
                         .get(i) instanceof Object) {
                         this.m_objectNodes
-                            .put(new Triple<Object,Field,Object>(object, f, (Object) cv.getValue()
+                            .put(new Triple<>(object, f, (Object) cv.getValue()
                                 .get(i)), valNode);
                     }
                     i++;
@@ -205,7 +205,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
                 }
 
                 if (v instanceof Object) {
-                    this.m_objectNodes.put(new Triple<Object,Field,Object>(object, f, (Object) v),
+                    this.m_objectNodes.put(new Triple<>(object, f, (Object) v),
                         valNode);
                 }
 
@@ -249,7 +249,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
                     OppositeProperty op = (OppositeProperty) p;
                     if (op.getField1() == f) {
 
-                        Triple<Object,Field,Object> opTriple = new Triple<Object,Field,Object>(
+                        Triple<Object,Field,Object> opTriple = new Triple<>(
                             triple.getRight(), op.getField2(), triple.getLeft());
                         if (!this.m_objectNodes.containsKey(opTriple)) {
                             continue;

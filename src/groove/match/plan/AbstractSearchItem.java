@@ -532,7 +532,7 @@ abstract class AbstractSearchItem implements SearchItem {
         /**
          * The previously found images.
          */
-        List<E> oldImages = new ArrayList<E>();
+        List<E> oldImages = new ArrayList<>();
         /** Index in {@link #oldImages} recording the state of the repetition */
         int oldImageIndex = 0;
         /** The state of this search item. */

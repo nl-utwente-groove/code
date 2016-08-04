@@ -134,12 +134,12 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
     }
 
     private final Map<ExploreKey,SettingsPanel> panelMap =
-        new EnumMap<ExploreKey,SettingsPanel>(ExploreKey.class);
+        new EnumMap<>(ExploreKey.class);
 
     private Map<ExploreKey,SettingEditor> getEditorMap() {
         if (this.editorMap == null) {
             EditorFactory factory = new EditorFactory(this);
-            this.editorMap = new EnumMap<ExploreKey,SettingEditor>(ExploreKey.class);
+            this.editorMap = new EnumMap<>(ExploreKey.class);
             for (ExploreKey key : ExploreKey.values()) {
                 this.editorMap.put(key, factory.createEditor(key));
             }

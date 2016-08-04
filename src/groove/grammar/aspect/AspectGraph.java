@@ -171,7 +171,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         }
         // look for node aspect indicators
         // and put all correct aspect vales in a map
-        Map<Edge,AspectLabel> edgeDataMap = new HashMap<Edge,AspectLabel>();
+        Map<Edge,AspectLabel> edgeDataMap = new HashMap<>();
         for (Edge edge : graph.edgeSet()) {
             AspectLabel label = parser.parse(edge.label()
                 .text(), role);
@@ -261,8 +261,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     private void doNormalise(AspectGraphMorphism map) {
         assert!isFixed();
         // identify and remove let- and test-edges
-        Set<AspectEdge> letEdges = new HashSet<AspectEdge>();
-        Set<AspectEdge> predEdges = new HashSet<AspectEdge>();
+        Set<AspectEdge> letEdges = new HashSet<>();
+        Set<AspectEdge> predEdges = new HashSet<>();
         for (AspectEdge edge : edgeSet()) {
             edge.setFixed();
             if (edge.isPredicate()) {
@@ -274,7 +274,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         removeEdgeSet(letEdges);
         removeEdgeSet(predEdges);
         // add assignments for the let-edges
-        List<FormatError> errors = new ArrayList<FormatError>();
+        List<FormatError> errors = new ArrayList<>();
         for (AspectEdge edge : letEdges) {
             try {
                 AspectEdge normalisedEdge = addAssignment(edge.source(), edge.getAssign());
@@ -524,7 +524,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     public AspectGraph renumber() {
         AspectGraph result = this;
         // renumber the nodes in their original order
-        SortedSet<AspectNode> nodes = new TreeSet<AspectNode>(NodeComparator.instance());
+        SortedSet<AspectNode> nodes = new TreeSet<>(NodeComparator.instance());
         nodes.addAll(nodeSet());
         if (!nodes.isEmpty() && nodes.last()
             .getNumber() != nodeCount() - 1) {
@@ -702,7 +702,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                 errors.addAll(node.getErrors());
             }
             // check for duplicate node identifiers
-            this.nodeIdMap = new HashMap<String,AspectNode>();
+            this.nodeIdMap = new HashMap<>();
             for (AspectNode node : nodeSet()) {
                 Aspect id = node.getId();
                 if (id != null) {
@@ -751,7 +751,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             result.addEdgeContext(edgeImage);
         }
         if (this.nodeIdMap != null) {
-            Map<String,AspectNode> newNodeIdMap = new HashMap<String,AspectNode>();
+            Map<String,AspectNode> newNodeIdMap = new HashMap<>();
             for (Map.Entry<String,AspectNode> e : this.nodeIdMap.entrySet()) {
                 newNodeIdMap.put(e.getKey(), map.getNode(e.getValue()));
             }
@@ -815,7 +815,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         }
         // look for node aspect indicators
         // and put all correct aspect vales in a map
-        Map<Edge,AspectLabel> edgeDataMap = new HashMap<Edge,AspectLabel>();
+        Map<Edge,AspectLabel> edgeDataMap = new HashMap<>();
         for (Edge edge : graph.edgeSet()) {
             AspectLabel label = parser.parse(edge.label()
                 .text(), role);
@@ -871,7 +871,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         }
         // Compute name and layout boundaries
         StringBuilder name = new StringBuilder();
-        List<Point.Double> dimensions = new ArrayList<Point.Double>();
+        List<Point.Double> dimensions = new ArrayList<>();
         double globalMaxX = 0;
         double globalMaxY = 0;
         for (AspectGraph graph : graphs) {
@@ -908,8 +908,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         int index = 0;
         double offsetX = 0;
         double offsetY = 0;
-        Map<AspectNode,AspectNode> nodeMap = new HashMap<AspectNode,AspectNode>();
-        Map<String,AspectNode> sharedNodes = new HashMap<String,AspectNode>();
+        Map<AspectNode,AspectNode> nodeMap = new HashMap<>();
+        Map<String,AspectNode> sharedNodes = new HashMap<>();
 
         // Copy the graphs one by one into the combined graph
         for (AspectGraph graph : graphs) {
@@ -1015,7 +1015,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
 
         /** Mapping from graph rules to element-producing factories. */
         static private Map<GraphRole,AspectFactory> factoryMap =
-            new EnumMap<GraphRole,AspectFactory>(GraphRole.class);
+            new EnumMap<>(GraphRole.class);
 
         static {
             factoryMap.put(RULE, new AspectFactory(RULE));

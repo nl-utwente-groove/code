@@ -40,5 +40,5 @@ public class ListComparator<T extends Comparable<T>> implements Comparator<T> {
     }
 
     /** Map of keys to display priority. */
-    private final Map<T,Integer> knownKeyIndexMap = new HashMap<T,Integer>();
+    private final Map<T,Integer> knownKeyIndexMap = new HashMap<>();
 }

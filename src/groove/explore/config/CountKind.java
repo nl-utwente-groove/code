@@ -88,7 +88,7 @@ public enum CountKind implements SettingKey {
         if (!isValue(content)) {
             throw new IllegalArgumentException();
         }
-        return new DefaultSetting<CountKind,Integer>(this, (Integer) content);
+        return new DefaultSetting<>(this, (Integer) content);
     }
 
     @Override

@@ -65,14 +65,14 @@ public class PropertiesTable extends JTable {
      */
     public PropertiesTable(Class<? extends PropertyKey<?>> defaultKeys, boolean editable) {
         this.editable = editable;
-        this.defaultKeys = new LinkedHashMap<String,PropertyKey<?>>();
+        this.defaultKeys = new LinkedHashMap<>();
         for (PropertyKey<?> key : defaultKeys.getEnumConstants()) {
             this.defaultKeys.put(key.getName(), key);
         }
         this.properties =
-            new TreeMap<String,String>(new ListComparator<String>(this.defaultKeys.keySet()));
-        this.keyIndexMap = new HashMap<PropertyKey<?>,Integer>();
-        this.errorMap = new HashMap<PropertyKey<?>,FormatErrorSet>();
+            new TreeMap<>(new ListComparator<>(this.defaultKeys.keySet()));
+        this.keyIndexMap = new HashMap<>();
+        this.errorMap = new HashMap<>();
         final TableModel model = getTableModel();
         setModel(model);
         setIntercellSpacing(new Dimension(2, -2));
@@ -140,7 +140,7 @@ public class PropertiesTable extends JTable {
      * with all default values removed.
      */
     final public Map<String,String> getProperties() {
-        Map<String,String> result = new HashMap<String,String>();
+        Map<String,String> result = new HashMap<>();
         // only copy non-default properties
         for (Map.Entry<String,String> entry : this.properties.entrySet()) {
             String stringKey = entry.getKey();
@@ -593,7 +593,7 @@ public class PropertiesTable extends JTable {
          * of the property map.
          */
         private void initPropertyKeys() {
-            this.propertyKeyList = new ArrayList<String>(aliasProperties().keySet());
+            this.propertyKeyList = new ArrayList<>(aliasProperties().keySet());
         }
 
         /** Retrieves a property key by index. */

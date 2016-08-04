@@ -306,7 +306,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
      */
     @Override
     public Object clone() {
-        TreeBag<T> result = new TreeBag<T>();
+        TreeBag<T> result = new TreeBag<>();
         for (Map.Entry<T,MyMultiplicity> entry : this.bag.entrySet()) {
             result.bag.put(entry.getKey(), entry.getValue().clone());
         }
@@ -365,7 +365,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
      * The underying mapping from elements to multiplicites.
      * @invariant <tt>bag : Object --> Multiplicity</tt>
      */
-    final Map<T,MyMultiplicity> bag = new TreeMap<T,MyMultiplicity>();
+    final Map<T,MyMultiplicity> bag = new TreeMap<>();
     /**
      * The number of element (occurrences) in this bag.
      * @invariant <tt>size == computeSize()</tt>

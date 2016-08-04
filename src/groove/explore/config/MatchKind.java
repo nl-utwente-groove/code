@@ -93,6 +93,6 @@ public enum MatchKind implements SettingKey {
             throw new IllegalArgumentException(String.format("'%s' is not a valid value for '%s'",
                 content, this));
         }
-        return new DefaultSetting<MatchKind,MatchHint>(this, (MatchHint) content);
+        return new DefaultSetting<>(this, (MatchHint) content);
     }
 }

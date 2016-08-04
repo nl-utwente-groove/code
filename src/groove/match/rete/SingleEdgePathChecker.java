@@ -40,7 +40,7 @@ public abstract class SingleEdgePathChecker extends AbstractPathChecker
      * picked up and deleted in a domino way without having to pass down
      * the edges themselves.
      */
-    private TreeHashSet<RetePathMatch> memory = new TreeHashSet<RetePathMatch>();
+    private TreeHashSet<RetePathMatch> memory = new TreeHashSet<>();
 
     /**
      *

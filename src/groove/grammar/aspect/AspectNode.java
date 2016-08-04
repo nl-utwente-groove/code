@@ -395,7 +395,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
                     this);
             }
             // collect collective nesting grandparents to test for circularity
-            Set<AspectNode> grandparents = new HashSet<AspectNode>();
+            Set<AspectNode> grandparents = new HashSet<>();
             AspectNode parent = edge.target();
             while (parent != null) {
                 grandparents.add(parent);
@@ -419,7 +419,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
                     edgeLabel, this);
             }
             if (this.argNodes == null) {
-                this.argNodes = new ArrayList<AspectNode>();
+                this.argNodes = new ArrayList<>();
             }
             int index = edge.getArgument();
             // extend the list if necessary
@@ -485,7 +485,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
      * node in the plain graph view.
      */
     public List<PlainLabel> getPlainLabels() {
-        List<PlainLabel> result = new ArrayList<PlainLabel>();
+        List<PlainLabel> result = new ArrayList<>();
         for (AspectLabel label : this.nodeLabels) {
             String text = label.toString();
             if (text.length() > 0) {
@@ -746,7 +746,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
 
     private final GraphRole graphRole;
     /** The list of aspect labels defining node aspects. */
-    private final List<AspectLabel> nodeLabels = new ArrayList<AspectLabel>();
+    private final List<AspectLabel> nodeLabels = new ArrayList<>();
     /** Indicates that the entire node is fixed. */
     private boolean allFixed;
     /** The type of the aspect node. */

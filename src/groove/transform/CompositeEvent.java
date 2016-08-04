@@ -83,7 +83,7 @@ public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.Compos
 
     @Override
     public String getAnchorImageString() {
-        List<String> eventLabels = new ArrayList<String>();
+        List<String> eventLabels = new ArrayList<>();
         for (BasicEvent event : this.eventArray) {
             eventLabels.add(event.getRule()
                 .getQualName() + event.getAnchorImageString());
@@ -180,7 +180,7 @@ public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.Compos
         if (myEvents.length != otherEvents.length) {
             return false;
         }
-        Set<BasicEvent> myEventSet = new HashSet<BasicEvent>(Arrays.asList(myEvents));
+        Set<BasicEvent> myEventSet = new HashSet<>(Arrays.asList(myEvents));
         for (int i = 0; i < otherEvents.length; i++) {
             if (!myEventSet.contains(otherEvents[i])) {
                 return false;
@@ -227,7 +227,7 @@ public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.Compos
         SortedSet<BasicEvent> getEventSet() {
             if (this.eventSet == null) {
                 this.eventSet =
-                    new TreeSet<BasicEvent>(Arrays.asList(CompositeEvent.this.eventArray));
+                    new TreeSet<>(Arrays.asList(CompositeEvent.this.eventArray));
             }
             return this.eventSet;
         }

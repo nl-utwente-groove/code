@@ -38,7 +38,7 @@ public enum AcceptorKind implements SettingKey {
 
         @Override
         public Setting<?,?> createSetting(Object content) throws IllegalArgumentException {
-            return new DefaultSetting<AcceptorKind,Object>(this, content);
+            return new DefaultSetting<>(this, content);
         }
     },
     /** States satisfying a propositional formula. */
@@ -51,7 +51,7 @@ public enum AcceptorKind implements SettingKey {
 
         @Override
         public Setting<?,?> createSetting(Object content) throws IllegalArgumentException {
-            return new DefaultSetting<AcceptorKind,Object>(this, content);
+            return new DefaultSetting<>(this, content);
         }
     },
     /** All states. */

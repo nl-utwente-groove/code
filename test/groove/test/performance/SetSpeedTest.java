@@ -47,7 +47,7 @@ public class SetSpeedTest {
     static private final Object[] DISTINCT_SAMPLE =
         new Object[LARGE_SAMPLE_SIZE];
     static {
-        Set<Object> sampleSet = new HashSet<Object>();
+        Set<Object> sampleSet = new HashSet<>();
         for (int i = 0; i < LARGE_SAMPLE_SIZE; i++) {
             LARGE_REGULAR_SAMPLE[i] = new Integer(i - (LARGE_SAMPLE_SIZE / 2));
             sampleSet.add(LARGE_REGULAR_SAMPLE[i] =
@@ -94,13 +94,13 @@ public class SetSpeedTest {
      */
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
-        new SetSpeedTest(new HashSet<Object>(SMALL_SAMPLE_SIZE)).start();
+        new SetSpeedTest(new HashSet<>(SMALL_SAMPLE_SIZE)).start();
         // new SetSpeedTest(new BitHashSet()).start();
         // new SetSpeedTest(new TreeStoreSet(1, SMALL_SAMPLE_SIZE,
         // TreeStoreSet.HASHCODE_EQUATOR)).start();
         // new SetSpeedTest(new TreeHashSet(2, SMALL_SAMPLE_SIZE,
         // TreeHashSet.HASHCODE_EQUATOR)).start();
-        new SetSpeedTest(new TreeHashSet<Object>(SMALL_SAMPLE_SIZE, 3, 7,
+        new SetSpeedTest(new TreeHashSet<>(SMALL_SAMPLE_SIZE, 3, 7,
             TreeHashSet.HASHCODE_EQUATOR)).start();
     }
 
@@ -181,7 +181,7 @@ public class SetSpeedTest {
         measures[OVERALL_INDEX].stop();
         Object newObject;
         if (this.object instanceof HashSet) {
-            newObject = new HashSet<Object>(this.object);
+            newObject = new HashSet<>(this.object);
         } else {
             newObject = new TreeHashSet<Object>((TreeHashSet) this.object);
         }

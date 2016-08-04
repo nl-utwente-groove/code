@@ -65,7 +65,7 @@ public class TypeGuard extends Property<TypeElement> {
      */
     public void setLabels(List<String> textList, boolean negated) {
         this.textList = textList;
-        this.labelSet = new HashSet<TypeLabel>();
+        this.labelSet = new HashSet<>();
         for (String text : textList) {
             this.labelSet.add(TypeLabel.createLabel(getKind(), text));
         }
@@ -86,7 +86,7 @@ public class TypeGuard extends Property<TypeElement> {
         TypeGuard result = this;
         if (this.labelSet != null && this.labelSet.contains(oldLabel)) {
             int index = this.textList.indexOf(oldLabel.text());
-            List<String> newTextList = new ArrayList<String>(this.textList);
+            List<String> newTextList = new ArrayList<>(this.textList);
             if (newLabel.getRole() == getKind()
                 && !this.labelSet.contains(newLabel)) {
                 newTextList.set(index, newLabel.text());

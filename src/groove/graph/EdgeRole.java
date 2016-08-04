@@ -111,7 +111,7 @@ public enum EdgeRole {
                 break;
             }
         }
-        return new Pair<EdgeRole,String>(resultRole,
+        return new Pair<>(resultRole,
             text.substring(resultRole.getPrefix().length()));
     }
 
@@ -151,7 +151,7 @@ public enum EdgeRole {
     /** Returns the documentation map for all edge roles. */
     public static Map<String,String> getDocMap() {
         if (docMap == null) {
-            docMap = new LinkedHashMap<String,String>();
+            docMap = new LinkedHashMap<>();
             for (Pair<String,String> doc : getRoleToDocMap().values()) {
                 docMap.put(doc.one(), doc.two());
             }
@@ -162,7 +162,7 @@ public enum EdgeRole {
     /** Computes the documentation map for the edge roles. */
     private static Map<EdgeRole,Pair<String,String>> computeRoleToDocMap() {
         Map<EdgeRole,Pair<String,String>> result =
-            new EnumMap<EdgeRole,Pair<String,String>>(EdgeRole.class);
+            new EnumMap<>(EdgeRole.class);
         for (Field field : EdgeRole.class.getFields()) {
             if (field.isEnumConstant()) {
                 EdgeRole role =
@@ -199,13 +199,13 @@ public enum EdgeRole {
     private static Map<EdgeRole,Pair<String,String>> roleToDocMap;
     /** Injective mapping from edge roles to indices. */
     private static Map<EdgeRole,Integer> indexMap =
-        new EnumMap<EdgeRole,Integer>(EdgeRole.class);
+        new EnumMap<>(EdgeRole.class);
     /** Injective mapping from role symbols to edge roles. */
     private static Map<String,EdgeRole> symbolToRoleMap =
-        new HashMap<String,EdgeRole>();
+        new HashMap<>();
     /** Injective mapping from role names to symbol text. */
     private static Map<String,String> nameToSymbolMap =
-        new HashMap<String,String>();
+        new HashMap<>();
     /** Array of edge roles, in the order of their indices. */
     private static final EdgeRole[] rolesArray =
         new EdgeRole[EdgeRole.values().length];

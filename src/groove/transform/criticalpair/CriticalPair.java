@@ -271,9 +271,9 @@ public class CriticalPair {
         //Special case, both of the two rules are nondeleting, then there are no critical pairs
         if (!(rule1.hasNodeErasers() || rule1.hasEdgeErasers() || rule2.hasNodeErasers()
             || rule2.hasEdgeErasers())) {
-            return new LinkedHashSet<CriticalPair>();
+            return new LinkedHashSet<>();
         }
-        LinkedHashSet<ParallelPair> parrPairs = new LinkedHashSet<ParallelPair>();
+        LinkedHashSet<ParallelPair> parrPairs = new LinkedHashSet<>();
 
         parrPairs = buildCriticalSet(parrPairs, rule1, rule2, MatchNumber.ONE);
         parrPairs = buildCriticalSet(parrPairs, rule1, rule2, MatchNumber.TWO);
@@ -298,7 +298,7 @@ public class CriticalPair {
         }
 
         //Filter out all critical pairs which are not parallel dependent
-        LinkedHashSet<CriticalPair> critPairs = new LinkedHashSet<CriticalPair>();
+        LinkedHashSet<CriticalPair> critPairs = new LinkedHashSet<>();
         for (ParallelPair pair : parrPairs) {
             CriticalPair criticalPair = pair.getCriticalPair();
             if (criticalPair != null) {
@@ -368,7 +368,7 @@ public class CriticalPair {
         Set<RuleNode> nodesToProcess = getNodesToProcess(ruleGraph);
 
         for (RuleNode rnode : nodesToProcess) {
-            LinkedHashSet<ParallelPair> newParrPairs = new LinkedHashSet<ParallelPair>();
+            LinkedHashSet<ParallelPair> newParrPairs = new LinkedHashSet<>();
             //initial case, parrPairs contains no pairs yet, this can only happen if l1.nodeSet().isEmpty()
             if (parrPairs.isEmpty()) {
                 ParallelPair pair = new ParallelPair(rule1, rule2);
@@ -570,8 +570,8 @@ public class CriticalPair {
      * @return a subset of ruleGraph.nodeSet()
      */
     private static Set<RuleNode> getNodesToProcess(RuleGraph ruleGraph) {
-        Set<RuleNode> result = new LinkedHashSet<RuleNode>(ruleGraph.nodeSet());
-        Set<VariableNode> targetsOfOperatorNodes = new LinkedHashSet<VariableNode>();
+        Set<RuleNode> result = new LinkedHashSet<>(ruleGraph.nodeSet());
+        Set<VariableNode> targetsOfOperatorNodes = new LinkedHashSet<>();
         for (RuleNode curNode : ruleGraph.nodeSet()) {
             if (curNode instanceof OperatorNode) {
                 result.remove(curNode);

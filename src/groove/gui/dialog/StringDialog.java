@@ -64,7 +64,7 @@ abstract public class StringDialog {
      * @param docMap mapping from syntax documentation lines to (possibly {@code null}) associated tool tips.
      */
     public StringDialog(String title, Map<String,String> docMap) {
-        this.history = new ArrayList<String>();
+        this.history = new ArrayList<>();
         this.title = title;
         this.docMap = docMap;
         this.parsed = docMap != null;
@@ -132,8 +132,8 @@ abstract public class StringDialog {
     }
 
     private JComponent createSyntaxPanel() {
-        final JList<String> list = new JList<String>();
-        DefaultListModel<String> model = new DefaultListModel<String>();
+        final JList<String> list = new JList<>();
+        DefaultListModel<String> model = new DefaultListModel<>();
         for (Map.Entry<String,String> entry : this.docMap.entrySet()) {
             model.addElement(entry.getKey());
         }
@@ -167,7 +167,7 @@ abstract public class StringDialog {
     /** Lazily creates and returns the combobox containing the current choices. */
     private JComboBox<String> getChoiceBox() {
         if (this.choiceBox == null) {
-            this.choiceBox = new JComboBox<String>();
+            this.choiceBox = new JComboBox<>();
             this.choiceBox
                 .setPrototypeDisplayValue("The longest value we want to display completely");
             this.choiceBox.addItemListener(new ItemListener() {

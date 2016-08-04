@@ -140,8 +140,8 @@ public class GxlIO extends GraphIO<AttrGraph> {
         gxlGraph.setRole(graph.getRole()
             .toString());
         List<GraphElementType> nodesEdges = gxlGraph.getNodeOrEdgeOrRel();
-        Map<Node,NodeType> nodeMap = new HashMap<Node,NodeType>();
-        Map<Edge,EdgeType> edgeMap = new HashMap<Edge,EdgeType>();
+        Map<Node,NodeType> nodeMap = new HashMap<>();
+        Map<Edge,EdgeType> edgeMap = new HashMap<>();
 
         // get the layout map
         LayoutMap layoutMap = GraphInfo.getLayoutMap(graph);
@@ -422,7 +422,7 @@ public class GxlIO extends GraphIO<AttrGraph> {
         for (GraphElementType gxlElement : gxlGraph.getNodeOrEdgeOrRel()) {
             if (gxlElement instanceof RelType) {
                 // We got a relation.
-                List<String> nodeIds = new ArrayList<String>();
+                List<String> nodeIds = new ArrayList<>();
                 for (RelendType relEnd : ((RelType) gxlElement).getRelend()) {
                     nodeIds.add(relEnd.getId());
                 }
@@ -506,7 +506,7 @@ public class GxlIO extends GraphIO<AttrGraph> {
      * Returns the string attributes of a given GXL element as a string-to-string map
      */
     private Map<String,String> loadAttributes(GraphElementType gxlElement) {
-        Map<String,String> result = new LinkedHashMap<String,String>();
+        Map<String,String> result = new LinkedHashMap<>();
         for (AttrType attr : gxlElement.getAttr()) {
             String value = attr.getString();
             if (value != null) {

@@ -117,8 +117,8 @@ public class ControlGraph extends NodeSetEdgeSetGraph<ControlNode,ControlEdge> {
     public static <P extends Position<P,A>,A extends Stage<P,A>> ControlGraph newGraph(
         QualName name, P init, boolean full) {
         ControlGraph result = new ControlGraph(name);
-        Map<P,ControlNode> nodeMap = new HashMap<P,ControlNode>();
-        Queue<P> fresh = new LinkedList<P>();
+        Map<P,ControlNode> nodeMap = new HashMap<>();
+        Queue<P> fresh = new LinkedList<>();
         addNode(result, nodeMap, init, fresh);
         while (!fresh.isEmpty()) {
             P next = fresh.poll();

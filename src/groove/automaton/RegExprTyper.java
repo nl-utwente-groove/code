@@ -172,7 +172,7 @@ public class RegExprTyper implements RegExprCalculator<Result> {
     private Result computeNodeWildcard(Wildcard expr) {
         Result result = new Result();
         LabelVar var = expr.getWildcardId();
-        Set<TypeNode> candidates = new HashSet<TypeNode>();
+        Set<TypeNode> candidates = new HashSet<>();
         if (var.hasName()) {
             candidates.addAll((Collection<TypeNode>) this.varTyping.get(var));
         } else {
@@ -189,7 +189,7 @@ public class RegExprTyper implements RegExprCalculator<Result> {
     private Result computeEdgeWildcard(Wildcard expr) {
         Result result = new Result();
         LabelVar var = expr.getWildcardId();
-        Set<TypeEdge> candidates = new HashSet<TypeEdge>();
+        Set<TypeEdge> candidates = new HashSet<>();
         if (var.hasName()) {
             candidates.addAll((Collection<TypeEdge>) this.varTyping.get(var));
         } else {
@@ -267,7 +267,7 @@ public class RegExprTyper implements RegExprCalculator<Result> {
         public boolean add(TypeNode left, TypeNode right) {
             Set<TypeNode> current = this.map.get(left);
             if (current == null) {
-                this.map.put(left, current = new HashSet<TypeNode>());
+                this.map.put(left, current = new HashSet<>());
             }
             boolean result = current.add(right);
             if (result) {
@@ -280,7 +280,7 @@ public class RegExprTyper implements RegExprCalculator<Result> {
         public boolean add(TypeNode left, Collection<? extends TypeNode> right) {
             Set<TypeNode> current = this.map.get(left);
             if (current == null) {
-                this.map.put(left, current = new HashSet<TypeNode>());
+                this.map.put(left, current = new HashSet<>());
             }
             int currentSize = current.size();
             current.addAll(right);
@@ -305,7 +305,7 @@ public class RegExprTyper implements RegExprCalculator<Result> {
         public Result getThen(Result other) {
             Result result = new Result();
             for (Map.Entry<TypeNode,Set<TypeNode>> entry : this.map.entrySet()) {
-                Set<TypeNode> allRight = new HashSet<TypeNode>();
+                Set<TypeNode> allRight = new HashSet<>();
                 for (TypeNode right : entry.getValue()) {
                     Set<TypeNode> otherRight = other.getAll(right);
                     if (otherRight != null) {
@@ -408,7 +408,7 @@ public class RegExprTyper implements RegExprCalculator<Result> {
 
         private int size;
         private final Map<TypeNode,Set<TypeNode>> map =
-            new HashMap<TypeNode,Set<TypeNode>>();
+            new HashMap<>();
         private final FormatErrorSet errors = new FormatErrorSet();
     }
 }

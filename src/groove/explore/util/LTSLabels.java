@@ -279,8 +279,8 @@ public class LTSLabels {
         return result.toString();
     }
 
-    private final Map<Flag,String> flagToLabelMap = new EnumMap<Flag,String>(Flag.class);
-    private final Map<String,Flag> labelToFlagMap = new HashMap<String,LTSLabels.Flag>();
+    private final Map<Flag,String> flagToLabelMap = new EnumMap<>(Flag.class);
+    private final Map<String,Flag> labelToFlagMap = new HashMap<>();
 
     /** Returns the flag for a given identifying character. */
     private static Flag getFlag(char c) {
@@ -298,7 +298,7 @@ public class LTSLabels {
     private static final StringHandler FLAG_PARSER = new StringHandler(SINGLE_QUOTE, ""
         + SINGLE_QUOTE);
 
-    private static final Map<Character,Flag> flagMap = new HashMap<Character,LTSLabels.Flag>();
+    private static final Map<Character,Flag> flagMap = new HashMap<>();
 
     static {
         for (Flag f : Flag.values()) {

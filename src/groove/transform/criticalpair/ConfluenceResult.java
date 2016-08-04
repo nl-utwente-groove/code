@@ -42,8 +42,8 @@ public class ConfluenceResult {
      * Needs to know when pairs are tested
      */
     private LazyCriticalPairSet untestedPairs;
-    private Set<CriticalPair> undecidedPairs = new LinkedHashSet<CriticalPair>();
-    private Set<CriticalPair> nonConfluentPairs = new LinkedHashSet<CriticalPair>();
+    private Set<CriticalPair> undecidedPairs = new LinkedHashSet<>();
+    private Set<CriticalPair> nonConfluentPairs = new LinkedHashSet<>();
 
     /**
      * @return the number of pairs for which confluence has not yet been analysed

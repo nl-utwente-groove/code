@@ -36,7 +36,7 @@ public class ShowFonts {
         if (args.length == 0) {
             chars = Collections.singletonList((int) Util.DT);
         } else {
-            chars = new ArrayList<Integer>(args.length);
+            chars = new ArrayList<>(args.length);
             for (String arg : args) {
                 chars.add(Integer.parseInt(arg, 16));
             }

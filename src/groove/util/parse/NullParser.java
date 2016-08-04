@@ -62,6 +62,6 @@ public class NullParser<@Nullable O> implements Parser<@Nullable O> {
 
     /** Returns a {@link groove.util.parse.NullParser} instance for a given type. */
     public static <O> NullParser<@Nullable O> instance(Class<? extends O> type) {
-        return new NullParser<@Nullable O>(type);
+        return new NullParser<>(type);
     }
 }

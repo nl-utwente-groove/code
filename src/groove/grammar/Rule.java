@@ -209,7 +209,7 @@ public class Rule implements Action, Fixable {
         // if this is a top-level rule, the (only) input nodes
         // are the input-only parameter nodes
         if (isTop()) {
-            result = new HashSet<RuleNode>();
+            result = new HashSet<>();
             for (Var var : getSignature()) {
                 if (var.isInOnly()) {
                     result.add(var.getRuleNode());
@@ -247,7 +247,7 @@ public class Rule implements Action, Fixable {
      */
     public Collection<Rule> getSubRules() {
         if (this.subRules == null) {
-            this.subRules = new TreeSet<Rule>();
+            this.subRules = new TreeSet<>();
             for (Condition condition : getCondition().getSubConditions()) {
                 for (Condition subCondition : condition.getSubConditions()) {
                     if (subCondition.hasRule()) {
@@ -270,7 +270,7 @@ public class Rule implements Action, Fixable {
         assert !isFixed();
         this.sig = sig;
         this.hiddenPars = hiddenPars;
-        List<CtrlPar.Var> derivedSig = new ArrayList<CtrlPar.Var>();
+        List<CtrlPar.Var> derivedSig = new ArrayList<>();
         for (int i = 0; i < sig.size(); i++) {
             // add the LHS parameters to the root graph
             RuleNode parNode = sig.get(i)
@@ -441,7 +441,7 @@ public class Rule implements Action, Fixable {
      *         <code>contextMap</code> is not compatible with the root map
      */
     public Collection<Proof> getAllMatches(HostGraph host, RuleToHostMap contextMap) {
-        List<Proof> result = new ArrayList<Proof>();
+        List<Proof> result = new ArrayList<>();
         traverseMatches(host, contextMap, Visitor.newCollector(result));
         return result;
     }
@@ -736,7 +736,7 @@ public class Rule implements Action, Fixable {
     /** Computes the array of nodes isolated in the left hand side. */
     private RuleNode[] computeIsolatedNodes() {
         testFixed(true);
-        Set<RuleNode> result = new HashSet<RuleNode>();
+        Set<RuleNode> result = new HashSet<>();
         for (RuleNode node : lhs().nodeSet()) {
             if (lhs().edgeSet(node)
                 .isEmpty()) {
@@ -916,7 +916,7 @@ public class Rule implements Action, Fixable {
      */
     private RuleEdge[] computeEraserEdges() {
         testFixed(true);
-        Set<RuleEdge> result = new HashSet<RuleEdge>(lhs().edgeSet());
+        Set<RuleEdge> result = new HashSet<>(lhs().edgeSet());
         result.removeAll(rhs().edgeSet());
         // also remove the incident edges of the lhs-only nodes
         for (RuleNode eraserNode : getEraserNodes()) {
@@ -938,7 +938,7 @@ public class Rule implements Action, Fixable {
      */
     private RuleEdge[] computeEraserNonAnchorEdges() {
         Set<RuleEdge> eraserNonAnchorEdgeSet =
-            new HashSet<RuleEdge>(Arrays.asList(getEraserEdges()));
+            new HashSet<>(Arrays.asList(getEraserEdges()));
         eraserNonAnchorEdgeSet.removeAll(getAnchor().edgeSet());
         return eraserNonAnchorEdgeSet.toArray(new RuleEdge[eraserNonAnchorEdgeSet.size()]);
     }
@@ -958,7 +958,7 @@ public class Rule implements Action, Fixable {
      */
     private DefaultRuleNode[] computeEraserNodes() {
         //testFixed(true);
-        Set<RuleNode> result = new HashSet<RuleNode>(lhs().nodeSet());
+        Set<RuleNode> result = new HashSet<>(lhs().nodeSet());
         result.removeAll(rhs().nodeSet());
         return result.toArray(new DefaultRuleNode[result.size()]);
     }
@@ -979,7 +979,7 @@ public class Rule implements Action, Fixable {
      * creator edges or mergers.
      */
     private Set<RuleNode> computeModifierEnds() {
-        Set<RuleNode> result = new HashSet<RuleNode>();
+        Set<RuleNode> result = new HashSet<>();
         // add the end nodes of eraser edges
         for (RuleEdge eraserEdge : getEraserEdges()) {
             result.add(eraserEdge.source());
@@ -1015,7 +1015,7 @@ public class Rule implements Action, Fixable {
      * Computes the set of variables occurring in creators or erasers.
      */
     private Set<LabelVar> computeModifierVars() {
-        Set<LabelVar> result = new HashSet<LabelVar>();
+        Set<LabelVar> result = new HashSet<>();
         // add the variables of creators
         for (RuleEdge edge : getCreatorGraph().edgeSet()) {
             result.addAll(edge.label()
@@ -1058,7 +1058,7 @@ public class Rule implements Action, Fixable {
      * Computes the creator edges between reader nodes.
      */
     private RuleEdge[] computeSimpleCreatorEdges() {
-        List<RuleEdge> result = new ArrayList<RuleEdge>();
+        List<RuleEdge> result = new ArrayList<>();
         Set<RuleNode> nonCreatorNodes = getCreatorEnds();
         // iterate over all creator edges
         for (RuleEdge edge : getCreatorEdges()) {
@@ -1084,7 +1084,7 @@ public class Rule implements Action, Fixable {
      * Computes the creator edges that have at least one creator end.
      */
     private Set<RuleEdge> computeComplexCreatorEdges() {
-        Set<RuleEdge> result = new HashSet<RuleEdge>(Arrays.asList(getCreatorEdges()));
+        Set<RuleEdge> result = new HashSet<>(Arrays.asList(getCreatorEdges()));
         result.removeAll(Arrays.asList(getSimpleCreatorEdges()));
         return result;
     }
@@ -1103,7 +1103,7 @@ public class Rule implements Action, Fixable {
      * Computes the creator (i.e., RHS-only) edges.
      */
     private RuleEdge[] computeCreatorEdges() {
-        Set<RuleEdge> result = new HashSet<RuleEdge>(rhs().edgeSet());
+        Set<RuleEdge> result = new HashSet<>(rhs().edgeSet());
         result.removeAll(lhs().edgeSet());
         Rule parent = getParent();
         if (parent != null && parent != this) {
@@ -1129,7 +1129,7 @@ public class Rule implements Action, Fixable {
      * Computes the creator (i.e., RHS-only) nodes.
      */
     private RuleNode[] computeCreatorNodes() {
-        Set<RuleNode> result = new HashSet<RuleNode>(rhs().nodeSet());
+        Set<RuleNode> result = new HashSet<>(rhs().nodeSet());
         result.removeAll(lhs().nodeSet());
         Rule parent = getParent();
         if (parent != null && parent != this) {
@@ -1154,7 +1154,7 @@ public class Rule implements Action, Fixable {
      * Computes the variables occurring in RHS nodes and edges.
      */
     private LabelVar[] computeCreatorVars() {
-        Set<LabelVar> creatorVarSet = new HashSet<LabelVar>();
+        Set<LabelVar> creatorVarSet = new HashSet<>();
         for (int i = 0; i < getCreatorEdges().length; i++) {
             addCreatorVar(creatorVarSet, getCreatorEdges()[i]);
         }
@@ -1198,7 +1198,7 @@ public class Rule implements Action, Fixable {
      */
     public final Set<RuleNode> getCreatorEnds() {
         if (this.creatorEnds == null) {
-            this.creatorEnds = new HashSet<RuleNode>(getCreatorGraph().nodeSet());
+            this.creatorEnds = new HashSet<>(getCreatorGraph().nodeSet());
             this.creatorEnds.retainAll(lhs().nodeSet());
         }
         return this.creatorEnds;
@@ -1225,10 +1225,10 @@ public class Rule implements Action, Fixable {
 
     /** Returns the set of merger edges in the RHS. */
     private final void initMergers() {
-        this.lhsMergers = new HashSet<RuleEdge>();
-        this.rhsMergers = new HashSet<RuleEdge>();
-        this.lhsMergeMap = new HashMap<RuleNode,RuleNode>();
-        this.rhsMergeMap = new HashMap<RuleNode,RuleNode>();
+        this.lhsMergers = new HashSet<>();
+        this.rhsMergers = new HashSet<>();
+        this.lhsMergeMap = new HashMap<>();
+        this.rhsMergeMap = new HashMap<>();
         for (RuleEdge rhsEdge : rhs().edgeSet()) {
             if (rhsEdge.label()
                 .isEmpty() && !this.lhs.containsEdge(rhsEdge)) {
@@ -1450,7 +1450,7 @@ public class Rule implements Action, Fixable {
     private Map<RuleNode,RuleNode> rhsMergeMap;
 
     /** Mapping from rule nodes to explicitly declared colours. */
-    private final Map<RuleNode,Color> colorMap = new HashMap<RuleNode,Color>();
+    private final Map<RuleNode,Color> colorMap = new HashMap<>();
     /** The rule priority. */
     private int priority;
     /** The optional transition label. */
@@ -1474,7 +1474,7 @@ public class Rule implements Action, Fixable {
     /**
      * Mapping from sets of initialised parameters to match strategies.
      */
-    private final Map<BitSet,Matcher> matcherMap = new HashMap<BitSet,Matcher>();
+    private final Map<BitSet,Matcher> matcherMap = new HashMap<>();
 
     /** The matcher for events of this rule. */
     private Matcher eventMatcher;

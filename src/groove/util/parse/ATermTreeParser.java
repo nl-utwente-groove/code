@@ -105,7 +105,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
     }
 
     private List<O> computeParsableOps(Collection<? extends O> ops) {
-        List<O> result = new ArrayList<O>();
+        List<O> result = new ArrayList<>();
         for (O op : ops) {
             if (op.getKind() != OpKind.NONE) {
                 result.add(op);
@@ -203,7 +203,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
     /** Returns the list of all token types recognised by this parser. */
     List<TokenType> getTokenTypes() {
         if (this.tokenTypes == null) {
-            this.tokenTypes = new ArrayList<TokenType>();
+            this.tokenTypes = new ArrayList<>();
             this.tokenTypes.addAll(getConstTokenMap().values());
             for (O op : getOps()) {
                 if (op.hasSymbol()) {
@@ -234,7 +234,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
     private Map<String,TokenFamily> getSymbolFamilyMap() {
         if (this.symbolFamilyMap == null) {
             Map<String,TokenFamily> result =
-                this.symbolFamilyMap = new TreeMap<String,TokenFamily>();
+                this.symbolFamilyMap = new TreeMap<>();
             for (TokenType type : getTokenTypes()) {
                 if (type.parsable()) {
                     String symbol = type.symbol();
@@ -261,7 +261,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
     TokenFamily getTokenFamily(TokenType type) {
         if (this.typeFamilyMap == null) {
             Map<TokenType,TokenFamily> result =
-                this.typeFamilyMap = new HashMap<TokenType,TokenFamily>();
+                this.typeFamilyMap = new HashMap<>();
             for (TokenType t : getTokenTypes()) {
                 if (t.parsable()) {
                     result.put(t, getTokenFamily(t.symbol()));
@@ -289,7 +289,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
      */
     private Map<Sort,TokenType> getConstTokenMap() {
         if (this.constTokenMap == null) {
-            this.constTokenMap = new EnumMap<Sort,TokenType>(Sort.class);
+            this.constTokenMap = new EnumMap<>(Sort.class);
             for (Sort sort : Sort.values()) {
                 this.constTokenMap.put(sort, new TokenType(TokenClaz.CONST, sort));
             }

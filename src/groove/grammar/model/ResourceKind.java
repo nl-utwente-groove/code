@@ -172,7 +172,7 @@ public enum ResourceKind {
     }
 
     private static Map<GraphRole,ResourceKind> roleKindMap =
-        new EnumMap<GraphRole,ResourceKind>(GraphRole.class);
+        new EnumMap<>(GraphRole.class);
 
     static {
         for (ResourceKind kind : ResourceKind.values()) {

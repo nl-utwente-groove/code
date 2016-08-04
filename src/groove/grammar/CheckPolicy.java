@@ -76,7 +76,7 @@ public enum CheckPolicy {
 
     /** Parser that returns a policy. */
     public static final Parser<CheckPolicy> singleParser =
-        new Parser.EnumParser<CheckPolicy>(CheckPolicy.class, ERROR);
+        new Parser.EnumParser<>(CheckPolicy.class, ERROR);
     /** Parser that returns a policy map. */
     public static final Parser<PolicyMap> multiParser = new PolicyMapParser();
 

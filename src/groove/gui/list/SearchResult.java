@@ -117,7 +117,7 @@ public class SearchResult implements SelectableListEntry {
     /** The name of the resource on which the result occurs. May be {@code null}. */
     private QualName resourceName;
     /** List of result elements. */
-    private final List<Element> elements = new ArrayList<Element>();
+    private final List<Element> elements = new ArrayList<>();
     /** The result message. */
     private final String message;
 

@@ -44,7 +44,7 @@ public class ContainmentChecker implements TypeChecker {
     public ContainmentChecker(TypeGraph type) {
         assert type != null;
         this.typeGraph = type;
-        this.checks = new ArrayList<TypeEdge>();
+        this.checks = new ArrayList<>();
         for (TypeEdge edge : type.edgeSet()) {
             for (TypeEdge subEdge : edge.getSubtypes()) {
                 if (edge.isComposite() || subEdge.isComposite()) {
@@ -86,14 +86,14 @@ public class ContainmentChecker implements TypeChecker {
      */
     private Map<Record,List<Record>> buildConnect(HostGraph host) {
         this.recordMap.clear();
-        Map<Record,List<Record>> connect = new LinkedHashMap<Record,List<Record>>();
+        Map<Record,List<Record>> connect = new LinkedHashMap<>();
         for (TypeEdge check : this.checks) {
             Set<? extends HostEdge> edges = host.edgeSet(check.label());
             for (HostEdge edge : edges) {
                 Record source = getRecord(edge.source());
                 List<Record> targets = connect.get(source);
                 if (targets == null) {
-                    connect.put(source, targets = new ArrayList<Record>());
+                    connect.put(source, targets = new ArrayList<>());
                 }
                 targets.add(getRecord(edge.target()));
             }
@@ -109,7 +109,7 @@ public class ContainmentChecker implements TypeChecker {
         return result;
     }
 
-    private final Map<HostNode,Record> recordMap = new HashMap<HostNode,Record>();
+    private final Map<HostNode,Record> recordMap = new HashMap<>();
 
     /**
      * Detects the set of SCCs reachable from the first element of the
@@ -165,11 +165,11 @@ public class ContainmentChecker implements TypeChecker {
     /** Current index in the search. */
     private int index;
     /** Search stack of records. */
-    private final Stack<Record> stack = new Stack<Record>();
+    private final Stack<Record> stack = new Stack<>();
     /** Set representation of {@link #stack} for efficiency of membership test. */
-    private final Set<Record> pool = new HashSet<Record>();
+    private final Set<Record> pool = new HashSet<>();
     /** Collected list of roots. */
-    private final List<HostNode> result = new ArrayList<HostNode>();
+    private final List<HostNode> result = new ArrayList<>();
 
     /** Record for a node during the search. */
     static private class Record {

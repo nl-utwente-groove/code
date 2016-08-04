@@ -56,7 +56,7 @@ public class QuantifierCountChecker extends ReteNetworkNode implements ReteState
      * The match containing the single node-binding between the
      * count node and the actual count value calculated at each round.
      */
-    private Set<ReteCountMatch> matches = new TreeHashSet<ReteCountMatch>();
+    private Set<ReteCountMatch> matches = new TreeHashSet<>();
     private ReteCountMatch dummyMatch;
 
     /**
@@ -93,7 +93,7 @@ public class QuantifierCountChecker extends ReteNetworkNode implements ReteState
     }
 
     private void makePattern() {
-        ArrayList<RuleNode> rootNodes = new ArrayList<RuleNode>();
+        ArrayList<RuleNode> rootNodes = new ArrayList<>();
         rootNodes.addAll(this.condition.getRoot()
             .nodeSet());
         Collections.sort(rootNodes, NodeComparator.instance());
@@ -273,7 +273,7 @@ public class QuantifierCountChecker extends ReteNetworkNode implements ReteState
 
     private ReteCountMatch getCountMatch(RuleToHostMap anchor) {
         ReteCountMatch countMatch = null;
-        List<TreeMatch> matchList = new ArrayList<TreeMatch>();
+        List<TreeMatch> matchList = new ArrayList<>();
         Collector<TreeMatch,?> collector = Visitor.newCollector(matchList);
         this.conditionMatcher.traverse(this.getOwner()
             .getOwnerEngine()

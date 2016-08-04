@@ -130,7 +130,7 @@ public class CTLTest {
         try {
             File tmp = File.createTempFile("gts-" + grammarName, ".gxl");
             this.ltsLabels = new LTSLabels("sfro");
-            List<String> genArgs = new ArrayList<String>();
+            List<String> genArgs = new ArrayList<>();
             genArgs.addAll(Arrays.asList("-v",
                 "0",
                 "-o",

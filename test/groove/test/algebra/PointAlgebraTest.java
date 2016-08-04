@@ -41,7 +41,7 @@ public class PointAlgebraTest extends
     @Override
     public void testConsistency() {
         super.testConsistency();
-        Set<Object> points = new HashSet<Object>();
+        Set<Object> points = new HashSet<>();
         for (Sort kind : Sort.values()) {
             PointAlgebra<?> algebra =
                 (PointAlgebra<?>) AlgebraFamily.POINT.getAlgebra(kind);

@@ -30,7 +30,7 @@ import groove.grammar.type.TypeGuard;
 import groove.graph.AEdge;
 
 /** Rule edge that is not attribute-related. */
-public class RuleEdge extends AEdge<RuleNode,RuleLabel>implements RuleElement {
+public class RuleEdge extends AEdge<RuleNode,RuleLabel> implements RuleElement {
     /** Constructs a rule edge from a given rule label and/or type edge. */
     public RuleEdge(RuleNode source, RuleLabel label, TypeEdge type, RuleNode target) {
         super(source, label, target);
@@ -94,7 +94,7 @@ public class RuleEdge extends AEdge<RuleNode,RuleLabel>implements RuleElement {
     public Set<LabelVar> getVars() {
         Set<LabelVar> result = this.vars;
         if (result == null) {
-            result = this.vars = new HashSet<LabelVar>();
+            result = this.vars = new HashSet<>();
             for (TypeGuard guard : getTypeGuards()) {
                 if (guard.isNamed()) {
                     result.add(guard.getVar());
@@ -125,19 +125,16 @@ public class RuleEdge extends AEdge<RuleNode,RuleLabel>implements RuleElement {
     private final @NonNull Set<TypeEdge> matchingTypes;
 
     /** Convenience method to assert non-nullness of singleton set. */
-    @SuppressWarnings("null")
     private static <T> @NonNull List<T> singletonList(T element) {
         return Collections.singletonList(element);
     }
 
     /** Convenience method to assert non-nullness of empty set. */
-    @SuppressWarnings("null")
     private static <T> @NonNull Set<T> emptySet() {
         return Collections.emptySet();
     }
 
     /** Convenience method to assert non-nullness of empty list. */
-    @SuppressWarnings("null")
     private static <T> @NonNull List<T> emptyList() {
         return Collections.emptyList();
     }

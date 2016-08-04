@@ -31,7 +31,7 @@ public class EncodedMinMaxMode extends EncodedFixedEnumeratedType<Boolean> {
 
     @Override
     public Map<String,String> fixedOptions() {
-        Map<String,String> result = new TreeMap<String,String>();
+        Map<String,String> result = new TreeMap<>();
         result.put(START_MAX, "Maximize gains");
         result.put(START_MIN, "Minimize gains");
         return result;
@@ -39,7 +39,7 @@ public class EncodedMinMaxMode extends EncodedFixedEnumeratedType<Boolean> {
 
     @Override
     public Map<String,Boolean> fixedValues() {
-        Map<String,Boolean> result = new TreeMap<String,Boolean>();
+        Map<String,Boolean> result = new TreeMap<>();
         result.put(START_MAX, true);
         result.put(START_MIN, false);
         return result;

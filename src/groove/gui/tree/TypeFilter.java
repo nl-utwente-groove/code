@@ -66,7 +66,7 @@ public class TypeFilter extends LabelFilter<AspectGraph> {
                 this.edgeTypeEntryMap.get(nodeKeyLabel);
             if (entryMap == null) {
                 this.edgeTypeEntryMap.put(nodeKeyLabel, entryMap =
-                    new HashMap<TypeLabel,TypeEntry>());
+                    new HashMap<>());
             }
             TypeLabel edgeKeyLabel = key.label();
             result = entryMap.get(edgeKeyLabel);
@@ -97,10 +97,10 @@ public class TypeFilter extends LabelFilter<AspectGraph> {
 
     /** Mapping from known node type labels to corresponding node type entries. */
     private final Map<TypeLabel,TypeEntry> nodeTypeEntryMap =
-        new HashMap<TypeLabel,TypeEntry>();
+        new HashMap<>();
     /** Mapping from known node type labels and edge type labels to corresponding edge type entries. */
     private final Map<TypeLabel,Map<TypeLabel,TypeEntry>> edgeTypeEntryMap =
-        new HashMap<TypeLabel,Map<TypeLabel,TypeEntry>>();
+        new HashMap<>();
     /** Field used to test consistency of the type entries. */
     private TypeGraph typeGraph;
 

@@ -215,7 +215,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     @Override
     public List<MatchResult> getMatches() {
         // copy the match set to prevent sharing errors
-        return new ArrayList<MatchResult>(getCache().getMatches()
+        return new ArrayList<>(getCache().getMatches()
             .getAll());
     }
 

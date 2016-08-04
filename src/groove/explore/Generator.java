@@ -464,7 +464,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         @SuppressWarnings("rawtypes")
         @Override
         protected Map<GrammarKey,String> createNewCollection(Class<? extends Map> type) {
-            return new EnumMap<GrammarKey,String>(GrammarKey.class);
+            return new EnumMap<>(GrammarKey.class);
         }
 
         @SuppressWarnings({"rawtypes", "unchecked"})

@@ -50,6 +50,5 @@ public interface RuleNode extends Node, RuleElement {
     public boolean stronglyEquals(RuleNode other);
 
     /** Fixed global empty set of matching types. */
-    @SuppressWarnings("null")
     final static @NonNull Set<TypeNode> EMPTY_MATCH_SET = Collections.emptySet();
 }

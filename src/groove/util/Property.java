@@ -115,7 +115,7 @@ abstract public class Property<S> {
      * objects of a generic type.
      */
     static public <T> Property<T> createTrue() {
-        return new True<T>();
+        return new True<>();
     }
 
     /** Property subclass that always returns true. */
@@ -255,7 +255,7 @@ abstract public class Property<S> {
         /** Constructs a choice based on a given set of values, and a given description. */
         @SafeVarargs
         public Choice(String comment, S... values) {
-            this.values = new HashSet<S>(Arrays.asList(values));
+            this.values = new HashSet<>(Arrays.asList(values));
             this.explanation = comment;
         }
 

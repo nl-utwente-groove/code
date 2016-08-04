@@ -130,7 +130,7 @@ public enum FileType {
                 .format("Badly formatted file type extension: %s", extension);
         this.extension = extension;
         this.description = description;
-        this.subTypes = new ArrayList<FileType>();
+        this.subTypes = new ArrayList<>();
     }
 
     /**
@@ -162,7 +162,7 @@ public enum FileType {
         List<String> result = this.extensions;
         if (result == null) {
             if (isMultiple()) {
-                result = new ArrayList<String>();
+                result = new ArrayList<>();
                 for (FileType subType : getSubTypes()) {
                     result.add(subType.getExtension());
                 }

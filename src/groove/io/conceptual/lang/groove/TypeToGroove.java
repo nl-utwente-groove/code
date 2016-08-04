@@ -40,7 +40,7 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
     private GrooveResource m_grooveResource;
     private Config m_cfg;
     private GrammarGraph m_currentGraph;
-    private Set<Property> m_properties = new HashSet<Property>();
+    private Set<Property> m_properties = new HashSet<>();
 
     public TypeToGroove(GrooveResource grooveResource) {
         this.m_grooveResource = grooveResource;

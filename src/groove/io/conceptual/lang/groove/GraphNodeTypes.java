@@ -38,8 +38,8 @@ public class GraphNodeTypes {
         TypeNone
     }
 
-    private Map<String,ModelType> m_modelTypes = new HashMap<String,ModelType>();
-    private Map<String,Type> m_types = new HashMap<String,Type>();
+    private Map<String,ModelType> m_modelTypes = new HashMap<>();
+    private Map<String,Type> m_types = new HashMap<>();
 
     public GraphNodeTypes() {
 

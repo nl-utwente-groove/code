@@ -86,7 +86,7 @@ public class Matcher implements SearchStrategy {
      *        <code>null</code> if there is no predefined mapping
      */
     public List<TreeMatch> findAll(HostGraph host, RuleToHostMap seedMap) {
-        List<TreeMatch> result = new ArrayList<TreeMatch>();
+        List<TreeMatch> result = new ArrayList<>();
         Collector<TreeMatch,List<TreeMatch>> collector =
             this.collector.newInstance(result);
         traverse(host, seedMap, collector);
@@ -168,14 +168,14 @@ public class Matcher implements SearchStrategy {
             if (!seedMap.nodeMap().keySet().equals(this.seed.nodeSet())) {
                 // test for the difference between seed nodes and the seed map 
                 Set<RuleNode> seedNodes =
-                    new HashSet<RuleNode>(this.seed.nodeSet());
+                    new HashSet<>(this.seed.nodeSet());
                 seedNodes.removeAll(seedMap.nodeMap().keySet());
                 if (!seedNodes.isEmpty()) {
                     throw new IllegalArgumentException("Unmatched seed nodes: "
                         + seedNodes);
                 }
                 Map<RuleNode,HostNode> seedNodeMap =
-                    new HashMap<RuleNode,HostNode>(seedMap.nodeMap());
+                    new HashMap<>(seedMap.nodeMap());
                 Set<RuleNode> seedNodeKeys = seedNodeMap.keySet();
                 seedNodeKeys.removeAll(this.seed.nodeSet());
                 for (RuleEdge edge : this.seed.edgeSet()) {
@@ -190,14 +190,14 @@ public class Matcher implements SearchStrategy {
             }
             if (!seedMap.edgeMap().keySet().equals(this.seed.edgeSet())) {
                 Set<RuleEdge> seedEdges =
-                    new HashSet<RuleEdge>(this.seed.edgeSet());
+                    new HashSet<>(this.seed.edgeSet());
                 seedEdges.removeAll(seedMap.edgeMap().keySet());
                 if (!seedEdges.isEmpty()) {
                     throw new IllegalArgumentException("Unmatched seed edges: "
                         + seedEdges);
                 }
                 Map<RuleEdge,HostEdge> seedEdgeMap =
-                    new HashMap<RuleEdge,HostEdge>(seedMap.edgeMap());
+                    new HashMap<>(seedMap.edgeMap());
                 seedEdgeMap.keySet().removeAll(this.seed.edgeSet());
                 seedEdgeMap.keySet().retainAll(
                     getCondition().getPattern().edgeSet());
@@ -208,7 +208,7 @@ public class Matcher implements SearchStrategy {
             }
             if (!seedMap.getValuation().keySet().equals(this.seed.varSet())) {
                 Set<LabelVar> seedVars =
-                    new HashSet<LabelVar>(this.seed.varSet());
+                    new HashSet<>(this.seed.varSet());
                 seedVars.removeAll(seedMap.getValuation().keySet());
                 if (!seedVars.isEmpty()) {
                     throw new IllegalArgumentException(

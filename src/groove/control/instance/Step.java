@@ -159,7 +159,7 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
     private List<Assignment> enters;
 
     private List<Assignment> computeEnterAssignments() {
-        List<Assignment> result = new ArrayList<Assignment>();
+        List<Assignment> result = new ArrayList<>();
         // add push actions for every successive call on the
         // stack of entered calls
         for (int i = getSource().getSwitchStack().size(); i < getSwitchStack().size() - 1; i++) {

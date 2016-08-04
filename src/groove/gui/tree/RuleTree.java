@@ -177,7 +177,7 @@ public class RuleTree extends AbstractResourceTree {
         }
         if (renewSelection) {
             ResourceModel<?> ruleModel = source.getResource(ResourceKind.RULE);
-            Set<GraphTransitionKey> keys = new HashSet<GraphTransitionKey>();
+            Set<GraphTransitionKey> keys = new HashSet<>();
             if (source.hasMatch()) {
                 keys.add(source.getMatch());
             }
@@ -208,8 +208,8 @@ public class RuleTree extends AbstractResourceTree {
         DisplayTreeNode topNode = this.topDirectoryNode;
         Map<Integer,Set<ActionEntry>> priorityMap = getPriorityMap(grammar);
         Map<CheckPolicy,Set<ActionEntry>> policyMap = getPolicyMap(grammar);
-        List<TreePath> expandedPaths = new ArrayList<TreePath>();
-        List<TreePath> selectedPaths = new ArrayList<TreePath>();
+        List<TreePath> expandedPaths = new ArrayList<>();
+        List<TreePath> selectedPaths = new ArrayList<>();
         boolean hasMultipleLevels = priorityMap.size() + policyMap.size() > 1;
         for (Map.Entry<Integer,Set<ActionEntry>> priorityEntry : priorityMap.entrySet()) {
             int priority = priorityEntry.getKey();
@@ -223,7 +223,7 @@ public class RuleTree extends AbstractResourceTree {
             }
             // collect entries for all actions
             Map<QualName,RuleEntry> ruleEntryMap = new HashMap<>();
-            List<RecipeEntry> recipes = new ArrayList<RecipeEntry>();
+            List<RecipeEntry> recipes = new ArrayList<>();
             for (ActionEntry action : priorityEntry.getValue()) {
                 if (action instanceof RecipeEntry) {
                     recipes.add((RecipeEntry) action);
@@ -297,13 +297,13 @@ public class RuleTree extends AbstractResourceTree {
      */
     private Map<Integer,Set<ActionEntry>> getPriorityMap(GrammarModel grammar) {
         Map<Integer,Set<ActionEntry>> result =
-            new TreeMap<Integer,Set<ActionEntry>>(Action.PRIORITY_COMPARATOR);
+            new TreeMap<>(Action.PRIORITY_COMPARATOR);
         for (Recipe recipe : grammar.getControlModel()
             .getRecipes()) {
             int priority = recipe.getPriority();
             Set<ActionEntry> recipes = result.get(priority);
             if (recipes == null) {
-                result.put(priority, recipes = new HashSet<ActionEntry>());
+                result.put(priority, recipes = new HashSet<>());
             }
             recipes.add(new RecipeEntry(recipe));
         }
@@ -313,7 +313,7 @@ public class RuleTree extends AbstractResourceTree {
                 int priority = rule.getPriority();
                 Set<ActionEntry> rules = result.get(priority);
                 if (rules == null) {
-                    result.put(priority, rules = new HashSet<ActionEntry>());
+                    result.put(priority, rules = new HashSet<>());
                 }
                 rules.add(new RuleEntry(rule));
             }
@@ -328,14 +328,14 @@ public class RuleTree extends AbstractResourceTree {
      */
     private Map<CheckPolicy,Set<ActionEntry>> getPolicyMap(GrammarModel grammar) {
         Map<CheckPolicy,Set<ActionEntry>> result =
-            new EnumMap<CheckPolicy,Set<ActionEntry>>(CheckPolicy.class);
+            new EnumMap<>(CheckPolicy.class);
         for (ResourceModel<?> model : grammar.getResourceSet(ResourceKind.RULE)) {
             RuleModel ruleModel = (RuleModel) model;
             if (ruleModel.isProperty()) {
                 CheckPolicy policy = ruleModel.getPolicy();
                 Set<ActionEntry> rules = result.get(policy);
                 if (rules == null) {
-                    result.put(policy, rules = new HashSet<ActionEntry>());
+                    result.put(policy, rules = new HashSet<>());
                 }
                 rules.add(new RuleEntry(ruleModel));
             }
@@ -397,7 +397,7 @@ public class RuleTree extends AbstractResourceTree {
      */
     private void refresh(GraphState state) {
         SortedSet<GraphTransitionKey> matches =
-            new TreeSet<GraphTransitionKey>(GraphTransitionKey.COMPARATOR);
+            new TreeSet<>(GraphTransitionKey.COMPARATOR);
         if (state != null) {
             for (GraphTransition trans : state.getTransitions(Claz.ANY)) {
                 matches.add(trans.getKey());
@@ -415,7 +415,7 @@ public class RuleTree extends AbstractResourceTree {
      * @param keys the match results to be selected
      */
     private void selectMatch(RuleModel rule, Set<GraphTransitionKey> keys) {
-        List<DisplayTreeNode> treeNodes = new ArrayList<DisplayTreeNode>();
+        List<DisplayTreeNode> treeNodes = new ArrayList<>();
         for (GraphTransitionKey key : keys) {
             DisplayTreeNode node = this.matchNodeMap.get(key);
             if (node != null) {
@@ -450,7 +450,7 @@ public class RuleTree extends AbstractResourceTree {
         }
         // clean up current match node map
         this.subruleNodeMap.clear();
-        Collection<DisplayTreeNode> treeNodes = new ArrayList<DisplayTreeNode>();
+        Collection<DisplayTreeNode> treeNodes = new ArrayList<>();
         Set<Duo<QualName>> triedPairs = getTried(state);
         // construct rule nodes for subrules
         for (Duo<QualName> pair : triedPairs) {
@@ -584,7 +584,7 @@ public class RuleTree extends AbstractResourceTree {
      * directory
      */
     private final Map<GraphTransitionKey,DisplayTreeNode> matchNodeMap =
-        new HashMap<GraphTransitionKey,DisplayTreeNode>();
+        new HashMap<>();
 
     /**
      * Mapping from {@link MatchResult} in the current LTS to match nodes in the rule

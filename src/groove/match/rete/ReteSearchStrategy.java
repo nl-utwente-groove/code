@@ -113,7 +113,7 @@ public class ReteSearchStrategy implements SearchStrategy {
                 Condition subCondition = subMatchers[i].getCondition();
                 Op subConditionOp = subCondition.getOp();
                 if (subConditionOp != Op.NOT) {
-                    List<TreeMatch> subMatches = new ArrayList<TreeMatch>();
+                    List<TreeMatch> subMatches = new ArrayList<>();
                     Collector<TreeMatch,List<TreeMatch>> collector =
                         Visitor.newCollector(subMatches);
                     subMatchers[i].traverse(host, patternMap, collector);
@@ -224,7 +224,7 @@ public class ReteSearchStrategy implements SearchStrategy {
     private ReteSearchStrategy[] getSubMatchers() {
         if (this.subMatchers == null) {
             List<ReteSearchStrategy> result =
-                new ArrayList<ReteSearchStrategy>(
+                new ArrayList<>(
                     getCondition().getSubConditions().size());
             for (Condition subCondition : getCondition().getSubConditions()) {
                 if (!(subCondition instanceof EdgeEmbargo)) {

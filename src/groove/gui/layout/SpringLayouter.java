@@ -97,8 +97,8 @@ public class SpringLayouter extends AbstractLayouter {
         }
         // initialise the edge fragment arrays
         // Object[] graphEdges = jgraph.getEdges(jgraph.getRoots());
-        List<LayoutNode> edgeSourceList = new LinkedList<LayoutNode>();
-        List<LayoutNode> edgeTargetList = new LinkedList<LayoutNode>();
+        List<LayoutNode> edgeSourceList = new LinkedList<>();
+        List<LayoutNode> edgeTargetList = new LinkedList<>();
         for (Object jCell : getJGraph().getRoots()) {
             if (!(jCell instanceof JEdge)) {
                 continue;
@@ -303,7 +303,7 @@ public class SpringLayouter extends AbstractLayouter {
      * <tt>(layoutables[i],deltas[i])</tt> for which
      * <tt>deltas[i] != null</tt>
      */
-    private final Map<LayoutNode,Point2D.Float> deltaMap = new HashMap<LayoutNode,Point2D.Float>();
+    private final Map<LayoutNode,Point2D.Float> deltaMap = new HashMap<>();
 
     /**
      * Source vertices or midpoints of the edge fragments in this graph.

@@ -105,17 +105,17 @@ class SeedSearchItem extends AbstractSearchItem {
 
     @Override
     public void activate(PlanSearchStrategy strategy) {
-        this.nodeIxMap = new HashMap<RuleNode,Integer>();
+        this.nodeIxMap = new HashMap<>();
         for (RuleNode node : this.boundNodes) {
             assert !strategy.isNodeFound(node) : String.format("Node %s is not fresh", node);
             this.nodeIxMap.put(node, strategy.getNodeIx(node));
         }
-        this.edgeIxMap = new HashMap<RuleEdge,Integer>();
+        this.edgeIxMap = new HashMap<>();
         for (RuleEdge edge : this.boundEdges) {
             assert !strategy.isEdgeFound(edge) : String.format("Edge %s is not fresh", edge);
             this.edgeIxMap.put(edge, strategy.getEdgeIx(edge));
         }
-        this.varIxMap = new HashMap<LabelVar,Integer>();
+        this.varIxMap = new HashMap<>();
         for (LabelVar var : this.boundVars) {
             assert !strategy.isVarFound(var) : String.format("Variable %s is not fresh", var);
             this.varIxMap.put(var, strategy.getVarIx(var));
@@ -136,7 +136,7 @@ class SeedSearchItem extends AbstractSearchItem {
 
     private boolean allElementsMatched(Search search) {
         if (this.unmatched == null) {
-            this.unmatched = new HashSet<Object>();
+            this.unmatched = new HashSet<>();
             for (Map.Entry<RuleNode,Integer> nodeEntry : this.nodeIxMap.entrySet()) {
                 if (search.getNode(nodeEntry.getValue()) == null) {
                     this.unmatched.add(nodeEntry.getKey());

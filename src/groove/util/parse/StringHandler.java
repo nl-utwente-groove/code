@@ -128,11 +128,11 @@ public class StringHandler {
         // quote character if quoted is true
         char quoteChar = 0;
         // current stack of brackets
-        Stack<Character> bracketStack = new Stack<Character>();
+        Stack<Character> bracketStack = new Stack<>();
         // the resulting stripped expression (with PLACEHOLDER chars)
         SimpleStringBuilder strippedExpr = new SimpleStringBuilder(expr.length());
         // the list of replacements so far
-        List<String> replacements = new LinkedList<String>();
+        List<String> replacements = new LinkedList<>();
         // the string currently being built
         SimpleStringBuilder current = strippedExpr;
         for (int i = 0; i < expr.length(); i++) {
@@ -202,7 +202,7 @@ public class StringHandler {
             throw new FormatException("Unbalanced brackets in expression '%s': '%c' is not closed",
                 expr, bracketStack.pop());
         }
-        return new Pair<String,List<String>>(strippedExpr.toString(),
+        return new Pair<>(strippedExpr.toString(),
             Collections.unmodifiableList(replacements));
     }
 
@@ -251,7 +251,7 @@ public class StringHandler {
      * @see String#split(String,int)
      */
     public String[] split(String expr, String split) throws FormatException {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         // Parse the expression first, so only non-quoted substrings are used to split
         Pair<String,List<String>> parseResult = parse(expr);
         String parseExpr = parseResult.one();
@@ -503,13 +503,13 @@ public class StringHandler {
      * character is at the same index of <tt>closeBrackets</tt>.
      */
     private final Map<Character,Integer> openBracketsIndexMap =
-        new LinkedHashMap<Character,Integer>();
+        new LinkedHashMap<>();
     /**
      * A map of closing bracket characters to indices. The corresponding opening bracket
      * character is at the same index of <tt>openBrackets</tt>.
      */
     private final Map<Character,Integer> closeBracketsIndexMap =
-        new LinkedHashMap<Character,Integer>();
+        new LinkedHashMap<>();
     /**
      * The character to use as a placeholder in the parse result of this parser.
      */

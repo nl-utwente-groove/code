@@ -68,14 +68,14 @@ public class ConditionChecker extends ReteNetworkNode implements
      * used if the matches are stored in the tree-liked index structure of
      * the {@link #conflictSetSearchTree}.
      */
-    protected Set<ReteSimpleMatch> conflictSet = new HashSet<ReteSimpleMatch>();
+    protected Set<ReteSimpleMatch> conflictSet = new HashSet<>();
 
     /**
      * A bag structure that keeps the record of number of times (one or more)
      * a given match is inhibited by an associated embargo match. 
      */
     protected HashBag<ReteSimpleMatch> inhibitionMap =
-        new HashBag<ReteSimpleMatch>();
+        new HashBag<>();
 
     /**
      * The associated {@link Condition} for this checker node.
@@ -127,7 +127,7 @@ public class ConditionChecker extends ReteNetworkNode implements
         this.getOwner().getState().subscribe(this);
         this.parent = parentConditionChecker;
         makeRootSearchOrder(c);
-        this.subConditionCheckers = new ArrayList<ConditionChecker>();
+        this.subConditionCheckers = new ArrayList<>();
         if (this.parent != null) {
             this.parent.addSubConditionChecker(this);
         }
@@ -138,7 +138,7 @@ public class ConditionChecker extends ReteNetworkNode implements
 
     private void makeRootSearchOrder(Condition c) {
         if (!c.getRoot().isEmpty()) {
-            ArrayList<RuleNode> nodes = new ArrayList<RuleNode>();
+            ArrayList<RuleNode> nodes = new ArrayList<>();
             nodes.addAll(c.getRoot().nodeSet());
             Collections.sort(nodes, NodeComparator.instance());
             this.conflictSetSearchTree = new SearchTree(nodes);
@@ -232,7 +232,7 @@ public class ConditionChecker extends ReteNetworkNode implements
         Set<ReteSimpleMatch> result = cs;
 
         if (!this.inhibitionMap.isEmpty() && (cs.size() > 0)) {
-            result = new TreeHashSet<ReteSimpleMatch>();
+            result = new TreeHashSet<>();
             for (ReteSimpleMatch m : cs) {
                 if (!this.isInhibited(m)) {
                     result.add(m);
@@ -373,7 +373,7 @@ public class ConditionChecker extends ReteNetworkNode implements
     public Set<RuleToHostMap> getActiveConflictsetAnchors(boolean includeEmpty) {
         Set<RuleToHostMap> result = null;
         if (this.conflictSetSearchTree != null) {
-            result = new HashSet<RuleToHostMap>();
+            result = new HashSet<>();
             HashMap<Set<ReteSimpleMatch>,RuleToHostMap> g =
                 this.conflictSetSearchTree.getCollectionsToAnchorsMap();
             for (Entry<Set<ReteSimpleMatch>,RuleToHostMap> s : g.entrySet()) {
@@ -557,10 +557,10 @@ public class ConditionChecker extends ReteNetworkNode implements
          */
         protected RuleElement[] rootSearchOrder;
 
-        HashMap<HostElement,Object> root = new HashMap<HostElement,Object>();
+        HashMap<HostElement,Object> root = new HashMap<>();
 
         HashMap<Set<ReteSimpleMatch>,RuleToHostMap> collectionsToAnchorsMap =
-            new HashMap<Set<ReteSimpleMatch>,RuleToHostMap>();
+            new HashMap<>();
 
         HostFactory factory;
 
@@ -603,7 +603,7 @@ public class ConditionChecker extends ReteNetworkNode implements
                     (HashMap<HostElement,Object>) leaf.get(ei);
                 if (treeNode == null) {
                     if (create) {
-                        treeNode = new HashMap<HostElement,Object>();
+                        treeNode = new HashMap<>();
                         leaf.put(ei, treeNode);
                     } else {
                         leaf = null;
@@ -650,7 +650,7 @@ public class ConditionChecker extends ReteNetworkNode implements
                 HashMap<HostElement,Object> treeNode =
                     (HashMap<HostElement,Object>) leaf.get(ei);
                 if (treeNode == null) {
-                    treeNode = new HashMap<HostElement,Object>();
+                    treeNode = new HashMap<>();
                     leaf.put(ei, treeNode);
                 }
                 leaf = treeNode;

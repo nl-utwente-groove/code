@@ -198,7 +198,7 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
      * @param spaces if {@code true}, spaces are introduced for readability */
     private Line toCallLine(boolean spaces) {
         assert getOp().getKind() == OpKind.CALL;
-        List<Line> result = new ArrayList<Line>();
+        List<Line> result = new ArrayList<>();
         result.add(Line.atom(getOp().getSymbol()));
         result.add(Line.atom("("));
         boolean firstArg = true;
@@ -218,7 +218,7 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
     /** Builds a display string for an operator with an infix or prefix symbol.
      * @param spaces if {@code true}, spaces are introduced for readability */
     private Line toFixLine(OpKind context, boolean spaces) {
-        List<Line> result = new ArrayList<Line>();
+        List<Line> result = new ArrayList<>();
         OpKind me = getOp().getKind();
         boolean addPars = me.compareTo(context) < 0;
         boolean addSpaces = spaces && me.compareTo(OpKind.MULT) < 0;

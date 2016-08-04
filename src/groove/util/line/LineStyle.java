@@ -92,7 +92,7 @@ public enum LineStyle {
     static public final LineStyle DEFAULT_VALUE = ORTHOGONAL;
 
     private static final Map<Integer,LineStyle> codeMap =
-        new HashMap<Integer,LineStyle>();
+        new HashMap<>();
 
     static {
         for (LineStyle style : LineStyle.values()) {

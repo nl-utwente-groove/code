@@ -198,7 +198,7 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
     @Override
     public Collection<? extends Label> getKeys() {
         getNode().testFixed(true);
-        Collection<TypeElement> result = new ArrayList<TypeElement>();
+        Collection<TypeElement> result = new ArrayList<>();
         if (!this.aspect.isMeta()) {
             for (Edge edge : getEdges()) {
                 TypeEdge key = getKey(edge);
@@ -219,7 +219,7 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
 
     @Override
     protected Collection<TypeNode> getNodeKeys(boolean hasEdgeKeys) {
-        List<TypeNode> result = new ArrayList<TypeNode>();
+        List<TypeNode> result = new ArrayList<>();
         TypeModelMap typeMap = getTypeMap();
         if (typeMap != null) {
             TypeNode type = typeMap.getNode(getNode());
@@ -297,7 +297,7 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
     public void loadFromUserObject(GraphRole role) {
         AspectNode node = new AspectNode(getNode().getNumber(), role);
         AspectParser parser = AspectParser.getInstance();
-        List<AspectLabel> edgeLabels = new ArrayList<AspectLabel>();
+        List<AspectLabel> edgeLabels = new ArrayList<>();
         for (String text : getUserObject()) {
             AspectLabel label = parser.parse(text, role);
             if (label.isNodeOnly()) {
@@ -311,7 +311,7 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
         // collect remark edges
         StringBuilder remarkText = new StringBuilder();
         // collect edges to be added explicitly
-        List<AspectEdge> newEdges = new ArrayList<AspectEdge>();
+        List<AspectEdge> newEdges = new ArrayList<>();
         // now process the edge labels
         int remarkCount = 0;
         for (AspectLabel label : edgeLabels) {

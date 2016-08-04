@@ -131,7 +131,7 @@ public class DefaultRuleNode extends ANode implements RuleNode, AnchorKey {
     public Set<LabelVar> getVars() {
         Set<LabelVar> result = this.vars;
         if (result == null) {
-            result = this.vars = new HashSet<LabelVar>();
+            result = this.vars = new HashSet<>();
             for (TypeGuard guard : getTypeGuards()) {
                 assert guard.isNamed();
                 result.add(guard.getVar());

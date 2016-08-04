@@ -76,7 +76,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         this.value = value;
         this.commandlineParser = commandlineParser;
         this.argumentNames = argumentNames;
-        this.argumentTypes = new TreeMap<String,EncodedType<?,String>>();
+        this.argumentTypes = new TreeMap<>();
     }
 
     /**
@@ -140,7 +140,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
      */
     @Override
     public EncodedTypeEditor<A,Serialized> createEditor(GrammarModel grammar) {
-        return new TemplateEditor<A>(grammar);
+        return new TemplateEditor<>(grammar);
     }
 
     /**
@@ -218,7 +218,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
      */
     private class TemplateEditor<X> extends EncodedTypeEditor<X,Serialized> {
         private final Map<String,EncodedTypeEditor<?,String>> editors =
-            new TreeMap<String,EncodedTypeEditor<?,String>>();
+            new TreeMap<>();
 
         public TemplateEditor(GrammarModel grammar) {
             super(grammar, new SpringLayout());

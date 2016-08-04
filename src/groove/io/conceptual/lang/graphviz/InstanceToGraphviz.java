@@ -48,8 +48,8 @@ import groove.io.external.PortException;
 
 @SuppressWarnings("javadoc")
 public class InstanceToGraphviz extends InstanceExporter<Node> {
-    private Map<Id,Graph> m_packageGraphs = new HashMap<Id,Graph>();
-    private Map<InstanceModel,Graph> m_instanceGraphs = new HashMap<InstanceModel,Graph>();
+    private Map<Id,Graph> m_packageGraphs = new HashMap<>();
+    private Map<InstanceModel,Graph> m_instanceGraphs = new HashMap<>();
     private TypeToGraphviz m_typeToGraphviz;
     private GraphvizResource m_resource;
 

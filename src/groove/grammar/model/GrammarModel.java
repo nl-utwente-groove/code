@@ -703,7 +703,7 @@ public class GrammarModel implements Observer {
     /** Counter of the number of invalidations of the grammar. */
     private final ChangeCount changeCount;
     private final Map<ResourceKind,ChangeCount> resourceChangeCounts =
-        new EnumMap<ResourceKind,ChangeCount>(ResourceKind.class);
+        new EnumMap<>(ResourceKind.class);
     /** Local properties; if {@code null}, the stored properties are used. */
     private GrammarProperties localProperties;
     /** Flag to indicate if the start graph is external. */
@@ -838,7 +838,7 @@ public class GrammarModel implements Observer {
          * value. Inefficient.
          */
         public static boolean apply(Set<String> set, Manipulation manipulation, String selected) {
-            Set<String> temp = new HashSet<String>();
+            Set<String> temp = new HashSet<>();
             temp.add(selected);
             return apply(set, manipulation, temp);
         }

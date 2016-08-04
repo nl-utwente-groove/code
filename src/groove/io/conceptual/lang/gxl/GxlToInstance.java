@@ -178,7 +178,7 @@ public class GxlToInstance extends InstanceImporter {
         }
 
         // Handle references
-        Map<String,Value> currentValues = new HashMap<String,Value>();
+        Map<String,Value> currentValues = new HashMap<>();
 
         // Sort the edges in case some of them are ordered
         nodeWrapper.sortEdges();

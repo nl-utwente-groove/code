@@ -229,7 +229,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
      */
     private MultiExpression toCallExprs(Map<String,Sort> varMap) throws FormatException {
         MultiExpression result = new MultiExpression();
-        List<MultiExpression> resultArgs = new ArrayList<MultiExpression>();
+        List<MultiExpression> resultArgs = new ArrayList<>();
         // all children are arguments
         for (ExprTree arg : getArgs()) {
             resultArgs.add(arg.toExpressions(varMap));
@@ -271,7 +271,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
                 op.toString(), op.getArity(), args.size());
         }
         List<Sort> parTypes = op.getParamTypes();
-        List<Expression> selectedArgs = new ArrayList<Expression>();
+        List<Expression> selectedArgs = new ArrayList<>();
         for (int i = 0; i < args.size(); i++) {
             Expression arg = args.get(i)
                 .get(parTypes.get(i));
@@ -393,7 +393,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
             return this.sortOps.values();
         }
 
-        private Map<Sort,Operator> sortOps = new EnumMap<Sort,Operator>(Sort.class);
+        private Map<Sort,Operator> sortOps = new EnumMap<>(Sort.class);
 
         @Override
         public String toString() {

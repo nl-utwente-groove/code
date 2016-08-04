@@ -14,7 +14,7 @@ public class ContainerValue extends Value {
     /** Constructs an initially empty container. */
     public ContainerValue(Container type) {
         super(type);
-        this.m_values = new ArrayList<Value>();
+        this.m_values = new ArrayList<>();
     }
 
     /** Adds a value to the container. */

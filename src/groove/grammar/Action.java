@@ -217,7 +217,7 @@ public interface Action extends Callable, Comparable<Action> {
          */
         static public Role toRole(String text) {
             if (roleMap == null) {
-                roleMap = new HashMap<String,Action.Role>();
+                roleMap = new HashMap<>();
                 for (Role role : Role.values()) {
                     roleMap.put(role.toString(), role);
                 }

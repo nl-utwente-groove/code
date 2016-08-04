@@ -71,7 +71,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements R
         assert typeGraph != null;
         addNode(start);
         addNode(end);
-        this.dfas = new EnumMap<Direction,Map<List<TypeLabel>,DFA>>(Direction.class);
+        this.dfas = new EnumMap<>(Direction.class);
     }
 
     @Override
@@ -165,7 +165,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements R
         DFA result =
             new DFA(dir, dir == OUTGOING ? getStartNode() : getEndNode(), isAcceptsEmptyWord());
         // set of unexplored states
-        Set<DFAState> unexplored = new HashSet<DFAState>();
+        Set<DFAState> unexplored = new HashSet<>();
         unexplored.add(result.getStartState());
         do {
             Iterator<DFAState> iter = unexplored.iterator();
@@ -173,7 +173,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements R
             iter.remove();
             // mapping from type labels to target nodes, per direction
             Map<Direction,Map<TypeLabel,Set<RegNode>>> succMaps =
-                new EnumMap<Direction,Map<TypeLabel,Set<RegNode>>>(Direction.class);
+                new EnumMap<>(Direction.class);
             // initialise the maps
             for (Direction edgeDir : Direction.values()) {
                 succMaps.put(edgeDir, new HashMap<TypeLabel,Set<RegNode>>());
@@ -217,7 +217,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements R
 
     /** Extracts the type labels from the type elements matching a given rule label. */
     private Set<TypeLabel> getMatchingLabels(RuleLabel label) {
-        Set<TypeLabel> result = new HashSet<TypeLabel>();
+        Set<TypeLabel> result = new HashSet<>();
         for (TypeElement type : this.typeGraph.getMatches(label)) {
             result.add(type.label());
         }
@@ -227,7 +227,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements R
     private <K> void addToImages(Map<K,Set<RegNode>> map, K key, RegNode node) {
         Set<RegNode> images = map.get(key);
         if (images == null) {
-            map.put(key, images = new HashSet<RegNode>());
+            map.put(key, images = new HashSet<>());
         }
         images.add(node);
     }
@@ -239,7 +239,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements R
         if (labelVars.isEmpty()) {
             result = EMPTY_LABEL_LIST;
         } else {
-            result = new ArrayList<TypeLabel>(labelVars.size());
+            result = new ArrayList<>(labelVars.size());
             for (LabelVar v : labelVars) {
                 TypeElement e = valuation.get(v);
                 assert e != null;
@@ -256,7 +256,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements R
 
     /** Computes the list of label variables occurring in this automaton. */
     private List<LabelVar> computeLabelVars() {
-        List<LabelVar> result = new ArrayList<LabelVar>();
+        List<LabelVar> result = new ArrayList<>();
         for (RegEdge e : edgeSet()) {
             RuleLabel label = e.label();
             if (label.isWildcard() && label.getWildcardGuard().isNamed()) {
@@ -322,7 +322,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements R
     @Override
     public Set<TypeElement> getAlphabet() {
         assert isFixed();
-        Set<TypeElement> result = new HashSet<TypeElement>();
+        Set<TypeElement> result = new HashSet<>();
         for (RegEdge edge : edgeSet()) {
             result.addAll(this.typeGraph.getMatches(edge.label()));
         }

@@ -81,7 +81,7 @@ public class CTLMarker {
         List<Integer>[] backward = new List[nodeCount];
         this.outCount = new int[nodeCount];
         // collect the special flag labels used in the formula
-        Map<Flag,Integer> flagNrs = new EnumMap<Flag,Integer>(Flag.class);
+        Map<Flag,Integer> flagNrs = new EnumMap<>(Flag.class);
         for (Flag flag : Flag.values()) {
             Integer flagIx = this.propNr.get(flagProps.get(flag));
             if (flagIx != null) {
@@ -106,7 +106,7 @@ public class CTLMarker {
                     // int targetNr = target.getNumber();
                     int targetNr = this.model.nodeIndex(target);
                     if (backward[targetNr] == null) {
-                        backward[targetNr] = new ArrayList<Integer>();
+                        backward[targetNr] = new ArrayList<>();
                     }
                     backward[targetNr].add(nodeNr);
                     markAtom(nodeNr, label);
@@ -434,7 +434,7 @@ public class CTLMarker {
         BitSet arg1Marking = arg1;
         BitSet arg2Marking = arg2;
         // mark the states that satisfy the second operand
-        Queue<Integer> newStates = new LinkedList<Integer>();
+        Queue<Integer> newStates = new LinkedList<>();
         for (int i = 0; i < this.nodeCount; i++) {
             if (arg2Marking.get(i)) {
                 result.set(i);
@@ -465,7 +465,7 @@ public class CTLMarker {
         BitSet result = new BitSet(this.nodeCount);
         int[] markedNextCount = new int[this.nodeCount];
         // mark the states that satisfy the second operand
-        Queue<Integer> newStates = new LinkedList<Integer>();
+        Queue<Integer> newStates = new LinkedList<>();
         for (int i = 0; i < this.nodeCount; i++) {
             if (arg2.get(i)) {
                 result.set(i);

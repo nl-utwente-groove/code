@@ -136,7 +136,7 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
      * corresponding to a given string.
      */
     private List<LogicOp> findPrefixOps(String input) {
-        List<LogicOp> result = new ArrayList<LogicOp>();
+        List<LogicOp> result = new ArrayList<>();
         for (int i = input.length() - 1; i >= 0; i--) {
             LogicOp op = LogicOp.getCompareOp(input.charAt(i));
             if (op == null) {
@@ -165,7 +165,7 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
      * @param logic the logic variant concerned
      */
     private static Map<String,String> computeDocMap(Logic logic) {
-        Map<String,String> result = new LinkedHashMap<String,String>();
+        Map<String,String> result = new LinkedHashMap<>();
         for (Field field : LogicOp.class.getFields()) {
             if (field.isEnumConstant()) {
                 LogicOp token = nameToTokenMap.get(field.getName());
@@ -182,11 +182,11 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
     }
 
     /** Mapping from token names to token values. */
-    private static Map<String,LogicOp> nameToTokenMap = new HashMap<String,LogicOp>();
+    private static Map<String,LogicOp> nameToTokenMap = new HashMap<>();
     /** Mapping from token symbols to token values. */
-    private static Map<String,String> nameToSymbolMap = new HashMap<String,String>();
+    private static Map<String,String> nameToSymbolMap = new HashMap<>();
     private static Map<Logic,Map<String,String>> docMapMap =
-        new EnumMap<Logic,Map<String,String>>(Logic.class);
+        new EnumMap<>(Logic.class);
 
     static {
         for (LogicOp token : LogicOp.values()) {

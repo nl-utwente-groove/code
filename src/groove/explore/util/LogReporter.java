@@ -122,7 +122,7 @@ public class LogReporter extends AExplorationReporter {
                 File gcLogFile = new File(GC_LOG_NAME);
                 if (gcLogFile.exists()) {
                     try (BufferedReader gcLog = new BufferedReader(new FileReader(gcLogFile))) {
-                        List<String> gcList = new ArrayList<String>();
+                        List<String> gcList = new ArrayList<>();
                         String nextLine = gcLog.readLine();
                         while (nextLine != null) {
                             gcList.add(nextLine);

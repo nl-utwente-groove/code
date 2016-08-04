@@ -274,7 +274,7 @@ public class PartitionRefiner extends CertificateStrategy {
 
     /** Returns the list of duplicate certificates with the smallest value. */
     private List<MyNodeCert> getSmallestDuplicates() {
-        List<MyNodeCert> result = new LinkedList<MyNodeCert>();
+        List<MyNodeCert> result = new LinkedList<>();
         MyNodeCert minCert = null;
         for (int i = 0; i < this.nodeCerts.length; i++) {
             MyNodeCert cert = (MyNodeCert) this.nodeCerts[i];
