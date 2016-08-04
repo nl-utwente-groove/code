@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.algebra;
@@ -20,6 +20,7 @@ import static groove.util.parse.OpKind.AND;
 import static groove.util.parse.OpKind.EQUAL;
 import static groove.util.parse.OpKind.NOT;
 import static groove.util.parse.OpKind.OR;
+
 import groove.annotation.InfixSymbol;
 import groove.annotation.PrefixSymbol;
 import groove.annotation.Syntax;
@@ -80,7 +81,7 @@ public abstract class BoolSignature<Bool> implements Signature {
 
     /** Enumeration of all operators defined in this signature. */
 
-    public static enum Op implements Signature.OpValue {
+    public enum Op implements Signature.OpValue {
         /** Value for {@link #and(Object,Object)}. */
         AND,
         /** Value for {@link #or(Object, Object)}. */
@@ -90,7 +91,7 @@ public abstract class BoolSignature<Bool> implements Signature {
         /** Value for {@link #eq(Object, Object)}. */
         EQ,
         /** Value for {@link #neq(Object, Object)}. */
-        NEQ, ;
+        NEQ,;
 
         @Override
         public Operator getOperator() {

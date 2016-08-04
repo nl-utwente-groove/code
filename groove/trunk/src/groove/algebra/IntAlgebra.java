@@ -19,17 +19,17 @@ package groove.algebra;
 import groove.algebra.syntax.Expression;
 
 /** Abstract superclass of all integer algebras.
- * @param <Int> The representation type of the integer algebra
- * @param <Bool> The representation type of the boolean algebra
- * @param <String> The representation type of the string algebra
+ * @param <INT> The representation type of the integer algebra
+ * @param <REAL> The representation type of the real algebra
+ * @param <BOOL> The representation type of the boolean algebra
+ * @param <STRING> The representation type of the string algebra
  */
-@SuppressWarnings("hiding")
-public abstract class IntAlgebra<Int,Real,Bool,String> extends IntSignature<Int,Real,Bool,String>
-    implements Algebra<Int> {
+public abstract class IntAlgebra<INT,REAL,BOOL,STRING> extends IntSignature<INT,REAL,BOOL,STRING>
+    implements Algebra<INT> {
     @Override
     @SuppressWarnings("unchecked")
-    public Int toValue(Expression term) {
-        return (Int) getFamily().toValue(term);
+    public INT toValue(Expression term) {
+        return (INT) getFamily().toValue(term);
     }
 
     /*
@@ -37,12 +37,11 @@ public abstract class IntAlgebra<Int,Real,Bool,String> extends IntSignature<Int,
      * @throws IllegalArgumentException if the parameter is not of type {@link Integer}
      */
     @Override
-    final public Int toValueFromJava(Object value) {
+    public final INT toValueFromJava(Object value) {
         if (!(value instanceof Integer)) {
-            throw new IllegalArgumentException(
-                java.lang.String.format("Native int type is %s, not %s",
-                    Integer.class.getSimpleName(),
-                    value.getClass().getSimpleName()));
+            throw new IllegalArgumentException(java.lang.String.format(
+                "Native int type is %s, not %s", Integer.class.getSimpleName(), value.getClass()
+                    .getSimpleName()));
         }
         return toValue((Integer) value);
     }
@@ -51,9 +50,9 @@ public abstract class IntAlgebra<Int,Real,Bool,String> extends IntSignature<Int,
      * Callback method to convert from the native ({@link Integer})
      * representation of a value to the algebra representation.
      */
-    protected abstract Int toValue(Integer constant);
+    protected abstract INT toValue(Integer constant);
 
     /* Specialises the return type to Integer. */
     @Override
-    abstract public Integer toJavaValue(Object value);
+    public abstract Integer toJavaValue(Object value);
 }

@@ -16,9 +16,6 @@
  */
 package groove.algebra;
 
-import groove.algebra.syntax.CallExpr;
-import groove.algebra.syntax.Expression;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -32,6 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import groove.algebra.syntax.CallExpr;
+import groove.algebra.syntax.Expression;
+
 /**
  * Register for the currently used algebras.
  * @author Arend Rensink
@@ -44,28 +44,18 @@ public enum AlgebraFamily {
      * {@link String} for {@code string},
      * {@link Double} for {@code real},
      */
-    DEFAULT("default",
-        "Java-based values (<tt>int</tt>, <tt>boolean</tt>, <tt>String</tt>, <tt>double</tt>)",
-        JavaIntAlgebra.instance, JavaBoolAlgebra.instance, JavaStringAlgebra.instance,
-        JavaRealAlgebra.instance),
+    DEFAULT("default", "Java-based values (<tt>int</tt>, <tt>boolean</tt>, <tt>String</tt>, <tt>double</tt>)", JavaIntAlgebra.instance, JavaBoolAlgebra.instance, JavaStringAlgebra.instance, JavaRealAlgebra.instance),
     /** Point algebra family: every sort has a single value. */
-    POINT("point", "A single value for every type (so all values are equal)",
-        PointIntAlgebra.instance, PointBoolAlgebra.instance, PointStringAlgebra.instance,
-        PointRealAlgebra.instance),
+    POINT("point", "A single value for every type (so all values are equal)", PointIntAlgebra.instance, PointBoolAlgebra.instance, PointStringAlgebra.instance, PointRealAlgebra.instance),
     /** High-precision algebra family:
      * {@link BigInteger} for {@code int},
      * {@link Boolean} for {@code bool},
      * {@link String} for {@code string},
      * {@link BigDecimal} for {@code real},
      */
-    BIG(
-        "big",
-        "High-precision values (<tt>BigInteger</tt>, <tt>boolean</tt>, <tt>String</tt>, <tt>BigDecimal</tt>)",
-        BigIntAlgebra.instance, BigBoolAlgebra.instance, BigStringAlgebra.instance,
-        BigRealAlgebra.instance),
+    BIG("big", "High-precision values (<tt>BigInteger</tt>, <tt>boolean</tt>, <tt>String</tt>, <tt>BigDecimal</tt>)", BigIntAlgebra.instance, BigBoolAlgebra.instance, BigStringAlgebra.instance, BigRealAlgebra.instance),
     /** Term algebra: symbolic representations for all values. */
-    TERM("term", "Symbolic term representations", TermIntAlgebra.instance,
-        TermBoolAlgebra.instance, TermStringAlgebra.instance, TermRealAlgebra.instance);
+    TERM("term", "Symbolic term representations", TermIntAlgebra.instance, TermBoolAlgebra.instance, TermStringAlgebra.instance, TermRealAlgebra.instance);
 
     /**
      * Constructs a new register, loaded with a given set of algebras.
@@ -106,8 +96,8 @@ public enum AlgebraFamily {
     private void checkCompleteness() throws IllegalStateException {
         for (Sort sigKind : Sort.values()) {
             if (!this.algebraMap.containsKey(sigKind)) {
-                throw new IllegalStateException(String.format(
-                    "Implementation of signature '%s' is missing", sigKind));
+                throw new IllegalStateException(
+                    String.format("Implementation of signature '%s' is missing", sigKind));
             }
         }
     }
@@ -192,7 +182,9 @@ public enum AlgebraFamily {
         Map<String,Operation> result = new HashMap<>();
         // first find out what methods were declared in the signature
         Set<String> methodNames = new HashSet<>();
-        Method[] signatureMethods = algebra.getSort().getSignatureClass().getDeclaredMethods();
+        Method[] signatureMethods = algebra.getSort()
+            .getSignatureClass()
+            .getDeclaredMethods();
         for (Method method : signatureMethods) {
             if (Modifier.isAbstract(method.getModifiers())
                 && Modifier.isPublic(method.getModifiers())) {
@@ -227,23 +219,20 @@ public enum AlgebraFamily {
     }
 
     /** A map from signature kinds to algebras registered for that name. */
-    private final Map<Sort,Algebra<?>> algebraMap = new EnumMap<>(
-        Sort.class);
+    private final Map<Sort,Algebra<?>> algebraMap = new EnumMap<>(Sort.class);
     /** Store of operations created from the algebras. */
-    private final Map<Algebra<?>,Map<String,Operation>> operationsMap =
-        new HashMap<>();
+    private final Map<Algebra<?>,Map<String,Operation>> operationsMap = new HashMap<>();
 
     /** Returns the algebra register with the family of default algebras. */
-    static public AlgebraFamily getInstance() {
+    public static AlgebraFamily getInstance() {
         return DEFAULT;
     }
 
     /**
      * Returns the algebra register with a given name.
      */
-    static public AlgebraFamily getInstance(String instanceName) {
-        AlgebraFamily result = familyMap.get(instanceName);
-        return result;
+    public static AlgebraFamily getInstance(String instanceName) {
+        return familyMap.get(instanceName);
     }
 
     /** Mapping from names to algebra families. */
@@ -259,8 +248,9 @@ public enum AlgebraFamily {
         Operation(AlgebraFamily register, Algebra<?> algebra, Method method) {
             this.algebra = algebra;
             this.method = method;
-            Sort returnType =
-                algebra.getSort().getOperator(method.getName()).getResultType();
+            Sort returnType = algebra.getSort()
+                .getOperator(method.getName())
+                .getResultType();
             this.returnType = register.getAlgebra(returnType);
         }
 
