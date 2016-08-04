@@ -1,5 +1,5 @@
 projectKey=groove
 serverUrl=http://localhost:9000
 dashboardUrl=http://localhost:9000/dashboard/index/groove
-ceTaskId=AVZP6n3phmoPaekcL1ys
-ceTaskUrl=http://localhost:9000/api/ce/task?id=AVZP6n3phmoPaekcL1ys
+ceTaskId=AVZVV5IAPNfPFcdkooIN
+ceTaskUrl=http://localhost:9000/api/ce/task?id=AVZVV5IAPNfPFcdkooIN
