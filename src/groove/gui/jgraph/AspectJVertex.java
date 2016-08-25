@@ -245,8 +245,8 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
     protected Look getStructuralLook() {
         if (isNodeEdge()) {
             return Look.NODIFIED;
-        } else
-            if (getNode().getGraphRole() == GraphRole.TYPE && getAspect() == AspectKind.DEFAULT) {
+        } else if (getNode().getGraphRole() == GraphRole.TYPE
+            && getAspect() == AspectKind.DEFAULT) {
             return Look.TYPE;
         } else {
             return Look.getLookFor(getAspect());
@@ -331,6 +331,7 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
             newEdges.add(edge);
         }
         setNode(node);
+        initialise();
         for (AspectEdge edge : newEdges) {
             addEdge(edge);
         }
