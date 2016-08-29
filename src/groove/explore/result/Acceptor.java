@@ -18,13 +18,13 @@ package groove.explore.result;
 
 import groove.explore.ExploreResult;
 import groove.lts.GTS;
-import groove.lts.GTSAdapter;
+import groove.lts.GTSListener;
 
 /**
  * Listens to a GTS and adds accepted elements to a result.
  * Also indicates if the exploration is done.
  */
-public abstract class Acceptor extends GTSAdapter {
+public abstract class Acceptor implements GTSListener {
     /** Creates an acceptor without exploration bound. */
     protected Acceptor(boolean prototype) {
         this(prototype, 0);
@@ -84,7 +84,7 @@ public abstract class Acceptor extends GTSAdapter {
      * @param gts the GTS of the new exploration
      */
     public void prepare(GTS gts) {
-        assert!this.prototype : "Using a prototype acceptor";
+        assert !this.prototype : "Using a prototype acceptor";
         this.result = createResult(gts);
     }
 

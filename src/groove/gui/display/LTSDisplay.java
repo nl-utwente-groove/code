@@ -35,7 +35,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
@@ -74,7 +74,7 @@ import groove.gui.list.ErrorListPanel;
 import groove.gui.tree.LabelTree;
 import groove.lts.Filter;
 import groove.lts.GTS;
-import groove.lts.GTSAdapter;
+import groove.lts.GTSListener;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.Status.Flag;
@@ -132,7 +132,8 @@ public class LTSDisplay extends Display implements SimulatorListener {
         getJGraph().addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals("background") && evt.getNewValue() != null) {
+                if (evt.getPropertyName()
+                    .equals("background") && evt.getNewValue() != null) {
                     result.setEnabledBackground((Color) evt.getNewValue());
                 }
             }
@@ -178,8 +179,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
     private JComboBox<Filter> getFilterChooser() {
         if (this.filterChooser == null) {
             this.filterListening = true;
-            final JComboBox<Filter> result =
-                this.filterChooser = new JComboBox<>(Filter.values());
+            final JComboBox<Filter> result = this.filterChooser = new JComboBox<>(Filter.values());
             result.setMaximumSize(new Dimension(result.getPreferredSize().width, 1000));
             result.addItemListener(new ItemListener() {
                 @Override
@@ -306,24 +306,26 @@ public class LTSDisplay extends Display implements SimulatorListener {
      * @param showTransitions flag to indicate that the canonical incoming transition
      * should also be highlighted.
      */
-    public void emphasiseStates(List<GraphState> counterExamples, boolean showTransitions) {
-        if (getJModel() == null) {
+    public void emphasiseStates(Collection<GraphState> counterExamples, boolean showTransitions) {
+        if (getJModel() == null || counterExamples.isEmpty()) {
             return;
         }
         Set<JCell<GTS>> jCells = new HashSet<>();
-        for (int i = 0; i < counterExamples.size(); i++) {
-            GraphState state = counterExamples.get(i);
-            jCells.add(getJModel().getJCellForNode(state));
-            if (showTransitions && i + 1 < counterExamples.size()) {
-                // find transition to next state
-                for (GraphTransition trans : state
+        Iterator<GraphState> stateIter = counterExamples.iterator();
+        GraphState current = stateIter.next();
+        while (current != null) {
+            jCells.add(getJModel().getJCellForNode(current));
+            GraphState next = stateIter.hasNext() ? stateIter.next() : null;
+            if (next != null && showTransitions) {
+                for (GraphTransition trans : current
                     .getTransitions(getJGraph().getTransitionClass())) {
-                    if (trans.target() == counterExamples.get(i + 1)) {
+                    if (trans.target() == next) {
                         jCells.add(getJModel().getJCellForEdge(trans));
                         break;
                     }
                 }
             }
+            current = next;
         }
         getJGraph().setSelectionCells(jCells.toArray());
     }
@@ -442,8 +444,10 @@ public class LTSDisplay extends Display implements SimulatorListener {
                     @Override
                     public void run() {
                         GrammarModel grammar = getSimulatorModel().getGrammar();
-                        if (grammar != null && grammar.getErrors().isEmpty()) {
-                            getActions().getStartSimulationAction().execute();
+                        if (grammar != null && grammar.getErrors()
+                            .isEmpty()) {
+                            getActions().getStartSimulationAction()
+                                .execute();
                         }
                     }
                 });
@@ -471,7 +475,8 @@ public class LTSDisplay extends Display implements SimulatorListener {
             }
             if (gts != oldModel.getGTS()) {
                 if (oldModel.getGTS() != null) {
-                    oldModel.getGTS().removeLTSListener(this.ltsListener);
+                    oldModel.getGTS()
+                        .removeLTSListener(this.ltsListener);
                 }
                 if (gts != null) {
                     gts.addLTSListener(this.ltsListener);
@@ -536,7 +541,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
      * Listener that makes sure the panel status gets updated when the LYS is
      * extended.
      */
-    private class MyLTSListener extends GTSAdapter {
+    private class MyLTSListener implements GTSListener {
         /** Empty constructor with the correct visibility. */
         MyLTSListener() {
             // empty
@@ -613,7 +618,8 @@ public class LTSDisplay extends Display implements SimulatorListener {
                     text.append(" (");
                     brackets = true;
                 }
-                int c = getSimulatorModel().getExploreResult().size();
+                int c = getSimulatorModel().getExploreResult()
+                    .size();
                 text.append(c + " result");
             }
             if (gts.hasErrorStates()) {
@@ -632,7 +638,8 @@ public class LTSDisplay extends Display implements SimulatorListener {
             text.append(gts.getTransitionCount());
             text.append(" transitions");
         }
-        getGraphPanel().getStatusLabel().setText(text.toString());
+        getGraphPanel().getStatusLabel()
+            .setText(text.toString());
     }
 
     /**
@@ -648,8 +655,10 @@ public class LTSDisplay extends Display implements SimulatorListener {
         @Override
         public void mouseClicked(MouseEvent evt) {
             if (getJGraph().getMode() == SELECT_MODE && evt.getButton() == MouseEvent.BUTTON1) {
-                if (!isEnabled() && getActions().getStartSimulationAction().isEnabled()) {
-                    getActions().getStartSimulationAction().execute();
+                if (!isEnabled() && getActions().getStartSimulationAction()
+                    .isEnabled()) {
+                    getActions().getStartSimulationAction()
+                        .execute();
                 } else {
                     // scale from screen to model
                     java.awt.Point loc = evt.getPoint();
@@ -662,7 +671,8 @@ public class LTSDisplay extends Display implements SimulatorListener {
                         GraphState node = ((LTSJVertex) cell).getNode();
                         getSimulatorModel().setState(node);
                         if (evt.getClickCount() == 2) {
-                            getActions().getExploreAction().doExploreState();
+                            getActions().getExploreAction()
+                                .doExploreState();
                         }
                     }
                 }
@@ -686,10 +696,13 @@ public class LTSDisplay extends Display implements SimulatorListener {
         @Override
         public void setEnabled(boolean enabled) {
             super.setEnabled(enabled);
-            getJGraph().getModeAction(SELECT_MODE).setEnabled(enabled);
-            getJGraph().getModeAction(PAN_MODE).setEnabled(enabled);
+            getJGraph().getModeAction(SELECT_MODE)
+                .setEnabled(enabled);
+            getJGraph().getModeAction(PAN_MODE)
+                .setEnabled(enabled);
             if (enabled) {
-                getJGraph().getModeButton(SELECT_MODE).doClick();
+                getJGraph().getModeButton(SELECT_MODE)
+                    .doClick();
             }
             LTSDisplay.this.setEnabled(enabled);
         }

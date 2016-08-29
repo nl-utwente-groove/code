@@ -26,26 +26,35 @@ import groove.lts.Status.Flag;
 public interface GTSListener {
     /**
      * Signals that a state has been added to a given GTS.
+     * The default implementation is empty.
      * @param gts the GTS that has been updated
      * @param state the state that has been added
      */
-    void addUpdate(GTS gts, GraphState state);
+    public default void addUpdate(GTS gts, GraphState state) {
+        // empty default implementation
+    }
 
     /**
      * Signals that a transition has been added to a given GTS.
+     * The default implementation is empty.
      * @param gts the GTS that has been updated
      * @param transition the transition that has been added
      */
-    void addUpdate(GTS gts, GraphTransition transition);
+    public default void addUpdate(GTS gts, GraphTransition transition) {
+        // empty default implementation
+    }
 
     /**
      * Signals that a status flag in a graph
      * state has changed.
+     * The default implementation is empty.
      * @param gts the GTS in which the change occurred
      * @param state the graph state whose status has changed
      * @param flag the status flag that is indicative of the state.
      * Must satisfy {@link Flag#isChange()}
      * @param oldStatus status of {@code state} before the change
      */
-    public void statusUpdate(GTS gts, GraphState state, Flag flag, int oldStatus);
+    public default void statusUpdate(GTS gts, GraphState state, Flag flag, int oldStatus) {
+        // empty default implementation
+    }
 }

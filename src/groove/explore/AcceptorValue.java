@@ -48,7 +48,7 @@ public enum AcceptorValue implements ParsableValue {
         "This acceptor is a variant of Check Invariant that succeeds when a"
             + " state is reached in which an arbitrary rule <i>formula</i> " + "is applicable."),
     /** Acceptor for arbitrary states. */
-    ANY("any", "Any State", "This acceptor succeeds whenever a state is added to the LTS."),
+    ANY("any", "Any State", "This acceptor succeeds whenever a (real) state is added to the LTS."),
     /** Acceptor for cycles. */
     CYCLE("cycle", "Cycles", "This acceptor listens to pairs of graph states and Buchi states,"
         + "and succeeds when a pair is added that lies on a cycle with an"

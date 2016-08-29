@@ -23,7 +23,7 @@ import java.util.Stack;
 import groove.explore.result.Acceptor;
 import groove.lts.DefaultGraphNextState;
 import groove.lts.GTS;
-import groove.lts.GTSAdapter;
+import groove.lts.GTSListener;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
@@ -40,15 +40,18 @@ import groove.util.Reporter;
 public class ReteStrategy extends GTSStrategy {
     @Override
     public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
-        gts.getRecord().setCopyGraphs(false);
+        gts.getRecord()
+            .setCopyGraphs(false);
         super.prepare(gts, state, acceptor);
         gts.addLTSListener(this.exploreListener);
         clearPool();
         this.newStates.clear();
         // initialise the rete network
         this.rete = new ReteSearchEngine(gts.getGrammar());
-        this.oldEngine = MatcherFactory.instance(gts.isSimple()).getEngine();
-        MatcherFactory.instance(gts.isSimple()).setEngine(this.rete);
+        this.oldEngine = MatcherFactory.instance(gts.isSimple())
+            .getEngine();
+        MatcherFactory.instance(gts.isSimple())
+            .setEngine(this.rete);
         //this.rete.getNetwork().save("e:\\temp\\reg-exp.gst", "reg-exp");
     }
 
@@ -74,7 +77,8 @@ public class ReteStrategy extends GTSStrategy {
     @Override
     public void finish() {
         super.finish();
-        MatcherFactory.instance(getGTS().isSimple()).setEngine(this.oldEngine);
+        MatcherFactory.instance(getGTS().isSimple())
+            .setEngine(this.oldEngine);
         getGTS().removeLTSListener(this.exploreListener);
     }
 
@@ -87,7 +91,8 @@ public class ReteStrategy extends GTSStrategy {
         }
         if (getNextState() == result) {
             do {
-                ((DefaultGraphNextState) result).getDelta().applyDelta(this.deltaAccumulator);
+                ((DefaultGraphNextState) result).getDelta()
+                    .applyDelta(this.deltaAccumulator);
                 triedState = result;
                 popPool();
                 result = topOfPool();
@@ -98,7 +103,8 @@ public class ReteStrategy extends GTSStrategy {
                 .source() != ((DefaultGraphNextState) triedState).source());
         }
         this.deltaAccumulator = this.deltaAccumulator.invert();
-        ((DefaultGraphNextState) result).getDelta().applyDelta(this.deltaAccumulator);
+        ((DefaultGraphNextState) result).getDelta()
+            .applyDelta(this.deltaAccumulator);
         this.rete.transitionOccurred(result.getGraph(), this.deltaAccumulator);
         return result;
     }
@@ -141,7 +147,7 @@ public class ReteStrategy extends GTSStrategy {
     private final ExploreListener exploreListener = new ExploreListener();
 
     /** A queue with states to be explored, used as a FIFO. */
-    private class ExploreListener extends GTSAdapter {
+    private class ExploreListener implements GTSListener {
         @Override
         public void addUpdate(GTS gts, GraphState state) {
             if (!state.isClosed()) {

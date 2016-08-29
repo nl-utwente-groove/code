@@ -64,17 +64,6 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     @Override
-    final public Set<? extends GraphTransition> getTransitions() {
-        return getTransitions(GraphTransition.Claz.REAL);
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    final public Set<RuleTransition> getRuleTransitions() {
-        return (Set<RuleTransition>) getTransitions(GraphTransition.Claz.RULE);
-    }
-
-    @Override
     public Set<? extends GraphTransition> getTransitions(GraphTransition.Claz claz) {
         return getCache().getTransitions(claz);
     }
@@ -242,11 +231,6 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     @Override
-    public boolean isClosed() {
-        return hasFlag(Flag.CLOSED);
-    }
-
-    @Override
     public boolean setClosed(boolean complete) {
         int oldStatus = this.status;
         boolean result = setStatus(Flag.CLOSED, true);
@@ -269,7 +253,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 
     @Override
     public boolean setError() {
-        int oldStatus = this.status;
+        int oldStatus = getStatus();
         boolean result = setStatus(Flag.ERROR, true);
         if (result) {
             fireStatus(Flag.ERROR, oldStatus);
@@ -278,42 +262,12 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     @Override
-    public boolean isError() {
-        return hasFlag(Flag.ERROR);
-    }
-
-    @Override
-    final public boolean isInternalState() {
-        return hasFlag(Flag.INTERNAL);
-    }
-
-    @Override
-    public final boolean isRealState() {
-        return Status.isReal(this.status);
-    }
-
-    @Override
-    final public boolean isTransient() {
-        return hasFlag(Flag.TRANSIENT);
-    }
-
-    @Override
-    public boolean isAbsent() {
-        return hasFlag(Flag.ABSENT);
-    }
-
-    @Override
     public int getAbsence() {
         if (isDone()) {
-            return Status.getAbsence(this.status);
+            return Status.getAbsence(getStatus());
         } else {
             return getCache().getAbsence();
         }
-    }
-
-    @Override
-    public boolean isPresent() {
-        return getAbsence() == 0 && !isAbsent();
     }
 
     @Override
@@ -331,21 +285,6 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
             fireStatus(Flag.DONE, oldStatus);
         }
         return result;
-    }
-
-    @Override
-    public boolean isDone() {
-        return hasFlag(Flag.DONE);
-    }
-
-    @Override
-    public boolean isFinal() {
-        return hasFlag(Flag.FINAL);
-    }
-
-    @Override
-    public boolean hasFlag(Flag flag) {
-        return flag.test(this.status);
     }
 
     @Override

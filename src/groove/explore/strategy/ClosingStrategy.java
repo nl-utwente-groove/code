@@ -16,16 +16,16 @@
  */
 package groove.explore.strategy;
 
+import java.util.List;
+import java.util.Stack;
+
 import groove.explore.result.Acceptor;
 import groove.lts.GTS;
-import groove.lts.GTSAdapter;
+import groove.lts.GTSListener;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
 import groove.lts.Status.Flag;
-
-import java.util.List;
-import java.util.Stack;
 
 /**
  * Strategy that closes every state it explores, and adds the newly generated
@@ -38,7 +38,8 @@ abstract public class ClosingStrategy extends GTSStrategy {
     public GraphState doNext() {
         GraphState state = getNextState();
         List<MatchResult> matches = state.getMatches();
-        if (state.getActualFrame().isTrial()) {
+        if (state.getActualFrame()
+            .isTrial()) {
             //assert !state.isTransient();
             // there are potential rule matches now blocked until
             // the previous ones have been explored
@@ -113,7 +114,7 @@ abstract public class ClosingStrategy extends GTSStrategy {
     private final Stack<GraphState> transientStack = new Stack<>();
 
     /** A queue with states to be explored, used as a FIFO. */
-    private class ExploreListener extends GTSAdapter {
+    private class ExploreListener implements GTSListener {
         @Override
         public void addUpdate(GTS gts, GraphState state) {
             addExplorable(state);

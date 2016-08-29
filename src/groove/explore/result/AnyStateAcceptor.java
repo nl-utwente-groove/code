@@ -19,12 +19,15 @@ package groove.explore.result;
 
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.lts.Status;
 import groove.lts.Status.Flag;
 
 /**
- * Acceptor that accepts any new state that is added to the LTS.
+ * Acceptor that accepts any new state that is added to the LTS, provided
+ * it is done and a real state.
  * @author Maarten de Mol
  * @version $Revision $
+ * @see Status#isReal(int)
  */
 public class AnyStateAcceptor extends Acceptor {
     /**
@@ -48,14 +51,14 @@ public class AnyStateAcceptor extends Acceptor {
 
     @Override
     public void addUpdate(GTS gts, GraphState state) {
-        if (state.isDone()) {
+        if (state.isRealState()) {
             getResult().addState(state);
         }
     }
 
     @Override
     public void statusUpdate(GTS graph, GraphState explored, Flag flag, int oldStatus) {
-        if (flag == Flag.DONE) {
+        if (flag == Flag.DONE && explored.isRealState()) {
             getResult().addState(explored);
         }
     }

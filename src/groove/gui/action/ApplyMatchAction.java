@@ -1,5 +1,11 @@
 package groove.gui.action;
 
+import javax.swing.Action;
+
+import groove.explore.AcceptorValue;
+import groove.explore.Exploration;
+import groove.explore.ExploreType;
+import groove.explore.StrategyValue;
 import groove.grammar.model.GrammarModel;
 import groove.gui.Icons;
 import groove.gui.Options;
@@ -8,8 +14,6 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
-
-import javax.swing.Action;
 
 /**
  * Action for applying the current derivation to the current state.
@@ -24,22 +28,37 @@ public class ApplyMatchAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        MatchResult match = getSimulatorModel().getMatch();
         if (getSimulatorModel().hasTransition()) {
             GraphTransition trans = getSimulatorModel().getTransition();
             getSimulatorModel().doSetStateAndMatch(trans.target(), trans);
         } else if (getSimulatorModel().hasMatch()) {
             GraphState state = getSimulatorModel().getState();
             RuleTransition trans;
+            MatchResult match = getSimulatorModel().getMatch();
             if (match.hasTransitionFrom(state)) {
                 trans = match.getTransition();
             } else {
                 trans = state.applyMatch(match);
             }
-            getSimulatorModel().doSetStateAndMatch(trans.target(), trans);
+            GraphState target = trans.target();
+            if (target.isRealState() || getLtsDisplay().getJGraph()
+                .isShowRecipeSteps()) {
+                getSimulatorModel().doSetStateAndMatch(target, trans);
+            } else {
+                Exploration e = getActions().getExploreAction()
+                    .explore(target, getStateExploration());
+                if (e.getResult()
+                    .isEmpty()) {
+                    getSimulatorModel().doSetStateAndMatch(state, null);
+                } else {
+                    getSimulatorModel().doSetStateAndMatch(e.getResult()
+                        .getLastState(), trans);
+                }
+            }
         } else {
             // no match is selected; explore the selected state instead
-            getActions().getExploreAction().doExploreState();
+            getActions().getExploreAction()
+                .doExploreState();
         }
     }
 
@@ -48,7 +67,20 @@ public class ApplyMatchAction extends SimulatorAction {
         GrammarModel grammar = getSimulatorModel().getGrammar();
         setEnabled(getSimulatorModel().hasState() && grammar != null && !grammar.hasErrors()
             && grammar.hasRules());
-        putValue(Action.SHORT_DESCRIPTION, getSimulatorModel().hasMatch()
-                ? Options.APPLY_MATCH_ACTION_NAME : Options.EXPLORE_STATE_ACTION_NAME);
+        putValue(Action.SHORT_DESCRIPTION,
+            getSimulatorModel().hasMatch() ? Options.APPLY_MATCH_ACTION_NAME
+                : Options.EXPLORE_STATE_ACTION_NAME);
     }
+
+    /**
+     * Returns the explore-strategy for exploring a single state
+     */
+    private ExploreType getStateExploration() {
+        if (this.stateExploration == null) {
+            this.stateExploration = new ExploreType(StrategyValue.STATE, AcceptorValue.ANY, 0);
+        }
+        return this.stateExploration;
+    }
+
+    private ExploreType stateExploration;
 }

@@ -16,6 +16,9 @@
  */
 package groove.explore;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import groove.explore.result.Acceptor;
 import groove.explore.strategy.Strategy;
 import groove.grammar.Grammar;
@@ -23,9 +26,6 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.util.Reporter;
 import groove.util.parse.FormatException;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * <!=========================================================================>
@@ -40,15 +40,16 @@ public class Exploration {
     /**
      * Creates an exploration with a given type and for a given GTS and start state.
      */
-    public Exploration(ExploreType type, GTS gts, GraphState start) throws FormatException {
+    public Exploration(ExploreType type, GraphState start) throws FormatException {
         this.type = type;
-        this.gts = gts;
+        this.gts = start.getGTS();
         this.start = start;
         Grammar grammar = this.gts.getGrammar();
         // parse the strategy
         this.strategy = this.type.getParsedStrategy(grammar);
         // parse the acceptor
-        this.acceptor = this.type.getParsedAcceptor(grammar).newAcceptor(this.type.getBound());
+        this.acceptor = this.type.getParsedAcceptor(grammar)
+            .newAcceptor(this.type.getBound());
         // initialize acceptor and GTS
         this.strategy.setGTS(this.gts);
         this.strategy.setState(this.start);
@@ -58,12 +59,14 @@ public class Exploration {
     private final Strategy strategy;
     private final Acceptor acceptor;
     private final GraphState start;
+
     /** Returns the type of this exploration. */
     public ExploreType getType() {
         return this.type;
     }
 
     private final ExploreType type;
+
     /**
      * Returns most recently explored GTS.
      */
@@ -72,6 +75,7 @@ public class Exploration {
     }
 
     private final GTS gts;
+
     /**
      * Returns the result of the most recent exploration.
      */
@@ -163,7 +167,8 @@ public class Exploration {
      * compatible with the default exploration type
      */
     static public final Exploration explore(GTS gts) throws FormatException {
-        return ExploreType.DEFAULT.newExploration(gts, null).play();
+        return ExploreType.DEFAULT.newExploration(gts, null)
+            .play();
     }
 
     /**

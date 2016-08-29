@@ -171,7 +171,7 @@ public class ExploreType {
      * @see #test(Grammar)
      */
     final public Exploration newExploration(GTS gts) throws FormatException {
-        return new Exploration(this, gts, null);
+        return new Exploration(this, null);
     }
 
     /**
@@ -184,7 +184,7 @@ public class ExploreType {
      * @see #test(Grammar)
      */
     final public Exploration newExploration(GTS gts, GraphState start) throws FormatException {
-        return new Exploration(this, gts, start);
+        return new Exploration(this, start);
     }
 
     /**

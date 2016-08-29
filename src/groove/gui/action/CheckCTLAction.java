@@ -41,7 +41,7 @@ public class CheckCTLAction extends SimulatorAction {
             // completely re-explore if the GTS has open states
             if (gts.hasOpenStates() && this.full && getSimulatorModel().resetGTS()) {
                 getActions().getExploreAction()
-                    .explore(getSimulatorModel().getExploreType(), false);
+                    .explore(getSimulatorModel().getExploreType());
                 gts = getSimulatorModel().getGTS();
                 doCheck = !gts.hasOpenStates();
             }
