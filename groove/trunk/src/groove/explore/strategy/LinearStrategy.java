@@ -17,15 +17,16 @@
 package groove.explore.strategy;
 
 import static groove.transform.RuleEvent.Reuse.NONE;
+
+import java.util.Stack;
+
 import groove.explore.result.Acceptor;
 import groove.lts.GTS;
-import groove.lts.GTSAdapter;
+import groove.lts.GTSListener;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
 import groove.lts.Status.Flag;
 import groove.transform.Record;
-
-import java.util.Stack;
 
 /**
  * Explores a single path until reaching a final state or a loop.
@@ -139,7 +140,7 @@ public class LinearStrategy extends GTSStrategy {
     private final ExploreListener exploreListener = new ExploreListener();
 
     /** A queue with states to be explored, used as a FIFO. */
-    private class ExploreListener extends GTSAdapter {
+    private class ExploreListener implements GTSListener {
         @Override
         public void addUpdate(GTS gts, GraphState state) {
             putFreshInPool(state);

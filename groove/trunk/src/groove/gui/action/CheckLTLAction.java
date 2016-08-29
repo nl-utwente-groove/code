@@ -16,6 +16,12 @@
  */
 package groove.gui.action;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
+import javax.swing.Action;
+import javax.swing.JOptionPane;
+
 import groove.explore.AcceptorValue;
 import groove.explore.Exploration;
 import groove.explore.ExploreType;
@@ -25,13 +31,11 @@ import groove.explore.strategy.Boundary;
 import groove.gui.Simulator;
 import groove.gui.dialog.BoundedModelCheckingDialog;
 import groove.gui.dialog.StringDialog;
+import groove.lts.GraphState;
 import groove.util.parse.FormatException;
 import groove.verify.Formula;
 import groove.verify.FormulaParser;
 import groove.verify.Logic;
-
-import javax.swing.Action;
-import javax.swing.JOptionPane;
 
 /**
  * @author Arend Rensink
@@ -61,26 +65,34 @@ public class CheckLTLAction extends ExploreAction {
         }
         // prompt for a boundary, if the LTL strategy is bounded
         if (this.strategyType == StrategyValue.LTL) {
-            strategy = this.strategyType.getTemplate().toSerialized(property);
+            strategy = this.strategyType.getTemplate()
+                .toSerialized(property);
         } else {
             BoundedModelCheckingDialog dialog = new BoundedModelCheckingDialog();
-            dialog.setGrammar(getSimulatorModel().getGTS().getGrammar());
+            dialog.setGrammar(getSimulatorModel().getGTS()
+                .getGrammar());
             dialog.showDialog(getFrame());
             Boundary boundary = dialog.getBoundary();
             if (boundary == null) {
                 return;
             }
-            strategy = this.strategyType.getTemplate().toSerialized(property, boundary);
+            strategy = this.strategyType.getTemplate()
+                .toSerialized(property, boundary);
         }
         ExploreType exploreType = new ExploreType(strategy, AcceptorValue.CYCLE.toSerialized(), 1);
         try {
             getSimulatorModel().setExploreType(exploreType);
-            Exploration exploration = getActions().getExploreAction().explore(exploreType, true);
+            Exploration exploration = getActions().getExploreAction()
+                .explore(exploreType);
             if (exploration != null) {
-                if (exploration.getResult().isEmpty()) {
+                if (exploration.getResult()
+                    .isEmpty()) {
                     JOptionPane.showMessageDialog(getFrame(),
                         String.format("The property '%s' holds for this system", property));
                 } else {
+                    Collection<GraphState> states = exploration.getResult()
+                        .getStates();
+                    getLtsDisplay().emphasiseStates(new ArrayList<>(states), true);
                     JOptionPane.showMessageDialog(getFrame(),
                         String.format("A counter-example to '%s' is highlighted", property));
                 }

@@ -16,13 +16,13 @@
  */
 package groove.lts;
 
+import java.util.List;
+import java.util.Set;
+
 import groove.control.instance.Frame;
 import groove.grammar.host.HostGraph;
 import groove.graph.Node;
 import groove.lts.Status.Flag;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * Combination of graph and node functionality, used to store the state of a
@@ -113,7 +113,9 @@ public interface GraphState extends Node {
      * Convenience method for {@code getTransitions(COMPLETE)}.
      * @see #getTransitions(GraphTransition.Claz)
      */
-    public Set<? extends GraphTransition> getTransitions();
+    public default Set<? extends GraphTransition> getTransitions() {
+        return getTransitions(GraphTransition.Claz.REAL);
+    }
 
     /**
      * Returns the set of currently generated outgoing
@@ -121,7 +123,10 @@ public interface GraphState extends Node {
      * Convenience method for {@code getTransitions(RULE)}.
      * @see #getTransitions(GraphTransition.Claz)
      */
-    public Set<RuleTransition> getRuleTransitions();
+    @SuppressWarnings("unchecked")
+    public default Set<RuleTransition> getRuleTransitions() {
+        return (Set<RuleTransition>) getTransitions(GraphTransition.Claz.RULE);
+    }
 
     /**
      * Returns the set of currently generated outgoing
@@ -180,7 +185,9 @@ public interface GraphState extends Node {
      * Tests if this state is fully explored, i.e., all outgoing transitions
      * have been generated.
      */
-    public boolean isClosed();
+    public default boolean isClosed() {
+        return hasFlag(Flag.CLOSED);
+    }
 
     /**
      * Declares this state to be an error state.
@@ -190,8 +197,12 @@ public interface GraphState extends Node {
      */
     public boolean setError();
 
-    /** Indicates if this is an error state. */
-    public boolean isError();
+    /** Indicates if this is an error state.
+     * This corresponds to having the {@link Flag#ERROR} flag.
+     */
+    public default boolean isError() {
+        return hasFlag(Flag.ERROR);
+    }
 
     /**
      * Declares this state to be done, while also setting its absence.
@@ -208,14 +219,18 @@ public interface GraphState extends Node {
      * or deadlocked state.
      * @see Flag#DONE
      */
-    public boolean isDone();
+    public default boolean isDone() {
+        return hasFlag(Flag.DONE);
+    }
 
     /**
      * Indicates if this state is final.
      * This is the case if and only if the state is done and the actual control frame is final.
      * @see Flag#FINAL
      */
-    public boolean isFinal();
+    public default boolean isFinal() {
+        return hasFlag(Flag.FINAL);
+    }
 
     /** Indicates if this state is inside a recipe.
      * This is the case if and only if the recipe has started
@@ -223,24 +238,28 @@ public interface GraphState extends Node {
      * A state can only be inside a recipe if it is transient.
      * @see #isTransient()
      * @see Flag#INTERNAL
-
      */
-    public boolean isInternalState();
+    public default boolean isInternalState() {
+        return hasFlag(Flag.INTERNAL);
+    }
 
     /**
      * Indicates if this state is a real part of the GTS.
      * This is the case if and only if the state is not internal or absent.
-     * @see #isAbsent()
-     * @see #isInternalState()
+     * @see Status#isReal(int)
      */
-    public boolean isRealState();
+    public default boolean isRealState() {
+        return Status.isReal(getStatus());
+    }
 
     /**
      * Indicates if this is a transient state, i.e., it is inside an atomic block.
      * This is the case if and only if the associated control frame is transient.
      * @see #getActualFrame()
      */
-    public boolean isTransient();
+    public default boolean isTransient() {
+        return hasFlag(Flag.TRANSIENT);
+    }
 
     /**
      * Indicates if this state is known to be not properly part of the state
@@ -249,14 +268,16 @@ public interface GraphState extends Node {
      * @see #isDone()
      * @see #getAbsence()
      */
-    public boolean isAbsent();
+    public default boolean isAbsent() {
+        return hasFlag(Flag.ABSENT);
+    }
 
     /**
      * Indicates the absence level, which is defined as the lowest
      * transient depth of the known reachable states.
      * This is maximal ({@link Status#MAX_ABSENCE}) if the state is
      * erroneous, and 0 if the state is non-transient (hence present).
-     * The state is <i>absent</i> if it is done has a positive absence level.
+     * The state is <i>absent</i> if it is done and has a positive absence level.
      * @see #isDone()
      * @see #isAbsent()
      */
@@ -270,13 +291,17 @@ public interface GraphState extends Node {
      * @see #isAbsent()
      * @see #getAbsence()
      */
-    public boolean isPresent();
+    public default boolean isPresent() {
+        return getAbsence() == 0 && !isAbsent();
+    }
 
     /** Returns the integer representation of the status of this state. */
     public int getStatus();
 
     /** Tests if a given status flag is set. */
-    public boolean hasFlag(Flag flag);
+    public default boolean hasFlag(Flag flag) {
+        return flag.test(getStatus());
+    }
 
     /**
      * Changes the value of a given status flag.

@@ -36,7 +36,7 @@ import groove.graph.iso.IsoChecker;
 import groove.graph.iso.PartitionRefiner;
 import groove.lts.AbstractGraphState;
 import groove.lts.GTS;
-import groove.lts.GTSAdapter;
+import groove.lts.GTSListener;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -387,7 +387,7 @@ public class StatisticsReporter extends AExplorationReporter {
     }
 
     /** GTS listener that counts all types of states and transitions. */
-    public static class GTSCounter extends GTSAdapter {
+    public static class GTSCounter implements GTSListener {
         /** Empty constructor with the correct visibility. */
         GTSCounter() {
             // Empty.
@@ -469,7 +469,7 @@ public class StatisticsReporter extends AExplorationReporter {
     }
 
     /** GTS listener that sums all nodes and edges of added sates. */
-    public static class GraphCounter extends GTSAdapter {
+    public static class GraphCounter implements GTSListener {
         /** Empty constructor with the correct visibility. */
         GraphCounter() {
             // Empty.

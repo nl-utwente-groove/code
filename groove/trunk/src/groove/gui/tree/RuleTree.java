@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -296,8 +297,7 @@ public class RuleTree extends AbstractResourceTree {
      * @param grammar the source of the rule map
      */
     private Map<Integer,Set<ActionEntry>> getPriorityMap(GrammarModel grammar) {
-        Map<Integer,Set<ActionEntry>> result =
-            new TreeMap<>(Action.PRIORITY_COMPARATOR);
+        Map<Integer,Set<ActionEntry>> result = new TreeMap<>(Action.PRIORITY_COMPARATOR);
         for (Recipe recipe : grammar.getControlModel()
             .getRecipes()) {
             int priority = recipe.getPriority();
@@ -327,8 +327,7 @@ public class RuleTree extends AbstractResourceTree {
      * @param grammar the source of the rule map
      */
     private Map<CheckPolicy,Set<ActionEntry>> getPolicyMap(GrammarModel grammar) {
-        Map<CheckPolicy,Set<ActionEntry>> result =
-            new EnumMap<>(CheckPolicy.class);
+        Map<CheckPolicy,Set<ActionEntry>> result = new EnumMap<>(CheckPolicy.class);
         for (ResourceModel<?> model : grammar.getResourceSet(ResourceKind.RULE)) {
             RuleModel ruleModel = (RuleModel) model;
             if (ruleModel.isProperty()) {
@@ -396,8 +395,7 @@ public class RuleTree extends AbstractResourceTree {
      * Simulator.
      */
     private void refresh(GraphState state) {
-        SortedSet<GraphTransitionKey> matches =
-            new TreeSet<>(GraphTransitionKey.COMPARATOR);
+        SortedSet<GraphTransitionKey> matches = new TreeSet<>(GraphTransitionKey.COMPARATOR);
         if (state != null) {
             for (GraphTransition trans : state.getTransitions(Claz.ANY)) {
                 matches.add(trans.getKey());
@@ -422,15 +420,20 @@ public class RuleTree extends AbstractResourceTree {
                 treeNodes.add(node);
             }
         }
-        if (treeNodes.isEmpty() && rule != null) {
+        boolean matchSelected = !treeNodes.isEmpty();
+        if (!matchSelected && rule != null) {
             treeNodes.add(this.ruleNodeMap.get(rule.getQualName()));
         }
         TreePath[] paths = new TreePath[treeNodes.size()];
+        TreePath lastPath = null;
         for (int i = 0; i < treeNodes.size(); i++) {
-            paths[i] = new TreePath(treeNodes.get(i)
+            lastPath = paths[i] = new TreePath(treeNodes.get(i)
                 .getPath());
         }
         setSelectionPaths(paths);
+        if (matchSelected) {
+            scrollPathToVisible(lastPath);
+        }
     }
 
     /**
@@ -583,8 +586,7 @@ public class RuleTree extends AbstractResourceTree {
      * Mapping from {@link MatchResult} in the current LTS to match nodes in the rule
      * directory
      */
-    private final Map<GraphTransitionKey,DisplayTreeNode> matchNodeMap =
-        new HashMap<>();
+    private final Map<GraphTransitionKey,DisplayTreeNode> matchNodeMap = new LinkedHashMap<>();
 
     /**
      * Mapping from {@link MatchResult} in the current LTS to match nodes in the rule

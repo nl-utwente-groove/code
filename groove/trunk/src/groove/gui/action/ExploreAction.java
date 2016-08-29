@@ -6,8 +6,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
 
 import javax.swing.Action;
 import javax.swing.BoxLayout;
@@ -60,24 +58,45 @@ public class ExploreAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        explore(getSimulatorModel().getExploreType(), true);
+        Exploration e =
+            explore(getSimulatorModel().getState(), getSimulatorModel().getExploreType());
+        if (e != null) {
+            getLtsDisplay().emphasiseStates(e.getResult()
+                .getStates(), true);
+        }
     }
 
-    /** Fully explores a given state of the GTS. */
+    /** Fully explores the currently selected state of the GTS. */
     public void doExploreState() {
         GraphState state = getSimulatorModel().getState();
-        explore(getStateExploration(), true);
+        Exploration e = explore(state, getStateExploration());
+        if (e != null) {
+            getLtsDisplay().emphasiseStates(e.getResult()
+                .getStates(), true);
+        }
         getSimulatorModel().doSetStateAndMatch(state, null);
     }
 
     /**
-     * Run a given exploration. Can be called from outside the Simulator.
+     * Runs a given exploration on the currently selected state.
+     * Can be called from outside the Simulator.
      * @param exploreType the exploration strategy to be used
-     * @param emphasise if {@code true}, the result of the exploration will be emphasised
      * @return the resulting exploration object, or {@code null} if setting up the exploration
      * failed for some reason
      */
-    public Exploration explore(ExploreType exploreType, boolean emphasise) {
+    public Exploration explore(ExploreType exploreType) {
+        return explore(getSimulatorModel().getState(), exploreType);
+    }
+
+    /**
+     * Runs a given exploration on a given state.
+     * Can be called from outside the Simulator.
+     * @param state the start state for the exploration
+     * @param exploreType the exploration strategy to be used
+     * @return the resulting exploration object, or {@code null} if setting up the exploration
+     * failed for some reason
+     */
+    public Exploration explore(GraphState state, ExploreType exploreType) {
         Exploration result = null;
         SimulatorModel simModel = getSimulatorModel();
         LTSJModel ltsJModel = getLtsDisplay().getJModel();
@@ -88,13 +107,11 @@ public class ExploreAction extends SimulatorAction {
                 return null;
             }
         }
-        GTS gts = simModel.getGTS();
         if (isAnimated()) {
             simModel.setDisplay(DisplayKind.LTS);
         }
-        GraphState start = simModel.getState();
         try {
-            result = new Exploration(exploreType, gts, start);
+            result = new Exploration(exploreType, state);
             // unhook the lts' jmodel from the lts, for efficiency's sake
             ltsJModel.setExploring(true);
             this.bound = INITIAL_STATE_BOUND;
@@ -109,11 +126,6 @@ public class ExploreAction extends SimulatorAction {
             // emphasise the result states, if required
             ltsJModel.setExploring(false);
             simModel.setExploreResult(result.getResult());
-            if (emphasise) {
-                Collection<GraphState> states = result.getResult()
-                    .getStates();
-                getLtsDisplay().emphasiseStates(new ArrayList<>(states), true);
-            }
         } catch (FormatException exc) {
             // this should not occur, as the exploration and the
             // grammar in the simulator model should always be compatible
@@ -443,7 +455,7 @@ public class ExploreAction extends SimulatorAction {
          * May only be invoked from the exploration thread.
          */
         private void disposeCancelDialog() {
-            assert!SwingUtilities.isEventDispatchThread();
+            assert !SwingUtilities.isEventDispatchThread();
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
                     @Override
