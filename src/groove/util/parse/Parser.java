@@ -16,9 +16,6 @@
  */
 package groove.util.parse;
 
-import groove.io.HTMLConverter;
-import groove.util.Groove;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,6 +23,9 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import groove.io.HTMLConverter;
+import groove.util.Groove;
 
 /**
  * Interface for basic parser functionality.
@@ -376,7 +376,7 @@ abstract public interface Parser<T> {
             boolean result = value instanceof Collection;
             if (result) {
                 for (Object part : (Collection<?>) value) {
-                    if (!this.inner.isValue(part) || this.inner.toParsableString(value)
+                    if (!this.inner.isValue(part) || this.inner.toParsableString(part)
                         .indexOf(' ') >= 0) {
                         result = false;
                         break;
