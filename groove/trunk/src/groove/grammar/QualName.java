@@ -297,7 +297,7 @@ public class QualName extends ModuleName implements Comparable<QualName>, Fallib
 
                 @Override
                 public String toParsableString(Object value) {
-                    return Groove.toString(((List<?>) value).toArray(), "", "", " ");
+                    return ((QualName) value).toString();
                 }
 
                 @Override
