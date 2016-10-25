@@ -20,9 +20,7 @@
  */
 package groove.grammar;
 
-import java.io.File;
-import java.util.List;
-
+import groove.util.Groove;
 import groove.util.line.Line;
 import groove.util.parse.Fallible;
 import groove.util.parse.FormatError;
@@ -30,6 +28,9 @@ import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
 import groove.util.parse.IdValidator;
 import groove.util.parse.Parser;
+
+import java.io.File;
+import java.util.List;
 
 /**
  * Representation of a qualified name. A qualified name is a
@@ -296,7 +297,7 @@ public class QualName extends ModuleName implements Comparable<QualName>, Fallib
 
                 @Override
                 public String toParsableString(Object value) {
-                    return ((QualName) value).toString();
+                    return Groove.toString(((List<?>) value).toArray(), "", "", " ");
                 }
 
                 @Override
