@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -192,11 +193,11 @@ public class DefaultFileSystemStore extends SystemStore {
     private GrammarProperties doEnableDefaultName(ResourceKind kind, Set<QualName> newNames)
         throws IOException {
         GrammarProperties result = null;
-        QualName defaultName = kind.getDefaultName();
-        if (defaultName != null && getProperties().getActiveNames(kind)
+        Optional<QualName> defaultName = kind.getDefaultName();
+        if (defaultName.isPresent() && getProperties().getActiveNames(kind)
             .isEmpty() && newNames.contains(defaultName)) {
             result = getProperties().clone();
-            result.setActiveNames(kind, Collections.singleton(defaultName));
+            result.setActiveNames(kind, Collections.singleton(defaultName.get()));
             doPutProperties(result);
         }
         return result;

@@ -223,29 +223,34 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
      * any more.
      */
     private void checkAspects() throws FormatException {
-        if (this.graphRole == GraphRole.RULE) {
-            // rule nodes that are not explicitly typed must be readers
-            if (!hasAspect()) {
-                setAspect(READER.getAspect());
+        try {
+            if (this.graphRole == GraphRole.RULE) {
+                // rule nodes that are not explicitly typed must be readers
+                if (!hasAspect()) {
+                    setAspect(READER.getAspect());
+                }
+                if (hasAttrAspect() && getKind() != READER && getKind() != EMBARGO) {
+                    throw new FormatException("Conflicting aspects %s and %s", getAttrAspect(),
+                        getAspect());
+                }
+            } else if (getKind().isRole()) {
+                throw new FormatException("Node aspect %s only allowed in rules", getAspect(),
+                    this);
+            } else if (!hasAspect()) {
+                setAspect(AspectKind.DEFAULT.getAspect());
             }
-            if (hasAttrAspect() && getKind() != READER && getKind() != EMBARGO) {
-                throw new FormatException("Conflicting aspects %s and %s", getAttrAspect(),
-                    getAspect());
+            if (hasImport()) {
+                if (getAttrKind().hasSignature()) {
+                    throw new FormatException("Can't import data type", getAttrKind(), this);
+                } else if (getKind() == ABSTRACT) {
+                    throw new FormatException("Can't abstract an imported type", getAttrKind(),
+                        this);
+                }
             }
-        } else if (getKind().isRole()) {
-            throw new FormatException("Node aspect %s only allowed in rules", getAspect(), this);
-        } else if (!hasAspect()) {
-            setAspect(AspectKind.DEFAULT.getAspect());
-        }
-        if (hasImport()) {
-            if (getAttrKind().hasSignature()) {
-                throw new FormatException("Can't import data type", getAttrKind(), this);
-            } else if (getKind() == ABSTRACT) {
-                throw new FormatException("Can't abstract an imported type", getAttrKind(), this);
+        } finally {
+            if (!hasAttrAspect()) {
+                setAttrAspect(AspectKind.DEFAULT.getAspect());
             }
-        }
-        if (!hasAttrAspect()) {
-            setAttrAspect(AspectKind.DEFAULT.getAspect());
         }
     }
 
@@ -362,7 +367,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
 
     /** Attempts to set the aspect type of this node to a given data type. */
     private void setDataType(Sort type) throws FormatException {
-        assert!isFixed();
+        assert !isFixed();
         Aspect newType = Aspect.getAspect(type.getName());
         assert newType.getKind()
             .hasSignature();
@@ -662,7 +667,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
 
     /** Changes the (aspect) type of this node. */
     void setAspect(Aspect type) throws FormatException {
-        assert!type.getKind()
+        assert !type.getKind()
             .isAttrKind()
             && !type.getKind()
                 .isParam() : String.format("Aspect %s is not a valid node type", type);

@@ -60,7 +60,6 @@ import org.jgraph.graph.GraphConstants;
 
 import com.jgoodies.looks.plastic.theme.DesertBlue;
 
-import groove.grammar.QualName;
 import groove.grammar.model.ResourceKind;
 import groove.io.Util;
 import groove.io.store.EditType;
@@ -334,12 +333,9 @@ public class Options implements Cloneable {
      * a given type.
      */
     public static String getNewResourceName(ResourceKind resource) {
-        QualName result = resource.getDefaultName();
-        if (result == null) {
-            return "new" + resource.getName();
-        } else {
-            return result.toString();
-        }
+        return resource.getDefaultName()
+            .map(n -> n.toString())
+            .orElse("new" + resource.getName());
     }
 
     // Menus
