@@ -19,6 +19,7 @@ package groove.grammar.model;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import groove.grammar.QualName;
@@ -63,7 +64,8 @@ public enum ResourceKind {
         this.description = description;
         this.name = name;
         this.fileType = fileType;
-        this.defaultName = QualName.name(defaultName);
+        this.defaultName =
+            Optional.ofNullable(defaultName == null ? null : QualName.name(defaultName));
     }
 
     /** Returns the graph role associated with this resource kind,
@@ -100,7 +102,7 @@ public enum ResourceKind {
     /** Returns the default name of a resource of this kind, if any.
      * @return a default name, of {@code null} if there is no default
      */
-    public QualName getDefaultName() {
+    public Optional<QualName> getDefaultName() {
         return this.defaultName;
     }
 
@@ -143,7 +145,7 @@ public enum ResourceKind {
     /** File filter for this resource kind. */
     private final FileType fileType;
     /** Default name of this resource kind, if any. */
-    private final QualName defaultName;
+    private final Optional<QualName> defaultName;
 
     /**
      * Returns the resource kind of a given graph role or {@code null}
@@ -171,8 +173,7 @@ public enum ResourceKind {
         allNonProperties.remove(PROPERTIES);
     }
 
-    private static Map<GraphRole,ResourceKind> roleKindMap =
-        new EnumMap<>(GraphRole.class);
+    private static Map<GraphRole,ResourceKind> roleKindMap = new EnumMap<>(GraphRole.class);
 
     static {
         for (ResourceKind kind : ResourceKind.values()) {

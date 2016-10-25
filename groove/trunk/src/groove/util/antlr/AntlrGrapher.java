@@ -65,7 +65,8 @@ public class AntlrGrapher {
 
     /** Returns the type graph for this parser. */
     public TypeGraph getType() {
-        TypeGraph result = new TypeGraph(ResourceKind.TYPE.getDefaultName());
+        TypeGraph result = new TypeGraph(ResourceKind.TYPE.getDefaultName()
+            .get());
         TypeNode topNode = result.addNode(TOP_TYPE);
         result.addEdge(topNode, CHILD_LABEL, topNode);
         result.addEdge(topNode, NEXT_LABEL, topNode);
