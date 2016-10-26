@@ -24,9 +24,10 @@ public enum MatchKind implements SettingKey {
     /** Search plan-based matching. */
     PLAN("plan", "Match hint", "Search plan-based matching", MatchHint.PARSER),
     /** RETE-based incremental matching. */
-    RETE("rete", null, "Incremental (rete-based) matching", null), ;
+    RETE("rete", null, "Incremental (rete-based) matching", null),;
 
-    private MatchKind(String name, String contentName, String explanation, Parser<MatchHint> parser) {
+    private MatchKind(String name, String contentName, String explanation,
+        Parser<MatchHint> parser) {
         this.name = name;
         this.contentName = contentName;
         this.explanation = explanation;
@@ -62,21 +63,6 @@ public enum MatchKind implements SettingKey {
     private final Parser<MatchHint> parser;
 
     @Override
-    public MatchHint getDefaultValue() {
-        return parser().getDefaultValue();
-    }
-
-    @Override
-    public boolean isValue(Object value) {
-        return parser().isValue(value);
-    }
-
-    @Override
-    public Class<? extends MatchHint> getContentType() {
-        return parser().getValueType();
-    }
-
-    @Override
     public Setting<MatchKind,MatchHint> getDefaultSetting() {
         return createSetting(getDefaultValue());
     }
@@ -90,8 +76,8 @@ public enum MatchKind implements SettingKey {
     public Setting<MatchKind,MatchHint> createSetting(Object content)
         throws IllegalArgumentException {
         if (!isValue(content)) {
-            throw new IllegalArgumentException(String.format("'%s' is not a valid value for '%s'",
-                content, this));
+            throw new IllegalArgumentException(
+                String.format("'%s' is not a valid value for '%s'", content, this));
         }
         return new DefaultSetting<>(this, (MatchHint) content);
     }

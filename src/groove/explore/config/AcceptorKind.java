@@ -29,8 +29,7 @@ public enum AcceptorKind implements SettingKey {
     /** Final states. */
     FINAL("final", null, "Final states are results", null),
     /** States satisfying a graph condition. */
-    CONDITION("condition", "Property name", "Any state satisfying a given property",
-        StringParser.identity()) {
+    CONDITION("condition", "Property name", "Any state satisfying a given property", StringParser.identity()) {
         @Override
         public Setting<?,?> createSettting() throws IllegalArgumentException {
             throw new IllegalArgumentException();
@@ -42,8 +41,7 @@ public enum AcceptorKind implements SettingKey {
         }
     },
     /** States satisfying a propositional formula. */
-    FORMULA("formula", "Property formula", "Any state satisfying a propositional formula",
-        StringParser.identity()) {
+    FORMULA("formula", "Property formula", "Any state satisfying a propositional formula", StringParser.identity()) {
         @Override
         public Setting<?,?> createSettting() throws IllegalArgumentException {
             throw new IllegalArgumentException();
@@ -57,7 +55,7 @@ public enum AcceptorKind implements SettingKey {
     /** All states. */
     ANY("any", null, "All states are results", null),
     /** No states. */
-    NONE("none", null, "No state is considered a result", null), ;
+    NONE("none", null, "No state is considered a result", null),;
 
     private AcceptorKind(String name, String contentName, String explanation, Parser<?> parser) {
         this.name = name;
@@ -108,19 +106,4 @@ public enum AcceptorKind implements SettingKey {
     }
 
     private final Parser<?> parser;
-
-    @Override
-    public Object getDefaultValue() {
-        return this.parser.getDefaultValue();
-    }
-
-    @Override
-    public boolean isValue(Object value) {
-        return this.parser.isValue(value);
-    }
-
-    @Override
-    public Class<?> getContentType() {
-        return this.parser.getValueType();
-    }
 }

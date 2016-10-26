@@ -31,8 +31,12 @@ public interface ParsableKey<V> {
     public Parser<? extends V> parser();
 
     /** Convenience method for {@code parser().getDefaultValue()}. */
-    public V getDefaultValue();
+    default public V getDefaultValue() {
+        return parser().getDefaultValue();
+    }
 
-    /** Convenience method for {@code perser().isValue(value)}. */
-    public boolean isValue(Object value);
+    /** Convenience method for {@code parser().isValue(value)}. */
+    default public boolean isValue(Object value) {
+        return parser().isValue(value);
+    }
 }

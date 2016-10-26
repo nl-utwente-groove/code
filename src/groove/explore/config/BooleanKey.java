@@ -27,7 +27,7 @@ public enum BooleanKey implements SettingKey, Setting<BooleanKey,Null> {
     /** Key for the boolean value {@code false}. */
     FALSE,
     /** Key for the boolean value {@code true}. */
-    TRUE, ;
+    TRUE,;
 
     @Override
     public String getName() {
@@ -47,11 +47,6 @@ public enum BooleanKey implements SettingKey, Setting<BooleanKey,Null> {
     @Override
     public Parser<Null> parser() {
         return Null.PARSER;
-    }
-
-    @Override
-    public Object getDefaultValue() {
-        return null;
     }
 
     @Override
@@ -85,11 +80,6 @@ public enum BooleanKey implements SettingKey, Setting<BooleanKey,Null> {
     @Override
     public Null getContent() {
         return null;
-    }
-
-    @Override
-    public Class<Null> getContentType() {
-        return Null.class;
     }
 
     /** Returns the key for a given boolean value. */

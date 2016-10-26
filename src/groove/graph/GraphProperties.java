@@ -16,16 +16,16 @@
  */
 package groove.graph;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import groove.grammar.Action.Role;
 import groove.util.Properties;
 import groove.util.PropertyKey;
 import groove.util.parse.Parser;
 import groove.util.parse.StringHandler;
 import groove.util.parse.StringParser;
-
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * Specialised properties class for graphs. This can be stored as part of the
@@ -64,33 +64,16 @@ public class GraphProperties extends Properties {
         ENABLED("enabled", "Disabled rules are never evaluated.", Parser.boolTrue),
 
         /** Rule injectivity. */
-        INJECTIVE("injective", "<body>Flag determining if the rule is to be matched injectively. "
-            + "<br>Disregarded if injective matching is set on the grammar level.",
-            Parser.boolFalse),
+        INJECTIVE("injective", "<body>Flag determining if the rule is to be matched injectively. " + "<br>Disregarded if injective matching is set on the grammar level.", Parser.boolFalse),
 
         /** Action role. */
-        ROLE(
-            "actionRole",
-            "<body>Role of the action. Values are:"
-                + "<li>* <i>transformer</i>: action that causes the graph to change; scheduled by the (im- or explicit) control"
-                + "<li>- <i>property</i>: unmodifying, parameterless action, checked at every state"
-                + "<li>- <i>forbidden</i>: forbidden graph pattern, dealt with as dictated by the violation policy"
-                + "<li>- <i>invariant</i>: invariant graph property, dealt with as dictated by the violation policy",
-            new Parser.EnumParser<>(Role.class, null)),
+        ROLE("actionRole", "<body>Role of the action. Values are:" + "<li>* <i>transformer</i>: action that causes the graph to change; scheduled by the (im- or explicit) control" + "<li>- <i>property</i>: unmodifying, parameterless action, checked at every state" + "<li>- <i>forbidden</i>: forbidden graph pattern, dealt with as dictated by the violation policy" + "<li>- <i>invariant</i>: invariant graph property, dealt with as dictated by the violation policy", new Parser.EnumParser<>(Role.class, null)),
 
         /** Output line format. */
-        FORMAT(
-            "printFormat",
-            "<body>If nonempty, is printed on <tt>System.out</tt> upon every rule application. "
-                + "<br>Optional format parameters as in <tt>String.format</tt> are instantiated with rule parameters.",
-            StringParser.identity()),
+        FORMAT("printFormat", "<body>If nonempty, is printed on <tt>System.out</tt> upon every rule application. " + "<br>Optional format parameters as in <tt>String.format</tt> are instantiated with rule parameters.", StringParser.identity()),
 
         /** Alternative transition label. */
-        TRANSITION_LABEL(
-            "transitionLabel",
-            "<body>String to be used as the transition label in the LTS. "
-                + "<p>If empty, defaults to the rule name."
-                + "<br>Optional format parameters as in <tt>String.format</tt> are instantiated with rule parameters."),
+        TRANSITION_LABEL("transitionLabel", "<body>String to be used as the transition label in the LTS. " + "<p>If empty, defaults to the rule name." + "<br>Optional format parameters as in <tt>String.format</tt> are instantiated with rule parameters."),
 
         /** Graph version. */
         VERSION("$version", "Graph version");
@@ -169,16 +152,6 @@ public class GraphProperties extends Properties {
         }
 
         private final Parser<?> parser;
-
-        @Override
-        public Object getDefaultValue() {
-            return parser().getDefaultValue();
-        }
-
-        @Override
-        public boolean isValue(Object value) {
-            return parser().isValue(value);
-        }
 
         /** Indicates if a given string corresponds to a property key. */
         static public boolean isKey(String key) {

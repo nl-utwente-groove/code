@@ -87,16 +87,6 @@ public enum ExploreKey implements PropertyKey<Setting<?,?>> {
 
     private SettingParser parser;
 
-    @Override
-    public Setting<?,?> getDefaultValue() {
-        if (this.defaultValue == null) {
-            this.defaultValue = parser().getDefaultValue();
-        }
-        return this.defaultValue;
-    }
-
-    private Setting<?,?> defaultValue;
-
     /** Returns the default setting kind for this exploration key. */
     public SettingKey getDefaultKind() {
         return this.defaultKind;
@@ -107,11 +97,6 @@ public enum ExploreKey implements PropertyKey<Setting<?,?>> {
     /** Returns the type of the setting key for this explore key. */
     public Class<? extends SettingKey> getKindType() {
         return getDefaultKind().getClass();
-    }
-
-    @Override
-    public boolean isValue(Object value) {
-        return parser().isValue(value);
     }
 
     /**

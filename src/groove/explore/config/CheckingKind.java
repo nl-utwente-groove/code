@@ -33,7 +33,7 @@ public enum CheckingKind implements SettingKey {
     /** LTL model checking. */
     LTL_CHECK("LTL", "Linear Temporal Logic checking", Logic.LTL),
     /** CTL model checking. */
-    CTL_CHECK("CTL", "Computation Tree Logic checking", Logic.CTL), ;
+    CTL_CHECK("CTL", "Computation Tree Logic checking", Logic.CTL),;
 
     private CheckingKind(String name, String explanation, Logic logic) {
         this.name = name;
@@ -105,21 +105,6 @@ public enum CheckingKind implements SettingKey {
     }
 
     private final Parser<Formula> parser;
-
-    @Override
-    public Formula getDefaultValue() {
-        return parser().getDefaultValue();
-    }
-
-    @Override
-    public boolean isValue(Object value) {
-        return parser().isValue(value);
-    }
-
-    @Override
-    public Class<FormulaSetting> getContentType() {
-        return FormulaSetting.class;
-    }
 
     /** Returns the model checking kind corresponding to a given logic.
      * @return {@link #LTL_CHECK} for {@link Logic#LTL}, {@link #CTL_CHECK} for {@link Logic#CTL}

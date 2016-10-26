@@ -16,14 +16,14 @@
  */
 package groove.gui.dialog.config;
 
+import javax.swing.JPanel;
+
 import groove.explore.config.ExploreKey;
-import groove.explore.config.Null;
 import groove.explore.config.Setting;
 import groove.explore.config.SettingKey;
 import groove.gui.dialog.ConfigDialog;
 import groove.util.parse.FormatException;
-
-import javax.swing.JPanel;
+import groove.util.parse.NullParser;
 
 /**
  * Editor for the null content.
@@ -37,7 +37,7 @@ public class NullEditor extends ContentEditor {
      */
     public NullEditor(ConfigDialog<?> dialog, JPanel holder, ExploreKey key, SettingKey kind) {
         super(dialog, holder, key, kind);
-        assert kind.getContentType() == Null.class;
+        assert kind.parser() instanceof NullParser;
     }
 
     @Override
