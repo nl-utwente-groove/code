@@ -399,7 +399,8 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
             JVertex<G> targetJVertex = getJCellForNode(edge.target());
             assert targetJVertex != null : "No vertex for target node of " + edge;
             this.connections.connect(result, sourceJVertex.getPort(), targetJVertex.getPort());
-            addFreshOutJEdge(sourceJVertex, jEdge);
+            addFreshJEdge(sourceJVertex, jEdge);
+            addFreshJEdge(targetJVertex, jEdge);
         }
         this.edgeJCellMap.put(edge, result);
         return result;
@@ -412,7 +413,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      */
     private Iterator<? extends JEdge<G>> getJEdges(JVertex<G> jVertex) {
         Iterator<? extends JEdge<G>> result;
-        Set<JEdge<G>> outJEdges = this.freshOutJEdges.get(jVertex);
+        Set<JEdge<G>> outJEdges = this.freshJEdges.get(jVertex);
         if (outJEdges == null) {
             result = jVertex.getContext();
         } else {
@@ -422,12 +423,12 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
     }
 
     /**
-     * Adds a given JEdge to the fresh outgoing edges of a JVertex.
+     * Adds a given JEdge to the fresh incident edges of a JVertex.
      */
-    private void addFreshOutJEdge(JVertex<G> jVertex, JEdge<G> jEdge) {
-        Set<JEdge<G>> jEdges = this.freshOutJEdges.get(jVertex);
+    private void addFreshJEdge(JVertex<G> jVertex, JEdge<G> jEdge) {
+        Set<JEdge<G>> jEdges = this.freshJEdges.get(jVertex);
         if (jEdges == null) {
-            this.freshOutJEdges.put(jVertex, jEdges = new HashSet<>());
+            this.freshJEdges.put(jVertex, jEdges = new HashSet<>());
         }
         jEdges.add(jEdge);
     }
@@ -504,7 +505,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
     protected void prepareInsert() {
         this.addedJEdges.clear();
         this.addedJVertices.clear();
-        this.freshOutJEdges.clear();
+        this.freshJEdges.clear();
         this.connections = new ConnectionSet();
     }
 
@@ -600,8 +601,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      * Mapping from jVertices to incident jEdges.
      * Used in the process of constructing a GraphJModel.
      */
-    protected final Map<JVertex<G>,Set<JEdge<G>>> freshOutJEdges =
-        new HashMap<>();
+    protected final Map<JVertex<G>,Set<JEdge<G>>> freshJEdges = new HashMap<>();
     /**
      * Set of added jEdges. Used in the process of constructing a
      * GraphJModel.
