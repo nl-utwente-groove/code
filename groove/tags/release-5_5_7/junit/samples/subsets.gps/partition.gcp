@@ -1,5 +1,0 @@
-recipe partition() {
-	newGroup;
-	#addNode;
-	goodGroup; 
-}
