@@ -77,10 +77,10 @@ public class MatchHint extends Duo<List<String>> {
         private String toUnquoted(String text) throws FormatException {
             text = text.trim();
             if (text.length() < 2) {
-                throw new FormatException("Label list '%s'should be double-quoted string");
+                throw new FormatException("Label list '%s' should be double-quoted string", text);
             }
             if (text.charAt(0) != DOUBLE_QUOTE_CHAR) {
-                throw new FormatException("Label list '%s'should be double-quoted string");
+                throw new FormatException("Label list '%s' should be double-quoted string", text);
             }
             return StringHandler.toUnquoted(text, DOUBLE_QUOTE_CHAR);
         }

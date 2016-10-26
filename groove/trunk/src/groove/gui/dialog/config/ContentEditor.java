@@ -1,28 +1,28 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.gui.dialog.config;
 
-import groove.explore.config.ExploreKey;
-import groove.explore.config.SettingKey;
-import groove.gui.dialog.ConfigDialog;
-
 import java.awt.CardLayout;
 
 import javax.swing.JPanel;
+
+import groove.explore.config.ExploreKey;
+import groove.explore.config.SettingKey;
+import groove.gui.dialog.ConfigDialog;
 
 /**
  * Abstract setting content editor.
@@ -31,9 +31,10 @@ import javax.swing.JPanel;
  */
 public abstract class ContentEditor extends SettingEditor {
     /**
-     * 
+     * Constructs an editor.
      */
-    protected ContentEditor(ConfigDialog<?> dialog, JPanel holder, ExploreKey key, SettingKey kind) {
+    protected ContentEditor(ConfigDialog<?> dialog, JPanel holder, ExploreKey key,
+        SettingKey kind) {
         this.dialog = dialog;
         this.holder = holder;
         this.key = key;
