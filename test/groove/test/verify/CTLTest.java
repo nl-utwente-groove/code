@@ -122,7 +122,7 @@ public class CTLTest {
         testFormula("EF $start", 1);
         testFormula("EF $open", 3);
         testFormula("EF $final", 0);
-        testFormula("EF $result", 2);
+        testFormula("EF $result", 3);
     }
 
     /** Sets the GTS to a given grammar in the JUnit samples. */

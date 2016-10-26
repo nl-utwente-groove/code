@@ -38,7 +38,7 @@ import groove.util.parse.FormatException;
  */
 public class Exploration {
     /**
-     * Creates an exploration with a given type and for a given GTS and start state.
+     * Creates an exploration with a given type and for a given GTS and (non-{@code null}) start state.
      */
     public Exploration(ExploreType type, GraphState start) throws FormatException {
         this.type = type;
