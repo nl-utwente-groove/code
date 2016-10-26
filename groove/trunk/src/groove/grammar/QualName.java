@@ -20,7 +20,9 @@
  */
 package groove.grammar;
 
-import groove.util.Groove;
+import java.io.File;
+import java.util.List;
+
 import groove.util.line.Line;
 import groove.util.parse.Fallible;
 import groove.util.parse.FormatError;
@@ -28,9 +30,6 @@ import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
 import groove.util.parse.IdValidator;
 import groove.util.parse.Parser;
-
-import java.io.File;
-import java.util.List;
 
 /**
  * Representation of a qualified name. A qualified name is a

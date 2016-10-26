@@ -29,7 +29,7 @@ public enum CountKind implements SettingKey {
     /** Halt after the first result. */
     ONE("One", "Halt after the first result", null),
     /** User-defined count; 0 means unbounded. */
-    COUNT("Value", "User-defined; 0 means unbounded", Parser.natural), ;
+    COUNT("Value", "User-defined; 0 means unbounded", Parser.natural),;
 
     private CountKind(String name, String explanation, Parser<Integer> parser) {
         this.name = name;
@@ -64,16 +64,6 @@ public enum CountKind implements SettingKey {
     private final Parser<Integer> parser;
 
     @Override
-    public Integer getDefaultValue() {
-        return parser().getDefaultValue();
-    }
-
-    @Override
-    public boolean isValue(Object value) {
-        return parser().isValue(value);
-    }
-
-    @Override
     public Setting<CountKind,Integer> getDefaultSetting() {
         return createSetting(getDefaultValue());
     }
@@ -84,15 +74,11 @@ public enum CountKind implements SettingKey {
     }
 
     @Override
-    public Setting<CountKind,Integer> createSetting(Object content) throws IllegalArgumentException {
+    public Setting<CountKind,Integer> createSetting(Object content)
+        throws IllegalArgumentException {
         if (!isValue(content)) {
             throw new IllegalArgumentException();
         }
         return new DefaultSetting<>(this, (Integer) content);
-    }
-
-    @Override
-    public Class<?> getContentType() {
-        return parser().getValueType();
     }
 }

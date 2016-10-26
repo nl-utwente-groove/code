@@ -32,7 +32,7 @@ public enum AlgebraKind implements SettingKey, Setting<AlgebraKind,Null> {
     /** Linear search. */
     POINT(AlgebraFamily.POINT),
     /** Best-first search, driven by some heuristic. */
-    TERM(AlgebraFamily.TERM), ;
+    TERM(AlgebraFamily.TERM),;
 
     private AlgebraKind(AlgebraFamily family) {
         this.family = family;
@@ -91,20 +91,5 @@ public enum AlgebraKind implements SettingKey, Setting<AlgebraKind,Null> {
     @Override
     public Parser<Null> parser() {
         return Null.PARSER;
-    }
-
-    @Override
-    public Null getDefaultValue() {
-        return null;
-    }
-
-    @Override
-    public boolean isValue(Object value) {
-        return value == null;
-    }
-
-    @Override
-    public Class<Null> getContentType() {
-        return Null.class;
     }
 }

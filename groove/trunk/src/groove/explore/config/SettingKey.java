@@ -29,7 +29,9 @@ public interface SettingKey extends ParsableKey<Object> {
     public String getContentName();
 
     /** Returns the type of content that this key expects. */
-    public Class<?> getContentType();
+    default public Class<?> getContentType() {
+        return parser().getValueType();
+    }
 
     /** Returns the default setting for this key, if any.
      * Convenience method for {@code createSetting(getDefaultValue())}.

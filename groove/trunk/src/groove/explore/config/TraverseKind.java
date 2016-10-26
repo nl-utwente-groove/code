@@ -93,19 +93,4 @@ public enum TraverseKind implements SettingKey, Setting<TraverseKind,Null> {
     public Parser<Null> parser() {
         return Null.PARSER;
     }
-
-    @Override
-    public Null getDefaultValue() {
-        return null;
-    }
-
-    @Override
-    public boolean isValue(Object value) {
-        return value == null;
-    }
-
-    @Override
-    public Class<Null> getContentType() {
-        return Null.class;
-    }
 }
