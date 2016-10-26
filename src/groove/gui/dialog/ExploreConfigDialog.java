@@ -44,6 +44,7 @@ import groove.explore.ExploreConfig;
 import groove.explore.config.ExploreKey;
 import groove.explore.config.Setting;
 import groove.explore.config.SettingKey;
+import groove.gui.Options;
 import groove.gui.action.Refreshable;
 import groove.gui.dialog.config.EditorFactory;
 import groove.gui.dialog.config.SettingEditor;
@@ -133,8 +134,7 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
         panel.add(getEditorMap().get(key));
     }
 
-    private final Map<ExploreKey,SettingsPanel> panelMap =
-        new EnumMap<>(ExploreKey.class);
+    private final Map<ExploreKey,SettingsPanel> panelMap = new EnumMap<>(ExploreKey.class);
 
     private Map<ExploreKey,SettingEditor> getEditorMap() {
         if (this.editorMap == null) {
@@ -292,6 +292,7 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
 
     /** Main method, for testing purposes. */
     public static void main(String[] args) {
+        Options.initLookAndFeel();
         new ExploreConfigDialog().getConfiguration();
     }
 }

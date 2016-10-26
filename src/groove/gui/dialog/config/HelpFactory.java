@@ -79,7 +79,7 @@ public class HelpFactory {
     /** Creates the help panel for the isomorphism checking setting. */
     protected JTextPane createRandomHelp(BooleanKey kind) {
         JTextPane result = createTextPane();
-        StringBuilder text = getExplanation(ExploreKey.ISO);
+        StringBuilder text = getExplanation(ExploreKey.RANDOM);
         text.append("Determines if successor states are explored in random order.");
         text.append(HTMLConverter.HTML_LINEBREAK);
         text.append(HTMLConverter.HTML_LINEBREAK);
@@ -113,13 +113,13 @@ public class HelpFactory {
         case FALSE:
             text.append(
                 "Currently set to <b>false</b>, meaning that no isomorphism check is performed. "
-                    + "This will speed up exploration, but may result in a far greater number of states"
+                    + "This will speed up exploration, but may result in a far greater number of states "
                     + "if there is any symmetry.");
             break;
         case TRUE:
-            text.append("Currently set to <b>true</b>, meaning that a state is only added if no"
-                + "isomorphic state has been discovered previously. If an isomorphic state has been"
-                + "found, that is used instead. If states have self-symmetry, this will reduce the state"
+            text.append("Currently set to <b>true</b>, meaning that a state is only added if no "
+                + "isomorphic state has been discovered previously. If an isomorphic state has been "
+                + "found, that is used instead. If states have self-symmetry, this will reduce the state "
                 + "space; however, the isomorphism check itself is costly.");
             break;
         default:
@@ -177,7 +177,8 @@ public class HelpFactory {
         HTMLTag dt = new HTMLTag("dt");
         HTMLTag dd = new HTMLTag("dd");
         HTMLTag strong = HTMLConverter.STRONG_TAG;
-        for (SettingKey kind : key.getKindType().getEnumConstants()) {
+        for (SettingKey kind : key.getKindType()
+            .getEnumConstants()) {
             list.append(dt.on(strong.on(StringHandler.toUpper(kind.getName()))));
             list.append(dd.on(kind.getExplanation()));
         }

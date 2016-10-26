@@ -95,6 +95,7 @@ abstract public class ConfigDialog<C> extends JDialog {
         return isStart() ? getConfigMap().get(getSelectedName()) : null;
     }
 
+    /** Lazily creates and returns the panel containing the list of configuration names. */
     private JPanel getListPanel() {
         if (this.listPanel == null) {
             JToolBar listToolbar = new JToolBar();
@@ -585,8 +586,8 @@ abstract public class ConfigDialog<C> extends JDialog {
      * the existing names
      */
     void addConfig(String newName, C newConfig) {
-        assert!isDirty();
-        assert!this.configMap.containsKey(newName);
+        assert !isDirty();
+        assert !this.configMap.containsKey(newName);
         getConfigMap().put(newName, newConfig);
         int index = getConfigMap().headMap(newName)
             .size();
