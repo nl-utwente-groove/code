@@ -1,24 +1,20 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.gui.dialog.config;
-
-import groove.explore.config.ExploreKey;
-import groove.explore.config.SettingKey;
-import groove.gui.dialog.ConfigDialog;
 
 import java.awt.CardLayout;
 import java.awt.Dimension;
@@ -32,6 +28,10 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.CompoundBorder;
+
+import groove.explore.config.ExploreKey;
+import groove.explore.config.SettingKey;
+import groove.gui.dialog.ConfigDialog;
 
 /**
  * Panel for a group of setting kinds.
@@ -90,6 +90,8 @@ public class SettingsPanel extends JPanel {
 
     private JPanel computeHelpPanel() {
         JPanel result = new JPanel(new CardLayout());
+        // add a dummy panel to ensure first help screen really shows up
+        result.add(new JPanel(), "dummy");
         result.setBorder(new CompoundBorder(getDialog().createEmptyBorder(),
             BorderFactory.createTitledBorder("Help")));
         result.setPreferredSize(new Dimension(200, 100));
