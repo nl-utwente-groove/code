@@ -211,11 +211,12 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
                     Setting<?,?> editedValue = editor.getSetting();
                     result = selectedValue == null ? editedValue != null
                         : !selectedValue.equals(editedValue);
-                    if (result) {
-                        break;
-                    }
                 } catch (FormatException exc) {
-                    // do nothing
+                    // there is an error in a setting, so the state must be dirty
+                    result = true;
+                }
+                if (result) {
+                    break;
                 }
             }
         }

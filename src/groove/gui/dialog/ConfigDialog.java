@@ -263,9 +263,6 @@ abstract public class ConfigDialog<C> extends JDialog {
 
                 /** Notifies the dialog of a change in the name field. */
                 void notifyNameChanged() {
-                    if (!isListening()) {
-                        return;
-                    }
                     String editedName = getEditedName();
                     String nameError = null;
                     if (hasSelectedName() && !editedName.equals(getSelectedName())) {
@@ -303,25 +300,6 @@ abstract public class ConfigDialog<C> extends JDialog {
         public void refresh() {
             setEnabled(hasSelectedName());
         }
-
-        /** Changes the text without notifying the listeners. */
-        public void setText(String text, boolean notify) {
-            if (!notify) {
-                setListening(false);
-            }
-            setText(text);
-            setListening(true);
-        }
-
-        boolean isListening() {
-            return this.listening;
-        }
-
-        void setListening(boolean listening) {
-            this.listening = listening;
-        }
-
-        private boolean listening = true;
     }
 
     /** Factory method for the main panel. */
@@ -604,7 +582,7 @@ abstract public class ConfigDialog<C> extends JDialog {
      */
     protected void selectConfig(String name) {
         setSelectedName(name);
-        getNameField().setText(name, false);
+        getNameField().setText(name);
         setConfigListSelection(name);
         setDirty(false);
         refreshActions();
@@ -936,6 +914,7 @@ abstract public class ConfigDialog<C> extends JDialog {
         @Override
         public void refresh() {
             setEnabled(hasSelectedName());
+            showError();
         }
 
         @Override
