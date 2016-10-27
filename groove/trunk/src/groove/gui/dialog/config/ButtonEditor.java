@@ -16,16 +16,6 @@
  */
 package groove.gui.dialog.config;
 
-import groove.explore.config.ExploreKey;
-import groove.explore.config.Null;
-import groove.explore.config.Setting;
-import groove.explore.config.SettingKey;
-import groove.gui.action.Refreshable;
-import groove.gui.dialog.ExploreConfigDialog;
-import groove.io.HTMLConverter;
-import groove.util.parse.FormatException;
-import groove.util.parse.StringHandler;
-
 import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
@@ -43,6 +33,16 @@ import javax.swing.ButtonModel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
+import groove.explore.config.ExploreKey;
+import groove.explore.config.Null;
+import groove.explore.config.Setting;
+import groove.explore.config.SettingKey;
+import groove.gui.action.Refreshable;
+import groove.gui.dialog.ExploreConfigDialog;
+import groove.io.HTMLConverter;
+import groove.util.parse.FormatException;
+import groove.util.parse.StringHandler;
+
 /**
  * Editor for an explore key, consisting of buttons for each valid setting kind
  * and optional editors for all kinds with non-{@code null} content.
@@ -59,7 +59,8 @@ public class ButtonEditor extends SettingEditor {
         this.factory = new EditorFactory(dialog);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         boolean content = false;
-        for (SettingKey kind : key.getKindType().getEnumConstants()) {
+        for (SettingKey kind : key.getKindType()
+            .getEnumConstants()) {
             content |= kind.getContentType() != Null.class;
         }
         add(createButtonsPanel());
@@ -86,7 +87,8 @@ public class ButtonEditor extends SettingEditor {
     private JPanel createButtonsPanel() {
         JPanel buttons = new JPanel();
         buttons.setLayout(new BoxLayout(buttons, BoxLayout.X_AXIS));
-        for (SettingKey kind : getKey().getKindType().getEnumConstants()) {
+        for (SettingKey kind : getKey().getKindType()
+            .getEnumConstants()) {
             buttons.add(getButton(kind));
             buttons.add(Box.createGlue());
         }
@@ -109,7 +111,8 @@ public class ButtonEditor extends SettingEditor {
      */
     private Map<SettingKey,SettingButton> createButtonMap() {
         Map<SettingKey,SettingButton> buttonMap = new HashMap<>();
-        for (SettingKey kind : getKey().getKindType().getEnumConstants()) {
+        for (SettingKey kind : getKey().getKindType()
+            .getEnumConstants()) {
             SettingButton button = new SettingButton(kind, getEditor(kind));
             getButtonGroup().add(button);
             buttonMap.put(kind, button);
@@ -155,7 +158,8 @@ public class ButtonEditor extends SettingEditor {
 
     private Map<SettingKey,SettingEditor> createEditorMap() {
         Map<SettingKey,SettingEditor> result = new HashMap<>();
-        for (SettingKey kind : getKey().getKindType().getEnumConstants()) {
+        for (SettingKey kind : getKey().getKindType()
+            .getEnumConstants()) {
             result.put(kind, this.factory.createEditor(getContentPanel(), getKey(), kind));
         }
         return result;
@@ -209,11 +213,6 @@ public class ButtonEditor extends SettingEditor {
         SettingKey kind = content.getKind();
         getButton(kind).setSelected(true);
         getEditor(kind).setSetting(content);
-    }
-
-    @Override
-    public boolean hasError() {
-        return getError() != null;
     }
 
     @Override

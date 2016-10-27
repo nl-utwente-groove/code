@@ -16,13 +16,13 @@
  */
 package groove.gui.dialog.config;
 
+import javax.swing.JPanel;
+
 import groove.explore.config.ExploreKey;
 import groove.explore.config.Setting;
 import groove.explore.config.SettingKey;
 import groove.gui.action.Refreshable;
 import groove.util.parse.FormatException;
-
-import javax.swing.JPanel;
 
 /**
  * Interface for the editor of a setting kind.
@@ -49,7 +49,9 @@ abstract public class SettingEditor extends JPanel implements Refreshable {
     abstract public void setSetting(Setting<?,?> content);
 
     /** Indicates that the editor is in an erroneous state. */
-    abstract public boolean hasError();
+    public boolean hasError() {
+        return getError() != null;
+    }
 
     /** Returns the current error in the editor, if any. */
     abstract public String getError();

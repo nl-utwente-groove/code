@@ -92,11 +92,6 @@ public abstract class ContentEditor extends SettingEditor {
 
     /** Reports the error value (if any) to the dialog. */
     protected void testError() {
-        getDialog().setError(this, getError());
-    }
-
-    @Override
-    public boolean hasError() {
-        return getError() != null;
+        getDialog().setError(getKey(), getError());
     }
 }
