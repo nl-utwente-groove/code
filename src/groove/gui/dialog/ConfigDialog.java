@@ -56,6 +56,7 @@ import javax.swing.event.ListSelectionListener;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import groove.explore.config.ExploreKey;
 import groove.gui.Icons;
 import groove.gui.action.Refreshable;
 import groove.util.collect.UncasedStringMap;
@@ -293,7 +294,7 @@ abstract public class ConfigDialog<C> extends JDialog {
                     refreshActions();
                 }
 
-                private static final String ERROR_KIND = "TEXT";
+                private static final String ERROR_KIND = "CONFIG_NAME";
             });
             addRefreshable(this);
         }
@@ -875,7 +876,7 @@ abstract public class ConfigDialog<C> extends JDialog {
     }
 
     /** Sets or resets an error of a particular category. */
-    public void setError(Object category, String error) {
+    public void setError(ExploreKey category, String error) {
         getErrorLabel().setError(category, error);
     }
 

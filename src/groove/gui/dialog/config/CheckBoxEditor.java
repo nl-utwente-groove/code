@@ -16,13 +16,6 @@
  */
 package groove.gui.dialog.config;
 
-import groove.explore.config.BooleanKey;
-import groove.explore.config.ExploreKey;
-import groove.explore.config.Setting;
-import groove.explore.config.SettingKey;
-import groove.gui.action.Refreshable;
-import groove.gui.dialog.ExploreConfigDialog;
-
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -32,6 +25,13 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
+
+import groove.explore.config.BooleanKey;
+import groove.explore.config.ExploreKey;
+import groove.explore.config.Setting;
+import groove.explore.config.SettingKey;
+import groove.gui.action.Refreshable;
+import groove.gui.dialog.ExploreConfigDialog;
 
 /**
  * Editor for an explore key, consisting of buttons for each valid setting kind
@@ -101,17 +101,13 @@ public class CheckBoxEditor extends SettingEditor {
 
     @Override
     public BooleanKey getSetting() {
-        return (getCheckBox().isSelected() ? BooleanKey.TRUE : BooleanKey.FALSE).getDefaultSetting();
+        return (getCheckBox().isSelected() ? BooleanKey.TRUE : BooleanKey.FALSE)
+            .getDefaultSetting();
     }
 
     @Override
     public void setSetting(Setting<?,?> content) {
         getCheckBox().setSelected(content.getKind() == BooleanKey.TRUE);
-    }
-
-    @Override
-    public boolean hasError() {
-        return getError() != null;
     }
 
     @Override
