@@ -36,10 +36,7 @@ public abstract class SearchEngine {
      * @param seed the nodes of the condition that have been matched
      *        already; if <code>null</code>, the condition's pattern map values
      *        are used
-     * @param oracle oracle to provide values for unbound variable nodes; if {@code null},
-     * the {@link DefaultValueOracle} is used.
      */
-    public abstract SearchStrategy createMatcher(Condition condition, Anchor seed,
-        ValueOracle oracle);
+    public abstract SearchStrategy createMatcher(Condition condition, Anchor seed);
 
 }

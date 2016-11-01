@@ -16,6 +16,15 @@
  */
 package groove.grammar;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import groove.algebra.AlgebraFamily;
 import groove.control.CtrlPar.Var;
 import groove.grammar.rule.OperatorNode;
@@ -29,18 +38,10 @@ import groove.grammar.type.TypeGraph;
 import groove.graph.EdgeRole;
 import groove.io.HTMLConverter;
 import groove.io.Util;
+import groove.match.ValueOracle.Kind;
 import groove.util.Fixable;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Type of conditions over graphs.
@@ -303,7 +304,9 @@ public class Condition implements Fixable {
             if (hasPattern()) {
                 getPattern().setFixed();
                 if (!getGrammarProperties().getAlgebraFamily()
-                    .supportsSymbolic()) {
+                    .supportsSymbolic()
+                    && getGrammarProperties().getValueOracle()
+                        .getKind() == Kind.NONE) {
                     checkResolution();
                 }
                 if (getRule() != null) {
@@ -346,7 +349,8 @@ public class Condition implements Fixable {
         Map<VariableNode,List<Set<VariableNode>>> resolverMap = createResolvers();
         stabilise(resolverMap);
         for (RuleNode node : resolverMap.keySet()) {
-            errors.add("Variable node '%s' cannot always be assigned (use %s algebra for symbolic exploration)",
+            errors.add(
+                "Variable node '%s' cannot always be assigned (use %s algebra for symbolic exploration or set a value oracle)",
                 node,
                 AlgebraFamily.POINT.getName());
         }
@@ -359,8 +363,7 @@ public class Condition implements Fixable {
      * for the key to be resolved.
      */
     private Map<VariableNode,List<Set<VariableNode>>> createResolvers() {
-        Map<VariableNode,List<Set<VariableNode>>> result =
-            new HashMap<>();
+        Map<VariableNode,List<Set<VariableNode>>> result = new HashMap<>();
         // Set of variable nodes already found to have been resolved
         Set<VariableNode> resolved = new HashSet<>();
         for (RuleNode node : getInputNodes()) {
@@ -632,9 +635,8 @@ public class Condition implements Fixable {
      */
     public Condition reverse() {
         assert getOp() == Op.NOT;
-        Condition result =
-            new Condition(getName() + "-reverse", Op.FORALL, getPattern(), getRoot(),
-                getGrammarProperties());
+        Condition result = new Condition(getName() + "-reverse", Op.FORALL, getPattern(), getRoot(),
+            getGrammarProperties());
         result.addSubCondition(True);
         if (getTypeGraph() != null) {
             result.setTypeGraph(getTypeGraph());

@@ -23,7 +23,6 @@ import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
 import groove.grammar.rule.Anchor;
 import groove.match.SearchEngine;
-import groove.match.ValueOracle;
 import groove.match.rete.ReteNetworkNode.Action;
 import groove.transform.DeltaStore;
 import groove.util.Reporter;
@@ -99,9 +98,9 @@ public class ReteSearchEngine extends SearchEngine {
 
     @Override
     public synchronized ReteSearchStrategy createMatcher(Condition condition,
-            Anchor seed, ValueOracle oracle) {
+            Anchor seed) {
         //TODO: ARASH: What about the seed nodes and edges?
-        return new ReteSearchStrategy(this, condition, oracle);
+        return new ReteSearchStrategy(this, condition);
     }
 
     private final ReteNetwork network;

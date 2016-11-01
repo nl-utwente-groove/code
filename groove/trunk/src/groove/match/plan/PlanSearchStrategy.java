@@ -16,6 +16,10 @@
  */
 package groove.match.plan;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 import groove.algebra.Sort;
 import groove.grammar.Condition;
 import groove.grammar.host.DefaultHostNode;
@@ -33,13 +37,8 @@ import groove.grammar.type.TypeElement;
 import groove.match.SearchEngine;
 import groove.match.SearchStrategy;
 import groove.match.TreeMatch;
-import groove.match.ValueOracle;
 import groove.util.Reporter;
 import groove.util.Visitor;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * This matcher walks through a search tree built up according to a search plan,
@@ -52,15 +51,13 @@ public class PlanSearchStrategy implements SearchStrategy {
      * Constructs a strategy from a given list of search items. A flag controls
      * if solutions should be injective.
      * @param plan the search items that make up the search plan
-     * @param oracle the oracle to obtain values for unbound variable nodes
      */
-    public PlanSearchStrategy(PlanSearchEngine engine, SearchPlan plan, ValueOracle oracle) {
+    public PlanSearchStrategy(PlanSearchEngine engine, SearchPlan plan) {
         this.nodeIxMap = new HashMap<>();
         this.edgeIxMap = new HashMap<>();
         this.varIxMap = new HashMap<>();
         this.condIxMap = new HashMap<>();
         this.engine = engine;
-        this.oracle = oracle;
         this.plan = plan;
         this.injective = plan.isInjective();
     }
@@ -68,11 +65,6 @@ public class PlanSearchStrategy implements SearchStrategy {
     @Override
     public SearchEngine getEngine() {
         return this.engine;
-    }
-
-    @Override
-    public ValueOracle getOracle() {
-        return this.oracle;
     }
 
     @Override
@@ -108,7 +100,6 @@ public class PlanSearchStrategy implements SearchStrategy {
         final int prime = 31;
         int result = 1;
         result = prime * result + (isInjective() ? 1231 : 1237);
-        result = prime * result + getOracle().hashCode();
         result = prime * result + getPlan().hashCode();
         return result;
     }
@@ -126,9 +117,6 @@ public class PlanSearchStrategy implements SearchStrategy {
         }
         PlanSearchStrategy other = (PlanSearchStrategy) obj;
         if (isInjective() != other.isInjective()) {
-            return false;
-        }
-        if (!getOracle().equals(other.getOracle())) {
             return false;
         }
         if (!getPlan().equals(other.getPlan())) {
@@ -275,14 +263,13 @@ public class PlanSearchStrategy implements SearchStrategy {
      */
     private void testFixed(boolean fixed) {
         if (this.fixed != fixed) {
-            throw new IllegalStateException(String.format("Search plan is %s fixed", fixed
-                ? "not yet" : ""));
+            throw new IllegalStateException(
+                String.format("Search plan is %s fixed", fixed ? "not yet" : ""));
         }
     }
 
     /** The fixed search object. */
     private Search search;
-    private final ValueOracle oracle;
     /** The engine used to create this strategy. */
     private final PlanSearchEngine engine;
     /**
@@ -373,7 +360,8 @@ public class PlanSearchStrategy implements SearchStrategy {
                     int i = getEdgeIx(edgeEntry.getKey());
                     this.edgeImages[i] = this.edgeSeeds[i] = edgeEntry.getValue();
                 }
-                for (Map.Entry<LabelVar,TypeElement> varEntry : seedMap.getValuation().entrySet()) {
+                for (Map.Entry<LabelVar,TypeElement> varEntry : seedMap.getValuation()
+                    .entrySet()) {
                     assert isVarFound(varEntry.getKey());
                     int i = getVarIx(varEntry.getKey());
                     this.varImages[i] = this.varSeeds[i] = varEntry.getValue();
@@ -436,9 +424,11 @@ public class PlanSearchStrategy implements SearchStrategy {
             this.found = found;
             if (PRINT_MATCHES) {
                 Condition condition = PlanSearchStrategy.this.plan.getCondition();
-                if (condition.hasRule() && condition.getRule().isTop()) {
-                    System.out.printf("Next match for %s%s%n", condition.getName(), oldFound ? ": "
-                        : " in " + this.host);
+                if (condition.hasRule() && condition.getRule()
+                    .isTop()) {
+                    System.out.printf("Next match for %s%s%n",
+                        condition.getName(),
+                        oldFound ? ": " : " in " + this.host);
                     if (found) {
                         System.out.print("  " + getMatch());
                     } else {
@@ -486,7 +476,8 @@ public class PlanSearchStrategy implements SearchStrategy {
                 }
             }
             RuleNode nodeKey = PlanSearchStrategy.this.nodeKeys[index];
-            assert image == null || this.nodeSeeds[index] == null : String.format("Assignment %s=%s replaces pre-matched image %s",
+            assert image == null || this.nodeSeeds[index] == null : String.format(
+                "Assignment %s=%s replaces pre-matched image %s",
                 nodeKey,
                 image,
                 this.nodeSeeds[index]);
@@ -594,7 +585,8 @@ public class PlanSearchStrategy implements SearchStrategy {
         public TreeMatch getMatch() {
             TreeMatch result = null;
             if (this.found) {
-                RuleToHostMap patternMap = this.host.getFactory().createRuleToHostMap();
+                RuleToHostMap patternMap = this.host.getFactory()
+                    .createRuleToHostMap();
                 for (int i = 0; i < this.nodeImages.length; i++) {
                     HostNode image = this.nodeImages[i];
                     if (image != null) {
