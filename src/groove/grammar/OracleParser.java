@@ -18,6 +18,7 @@ package groove.grammar;
 
 import groove.io.HTMLConverter;
 import groove.match.DefaultValueOracle;
+import groove.match.DialogValueOracle;
 import groove.match.NoValueOracle;
 import groove.match.RandomValueOracle;
 import groove.match.ValueOracle;
@@ -84,7 +85,7 @@ public class OracleParser implements Parser<ValueOracle> {
         case DEFAULT:
             return DefaultValueOracle.instance();
         case DIALOG:
-
+            return DialogValueOracle.instance();
         case NONE:
             return NoValueOracle.instance();
         case RANDOM:
