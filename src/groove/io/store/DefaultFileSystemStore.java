@@ -195,7 +195,7 @@ public class DefaultFileSystemStore extends SystemStore {
         GrammarProperties result = null;
         Optional<QualName> defaultName = kind.getDefaultName();
         if (defaultName.isPresent() && getProperties().getActiveNames(kind)
-            .isEmpty() && newNames.contains(defaultName)) {
+            .isEmpty() && newNames.contains(defaultName.get())) {
             result = getProperties().clone();
             result.setActiveNames(kind, Collections.singleton(defaultName.get()));
             doPutProperties(result);
