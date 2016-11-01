@@ -1,20 +1,23 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.match.plan;
+
+import java.util.Collection;
+import java.util.Collections;
 
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
@@ -30,9 +33,6 @@ import groove.grammar.rule.VariableNode;
 import groove.match.ValueOracle;
 import groove.match.plan.PlanSearchStrategy.Search;
 
-import java.util.Collection;
-import java.util.Collections;
-
 /**
  * A search item for a value node.
  * @author Arend Rensink
@@ -42,17 +42,19 @@ class ValueNodeSearchItem extends AbstractSearchItem {
     /**
      * Creates a search item for a value node.
      * @param node the node to be matched
+     * @param oracle source of values for the node, if the node is not bound
      */
-    public ValueNodeSearchItem(VariableNode node, AlgebraFamily family) {
+    public ValueNodeSearchItem(VariableNode node, AlgebraFamily family, ValueOracle oracle) {
         this.node = node;
         this.boundNodes = Collections.<RuleNode>singleton(node);
         this.algebra = family.getAlgebra(node.getSignature());
         Expression term = node.getTerm();
         this.value = term instanceof Variable ? null : family.toValue(node.getTerm());
+        this.oracle = oracle;
     }
 
     @Override
-    public Record createRecord(groove.match.plan.PlanSearchStrategy.Search matcher) {
+    public Record createRecord(Search matcher) {
         if (this.value == null) {
             return new ValueQueryRecord(matcher);
         } else {
@@ -120,8 +122,8 @@ class ValueNodeSearchItem extends AbstractSearchItem {
     @Override
     public void activate(PlanSearchStrategy strategy) {
         this.nodeIx = strategy.getNodeIx(this.node);
-        this.oracle = strategy.getOracle();
-        this.condition = strategy.getPlan().getCondition();
+        this.condition = strategy.getPlan()
+            .getCondition();
     }
 
     /** Singleton set consisting of <code>node</code>. */
@@ -137,7 +139,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
     /** Condition being matched. */
     Condition condition;
     /** Source of matches in case the variable node is unbound. */
-    ValueOracle oracle;
+    final ValueOracle oracle;
 
     /**
      * Record of a value node search item.
@@ -155,9 +157,8 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         @Override
         public void initialise(HostGraph host) {
             super.initialise(host);
-            this.image =
-                host.getFactory().createNode(ValueNodeSearchItem.this.algebra,
-                    ValueNodeSearchItem.this.value);
+            this.image = host.getFactory()
+                .createNode(ValueNodeSearchItem.this.algebra, ValueNodeSearchItem.this.value);
         }
 
         @Override
@@ -193,9 +194,8 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         public void initialise(HostGraph host) {
             super.initialise(host);
             this.factory = host.getFactory();
-            this.values =
-                ValueNodeSearchItem.this.oracle.getValues(ValueNodeSearchItem.this.condition,
-                    ValueNodeSearchItem.this.node);
+            this.values = ValueNodeSearchItem.this.oracle
+                .getValues(ValueNodeSearchItem.this.condition, ValueNodeSearchItem.this.node);
         }
 
         @Override

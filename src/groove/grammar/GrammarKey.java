@@ -49,6 +49,9 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
     /** Property name for the algebra to be used during simulation. */
     ALGEBRA("algebraFamily", "<body>Algebra used for attributes" + "<li>- <i>default</i>: " + AlgebraFamily.DEFAULT.getExplanation() + "<li>- <i>big</i>: " + AlgebraFamily.BIG.getExplanation() + "<li>- <i>point</i>: " + AlgebraFamily.POINT.getExplanation() + "<li>- <i>term</i>: " + AlgebraFamily.TERM.getExplanation(), new Parser.EnumParser<>(AlgebraFamily.class, AlgebraFamily.DEFAULT)),
 
+    /** Property name for the value oracle to be used for matching unbound value parameters. */
+    ORACLE("valueOracle", "Source of values for unbound value parameters", OracleParser.instance()),
+
     /**
      * Flag determining the injectivity of the rule system. If <code>true</code>,
      * all rules should be matched injectively. Default is <code>false</code>.

@@ -241,7 +241,7 @@ public class QuantifierCountChecker extends ReteNetworkNode implements ReteState
         if (this.conditionMatcher == null) {
             this.conditionMatcher = this.getOwner()
                 .getOwnerEngine()
-                .createMatcher(this.universalQuantifierChecker.getCondition(), null, null);
+                .createMatcher(this.universalQuantifierChecker.getCondition(), null);
         }
         if (activeAnchors != null) {
             for (RuleToHostMap anchor : activeAnchors) {

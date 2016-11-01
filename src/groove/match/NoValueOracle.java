@@ -16,27 +16,35 @@
  */
 package groove.match;
 
+import java.util.Collections;
+
 import groove.algebra.Constant;
 import groove.grammar.Condition;
 import groove.grammar.rule.VariableNode;
 
-/** Interface to provide values for unbound variable nodes during matching. */
-public interface ValueOracle {
-    /** Returns a range of possible values for a given variable node. */
-    Iterable<Constant> getValues(Condition condition, VariableNode var);
-
-    /** Returns the kind of this oracle. */
-    public Kind getKind();
-
-    /** Kind of oracle. */
-    public static enum Kind {
-        /** No oracle. */
-        NONE,
-        /** Default value oracle. */
-        DEFAULT,
-        /** Random value oracle. */
-        RANDOM,
-        /** User dialog input. */
-        DIALOG,
+/**
+ * Oracle that always returns an empty range of values.
+ * @author Arend Rensink
+ * @version $Revision $
+ */
+public class NoValueOracle implements ValueOracle {
+    @Override
+    public Iterable<Constant> getValues(Condition condition, VariableNode var) {
+        return Collections.emptyList();
     }
+
+    @Override
+    public Kind getKind() {
+        return Kind.NONE;
+    }
+
+    /** Returns the singleton instance of this class. */
+    public final static NoValueOracle instance() {
+        if (INSTANCE == null) {
+            INSTANCE = new NoValueOracle();
+        }
+        return INSTANCE;
+    }
+
+    private static NoValueOracle INSTANCE;
 }

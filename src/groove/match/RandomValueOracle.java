@@ -60,6 +60,11 @@ public class RandomValueOracle implements ValueOracle {
         return Collections.singleton(result);
     }
 
+    @Override
+    public Kind getKind() {
+        return Kind.RANDOM;
+    }
+
     /** Returns the singleton instance of this class. */
     public final static RandomValueOracle instance() {
         return instance;

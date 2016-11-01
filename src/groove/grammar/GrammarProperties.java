@@ -15,6 +15,7 @@ import groove.grammar.CheckPolicy.PolicyMap;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.type.TypeLabel;
+import groove.match.ValueOracle;
 import groove.util.Groove;
 import groove.util.Properties;
 import groove.util.ThreeValued;
@@ -290,8 +291,8 @@ public class GrammarProperties extends Properties {
         if (kind == ResourceKind.CONFIG || kind == ResourceKind.GROOVY) {
             return Collections.emptySet();
         }
-        @SuppressWarnings("unchecked")
-        List<QualName> names = (List<QualName>) parseProperty(resourceKeyMap.get(kind));
+        @SuppressWarnings("unchecked") List<QualName> names =
+            (List<QualName>) parseProperty(resourceKeyMap.get(kind));
         return new TreeSet<>(names);
     }
 
@@ -313,6 +314,20 @@ public class GrammarProperties extends Properties {
             result = AlgebraFamily.DEFAULT;
         }
         return result;
+    }
+
+    /**
+     * Sets the value oracle to be used.
+     */
+    public void setValueOracle(ValueOracle oracle) {
+        storeProperty(GrammarKey.ORACLE, oracle);
+    }
+
+    /**
+     * Returns the installed value oracle.
+     */
+    public ValueOracle getValueOracle() {
+        return (ValueOracle) parseProperty(GrammarKey.ORACLE);
     }
 
     /**
