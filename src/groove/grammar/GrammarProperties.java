@@ -15,6 +15,7 @@ import groove.grammar.CheckPolicy.PolicyMap;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.type.TypeLabel;
+import groove.match.DefaultValueOracle;
 import groove.match.ValueOracle;
 import groove.util.Groove;
 import groove.util.Properties;
@@ -327,7 +328,13 @@ public class GrammarProperties extends Properties {
      * Returns the installed value oracle.
      */
     public ValueOracle getValueOracle() {
-        return (ValueOracle) parseProperty(GrammarKey.ORACLE);
+        if (getAlgebraFamily() == AlgebraFamily.POINT) {
+            // with the point algebra, any value will do and is the same
+            // so we can just take the default value
+            return DefaultValueOracle.instance();
+        } else {
+            return (ValueOracle) parseProperty(GrammarKey.ORACLE);
+        }
     }
 
     /**

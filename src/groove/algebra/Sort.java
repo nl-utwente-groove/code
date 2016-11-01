@@ -130,13 +130,9 @@ public enum Sort {
 
         @Override
         public Constant createConstant(String symbol) throws FormatException {
-            try {
-                Constant result = Constant.instance(StringHandler.toUnquoted(symbol));
-                result.setSymbol(symbol);
-                return result;
-            } catch (NumberFormatException exc) {
-                throw new FormatException("'%s' does not denote properly quoted string", symbol);
-            }
+            Constant result = Constant.instance(StringHandler.toUnquoted(symbol));
+            result.setSymbol(symbol);
+            return result;
         }
 
         @Override
