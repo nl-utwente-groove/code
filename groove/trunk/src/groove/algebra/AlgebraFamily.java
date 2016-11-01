@@ -31,13 +31,14 @@ import java.util.Set;
 
 import groove.algebra.syntax.CallExpr;
 import groove.algebra.syntax.Expression;
+import groove.util.DocumentedEnum;
 
 /**
  * Register for the currently used algebras.
  * @author Arend Rensink
  * @version $Revision $
  */
-public enum AlgebraFamily {
+public enum AlgebraFamily implements DocumentedEnum {
     /** Default algebra family:
      * {@link Integer} for {@code int},
      * {@link Boolean} for {@code bool},
@@ -103,6 +104,7 @@ public enum AlgebraFamily {
     }
 
     /** Returns the name of this algebra family. */
+    @Override
     public final String getName() {
         return this.name;
     }
@@ -111,6 +113,7 @@ public enum AlgebraFamily {
     private final String name;
 
     /** Returns a one-line explanation of this algebra family. */
+    @Override
     public String getExplanation() {
         return this.explanation;
     }

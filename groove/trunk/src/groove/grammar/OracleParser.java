@@ -22,6 +22,7 @@ import groove.match.DialogValueOracle;
 import groove.match.NoValueOracle;
 import groove.match.RandomValueOracle;
 import groove.match.ValueOracle;
+import groove.match.ValueOracle.Kind;
 import groove.util.Exceptions;
 import groove.util.parse.FormatException;
 import groove.util.parse.Parser;
@@ -43,10 +44,9 @@ public class OracleParser implements Parser<ValueOracle> {
             StringBuilder buffer = new StringBuilder();
             buffer.append("One of");
             boolean first = true;
-            for (ValueOracle.Kind kind : ValueOracle.Kind.values()) {
+            for (Kind kind : Kind.values()) {
                 buffer.append(first ? ": " : ", ");
-                buffer.append(HTMLConverter.ITALIC_TAG.on(kind.name()
-                    .toLowerCase()));
+                buffer.append(HTMLConverter.ITALIC_TAG.on(kind.getName()));
                 if (first) {
                     buffer.append(" (default)");
                     first = false;
@@ -63,11 +63,10 @@ public class OracleParser implements Parser<ValueOracle> {
     public ValueOracle parse(String input) throws FormatException {
         ValueOracle result = null;
         if (input == null || input.length() == 0) {
-            result = createOracle(ValueOracle.Kind.NONE);
+            result = createOracle(Kind.NONE);
         } else {
-            for (ValueOracle.Kind kind : ValueOracle.Kind.values()) {
-                if (input.equals(kind.name()
-                    .toLowerCase())) {
+            for (Kind kind : Kind.values()) {
+                if (input.equals(kind.getName())) {
                     result = createOracle(kind);
                     break;
                 }
@@ -80,7 +79,7 @@ public class OracleParser implements Parser<ValueOracle> {
     }
 
     /** Returns an oracle of the desired kind. */
-    private ValueOracle createOracle(ValueOracle.Kind kind) {
+    private ValueOracle createOracle(Kind kind) {
         switch (kind) {
         case DEFAULT:
             return DefaultValueOracle.instance();
@@ -97,19 +96,18 @@ public class OracleParser implements Parser<ValueOracle> {
 
     @Override
     public String toParsableString(Object value) {
-        ValueOracle.Kind result = null;
+        Kind result = null;
         Class<? extends ValueOracle> oracle = ((ValueOracle) value).getClass();
         if (oracle == NoValueOracle.class) {
-            result = ValueOracle.Kind.NONE;
+            result = Kind.NONE;
         } else if (oracle == DefaultValueOracle.class) {
-            result = ValueOracle.Kind.DEFAULT;
+            result = Kind.DEFAULT;
         } else if (oracle == RandomValueOracle.class) {
-            result = ValueOracle.Kind.RANDOM;
+            result = Kind.RANDOM;
         } else {
             throw Exceptions.UNREACHABLE;
         }
-        return result.name()
-            .toLowerCase();
+        return result.getName();
     }
 
     @Override

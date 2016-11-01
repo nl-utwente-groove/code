@@ -19,6 +19,8 @@ package groove.match;
 import groove.algebra.Constant;
 import groove.grammar.Condition;
 import groove.grammar.rule.VariableNode;
+import groove.util.DocumentedEnum;
+import groove.util.Exceptions;
 
 /** Interface to provide values for unbound variable nodes during matching. */
 public interface ValueOracle {
@@ -29,7 +31,7 @@ public interface ValueOracle {
     public Kind getKind();
 
     /** Kind of oracle. */
-    public static enum Kind {
+    public static enum Kind implements DocumentedEnum {
         /** No oracle. */
         NONE,
         /** Default value oracle. */
@@ -37,6 +39,27 @@ public interface ValueOracle {
         /** Random value oracle. */
         RANDOM,
         /** User dialog input. */
-        DIALOG,
+        DIALOG,;
+
+        @Override
+        public String getName() {
+            return name().toLowerCase();
+        }
+
+        @Override
+        public String getExplanation() {
+            switch (this) {
+            case DEFAULT:
+                return "Returns the default value of the type";
+            case DIALOG:
+                return "Asks the user to input a value of the type";
+            case NONE:
+                return "No oracle";
+            case RANDOM:
+                return "Returns a randum value of the type";
+            default:
+                throw Exceptions.UNREACHABLE;
+            }
+        }
     }
 }

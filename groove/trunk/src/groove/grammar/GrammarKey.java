@@ -29,6 +29,8 @@ import groove.explore.ExploreType;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.RuleModel;
+import groove.match.ValueOracle.Kind;
+import groove.util.DocumentedEnum;
 import groove.util.Groove;
 import groove.util.PropertyKey;
 import groove.util.ThreeValued;
@@ -47,10 +49,10 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
     REMARK("remark", "A one-line description of the graph production system"),
 
     /** Property name for the algebra to be used during simulation. */
-    ALGEBRA("algebraFamily", "<body>Algebra used for attributes" + "<li>- <i>default</i>: " + AlgebraFamily.DEFAULT.getExplanation() + "<li>- <i>big</i>: " + AlgebraFamily.BIG.getExplanation() + "<li>- <i>point</i>: " + AlgebraFamily.POINT.getExplanation() + "<li>- <i>term</i>: " + AlgebraFamily.TERM.getExplanation(), new Parser.EnumParser<>(AlgebraFamily.class, AlgebraFamily.DEFAULT)),
+    ALGEBRA("algebraFamily", "<body>Algebra used for attributes" + DocumentedEnum.document(AlgebraFamily.class), new Parser.EnumParser<>(AlgebraFamily.class, AlgebraFamily.DEFAULT)),
 
     /** Property name for the value oracle to be used for matching unbound value parameters. */
-    ORACLE("valueOracle", "Source of values for unbound value parameters", OracleParser.instance()),
+    ORACLE("valueOracle", "Source of values for unbound value parameters" + DocumentedEnum.document(Kind.class) + "<p>If the algebra family is set to <i>point</i>, the oracle is disregarded", OracleParser.instance()),
 
     /**
      * Flag determining the injectivity of the rule system. If <code>true</code>,
