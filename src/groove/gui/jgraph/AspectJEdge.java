@@ -256,6 +256,7 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
 
     @Override
     public void loadFromUserObject(GraphRole role) {
+        boolean bidirectional = getLooks().contains(Look.BIDIRECTIONAL);
         initialise();
         AspectParser parser = AspectParser.getInstance();
         for (String text : getUserObject()) {
@@ -263,6 +264,11 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
             AspectEdge edge = new AspectEdge(getSourceNode(), label, getTargetNode());
             edge.setFixed();
             addEdge(edge);
+            if (bidirectional) {
+                edge = new AspectEdge(getTargetNode(), label, getSourceNode());
+                edge.setFixed();
+                addEdge(edge);
+            }
         }
         setStale(VisualKey.refreshables());
     }

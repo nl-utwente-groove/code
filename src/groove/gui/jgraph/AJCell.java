@@ -120,6 +120,9 @@ public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JMo
         edges.add(edge);
         setStale(VisualKey.LABEL);
         setStale(VisualKey.TEXT_SIZE);
+        // Edge may have become bidirectional
+        setStale(VisualKey.EDGE_SOURCE_SHAPE);
+        setStale(VisualKey.EDGE_TARGET_SHAPE);
     }
 
     @Override
@@ -136,7 +139,7 @@ public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JMo
     /** Sets or resets a look value. */
     @Override
     public boolean setLook(Look look, boolean set) {
-        assert!look.isStructural();
+        assert !look.isStructural();
         boolean change = set ? getLooks().add(look) : getLooks().remove(look);
         if (change) {
             this.looksChanged = true;
