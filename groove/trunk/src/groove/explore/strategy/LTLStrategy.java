@@ -53,10 +53,11 @@ import groove.verify.Proposition.Arg;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-public class LTLStrategy extends Strategy implements ExploreIterator {
+public class LTLStrategy extends Strategy {
     @Override
     public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
         assert acceptor instanceof CycleAcceptor;
+        super.prepare(gts, state, acceptor);
         MatcherFactory.instance(gts.isSimple())
             .setDefaultEngine();
         this.stateSet = new ProductStateSet();
@@ -66,7 +67,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
         this.result = acceptor.getResult();
         this.stateSet.addListener(this.acceptor);
         this.stateStack = new Stack<>();
-        assert(this.startLocation != null) : "The property automaton should have an initial state";
+        assert (this.startLocation != null) : "The property automaton should have an initial state";
         ProductState startState = createState(gts.startState(), null, this.startLocation);
         this.startState = startState;
         this.nextState = startState;
@@ -346,7 +347,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
                 // no isomorphic state found
                 result = createProductTransition(source, transition, target);
             } else {
-                assert(isoTarget.iteration() <= getRecord()
+                assert (isoTarget.iteration() <= getRecord()
                     .getIteration()) : "This state belongs to the next iteration and should not be explored now.";
                 result = createProductTransition(source, transition, isoTarget);
             }
