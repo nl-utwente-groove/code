@@ -31,24 +31,6 @@ import groove.lts.Status.Flag;
  */
 public abstract class Strategy {
     /**
-     * Constructs a new strategy,
-     * under the assumption that the instantiated class
-     * is itself an instance of {@link ExploreIterator}.
-     */
-    protected Strategy() {
-        this.iterator = (ExploreIterator) this;
-    }
-
-    /**
-     * Constructs a new strategy,
-     * for a given exploration iterator.
-     * @param iterator the exploration iterator to be used.
-     */
-    protected Strategy(ExploreIterator iterator) {
-        this.iterator = iterator;
-    }
-
-    /**
      * Sets the GTS to be explored, in preparation
      * to a call of {@link #play()}.
      * Also sets the state to be explored to {@code null},
@@ -84,15 +66,43 @@ public abstract class Strategy {
     final public void play() {
         assert this.gts != null : "GTS not initialised";
         assert this.acceptor != null : "Acceptor not initialised";
-        this.acceptor.prepare(this.gts);
-        this.iterator.prepare(this.gts, this.startState, this.acceptor);
+        prepare(this.gts, this.startState, this.acceptor);
         collectKnownStates();
         this.interrupted = false;
-        while (!this.acceptor.done() && this.iterator.hasNext() && !testInterrupted()) {
-            this.lastState = this.iterator.doNext();
+        while (!this.acceptor.done() && hasNext() && !testInterrupted()) {
+            this.lastState = doNext();
         }
-        this.iterator.finish();
+        finish();
     }
+
+    /**
+     * Initialises the iterator for exploring a given
+     * GTS, starting from a given state.
+     * @param gts the GTS to be explored; non-{@code null}
+     * @param state the state at which exploration should
+     * start; may be {@code null}, in which case the GTS' start state is to be used
+     * @param acceptor acceptor object to be used during exploration; non-{@code null}
+     */
+    public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
+        acceptor.prepare(gts);
+    }
+
+    /**
+     * Performs the next step in the exploration.
+     * Should be called only if {@link #hasNext} holds.
+     * @return the (last) state explored as a result of this call.
+     */
+    abstract public GraphState doNext();
+
+    /** Indicates if there is a next step in the exploration. */
+    abstract public boolean hasNext();
+
+    /**
+     * Callback method invoked after exploration has finished.
+     * After this method, the only next operation allowed is
+     * {@link #prepare}.
+     */
+    abstract public void finish();
 
     /**
      * Sets all states already in the state space to Flag.KNOWN.
@@ -115,7 +125,8 @@ public abstract class Strategy {
     private boolean testInterrupted() {
         boolean result = this.interrupted;
         if (!result) {
-            result = this.interrupted = Thread.currentThread().isInterrupted();
+            result = this.interrupted = Thread.currentThread()
+                .isInterrupted();
         }
         return result;
     }
@@ -139,7 +150,6 @@ public abstract class Strategy {
         return result.toString();
     }
 
-    private final ExploreIterator iterator;
     /** Flag indicating that the last invocation of {@link #play} was interrupted. */
     private boolean interrupted;
     /** The graph transition system explored by the strategy. */
@@ -151,6 +161,6 @@ public abstract class Strategy {
     private GraphState startState;
     /** The acceptor to be used at the next exploration. */
     private Acceptor acceptor;
-    /** The state returned by the last call of {@link ExploreIterator#doNext()}. */
+    /** The state returned by the last call of {@link #doNext()}. */
     private GraphState lastState;
 }
