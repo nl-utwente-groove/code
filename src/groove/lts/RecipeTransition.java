@@ -54,8 +54,8 @@ import groove.util.parse.FormatException;
 public class RecipeTransition extends ALabelEdge<GraphState>
     implements GraphTransition, ActionLabel {
     /**
-     * Constructs a transition between
-     * a given source and target state, on the basis of a (recipe) control step and
+     * Constructs a recipe transition between
+     * a given source and target state, on the basis of
      * an initial underlying rule transition.
      */
     public RecipeTransition(GraphState source, GraphState target, RuleTransition initial) {
