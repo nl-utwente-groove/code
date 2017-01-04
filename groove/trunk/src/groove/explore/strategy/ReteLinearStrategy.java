@@ -33,31 +33,15 @@ import groove.transform.DeltaStore;
  *
  */
 public class ReteLinearStrategy extends LinearStrategy {
-    /**
-     * Constructs a default instance of the strategy, in which states are only
-     * closed if they have been fully explored
-     */
-    public ReteLinearStrategy() {
-        this(false);
-    }
-
-    /**
-     * Constructs an instance of the strategy with control over the closing of
-     * states.
-     * @param closeFast if <code>true</code>, close states immediately after a
-     *        single outgoing transition has been computed.
-     */
-    public ReteLinearStrategy(boolean closeFast) {
-        super(closeFast);
-    }
-
     @Override
     public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
         super.prepare(gts, state, acceptor);
         // initialise the RETE network
         this.rete = new ReteSearchEngine(getGTS().getGrammar());
-        this.oldEngine = MatcherFactory.instance(gts.isSimple()).getEngine();
-        MatcherFactory.instance(gts.isSimple()).setEngine(this.rete);
+        this.oldEngine = MatcherFactory.instance(gts.isSimple())
+            .getEngine();
+        MatcherFactory.instance(gts.isSimple())
+            .setEngine(this.rete);
     }
 
     @Override
@@ -65,7 +49,8 @@ public class ReteLinearStrategy extends LinearStrategy {
         GraphState result = super.computeNextState();
         DeltaStore d = new DeltaStore();
         if (result != null) {
-            ((DefaultGraphNextState) result).getDelta().applyDelta(d);
+            ((DefaultGraphNextState) result).getDelta()
+                .applyDelta(d);
             this.rete.transitionOccurred(result.getGraph(), d);
         }
         return result;
@@ -76,7 +61,8 @@ public class ReteLinearStrategy extends LinearStrategy {
      */
     @Override
     public void finish() {
-        MatcherFactory.instance(getGTS().isSimple()).setEngine(this.oldEngine);
+        MatcherFactory.instance(getGTS().isSimple())
+            .setEngine(this.oldEngine);
         super.finish();
     }
 

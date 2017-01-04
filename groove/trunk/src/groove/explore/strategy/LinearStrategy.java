@@ -34,24 +34,6 @@ import groove.transform.Record;
  *
  */
 public class LinearStrategy extends GTSStrategy {
-    /**
-     * Constructs a default instance of the strategy, in which states are only
-     * closed if they have been fully explored
-     */
-    public LinearStrategy() {
-        this(false);
-    }
-
-    /**
-     * Constructs an instance of the strategy with control over the closing of
-     * states.
-     * @param closeFast if <code>true</code>, close states immediately after a
-     *        single outgoing transition has been computed.
-     */
-    public LinearStrategy(boolean closeFast) {
-        this.closeFast = closeFast;
-    }
-
     @Override
     public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
         // We have to set the non-collapsing property before the first (start)
@@ -110,11 +92,6 @@ public class LinearStrategy extends GTSStrategy {
         // empty the pool if the new state is not transient
         // as then no more backtracking is going to be needed
         if (!state.isTransient()) {
-            if (isCloseFast()) {
-                for (GraphState s : this.pool) {
-                    s.setClosed(false);
-                }
-            }
             this.pool.clear();
         }
         // only add non-transient states if they are unknown
@@ -122,17 +99,6 @@ public class LinearStrategy extends GTSStrategy {
             this.pool.push(state);
         }
     }
-
-    /** Return the current value of the "close on exit" setting */
-    private boolean isCloseFast() {
-        return this.closeFast;
-    }
-
-    /**
-     * Option to close states immediately after a transition has been generated.
-     * Used to save memory by closing states ASAP.
-     */
-    private final boolean closeFast;
 
     private final Stack<GraphState> pool = new Stack<>();
 
