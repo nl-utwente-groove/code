@@ -1,0 +1,8 @@
+recipe ab() {
+  choice {
+    try a;
+  } or {
+    b;
+  }
+  c;
+}
