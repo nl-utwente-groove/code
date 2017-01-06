@@ -43,11 +43,11 @@ public class EditorFactory {
     /** Creates a settings editor for a given exploration key. */
     public SettingEditor createEditor(ExploreKey key) {
         switch (key) {
-        case ACCEPTOR:
+        case GOAL:
             return new ButtonEditor(getDialog(), key, "Acceptor");
         case ALGEBRA:
             return new ButtonEditor(getDialog(), key, "Algebra for data values");
-        case COUNT:
+        case STOP:
             return new ButtonEditor(getDialog(), key, "Result count");
         case MATCHER:
             return new ButtonEditor(getDialog(), key, "Match strategy");
@@ -72,7 +72,7 @@ public class EditorFactory {
     public SettingEditor createEditor(JPanel holder, ExploreKey key, SettingKey kind) {
         SettingEditor result;
         switch (key) {
-        case ACCEPTOR:
+        case GOAL:
             switch ((AcceptorKind) kind) {
             case CONDITION:
                 result = new TextFieldEditor(getDialog(), holder, key, kind);
@@ -84,7 +84,7 @@ public class EditorFactory {
                 result = null;
             }
             break;
-        case COUNT:
+        case STOP:
             switch ((CountKind) kind) {
             case COUNT:
                 result = new TextFieldEditor(getDialog(), holder, key, kind);

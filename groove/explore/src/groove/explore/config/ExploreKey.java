@@ -31,7 +31,9 @@ public enum ExploreKey implements PropertyKey<Setting<?,?>> {
     /** The acceptor for results. */
     RANDOM("random", "Pick random successor of explored state?", BooleanKey.FALSE, true),
     /** The acceptor for results. */
-    ACCEPTOR("accept", "Criterion for results", AcceptorKind.FINAL, true),
+    GOAL("accept", "Criterion for results", AcceptorKind.FINAL, true),
+    /** Number of results after which to stop exploring. */
+    STOP("count", "Result count before exploration halts", CountKind.ALL, true),
     /** The matching strategy. */
     MATCHER("match", "Match strategy", MatchKind.PLAN, true),
     /** The algebra for data values. */
@@ -40,8 +42,7 @@ public enum ExploreKey implements PropertyKey<Setting<?,?>> {
     ISO("iso", "Collapse isomorphic states?", BooleanKey.TRUE, true),
     /** Conditions for where to stop exploring. */
     //BOUNDARY("bound", "Boundary conditions for exploration", null, false),
-    /** Number of results after which to stop exploring. */
-    COUNT("count", "Result count before exploration halts", CountKind.ALL, true),;
+    ;
 
     private ExploreKey(String name, String explanation, SettingKey defaultKind, boolean singular) {
         this.name = name;
@@ -113,7 +114,7 @@ public enum ExploreKey implements PropertyKey<Setting<?,?>> {
         if (this.kindMap == null) {
             this.kindMap = new KindMap(getKindType());
             switch (this) {
-            case COUNT:
+            case STOP:
                 this.kindMap.put("", CountKind.COUNT);
                 break;
             case ISO:

@@ -111,8 +111,8 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
         SettingsPanel searchPanel = new SettingsPanel(this, "Search");
         addEditor(searchPanel, ExploreKey.TRAVERSE);
         addEditor(searchPanel, ExploreKey.RANDOM);
-        addEditor(searchPanel, ExploreKey.ACCEPTOR);
-        addEditor(searchPanel, ExploreKey.COUNT);
+        addEditor(searchPanel, ExploreKey.GOAL);
+        addEditor(searchPanel, ExploreKey.STOP);
         addTab(result, searchPanel);
         // panel with basic settings
         SettingsPanel checkingPanel = new SettingsPanel(this, "Model Checking");
