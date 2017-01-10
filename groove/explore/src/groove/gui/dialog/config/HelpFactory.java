@@ -64,9 +64,6 @@ public class HelpFactory {
         case ISO:
             result = createIsoHelp((BooleanKey) kind);
             break;
-        case RANDOM:
-            result = createRandomHelp((BooleanKey) kind);
-            break;
         case CHECKING:
             result = createCheckingHelp((CheckingKind) kind);
             break;
@@ -75,32 +72,32 @@ public class HelpFactory {
         }
         return result;
     }
-
-    /** Creates the help panel for the isomorphism checking setting. */
-    protected JTextPane createRandomHelp(BooleanKey kind) {
-        JTextPane result = createTextPane();
-        StringBuilder text = getExplanation(ExploreKey.RANDOM);
-        text.append("Determines if successor states are explored in random order.");
-        text.append(HTMLConverter.HTML_LINEBREAK);
-        text.append(HTMLConverter.HTML_LINEBREAK);
-        switch (kind) {
-        case FALSE:
-            text.append(
-                "Currently set to <b>false</b>, meaning that when the successors of a given state "
-                    + "are explored, the next state to be picked is determined by the search strategy "
-                    + "and deterministally fixed between one exploration and the next.");
-            break;
-        case TRUE:
-            text.append("Currently set to <b>true</b>, meaning that whenever the next successor of "
-                + "a given state is explored, a random choice is made between the as yet unexplored "
-                + "states.");
-            break;
-        default:
-            assert false;
-        }
-        result.setText(text.toString());
-        return result;
-    }
+    //
+    //    /** Creates the help panel for the isomorphism checking setting. */
+    //    protected JTextPane createRandomHelp(BooleanKey kind) {
+    //        JTextPane result = createTextPane();
+    //        StringBuilder text = getExplanation(ExploreKey.RANDOM);
+    //        text.append("Determines if successor states are explored in random order.");
+    //        text.append(HTMLConverter.HTML_LINEBREAK);
+    //        text.append(HTMLConverter.HTML_LINEBREAK);
+    //        switch (kind) {
+    //        case FALSE:
+    //            text.append(
+    //                "Currently set to <b>false</b>, meaning that when the successors of a given state "
+    //                    + "are explored, the next state to be picked is determined by the search strategy "
+    //                    + "and deterministally fixed between one exploration and the next.");
+    //            break;
+    //        case TRUE:
+    //            text.append("Currently set to <b>true</b>, meaning that whenever the next successor of "
+    //                + "a given state is explored, a random choice is made between the as yet unexplored "
+    //                + "states.");
+    //            break;
+    //        default:
+    //            assert false;
+    //        }
+    //        result.setText(text.toString());
+    //        return result;
+    //    }
 
     /** Creates the help panel for the isomorphism checking setting. */
     protected JTextPane createIsoHelp(BooleanKey kind) {

@@ -101,8 +101,7 @@ public class CheckBoxEditor extends SettingEditor {
 
     @Override
     public BooleanKey getSetting() {
-        return (getCheckBox().isSelected() ? BooleanKey.TRUE : BooleanKey.FALSE)
-            .getDefaultSetting();
+        return getCheckBox().isSelected() ? BooleanKey.TRUE : BooleanKey.FALSE;
     }
 
     @Override

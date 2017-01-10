@@ -12,31 +12,29 @@
  * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
- * $Id$
+ * $Id: TraverseKind.java 5811 2016-10-26 15:31:09Z rensink $
  */
 package groove.explore.config;
 
-import groove.util.parse.NullParser;
-import groove.util.parse.Parser;
-
 /**
+ * Selection strategy for the next successor of a given state.
  * @author Arend Rensink
  * @version $Revision $
  */
-public enum CountKind implements SettingKey {
-    /** Continue regardless of results found. */
-    ALL("All", "Continue regardless of the number of results", null),
-    /** Halt after the first result. */
-    ONE("One", "Halt after the first result", null),
-    /** User-defined count; 0 means unbounded. */
-    COUNT("Value", "User-defined; 0 means unbounded", Parser.natural),;
+public enum SuccessorKind implements SettingKind<SuccessorKind> {
+    /** First successor. */
+    FIRST("First", "The first unexplored successor"),
+    /** Random successor. */
+    RANDOM("Random", "A random unexplored successor"),
+    /** All successors. */
+    ALL("All", "All successors"),;
 
-    private CountKind(String name, String explanation, Parser<Integer> parser) {
+    private SuccessorKind(String name, String explanation) {
         this.name = name;
         this.explanation = explanation;
-        this.parser = parser == null ? NullParser.instance(Integer.class) : parser;
     }
 
+    /** Returns the name of this search order. */
     @Override
     public String getName() {
         return this.name;
@@ -45,21 +43,9 @@ public enum CountKind implements SettingKey {
     private final String name;
 
     @Override
-    public String getContentName() {
-        return "Result count";
-    }
-
-    @Override
     public String getExplanation() {
         return this.explanation;
     }
 
     private final String explanation;
-
-    @Override
-    public Parser<Integer> parser() {
-        return this.parser;
-    }
-
-    private final Parser<Integer> parser;
 }

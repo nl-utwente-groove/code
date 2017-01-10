@@ -24,12 +24,18 @@ import groove.util.parse.StringHandler;
  * @author Arend Rensink
  */
 public enum ExploreKey implements PropertyKey<Setting<?,?>> {
-    /** The search traversal strategy. */
-    TRAVERSE("traverse", "State space traversal strategy", TraverseKind.DEPTH_FIRST, true),
+    /** The traversal selection strategy. */
+    TRAVERSE("traverse", "Traversal selection strategy", TraverseKind.DEPTH, true),
+    /** The successor selection strategy. */
+    SUCCESSOR("successor", "Successor selection strategy", SuccessorKind.ALL, true),
+    /** The successor selection strategy. */
+    HEURISTIC("heuristic", "Exploration heuristic", HeuristicKind.NONE, true),
+    /** The frontier size. */
+    COST("cost", "Path cost function", CostKind.NONE, true),
+    /** The frontier size. */
+    FRONTIER_SIZE("frontierSize", "Frontier size", FrontierSizeKind.COMPLETE, true),
     /** Model checking settings. */
     CHECKING("checking", "Model checking mode", CheckingKind.NONE, true),
-    /** The acceptor for results. */
-    RANDOM("random", "Pick random successor of explored state?", BooleanKey.FALSE, true),
     /** The acceptor for results. */
     GOAL("accept", "Criterion for results", AcceptorKind.FINAL, true),
     /** Number of results after which to stop exploring. */
@@ -118,10 +124,6 @@ public enum ExploreKey implements PropertyKey<Setting<?,?>> {
                 this.kindMap.put("", CountKind.COUNT);
                 break;
             case ISO:
-            case RANDOM:
-                this.kindMap.put("yes", BooleanKey.TRUE);
-                this.kindMap.put("no", BooleanKey.FALSE);
-                break;
             default:
                 // no mappings
             }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
- * $Id$
+ * $Id: AcceptorKind.java 5811 2016-10-26 15:31:09Z rensink $
  */
 package groove.explore.config;
 
@@ -20,21 +20,21 @@ import groove.util.parse.NullParser;
 import groove.util.parse.Parser;
 
 /**
+ * Key determining the heuristic used during exploration.
  * @author Arend Rensink
  * @version $Revision $
  */
-public enum CountKind implements SettingKey {
-    /** Continue regardless of results found. */
-    ALL("All", "Continue regardless of the number of results", null),
-    /** Halt after the first result. */
-    ONE("One", "Halt after the first result", null),
-    /** User-defined count; 0 means unbounded. */
-    COUNT("Value", "User-defined; 0 means unbounded", Parser.natural),;
+public enum HeuristicKind implements SettingKey {
+    /** Final states. */
+    NONE("none", null, "No heuristic", null),
+    /** States satisfying a graph condition. */
+    NEN("nen", null, "Edge count", null),;
 
-    private CountKind(String name, String explanation, Parser<Integer> parser) {
+    private HeuristicKind(String name, String contentName, String explanation, Parser<?> parser) {
         this.name = name;
+        this.contentName = contentName;
         this.explanation = explanation;
-        this.parser = parser == null ? NullParser.instance(Integer.class) : parser;
+        this.parser = parser == null ? NullParser.instance(Object.class) : parser;
     }
 
     @Override
@@ -46,8 +46,10 @@ public enum CountKind implements SettingKey {
 
     @Override
     public String getContentName() {
-        return "Result count";
+        return this.contentName;
     }
+
+    private final String contentName;
 
     @Override
     public String getExplanation() {
@@ -57,9 +59,9 @@ public enum CountKind implements SettingKey {
     private final String explanation;
 
     @Override
-    public Parser<Integer> parser() {
+    public Parser<?> parser() {
         return this.parser;
     }
 
-    private final Parser<Integer> parser;
+    private final Parser<?> parser;
 }

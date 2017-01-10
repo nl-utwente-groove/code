@@ -69,30 +69,6 @@ public enum CheckingKind implements SettingKey {
     private final Logic logic;
 
     @Override
-    public FormulaSetting getDefaultSetting() {
-        return createSetting(getDefaultValue());
-    }
-
-    @Override
-    public FormulaSetting createSettting() throws IllegalArgumentException {
-        switch (this) {
-        case NONE:
-            return null;
-        case LTL_CHECK:
-        case CTL_CHECK:
-            throw new IllegalArgumentException();
-        default:
-            assert false;
-            return null;
-        }
-    }
-
-    @Override
-    public FormulaSetting createSetting(Object content) throws IllegalArgumentException {
-        return new FormulaSetting(getLogic(), (Formula) content);
-    }
-
-    @Override
     public String getExplanation() {
         return this.explanation;
     }

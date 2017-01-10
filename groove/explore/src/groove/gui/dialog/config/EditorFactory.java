@@ -57,8 +57,6 @@ public class EditorFactory {
             return new ButtonEditor(getDialog(), key, "Property to check");
         case ISO:
             return new CheckBoxEditor(getDialog(), key, "Isomorphicm checking");
-        case RANDOM:
-            return new CheckBoxEditor(getDialog(), key, "Randomisation");
         default:
             assert false;
             return null;
@@ -123,7 +121,6 @@ public class EditorFactory {
             break;
         case ALGEBRA:
         case ISO:
-        case RANDOM:
             // these keys do not have content, hence no holder
             result = new NullEditor(getDialog(), null, key, kind);
             break;

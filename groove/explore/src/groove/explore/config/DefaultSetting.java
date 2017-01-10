@@ -22,16 +22,20 @@ import org.eclipse.jdt.annotation.Nullable;
  * Default implementation of {@link Setting}
  * @author Arend Rensink
  */
-public class DefaultSetting<K extends Enum<K> & SettingKey,C> implements Setting<K,@Nullable C> {
+public class DefaultSetting<K extends SettingKey,C> implements Setting<K,@Nullable C> {
     /** Constructs a value with a given value kind and {@code null} content. */
     protected DefaultSetting(K kind) {
         this(kind, null);
     }
 
-    /** Constructs a value with given value kind and content. */
-    protected DefaultSetting(K kind, @Nullable C content) {
-        assert kind.parser()
-            .isValue(content);
+    /** Constructs a value with given value kind and content.
+     * @throws IllegalArgumentException if the passed-in content is not valid for the value kind
+     */
+    protected DefaultSetting(K kind, @Nullable C content) throws IllegalArgumentException {
+        if (!kind.isValue(content)) {
+            throw new IllegalArgumentException(
+                String.format("'%s' is not a valid value for '%s'", content, this));
+        }
         this.kind = kind;
         this.content = content;
     }

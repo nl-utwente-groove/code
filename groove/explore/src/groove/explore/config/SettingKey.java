@@ -17,7 +17,6 @@
 package groove.explore.config;
 
 import groove.util.parse.ParsableKey;
-import groove.util.parse.Parser;
 
 /**
  * Supertype for the discriminators of {@link Setting}s
@@ -38,17 +37,24 @@ public interface SettingKey extends ParsableKey<Object> {
      * @see #createSetting(Object)
      * @see #getDefaultValue()
      */
-    public Setting<?,?> getDefaultSetting();
+    default public Setting<? extends SettingKey,?> getDefaultSetting() {
+        return createSetting(getDefaultValue());
+    }
 
-    /** Convenience method for {@code createValue(null)}
-     * @throws IllegalArgumentException if {@code null} does not satisfy {@link Parser#isValue}
+    /** Convenience method for {@code createSetting(null)}
+     * @throws IllegalArgumentException if {@code null} does not satisfy {@link #isValue}
      */
-    public Setting<?,?> createSettting() throws IllegalArgumentException;
+    default public Setting<? extends SettingKey,?> createSetting() throws IllegalArgumentException {
+        return createSetting(null);
+    }
 
     /**
      * Creates an exploration value of this kind, and a given content.
      * @param content exploration content; should be compatible with this kind
-     * @throws IllegalArgumentException if {@code content} does not satisfy {@link Parser#isValue}
+     * @throws IllegalArgumentException if {@code content} does not satisfy {@link #isValue}
      */
-    public Setting<?,?> createSetting(Object content) throws IllegalArgumentException;
+    default public Setting<? extends SettingKey,?> createSetting(Object content)
+        throws IllegalArgumentException {
+        return new DefaultSetting<SettingKey,Null>(this);
+    }
 }

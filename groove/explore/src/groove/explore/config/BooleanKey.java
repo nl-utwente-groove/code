@@ -16,14 +16,12 @@
  */
 package groove.explore.config;
 
-import groove.util.parse.Parser;
-
 /**
  * Boolean setting key.
  * @author Arend Rensink
  * @version $Revision $
  */
-public enum BooleanKey implements SettingKey, Setting<BooleanKey,Null> {
+public enum BooleanKey implements SettingKind<BooleanKey> {
     /** Key for the boolean value {@code false}. */
     FALSE,
     /** Key for the boolean value {@code true}. */
@@ -35,51 +33,8 @@ public enum BooleanKey implements SettingKey, Setting<BooleanKey,Null> {
     }
 
     @Override
-    public String getContentName() {
-        return null;
-    }
-
-    @Override
     public String getExplanation() {
         return "Boolean value";
-    }
-
-    @Override
-    public Parser<Null> parser() {
-        return Null.PARSER;
-    }
-
-    @Override
-    public boolean isValue(Object value) {
-        return value == null;
-    }
-
-    @Override
-    public BooleanKey getDefaultSetting() {
-        return createSetting(getDefaultValue());
-    }
-
-    @Override
-    public BooleanKey createSettting() throws IllegalArgumentException {
-        return this;
-    }
-
-    @Override
-    public BooleanKey createSetting(Object content) throws IllegalArgumentException {
-        if (content != null) {
-            throw new IllegalArgumentException();
-        }
-        return this;
-    }
-
-    @Override
-    public BooleanKey getKind() {
-        return this;
-    }
-
-    @Override
-    public Null getContent() {
-        return null;
     }
 
     /** Returns the key for a given boolean value. */

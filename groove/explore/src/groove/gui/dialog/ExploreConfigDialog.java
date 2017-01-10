@@ -110,7 +110,7 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
         // panel with basic settings
         SettingsPanel searchPanel = new SettingsPanel(this, "Search");
         addEditor(searchPanel, ExploreKey.TRAVERSE);
-        addEditor(searchPanel, ExploreKey.RANDOM);
+        //        addEditor(searchPanel, ExploreKey.RANDOM);
         addEditor(searchPanel, ExploreKey.GOAL);
         addEditor(searchPanel, ExploreKey.STOP);
         addTab(result, searchPanel);

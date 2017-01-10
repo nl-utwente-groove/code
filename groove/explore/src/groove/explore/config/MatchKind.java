@@ -61,24 +61,4 @@ public enum MatchKind implements SettingKey {
     }
 
     private final Parser<MatchHint> parser;
-
-    @Override
-    public Setting<MatchKind,MatchHint> getDefaultSetting() {
-        return createSetting(getDefaultValue());
-    }
-
-    @Override
-    public Setting<MatchKind,MatchHint> createSettting() throws IllegalArgumentException {
-        return createSetting(null);
-    }
-
-    @Override
-    public Setting<MatchKind,MatchHint> createSetting(Object content)
-        throws IllegalArgumentException {
-        if (!isValue(content)) {
-            throw new IllegalArgumentException(
-                String.format("'%s' is not a valid value for '%s'", content, this));
-        }
-        return new DefaultSetting<>(this, (MatchHint) content);
-    }
 }

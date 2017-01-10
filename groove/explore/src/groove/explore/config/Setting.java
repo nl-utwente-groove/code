@@ -23,7 +23,7 @@ package groove.explore.config;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface Setting<K extends Enum<K> & SettingKey,C> {
+public interface Setting<K extends SettingKey,C> {
     /** Returns the kind of this setting. */
     public abstract K getKind();
 

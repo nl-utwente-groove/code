@@ -16,41 +16,41 @@
  */
 package groove.explore.config;
 
-import groove.algebra.AlgebraFamily;
+import groove.util.parse.Parser;
 
 /**
- * Kind of exploration strategies.
+ * Setting key with no further parameters, so the keys in themselves serve as settings.
  * @author Arend Rensink
  * @version $Revision $
  */
-public enum AlgebraKind implements SettingKind<AlgebraKind> {
-    /** Depth-first search. */
-    DEFAULT(AlgebraFamily.DEFAULT),
-    /** Breadth-first search. */
-    BIG(AlgebraFamily.BIG),
-    /** Linear search. */
-    POINT(AlgebraFamily.POINT),
-    /** Best-first search, driven by some heuristic. */
-    TERM(AlgebraFamily.TERM),;
-
-    private AlgebraKind(AlgebraFamily family) {
-        this.family = family;
-    }
-
-    /** Returns the algebra family. */
-    public AlgebraFamily getFamily() {
-        return this.family;
-    }
-
-    private final AlgebraFamily family;
-
+public interface SettingKind<K extends Enum<K> & SettingKind<K>>
+    extends SettingKey, Setting<K,Null> {
     @Override
-    public String getName() {
-        return getFamily().getName();
+    default public K createSetting(Object content) throws IllegalArgumentException {
+        if (content != null) {
+            throw new IllegalArgumentException();
+        }
+        return getKind();
     }
 
     @Override
-    public String getExplanation() {
-        return getFamily().getExplanation();
+    default public K getKind() {
+        @SuppressWarnings("unchecked") K result = (K) this;
+        return result;
+    }
+
+    @Override
+    default public String getContentName() {
+        return null;
+    }
+
+    @Override
+    default public Null getContent() {
+        return null;
+    }
+
+    @Override
+    default public Parser<Null> parser() {
+        return Null.PARSER;
     }
 }

@@ -29,29 +29,9 @@ public enum AcceptorKind implements SettingKey {
     /** Final states. */
     FINAL("final", null, "Final states are results", null),
     /** States satisfying a graph condition. */
-    CONDITION("condition", "Property name", "Any state satisfying a given property", StringParser.identity()) {
-        @Override
-        public Setting<?,?> createSettting() throws IllegalArgumentException {
-            throw new IllegalArgumentException();
-        }
-
-        @Override
-        public Setting<?,?> createSetting(Object content) throws IllegalArgumentException {
-            return new DefaultSetting<>(this, content);
-        }
-    },
+    CONDITION("condition", "Property name", "Any state satisfying a given property", StringParser.identity()),
     /** States satisfying a propositional formula. */
-    FORMULA("formula", "Property formula", "Any state satisfying a propositional formula", StringParser.identity()) {
-        @Override
-        public Setting<?,?> createSettting() throws IllegalArgumentException {
-            throw new IllegalArgumentException();
-        }
-
-        @Override
-        public Setting<?,?> createSetting(Object content) throws IllegalArgumentException {
-            return new DefaultSetting<>(this, content);
-        }
-    },
+    FORMULA("formula", "Property formula", "Any state satisfying a propositional formula", StringParser.identity()),
     /** All states. */
     ANY("any", null, "All states are results", null),
     /** No states. */
@@ -77,21 +57,6 @@ public enum AcceptorKind implements SettingKey {
     }
 
     private final String contentName;
-
-    @Override
-    public Setting<?,?> getDefaultSetting() {
-        return createSetting(getDefaultValue());
-    }
-
-    @Override
-    public Setting<?,?> createSettting() throws IllegalArgumentException {
-        return new DefaultSetting<AcceptorKind,Null>(this);
-    }
-
-    @Override
-    public Setting<?,?> createSetting(Object content) throws IllegalArgumentException {
-        return new DefaultSetting<AcceptorKind,Null>(this);
-    }
 
     @Override
     public String getExplanation() {

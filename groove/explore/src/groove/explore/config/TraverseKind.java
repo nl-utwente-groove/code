@@ -16,25 +16,18 @@
  */
 package groove.explore.config;
 
-import groove.util.parse.Parser;
-
 /**
- * Kind of traversal strategies.
+ * Selection strategy for the next state from the frontier.
  * @author Arend Rensink
  * @version $Revision $
  */
-public enum TraverseKind implements SettingKey, Setting<TraverseKind,Null> {
-    /** Depth-first search. */
-    DEPTH_FIRST("DFS", "Depth-first search"),
+public enum TraverseKind implements SettingKind<TraverseKind> {
+    /** Depth-first selection. */
+    DEPTH("Depth first", "Depth-first selection"),
     /** Breadth-first search. */
-    BREADTH_FIRST("BFS", "Breadth-first search"),
-    /** Linear search. */
-    LINEAR("Linear", "Linear search: never backtracks"),
-    /** Best-first search, driven by some heuristic. */
-    BEST_FIRST("Heuristic", "Heuristic search according to a given function"),
-    /** LTL model checking, driven by some property to be checked. */
-    //LTL("LTL", "LTL model checking of a given formula"),
-    ;
+    BREADTH("Breadth first", "Breadth-first selection"),
+    /** Random selection. */
+    RANDOM("Random", "Random selection"),;
 
     private TraverseKind(String name, String explanation) {
         this.name = name;
@@ -50,47 +43,10 @@ public enum TraverseKind implements SettingKey, Setting<TraverseKind,Null> {
     private final String name;
 
     @Override
-    public String getContentName() {
-        return null;
-    }
-
-    @Override
-    public TraverseKind getDefaultSetting() {
-        return createSetting(getDefaultValue());
-    }
-
-    @Override
-    public TraverseKind createSettting() {
-        return this;
-    }
-
-    @Override
-    public TraverseKind createSetting(Object content) throws IllegalArgumentException {
-        if (content != null) {
-            throw new IllegalArgumentException();
-        }
-        return this;
-    }
-
-    @Override
-    public TraverseKind getKind() {
-        return this;
-    }
-
-    @Override
-    public Null getContent() {
-        return null;
-    }
-
-    @Override
     public String getExplanation() {
         return this.explanation;
     }
 
     private final String explanation;
 
-    @Override
-    public Parser<Null> parser() {
-        return Null.PARSER;
-    }
 }
