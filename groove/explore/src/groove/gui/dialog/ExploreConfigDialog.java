@@ -112,16 +112,16 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
         addEditor(searchPanel, ExploreKey.TRAVERSE);
         //        addEditor(searchPanel, ExploreKey.RANDOM);
         addEditor(searchPanel, ExploreKey.GOAL);
-        addEditor(searchPanel, ExploreKey.STOP);
+        addEditor(searchPanel, ExploreKey.RESULT_COUNT);
         addTab(result, searchPanel);
         // panel with basic settings
         SettingsPanel checkingPanel = new SettingsPanel(this, "Model Checking");
-        addEditor(checkingPanel, ExploreKey.CHECKING);
+        //        addEditor(checkingPanel, ExploreKey.CHECKING);
         addTab(result, checkingPanel);
         // panel with advanced settings
         SettingsPanel advancedPanel = new SettingsPanel(this, "Advanced");
         addEditor(advancedPanel, ExploreKey.ALGEBRA);
-        addEditor(advancedPanel, ExploreKey.ISO);
+        addEditor(advancedPanel, ExploreKey.EQUATE);
         addEditor(advancedPanel, ExploreKey.MATCHER);
         addTab(result, advancedPanel);
         return result;

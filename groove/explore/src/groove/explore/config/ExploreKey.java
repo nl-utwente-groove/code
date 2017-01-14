@@ -34,21 +34,22 @@ public enum ExploreKey implements PropertyKey<Setting<?,?>> {
     COST("cost", "Path cost function", CostKind.NONE, true),
     /** The frontier size. */
     FRONTIER_SIZE("frontierSize", "Frontier size", FrontierSizeKind.COMPLETE, true),
-    /** Model checking settings. */
-    CHECKING("checking", "Model checking mode", CheckingKind.NONE, true),
     /** The acceptor for results. */
-    GOAL("accept", "Criterion for results", AcceptorKind.FINAL, true),
+    GOAL("goal", "Criterion for results", GoalKind.FINAL, true),
+    /** The acceptor for results. */
+    RESULT_TYPE("result", "Type of a result", ResultTypeKind.STATE, true),
     /** Number of results after which to stop exploring. */
-    STOP("count", "Result count before exploration halts", CountKind.ALL, true),
+    RESULT_COUNT("count", "Result count before exploration halts", CountKind.ALL, true),
+    /** Boundary condition at which to stop exploring. */
+    BOUND("bound", "Boundary at which to stop exploring", BoundKind.NONE, true),
+    /** Boundary condition at which to stop exploring. */
+    PERSISTENCE("persistence", "Remembering explored states", PersistenceKind.ALL, true),
     /** The matching strategy. */
     MATCHER("match", "Match strategy", MatchKind.PLAN, true),
     /** The algebra for data values. */
     ALGEBRA("algebra", "Algebra for data values", AlgebraKind.DEFAULT, true),
-    /** Collapsing of isomorphic states. */
-    ISO("iso", "Collapse isomorphic states?", BooleanKey.TRUE, true),
-    /** Conditions for where to stop exploring. */
-    //BOUNDARY("bound", "Boundary conditions for exploration", null, false),
-    ;
+    /** Collapsing of states. */
+    EQUATE("collapse", "When are states equated", EquateKind.ISO, true),;
 
     private ExploreKey(String name, String explanation, SettingKey defaultKind, boolean singular) {
         this.name = name;
@@ -119,14 +120,6 @@ public enum ExploreKey implements PropertyKey<Setting<?,?>> {
     public KindMap getKindMap() {
         if (this.kindMap == null) {
             this.kindMap = new KindMap(getKindType());
-            switch (this) {
-            case STOP:
-                this.kindMap.put("", CountKind.COUNT);
-                break;
-            case ISO:
-            default:
-                // no mappings
-            }
         }
         return this.kindMap;
     }

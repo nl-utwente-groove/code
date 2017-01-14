@@ -32,7 +32,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 
 import groove.explore.config.BooleanKey;
-import groove.explore.config.CheckingKind;
 import groove.explore.config.ExploreKey;
 import groove.explore.config.SettingKey;
 import groove.gui.display.DismissDelayer;
@@ -61,12 +60,12 @@ public class HelpFactory {
     public JComponent createHelp(ExploreKey key, SettingKey kind) {
         JComponent result;
         switch (key) {
-        case ISO:
+        case EQUATE:
             result = createIsoHelp((BooleanKey) kind);
             break;
-        case CHECKING:
-            result = createCheckingHelp((CheckingKind) kind);
-            break;
+        //        case CHECKING:
+        //            result = createCheckingHelp((CheckingKind) kind);
+        //            break;
         default:
             result = createDefaultHelp(key);
         }
@@ -102,7 +101,7 @@ public class HelpFactory {
     /** Creates the help panel for the isomorphism checking setting. */
     protected JTextPane createIsoHelp(BooleanKey kind) {
         JTextPane result = createTextPane();
-        StringBuilder text = getExplanation(ExploreKey.ISO);
+        StringBuilder text = getExplanation(ExploreKey.EQUATE);
         text.append("Determines if isomorphic states are detected and collapsed");
         text.append(HTMLConverter.HTML_LINEBREAK);
         text.append(HTMLConverter.HTML_LINEBREAK);
@@ -125,20 +124,20 @@ public class HelpFactory {
         result.setText(text.toString());
         return result;
     }
-
-    /** Creates a help panel for a given model checking kind. */
-    protected JComponent createCheckingHelp(CheckingKind kind) {
-        JComponent result;
-        switch (kind) {
-        case CTL_CHECK:
-        case LTL_CHECK:
-            result = createSyntaxPanel(kind.getLogic());
-            break;
-        default:
-            result = createDefaultHelp(ExploreKey.CHECKING);
-        }
-        return result;
-    }
+    //
+    //    /** Creates a help panel for a given model checking kind. */
+    //    protected JComponent createCheckingHelp(CheckingKind kind) {
+    //        JComponent result;
+    //        switch (kind) {
+    //        case CTL_CHECK:
+    //        case LTL_CHECK:
+    //            result = createSyntaxPanel(kind.getLogic());
+    //            break;
+    //        default:
+    //            result = createDefaultHelp(ExploreKey.CHECKING);
+    //        }
+    //        return result;
+    //    }
 
     private JComponent createSyntaxPanel(Logic logic) {
         final JList<String> list = new JList<>();

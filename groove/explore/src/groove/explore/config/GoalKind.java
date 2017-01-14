@@ -25,19 +25,21 @@ import groove.util.parse.StringParser;
  * @author Arend Rensink
  * @version $Revision $
  */
-public enum AcceptorKind implements SettingKey {
+public enum GoalKind implements SettingKey {
     /** Final states. */
     FINAL("final", null, "Final states are results", null),
     /** States satisfying a graph condition. */
-    CONDITION("condition", "Property name", "Any state satisfying a given property", StringParser.identity()),
-    /** States satisfying a propositional formula. */
-    FORMULA("formula", "Property formula", "Any state satisfying a propositional formula", StringParser.identity()),
-    /** All states. */
-    ANY("any", null, "All states are results", null),
+    CONDITION("condition", "Condition name", "Result determined by rule condition", StringParser.identity()),
+    /** States satisfying a propositional state formula. */
+    FORMULA("formula", "State formula", "Result determined by a propositional formula", StringParser.identity()),
+    /** States satisfying a propositional state formula. */
+    LTL("ltl", "LTL formula", "Result determined by an LTL formula", StringParser.identity()),
+    /** States satisfying a propositional state formula. */
+    CTL("ctl", "CTL formula", "Result determined by a CTL formula", StringParser.identity()),
     /** No states. */
     NONE("none", null, "No state is considered a result", null),;
 
-    private AcceptorKind(String name, String contentName, String explanation, Parser<?> parser) {
+    private GoalKind(String name, String contentName, String explanation, Parser<?> parser) {
         this.name = name;
         this.contentName = contentName;
         this.explanation = explanation;

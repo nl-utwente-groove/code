@@ -18,10 +18,9 @@ package groove.gui.dialog.config;
 
 import javax.swing.JPanel;
 
-import groove.explore.config.AcceptorKind;
-import groove.explore.config.CheckingKind;
 import groove.explore.config.CountKind;
 import groove.explore.config.ExploreKey;
+import groove.explore.config.GoalKind;
 import groove.explore.config.MatchKind;
 import groove.explore.config.SettingKey;
 import groove.explore.config.TraverseKind;
@@ -47,15 +46,15 @@ public class EditorFactory {
             return new ButtonEditor(getDialog(), key, "Acceptor");
         case ALGEBRA:
             return new ButtonEditor(getDialog(), key, "Algebra for data values");
-        case STOP:
+        case RESULT_COUNT:
             return new ButtonEditor(getDialog(), key, "Result count");
         case MATCHER:
             return new ButtonEditor(getDialog(), key, "Match strategy");
         case TRAVERSE:
             return new ButtonEditor(getDialog(), key, "Traversal strategy");
-        case CHECKING:
-            return new ButtonEditor(getDialog(), key, "Property to check");
-        case ISO:
+        //        case CHECKING:
+        //            return new ButtonEditor(getDialog(), key, "Property to check");
+        case EQUATE:
             return new CheckBoxEditor(getDialog(), key, "Isomorphicm checking");
         default:
             assert false;
@@ -71,7 +70,7 @@ public class EditorFactory {
         SettingEditor result;
         switch (key) {
         case GOAL:
-            switch ((AcceptorKind) kind) {
+            switch ((GoalKind) kind) {
             case CONDITION:
                 result = new TextFieldEditor(getDialog(), holder, key, kind);
                 break;
@@ -82,7 +81,7 @@ public class EditorFactory {
                 result = null;
             }
             break;
-        case STOP:
+        case RESULT_COUNT:
             switch ((CountKind) kind) {
             case COUNT:
                 result = new TextFieldEditor(getDialog(), holder, key, kind);
@@ -109,18 +108,18 @@ public class EditorFactory {
                 //break;
             }
             break;
-        case CHECKING:
-            switch ((CheckingKind) kind) {
-            case LTL_CHECK:
-            case CTL_CHECK:
-                result = new TextFieldEditor(getDialog(), holder, key, kind);
-                break;
-            default:
-                result = null;
-            }
-            break;
+        //        case CHECKING:
+        //            switch ((CheckingKind) kind) {
+        //            case LTL_CHECK:
+        //            case CTL_CHECK:
+        //                result = new TextFieldEditor(getDialog(), holder, key, kind);
+        //                break;
+        //            default:
+        //                result = null;
+        //            }
+        //            break;
         case ALGEBRA:
-        case ISO:
+        case EQUATE:
             // these keys do not have content, hence no holder
             result = new NullEditor(getDialog(), null, key, kind);
             break;
