@@ -241,10 +241,12 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
             if (!complete && getActualFrame().isTrial()) {
                 setFrame(getPrimeFrame());
             }
-            setStatus(Flag.TRANSIENT, getActualFrame().isTransient());
-            setStatus(Flag.INTERNAL, getActualFrame().isInternal());
-            setStatus(Flag.ERROR, getActualFrame().isError());
-            setStatus(Flag.ABSENT, getActualFrame().isRemoved());
+            // the flag below are set when the actual frame is updated;
+            // no need to do it again
+            //            setStatus(Flag.TRANSIENT, getActualFrame().isTransient());
+            //            setStatus(Flag.INTERNAL, getActualFrame().isInternal());
+            //            setStatus(Flag.ERROR, getActualFrame().isError());
+            //            setStatus(Flag.ABSENT, getActualFrame().isRemoved());
             fireStatus(Flag.CLOSED, oldStatus);
             getCache().notifyClosed();
         }
@@ -276,8 +278,10 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         boolean result = setStatus(Flag.DONE, true);
         if (result) {
             setAbsence(absence);
-            setStatus(Flag.ERROR, getActualFrame().isError());
-            setStatus(Flag.ABSENT, getActualFrame().isRemoved());
+            // the flag below are set when the actual frame is updated;
+            // no need to do it again
+            //            setStatus(Flag.ERROR, getActualFrame().isError());
+            //            setStatus(Flag.ABSENT, getActualFrame().isRemoved());
             setStatus(Flag.FINAL, getActualFrame().isFinal());
             checkDoneConstraints();
             getCache().notifyDone();
@@ -437,6 +441,12 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         this.actualFrame = frame;
         setStatus(Flag.TRANSIENT, frame.isTransient());
         setStatus(Flag.INTERNAL, frame.isInternal());
+        if (frame.isError()) {
+            setStatus(Flag.ERROR, true);
+        }
+        if (frame.isRemoved()) {
+            setStatus(Flag.ABSENT, true);
+        }
     }
 
     @Override

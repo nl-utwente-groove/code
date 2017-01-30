@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 import groove.control.instance.Frame;
+import groove.grammar.CheckPolicy;
 import groove.grammar.host.HostGraph;
 import groove.graph.Node;
 import groove.lts.Status.Flag;
@@ -263,8 +264,9 @@ public interface GraphState extends Node {
 
     /**
      * Indicates if this state is known to be not properly part of the state
-     * space. This is the case if the state is done and not present.
-     * A special case of absence is if the state is erroneous.
+     * space. This is the case if the state is done and has a positive absence
+     * level, or if it is absent because of the violation of some constraint
+     * (in combination with a {@link CheckPolicy#REMOVE} policy).
      * @see #isDone()
      * @see #getAbsence()
      */
@@ -276,8 +278,8 @@ public interface GraphState extends Node {
      * Indicates the absence level, which is defined as the lowest
      * transient depth of the known reachable states.
      * This is maximal ({@link Status#MAX_ABSENCE}) if the state is
-     * erroneous, and 0 if the state is non-transient (hence present).
-     * The state is <i>absent</i> if it is done and has a positive absence level.
+     * erroneous, and 0 if the state is non-transient.
+     * A state that is done and has a positive absence level is absent.
      * @see #isDone()
      * @see #isAbsent()
      */
@@ -285,7 +287,7 @@ public interface GraphState extends Node {
 
     /**
      * Indicates if this state is properly part of the state space.
-     * Convenience method for <code>getAbsence() == 0</code>.
+     * Convenience method for <code>getAbsence() == 0 && !isAbsent()</code>.
      * If a state is done, it is either present or absent.
      * @see #isDone()
      * @see #isAbsent()
