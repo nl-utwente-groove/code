@@ -14,22 +14,30 @@
  *
  * $Id$
  */
-package groove.explore.config;
+package groove.explore;
+
+import java.util.Collection;
 
 /**
- * Supertype for all key/value pairs that can be assigned to {@link ExploreKey}s.
- * @param <K> type of the keys for this setting
- * @param <C> type of the content for this setting
+ * Frontier of incompletely explored states.
+ * The ordering of the frontier determines part of the exploration strategy.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface Setting<K extends SettingKey,C> {
-    /** Returns the kind of this setting. */
-    public abstract K getKind();
+interface ExploreFrontier {
+    /** Indicates there is a next state to be explored in the frontier. */
+    boolean hasNext();
+
+    /** Returns the next explore point of the frontier. */
+    ExplorePoint next();
+
+    /** Adds an explore point to the frontier. */
+    void add(ExplorePoint point);
 
     /**
-     * Returns the content of the setting.
-     * May be {@code null}, if this is allowed by the setting key.
+     * Adds a collection of explore points,
+     * taking the frontier size into account.
+     * @param points the explore points to be added
      */
-    public abstract C getContent();
+    void addAll(Collection<ExplorePoint> points);
 }

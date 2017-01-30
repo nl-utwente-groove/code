@@ -49,7 +49,7 @@ public enum ExploreKey implements PropertyKey<Setting<?,?>> {
     /** The algebra for data values. */
     ALGEBRA("algebra", "Algebra for data values", AlgebraKind.DEFAULT, true),
     /** Collapsing of states. */
-    EQUATE("collapse", "When are states equated", EquateKind.ISO, true),;
+    EQUATE("equate", "When are states equated", EquateKind.ISO, true),;
 
     private ExploreKey(String name, String explanation, SettingKey defaultKind, boolean singular) {
         this.name = name;

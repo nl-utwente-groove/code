@@ -16,20 +16,21 @@
  */
 package groove.explore.config;
 
+import org.eclipse.jdt.annotation.NonNull;
+
+import groove.explore.ExploreGoal;
+
 /**
- * Supertype for all key/value pairs that can be assigned to {@link ExploreKey}s.
- * @param <K> type of the keys for this setting
- * @param <C> type of the content for this setting
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface Setting<K extends SettingKey,C> {
-    /** Returns the kind of this setting. */
-    public abstract K getKind();
-
+public class GoalSetting extends DefaultSetting<GoalKind,ExploreGoal> {
     /**
-     * Returns the content of the setting.
-     * May be {@code null}, if this is allowed by the setting key.
+     * Constructs a goal setting
+     * @param kind goal kind for which this is a setting
+     * @param content the goal property
      */
-    public abstract C getContent();
+    public GoalSetting(GoalKind kind, @NonNull ExploreGoal content) {
+        super(kind, content);
+    }
 }

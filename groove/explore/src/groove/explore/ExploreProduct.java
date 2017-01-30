@@ -14,22 +14,14 @@
  *
  * $Id$
  */
-package groove.explore.config;
+package groove.explore;
 
 /**
- * Supertype for all key/value pairs that can be assigned to {@link ExploreKey}s.
- * @param <K> type of the keys for this setting
- * @param <C> type of the content for this setting
+ * Type wrapping a single product of an exploration.
+ * Exploration products are collected into an exploration outcome.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface Setting<K extends SettingKey,C> {
-    /** Returns the kind of this setting. */
-    public abstract K getKind();
-
-    /**
-     * Returns the content of the setting.
-     * May be {@code null}, if this is allowed by the setting key.
-     */
-    public abstract C getContent();
+public interface ExploreProduct {
+    // empty
 }

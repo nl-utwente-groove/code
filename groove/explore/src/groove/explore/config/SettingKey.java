@@ -55,6 +55,6 @@ public interface SettingKey extends ParsableKey<Object> {
      */
     default public Setting<? extends SettingKey,?> createSetting(Object content)
         throws IllegalArgumentException {
-        return new DefaultSetting<SettingKey,Null>(this);
+        return new DefaultSetting<>(this, content);
     }
 }

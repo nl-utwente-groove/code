@@ -31,7 +31,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 
-import groove.explore.config.BooleanKey;
+import groove.explore.config.EquateKind;
 import groove.explore.config.ExploreKey;
 import groove.explore.config.SettingKey;
 import groove.gui.display.DismissDelayer;
@@ -61,7 +61,7 @@ public class HelpFactory {
         JComponent result;
         switch (key) {
         case EQUATE:
-            result = createIsoHelp((BooleanKey) kind);
+            result = createIsoHelp((EquateKind) kind);
             break;
         //        case CHECKING:
         //            result = createCheckingHelp((CheckingKind) kind);
@@ -99,21 +99,27 @@ public class HelpFactory {
     //    }
 
     /** Creates the help panel for the isomorphism checking setting. */
-    protected JTextPane createIsoHelp(BooleanKey kind) {
+    protected JTextPane createIsoHelp(EquateKind kind) {
         JTextPane result = createTextPane();
         StringBuilder text = getExplanation(ExploreKey.EQUATE);
-        text.append("Determines if isomorphic states are detected and collapsed");
+        text.append("Determines when states are equated and collapsed");
         text.append(HTMLConverter.HTML_LINEBREAK);
         text.append(HTMLConverter.HTML_LINEBREAK);
         switch (kind) {
-        case FALSE:
+        case EQUAL:
             text.append(
-                "Currently set to <b>false</b>, meaning that no isomorphism check is performed. "
+                "Currently set to <b>equal</b>, meaning that no isomorphism check is performed. "
                     + "This will speed up exploration, but may result in a far greater number of states "
                     + "if there is any symmetry.");
             break;
-        case TRUE:
-            text.append("Currently set to <b>true</b>, meaning that a state is only added if no "
+        case HASH:
+            text.append("Currently set to <b>hash</b>, meaning that a state is only added if no "
+                + "state witht he same hash code has been discovered previously. If same-hash state has been "
+                + "found, that is used instead. Since equal hash does not always imply isomorphism,"
+                + "exporation will be lossy.");
+            break;
+        case ISO:
+            text.append("Currently set to <b>iso</b>, meaning that a state is only added if no "
                 + "isomorphic state has been discovered previously. If an isomorphic state has been "
                 + "found, that is used instead. If states have self-symmetry, this will reduce the state "
                 + "space; however, the isomorphism check itself is costly.");

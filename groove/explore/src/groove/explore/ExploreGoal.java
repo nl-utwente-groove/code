@@ -14,22 +14,18 @@
  *
  * $Id$
  */
-package groove.explore.config;
+package groove.explore;
+
+import java.util.function.Predicate;
+
+import groove.lts.GraphState;
 
 /**
- * Supertype for all key/value pairs that can be assigned to {@link ExploreKey}s.
- * @param <K> type of the keys for this setting
- * @param <C> type of the content for this setting
+ * Interface wrapping the ability to test a graph state for satisfaction
+ * of an exploration goal.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface Setting<K extends SettingKey,C> {
-    /** Returns the kind of this setting. */
-    public abstract K getKind();
-
-    /**
-     * Returns the content of the setting.
-     * May be {@code null}, if this is allowed by the setting key.
-     */
-    public abstract C getContent();
+public interface ExploreGoal extends Predicate<GraphState> {
+    // empty
 }

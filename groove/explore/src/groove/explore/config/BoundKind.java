@@ -16,6 +16,7 @@
  */
 package groove.explore.config;
 
+import groove.util.parse.NullParser;
 import groove.util.parse.Parser;
 import groove.util.parse.StringParser;
 
@@ -26,17 +27,18 @@ import groove.util.parse.StringParser;
  */
 public enum BoundKind implements SettingKey {
     /** There is no bound. */
-    NONE("none", "There is no bound"),
+    NONE("none", "There is no bound", null),
     /** The bound equals the path cost. */
-    COST("cost", "The bound equals the path cost"),
+    COST("cost", "The bound equals the path cost", StringParser.identity()),
     /** The bound equals the path cost. */
-    SIZE("size", "The bound is given by graph size"),
+    SIZE("size", "The bound is given by graph size", StringParser.identity()),
     /** The bound equals the path cost. */
-    COUNTS("counts", "The bound is determined by element counts"),;
+    COUNTS("counts", "The bound is determined by element counts", StringParser.identity()),;
 
-    private BoundKind(String name, String explanation) {
+    private BoundKind(String name, String explanation, Parser<?> parser) {
         this.name = name;
         this.explanation = explanation;
+        this.parser = parser == null ? NullParser.instance(Object.class) : parser;
     }
 
     /** Returns the name of this search order. */
@@ -56,8 +58,10 @@ public enum BoundKind implements SettingKey {
 
     @Override
     public Parser<? extends Object> parser() {
-        return StringParser.identity();
+        return this.parser;
     }
+
+    private final Parser<?> parser;
 
     @Override
     public String getContentName() {

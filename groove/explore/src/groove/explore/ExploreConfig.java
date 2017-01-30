@@ -16,15 +16,19 @@
  */
 package groove.explore;
 
-import groove.explore.config.ExploreKey;
-import groove.explore.config.Setting;
-import groove.explore.config.TraverseKind;
-import groove.util.parse.FormatException;
-import groove.util.parse.StringHandler;
-
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Properties;
+
+import groove.explore.config.ExploreKey;
+import groove.explore.config.FrontierSizeKind;
+import groove.explore.config.GoalSetting;
+import groove.explore.config.Setting;
+import groove.explore.config.SuccessorKind;
+import groove.explore.config.TraverseKind;
+import groove.util.Exceptions;
+import groove.util.parse.FormatException;
+import groove.util.parse.StringHandler;
 
 /**
  * Collection of all properties influencing the exploration of a GTS.
@@ -46,14 +50,39 @@ public class ExploreConfig {
         }
     }
 
-    /** Returns the currently set search strategy. */
-    public TraverseKind getStrategy() {
+    /** Returns the currently set traversal strategy. */
+    public TraverseKind getTraversal() {
         return (TraverseKind) this.pars.get(ExploreKey.TRAVERSE);
     }
 
-    /** Sets the search strategy to a non-{@code null} value. */
-    public void setStrategy(TraverseKind order) {
+    /** Sets the traversal strategy to a non-{@code null} value. */
+    public void setTraversal(TraverseKind order) {
         this.pars.put(ExploreKey.TRAVERSE, order);
+    }
+
+    /** Returns the currently set successor strategy. */
+    public SuccessorKind getSuccessor() {
+        return (SuccessorKind) this.pars.get(ExploreKey.SUCCESSOR);
+    }
+
+    /** Returns the goal setting of this configuration. */
+    public GoalSetting getGoal() {
+        return (GoalSetting) this.pars.get(ExploreKey.GOAL);
+    }
+
+    /** Returns the maximum size of the frontier, or {@code 0} if there is no maximum. */
+    public int getFrontierSize() {
+        Setting<?,?> setting = this.pars.get(ExploreKey.FRONTIER_SIZE);
+        switch ((FrontierSizeKind) setting.getKind()) {
+        case BEAM:
+            return (Integer) setting.getContent();
+        case COMPLETE:
+            return 0;
+        case SINGLE:
+            return 1;
+        default:
+            throw Exceptions.UNREACHABLE;
+        }
     }
 
     /** Returns the current setting for a given key. */
@@ -75,14 +104,16 @@ public class ExploreConfig {
         for (Map.Entry<ExploreKey,Setting<?,?>> e : this.pars.entrySet()) {
             ExploreKey key = e.getKey();
             Setting<?,?> setting = e.getValue();
-            if (key.parser().isDefault(setting)) {
+            if (key.parser()
+                .isDefault(setting)) {
                 continue;
             }
             result.append(OPTION);
             StringBuilder arg = new StringBuilder();
             arg.append(key.getName());
             arg.append(SEPARATOR);
-            arg.append(key.parser().toParsableString(setting));
+            arg.append(key.parser()
+                .toParsableString(setting));
             if (arg.indexOf(" ") > 0) {
                 result.append(StringHandler.toQuoted(arg.toString(), '"'));
             } else {
@@ -90,7 +121,8 @@ public class ExploreConfig {
             }
             result.append(" ");
         }
-        return result.toString().trim();
+        return result.toString()
+            .trim();
     }
 
     /** Converts this configuration into a properties map. */
@@ -99,8 +131,10 @@ public class ExploreConfig {
         for (Map.Entry<ExploreKey,Setting<?,?>> e : this.pars.entrySet()) {
             ExploreKey key = e.getKey();
             Setting<?,?> setting = e.getValue();
-            if (!key.parser().isDefault(setting)) {
-                result.setProperty(key.getName(), key.parser().toParsableString(setting));
+            if (!key.parser()
+                .isDefault(setting)) {
+                result.setProperty(key.getName(), key.parser()
+                    .toParsableString(setting));
             }
         }
         return result;
@@ -114,7 +148,8 @@ public class ExploreConfig {
         for (ExploreKey key : ExploreKey.values()) {
             String value = props.getProperty(key.getName());
             try {
-                put(key, key.parser().parse(value));
+                put(key, key.parser()
+                    .parse(value));
             } catch (FormatException exc) {
                 // skip this key
             }
@@ -123,7 +158,7 @@ public class ExploreConfig {
 
     @Override
     public String toString() {
-        return "ExploreConfig[" + this.pars + "]";
+        return "ExploreConfig:" + this.pars.values();
     }
 
     @Override

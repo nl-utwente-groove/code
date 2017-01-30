@@ -26,7 +26,7 @@ import groove.util.parse.FormatException;
 import groove.util.parse.NullParser;
 
 /**
- * Editor for the null content.
+ * Editor for null content.
  * @author Arend Rensink
  * @version $Revision $
  */

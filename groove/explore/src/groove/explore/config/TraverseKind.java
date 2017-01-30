@@ -18,6 +18,7 @@ package groove.explore.config;
 
 /**
  * Selection strategy for the next state from the frontier.
+ * Only used to select among states with the same heuristic value.
  * @author Arend Rensink
  * @version $Revision $
  */

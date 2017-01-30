@@ -27,7 +27,7 @@ public enum SuccessorKind implements SettingKind<SuccessorKind> {
     /** Random successor. */
     RANDOM("Random", "A random unexplored successor"),
     /** All successors. */
-    ALL("All", "All successors"),;
+    ALL("All", "All successors (in natural order)"),;
 
     private SuccessorKind(String name, String explanation) {
         this.name = name;
