@@ -44,8 +44,8 @@ public class FinalStateAcceptor extends Acceptor {
     }
 
     @Override
-    public void statusUpdate(GTS gts, GraphState state, Flag flag, int oldStatus) {
-        if (!Flag.FINAL.test(oldStatus) && state.isFinal()) {
+    public void statusUpdate(GTS gts, GraphState state, int change) {
+        if (Flag.FINAL.test(change)) {
             getResult().addState(state);
         }
     }

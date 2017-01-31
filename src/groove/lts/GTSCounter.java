@@ -16,12 +16,12 @@
  */
 package groove.lts;
 
-import groove.lts.Status.Flag;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import groove.lts.Status.Flag;
 
 /** Class counting various statistics of a GTS under exploration. */
 public class GTSCounter implements GTSListener {
@@ -100,16 +100,22 @@ public class GTSCounter implements GTSListener {
         if (target.isAbsent()) {
             this.absentTransitionCount++;
         } else if (trans instanceof RuleTransition && !target.isDone()) {
-            this.inTransMap.get(target).add((RuleTransition) trans);
+            this.inTransMap.get(target)
+                .add((RuleTransition) trans);
         }
     }
 
     @Override
-    public void statusUpdate(GTS gts, GraphState state, Flag flag, int oldStatus) {
-        this.count[flag.ordinal()]++;
-        if (flag == Flag.CLOSED && state.isInternalState()) {
+    public void statusUpdate(GTS gts, GraphState state, int change) {
+        for (Flag flag : Flag.values()) {
+            if (flag.test(change)) {
+                this.count[flag.ordinal()]++;
+            }
+        }
+        if (Flag.CLOSED.test(change) && state.isInternalState()) {
             this.recipeStageCount++;
-        } else if (flag == Flag.DONE) {
+        }
+        if (Flag.DONE.test(change)) {
             List<RuleTransition> inTrans = this.inTransMap.remove(state);
             if (state.isAbsent()) {
                 this.absentTransitionCount += inTrans.size();
@@ -130,7 +136,8 @@ public class GTSCounter implements GTSListener {
 
     /** Returns the number of final states in the GTS. */
     public int getFinalStateCount() {
-        return this.gts.getFinalStates().size();
+        return this.gts.getFinalStates()
+            .size();
     }
 
     /** Returns the number of incompletely explored states in the GTS. */
@@ -175,6 +182,5 @@ public class GTSCounter implements GTSListener {
     private int recipeStepCount;
     private int ruleTransitionCount;
     private int absentTransitionCount;
-    private final Map<GraphState,List<RuleTransition>> inTransMap =
-            new HashMap<>();
+    private final Map<GraphState,List<RuleTransition>> inTransMap = new HashMap<>();
 }
