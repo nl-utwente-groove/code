@@ -72,7 +72,7 @@ import groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GTS extends AGraph<GraphState,GraphTransition>implements Cloneable {
+public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable {
     /** Debug flag controlling whether states are compared for control location equality. */
     protected final static boolean CHECK_CONTROL_LOCATION = true;
     /**
@@ -345,8 +345,7 @@ public class GTS extends AGraph<GraphState,GraphTransition>implements Cloneable 
         return result;
     }
 
-    private final Map<Flag,List<GraphState>> statesMap =
-        new EnumMap<>(Flag.class);
+    private final Map<Flag,List<GraphState>> statesMap = new EnumMap<>(Flag.class);
 
     /**
      * Indicates if there are states with a given flag.
@@ -538,11 +537,9 @@ public class GTS extends AGraph<GraphState,GraphTransition>implements Cloneable 
     /**
      * Notifies all listeners of a change in status of a given state.
      * @param state the state of which the status has changed
-     * @param flag the flag that is indicative of the change
-     * @param oldStatus status
+     * @param oldStatus status before the reported change
      */
-    protected void fireUpdateState(GraphState state, Flag flag, int oldStatus) {
-        assert flag.isChange();
+    protected void fireUpdateState(GraphState state, int oldStatus) {
         this.transients |= state.isTransient();
         this.absents |= state.isAbsent();
         boolean wasReal = Status.isReal(oldStatus);
@@ -569,8 +566,9 @@ public class GTS extends AGraph<GraphState,GraphTransition>implements Cloneable 
                 }
             }
         }
+        int change = state.getStatus() ^ oldStatus;
         for (GTSListener listener : getGraphListeners()) {
-            listener.statusUpdate(this, state, flag, oldStatus);
+            listener.statusUpdate(this, state, change);
         }
         if (state.isError()) {
             FormatErrorSet errors = new FormatErrorSet();

@@ -39,11 +39,5 @@ public class RandomNewStateChooser implements ProductListener {
         this.rc.show(state);
     }
 
-    @Override
-    public void closeUpdate(ProductStateSet gts, ProductState state) {
-        // does nothing
-    }
-
-    private final RandomChooserInSequence<ProductState> rc =
-        new RandomChooserInSequence<>();
+    private final RandomChooserInSequence<ProductState> rc = new RandomChooserInSequence<>();
 }

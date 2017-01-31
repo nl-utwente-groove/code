@@ -57,8 +57,8 @@ public class AnyStateAcceptor extends Acceptor {
     }
 
     @Override
-    public void statusUpdate(GTS graph, GraphState explored, Flag flag, int oldStatus) {
-        if (flag == Flag.DONE && explored.isRealState()) {
+    public void statusUpdate(GTS graph, GraphState explored, int change) {
+        if (Flag.DONE.test(change) && explored.isRealState()) {
             getResult().addState(explored);
         }
     }

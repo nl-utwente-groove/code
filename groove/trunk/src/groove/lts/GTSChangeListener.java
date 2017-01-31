@@ -16,8 +16,6 @@
  */
 package groove.lts;
 
-import groove.lts.Status.Flag;
-
 /**
  * LTS listener to observe changes to the GTS.
  */
@@ -52,7 +50,7 @@ public class GTSChangeListener implements GTSListener {
     }
 
     @Override
-    public void statusUpdate(GTS graph, GraphState explored, Flag flag, int oldStatus) {
+    public void statusUpdate(GTS graph, GraphState explored, int change) {
         this.changed = true;
     }
 

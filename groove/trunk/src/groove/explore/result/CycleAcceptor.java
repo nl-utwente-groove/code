@@ -26,7 +26,6 @@ import groove.explore.strategy.LTLStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.Status.Flag;
 import groove.verify.ModelChecking.Outcome;
 import groove.verify.ModelChecking.Record;
 import groove.verify.ProductListener;
@@ -75,18 +74,9 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
     }
 
     @Override
-    public void statusUpdate(GTS gts, GraphState state, Flag flag, int oldStatus) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void addUpdate(ProductStateSet gts, ProductState state) {
-        // does nothing
-    }
-
-    @Override
     public void closeUpdate(ProductStateSet gts, ProductState state) {
-        if (state.getBuchiLocation().isAccepting()) {
+        if (state.getBuchiLocation()
+            .isAccepting()) {
             Outcome event = redDFS(state);
             if (event != Outcome.OK) {
                 // put the counter-example in the result
