@@ -63,10 +63,17 @@ public class Version {
     }
 
     /** Build number (timestamp with format yyyyMMddHHmmssSSS). */
-    public static final String BUILD = "20160720";
+    public static final String BUILD = "20170206";
 
     /** Release date of this version (date format dd.MM.yyyy). */
-    public static final String DATE = "20.07.2016";
+    public static final String DATE;
+
+    static {
+        String year = BUILD.substring(0, 4);
+        String month = BUILD.substring(4, 6);
+        String day = BUILD.substring(6, 8);
+        DATE = day + "." + month + "." + year;
+    }
 
     /**
      * Groove Version number of format x.y.z, with
@@ -77,7 +84,7 @@ public class Version {
      * </ul>
      * A '+' sign at the end of the number indicates a development version.
      */
-    public static final String NUMBER = "5.5.6+";
+    public static final String NUMBER = "5.5.8+";
 
     /** Minimum Java JRE version required. */
     static public final String NUMBER_JAVAMIN = "1.8";
