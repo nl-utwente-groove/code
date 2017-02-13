@@ -20,9 +20,13 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Properties;
 
+import groove.explore.config.BoundSetting;
+import groove.explore.config.CostSetting;
 import groove.explore.config.ExploreKey;
 import groove.explore.config.FrontierSizeKind;
 import groove.explore.config.GoalSetting;
+import groove.explore.config.HeuristicSetting;
+import groove.explore.config.ResultTypeKind;
 import groove.explore.config.Setting;
 import groove.explore.config.SuccessorKind;
 import groove.explore.config.TraverseKind;
@@ -83,6 +87,26 @@ public class ExploreConfig {
         default:
             throw Exceptions.UNREACHABLE;
         }
+    }
+
+    /** Returns the cost setting of this configuration. */
+    public CostSetting getCost() {
+        return (CostSetting) get(ExploreKey.COST);
+    }
+
+    /** Returns the heuristic setting of this configuration. */
+    public HeuristicSetting getHeuristic() {
+        return (HeuristicSetting) get(ExploreKey.HEURISTIC);
+    }
+
+    /** Returns the bound setting of this configuration. */
+    public BoundSetting getBound() {
+        return (BoundSetting) get(ExploreKey.BOUND);
+    }
+
+    /** Returns the result type according to this configuration. */
+    public ResultTypeKind getResultType() {
+        return (ResultTypeKind) get(ExploreKey.RESULT_TYPE);
     }
 
     /** Returns the current setting for a given key. */

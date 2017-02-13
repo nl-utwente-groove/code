@@ -17,6 +17,7 @@
 package groove.explore;
 
 import java.util.Collection;
+import java.util.NoSuchElementException;
 
 /**
  * Frontier of incompletely explored states.
@@ -24,20 +25,78 @@ import java.util.Collection;
  * @author Arend Rensink
  * @version $Revision $
  */
-interface ExploreFrontier {
+abstract class ExploreFrontier {
+    /**
+     * Constructs a frontier with a given maximum size.
+     */
+    protected ExploreFrontier(int maxSize) {
+        this.maxSize = maxSize;
+    }
+
     /** Indicates there is a next state to be explored in the frontier. */
-    boolean hasNext();
+    public boolean hasNext() {
+        return size() > 0;
+    }
 
-    /** Returns the next explore point of the frontier. */
-    ExplorePoint next();
+    /** Returns and removes the next element from the frontier.
+     * @throws NoSuchElementException if the frontier is empty
+     */
+    abstract public ExplorePoint next();
 
-    /** Adds an explore point to the frontier. */
-    void add(ExplorePoint point);
+    /** Checks if there are no more elements in the frontier.
+     * @see #size()
+     */
+    public boolean isEmpty() {
+        return size() == 0;
+    }
+
+    /** Returns the number of remaining elements in the frontier. */
+    abstract public int size();
+
+    /** Adds an explore point to the frontier.
+     * If the maximum size is thereby exceeded, also removes an element.
+     * @see ExploreFrontier#addToFrontier(ExplorePoint)
+     * @see #removeLast()
+     */
+    public void add(ExplorePoint point) {
+        addToFrontier(point);
+        if (hasMaxSize() && size() > getMaxSize()) {
+            removeLast();
+        }
+    }
+
+    /** Callback method to add a new element to the underlying collection,
+     * without maintaining the maximum size.
+     * @see #add(ExplorePoint)
+     */
+    abstract protected void addToFrontier(ExplorePoint point);
+
+    /** Removes the last element of the frontier. */
+    abstract public void removeLast();
 
     /**
      * Adds a collection of explore points,
      * taking the frontier size into account.
      * @param points the explore points to be added
      */
-    void addAll(Collection<ExplorePoint> points);
+    public void addAll(Collection<ExplorePoint> points) {
+        for (ExplorePoint p : points) {
+            add(p);
+        }
+    }
+
+    /** Indicates if this frontier has a maximum size. */
+    public boolean hasMaxSize() {
+        return this.maxSize != 0;
+    }
+
+    /**
+     * Returns the maximum size of this frontier, if any.
+     * @return the maximum frontier size, or {@code 0} if there is no maximum
+     */
+    public int getMaxSize() {
+        return this.maxSize;
+    }
+
+    private final int maxSize;
 }

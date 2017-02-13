@@ -14,28 +14,22 @@
  *
  * $Id$
  */
-package groove.explore;
+package groove.explore.config;
 
-import groove.lts.GraphState;
+import java.util.function.Function;
+
+import groove.grammar.host.HostGraph;
 
 /**
- * State in an exploration.
- * Combines a {@link GraphState} with functionality to explore its successors
- * in the order determined by the explore configuration, and to construct an
- * appropriate {@link ExploreProduct}.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface ExplorePoint {
-    /** Indicates if this explore point has unexplored successors. */
-    public boolean hasNext();
+public class HeuristicSetting extends DefaultSetting<HeuristicKind,Function<HostGraph,Integer>> {
+    /** Constructs the setting for {@link HeuristicKind#NONE}. */
+    private HeuristicSetting(HeuristicKind kind) {
+        super(kind, kind == HeuristicKind.NONE ? (lab -> 0) : (lab -> 1));
+    }
 
-    /** Returns the next unexplored successor of this explore point. */
-    public ExplorePoint next();
-
-    /** Returns the graph state wrapped in this explore point. */
-    public GraphState getState();
-
-    /** Returns the sum of the cost and heuristic of this explore point. */
-    public int getPriority();
+    /** The singleton setting for {@link HeuristicKind#NONE}. */
+    static public final HeuristicSetting NONE_SETTING = new HeuristicSetting(HeuristicKind.NONE);
 }

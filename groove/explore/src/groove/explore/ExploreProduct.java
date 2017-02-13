@@ -16,6 +16,8 @@
  */
 package groove.explore;
 
+import groove.lts.GraphState;
+
 /**
  * Type wrapping a single product of an exploration.
  * Exploration products are collected into an exploration outcome.
@@ -23,5 +25,6 @@ package groove.explore;
  * @version $Revision $
  */
 public interface ExploreProduct {
-    // empty
+    /** Returns the end state of this exploration product. */
+    public GraphState getEndState();
 }

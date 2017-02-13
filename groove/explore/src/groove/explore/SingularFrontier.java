@@ -16,26 +16,38 @@
  */
 package groove.explore;
 
-import groove.lts.GraphState;
-
 /**
- * State in an exploration.
- * Combines a {@link GraphState} with functionality to explore its successors
- * in the order determined by the explore configuration, and to construct an
- * appropriate {@link ExploreProduct}.
+ * Frontier consisting of a single explore point only
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface ExplorePoint {
-    /** Indicates if this explore point has unexplored successors. */
-    public boolean hasNext();
+public class SingularFrontier extends ExploreFrontier {
+    /** Constructs a singular frontier. */
+    public SingularFrontier() {
+        super(0);
+    }
 
-    /** Returns the next unexplored successor of this explore point. */
-    public ExplorePoint next();
+    private ExplorePoint point;
 
-    /** Returns the graph state wrapped in this explore point. */
-    public GraphState getState();
+    @Override
+    public ExplorePoint next() {
+        ExplorePoint result = this.point;
+        this.point = null;
+        return result;
+    }
 
-    /** Returns the sum of the cost and heuristic of this explore point. */
-    public int getPriority();
+    @Override
+    public int size() {
+        return this.point == null ? 0 : 1;
+    }
+
+    @Override
+    protected void addToFrontier(ExplorePoint point) {
+        this.point = point;
+    }
+
+    @Override
+    public void removeLast() {
+        this.point = null;
+    }
 }

@@ -16,26 +16,12 @@
  */
 package groove.explore;
 
-import groove.lts.GraphState;
-
 /**
- * State in an exploration.
- * Combines a {@link GraphState} with functionality to explore its successors
- * in the order determined by the explore configuration, and to construct an
- * appropriate {@link ExploreProduct}.
+ * Function computing a non-negative value for a given explore point.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface ExplorePoint {
-    /** Indicates if this explore point has unexplored successors. */
-    public boolean hasNext();
-
-    /** Returns the next unexplored successor of this explore point. */
-    public ExplorePoint next();
-
-    /** Returns the graph state wrapped in this explore point. */
-    public GraphState getState();
-
-    /** Returns the sum of the cost and heuristic of this explore point. */
-    public int getPriority();
+public interface ExplorePointValuation {
+    /** The wrapped function. */
+    public int compute(ExplorePoint point);
 }

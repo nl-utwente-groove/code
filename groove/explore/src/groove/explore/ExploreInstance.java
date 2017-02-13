@@ -16,10 +16,20 @@
  */
 package groove.explore;
 
+import java.util.function.Function;
+
+import groove.explore.config.BoundKind;
+import groove.explore.config.BoundSetting;
+import groove.explore.config.CostKind;
 import groove.explore.config.ExploreKey;
+import groove.explore.config.HeuristicKind;
 import groove.explore.config.SuccessorKind;
+import groove.explore.config.TraverseKind;
+import groove.grammar.host.HostGraph;
+import groove.lts.ActionLabel;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.util.Exceptions;
 
 /**
  * General class for exploration, used for all cases except model checking.
@@ -30,10 +40,21 @@ public class ExploreInstance {
     /** Creates an exploration instance from an exploration configuration and a start state. */
     public ExploreInstance(ExploreConfig config, GTS gts, GraphState startState) {
         this.config = config;
+        this.computePriority = config.getCost()
+            .getKind() != CostKind.NONE
+            && config.getHeuristic()
+                .getKind() != HeuristicKind.NONE;
+        this.costFunction = config.getCost()
+            .getContent();
+        this.heuristicFunction = config.getHeuristic()
+            .getContent();
         this.startState = startState;
     }
 
+    /** The explore configuration according to which this instance is configured. */
     private final ExploreConfig config;
+
+    /** The start state for the exploration. */
     private final GraphState startState;
 
     /** Flag indicating that {@link #go()} has been invoked. */
@@ -94,6 +115,24 @@ public class ExploreInstance {
         return result;
     }
 
+    boolean isComputePriority() {
+        return this.computePriority;
+    }
+
+    private final boolean computePriority;
+
+    int computeCost(ActionLabel label) {
+        return this.costFunction.apply(label);
+    }
+
+    private final Function<ActionLabel,Integer> costFunction;
+
+    int computeHeuristic(GraphState state) {
+        return this.heuristicFunction.apply(state.getGraph());
+    }
+
+    private final Function<HostGraph,Integer> heuristicFunction;
+
     /** Factory method to create an exploration goal. */
     protected ExploreGoal createGoal() {
         return this.config.getGoal()
@@ -102,17 +141,43 @@ public class ExploreInstance {
 
     /** Factory method to create the initial explore point from a graph state. */
     protected ExplorePoint createPoint(GraphState state) {
-        return new SimpleExplorePoint(state);
+        return new SimpleExplorePoint(this, state);
     }
 
     /** Factory method for an exploration frontier, based on the configuration. */
     protected ExploreFrontier createFrontier() {
-
+        ExploreFrontier result;
+        if (this.config.getFrontierSize() == 1) {
+            result = new SingularFrontier();
+        } else {
+            TraverseKind traverse = this.config.getTraversal();
+            int maxSize = this.config.getFrontierSize();
+            if (isComputePriority()) {
+                result =
+                    new PriorityFrontier(() -> BasicFrontier.createFrontier(traverse), maxSize);
+            } else {
+                result = BasicFrontier.createFrontier(traverse, maxSize);
+            }
+            BoundSetting bound = this.config.getBound();
+            if (bound.getKind() != BoundKind.NONE) {
+                result = new BoundedFrontier(result, bound.getContent(), bound.getBound(),
+                    bound.getIncrement());
+            }
+        }
+        return result;
     }
 
     /** Factory method to create an exploration product from an exploration point. */
     protected ExploreProduct createProduct(ExplorePoint point) {
-
+        GraphState state = point.getState();
+        switch (this.config.getResultType()) {
+        case PATH:
+            return new TraceExploreProduct(state);
+        case STATE:
+            return new StateExploreProduct(state);
+        default:
+            throw Exceptions.UNREACHABLE;
+        }
     }
 
     /** Factory method for an exploration outcome, based on the configuration. */

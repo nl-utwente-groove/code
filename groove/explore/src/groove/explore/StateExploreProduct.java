@@ -19,23 +19,23 @@ package groove.explore;
 import groove.lts.GraphState;
 
 /**
- * State in an exploration.
- * Combines a {@link GraphState} with functionality to explore its successors
- * in the order determined by the explore configuration, and to construct an
- * appropriate {@link ExploreProduct}.
+ * Exploration product consisting of a single graph state.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface ExplorePoint {
-    /** Indicates if this explore point has unexplored successors. */
-    public boolean hasNext();
+public class StateExploreProduct implements ExploreProduct {
+    /**
+     * Constructs a product from a given graph state.
+     * @param endState the end state of the product
+     */
+    public StateExploreProduct(GraphState endState) {
+        this.endState = endState;
+    }
 
-    /** Returns the next unexplored successor of this explore point. */
-    public ExplorePoint next();
+    private final GraphState endState;
 
-    /** Returns the graph state wrapped in this explore point. */
-    public GraphState getState();
-
-    /** Returns the sum of the cost and heuristic of this explore point. */
-    public int getPriority();
+    @Override
+    public GraphState getEndState() {
+        return this.endState;
+    }
 }

@@ -21,34 +21,34 @@ import java.util.List;
 
 /**
  * An exploration outcome collects exploration results.
- * There may be an upper bound to the number of expected results.
+ * There may be an a priori maximum to the number of expected results.
  * The outcome object also records if exploration was interrupted,
- * in which case the number of results may have stayed below the bound.
+ * in which case the number of results may have stayed below the maximum.
  * @author Arend Rensink
  * @version $Revision $
  */
 public class ExploreOutcome {
-    /** Constructs a new exploration outcome, with a given bound. */
-    ExploreOutcome(int bound) {
-        assert bound >= 0;
+    /** Constructs a new exploration outcome, with a given maximum size. */
+    ExploreOutcome(int maxSize) {
+        assert maxSize >= 0;
         this.results = new ArrayList<>();
-        this.bound = bound;
+        this.maxSize = maxSize;
     }
 
     /** The maximum number of exploration results, or {@code 0} if there is no maximum. */
-    private final int bound;
+    private final int maxSize;
 
-    /** Indicates if there is an a priori bound to the number of results in this outcome. */
-    public boolean hasBound() {
-        return this.bound > 0;
+    /** Indicates if there is an a priori maximum to the number of results in this outcome. */
+    public boolean hasMaxSize() {
+        return this.maxSize > 0;
     }
 
     /**
-     * Returns the a priori bound to the number of expected results.
-     * @return The number of expected results, or {@code 0} if there is no a priori bound
+     * Returns the a priori maximum number of expected results.
+     * @return The number of expected results, or {@code 0} if there is no a priori maximum
      */
-    public int getBound() {
-        return this.bound;
+    public int getMaxSize() {
+        return this.maxSize;
     }
 
     private final List<ExploreProduct> results;
@@ -56,8 +56,8 @@ public class ExploreOutcome {
     /** Adds an exploration result to this outcome. */
     void addResult(ExploreProduct result) {
         if (isFull()) {
-            throw new IllegalStateException(
-                String.format("Attempt to add result to full outcome (bound = %d)", getBound()));
+            throw new IllegalStateException(String
+                .format("Attempt to add result to full outcome (max size = %d)", getMaxSize()));
         }
         this.results.add(result);
     }
@@ -67,9 +67,9 @@ public class ExploreOutcome {
         return this.results;
     }
 
-    /** Indicates if the bound of this outcome was reached. */
+    /** Indicates if the maximum size of this outcome was reached. */
     public boolean isFull() {
-        return hasBound() && getResults().size() == getBound();
+        return hasMaxSize() && getResults().size() == getMaxSize();
     }
 
     /**

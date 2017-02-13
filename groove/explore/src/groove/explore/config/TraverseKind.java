@@ -24,9 +24,9 @@ package groove.explore.config;
  */
 public enum TraverseKind implements SettingKind<TraverseKind> {
     /** Depth-first selection. */
-    DEPTH("Depth first", "Depth-first selection"),
+    NEWEST("Depth first", "Depth-first selection"),
     /** Breadth-first search. */
-    BREADTH("Breadth first", "Breadth-first selection"),
+    OLDEST("Breadth first", "Breadth-first selection"),
     /** Random selection. */
     RANDOM("Random", "Random selection"),;
 

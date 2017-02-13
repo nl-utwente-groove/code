@@ -25,7 +25,7 @@ import groove.util.parse.StringHandler;
  */
 public enum ExploreKey implements PropertyKey<Setting<?,?>> {
     /** The traversal selection strategy. */
-    TRAVERSE("traverse", "Traversal selection strategy", TraverseKind.DEPTH, true),
+    TRAVERSE("traverse", "Traversal selection strategy", TraverseKind.NEWEST, true),
     /** The successor selection strategy. */
     SUCCESSOR("successor", "Successor selection strategy", SuccessorKind.ALL, true),
     /** The successor selection strategy. */
