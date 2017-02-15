@@ -412,9 +412,8 @@ public class StatisticsReporter extends AExplorationReporter {
         }
 
         @Override
-        public void statusUpdate(GTS graph, GraphState explored, Flag flag, int oldStatus) {
-            switch (flag) {
-            case CLOSED:
+        public void statusUpdate(GTS graph, GraphState explored, int change) {
+            if (Flag.CLOSED.test(change)) {
                 if (explored.getPrimeFrame()
                     .isInternal()) {
                     this.openRecipeStateCount--;
@@ -422,17 +421,12 @@ public class StatisticsReporter extends AExplorationReporter {
                 if (explored.isInternalState()) {
                     this.closedRecipeStateCount++;
                 }
-                break;
-            case ERROR:
+            }
+            if (Flag.ERROR.test(change)) {
                 this.errorStateCount++;
-                break;
-            case DONE:
-                if (explored.isAbsent()) {
-                    this.absentStateCount++;
-                }
-                break;
-            default:
-                // no action
+            }
+            if (Flag.DONE.test(change) && explored.isAbsent()) {
+                this.absentStateCount++;
             }
         }
 

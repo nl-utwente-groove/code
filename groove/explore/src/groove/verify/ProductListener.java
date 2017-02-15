@@ -16,7 +16,6 @@
  */
 package groove.verify;
 
-
 /**
  * A listener to the exploration of product systems.
  * @author Arend Rensink
@@ -28,11 +27,15 @@ public interface ProductListener {
      * @param gts the product system that has been updated
      * @param state the state that has been added
      */
-    void addUpdate(ProductStateSet gts, ProductState state);
+    default void addUpdate(ProductStateSet gts, ProductState state) {
+        // default empty implementation
+    }
 
     /**
-     * Update method called when a state of a product system is set to closed, 
+     * Update method called when a state of a product system is set to closed,
      * in the course of exploration.
      */
-    public void closeUpdate(ProductStateSet gts, ProductState state);
+    default public void closeUpdate(ProductStateSet gts, ProductState state) {
+        // default empty implementation
+    }
 }

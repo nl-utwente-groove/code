@@ -25,7 +25,6 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
-import groove.lts.Status.Flag;
 
 /**
  * State in an exploration.
@@ -75,11 +74,9 @@ class ExplorePoint {
                 }
 
                 @Override
-                public void statusUpdate(GTS gts, GraphState state, Flag flag, int oldStatus) {
-                    // TODO Auto-generated method stub
-                    GTSListener.super.statusUpdate(gts, state, flag, oldStatus);
+                public void statusUpdate(GTS gts, GraphState state, int change) {
+                    GTSListener.super.statusUpdate(gts, state, change);
                 }
-
             });
     }
 

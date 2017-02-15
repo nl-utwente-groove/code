@@ -571,9 +571,9 @@ public class LTSDisplay extends Display implements SimulatorListener {
          * If a state is closed, its background should be reset.
          */
         @Override
-        public void statusUpdate(GTS gts, GraphState closed, Flag flag, int oldStatus) {
+        public void statusUpdate(GTS gts, GraphState closed, int change) {
             assert gts == getSimulatorModel().getGTS() : "I want to listen only to my lts";
-            if (flag == Flag.ERROR) {
+            if (Flag.ERROR.test(change)) {
                 updateErrors();
             }
             updateStatus(gts);

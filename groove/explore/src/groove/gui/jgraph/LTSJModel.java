@@ -38,7 +38,7 @@ import groove.lts.Status.Flag;
  * @author Arend Rensink
  * @version $Revision$
  */
-final public class LTSJModel extends JModel<GTS>implements GTSListener {
+final public class LTSJModel extends JModel<GTS> implements GTSListener {
     /** Creates a new model from a given LTS and set of display options. */
     LTSJModel(LTSJGraph jGraph) {
         super(jGraph);
@@ -96,8 +96,8 @@ final public class LTSJModel extends JModel<GTS>implements GTSListener {
     }
 
     @Override
-    public void statusUpdate(GTS lts, GraphState explored, Flag flag, int oldStatus) {
-        JCell<GTS> jCell = registerChange(explored, flag, oldStatus);
+    public void statusUpdate(GTS lts, GraphState explored, int change) {
+        JCell<GTS> jCell = registerChange(explored, change);
         if (jCell != null) {
             if (isExploring()) {
                 this.changedCells.add(jCell);
@@ -112,22 +112,18 @@ final public class LTSJModel extends JModel<GTS>implements GTSListener {
      * @return the cell that was changed as a consequence to the state change;
      * {@code null} if there was no change.
      */
-    private JCell<GTS> registerChange(GraphState explored, Flag flag, int oldStatus) {
+    private JCell<GTS> registerChange(GraphState explored, int change) {
         JVertex<GTS> jCell = getJCellForNode(explored);
         if (jCell != null) {
-            switch (flag) {
-            case CLOSED:
+            if (Flag.CLOSED.test(change)) {
                 jCell.setLook(Look.OPEN, false);
-                break;
-            case DONE:
+            }
+            if (Flag.DONE.test(change)) {
                 jCell.setLook(Look.RECIPE, explored.isInternalState());
                 jCell.setLook(Look.TRANSIENT, explored.isTransient());
                 jCell.setLook(Look.FINAL, explored.isFinal());
-                break;
-            default:
-                // no special look
             }
-            if (explored.isAbsent() && !Flag.ABSENT.test(oldStatus)) {
+            if (Flag.ABSENT.test(change)) {
                 Iterator<? extends JEdge<GTS>> iter = jCell.getContext();
                 while (iter.hasNext()) {
                     iter.next()

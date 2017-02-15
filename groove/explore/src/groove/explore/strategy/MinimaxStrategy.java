@@ -35,7 +35,6 @@ import groove.lts.GTSListener;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.RuleTransition;
-import groove.lts.Status.Flag;
 import groove.transform.RuleEvent;
 
 /**
@@ -331,16 +330,6 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
         if (VERBOSE) {
             System.out.printf("Child added: %s for %s%n", mtt.getNodeno(), mts.getNodeno());
         }
-    }
-
-    @Override
-    public void statusUpdate(GTS gts, GraphState state, Flag flag, int oldStatus) {
-        //unnessecary when all transitions are already handled
-    }
-
-    @Override
-    public void addUpdate(GTS gts, GraphState state) {
-        //dont do anything with states
     }
 
     //

@@ -327,7 +327,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
      * @param oldStatus the status of this state before the change
      */
     private void fireStatus(Flag flag, int oldStatus) {
-        getGTS().fireUpdateState(this, flag, oldStatus);
+        getGTS().fireUpdateState(this, oldStatus);
     }
 
     @Override
@@ -439,8 +439,18 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         // the frame is artificially set again for a start state
         // assert this.currentFrame == null || frame.getPrime() == getPrimeFrame();
         this.actualFrame = frame;
-        setStatus(Flag.TRANSIENT, frame.isTransient());
-        setStatus(Flag.INTERNAL, frame.isInternal());
+        int oldStatus = this.status;
+        boolean statusChanged = setStatus(Flag.TRANSIENT, frame.isTransient());
+        statusChanged |= setStatus(Flag.INTERNAL, frame.isInternal());
+        if (frame.isError()) {
+            statusChanged |= setStatus(Flag.ERROR, true);
+        }
+        if (frame.isRemoved()) {
+            statusChanged |= setStatus(Flag.ABSENT, true);
+        }
+        if (statusChanged) {
+            fireStatus(Flag.CLOSED, oldStatus);
+        }
         if (frame.isError()) {
             setStatus(Flag.ERROR, true);
         }
