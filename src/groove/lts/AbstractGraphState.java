@@ -247,7 +247,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
             //            setStatus(Flag.INTERNAL, getActualFrame().isInternal());
             //            setStatus(Flag.ERROR, getActualFrame().isError());
             //            setStatus(Flag.ABSENT, getActualFrame().isRemoved());
-            fireStatus(Flag.CLOSED, oldStatus);
+            fireStatus(oldStatus);
             getCache().notifyClosed();
         }
         return result;
@@ -258,7 +258,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         int oldStatus = getStatus();
         boolean result = setStatus(Flag.ERROR, true);
         if (result) {
-            fireStatus(Flag.ERROR, oldStatus);
+            fireStatus(oldStatus);
         }
         return result;
     }
@@ -286,7 +286,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
             checkDoneConstraints();
             getCache().notifyDone();
             setCacheCollectable();
-            fireStatus(Flag.DONE, oldStatus);
+            fireStatus(oldStatus);
         }
         return result;
     }
@@ -322,11 +322,10 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     /**
-     * Notifies the observers of a change in this state's status with respect
-     * to a given status flag.
+     * Notifies the observers of a change in this state's status.
      * @param oldStatus the status of this state before the change
      */
-    private void fireStatus(Flag flag, int oldStatus) {
+    private void fireStatus(int oldStatus) {
         getGTS().fireUpdateState(this, oldStatus);
     }
 
@@ -449,7 +448,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
             statusChanged |= setStatus(Flag.ABSENT, true);
         }
         if (statusChanged) {
-            fireStatus(Flag.CLOSED, oldStatus);
+            fireStatus(oldStatus);
         }
     }
 
