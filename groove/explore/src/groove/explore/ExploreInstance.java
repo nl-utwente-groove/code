@@ -141,7 +141,7 @@ public class ExploreInstance {
 
     /** Factory method to create the initial explore point from a graph state. */
     protected ExplorePoint createPoint(GraphState state) {
-        return new SimpleExplorePoint(this, state);
+        return new ExplorePoint(this, state);
     }
 
     /** Factory method for an exploration frontier, based on the configuration. */
