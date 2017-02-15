@@ -50,8 +50,8 @@ public interface GTSListener {
      * The default implementation is empty.
      * @param gts the GTS in which the change occurred
      * @param state the graph state whose status has changed
-     * @param change the vector of changes; a flag has been set if {@link Flag#test(int)} returns true when
-     * applied to {@code change}
+     * @param change the vector of changes; a flag has been (un)set if {@link Flag#test(int)}
+     * returns true when applied to {@code change}
      * @see Flag#test(int)
      */
     public default void statusUpdate(GTS gts, GraphState state, int change) {
