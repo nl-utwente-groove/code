@@ -18,13 +18,15 @@ package groove.explore;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Stack;
 
 import groove.lts.GTS;
 import groove.lts.GTSListener;
+import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
-import groove.lts.RuleTransition;
+import groove.lts.Status.Flag;
 
 /**
  * State in an exploration.
@@ -39,16 +41,37 @@ class ExplorePoint {
     ExplorePoint(ExploreInstance exploration, GraphState state) {
         this.exploration = exploration;
         this.state = state;
-        this.priority = exploration.computeHeuristic(state);
+        this.cost = 0;
+        if (exploration.isComputeHeuristic()) {
+            this.priority = exploration.computeHeuristic(state);
+        } else {
+            this.priority = 0;
+        }
         setGTSListener();
     }
 
-    /** Constructs an exploration point with a given parent. */
-    private ExplorePoint(ExplorePoint parent, GraphTransition path) {
+    /** Constructs an exploration point for a given state, with a given parent. */
+    private ExplorePoint(ExplorePoint parent, GraphState state) {
         this.exploration = parent.getExploration();
-        this.state = path.target();
-        this.priority = parent.getPriority() + this.exploration.computeCost(path.label())
-            + this.exploration.computeHeuristic(this.state);
+        this.state = state;
+        // compute the cost of this explore point
+        int cost = parent.getCost();
+        if (this.exploration.isComputeCost()) {
+            GraphState target = state;
+            // follow incoming transitions back to parent
+            do {
+                GraphTransition trans = ((GraphNextState) target).getInTransition();
+                cost += this.exploration.computeCost(trans.label());
+                target = trans.source();
+            } while (target != parent.getState());
+        }
+        this.cost = cost;
+        // compute the priority of this explore point
+        int priority = cost;
+        if (this.exploration.isComputeHeuristic()) {
+            priority += this.exploration.computeHeuristic(this.state);
+        }
+        this.priority = priority;
         setGTSListener();
     }
 
@@ -59,23 +82,32 @@ class ExplorePoint {
         return this.exploration;
     }
 
-    /** Exploration point from which this one was reached. */
+    /** Exploration instance to which this exploration point belongs. */
     private final ExploreInstance exploration;
-    private boolean freshState;
 
     private void setGTSListener() {
         this.state.getGTS()
             .addLTSListener(new GTSListener() {
                 @Override
                 public void addUpdate(GTS gts, GraphState state) {
-                    if (state.isRealState()) {
-                        ExplorePoint.this.nextStates.add(state);
-                    }
+                    testAndAdd(state);
                 }
 
                 @Override
                 public void statusUpdate(GTS gts, GraphState state, int change) {
-                    GTSListener.super.statusUpdate(gts, state, change);
+                    if (Flag.TRANSIENT.test(change)) {
+                        // the transience just changed, so maybe this state is now eligible
+                        testAndAdd(state);
+                    }
+                }
+
+                /** Adds a state to the set of discovered successor states
+                 * if it is a real and non-transient state
+                 */
+                private void testAndAdd(GraphState state) {
+                    if (state.isRealState() && !state.isTransient()) {
+                        ExplorePoint.this.nextStates.add(state);
+                    }
                 }
             });
     }
@@ -88,22 +120,68 @@ class ExplorePoint {
      */
     private ExplorePoint next;
 
+    /** Flag indicating that the search for a next successor has not yet failed. */
+    private boolean hasNext;
+
     /** Indicates if this explore point has unexplored successors. */
     public boolean hasNext() {
-        if (this.next == null && !this.state.isClosed()) {
-            MatchResult nextMatch = this.state.getMatch();
-            this.freshState = false;
-            RuleTransition trans = this.state.applyMatch(nextMatch);
-            // if a fresh state was added, the listener has signalled it in the freshState flag
-            if (this.freshState) {
-                this.next = createPoint(trans);
+        if (this.next == null && this.hasNext) {
+            GraphState nextState = computeNext();
+            if (nextState == null) {
+                this.hasNext = false;
+            } else {
+                this.next = createPoint(nextState);
             }
         }
         return this.next == null;
     }
 
-    private ExplorePoint createPoint(GraphTransition path) {
-        return new ExplorePoint(this, path);
+    /** Computes and returns the next unexplored successor of {@link #state},
+     * if any.
+     * @return the next unexplored successor of {@link #state},
+     * or {@code null} if there is none
+     */
+    private GraphState computeNext() {
+        GraphState result = this.nextStates.poll();
+        while (result == null && !this.state.isClosed()) {
+            exploreNextMatch();
+            result = this.nextStates.poll();
+        }
+        return result;
+    }
+
+    /**
+     * Explores the next match of {@link #state}, up to the next real, non-transient states.
+     * After finishing, the discovered successor states (if any) will
+     * be collected in {@link #nextStates}
+     */
+    private void exploreNextMatch() {
+        Stack<GraphState> stack = new Stack<>();
+        stack.push(this.state);
+        while (!stack.isEmpty()) {
+            GraphState top = stack.pop();
+            MatchResult nextMatch = top.getMatch();
+            if (nextMatch == null) {
+                // top is exhausted; continue with next stack element
+                continue;
+            }
+            GraphState succ = top.applyMatch(nextMatch)
+                .target();
+            // top may now have become non-transient or closed
+            if (top.isTransient() && !top.isClosed()) {
+                // otherwise, put top back in stack for backtracking
+                stack.push(top);
+            }
+            // put successor on stack if transient
+            if (succ.isTransient()) {
+                stack.push(succ);
+            }
+        }
+    }
+
+    /** Factory method for an exploration point. */
+    private ExplorePoint createPoint(GraphState state) {
+        return new ExplorePoint(this, state);
     }
 
     /** Returns the next unexplored successor of this explore point. */
@@ -125,6 +203,15 @@ class ExplorePoint {
     /** Graph state wrapped in this exploration point. */
     private final GraphState state;
 
+    /** Returns the cost of this explore point. */
+    public int getCost() {
+        return this.cost;
+    }
+
+    /** The cost of this exploration point.
+     */
+    private final int cost;
+
     /** Returns the sum of the cost and heuristic of this explore point. */
     public int getPriority() {
         return this.priority;
@@ -134,5 +221,4 @@ class ExplorePoint {
      * there is a cost or heuristic function involved.
      */
     private final int priority;
-
 }

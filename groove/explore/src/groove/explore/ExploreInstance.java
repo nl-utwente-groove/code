@@ -40,10 +40,10 @@ public class ExploreInstance {
     /** Creates an exploration instance from an exploration configuration and a start state. */
     public ExploreInstance(ExploreConfig config, GTS gts, GraphState startState) {
         this.config = config;
-        this.computePriority = config.getCost()
-            .getKind() != CostKind.NONE
-            && config.getHeuristic()
-                .getKind() != HeuristicKind.NONE;
+        this.computeCost = config.getCost()
+            .getKind() != CostKind.NONE;
+        this.computeHeuristic = config.getHeuristic()
+            .getKind() != HeuristicKind.NONE;
         this.costFunction = config.getCost()
             .getContent();
         this.heuristicFunction = config.getHeuristic()
@@ -115,18 +115,36 @@ public class ExploreInstance {
         return result;
     }
 
-    boolean isComputePriority() {
-        return this.computePriority;
+    /** Indicates if the exploration instance has a non-trivial cost function.
+     * @see ExploreConfig#getCost()
+     */
+    boolean isComputeCost() {
+        return this.computeCost;
     }
 
-    private final boolean computePriority;
+    private final boolean computeCost;
 
+    /** Applies the cost function to a given action label.
+     * @see ExploreConfig#getCost()
+     */
     int computeCost(ActionLabel label) {
         return this.costFunction.apply(label);
     }
 
     private final Function<ActionLabel,Integer> costFunction;
 
+    /** Indicates if the exploration instance has a non-trivial heuristic function.
+     * @see ExploreConfig#getHeuristic()
+     */
+    boolean isComputeHeuristic() {
+        return this.computeHeuristic;
+    }
+
+    private final boolean computeHeuristic;
+
+    /** Applies the cost function to a given graph state.
+     * @see ExploreConfig#getHeuristic()
+     */
     int computeHeuristic(GraphState state) {
         return this.heuristicFunction.apply(state.getGraph());
     }
@@ -152,7 +170,7 @@ public class ExploreInstance {
         } else {
             TraverseKind traverse = this.config.getTraversal();
             int maxSize = this.config.getFrontierSize();
-            if (isComputePriority()) {
+            if (isComputeCost() || isComputeHeuristic()) {
                 result =
                     new PriorityFrontier(() -> BasicFrontier.createFrontier(traverse), maxSize);
             } else {
