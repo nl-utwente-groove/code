@@ -16,6 +16,11 @@
  */
 package groove.lts;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IllegalFormatException;
+import java.util.List;
+
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Const;
 import groove.control.CtrlPar.Var;
@@ -37,18 +42,13 @@ import groove.transform.RuleApplication;
 import groove.transform.RuleEvent;
 import groove.util.parse.FormatException;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.MissingFormatArgumentException;
-
 /**
  * Models a transition built upon a rule application
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-03-05 16:50:10 $
  */
-public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel> implements
-    RuleTransitionStub, RuleTransition {
+public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
+    implements RuleTransitionStub, RuleTransition {
     /**
      * Constructs a GraphTransition on the basis of a given rule event, between
      * a given source and target state.
@@ -142,7 +142,8 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
         if (isSymmetry()) {
             return new SymmetryTransitionStub(getKey(), getAddedNodes(), target());
         } else if (target() instanceof DefaultGraphNextState) {
-            return ((DefaultGraphNextState) target()).createInTransitionStub(source(), getKey(),
+            return ((DefaultGraphNextState) target()).createInTransitionStub(source(),
+                getKey(),
                 getAddedNodes());
         } else {
             return new IdentityTransitionStub(getKey(), getAddedNodes(), target());
@@ -239,10 +240,12 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
             RuleApplication appl = getEvent().newApplication(sourceGraph);
             result = appl.getMorphism();
             if (isSymmetry()) {
-                HostGraph derivedTarget = appl.getTarget().clone();
-                HostGraph realTarget = target().getGraph().clone();
-                final Morphism<HostNode,HostEdge> iso =
-                    IsoChecker.getInstance(true).getIsomorphism(derivedTarget, realTarget);
+                HostGraph derivedTarget = appl.getTarget()
+                    .clone();
+                HostGraph realTarget = target().getGraph()
+                    .clone();
+                final Morphism<HostNode,HostEdge> iso = IsoChecker.getInstance(true)
+                    .getIsomorphism(derivedTarget, realTarget);
                 assert iso != null : "Can't reconstruct derivation from graph transition " + this
                     + ": \n" + AGraph.toString(derivedTarget) + " and \n"
                     + AGraph.toString(realTarget) + " \nnot isomorphic";
@@ -250,7 +253,8 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
             }
         } else {
             // create an identity morphism
-            result = sourceGraph.getFactory().createMorphism();
+            result = sourceGraph.getFactory()
+                .createMorphism();
             for (HostNode node : sourceGraph.nodeSet()) {
                 result.putNode(node, node);
             }
@@ -351,10 +355,12 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
      */
     public static String getOutputString(GraphTransition trans) throws FormatException {
         String result = null;
-        String formatString = trans.getAction().getFormatString();
+        String formatString = trans.getAction()
+            .getFormatString();
         if (formatString != null && !formatString.isEmpty()) {
             List<Object> args = new ArrayList<>();
-            for (HostNode arg : trans.label().getArguments()) {
+            for (HostNode arg : trans.label()
+                .getArguments()) {
                 if (arg instanceof ValueNode) {
                     args.add(((ValueNode) arg).getValue());
                 } else {
@@ -363,7 +369,7 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
             }
             try {
                 result = String.format(formatString, args.toArray());
-            } catch (MissingFormatArgumentException e) {
+            } catch (IllegalFormatException e) {
                 throw new FormatException("Error in rule output string: %s", e.getMessage());
             }
         }
@@ -373,11 +379,13 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     /** Computes the list of call arguments for a given graph transition. */
     public static List<HostNode> getArguments(GraphTransition trans) {
         List<HostNode> result;
-        List<CtrlPar.Var> actionSig = trans.getAction().getSignature();
+        List<CtrlPar.Var> actionSig = trans.getAction()
+            .getSignature();
         if (actionSig.isEmpty()) {
             result = EMPTY_ARGS;
         } else {
-            List<? extends CtrlPar> args = trans.getSwitch().getArgs();
+            List<? extends CtrlPar> args = trans.getSwitch()
+                .getArgs();
             result = new ArrayList<>();
             for (int i = 0; i < args.size(); i++) {
                 CtrlPar par = args.get(i);
