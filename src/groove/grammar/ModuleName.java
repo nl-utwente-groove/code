@@ -20,6 +20,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import groove.util.Groove;
 
 /**
@@ -39,7 +41,7 @@ public class ModuleName {
     /**
      * Returns the tokens in this module name as an array of strings.
      */
-    public List<String> tokens() {
+    public List<@NonNull String> tokens() {
         return this.tokens;
     }
 
@@ -63,22 +65,22 @@ public class ModuleName {
      * @require <tt>0 <= i && i < size()</tt>
      * @ensure </tt>return == tokens[i]</tt>
      */
-    public String get(int i) {
+    public @NonNull String get(int i) {
         return tokens().get(i);
     }
 
     /** The tokens of which this module name consists. */
-    final List<String> tokens;
+    final List<@NonNull String> tokens;
 
     /** Extends this module name with a child, and returns the result. */
-    public QualName extend(String child) {
+    public QualName extend(@NonNull String child) {
         QualName result = new QualName(tokens());
         result.tokens.add(child);
         return result;
     }
 
     /** Nests this module name inside a new outer token, and returns the result. */
-    public QualName nest(String child) {
+    public QualName nest(@NonNull String child) {
         QualName result = new QualName();
         result.tokens.add(child);
         result.tokens.addAll(tokens());

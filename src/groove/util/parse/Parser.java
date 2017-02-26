@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import groove.io.HTMLConverter;
 import groove.util.Groove;
 
@@ -487,7 +489,7 @@ abstract public interface Parser<T> {
          * @param defaultValue the value of {@code T} represented
          * by the empty string
          */
-        public EnumParser(Class<T> enumType, T defaultValue, String... texts) {
+        public EnumParser(Class<T> enumType, @Nullable T defaultValue, String... texts) {
             this.defaultValue = defaultValue;
             this.toStringMap = new EnumMap<>(enumType);
             this.toValueMap = new HashMap<>();
@@ -512,7 +514,7 @@ abstract public interface Parser<T> {
          * @param defaultValue if non-{@code null}, the value of {@code T} represented
          * by the empty string
          */
-        public EnumParser(Class<T> enumType, T defaultValue) {
+        public EnumParser(Class<T> enumType, @Nullable T defaultValue) {
             this(enumType, defaultValue, camel(enumType.getEnumConstants()));
         }
 

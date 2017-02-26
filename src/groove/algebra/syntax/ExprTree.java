@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import groove.algebra.Constant;
 import groove.algebra.IntSignature;
 import groove.algebra.Operator;
@@ -104,7 +106,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
      * @param varMap mapping from known variables to types. Only variables in this map are
      * allowed to occur in the term.
      */
-    public Expression toExpression(Typing varMap) throws FormatException {
+    public Expression toExpression(@NonNull Typing varMap) throws FormatException {
         assert isFixed();
         getErrors().throwException();
         Map<Sort,? extends Expression> choice = toExpressions(varMap);
@@ -124,7 +126,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
      * @param varMap mapping from known variables to types. Only variables in this map are
      * allowed to occur in the term.
      */
-    private MultiExpression toExpressions(Typing varMap) throws FormatException {
+    private MultiExpression toExpressions(@NonNull Typing varMap) throws FormatException {
         MultiExpression result;
         if (hasConstant()) {
             Constant constant = toConstant();
@@ -156,11 +158,12 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
      * Chained field expressions are currently unsupported.
      * @param varMap variable typing
      */
-    private MultiExpression toAtomExprs(Typing varMap) throws FormatException {
+    private MultiExpression toAtomExprs(@NonNull Typing varMap) throws FormatException {
         assert getOp().getKind() == OpKind.ATOM;
         MultiExpression result = new MultiExpression();
         if (hasSort()) {
             Sort sort = getSort();
+            assert sort != null;
             result.put(sort, toAtomExpr(varMap, sort));
         } else {
             for (Sort sort : Sort.values()) {
@@ -176,7 +179,8 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
      * @param varMap variable typing
      * @param sort expected type of the expression
      */
-    private Expression toAtomExpr(Typing varMap, Sort sort) throws FormatException {
+    private Expression toAtomExpr(@NonNull Typing varMap, @NonNull Sort sort)
+        throws FormatException {
         Expression result;
         assert hasId();
         QualName id = getId();
@@ -205,7 +209,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
      * @param name variable name
      * @param sort expected type of the expression
      */
-    private Expression toVarExpr(String name, Sort sort) throws FormatException {
+    private Expression toVarExpr(@NonNull String name, @NonNull Sort sort) throws FormatException {
         Expression result;
         if (name.charAt(0) == '$') {
             int number;
@@ -227,7 +231,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
      * Returns the set of derivable expressions in case the top level is
      * a non-atomic operator.
      */
-    private MultiExpression toCallExprs(Typing varMap) throws FormatException {
+    private MultiExpression toCallExprs(@NonNull Typing varMap) throws FormatException {
         MultiExpression result = new MultiExpression();
         List<MultiExpression> resultArgs = new ArrayList<>();
         // all children are arguments

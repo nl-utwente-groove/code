@@ -19,6 +19,9 @@ package groove.algebra.syntax;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import groove.algebra.Constant;
 import groove.algebra.Sort;
 import groove.grammar.type.TypeLabel;
@@ -31,6 +34,7 @@ import groove.util.parse.OpKind;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public abstract class Expression {
     /**
      * Constructor for subclasses.
@@ -78,10 +82,11 @@ public abstract class Expression {
      * @see #toDisplayString()
      */
     public String toParseString() {
-        if (this.parseString == null) {
-            this.parseString = createParseString();
+        String result = this.parseString;
+        if (result == null) {
+            this.parseString = result = createParseString();
         }
-        return this.parseString;
+        return result;
     }
 
     /**
@@ -96,7 +101,7 @@ public abstract class Expression {
     }
 
     /** The string from which this expression has been parsed, if any. */
-    private String parseString;
+    private @Nullable String parseString;
 
     /**
      * Indicates if this expression is a term,
@@ -118,14 +123,15 @@ public abstract class Expression {
      * to the corresponding types.
      */
     public Typing getTyping() {
-        if (this.typing == null) {
-            this.typing = computeTyping();
+        Typing result = this.typing;
+        if (result == null) {
+            this.typing = result = computeTyping();
         }
-        return this.typing;
+        return result;
     }
 
     /** The mapping from variables occurring in this expression to their types. */
-    private Typing typing;
+    private @Nullable Typing typing;
 
     /** Factory method to create the variable map for this expression. */
     abstract protected Typing computeTyping();

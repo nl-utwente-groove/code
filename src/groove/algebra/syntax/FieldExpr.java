@@ -18,6 +18,9 @@ package groove.algebra.syntax;
 
 import static groove.graph.EdgeRole.BINARY;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import groove.algebra.Sort;
 import groove.grammar.type.TypeLabel;
 import groove.util.line.Line;
@@ -29,9 +32,10 @@ import groove.util.parse.OpKind;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public class FieldExpr extends Expression {
     /** Constructs a new field expression. */
-    public FieldExpr(boolean prefixed, String target, String field, Sort type) {
+    public FieldExpr(boolean prefixed, @Nullable String target, String field, Sort type) {
         super(prefixed);
         assert field != null && type != null;
         this.target = target;
@@ -48,7 +52,7 @@ public class FieldExpr extends Expression {
      * Returns the target of this field expression.
      * If {@code null}, the target is self.
      */
-    public String getTarget() {
+    public @Nullable String getTarget() {
         return this.target;
     }
 
@@ -96,7 +100,7 @@ public class FieldExpr extends Expression {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }
@@ -107,11 +111,12 @@ public class FieldExpr extends Expression {
         if (this.type != other.type) {
             return false;
         }
-        if (this.target == null) {
+        String target = this.target;
+        if (target == null) {
             if (other.target != null) {
                 return false;
             }
-        } else if (!this.target.equals(other.target)) {
+        } else if (!target.equals(other.target)) {
             return false;
         }
         return this.field.equals(other.field);
@@ -121,7 +126,8 @@ public class FieldExpr extends Expression {
     public int hashCode() {
         final int prime = 31;
         int result = this.field.hashCode();
-        result = prime * result + (this.target == null ? 0 : this.target.hashCode());
+        String target = this.target;
+        result = prime * result + (target == null ? 0 : target.hashCode());
         result = prime * result + this.type.hashCode();
         return result;
     }
@@ -140,7 +146,7 @@ public class FieldExpr extends Expression {
         return getSort() + ":" + toDisplayString();
     }
 
-    private final String target;
+    private final @Nullable String target;
     private final String field;
     private final Sort type;
 }

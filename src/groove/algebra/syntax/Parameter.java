@@ -16,6 +16,9 @@
  */
 package groove.algebra.syntax;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import groove.algebra.Sort;
 import groove.util.line.Line;
 import groove.util.parse.OpKind;
@@ -25,6 +28,7 @@ import groove.util.parse.OpKind;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public class Parameter extends Expression {
     /** Constructs a new parameter. */
     public Parameter(boolean prefixed, int nr, Sort type) {
@@ -70,7 +74,7 @@ public class Parameter extends Expression {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }
