@@ -1,20 +1,23 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.algebra.syntax;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import groove.algebra.Constant;
 import groove.algebra.Sort;
@@ -22,9 +25,6 @@ import groove.grammar.type.TypeLabel;
 import groove.util.line.Line;
 import groove.util.parse.FormatException;
 import groove.util.parse.OpKind;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Expressions are constants, variables, field expressions or call expressions.
@@ -65,12 +65,12 @@ public abstract class Expression {
     }
 
     /**
-     * Builds the display string for this expression in the 
+     * Builds the display string for this expression in the
      * result parameter.
      */
     abstract protected Line toLine(OpKind context);
 
-    /** 
+    /**
      * Returns a string representation from which
      * this expression can be been parsed.
      * If the expression has been constructed rather
@@ -85,7 +85,7 @@ public abstract class Expression {
     }
 
     /**
-     * Callback method to create the input string for such 
+     * Callback method to create the input string for such
      * expressions that were constructed rather than parsed.
      */
     abstract protected String createParseString();
@@ -106,26 +106,29 @@ public abstract class Expression {
 
     /**
      * Indicates if this expression is closed, i.e., does not contain any variables.
-     * Convenience method for {@code getVariables().isEmpty()}
+     * Convenience method for {@code getTyping().isEmpty()}
      * @return {@code true} if the expression is closed.
      */
     public boolean isClosed() {
-        return getVariables().isEmpty();
+        return getTyping().isEmpty();
     }
 
     /**
      * Returns a mapping from all variables occurring in this expression
      * to the corresponding types.
      */
-    public Map<String,Sort> getVariables() {
-        if (this.varMap == null) {
-            this.varMap = computeVarMap();
+    public Typing getTyping() {
+        if (this.typing == null) {
+            this.typing = computeTyping();
         }
-        return this.varMap;
+        return this.typing;
     }
 
+    /** The mapping from variables occurring in this expression to their types. */
+    private Typing typing;
+
     /** Factory method to create the variable map for this expression. */
-    abstract protected Map<String,Sort> computeVarMap();
+    abstract protected Typing computeTyping();
 
     /**
      * Returns an expression obtained from this one by changing all
@@ -148,9 +151,9 @@ public abstract class Expression {
     /** The expression kind of this expression. */
     private final Kind kind;
 
-    /** 
+    /**
      * Indicates if the parsed text for this expression has an explicit
-     * type prefix. 
+     * type prefix.
      */
     public boolean isPrefixed() {
         return this.prefixed;
@@ -158,23 +161,23 @@ public abstract class Expression {
 
     /** Flag indicating if the parsed text for this expression had a type prefix. */
     private final boolean prefixed;
-    /** The mapping from variables occurring in this expression to their types. */
-    private Map<String,Sort> varMap;
 
     /**
-     * Returns the expression tree for a given test:-content string. 
+     * Returns the expression tree for a given test:-content string.
      * @param term the string to be parsed as a test-expression
      */
     public static Expression parseTest(String term) throws FormatException {
-        return ExprTreeParser.parseExpr(term, true).toExpression();
+        return ExprTreeParser.parseExpr(term, true)
+            .toExpression();
     }
 
     /**
-     * Returns the expression tree for a given string. 
+     * Returns the expression tree for a given string.
      * @param term the string to be parsed as an expression
      */
     public static Expression parse(String term) throws FormatException {
-        return ExprTreeParser.parseExpr(term, false).toExpression();
+        return ExprTreeParser.parseExpr(term, false)
+            .toExpression();
     }
 
     /** Call with &lt;expression> */
@@ -184,14 +187,14 @@ public abstract class Expression {
             System.out.printf("Original expression: %s%n", args[0]);
             System.out.printf("Flattened term tree: %s%n", tree.toString());
             System.out.printf("Corresponding term:  %s%n", tree.toExpression());
-            System.out.printf("Display string:      %s%n", tree.toExpression().toDisplayString());
+            System.out.printf("Display string:      %s%n", tree.toExpression()
+                .toDisplayString());
         } catch (FormatException e) {
             e.printStackTrace();
         }
     }
 
-    static private final Map<Class<? extends Expression>,Kind> kindMap =
-        new HashMap<>();
+    static private final Map<Class<? extends Expression>,Kind> kindMap = new HashMap<>();
 
     static {
         kindMap.put(Constant.class, Kind.CONST);
