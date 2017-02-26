@@ -45,6 +45,8 @@ import java.util.TreeSet;
 
 import javax.swing.SwingUtilities;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import groove.algebra.Constant;
 import groove.algebra.syntax.Expression;
 import groove.algebra.syntax.Variable;
@@ -287,20 +289,19 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
     /** Returns the set of labels occurring in this rule. */
     @Override
-    public Set<TypeLabel> getLabels() {
-        if (this.labelSet == null) {
-            this.labelSet = new HashSet<>();
-            for (AspectEdge edge : getNormalSource().edgeSet()) {
-                RuleLabel label = edge.getRuleLabel();
-                if (label != null) {
-                    RegExpr labelExpr = label.getMatchExpr();
-                    if (labelExpr != null) {
-                        this.labelSet.addAll(labelExpr.getTypeLabels());
-                    }
-                }
-            }
+    public @NonNull Set<TypeLabel> getLabels() {
+        Set<TypeLabel> result = this.labelSet;
+        if (result == null) {
+            Set<TypeLabel> labelSet = new HashSet<>();
+            getNormalSource().edgeSet()
+                .stream()
+                .map(e -> e.getRuleLabel())
+                .filter(l -> l != null)
+                .map(l -> l.getMatchExpr())
+                .forEach(e -> labelSet.addAll(e.getTypeLabels()));
+            result = this.labelSet = labelSet;
         }
-        return this.labelSet;
+        return result;
     }
 
     @Override

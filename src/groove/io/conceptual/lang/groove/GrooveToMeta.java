@@ -84,10 +84,6 @@ public class GrooveToMeta implements Messenger {
             .text();
         MetaType type = MetaType.None;
 
-        if (label == null) {
-            return MetaType.None;
-        }
-
         if (label.equals(this.m_cfg.getStrings()
             .getMetaType())) {
             type = MetaType.Type;

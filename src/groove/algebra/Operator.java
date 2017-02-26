@@ -31,6 +31,7 @@ public class Operator {
      * @throws IllegalArgumentException if the method parameter or return types
      * are not type variables.
      */
+    @SuppressWarnings("null")
     private Operator(Sort sort, OpValue opValue, Method method) throws IllegalArgumentException {
         Type[] methodParameterTypes = method.getGenericParameterTypes();
         this.sort = sort;

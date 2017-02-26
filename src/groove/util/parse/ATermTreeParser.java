@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import groove.algebra.Constant;
@@ -100,7 +101,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
     protected ATermTreeParser(X prototype, Collection<? extends O> ops) {
         this.prototype = prototype;
         this.atomOp = prototype.getOp();
-        assert!this.atomOp.hasSymbol();
+        assert !this.atomOp.hasSymbol();
         this.ops = computeParsableOps(ops);
     }
 
@@ -233,8 +234,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
     /** Returns the map from symbols to predefined (parsable) token types of this parser. */
     private Map<String,TokenFamily> getSymbolFamilyMap() {
         if (this.symbolFamilyMap == null) {
-            Map<String,TokenFamily> result =
-                this.symbolFamilyMap = new TreeMap<>();
+            Map<String,TokenFamily> result = this.symbolFamilyMap = new TreeMap<>();
             for (TokenType type : getTokenTypes()) {
                 if (type.parsable()) {
                     String symbol = type.symbol();
@@ -258,10 +258,10 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
     private Map<String,TokenFamily> symbolFamilyMap;
 
     /** Returns the fixed default token family for a given token type. */
+    @NonNull
     TokenFamily getTokenFamily(TokenType type) {
         if (this.typeFamilyMap == null) {
-            Map<TokenType,TokenFamily> result =
-                this.typeFamilyMap = new HashMap<>();
+            Map<TokenType,TokenFamily> result = this.typeFamilyMap = new HashMap<>();
             for (TokenType t : getTokenTypes()) {
                 if (t.parsable()) {
                     result.put(t, getTokenFamily(t.symbol()));
@@ -272,7 +272,9 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
             }
         }
         assert this.typeFamilyMap.containsKey(type);
-        return this.typeFamilyMap.get(type);
+        TokenFamily result = this.typeFamilyMap.get(type);
+        assert result != null;
+        return result;
     }
 
     private Map<TokenType,TokenFamily> typeFamilyMap;
@@ -412,8 +414,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
      * guaranteed to contain a prefix operator
      */
     protected X parsePrefixed(Token opToken) throws FormatException {
-        @Nullable
-        O op = opToken.type(TokenClaz.PRE_OP)
+        @Nullable O op = opToken.type(TokenClaz.PRE_OP)
             .op();
         assert op != null; // never for pre-ops
         X result = createTree(op);
@@ -815,7 +816,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
      * @param start start position of the fragment
      * @param end end position of the fragment
      */
-    private LineFragment createFragment(int start, int end) {
+    private @NonNull LineFragment createFragment(int start, int end) {
         return new LineFragment(this.input, start, end);
     }
 
@@ -828,7 +829,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
         return createFamilyToken(family, start, end);
     }
 
-    private Token createFamilyToken(TokenFamily family, int start, int end) {
+    private Token createFamilyToken(@NonNull TokenFamily family, int start, int end) {
         return new Token(family, createFragment(start, end));
     }
 
@@ -889,12 +890,10 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
      * though only of distinct token classes.
      * A token also contains the line fragment where it has been found.
      */
-    protected static class Token extends Pair<TokenFamily,LineFragment> {
+    protected static class Token extends Pair<@NonNull TokenFamily,@NonNull LineFragment> {
         /** Constructs a token of a given type family. */
-        Token(TokenFamily family, LineFragment fragment) {
+        Token(@NonNull TokenFamily family, @NonNull LineFragment fragment) {
             super(family, fragment);
-            assert family != null;
-            assert fragment != null;
         }
 
         /** Returns the type of this token. */
@@ -911,8 +910,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
          * one in this token. */
         public <O extends Op> O op(TokenClaz claz) {
             assert claz == TokenClaz.PRE_OP || claz == TokenClaz.LATE_OP;
-            @Nullable
-            O result = type(claz).op();
+            @Nullable O result = type(claz).op();
             assert result != null; // never null for pre- or late-ops
             return result;
         }
@@ -928,7 +926,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
         }
 
         /** Returns the string representation of the token content. */
-        public String substring() {
+        public @NonNull String substring() {
             return two().substring();
         }
 
@@ -984,7 +982,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
             if (this.symbol == null) {
                 this.symbol = type.symbol();
             } else {
-                assert!type.parsable() || this.symbol.equals(type.symbol());
+                assert !type.parsable() || this.symbol.equals(type.symbol());
             }
         }
 
@@ -1000,14 +998,14 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
     static class OpFamily<O extends Op> extends Duo<O> {
         /** Returns an operator family, initialised with a given operator. */
         OpFamily(O op) {
+            super(null, null);
             this.symbol = op.getSymbol();
             add(op);
         }
 
         /** Adds an operator to this family. */
         public void add(O value) {
-            @Nullable
-            O oldValue;
+            @Nullable O oldValue;
             if (value.getKind()
                 .getPlace() == Placement.PREFIX) {
                 oldValue = setOne(value);
@@ -1062,7 +1060,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
         }
 
         /** Returns the fragment substring. */
-        public String substring() {
+        public @NonNull String substring() {
             return line().substring(start(), end());
         }
 
@@ -1148,8 +1146,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
             switch (claz()) {
             case PRE_OP:
             case LATE_OP:
-                @Nullable
-                Op op = op();
+                @Nullable Op op = op();
                 assert op != null; // never null for pre- or late-ops
                 result = op.getSymbol();
                 break;

@@ -1576,10 +1576,10 @@ abstract public class RegExpr { // implements VarSetSupport {
                     result.append(" ");
                     result.append(type.subSequence(0, type.length() - 1));
                 }
-                if (this.guard.getLabels() != null) {
+                Set<TypeLabel> labels = this.guard.getLabels();
+                if (labels != null) {
                     result.append(this.guard.isNegated() ? " not in " : " from ");
-                    result.append(Groove.toString(this.guard.getLabels()
-                        .toArray()));
+                    result.append(Groove.toString(labels.toArray()));
                 }
             }
             return result.toString();

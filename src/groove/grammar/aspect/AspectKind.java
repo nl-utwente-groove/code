@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import groove.algebra.Constant;
 import groove.algebra.Operator;
 import groove.algebra.Signature.OpValue;
@@ -205,8 +207,7 @@ public enum AspectKind {
         assert input.startsWith(getName()) && input.indexOf(SEPARATOR) >= 0;
         // give the text to the content kind to parse
         Pair<Object,String> result = getContentKind().parse(input, getName().length(), role);
-        return new Pair<>(new Aspect(this, getContentKind(), result.one()),
-            result.two());
+        return new Pair<>(new Aspect(this, getContentKind(), result.one()), result.two());
     }
 
     /**
@@ -891,11 +892,13 @@ public enum AspectKind {
     static private String ops(AspectKind kind) {
         StringBuilder result = new StringBuilder();
         assert kind.hasSignature();
-        for (OpValue op : Sort.getKind(kind.getName()).getOpValues()) {
+        for (OpValue op : Sort.getKind(kind.getName())
+            .getOpValues()) {
             if (result.length() > 0) {
                 result.append(", ");
             }
-            result.append(Help.it(op.getOperator().getName()));
+            result.append(Help.it(op.getOperator()
+                .getName()));
         }
         return result.toString();
     }
@@ -1045,7 +1048,7 @@ public enum AspectKind {
                     COMPOSITE);
                 break;
             default:
-                assert!role.inGrammar();
+                assert !role.inGrammar();
                 nodeKinds = EnumSet.noneOf(AspectKind.class);
                 edgeKinds = EnumSet.noneOf(AspectKind.class);
             }
@@ -1428,6 +1431,7 @@ public enum AspectKind {
                 // the rest of the label should be a constant or operator
                 // of the signature
                 String value = text.substring(pos + 1);
+                assert value != null;
                 return new Pair<>(parseContent(value, role), "");
             }
         }
@@ -1437,7 +1441,7 @@ public enum AspectKind {
          * @param role graph role for which the content is parsed
          * @return the resulting content value
          */
-        Object parseContent(String text, GraphRole role) throws FormatException {
+        Object parseContent(@NonNull String text, GraphRole role) throws FormatException {
             Object result;
             // This implementation tries to parse the text as a constant of the
             // given signature.
@@ -1533,7 +1537,8 @@ public enum AspectKind {
             Object result = content;
             if (this.signature != null && content instanceof String) {
                 // this is a field name
-                if (oldLabel.getRole() == EdgeRole.BINARY && oldLabel.text().equals(content)) {
+                if (oldLabel.getRole() == EdgeRole.BINARY && oldLabel.text()
+                    .equals(content)) {
                     result = newLabel.text();
                 }
             }

@@ -138,6 +138,7 @@ public class GrooveEnvironment extends Environment {
     /**
      * Loads a single method definition, and tests the definition.
      */
+    @SuppressWarnings("null")
     private void ensureLoaded(Class<? extends GroovePredicates> source, CompoundTermTag tag,
         String definition) {
         DefinitionListener listener = new DefinitionListener();
@@ -177,7 +178,8 @@ public class GrooveEnvironment extends Environment {
                             className,
                             PrologCode.class.getName()));
                 }
-                if (builtInClass.getAnnotation(Deprecated.class) != null) {
+                Deprecated annotation = builtInClass.getAnnotation(Deprecated.class);
+                if (annotation != null) {
                     throw new IllegalArgumentException(
                         String.format("%s#%s_%d builds in deprecated class %s",
                             source.getName(),

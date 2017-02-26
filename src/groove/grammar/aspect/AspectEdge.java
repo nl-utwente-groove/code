@@ -67,7 +67,7 @@ import groove.util.parse.StringHandler;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AspectEdge extends AEdge<AspectNode,AspectLabel>implements AspectElement, Fixable {
+public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectElement, Fixable {
     /**
      * Constructs a new edge.
      * @param source the source node for this edge
@@ -229,7 +229,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel>implements AspectEl
             assert kind.isRole();
             String message = null;
             RegExpr matchExpr = ruleLabel.getMatchExpr();
-            if (matchExpr != null && matchExpr.containsOperator(RegExpr.NEG_OPERATOR)) {
+            if (matchExpr.containsOperator(RegExpr.NEG_OPERATOR)) {
                 message = "Negation only allowed as top-level operator";
             } else if (kind.isCreator()) {
                 if (ruleLabel.isWildcard()) {
@@ -260,7 +260,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel>implements AspectEl
      * @throws FormatException if the aspects are inconsistent
      */
     private void setAspects(AspectLabel label) throws FormatException {
-        assert!label.isNodeOnly();
+        assert !label.isNodeOnly();
         for (Aspect aspect : label.getAspects()) {
             declareAspect(aspect);
         }
@@ -416,7 +416,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel>implements AspectEl
         // prefix
         switch (getKind()) {
         case CONNECT:
-            assert!onNode;
+            assert !onNode;
             text = "+";
             break;
         case LET:
@@ -633,7 +633,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel>implements AspectEl
     /** Setter for the aspect type. */
     private void setAspect(Aspect aspect) throws FormatException {
         AspectKind kind = aspect.getKind();
-        assert!kind.isAttrKind() && kind != AspectKind.PATH && kind != AspectKind.LITERAL;
+        assert !kind.isAttrKind() && kind != AspectKind.PATH && kind != AspectKind.LITERAL;
         // process the content, if any
         if (kind.isQuantifier()) {
             // backward compatibility to take care of edges such as

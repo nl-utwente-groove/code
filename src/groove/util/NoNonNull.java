@@ -16,15 +16,7 @@
  */
 package groove.util;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Collection of convenience methods to avoid {@link NoNonNull}-related warnings
@@ -34,14 +26,6 @@ import org.eclipse.jdt.annotation.Nullable;
  */
 @NonNullByDefault
 public class NoNonNull {
-    /** Convenience method for {@link Collections#singleton(Object)}.
-     * Avoids {@link NoNonNull}-warnings.
-     */
-    @SuppressWarnings("null")
-    public static <T> Set<T> singleton(T o) {
-        return Collections.singleton(o);
-    }
-
     /** Convenience method for {@link Object#toString()}.
      * Avoids {@link NoNonNull}-warnings.
      */
@@ -50,53 +34,4 @@ public class NoNonNull {
         assert result != null;
         return result;
     }
-
-    /** Convenience method for {@link Collection#toArray(Object[])}.
-     * Avoids {@link NoNonNull}-warnings.
-     */
-    @SuppressWarnings("null")
-    public static <T> T[] toArray(Collection<T> source, T[] a) {
-        return source.toArray(a);
-    }
-
-    /** Convenience method for {@link Collections#unmodifiableList(List)}.
-     * Avoids {@link NoNonNull}-warnings.
-     */
-    @SuppressWarnings("null")
-    public static <T> List<T> unmodifiableList(List<T> source) {
-        return Collections.unmodifiableList(source);
-    }
-
-    /** Convenience method for {@link Iterator#next()}.
-     * Avoids {@link NoNonNull}-warnings.
-     */
-    @SuppressWarnings("null")
-    public static <T> T next(@Nullable Iterator<T> source) {
-        return source.next();
-    }
-
-    /** Convenience method for {@link String#substring(int, int)}.
-     * Avoids {@link NoNonNull}-warnings.
-     */
-    @SuppressWarnings("null")
-    public static String substring(String source, int start, int end) {
-        return source.substring(start, end);
-    }
-
-    /** Convenience method for {@link String#substring(int)}.
-     * Avoids {@link NoNonNull}-warnings.
-     */
-    @SuppressWarnings("null")
-    public static String substring(String source, int start) {
-        return source.substring(start);
-    }
-
-    /** Convenience method for {@link String#trim()}.
-     * Avoids {@link NoNonNull}-warnings.
-     */
-    @SuppressWarnings("null")
-    public static final String trim(String string) {
-        return (@NonNull String) string.trim();
-    }
-
 }

@@ -116,8 +116,9 @@ public class RegExprTyper implements RegExprCalculator<Result> {
         Result result = new Result();
         TypeLabel typeLabel = expr.toTypeLabel();
         if (this.typeGraph.isNodeType(typeLabel)) {
-            for (TypeNode subType : this.typeGraph.getNode(typeLabel)
-                .getSubtypes()) {
+            TypeNode typeNode = this.typeGraph.getNode(typeLabel);
+            assert typeNode != null; // due to isNodeType(typeLabel)
+            for (TypeNode subType : typeNode.getSubtypes()) {
                 if (!subType.isAbstract()) {
                     result.add(subType, subType);
                 }
@@ -145,8 +146,9 @@ public class RegExprTyper implements RegExprCalculator<Result> {
         Result result = new Result();
         TypeLabel typeLabel = expr.getSharpLabel();
         if (this.typeGraph.isNodeType(typeLabel)) {
-            for (TypeNode subType : this.typeGraph.getNode(typeLabel)
-                .getSubtypes()) {
+            TypeNode typeNode = this.typeGraph.getNode(typeLabel);
+            assert typeNode != null; // due to isNodeType(typeLabel)
+            for (TypeNode subType : typeNode.getSubtypes()) {
                 result.add(subType, subType);
             }
         } else {

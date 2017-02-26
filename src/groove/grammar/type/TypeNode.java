@@ -205,7 +205,7 @@ public class TypeNode implements Node, TypeElement {
         if (this.equals(other)) {
             return true;
         } else {
-            return !strict && getGraph() != null && getGraph().isSubtype(other, this);
+            return !strict && getGraph().isSubtype(other, this);
         }
     }
 
