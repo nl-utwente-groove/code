@@ -16,15 +16,18 @@
  */
 package groove.algebra.syntax;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import groove.algebra.Sort;
 import groove.util.line.Line;
 import groove.util.parse.OpKind;
 
 /**
  * Algebraic variable.
- * @author Rensink
+ * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public class Variable extends Expression {
     /** Constructs a new variable with a given name and sort. */
     public Variable(boolean prefixed, String name, Sort sort) {
