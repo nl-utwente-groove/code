@@ -191,7 +191,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         } else {
             String name = id.get(0);
             Optional<Sort> varSort = varMap.getSort(name);
-            if (varSort.isPresent()) {
+            if (!varSort.isPresent()) {
                 // this is a self-field
                 result = new FieldExpr(hasSort(), null, name, sort);
             } else if (varSort.get() != sort) {
