@@ -95,7 +95,7 @@ public class TypeGuard extends Property<TypeElement> {
                     .forEach(l -> textList.add((l.equals(oldLabel) ? newLabel : l).text()));
             } else {
                 labelSet.stream()
-                    .filter(l -> l.equals(oldLabel))
+                    .filter(l -> !l.equals(oldLabel))
                     .forEach(l -> textList.add(l.text()));
             }
             result = new TypeGuard(this.var);
