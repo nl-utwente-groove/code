@@ -572,10 +572,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
             RuleNode sourceImage = result.getNode(edge.source());
             RuleNode targetImage = result.getNode(edge.target());
             TypeNode sourceType = sourceImage.getType();
-            TypeEdge typeEdge = getTypeEdge(sourceImage.getType(),
-                edgeLabel.getTypeLabel(),
-                targetImage.getType(),
-                false);
+            TypeNode targetType = targetImage.getType();
+            TypeEdge typeEdge =
+                getTypeEdge(sourceImage.getType(), edgeLabel.getTypeLabel(), targetType, false);
             if (typeEdge == null) {
                 // if the source type is the top type, we must be in a
                 // graph editor where a new edge label has been used and
@@ -583,8 +582,13 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                 // upon saving, and the error is confusing, so dont't
                 // throw it
                 if (!sourceType.isTopType()) {
-                    errors.add("%s-node has unknown %s-%s", sourceType, edgeLabel, edge.getRole()
-                        .getDescription(false), edge);
+                    errors.add("%s-node has unknown %s-%s to %s",
+                        sourceType,
+                        edgeLabel,
+                        edge.getRole()
+                            .getDescription(false),
+                        targetType,
+                        edge);
                 }
             } else {
                 result.putEdge(edge, ruleFactory.createEdge(sourceImage, edgeLabel, targetImage));
@@ -895,11 +899,12 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                 // upon saving, and the error is confusing, so dont't
                 // throw it
                 if (!sourceType.isTopType()) {
-                    errors.add("%s-node has unknown %s-%s",
+                    errors.add("%s-node has unknown %s-%s to %s",
                         sourceType,
                         edgeType.text(),
                         edgeType.getRole()
                             .getDescription(false),
+                        targetType,
                         edge.source());
                 }
             } else if (typeEdge.isAbstract()) {
