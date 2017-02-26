@@ -37,6 +37,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import groove.annotation.Help;
 import groove.annotation.Syntax;
 import groove.annotation.ToolTipBody;
@@ -457,15 +459,16 @@ abstract public class RegExpr { // implements VarSetSupport {
     abstract public boolean isBinary();
 
     /** Returns a line representing this expression typeset properly. */
-    public Line toLine() {
-        if (this.line == null) {
-            this.line = computeLine();
+    public @NonNull Line toLine() {
+        Line result = this.line;
+        if (result == null) {
+            this.line = result = computeLine();
         }
-        return this.line;
+        return result;
     }
 
     /** Callback method to create the line representation for this expression. */
-    abstract protected Line computeLine();
+    abstract protected @NonNull Line computeLine();
 
     private Line line;
 

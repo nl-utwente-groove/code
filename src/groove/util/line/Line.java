@@ -97,7 +97,7 @@ public abstract class Line {
     }
 
     /** Returns a composed line consisting of this line and a sequence of others. */
-    public Line append(Line... args) {
+    public @NonNull Line append(@NonNull Line... args) {
         Line result;
         if (isEmpty()) {
             if (args.length == 0) {
@@ -207,7 +207,7 @@ public abstract class Line {
     }
 
     /** Returns the (fixed) empty line. */
-    public static Empty empty() {
+    public static @NonNull Empty empty() {
         return empty;
     }
 
