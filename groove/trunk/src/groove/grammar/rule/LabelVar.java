@@ -1,20 +1,23 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.grammar.rule;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import groove.automaton.RegExpr;
 import groove.grammar.AnchorKind;
@@ -27,8 +30,9 @@ import groove.graph.EdgeRole;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public class LabelVar implements AnchorKey, Comparable<LabelVar> {
-    /** 
+    /**
      * Private constructor initialising all fields
      * @param nr number of the new variable; 0 unless the name is empty
      * @param name non-{@code null} name of the new variable
@@ -59,17 +63,17 @@ public class LabelVar implements AnchorKey, Comparable<LabelVar> {
         this(++unnamedLabelCounter, "", kind);
     }
 
-    /** 
+    /**
      * Indicates if this variable has a nonempty name.
      */
     public final boolean hasName() {
         return this.name.length() > 0;
     }
 
-    /** 
+    /**
      * Returns the name of the variable.
      * Note that the name alone does not uniquely identify the variable,
-     * as there may be multiple unnamed variables; see {@link #getKey()} 
+     * as there may be multiple unnamed variables; see {@link #getKey()}
      */
     public final String getName() {
         return this.name;
@@ -80,7 +84,7 @@ public class LabelVar implements AnchorKey, Comparable<LabelVar> {
         return getName() + "-" + this.nr;
     }
 
-    /** 
+    /**
      * Returns the kind of this label variable.
      */
     public final EdgeRole getKind() {
@@ -103,7 +107,7 @@ public class LabelVar implements AnchorKey, Comparable<LabelVar> {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }

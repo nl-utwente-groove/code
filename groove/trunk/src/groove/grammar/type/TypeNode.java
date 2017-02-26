@@ -21,6 +21,8 @@ import static groove.graph.EdgeRole.NODE_TYPE;
 import java.awt.Color;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import groove.grammar.AnchorKind;
 import groove.graph.EdgeRole;
 import groove.graph.Label;
@@ -43,7 +45,7 @@ public class TypeNode implements Node, TypeElement {
      * @param type the non-{@code null} type label
      * @param graph the type graph to which this node belongs; non-{@code null}
      */
-    public TypeNode(int nr, TypeLabel type, TypeGraph graph) {
+    public TypeNode(int nr, @NonNull TypeLabel type, @NonNull TypeGraph graph) {
         assert graph != null;
         assert type.getRole() == NODE_TYPE : String
             .format("Can't create type node for non-type label '%s'", type);
@@ -65,7 +67,7 @@ public class TypeNode implements Node, TypeElement {
             || (isImported() && ((TypeNode) obj).isImported());
         boolean result = this == obj;
         // object equality should imply equal numbers and type labels
-        assert!result || !(obj instanceof TypeNode) || (getNumber() == ((TypeNode) obj).getNumber()
+        assert !result || !(obj instanceof TypeNode) || (getNumber() == ((TypeNode) obj).getNumber()
             && label().equals(((TypeNode) obj).label()));
         return result;
     }
@@ -213,7 +215,7 @@ public class TypeNode implements Node, TypeElement {
     }
 
     /** The type graph with which this node is associated. */
-    private final TypeGraph graph;
+    private final @NonNull TypeGraph graph;
     /** Flag indicating this node is a data type. */
     private final boolean dataType;
     /** Flag indicating if this node type is abstract. */
@@ -227,5 +229,5 @@ public class TypeNode implements Node, TypeElement {
     /** The number of this node. */
     private final int nr;
     /** The type of this node. */
-    private final TypeLabel type;
+    private final @NonNull TypeLabel type;
 }

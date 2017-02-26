@@ -34,6 +34,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 import groove.automaton.RegExpr;
 import groove.automaton.RegExprTyper;
@@ -72,7 +73,7 @@ import groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge>implements TypeChecker {
+public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements TypeChecker {
     /** Constructs a fresh type graph.
      * @param name the (non-{@code null}) name of the type graph
      */
@@ -335,8 +336,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge>implements 
                 // propagate colours
                 Color nodeColour = node.getColor();
                 if (nodeColour != null) {
-                    Set<TypeNode> propagatees =
-                        new HashSet<>(this.nodeSubtypeMap.get(node));
+                    Set<TypeNode> propagatees = new HashSet<>(this.nodeSubtypeMap.get(node));
                     propagatees.remove(node);
                     while (!propagatees.isEmpty()) {
                         Iterator<TypeNode> subNodeIter = propagatees.iterator();
@@ -352,8 +352,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge>implements 
                 // propagate label patterns
                 LabelPattern nodePattern = node.getLabelPattern();
                 if (nodePattern != null) {
-                    Set<TypeNode> propagatees =
-                        new HashSet<>(this.nodeSubtypeMap.get(node));
+                    Set<TypeNode> propagatees = new HashSet<>(this.nodeSubtypeMap.get(node));
                     propagatees.remove(node);
                     while (!propagatees.isEmpty()) {
                         Iterator<TypeNode> subNodeIter = propagatees.iterator();
@@ -624,8 +623,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge>implements 
                     // for all other regular expressions, the matching path may start and
                     // end in a subtype of the regexpr edge source/target
                     fit = false;
-                    Set<TypeNode> targetTypes =
-                        new HashSet<>(getMatchingTypes(targetImage));
+                    Set<TypeNode> targetTypes = new HashSet<>(getMatchingTypes(targetImage));
                     for (TypeNode sourceType : getMatchingTypes(sourceImage)) {
                         Set<TypeNode> resultTargetTypes = typeResult.getAll(sourceType);
                         if (resultTargetTypes != null && targetTypes.removeAll(resultTargetTypes)) {
@@ -664,7 +662,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge>implements 
         RuleGraphMorphism parentTyping, RuleGraphMorphism typing) throws FormatException {
         Map<RuleNode,RuleNode> result = new HashMap<>();
         // mapping from type variables to sets of potential node types
-        Map<LabelVar,Set<TypeNode>> varTypesMap = new HashMap<>();
+        Map<LabelVar,Set<@NonNull TypeNode>> varTypesMap = new HashMap<>();
         FormatErrorSet errors = new FormatErrorSet();
         // auxiliary map to sets of allowed node types
         Map<RuleNode,Set<TypeNode>> nodeTypesMap = new HashMap<>();
@@ -705,7 +703,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge>implements 
                     // for node type wildcards, the guard is never null
                     LabelVar var = guard.getVar();
                     vars.add(var);
-                    Set<TypeNode> varTypes = varTypesMap.get(var);
+                    Set<@NonNull TypeNode> varTypes = varTypesMap.get(var);
                     if (varTypes == null) {
                         varTypesMap.put(var, varTypes = new HashSet<>(types));
                     }
@@ -1032,7 +1030,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge>implements 
      * @return the type node labelled with {@code label}, or {@code null}
      * if {@code label} does not correspond to a note type label.
      */
-    public TypeNode getNode(String label) {
+    public @Nullable TypeNode getNode(String label) {
         return getNode(TypeLabel.createLabel(label));
     }
 
@@ -1041,7 +1039,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge>implements 
      * if there is such a node in the type graph. Returns {@code null}
      * if the label is not a known node type.
      */
-    public TypeNode getNode(Label label) {
+    public @Nullable TypeNode getNode(@NonNull Label label) {
         assert label.getRole() == NODE_TYPE;
         if (isImplicit()) {
             return this.factory.getTopNode();
@@ -1175,8 +1173,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge>implements 
      * Mapping from abstract edge types to edge subtypes.
      * Built at the moment of fixing the type graph.
      */
-    private final Map<TypeEdge,Set<TypeEdge>> edgeSubtypeMap =
-        new HashMap<>();
+    private final Map<TypeEdge,Set<TypeEdge>> edgeSubtypeMap = new HashMap<>();
 
     /** Returns the set of supertypes of a given node type. */
     public @NonNull Set<TypeNode> getSupertypes(TypeNode node) {
@@ -1215,15 +1212,14 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge>implements 
      * Mapping from edge types to abstract edge supertypes.
      * Built at the moment of fixing the type graph.
      */
-    private final Map<TypeEdge,Set<TypeEdge>> edgeSupertypeMap =
-        new HashMap<>();
+    private final Map<TypeEdge,Set<TypeEdge>> edgeSupertypeMap = new HashMap<>();
 
     /**
      * Returns the set of type nodes and edges in this type graph
      * that can be matched by a given rule label.
      */
     public Set<TypeElement> getMatches(RuleLabel label) {
-        Set<TypeElement> result = new HashSet<>();
+        Set<@NonNull TypeElement> result = new HashSet<>();
         if (label.isInv()) {
             label = label.getInvLabel();
         }
@@ -1242,7 +1238,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge>implements 
                 .filter(result);
         } else if (label.isSharp()) {
             if (isNodeType(label) && !isImplicit()) {
-                result.add(getNode(label));
+                TypeNode node = getNode(label);
+                assert node != null; // because isNodeType(label)
+                result.add(node);
             } else {
                 result.addAll(edgeSet(label.getSharpLabel()));
             }

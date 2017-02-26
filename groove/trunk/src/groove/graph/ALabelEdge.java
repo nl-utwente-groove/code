@@ -16,6 +16,8 @@
  */
 package groove.graph;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import groove.util.line.Line;
 
 /**
@@ -23,7 +25,7 @@ import groove.util.line.Line;
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class ALabelEdge<N extends Node> extends AEdge<N,ALabelEdge<N>>implements Label {
+public abstract class ALabelEdge<N extends Node> extends AEdge<N,ALabelEdge<N>> implements Label {
     /**
      * Constructs a new instance, for a given source and target node.
      */
@@ -43,16 +45,17 @@ public abstract class ALabelEdge<N extends Node> extends AEdge<N,ALabelEdge<N>>i
 
     @Override
     final public Line toLine() {
-        if (this.line == null) {
-            this.line = computeLine();
+        Line result = this.line;
+        if (result == null) {
+            this.line = result = computeLine();
         }
-        return this.line;
+        return result;
     }
 
     private Line line;
 
     /** Callback method to compute the line returned by {@link #toLine()}. */
-    abstract protected Line computeLine();
+    abstract protected @NonNull Line computeLine();
 
     /** In general, we do not expect labels to be reconstructable from a string. */
     @Override
