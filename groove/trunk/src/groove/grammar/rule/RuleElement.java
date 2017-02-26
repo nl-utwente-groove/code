@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import groove.grammar.type.TypeElement;
 import groove.grammar.type.TypeGuard;
@@ -35,7 +36,7 @@ import groove.graph.Element;
 @NonNullByDefault
 public interface RuleElement extends Element, AnchorKey {
     /** Returns the type of this rule element. */
-    public TypeElement getType();
+    public @Nullable TypeElement getType();
 
     /** Returns the set of label variables associated with this rule element. */
     public Set<LabelVar> getVars();
@@ -52,9 +53,7 @@ public interface RuleElement extends Element, AnchorKey {
     public Set<? extends TypeElement> getMatchingTypes();
 
     /** Fixed global empty set of label variables. */
-    @SuppressWarnings("null")
     final static Set<LabelVar> EMPTY_VAR_SET = Collections.emptySet();
     /** Fixed global empty set of label variables. */
-    @SuppressWarnings("null")
     final static List<TypeGuard> EMPTY_GUARD_LIST = Collections.emptyList();
 }

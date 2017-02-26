@@ -24,6 +24,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import groove.algebra.Sort;
+import groove.util.NoNonNull;
 
 /**
  * Variable typing.
@@ -69,7 +70,6 @@ public class Typing {
      * @param varName the variable name of which the sort is requested
      * @return the sort of {@code varName}, or none if {@code varName} is unknown
      */
-    @SuppressWarnings("null")
     public Optional<Sort> getSort(String varName) {
         Sort sort = this.sortMap.get(varName);
         return Optional.ofNullable(sort);
@@ -95,10 +95,9 @@ public class Typing {
         return true;
     }
 
-    @SuppressWarnings("null")
     @Override
     public String toString() {
-        return this.sortMap.toString();
+        return NoNonNull.toString(this.sortMap);
     }
 
     /** Creates an (initially) empty typing. */
