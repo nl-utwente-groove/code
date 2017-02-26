@@ -19,7 +19,7 @@ package groove.grammar.rule;
 import java.util.Collections;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import groove.grammar.type.TypeNode;
 import groove.graph.Node;
@@ -29,6 +29,7 @@ import groove.graph.Node;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public interface RuleNode extends Node, RuleElement {
     /* Specialises the return type. */
     @Override
@@ -50,5 +51,5 @@ public interface RuleNode extends Node, RuleElement {
     public boolean stronglyEquals(RuleNode other);
 
     /** Fixed global empty set of matching types. */
-    final static @NonNull Set<TypeNode> EMPTY_MATCH_SET = Collections.emptySet();
+    @SuppressWarnings("null") final static Set<TypeNode> EMPTY_MATCH_SET = Collections.emptySet();
 }

@@ -21,6 +21,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import groove.util.DefaultFixable;
 import groove.util.Pair;
 import groove.util.line.Line;
@@ -59,7 +61,7 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
 
     /** Adds an argument to this expression. */
     public void addArg(T arg) {
-        assert!isFixed();
+        assert !isFixed();
         this.args.add(arg);
     }
 
@@ -260,12 +262,12 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
     }
 
     /** Returns the string from which this expression was parsed, if any. */
-    public String getParseString() {
-        if (this.parseString == null) {
-            return toLine().toFlatString();
-        } else {
-            return this.parseString;
+    public @NonNull String getParseString() {
+        String result = this.parseString;
+        if (result == null) {
+            result = toLine().toFlatString();
         }
+        return result;
     }
 
     /**

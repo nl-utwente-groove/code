@@ -17,6 +17,7 @@
 package groove.algebra.syntax;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import groove.algebra.Sort;
 import groove.util.line.Line;
@@ -77,7 +78,7 @@ public class Variable extends Expression {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }

@@ -48,6 +48,7 @@ public class Typing {
 
     /** Adds a variable plus type to this typing.
      * @throws IllegalArgumentException if variable already occurs with another type. */
+    @SuppressWarnings("null")
     public void add(String var, Sort type) {
         Sort oldType = this.sortMap.put(var, type);
         if (oldType != null && !oldType.equals(type)) {
@@ -56,7 +57,7 @@ public class Typing {
         }
     }
 
-    private final Map<String,@Nullable Sort> sortMap;
+    private final Map<String,Sort> sortMap;
 
     /** Indicates if this typing is empty. */
     public boolean isEmpty() {
@@ -68,11 +69,10 @@ public class Typing {
      * @param varName the variable name of which the sort is requested
      * @return the sort of {@code varName}, or none if {@code varName} is unknown
      */
+    @SuppressWarnings("null")
     public Optional<Sort> getSort(String varName) {
         Sort sort = this.sortMap.get(varName);
-        Optional<Sort> result = sort == null ? Optional.empty() : Optional.of(sort);
-        assert result != null;
-        return result;
+        return Optional.ofNullable(sort);
     }
 
     @Override
@@ -81,7 +81,7 @@ public class Typing {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }
@@ -95,6 +95,7 @@ public class Typing {
         return true;
     }
 
+    @SuppressWarnings("null")
     @Override
     public String toString() {
         return this.sortMap.toString();

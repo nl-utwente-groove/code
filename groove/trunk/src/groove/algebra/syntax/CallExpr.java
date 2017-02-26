@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import groove.algebra.Operator;
 import groove.algebra.Sort;
 import groove.grammar.type.TypeLabel;
@@ -71,9 +73,8 @@ public class CallExpr extends Expression {
     @Override
     protected Typing computeTyping() {
         Typing result = new Typing();
-        for (Expression arg : getArgs()) {
-            result.add(arg.getTyping());
-        }
+        getArgs().stream()
+            .forEach(a -> result.add(a.getTyping()));
         return result;
     }
 
@@ -151,7 +152,7 @@ public class CallExpr extends Expression {
     }
 
     /** Builds a display string for an operator without symbol. */
-    private Line toCallLine() {
+    private @NonNull Line toCallLine() {
         List<Line> result = new ArrayList<>();
         result.add(Line.atom(this.op.getName() + '('));
         boolean firstArg = true;
@@ -168,7 +169,7 @@ public class CallExpr extends Expression {
     }
 
     /** Builds a display string for an operator with an infix or prefix symbol. */
-    private Line toFixLine(OpKind context) {
+    private @NonNull Line toFixLine(OpKind context) {
         List<Line> result = new ArrayList<>();
         OpKind me = getOperator().getKind();
         boolean addPars = me.compareTo(context) < 0;

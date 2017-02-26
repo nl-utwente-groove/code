@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package groove.util.collect;
 
@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Observable;
 import java.util.Set;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Provides a view upon a given set that sends notifications of additions and
@@ -149,7 +151,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
             }
 
             /** The last element returned by #next(). */
-            private T last;
+            private @Nullable T last;
         };
     }
 
