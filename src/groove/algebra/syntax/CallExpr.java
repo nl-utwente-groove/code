@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -17,6 +17,12 @@
 package groove.algebra.syntax;
 
 import static groove.graph.EdgeRole.BINARY;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import groove.algebra.Operator;
 import groove.algebra.Sort;
 import groove.grammar.type.TypeLabel;
@@ -24,13 +30,6 @@ import groove.util.line.Line;
 import groove.util.parse.OpKind;
 import groove.util.parse.OpKind.Direction;
 import groove.util.parse.OpKind.Placement;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * "Proper" term, consisting of an operator applied to other terms.
@@ -50,7 +49,7 @@ public class CallExpr extends Expression {
      * Constructs a term from a given operator and sequence of arguments.
      * The term will be considered type prefixed if the operator is ambiguous.
      * @see #isPrefixed()
-     * @see Operator#isAmbiguous() 
+     * @see Operator#isAmbiguous()
      */
     public CallExpr(Operator op, Expression... args) {
         this(op.isAmbiguous(), op, Arrays.asList(args));
@@ -70,10 +69,10 @@ public class CallExpr extends Expression {
     }
 
     @Override
-    protected Map<String,Sort> computeVarMap() {
-        Map<String,Sort> result = new HashMap<>();
+    protected Typing computeTyping() {
+        Typing result = new Typing();
         for (Expression arg : getArgs()) {
-            result.putAll(arg.getVariables());
+            result.add(arg.getTyping());
         }
         return result;
     }
@@ -180,8 +179,8 @@ public class CallExpr extends Expression {
         }
         if (me.getPlace() != Placement.PREFIX) {
             // add left argument
-            result.add(this.args.get(nextArgIx).toLine(
-                me.getDirection() == Direction.LEFT ? me : me.increase()));
+            result.add(this.args.get(nextArgIx)
+                .toLine(me.getDirection() == Direction.LEFT ? me : me.increase()));
             nextArgIx++;
             if (addSpaces) {
                 result.add(Line.atom(" "));
@@ -193,8 +192,8 @@ public class CallExpr extends Expression {
             if (addSpaces) {
                 result.add(Line.atom(" "));
             }
-            result.add(this.args.get(nextArgIx).toLine(
-                me.getDirection() == Direction.RIGHT ? me : me.increase()));
+            result.add(this.args.get(nextArgIx)
+                .toLine(me.getDirection() == Direction.RIGHT ? me : me.increase()));
             nextArgIx++;
         }
         if (addPars) {
@@ -250,7 +249,8 @@ public class CallExpr extends Expression {
             return false;
         }
         for (int i = 0; i < arity; i++) {
-            if (getArgs().get(i).getSort() != argTypes.get(i)) {
+            if (getArgs().get(i)
+                .getSort() != argTypes.get(i)) {
                 return false;
             }
         }

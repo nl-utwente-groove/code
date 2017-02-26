@@ -18,10 +18,9 @@ package groove.algebra;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Collections;
-import java.util.Map;
 
 import groove.algebra.syntax.Expression;
+import groove.algebra.syntax.Typing;
 import groove.util.Exceptions;
 import groove.util.line.Line;
 import groove.util.parse.OpKind;
@@ -92,8 +91,8 @@ public class Constant extends Expression {
     }
 
     @Override
-    protected Map<String,Sort> computeVarMap() {
-        return Collections.emptyMap();
+    protected Typing computeTyping() {
+        return Typing.emptyTyping();
     }
 
     @Override
