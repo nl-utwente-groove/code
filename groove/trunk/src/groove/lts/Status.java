@@ -52,11 +52,12 @@ public class Status {
 
     private final Set<Flag> flags;
 
-    /** Retrieves the absence level from a given status value. */
+    /** Sets the absence level in a given status value, and returns the result. */
     static public int setAbsence(int status, int absence) {
+        assert getAbsence(status) == 0 : String.format("Absence level already set in %x", absence);
         if (absence > Status.MAX_ABSENCE) {
-            throw new IllegalArgumentException(String.format("Absence level %d too large: max. %s",
-                absence, Status.MAX_ABSENCE));
+            throw new IllegalArgumentException(
+                String.format("Absence level %d too large: max. %s", absence, Status.MAX_ABSENCE));
         }
         return status | (absence << Status.ABSENCE_SHIFT);
     }
