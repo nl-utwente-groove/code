@@ -16,6 +16,11 @@
  */
 package groove.grammar.rule;
 
+import java.util.List;
+import java.util.Set;
+
+import org.eclipse.jdt.annotation.NonNull;
+
 import groove.automaton.RegAut;
 import groove.automaton.RegAutCalculator;
 import groove.automaton.RegExpr;
@@ -26,9 +31,6 @@ import groove.graph.ALabel;
 import groove.graph.EdgeRole;
 import groove.graph.Label;
 import groove.util.line.Line;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * Implements a label corresponding to a regular expression.
@@ -111,7 +113,7 @@ public class RuleLabel extends ALabel {
     }
 
     /** Returns the underlying regular expression. */
-    public RegExpr getMatchExpr() {
+    public @NonNull RegExpr getMatchExpr() {
         return this.regExpr;
     }
 
@@ -178,8 +180,7 @@ public class RuleLabel extends ALabel {
 
     /** Tests if this label wraps a {@link groove.automaton.RegExpr.Sharp}. */
     public boolean isSharp() {
-        RegExpr regExpr = getMatchExpr();
-        return regExpr == null ? false : regExpr.isSharp();
+        return getMatchExpr().isSharp();
     }
 
     /**
@@ -188,14 +189,12 @@ public class RuleLabel extends ALabel {
      * Returns {@code null} otherwise.
      */
     public TypeLabel getSharpLabel() {
-        RegExpr regExpr = getMatchExpr();
-        return regExpr == null ? null : regExpr.getSharpLabel();
+        return getMatchExpr().getSharpLabel();
     }
 
     /** Tests if this label wraps a {@link groove.automaton.RegExpr.Wildcard}. */
     public boolean isWildcard() {
-        RegExpr regExpr = getMatchExpr();
-        return regExpr == null ? false : regExpr.isWildcard();
+        return getMatchExpr().isWildcard();
     }
 
     /**
@@ -204,8 +203,7 @@ public class RuleLabel extends ALabel {
      * Returns <code>null</code> in all other cases.
      */
     public TypeGuard getWildcardGuard() {
-        RegExpr regExpr = getMatchExpr();
-        return regExpr == null ? null : regExpr.getWildcardGuard();
+        return getMatchExpr().getWildcardGuard();
     }
 
     /** Tests if this label wraps a {@link groove.automaton.RegExpr.Choice}. */
@@ -294,7 +292,8 @@ public class RuleLabel extends ALabel {
         RuleLabel result = null;
         RegExpr expr = getMatchExpr();
         if (expr instanceof RegExpr.Inv) {
-            result = ((RegExpr.Inv) expr).getOperand().toLabel();
+            result = ((RegExpr.Inv) expr).getOperand()
+                .toLabel();
         }
         return result;
     }
@@ -323,7 +322,7 @@ public class RuleLabel extends ALabel {
     }
 
     /** The underlying regular expression, if any. */
-    private final RegExpr regExpr;
+    private final @NonNull RegExpr regExpr;
     /** An automaton constructed lazily for the regular expression. */
     private RegAut automaton;
     /** Calculator used to construct all the automata. */

@@ -21,6 +21,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * Implements a collection which flattens a collection of collections. The
  * collection is unmodifiable. Containment test is by iterating over the
@@ -58,13 +60,15 @@ public class CollectionOfCollections<T> extends AbstractCollection<T> {
             @Override
             public T next() {
                 forwardCollectionIter();
-                this.latest = this.elemIter.next();
-                return this.latest;
+                T result = this.elemIter.next();
+                this.latest = result;
+                return result;
             }
 
             @Override
             public void remove() {
                 this.elemIter.remove();
+                assert this.latest != null;
                 updateRemove(this.latest);
             }
 
@@ -83,7 +87,7 @@ public class CollectionOfCollections<T> extends AbstractCollection<T> {
             private Iterator<? extends Collection<? extends T>> collectionIter =
                 getCollections().iterator();
             private Iterator<? extends T> elemIter;
-            private T latest;
+            private @Nullable T latest;
         };
         return res;
     }

@@ -259,7 +259,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
      * counterparts in the normalised graph; may be {@code null}
      */
     private void doNormalise(AspectGraphMorphism map) {
-        assert!isFixed();
+        assert !isFixed();
         // identify and remove let- and test-edges
         Set<AspectEdge> letEdges = new HashSet<>();
         Set<AspectEdge> predEdges = new HashSet<>();
@@ -576,11 +576,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             if (edge.getRuleLabel() != null) {
                 RegExpr oldLabelExpr = edge.getRuleLabel()
                     .getMatchExpr();
-                if (oldLabelExpr != null) {
-                    RegExpr newLabelExpr = oldLabelExpr.relabel(oldLabel, newLabel);
-                    if (newLabelExpr != oldLabelExpr) {
-                        replacement = newLabelExpr.toString();
-                    }
+                RegExpr newLabelExpr = oldLabelExpr.relabel(oldLabel, newLabel);
+                if (newLabelExpr != oldLabelExpr) {
+                    replacement = newLabelExpr.toString();
                 }
             } else if (oldLabel.equals(edge.getTypeLabel())) {
                 replacement = newLabel.toParsableString();
@@ -1014,8 +1012,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         }
 
         /** Mapping from graph rules to element-producing factories. */
-        static private Map<GraphRole,AspectFactory> factoryMap =
-            new EnumMap<>(GraphRole.class);
+        static private Map<GraphRole,AspectFactory> factoryMap = new EnumMap<>(GraphRole.class);
 
         static {
             factoryMap.put(RULE, new AspectFactory(RULE));

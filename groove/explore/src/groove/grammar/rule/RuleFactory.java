@@ -1,20 +1,24 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.grammar.rule;
+
+import java.util.List;
+
+import org.eclipse.jdt.annotation.NonNull;
 
 import groove.algebra.Operator;
 import groove.algebra.syntax.Expression;
@@ -27,8 +31,6 @@ import groove.grammar.type.TypeNode;
 import groove.graph.ElementFactory;
 import groove.graph.Label;
 import groove.graph.NodeFactory;
-
-import java.util.List;
 
 /** Factory class for graph elements. */
 public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
@@ -45,7 +47,10 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
 
     @Override
     protected boolean isAllowed(RuleNode node) {
-        return node.getType().isTopType() && !node.isSharp() && node.getTypeGuards() == null;
+        return node.getType()
+            .isTopType() && !node.isSharp()
+            && node.getTypeGuards()
+                .isEmpty();
     }
 
     /** Returns the fixed node factory for the top type. */
@@ -60,7 +65,8 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
     private RuleNodeFactory topNodeFactory;
 
     /** Returns a node factory for typed default rule nodes. */
-    public NodeFactory<RuleNode> nodes(TypeNode type, boolean sharp, List<TypeGuard> typeGuards) {
+    public NodeFactory<RuleNode> nodes(@NonNull TypeNode type, boolean sharp,
+        List<TypeGuard> typeGuards) {
         return new RuleNodeFactory(type, sharp, typeGuards);
     }
 
@@ -74,7 +80,7 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
 
     /** Creates an operator node for a given node number and arity. */
     public RuleNode createOperatorNode(int nr, Operator operator, List<VariableNode> arguments,
-            VariableNode target) {
+        VariableNode target) {
         RuleNode result = new OperatorNode(nr, operator, arguments, target);
         registerNode(result);
         return result;
@@ -91,9 +97,8 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
     public RuleEdge createEdge(RuleNode source, Label label, RuleNode target) {
         RuleLabel ruleLabel = (RuleLabel) label;
         TypeLabel typeLabel = ruleLabel.getTypeLabel();
-        TypeEdge type =
-            typeLabel == null ? null : getTypeFactory().createEdge(source.getType(), typeLabel,
-                target.getType(), false);
+        TypeEdge type = typeLabel == null ? null
+            : getTypeFactory().createEdge(source.getType(), typeLabel, target.getType(), false);
         return new RuleEdge(source, ruleLabel, type, target);
     }
 
@@ -123,7 +128,8 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
     /** Factory for (typed) {@link DefaultHostNode}s. */
     protected class RuleNodeFactory extends DependentNodeFactory {
         /** Constructor for subclassing. */
-        protected RuleNodeFactory(TypeNode type, boolean sharp, List<TypeGuard> typeGuards) {
+        protected RuleNodeFactory(@NonNull TypeNode type, boolean sharp,
+            List<TypeGuard> typeGuards) {
             this.type = type;
             this.sharp = sharp;
             this.typeGuards = typeGuards;
@@ -132,7 +138,8 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
         @Override
         protected boolean isAllowed(RuleNode node) {
             return node.getType() == this.type && node.isSharp() == this.sharp
-                && node.getTypeGuards().equals(this.typeGuards);
+                && node.getTypeGuards()
+                    .equals(this.typeGuards);
         }
 
         @Override
@@ -145,7 +152,7 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
             return this.type;
         }
 
-        private final TypeNode type;
+        private final @NonNull TypeNode type;
         private final boolean sharp;
         private final List<TypeGuard> typeGuards;
     }

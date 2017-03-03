@@ -16,12 +16,14 @@
  */
 package groove.util.line;
 
-import groove.gui.look.Values;
-import groove.util.line.LineFormat.Builder;
-
 import java.awt.Color;
 import java.util.Arrays;
 import java.util.List;
+
+import org.eclipse.jdt.annotation.NonNull;
+
+import groove.gui.look.Values;
+import groove.util.line.LineFormat.Builder;
 
 /**
  * Generic representation of a formatted line of text,
@@ -39,11 +41,13 @@ public abstract class Line {
      * Returns a flattened string rendering of this line.
      * Convenience method for {@code toString(StringFormat.instance()).toString()}.
      */
-    public String toFlatString() {
-        if (this.flatString == null) {
-            this.flatString = toString(StringFormat.instance()).toString();
+    public @NonNull String toFlatString() {
+        String result = this.flatString;
+        if (result == null) {
+            this.flatString = result = toString(StringFormat.instance()).toString();
+            assert result != null;
         }
-        return this.flatString;
+        return result;
     }
 
     private String flatString;
@@ -75,7 +79,7 @@ public abstract class Line {
     /** Returns a coloured version of this line,
      * where the colour is specified as a user-provided RGB value.
      */
-    public Line color(Color color) {
+    public @NonNull Line color(Color color) {
         if (isEmpty()) {
             return this;
         } else {
@@ -84,7 +88,7 @@ public abstract class Line {
     }
 
     /** Returns a styled version of this line. */
-    public Line style(Style style) {
+    public @NonNull Line style(Style style) {
         if (isEmpty()) {
             return this;
         } else {
@@ -93,7 +97,7 @@ public abstract class Line {
     }
 
     /** Returns a composed line consisting of this line and a sequence of others. */
-    public Line append(Line... args) {
+    public @NonNull Line append(@NonNull Line... args) {
         Line result;
         if (isEmpty()) {
             if (args.length == 0) {
@@ -119,7 +123,7 @@ public abstract class Line {
     }
 
     /** Returns a composed line consisting of this line and an atomic line. */
-    public Line append(String atom) {
+    public @NonNull Line append(String atom) {
         Line result;
         if (this == empty) {
             result = Line.atom(atom);
@@ -203,11 +207,11 @@ public abstract class Line {
     }
 
     /** Returns the (fixed) empty line. */
-    public static Empty empty() {
+    public static @NonNull Empty empty() {
         return empty;
     }
 
-    private final static Empty empty = new Empty();
+    private final static @NonNull Empty empty = new Empty();
 
     /** Returns the (fixed) horizontal rule. */
     public static HRule hrule() {
@@ -217,7 +221,7 @@ public abstract class Line {
     private final static HRule hrule = new HRule();
 
     /** Returns an atomic line consisting of a given string. */
-    public static Line atom(String text) {
+    public static @NonNull Line atom(String text) {
         if (text == null || text.length() == 0) {
             return empty;
         } else {
@@ -226,7 +230,7 @@ public abstract class Line {
     }
 
     /** Returns a composed line consisting of a list of fragments. */
-    public static Composed composed(List<Line> fragments) {
+    public static @NonNull Composed composed(List<Line> fragments) {
         return new Composed(fragments);
     }
 
@@ -245,8 +249,7 @@ public abstract class Line {
 
         @Override
         public <R extends Builder<R>> R toString(LineFormat<R> renderer) {
-            @SuppressWarnings("unchecked")
-            R[] fragments = (R[]) new Builder[this.fragments.length];
+            @SuppressWarnings("unchecked") R[] fragments = (R[]) new Builder[this.fragments.length];
             for (int i = 0; i < fragments.length; i++) {
                 fragments[i] = this.fragments[i].toString(renderer);
             }

@@ -1,20 +1,29 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.automaton;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.eclipse.jdt.annotation.NonNull;
 
 import groove.automaton.RegExpr.Atom;
 import groove.automaton.RegExpr.Choice;
@@ -38,22 +47,14 @@ import groove.graph.EdgeRole;
 import groove.util.parse.FormatError;
 import groove.util.parse.FormatErrorSet;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 /** Calculates the possible types of a regular expression. */
 public class RegExprTyper implements RegExprCalculator<Result> {
-    /** 
+    /**
      * Constructs a typer for a given type graph and variable typing.
      * @param typeGraph the (non-{@code null}) type graph over which results are computed
      * @param varTyping the (non-{@code null}) mapping from type variables to type graph elements
      */
-    public RegExprTyper(TypeGraph typeGraph,
-            Map<LabelVar,Set<? extends TypeElement>> varTyping) {
+    public RegExprTyper(TypeGraph typeGraph, Map<LabelVar,Set<? extends TypeElement>> varTyping) {
         this.typeGraph = typeGraph;
         this.varTyping = varTyping;
     }
@@ -65,7 +66,8 @@ public class RegExprTyper implements RegExprCalculator<Result> {
 
     @Override
     public Result computeStar(Star expr, Result arg) {
-        Result result = new Result().getUnion(arg).getClosure();
+        Result result = new Result().getUnion(arg)
+            .getClosure();
         if (!arg.isEmpty() && result.isEmpty()) {
             result.addError("%s cannot be typed", expr);
         }
@@ -114,7 +116,9 @@ public class RegExprTyper implements RegExprCalculator<Result> {
         Result result = new Result();
         TypeLabel typeLabel = expr.toTypeLabel();
         if (this.typeGraph.isNodeType(typeLabel)) {
-            for (TypeNode subType : this.typeGraph.getNode(typeLabel).getSubtypes()) {
+            TypeNode typeNode = this.typeGraph.getNode(typeLabel);
+            assert typeNode != null; // due to isNodeType(typeLabel)
+            for (TypeNode subType : typeNode.getSubtypes()) {
                 if (!subType.isAbstract()) {
                     result.add(subType, subType);
                 }
@@ -122,8 +126,10 @@ public class RegExprTyper implements RegExprCalculator<Result> {
         } else {
             for (TypeEdge edgeType : this.typeGraph.edgeSet(typeLabel)) {
                 if (!edgeType.isAbstract()) {
-                    Set<TypeNode> targetTypes = edgeType.target().getSubtypes();
-                    for (TypeNode sourceType : edgeType.source().getSubtypes()) {
+                    Set<TypeNode> targetTypes = edgeType.target()
+                        .getSubtypes();
+                    for (TypeNode sourceType : edgeType.source()
+                        .getSubtypes()) {
                         result.add(sourceType, targetTypes);
                     }
                 }
@@ -140,7 +146,9 @@ public class RegExprTyper implements RegExprCalculator<Result> {
         Result result = new Result();
         TypeLabel typeLabel = expr.getSharpLabel();
         if (this.typeGraph.isNodeType(typeLabel)) {
-            for (TypeNode subType : this.typeGraph.getNode(typeLabel).getSubtypes()) {
+            TypeNode typeNode = this.typeGraph.getNode(typeLabel);
+            assert typeNode != null; // due to isNodeType(typeLabel)
+            for (TypeNode subType : typeNode.getSubtypes()) {
                 result.add(subType, subType);
             }
         } else {
@@ -172,9 +180,9 @@ public class RegExprTyper implements RegExprCalculator<Result> {
     private Result computeNodeWildcard(Wildcard expr) {
         Result result = new Result();
         LabelVar var = expr.getWildcardId();
-        Set<TypeNode> candidates = new HashSet<>();
+        Set<@NonNull TypeNode> candidates = new HashSet<>();
         if (var.hasName()) {
-            candidates.addAll((Collection<TypeNode>) this.varTyping.get(var));
+            candidates.addAll((Collection<@NonNull TypeNode>) this.varTyping.get(var));
         } else {
             candidates.addAll(this.typeGraph.nodeSet());
         }
@@ -189,16 +197,18 @@ public class RegExprTyper implements RegExprCalculator<Result> {
     private Result computeEdgeWildcard(Wildcard expr) {
         Result result = new Result();
         LabelVar var = expr.getWildcardId();
-        Set<TypeEdge> candidates = new HashSet<>();
+        Set<@NonNull TypeEdge> candidates = new HashSet<>();
         if (var.hasName()) {
-            candidates.addAll((Collection<TypeEdge>) this.varTyping.get(var));
+            candidates.addAll((Collection<@NonNull TypeEdge>) this.varTyping.get(var));
         } else {
             candidates.addAll(this.typeGraph.edgeSet());
         }
         TypeGuard guard = expr.getWildcardGuard();
         for (TypeEdge typeEdge : guard.filter(candidates)) {
-            Set<TypeNode> targetTypes = typeEdge.target().getSubtypes();
-            for (TypeNode sourceType : typeEdge.source().getSubtypes()) {
+            Set<TypeNode> targetTypes = typeEdge.target()
+                .getSubtypes();
+            for (TypeNode sourceType : typeEdge.source()
+                .getSubtypes()) {
                 if (expr.getKind() == EdgeRole.BINARY) {
                     result.add(sourceType, targetTypes);
                 } else {
@@ -228,11 +238,11 @@ public class RegExprTyper implements RegExprCalculator<Result> {
     /** The type graph with respect to which the typing is calculated. */
     private final TypeGraph typeGraph;
 
-    /** 
+    /**
      * Outcome of the typing of a regular expression,
      * consisting of a relation between type nodes.
      * Each pair in the relation consists of a potential source and target
-     * node of a path through the type graph of which the label sequence 
+     * node of a path through the type graph of which the label sequence
      * is accepted by the regular expression.
      * @author Arend Rensink
      * @version $Revision $
@@ -343,9 +353,9 @@ public class RegExprTyper implements RegExprCalculator<Result> {
             return result;
         }
 
-        /** 
+        /**
          * Intersects this relation with another.
-         * @return {@code true} if this relation was changed as a result 
+         * @return {@code true} if this relation was changed as a result
          */
         private boolean union(Result other) {
             return other.copyTo(this);
@@ -407,8 +417,7 @@ public class RegExprTyper implements RegExprCalculator<Result> {
         }
 
         private int size;
-        private final Map<TypeNode,Set<TypeNode>> map =
-            new HashMap<>();
+        private final Map<TypeNode,Set<TypeNode>> map = new HashMap<>();
         private final FormatErrorSet errors = new FormatErrorSet();
     }
 }

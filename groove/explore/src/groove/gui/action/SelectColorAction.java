@@ -107,9 +107,10 @@ public class SelectColorAction extends SimulatorAction
 
     @Override
     public void execute() {
-        Color initColour = getGrammarModel().getTypeGraph()
-            .getNode(this.label)
-            .getColor();
+        TypeNode typeNode = getGrammarModel().getTypeGraph()
+            .getNode(this.label);
+        assert typeNode != null; // ensured by the label
+        Color initColour = typeNode.getColor();
         if (initColour != null) {
             this.chooser.setColor(initColour);
         }

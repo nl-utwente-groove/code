@@ -28,31 +28,17 @@ import groove.lts.GraphState;
 /** Symbolic values for the implemented acceptors. */
 public enum AcceptorValue implements ParsableValue {
     /** Acceptor for final states. */
-    FINAL("final", "Final States",
-        "This acceptor succeeds when a state is added to the LTS that is "
-            + "<I>final</I>. A state is final when no modifying rule is" + "applicable on it."),
+    FINAL("final", "Final States", "This acceptor succeeds when a state is added to the LTS that is " + "<I>final</I>. A state is final when no modifying rule is" + "applicable on it."),
     /** Acceptor for states where a given invariant rule is applicable. */
-    INVARIANT("inv", "Check Invariant",
-        "This acceptor succeeds when a state is reached in which the "
-            + "indicated rule is applicable. Note that this is detected "
-            + "<I>before</I> the rule has been applied.<BR> "
-            + "This acceptor ignores rule priorities."),
+    INVARIANT("inv", "Check Invariant", "This acceptor succeeds when a state is reached in which the " + "indicated rule is applicable. Note that this is detected " + "<I>before</I> the rule has been applied.<BR> " + "This acceptor ignores rule priorities."),
     /** Acceptor for states reached by the application of a certain rule. */
-    RULE("ruleapp", "Rule Application",
-        "This acceptor succeeds when a transition of the indicated rule is "
-            + "added to the LTS. Note that this is detected <I>after</I> "
-            + "the rule has been applied (which means that rule priorities "
-            + "are taken into account)."),
+    RULE("ruleapp", "Rule Application", "This acceptor succeeds when a transition of the indicated rule is " + "added to the LTS. Note that this is detected <I>after</I> " + "the rule has been applied (which means that rule priorities " + "are taken into account)."),
     /** Acceptor for states that satisfy a given rule formula. */
-    FORMULA("formula", "Rule Formula",
-        "This acceptor is a variant of Check Invariant that succeeds when a"
-            + " state is reached in which an arbitrary rule <i>formula</i> " + "is applicable."),
+    FORMULA("formula", "Rule Formula", "This acceptor is a variant of Check Invariant that succeeds when a" + " state is reached in which an arbitrary rule <i>formula</i> " + "is applicable."),
     /** Acceptor for arbitrary states. */
     ANY("any", "Any State", "This acceptor succeeds whenever a (real) state is added to the LTS."),
     /** Acceptor for cycles. */
-    CYCLE("cycle", "Cycles", "This acceptor listens to pairs of graph states and Buchi states,"
-        + "and succeeds when a pair is added that lies on a cycle with an"
-        + "accepting Buchi state. Should only be used in conjunction with " + "LTL model checking."),
+    CYCLE("cycle", "Cycles", "This acceptor listens to pairs of graph states and Buchi states," + "and succeeds when a pair is added that lies on a cycle with an" + "accepting Buchi state. Should only be used in conjunction with " + "LTL model checking."),
     /** Acceptor that does not accept any states. */
     NONE("none", "No State", "This acceptor always fails whenever a state is added to the LTS.");
 
@@ -93,7 +79,7 @@ public enum AcceptorValue implements ParsableValue {
     @Override
     public boolean isDefault(GrammarModel grammar) {
         ExploreType exploration = grammar.getDefaultExploreType();
-        return exploration == null ? this == FINAL : exploration.getAcceptor()
+        return exploration.getAcceptor()
             .getKeyword()
             .equals(getKeyword());
     }
@@ -135,9 +121,9 @@ public enum AcceptorValue implements ParsableValue {
             };
 
         case INVARIANT:
-            PSequence parser =
-                new PSequence(new POptional("!", "mode", EncodedRuleMode.NEGATIVE,
-                    EncodedRuleMode.POSITIVE), new PIdentifier("rule"));
+            PSequence parser = new PSequence(
+                new POptional("!", "mode", EncodedRuleMode.NEGATIVE, EncodedRuleMode.POSITIVE),
+                new PIdentifier("rule"));
             return new MyTemplate2<Rule,Boolean>(parser, "rule", new EncodedEnabledRule(), "mode",
                 new EncodedRuleMode()) {
 
@@ -160,7 +146,8 @@ public enum AcceptorValue implements ParsableValue {
             };
 
         case RULE:
-            return new MyTemplate1<Rule>(new PIdentifier("rule"), "rule", new EncodedEnabledRule()) {
+            return new MyTemplate1<Rule>(new PIdentifier("rule"), "rule",
+                new EncodedEnabledRule()) {
 
                 @Override
                 public Acceptor create(Rule rule) {

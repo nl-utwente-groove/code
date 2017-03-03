@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import groove.algebra.Operator;
 import groove.algebra.Sort;
 import groove.algebra.syntax.ExprTree.ExprOp;
@@ -247,14 +249,15 @@ public class ExprTreeParser extends groove.util.parse.ATermTreeParser<ExprTree.E
     /** Parses a given input as an expression, with or without legacy test syntax.
      * @throws FormatException if there is a parse error.
      */
-    public static ExprTree parseExpr(String input, boolean test) throws FormatException {
+    public static @NonNull ExprTree parseExpr(String input, boolean test) throws FormatException {
         return parse(test ? TEST_PARSER : EXPR_PARSER, input);
     }
 
     /** Parses a given input with a given parser.
      * @throws FormatException if there is a parse error.
      */
-    private static ExprTree parse(ExprTreeParser parser, String input) throws FormatException {
+    private static @NonNull ExprTree parse(ExprTreeParser parser, String input)
+        throws FormatException {
         ExprTree result = parser.parse(input);
         FormatErrorSet errors = new FormatErrorSet();
         for (FormatError error : result.getErrors()) {

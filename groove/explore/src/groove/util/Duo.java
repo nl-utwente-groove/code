@@ -22,11 +22,6 @@ package groove.util;
  * @version $Revision $
  */
 public class Duo<O> extends Pair<O,O> {
-    /** Creates a new duo with initially null fields. */
-    public Duo() {
-        super();
-    }
-
     /** Creates a new duo. */
     public Duo(O one, O two) {
         super(one, two);

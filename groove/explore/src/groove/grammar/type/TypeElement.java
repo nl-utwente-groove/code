@@ -18,7 +18,7 @@ package groove.grammar.type;
 
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import groove.grammar.host.AnchorValue;
 import groove.graph.Element;
@@ -29,6 +29,7 @@ import groove.graph.Label;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public interface TypeElement extends Element, AnchorValue, Label {
     /**
      * Returns the type label of this type element.
@@ -44,8 +45,8 @@ public interface TypeElement extends Element, AnchorValue, Label {
     public TypeGraph getGraph();
 
     /** Returns the (reflexively and transitively closed) set of subtypes of this type element. */
-    public @NonNull Set<? extends TypeElement> getSubtypes();
+    public Set<? extends TypeElement> getSubtypes();
 
     /** Returns the (reflexively and transitively closed) set of supertypes of this type element. */
-    public @NonNull Set<? extends TypeElement> getSupertypes();
+    public Set<? extends TypeElement> getSupertypes();
 }

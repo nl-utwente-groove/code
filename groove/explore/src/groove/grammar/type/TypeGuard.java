@@ -1,32 +1,35 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.grammar.type;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import groove.automaton.RegExpr;
 import groove.grammar.rule.LabelVar;
 import groove.graph.EdgeRole;
 import groove.graph.Label;
-import groove.util.Groove;
+import groove.util.NoNonNull;
 import groove.util.Property;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Encodes a constraint on type labels, which can be used to filter
@@ -34,6 +37,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public class TypeGuard extends Property<TypeElement> {
     /**
      * Constructs a new constraint.
@@ -58,14 +62,13 @@ public class TypeGuard extends Property<TypeElement> {
         return getVar().getKind();
     }
 
-    /** 
+    /**
      * Sets the set of labels to test for.
      * @param textList List of labels which membership is tested; may be {@code null} if only the label type is tested for
      * @param negated if {@code true}, satisfaction is defined as presence in {@code textList}; otherwise as absence
      */
     public void setLabels(List<String> textList, boolean negated) {
-        this.textList = textList;
-        this.labelSet = new HashSet<>();
+        this.labelSet = new LinkedHashSet<>();
         for (String text : textList) {
             this.labelSet.add(TypeLabel.createLabel(getKind(), text));
         }
@@ -84,17 +87,19 @@ public class TypeGuard extends Property<TypeElement> {
      */
     public TypeGuard relabel(Label oldLabel, Label newLabel) {
         TypeGuard result = this;
-        if (this.labelSet != null && this.labelSet.contains(oldLabel)) {
-            int index = this.textList.indexOf(oldLabel.text());
-            List<String> newTextList = new ArrayList<>(this.textList);
-            if (newLabel.getRole() == getKind()
-                && !this.labelSet.contains(newLabel)) {
-                newTextList.set(index, newLabel.text());
+        Set<TypeLabel> labelSet = this.labelSet;
+        if (oldLabel.getRole() == getKind() && labelSet != null && labelSet.contains(oldLabel)) {
+            List<String> textList = new ArrayList<>(labelSet.size());
+            if (newLabel.getRole() == getKind() && !labelSet.contains(newLabel)) {
+                labelSet.stream()
+                    .forEach(l -> textList.add((l.equals(oldLabel) ? newLabel : l).text()));
             } else {
-                newTextList.remove(index);
+                labelSet.stream()
+                    .filter(l -> !l.equals(oldLabel))
+                    .forEach(l -> textList.add(l.text()));
             }
             result = new TypeGuard(this.var);
-            result.setLabels(newTextList, this.negated);
+            result.setLabels(textList, this.negated);
         }
         return result;
     }
@@ -103,12 +108,12 @@ public class TypeGuard extends Property<TypeElement> {
      * Returns the (possibly {@code null}) set of labels occurring in this label constraint.
      * @see RegExpr#getTypeLabels()
      */
-    public Set<TypeLabel> getLabels() {
+    public @Nullable Set<TypeLabel> getLabels() {
         return this.labelSet;
     }
 
     /**
-     * Determines if this label constraint is a negative constraint 
+     * Determines if this label constraint is a negative constraint
      * like [^a,b,c].
      */
     public boolean isNegated() {
@@ -118,16 +123,17 @@ public class TypeGuard extends Property<TypeElement> {
     @Override
     public boolean isSatisfied(TypeElement type) {
         if (getKind() != ((type instanceof TypeNode) ? EdgeRole.NODE_TYPE
-                : ((TypeEdge) type).getRole())) {
+            : ((TypeEdge) type).getRole())) {
             return false;
         }
-        if (this.labelSet == null) {
+        Set<TypeLabel> labelSet = this.labelSet;
+        if (labelSet == null) {
             return true;
         }
-        boolean valueFound = this.labelSet.contains(type.label());
+        boolean valueFound = labelSet.contains(type.label());
         if (!valueFound) {
             for (TypeElement superType : type.getSupertypes()) {
-                if (this.labelSet.contains(superType.label())) {
+                if (labelSet.contains(superType.label())) {
                     valueFound = true;
                     break;
                 }
@@ -138,36 +144,40 @@ public class TypeGuard extends Property<TypeElement> {
 
     @Override
     public String toString() {
-        String result = "";
-        if (this.labelSet != null) {
-            result += OPEN;
+        StringBuilder result = new StringBuilder();
+        Set<TypeLabel> labelSet = this.labelSet;
+        if (labelSet != null) {
+            result.append(OPEN);
             if (this.negated) {
-                result += NEGATOR;
+                result.append(NEGATOR);
             }
-            result =
-                Groove.toString(this.textList.toArray(), result, "" + CLOSE, ""
-                    + SEPARATOR);
+            boolean first = true;
+            for (TypeLabel label : labelSet) {
+                if (first) {
+                    first = false;
+                } else {
+                    result.append(SEPARATOR);
+                }
+                result.append(label.text());
+            }
+            result.append(CLOSE);
         }
-        return result;
+        return NoNonNull.toString(result);
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result =
-            prime * result
-                + ((this.labelSet == null) ? 0 : this.labelSet.hashCode());
+        Set<TypeLabel> labelSet = this.labelSet;
+        result = prime * result + ((labelSet == null) ? 0 : labelSet.hashCode());
         result = prime * result + (this.negated ? 1231 : 1237);
-        result =
-            prime * result
-                + ((this.textList == null) ? 0 : this.textList.hashCode());
         result = prime * result + this.var.hashCode();
         return result;
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }
@@ -175,21 +185,15 @@ public class TypeGuard extends Property<TypeElement> {
             return false;
         }
         TypeGuard other = (TypeGuard) obj;
-        if (this.labelSet == null) {
+        Set<TypeLabel> labelSet = this.labelSet;
+        if (labelSet == null) {
             if (other.labelSet != null) {
                 return false;
             }
-        } else if (!this.labelSet.equals(other.labelSet)) {
+        } else if (!labelSet.equals(other.labelSet)) {
             return false;
         }
         if (this.negated != other.negated) {
-            return false;
-        }
-        if (this.textList == null) {
-            if (other.textList != null) {
-                return false;
-            }
-        } else if (!this.textList.equals(other.textList)) {
             return false;
         }
         if (!this.var.equals(other.var)) {
@@ -200,10 +204,8 @@ public class TypeGuard extends Property<TypeElement> {
 
     /** The optional label variable associated with the constraint. */
     private final LabelVar var;
-    /** The list of strings indicating the labels to be matched. */
-    private List<String> textList;
-    /** The set of labels to be tested for inclusion. */
-    private Set<TypeLabel> labelSet;
+    /** The optional set of labels to be tested for inclusion. */
+    private @Nullable Set<TypeLabel> labelSet;
     /** Flag indicating if we are testing for absence or presence. */
     private boolean negated;
     /** Opening bracket of a wildcard constraint. */

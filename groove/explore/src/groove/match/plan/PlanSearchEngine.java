@@ -48,6 +48,7 @@ import groove.grammar.rule.RuleGraph;
 import groove.grammar.rule.RuleLabel;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.VariableNode;
+import groove.grammar.type.TypeEdge;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
 import groove.grammar.type.TypeNode;
@@ -337,17 +338,16 @@ public class PlanSearchEngine extends SearchEngine {
                     // end nodes are only matched if the item is not negated and
                     // types are not specialised
                     RuleNode source = edge.source();
+                    TypeEdge edgeType = edge.getType();
                     if (edgeItem.bindsNodes()
-                        .contains(source) && edge.getType() != null
-                        && edge.getType()
-                            .source() == source.getType()) {
+                        .contains(source) && edgeType != null
+                        && edgeType.source() == source.getType()) {
                         unmatchedNodes.remove(source);
                     }
                     RuleNode target = edge.target();
                     if (edgeItem.bindsNodes()
-                        .contains(target) && edge.getType() != null
-                        && edge.getType()
-                            .target() == target.getType()) {
+                        .contains(target) && edgeType != null
+                        && edgeType.target() == target.getType()) {
                         unmatchedNodes.remove(target);
                     }
                 }

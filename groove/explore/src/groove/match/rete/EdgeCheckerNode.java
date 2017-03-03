@@ -188,8 +188,8 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
             .getMatchExpr()
             .getWildcardGuard()
             .isSatisfied(e.getType())
-            : this.edge.getType()
-                .equals(e.getType());
+            : e.getType()
+                .equals(this.edge.getType());
 
         return (this.type == null || this.type.subsumes(e.getType())) && checkSourceType(e.source())
             && checkTargetType(e.target()) && checkValues(this.sourceNode, e.source())
@@ -264,9 +264,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
     public boolean isAcceptingLabel(TypeElement e) {
         RuleLabel rl = this.edge.label();
         return isWildcardEdge() ? rl.getWildcardGuard()
-            .isSatisfied(e)
-            : this.edge.getType()
-                .equals(e);
+            .isSatisfied(e) : e.equals(this.edge.getType());
     }
 
     /**
@@ -369,7 +367,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
         }
 
         if (action == Action.ADD) {
-            assert!this.memory.contains(m);
+            assert !this.memory.contains(m);
             this.memory.add(m);
             passDownMatchToSuccessors(m);
         } else { // action == Action.REMOVE

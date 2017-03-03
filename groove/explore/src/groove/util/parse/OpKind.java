@@ -6,6 +6,8 @@ import static groove.util.parse.OpKind.Direction.RIGHT;
 import static groove.util.parse.OpKind.Placement.INFIX;
 import static groove.util.parse.OpKind.Placement.PREFIX;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 /**
  * Operator kind, consisting of an implicit precedence ordering,
  * a {@link Placement} type, and (for infix operators) an associativity {@link Direction}.
@@ -50,9 +52,14 @@ public enum OpKind {
     /** Call-type operator. */
     CALL(PREFIX, RIGHT, -1),
     /** Atom, e.g., variable name or constant.
-     * This is the only non-dummy operator kind (e.g., not {@link #NONE}) with arity 0.
+     * This is the only non-dummy operator kind (e.g., not {@link #NONE} or {@link #HIGH}) with arity 0.
      */
-    ATOM(PREFIX, NEITHER, 0),;
+    ATOM(PREFIX, NEITHER, 0),
+    /** Dummy value used for highest-level context of an expression.
+     * Operators of this kind will be ignored by the parser, and so
+     * are guaranteed to never end up in a term tree.
+     */
+    HIGH(PREFIX, NEITHER, 0),;
 
     private OpKind(Placement place, Direction direction, int arity) {
         this.direction = direction;
@@ -95,9 +102,9 @@ public enum OpKind {
     private final int arity;
 
     /** Returns the next higher precedence, or {@code null} if this is the highest value. */
-    public OpKind increase() {
+    public @NonNull OpKind increase() {
         int nextIx = ordinal() + 1;
-        return nextIx >= values().length ? null : values()[nextIx];
+        return nextIx >= values().length ? HIGH : values()[nextIx];
     }
 
     /** Direction of associativity. */

@@ -20,7 +20,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import groove.grammar.type.TypeElement;
 import groove.grammar.type.TypeGuard;
@@ -32,12 +33,13 @@ import groove.graph.Element;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public interface RuleElement extends Element, AnchorKey {
     /** Returns the type of this rule element. */
-    public TypeElement getType();
+    public @Nullable TypeElement getType();
 
     /** Returns the set of label variables associated with this rule element. */
-    public @NonNull Set<LabelVar> getVars();
+    public Set<LabelVar> getVars();
 
     /** Returns the collection of (named) type guards associated with this rule element. */
     public List<TypeGuard> getTypeGuards();
@@ -48,10 +50,10 @@ public interface RuleElement extends Element, AnchorKey {
      * further constrained by type variables.
      * @see #getType()
      */
-    public @NonNull Set<? extends TypeElement> getMatchingTypes();
+    public Set<? extends TypeElement> getMatchingTypes();
 
     /** Fixed global empty set of label variables. */
-    final static @NonNull Set<LabelVar> EMPTY_VAR_SET = Collections.emptySet();
+    final static Set<LabelVar> EMPTY_VAR_SET = Collections.emptySet();
     /** Fixed global empty set of label variables. */
     final static List<TypeGuard> EMPTY_GUARD_LIST = Collections.emptyList();
 }

@@ -5,6 +5,8 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import groove.algebra.Sort;
 import groove.grammar.QualName;
 import groove.graph.EdgeRole;
@@ -41,18 +43,19 @@ public class TypeFactory extends ElementFactory<TypeNode,TypeEdge> {
      * Returns the unique top node type, used for implicitly graphs.
      * This is only valid if the type graph is implicit.
      */
-    public TypeNode getTopNode() {
-        if (this.topNode == null) {
-            this.topNode = createNode(TypeLabel.NODE);
+    public @NonNull TypeNode getTopNode() {
+        TypeNode result = this.topNode;
+        if (result == null) {
+            this.topNode = result = createNode(TypeLabel.NODE);
         }
-        return this.topNode;
+        return result;
     }
 
     /**
      * Looks up or creates a node with a given (non-{@code null}) type label.
      * If the node is created, it is also added to the type graph.
      */
-    public TypeNode createNode(TypeLabel label) {
+    public @NonNull TypeNode createNode(TypeLabel label) {
         assert label.getRole() == EdgeRole.NODE_TYPE;
         TypeNode result = this.typeNodeMap.get(label);
         if (result == null) {
@@ -148,8 +151,7 @@ public class TypeFactory extends ElementFactory<TypeNode,TypeEdge> {
      * The internal translation table from strings to type labels,
      * per edge role.
      */
-    private final Map<EdgeRole,Map<String,TypeLabel>> labelMaps =
-        new EnumMap<>(EdgeRole.class);
+    private final Map<EdgeRole,Map<String,TypeLabel>> labelMaps = new EnumMap<>(EdgeRole.class);
 
     {
         for (EdgeRole kind : EdgeRole.values()) {

@@ -14,20 +14,24 @@
  *
  * $Id$
  */
-package groove.grammar.rule;
+package groove.util;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import groove.grammar.AnchorKind;
-
 /**
- * Type of element that can occur in an anchor.
- * Anchors are used to fix a match of a rule graph in a host graph.
+ * Collection of convenience methods to avoid {@link NoNonNull}-related warnings
+ * of standard Java library methods.
  * @author Arend Rensink
  * @version $Revision $
  */
 @NonNullByDefault
-public interface AnchorKey {
-    /** Returns the kind of anchor key of this object. */
-    AnchorKind getAnchorKind();
+public class NoNonNull {
+    /** Convenience method for {@link Object#toString()}.
+     * Avoids {@link NoNonNull}-warnings.
+     */
+    public static String toString(Object s) {
+        String result = s.toString();
+        assert result != null;
+        return result;
+    }
 }

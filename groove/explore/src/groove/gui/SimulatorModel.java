@@ -1057,8 +1057,7 @@ public class SimulatorModel implements Cloneable {
         ExploreType exploreType = null;
         if (hasGrammar()) {
             exploreType = getGrammar().getDefaultExploreType();
-        }
-        if (exploreType == null) {
+        } else {
             exploreType = ExploreType.DEFAULT;
         }
         changeExploreType(exploreType);
@@ -1189,8 +1188,7 @@ public class SimulatorModel implements Cloneable {
     private void fireUpdate() {
         Set<SimulatorListener> notified = new HashSet<>();
         for (Change change : this.changes) {
-            for (SimulatorListener listener : new ArrayList<>(
-                this.listeners.get(change))) {
+            for (SimulatorListener listener : new ArrayList<>(this.listeners.get(change))) {
                 if (notified.add(listener)) {
                     listener.update(this, this.old, this.changes);
                 }
@@ -1248,8 +1246,7 @@ public class SimulatorModel implements Cloneable {
     }
 
     /** Array of listeners. */
-    private final Map<Change,List<SimulatorListener>> listeners =
-        new EnumMap<>(Change.class);
+    private final Map<Change,List<SimulatorListener>> listeners = new EnumMap<>(Change.class);
 
     { // initialise the listener map to empty listener lists
         for (Change change : Change.values()) {

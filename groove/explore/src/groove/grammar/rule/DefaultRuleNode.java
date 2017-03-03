@@ -43,7 +43,8 @@ public class DefaultRuleNode extends ANode implements RuleNode, AnchorKey {
      * @param sharp if {@code true}, the node is sharply typed
      * @param typeGuards collection of named and unnamed type guards for this node
      */
-    protected DefaultRuleNode(int nr, TypeNode type, boolean sharp, List<TypeGuard> typeGuards) {
+    protected DefaultRuleNode(int nr, @NonNull TypeNode type, boolean sharp,
+        List<TypeGuard> typeGuards) {
         super(nr);
         assert type != null : "Can't instantiate untyped rule node";
         this.type = type;
@@ -75,20 +76,14 @@ public class DefaultRuleNode extends ANode implements RuleNode, AnchorKey {
             return false;
         }
         DefaultRuleNode other = (DefaultRuleNode) obj;
-        if (getType() == null) {
-            return other.getType() == null;
-        } else {
-            return getType().equals(other.getType());
-        }
+        return getType().equals(other.getType());
     }
 
     @Override
     protected int computeHashCode() {
         int result = super.computeHashCode();
         int prime = 31;
-        if (getType() != null) {
-            result = prime * result + getType().hashCode();
-        }
+        result = prime * result + getType().hashCode();
         return result;
     }
 
@@ -141,7 +136,7 @@ public class DefaultRuleNode extends ANode implements RuleNode, AnchorKey {
     }
 
     @Override
-    public Set<TypeNode> getMatchingTypes() {
+    public @NonNull Set<@NonNull TypeNode> getMatchingTypes() {
         return this.matchingTypes;
     }
 
@@ -158,11 +153,11 @@ public class DefaultRuleNode extends ANode implements RuleNode, AnchorKey {
     /** Flag indicating if this node is sharply typed. */
     private final boolean sharp;
     /** The (possibly {@code null}) type of this rule node. */
-    private final TypeNode type;
+    private final @NonNull TypeNode type;
     /** The list of type guards associated with this node. */
-    private final List<TypeGuard> typeGuards;
+    private final @NonNull List<TypeGuard> typeGuards;
     /** The (named) label variables involved in the type guards. */
     private Set<LabelVar> vars;
     /** The set of matching node types. */
-    private final @NonNull Set<TypeNode> matchingTypes;
+    private final @NonNull Set<@NonNull TypeNode> matchingTypes;
 }

@@ -37,6 +37,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import groove.annotation.Help;
 import groove.annotation.Syntax;
 import groove.annotation.ToolTipBody;
@@ -457,15 +459,16 @@ abstract public class RegExpr { // implements VarSetSupport {
     abstract public boolean isBinary();
 
     /** Returns a line representing this expression typeset properly. */
-    public Line toLine() {
-        if (this.line == null) {
-            this.line = computeLine();
+    public @NonNull Line toLine() {
+        Line result = this.line;
+        if (result == null) {
+            this.line = result = computeLine();
         }
-        return this.line;
+        return result;
     }
 
     /** Callback method to create the line representation for this expression. */
-    abstract protected Line computeLine();
+    abstract protected @NonNull Line computeLine();
 
     private Line line;
 
@@ -1573,10 +1576,10 @@ abstract public class RegExpr { // implements VarSetSupport {
                     result.append(" ");
                     result.append(type.subSequence(0, type.length() - 1));
                 }
-                if (this.guard.getLabels() != null) {
+                Set<TypeLabel> labels = this.guard.getLabels();
+                if (labels != null) {
                     result.append(this.guard.isNegated() ? " not in " : " from ");
-                    result.append(Groove.toString(this.guard.getLabels()
-                        .toArray()));
+                    result.append(Groove.toString(labels.toArray()));
                 }
             }
             return result.toString();
