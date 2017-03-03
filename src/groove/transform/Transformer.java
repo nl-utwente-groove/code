@@ -91,7 +91,7 @@ public class Transformer {
      * grammar
      */
     public void setProperty(GrammarKey key, String value) throws FormatException {
-        assert!key.isSystem();
+        assert !key.isSystem();
         assert value != null && key.parser()
             .accepts(value);
         if (this.properties == null) {
@@ -325,9 +325,6 @@ public class Transformer {
 
     private ExploreType computeExploreType() {
         ExploreType result = getGrammarModel().getDefaultExploreType();
-        if (result == null) {
-            result = ExploreType.DEFAULT;
-        }
         boolean rebuild = hasStrategy() || hasAcceptor() || hasResultCount();
         if (rebuild) {
             Serialized strategy = hasStrategy() ? getStrategy() : result.getStrategy();

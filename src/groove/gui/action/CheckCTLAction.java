@@ -1,6 +1,12 @@
 package groove.gui.action;
 
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.JOptionPane;
+
 import groove.explore.ExploreResult;
 import groove.graph.Node;
 import groove.gui.Options;
@@ -16,19 +22,14 @@ import groove.verify.Formula;
 import groove.verify.FormulaParser;
 import groove.verify.Logic;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.JOptionPane;
-
 /**
  * Action for verifying a CTL formula.
  */
 public class CheckCTLAction extends SimulatorAction {
     /** Constructs an instance of the action. */
     public CheckCTLAction(Simulator simulator, boolean full) {
-        super(simulator, full ? Options.CHECK_CTL_FULL_ACTION_NAME
-            : Options.CHECK_CTL_AS_IS_ACTION_NAME, null);
+        super(simulator,
+            full ? Options.CHECK_CTL_FULL_ACTION_NAME : Options.CHECK_CTL_AS_IS_ACTION_NAME, null);
         this.full = full;
     }
 
@@ -41,7 +42,7 @@ public class CheckCTLAction extends SimulatorAction {
             // completely re-explore if the GTS has open states
             if (gts.hasOpenStates() && this.full && getSimulatorModel().resetGTS()) {
                 getActions().getExploreAction()
-                    .explore(getSimulatorModel().getExploreType());
+                    .explore(getGrammarModel().getDefaultExploreType());
                 gts = getSimulatorModel().getGTS();
                 doCheck = !gts.hasOpenStates();
             }
@@ -76,7 +77,8 @@ public class CheckCTLAction extends SimulatorAction {
      * @throws FormatException if the property is not a properly formatted CTL property
      */
     private void doCheckProperty(ExploreResult result, String property) throws FormatException {
-        Formula formula = Formula.parse(property).toCtlFormula();
+        Formula formula = Formula.parse(property)
+            .toCtlFormula();
         CTLMarker modelChecker = new CTLMarker(formula, CTLModelChecker.newModel(result));
         int counterExampleCount = modelChecker.getCount(false);
         List<GraphState> counterExamples = new ArrayList<>(counterExampleCount);
@@ -84,9 +86,8 @@ public class CheckCTLAction extends SimulatorAction {
         if (counterExampleCount == 0) {
             message = String.format("The property '%s' holds for all states", property);
         } else {
-            boolean allStates =
-                confirmBehaviour(VERIFY_ALL_STATES_OPTION,
-                    "Verify all states? Choosing 'No' will report only on the start state.");
+            boolean allStates = confirmBehaviour(VERIFY_ALL_STATES_OPTION,
+                "Verify all states? Choosing 'No' will report only on the start state.");
             if (allStates) {
                 for (Node state : modelChecker.getStates(false)) {
                     counterExamples.add((GraphState) state);
@@ -96,7 +97,8 @@ public class CheckCTLAction extends SimulatorAction {
                         property,
                         counterExampleCount);
             } else if (modelChecker.hasValue(false)) {
-                counterExamples.add(result.getGTS().startState());
+                counterExamples.add(result.getGTS()
+                    .startState());
                 message =
                     String.format("The property '%s' fails to hold in the initial state", property);
             } else {
