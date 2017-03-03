@@ -265,11 +265,15 @@ public class GrammarProperties extends Properties {
     }
 
     /**
-     * Returns the exploration strategy, or <code>null</code> if there
+     * Returns the exploration strategy, or {@link ExploreType#DEFAULT} if there
      * is no strategy set.
      */
     public ExploreType getExploreType() {
-        return (ExploreType) parseProperty(GrammarKey.EXPLORATION);
+        ExploreType result = (ExploreType) parseProperty(GrammarKey.EXPLORATION);
+        if (result == null) {
+            result = ExploreType.DEFAULT;
+        }
+        return result;
     }
 
     /**
