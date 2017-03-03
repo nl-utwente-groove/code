@@ -196,7 +196,6 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
             if (!alive) {
                 getCache().addDeadlockError(getGraph());
                 setFrame(getActualFrame().onError());
-                setStatus(Flag.ERROR, true);
             }
         }
     }
@@ -239,7 +238,9 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
             // reset the schedule to the beginning if the state was not
             // completely explored
             if (!complete && getActualFrame().isTrial()) {
-                setFrame(getPrimeFrame());
+                setFrame(getPrimeFrame(), oldStatus);
+            } else {
+                fireStatus(oldStatus);
             }
             // the flag below are set when the actual frame is updated;
             // no need to do it again
@@ -247,7 +248,6 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
             //            setStatus(Flag.INTERNAL, getActualFrame().isInternal());
             //            setStatus(Flag.ERROR, getActualFrame().isError());
             //            setStatus(Flag.ABSENT, getActualFrame().isRemoved());
-            fireStatus(oldStatus);
             getCache().notifyClosed();
         }
         return result;
@@ -433,12 +433,23 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 
     @Override
     public void setFrame(Frame frame) {
+        setFrame(frame, this.status);
+    }
+
+    /** Changes the frame and reports the changed status.
+     * @param frame the new control frame
+     * @param oldStatus status value before any changes were made.
+     * {@link #fireStatus(int)} will be called with {@code oldStatus}
+     * as parameter.
+     */
+    private void setFrame(Frame frame, int oldStatus) {
         assert frame != null;
         // AR: the assertion below fails to hold in one of the tests because
         // the frame is artificially set again for a start state
         // assert this.currentFrame == null || frame.getPrime() == getPrimeFrame();
+        // remember if this state is just created
+        boolean fresh = this.actualFrame == null;
         this.actualFrame = frame;
-        int oldStatus = this.status;
         boolean statusChanged = setStatus(Flag.TRANSIENT, frame.isTransient());
         statusChanged |= setStatus(Flag.INTERNAL, frame.isInternal());
         if (frame.isError()) {
@@ -447,7 +458,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         if (frame.isRemoved()) {
             statusChanged |= setStatus(Flag.ABSENT, true);
         }
-        if (statusChanged) {
+        if (!fresh && statusChanged) {
             fireStatus(oldStatus);
         }
     }
