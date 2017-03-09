@@ -35,7 +35,7 @@ import groove.transform.Record;
  */
 public class LinearStrategy extends GTSStrategy {
     @Override
-    public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
+    protected void prepare(GTS gts, GraphState state, Acceptor acceptor) {
         // We have to set the non-collapsing property before the first (start)
         // state is generated, otherwise it is too late.
         Record record = gts.getRecord();

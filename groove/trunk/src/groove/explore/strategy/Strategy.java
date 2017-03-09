@@ -76,14 +76,14 @@ public abstract class Strategy {
     }
 
     /**
-     * Initialises the iterator for exploring a given
+     * Callback method to initialise the iterator for exploring a given
      * GTS, starting from a given state.
      * @param gts the GTS to be explored; non-{@code null}
      * @param state the state at which exploration should
      * start; may be {@code null}, in which case the GTS' start state is to be used
      * @param acceptor acceptor object to be used during exploration; non-{@code null}
      */
-    public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
+    protected void prepare(GTS gts, GraphState state, Acceptor acceptor) {
         acceptor.prepare(gts);
     }
 

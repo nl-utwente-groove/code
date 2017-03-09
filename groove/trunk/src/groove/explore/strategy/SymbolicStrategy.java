@@ -69,7 +69,7 @@ public class SymbolicStrategy extends GTSStrategy {
     }
 
     @Override
-    public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
+    protected void prepare(GTS gts, GraphState state, Acceptor acceptor) {
         super.prepare(gts, state, acceptor);
         // Check if the point algebra is set. This should be moved to the hook
         // in an upcoming feature
