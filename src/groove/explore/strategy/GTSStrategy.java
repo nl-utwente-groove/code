@@ -28,7 +28,7 @@ import groove.match.MatcherFactory;
  */
 public abstract class GTSStrategy extends Strategy {
     @Override
-    public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
+    protected void prepare(GTS gts, GraphState state, Acceptor acceptor) {
         super.prepare(gts, state, acceptor);
         this.gts = gts;
         this.nextState = this.startState = state == null ? gts.startState() : state;

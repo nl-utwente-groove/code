@@ -34,7 +34,7 @@ import groove.transform.DeltaStore;
  */
 public class ReteLinearStrategy extends LinearStrategy {
     @Override
-    public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
+    protected void prepare(GTS gts, GraphState state, Acceptor acceptor) {
         super.prepare(gts, state, acceptor);
         // initialise the RETE network
         this.rete = new ReteSearchEngine(getGTS().getGrammar());

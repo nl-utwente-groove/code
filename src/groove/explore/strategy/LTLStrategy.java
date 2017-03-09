@@ -55,7 +55,7 @@ import groove.verify.Proposition.Arg;
  */
 public class LTLStrategy extends Strategy {
     @Override
-    public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
+    protected void prepare(GTS gts, GraphState state, Acceptor acceptor) {
         assert acceptor instanceof CycleAcceptor;
         super.prepare(gts, state, acceptor);
         MatcherFactory.instance(gts.isSimple())

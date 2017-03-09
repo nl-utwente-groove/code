@@ -39,7 +39,7 @@ import groove.util.Reporter;
  */
 public class ReteStrategy extends GTSStrategy {
     @Override
-    public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
+    protected void prepare(GTS gts, GraphState state, Acceptor acceptor) {
         gts.getRecord()
             .setCopyGraphs(false);
         super.prepare(gts, state, acceptor);
