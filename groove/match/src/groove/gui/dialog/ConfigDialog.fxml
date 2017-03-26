@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DialogPane?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+
+
+<fx:root type="DialogPane" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1">
+   <content>
+      <BorderPane prefHeight="492.0" prefWidth="441.0">
+         <left>
+            <BorderPane prefHeight="400.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+               <opaqueInsets>
+                  <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
+               </opaqueInsets>
+               <top>
+                  <ToolBar BorderPane.alignment="CENTER">
+                    <items>
+                      <Button fx:id="newButton" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" mnemonicParsing="false" onAction="#doNew">
+                           <graphic>
+                              <ImageView pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../../../resources/new.gif" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                        <Button fx:id="copyButton" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" mnemonicParsing="false">
+                           <graphic>
+                              <ImageView disable="true" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../../../resources/copy.gif" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                        <Button fx:id="deleteButton" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" mnemonicParsing="false" onAction="#doDelete">
+                           <graphic>
+                              <ImageView disable="true" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../../../resources/delete.gif" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                    </items>
+                  </ToolBar>
+               </top>
+               <center>
+                  <ScrollPane BorderPane.alignment="CENTER">
+                     <content>
+                        <ListView fx:id="configList" />
+                     </content>
+                  </ScrollPane>
+               </center>
+            </BorderPane>
+         </left>
+         <center>
+            <BorderPane fx:id="configPane" prefHeight="489.0" prefWidth="1829.0" BorderPane.alignment="CENTER">
+               <top>
+                  <FlowPane hgap="5.0" vgap="5.0" BorderPane.alignment="CENTER">
+                     <children>
+                        <Label text="Name: " />
+                        <TextField />
+                     </children>
+                     <padding>
+                        <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
+                     </padding>
+                  </FlowPane>
+               </top>
+               <padding>
+                  <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
+               </padding>
+            </BorderPane>
+         </center>
+      </BorderPane>
+   </content>
+</fx:root>
