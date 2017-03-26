@@ -70,6 +70,7 @@ import groove.grammar.aspect.AspectKind;
 import groove.grammar.aspect.AspectNode;
 import groove.grammar.rule.DefaultRuleNode;
 import groove.grammar.rule.LabelVar;
+import groove.grammar.rule.MethodName;
 import groove.grammar.rule.OperatorNode;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleElement;
@@ -276,7 +277,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             this.typeMap.putEdge(edgeEntry.getKey(), edgeEntry.getValue()
                 .getType());
         }
-        return computeRule(this.levelTree);
+        Rule result = computeRule(this.levelTree);
+        MethodName matchFilter = result.getMatchFilter();
+        if (matchFilter != null && !matchFilter.exists()) {
+            throw new FormatException("Match filter method '%s' does not exist", matchFilter);
+        }
+        return result;
     }
 
     @Override

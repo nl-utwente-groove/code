@@ -83,8 +83,7 @@ abstract public interface Parser<T> {
      * represented as a string that can be parsed back.
      */
     public default boolean isValue(Object value) {
-        // By default, tests if the value is an instance of the value type
-        return getValueType().isInstance(value);
+        return isDefault(value) || getValueType().isInstance(value);
     }
 
     /**
