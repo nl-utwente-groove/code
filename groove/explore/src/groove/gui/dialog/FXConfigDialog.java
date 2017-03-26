@@ -16,143 +16,119 @@
  */
 package groove.gui.dialog;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.ResourceBundle;
 import java.util.TreeMap;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
-import javax.swing.Icon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.JToolBar;
-import javax.swing.ListSelectionModel;
-import javax.swing.ToolTipManager;
-import javax.swing.WindowConstants;
-import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 import org.eclipse.jdt.annotation.Nullable;
 
 import groove.explore.config.ExploreKey;
-import groove.gui.Icons;
 import groove.gui.action.Refreshable;
 import groove.util.collect.UncasedStringMap;
-import javafx.application.Application;
-import javafx.stage.Stage;
+import groove.util.parse.Fallible;
+import javafx.beans.Observable;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.ListView;
+import javafx.scene.control.SelectionModel;
+import javafx.scene.layout.BorderPane;
 
 /**
  * Dialog to manage configurations.
  * @author Arend Rensink
  * @version $Revision $
  */
-abstract public class FXConfigDialog<C> extends Application {
+abstract public class FXConfigDialog<C extends Fallible & Observable> extends Dialog<C>
+    implements Initializable {
     /**
      * Constructs a new dialog instance.
      */
     public FXConfigDialog() {
         this.refreshables = new ArrayList<>();
         this.configMap = new UncasedStringMap<>();
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("ConfigDialog.fxml"));
+            loader.setController(this);
+            loader.setRoot(getDialogPane());
+            loader.load();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
-    public void start(Stage arg0) throws Exception {
-
+    public void initialize(URL location, ResourceBundle resources) {
+        getButtonBar().setButtonOrder(ButtonBar.BUTTON_ORDER_NONE);
+        getDialogPane().getButtonTypes()
+            .setAll(APPLY_TYPE, REVERT_TYPE, START_TYPE, CLOSE_TYPE);
+        setResultConverter(b -> getSelectedConfig());
+        getApplyButton().setOnAction(this::doApply);
+        getCloseButton().addEventFilter(ActionEvent.ACTION, e -> {
+            if (!askSave()) {
+                e.consume();
+            }
+        });
+        getRevertButton().setOnAction(this::doRevert);
+        addRefreshable(this::refreshApply);
+        addRefreshable(this::refreshClose);
+        addRefreshable(this::refreshCopy);
+        addRefreshable(this::refreshDelete);
+        addRefreshable(this::refreshNew);
+        addRefreshable(this::refreshRevert);
+        addRefreshable(this::refreshStart);
     }
 
-    /**
-     * Makes the dialog visible, and upon exit, returns the configuration to be started.
-     * @return the selected configuration if the dialog was exited by the start action,
-     * {@code null} if it was exited in another fashion.
-     */
-    public Object getConfiguration() {
-        // construct the window
-        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Exploration configurations");
-        JPanel contentPanel = new JPanel(new BorderLayout(3, 3));
-        contentPanel.setBorder(createEmptyBorder());
-        contentPanel.add(getListPanel(), BorderLayout.WEST);
-        contentPanel.add(getConfigPanel(), BorderLayout.CENTER);
-        ToolTipManager.sharedInstance()
-            .registerComponent(contentPanel);
-        setContentPane(contentPanel);
-        pack();
-        setVisible(true);
-        return isStart() ? getConfigMap().get(getSelectedName()) : null;
+    /** Retrieves the button bar from among the dialog pane's children. */
+    private ButtonBar getButtonBar() {
+        return getDialogPane().getChildren()
+            .stream()
+            .filter(n -> n instanceof ButtonBar)
+            .map(n -> (ButtonBar) n)
+            .findAny()
+            .get();
     }
 
-    /** Lazily creates and returns the panel containing the list of configuration names. */
-    private JPanel getListPanel() {
-        if (this.listPanel == null) {
-            JToolBar listToolbar = new JToolBar();
-            listToolbar.setFloatable(false);
-            listToolbar.add(getNewAction());
-            listToolbar.add(getCopyAction());
-            listToolbar.add(getDeleteAction());
-
-            this.listPanel = new JPanel(new BorderLayout());
-            this.listPanel.setPreferredSize(new Dimension(200, 400));
-            this.listPanel.setBorder(createLineBorder());
-            this.listPanel.add(listToolbar, BorderLayout.NORTH);
-            JScrollPane listScrollPanel = new JScrollPane(getConfigList());
-            listScrollPanel.setBorder(null);
-            this.listPanel.add(listScrollPanel);
-        }
-        return this.listPanel;
+    /** Getter for the panel whose central component holds the configuration editor. */
+    protected BorderPane getConfigPane() {
+        return this.configPane;
     }
 
-    private JPanel listPanel;
+    /** The panel whose central component should hold the configuration editor. */
+    @FXML
+    private BorderPane configPane;
 
-    private JList<String> getConfigList() {
-        if (this.configList == null) {
-            this.configList = new JList<>();
-            this.configList.setEnabled(true);
-            this.configList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-            this.configList.setPreferredSize(new Dimension(100, 100));
-            this.configList.setModel(getConfigListModel());
-            this.configList.addListSelectionListener(new ListSelectionListener() {
-                @Override
-                public void valueChanged(ListSelectionEvent e) {
-                    boolean wasListening = resetConfigListListening();
-                    // get the name now because it may change if saving reorders the list
-                    String name = getConfigList().getSelectedValue();
-                    if (wasListening) {
-                        if (askSave()) {
-                            selectConfig(name);
-                        } else {
-                            // undo the selection
-                            getConfigList().setSelectedValue(getSelectedName(), false);
-                        }
-                    }
-                    setConfigListListening(wasListening);
-                }
-            });
-        }
+    private ListView<String> getConfigList() {
         return this.configList;
     }
 
-    private JList<String> configList;
+    @FXML
+    private ListView<String> configList;
 
     /** Sets the configuration list selection to a given name.
      * @param name the name to be selected; either {@code null} (in which case
@@ -161,10 +137,11 @@ abstract public class FXConfigDialog<C> extends Application {
      */
     private void setConfigListSelection(String name) {
         boolean wasListening = resetConfigListListening();
+        SelectionModel<String> selection = getConfigList().getSelectionModel();
         if (name == null) {
-            getConfigList().setSelectedIndex(-1);
-        } else if (!name.equals(getConfigList().getSelectedValue())) {
-            getConfigList().setSelectedValue(name, true);
+            selection.clearSelection();
+        } else if (!name.equals(selection.getSelectedItem())) {
+            selection.select(name);
         }
         setConfigListListening(wasListening);
     }
@@ -174,7 +151,9 @@ abstract public class FXConfigDialog<C> extends Application {
      */
     private void removeConfigListSelection() {
         boolean wasListening = resetConfigListListening();
-        getConfigListModel().remove(getConfigList().getSelectedIndex());
+        getConfigList().getItems()
+            .remove(getConfigList().getSelectionModel()
+                .getSelectedIndex());
         setConfigListListening(wasListening);
     }
 
@@ -189,50 +168,6 @@ abstract public class FXConfigDialog<C> extends Application {
     }
 
     private boolean configListListening = true;
-
-    private DefaultListModel<String> getConfigListModel() {
-        if (this.configListModel == null) {
-            this.configListModel = new DefaultListModel<>();
-        }
-        return this.configListModel;
-    }
-
-    private DefaultListModel<String> configListModel;
-
-    /** Returns the panel with the name field, main panel, syntax help, close buttons and error field. */
-    private JPanel getConfigPanel() {
-        if (this.configPanel == null) {
-            // configuration name
-            JPanel namePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            namePanel.add(new JLabel("Name:"));
-            namePanel.add(getNameField());
-            // error panel
-            JPanel errorPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            errorPanel.add(getErrorLabel());
-            // action buttons
-            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-            buttonPanel.add(new JButton(getApplyAction()));
-            buttonPanel.add(new JButton(getRevertAction()));
-            buttonPanel.add(new JButton(getStartAction()));
-            buttonPanel.add(new JButton(getCloseAction()));
-
-            JComponent mainPanel = createMainPanel();
-
-            JPanel bottomPanel = new JPanel();
-            bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
-            bottomPanel.add(errorPanel);
-            bottomPanel.add(buttonPanel);
-
-            this.configPanel = new JPanel(new BorderLayout(3, 3));
-            this.configPanel.setBorder(createBorder());
-            this.configPanel.add(namePanel, BorderLayout.NORTH);
-            this.configPanel.add(mainPanel, BorderLayout.CENTER);
-            this.configPanel.add(bottomPanel, BorderLayout.SOUTH);
-        }
-        return this.configPanel;
-    }
-
-    private JPanel configPanel;
 
     /** Returns the current content of the name field. */
     String getEditedName() {
@@ -308,29 +243,9 @@ abstract public class FXConfigDialog<C> extends Application {
         }
     }
 
-    /** Factory method for the main panel. */
-    protected JComponent createMainPanel() {
-        return new JPanel();
-    }
-
     /** Factory method for the help panel. */
     protected JComponent createHelpPanel() {
         return new JPanel();
-    }
-
-    /** Factory method for a line border with small insets. */
-    protected final Border createBorder() {
-        return BorderFactory.createCompoundBorder(createLineBorder(), createEmptyBorder());
-    }
-
-    /** Factory method for a line border. */
-    public final Border createLineBorder() {
-        return BorderFactory.createLineBorder(Color.DARK_GRAY);
-    }
-
-    /** Factory method for small insets border. */
-    public final Border createEmptyBorder() {
-        return BorderFactory.createEmptyBorder(3, 3, 3, 3);
     }
 
     /** Returns the currently selected configuration, if any. */
@@ -345,19 +260,6 @@ abstract public class FXConfigDialog<C> extends Application {
 
     /** Mapping from names to corresponding configurations. */
     private final TreeMap<String,C> configMap;
-
-    /** Sets the start flag to {@code true}. */
-    void setStart() {
-        this.start = true;
-    }
-
-    /** Indicates if the start action has been invoked. */
-    boolean isStart() {
-        return this.start;
-    }
-
-    /** Flag recording if the start action has been invoked. */
-    private boolean start;
 
     /** Indicates that there is a currently selected configuration. */
     public boolean hasSelectedName() {
@@ -377,21 +279,27 @@ abstract public class FXConfigDialog<C> extends Application {
     /** Currently selected name. */
     private String selectedName;
 
-    /** Asks and attempts to save the current configuration, if it is dirty. */
+    /**
+     * Asks and attempts to save the current configuration, if it is dirty.
+     * @return <code>true</code> if the dialog was not cancelled
+     */
     boolean askSave() {
         if (!isDirty()) {
             return true;
         }
-        int answer = JOptionPane.showConfirmDialog(this,
+        Alert confirm = new Alert(AlertType.CONFIRMATION,
             String.format("Configuration '%s' has been modified. Save changes?", getSelectedName()),
-            null,
-            JOptionPane.YES_NO_CANCEL_OPTION);
-        if (answer == JOptionPane.YES_OPTION) {
-            saveConfig();
-        } else if (answer == JOptionPane.NO_OPTION) {
-            setDirty(false);
-        }
-        return answer != JOptionPane.CANCEL_OPTION;
+            ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
+        Optional<ButtonType> answer = confirm.showAndWait();
+        answer.ifPresent(b -> {
+            if (b == ButtonType.YES) {
+                saveConfig();
+            } else if (b == ButtonType.NO) {
+                setDirty(false);
+            }
+        });
+        return answer.map(b -> b != ButtonType.CANCEL)
+            .orElse(true);
     }
 
     /** Indicates that the currently selected configuration has unsaved changes. */
@@ -547,10 +455,11 @@ abstract public class FXConfigDialog<C> extends Application {
         boolean wasListening = resetConfigListListening();
         String currentName = getSelectedName();
         String newName = getEditedName();
-        C newConfig = extractConfig();
+        C newConfig = getSelectedConfig();
         if (!currentName.equals(newName)) {
             getConfigMap().remove(currentName);
-            getConfigListModel().removeElement(currentName);
+            getConfigList().getItems()
+                .remove(currentName);
             addConfig(newName, newConfig);
         } else {
             getConfigMap().put(currentName, newConfig);
@@ -576,7 +485,8 @@ abstract public class FXConfigDialog<C> extends Application {
         getConfigMap().put(newName, newConfig);
         int index = getConfigMap().headMap(newName)
             .size();
-        getConfigListModel().add(index, newName);
+        getConfigList().getItems()
+            .add(index, newName);
         selectConfig(newName);
     }
 
@@ -594,14 +504,8 @@ abstract public class FXConfigDialog<C> extends Application {
         refreshActions();
     }
 
-    /** Callback method to create a fresh configuration. */
+    /** Callback factory method to create an empty configuration. */
     abstract protected C createConfig();
-
-    /** Callback method to extract the configuration from the current settings. */
-    protected C extractConfig() {
-        // stopgap implementation
-        return getConfigMap().get(getSelectedName());
-    }
 
     /**
      * Generates a fresh name by extending a given name so that it does not
@@ -616,30 +520,135 @@ abstract public class FXConfigDialog<C> extends Application {
         return result;
     }
 
-    @Override
-    public void dispose() {
-        if (askSave()) {
-            super.dispose();
-        }
-    }
-
     /**
      * Callback method to create an object of the generic name type from a
      * string.
      */
     private final static String suggestedName = "newConfig";
 
-    private static abstract class RefreshableAction extends javax.swing.AbstractAction
-        implements Refreshable {
-        /** Constructor for subclassing. */
-        protected RefreshableAction(String name) {
-            super(name);
-        }
+    /** Implements the effect of the {@link #getApplyButton()}. */
+    @FXML
+    private void doApply(javafx.event.ActionEvent e) {
+        saveConfig();
+    }
 
-        /** Constructor for subclassing. */
-        protected RefreshableAction(String name, Icon icon) {
-            super(name, icon);
+    /** Refreshes the {@link #getApplyButton()}. */
+    private void refreshApply() {
+        getApplyButton().setDisable(!isDirty() || hasError());
+    }
+
+    private Button getApplyButton() {
+        return (Button) getDialogPane().lookupButton(APPLY_TYPE);
+    }
+
+    /** Refreshes the {@link #getCloseButton()}. */
+    private void refreshClose() {
+        // close button is always enabled
+    }
+
+    private Button getCloseButton() {
+        return (Button) getDialogPane().lookupButton(CLOSE_TYPE);
+    }
+
+    /** Implements the effect of the {@link #getCopyButton()}. */
+    @FXML
+    private void doCopy(javafx.event.ActionEvent e) {
+        if (askSave()) {
+            String currentName = getSelectedName();
+            C currentConfig = getConfigMap().get(currentName);
+            addConfig(generateNewName(currentName), currentConfig);
         }
+    }
+
+    /** Refreshes the {@link #getCopyButton()}. */
+    private void refreshCopy() {
+        getCopyButton().setDisable(!hasSelectedName());
+    }
+
+    private Button getCopyButton() {
+        return this.copyButton;
+    }
+
+    /** Configuration copy button */
+    @FXML
+    private Button copyButton;
+
+    /** Implements the effect of the {@link #getDeleteButton()}. */
+    @FXML
+    private void doDelete(javafx.event.ActionEvent e) {
+        if (askDelete()) {
+            deleteConfig();
+        }
+    }
+
+    /** Asks and attempts to save the current configuration, if it is dirty. */
+    private boolean askDelete() {
+        Alert confirm = new Alert(AlertType.CONFIRMATION,
+            String.format("Delete configuration '%s'?", getSelectedName()));
+        return confirm.showAndWait()
+            .map(b -> b == ButtonType.YES)
+            .orElse(false);
+    }
+
+    /** Refreshes the {@link #getDeleteButton()}. */
+    private void refreshDelete() {
+        getDeleteButton().setDisable(!hasSelectedName());
+    }
+
+    private Button getDeleteButton() {
+        return this.deleteButton;
+    }
+
+    /** Configuration delete button */
+    @FXML
+    private Button deleteButton;
+
+    /** Implements the effect of the {@link #getNewButton()}. */
+    @FXML
+    private void doNew(javafx.event.ActionEvent e) {
+        if (askSave()) {
+            String newName = generateNewName(suggestedName);
+            addConfig(newName, createConfig());
+            refreshActions();
+        }
+    }
+
+    /** Refreshes the {@link #getNewButton()}. */
+    private void refreshNew() {
+        getNewButton().setDisable(hasError());
+    }
+
+    /** Returns the new configuration button. */
+    private Button getNewButton() {
+        return this.newButton;
+    }
+
+    /** New configuration button */
+    @FXML
+    private Button newButton;
+
+    /** Implements the effect of the {@link #getRevertButton()}. */
+    @FXML
+    private void doRevert(javafx.event.ActionEvent e) {
+        revertConfig();
+    }
+
+    /** Refreshes the {@link #getRevertButton()}. */
+    private void refreshRevert() {
+        getRevertButton().setDisable(!isDirty());
+    }
+
+    private Button getRevertButton() {
+        return (Button) getDialogPane().lookupButton(REVERT_TYPE);
+    }
+
+    /** Refreshes the {@link #getStartButton()}. */
+    private void refreshStart() {
+        getStartButton().setDisable(hasError() || isDirty() || !hasSelectedName());
+    }
+
+    private Button getStartButton() {
+        return (Button) getDialogPane().lookupButton(START_TYPE);
     }
 
     /** Refreshes all refreshables. */
@@ -656,208 +665,6 @@ abstract public class FXConfigDialog<C> extends Application {
     }
 
     private final List<Refreshable> refreshables;
-
-    private ApplyAction getApplyAction() {
-        if (this.applyAction == null) {
-            this.applyAction = new ApplyAction();
-        }
-        return this.applyAction;
-    }
-
-    private ApplyAction applyAction;
-
-    private class ApplyAction extends RefreshableAction {
-        public ApplyAction() {
-            super("Apply");
-            addRefreshable(this);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            saveConfig();
-        }
-
-        @Override
-        public void refresh() {
-            setEnabled(isDirty() && !hasError());
-        }
-    }
-
-    private CloseAction getCloseAction() {
-        if (this.closeAction == null) {
-            this.closeAction = new CloseAction();
-        }
-        return this.closeAction;
-    }
-
-    private CloseAction closeAction;
-
-    private class CloseAction extends RefreshableAction {
-        public CloseAction() {
-            super("Close");
-            addRefreshable(this);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            dispose();
-        }
-
-        @Override
-        public void refresh() {
-            // always enabled
-        }
-    }
-
-    private CopyAction getCopyAction() {
-        if (this.copyAction == null) {
-            this.copyAction = new CopyAction();
-        }
-        return this.copyAction;
-    }
-
-    private CopyAction copyAction;
-
-    private class CopyAction extends RefreshableAction {
-        public CopyAction() {
-            super("Copy Configuration", Icons.COPY_ICON);
-            addRefreshable(this);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (askSave()) {
-                String currentName = getSelectedName();
-                C currentConfig = getConfigMap().get(currentName);
-                addConfig(generateNewName(currentName), currentConfig);
-            }
-        }
-
-        @Override
-        public void refresh() {
-            setEnabled(!hasError() && hasSelectedName());
-        }
-    }
-
-    private DeleteAction getDeleteAction() {
-        if (this.deleteAction == null) {
-            this.deleteAction = new DeleteAction();
-        }
-        return this.deleteAction;
-    }
-
-    private DeleteAction deleteAction;
-
-    private class DeleteAction extends RefreshableAction {
-        public DeleteAction() {
-            super("Delete Configuration", Icons.DELETE_ICON);
-            addRefreshable(this);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (askDelete()) {
-                deleteConfig();
-            }
-        }
-
-        /** Asks and attempts to save the current configuration, if it is dirty. */
-        boolean askDelete() {
-            int answer = JOptionPane.showConfirmDialog(FXConfigDialog.this,
-                String.format("Delete configuration '%s'?", getSelectedName()),
-                null,
-                JOptionPane.YES_NO_OPTION);
-            return answer == JOptionPane.YES_OPTION;
-        }
-
-        @Override
-        public void refresh() {
-            setEnabled(hasSelectedName());
-        }
-    }
-
-    private NewAction getNewAction() {
-        if (this.newAction == null) {
-            this.newAction = new NewAction();
-        }
-        return this.newAction;
-    }
-
-    private NewAction newAction;
-
-    private class NewAction extends RefreshableAction {
-        public NewAction() {
-            super("New Configuration", Icons.NEW_ICON);
-            addRefreshable(this);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (askSave()) {
-                String newName = generateNewName(suggestedName);
-                addConfig(newName, createConfig());
-                refreshActions();
-            }
-        }
-
-        @Override
-        public void refresh() {
-            setEnabled(!hasError());
-        }
-    }
-
-    private StartAction getStartAction() {
-        if (this.startAction == null) {
-            this.startAction = new StartAction();
-        }
-        return this.startAction;
-    }
-
-    private StartAction startAction;
-
-    private class StartAction extends RefreshableAction {
-        public StartAction() {
-            super("Start");
-            addRefreshable(this);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            setStart();
-            dispose();
-        }
-
-        @Override
-        public void refresh() {
-            setEnabled(!hasError() && !isDirty() && hasSelectedName());
-        }
-    }
-
-    private RevertAction getRevertAction() {
-        if (this.revertAction == null) {
-            this.revertAction = new RevertAction();
-        }
-        return this.revertAction;
-    }
-
-    private RevertAction revertAction;
-
-    private class RevertAction extends RefreshableAction {
-        public RevertAction() {
-            super("Revert");
-            addRefreshable(this);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            revertConfig();
-        }
-
-        @Override
-        public void refresh() {
-            setEnabled(isDirty());
-        }
-    }
 
     /** Sets or resets an error of a particular category. */
     public void setError(ExploreKey category, String error) {
@@ -931,8 +738,8 @@ abstract public class FXConfigDialog<C> extends Application {
         }
     }
 
-    /** Main method, for testing purposes. */
-    public static void main(String[] args) {
-        launch(args);
-    }
+    private static final ButtonType APPLY_TYPE = ButtonType.APPLY;
+    private static final ButtonType REVERT_TYPE = new ButtonType("Revert");
+    private static final ButtonType START_TYPE = new ButtonType("Start");
+    private static final ButtonType CLOSE_TYPE = ButtonType.CLOSE;
 }
