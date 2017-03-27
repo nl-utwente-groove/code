@@ -60,10 +60,11 @@ abstract public class MethodName {
     abstract public boolean exists();
 
     /** Invokes this method on a given host graph and event.
-     * @throws NoSuchMethodException if a method with this name does not exist
+     * @throws UnsupportedOperationException TODO
      * @see #exists()
      */
-    abstract public boolean invoke(HostGraph graph, RuleEvent match) throws NoSuchMethodException;
+    abstract public boolean invoke(HostGraph graph, RuleEvent match)
+        throws UnsupportedOperationException;
 
     @Override
     public String toString() {

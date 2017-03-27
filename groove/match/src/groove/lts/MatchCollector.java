@@ -31,6 +31,7 @@ import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.ValueNode;
+import groove.grammar.rule.MethodName;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.RuleToHostMap;
 import groove.grammar.rule.VariableNode;
@@ -117,23 +118,28 @@ public class MatchCollector {
             RuleToHostMap boundMap = extractBinding(step);
             if (boundMap != null) {
                 final Record record = this.record;
+                MethodName matchFilter = step.getRule()
+                    .getMatchFilter();
                 Visitor<Proof,Boolean> eventCollector = new Visitor<Proof,Boolean>(false) {
                     @Override
                     protected boolean process(Proof object) {
                         RuleEvent event = record.getEvent(object);
-                        // only look up the event in the parent map if
-                        // the rule was disabled, as otherwise the result
-                        // already contains all relevant parent results
-                        MatchResult match = new MatchResult(event, step);
-                        if (isDisabled) {
-                            match = getParentTrans(match);
+                        if (matchFilter == null
+                            || matchFilter.invoke(MatchCollector.this.state.getGraph(), event)) {
+                            // only look up the event in the parent map if
+                            // the rule was disabled, as otherwise the result
+                            // already contains all relevant parent results
+                            MatchResult match = new MatchResult(event, step);
+                            if (isDisabled) {
+                                match = getParentTrans(match);
+                            }
+                            result.add(match);
+                            if (DEBUG) {
+                                System.out.print(" E" + System.identityHashCode(match.getEvent()));
+                                checkEvent(match.getEvent());
+                            }
+                            setResult(true);
                         }
-                        result.add(match);
-                        if (DEBUG) {
-                            System.out.print(" E" + System.identityHashCode(match.getEvent()));
-                            checkEvent(match.getEvent());
-                        }
-                        setResult(true);
                         return true;
                     }
                 };

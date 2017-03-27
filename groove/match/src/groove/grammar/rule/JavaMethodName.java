@@ -21,8 +21,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Optional;
 
-import javax.xml.crypto.NoSuchMechanismException;
-
 import groove.grammar.QualName;
 import groove.grammar.host.HostGraph;
 import groove.transform.RuleEvent;
@@ -82,8 +80,8 @@ public class JavaMethodName extends MethodName {
     }
 
     @Override
-    public boolean invoke(HostGraph graph, RuleEvent match) throws NoSuchMethodException {
-        Method method = getMethod().orElseThrow(() -> new NoSuchMechanismException(
+    public boolean invoke(HostGraph graph, RuleEvent match) throws UnsupportedOperationException {
+        Method method = getMethod().orElseThrow(() -> new UnsupportedOperationException(
             String.format("Method '%s' does not exist", getQualName())));
         try {
             return (Boolean) method.invoke(null, graph, match);
