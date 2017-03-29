@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -163,7 +164,7 @@ public class Rule implements Action, Fixable {
         this.priority = (Integer) properties.parseProperty(Key.PRIORITY);
         this.transitionLabel = (String) properties.parseProperty(Key.TRANSITION_LABEL);
         this.formatString = (String) properties.parseProperty(Key.FORMAT);
-        this.matchFilter = (MethodName) properties.parseProperty(Key.FILTER);
+        this.matchFilter = Optional.ofNullable((MethodName) properties.parseProperty(Key.FILTER));
     }
 
     @Override
@@ -199,11 +200,11 @@ public class Rule implements Action, Fixable {
     private int priority;
 
     /** Returns the optional match filter method. */
-    public MethodName getMatchFilter() {
+    public Optional<MethodName> getMatchFilter() {
         return this.matchFilter;
     }
 
-    private MethodName matchFilter;
+    private Optional<MethodName> matchFilter;
 
     /** Sets the dangling-edge check for matches of this rule. */
     public void setCheckDangling(boolean checkDangling) {

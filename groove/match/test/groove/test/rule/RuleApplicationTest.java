@@ -34,8 +34,10 @@ import groove.grammar.QualName;
 import groove.grammar.Rule;
 import groove.grammar.aspect.GraphConverter;
 import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.HostModel;
+import groove.grammar.rule.RuleToHostMap;
 import groove.graph.iso.IsoChecker;
 import groove.io.FileType;
 import groove.transform.Proof;
@@ -109,6 +111,12 @@ public class RuleApplicationTest {
     @Test
     public void testPointMatching() {
         test("pointMatching");
+    }
+
+    /** Collection of regression tests. */
+    @Test
+    public void testMatchFilter() {
+        test("matchFilter");
     }
 
     /** Collection of regression tests. */
@@ -202,7 +210,12 @@ public class RuleApplicationTest {
         BitSet found = new BitSet();
         Set<RuleEvent> eventSet = new HashSet<>();
         for (Proof proof : rule.getAllMatches(start, null)) {
-            eventSet.add(proof.newEvent(null));
+            RuleEvent event = proof.newEvent(null);
+            if (!rule.getMatchFilter()
+                .filter(f -> !f.invoke(start, event.getAnchorMap()))
+                .isPresent()) {
+                eventSet.add(event);
+            }
         }
         for (RuleEvent event : eventSet) {
             HostGraph target = new RuleApplication(event, start).getTarget();
@@ -241,5 +254,18 @@ public class RuleApplicationTest {
                 results.get(leftOver)
                     .getName()));
         }
+    }
+
+    /** Filter method for {@link #testMatchFilter()} */
+    public static boolean filterFlag(HostGraph host, RuleToHostMap anchorMap) {
+        HostNode image = anchorMap.nodeMap()
+            .values()
+            .iterator()
+            .next();
+        return !host.outEdgeSet(image)
+            .stream()
+            .anyMatch(e -> e.label()
+                .text()
+                .equals("flag"));
     }
 }

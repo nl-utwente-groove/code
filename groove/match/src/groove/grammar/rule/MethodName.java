@@ -21,7 +21,6 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import groove.grammar.QualName;
 import groove.grammar.host.HostGraph;
-import groove.transform.RuleEvent;
 import groove.util.Exceptions;
 
 /**
@@ -63,7 +62,7 @@ abstract public class MethodName {
      * @throws UnsupportedOperationException TODO
      * @see #exists()
      */
-    abstract public boolean invoke(HostGraph graph, RuleEvent match)
+    abstract public boolean invoke(HostGraph graph, RuleToHostMap anchorMap)
         throws UnsupportedOperationException;
 
     @Override

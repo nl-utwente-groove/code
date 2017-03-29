@@ -282,7 +282,8 @@ public class RuleDependencies {
         for (Rule rule : this.rules) {
             Set<TypeElement> positives = this.positiveMap.get(rule);
             Set<TypeElement> negatives = this.negativeMap.get(rule);
-            boolean hasMatchFilter = rule.getMatchFilter() != null;
+            boolean hasMatchFilter = rule.getMatchFilter()
+                .isPresent();
             for (Rule depRule : this.rules) {
                 // Positive as well as negative dependencies exist if this rule has a match filter
                 if (hasMatchFilter) {

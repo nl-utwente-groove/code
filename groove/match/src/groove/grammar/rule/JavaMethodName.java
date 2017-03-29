@@ -23,7 +23,6 @@ import java.util.Optional;
 
 import groove.grammar.QualName;
 import groove.grammar.host.HostGraph;
-import groove.transform.RuleEvent;
 import groove.util.Exceptions;
 
 /**
@@ -39,7 +38,7 @@ public class JavaMethodName extends MethodName {
         super(Language.JAVA, qualName);
     }
 
-    /** Lazily creates the reflected method. */
+    /** Lazily looks up and returns the reflected method. */
     private Optional<Method> getMethod() {
         Optional<Method> result = this.method;
         if (result == null) {
@@ -50,12 +49,16 @@ public class JavaMethodName extends MethodName {
                     .loadClass(clazName);
                 Method method;
                 try {
-                    method = claz.getMethod(getQualName().last(), HostGraph.class, RuleEvent.class);
+                    method =
+                        claz.getMethod(getQualName().last(), HostGraph.class, RuleToHostMap.class);
+                    this.parameterCount = 2;
                 } catch (NoSuchMethodException exc) {
                     try {
                         method = claz.getMethod(getQualName().last(), HostGraph.class);
+                        this.parameterCount = 1;
                     } catch (NoSuchMethodException exc1) {
                         method = claz.getMethod(getQualName().last());
+                        this.parameterCount = 0;
                     }
                 }
                 boolean isStatic = Modifier.isStatic(method.getModifiers());
@@ -72,7 +75,10 @@ public class JavaMethodName extends MethodName {
         return result;
     }
 
+    /** The actual method corresponding to the method name, if one exists. */
     private Optional<Method> method;
+    /** Number of parameters that the method takes. */
+    private int parameterCount;
 
     @Override
     public boolean exists() {
@@ -80,11 +86,21 @@ public class JavaMethodName extends MethodName {
     }
 
     @Override
-    public boolean invoke(HostGraph graph, RuleEvent match) throws UnsupportedOperationException {
+    public boolean invoke(HostGraph graph, RuleToHostMap anchorMap)
+        throws UnsupportedOperationException {
         Method method = getMethod().orElseThrow(() -> new UnsupportedOperationException(
             String.format("Method '%s' does not exist", getQualName())));
         try {
-            return (Boolean) method.invoke(null, graph, match);
+            switch (this.parameterCount) {
+            case 0:
+                return (Boolean) method.invoke(null);
+            case 1:
+                return (Boolean) method.invoke(null, graph);
+            case 2:
+                return (Boolean) method.invoke(null, graph, anchorMap);
+            default:
+                throw Exceptions.UNREACHABLE;
+            }
         } catch (IllegalAccessException | IllegalArgumentException
             | InvocationTargetException exc) {
             throw Exceptions.UNREACHABLE;
@@ -92,7 +108,7 @@ public class JavaMethodName extends MethodName {
     }
 
     /** Example filter method, which does not allow any match. */
-    public static boolean falseFilter(HostGraph h, RuleEvent e) {
+    public static boolean falseFilter(HostGraph h, RuleToHostMap e) {
         return false;
     }
 }

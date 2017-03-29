@@ -16,6 +16,7 @@
  */
 package groove.lts;
 
+import java.util.Optional;
 import java.util.Set;
 
 import groove.algebra.Constant;
@@ -118,14 +119,15 @@ public class MatchCollector {
             RuleToHostMap boundMap = extractBinding(step);
             if (boundMap != null) {
                 final Record record = this.record;
-                MethodName matchFilter = step.getRule()
+                Optional<MethodName> matchFilter = step.getRule()
                     .getMatchFilter();
                 Visitor<Proof,Boolean> eventCollector = new Visitor<Proof,Boolean>(false) {
                     @Override
-                    protected boolean process(Proof object) {
-                        RuleEvent event = record.getEvent(object);
-                        if (matchFilter == null
-                            || matchFilter.invoke(MatchCollector.this.state.getGraph(), event)) {
+                    protected boolean process(Proof proof) {
+                        RuleEvent event = record.getEvent(proof);
+                        if (!matchFilter.filter(f -> !f.invoke(MatchCollector.this.state.getGraph(),
+                            event.getAnchorMap()))
+                            .isPresent()) {
                             // only look up the event in the parent map if
                             // the rule was disabled, as otherwise the result
                             // already contains all relevant parent results
