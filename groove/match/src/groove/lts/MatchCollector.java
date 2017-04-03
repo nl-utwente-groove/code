@@ -37,6 +37,7 @@ import groove.grammar.rule.MethodName;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.RuleToHostMap;
 import groove.grammar.rule.VariableNode;
+import groove.graph.GraphInfo;
 import groove.transform.CompositeEvent;
 import groove.transform.Proof;
 import groove.transform.Record;
@@ -44,6 +45,7 @@ import groove.transform.RuleEvent;
 import groove.util.Pair;
 import groove.util.Visitor;
 import groove.util.collect.KeySet;
+import groove.util.parse.FormatError;
 
 /**
  * Algorithm to create the set of current match results for a given state.
@@ -127,13 +129,18 @@ public class MatchCollector {
                     protected boolean process(Proof proof) {
                         RuleEvent event = record.getEvent(proof);
                         boolean filtered = false;
+                        HostGraph host = MatchCollector.this.state.getGraph();
                         if (matchFilter.isPresent()) {
                             try {
                                 filtered = matchFilter.get()
-                                    .invoke(MatchCollector.this.state.getGraph(),
-                                        event.getAnchorMap());
+                                    .invoke(host, event.getAnchorMap());
                             } catch (InvocationTargetException exc) {
-                                System.err.println(exc.getMessage());
+                                FormatError error =
+                                    new FormatError("%s while applying match filter %s",
+                                        exc.getCause(), matchFilter.get()
+                                            .getQualName());
+                                GraphInfo.addError(host, error);
+                                MatchCollector.this.state.setError();
                             }
                         }
                         if (!filtered) {
