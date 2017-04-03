@@ -211,13 +211,23 @@ public class RuleApplicationTest {
         Optional<MethodName> matchFilter = rule.getMatchFilter();
         for (Proof proof : rule.getAllMatches(start, null)) {
             RuleEvent event = proof.newEvent(null);
+            boolean errorExpected = start.getName()
+                .endsWith("E");
             try {
-                if (matchFilter.isPresent() && matchFilter.get()
-                    .invoke(start, event.getAnchorMap())) {
+                boolean ok = !matchFilter.isPresent() || matchFilter.get()
+                    .invoke(start, event.getAnchorMap());
+                if (errorExpected) {
+                    Assert.fail("Expected exception for " + start.getName() + " did not occur");
+                }
+                if (!ok) {
                     continue;
                 }
             } catch (InvocationTargetException exc) {
-                throw new IllegalArgumentException(exc.getTargetException());
+                if (errorExpected) {
+                    continue;
+                } else {
+                    throw new IllegalArgumentException(exc.getTargetException());
+                }
             }
             eventSet.add(event);
         }
@@ -260,7 +270,8 @@ public class RuleApplicationTest {
         }
     }
 
-    /** Filter method for {@link #testMatchFilter()} */
+    /** Filter method for {@link #testMatchFilter()}. Returns <code>true</code> only if the
+     * match image has a {@code flag} flag. */
     public static boolean filterFlag(HostGraph host, RuleToHostMap anchorMap) {
         HostNode image = anchorMap.nodeMap()
             .values()
