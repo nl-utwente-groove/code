@@ -16,6 +16,8 @@
  */
 package groove.grammar.rule;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -60,10 +62,11 @@ abstract public class MethodName {
 
     /** Invokes this method on a given host graph and event.
      * @throws UnsupportedOperationException TODO
+     * @throws InvocationTargetException TODO
      * @see #exists()
      */
     abstract public boolean invoke(HostGraph graph, RuleToHostMap anchorMap)
-        throws UnsupportedOperationException;
+        throws UnsupportedOperationException, InvocationTargetException;
 
     @Override
     public String toString() {

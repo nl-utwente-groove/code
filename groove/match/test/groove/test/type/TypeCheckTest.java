@@ -73,6 +73,12 @@ public class TypeCheckTest {
         test("regression");
     }
 
+    /** Tests node identity constraints. */
+    @Test
+    public void testNodeIds() {
+        test("nodeids");
+    }
+
     /** Tests all rules in a named grammar (to be loaded from {@link #INPUT_DIR}). */
     private void test(String grammarName) {
         try {

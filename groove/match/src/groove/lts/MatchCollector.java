@@ -16,6 +16,7 @@
  */
 package groove.lts;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 import java.util.Set;
 
@@ -125,9 +126,17 @@ public class MatchCollector {
                     @Override
                     protected boolean process(Proof proof) {
                         RuleEvent event = record.getEvent(proof);
-                        if (!matchFilter.filter(f -> !f.invoke(MatchCollector.this.state.getGraph(),
-                            event.getAnchorMap()))
-                            .isPresent()) {
+                        boolean filtered = false;
+                        if (matchFilter.isPresent()) {
+                            try {
+                                filtered = matchFilter.get()
+                                    .invoke(MatchCollector.this.state.getGraph(),
+                                        event.getAnchorMap());
+                            } catch (InvocationTargetException exc) {
+                                System.err.println(exc.getMessage());
+                            }
+                        }
+                        if (!filtered) {
                             // only look up the event in the parent map if
                             // the rule was disabled, as otherwise the result
                             // already contains all relevant parent results

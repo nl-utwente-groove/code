@@ -87,7 +87,7 @@ public class JavaMethodName extends MethodName {
 
     @Override
     public boolean invoke(HostGraph graph, RuleToHostMap anchorMap)
-        throws UnsupportedOperationException {
+        throws UnsupportedOperationException, InvocationTargetException {
         Method method = getMethod().orElseThrow(() -> new UnsupportedOperationException(
             String.format("Method '%s' does not exist", getQualName())));
         try {
@@ -101,8 +101,7 @@ public class JavaMethodName extends MethodName {
             default:
                 throw Exceptions.UNREACHABLE;
             }
-        } catch (IllegalAccessException | IllegalArgumentException
-            | InvocationTargetException exc) {
+        } catch (IllegalAccessException | IllegalArgumentException exc) {
             throw Exceptions.UNREACHABLE;
         }
     }
@@ -110,5 +109,10 @@ public class JavaMethodName extends MethodName {
     /** Example filter method, which does not allow any match. */
     public static boolean falseFilter(HostGraph h, RuleToHostMap e) {
         return false;
+    }
+
+    /** Example filter method, which does not allow any match. */
+    public static boolean errorFilter(HostGraph h, RuleToHostMap e) {
+        throw new UnsupportedOperationException();
     }
 }
