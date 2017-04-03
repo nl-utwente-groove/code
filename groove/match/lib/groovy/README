@@ -1,7 +1,0 @@
-Please place Groovy libs here:
-http://groovy.codehaus.org/Download
-current version deeplink: http://dist.groovy.codehaus.org/distributions/groovy-binary-1.8.5.zip
-
-Extract files from the LIB folder in the archive into this directory
-
-This may require updating the .classpath for newer/other versions
