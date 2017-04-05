@@ -21,6 +21,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import groove.grammar.Action.Role;
+import groove.grammar.rule.MethodName.Language;
+import groove.grammar.rule.MethodNameParser;
+import groove.util.Groove;
 import groove.util.Properties;
 import groove.util.PropertyKey;
 import groove.util.parse.Parser;
@@ -68,6 +71,9 @@ public class GraphProperties extends Properties {
 
         /** Action role. */
         ROLE("actionRole", "<body>Role of the action. Values are:" + "<li>* <i>transformer</i>: action that causes the graph to change; scheduled by the (im- or explicit) control" + "<li>- <i>property</i>: unmodifying, parameterless action, checked at every state" + "<li>- <i>forbidden</i>: forbidden graph pattern, dealt with as dictated by the violation policy" + "<li>- <i>invariant</i>: invariant graph property, dealt with as dictated by the violation policy", new Parser.EnumParser<>(Role.class, null)),
+
+        /** Match filter. */
+        FILTER("matchFilter", "<body>Boolean method or predicate that filters the matches of the rule. A match is only considered if the method returns <code>true</code>.<br>" + "Format: <tt>lang:name</tt> where the optional <tt>lang</tt> is the name of a language (by default Java) and <tt>name</tt> the fully qualified method name.<br>" + "The method may optionally take parameters of type <tt>groove.grammar.host.HostGraph</tt> and <tt>groove.transform.RuleEvent</tt><br/>" + "Supported languages are: <tt>" + Groove.toString(Language.values(), "", "", ", ") + "</tt>", MethodNameParser.instance()),
 
         /** Output line format. */
         FORMAT("printFormat", "<body>If nonempty, is printed on <tt>System.out</tt> upon every rule application. " + "<br>Optional format parameters as in <tt>String.format</tt> are instantiated with rule parameters.", StringParser.identity()),

@@ -16,6 +16,8 @@
  */
 package groove.lts;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
 import java.util.Set;
 
 import groove.algebra.Constant;
@@ -31,9 +33,11 @@ import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.ValueNode;
+import groove.grammar.rule.MatchChecker;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.RuleToHostMap;
 import groove.grammar.rule.VariableNode;
+import groove.graph.GraphInfo;
 import groove.transform.CompositeEvent;
 import groove.transform.Proof;
 import groove.transform.Record;
@@ -41,6 +45,7 @@ import groove.transform.RuleEvent;
 import groove.util.Pair;
 import groove.util.Visitor;
 import groove.util.collect.KeySet;
+import groove.util.parse.FormatError;
 
 /**
  * Algorithm to create the set of current match results for a given state.
@@ -117,23 +122,43 @@ public class MatchCollector {
             RuleToHostMap boundMap = extractBinding(step);
             if (boundMap != null) {
                 final Record record = this.record;
+                Optional<MatchChecker> matchFilter = step.getRule()
+                    .getMatchFilter();
                 Visitor<Proof,Boolean> eventCollector = new Visitor<Proof,Boolean>(false) {
                     @Override
-                    protected boolean process(Proof object) {
-                        RuleEvent event = record.getEvent(object);
-                        // only look up the event in the parent map if
-                        // the rule was disabled, as otherwise the result
-                        // already contains all relevant parent results
-                        MatchResult match = new MatchResult(event, step);
-                        if (isDisabled) {
-                            match = getParentTrans(match);
+                    protected boolean process(Proof proof) {
+                        RuleEvent event = record.getEvent(proof);
+                        boolean filtered = false;
+                        GraphState state = MatchCollector.this.state;
+                        HostGraph host = state.getGraph();
+                        if (matchFilter.isPresent()) {
+                            try {
+                                filtered = matchFilter.get()
+                                    .invoke(host, event.getAnchorMap());
+                            } catch (InvocationTargetException exc) {
+                                FormatError error = new FormatError(
+                                    "Error at state %s while applying match filter %s: %s", state,
+                                    matchFilter.get()
+                                        .getQualName(),
+                                    exc.getCause());
+                                GraphInfo.addError(state.getGTS(), error);
+                            }
                         }
-                        result.add(match);
-                        if (DEBUG) {
-                            System.out.print(" E" + System.identityHashCode(match.getEvent()));
-                            checkEvent(match.getEvent());
+                        if (!filtered) {
+                            // only look up the event in the parent map if
+                            // the rule was disabled, as otherwise the result
+                            // already contains all relevant parent results
+                            MatchResult match = new MatchResult(event, step);
+                            if (isDisabled) {
+                                match = getParentTrans(match);
+                            }
+                            result.add(match);
+                            if (DEBUG) {
+                                System.out.print(" E" + System.identityHashCode(match.getEvent()));
+                                checkEvent(match.getEvent());
+                            }
+                            setResult(true);
                         }
-                        setResult(true);
                         return true;
                     }
                 };

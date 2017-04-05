@@ -16,6 +16,10 @@
  */
 package groove.grammar.rule;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import groove.grammar.AnchorKind;
 import groove.grammar.host.AnchorValue;
 import groove.grammar.host.HostEdge;
@@ -27,18 +31,13 @@ import groove.grammar.type.TypeLabel;
 import groove.graph.AElementMap;
 import groove.graph.Label;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 /**
- * Implementation of the {@link RuleToHostMap} interface where the variable
- * mapping part is given by a separate instance variable.
+ * Mapping from rule graph elements (including label variables) to host graph elements.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class RuleToHostMap extends AElementMap<RuleNode,RuleEdge,HostNode,HostEdge> implements
-    VarMap {
+public class RuleToHostMap extends AElementMap<RuleNode,RuleEdge,HostNode,HostEdge>
+    implements VarMap {
     /**
      * Creates an empty map with an empty valuation.
      */
@@ -68,14 +67,14 @@ public class RuleToHostMap extends AElementMap<RuleNode,RuleEdge,HostNode,HostEd
         if (ruleLabel.isWildcard()) {
             TypeGuard guard = ruleLabel.getWildcardGuard();
             if (!guard.isNamed()) {
-                throw new IllegalArgumentException(String.format("Label %s cannot be mapped",
-                    ruleLabel));
+                throw new IllegalArgumentException(
+                    String.format("Label %s cannot be mapped", ruleLabel));
             } else {
                 result = getVar(guard.getVar()).label();
             }
         } else {
-            assert ruleLabel.isSharp() || ruleLabel.isAtom() : String.format("Label %s should be sharp or atom",
-                label);
+            assert ruleLabel.isSharp() || ruleLabel.isAtom() : String
+                .format("Label %s should be sharp or atom", label);
             result = ruleLabel.getTypeLabel();
         }
         return result;

@@ -70,6 +70,8 @@ import groove.grammar.aspect.AspectKind;
 import groove.grammar.aspect.AspectNode;
 import groove.grammar.rule.DefaultRuleNode;
 import groove.grammar.rule.LabelVar;
+import groove.grammar.rule.MatchChecker;
+import groove.grammar.rule.MethodName;
 import groove.grammar.rule.OperatorNode;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleElement;
@@ -87,6 +89,8 @@ import groove.grammar.type.TypeNode;
 import groove.graph.EdgeComparator;
 import groove.graph.Element;
 import groove.graph.GraphInfo;
+import groove.graph.GraphProperties;
+import groove.graph.GraphProperties.Key;
 import groove.graph.NodeComparator;
 import groove.gui.dialog.GraphPreviewDialog;
 import groove.util.DefaultFixable;
@@ -127,8 +131,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     boolean isShouldRebuild() {
         boolean result = super.isShouldRebuild();
         // check for the properties to update the match constraints
+        result |= isStale(ResourceKind.PROPERTIES);
         // check for the type graph to get the correct instance
-        result |= isStale(ResourceKind.PROPERTIES) | this.oldTypeGraph != getType();
+        result |= this.oldTypeGraph != getType();
+        // check for Groovy scripts to get the correct match filter
+        result |= isStale(ResourceKind.GROOVY);
         this.oldTypeGraph = getType();
         return result;
     }
@@ -276,7 +283,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             this.typeMap.putEdge(edgeEntry.getKey(), edgeEntry.getValue()
                 .getType());
         }
-        return computeRule(this.levelTree);
+        Rule result = computeRule(this.levelTree);
+        return result;
     }
 
     @Override
@@ -453,12 +461,17 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             result = conditionTree.firstEntry()
                 .getValue()
                 .getRule();
-            if (result != null) {
-                result.setProperties(GraphInfo.getProperties(getSource()));
-                result.setCheckDangling(getGrammarProperties().isCheckDangling());
-                Parameters parameters = new Parameters();
-                result.setSignature(parameters.getSignature(), parameters.getHiddenPars());
-                result.setRole(role);
+        }
+        if (result != null) {
+            GraphProperties properties = GraphInfo.getProperties(getSource());
+            result.setProperties(properties);
+            result.setCheckDangling(getGrammarProperties().isCheckDangling());
+            Parameters parameters = new Parameters();
+            result.setSignature(parameters.getSignature(), parameters.getHiddenPars());
+            result.setRole(role);
+            MethodName matchFilter = (MethodName) properties.parseProperty(Key.FILTER);
+            if (matchFilter != null) {
+                result.setMatchFilter(MatchChecker.createChecker(matchFilter, getGrammar()));
             }
         }
         transferErrors(errors, levelTree.getModelMap()).throwException();

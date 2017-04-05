@@ -21,10 +21,12 @@ import static groove.grammar.model.ResourceKind.RULE;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Test;
@@ -34,8 +36,10 @@ import groove.grammar.QualName;
 import groove.grammar.Rule;
 import groove.grammar.aspect.GraphConverter;
 import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
 import groove.grammar.model.GrammarModel;
-import groove.grammar.model.HostModel;
+import groove.grammar.rule.MatchChecker;
+import groove.grammar.rule.RuleToHostMap;
 import groove.graph.iso.IsoChecker;
 import groove.io.FileType;
 import groove.transform.Proof;
@@ -93,12 +97,6 @@ public class RuleApplicationTest {
         test("forallCount");
     }
 
-    /** Tests the rules in the forallCount grammar. */
-    @Test
-    public void testNodeIds() {
-        test("nodeids");
-    }
-
     /** Tests the rules in the existsOptional grammar. */
     @Test
     public void testExistsOptional() {
@@ -109,6 +107,12 @@ public class RuleApplicationTest {
     @Test
     public void testPointMatching() {
         test("pointMatching");
+    }
+
+    /** Collection of regression tests. */
+    @Test
+    public void testMatchFilter() {
+        test("matchFilter");
     }
 
     /** Collection of regression tests. */
@@ -138,18 +142,21 @@ public class RuleApplicationTest {
      * (for <i>j</i> ranging from zero).
      */
     private void test(GrammarModel view, QualName ruleName) {
-        boolean cont = true;
-        int i;
-        for (i = 0; cont; i++) {
-            QualName startName = ruleName.parent()
-                .extend(ruleName.last() + "-" + i);
-            cont = view.getNames(HOST)
-                .contains(startName);
-            if (cont) {
+        boolean found = false;
+        for (QualName startName : view.getNames(HOST)) {
+            String namePrefix = ruleName.last() + "-";
+            if (startName.parent()
+                .equals(ruleName.parent())
+                && startName.last()
+                    .startsWith(namePrefix)
+                && !startName.last()
+                    .substring(namePrefix.length())
+                    .contains("-")) {
                 test(view, ruleName, startName);
+                found = true;
             }
         }
-        if (i == 0) {
+        if (!found) {
             Assert.fail(String.format("No appropriate start graph for rule %s", ruleName));
         }
     }
@@ -168,15 +175,14 @@ public class RuleApplicationTest {
             List<HostGraph> results = new ArrayList<>();
             AlgebraFamily family = grammarModel.getProperties()
                 .getAlgebraFamily();
-            boolean cont = true;
-            for (int j = 0; cont; j++) {
-                QualName resultName = startName.parent()
-                    .extend(startName.last() + "-" + j);
-                HostModel hostModel = grammarModel.getHostModel(resultName);
-                if (hostModel == null) {
-                    cont = false;
-                } else {
-                    results.add(hostModel.toResource()
+            for (QualName resultName : grammarModel.getNames(HOST)) {
+                String namePrefix = startName.last() + "-";
+                if (resultName.parent()
+                    .equals(startName.parent())
+                    && resultName.last()
+                        .startsWith(namePrefix)) {
+                    results.add(grammarModel.getHostModel(resultName)
+                        .toResource()
                         .clone(family));
                 }
             }
@@ -197,12 +203,33 @@ public class RuleApplicationTest {
      * Tests if the application of a given rule to a given start graph
      * results in a given set of result graphs.
      */
-    private void test(HostGraph start, Rule rule, List<HostGraph> results) {
+    private void test(HostGraph start, Rule rule, List<HostGraph> results)
+        throws IllegalArgumentException {
         IsoChecker checker = IsoChecker.getInstance(true);
         BitSet found = new BitSet();
         Set<RuleEvent> eventSet = new HashSet<>();
+        Optional<MatchChecker> matchFilter = rule.getMatchFilter();
         for (Proof proof : rule.getAllMatches(start, null)) {
-            eventSet.add(proof.newEvent(null));
+            RuleEvent event = proof.newEvent(null);
+            boolean errorExpected = start.getName()
+                .endsWith("E");
+            try {
+                boolean ok = !matchFilter.isPresent() || matchFilter.get()
+                    .invoke(start, event.getAnchorMap());
+                if (errorExpected) {
+                    Assert.fail("Expected exception for " + start.getName() + " did not occur");
+                }
+                if (!ok) {
+                    continue;
+                }
+            } catch (InvocationTargetException exc) {
+                if (errorExpected) {
+                    continue;
+                } else {
+                    throw new IllegalArgumentException(exc.getTargetException());
+                }
+            }
+            eventSet.add(event);
         }
         for (RuleEvent event : eventSet) {
             HostGraph target = new RuleApplication(event, start).getTarget();
@@ -241,5 +268,24 @@ public class RuleApplicationTest {
                 results.get(leftOver)
                     .getName()));
         }
+    }
+
+    /** Filter method for {@link #testMatchFilter()}. Returns <code>true</code> only if the
+     * match image has a {@code flag} flag. */
+    public static boolean filterFlag(HostGraph host, RuleToHostMap anchorMap) {
+        HostNode image = anchorMap.nodeMap()
+            .values()
+            .iterator()
+            .next();
+        return !host.outEdgeSet(image)
+            .stream()
+            .anyMatch(e -> e.label()
+                .text()
+                .equals("flag"));
+    }
+
+    /** Filter method that intentionally throws an exception. */
+    public static boolean errorFilter(HostGraph host, RuleToHostMap anchorMap) {
+        throw new NullPointerException();
     }
 }

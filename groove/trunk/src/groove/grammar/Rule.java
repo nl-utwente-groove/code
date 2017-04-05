@@ -16,6 +16,20 @@
  */
 package groove.grammar;
 
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
+
 import groove.algebra.AlgebraFamily;
 import groove.control.Binding;
 import groove.control.CtrlPar;
@@ -28,6 +42,7 @@ import groove.grammar.host.HostNode;
 import groove.grammar.rule.Anchor;
 import groove.grammar.rule.DefaultRuleNode;
 import groove.grammar.rule.LabelVar;
+import groove.grammar.rule.MatchChecker;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleElement;
 import groove.grammar.rule.RuleGraph;
@@ -47,19 +62,6 @@ import groove.util.Fixable;
 import groove.util.Visitor;
 import groove.util.parse.FormatException;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
 /**
  * Type of a production rule. The rule essentially consists of a left hand
  * side graph, a right hand side graph, a rule morphism and a set of NACs.
@@ -77,16 +79,18 @@ public class Rule implements Action, Fixable {
     public Rule(Condition condition, RuleGraph rhs, RuleGraph coRoot) {
         assert condition.getTypeGraph()
             .getFactory() == rhs.getFactory()
-            .getTypeFactory() && (coRoot == null || rhs.getFactory() == coRoot.getFactory());
+                .getTypeFactory()
+            && (coRoot == null || rhs.getFactory() == coRoot.getFactory());
         this.condition = condition;
         this.qualName = QualName.parse(condition.getName());
         this.coRoot = coRoot;
         this.lhs = condition.getPattern();
         this.rhs = rhs;
         assert coRoot == null || rhs().nodeSet()
-            .containsAll(coRoot.nodeSet()) : String.format("RHS nodes %s do not contain all co-root values %s",
-            rhs().nodeSet(),
-            coRoot.nodeSet());
+            .containsAll(coRoot.nodeSet()) : String.format(
+                "RHS nodes %s do not contain all co-root values %s",
+                rhs().nodeSet(),
+                coRoot.nodeSet());
     }
 
     /** Returns the condition with which this rule is associated. */
@@ -126,16 +130,17 @@ public class Rule implements Action, Fixable {
      */
     public void setParent(Rule parent, int[] level) {
         testFixed(false);
-        assert getCoRoot() != null : String.format("Sub-rule at level %s must have a non-trivial co-root map",
-            Arrays.toString(level));
+        assert getCoRoot() != null : String.format(
+            "Sub-rule at level %s must have a non-trivial co-root map", Arrays.toString(level));
         if (parent != null) {
             assert parent.rhs()
                 .nodeSet()
-                .containsAll(getCoRoot().nodeSet()) : String.format("Rule '%s': Parent nodes %s do not contain all co-roots %s",
-                getQualName(),
-                parent.rhs()
-                    .nodeSet(),
-                getCoRoot().nodeSet());
+                .containsAll(getCoRoot().nodeSet()) : String.format(
+                    "Rule '%s': Parent nodes %s do not contain all co-roots %s",
+                    getQualName(),
+                    parent.rhs()
+                        .nodeSet(),
+                    getCoRoot().nodeSet());
         }
         this.parent = parent;
     }
@@ -170,10 +175,16 @@ public class Rule implements Action, Fixable {
         return result;
     }
 
+    /** The optional transition label. */
+    private String transitionLabel;
+
     @Override
     public String getFormatString() {
         return this.formatString;
     }
+
+    /** The optional format string. */
+    private String formatString;
 
     /**
      * Returns the priority of this object. A higher number means higher
@@ -183,6 +194,21 @@ public class Rule implements Action, Fixable {
     public int getPriority() {
         return this.priority;
     }
+
+    /** The rule priority. */
+    private int priority;
+
+    /** Sets the match filter method. */
+    public void setMatchFilter(MatchChecker matchFilter) {
+        this.matchFilter = matchFilter;
+    }
+
+    /** Returns the optional match filter method. */
+    public Optional<MatchChecker> getMatchFilter() {
+        return Optional.ofNullable(this.matchFilter);
+    }
+
+    private MatchChecker matchFilter;
 
     /** Sets the dangling-edge check for matches of this rule. */
     public void setCheckDangling(boolean checkDangling) {
@@ -295,9 +321,8 @@ public class Rule implements Action, Fixable {
             }
             derivedSig.add(par);
         }
-        assert derivedSig.equals(sig) : String.format("Declared signature %s differs from derived signature %s",
-            sig,
-            derivedSig);
+        assert derivedSig.equals(sig) : String
+            .format("Declared signature %s differs from derived signature %s", sig, derivedSig);
     }
 
     /** Returns the signature of the rule. */
@@ -792,9 +817,8 @@ public class Rule implements Action, Fixable {
      * Computes if the rule is modifying or not.
      */
     private boolean computeIsModifying() {
-        boolean result =
-            getEraserEdges().length > 0 || getEraserNodes().length > 0 || hasMergers()
-                || hasNodeCreators() || hasEdgeCreators() || !getColorMap().isEmpty();
+        boolean result = getEraserEdges().length > 0 || getEraserNodes().length > 0 || hasMergers()
+            || hasNodeCreators() || hasEdgeCreators() || !getColorMap().isEmpty();
         if (!result) {
             for (Rule subRule : getSubRules()) {
                 result = subRule.isModifying();
@@ -937,8 +961,7 @@ public class Rule implements Action, Fixable {
      * Computes the array of creator edges that are not themselves anchors.
      */
     private RuleEdge[] computeEraserNonAnchorEdges() {
-        Set<RuleEdge> eraserNonAnchorEdgeSet =
-            new HashSet<>(Arrays.asList(getEraserEdges()));
+        Set<RuleEdge> eraserNonAnchorEdgeSet = new HashSet<>(Arrays.asList(getEraserEdges()));
         eraserNonAnchorEdgeSet.removeAll(getAnchor().edgeSet());
         return eraserNonAnchorEdgeSet.toArray(new RuleEdge[eraserNonAnchorEdgeSet.size()]);
     }
@@ -1063,7 +1086,8 @@ public class Rule implements Action, Fixable {
         // iterate over all creator edges
         for (RuleEdge edge : getCreatorEdges()) {
             // determine if this edge is simple
-            if (nonCreatorNodes.contains(edge.source()) && nonCreatorNodes.contains(edge.target())) {
+            if (nonCreatorNodes.contains(edge.source())
+                && nonCreatorNodes.contains(edge.target())) {
                 result.add(edge);
             }
         }
@@ -1451,12 +1475,6 @@ public class Rule implements Action, Fixable {
 
     /** Mapping from rule nodes to explicitly declared colours. */
     private final Map<RuleNode,Color> colorMap = new HashMap<>();
-    /** The rule priority. */
-    private int priority;
-    /** The optional transition label. */
-    private String transitionLabel;
-    /** The optional format string. */
-    private String formatString;
 
     /** The signature of the rule. */
     private List<CtrlPar.Var> sig;

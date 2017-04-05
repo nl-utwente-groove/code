@@ -282,21 +282,24 @@ public class RuleDependencies {
         for (Rule rule : this.rules) {
             Set<TypeElement> positives = this.positiveMap.get(rule);
             Set<TypeElement> negatives = this.negativeMap.get(rule);
-            //            Set<CtrlType> inPars = this.inParameterMap.get(rule);
+            boolean hasMatchFilter = rule.getMatchFilter()
+                .isPresent();
             for (Rule depRule : this.rules) {
+                // Positive as well as negative dependencies exist if this rule has a match filter
+                if (hasMatchFilter) {
+                    addEnabling(depRule, rule);
+                    addDisabling(depRule, rule);
+                    continue;
+                }
                 // a positive dependency exists if the other rule produces
-                // labels
-                // that this one needs
-                Set<TypeElement> depProduces =
-                    new HashSet<>(this.producedMap.get(depRule));
+                // labels that this one needs
+                Set<TypeElement> depProduces = new HashSet<>(this.producedMap.get(depRule));
                 if (depProduces.removeAll(positives)) {
                     addEnabling(depRule, rule);
                 }
                 // a positive dependency exists if the other rule consumes
-                // labels
-                // that this one forbids
-                Set<TypeElement> depConsumes =
-                    new HashSet<>(this.consumedMap.get(depRule));
+                // labels that this one forbids
+                Set<TypeElement> depConsumes = new HashSet<>(this.consumedMap.get(depRule));
                 if (depConsumes.removeAll(negatives)) {
                     addEnabling(depRule, rule);
                 }
@@ -308,16 +311,14 @@ public class RuleDependencies {
                     addEnabling(depRule, rule);
                 }
                 // a negative dependency exists if the other rule produces
-                // labels
-                // that this one forbids, or if the other rule contains mergers
+                // labels that this one forbids, or if the other rule contains mergers
                 // HARMEN: what is the point with mergers?
                 depProduces = new HashSet<>(this.producedMap.get(depRule));
                 if (depProduces.removeAll(negatives)) {
                     addDisabling(depRule, rule);
                 }
                 // a negative dependency exists if the other rule consumes
-                // labels
-                // that this one needs
+                // labels that this one needs
                 depConsumes = new HashSet<>(this.consumedMap.get(depRule));
                 if (depConsumes.removeAll(positives)) {
                     addDisabling(depRule, rule);
