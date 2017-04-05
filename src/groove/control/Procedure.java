@@ -16,19 +16,18 @@
  */
 package groove.control;
 
-import groove.control.CtrlPar.Var;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import groove.control.template.Template;
 import groove.control.term.Term;
 import groove.grammar.Callable;
 import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
+import groove.grammar.Signature;
 import groove.util.Fixable;
 import groove.util.Groove;
-
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Control-defined callable unit.
@@ -47,7 +46,7 @@ public abstract class Procedure implements Callable, Fixable {
      * which the unit declaration starts
      * @param grammarProperties grammar properties for this procedure
      */
-    protected Procedure(QualName fullName, Kind kind, List<Var> signature, QualName controlName,
+    protected Procedure(QualName fullName, Kind kind, Signature signature, QualName controlName,
         int startLine, GrammarProperties grammarProperties) {
         this.fullName = fullName;
         this.signature = signature;
@@ -65,11 +64,11 @@ public abstract class Procedure implements Callable, Fixable {
     private final QualName fullName;
 
     @Override
-    public List<Var> getSignature() {
+    public Signature getSignature() {
         return this.signature;
     }
 
-    private final List<Var> signature;
+    private final Signature signature;
 
     /** Returns the full name of the control program in which this procedure is declared. */
     public QualName getControlName() {
@@ -162,7 +161,7 @@ public abstract class Procedure implements Callable, Fixable {
         this.inParMap = new LinkedHashMap<>();
         this.outParMap = new LinkedHashMap<>();
         for (int i = 0; i < getSignature().size(); i++) {
-            CtrlPar.Var par = getSignature().get(i);
+            CtrlPar.Var par = getSignature().getPar(i);
             if (par.isInOnly()) {
                 this.inParMap.put(par.getVar(), i);
             } else {
@@ -191,7 +190,8 @@ public abstract class Procedure implements Callable, Fixable {
     @Override
     public String toString() {
         return getKind().getName(true) + " " + getQualName()
-            + Groove.toString(getSignature().toArray(), "(", ")", ", ");
+            + Groove.toString(getSignature().getPars()
+                .toArray(), "(", ")", ", ");
     }
 
     @Override
@@ -224,7 +224,7 @@ public abstract class Procedure implements Callable, Fixable {
      * @param grammarProperties grammar properties for the new procedure
      */
     public static Procedure newInstance(QualName fullName, Kind kind, int priority,
-        List<Var> signature, QualName controlName, int startLine,
+        Signature signature, QualName controlName, int startLine,
         GrammarProperties grammarProperties) {
         assert kind.isProcedure();
         Procedure result;
@@ -234,8 +234,8 @@ public abstract class Procedure implements Callable, Fixable {
             result = new Function(fullName, signature, controlName, startLine, grammarProperties);
             break;
         case RECIPE:
-            result =
-                new Recipe(fullName, priority, signature, controlName, startLine, grammarProperties);
+            result = new Recipe(fullName, priority, signature, controlName, startLine,
+                grammarProperties);
             break;
         default:
             assert false;

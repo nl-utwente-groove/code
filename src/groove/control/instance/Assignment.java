@@ -16,6 +16,12 @@
  */
 package groove.control.instance;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 import groove.control.Binding;
 import groove.control.Binding.Source;
 import groove.control.CtrlPar;
@@ -29,13 +35,8 @@ import groove.control.template.Switch;
 import groove.control.template.SwitchStack;
 import groove.grammar.Callable;
 import groove.grammar.Rule;
+import groove.grammar.Signature;
 import groove.grammar.host.HostNode;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Action to be taken as part of a {@link Step}.
@@ -130,13 +131,15 @@ public class Assignment {
                 value = null;
                 break;
             case CALLER:
-                assert parentValues != null : String.format("Can't apply %s: valuation %s does not have parent level",
+                assert parentValues != null : String.format(
+                    "Can't apply %s: valuation %s does not have parent level",
                     this,
                     Valuator.toString(val));
                 value = Valuator.get(parentValues, bind.getIndex());
                 break;
             case CONST:
-                value = bind.getValue().getNode();
+                value = bind.getValue()
+                    .getNode();
                 break;
             case VAR:
                 value = Valuator.get(val, bind.getIndex());
@@ -193,9 +196,12 @@ public class Assignment {
     static Assignment modify(Switch swit) {
         assert swit.getKind() == Callable.Kind.RULE;
         List<Binding> result = new ArrayList<>();
-        List<CtrlVar> sourceVars = swit.getSource().getVars();
-        Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
-        for (CtrlVar var : swit.onFinish().getVars()) {
+        List<CtrlVar> sourceVars = swit.getSource()
+            .getVars();
+        Map<CtrlVar,Integer> outVars = swit.getCall()
+            .getOutVars();
+        for (CtrlVar var : swit.onFinish()
+            .getVars()) {
             Integer ix = outVars.get(var);
             Binding rhs;
             if (ix == null) {
@@ -219,17 +225,22 @@ public class Assignment {
      * @param swit the template call
      */
     static Assignment enter(Switch swit) {
-        assert swit.getKind().isProcedure();
+        assert swit.getKind()
+            .isProcedure();
         List<Binding> result = new ArrayList<>();
-        List<CtrlVar> sourceVars = swit.getSource().getVars();
+        List<CtrlVar> sourceVars = swit.getSource()
+            .getVars();
         Procedure proc = (Procedure) swit.getUnit();
         Map<CtrlVar,Integer> sig = proc.getInPars();
-        for (CtrlVar var : proc.getTemplate().getStart().getVars()) {
+        for (CtrlVar var : proc.getTemplate()
+            .getStart()
+            .getVars()) {
             // all initial state variables are formal input parameters
             Integer ix = sig.get(var);
             assert ix != null;
             // look up the corresponding argument in the call
-            CtrlPar arg = swit.getArgs().get(ix);
+            CtrlPar arg = swit.getArgs()
+                .get(ix);
             Binding rhs;
             if (arg instanceof Const) {
                 rhs = Binding.value((Const) arg);
@@ -249,13 +260,18 @@ public class Assignment {
      * @param swit the template call
      */
     static Assignment exit(Location top, Switch swit) {
-        assert swit.getKind().isProcedure();
+        assert swit.getKind()
+            .isProcedure();
         List<Binding> result = new ArrayList<>();
-        List<CtrlPar.Var> sig = swit.getUnit().getSignature();
-        List<CtrlVar> callerVars = swit.getSource().getVars();
-        Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
+        Signature sig = swit.getUnit()
+            .getSignature();
+        List<CtrlVar> callerVars = swit.getSource()
+            .getVars();
+        Map<CtrlVar,Integer> outVars = swit.getCall()
+            .getOutVars();
         Map<CtrlVar,Integer> finalVars = top.getVarIxMap();
-        for (CtrlVar var : swit.onFinish().getVars()) {
+        for (CtrlVar var : swit.onFinish()
+            .getVars()) {
             Integer ix = outVars.get(var);
             Binding rhs;
             if (ix == null) {
@@ -264,7 +280,8 @@ public class Assignment {
             } else {
                 // the value comes from an output parameter of the call
                 // find the corresponding formal parameter
-                CtrlVar par = sig.get(ix).getVar();
+                CtrlVar par = sig.getPar(ix)
+                    .getVar();
                 // look it up in the final location variables
                 rhs = Binding.var(finalVars.get(par));
             }
@@ -285,7 +302,8 @@ public class Assignment {
         for (int i = stack.size() - 1; i >= remaining; i--) {
             assert top.isFinal();
             result.add(Assignment.exit(top, stack.get(i)));
-            top = stack.get(i).onFinish();
+            top = stack.get(i)
+                .onFinish();
         }
         return result;
     }
@@ -312,6 +330,6 @@ public class Assignment {
         /** Pop a frame instance. */
         POP,
         /** Invoke a rule. */
-        MODIFY, ;
+        MODIFY,;
     }
 }

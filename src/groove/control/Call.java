@@ -23,6 +23,7 @@ import java.util.Map;
 
 import groove.grammar.Callable;
 import groove.grammar.Rule;
+import groove.grammar.Signature;
 import groove.grammar.host.HostFactory;
 import groove.util.Groove;
 import groove.util.Pair;
@@ -32,7 +33,7 @@ import groove.util.Pair;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Call extends Pair<Callable,List<? extends CtrlPar>>implements Comparable<Call> {
+public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comparable<Call> {
     /**
      * Constructs a call of a given unit, with arguments.
      */
@@ -166,7 +167,7 @@ public class Call extends Pair<Callable,List<? extends CtrlPar>>implements Compa
         return result;
     }
 
-    private static List<CtrlPar> createWildArgs(List<CtrlPar.Var> sig) {
+    private static List<CtrlPar> createWildArgs(Signature sig) {
         int count = sig.size();
         List<CtrlPar> result = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {

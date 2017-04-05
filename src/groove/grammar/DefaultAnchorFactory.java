@@ -20,10 +20,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
-import groove.control.CtrlPar;
 import groove.grammar.rule.Anchor;
 import groove.grammar.rule.AnchorKey;
 import groove.grammar.rule.RuleEdge;
@@ -55,7 +53,8 @@ public class DefaultAnchorFactory implements AnchorFactory {
     public Anchor newAnchor(Rule rule) {
         RuleGraph lhs = rule.lhs();
         Set<AnchorKey> result = new LinkedHashSet<>();
-        Set<RuleNode> colorNodes = new HashSet<>(rule.getColorMap().keySet());
+        Set<RuleNode> colorNodes = new HashSet<>(rule.getColorMap()
+            .keySet());
         colorNodes.retainAll(lhs.nodeSet());
         result.addAll(colorNodes);
         result.addAll(Arrays.asList(rule.getEraserNodes()));
@@ -81,12 +80,11 @@ public class DefaultAnchorFactory implements AnchorFactory {
             if (hiddenPars != null) {
                 result.addAll(hiddenPars);
             }
-            List<CtrlPar.Var> ruleSig = rule.getSignature();
-            for (CtrlPar.Var rulePar : ruleSig) {
-                if (!rulePar.isCreator()) {
-                    result.add(rulePar.getRuleNode());
-                }
-            }
+            rule.getSignature()
+                .stream()
+                .filter(v -> v.isCreator())
+                .map(v -> v.getRuleNode())
+                .forEach(n -> result.add(n));
         }
         // remove the root elements of the rule itself
         return new Anchor(result);
@@ -94,8 +92,7 @@ public class DefaultAnchorFactory implements AnchorFactory {
 
     /** Returns the collection of all potential anchor keys in a given rule graph. */
     private Collection<Object> getAnchorKeys(RuleGraph graph) {
-        return new CollectionOfCollections<>(graph.nodeSet(), graph.edgeSet(),
-            graph.varSet());
+        return new CollectionOfCollections<>(graph.nodeSet(), graph.edgeSet(), graph.varSet());
     }
 
     /**

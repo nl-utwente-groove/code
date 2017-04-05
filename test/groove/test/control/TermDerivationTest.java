@@ -26,7 +26,6 @@ import java.util.Collections;
 import org.junit.Test;
 
 import groove.control.Call;
-import groove.control.CtrlPar.Var;
 import groove.control.Function;
 import groove.control.term.Derivation;
 import groove.control.term.DerivationAttempt;
@@ -35,6 +34,7 @@ import groove.grammar.Callable;
 import groove.grammar.Grammar;
 import groove.grammar.QualName;
 import groove.grammar.Rule;
+import groove.grammar.Signature;
 import groove.util.Groove;
 import junit.framework.Assert;
 
@@ -388,7 +388,7 @@ public class TermDerivationTest {
 
     /** Constructs a function with a given name and body, and an empty signature. */
     private Function function(String name, Term body) {
-        Function result = new Function(QualName.name(name), Collections.<Var>emptyList(),
+        Function result = new Function(QualName.name(name), new Signature(),
             QualName.name("control"), 0, this.grammar.getProperties());
         result.setTerm(body);
         result.setFixed();
