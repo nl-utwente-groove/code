@@ -171,7 +171,7 @@ public class Condition implements Fixable {
      * bound before the condition has to be matched.
      */
     Set<RuleNode> computeInputNodes() {
-        if (hasRule()) {
+        if (hasRule() && getRule().isTop()) {
             // collect the input parameters
             return this.rule.computeInputNodes();
         } else {

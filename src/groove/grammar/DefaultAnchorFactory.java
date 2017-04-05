@@ -82,7 +82,7 @@ public class DefaultAnchorFactory implements AnchorFactory {
             }
             rule.getSignature()
                 .stream()
-                .filter(v -> v.isCreator())
+                .filter(v -> !v.isCreator())
                 .map(v -> v.getRuleNode())
                 .forEach(n -> result.add(n));
         }
