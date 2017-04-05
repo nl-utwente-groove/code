@@ -16,14 +16,10 @@
  */
 package groove.grammar.rule;
 
-import java.lang.reflect.InvocationTargetException;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import groove.grammar.QualName;
-import groove.grammar.host.HostGraph;
-import groove.util.Exceptions;
 
 /**
  * encoded method name in a given language,
@@ -32,7 +28,7 @@ import groove.util.Exceptions;
  * @version $Revision $
  */
 @NonNullByDefault
-abstract public class MethodName {
+public class MethodName {
     /** Constructs a method name for a given language. */
     protected MethodName(Language language, QualName qualName) {
         this.language = language;
@@ -56,17 +52,6 @@ abstract public class MethodName {
 
     /** The language of this method. */
     private final Language language;
-
-    /** Tests if a method with this name actually exists. */
-    abstract public boolean exists();
-
-    /** Invokes this method on a given host graph and event.
-     * @throws UnsupportedOperationException TODO
-     * @throws InvocationTargetException TODO
-     * @see #exists()
-     */
-    abstract public boolean invoke(HostGraph graph, RuleToHostMap anchorMap)
-        throws UnsupportedOperationException, InvocationTargetException;
 
     @Override
     public String toString() {
@@ -100,20 +85,12 @@ abstract public class MethodName {
         return true;
     }
 
-    /** Creates a method name object of the correct type. */
-    public static MethodName createName(Language language, QualName qualName) {
-        switch (language) {
-        case JAVA:
-            return new JavaMethodName(qualName);
-        default:
-            throw Exceptions.UNREACHABLE;
-        }
-    }
-
     /** Language in which the method is implemented. */
     public static enum Language {
         /** The Java language. */
-        JAVA,;
+        JAVA,
+        /** The Groovy language. */
+        GROOVY,;
 
         private Language() {
             this.name = name().toLowerCase();

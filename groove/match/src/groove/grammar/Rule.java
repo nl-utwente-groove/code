@@ -42,7 +42,7 @@ import groove.grammar.host.HostNode;
 import groove.grammar.rule.Anchor;
 import groove.grammar.rule.DefaultRuleNode;
 import groove.grammar.rule.LabelVar;
-import groove.grammar.rule.MethodName;
+import groove.grammar.rule.MatchChecker;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleElement;
 import groove.grammar.rule.RuleGraph;
@@ -164,7 +164,6 @@ public class Rule implements Action, Fixable {
         this.priority = (Integer) properties.parseProperty(Key.PRIORITY);
         this.transitionLabel = (String) properties.parseProperty(Key.TRANSITION_LABEL);
         this.formatString = (String) properties.parseProperty(Key.FORMAT);
-        this.matchFilter = Optional.ofNullable((MethodName) properties.parseProperty(Key.FILTER));
     }
 
     @Override
@@ -199,12 +198,17 @@ public class Rule implements Action, Fixable {
     /** The rule priority. */
     private int priority;
 
-    /** Returns the optional match filter method. */
-    public Optional<MethodName> getMatchFilter() {
-        return this.matchFilter;
+    /** Sets the match filter method. */
+    public void setMatchFilter(MatchChecker matchFilter) {
+        this.matchFilter = matchFilter;
     }
 
-    private Optional<MethodName> matchFilter;
+    /** Returns the optional match filter method. */
+    public Optional<MatchChecker> getMatchFilter() {
+        return Optional.ofNullable(this.matchFilter);
+    }
+
+    private MatchChecker matchFilter;
 
     /** Sets the dangling-edge check for matches of this rule. */
     public void setCheckDangling(boolean checkDangling) {

@@ -8,12 +8,9 @@ public static boolean filterFlag(HostGraph host, RuleToHostMap anchorMap) {
             .values()
             .iterator()
             .next();
-        boolean result = true;
-        for (HostEdge edge: host.outEdgeSet(image)) {
-        	if (edge.label().text().equals("flag")) {
-        		result = false;
-        		break;
-        	}
-        }
-        return result;
+        return !host.outEdgeSet(image)
+            .stream()
+            .allMatch({e -> !e.label()
+                .text()
+                .equals("flag")});
 }

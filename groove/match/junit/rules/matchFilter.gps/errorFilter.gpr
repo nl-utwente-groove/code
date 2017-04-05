@@ -4,6 +4,9 @@
         <attr name="matchFilter">
             <string>groove.test.rule.RuleApplicationTest.errorFilter</string>
         </attr>
+        <attr name="actionRole">
+            <string>transformer</string>
+        </attr>
         <attr name="$version">
             <string>curly</string>
         </attr>

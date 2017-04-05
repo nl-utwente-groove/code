@@ -33,7 +33,7 @@ import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.ValueNode;
-import groove.grammar.rule.MethodName;
+import groove.grammar.rule.MatchChecker;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.RuleToHostMap;
 import groove.grammar.rule.VariableNode;
@@ -122,25 +122,26 @@ public class MatchCollector {
             RuleToHostMap boundMap = extractBinding(step);
             if (boundMap != null) {
                 final Record record = this.record;
-                Optional<MethodName> matchFilter = step.getRule()
+                Optional<MatchChecker> matchFilter = step.getRule()
                     .getMatchFilter();
                 Visitor<Proof,Boolean> eventCollector = new Visitor<Proof,Boolean>(false) {
                     @Override
                     protected boolean process(Proof proof) {
                         RuleEvent event = record.getEvent(proof);
                         boolean filtered = false;
-                        HostGraph host = MatchCollector.this.state.getGraph();
+                        GraphState state = MatchCollector.this.state;
+                        HostGraph host = state.getGraph();
                         if (matchFilter.isPresent()) {
                             try {
                                 filtered = matchFilter.get()
                                     .invoke(host, event.getAnchorMap());
                             } catch (InvocationTargetException exc) {
-                                FormatError error =
-                                    new FormatError("%s while applying match filter %s",
-                                        exc.getCause(), matchFilter.get()
-                                            .getQualName());
-                                GraphInfo.addError(host, error);
-                                MatchCollector.this.state.setError();
+                                FormatError error = new FormatError(
+                                    "Error at state %s while applying match filter %s: %s", state,
+                                    matchFilter.get()
+                                        .getQualName(),
+                                    exc.getCause());
+                                GraphInfo.addError(state.getGTS(), error);
                             }
                         }
                         if (!filtered) {

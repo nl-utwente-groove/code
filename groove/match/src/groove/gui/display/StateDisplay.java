@@ -56,6 +56,7 @@ import groove.grammar.host.HostNodeSet;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.HostModel;
 import groove.grammar.rule.RuleNode;
+import groove.graph.GraphInfo;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.SimulatorListener;
@@ -431,18 +432,16 @@ public class StateDisplay extends Display implements SimulatorListener {
     /** Changes the display to a given state. */
     public void displayState(GraphState state) {
         clearSelectedMatch(true);
-        Collection<? extends FormatError> errors = null;
         if (state == null) {
             getJGraph().setModel(null);
         } else {
             AspectJModel model = getAspectJModel(state);
             getJGraph().setModel(model);
             getJGraph().doLayout(false);
-            errors = model.getResourceModel()
-                .getErrors();
         }
         Color background;
         if (state != null && state.isError()) {
+            Collection<FormatError> errors = GraphInfo.getErrors(state.getGraph());
             getErrorPanel().setEntries(errors);
             getDisplayPanel().setBottomComponent(getErrorPanel());
             getDisplayPanel().resetToPreferredSizes();
@@ -765,13 +764,11 @@ public class StateDisplay extends Display implements SimulatorListener {
     /**
      * Mapping from graphs to the corresponding graph models.
      */
-    private final Map<GraphState,AspectJModel> stateToJModel =
-        new WeakHashMap<>();
+    private final Map<GraphState,AspectJModel> stateToJModel = new WeakHashMap<>();
     /**
      * Mapping from graphs to the corresponding graph models.
      */
-    private final Map<GraphState,HostToAspectMap> stateToAspectMap =
-        new WeakHashMap<>();
+    private final Map<GraphState,HostToAspectMap> stateToAspectMap = new WeakHashMap<>();
 
     /** Flag indicating that the listeners are activated. */
     private boolean listening;

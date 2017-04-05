@@ -62,7 +62,7 @@ public class MethodNameParser implements Parser<MethodName> {
             QualName qualName = QualName.parse(name);
             qualName.getErrors()
                 .throwException();
-            result = MethodName.createName(language, qualName);
+            result = new MethodName(language, qualName);
         }
         return result;
     }

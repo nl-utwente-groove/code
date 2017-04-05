@@ -16,6 +16,7 @@ t * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  */
 package groove.io.store;
 
+import static groove.grammar.model.ResourceKind.GROOVY;
 import static groove.grammar.model.ResourceKind.PROPERTIES;
 import static groove.grammar.model.ResourceKind.RULE;
 import static groove.io.FileType.GRAMMAR;
@@ -42,6 +43,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 import javax.swing.undo.AbstractUndoableEdit;
@@ -225,7 +227,7 @@ public class DefaultFileSystemStore extends SystemStore {
         testInit();
         Map<QualName,String> oldTexts = new HashMap<>();
         boolean activeChanged = false;
-        Set<QualName> activeNames = new TreeSet<>(getProperties().getActiveNames(kind));
+        Set<QualName> activeNames = getRecordedActiveNames(kind);
         for (QualName name : names) {
             assert name != null;
             String text = getTextMap(kind).remove(name);
@@ -278,7 +280,7 @@ public class DefaultFileSystemStore extends SystemStore {
         // check if this affects the system properties
         GrammarProperties oldProps = null;
         GrammarProperties newProps = null;
-        Set<QualName> activeNames = new TreeSet<>(getProperties().getActiveNames(kind));
+        Set<QualName> activeNames = getRecordedActiveNames(kind);
         if (activeNames.remove(oldName)) {
             oldProps = getProperties();
             newProps = getProperties().clone();
@@ -309,15 +311,13 @@ public class DefaultFileSystemStore extends SystemStore {
         // change the properties if there is a change in the enabled types
         GrammarProperties oldProps = null;
         GrammarProperties newProps = null;
-        if (kind != RULE) {
-            Set<QualName> activeNames = new TreeSet<>(getProperties().getActiveNames(kind));
-            if (activeNames.remove(oldName)) {
-                oldProps = getProperties();
-                newProps = oldProps.clone();
-                activeNames.add(newName);
-                newProps.setActiveNames(kind, activeNames);
-                doPutProperties(newProps);
-            }
+        Set<QualName> activeNames = getRecordedActiveNames(kind);
+        if (activeNames.remove(oldName)) {
+            oldProps = getProperties();
+            newProps = oldProps.clone();
+            activeNames.add(newName);
+            newProps.setActiveNames(kind, activeNames);
+            doPutProperties(newProps);
         }
         return new GraphBasedEdit(kind, EditType.RENAME, Collections.singleton(oldGraph),
             Collections.singleton(newGraph), oldProps, newProps);
@@ -414,8 +414,7 @@ public class DefaultFileSystemStore extends SystemStore {
         throws IOException {
         testInit();
         List<AspectGraph> deletedGraphs = new ArrayList<>(names.size());
-        Set<QualName> activeNames =
-            kind == RULE ? null : new TreeSet<>(getProperties().getActiveNames(kind));
+        Set<QualName> activeNames = getRecordedActiveNames(kind);
         boolean activeChanged = false;
         for (QualName name : names) {
             AspectGraph graph = getGraphMap(kind).remove(name);
@@ -424,7 +423,7 @@ public class DefaultFileSystemStore extends SystemStore {
             this.marshaller.deleteGraph(oldFile);
             deleteEmptyDirectories(oldFile.getParentFile());
             deletedGraphs.add(graph);
-            activeChanged |= activeNames != null && activeNames.remove(name);
+            activeChanged |= activeNames.remove(name);
         }
         GrammarProperties oldProps = null;
         GrammarProperties newProps = null;
@@ -610,6 +609,18 @@ public class DefaultFileSystemStore extends SystemStore {
     public String toString() {
         String location = this.file == null ? getLocation().toString() : this.file.getParent();
         return getName() + " - " + location;
+    }
+
+    /**
+     * Returns a copy of the currently activated names of a given resource kind,
+     * as stored in the grammar properties.
+     */
+    private SortedSet<QualName> getRecordedActiveNames(ResourceKind kind) {
+        if (kind == RULE || kind == GROOVY || kind == PROPERTIES) {
+            return new TreeSet<>();
+        } else {
+            return new TreeSet<>(getProperties().getActiveNames(kind));
+        }
     }
 
     /**

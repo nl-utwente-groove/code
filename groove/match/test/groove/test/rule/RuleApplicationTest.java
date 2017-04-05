@@ -38,7 +38,7 @@ import groove.grammar.aspect.GraphConverter;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
 import groove.grammar.model.GrammarModel;
-import groove.grammar.rule.MethodName;
+import groove.grammar.rule.MatchChecker;
 import groove.grammar.rule.RuleToHostMap;
 import groove.graph.iso.IsoChecker;
 import groove.io.FileType;
@@ -208,7 +208,7 @@ public class RuleApplicationTest {
         IsoChecker checker = IsoChecker.getInstance(true);
         BitSet found = new BitSet();
         Set<RuleEvent> eventSet = new HashSet<>();
-        Optional<MethodName> matchFilter = rule.getMatchFilter();
+        Optional<MatchChecker> matchFilter = rule.getMatchFilter();
         for (Proof proof : rule.getAllMatches(start, null)) {
             RuleEvent event = proof.newEvent(null);
             boolean errorExpected = start.getName()

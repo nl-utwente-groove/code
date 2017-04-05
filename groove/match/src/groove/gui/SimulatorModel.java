@@ -12,6 +12,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import groove.explore.Exploration;
 import groove.explore.ExplorationListener;
@@ -40,6 +41,7 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
+import groove.util.Exceptions;
 import groove.util.parse.FormatException;
 
 /**
@@ -155,7 +157,7 @@ public class SimulatorModel implements Cloneable {
         case CONTROL:
             GrammarProperties newProperties = getGrammar().getProperties()
                 .clone();
-            List<QualName> actives = new ArrayList<>(newProperties.getActiveNames(kind));
+            Set<QualName> actives = new TreeSet<>(newProperties.getActiveNames(kind));
             for (QualName typeName : names) {
                 if (!actives.remove(typeName)) {
                     actives.add(typeName);
@@ -166,7 +168,7 @@ public class SimulatorModel implements Cloneable {
             break;
         case PROPERTIES:
         default:
-            assert false;
+            throw Exceptions.UNREACHABLE;
         }
     }
 
@@ -203,7 +205,7 @@ public class SimulatorModel implements Cloneable {
             break;
         case PROPERTIES:
         default:
-            assert false;
+            throw Exceptions.UNREACHABLE;
         }
     }
 
