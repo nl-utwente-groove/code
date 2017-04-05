@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph edgemode="directed" edgeids="false" role="rule" id="addToMerged">
+        <attr name="remark">
+            <string>Adds edges to nodes that have been merged on a lower quantification level</string>
+        </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n137651">
+            <attr name="layout">
+                <string>145 212 156 21</string>
+            </attr>
+        </node>
+        <node id="n137645">
+            <attr name="layout">
+                <string>426 90 181 21</string>
+            </attr>
+        </node>
+        <node id="n137649">
+            <attr name="layout">
+                <string>307 140 18 21</string>
+            </attr>
+        </node>
+        <node id="n137646">
+            <attr name="layout">
+                <string>35 14 152 21</string>
+            </attr>
+        </node>
+        <node id="n137650">
+            <attr name="layout">
+                <string>199 83 21 25</string>
+            </attr>
+        </node>
+        <node id="n137652">
+            <attr name="layout">
+                <string>116 166 18 21</string>
+            </attr>
+        </node>
+        <node id="n137647">
+            <attr name="layout">
+                <string>305 39 18 21</string>
+            </attr>
+        </node>
+        <node id="n137648">
+            <attr name="layout">
+                <string>118 91 17 21</string>
+            </attr>
+        </node>
+        <edge to="n137649" from="n137647">
+            <attr name="label">
+                <string>!=</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 323 59 363 102 325 141 12</string>
+            </attr>
+        </edge>
+        <edge to="n137648" from="n137648">
+            <attr name="label">
+                <string>B</string>
+            </attr>
+        </edge>
+        <edge to="n137651" from="n137651">
+            <attr name="label">
+                <string>edges added on a sublevel</string>
+            </attr>
+        </edge>
+        <edge to="n137649" from="n137645">
+            <attr name="label">
+                <string>second</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 514 89 514 151 325 151 14</string>
+            </attr>
+        </edge>
+        <edge to="n137652" from="n137652">
+            <attr name="label">
+                <string>forall:</string>
+            </attr>
+        </edge>
+        <edge to="n137646" from="n137646">
+            <attr name="label">
+                <string>rem:</string>
+            </attr>
+        </edge>
+        <edge to="n137652" from="n137648">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge to="n137646" from="n137646">
+            <attr name="label">
+                <string>triggers the universal level</string>
+            </attr>
+        </edge>
+        <edge to="n137649" from="n137647">
+            <attr name="label">
+                <string>new:=</string>
+            </attr>
+        </edge>
+        <edge to="n137647" from="n137647">
+            <attr name="label">
+                <string>A</string>
+            </attr>
+        </edge>
+        <edge to="n137649" from="n137649">
+            <attr name="label">
+                <string>A</string>
+            </attr>
+        </edge>
+        <edge to="n137645" from="n137645">
+            <attr name="label">
+                <string>nodes merged on the top level</string>
+            </attr>
+        </edge>
+        <edge to="n137650" from="n137650">
+            <attr name="label">
+                <string>new:</string>
+            </attr>
+        </edge>
+        <edge to="n137652" from="n137650">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge to="n137649" from="n137650">
+            <attr name="label">
+                <string>new:b</string>
+            </attr>
+        </edge>
+        <edge to="n137651" from="n137651">
+            <attr name="label">
+                <string>rem:</string>
+            </attr>
+        </edge>
+        <edge to="n137647" from="n137645">
+            <attr name="label">
+                <string>first</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 511 68 511 51 323 51 14</string>
+            </attr>
+        </edge>
+        <edge to="n137645" from="n137645">
+            <attr name="label">
+                <string>rem:</string>
+            </attr>
+        </edge>
+        <edge to="n137648" from="n137646">
+            <attr name="label">
+                <string>trigger</string>
+            </attr>
+        </edge>
+        <edge to="n137647" from="n137650">
+            <attr name="label">
+                <string>a</string>
+            </attr>
+        </edge>
+        <edge to="n137650" from="n137650">
+            <attr name="label">
+                <string>C</string>
+            </attr>
+        </edge>
+        <edge to="n137650" from="n137651">
+            <attr name="label">
+                <string>new</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>
