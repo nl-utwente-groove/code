@@ -284,30 +284,30 @@ public class Rule implements Action, Fixable {
      * Sets the parameters of this rule. The rule can have numbered and hidden
      * parameters. Numbered parameters are divided into input (LHS) and output
      * (RHS-only) parameters, and are visible on the transition label.
-     * @param sig the signature of the rule, i.e., the list of (visible) parameters
+     * @param parList the list of (visible) parameters
      * @param hiddenPars the set of hidden (i.e., unnumbered) parameter nodes
      */
-    public void setSignature(List<CtrlPar.Var> sig, Set<RuleNode> hiddenPars) {
+    public void setSignature(List<CtrlPar.Var> parList, Set<RuleNode> hiddenPars) {
         assert !isFixed();
-        this.sig = new Signature(sig);
+        this.sig = new Signature(parList);
         this.hiddenPars = hiddenPars;
         List<CtrlPar.Var> derivedSig = new ArrayList<>();
-        for (int i = 0; i < sig.size(); i++) {
+        for (int i = 0; i < parList.size(); i++) {
             // add the LHS parameters to the root graph
-            RuleNode parNode = sig.get(i)
+            RuleNode parNode = parList.get(i)
                 .getRuleNode();
             if (this.lhs.containsNode(parNode)) {
                 this.condition.getRoot()
                     .addNode(parNode);
             }
             String parName = "arg" + i;
-            CtrlType parType = sig.get(i)
+            CtrlType parType = parList.get(i)
                 .getType();
             CtrlVar var = new CtrlVar(null, parName, parType);
             CtrlPar.Var par;
-            boolean inOnly = sig.get(i)
+            boolean inOnly = parList.get(i)
                 .isInOnly();
-            boolean outOnly = sig.get(i)
+            boolean outOnly = parList.get(i)
                 .isOutOnly();
             if (!inOnly && !outOnly) {
                 par = new CtrlPar.Var(var);
@@ -316,8 +316,8 @@ public class Rule implements Action, Fixable {
             }
             derivedSig.add(par);
         }
-        assert new Signature(derivedSig).equals(sig) : String
-            .format("Declared signature %s differs from derived signature %s", sig, derivedSig);
+        assert new Signature(derivedSig).equals(this.sig) : String
+            .format("Declared signature %s differs from derived signature %s", parList, derivedSig);
     }
 
     /** Returns the signature of the rule. */
