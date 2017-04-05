@@ -16,6 +16,9 @@
  */
 package groove.control.template;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import groove.control.Binding;
 import groove.control.Call;
 import groove.control.CtrlPar;
@@ -23,10 +26,8 @@ import groove.control.CtrlPar.Var;
 import groove.control.CtrlVar;
 import groove.grammar.Callable;
 import groove.grammar.QualName;
+import groove.grammar.Signature;
 import groove.util.Pair;
-
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Transition between control locations, bearing either a call or a verdict.
@@ -146,7 +147,7 @@ public class Switch implements Comparable<Switch>, Relocatable {
     private List<Pair<Var,Binding>> computeCallBinding() {
         List<Pair<Var,Binding>> result = new LinkedList<>();
         List<? extends CtrlPar> args = getArgs();
-        List<Var> sig = getUnit().getSignature();
+        Signature sig = getUnit().getSignature();
         int size = args == null ? 0 : args.size();
         List<CtrlVar> sourceVars = getSource().getVars();
         for (int i = 0; i < size; i++) {
@@ -171,7 +172,7 @@ public class Switch implements Comparable<Switch>, Relocatable {
                 assert arg instanceof CtrlPar.Wild;
                 bind = null;
             }
-            result.add(Pair.newPair(sig.get(i), bind));
+            result.add(Pair.newPair(sig.getPar(i), bind));
         }
         return result;
     }

@@ -17,10 +17,8 @@
 package groove.grammar;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import groove.control.CtrlPar;
 import groove.control.Procedure;
 
 /**
@@ -31,7 +29,7 @@ import groove.control.Procedure;
  */
 public class Recipe extends Procedure implements Action {
     /** Constructs a recipe. */
-    public Recipe(QualName fullName, int priority, List<CtrlPar.Var> signature,
+    public Recipe(QualName fullName, int priority, Signature signature,
         QualName controlName, int startLine, GrammarProperties grammarProperties) {
         super(fullName, Kind.RECIPE, signature, controlName, startLine, grammarProperties);
         this.priority = priority;

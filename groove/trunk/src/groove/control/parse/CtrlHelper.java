@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
@@ -44,6 +45,7 @@ import groove.grammar.Callable.Kind;
 import groove.grammar.CheckPolicy;
 import groove.grammar.ModuleName;
 import groove.grammar.QualName;
+import groove.grammar.Signature;
 import groove.util.parse.FormatException;
 import groove.util.parse.StringHandler;
 
@@ -155,7 +157,7 @@ public class CtrlHelper {
         Token topToken;
         if (asterisk == null) {
             qualName = QualName.name(getText(call));
-            assert!qualName.hasErrors();
+            assert !qualName.hasErrors();
             topToken = call;
         } else {
             qualName = QualName.name(getText(asterisk))
@@ -266,8 +268,8 @@ public class CtrlHelper {
      */
     boolean declareCtrlUnit(CtrlTree unitTree) {
         boolean result = false;
-        assert(unitTree.getType() == CtrlParser.FUNCTION || unitTree.getType() == CtrlParser.RECIPE)
-            && unitTree.getChildCount() <= 4;
+        assert (unitTree.getType() == CtrlParser.FUNCTION
+            || unitTree.getType() == CtrlParser.RECIPE) && unitTree.getChildCount() <= 4;
         QualName qualName = qualify(unitTree.getChild(0)
             .getText());
         Callable unit = this.namespace.getCallable(qualName);
@@ -277,7 +279,7 @@ public class CtrlHelper {
         } else {
             int priority = unitTree.getChildCount() == 3 ? 0 : Integer.parseInt(unitTree.getChild(2)
                 .getText());
-            List<CtrlPar.Var> parList = getPars(qualName, unitTree.getChild(1));
+            Signature parList = getPars(qualName, unitTree.getChild(1));
             QualName controlName = this.namespace.getControlName();
             Kind kind = toProcKind(unitTree);
             this.namespace.addProcedure(Procedure.newInstance(qualName,
@@ -302,7 +304,7 @@ public class CtrlHelper {
     /**
      * Extracts the parameter declarations.
      */
-    private List<CtrlPar.Var> getPars(QualName procName, CtrlTree parListTree) {
+    private Signature getPars(QualName procName, CtrlTree parListTree) {
         assert parListTree.getType() == CtrlChecker.PARS;
         List<CtrlPar.Var> result = new ArrayList<>();
         if (!this.namespace.hasErrors()) {
@@ -316,7 +318,7 @@ public class CtrlHelper {
                 result.add(CtrlPar.var(procName, name, type, !out));
             }
         }
-        return result;
+        return new Signature(result);
     }
 
     /** Starts a procedure declaration. */
@@ -575,7 +577,7 @@ public class CtrlHelper {
                     // this is a group call, for which we create artificial output parameters
                     unitArgs = new ArrayList<>();
                     for (CtrlPar.Var par : unit.getSignature()) {
-                        assert!par.isInOnly();
+                        assert !par.isInOnly();
                         unitArgs.add(new CtrlPar.Var(par.getVar(), false));
                     }
                 } else {
@@ -706,17 +708,15 @@ public class CtrlHelper {
         List<CtrlPar> targets) {
         assert unit != null;
         assert targets != null;
-        List<CtrlPar.Var> sig = unit.getSignature();
+        Signature sig = unit.getSignature();
+        // extract the non-output-only arguments
+        List<CtrlPar.Var> inPars = sig.stream()
+            .filter(v -> !v.isOutOnly())
+            .collect(Collectors.toList());
         // extract the output-only arguments
-        List<CtrlPar.Var> inPars = new ArrayList<>();
-        List<CtrlPar.Var> outPars = new ArrayList<>();
-        for (CtrlPar.Var par : sig) {
-            if (par.isOutOnly()) {
-                outPars.add(par);
-            } else {
-                inPars.add(par);
-            }
-        }
+        List<CtrlPar.Var> outPars = sig.stream()
+            .filter(v -> v.isOutOnly())
+            .collect(Collectors.toList());
         QualName unitName = unit.getQualName();
         String kindName = unit.getKind()
             .getName(true);
@@ -747,10 +747,8 @@ public class CtrlHelper {
         // check the arguments against the input and in/out-parameters
         boolean inResult = true;
         if (args == null) {
-            for (int i = 0; inResult && i < inPars.size(); i++) {
-                inResult = inPars.get(i)
-                    .compatibleWith(CtrlPar.wild());
-            }
+            inResult = inPars.stream()
+                .allMatch(v -> v.compatibleWith(CtrlPar.wild()));
             if (!inResult) {
                 String message = "%s %s%s not assignable without arguments";
                 emitErrorMessage(callTree, message, kindName, unitName, ruleSig);
@@ -778,29 +776,26 @@ public class CtrlHelper {
         assert unit != null;
         boolean result;
         QualName name = unit.getQualName();
-        List<CtrlPar.Var> sig = unit.getSignature();
+        Signature sig = unit.getSignature();
         Kind unitKind = unit.getKind();
         if (args == null) {
-            result = true;
-            for (int i = 0; result && i < sig.size(); i++) {
-                result = sig.get(i)
-                    .compatibleWith(CtrlPar.wild());
-            }
+            result = sig.stream()
+                .allMatch(v -> v.compatibleWith(CtrlPar.wild()));
             if (!result) {
                 String message = "%s %s%s not applicable without arguments";
-                String ruleSig = toTypeString(sig, true);
+                String ruleSig = toTypeString(sig.getPars(), true);
                 emitErrorMessage(callTree, message, unitKind.getName(true), name, ruleSig);
             }
         } else {
             result = args.size() == sig.size();
             for (int i = 0; result && i < args.size(); i++) {
-                result = sig.get(i)
+                result = sig.getPar(i)
                     .compatibleWith(args.get(i));
             }
             if (!result) {
                 String message = "%s %s%s not applicable for arguments %s";
                 String callSig = toTypeString(args, true);
-                String ruleSig = toTypeString(sig, true);
+                String ruleSig = toTypeString(sig.getPars(), true);
                 emitErrorMessage(callTree, message, unitKind.getName(true), name, ruleSig, callSig);
             }
         }
