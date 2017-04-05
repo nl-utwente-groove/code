@@ -126,16 +126,15 @@ final public class GroovyDisplay extends ResourceDisplay {
                 newstream.println(e.getMessage());
             }
 
-            // Stop thread, ignore any errors
-            try {
-                writer.join();
-            } catch (InterruptedException e) {
-                // Ignore
-            }
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
-
+        // Stop thread, ignore any errors
+        try {
+            writer.join();
+        } catch (InterruptedException e) {
+            // Ignore
+        }
     }
 
     /** Lazily creates and returns the editor pane. */

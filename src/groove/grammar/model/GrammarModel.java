@@ -17,6 +17,7 @@
 package groove.grammar.model;
 
 import static groove.grammar.model.ResourceKind.CONTROL;
+import static groove.grammar.model.ResourceKind.GROOVY;
 import static groove.grammar.model.ResourceKind.HOST;
 import static groove.grammar.model.ResourceKind.PROLOG;
 import static groove.grammar.model.ResourceKind.RULE;
@@ -592,7 +593,7 @@ public class GrammarModel implements Observer {
             .retainAll(sourceMap.keySet());
         // collect the new active names
         SortedSet<QualName> newActiveNames = new TreeSet<>();
-        if (kind != RULE && kind != ResourceKind.GROOVY && kind != ResourceKind.CONFIG) {
+        if (kind != RULE && kind != ResourceKind.CONFIG) {
             newActiveNames.addAll(getProperties().getActiveNames(kind));
         }
         // now synchronise the models with the sources in the store
@@ -604,7 +605,8 @@ public class GrammarModel implements Observer {
                 modelMap.put(name, model = createModel(kind, name));
                 // collect the active rules
             }
-            if (kind == RULE && GraphInfo.isEnabled((AspectGraph) model.getSource())) {
+            if (kind == GROOVY
+                || kind == RULE && GraphInfo.isEnabled((AspectGraph) model.getSource())) {
                 newActiveNames.add(name);
             }
         }

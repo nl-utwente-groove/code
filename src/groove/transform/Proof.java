@@ -1,20 +1,23 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.transform;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 import groove.grammar.Condition;
 import groove.grammar.Condition.Op;
@@ -24,16 +27,13 @@ import groove.grammar.host.HostNodeSet;
 import groove.grammar.rule.RuleToHostMap;
 import groove.transform.RuleEvent.Reuse;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 /**
  * Proof of a {@link Condition}.
  * A proof may contain the following elements:
  * <ul>
  * <li> A match of the condition pattern, if the condition is a quantifier
  * <li> One or more proofs for one or more subconditions. In particular, for a
- * universal subcondition there will in general one proof for 
+ * universal subcondition there will in general be one proof for
  * each match of the condition pattern; and if the condition of this proof is
  * conjunctive, there will be proofs for all subconditions.
  * </ul>
@@ -45,12 +45,13 @@ public class Proof {
     public Proof(Condition condition, RuleToHostMap patternMap) {
         this.condition = condition;
         this.patternMap = patternMap;
-        assert condition.getOp().hasPattern()
-            || (condition.getOp().isConjunctive() || condition.getOp() == Op.TRUE)
-            && patternMap == null;
+        assert condition.getOp()
+            .hasPattern()
+            || (condition.getOp()
+                .isConjunctive() || condition.getOp() == Op.TRUE) && patternMap == null;
     }
 
-    /** 
+    /**
      * Indicates whether the proved condition is a rule.
      * Convenience method for {@code getCondition().hasRule()}.
      */
@@ -59,7 +60,7 @@ public class Proof {
     }
 
     /**
-     * Returns the rule of the proved condition, if any. 
+     * Returns the rule of the proved condition, if any.
      * Convenience method for {@code getCondition().getRule()}.
      */
     public Rule getRule() {
@@ -71,7 +72,7 @@ public class Proof {
         return this.condition;
     }
 
-    /** 
+    /**
      * Indicates if this is a composite proof.
      * A composite proof consists of conjunctively interpreted subproofs,
      * but has no pattern map of its own.
@@ -97,7 +98,8 @@ public class Proof {
             result.addAll(subMatch.getEdgeValues());
         }
         if (this.patternMap != null) {
-            result.addAll(this.patternMap.edgeMap().values());
+            result.addAll(this.patternMap.edgeMap()
+                .values());
         }
         return result;
     }
@@ -109,7 +111,8 @@ public class Proof {
             result.addAll(subMatch.getNodeValues());
         }
         if (this.patternMap != null) {
-            result.addAll(this.patternMap.nodeMap().values());
+            result.addAll(this.patternMap.nodeMap()
+                .values());
         }
         return result;
     }
@@ -127,7 +130,8 @@ public class Proof {
         collectEvents(eventSet, record);
         assert !eventSet.isEmpty();
         if (eventSet.size() == 1 && !getRule().hasSubRules()) {
-            return eventSet.iterator().next();
+            return eventSet.iterator()
+                .next();
         } else {
             return createCompositeEvent(record, eventSet);
         }
@@ -169,8 +173,7 @@ public class Proof {
      * {@link Record#createSimpleEvent(Rule, RuleToHostMap)} if
      * <code>nodeFactory</code> is not <code>null</code>.
      */
-    private RuleEvent createCompositeEvent(Record record,
-            Collection<BasicEvent> eventSet) {
+    private RuleEvent createCompositeEvent(Record record, Collection<BasicEvent> eventSet) {
         if (record == null) {
             return new CompositeEvent(record, getRule(), eventSet, Reuse.NONE);
         } else {
@@ -188,7 +191,8 @@ public class Proof {
             return false;
         }
         Proof other = (Proof) obj;
-        if (!other.getCondition().equals(getCondition())) {
+        if (!other.getCondition()
+            .equals(getCondition())) {
             return false;
         }
         if (getPatternMap() == null) {
@@ -231,22 +235,20 @@ public class Proof {
     public String toString() {
         StringBuilder result = new StringBuilder();
         if (getPatternMap() == null) {
-            result.append(String.format("Combined match of %s",
-                getCondition().getName()));
+            result.append(String.format("Combined match of %s", getCondition().getName()));
         } else {
             result.append(String.format("Match of %s: Nodes %s, edges %s",
-                getCondition().getName(), getPatternMap().nodeMap(),
+                getCondition().getName(),
+                getPatternMap().nodeMap(),
                 getPatternMap().edgeMap()));
         }
         if (!getSubProofs().isEmpty()) {
-            result.append(String.format("%n--- Submatches of %s ---%n",
-                getCondition().getName()));
+            result.append(String.format("%n--- Submatches of %s ---%n", getCondition().getName()));
             for (Proof match : getSubProofs()) {
                 result.append(match.toString());
                 result.append("\n");
             }
-            result.append(String.format("--- End of %s ---",
-                getCondition().getName()));
+            result.append(String.format("--- End of %s ---", getCondition().getName()));
         }
         return result.toString();
     }
@@ -255,7 +257,7 @@ public class Proof {
      * The condition of which this is a proof.
      */
     private final Condition condition;
-    /** 
+    /**
      * The pattern map of the match.
      * May be {@code null} if this is a composite proof:
      * in that case the proof is only a conjunction of its sub-proofs.
@@ -263,8 +265,7 @@ public class Proof {
     private final RuleToHostMap patternMap;
 
     /** The proofs of the sub-conditions. */
-    private final Collection<Proof> subProofs =
-        new java.util.LinkedHashSet<>();
+    private final Collection<Proof> subProofs = new java.util.LinkedHashSet<>();
     /** The (pre-computed) hash code of this match. */
     private int hashCode;
 

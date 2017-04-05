@@ -22,17 +22,22 @@ package groove.util.parse;
  * @version $Id$
  */
 public interface Fallible {
-    /** Adds an error to the errors contained in this name space. */
+    /** Adds an error to this fallible object. */
     public default void addError(String message, Object... args) {
         getErrors().add(message, args);
     }
 
-    /** Adds an error to the errors contained in this name space. */
+    /** Adds an error to this fallible object. */
     public default void addError(FormatError error) {
         getErrors().add(error);
     }
 
-    /** Indicates if this expression has any errors. */
+    /** Adds errors to this fallible object. */
+    public default void addErrors(FormatErrorSet error) {
+        getErrors().addAll(error);
+    }
+
+    /** Indicates if this fallible object has any errors. */
     public default boolean hasErrors() {
         return !getErrors().isEmpty();
     }
