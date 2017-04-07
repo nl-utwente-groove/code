@@ -1512,7 +1512,7 @@ public class Rule implements Action, Fixable {
     /**
      * The factory used for creating rule anchors.
      */
-    private static AnchorFactory anchorFactory = DefaultAnchorFactory.getInstance();
+    private static AnchorFactory anchorFactory = DefaultAnchorFactory.instance();
     /** Debug flag for the constructor. */
     private static final boolean PRINT = false;
 }

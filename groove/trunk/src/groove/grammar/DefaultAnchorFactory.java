@@ -45,7 +45,7 @@ public class DefaultAnchorFactory implements AnchorFactory {
     }
 
     /**
-     * This implementation assumes that the rule is an <tt>SPORule</tt>, and
+     * This implementation assumes
      * that the rule's internal sets of <tt>lhsOnlyNodes</tt> etc. have been
      * initialised already.
      */
@@ -98,10 +98,10 @@ public class DefaultAnchorFactory implements AnchorFactory {
     /**
      * Returns the singleton instance of this class.
      */
-    static public DefaultAnchorFactory getInstance() {
-        return prototype;
+    static public DefaultAnchorFactory instance() {
+        return INSTANCE;
     }
 
     /** The singleton instance of this class. */
-    static private DefaultAnchorFactory prototype = new DefaultAnchorFactory();
+    static private DefaultAnchorFactory INSTANCE = new DefaultAnchorFactory();
 }
