@@ -379,13 +379,11 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     /** Computes the list of call arguments for a given graph transition. */
     public static List<HostNode> getArguments(GraphTransition trans) {
         List<HostNode> result;
-        List<CtrlPar.Var> actionSig = trans.getAction()
-            .getSignature();
-        if (actionSig.isEmpty()) {
+        List<? extends CtrlPar> args = trans.getSwitch()
+            .getArgs();
+        if (args.isEmpty()) {
             result = EMPTY_ARGS;
         } else {
-            List<? extends CtrlPar> args = trans.getSwitch()
-                .getArgs();
             result = new ArrayList<>();
             for (int i = 0; i < args.size(); i++) {
                 CtrlPar par = args.get(i);

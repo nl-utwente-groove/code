@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,11 +28,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import groove.algebra.AlgebraFamily;
 import groove.control.Binding;
 import groove.control.CtrlPar;
-import groove.control.CtrlPar.Var;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.grammar.host.HostEdgeSet;
@@ -229,20 +228,16 @@ public class Rule implements Action, Fixable {
         }
     }
 
-    //    @Override
     Set<RuleNode> computeInputNodes() {
         Set<RuleNode> result = null;
         // if this is a top-level rule, the (only) input nodes
         // are the input-only parameter nodes
         if (isTop()) {
-            result = new HashSet<>();
-            for (Var var : getSignature()) {
-                if (var.isInOnly()) {
-                    result.add(var.getRuleNode());
-                }
-            }
-            //        } else {
-            //            result = super.computeInputNodes();
+            result = new HashSet<>(getSignature().getPars()
+                .stream()
+                .filter(v -> v.isInOnly())
+                .map(v -> v.getRuleNode())
+                .collect(Collectors.toSet()));
         }
         return result;
     }
@@ -289,30 +284,30 @@ public class Rule implements Action, Fixable {
      * Sets the parameters of this rule. The rule can have numbered and hidden
      * parameters. Numbered parameters are divided into input (LHS) and output
      * (RHS-only) parameters, and are visible on the transition label.
-     * @param sig the signature of the rule, i.e., the list of (visible) parameters
+     * @param parList the list of (visible) parameters
      * @param hiddenPars the set of hidden (i.e., unnumbered) parameter nodes
      */
-    public void setSignature(List<CtrlPar.Var> sig, Set<RuleNode> hiddenPars) {
+    public void setSignature(List<CtrlPar.Var> parList, Set<RuleNode> hiddenPars) {
         assert !isFixed();
-        this.sig = sig;
+        this.sig = new Signature(parList);
         this.hiddenPars = hiddenPars;
         List<CtrlPar.Var> derivedSig = new ArrayList<>();
-        for (int i = 0; i < sig.size(); i++) {
+        for (int i = 0; i < parList.size(); i++) {
             // add the LHS parameters to the root graph
-            RuleNode parNode = sig.get(i)
+            RuleNode parNode = parList.get(i)
                 .getRuleNode();
             if (this.lhs.containsNode(parNode)) {
                 this.condition.getRoot()
                     .addNode(parNode);
             }
             String parName = "arg" + i;
-            CtrlType parType = sig.get(i)
+            CtrlType parType = parList.get(i)
                 .getType();
             CtrlVar var = new CtrlVar(null, parName, parType);
             CtrlPar.Var par;
-            boolean inOnly = sig.get(i)
+            boolean inOnly = parList.get(i)
                 .isInOnly();
-            boolean outOnly = sig.get(i)
+            boolean outOnly = parList.get(i)
                 .isOutOnly();
             if (!inOnly && !outOnly) {
                 par = new CtrlPar.Var(var);
@@ -321,16 +316,16 @@ public class Rule implements Action, Fixable {
             }
             derivedSig.add(par);
         }
-        assert derivedSig.equals(sig) : String
-            .format("Declared signature %s differs from derived signature %s", sig, derivedSig);
+        assert new Signature(derivedSig).equals(this.sig) : String
+            .format("Declared signature %s differs from derived signature %s", parList, derivedSig);
     }
 
     /** Returns the signature of the rule. */
     @Override
-    public List<CtrlPar.Var> getSignature() {
+    public Signature getSignature() {
         assert isFixed();
         if (this.sig == null) {
-            this.sig = Collections.emptyList();
+            this.sig = new Signature();
         }
         return this.sig;
     }
@@ -343,7 +338,7 @@ public class Rule implements Action, Fixable {
         if (this.parBinding == null) {
             this.parBinding = computeParBinding();
         }
-        return this.parBinding[i];
+        return this.parBinding.get(i);
     }
 
     /**
@@ -351,11 +346,10 @@ public class Rule implements Action, Fixable {
      * anchor respectively created node indices.
      * @see #getParBinding(int)
      */
-    private Binding[] computeParBinding() {
-        Binding[] result = new Binding[this.sig.size()];
+    private List<Binding> computeParBinding() {
+        List<Binding> result = new ArrayList<>();
         List<RuleNode> creatorNodes = Arrays.asList(getCreatorNodes());
-        for (int i = 0; i < this.sig.size(); i++) {
-            CtrlPar.Var par = this.sig.get(i);
+        for (CtrlPar.Var par : getSignature()) {
             Binding binding;
             RuleNode ruleNode = par.getRuleNode();
             if (par.isCreator()) {
@@ -367,10 +361,17 @@ public class Rule implements Action, Fixable {
                 assert ix >= 0 : String.format("Node %s not in anchors %s", ruleNode, getAnchor());
                 binding = Binding.anchor(ix);
             }
-            result[i] = binding;
+            result.add(binding);
         }
         return result;
     }
+
+    /**
+     * List of indices for the parameters, pointing either to the
+     * anchor position or to the position in the created nodes list.
+     * The latter are offset by the length of the anchor.
+     */
+    private List<Binding> parBinding;
 
     /**
      * Returns the set of hidden (i.e., unnumbered) parameter nodes of this
@@ -425,12 +426,8 @@ public class Rule implements Action, Fixable {
     private boolean isPropertyLike() {
         boolean result = !isModifying() && getPriority() == 0 && getHiddenPars().isEmpty();
         if (result) {
-            for (CtrlPar.Var var : getSignature()) {
-                if (var.isInOnly()) {
-                    result = false;
-                    break;
-                }
-            }
+            result = getSignature().stream()
+                .allMatch(v -> !v.isInOnly());
         }
         return result;
     }
@@ -533,15 +530,15 @@ public class Rule implements Action, Fixable {
         Matcher result;
         boolean simple = seedMap.getFactory()
             .isSimple();
-        if (getSignature().size() > 0) {
-            int sigSize = getSignature().size();
+        Signature sig = getSignature();
+        if (!sig.isEmpty()) {
+            int sigSize = sig.size();
             BitSet initPars = new BitSet(sigSize);
             for (int i = 0; i < sigSize; i++) {
                 // set initPars if the seed map contains a value
                 // for this parameter
                 initPars.set(i, seedMap.nodeMap()
-                    .containsKey(getSignature().get(i)
-                        .getRuleNode()));
+                    .containsKey(sig.getNode(i)));
             }
             result = this.matcherMap.get(initPars);
             if (result == null) {
@@ -1477,13 +1474,7 @@ public class Rule implements Action, Fixable {
     private final Map<RuleNode,Color> colorMap = new HashMap<>();
 
     /** The signature of the rule. */
-    private List<CtrlPar.Var> sig;
-    /**
-     * List of indices for the parameters, pointing either to the
-     * anchor position or to the position in the created nodes list.
-     * The latter are offset by the length of the anchor.
-     */
-    private Binding[] parBinding;
+    private Signature sig;
     /**
      * Set of anonymous (unnumbered) parameters.
      */
@@ -1521,7 +1512,7 @@ public class Rule implements Action, Fixable {
     /**
      * The factory used for creating rule anchors.
      */
-    private static AnchorFactory anchorFactory = DefaultAnchorFactory.getInstance();
+    private static AnchorFactory anchorFactory = DefaultAnchorFactory.instance();
     /** Debug flag for the constructor. */
     private static final boolean PRINT = false;
 }

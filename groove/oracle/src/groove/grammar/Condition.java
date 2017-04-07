@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Set;
 
 import groove.algebra.AlgebraFamily;
-import groove.control.CtrlPar.Var;
 import groove.grammar.rule.OperatorNode;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleFactory;
@@ -174,13 +173,7 @@ public class Condition implements Fixable {
     Set<RuleNode> computeInputNodes() {
         if (hasRule() && getRule().isTop()) {
             // collect the input parameters
-            Set<RuleNode> result = new HashSet<>();
-            for (Var var : getRule().getSignature()) {
-                if (var.isInOnly()) {
-                    result.add(var.getRuleNode());
-                }
-            }
-            return result;
+            return this.rule.computeInputNodes();
         } else {
             return new HashSet<>(this.root.nodeSet());
         }
@@ -339,20 +332,27 @@ public class Condition implements Fixable {
 
     /**
      * Tests if the algebra part of the target graph can be matched. This
-     * requires that there are no variable nodes that cannot be resolved, no
-     * typing conflicts, and no missing arguments. This is checked at fixing
-     * time of the condition.
+     * requires that there are no variable nodes that cannot be resolved.
      * @throws FormatException if the algebra part cannot be matched
      */
     public void checkResolution() throws FormatException {
+        // if the algebra family allows symbolic exploration, there is nothing to be checked
+        if (getGrammarProperties().getAlgebraFamily()
+            .supportsSymbolic()) {
+            return;
+        }
+        boolean hasOracle = getGrammarProperties().getValueOracle()
+            .getKind() != Kind.NONE;
         FormatErrorSet errors = new FormatErrorSet();
         Map<VariableNode,List<Set<VariableNode>>> resolverMap = createResolvers();
         stabilise(resolverMap);
         for (RuleNode node : resolverMap.keySet()) {
-            errors.add(
-                "Variable node '%s' cannot always be assigned (use %s algebra for symbolic exploration or set a value oracle)",
-                node,
-                AlgebraFamily.POINT.getName());
+            if (!hasOracle) {
+                errors.add(
+                    "Variable node '%s' cannot always be assigned (use %s algebra for symbolic exploration or set a value oracle)",
+                    node,
+                    AlgebraFamily.POINT.getName());
+            }
         }
         errors.throwException();
     }

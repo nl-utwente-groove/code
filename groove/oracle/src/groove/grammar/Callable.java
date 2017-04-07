@@ -16,9 +16,6 @@
  */
 package groove.grammar;
 
-import java.util.List;
-
-import groove.control.CtrlPar.Var;
 import groove.control.Procedure;
 
 /**
@@ -45,7 +42,7 @@ public interface Callable {
     }
 
     /** Returns the signature of the unit. */
-    public List<Var> getSignature();
+    public Signature getSignature();
 
     /** Callable unit kind. */
     public static enum Kind {
