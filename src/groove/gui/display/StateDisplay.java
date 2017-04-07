@@ -359,18 +359,16 @@ public class StateDisplay extends Display implements SimulatorListener {
         AspectJModel jModel = getJGraph().getModel();
         HostToAspectMap aspectMap = getAspectMap(getSimulatorModel().getState());
         Set<AspectJCell> emphElems = new HashSet<>();
-        for (HostNode matchedNode : match.getNodeValues()) {
-            AspectJCell jCell = jModel.getJCellForNode(aspectMap.getNode(matchedNode));
-            if (jCell != null) {
-                emphElems.add(jCell);
-            }
-        }
-        for (HostEdge matchedEdge : match.getEdgeValues()) {
-            AspectJCell jCell = jModel.getJCellForEdge(aspectMap.getEdge(matchedEdge));
-            if (jCell != null) {
-                emphElems.add(jCell);
-            }
-        }
+        match.getNodeValues()
+            .stream()
+            .map(n -> jModel.getJCellForNode(aspectMap.getNode(n)))
+            .filter(c -> c != null)
+            .forEach(c -> emphElems.add(c));
+        match.getEdgeValues()
+            .stream()
+            .map(e -> jModel.getJCellForEdge(aspectMap.getEdge(e)))
+            .filter(c -> c != null)
+            .forEach(c -> emphElems.add(c));
         getJGraph().setSelectionCells(emphElems.toArray());
         this.matchSelected = true;
     }
