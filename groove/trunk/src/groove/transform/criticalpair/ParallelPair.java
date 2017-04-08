@@ -270,13 +270,13 @@ class ParallelPair {
                     target = typeFactory.createNode();
                 } else if (firstNode instanceof VariableNode) {
                     VariableNode varNode = (VariableNode) firstNode;
-                    Algebra<?> alg = AlgebraFamily.TERM.getAlgebra(varNode.getSignature());
+                    Algebra<?> alg = AlgebraFamily.TERM.getAlgebra(varNode.getSort());
                     //The set can contain multiple constants, the values of these constants
                     //in the algebra of the rule is the same
                     Constant constant = getFirstConstant(getCombination(entry.getKey()));
                     if (constant == null) {
                         target = host.getFactory().createNode(alg,
-                            new Variable("x" + variableCounter++, varNode.getSignature()));
+                            new Variable("x" + variableCounter++, varNode.getSort()));
                     } else {
                         target = host.getFactory().createNode(alg, constant);
                     }
@@ -323,7 +323,7 @@ class ParallelPair {
                 VariableNode varNode = (VariableNode) rn;
                 //add unconnected constants to the match
                 if (varNode.hasConstant()) {
-                    Sort sig = varNode.getSignature();
+                    Sort sig = varNode.getSort();
                     Algebra<?> alg = AlgebraFamily.TERM.getAlgebra(sig);
                     //Create this node in the host graph
                     //(if a node with this constant already exists, it will be reused)

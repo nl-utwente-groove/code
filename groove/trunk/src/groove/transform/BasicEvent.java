@@ -35,7 +35,6 @@ import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.HostNodeSet;
-import groove.grammar.host.ValueNode;
 import groove.grammar.rule.Anchor;
 import groove.grammar.rule.AnchorKey;
 import groove.grammar.rule.LabelVar;
@@ -727,22 +726,16 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
             // not creators
             for (RuleNode creatorEnd : getRule().getCreatorEnds()) {
                 HostNode createdValue;
-                if (creatorEnd instanceof ValueNode) {
-                    ValueNode node = (ValueNode) creatorEnd;
-                    createdValue =
-                        BasicEvent.this.hostFactory.createNode(node.getAlgebra(), node.getValue());
-                } else {
-                    createdValue = anchorMap.getNode(creatorEnd);
-                    assert creatorEnd != null : String.format(
-                        "Event '%s': No coanchor image for '%s' in %s",
-                        BasicEvent.this,
-                        creatorEnd,
-                        anchorMap);
-                }
+                createdValue = anchorMap.getNode(creatorEnd);
+                assert createdValue != null : String.format(
+                    "Event '%s': No coanchor image for '%s' in %s",
+                    BasicEvent.this,
+                    creatorEnd,
+                    anchorMap);
                 // if the value is null, the image was deleted due to a delete
                 // conflict
                 // or it is yet to be created by a parent rule
-                if (createdValue != null) {
+                if (!getErasedNodes().contains(createdValue)) {
                     result.putNode(creatorEnd, createdValue);
                 }
             }

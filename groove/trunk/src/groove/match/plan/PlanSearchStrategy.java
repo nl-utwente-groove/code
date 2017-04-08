@@ -488,8 +488,8 @@ public class PlanSearchStrategy implements SearchStrategy {
                 if (!keyIsVariableNode) {
                     return false;
                 } else {
-                    Sort keySignature = ((VariableNode) nodeKey).getSignature();
-                    if (((ValueNode) image).getSignature() != keySignature) {
+                    Sort keySignature = ((VariableNode) nodeKey).getSort();
+                    if (((ValueNode) image).getSort() != keySignature) {
                         return false;
                     }
                 }

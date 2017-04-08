@@ -33,7 +33,7 @@ public class RandomValueOracle implements ValueOracle {
 
     @Override
     public Iterable<Constant> getValues(Condition condition, VariableNode var) {
-        Sort sig = var.getSignature();
+        Sort sig = var.getSort();
         Constant result;
         switch (sig) {
         case BOOL:

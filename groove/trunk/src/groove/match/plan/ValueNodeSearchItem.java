@@ -47,7 +47,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
     public ValueNodeSearchItem(VariableNode node, AlgebraFamily family, ValueOracle oracle) {
         this.node = node;
         this.boundNodes = Collections.<RuleNode>singleton(node);
-        this.algebra = family.getAlgebra(node.getSignature());
+        this.algebra = family.getAlgebra(node.getSort());
         Expression term = node.getTerm();
         this.value = term instanceof Variable ? null : family.toValue(node.getTerm());
         this.oracle = oracle;

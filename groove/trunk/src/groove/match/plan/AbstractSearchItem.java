@@ -39,7 +39,7 @@ import groove.util.Exceptions;
  * @version $Revision$
  */
 abstract class AbstractSearchItem implements SearchItem {
-    /**
+    /*
      * This implementation returns the empty set.
      */
     @Override
@@ -47,7 +47,7 @@ abstract class AbstractSearchItem implements SearchItem {
         return Collections.emptySet();
     }
 
-    /**
+    /*
      * This implementation returns the empty set.
      */
     @Override
@@ -55,7 +55,7 @@ abstract class AbstractSearchItem implements SearchItem {
         return Collections.emptySet();
     }
 
-    /**
+    /*
      * This implementation returns the empty set.
      */
     @Override
@@ -63,7 +63,7 @@ abstract class AbstractSearchItem implements SearchItem {
         return Collections.emptySet();
     }
 
-    /**
+    /*
      * This implementation returns the empty set.
      */
     @Override
@@ -85,7 +85,7 @@ abstract class AbstractSearchItem implements SearchItem {
         return false;
     }
 
-    /**
+    /*
      * This implementation compares items on the basis of their class names, and
      * after that, on the basis of their ratings. A lower rating means a
      * "smaller" search item, which is scheduled earlier.

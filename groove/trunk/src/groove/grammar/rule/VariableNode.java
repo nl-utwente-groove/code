@@ -32,18 +32,21 @@ import groove.grammar.type.TypeNode;
 import groove.graph.ANode;
 
 /**
- * Nodes used to represent attribute variables in rules and conditions.
+ * Nodes used to represent attribute variables and values in rules and conditions.
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-12 15:15:32 $
  */
 public class VariableNode extends ANode implements RuleNode, AnchorKey {
     /**
-     * Constructs a (numbered) constant variable node.
+     * Constructs a (numbered) variable node.
+     * @param nr the node number; uniquely identifies the node
+     * @param term a {@link Constant} or {@link Variable} characterising the node
+     * @param type the corresponding type node
      */
     public VariableNode(int nr, Expression term, TypeNode type) {
         super(nr);
         this.term = term;
-        assert type != null;
+        assert type != null && type.isDataType();
         this.type = type;
     }
 
@@ -83,11 +86,18 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
     }
 
     /**
-     * Returns the (non-{@code null}) signature to which the variable node
+     * Returns the (non-{@code null}) sort to which the variable node
      * belongs.
      */
-    public Sort getSignature() {
+    public Sort getSort() {
         return this.term.getSort();
+    }
+
+    /**
+     * Returns the term (a {@link Constant} or {@link Variable}) wrapped in this variable node.
+     */
+    public Expression getTerm() {
+        return this.term;
     }
 
     /**
@@ -99,14 +109,7 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
     }
 
     /**
-     * Returns the term wrapped in this variable node.
-     */
-    public Expression getTerm() {
-        return this.term;
-    }
-
-    /**
-     * Returns the constant of the variable node
+     * Returns the constant of the variable node.
      * if its wrapped term is a constant; otherwise returns {@code null}.
      */
     public Constant getConstant() {
@@ -114,11 +117,11 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
     }
 
     /**
-     * Returns the variable of the variable node
+     * Returns the variable of the variable node.
      * if its wrapped term is a variable; otherwise returns {@code null}.
      */
     public Variable getVariable() {
-        return (getTerm() instanceof Variable) ? null : (Variable) getTerm();
+        return hasConstant() ? null : (Variable) getTerm();
     }
 
     @Override
