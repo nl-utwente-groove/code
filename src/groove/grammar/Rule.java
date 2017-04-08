@@ -1516,5 +1516,5 @@ public class Rule implements Action, Fixable {
      */
     private static AnchorFactory anchorFactory = DefaultAnchorFactory.instance();
     /** Debug flag for the constructor. */
-    private static final boolean PRINT = true;
+    private static final boolean PRINT = false;
 }
