@@ -348,7 +348,7 @@ public class RuleApplication implements DeltaApplier {
                     HostEdgeSet edges = getValueNodeEdges((ValueNode) edgeTarget);
                     edges.remove(edge);
                     if (edges.isEmpty()) {
-                        addIsolatedValueNode((ValueNode) edgeTarget);
+                        registerIsolatedValueNode((ValueNode) edgeTarget);
                     }
                 }
             }
@@ -379,7 +379,7 @@ public class RuleApplication implements DeltaApplier {
                 if (targetNode instanceof ValueNode) {
                     ValueNode valueNode = (ValueNode) targetNode;
                     if (this.source.containsNode(targetNode)) {
-                        removeIsolatedValueNode(valueNode);
+                        unregisterIsolatedValueNode(valueNode);
                     } else if (registerAddedValueNode(valueNode)) {
                         target.addNode(targetNode);
                     }
@@ -457,7 +457,7 @@ public class RuleApplication implements DeltaApplier {
      * Adds a node to the set of value nodes that have become isolated
      * due to edge erasure.
      */
-    private void addIsolatedValueNode(ValueNode node) {
+    private void registerIsolatedValueNode(ValueNode node) {
         if (this.isolatedValueNodes == null) {
             this.isolatedValueNodes = new HashSet<>();
         }
@@ -467,7 +467,7 @@ public class RuleApplication implements DeltaApplier {
     /**
      * Removes an isolated node (a new edge to it has been added).
      */
-    private void removeIsolatedValueNode(ValueNode node) {
+    private void unregisterIsolatedValueNode(ValueNode node) {
         if (this.isolatedValueNodes != null) {
             this.isolatedValueNodes.remove(node);
         }
