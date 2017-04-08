@@ -1209,7 +1209,9 @@ public class Rule implements Action, Fixable {
     private RuleGraph computeCreatorGraph() {
         RuleGraph result = rhs().newGraph(getQualName() + "(creators)");
         result.addNodeSet(Arrays.asList(getCreatorNodes()));
-        result.addEdgeSet(Arrays.asList(getCreatorEdges()));
+        for (RuleEdge e : getCreatorEdges()) {
+            result.addEdgeContext(e);
+        }
         return result;
     }
 
@@ -1514,5 +1516,5 @@ public class Rule implements Action, Fixable {
      */
     private static AnchorFactory anchorFactory = DefaultAnchorFactory.instance();
     /** Debug flag for the constructor. */
-    private static final boolean PRINT = false;
+    private static final boolean PRINT = true;
 }

@@ -213,15 +213,15 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
 
     private boolean checkValues(RuleNode n1, HostNode n2) {
         return !(n1 instanceof VariableNode)
-            || (((n2 instanceof ValueNode) && (((ValueNode) n2).getSignature()
-                .equals(((VariableNode) n1).getSignature())))
+            || (((n2 instanceof ValueNode) && (((ValueNode) n2).getSort()
+                .equals(((VariableNode) n1).getSort())))
                 && valuesMatch((VariableNode) n1, (ValueNode) n2));
 
     }
 
     private boolean valuesMatch(VariableNode n1, ValueNode n2) {
-        assert n2.getSignature()
-            .equals((n2.getSignature()));
+        assert n2.getSort()
+            .equals((n2.getSort()));
         Constant c = n1.getConstant();
         return (c == null) || (c.equals(n2.getTerm()));
     }
@@ -303,8 +303,8 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
         if (result && (n1 instanceof VariableNode)) {
             VariableNode vn1 = (VariableNode) n1;
             VariableNode vn2 = (VariableNode) n2;
-            result = vn1.getSignature()
-                .equals(vn2.getSignature());
+            result = vn1.getSort()
+                .equals(vn2.getSort());
             if (result) {
                 result = (vn1.getConstant() == null) == (vn2.getConstant() == null);
                 if (result && (vn1.getConstant() != null)) {

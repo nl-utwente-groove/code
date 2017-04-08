@@ -99,7 +99,7 @@ public class STS {
     public LocationVariable addLocationVariable(HostEdge edge, Object init) {
         ValueNode node = (ValueNode) edge.target();
         String label = LocationVariable.createLocationVariableLabel(edge);
-        LocationVariable v = new LocationVariable(label, node.getSignature(), init);
+        LocationVariable v = new LocationVariable(label, node.getSort(), init);
         this.locationVariables.put(new Pair<>(edge.source()
             .getNumber(), edge.label()), v);
         return v;
@@ -173,7 +173,7 @@ public class STS {
      */
     public InteractionVariable addInteractionVariable(VariableNode node, Rule rule) {
         String label = InteractionVariable.createInteractionVariableLabel(rule, node);
-        InteractionVariable v = new InteractionVariable(label, node.getSignature());
+        InteractionVariable v = new InteractionVariable(label, node.getSort());
         this.interactionVariables.put(new Pair<>(node, rule), v);
         return v;
     }

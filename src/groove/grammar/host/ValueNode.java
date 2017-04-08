@@ -36,7 +36,7 @@ public class ValueNode extends ANode implements HostNode {
     private ValueNode() {
         super(Integer.MAX_VALUE);
         this.algebra = null;
-        this.signature = null;
+        this.sort = null;
         this.value = null;
         this.type = null;
     }
@@ -52,7 +52,7 @@ public class ValueNode extends ANode implements HostNode {
         super(nr);
         assert algebra != null && value != null && type != null && algebra.isValue(value);
         this.algebra = algebra;
-        this.signature = algebra.getSort();
+        this.sort = algebra.getSort();
         this.value = value;
         this.type = type;
     }
@@ -121,12 +121,12 @@ public class ValueNode extends ANode implements HostNode {
     }
 
     /**
-     * Returns the signature to which the value node
+     * Returns the sort to which the value node
      * belongs.
      */
-    public Sort getSignature() {
+    public Sort getSort() {
         assert this != DUMMY_NODE;
-        return this.signature;
+        return this.sort;
     }
 
     @Override
@@ -139,8 +139,8 @@ public class ValueNode extends ANode implements HostNode {
         return AnchorKind.NODE;
     }
 
-    /** The signature of this value node. */
-    private final Sort signature;
+    /** The sort of this value node. */
+    private final Sort sort;
     /** The algebra of this value node. */
     private final Algebra<?> algebra;
     /**

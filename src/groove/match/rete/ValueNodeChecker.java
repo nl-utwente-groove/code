@@ -104,7 +104,7 @@ public class ValueNodeChecker extends NodeChecker implements ReteStateSubscriber
     public List<? extends Object> initialize() {
         VariableNode varNode = (VariableNode) this.pattern[0];
         Algebra<?> algebra = AlgebraFamily.getInstance()
-            .getAlgebra(varNode.getSignature());
+            .getAlgebra(varNode.getSort());
         ValueNode valueNode = getOwner().getHostFactory()
             .createNode(algebra, algebra.toValue(varNode.getConstant()));
         ReteSimpleMatch match = new ReteSimpleMatch(this, valueNode, getOwner().isInjective());
