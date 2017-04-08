@@ -1,20 +1,25 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.match.plan;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 
 import groove.algebra.AlgebraFamily;
 import groove.algebra.Operation;
@@ -27,11 +32,6 @@ import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.VariableNode;
 import groove.match.plan.PlanSearchStrategy.Search;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-
 /**
  * A search item for an operator node.
  * @author Arend Rensink
@@ -39,9 +39,12 @@ import java.util.List;
  */
 class OperatorNodeSearchItem extends AbstractSearchItem {
     /**
-     * Creates a search item for a given edge, for which it is know which edge
-     * ends have already been matched (in the search plan) before this one.
-     * @param node the edge to be matched
+     * Creates a search item for a given operator node, all of whose arguments
+     * have already been matched. More properly speaking, the search item calculates
+     * the value of the target node, and either installs it or compares it with
+     * the value already installed.
+     * @param node the operator node to be matched
+     * @param family the algebra family to take values from
      */
     public OperatorNodeSearchItem(OperatorNode node, AlgebraFamily family) {
         this.node = node;
@@ -85,7 +88,9 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
 
     @Override
     public String toString() {
-        return String.format("Compute %s%s-->%s", this.operation.toString(), this.arguments,
+        return String.format("Compute %s%s-->%s",
+            this.operation.toString(),
+            this.arguments,
             this.target);
     }
 
@@ -102,12 +107,15 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
         }
         OperatorNode hisNode = ((OperatorNodeSearchItem) item).getNode();
         List<VariableNode> hisArguments = hisNode.getArguments();
-        result = this.operation.getName().compareTo(hisNode.getOperator().getName());
+        result = this.operation.getName()
+            .compareTo(hisNode.getOperator()
+                .getName());
         if (result != 0) {
             return result;
         }
         for (int i = 0; i < this.arguments.size(); i++) {
-            result = this.arguments.get(i).compareTo(hisArguments.get(i));
+            result = this.arguments.get(i)
+                .compareTo(hisArguments.get(i));
             if (result != 0) {
                 return result;
             }
@@ -198,7 +206,8 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
 
         @Override
         public String toString() {
-            return String.format("%s = %s", OperatorNodeSearchItem.this.toString(),
+            return String.format("%s = %s",
+                OperatorNodeSearchItem.this.toString(),
                 this.search.getNode(OperatorNodeSearchItem.this.targetIx));
         }
 
@@ -222,11 +231,11 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
                 if (targetFind == null) {
                     targetFind = this.search.getNode(OperatorNodeSearchItem.this.targetIx);
                 }
-                result = ((ValueNode) targetFind).getValue().equals(outcome);
+                result = ((ValueNode) targetFind).getValue()
+                    .equals(outcome);
             } else {
-                ValueNode targetImage =
-                    this.factory.createNode(
-                        OperatorNodeSearchItem.this.operation.getResultAlgebra(), outcome);
+                ValueNode targetImage = this.factory
+                    .createNode(OperatorNodeSearchItem.this.operation.getResultAlgebra(), outcome);
                 this.image = targetImage;
                 result = write();
             }
@@ -271,7 +280,9 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
                     OperatorNodeSearchItem.this.operation.apply(Arrays.asList(operands));
                 if (PRINT) {
                     System.out.printf("Applying %s to %s yields %s%n",
-                        OperatorNodeSearchItem.this.operation, Arrays.asList(operands), result);
+                        OperatorNodeSearchItem.this.operation,
+                        Arrays.asList(operands),
+                        result);
                 }
                 return result;
             } catch (IllegalArgumentException exc) {

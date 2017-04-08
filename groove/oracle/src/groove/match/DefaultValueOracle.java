@@ -32,7 +32,7 @@ public class DefaultValueOracle implements ValueOracle {
 
     @Override
     public Iterable<Constant> getValues(Condition condition, VariableNode var) {
-        Sort sig = var.getSignature();
+        Sort sig = var.getSort();
         return Collections.singleton(sig.getDefaultValue());
     }
 

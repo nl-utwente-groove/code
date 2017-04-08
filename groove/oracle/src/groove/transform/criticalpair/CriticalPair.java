@@ -463,13 +463,13 @@ public class CriticalPair {
                     //The constant may be merged if no group contains the constant
                     //i.e. constantGroup == null or if constantGroup is equal to group
                     if (constantGroup == null || constantGroup.equals(group)) {
-                        Sort sigKind = varRuleNode.getSignature();
+                        Sort sigKind = varRuleNode.getSort();
                         Algebra<?> alg = algebraFamily.getAlgebra(sigKind);
                         Object consValue = alg.toValueFromConstant(cons);
                         for (RuleNode other : pair.getCombination(group)) {
                             if (other instanceof VariableNode) {
                                 VariableNode varOther = (VariableNode) other;
-                                if (sigKind.equals(varOther.getSignature())) {
+                                if (sigKind.equals(varOther.getSort())) {
                                     if (varOther.hasConstant() && !consValue
                                         .equals(alg.toValueFromConstant(varOther.getConstant()))) {
                                         //The other variable has a constant which has a different value in the algebra

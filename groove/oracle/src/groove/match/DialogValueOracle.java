@@ -36,7 +36,7 @@ import groove.util.parse.FormatException;
 public class DialogValueOracle implements ValueOracle {
     @Override
     public Iterable<Constant> getValues(Condition condition, VariableNode var) {
-        Optional<Constant> value = getValue(condition.getName(), var.getSignature());
+        Optional<Constant> value = getValue(condition.getName(), var.getSort());
         return value.map(v -> Collections.singleton(v))
             .orElse(Collections.emptySet());
     }

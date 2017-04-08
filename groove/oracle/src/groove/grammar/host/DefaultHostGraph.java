@@ -77,7 +77,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>impl
             HostNode tn;
             if (sn instanceof ValueNode && family != null) {
                 ValueNode vn = (ValueNode) sn;
-                tn = getFactory().createNode(family.getAlgebra(vn.getSignature()),
+                tn = getFactory().createNode(family.getAlgebra(vn.getSort()),
                     family.toValue(vn.getTerm()));
             } else {
                 tn = sn;
