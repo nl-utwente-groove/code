@@ -107,6 +107,8 @@ public enum AspectKind {
     PARAM_IN(Keywords.PAR_IN, ContentKind.PARAM),
     /** Indicates an output rule parameter. */
     PARAM_OUT(Keywords.PAR_OUT, ContentKind.PARAM),
+    /** Indicates an interactive rule parameter. */
+    PARAM_ASK(Keywords.PAR_ASK, ContentKind.PARAM),
 
     // type-related aspects
     /** Indicates a nodified edge type. */
@@ -764,6 +766,12 @@ public enum AspectKind {
             b.add("Declares rule output parameter %s (ranging from 0).");
             break;
 
+        case PARAM_ASK:
+            s = "%s.COLON.nr";
+            h = "Interactive rule parameter";
+            b.add("Declares interactive rule parameter %s (ranging from 0).");
+            break;
+
         case PATH:
             s = "%s.COLON.regexpr";
             h = "Regular path expression";
@@ -958,7 +966,8 @@ public enum AspectKind {
     public static final Set<AspectKind> meta =
         EnumSet.of(FORALL, FORALL_POS, EXISTS, EXISTS_OPT, NESTED, REMARK, CONNECT);
     /** Set of parameter aspects. */
-    public static final Set<AspectKind> params = EnumSet.of(PARAM_BI, PARAM_IN, PARAM_OUT);
+    public static final Set<AspectKind> params =
+        EnumSet.of(PARAM_BI, PARAM_IN, PARAM_OUT, PARAM_ASK);
     /** Set of existential quantifier aspects, i.e., which do not reflect real graph structure. */
     public static final Set<AspectKind> existsQuantifiers = EnumSet.of(EXISTS, EXISTS_OPT);
     /** Set of universal quantifier aspects, i.e., which do not reflect real graph structure. */
@@ -997,6 +1006,7 @@ public enum AspectKind {
                     PARAM_BI,
                     PARAM_IN,
                     PARAM_OUT,
+                    PARAM_ASK,
                     FORALL,
                     FORALL_POS,
                     EXISTS,

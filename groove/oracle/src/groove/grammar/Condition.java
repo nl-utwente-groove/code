@@ -349,7 +349,7 @@ public class Condition implements Fixable {
         for (RuleNode node : resolverMap.keySet()) {
             if (!hasOracle) {
                 errors.add(
-                    "Variable node '%s' cannot always be assigned (use %s algebra for symbolic exploration or set a value oracle)",
+                    "Variable node '%s' cannot always be resolved (use %s algebra for symbolic exploration or set a value oracle)",
                     node,
                     AlgebraFamily.POINT.getName());
             }

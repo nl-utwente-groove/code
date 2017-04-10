@@ -33,8 +33,6 @@ import java.util.stream.Collectors;
 import groove.algebra.AlgebraFamily;
 import groove.control.Binding;
 import groove.control.CtrlPar;
-import groove.control.CtrlType;
-import groove.control.CtrlVar;
 import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
@@ -291,7 +289,6 @@ public class Rule implements Action, Fixable {
         assert !isFixed();
         this.sig = new Signature(parList);
         this.hiddenPars = hiddenPars;
-        List<CtrlPar.Var> derivedSig = new ArrayList<>();
         for (int i = 0; i < parList.size(); i++) {
             // add the LHS parameters to the root graph
             RuleNode parNode = parList.get(i)
@@ -300,24 +297,7 @@ public class Rule implements Action, Fixable {
                 this.condition.getRoot()
                     .addNode(parNode);
             }
-            String parName = "arg" + i;
-            CtrlType parType = parList.get(i)
-                .getType();
-            CtrlVar var = new CtrlVar(null, parName, parType);
-            CtrlPar.Var par;
-            boolean inOnly = parList.get(i)
-                .isInOnly();
-            boolean outOnly = parList.get(i)
-                .isOutOnly();
-            if (!inOnly && !outOnly) {
-                par = new CtrlPar.Var(var);
-            } else {
-                par = new CtrlPar.Var(var, inOnly);
-            }
-            derivedSig.add(par);
         }
-        assert new Signature(derivedSig).equals(this.sig) : String
-            .format("Declared signature %s differs from derived signature %s", parList, derivedSig);
     }
 
     /** Returns the signature of the rule. */
@@ -714,20 +694,30 @@ public class Rule implements Action, Fixable {
     public boolean setFixed() throws FormatException {
         boolean result = !isFixed();
         if (result && !this.fixing) {
-            this.fixing = true;
-            this.fixed = true;
-            getCondition().setFixed();
-            if (PRINT && isTop()) {
-                System.out.println(toString());
+            try {
+                this.fixing = true;
+                getCondition().setFixed();
+                if (PRINT && isTop()) {
+                    System.out.println(toString());
+                }
+                // check if there is an oracle if one is needed
+                boolean hasAskPars = getSignature().stream()
+                    .anyMatch(v -> v.isAsk());
+                if (hasAskPars && !getGrammarProperties().hasValueOracle()) {
+                    throw new FormatException(
+                        "Rule has on-demand parameter but no oracle has been installed");
+                }
+                // push the colour map to the top rule
+                Rule parent = this.parent;
+                while (parent != null && parent != this) {
+                    parent.getColorMap()
+                        .putAll(getColorMap());
+                    parent = parent == parent.parent ? null : parent.parent;
+                }
+                this.fixed = true;
+            } finally {
+                this.fixing = false;
             }
-            // push the colour map to the top rule
-            Rule parent = this.parent;
-            while (parent != null && parent != this) {
-                parent.getColorMap()
-                    .putAll(getColorMap());
-                parent = parent == parent.parent ? null : parent.parent;
-            }
-            this.fixing = false;
         }
         return result;
     }

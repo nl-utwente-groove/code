@@ -20,6 +20,7 @@ package groove.grammar.model;
 import static groove.grammar.aspect.AspectKind.CONNECT;
 import static groove.grammar.aspect.AspectKind.EXISTS;
 import static groove.grammar.aspect.AspectKind.FORALL_POS;
+import static groove.grammar.aspect.AspectKind.PARAM_ASK;
 import static groove.grammar.aspect.AspectKind.PARAM_BI;
 import static groove.grammar.aspect.AspectKind.PARAM_IN;
 import static groove.grammar.aspect.AspectKind.PARAM_OUT;
@@ -2585,7 +2586,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             }
             CtrlVar var = new CtrlVar(null, "arg" + nr, varType);
             boolean inOnly = paramKind == PARAM_IN;
-            boolean outOnly = paramKind == PARAM_OUT;
+            boolean outOnly = paramKind == PARAM_OUT || paramKind == PARAM_ASK;
             RuleNode nodeImage = RuleModel.this.modelMap.getNode(node);
             assert nodeImage != null;
             boolean creator;

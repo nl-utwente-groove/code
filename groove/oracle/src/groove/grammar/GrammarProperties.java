@@ -329,6 +329,13 @@ public class GrammarProperties extends Properties {
     }
 
     /**
+     * Indicates if there is an installed value oracle.
+     */
+    public boolean hasValueOracle() {
+        return getValueOracle() != null;
+    }
+
+    /**
      * Returns the installed value oracle.
      */
     public ValueOracle getValueOracle() {

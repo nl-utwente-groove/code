@@ -41,6 +41,9 @@ public class AdornmentValue extends AspectValue<String> {
             case PARAM_OUT:
                 result.append("!");
                 break;
+            case PARAM_ASK:
+                result.append("*");
+                break;
             default:
                 // no special decoration
             }
