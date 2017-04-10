@@ -22,11 +22,12 @@ import java.util.List;
 import groove.control.Binding;
 import groove.control.Call;
 import groove.control.CtrlPar;
-import groove.control.CtrlPar.Var;
 import groove.control.CtrlVar;
 import groove.grammar.Callable;
 import groove.grammar.QualName;
+import groove.grammar.Rule;
 import groove.grammar.Signature;
+import groove.grammar.Signature.RulePar;
 import groove.util.Pair;
 
 /**
@@ -123,11 +124,11 @@ public class Switch implements Comparable<Switch>, Relocatable {
     private final int transience;
 
     /**
-     * Returns pairs of input parameters of this call and corresponding
+     * Returns pairs of formal input parameters of this call and corresponding
      * bindings to source location variables and constant values.
      * This is only valid for rule calls.
      */
-    public List<Pair<Var,Binding>> getCallBinding() {
+    public List<Pair<RulePar,Binding>> getCallBinding() {
         assert getKind() == Callable.Kind.RULE;
         if (this.callBinding == null) {
             this.callBinding = computeCallBinding();
@@ -136,18 +137,18 @@ public class Switch implements Comparable<Switch>, Relocatable {
     }
 
     /** Binding of in-parameter positions to source variables and constant arguments. */
-    private List<Pair<Var,Binding>> callBinding;
+    private List<Pair<RulePar,Binding>> callBinding;
 
     /**
-     * Computes the binding of call parameter positions to source location
+     * Computes the binding of formal call parameters to source location
      * variables and constant values.
      * @return a list of pairs of call parameter variables and bindings.
      * The binding is {@code null} for a non-input-parameter.
      */
-    private List<Pair<Var,Binding>> computeCallBinding() {
-        List<Pair<Var,Binding>> result = new LinkedList<>();
+    private List<Pair<RulePar,Binding>> computeCallBinding() {
+        List<Pair<RulePar,Binding>> result = new LinkedList<>();
         List<? extends CtrlPar> args = getArgs();
-        Signature sig = getUnit().getSignature();
+        Signature<RulePar> sig = ((Rule) getUnit()).getSignature();
         int size = args == null ? 0 : args.size();
         List<CtrlVar> sourceVars = getSource().getVars();
         for (int i = 0; i < size; i++) {

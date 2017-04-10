@@ -22,6 +22,7 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
+import groove.grammar.aspect.AspectKind;
 import groove.grammar.type.TypeNode;
 import groove.graph.Node;
 
@@ -32,6 +33,14 @@ import groove.graph.Node;
  */
 @NonNullByDefault
 public interface RuleNode extends Node, RuleElement {
+    /** Returns the optional ID of this rule node.
+     * This is the {@link AspectKind#ID}-value if any;
+     * it defaults to the {@link #toString()}-value.
+     */
+    default public String getId() {
+        return toString();
+    }
+
     /* Specialises the return type. */
     @Override
     public @NonNull TypeNode getType();

@@ -29,9 +29,7 @@ import groove.grammar.host.ValueNode;
 import groove.grammar.rule.RuleNode;
 
 /**
- * Class representing a control parameter.
- * Control parameters are used as arguments and formal parameters
- * in rules and functions.
+ * Class representing a control argument in an action call.
  * A control parameter has two properties:
  * <ul>
  * <li>Its direction: input-only, output-only or don't care
@@ -114,8 +112,7 @@ public abstract class CtrlPar {
     }
 
     /** Store of wildcard variables. */
-    private static Map<CtrlType,List<Var>> wildMap =
-        new EnumMap<>(CtrlType.class);
+    private static Map<CtrlType,List<Var>> wildMap = new EnumMap<>(CtrlType.class);
 
     /** Returns the single untyped wildcard argument. */
     public static Wild wild() {
@@ -143,7 +140,7 @@ public abstract class CtrlPar {
         }
 
         /**
-         * Constructs a new, directional variable control parameter.
+         * Constructs a new, directional variable control argument.
          * @param var the control variable of this parameter
          * @param inOnly if {@code true}, the parameter is input-only,
          * otherwise it is output-only
@@ -265,10 +262,7 @@ public abstract class CtrlPar {
     }
 
     /**
-     * Constant control parameter.
-     * A constant parameter van be virtual or instantiated;
-     * in the first case it is represented as a string.
-     * Can only be used as an argument
+     * Constant control argument.
      */
     public static class Const extends CtrlPar {
         /**

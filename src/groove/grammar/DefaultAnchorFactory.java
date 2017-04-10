@@ -83,7 +83,7 @@ public class DefaultAnchorFactory implements AnchorFactory {
             rule.getSignature()
                 .stream()
                 .filter(v -> !v.isCreator())
-                .map(v -> v.getRuleNode())
+                .map(v -> v.getNode())
                 .forEach(n -> result.add(n));
         }
         // remove the root elements of the rule itself

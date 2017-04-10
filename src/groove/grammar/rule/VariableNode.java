@@ -50,6 +50,19 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
         this.type = type;
     }
 
+    /** Sets the special ID of this rule node. */
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    @Override
+    public String getId() {
+        return this.id == null ? toString() : this.id;
+    }
+
+    /** The optional special ID of this rule node. */
+    private String id;
+
     /**
      * This methods returns description of the variable, based on its number.
      */
