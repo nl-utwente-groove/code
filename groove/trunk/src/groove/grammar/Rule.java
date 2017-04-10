@@ -32,9 +32,7 @@ import java.util.stream.Collectors;
 
 import groove.algebra.AlgebraFamily;
 import groove.control.Binding;
-import groove.control.CtrlPar;
-import groove.control.CtrlType;
-import groove.control.CtrlVar;
+import groove.grammar.Signature.RulePar;
 import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
@@ -233,10 +231,9 @@ public class Rule implements Action, Fixable {
         // if this is a top-level rule, the (only) input nodes
         // are the input-only parameter nodes
         if (isTop()) {
-            result = new HashSet<>(getSignature().getPars()
-                .stream()
+            result = new HashSet<RuleNode>(getSignature().stream()
                 .filter(v -> v.isInOnly())
-                .map(v -> v.getRuleNode())
+                .map(v -> v.getNode())
                 .collect(Collectors.toSet()));
         }
         return result;
@@ -287,45 +284,27 @@ public class Rule implements Action, Fixable {
      * @param parList the list of (visible) parameters
      * @param hiddenPars the set of hidden (i.e., unnumbered) parameter nodes
      */
-    public void setSignature(List<CtrlPar.Var> parList, Set<RuleNode> hiddenPars) {
+    public void setSignature(List<RulePar> parList, Set<RuleNode> hiddenPars) {
         assert !isFixed();
-        this.sig = new Signature(parList);
+        this.sig = new Signature<>(parList);
         this.hiddenPars = hiddenPars;
-        List<CtrlPar.Var> derivedSig = new ArrayList<>();
         for (int i = 0; i < parList.size(); i++) {
             // add the LHS parameters to the root graph
             RuleNode parNode = parList.get(i)
-                .getRuleNode();
+                .getNode();
             if (this.lhs.containsNode(parNode)) {
                 this.condition.getRoot()
                     .addNode(parNode);
             }
-            String parName = "arg" + i;
-            CtrlType parType = parList.get(i)
-                .getType();
-            CtrlVar var = new CtrlVar(null, parName, parType);
-            CtrlPar.Var par;
-            boolean inOnly = parList.get(i)
-                .isInOnly();
-            boolean outOnly = parList.get(i)
-                .isOutOnly();
-            if (!inOnly && !outOnly) {
-                par = new CtrlPar.Var(var);
-            } else {
-                par = new CtrlPar.Var(var, inOnly);
-            }
-            derivedSig.add(par);
         }
-        assert new Signature(derivedSig).equals(this.sig) : String
-            .format("Declared signature %s differs from derived signature %s", parList, derivedSig);
     }
 
     /** Returns the signature of the rule. */
     @Override
-    public Signature getSignature() {
+    public Signature<RulePar> getSignature() {
         assert isFixed();
         if (this.sig == null) {
-            this.sig = new Signature();
+            this.sig = new Signature<>();
         }
         return this.sig;
     }
@@ -349,9 +328,9 @@ public class Rule implements Action, Fixable {
     private List<Binding> computeParBinding() {
         List<Binding> result = new ArrayList<>();
         List<RuleNode> creatorNodes = Arrays.asList(getCreatorNodes());
-        for (CtrlPar.Var par : getSignature()) {
+        for (RulePar par : getSignature()) {
             Binding binding;
-            RuleNode ruleNode = par.getRuleNode();
+            RuleNode ruleNode = par.getNode();
             if (par.isCreator()) {
                 // look up the node in the creator nodes
                 binding = Binding.creator(creatorNodes.indexOf(ruleNode));
@@ -530,7 +509,7 @@ public class Rule implements Action, Fixable {
         Matcher result;
         boolean simple = seedMap.getFactory()
             .isSimple();
-        Signature sig = getSignature();
+        Signature<RulePar> sig = getSignature();
         if (!sig.isEmpty()) {
             int sigSize = sig.size();
             BitSet initPars = new BitSet(sigSize);
@@ -538,7 +517,8 @@ public class Rule implements Action, Fixable {
                 // set initPars if the seed map contains a value
                 // for this parameter
                 initPars.set(i, seedMap.nodeMap()
-                    .containsKey(sig.getNode(i)));
+                    .containsKey(sig.getPar(i)
+                        .getNode()));
             }
             result = this.matcherMap.get(initPars);
             if (result == null) {
@@ -1476,7 +1456,7 @@ public class Rule implements Action, Fixable {
     private final Map<RuleNode,Color> colorMap = new HashMap<>();
 
     /** The signature of the rule. */
-    private Signature sig;
+    private Signature<RulePar> sig;
     /**
      * Set of anonymous (unnumbered) parameters.
      */

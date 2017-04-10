@@ -23,11 +23,11 @@ import java.util.Set;
 import groove.algebra.Constant;
 import groove.control.Binding;
 import groove.control.Call;
-import groove.control.CtrlPar.Var;
 import groove.control.Valuator;
 import groove.control.instance.Assignment;
 import groove.control.instance.Step;
 import groove.grammar.Rule;
+import groove.grammar.Signature.RulePar;
 import groove.grammar.host.AnchorValue;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
@@ -260,7 +260,7 @@ public class MatchCollector {
         for (Assignment assign : step.getEnterAssignments()) {
             sourceValues = assign.compute(sourceValues);
         }
-        for (Pair<Var,Binding> entry : step.getRuleSwitch()
+        for (Pair<RulePar,Binding> entry : step.getRuleSwitch()
             .getCallBinding()) {
             Binding bind = entry.two();
             HostNode value;
@@ -281,7 +281,7 @@ public class MatchCollector {
                 value = null;
             }
             RuleNode ruleNode = entry.one()
-                .getRuleNode();
+                .getNode();
             if (isCompatible(ruleNode, value)) {
                 result.putNode(ruleNode, value);
             } else {
