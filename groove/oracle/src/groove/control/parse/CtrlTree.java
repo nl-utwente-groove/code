@@ -1,5 +1,16 @@
 package groove.control.parse;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.RecognitionException;
+import org.antlr.runtime.Token;
+
 import groove.control.Call;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
@@ -16,17 +27,6 @@ import groove.grammar.QualName;
 import groove.util.antlr.ParseTree;
 import groove.util.parse.FormatError;
 import groove.util.parse.FormatException;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
-
-import org.antlr.runtime.CommonToken;
-import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.Token;
 
 /**
  * Dedicated tree node for GCL parsing.
@@ -484,7 +484,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
     static public CtrlTree parse(Namespace namespace, String term) throws FormatException {
         try {
             CtrlParser parser = createParser(namespace, term);
-            CtrlTree result = (CtrlTree) parser.program()
+            CtrlTree result = parser.program()
                 .getTree();
             namespace.getErrors()
                 .throwException();

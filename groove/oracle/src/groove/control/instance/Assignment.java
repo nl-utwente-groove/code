@@ -36,6 +36,7 @@ import groove.control.template.SwitchStack;
 import groove.grammar.Callable;
 import groove.grammar.Rule;
 import groove.grammar.Signature;
+import groove.grammar.Signature.ProcedurePar;
 import groove.grammar.host.HostNode;
 
 /**
@@ -263,8 +264,7 @@ public class Assignment {
         assert swit.getKind()
             .isProcedure();
         List<Binding> result = new ArrayList<>();
-        Signature sig = swit.getUnit()
-            .getSignature();
+        Signature<ProcedurePar> sig = ((Procedure) swit.getUnit()).getSignature();
         List<CtrlVar> callerVars = swit.getSource()
             .getVars();
         Map<CtrlVar,Integer> outVars = swit.getCall()

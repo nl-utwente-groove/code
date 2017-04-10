@@ -70,39 +70,18 @@ public class DefaultRuleNode extends ANode implements RuleNode, AnchorKey {
         }
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (!super.equals(obj)) {
-            return false;
-        }
-        DefaultRuleNode other = (DefaultRuleNode) obj;
-        return getType().equals(other.getType());
+    /** Sets the special ID of this rule node. */
+    public void setId(String id) {
+        this.id = id;
     }
 
     @Override
-    protected int computeHashCode() {
-        int result = super.computeHashCode();
-        int prime = 31;
-        result = prime * result + getType().hashCode();
-        return result;
+    public String getId() {
+        return this.id == null ? toString() : this.id;
     }
 
-    @Override
-    public boolean stronglyEquals(RuleNode other) {
-        if (this == other) {
-            return true;
-        }
-        if (!equals(other)) {
-            return false;
-        }
-        if (!getTypeGuards().equals(other.getTypeGuards())) {
-            return false;
-        }
-        if (!getMatchingTypes().equals(other.getMatchingTypes())) {
-            return false;
-        }
-        return true;
-    }
+    /** The optional special ID of this rule node. */
+    private String id;
 
     /**
      * Returns a string consisting of the letter <tt>'n'</tt>.
@@ -148,6 +127,40 @@ public class DefaultRuleNode extends ANode implements RuleNode, AnchorKey {
     @Override
     public AnchorKind getAnchorKind() {
         return AnchorKind.NODE;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) {
+            return false;
+        }
+        DefaultRuleNode other = (DefaultRuleNode) obj;
+        return getType().equals(other.getType());
+    }
+
+    @Override
+    protected int computeHashCode() {
+        int result = super.computeHashCode();
+        int prime = 31;
+        result = prime * result + getType().hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean stronglyEquals(RuleNode other) {
+        if (this == other) {
+            return true;
+        }
+        if (!equals(other)) {
+            return false;
+        }
+        if (!getTypeGuards().equals(other.getTypeGuards())) {
+            return false;
+        }
+        if (!getMatchingTypes().equals(other.getMatchingTypes())) {
+            return false;
+        }
+        return true;
     }
 
     /** Flag indicating if this node is sharply typed. */

@@ -334,7 +334,7 @@ expr_atom
 assign
   : //@S id1 (COMMA id2)* BECOMES call
     //@B Rule call of %3$s with assignment syntax for output parameters.
-    //@B The argument list of %1$s contains only non-output parameters.
+    //@B The argument list of %3$s contains only non-output parameters.
     //@B The %1$s/%2$s-list corresponds to the output parameters of the call.
     //@P variable serving as output parameter 
     //@P optional further output parameters

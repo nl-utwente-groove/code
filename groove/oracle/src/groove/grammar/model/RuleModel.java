@@ -20,10 +20,8 @@ package groove.grammar.model;
 import static groove.grammar.aspect.AspectKind.CONNECT;
 import static groove.grammar.aspect.AspectKind.EXISTS;
 import static groove.grammar.aspect.AspectKind.FORALL_POS;
-import static groove.grammar.aspect.AspectKind.PARAM_ASK;
 import static groove.grammar.aspect.AspectKind.PARAM_BI;
 import static groove.grammar.aspect.AspectKind.PARAM_IN;
-import static groove.grammar.aspect.AspectKind.PARAM_OUT;
 import static groove.grammar.aspect.AspectKind.PRODUCT;
 
 import java.awt.Color;
@@ -52,9 +50,6 @@ import groove.algebra.Constant;
 import groove.algebra.syntax.Expression;
 import groove.algebra.syntax.Variable;
 import groove.automaton.RegExpr;
-import groove.control.CtrlPar;
-import groove.control.CtrlType;
-import groove.control.CtrlVar;
 import groove.grammar.Action.Role;
 import groove.grammar.CheckPolicy;
 import groove.grammar.Condition;
@@ -63,6 +58,7 @@ import groove.grammar.EdgeEmbargo;
 import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.Rule;
+import groove.grammar.Signature.RulePar;
 import groove.grammar.aspect.Aspect;
 import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectElement;
@@ -1848,15 +1844,22 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             if (nodeAttrKind.hasSignature()) {
                 Aspect nodeAttr = node.getAttrAspect();
                 Expression term;
+                String id = node.hasId() ? node.getId()
+                    .getContentString() : null;
                 if (nodeAttr.hasContent()) {
                     term = (Constant) nodeAttr.getContent();
                 } else {
-                    term = new Variable(VariableNode.TO_STRING_PREFIX + nr,
-                        nodeAttrKind.getSignature());
+                    String varName = id == null ? VariableNode.TO_STRING_PREFIX + nr : id;
+                    term = new Variable(varName, nodeAttrKind.getSignature());
                 }
-                result = this.factory.createVariableNode(nr, term);
+                VariableNode image = this.factory.createVariableNode(nr, term);
+                if (id != null) {
+                    image.setId(id);
+                }
+                result = image;
             } else {
-                result = this.factory.createNode(nr);
+                DefaultRuleNode image = (DefaultRuleNode) this.factory.createNode(nr);
+                result = image;
             }
             return result;
         }
@@ -2523,7 +2526,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             FormatErrorSet errors = createErrors();
             this.hiddenPars = new HashSet<>();
             // Mapping from parameter position to parameter
-            Map<Integer,CtrlPar.Var> parMap = new HashMap<>();
+            Map<Integer,RulePar> parMap = new HashMap<>();
             int parCount = 0;
             // collect parameter nodes
             for (AspectNode node : getSource().nodeSet()) {
@@ -2566,49 +2569,29 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             if (!missingPars.isEmpty()) {
                 throw new FormatException("Parameters %s missing", missingPars);
             }
-            CtrlPar.Var[] sigArray = new CtrlPar.Var[parCount];
-            for (Map.Entry<Integer,CtrlPar.Var> parEntry : parMap.entrySet()) {
+            RulePar[] sigArray = new RulePar[parCount];
+            for (Map.Entry<Integer,RulePar> parEntry : parMap.entrySet()) {
                 sigArray[parEntry.getKey()] = parEntry.getValue();
             }
             this.sig = Arrays.asList(sigArray);
         }
 
-        private void processNode(Map<Integer,CtrlPar.Var> parMap, AspectNode node, Integer nr)
+        private void processNode(Map<Integer,RulePar> parMap, AspectNode node, Integer nr)
             throws FormatException {
             AspectKind nodeKind = node.getKind();
             AspectKind paramKind = node.getParamKind();
-            CtrlType varType;
-            AspectKind attrKind = node.getAttrKind();
-            if (attrKind.hasSignature()) {
-                varType = CtrlType.getType(attrKind.getSignature());
-            } else {
-                varType = CtrlType.NODE;
-            }
-            CtrlVar var = new CtrlVar(null, "arg" + nr, varType);
-            boolean inOnly = paramKind == PARAM_IN;
-            boolean outOnly = paramKind == PARAM_OUT || paramKind == PARAM_ASK;
             RuleNode nodeImage = RuleModel.this.modelMap.getNode(node);
             assert nodeImage != null;
-            boolean creator;
-            if (nodeKind.inLHS()) {
-                creator = false;
-            } else if (nodeKind.inRHS()) {
-                if (inOnly) {
-                    throw new FormatException("Creator node cannot be used as input parameter",
-                        node);
-                }
-                outOnly = true;
-                creator = true;
-            } else {
+            if (nodeKind.isCreator() && paramKind == PARAM_IN) {
+                throw new FormatException("Input parameter %d cannot be creator node", nr, node);
+            } else if (nodeKind.inNAC()) {
                 throw new FormatException("Parameter '%d' may not occur in NAC", nr, node);
             }
-            CtrlPar.Var par =
-                inOnly || outOnly ? new CtrlPar.Var(var, inOnly) : new CtrlPar.Var(var);
-            par.setRuleNode(nodeImage, creator);
-            CtrlPar.Var oldPar = parMap.put(nr, par);
+            RulePar par = new RulePar(paramKind, nodeImage, nodeKind.isCreator());
+            RulePar oldPar = parMap.put(nr, par);
             if (oldPar != null) {
                 throw new FormatException("Parameter '%d' defined more than once", nr, node,
-                    oldPar.getRuleNode());
+                    oldPar.getNode());
             }
         }
 
@@ -2618,14 +2601,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         }
 
         /** Returns the rule signature. */
-        public List<CtrlPar.Var> getSignature() {
+        public List<RulePar> getSignature() {
             return this.sig;
         }
 
         /** Set of all rule parameter nodes */
         private Set<RuleNode> hiddenPars;
         /** Signature of the rule. */
-        private List<CtrlPar.Var> sig;
+        private List<RulePar> sig;
     }
 
     /** Mapping from aspect graph elements to rule graph elements. */

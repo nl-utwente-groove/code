@@ -42,7 +42,7 @@ public interface Callable {
     }
 
     /** Returns the signature of the unit. */
-    public Signature getSignature();
+    public Signature<?> getSignature();
 
     /** Callable unit kind. */
     public static enum Kind {

@@ -167,7 +167,7 @@ public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comp
         return result;
     }
 
-    private static List<CtrlPar> createWildArgs(Signature sig) {
+    private static List<CtrlPar> createWildArgs(Signature<?> sig) {
         int count = sig.size();
         List<CtrlPar> result = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
