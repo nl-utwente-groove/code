@@ -284,13 +284,13 @@ public class Rule implements Action, Fixable {
      * @param parList the list of (visible) parameters
      * @param hiddenPars the set of hidden (i.e., unnumbered) parameter nodes
      */
-    public void setSignature(List<RulePar> parList, Set<RuleNode> hiddenPars) {
+    public void setSignature(Signature<RulePar> parList, Set<RuleNode> hiddenPars) {
         assert !isFixed();
-        this.sig = new Signature<>(parList);
+        this.sig = parList;
         this.hiddenPars = hiddenPars;
         for (int i = 0; i < parList.size(); i++) {
             // add the LHS parameters to the root graph
-            RuleNode parNode = parList.get(i)
+            RuleNode parNode = parList.getPar(i)
                 .getNode();
             if (this.lhs.containsNode(parNode)) {
                 this.condition.getRoot()

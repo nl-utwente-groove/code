@@ -58,6 +58,7 @@ import groove.grammar.EdgeEmbargo;
 import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.Rule;
+import groove.grammar.Signature;
 import groove.grammar.Signature.RulePar;
 import groove.grammar.aspect.Aspect;
 import groove.grammar.aspect.AspectEdge;
@@ -258,6 +259,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     /** Convenience method */
     public String getFormatString() {
         return GraphInfo.getFormatString(getSource());
+    }
+
+    /** Returns the signature of this rule.
+     * @throws FormatException if the model contains errors that prevent the signature
+     * from being computed
+     */
+    public Signature<RulePar> getSignature() throws FormatException {
+        return new Parameters().getSignature();
     }
 
     @Override
@@ -2601,8 +2610,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         }
 
         /** Returns the rule signature. */
-        public List<RulePar> getSignature() {
-            return this.sig;
+        public Signature<RulePar> getSignature() {
+            return new Signature<>(this.sig);
         }
 
         /** Set of all rule parameter nodes */
