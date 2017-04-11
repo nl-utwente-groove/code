@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 
 import groove.algebra.AlgebraFamily;
 import groove.control.Binding;
-import groove.grammar.Signature.RulePar;
 import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
@@ -284,7 +283,7 @@ public class Rule implements Action, Fixable {
      * @param parList the list of (visible) parameters
      * @param hiddenPars the set of hidden (i.e., unnumbered) parameter nodes
      */
-    public void setSignature(Signature<RulePar> parList, Set<RuleNode> hiddenPars) {
+    public void setSignature(Signature<UnitPar.RulePar> parList, Set<RuleNode> hiddenPars) {
         assert !isFixed();
         this.sig = parList;
         this.hiddenPars = hiddenPars;
@@ -301,7 +300,7 @@ public class Rule implements Action, Fixable {
 
     /** Returns the signature of the rule. */
     @Override
-    public Signature<RulePar> getSignature() {
+    public Signature<UnitPar.RulePar> getSignature() {
         assert isFixed();
         if (this.sig == null) {
             this.sig = new Signature<>();
@@ -328,7 +327,7 @@ public class Rule implements Action, Fixable {
     private List<Binding> computeParBinding() {
         List<Binding> result = new ArrayList<>();
         List<RuleNode> creatorNodes = Arrays.asList(getCreatorNodes());
-        for (RulePar par : getSignature()) {
+        for (UnitPar.RulePar par : getSignature()) {
             Binding binding;
             RuleNode ruleNode = par.getNode();
             if (par.isCreator()) {
@@ -509,7 +508,7 @@ public class Rule implements Action, Fixable {
         Matcher result;
         boolean simple = seedMap.getFactory()
             .isSimple();
-        Signature<RulePar> sig = getSignature();
+        Signature<UnitPar.RulePar> sig = getSignature();
         if (!sig.isEmpty()) {
             int sigSize = sig.size();
             BitSet initPars = new BitSet(sigSize);
@@ -1456,7 +1455,7 @@ public class Rule implements Action, Fixable {
     private final Map<RuleNode,Color> colorMap = new HashMap<>();
 
     /** The signature of the rule. */
-    private Signature<RulePar> sig;
+    private Signature<UnitPar.RulePar> sig;
     /**
      * Set of anonymous (unnumbered) parameters.
      */

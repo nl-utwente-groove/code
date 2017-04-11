@@ -20,7 +20,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import groove.control.Procedure;
-import groove.grammar.Signature.ProcedurePar;
 
 /**
  * Class wrapping a transaction.
@@ -30,7 +29,7 @@ import groove.grammar.Signature.ProcedurePar;
  */
 public class Recipe extends Procedure implements Action {
     /** Constructs a recipe. */
-    public Recipe(QualName fullName, int priority, Signature<ProcedurePar> signature,
+    public Recipe(QualName fullName, int priority, Signature<UnitPar.ProcedurePar> signature,
         QualName controlName, int startLine, GrammarProperties grammarProperties) {
         super(fullName, Kind.RECIPE, signature, controlName, startLine, grammarProperties);
         this.priority = priority;
