@@ -119,7 +119,13 @@ public class Signature<P extends UnitPar> implements Iterable<P> {
                 result.append(',');
             }
             if (par.isOutOnly()) {
-                result.append(CtrlPar.OUT_PREFIX);
+                result.append(OUT_PREFIX);
+                result.append(' ');
+            } else if (par.isAsk()) {
+                result.append(BI_PREFIX);
+                result.append(' ');
+            } else if (par.isBidirectional()) {
+                result.append(BI_PREFIX);
                 result.append(' ');
             }
             result.append(par.getType());
@@ -127,6 +133,13 @@ public class Signature<P extends UnitPar> implements Iterable<P> {
         result.append(')');
         return result.toString();
     }
+
+    /** Prefix used to indicate output-only parameters. */
+    public static final String OUT_PREFIX = "out";
+    /** Prefix used to indicate user-provided parameters. */
+    public static final String ASK_PREFIX = "ask";
+    /** Prefix used to indicate bidirectional parameters. */
+    public static final String BI_PREFIX = "inout";
 
     /**
      * Convenience method to construct a parameter with a given name, type and direction.
@@ -145,21 +158,31 @@ public class Signature<P extends UnitPar> implements Iterable<P> {
 
         /**
          * Indicates whether this parameter is input-only.
-         * A parameter is either input-only, output-only, or bidirectional.
+         * A parameter is either input-only, output-only, user-provided, or bidirectional.
          */
         public abstract boolean isInOnly();
 
         /**
          * Indicates whether this parameter is output-only.
-         * A parameter is either input-only, output-only, or bidirectional.
+         * A parameter is either input-only, output-only, user-provided, or bidirectional.
          */
         public abstract boolean isOutOnly();
 
+        /** Indicates that the value of this variable should be user-provided
+         * (i.e., obtained through an oracle).
+         * A parameter is either input-only, output-only, user-provided, or bidirectional.
+         */
+        public boolean isAsk() {
+            return false;
+        }
+
         /**
          * Indicates whether this parameter is bidirectional.
-         * A parameter is either input-only, output-only, or bidirectional.
+         * A parameter is either input-only, output-only, user-provided, or bidirectional.
          */
-        public abstract boolean isBidirectional();
+        public boolean isBidirectional() {
+            return false;
+        }
 
         /**
          * Tests whether this variable parameter,
@@ -177,7 +200,7 @@ public class Signature<P extends UnitPar> implements Iterable<P> {
             if (isInOnly()) {
                 return arg.isInOnly();
             }
-            if (isOutOnly()) {
+            if (isOutOnly() || isAsk()) {
                 return !arg.isInOnly();
             }
             assert isBidirectional();
@@ -246,15 +269,6 @@ public class Signature<P extends UnitPar> implements Iterable<P> {
         @Override
         public boolean isOutOnly() {
             return this.isOut;
-        }
-
-        /**
-         * Indicates whether this parameter is bidirectional.
-         * A parameter is either input-only, output-only, or bidirectional.
-         */
-        @Override
-        public boolean isBidirectional() {
-            return false;
         }
 
         @Override
@@ -335,7 +349,7 @@ public class Signature<P extends UnitPar> implements Iterable<P> {
             return isCreator() && getKind() == PARAM_BI || getKind() == PARAM_OUT;
         }
 
-        /** Indicates that the value of this variable should be obtained through an oracle. */
+        @Override
         public boolean isAsk() {
             return getKind() == PARAM_ASK;
         }

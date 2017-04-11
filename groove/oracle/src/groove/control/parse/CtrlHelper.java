@@ -511,8 +511,8 @@ public class CtrlHelper {
                 int argCount = 0, targetCount = 0;
                 for (UnitPar par : unit.getSignature()) {
                     CtrlPar arg;
-                    if (par.isOutOnly()) {
-                        // output-only parameters must be assignment targets
+                    if (par.isOutOnly() || par.isAsk()) {
+                        // output-only and user-provided parameters must be assignment targets
                         arg = targets.get(targetCount);
                         targetCount++;
                     } else if (args == null) {

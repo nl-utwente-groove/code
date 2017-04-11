@@ -25,6 +25,7 @@ import static groove.grammar.aspect.AspectKind.EDGE;
 import static groove.grammar.aspect.AspectKind.EMBARGO;
 import static groove.grammar.aspect.AspectKind.ID;
 import static groove.grammar.aspect.AspectKind.IMPORT;
+import static groove.grammar.aspect.AspectKind.PARAM_ASK;
 import static groove.grammar.aspect.AspectKind.PRODUCT;
 import static groove.grammar.aspect.AspectKind.READER;
 
@@ -228,6 +229,9 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
                 // rule nodes that are not explicitly typed must be readers
                 if (!hasAspect()) {
                     setAspect(READER.getAspect());
+                }
+                if (getParamKind() == PARAM_ASK && !getAttrKind().hasSignature()) {
+                    throw new FormatException("User-provided parameters must be data values");
                 }
                 if (hasAttrAspect() && getKind() != READER && getKind() != EMBARGO) {
                     throw new FormatException("Conflicting aspects %s and %s", getAttrAspect(),

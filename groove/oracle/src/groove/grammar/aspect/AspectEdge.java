@@ -25,6 +25,7 @@ import static groove.grammar.aspect.AspectKind.ERASER;
 import static groove.grammar.aspect.AspectKind.LET;
 import static groove.grammar.aspect.AspectKind.LITERAL;
 import static groove.grammar.aspect.AspectKind.NESTED;
+import static groove.grammar.aspect.AspectKind.PARAM_ASK;
 import static groove.grammar.aspect.AspectKind.PATH;
 import static groove.grammar.aspect.AspectKind.READER;
 import static groove.grammar.aspect.AspectKind.REMARK;
@@ -204,6 +205,12 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
             } else if (hasAttrAspect() && getKind() != READER && getKind() != EMBARGO) {
                 throw new FormatException("Conflicting aspects %s and %s", getAttrAspect(),
                     getAspect());
+            }
+            if (source().getParamKind() == PARAM_ASK || target().getParamKind() == PARAM_ASK) {
+                if (getKind().isCreator()) {
+                    throw new FormatException(
+                        "User-provided parameters may only be used for new attributes");
+                }
             }
         } else if (getKind().isRole()) {
             throw new FormatException("Edge aspect %s only allowed in rules", getAspect(), this);

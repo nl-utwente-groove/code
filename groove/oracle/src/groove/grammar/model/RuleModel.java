@@ -20,6 +20,7 @@ package groove.grammar.model;
 import static groove.grammar.aspect.AspectKind.CONNECT;
 import static groove.grammar.aspect.AspectKind.EXISTS;
 import static groove.grammar.aspect.AspectKind.FORALL_POS;
+import static groove.grammar.aspect.AspectKind.PARAM_ASK;
 import static groove.grammar.aspect.AspectKind.PARAM_BI;
 import static groove.grammar.aspect.AspectKind.PARAM_IN;
 import static groove.grammar.aspect.AspectKind.PRODUCT;
@@ -1379,7 +1380,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             AspectKind nodeKind = modelNode.getKind();
             this.isRule |= nodeKind.inLHS() != nodeKind.inRHS();
             RuleNode ruleNode = getNodeImage(modelNode);
-            if (nodeKind.inLHS()) {
+            boolean isAskNode = modelNode.getParamKind() == PARAM_ASK;
+            if (nodeKind.inLHS() && !isAskNode) {
                 this.lhs.addNode(ruleNode);
                 if (nodeKind.inRHS()) {
                     this.rhs.addNode(ruleNode);
@@ -1393,7 +1395,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 if (nodeKind.inRHS()) {
                     // creator node
                     this.rhs.addNode(ruleNode);
-                    if (isRhsAsNac()) {
+                    if (isRhsAsNac() && !isAskNode) {
                         this.nacNodeSet.add(ruleNode);
                     }
                 }
@@ -2582,9 +2584,13 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             AspectKind paramKind = node.getParamKind();
             RuleNode nodeImage = RuleModel.this.modelMap.getNode(node);
             assert nodeImage != null;
-            if (nodeKind.isCreator() && paramKind == PARAM_IN) {
+            if (paramKind == PARAM_IN && nodeKind.isCreator()) {
                 throw new FormatException("Input parameter %d cannot be creator node", nr, node);
-            } else if (nodeKind.inNAC()) {
+            }
+            if (paramKind == PARAM_ASK && !nodeKind.isCreator()) {
+                throw new FormatException("User-provided parameter %d may not occur in LHS");
+            }
+            if (nodeKind.inNAC()) {
                 throw new FormatException("Parameter '%d' may not occur in NAC", nr, node);
             }
             RulePar par = new RulePar(paramKind, nodeImage, nodeKind.isCreator());
