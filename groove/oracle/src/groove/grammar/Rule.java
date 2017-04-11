@@ -724,7 +724,7 @@ public class Rule implements Action, Fixable {
 
     @Override
     public boolean isFixed() {
-        return this.fixed;
+        return this.fixing || this.fixed;
     }
 
     /**

@@ -660,7 +660,6 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
 
     /** Returns the parameter kind of this node, if any. */
     public AspectKind getParamKind() {
-        assert hasParam();
         return hasParam() ? getParam().getKind() : DEFAULT;
     }
 
