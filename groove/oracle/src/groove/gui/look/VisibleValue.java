@@ -125,7 +125,7 @@ public class VisibleValue implements VisualValue<Boolean> {
         Aspect attr = node.getAttrAspect();
         // explicit product nodes should be visible
         if (attr == null || !attr.getKind()
-            .hasSignature()) {
+            .hasSort()) {
             return true;
         }
         // in addition, value nodes or data type nodes may be filtered

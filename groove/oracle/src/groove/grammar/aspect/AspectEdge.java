@@ -132,7 +132,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         if (this.isPredicate() || isAssign()) {
             // We just want the edge role to be non-binary...
             return EdgeRole.FLAG;
-        } else if (getGraphRole() == GraphRole.TYPE && getAttrKind().hasSignature()) {
+        } else if (getGraphRole() == GraphRole.TYPE && getAttrKind().hasSort()) {
             return EdgeRole.FLAG;
         } else {
             Label label = getGraphRole() == RULE ? getRuleLabel() : getTypeLabel();
@@ -207,7 +207,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
                     getAspect());
             }
             if (source().getParamKind() == PARAM_ASK || target().getParamKind() == PARAM_ASK) {
-                if (getKind().isCreator()) {
+                if (!getKind().isCreator()) {
                     throw new FormatException(
                         "User-provided parameters may only be used for new attributes");
                 }
@@ -513,15 +513,15 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
                     // this is a primitive type field declaration modelled through an
                     // edge to the target type
                     type = target().getAttrKind()
-                        .getSignature();
+                        .getSort();
                     break;
                 default:
                     throw Exceptions.UNREACHABLE;
                 }
-            } else if (getAttrKind().hasSignature()) {
+            } else if (getAttrKind().hasSort()) {
                 // this is a primitive type field declaration
                 // modelled through a self-edge
-                type = getAttrKind().getSignature();
+                type = getAttrKind().getSort();
             }
             if (type != null) {
                 result = result.append(TYPE_TEXT);
@@ -607,7 +607,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
     private TypeLabel createTypeLabel() throws FormatException {
         TypeLabel result;
         if (getKind() == REMARK || isAssign() || isPredicate()
-            || getGraphRole() == GraphRole.TYPE && getAttrKind().hasSignature()) {
+            || getGraphRole() == GraphRole.TYPE && getAttrKind().hasSort()) {
             result = null;
         } else if (!getKind().isRole() && getLabelKind() != PATH) {
             if (getLabelKind() == LITERAL) {
@@ -736,9 +736,9 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         if (type.getKind() == ARGUMENT) {
             this.attr = type;
             this.argumentNr = (Integer) this.attr.getContent();
-        } else if (kind.hasSignature()) {
+        } else if (kind.hasSort()) {
             this.attr = type;
-            this.signature = kind.getSignature();
+            this.signature = kind.getSort();
             if (getGraphRole() == RULE) {
                 this.operator = (Operator) type.getContent();
             }

@@ -158,7 +158,7 @@ public class Aspect {
     public boolean isForEdge(GraphRole role) {
         boolean result = AspectKind.allowedEdgeKinds.get(role)
             .contains(getKind());
-        if (result && getKind().hasSignature()) {
+        if (result && getKind().hasSort()) {
             result = !(getContent() instanceof Constant);
         }
         return result;
@@ -168,7 +168,7 @@ public class Aspect {
     public boolean isForNode(GraphRole role) {
         boolean result = AspectKind.allowedNodeKinds.get(role)
             .contains(getKind());
-        if (result && getKind().hasSignature()) {
+        if (result && getKind().hasSort()) {
             switch (role) {
             case TYPE:
                 result = !hasContent();

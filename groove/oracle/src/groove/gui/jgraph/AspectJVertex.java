@@ -135,7 +135,7 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
             return null;
         } else if (getNode().hasAttrAspect()) {
             AspectKind attrKind = getNode().getAttrKind();
-            if (attrKind.hasSignature()) {
+            if (attrKind.hasSort()) {
                 // this is a constant or variable node
                 Object content = getNode().getAttrAspect()
                     .getContent();
@@ -173,7 +173,7 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
             HTMLConverter.EMBARGO_TAG.on(result);
         } else {
             if (getNode().getAttrKind()
-                .hasSignature()) {
+                .hasSort()) {
                 if (getNode().getAttrAspect()
                     .hasContent()) {
                     result.append("Constant node");

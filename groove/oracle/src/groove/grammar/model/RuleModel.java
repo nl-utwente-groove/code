@@ -1843,7 +1843,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             }
             AspectKind nodeAttrKind = node.getAttrKind();
             int nr = node.getNumber();
-            if (nodeAttrKind.hasSignature()) {
+            if (nodeAttrKind.hasSort()) {
                 Aspect nodeAttr = node.getAttrAspect();
                 Expression term;
                 String id = node.hasId() ? node.getId()
@@ -1852,7 +1852,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                     term = (Constant) nodeAttr.getContent();
                 } else {
                     String varName = id == null ? VariableNode.TO_STRING_PREFIX + nr : id;
-                    term = new Variable(varName, nodeAttrKind.getSignature());
+                    term = new Variable(varName, nodeAttrKind.getSort());
                 }
                 VariableNode image = this.factory.createVariableNode(nr, term);
                 if (id != null) {
@@ -2586,9 +2586,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             assert nodeImage != null;
             if (paramKind == PARAM_IN && nodeKind.isCreator()) {
                 throw new FormatException("Input parameter %d cannot be creator node", nr, node);
-            }
-            if (paramKind == PARAM_ASK && !nodeKind.isCreator()) {
-                throw new FormatException("User-provided parameter %d may not occur in LHS");
             }
             if (nodeKind.inNAC()) {
                 throw new FormatException("Parameter '%d' may not occur in NAC", nr, node);
