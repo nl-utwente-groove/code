@@ -37,7 +37,6 @@ import groove.grammar.QualName;
 import groove.grammar.Rule;
 import groove.grammar.Signature;
 import groove.grammar.UnitPar;
-import groove.grammar.UnitPar.ProcedurePar;
 import groove.util.Groove;
 import junit.framework.Assert;
 
