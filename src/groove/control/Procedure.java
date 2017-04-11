@@ -26,7 +26,7 @@ import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.grammar.Signature;
-import groove.grammar.Signature.ProcedurePar;
+import groove.grammar.UnitPar;
 import groove.util.Fixable;
 import groove.util.Groove;
 
@@ -47,7 +47,7 @@ public abstract class Procedure implements Callable, Fixable {
      * which the unit declaration starts
      * @param grammarProperties grammar properties for this procedure
      */
-    protected Procedure(QualName fullName, Kind kind, Signature<ProcedurePar> signature,
+    protected Procedure(QualName fullName, Kind kind, Signature<UnitPar.ProcedurePar> signature,
         QualName controlName, int startLine, GrammarProperties grammarProperties) {
         this.fullName = fullName;
         this.signature = signature;
@@ -65,11 +65,11 @@ public abstract class Procedure implements Callable, Fixable {
     private final QualName fullName;
 
     @Override
-    public Signature<ProcedurePar> getSignature() {
+    public Signature<UnitPar.ProcedurePar> getSignature() {
         return this.signature;
     }
 
-    private final Signature<ProcedurePar> signature;
+    private final Signature<UnitPar.ProcedurePar> signature;
 
     /** Returns the full name of the control program in which this procedure is declared. */
     public QualName getControlName() {
@@ -162,7 +162,7 @@ public abstract class Procedure implements Callable, Fixable {
         this.inParMap = new LinkedHashMap<>();
         this.outParMap = new LinkedHashMap<>();
         for (int i = 0; i < getSignature().size(); i++) {
-            ProcedurePar par = getSignature().getPar(i);
+            UnitPar.ProcedurePar par = getSignature().getPar(i);
             if (par.isInOnly()) {
                 this.inParMap.put(par.getVar(), i);
             } else {
@@ -225,7 +225,7 @@ public abstract class Procedure implements Callable, Fixable {
      * @param grammarProperties grammar properties for the new procedure
      */
     public static Procedure newInstance(QualName fullName, Kind kind, int priority,
-        Signature<ProcedurePar> signature, QualName controlName, int startLine,
+        Signature<UnitPar.ProcedurePar> signature, QualName controlName, int startLine,
         GrammarProperties grammarProperties) {
         assert kind.isProcedure();
         Procedure result;

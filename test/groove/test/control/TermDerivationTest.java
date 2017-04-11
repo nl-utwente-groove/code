@@ -36,7 +36,8 @@ import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.Rule;
 import groove.grammar.Signature;
-import groove.grammar.Signature.ProcedurePar;
+import groove.grammar.UnitPar;
+import groove.grammar.UnitPar.ProcedurePar;
 import groove.util.Groove;
 import junit.framework.Assert;
 
@@ -391,7 +392,7 @@ public class TermDerivationTest {
     /** Constructs a function with a given name and body, and an empty signature. */
     private Function function(String name, Term body) {
         QualName fullName = QualName.name(name);
-        Signature<ProcedurePar> sig = new Signature<ProcedurePar>();
+        Signature<UnitPar.ProcedurePar> sig = new Signature<UnitPar.ProcedurePar>();
         QualName controlName = QualName.name("control");
         GrammarProperties properties = this.grammar.getProperties();
         Function result = new Function(fullName, sig, controlName, 0, properties);

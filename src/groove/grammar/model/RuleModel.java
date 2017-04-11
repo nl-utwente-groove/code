@@ -59,7 +59,7 @@ import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.Rule;
 import groove.grammar.Signature;
-import groove.grammar.Signature.RulePar;
+import groove.grammar.UnitPar;
 import groove.grammar.aspect.Aspect;
 import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectElement;
@@ -265,7 +265,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
      * @throws FormatException if the model contains errors that prevent the signature
      * from being computed
      */
-    public Signature<RulePar> getSignature() throws FormatException {
+    public Signature<UnitPar.RulePar> getSignature() throws FormatException {
         return new Parameters().getSignature();
     }
 
@@ -2535,7 +2535,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             FormatErrorSet errors = createErrors();
             this.hiddenPars = new HashSet<>();
             // Mapping from parameter position to parameter
-            Map<Integer,RulePar> parMap = new HashMap<>();
+            Map<Integer,UnitPar.RulePar> parMap = new HashMap<>();
             int parCount = 0;
             // collect parameter nodes
             for (AspectNode node : getSource().nodeSet()) {
@@ -2578,14 +2578,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             if (!missingPars.isEmpty()) {
                 throw new FormatException("Parameters %s missing", missingPars);
             }
-            RulePar[] sigArray = new RulePar[parCount];
-            for (Map.Entry<Integer,RulePar> parEntry : parMap.entrySet()) {
+            UnitPar.RulePar[] sigArray = new UnitPar.RulePar[parCount];
+            for (Map.Entry<Integer,UnitPar.RulePar> parEntry : parMap.entrySet()) {
                 sigArray[parEntry.getKey()] = parEntry.getValue();
             }
             this.sig = Arrays.asList(sigArray);
         }
 
-        private void processNode(Map<Integer,RulePar> parMap, AspectNode node, Integer nr)
+        private void processNode(Map<Integer,UnitPar.RulePar> parMap, AspectNode node, Integer nr)
             throws FormatException {
             AspectKind nodeKind = node.getKind();
             AspectKind paramKind = node.getParamKind();
@@ -2596,8 +2596,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             } else if (nodeKind.inNAC()) {
                 throw new FormatException("Parameter '%d' may not occur in NAC", nr, node);
             }
-            RulePar par = new RulePar(paramKind, nodeImage, nodeKind.isCreator());
-            RulePar oldPar = parMap.put(nr, par);
+            UnitPar.RulePar par = new UnitPar.RulePar(paramKind, nodeImage, nodeKind.isCreator());
+            UnitPar.RulePar oldPar = parMap.put(nr, par);
             if (oldPar != null) {
                 throw new FormatException("Parameter '%d' defined more than once", nr, node,
                     oldPar.getNode());
@@ -2610,14 +2610,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         }
 
         /** Returns the rule signature. */
-        public Signature<RulePar> getSignature() {
+        public Signature<UnitPar.RulePar> getSignature() {
             return new Signature<>(this.sig);
         }
 
         /** Set of all rule parameter nodes */
         private Set<RuleNode> hiddenPars;
         /** Signature of the rule. */
-        private List<RulePar> sig;
+        private List<UnitPar.RulePar> sig;
     }
 
     /** Mapping from aspect graph elements to rule graph elements. */

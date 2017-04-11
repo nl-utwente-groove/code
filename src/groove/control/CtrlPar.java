@@ -23,6 +23,7 @@ import java.util.Map;
 
 import groove.algebra.Algebra;
 import groove.grammar.QualName;
+import groove.grammar.UnitPar.Direction;
 import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.ValueNode;
@@ -75,7 +76,7 @@ public abstract class CtrlPar {
     /** String representation of a don't care parameter. */
     public static final String DONT_CARE = "_";
     /** Prefix used to indicate output parameters. */
-    public static final String OUT_PREFIX = "out";
+    public static final String OUT_PREFIX = Direction.OUT.getPrefix();
 
     /**
      * Convenience method to construct a parameter with a given name, type and direction.
