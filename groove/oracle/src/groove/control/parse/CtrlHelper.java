@@ -46,8 +46,7 @@ import groove.grammar.CheckPolicy;
 import groove.grammar.ModuleName;
 import groove.grammar.QualName;
 import groove.grammar.Signature;
-import groove.grammar.Signature.ProcedurePar;
-import groove.grammar.Signature.UnitPar;
+import groove.grammar.UnitPar;
 import groove.util.parse.FormatException;
 import groove.util.parse.StringHandler;
 
@@ -281,7 +280,7 @@ public class CtrlHelper {
         } else {
             int priority = unitTree.getChildCount() == 3 ? 0 : Integer.parseInt(unitTree.getChild(2)
                 .getText());
-            Signature<ProcedurePar> parList = getPars(qualName, unitTree.getChild(1));
+            Signature<UnitPar.ProcedurePar> parList = getPars(qualName, unitTree.getChild(1));
             QualName controlName = this.namespace.getControlName();
             Kind kind = toProcKind(unitTree);
             this.namespace.addProcedure(Procedure.newInstance(qualName,
@@ -306,9 +305,9 @@ public class CtrlHelper {
     /**
      * Extracts the parameter declarations of a function or recipe.
      */
-    private Signature<ProcedurePar> getPars(QualName procName, CtrlTree parListTree) {
+    private Signature<UnitPar.ProcedurePar> getPars(QualName procName, CtrlTree parListTree) {
         assert parListTree.getType() == CtrlChecker.PARS;
-        List<ProcedurePar> result = new ArrayList<>();
+        List<UnitPar.ProcedurePar> result = new ArrayList<>();
         if (!this.namespace.hasErrors()) {
             for (int i = 0; i < parListTree.getChildCount(); i++) {
                 CtrlTree parTree = parListTree.getChild(i);
@@ -317,7 +316,7 @@ public class CtrlHelper {
                 CtrlType type = typeTree.getCtrlType();
                 String name = parTree.getChild(out ? 2 : 1)
                     .getText();
-                result.add(Signature.par(procName, name, type, out));
+                result.add(UnitPar.par(procName, name, type, out));
             }
         }
         return new Signature<>(result);

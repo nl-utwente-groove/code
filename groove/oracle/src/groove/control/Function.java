@@ -19,7 +19,7 @@ package groove.control;
 import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.Signature;
-import groove.grammar.Signature.ProcedurePar;
+import groove.grammar.UnitPar;
 import groove.util.Fixable;
 
 /**
@@ -31,8 +31,8 @@ public class Function extends Procedure implements Fixable {
     /**
      * Constructs a function with the given parameters.
      */
-    public Function(QualName fullName, Signature<ProcedurePar> signature, QualName controlName,
-        int startLine, GrammarProperties grammarProperties) {
+    public Function(QualName fullName, Signature<UnitPar.ProcedurePar> signature,
+        QualName controlName, int startLine, GrammarProperties grammarProperties) {
         super(fullName, Kind.FUNCTION, signature, controlName, startLine, grammarProperties);
     }
 }

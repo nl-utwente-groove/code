@@ -27,7 +27,7 @@ import groove.grammar.Callable;
 import groove.grammar.QualName;
 import groove.grammar.Rule;
 import groove.grammar.Signature;
-import groove.grammar.Signature.RulePar;
+import groove.grammar.UnitPar;
 import groove.util.Pair;
 
 /**
@@ -128,7 +128,7 @@ public class Switch implements Comparable<Switch>, Relocatable {
      * bindings to source location variables and constant values.
      * This is only valid for rule calls.
      */
-    public List<Pair<RulePar,Binding>> getCallBinding() {
+    public List<Pair<UnitPar.RulePar,Binding>> getCallBinding() {
         assert getKind() == Callable.Kind.RULE;
         if (this.callBinding == null) {
             this.callBinding = computeCallBinding();
@@ -137,7 +137,7 @@ public class Switch implements Comparable<Switch>, Relocatable {
     }
 
     /** Binding of in-parameter positions to source variables and constant arguments. */
-    private List<Pair<RulePar,Binding>> callBinding;
+    private List<Pair<UnitPar.RulePar,Binding>> callBinding;
 
     /**
      * Computes the binding of formal call parameters to source location
@@ -145,10 +145,10 @@ public class Switch implements Comparable<Switch>, Relocatable {
      * @return a list of pairs of call parameter variables and bindings.
      * The binding is {@code null} for a non-input-parameter.
      */
-    private List<Pair<RulePar,Binding>> computeCallBinding() {
-        List<Pair<RulePar,Binding>> result = new LinkedList<>();
+    private List<Pair<UnitPar.RulePar,Binding>> computeCallBinding() {
+        List<Pair<UnitPar.RulePar,Binding>> result = new LinkedList<>();
         List<? extends CtrlPar> args = getArgs();
-        Signature<RulePar> sig = ((Rule) getUnit()).getSignature();
+        Signature<UnitPar.RulePar> sig = ((Rule) getUnit()).getSignature();
         int size = args == null ? 0 : args.size();
         List<CtrlVar> sourceVars = getSource().getVars();
         for (int i = 0; i < size; i++) {
