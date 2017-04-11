@@ -26,6 +26,7 @@ import javax.swing.Icon;
 import groove.grammar.Action.Role;
 import groove.grammar.CheckPolicy;
 import groove.grammar.QualName;
+import groove.grammar.Signature;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.RuleModel;
 import groove.graph.GraphInfo;
@@ -36,6 +37,7 @@ import groove.gui.display.ResourceDisplay;
 import groove.io.HTMLConverter;
 import groove.util.Exceptions;
 import groove.util.Groove;
+import groove.util.parse.FormatException;
 
 /**
  * Rule nodes (= level 1 nodes) of the directory
@@ -189,7 +191,16 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
             showEnabled = isProperty() || !isPartial() || (getParent() instanceof RecipeTreeNode)
                 || (getParent() instanceof StateTree.StateTreeNode);
         }
-        String suffix = getRule().isProperty() ? roleSuffixMap.get(getRule().getRole())
+        String suffix = "";
+        try {
+            Signature<?> sig = getRule().getSignature();
+            if (!sig.isEmpty()) {
+                suffix = sig.toString();
+            }
+        } catch (FormatException exc) {
+            // don't add a suffix string
+        }
+        suffix += getRule().isProperty() ? roleSuffixMap.get(getRule().getRole())
             : isRecipeChild() ? INGREDIENT_SUFFIX : RULE_SUFFIX;
         return getDisplay().getLabelText(getQualName(), suffix, showEnabled);
     }
