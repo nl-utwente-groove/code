@@ -24,8 +24,14 @@ import groove.util.Exceptions;
 
 /** Interface to provide values for unbound variable nodes during matching. */
 public interface ValueOracle {
-    /** Returns a range of possible values for a given variable node. */
-    Iterable<Constant> getValues(Condition condition, VariableNode var);
+    /** Returns a series of possible values for a given variable node. */
+    public Iterable<Constant> getValues(Condition condition, VariableNode var);
+
+    /** Returns a single value for a given variable node. */
+    default public Constant getValue(Condition condition, VariableNode var) {
+        return getValues(condition, var).iterator()
+            .next();
+    }
 
     /** Returns the kind of this oracle. */
     public Kind getKind();

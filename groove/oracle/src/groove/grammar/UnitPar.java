@@ -125,22 +125,6 @@ public abstract class UnitPar {
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj instanceof CtrlVar) {
-                return this.var.equals(obj);
-            }
-            if (!(obj instanceof Var)) {
-                return false;
-            }
-            Var other = (Var) obj;
-            return isOutOnly() == other.isOutOnly() && isInOnly() == other.isInOnly()
-                && getVar().equals(other.getVar());
-        }
-
-        @Override
         public CtrlType getType() {
             return getVar().getType();
         }
@@ -155,6 +139,22 @@ public abstract class UnitPar {
             int result = isInOnly() ? 0 : isOutOnly() ? 1 : 2;
             result = result * 31 + getVar().hashCode();
             return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj instanceof CtrlVar) {
+                return this.var.equals(obj);
+            }
+            if (!(obj instanceof Var)) {
+                return false;
+            }
+            Var other = (Var) obj;
+            return isOutOnly() == other.isOutOnly() && isInOnly() == other.isInOnly()
+                && getVar().equals(other.getVar());
         }
 
         @Override
@@ -176,23 +176,11 @@ public abstract class UnitPar {
          * @param node the associated rule node
          */
         public RulePar(AspectKind kind, RuleNode node, boolean creator) {
-            super(toDirection(kind));
+            super(creator ? Direction.OUT : toDirection(kind));
             assert kind.isParam();
             this.kind = kind;
             this.ruleNode = node;
             this.creator = creator;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (!(obj instanceof RulePar)) {
-                return false;
-            }
-            RulePar other = (RulePar) obj;
-            return getKind().equals(other.getKind()) && getNode().equals(other.getNode());
         }
 
         /**
@@ -205,13 +193,6 @@ public abstract class UnitPar {
             } else {
                 return CtrlType.NODE;
             }
-        }
-
-        @Override
-        public int hashCode() {
-            int result = getKind().hashCode();
-            result = result * 31 + getNode().hashCode();
-            return result;
         }
 
         /** Returns the directionality of this parameter.
@@ -245,6 +226,32 @@ public abstract class UnitPar {
         private final RuleNode ruleNode;
         /** Flag indicating if this is a rule parameter referring to a creator node. */
         private final boolean creator;
+
+        @Override
+        public int hashCode() {
+            int result = getDirection().hashCode();
+            result = result * 31 + getNode().hashCode();
+            result = result * 31 + (isCreator() ? 0xFF : 0);
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof RulePar)) {
+                return false;
+            }
+            RulePar other = (RulePar) obj;
+            if (!getDirection().equals(other.getDirection())) {
+                return false;
+            }
+            if (!getNode().equals(other.getNode())) {
+                return false;
+            }
+            return isCreator() == other.isCreator();
+        }
     }
 
     /** The value-passing direction of a parameter. */

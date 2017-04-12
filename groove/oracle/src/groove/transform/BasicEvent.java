@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import groove.algebra.Algebra;
+import groove.algebra.Constant;
 import groove.grammar.AnchorKind;
 import groove.grammar.Rule;
 import groove.grammar.host.AnchorValue;
@@ -35,15 +37,18 @@ import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.HostNodeSet;
+import groove.grammar.host.ValueNode;
 import groove.grammar.rule.Anchor;
 import groove.grammar.rule.AnchorKey;
 import groove.grammar.rule.LabelVar;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.RuleToHostMap;
+import groove.grammar.rule.VariableNode;
 import groove.grammar.type.TypeNode;
 import groove.graph.plain.PlainNode;
 import groove.match.TreeMatch;
+import groove.match.ValueOracle;
 import groove.transform.RuleEffect.Fragment;
 import groove.util.Groove;
 import groove.util.cache.CacheReference;
@@ -522,7 +527,11 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
                         .get(0)
                         .getVar());
                 }
-                result[i] = createNode(i, type, sourceNodes, current);
+                if (type.isDataType()) {
+                    result[i] = createValueNode((VariableNode) creatorNodes[i]);
+                } else {
+                    result[i] = createNode(i, type, sourceNodes, current);
+                }
             }
             // normalise the result to a previously stored instance
             if (getReuse() != NONE) {
@@ -530,6 +539,19 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
             }
         }
         return result;
+    }
+
+    /**
+     * Creates a value node by querying the oracle.
+     */
+    private ValueNode createValueNode(VariableNode var) {
+        ValueOracle oracle = getAction().getGrammarProperties()
+            .getValueOracle();
+        Constant c = oracle.getValue(getAction().getCondition(), var);
+        Algebra<?> alg = getAction().getGrammarProperties()
+            .getAlgebraFamily()
+            .getAlgebra(c.getSort());
+        return getHostFactory().createNode(alg, alg.toValueFromConstant(c));
     }
 
     /**

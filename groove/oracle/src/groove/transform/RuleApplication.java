@@ -16,6 +16,11 @@
  */
 package groove.transform;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import groove.grammar.Rule;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostEdgeSet;
@@ -31,11 +36,6 @@ import groove.match.TreeMatch;
 import groove.util.Property;
 import groove.util.Visitor;
 import groove.util.Visitor.Finder;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Class representing a particular application of a {@link groove.grammar.Rule} and a
@@ -248,7 +248,7 @@ public class RuleApplication implements DeltaApplier {
             }
         }
         for (HostEdge edge : sourceEdges) {
-            if (!getEffect().isErasedEdge(edge)) {
+            if (!record.isErasedEdge(edge)) {
                 HostEdge edgeImage = mergeMap == null ? edge : mergeMap.mapEdge(edge);
                 if (edgeImage != null && getTarget().containsEdge(edgeImage)) {
                     result.putEdge(edge, edgeImage);
@@ -273,17 +273,19 @@ public class RuleApplication implements DeltaApplier {
     private HostGraphMorphism morphism;
 
     private RuleEffect getEffect() {
-        if (this.effect == null) {
+        RuleEffect result = this.effect;
+        if (result == null) {
             // use the predefined created nodes, if available
             if (getAddedNodes() == null) {
-                this.effect = new RuleEffect(getSource());
+                result = new RuleEffect(getSource());
             } else {
-                this.effect = new RuleEffect(getSource(), getAddedNodes());
+                result = new RuleEffect(getSource(), getAddedNodes());
             }
-            getEvent().recordEffect(this.effect);
-            this.effect.setFixed();
+            getEvent().recordEffect(result);
+            result.setFixed();
+            this.effect = result;
         }
-        return this.effect;
+        return result;
     }
 
     /** The application record. */
@@ -532,7 +534,8 @@ public class RuleApplication implements DeltaApplier {
     }
 
     /** Adds a key/value pair to a relational map. */
-    private void addToComatch(Map<RuleNode,HostNodeSet> result, RuleNode ruleNode, HostNode hostNode) {
+    private void addToComatch(Map<RuleNode,HostNodeSet> result, RuleNode ruleNode,
+        HostNode hostNode) {
         assert hostNode != null;
         HostNodeSet image = result.get(ruleNode);
         if (image == null) {
