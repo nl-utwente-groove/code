@@ -72,7 +72,6 @@ public class DefaultAnchorFactory implements AnchorFactory {
             result.add(eraserEdge);
             result.addAll(eraserEdge.getVars());
         }
-        result.addAll(Arrays.asList(rule.getEraserEdges()));
         // add all non-creator parameters explicitly, as they need to be in the anchors
         // to ensure they are correctly bound
         if (rule.isTop()) {
@@ -82,7 +81,7 @@ public class DefaultAnchorFactory implements AnchorFactory {
             }
             rule.getSignature()
                 .stream()
-                .filter(v -> !v.isCreator())
+                .filter(v -> !v.isCreator() && !v.isAsk())
                 .map(v -> v.getNode())
                 .forEach(n -> result.add(n));
         }

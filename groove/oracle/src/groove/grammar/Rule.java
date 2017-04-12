@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import groove.algebra.AlgebraFamily;
 import groove.control.Binding;
+import groove.grammar.UnitPar.RulePar;
 import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
@@ -327,10 +328,10 @@ public class Rule implements Action, Fixable {
     private List<Binding> computeParBinding() {
         List<Binding> result = new ArrayList<>();
         List<RuleNode> creatorNodes = Arrays.asList(getCreatorNodes());
-        for (UnitPar.RulePar par : getSignature()) {
+        for (RulePar par : getSignature()) {
             Binding binding;
             RuleNode ruleNode = par.getNode();
-            if (par.isCreator()) {
+            if (par.isCreator() || par.isAsk()) {
                 // look up the node in the creator nodes
                 binding = Binding.creator(creatorNodes.indexOf(ruleNode));
             } else {
