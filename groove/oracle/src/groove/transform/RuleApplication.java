@@ -64,15 +64,15 @@ public class RuleApplication implements DeltaApplier {
      * graph and rule factory.
      * @param event the production rule instance involved
      * @param source the host graph to which the rule is to be applied
-     * @param coanchorImage the created nodes, in the order of the rule's
+     * @param addedNodes the created nodes, in the order of the rule's
      *        coanchor. If <code>null</code>, the coanchor image has to be
      *        computed from the source graph.
      */
-    public RuleApplication(final RuleEvent event, HostGraph source, HostNode[] coanchorImage) {
+    public RuleApplication(final RuleEvent event, HostGraph source, HostNode[] addedNodes) {
         this.event = event;
         this.rule = event.getRule();
         this.source = source;
-        this.addedNodes = coanchorImage;
+        this.addedNodes = addedNodes;
         assert testEvent(event, source) : String.format("Event error for %s applied to %s",
             event,
             source);
@@ -83,13 +83,13 @@ public class RuleApplication implements DeltaApplier {
      * graph and target graph, and created nodes.
      * @param event the production rule instance involved
      * @param source the host graph to which the rule is to be applied
-     * @param coanchorImage the created nodes, in the order of the rule's
+     * @param addedNodes the created nodes, in the order of the rule's
      *        coanchor. If <code>null</code>, the coanchor image has to be
      *        computed from the source graph.
      */
     public RuleApplication(RuleEvent event, HostGraph source, HostGraph target,
-        HostNode[] coanchorImage) {
-        this(event, source, coanchorImage);
+        HostNode[] addedNodes) {
+        this(event, source, addedNodes);
         this.target = target;
     }
 

@@ -55,8 +55,6 @@ import groove.grammar.type.TypeNode;
 import groove.graph.EdgeRole;
 import groove.graph.Label;
 import groove.match.SearchEngine;
-import groove.match.ValueOracle;
-import groove.match.ValueOracle.Kind;
 import groove.util.collect.Bag;
 import groove.util.collect.HashBag;
 
@@ -179,8 +177,6 @@ public class PlanSearchEngine extends SearchEngine {
             } else {
                 this.algebraFamily = AlgebraFamily.DEFAULT;
             }
-            this.oracle = condition.getGrammarProperties()
-                .getValueOracle();
         }
 
         private void testUsed() {
@@ -357,8 +353,7 @@ public class PlanSearchEngine extends SearchEngine {
                 AbstractSearchItem nodeItem = createNodeSearchItem(node);
                 if (nodeItem != null) {
                     assert !(node instanceof VariableNode) || ((VariableNode) node).hasConstant()
-                        || this.algebraFamily.supportsSymbolic()
-                        || this.oracle.getKind() != Kind.NONE || seed.nodeSet()
+                        || this.algebraFamily.supportsSymbolic() || seed.nodeSet()
                             .contains(node) : String.format(
                                 "Variable node '%s' should be among anchors %s", node, seed);
                     result.add(nodeItem);
@@ -450,10 +445,8 @@ public class PlanSearchEngine extends SearchEngine {
         protected AbstractSearchItem createNodeSearchItem(RuleNode node) {
             AbstractSearchItem result = null;
             if (node instanceof VariableNode) {
-                if (((VariableNode) node).hasConstant() || this.algebraFamily.supportsSymbolic()
-                    || this.oracle.getKind() != Kind.NONE) {
-                    result = new ValueNodeSearchItem((VariableNode) node, this.algebraFamily,
-                        this.oracle);
+                if (((VariableNode) node).hasConstant() || this.algebraFamily.supportsSymbolic()) {
+                    result = new ValueNodeSearchItem((VariableNode) node, this.algebraFamily);
                 }
                 // otherwise, the node must be among the count nodes of
                 // the subconditions
@@ -495,8 +488,6 @@ public class PlanSearchEngine extends SearchEngine {
          * @see AlgebraFamily#getInstance(String)
          */
         private final AlgebraFamily algebraFamily;
-        /** Indicates if a value oracle has been installed. */
-        private final ValueOracle oracle;
         /**
          * The comparators used to determine the order in which the edges should
          * be matched.

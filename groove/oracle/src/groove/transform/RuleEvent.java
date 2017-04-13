@@ -65,12 +65,6 @@ public interface RuleEvent extends Comparable<RuleEvent>, Event {
     public Proof getMatch(HostGraph source);
 
     /**
-     * Constructs and records the application of this event to
-     * a given host graph.
-     */
-    public RuleEffect getEffect(HostGraph host);
-
-    /**
      * Records the application of this event, by storing the relevant
      * information into the record object passed in as a parameter.
      */
@@ -83,11 +77,6 @@ public interface RuleEvent extends Comparable<RuleEvent>, Event {
      * between creator nodes) that the other erases.
      */
     public boolean conflicts(RuleEvent other);
-
-    /**
-     * Factory method to create a rule application on a given source graph.
-     */
-    public RuleApplication newApplication(HostGraph source);
 
     /**
      * Factory method to create an event from a proof, using this

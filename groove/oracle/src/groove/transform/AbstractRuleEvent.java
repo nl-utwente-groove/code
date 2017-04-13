@@ -39,19 +39,11 @@ import groove.util.cache.CacheReference;
  * @version $Revision $
  */
 public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEvent<R,C>.AbstractEventCache>
-    extends AbstractCacheHolder<C>implements RuleEvent {
+    extends AbstractCacheHolder<C> implements RuleEvent {
     /** Constructs an event for a given rule. */
     protected AbstractRuleEvent(CacheReference<C> template, R rule) {
         super(template);
         this.rule = rule;
-    }
-
-    @Override
-    public RuleEffect getEffect(HostGraph host) {
-        RuleEffect result = new RuleEffect(host);
-        recordEffect(result);
-        result.setFixed();
-        return result;
     }
 
     @Override
@@ -62,11 +54,6 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
     @Override
     public R getRule() {
         return this.rule;
-    }
-
-    @Override
-    public RuleApplication newApplication(HostGraph source) {
-        return new RuleApplication(this, source);
     }
 
     @Override
@@ -108,7 +95,7 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
         if (other.getReuse() != EVENT) {
             return other.equalsEvent(this);
         }
-        assert!equalsEvent(other);
+        assert !equalsEvent(other);
         return false;
     }
 

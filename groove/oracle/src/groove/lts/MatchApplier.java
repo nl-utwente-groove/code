@@ -158,10 +158,10 @@ public class MatchApplier {
             RuleTransition parentOut = match.getTransition();
             addedNodes = parentOut.getAddedNodes();
         } else if (match.getAction().hasNodeCreators()) {
-            RuleEffect record = new RuleEffect(source.getGraph(), Fragment.NODE_CREATION);
-            event.recordEffect(record);
-            record.setFixed();
-            addedNodes = record.getCreatedNodeArray();
+            RuleEffect effect = new RuleEffect(source.getGraph(), Fragment.NODE_CREATION);
+            event.recordEffect(effect);
+            effect.setFixed();
+            addedNodes = effect.getCreatedNodeArray();
         } else {
             addedNodes = EMPTY_NODE_ARRAY;
         }
