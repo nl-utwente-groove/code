@@ -56,7 +56,7 @@ public class ReteStrategy extends GTSStrategy {
     }
 
     @Override
-    public GraphState doNext() {
+    public GraphState doNext() throws InterruptedException {
         GraphState state = getNextState();
         ReteStrategyNextReporter.start();
         Collection<? extends MatchResult> ruleMatches = state.getMatches();

@@ -17,21 +17,16 @@
 package groove.match;
 
 import groove.algebra.Constant;
-import groove.grammar.Condition;
-import groove.grammar.rule.VariableNode;
+import groove.grammar.UnitPar.RulePar;
+import groove.grammar.host.HostGraph;
+import groove.transform.RuleEvent;
 import groove.util.DocumentedEnum;
 import groove.util.Exceptions;
 
 /** Interface to provide values for unbound variable nodes during matching. */
 public interface ValueOracle {
-    /** Returns a series of possible values for a given variable node. */
-    public Iterable<Constant> getValues(Condition condition, VariableNode var);
-
-    /** Returns a single value for a given variable node. */
-    default public Constant getValue(Condition condition, VariableNode var) {
-        return getValues(condition, var).iterator()
-            .next();
-    }
+    /** Returns a value for a given variable node. */
+    public Constant getValue(HostGraph graph, RuleEvent event, RulePar par);
 
     /** Returns the kind of this oracle. */
     public Kind getKind();

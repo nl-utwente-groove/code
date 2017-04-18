@@ -21,7 +21,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import groove.grammar.Rule;
+import groove.grammar.UnitPar.Direction;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostGraph;
@@ -57,16 +60,19 @@ public class RuleApplication implements DeltaApplier {
      */
     public RuleApplication(RuleEvent event, HostGraph source) {
         this(event, source, null);
+        assert !event.getRule()
+            .getSignature()
+            .has(Direction.ASK) : "Rule signature should not have user-provided parameters";
     }
 
     /**
      * Constructs a new derivation on the basis of a given production rule, host
-     * graph and rule factory.
+     * graph and added node set.
      * @param event the production rule instance involved
      * @param source the host graph to which the rule is to be applied
      * @param addedNodes the created nodes, in the order of the rule's
-     *        coanchor. If <code>null</code>, the coanchor image has to be
-     *        computed from the source graph.
+     *        coanchor. If <code>null</code>, the added nodes are yet to be
+     *        generated.
      */
     public RuleApplication(final RuleEvent event, HostGraph source, HostNode[] addedNodes) {
         this.event = event;
@@ -84,11 +90,10 @@ public class RuleApplication implements DeltaApplier {
      * @param event the production rule instance involved
      * @param source the host graph to which the rule is to be applied
      * @param addedNodes the created nodes, in the order of the rule's
-     *        coanchor. If <code>null</code>, the coanchor image has to be
-     *        computed from the source graph.
+     *        coanchor.
      */
     public RuleApplication(RuleEvent event, HostGraph source, HostGraph target,
-        HostNode[] addedNodes) {
+        @NonNull HostNode[] addedNodes) {
         this(event, source, addedNodes);
         this.target = target;
     }
@@ -281,7 +286,11 @@ public class RuleApplication implements DeltaApplier {
             } else {
                 result = new RuleEffect(getSource(), getAddedNodes());
             }
-            getEvent().recordEffect(result);
+            try {
+                getEvent().recordEffect(result);
+            } catch (InterruptedException exc) {
+                throw new IllegalStateException("By assumption, value oracles are ruled out");
+            }
             result.setFixed();
             this.effect = result;
         }

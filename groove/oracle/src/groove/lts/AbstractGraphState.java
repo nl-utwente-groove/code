@@ -214,7 +214,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     @Override
-    public RuleTransition applyMatch(MatchResult match) {
+    public RuleTransition applyMatch(MatchResult match) throws InterruptedException {
         RuleTransition result = null;
         if (match instanceof RuleTransition) {
             RuleTransition trans = (RuleTransition) match;

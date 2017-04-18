@@ -53,6 +53,11 @@ public class Signature<P extends UnitPar> implements Iterable<P> {
 
     private final List<P> pars;
 
+    /** Tests if this signature has parameters of a given direction. */
+    public boolean has(UnitPar.Direction dir) {
+        return stream().anyMatch(p -> p.getDirection() == dir);
+    }
+
     @Override
     public Iterator<P> iterator() {
         return this.pars.iterator();

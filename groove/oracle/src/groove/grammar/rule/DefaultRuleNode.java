@@ -20,11 +20,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 
 import groove.grammar.AnchorKind;
+import groove.grammar.UnitPar.RulePar;
 import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeNode;
 import groove.graph.ANode;
@@ -82,6 +84,18 @@ public class DefaultRuleNode extends ANode implements RuleNode, AnchorKey {
 
     /** The optional special ID of this rule node. */
     private String id;
+
+    @Override
+    public void setPar(RulePar par) {
+        this.par = par;
+    }
+
+    @Override
+    public Optional<RulePar> getPar() {
+        return Optional.ofNullable(this.par);
+    }
+
+    private RulePar par;
 
     /**
      * Returns a string consisting of the letter <tt>'n'</tt>.

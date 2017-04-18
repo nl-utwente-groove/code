@@ -21,19 +21,28 @@ import static groove.grammar.aspect.AspectKind.PARAM_BI;
 import static groove.grammar.aspect.AspectKind.PARAM_IN;
 import static groove.grammar.aspect.AspectKind.PARAM_OUT;
 
+import java.util.Arrays;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import groove.control.CtrlPar;
-import groove.control.CtrlPar.Var;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.grammar.aspect.AspectKind;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.VariableNode;
 import groove.util.Exceptions;
+import groove.util.parse.FormatException;
+import groove.util.parse.IdValidator;
 
 /** Class encoding a formal unit parameter. */
+@NonNullByDefault
 public abstract class UnitPar {
     /** Constructor for subclassing, setting the parameter direction. */
-    protected UnitPar(Direction direction) {
+    protected UnitPar(CtrlType type, String name, Direction direction) {
+        this.type = type;
+        this.name = name;
         this.direction = direction;
     }
 
@@ -47,7 +56,20 @@ public abstract class UnitPar {
     /**
      * Returns the control type of this parameter.
      */
-    public abstract CtrlType getType();
+    public CtrlType getType() {
+        return this.type;
+    }
+
+    private final CtrlType type;
+
+    /**
+     * Returns the name of this parameter.
+     */
+    public String getName() {
+        return this.name;
+    }
+
+    private final String name;
 
     /**
      * Indicates whether this parameter is input-only.
@@ -104,6 +126,79 @@ public abstract class UnitPar {
         return true;
     }
 
+    @Override
+    public int hashCode() {
+        int result = getDirection().hashCode();
+        result = result * 31 + getType().hashCode();
+        result = result * 31 + getName().hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof UnitPar)) {
+            return false;
+        }
+        UnitPar other = (UnitPar) obj;
+        if (!getDirection().equals(other.getDirection())) {
+            return false;
+        }
+        if (!getType().equals(other.getType())) {
+            return false;
+        }
+        if (!getName().equals(other.getName())) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder(getDirection().getPrefix());
+        if (result.length() != 0) {
+            result.append(' ');
+        }
+        result.append(getType());
+        result.append(' ');
+        result.append(getName());
+        return result.toString();
+    }
+
+    /** Attempts to parse a string as a unit parameter,
+     * consisting of optional direction, mandatory node type,
+     * and mandatory name (an identifier). */
+    static public UnitPar parse(String input) throws FormatException {
+        String text = input.trim();
+        Direction dir = Arrays.stream(Direction.values())
+            .filter(d -> !d.getPrefix()
+                .isEmpty())
+            .filter(d -> text.startsWith(d.getPrefix() + " "))
+            .findAny()
+            .orElse(Direction.IN);
+        String typeText = text.substring(dir.getPrefix()
+            .length())
+            .trim();
+        CtrlType type = Arrays.stream(CtrlType.values())
+            .filter(t -> typeText.startsWith(t.getName() + " "))
+            .findAny()
+            .orElseThrow(() -> new FormatException(
+                "Error in parameter declaration '%s': Could not determine parameter type", input));
+        String name = typeText.substring(type.getName()
+            .length())
+            .trim();
+        if (!IdValidator.JAVA_ID.isValid(name)) {
+            throw new FormatException(
+                "Error in parameter declaration '%s': name '%s' is not a valid identifier", input,
+                name);
+        }
+        return new UnitPar(type, name, dir) {
+            // empty body
+        };
+    }
+
     /**
      * Convenience method to construct a parameter with a given name, type and direction.
      * @param scope defining scope of the variable; possibly {@code null}
@@ -120,13 +215,8 @@ public abstract class UnitPar {
          * @param isOut flag indicating whether this is an output parameter
          */
         public ProcedurePar(CtrlVar var, boolean isOut) {
-            super(isOut ? Direction.OUT : Direction.IN);
+            super(var.getType(), var.getName(), isOut ? Direction.OUT : Direction.IN);
             this.var = var;
-        }
-
-        @Override
-        public CtrlType getType() {
-            return getVar().getType();
         }
 
         /** Returns the control variable declared by this procedure parameter. */
@@ -142,26 +232,16 @@ public abstract class UnitPar {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (this == obj) {
                 return true;
             }
-            if (obj instanceof CtrlVar) {
-                return this.var.equals(obj);
-            }
-            if (!(obj instanceof Var)) {
+            if (!super.equals(obj)) {
                 return false;
             }
-            Var other = (Var) obj;
-            return isOutOnly() == other.isOutOnly() && isInOnly() == other.isInOnly()
-                && getVar().equals(other.getVar());
-        }
-
-        @Override
-        public String toString() {
-            String result = isOutOnly() ? "out " : "";
-            result += getVar().toString();
-            return result;
+            assert obj != null;
+            ProcedurePar other = (ProcedurePar) obj;
+            return getVar().equals(other.getVar());
         }
 
         /** The control variable declared by this procedure parameter. */
@@ -176,81 +256,71 @@ public abstract class UnitPar {
          * @param node the associated rule node
          */
         public RulePar(AspectKind kind, RuleNode node, boolean creator) {
-            super(creator ? Direction.OUT : toDirection(kind));
+            super(getType(node), node.getId(), creator ? Direction.OUT : toDirection(kind));
             assert kind.isParam();
-            this.kind = kind;
-            this.ruleNode = node;
+            assert !creator || toDirection(kind) == Direction.BI;
+            this.node = node;
             this.creator = creator;
+            // do this only now, after all instance variables are set
+            node.setPar(this);
         }
 
-        /**
-         * Returns the control type of this parameter.
-         */
-        @Override
-        public CtrlType getType() {
-            if (this.ruleNode instanceof VariableNode) {
-                return CtrlType.getType(((VariableNode) this.ruleNode).getSort());
-            } else {
-                return CtrlType.NODE;
-            }
-        }
-
-        /** Returns the directionality of this parameter.
-         * @return one of {@link #PARAM_IN}, {@link #PARAM_OUT} or {@link #PARAM_BI}
-         */
-        public AspectKind getKind() {
-            return this.kind;
-        }
-
-        private final AspectKind kind;
-
-        @Override
-        public String toString() {
-            String result = isOutOnly() ? "!" : isInOnly() ? "?" : "";
-            result += getNode().getId()
-                .toString();
-            return result;
-        }
-
-        /** Returns the (possibly {@code null} rule node in this parameter. */
+        /** Returns the (non-{@code null}) rule node in this parameter. */
         public RuleNode getNode() {
-            return this.ruleNode;
+            return this.node;
         }
+
+        /** Associated node if this is a rule parameter. */
+        private final RuleNode node;
 
         /** Indicates if this is a rule parameter corresponding to a creator node. */
         public final boolean isCreator() {
             return this.creator;
         }
 
-        /** Associated node if this is a rule parameter. */
-        private final RuleNode ruleNode;
         /** Flag indicating if this is a rule parameter referring to a creator node. */
         private final boolean creator;
 
         @Override
         public int hashCode() {
-            int result = getDirection().hashCode();
+            int result = super.hashCode();
             result = result * 31 + getNode().hashCode();
             result = result * 31 + (isCreator() ? 0xFF : 0);
             return result;
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
+        public boolean equals(@Nullable Object obj) {
+            if (obj == this) {
                 return true;
             }
-            if (!(obj instanceof RulePar)) {
+            if (!super.equals(obj)) {
                 return false;
             }
+            assert obj != null;
             RulePar other = (RulePar) obj;
-            if (!getDirection().equals(other.getDirection())) {
-                return false;
-            }
             if (!getNode().equals(other.getNode())) {
                 return false;
             }
             return isCreator() == other.isCreator();
+        }
+
+        @Override
+        public String toString() {
+            String result = isOutOnly() ? "!" : isInOnly() ? "?" : "";
+            result += getNode().getId();
+            return result;
+        }
+
+        /**
+         * Extracts the control type of a rule node.
+         */
+        static public CtrlType getType(RuleNode node) {
+            if (node instanceof VariableNode) {
+                return CtrlType.getType(((VariableNode) node).getSort());
+            } else {
+                return CtrlType.NODE;
+            }
         }
     }
 

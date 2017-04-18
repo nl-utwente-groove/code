@@ -35,7 +35,7 @@ import groove.lts.Status.Flag;
  */
 abstract public class ClosingStrategy extends GTSStrategy {
     @Override
-    public GraphState doNext() {
+    public GraphState doNext() throws InterruptedException {
         GraphState state = getNextState();
         List<MatchResult> matches = state.getMatches();
         if (state.getActualFrame()

@@ -31,10 +31,12 @@ import groove.algebra.Algebra;
 import groove.algebra.Constant;
 import groove.grammar.AnchorKind;
 import groove.grammar.Rule;
+import groove.grammar.UnitPar.RulePar;
 import groove.grammar.host.AnchorValue;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostFactory;
+import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.HostNodeSet;
 import groove.grammar.host.ValueNode;
@@ -44,7 +46,6 @@ import groove.grammar.rule.LabelVar;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.RuleToHostMap;
-import groove.grammar.rule.VariableNode;
 import groove.grammar.type.TypeNode;
 import groove.graph.plain.PlainNode;
 import groove.match.TreeMatch;
@@ -313,12 +314,8 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
         return getCache().getAnchorImageSet();
     }
 
-    /**
-     * Records the application of this event, by storing the relevant
-     * information into the record object passed in as a parameter.
-     */
     @Override
-    public void recordEffect(RuleEffect record) {
+    public void recordEffect(RuleEffect record) throws InterruptedException {
         if (getRule().isModifying()) {
             if (getRule().getCreatorNodes().length > 0) {
                 recordCreatedNodes(record);
@@ -353,14 +350,16 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
         record.addErasedEdges(getErasedEdges());
     }
 
-    /** Adds the created nodes to the application record. */
-    private void recordCreatedNodes(RuleEffect record) {
+    /** Adds the created nodes to the application record.
+     * @throws InterruptedException if an oracle input was cancelled
+     */
+    private void recordCreatedNodes(RuleEffect record) throws InterruptedException {
         RuleNode[] creatorNodes = getRule().getCreatorNodes();
         if (record.isNodesPredefined()) {
             record.addCreatorNodes(creatorNodes);
         } else {
-            HostNode[] createdNodes = getCreatedNodes(record.getSource()
-                .nodeSet(), record.getCreatedNodeMap());
+            HostNode[] createdNodes =
+                getCreatedNodes(record.getSource(), record.getCreatedNodeMap());
             record.addCreatedNodes(creatorNodes, createdNodes);
         }
     }
@@ -502,12 +501,13 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
     /** Computes an array of created nodes that are fresh both
      * with respect to a given set of source graph nodes and with respect
      * to a set of nodes that were already created.
-     * @param sourceNodes the set of nodes in the source graph
+     * @param source the source graph
      * @param created possibly {@code null} mapping from creators to created nodes
      * @return array of fresh nodes, in the order of the node creators
+     * @throws InterruptedException if an oracle input was cancelled
      */
-    private HostNode[] getCreatedNodes(Set<? extends HostNode> sourceNodes,
-        Map<RuleNode,HostNode> created) {
+    private HostNode[] getCreatedNodes(HostGraph source, Map<RuleNode,HostNode> created)
+        throws InterruptedException {
         HostNode[] result;
         RuleNode[] creatorNodes = getRule().getCreatorNodes();
         int count = creatorNodes.length;
@@ -528,9 +528,10 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
                         .getVar());
                 }
                 if (type.isDataType()) {
-                    result[i] = createValueNode((VariableNode) creatorNodes[i]);
+                    result[i] = createValueNode(source, creatorNodes[i].getPar()
+                        .get());
                 } else {
-                    result[i] = createNode(i, type, sourceNodes, current);
+                    result[i] = createNode(i, type, source.nodeSet(), current);
                 }
             }
             // normalise the result to a previously stored instance
@@ -543,11 +544,15 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
 
     /**
      * Creates a value node by querying the oracle.
+     * @throws InterruptedException if an oracle input was cancelled
      */
-    private ValueNode createValueNode(VariableNode var) {
+    private ValueNode createValueNode(HostGraph source, RulePar par) throws InterruptedException {
         ValueOracle oracle = getAction().getGrammarProperties()
             .getValueOracle();
-        Constant c = oracle.getValue(getAction().getCondition(), var);
+        Constant c = oracle.getValue(source, this, par);
+        if (c == null) {
+            throw new InterruptedException("Oracle query did not yield a value");
+        }
         Algebra<?> alg = getAction().getGrammarProperties()
             .getAlgebraFamily()
             .getAlgebra(c.getSort());

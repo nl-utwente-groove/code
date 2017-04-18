@@ -16,13 +16,12 @@
  */
 package groove.match;
 
-import java.util.Collections;
-
 import groove.algebra.BoolSignature;
 import groove.algebra.Constant;
 import groove.algebra.Sort;
-import groove.grammar.Condition;
-import groove.grammar.rule.VariableNode;
+import groove.grammar.UnitPar.RulePar;
+import groove.grammar.host.HostGraph;
+import groove.transform.RuleEvent;
 
 /** Oracle returning a single random value for the appropriate type. */
 public class RandomValueOracle implements ValueOracle {
@@ -32,10 +31,11 @@ public class RandomValueOracle implements ValueOracle {
     }
 
     @Override
-    public Iterable<Constant> getValues(Condition condition, VariableNode var) {
-        Sort sig = var.getSort();
+    public Constant getValue(HostGraph graph, RuleEvent event, RulePar par) {
+        Sort sort = par.getType()
+            .getSort();
         Constant result;
-        switch (sig) {
+        switch (sort) {
         case BOOL:
             result = Math.random() < 0.5 ? BoolSignature.TRUE : BoolSignature.FALSE;
             break;
@@ -57,7 +57,7 @@ public class RandomValueOracle implements ValueOracle {
             result = null;
             assert false;
         }
-        return Collections.singleton(result);
+        return result;
     }
 
     @Override

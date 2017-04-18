@@ -161,8 +161,9 @@ public interface GraphState extends Node {
      * @param match the match to be applied
      * @return the added transition (or the match itself if that is an outgoing
      * transition); non-{@code null}
+     * @throws InterruptedException if an oracle input was cancelled
      */
-    public RuleTransition applyMatch(MatchResult match);
+    public RuleTransition applyMatch(MatchResult match) throws InterruptedException;
 
     /**
      * Returns the current state cache, or a fresh one if the cache is cleared.

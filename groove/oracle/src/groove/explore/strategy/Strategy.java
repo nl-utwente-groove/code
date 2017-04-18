@@ -69,8 +69,12 @@ public abstract class Strategy {
         prepare(this.gts, this.startState, this.acceptor);
         collectKnownStates();
         this.interrupted = false;
-        while (!this.acceptor.done() && hasNext() && !testInterrupted()) {
-            this.lastState = doNext();
+        try {
+            while (!this.acceptor.done() && hasNext() && !testInterrupted()) {
+                this.lastState = doNext();
+            }
+        } catch (InterruptedException exc) {
+            // exploration was interrupted by a cancelled oracle input
         }
         finish();
     }
@@ -91,8 +95,9 @@ public abstract class Strategy {
      * Performs the next step in the exploration.
      * Should be called only if {@link #hasNext} holds.
      * @return the (last) state explored as a result of this call.
+     * @throws InterruptedException if an oracle input was cancelled
      */
-    abstract public GraphState doNext();
+    abstract public GraphState doNext() throws InterruptedException;
 
     /** Indicates if there is a next step in the exploration. */
     abstract public boolean hasNext();

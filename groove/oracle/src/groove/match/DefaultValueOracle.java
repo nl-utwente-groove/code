@@ -16,12 +16,10 @@
  */
 package groove.match;
 
-import java.util.Collections;
-
 import groove.algebra.Constant;
-import groove.algebra.Sort;
-import groove.grammar.Condition;
-import groove.grammar.rule.VariableNode;
+import groove.grammar.UnitPar.RulePar;
+import groove.grammar.host.HostGraph;
+import groove.transform.RuleEvent;
 
 /** Oracle returning the default value for the appropriate type. */
 public class DefaultValueOracle implements ValueOracle {
@@ -31,9 +29,10 @@ public class DefaultValueOracle implements ValueOracle {
     }
 
     @Override
-    public Iterable<Constant> getValues(Condition condition, VariableNode var) {
-        Sort sig = var.getSort();
-        return Collections.singleton(sig.getDefaultValue());
+    public Constant getValue(HostGraph graph, RuleEvent event, RulePar par) {
+        return par.getType()
+            .getSort()
+            .getDefaultValue();
     }
 
     @Override

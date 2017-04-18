@@ -17,15 +17,14 @@
 package groove.match;
 
 import java.awt.Component;
-import java.util.Collections;
-import java.util.Optional;
 
 import javax.swing.JOptionPane;
 
 import groove.algebra.Constant;
 import groove.algebra.Sort;
-import groove.grammar.Condition;
-import groove.grammar.rule.VariableNode;
+import groove.grammar.UnitPar.RulePar;
+import groove.grammar.host.HostGraph;
+import groove.transform.RuleEvent;
 import groove.util.parse.FormatException;
 
 /**
@@ -35,27 +34,26 @@ import groove.util.parse.FormatException;
  */
 public class DialogValueOracle implements ValueOracle {
     @Override
-    public Iterable<Constant> getValues(Condition condition, VariableNode var) {
-        Optional<Constant> value = getValue(condition.getName(), var.getSort());
-        return value.map(v -> Collections.singleton(v))
-            .orElse(Collections.emptySet());
-    }
-
-    private Optional<Constant> getValue(String ruleName, Sort type) {
-        Optional<Constant> result = Optional.empty();
+    public Constant getValue(HostGraph graph, RuleEvent event, RulePar par) {
+        String ruleName = event.getRule()
+            .getQualName()
+            .toString();
+        Sort type = par.getType()
+            .getSort();
+        Constant result = null;
         boolean answered = false;
         do {
             String value = JOptionPane.showInputDialog(this.parent,
-                String.format("Enter a %s value for rule %s", type.getName(), ruleName));
+                String.format("Enter a value for parameter %s of rule %s", par, ruleName));
             if (value == null) {
                 int answer = JOptionPane.showConfirmDialog(this.parent,
-                    "Cancelling means the rule is marked as not applicable.\nIs that what you want?",
+                    "Cancelling means the exploration will be interrupted.\nIs that what you want?",
                     "Confirm cancel",
                     JOptionPane.YES_NO_OPTION);
                 answered = answer == JOptionPane.YES_OPTION;
             } else {
                 try {
-                    result = Optional.of(type.createConstant(value));
+                    result = type.createConstant(value);
                     answered = true;
                 } catch (FormatException exc) {
                     JOptionPane.showMessageDialog(this.parent,

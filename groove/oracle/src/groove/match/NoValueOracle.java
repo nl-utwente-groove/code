@@ -16,11 +16,10 @@
  */
 package groove.match;
 
-import java.util.Collections;
-
 import groove.algebra.Constant;
-import groove.grammar.Condition;
-import groove.grammar.rule.VariableNode;
+import groove.grammar.UnitPar.RulePar;
+import groove.grammar.host.HostGraph;
+import groove.transform.RuleEvent;
 
 /**
  * Oracle that always returns an empty range of values.
@@ -29,8 +28,8 @@ import groove.grammar.rule.VariableNode;
  */
 public class NoValueOracle implements ValueOracle {
     @Override
-    public Iterable<Constant> getValues(Condition condition, VariableNode var) {
-        return Collections.emptyList();
+    public Constant getValue(HostGraph graph, RuleEvent event, RulePar par) {
+        return null;
     }
 
     @Override

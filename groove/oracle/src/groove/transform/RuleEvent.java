@@ -67,8 +67,9 @@ public interface RuleEvent extends Comparable<RuleEvent>, Event {
     /**
      * Records the application of this event, by storing the relevant
      * information into the record object passed in as a parameter.
+     * @throws InterruptedException if an oracle input was cancelled
      */
-    void recordEffect(RuleEffect record);
+    void recordEffect(RuleEffect record) throws InterruptedException;
 
     /**
      * Tests if this event conflicts with another, in the sense that if the

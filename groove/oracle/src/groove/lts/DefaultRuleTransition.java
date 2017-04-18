@@ -230,6 +230,7 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
         HostGraphMorphism result;
         HostGraph sourceGraph = source().getGraph();
         if (getAction().isModifying()) {
+            // create fresh rule application to account for target isomorphism
             RuleApplication appl = new RuleApplication(getEvent(), sourceGraph, getAddedNodes());
             result = appl.getMorphism();
             if (isSymmetry()) {
