@@ -17,6 +17,11 @@
 package groove.test.grammar;
 
 import static groove.grammar.UnitPar.parse;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.fail;
+
+import java.util.Arrays;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,6 +33,7 @@ import groove.algebra.syntax.Variable;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.grammar.QualName;
+import groove.grammar.Signature;
 import groove.grammar.UnitPar;
 import groove.grammar.UnitPar.Direction;
 import groove.grammar.UnitPar.ProcedurePar;
@@ -59,9 +65,9 @@ public class UnitParTest {
     private UnitPar u3;
     /** INT, IN. */
     private ProcedurePar p1;
-    /** NODE, IN. */
+    /** BOOL, ASK. */
     private ProcedurePar p2;
-    /** BOOL, OUT. */
+    /** NODE, OUT. */
     private ProcedurePar p3;
     /** INT, IN. */
     private RulePar r1;
@@ -72,15 +78,12 @@ public class UnitParTest {
 
     @Before
     public void setup() {
-        this.u1 = new UnitPar(CtrlType.INT, "u1", Direction.IN) { // empty
-        };
-        this.u2 = new UnitPar(CtrlType.NODE, "u2", Direction.IN) { // empty
-        };
-        this.u3 = new UnitPar(CtrlType.INT, "u3", Direction.OUT) { // empty
-        };
-        this.p1 = new ProcedurePar(new CtrlVar(null, "p1", CtrlType.INT), false);
-        this.p2 = new ProcedurePar(new CtrlVar(null, "p2", CtrlType.NODE), false);
-        this.p3 = new ProcedurePar(new CtrlVar(null, "p3", CtrlType.BOOL), true);
+        this.u1 = UnitPar.par("u1", CtrlType.INT, Direction.IN);
+        this.u2 = UnitPar.par("u2", CtrlType.NODE, Direction.IN);
+        this.u3 = UnitPar.par("u3", CtrlType.INT, Direction.OUT);
+        this.p1 = new ProcedurePar(new CtrlVar(null, "p1", CtrlType.INT), Direction.IN);
+        this.p2 = new ProcedurePar(new CtrlVar(null, "p2", CtrlType.BOOL), Direction.ASK);
+        this.p3 = new ProcedurePar(new CtrlVar(null, "p3", CtrlType.NODE), Direction.OUT);
         this.typeGraph = new TypeGraph(QualName.name("test"));
         this.boolNode = this.typeGraph.getFactory()
             .getDataType(Sort.BOOL);
@@ -100,48 +103,58 @@ public class UnitParTest {
 
     @Test
     public void testEquals() {
-        Assert.assertEquals(this.u1, this.u1);
-        UnitPar myU1 = new UnitPar(CtrlType.INT, "u1", Direction.IN) { // empty
-        };
-        Assert.assertEquals(myU1, this.u1);
-        Assert.assertFalse(this.u1.equals(this.u2));
-        Assert.assertFalse(this.u1.equals(this.r1));
-        Assert.assertFalse(this.u1.equals(this.p1));
+        assertEquals(this.u1, this.u1);
+        UnitPar myU1 = UnitPar.par("u1", CtrlType.INT, Direction.IN);
+        assertEquals(myU1, this.u1);
+        assertFalse(this.u1.equals(this.u2));
+        assertFalse(this.u1.equals(this.r1));
+        assertFalse(this.u1.equals(this.p1));
         // ProcedurePar.equals
-        Assert.assertEquals(this.p1, this.p1);
-        ProcedurePar myP1 = new ProcedurePar(new CtrlVar(null, "p1", CtrlType.INT), false);
-        Assert.assertEquals(myP1, this.p1);
-        Assert.assertFalse(this.p1.equals(this.p2));
-        Assert.assertFalse(this.p1.equals(this.r1));
+        assertEquals(this.p1, this.p1);
+        ProcedurePar myP1 = new ProcedurePar(new CtrlVar(null, "p1", CtrlType.INT), Direction.IN);
+        assertEquals(myP1, this.p1);
+        assertFalse(this.p1.equals(this.p2));
+        assertFalse(this.p1.equals(this.r1));
         // RulePar.equals
         try {
-            Assert.assertEquals(this.r1, this.r1);
-            Assert.assertFalse(this.r1.equals(this.r2));
+            assertEquals(this.r1, this.r1);
+            assertFalse(this.r1.equals(this.r2));
             RulePar myR1 = new RulePar(AspectKind.PARAM_IN,
                 new VariableNode(0, Expression.parse("1"), this.intNode), false);
-            Assert.assertEquals(myR1, this.r1);
+            assertEquals(myR1, this.r1);
         } catch (FormatException exc) {
-            Assert.fail(exc.getMessage());
+            fail(exc.getMessage());
         }
     }
 
     @Test
-    public void testParse() {
+    public void testParParse() {
         try {
             UnitPar myU1 = parse("int u1");
             UnitPar myU2 = parse("node u2");
             UnitPar myU3 = parse("out int u3");
-            myU1.equals(this.u1);
-            myU2.equals(this.u2);
-            myU3.equals(this.u3);
+            assertEquals(this.u1, myU1);
+            assertEquals(this.u2, myU2);
+            assertEquals(this.u3, myU3);
 
-            parse("int p1").equals(this.p1);
-            parse("node p2").equals(this.p2);
-            parse("out bool p3").equals(this.p3);
+            assertEquals(this.p1, parse("int p1"));
+            assertEquals(this.p2, parse("ask bool p2"));
+            assertEquals(this.p3, parse("out node p3"));
 
-            parse("int r1").equals(this.r1);
-            parse("inout int r2").equals(this.r2);
-            parse("out bool p1").equals(this.r3);
+            assertFalse(parse("int r1").equals(this.r1));
+            assertFalse(parse("inout int r2").equals(this.r2));
+            assertFalse(parse("out bool r3").equals(this.r3));
+        } catch (FormatException exc) {
+            fail(exc.getMessage());
+        }
+    }
+
+    @Test
+    public void testSigParse() {
+        try {
+            Signature<?> expected = new Signature<>(Arrays.asList(this.p1, this.p2, this.p3));
+            Signature<?> parsed = Signature.parse("int p1, ask bool p2, out node p3");
+            Assert.assertEquals(expected, parsed);
         } catch (FormatException exc) {
             Assert.fail(exc.getMessage());
         }

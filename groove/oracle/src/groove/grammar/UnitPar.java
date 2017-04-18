@@ -167,10 +167,10 @@ public abstract class UnitPar {
         return result.toString();
     }
 
-    /** Attempts to parse a string as a unit parameter,
+    /** Attempts to parse a string as a procedure parameter,
      * consisting of optional direction, mandatory node type,
      * and mandatory name (an identifier). */
-    static public UnitPar parse(String input) throws FormatException {
+    static public ProcedurePar parse(String input) throws FormatException {
         String text = input.trim();
         Direction dir = Arrays.stream(Direction.values())
             .filter(d -> !d.getPrefix()
@@ -194,17 +194,23 @@ public abstract class UnitPar {
                 "Error in parameter declaration '%s': name '%s' is not a valid identifier", input,
                 name);
         }
-        return new UnitPar(type, name, dir) {
-            // empty body
-        };
+        return par(name, type, dir);
+    }
+
+    /**
+     * Convenience method to construct a parameter with a given scope, name, type and direction.
+     * @param scope defining scope of the variable; possibly {@code null}
+     */
+    public static ProcedurePar par(@Nullable QualName scope, String name, CtrlType type,
+        Direction dir) {
+        return new ProcedurePar(new CtrlVar(scope, name, type), dir);
     }
 
     /**
      * Convenience method to construct a parameter with a given name, type and direction.
-     * @param scope defining scope of the variable; possibly {@code null}
      */
-    public static ProcedurePar par(QualName scope, String name, CtrlType type, boolean isOut) {
-        return new ProcedurePar(new CtrlVar(scope, name, type), isOut);
+    public static ProcedurePar par(String name, CtrlType type, Direction dir) {
+        return par(null, name, type, dir);
     }
 
     /** Class encoding a formal action parameter. */
@@ -212,10 +218,10 @@ public abstract class UnitPar {
         /**
          * Constructs a new formal action parameter.
          * @param var the control variable declared by this parameter
-         * @param isOut flag indicating whether this is an output parameter
+         * @param dir value-passing direction of the parameter
          */
-        public ProcedurePar(CtrlVar var, boolean isOut) {
-            super(var.getType(), var.getName(), isOut ? Direction.OUT : Direction.IN);
+        public ProcedurePar(CtrlVar var, Direction dir) {
+            super(var.getType(), var.getName(), dir);
             this.var = var;
         }
 
