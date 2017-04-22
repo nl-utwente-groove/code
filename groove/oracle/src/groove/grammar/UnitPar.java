@@ -399,7 +399,7 @@ public abstract class UnitPar {
     /** Prefix used to indicate output parameters. */
     public static final String OUT_PREFIX = "out";
     /** Prefix used to indicate bidirectional parameters. */
-    public static final String BI_PREFIX = "inout";
+    public static final String BI_PREFIX = "bi";
     /** Prefix used to indicate user-provided parameters. */
     public static final String ASK_PREFIX = "ask";
 }
