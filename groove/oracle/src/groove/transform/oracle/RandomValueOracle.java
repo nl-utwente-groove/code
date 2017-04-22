@@ -14,7 +14,9 @@
  *
  * $Id$
  */
-package groove.match;
+package groove.transform.oracle;
+
+import java.util.Random;
 
 import groove.algebra.BoolSignature;
 import groove.algebra.Constant;
@@ -22,40 +24,48 @@ import groove.algebra.Sort;
 import groove.grammar.UnitPar.RulePar;
 import groove.grammar.host.HostGraph;
 import groove.transform.RuleEvent;
+import groove.util.Exceptions;
+import groove.util.parse.FormatException;
 
 /** Oracle returning a single random value for the appropriate type. */
 public class RandomValueOracle implements ValueOracle {
     /** Constructor for the singleton instance. */
     private RandomValueOracle() {
-        // empty
+        this.random = new Random();
     }
 
+    /** Constructor for a seeded instance. */
+    private RandomValueOracle(long seed) {
+        this.random = new Random(seed);
+    }
+
+    private final Random random;
+
     @Override
-    public Constant getValue(HostGraph graph, RuleEvent event, RulePar par) {
+    public Constant getValue(HostGraph host, RuleEvent event, RulePar par) throws FormatException {
         Sort sort = par.getType()
             .getSort();
         Constant result;
         switch (sort) {
         case BOOL:
-            result = Math.random() < 0.5 ? BoolSignature.TRUE : BoolSignature.FALSE;
+            result = this.random.nextBoolean() ? BoolSignature.TRUE : BoolSignature.FALSE;
             break;
         case INT:
-            result = Constant.instance((int) (Math.random() * 100));
+            result = Constant.instance((this.random.nextInt()));
             break;
         case REAL:
-            result = Constant.instance(Math.random() * 100);
+            result = Constant.instance(this.random.nextDouble());
             break;
         case STRING:
             StringBuffer text = new StringBuffer();
-            int length = (int) (Math.random() * 10);
+            int length = this.random.nextInt(10);
             for (int i = 0; i < length; i++) {
-                text.append((char) ('0' + Math.random() * 36));
+                text.append((char) ('0' + this.random.nextInt(36)));
             }
             result = Constant.instance(text.toString());
             break;
         default:
-            result = null;
-            assert false;
+            throw Exceptions.UNREACHABLE;
         }
         return result;
     }
@@ -63,6 +73,11 @@ public class RandomValueOracle implements ValueOracle {
     @Override
     public Kind getKind() {
         return Kind.RANDOM;
+    }
+
+    /** Returns the a seeded instance of this class. */
+    public final static RandomValueOracle instance(long seed) {
+        return new RandomValueOracle(seed);
     }
 
     /** Returns the singleton instance of this class. */

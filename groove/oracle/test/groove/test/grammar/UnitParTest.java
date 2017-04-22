@@ -142,7 +142,7 @@ public class UnitParTest {
             assertEquals(this.p3, parse("out node p3"));
 
             assertFalse(parse("int r1").equals(this.r1));
-            assertFalse(parse("inout int r2").equals(this.r2));
+            assertFalse(parse("bi int r2").equals(this.r2));
             assertFalse(parse("out bool r3").equals(this.r3));
         } catch (FormatException exc) {
             fail(exc.getMessage());

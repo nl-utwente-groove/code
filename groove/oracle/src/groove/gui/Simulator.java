@@ -90,7 +90,7 @@ import groove.gui.list.ListTabbedPane;
 import groove.gui.list.SearchResult;
 import groove.gui.menu.ModelCheckingMenu;
 import groove.gui.menu.MyJMenu;
-import groove.match.DialogValueOracle;
+import groove.transform.oracle.DialogValueOracle;
 import groove.util.Groove;
 import groove.util.parse.FormatError;
 import groove.util.parse.FormatErrorSet;

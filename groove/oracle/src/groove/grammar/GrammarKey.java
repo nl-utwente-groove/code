@@ -29,7 +29,7 @@ import groove.explore.ExploreType;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.RuleModel;
-import groove.match.ValueOracle.Kind;
+import groove.transform.oracle.ValueOracle.Kind;
 import groove.util.DocumentedEnum;
 import groove.util.Groove;
 import groove.util.PropertyKey;

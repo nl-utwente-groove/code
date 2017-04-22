@@ -49,10 +49,11 @@ import groove.grammar.rule.RuleToHostMap;
 import groove.grammar.type.TypeNode;
 import groove.graph.plain.PlainNode;
 import groove.match.TreeMatch;
-import groove.match.ValueOracle;
 import groove.transform.RuleEffect.Fragment;
+import groove.transform.oracle.ValueOracle;
 import groove.util.Groove;
 import groove.util.cache.CacheReference;
+import groove.util.parse.FormatException;
 
 /**
  * Class representing an instance of an {@link Rule} for a given anchor map.
@@ -549,14 +550,15 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
     private ValueNode createValueNode(HostGraph source, RulePar par) throws InterruptedException {
         ValueOracle oracle = getAction().getGrammarProperties()
             .getValueOracle();
-        Constant c = oracle.getValue(source, this, par);
-        if (c == null) {
-            throw new InterruptedException("Oracle query did not yield a value");
+        try {
+            Constant c = oracle.getValue(source, this, par);
+            Algebra<?> alg = getAction().getGrammarProperties()
+                .getAlgebraFamily()
+                .getAlgebra(c.getSort());
+            return getHostFactory().createNode(alg, alg.toValueFromConstant(c));
+        } catch (FormatException exc) {
+            throw new InterruptedException(exc.getMessage());
         }
-        Algebra<?> alg = getAction().getGrammarProperties()
-            .getAlgebraFamily()
-            .getAlgebra(c.getSort());
-        return getHostFactory().createNode(alg, alg.toValueFromConstant(c));
     }
 
     /**

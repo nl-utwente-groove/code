@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.match;
+package groove.transform.oracle;
 
 import groove.algebra.Constant;
 import groove.grammar.UnitPar.RulePar;
@@ -22,11 +22,14 @@ import groove.grammar.host.HostGraph;
 import groove.transform.RuleEvent;
 import groove.util.DocumentedEnum;
 import groove.util.Exceptions;
+import groove.util.parse.FormatException;
 
 /** Interface to provide values for unbound variable nodes during matching. */
 public interface ValueOracle {
-    /** Returns a value for a given variable node. */
-    public Constant getValue(HostGraph graph, RuleEvent event, RulePar par);
+    /** Returns a value for a given variable node.
+     * @throws FormatException if no correct value was provided
+     */
+    public Constant getValue(HostGraph host, RuleEvent event, RulePar par) throws FormatException;
 
     /** Returns the kind of this oracle. */
     public Kind getKind();
@@ -40,7 +43,9 @@ public interface ValueOracle {
         /** Random value oracle. */
         RANDOM,
         /** User dialog input. */
-        DIALOG,;
+        DIALOG,
+        /** (File) reader input. */
+        READER,;
 
         @Override
         public String getName() {
@@ -57,7 +62,9 @@ public interface ValueOracle {
             case NONE:
                 return "No oracle";
             case RANDOM:
-                return "Returns a randum value of the type";
+                return "Returns a random value of the type";
+            case READER:
+                return "Reads values from a file";
             default:
                 throw Exceptions.UNREACHABLE;
             }

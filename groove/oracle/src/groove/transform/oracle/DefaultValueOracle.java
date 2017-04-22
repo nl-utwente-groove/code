@@ -14,36 +14,37 @@
  *
  * $Id$
  */
-package groove.match;
+package groove.transform.oracle;
 
 import groove.algebra.Constant;
 import groove.grammar.UnitPar.RulePar;
 import groove.grammar.host.HostGraph;
 import groove.transform.RuleEvent;
+import groove.util.parse.FormatException;
 
-/**
- * Oracle that always returns an empty range of values.
- * @author Arend Rensink
- * @version $Revision $
- */
-public class NoValueOracle implements ValueOracle {
+/** Oracle returning the default value for the appropriate type. */
+public class DefaultValueOracle implements ValueOracle {
+    /** Constructor for the singleton instance. */
+    private DefaultValueOracle() {
+        // empty
+    }
+
     @Override
-    public Constant getValue(HostGraph graph, RuleEvent event, RulePar par) {
-        return null;
+    public Constant getValue(HostGraph host, RuleEvent event, RulePar par) throws FormatException {
+        return par.getType()
+            .getSort()
+            .getDefaultValue();
     }
 
     @Override
     public Kind getKind() {
-        return Kind.NONE;
+        return Kind.DEFAULT;
     }
 
     /** Returns the singleton instance of this class. */
-    public final static NoValueOracle instance() {
-        if (INSTANCE == null) {
-            INSTANCE = new NoValueOracle();
-        }
-        return INSTANCE;
+    public final static DefaultValueOracle instance() {
+        return instance;
     }
 
-    private static NoValueOracle INSTANCE;
+    private static final DefaultValueOracle instance = new DefaultValueOracle();
 }

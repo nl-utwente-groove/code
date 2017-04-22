@@ -16,13 +16,17 @@
  */
 package groove.grammar;
 
+import java.io.FileNotFoundException;
+import java.util.Arrays;
+
 import groove.io.HTMLConverter;
-import groove.match.DefaultValueOracle;
-import groove.match.DialogValueOracle;
-import groove.match.NoValueOracle;
-import groove.match.RandomValueOracle;
-import groove.match.ValueOracle;
-import groove.match.ValueOracle.Kind;
+import groove.transform.oracle.DefaultValueOracle;
+import groove.transform.oracle.DialogValueOracle;
+import groove.transform.oracle.NoValueOracle;
+import groove.transform.oracle.RandomValueOracle;
+import groove.transform.oracle.ReaderValueOracle;
+import groove.transform.oracle.ValueOracle;
+import groove.transform.oracle.ValueOracle.Kind;
 import groove.util.Exceptions;
 import groove.util.parse.FormatException;
 import groove.util.parse.Parser;
@@ -61,34 +65,75 @@ public class OracleParser implements Parser<ValueOracle> {
 
     @Override
     public ValueOracle parse(String input) throws FormatException {
-        ValueOracle result = null;
+        ValueOracle result;
         if (input == null || input.length() == 0) {
-            result = createOracle(Kind.NONE);
+            result = createOracle(Kind.NONE, null);
         } else {
-            for (Kind kind : Kind.values()) {
-                if (input.equals(kind.getName())) {
-                    result = createOracle(kind);
-                    break;
+            FormatException exc =
+                new FormatException("%s is not a valid oracle specification", input);
+            Kind kind = Arrays.stream(Kind.values())
+                .filter(k -> input.startsWith(k.getName()))
+                .findAny()
+                .orElseThrow(() -> exc);
+            String par;
+            if (input.equals(kind.getName())) {
+                par = null;
+            } else {
+                int colon = input.indexOf(':');
+                if (colon != kind.getName()
+                    .length()) {
+                    throw exc;
                 }
+                par = input.substring(colon + 1);
             }
-            if (result == null) {
-                throw new FormatException("%s is not a valid oracle kind", input);
+            try {
+                result = createOracle(kind, par);
+            } catch (FormatException inner) {
+                throw new FormatException("Error in oracle specifcation '%s': %s", input, inner);
             }
         }
         return result;
     }
 
     /** Returns an oracle of the desired kind. */
-    private ValueOracle createOracle(Kind kind) {
+    private ValueOracle createOracle(Kind kind, String par) throws FormatException {
+        FormatException exc = new FormatException("Unexpected parameter '%s'", par);
         switch (kind) {
         case DEFAULT:
+            if (par != null) {
+                throw exc;
+            }
             return DefaultValueOracle.instance();
         case DIALOG:
+            if (par != null) {
+                throw exc;
+            }
             return DialogValueOracle.instance();
         case NONE:
+            if (par != null) {
+                throw exc;
+            }
             return NoValueOracle.instance();
         case RANDOM:
-            return RandomValueOracle.instance();
+            if (par == null) {
+                return RandomValueOracle.instance();
+            } else {
+                try {
+                    long seed = Long.parseLong(par);
+                    return RandomValueOracle.instance(seed);
+                } catch (NumberFormatException number) {
+                    throw new FormatException("Seed '%s' should be long value", par);
+                }
+            }
+        case READER:
+            if (par == null) {
+                throw new FormatException("Reader oracle should specify filename");
+            }
+            try {
+                return new ReaderValueOracle(par);
+            } catch (FileNotFoundException exc1) {
+                throw new FormatException(exc1.getMessage());
+            }
         default:
             throw Exceptions.UNREACHABLE;
         }
@@ -115,17 +160,17 @@ public class OracleParser implements Parser<ValueOracle> {
         return ValueOracle.class;
     }
 
+    @Override
+    public ValueOracle getDefaultValue() {
+        return NoValueOracle.instance();
+    }
+
     /** Returns the singleton instance of this parser. */
     public static OracleParser instance() {
         if (INSTANCE == null) {
             INSTANCE = new OracleParser();
         }
         return INSTANCE;
-    }
-
-    @Override
-    public ValueOracle getDefaultValue() throws UnsupportedOperationException {
-        return NoValueOracle.instance();
     }
 
     private static OracleParser INSTANCE;

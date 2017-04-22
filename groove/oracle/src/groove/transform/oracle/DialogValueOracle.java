@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.match;
+package groove.transform.oracle;
 
 import java.awt.Component;
 
@@ -34,17 +34,20 @@ import groove.util.parse.FormatException;
  */
 public class DialogValueOracle implements ValueOracle {
     @Override
-    public Constant getValue(HostGraph graph, RuleEvent event, RulePar par) {
+    public Constant getValue(HostGraph host, RuleEvent event, RulePar par) throws FormatException {
         String ruleName = event.getRule()
             .getQualName()
             .toString();
-        Sort type = par.getType()
+        Sort sort = par.getType()
             .getSort();
         Constant result = null;
         boolean answered = false;
         do {
             String value = JOptionPane.showInputDialog(this.parent,
-                String.format("Enter a value for parameter %s of rule %s", par, ruleName));
+                String.format("Enter a value of type %s for parameter %s of rule %s",
+                    sort,
+                    par.getName(),
+                    ruleName));
             if (value == null) {
                 int answer = JOptionPane.showConfirmDialog(this.parent,
                     "Cancelling means the exploration will be interrupted.\nIs that what you want?",
@@ -53,14 +56,17 @@ public class DialogValueOracle implements ValueOracle {
                 answered = answer == JOptionPane.YES_OPTION;
             } else {
                 try {
-                    result = type.createConstant(value);
+                    result = sort.createConstant(value);
                     answered = true;
                 } catch (FormatException exc) {
                     JOptionPane.showMessageDialog(this.parent,
-                        String.format("Invalid %s value: %s", type.getName(), exc.getMessage()));
+                        String.format("Invalid %s value: %s", sort.getName(), exc.getMessage()));
                 }
             }
         } while (!answered);
+        if (result == null) {
+            throw new FormatException("User input in value dialog cancelled");
+        }
         return result;
     }
 
