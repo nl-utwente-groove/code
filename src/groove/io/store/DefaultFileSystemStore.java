@@ -28,7 +28,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -542,23 +541,13 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     @Override
-    public Object getLocation() {
-        if (this.file == null) {
-            return this.url;
-        } else {
-            return this.file;
-        }
+    public File getLocation() {
+        return this.file;
     }
 
     @Override
     public SystemStore save(File file, boolean clearDir) throws IOException {
         return SystemStore.save(file, this, clearDir);
-    }
-
-    /** This type of system store is modifiable. */
-    @Override
-    public boolean isModifiable() {
-        return true;
     }
 
     /**
@@ -590,7 +579,7 @@ public class DefaultFileSystemStore extends SystemStore {
      */
     @Override
     public String toString() {
-        String location = this.file == null ? getLocation().toString() : this.file.getParent();
+        String location = this.file.getParent();
         return getName() + " - " + location;
     }
 
@@ -799,11 +788,6 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     private GrammarProperties properties;
-    /**
-     * The location from which the source is loaded. If <code>null</code>, the
-     * location was specified by file rather than url.
-     */
-    private URL url;
     /** The file obtained from <code>location</code>. */
     private final File file;
     /** Name of the rule system. */

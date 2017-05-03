@@ -48,7 +48,7 @@ class SimulatorHistory implements SimulatorListener {
     public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
         if (changes.contains(Change.GRAMMAR)) {
             try {
-                Object location = source.getStore()
+                File location = source.getStore()
                     .getLocation();
                 LoadGrammarFromHistoryAction newAction = createLoadAction(location.toString());
                 this.history.remove(newAction);

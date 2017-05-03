@@ -196,11 +196,9 @@ public class Transformer {
                 File startGraphFile = new File(startGraphName);
                 if (!startGraphFile.exists()) {
                     // look for the name within the grammar location
-                    Object grammarLocation = getGrammarModel().getStore()
+                    File grammarLocation = getGrammarModel().getStore()
                         .getLocation();
-                    if (grammarLocation instanceof File) {
-                        startGraphFile = new File((File) grammarLocation, startGraphName);
-                    }
+                    startGraphFile = new File(grammarLocation, startGraphName);
                 }
                 if (!startGraphFile.exists()) {
                     throw new IOException("Can't find start graph " + startGraphName);

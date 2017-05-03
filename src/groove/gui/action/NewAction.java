@@ -48,6 +48,6 @@ public class NewAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getGrammarStore() != null && getGrammarStore().isModifiable());
+        setEnabled(getGrammarStore() != null);
     }
 }

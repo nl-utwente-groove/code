@@ -1,14 +1,14 @@
 package groove.gui.action;
 
+import java.io.IOException;
+import java.util.Map;
+
 import groove.grammar.GrammarProperties;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.PropertiesDialog;
 import groove.util.Properties.CheckerMap;
-
-import java.io.IOException;
-import java.util.Map;
 
 /** Action to show the system properties. */
 public class EditSystemPropertiesAction extends SimulatorAction {
@@ -29,7 +29,8 @@ public class EditSystemPropertiesAction extends SimulatorAction {
         if (dialog.showDialog(getFrame())) {
             GrammarProperties newProperties = new GrammarProperties();
             // don't use putAll, as that bypasses the filtering of default entries
-            for (Map.Entry<String,String> e : dialog.getProperties().entrySet()) {
+            for (Map.Entry<String,String> e : dialog.getProperties()
+                .entrySet()) {
                 newProperties.setProperty(e.getKey(), e.getValue());
             }
             try {
@@ -46,6 +47,6 @@ public class EditSystemPropertiesAction extends SimulatorAction {
      */
     @Override
     public void refresh() {
-        setEnabled(getGrammarStore() != null && getGrammarStore().isModifiable());
+        setEnabled(getGrammarStore() != null);
     }
 }

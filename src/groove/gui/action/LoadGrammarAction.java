@@ -106,9 +106,9 @@ public class LoadGrammarAction extends SimulatorAction {
                 return false;
             }
             newGrammarFile = null;
-        } else if (compare > 0 && store.getLocation() instanceof File) {
+        } else if (compare > 0) {
             // Trying to load an older grammar from a file.
-            File grammarFile = (File) store.getLocation();
+            File grammarFile = store.getLocation();
             switch (VersionDialog.showOldFile(this.getFrame(), props)) {
             case 0: // save and overwrite
                 newGrammarFile = grammarFile;

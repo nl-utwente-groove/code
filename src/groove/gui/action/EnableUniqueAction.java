@@ -59,7 +59,7 @@ public class EnableUniqueAction extends SimulatorAction {
         if (selected.size() == 1) {
             Set<QualName> enabled = getSimulatorModel().getGrammar()
                 .getActiveNames(getResourceKind());
-            setEnabled(getGrammarStore().isModifiable() && !selected.equals(enabled));
+            setEnabled(!selected.equals(enabled));
         } else {
             setEnabled(false);
         }
