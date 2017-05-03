@@ -400,6 +400,12 @@ public enum FileType {
         return filename.substring(filename.lastIndexOf(SEPARATOR));
     }
 
+    /** Tests if a given file has a pure name part,
+     * i.e., a non-empty string before the extension. */
+    static public boolean hasPureName(File file) {
+        return hasPureName(file.getName());
+    }
+
     /**
      * Returns the name part of a file name, without extension. The extension is
      * taken to be the part from the last #SEPARATOR occurrence (inclusive).
@@ -410,6 +416,12 @@ public enum FileType {
      */
     static public String getPureName(File file) {
         return getPureName(file.getName());
+    }
+
+    /** Tests if a given filename has a pure name part,
+     * i.e., a non-empty string before the extension. */
+    static public boolean hasPureName(String filename) {
+        return filename.lastIndexOf(SEPARATOR) != 0;
     }
 
     /**
