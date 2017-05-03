@@ -61,6 +61,6 @@ public class CopyAction extends SimulatorAction {
     @Override
     public void refresh() {
         setEnabled(getSimulatorModel().getSelectSet(getResourceKind())
-            .size() == 1 && getGrammarStore().isModifiable());
+            .size() == 1);
     }
 }

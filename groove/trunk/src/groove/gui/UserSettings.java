@@ -180,7 +180,7 @@ public class UserSettings {
         if (model != null) {
             SystemStore store = model.getStore();
             if (store != null) {
-                Object location = store.getLocation();
+                File location = store.getLocation();
                 userPrefs.put(LOCATION_KEY, location.toString());
             }
         }

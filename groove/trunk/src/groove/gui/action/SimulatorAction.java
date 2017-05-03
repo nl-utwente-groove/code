@@ -4,7 +4,6 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -43,7 +42,6 @@ import groove.io.GrooveFileChooser;
 import groove.io.store.EditType;
 import groove.io.store.SystemStore;
 import groove.util.Duo;
-import groove.util.Groove;
 import groove.util.parse.FormatException;
 
 /**
@@ -427,15 +425,8 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
      * Returns the last file from which a grammar was loaded.
      */
     final protected File getLastGrammarFile() {
-        File result = null;
         SystemStore store = getSimulatorModel().getStore();
-        Object location = store == null ? null : store.getLocation();
-        if (location instanceof File) {
-            result = (File) location;
-        } else if (location instanceof URL) {
-            result = Groove.toFile((URL) location);
-        }
-        return result;
+        return store == null ? null : store.getLocation();
     }
 
     /**
@@ -449,26 +440,24 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
         // find out if this is within the grammar directory
         String selectedPath = filter.stripExtension(selectedFile.getCanonicalPath());
         QualName result = null;
-        Object location = getSimulatorModel().getStore()
+        File location = getSimulatorModel().getStore()
             .getLocation();
-        if (location instanceof File) {
-            String grammarPath = ((File) location).getCanonicalPath();
-            if (selectedPath.startsWith(grammarPath)) {
-                String diff = selectedPath.substring(grammarPath.length());
-                File pathDiff = new File(diff);
-                List<String> pathFragments = new LinkedList<>();
-                while (!pathDiff.getName()
-                    .isEmpty()) {
-                    pathFragments.add(0, pathDiff.getName());
-                    pathDiff = pathDiff.getParentFile();
-                }
-                try {
-                    result = new QualName(pathFragments).testValid();
-                } catch (FormatException e) {
-                    throw new IOException(String.format("Malformed %s name: %s",
-                        getResourceKind().getDescription(),
-                        e.getMessage()));
-                }
+        String grammarPath = location.getCanonicalPath();
+        if (selectedPath.startsWith(grammarPath)) {
+            String diff = selectedPath.substring(grammarPath.length());
+            File pathDiff = new File(diff);
+            List<String> pathFragments = new LinkedList<>();
+            while (!pathDiff.getName()
+                .isEmpty()) {
+                pathFragments.add(0, pathDiff.getName());
+                pathDiff = pathDiff.getParentFile();
+            }
+            try {
+                result = new QualName(pathFragments).testValid();
+            } catch (FormatException e) {
+                throw new IOException(String.format("Malformed %s name: %s",
+                    getResourceKind().getDescription(),
+                    e.getMessage()));
             }
         }
         return result;

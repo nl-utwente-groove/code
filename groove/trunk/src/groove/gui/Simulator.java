@@ -925,10 +925,6 @@ public class Simulator implements SimulatorListener {
         GrammarModel grammar = getModel().getGrammar();
         if (grammar != null && grammar.getName() != null) {
             title.append(grammar.getId());
-            if (!grammar.getStore()
-                .isModifiable()) {
-                title.append(" (read-only)");
-            }
             title.append(" - ");
 
         }

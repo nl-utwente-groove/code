@@ -58,7 +58,7 @@ abstract public class SystemStore extends UndoableEditSupport {
      * place from where the store was obtained.
      * @return the location of this store; cannot be <code>null</code> or empty.
      */
-    abstract public Object getLocation();
+    abstract public File getLocation();
 
     /** Checks if the store is empty. */
     public boolean isEmpty() {
@@ -191,14 +191,6 @@ abstract public class SystemStore extends UndoableEditSupport {
     public void addObserver(Observer observer) {
         this.observable.addObserver(observer);
     }
-
-    /**
-     * Indicates if this store can be modified. If the store cannot be modified,
-     * all the operations that attempt to modify it will throw
-     * {@link IOException}s.
-     * @return <code>true</code> if the store is modifiable
-     */
-    abstract public boolean isModifiable();
 
     /** Indicates if edits are currently added to the undo list. */
     public boolean isUndoSuspended() {
