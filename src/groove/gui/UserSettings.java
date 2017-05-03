@@ -15,6 +15,7 @@
 package groove.gui;
 
 import java.awt.Frame;
+import java.io.File;
 import java.io.IOException;
 import java.util.prefs.Preferences;
 
@@ -95,7 +96,7 @@ public class UserSettings {
             // reoccur forever from now on
             userPrefs.remove(LOCATION_KEY);
             try {
-                final SystemStore store = SystemStoreFactory.newStore(location);
+                final SystemStore store = SystemStoreFactory.newStore(new File(location), false);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {

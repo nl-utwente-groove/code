@@ -28,8 +28,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -98,7 +96,7 @@ public class DefaultFileSystemStore extends SystemStore {
             throw new IllegalArgumentException(String.format("File '%s' is not a directory", file));
         }
         if (!GRAMMAR.hasExtension(file)) {
-            throw new IllegalArgumentException(
+            throw new IOException(
                 String.format("File '%s' does not refer to a production system", file));
         }
         this.file = file;
@@ -107,21 +105,6 @@ public class DefaultFileSystemStore extends SystemStore {
         if (create) {
             this.createVersionProperties();
         }
-    }
-
-    /**
-     * Constructs a store from a given URL. The URL should specify the
-     * <code>file:</code> protocol, and the file should be a directory with
-     * extension {@link FileType#GRAMMAR}. The store is writable.
-     * @param location source location of the underlying persistent storage;
-     *        should refer to a file.
-     * @throws IllegalArgumentException if <code>location</code> does not
-     *         conform to URI syntax, or does not point to an existing
-     *         directory, or does not have the correct extension.
-     */
-    public DefaultFileSystemStore(URL location) throws IOException {
-        this(toFile(location), false);
-        this.url = location;
     }
 
     private void createVersionProperties() {
@@ -831,26 +814,6 @@ public class DefaultFileSystemStore extends SystemStore {
     private boolean initialised;
     /** Flag whether this store contains a 'system.properties' file. */
     private boolean hasSystemPropertiesFile = false;
-
-    /**
-     * Returns a file based on a given URL, if there is one such.
-     * @return a file based on <code>url</code>; non-null
-     * @throws IllegalArgumentException if <code>url</code> does not conform to
-     *         URI syntax or does not point to an existing file.
-     */
-    private static File toFile(URL url) throws IllegalArgumentException {
-        try {
-            // ignore query and reference part of the URL
-            return new File(new URI(url.getProtocol(), url.getAuthority(), url.toURI()
-                .getPath(), null, null));
-        } catch (URISyntaxException exc) {
-            throw new IllegalArgumentException(
-                String.format("URL '%s' is not formatted correctly: %s", url, exc.getMessage()));
-        } catch (IllegalArgumentException exc) {
-            throw new IllegalArgumentException(
-                String.format("URL '%s' is not a valid file: %s", url, exc.getMessage()));
-        }
-    }
 
     /** Error message if a grammar cannot be loaded. */
     static private final String LOAD_ERROR = "Can't load graph grammar";
