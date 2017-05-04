@@ -23,7 +23,6 @@ import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.VersionDialog;
 import groove.io.store.SystemStore;
-import groove.io.store.SystemStoreFactory;
 import groove.util.ThreeValued;
 import groove.util.Version;
 
@@ -65,7 +64,7 @@ public class LoadGrammarAction extends SimulatorAction {
     public boolean load(File grammarFile) throws IOException {
         boolean result = false;
         // Load the grammar.
-        final SystemStore store = SystemStoreFactory.newStore(grammarFile, false);
+        final SystemStore store = SystemStore.newStore(grammarFile, false);
         result = load(store);
         // now we know loading succeeded, we can set the current
         // names & files

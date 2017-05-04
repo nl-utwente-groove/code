@@ -3,7 +3,6 @@ package groove.gui.action;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.io.store.SystemStore;
-import groove.io.store.SystemStoreFactory;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -28,7 +27,7 @@ public class LoadGrammarFromURLAction extends SimulatorAction {
         if (input != null) {
             try {
                 URL url = new URL(input);
-                final SystemStore store = SystemStoreFactory.newStore(url);
+                final SystemStore store = SystemStore.newStore(url);
                 //                String startGraphName = url.getQuery();
                 getActions().getLoadGrammarAction().load(store);
             } catch (MalformedURLException e) {

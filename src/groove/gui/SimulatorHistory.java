@@ -10,7 +10,6 @@ import javax.swing.JMenu;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.LoadGrammarFromHistoryAction;
 import groove.io.store.SystemStore;
-import groove.io.store.SystemStoreFactory;
 
 /** Class wrapping a menu of recently opened files. */
 class SimulatorHistory implements SimulatorListener {
@@ -66,7 +65,7 @@ class SimulatorHistory implements SimulatorListener {
     }
 
     private LoadGrammarFromHistoryAction createLoadAction(String location) throws IOException {
-        SystemStore store = SystemStoreFactory.newStore(new File(location), false);
+        SystemStore store = SystemStore.newStore(new File(location), false);
         return new LoadGrammarFromHistoryAction(this.simulator, store);
     }
 
