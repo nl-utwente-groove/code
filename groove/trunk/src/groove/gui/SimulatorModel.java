@@ -32,7 +32,6 @@ import groove.grammar.type.TypeLabel;
 import groove.graph.GraphInfo;
 import groove.gui.display.DisplayKind;
 import groove.gui.list.SearchResult;
-import groove.io.store.DefaultFileSystemStore;
 import groove.io.store.SystemStore;
 import groove.lts.GTS;
 import groove.lts.GTSChangeListener;
@@ -411,13 +410,9 @@ public class SimulatorModel implements Cloneable {
     public boolean doRenumber() throws IOException {
         start();
         try {
-            boolean result = false;
-            if (getStore() instanceof DefaultFileSystemStore) {
-                ((DefaultFileSystemStore) getStore()).renumber();
-                changeGrammar(true);
-                result = true;
-            }
-            return result;
+            getStore().renumber();
+            changeGrammar(true);
+            return true;
         } finally {
             finish();
         }
