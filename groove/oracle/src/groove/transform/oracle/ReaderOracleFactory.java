@@ -12,35 +12,43 @@
  * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
- * $Id$
+ * $Id: RandomValueOracle.java 5905 2017-04-18 15:39:30Z rensink $
  */
 package groove.transform.oracle;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import groove.algebra.Constant;
-import groove.grammar.UnitPar.RulePar;
-import groove.grammar.host.HostGraph;
-import groove.transform.RuleEvent;
+import groove.lts.GTS;
 import groove.util.parse.FormatException;
 
 /**
- * Interface to provide values for unbound variable nodes during matching.
+ * Oracle returning values from a file reader.
  * @author Arend Rensink
  * @version $Revision $
  */
 @NonNullByDefault
-public interface ValueOracle {
-    /** Returns a value for a given variable node.
-     * @throws FormatException if no correct value was provided
-     */
-    public Constant getValue(HostGraph host, RuleEvent event, RulePar par) throws FormatException;
-
-    /** Closes all resources associated with this oracle. */
-    public default void close() {
-        // does nothing
+public class ReaderOracleFactory implements ValueOracleFactory {
+    /** Constructor for a file reader to be created for a given filename. */
+    public ReaderOracleFactory(String filename) {
+        this.filename = filename;
     }
 
-    /** Returns the kind of this oracle. */
-    public ValueOracleKind getKind();
+    @Override
+    public ValueOracle instance(GTS gts) throws FormatException {
+        return new ReaderOracle(gts, this.filename);
+    }
+
+    /**
+     * Returns the filename of this oracle.
+     */
+    public String getFilename() {
+        return this.filename;
+    }
+
+    private final String filename;
+
+    @Override
+    public ValueOracleKind getKind() {
+        return ValueOracleKind.READER;
+    }
 }

@@ -119,7 +119,7 @@ public abstract class UnitPar {
         if (isInOnly()) {
             return arg.isInOnly();
         }
-        if (isOutOnly()) {
+        if (isOutOnly() || isAsk()) {
             return !arg.isInOnly();
         }
         assert isBidirectional();

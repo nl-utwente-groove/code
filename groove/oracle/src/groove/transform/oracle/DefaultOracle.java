@@ -16,17 +16,30 @@
  */
 package groove.transform.oracle;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import groove.algebra.Constant;
 import groove.grammar.UnitPar.RulePar;
 import groove.grammar.host.HostGraph;
+import groove.lts.GTS;
 import groove.transform.RuleEvent;
 import groove.util.parse.FormatException;
 
-/** Oracle returning the default value for the appropriate type. */
-public class DefaultValueOracle implements ValueOracle {
+/**
+ * Oracle returning the default value for the appropriate type.
+ * @author Arend Rensink
+ * @version $Revision $
+ */
+@NonNullByDefault
+public class DefaultOracle implements ValueOracleFactory, ValueOracle {
     /** Constructor for the singleton instance. */
-    private DefaultValueOracle() {
+    private DefaultOracle() {
         // empty
+    }
+
+    @Override
+    public ValueOracle instance(GTS gts) throws FormatException {
+        return instance();
     }
 
     @Override
@@ -37,14 +50,14 @@ public class DefaultValueOracle implements ValueOracle {
     }
 
     @Override
-    public Kind getKind() {
-        return Kind.DEFAULT;
+    public ValueOracleKind getKind() {
+        return ValueOracleKind.DEFAULT;
     }
 
     /** Returns the singleton instance of this class. */
-    public final static DefaultValueOracle instance() {
-        return instance;
+    public final static DefaultOracle instance() {
+        return INSTANCE;
     }
 
-    private static final DefaultValueOracle instance = new DefaultValueOracle();
+    private static final DefaultOracle INSTANCE = new DefaultOracle();
 }

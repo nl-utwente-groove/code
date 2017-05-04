@@ -18,6 +18,8 @@ package groove.transform.oracle;
 
 import java.util.Random;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import groove.algebra.BoolSignature;
 import groove.algebra.Constant;
 import groove.algebra.Sort;
@@ -27,18 +29,33 @@ import groove.transform.RuleEvent;
 import groove.util.Exceptions;
 import groove.util.parse.FormatException;
 
-/** Oracle returning a single random value for the appropriate type. */
-public class RandomValueOracle implements ValueOracle {
-    /** Constructor for the singleton instance. */
-    private RandomValueOracle() {
-        this.random = new Random();
+/**
+ * Oracle returning a random value for the appropriate type.
+ * @author Arend Rensink
+ * @version $Revision $
+ */
+@NonNullByDefault
+public class RandomOracle implements ValueOracle {
+    /** Constructor for an optionally seeded oracle. */
+    RandomOracle(boolean hasSeed, long seed) {
+        this.hasSeed = hasSeed;
+        this.seed = seed;
+        this.random = hasSeed ? new Random(seed) : new Random();
     }
 
-    /** Constructor for a seeded instance. */
-    private RandomValueOracle(long seed) {
-        this.random = new Random(seed);
+    /** Indicates if this random value oracle is seeded. */
+    public boolean hasSeed() {
+        return this.hasSeed;
     }
 
+    /** Returns the seed of this random value oracle, or {@code 0} if
+     * the oracle is not seeded. */
+    public long getSeed() {
+        return this.seed;
+    }
+
+    private final boolean hasSeed;
+    private final long seed;
     private final Random random;
 
     @Override
@@ -71,19 +88,7 @@ public class RandomValueOracle implements ValueOracle {
     }
 
     @Override
-    public Kind getKind() {
-        return Kind.RANDOM;
+    public ValueOracleKind getKind() {
+        return ValueOracleKind.RANDOM;
     }
-
-    /** Returns the a seeded instance of this class. */
-    public final static RandomValueOracle instance(long seed) {
-        return new RandomValueOracle(seed);
-    }
-
-    /** Returns the singleton instance of this class. */
-    public final static RandomValueOracle instance() {
-        return instance;
-    }
-
-    private static final RandomValueOracle instance = new RandomValueOracle();
 }

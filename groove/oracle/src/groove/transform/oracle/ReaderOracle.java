@@ -20,29 +20,44 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.Reader;
+import java.nio.file.Path;
 
 import groove.algebra.Constant;
 import groove.algebra.Sort;
 import groove.grammar.UnitPar.RulePar;
 import groove.grammar.host.HostGraph;
+import groove.lts.GTS;
 import groove.transform.RuleEvent;
 import groove.util.parse.FormatException;
 
-/** Oracle returning a single random value for the appropriate type. */
-public class ReaderValueOracle implements ValueOracle {
+/**
+ * Oracle returning values from a file reader.
+ * @author Arend Rensink
+ * @version $Revision $
+ */
+public class ReaderOracle implements ValueOracle {
     /** Constructor for a file reader to be created for a given filename.
-     * @throws FileNotFoundException if the filename does not correspond to an existing file. */
-    @SuppressWarnings("resource")
-    public ReaderValueOracle(String filename) throws FileNotFoundException {
-        this(new FileReader(filename));
+     * @throws FormatException if the filename does not correspond to an existing file. */
+    ReaderOracle(GTS gts, String filename) throws FormatException {
+        this.filename = filename;
+        Path home = gts.getGrammar()
+            .getLocation();
+        try {
+            Path file = home.resolve(filename);
+            this.reader = new BufferedReader(new FileReader(file.toFile()));
+        } catch (FileNotFoundException exc) {
+            throw new FormatException("Can't open file '%s'", filename);
+        }
     }
 
-    /** Constructor for a predefined reader. */
-    private ReaderValueOracle(Reader reader) {
-        this.reader = new BufferedReader(reader);
+    /**
+     * Returns the filename of this oracle.
+     */
+    public String getFilename() {
+        return this.filename;
     }
 
+    private final String filename;
     private final BufferedReader reader;
 
     @Override
@@ -62,7 +77,17 @@ public class ReaderValueOracle implements ValueOracle {
     }
 
     @Override
-    public Kind getKind() {
-        return Kind.READER;
+    public ValueOracleKind getKind() {
+        return ValueOracleKind.READER;
+    }
+
+    /** Closes the reader object. */
+    @Override
+    public void close() {
+        try {
+            this.reader.close();
+        } catch (IOException exc) {
+            // do nothing
+        }
     }
 }

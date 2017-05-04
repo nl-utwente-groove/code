@@ -36,7 +36,6 @@ import groove.grammar.host.AnchorValue;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostFactory;
-import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.HostNodeSet;
 import groove.grammar.host.ValueNode;
@@ -50,7 +49,6 @@ import groove.grammar.type.TypeNode;
 import groove.graph.plain.PlainNode;
 import groove.match.TreeMatch;
 import groove.transform.RuleEffect.Fragment;
-import groove.transform.oracle.ValueOracle;
 import groove.util.Groove;
 import groove.util.cache.CacheReference;
 import groove.util.parse.FormatException;
@@ -359,8 +357,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
         if (record.isNodesPredefined()) {
             record.addCreatorNodes(creatorNodes);
         } else {
-            HostNode[] createdNodes =
-                getCreatedNodes(record.getSource(), record.getCreatedNodeMap());
+            HostNode[] createdNodes = getCreatedNodes(record);
             record.addCreatedNodes(creatorNodes, createdNodes);
         }
     }
@@ -391,10 +388,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
                     this,
                     target);
             }
-            HostEdge image = getHostFactory().createEdge(sourceImage,
-                anchorMap.mapLabel(edge.label()),
-                targetImage);
-            record.addCreatedEdge(image);
+            record.addCreateEdge(sourceImage, anchorMap.mapLabel(edge.label()), targetImage);
         }
     }
 
@@ -502,13 +496,11 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
     /** Computes an array of created nodes that are fresh both
      * with respect to a given set of source graph nodes and with respect
      * to a set of nodes that were already created.
-     * @param source the source graph
-     * @param created possibly {@code null} mapping from creators to created nodes
+     * @param record the source graph
      * @return array of fresh nodes, in the order of the node creators
      * @throws InterruptedException if an oracle input was cancelled
      */
-    private HostNode[] getCreatedNodes(HostGraph source, Map<RuleNode,HostNode> created)
-        throws InterruptedException {
+    private HostNode[] getCreatedNodes(RuleEffect record) throws InterruptedException {
         HostNode[] result;
         RuleNode[] creatorNodes = getRule().getCreatorNodes();
         int count = creatorNodes.length;
@@ -516,7 +508,6 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
             result = AbstractRuleEvent.EMPTY_NODE_ARRAY;
         } else {
             result = new HostNode[count];
-            Set<HostNode> current = null;
             for (int i = 0; i < count; i++) {
                 TypeNode type;
                 if (creatorNodes[i].getTypeGuards()
@@ -529,10 +520,10 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
                         .getVar());
                 }
                 if (type.isDataType()) {
-                    result[i] = createValueNode(source, creatorNodes[i].getPar()
+                    result[i] = createValueNode(record, creatorNodes[i].getPar()
                         .get());
                 } else {
-                    result[i] = createNode(i, type, source.nodeSet(), current);
+                    result[i] = createNode(record, i, type);
                 }
             }
             // normalise the result to a previously stored instance
@@ -547,15 +538,16 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
      * Creates a value node by querying the oracle.
      * @throws InterruptedException if an oracle input was cancelled
      */
-    private ValueNode createValueNode(HostGraph source, RulePar par) throws InterruptedException {
-        ValueOracle oracle = getAction().getGrammarProperties()
-            .getValueOracle();
+    private ValueNode createValueNode(RuleEffect record, RulePar par) throws InterruptedException {
         try {
-            Constant c = oracle.getValue(source, this, par);
+            Constant c = record.getOracle()
+                .getValue(record.getSource(), this, par);
             Algebra<?> alg = getAction().getGrammarProperties()
                 .getAlgebraFamily()
                 .getAlgebra(c.getSort());
-            return getHostFactory().createNode(alg, alg.toValueFromConstant(c));
+            return record.getSource()
+                .getFactory()
+                .createNode(alg, alg.toValueFromConstant(c));
         } catch (FormatException exc) {
             throw new InterruptedException(exc.getMessage());
         }
@@ -567,15 +559,12 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
      * (see {@link BasicEvent#getFreshNodes(int)}; only if all of those are
      * already in the graph, a new fresh node is created using
      * {@link #createNode(TypeNode)}.
+     * @param record the rule effect with respect to which the node should be fresh
      * @param creatorIndex index in the creator nodes array indicating the node
      *        of the rule for which a new image is to be created
-     * @param sourceNodes the existing nodes, which should not contain the
-     *        fresh node
-     * @param current the collection of already added nodes; the newly added node
-     *        is guaranteed to be fresh with respect to these
+     * @param type type of the node to be created
      */
-    private HostNode createNode(int creatorIndex, TypeNode type,
-        Set<? extends HostNode> sourceNodes, Set<HostNode> current) {
+    private HostNode createNode(RuleEffect record, int creatorIndex, TypeNode type) {
         HostNode result = null;
         boolean added = false;
         List<HostNode> previous = getFreshNodes(creatorIndex);
@@ -583,14 +572,12 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
             int previousCount = previous.size();
             for (int i = 0; !added && i < previousCount; i++) {
                 result = previous.get(i);
-                added = !sourceNodes.contains(result) && (current == null || current.add(result));
+                added = !record.getSource()
+                    .containsNode(result);
             }
         }
         if (!added) {
             result = createNode(type);
-            if (current != null) {
-                current.add(result);
-            }
             if (previous != null) {
                 previous.add(result);
             }

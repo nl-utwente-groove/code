@@ -16,17 +16,19 @@
  */
 package groove.grammar;
 
-import java.io.FileNotFoundException;
 import java.util.Arrays;
 
 import groove.io.HTMLConverter;
-import groove.transform.oracle.DefaultValueOracle;
-import groove.transform.oracle.DialogValueOracle;
+import groove.transform.oracle.DefaultOracle;
+import groove.transform.oracle.DialogOracle;
 import groove.transform.oracle.NoValueOracle;
-import groove.transform.oracle.RandomValueOracle;
-import groove.transform.oracle.ReaderValueOracle;
+import groove.transform.oracle.RandomOracle;
+import groove.transform.oracle.RandomOracleFactory;
+import groove.transform.oracle.ReaderOracle;
+import groove.transform.oracle.ReaderOracleFactory;
 import groove.transform.oracle.ValueOracle;
-import groove.transform.oracle.ValueOracle.Kind;
+import groove.transform.oracle.ValueOracleFactory;
+import groove.transform.oracle.ValueOracleKind;
 import groove.util.Exceptions;
 import groove.util.parse.FormatException;
 import groove.util.parse.Parser;
@@ -36,7 +38,7 @@ import groove.util.parse.Parser;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class OracleParser implements Parser<ValueOracle> {
+public class OracleParser implements Parser<ValueOracleFactory> {
     /** Private constructor for the singleton instance. */
     private OracleParser() {
         // empty
@@ -48,7 +50,7 @@ public class OracleParser implements Parser<ValueOracle> {
             StringBuilder buffer = new StringBuilder();
             buffer.append("One of");
             boolean first = true;
-            for (Kind kind : Kind.values()) {
+            for (ValueOracleKind kind : ValueOracleKind.values()) {
                 buffer.append(first ? ": " : ", ");
                 buffer.append(HTMLConverter.ITALIC_TAG.on(kind.getName()));
                 if (first) {
@@ -64,14 +66,14 @@ public class OracleParser implements Parser<ValueOracle> {
     private String description;
 
     @Override
-    public ValueOracle parse(String input) throws FormatException {
-        ValueOracle result;
+    public ValueOracleFactory parse(String input) throws FormatException {
+        ValueOracleFactory result;
         if (input == null || input.length() == 0) {
-            result = createOracle(Kind.NONE, null);
+            result = createOracle(ValueOracleKind.NONE, null);
         } else {
             FormatException exc =
                 new FormatException("%s is not a valid oracle specification", input);
-            Kind kind = Arrays.stream(Kind.values())
+            ValueOracleKind kind = Arrays.stream(ValueOracleKind.values())
                 .filter(k -> input.startsWith(k.getName()))
                 .findAny()
                 .orElseThrow(() -> exc);
@@ -96,19 +98,20 @@ public class OracleParser implements Parser<ValueOracle> {
     }
 
     /** Returns an oracle of the desired kind. */
-    private ValueOracle createOracle(Kind kind, String par) throws FormatException {
+    private ValueOracleFactory createOracle(ValueOracleKind kind, String par)
+        throws FormatException {
         FormatException exc = new FormatException("Unexpected parameter '%s'", par);
         switch (kind) {
         case DEFAULT:
             if (par != null) {
                 throw exc;
             }
-            return DefaultValueOracle.instance();
+            return DefaultOracle.instance();
         case DIALOG:
             if (par != null) {
                 throw exc;
             }
-            return DialogValueOracle.instance();
+            return DialogOracle.instance();
         case NONE:
             if (par != null) {
                 throw exc;
@@ -116,11 +119,11 @@ public class OracleParser implements Parser<ValueOracle> {
             return NoValueOracle.instance();
         case RANDOM:
             if (par == null) {
-                return RandomValueOracle.instance();
+                return RandomOracleFactory.instance();
             } else {
                 try {
                     long seed = Long.parseLong(par);
-                    return RandomValueOracle.instance(seed);
+                    return RandomOracleFactory.instance(seed);
                 } catch (NumberFormatException number) {
                     throw new FormatException("Seed '%s' should be long value", par);
                 }
@@ -129,11 +132,7 @@ public class OracleParser implements Parser<ValueOracle> {
             if (par == null) {
                 throw new FormatException("Reader oracle should specify filename");
             }
-            try {
-                return new ReaderValueOracle(par);
-            } catch (FileNotFoundException exc1) {
-                throw new FormatException(exc1.getMessage());
-            }
+            return new ReaderOracleFactory(par);
         default:
             throw Exceptions.UNREACHABLE;
         }
@@ -141,27 +140,30 @@ public class OracleParser implements Parser<ValueOracle> {
 
     @Override
     public String toParsableString(Object value) {
-        Kind result = null;
+        String result;
         Class<? extends ValueOracle> oracle = ((ValueOracle) value).getClass();
         if (oracle == NoValueOracle.class) {
-            result = Kind.NONE;
-        } else if (oracle == DefaultValueOracle.class) {
-            result = Kind.DEFAULT;
-        } else if (oracle == RandomValueOracle.class) {
-            result = Kind.RANDOM;
+            result = ValueOracleKind.NONE.getName();
+        } else if (oracle == DefaultOracle.class) {
+            result = ValueOracleKind.DEFAULT.getName();
+        } else if (oracle == RandomOracle.class) {
+            RandomOracle random = (RandomOracle) value;
+            result = ValueOracleKind.RANDOM + (random.hasSeed() ? ":" + random.getSeed() : "");
+        } else if (oracle == ReaderOracle.class) {
+            result = ValueOracleKind.READER + ":" + ((ReaderOracle) value).getFilename();
         } else {
             throw Exceptions.UNREACHABLE;
         }
-        return result.getName();
+        return result;
     }
 
     @Override
-    public Class<? extends ValueOracle> getValueType() {
-        return ValueOracle.class;
+    public Class<? extends ValueOracleFactory> getValueType() {
+        return ValueOracleFactory.class;
     }
 
     @Override
-    public ValueOracle getDefaultValue() {
+    public ValueOracleFactory getDefaultValue() {
         return NoValueOracle.instance();
     }
 

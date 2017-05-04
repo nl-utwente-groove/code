@@ -16,35 +16,46 @@
  */
 package groove.transform.oracle;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import groove.algebra.Constant;
 import groove.grammar.UnitPar.RulePar;
 import groove.grammar.host.HostGraph;
+import groove.lts.GTS;
 import groove.transform.RuleEvent;
 import groove.util.parse.FormatException;
 
 /**
- * Oracle that always returns an empty range of values.
+ * Oracle that always throws an exception.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class NoValueOracle implements ValueOracle {
+@NonNullByDefault
+public class NoValueOracle implements ValueOracleFactory, ValueOracle {
     @Override
-    public Constant getValue(HostGraph host, RuleEvent event, RulePar par) throws FormatException {
-        return null;
+    public NoValueOracle instance(GTS gts) {
+        return instance();
     }
 
     @Override
-    public Kind getKind() {
-        return Kind.NONE;
+    public Constant getValue(HostGraph host, RuleEvent event, RulePar par) throws FormatException {
+        throw new FormatException("No value");
+    }
+
+    @Override
+    public ValueOracleKind getKind() {
+        return ValueOracleKind.NONE;
     }
 
     /** Returns the singleton instance of this class. */
     public final static NoValueOracle instance() {
-        if (INSTANCE == null) {
-            INSTANCE = new NoValueOracle();
+        NoValueOracle result = INSTANCE;
+        if (result == null) {
+            result = INSTANCE = new NoValueOracle();
         }
-        return INSTANCE;
+        return result;
     }
 
-    private static NoValueOracle INSTANCE;
+    private static @Nullable NoValueOracle INSTANCE;
 }

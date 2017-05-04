@@ -52,7 +52,7 @@ import groove.util.parse.FormatException;
 public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     implements RuleTransitionStub, RuleTransition {
     /**
-     * Constructs a GraphTransition on the basis of a given rule event, between
+     * Constructs a GraphTransition on the basis of a given match and added node set, between
      * a given source and target state.
      */
     public DefaultRuleTransition(GraphState source, MatchResult match,

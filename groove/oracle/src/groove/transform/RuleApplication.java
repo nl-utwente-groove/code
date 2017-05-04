@@ -36,13 +36,14 @@ import groove.grammar.rule.Anchor;
 import groove.grammar.rule.AnchorKey;
 import groove.grammar.rule.RuleNode;
 import groove.match.TreeMatch;
+import groove.transform.oracle.ValueOracle;
 import groove.util.Property;
 import groove.util.Visitor;
 import groove.util.Visitor.Finder;
 
 /**
  * Class representing a particular application of a {@link groove.grammar.Rule} and a
- * graph. This is essentially the combination of a {@link RuleEvent}, the host graph,
+ * graph. This is essentially the combination of an existing {@link RuleEvent}, the host graph,
  * and the created nodes.
  * <p>
  * The main functionality of objects of this class is to apply the rule event's changes
@@ -53,8 +54,8 @@ import groove.util.Visitor.Finder;
  */
 public class RuleApplication implements DeltaApplier {
     /**
-     * Constructs a new derivation on the basis of a given rule and host
-     * graph.
+     * Constructs a new application on the basis of a given rule and host
+     * graph. The target graph is computed.
      * @param event the production rule instance involved
      * @param source the host graph to which the rule is to be applied
      */
@@ -70,9 +71,9 @@ public class RuleApplication implements DeltaApplier {
      * graph and added node set.
      * @param event the production rule instance involved
      * @param source the host graph to which the rule is to be applied
-     * @param addedNodes the created nodes, in the order of the rule's
-     *        coanchor. If <code>null</code>, the added nodes are yet to be
-     *        generated.
+     * @param addedNodes the non-<code>null</code> array of created nodes,
+     * in the order of the rule's coanchor. If <code>null</code>, the added nodes are yet to be
+     * generated.
      */
     public RuleApplication(final RuleEvent event, HostGraph source, HostNode[] addedNodes) {
         this.event = event;
@@ -89,8 +90,8 @@ public class RuleApplication implements DeltaApplier {
      * graph and target graph, and created nodes.
      * @param event the production rule instance involved
      * @param source the host graph to which the rule is to be applied
-     * @param addedNodes the created nodes, in the order of the rule's
-     *        coanchor.
+     * @param addedNodes the non-<code>null</code> array of created nodes,
+     * in the order of the rule's coanchor.
      */
     public RuleApplication(RuleEvent event, HostGraph source, HostGraph target,
         @NonNull HostNode[] addedNodes) {
@@ -282,7 +283,7 @@ public class RuleApplication implements DeltaApplier {
         if (result == null) {
             // use the predefined created nodes, if available
             if (getAddedNodes() == null) {
-                result = new RuleEffect(getSource());
+                result = new RuleEffect(getSource(), (ValueOracle) null);
             } else {
                 result = new RuleEffect(getSource(), getAddedNodes());
             }
@@ -375,6 +376,9 @@ public class RuleApplication implements DeltaApplier {
         if (record.hasAddedNodes()) {
             for (HostNode node : record.getAddedNodes()) {
                 target.addNode(node);
+                if (node instanceof ValueNode) {
+                    registerAddedValueNode((ValueNode) node);
+                }
             }
         }
     }

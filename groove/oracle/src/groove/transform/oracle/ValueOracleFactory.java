@@ -18,29 +18,20 @@ package groove.transform.oracle;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import groove.algebra.Constant;
-import groove.grammar.UnitPar.RulePar;
-import groove.grammar.host.HostGraph;
-import groove.transform.RuleEvent;
+import groove.lts.GTS;
 import groove.util.parse.FormatException;
 
 /**
- * Interface to provide values for unbound variable nodes during matching.
+ * Factory to create a value oracle for a given GTS.
  * @author Arend Rensink
  * @version $Revision $
  */
 @NonNullByDefault
-public interface ValueOracle {
-    /** Returns a value for a given variable node.
-     * @throws FormatException if no correct value was provided
-     */
-    public Constant getValue(HostGraph host, RuleEvent event, RulePar par) throws FormatException;
+public interface ValueOracleFactory {
+    /** Creates an oracle for a given GTS. 
+     * @throws FormatException TODO*/
+    public ValueOracle instance(GTS gts) throws FormatException;
 
-    /** Closes all resources associated with this oracle. */
-    public default void close() {
-        // does nothing
-    }
-
-    /** Returns the kind of this oracle. */
+    /** Returns the kind of value oracle this factory produces. */
     public ValueOracleKind getKind();
 }

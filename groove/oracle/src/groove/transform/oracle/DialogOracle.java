@@ -20,19 +20,34 @@ import java.awt.Component;
 
 import javax.swing.JOptionPane;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import groove.algebra.Constant;
 import groove.algebra.Sort;
 import groove.grammar.UnitPar.RulePar;
 import groove.grammar.host.HostGraph;
+import groove.lts.GTS;
 import groove.transform.RuleEvent;
 import groove.util.parse.FormatException;
 
 /**
- * Value oracle that asks the user for a value
+ * Value oracle that asks the user for a value.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class DialogValueOracle implements ValueOracle {
+@NonNullByDefault
+public class DialogOracle implements ValueOracleFactory, ValueOracle {
+    /** Private constructor for the singleton instance. */
+    private DialogOracle() {
+        // empty
+    }
+
+    @Override
+    public DialogOracle instance(GTS gts) {
+        return instance();
+    }
+
     @Override
     public Constant getValue(HostGraph host, RuleEvent event, RulePar par) throws FormatException {
         String ruleName = event.getRule()
@@ -75,20 +90,21 @@ public class DialogValueOracle implements ValueOracle {
         this.parent = parent;
     }
 
-    private Component parent;
+    private @Nullable Component parent;
 
     @Override
-    public Kind getKind() {
-        return Kind.DIALOG;
+    public ValueOracleKind getKind() {
+        return ValueOracleKind.DIALOG;
     }
 
     /** Returns the singleton instance of this class. */
-    public final static DialogValueOracle instance() {
-        if (INSTANCE == null) {
-            INSTANCE = new DialogValueOracle();
+    public final static DialogOracle instance() {
+        DialogOracle result = INSTANCE;
+        if (result == null) {
+            result = INSTANCE = new DialogOracle();
         }
-        return INSTANCE;
+        return result;
     }
 
-    private static DialogValueOracle INSTANCE;
+    private static @Nullable DialogOracle INSTANCE;
 }

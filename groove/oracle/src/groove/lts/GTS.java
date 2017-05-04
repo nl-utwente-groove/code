@@ -58,6 +58,7 @@ import groove.graph.multi.MultiGraph;
 import groove.graph.multi.MultiNode;
 import groove.lts.Status.Flag;
 import groove.transform.Record;
+import groove.transform.oracle.ValueOracle;
 import groove.util.collect.NestedIterator;
 import groove.util.collect.SetView;
 import groove.util.collect.TransformIterator;
@@ -98,10 +99,13 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     /**
      * Constructs a GTS from a (fixed) graph grammar.
      */
-    public GTS(Grammar grammar) {
+    public GTS(Grammar grammar) throws FormatException {
         super(grammar.getName() + "-gts");
         grammar.testFixed(true);
         this.grammar = grammar;
+        this.oracle = grammar.getProperties()
+            .getValueOracle()
+            .instance(this);
     }
 
     /** Indicates if the grammar works with simple or multi-graphs. */
@@ -748,7 +752,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
 
     @Override
     public GTS newGraph(String name) {
-        return new GTS(this.grammar);
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -799,6 +803,15 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         return new MatchApplier(this);
     }
 
+    /** The match applier associated with this GTS. */
+    private MatchApplier matchApplier;
+
+    /** Returns the oracle associated with this GTS. */
+    public ValueOracle getOracle() {
+        return this.oracle;
+    }
+
+    private final ValueOracle oracle;
     /**
      * The start state of this LTS.
      * @invariant <tt>nodeSet().contains(startState)</tt>
@@ -815,8 +828,6 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
 
     /** The system record for this GTS. */
     private Record record;
-    /** The match applier associated with this GTS. */
-    private MatchApplier matchApplier;
     /**
      * Set of {@link GTSListener} s to be identified of changes in this graph.
      * Set to <tt>null</tt> when the graph is fixed.

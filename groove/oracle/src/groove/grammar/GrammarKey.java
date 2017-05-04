@@ -29,7 +29,7 @@ import groove.explore.ExploreType;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.RuleModel;
-import groove.transform.oracle.ValueOracle.Kind;
+import groove.transform.oracle.ValueOracleKind;
 import groove.util.DocumentedEnum;
 import groove.util.Groove;
 import groove.util.PropertyKey;
@@ -52,7 +52,7 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
     ALGEBRA("algebraFamily", "<body>Algebra used for attributes" + DocumentedEnum.document(AlgebraFamily.class), new Parser.EnumParser<>(AlgebraFamily.class, AlgebraFamily.DEFAULT)),
 
     /** Property name for the value oracle to be used for matching unbound value parameters. */
-    ORACLE("valueOracle", "Source of values for unbound value parameters" + DocumentedEnum.document(Kind.class) + "<p>If the algebra family is set to <i>point</i>, the oracle is disregarded", OracleParser.instance()),
+    ORACLE("valueOracle", "Source of values for unbound value parameters" + DocumentedEnum.document(ValueOracleKind.class) + "<p>If the algebra family is set to <i>point</i>, the oracle is disregarded", OracleParser.instance()),
 
     /**
      * Flag determining the injectivity of the rule system. If <code>true</code>,

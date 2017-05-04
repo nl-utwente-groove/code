@@ -121,6 +121,14 @@ public class RuleApplicationTest {
         test("regression");
     }
 
+    /** Collection of regression tests. */
+    @Test
+    public void testOracle() {
+        test("oracle-default");
+        test("oracle-random");
+        test("oracle-reader");
+    }
+
     /** Tests all rules in a named grammar (to be loaded from {@link #INPUT_DIR}). */
     private void test(String grammarName) {
         try {

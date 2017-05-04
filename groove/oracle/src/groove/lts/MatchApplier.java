@@ -130,7 +130,7 @@ public class MatchApplier {
             .hasNodeCreators()) {
             // compute the frame values at the same time, if there are any
             Fragment fragment = hasFrameValues ? Fragment.NODE_ALL : Fragment.NODE_CREATION;
-            effectRecord = new RuleEffect(source.getGraph(), fragment);
+            effectRecord = new RuleEffect(source.getGraph(), fragment, this.gts.getOracle());
             event.recordEffect(effectRecord);
             effectRecord.setFixed();
             addedNodes = effectRecord.getCreatedNodeArray();
@@ -168,7 +168,8 @@ public class MatchApplier {
             addedNodes = parentOut.getAddedNodes();
         } else if (match.getAction()
             .hasNodeCreators()) {
-            RuleEffect effect = new RuleEffect(source.getGraph(), Fragment.NODE_CREATION);
+            RuleEffect effect =
+                new RuleEffect(source.getGraph(), Fragment.NODE_CREATION, this.gts.getOracle());
             event.recordEffect(effect);
             effect.setFixed();
             addedNodes = effect.getCreatedNodeArray();

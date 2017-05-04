@@ -267,6 +267,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
      * from being computed
      */
     public Signature<UnitPar.RulePar> getSignature() throws FormatException {
+        getErrors().throwException();
         return new Parameters().getSignature();
     }
 
@@ -321,9 +322,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
     @Override
     public RuleModelMap getMap() {
-        synchronise();
         if (hasErrors()) {
-            throw new IllegalStateException();
+            throw new IllegalStateException(
+                "Can't compute map while rule has errors: " + getErrors().toString());
         }
         return this.modelMap;
     }
@@ -2591,7 +2592,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             throws FormatException {
             AspectKind nodeKind = node.getKind();
             AspectKind paramKind = node.getParamKind();
-            RuleNode nodeImage = RuleModel.this.modelMap.getNode(node);
+            RuleNode nodeImage = getMap().getNode(node);
             assert nodeImage != null;
             if (paramKind == PARAM_IN && nodeKind.isCreator()) {
                 throw new FormatException("Input parameter %d cannot be creator node", nr, node);
