@@ -16,6 +16,8 @@
  */
 package groove.algebra;
 
+import java.util.Collection;
+
 import groove.algebra.syntax.Expression;
 
 /**
@@ -105,6 +107,12 @@ public class JavaIntAlgebra extends IntAlgebra<Integer,Double,Boolean,String> {
     }
 
     @Override
+    public Integer sum(Collection<Integer> arg) {
+        return arg.stream()
+            .reduce(0, (i, j) -> i + j);
+    }
+
+    @Override
     public Double toReal(Integer arg) {
         return new Double(arg);
     }
@@ -126,7 +134,8 @@ public class JavaIntAlgebra extends IntAlgebra<Integer,Double,Boolean,String> {
 
     @Override
     public Integer toValueFromConstant(Constant constant) {
-        return constant.getIntRepr().intValue();
+        return constant.getIntRepr()
+            .intValue();
     }
 
     /* The value is already of the right type. */

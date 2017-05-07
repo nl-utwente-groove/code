@@ -22,6 +22,8 @@ import static groove.util.parse.OpKind.EQUAL;
 import static groove.util.parse.OpKind.MULT;
 import static groove.util.parse.OpKind.UNARY;
 
+import java.util.Collection;
+
 import groove.annotation.InfixSymbol;
 import groove.annotation.PrefixSymbol;
 import groove.annotation.Syntax;
@@ -141,6 +143,12 @@ public abstract class IntSignature<INT,REAL,BOOL,STRING> implements Signature {
     @InfixSymbol(symbol = "-", kind = ADD)
     public abstract INT sub(INT arg0, INT arg1);
 
+    /** Summation over a set of values. */
+    @Syntax("Q%s.LPAR.i1.RPAR")
+    @ToolTipHeader("Integer summation")
+    @ToolTipBody("Returns the sum of all quantified values")
+    public abstract INT sum(Collection<INT> arg);
+
     /** String representation. */
     @ToolTipHeader("Integer-to-string conversion")
     @Syntax("Q%s.LPAR.i1.RPAR")
@@ -194,6 +202,8 @@ public abstract class IntSignature<INT,REAL,BOOL,STRING> implements Signature {
         NEG,
         /** Value for {@link #sub(Object, Object)}. */
         SUB,
+        /** Value for {@link #sum(Collection)}. */
+        SUM,
         /** Value for {@link #toReal(Object)}. */
         TO_REAL,
         /** Value for {@link #toString(Object)}. */

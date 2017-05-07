@@ -16,10 +16,11 @@
  */
 package groove.algebra;
 
-import groove.algebra.syntax.Expression;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Collection;
+
+import groove.algebra.syntax.Expression;
 
 /**
  * Integer algebra based on the java type {@link Integer}.
@@ -59,22 +60,26 @@ public class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolean,Stri
 
     @Override
     public Boolean ge(BigInteger arg0, BigInteger arg1) {
-        return arg0.subtract(arg1).signum() >= 0;
+        return arg0.subtract(arg1)
+            .signum() >= 0;
     }
 
     @Override
     public Boolean gt(BigInteger arg0, BigInteger arg1) {
-        return arg0.subtract(arg1).signum() > 0;
+        return arg0.subtract(arg1)
+            .signum() > 0;
     }
 
     @Override
     public Boolean le(BigInteger arg0, BigInteger arg1) {
-        return arg0.subtract(arg1).signum() <= 0;
+        return arg0.subtract(arg1)
+            .signum() <= 0;
     }
 
     @Override
     public Boolean lt(BigInteger arg0, BigInteger arg1) {
-        return arg0.subtract(arg1).signum() < 0;
+        return arg0.subtract(arg1)
+            .signum() < 0;
     }
 
     @Override
@@ -105,6 +110,12 @@ public class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolean,Stri
     @Override
     public BigInteger sub(BigInteger arg0, BigInteger arg1) {
         return arg0.subtract(arg1);
+    }
+
+    @Override
+    public BigInteger sum(Collection<BigInteger> arg) {
+        return arg.stream()
+            .reduce(BigInteger.ZERO, (i, j) -> i.add(j));
     }
 
     @Override

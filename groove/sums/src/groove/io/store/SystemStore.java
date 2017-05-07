@@ -95,7 +95,7 @@ public class SystemStore extends UndoableEditSupport {
      * @param file source directory of the underlying persistent storage
      * @param create if <code>true</code> and <code>file</code> does not yet
      *        exist, attempt to create it.
-     * @throws IllegalArgumentException if <code>file</code> is not an existing
+     * @throws IOException if <code>file</code> is not an existing
      *         directory, or does not have the correct extension.
      */
     public SystemStore(File file, boolean create) throws IOException {
@@ -105,11 +105,11 @@ public class SystemStore extends UndoableEditSupport {
                     throw new IOException(String.format("Could not create directory '%s'", file));
                 }
             } else {
-                throw new IllegalArgumentException(String.format("File '%s' does not exist", file));
+                throw new IOException(String.format("File '%s' does not exist", file));
             }
         }
         if (!file.isDirectory()) {
-            throw new IllegalArgumentException(String.format("File '%s' is not a directory", file));
+            throw new IOException(String.format("File '%s' is not a directory", file));
         }
         if (!GRAMMAR.hasExtension(file)) {
             throw new IOException(

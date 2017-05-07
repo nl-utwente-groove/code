@@ -16,6 +16,8 @@
  */
 package groove.algebra;
 
+import java.util.Collection;
+
 import groove.algebra.syntax.Expression;
 
 /**
@@ -24,8 +26,8 @@ import groove.algebra.syntax.Expression;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class PointIntAlgebra extends IntAlgebra<Integer,Double,Boolean,String> implements
-    PointAlgebra<Integer> {
+public class PointIntAlgebra extends IntAlgebra<Integer,Double,Boolean,String>
+    implements PointAlgebra<Integer> {
     /** Private constructor for the singleton instance. */
     private PointIntAlgebra() {
         // empty
@@ -148,6 +150,11 @@ public class PointIntAlgebra extends IntAlgebra<Integer,Double,Boolean,String> i
 
     @Override
     public Integer sub(Integer arg0, Integer arg1) {
+        return singleInt;
+    }
+
+    @Override
+    public Integer sum(Collection<Integer> arg) {
         return singleInt;
     }
 

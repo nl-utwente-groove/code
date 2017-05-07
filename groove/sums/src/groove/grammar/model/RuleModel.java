@@ -1021,7 +1021,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             for (Level1 level1 : level1Map.values()) {
                 try {
                     Index index = level1.getIndex();
-                    Level2 level2 = new Level2(level1, modelMap);
+                    Level2 parent = index.isTopLevel() ? null : result.get(index.parent);
+                    Level2 level2 = new Level2(level1, parent, modelMap);
                     result.put(index, level2);
                 } catch (FormatException e) {
                     errors.addAll(e.getErrors());
@@ -1321,10 +1322,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         /**
          * Creates a new level, with a given index and parent level.
          * @param origin the level 1 object from which this level 2 object is created
+         * @param parent the parent's level 2 object, if this is not a top level
          */
-        public Level2(Level1 origin, RuleModelMap modelMap) throws FormatException {
+        public Level2(Level1 origin, Level2 parent, RuleModelMap modelMap) throws FormatException {
             this.factory = modelMap.getFactory();
             Index index = this.index = origin.index;
+            this.parent = parent;
             this.modelMap = modelMap;
             this.isRule = index.isTopLevel();
             // initialise the rule data structures
@@ -1492,19 +1495,31 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             List<VariableNode> arguments = new ArrayList<>();
             for (AspectNode argModelNode : productNode.getArgNodes()) {
                 VariableNode argument = (VariableNode) getNodeImage(argModelNode);
-                if (!(this.lhs.nodeSet()
-                    .contains(argument) || embargo && this.nacNodeSet.contains(argument))) {
+                boolean argOnThisLevel = this.lhs.nodeSet()
+                    .contains(argument);
+                if (!(argOnThisLevel || embargo && this.nacNodeSet.contains(argument))) {
                     throw new FormatException(
-                        "Argument must exist on the level of the product node", argModelNode,
+                        "Argument '%s' must exist on the level of the product node", argModelNode,
                         productNode);
                 }
                 arguments.add(argument);
             }
-            VariableNode target = (VariableNode) getNodeImage(operatorEdge.target());
+            AspectNode targetModelNode = operatorEdge.target();
+            VariableNode target = (VariableNode) getNodeImage(targetModelNode);
             if (!(this.lhs.nodeSet()
                 .contains(target) || embargo && this.nacNodeSet.contains(target))) {
                 throw new FormatException(
                     "Operation target must exist on the level of the operator edge", operatorEdge);
+            }
+            // make sure that set operator targets appear on the parent level already
+            if (operatorEdge.getOperator()
+                .takesCollection()) {
+                if (!(this.parent != null && this.parent.lhs.nodeSet()
+                    .contains(target))) {
+                    throw new FormatException(
+                        "Set operator target '%s' must be defined on the parent level",
+                        targetModelNode, productNode);
+                }
             }
             RuleNode opNode = this.factory.createOperatorNode(productNode.getNumber(),
                 operatorEdge.getOperator(),
@@ -1927,6 +1942,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         private final RuleModelMap modelMap;
         /** Index of this level. */
         private final Index index;
+        /** Parent level. */
+        private final Level2 parent;
         /** Map of all connect edges on this level. */
         private final Map<AspectEdge,Set<RuleNode>> connectMap = new HashMap<>();
         /** The rule node registering the match count. */

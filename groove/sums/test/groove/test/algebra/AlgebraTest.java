@@ -17,6 +17,11 @@
 package groove.test.algebra;
 
 import static org.junit.Assert.assertEquals;
+
+import java.util.Arrays;
+
+import org.junit.Test;
+
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.algebra.BoolAlgebra;
@@ -25,8 +30,6 @@ import groove.algebra.RealAlgebra;
 import groove.algebra.Sort;
 import groove.algebra.StringAlgebra;
 import groove.algebra.syntax.Expression;
-
-import org.junit.Test;
 
 /** Abstract class to test the functionality of an algebra family. */
 public abstract class AlgebraTest<B,I,R,S> {
@@ -228,6 +231,12 @@ public abstract class AlgebraTest<B,I,R,S> {
     /** Delegates to {@link IntAlgebra#sub} */
     protected I iSub(I arg0, I arg1) {
         return this.intAlgebra.sub(arg0, arg1);
+    }
+
+    /** Delegates to {@link IntAlgebra#sum} */
+    @SafeVarargs
+    final protected I iSum(I... arg) {
+        return this.intAlgebra.sum(Arrays.asList(arg));
     }
 
     /** Delegates to {@link IntAlgebra#toReal} */
