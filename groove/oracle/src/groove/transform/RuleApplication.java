@@ -60,10 +60,21 @@ public class RuleApplication implements DeltaApplier {
      * @param source the host graph to which the rule is to be applied
      */
     public RuleApplication(RuleEvent event, HostGraph source) {
-        this(event, source, null);
+        this(event, source, (ValueOracle) null);
         assert !event.getRule()
             .getSignature()
             .has(Direction.ASK) : "Rule signature should not have user-provided parameters";
+    }
+
+    /**
+     * Constructs a new application on the basis of a given rule, host
+     * graph and value oracle. The target graph is computed.
+     * @param event the production rule instance involved
+     * @param source the host graph to which the rule is to be applied
+     */
+    public RuleApplication(RuleEvent event, HostGraph source, ValueOracle oracle) {
+        this(event, source, (HostNode[]) null);
+        this.oracle = oracle;
     }
 
     /**
@@ -159,6 +170,13 @@ public class RuleApplication implements DeltaApplier {
      * to (re)construct the derivation target.
      */
     private final HostNode[] addedNodes;
+
+    /** Returns the optional value oracle. */
+    private ValueOracle getOracle() {
+        return this.oracle;
+    }
+
+    private ValueOracle oracle;
 
     /**
      * Returns a target graph created as a result of the application. The target
@@ -283,7 +301,7 @@ public class RuleApplication implements DeltaApplier {
         if (result == null) {
             // use the predefined created nodes, if available
             if (getAddedNodes() == null) {
-                result = new RuleEffect(getSource(), (ValueOracle) null);
+                result = new RuleEffect(getSource(), getOracle());
             } else {
                 result = new RuleEffect(getSource(), getAddedNodes());
             }

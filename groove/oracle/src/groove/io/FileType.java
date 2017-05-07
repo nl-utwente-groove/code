@@ -17,6 +17,7 @@
 package groove.io;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -216,6 +217,16 @@ public enum FileType {
     }
 
     /**
+     * Strips the extension of this file type from a path, if the extension is in fact there.
+     * @param path the path to be stripped
+     */
+    public Path stripExtension(Path path) {
+        return path.getParent()
+            .resolve(path.getFileName()
+                .toString());
+    }
+
+    /**
      * Adds the (primary) extension of this file type to filename, if there is no extension.
      * @param filename the filename to be provided with an extension
      */
@@ -264,6 +275,16 @@ public enum FileType {
      */
     public boolean hasExtension(File file) {
         return hasExtension(file.getName());
+    }
+
+    /**
+     * Tests if a given path has the extension of this file type.
+     * @param path the path to be tested
+     * @return <code>true</code> if <code>file</code> has the extension
+     *         of this filter
+     */
+    public boolean hasExtension(Path path) {
+        return hasExtension(path.toString());
     }
 
     /** Indicates if this file format has an associated loader/saver for graphs.
@@ -400,6 +421,12 @@ public enum FileType {
         return filename.substring(filename.lastIndexOf(SEPARATOR));
     }
 
+    /** Tests if a given file has a pure name part,
+     * i.e., a non-empty string before the extension. */
+    static public boolean hasPureName(File file) {
+        return hasPureName(file.getName());
+    }
+
     /**
      * Returns the name part of a file name, without extension. The extension is
      * taken to be the part from the last #SEPARATOR occurrence (inclusive).
@@ -410,6 +437,12 @@ public enum FileType {
      */
     static public String getPureName(File file) {
         return getPureName(file.getName());
+    }
+
+    /** Tests if a given filename has a pure name part,
+     * i.e., a non-empty string before the extension. */
+    static public boolean hasPureName(String filename) {
+        return filename.lastIndexOf(SEPARATOR) != 0;
     }
 
     /**

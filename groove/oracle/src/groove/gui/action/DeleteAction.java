@@ -61,8 +61,6 @@ public class DeleteAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getSimulatorModel().getSelected(getResourceKind()) != null
-            && getSimulatorModel().getStore()
-                .isModifiable());
+        setEnabled(getSimulatorModel().getSelected(getResourceKind()) != null);
     }
 }

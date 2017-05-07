@@ -45,6 +45,7 @@ import groove.io.FileType;
 import groove.transform.Proof;
 import groove.transform.RuleApplication;
 import groove.transform.RuleEvent;
+import groove.transform.oracle.ValueOracle;
 import groove.util.Groove;
 import groove.util.parse.FormatException;
 import junit.framework.Assert;
@@ -132,14 +133,21 @@ public class RuleApplicationTest {
     /** Tests all rules in a named grammar (to be loaded from {@link #INPUT_DIR}). */
     private void test(String grammarName) {
         try {
-            GrammarModel view = Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
-            for (QualName ruleName : view.getNames(RULE)) {
-                test(view, ruleName);
+            this.grammar = Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
+            this.oracle = this.grammar.getProperties()
+                .getValueOracle();
+            for (QualName ruleName : this.grammar.getNames(RULE)) {
+                test(ruleName);
             }
-        } catch (IOException e) {
+        } catch (FormatException | IOException e) {
             Assert.fail(e.getMessage());
         }
     }
+
+    /** Grammar set for the next rule test. */
+    private GrammarModel grammar;
+    /** Value oracle set for the next rule test. */
+    private ValueOracle oracle;
 
     /**
      * Tests a named rule from a given grammar view.
@@ -149,9 +157,9 @@ public class RuleApplicationTest {
      * graphs with all graphs named {@code ruleName-<i>i</i>-<i>j</i>}
      * (for <i>j</i> ranging from zero).
      */
-    private void test(GrammarModel view, QualName ruleName) {
+    private void test(QualName ruleName) {
         boolean found = false;
-        for (QualName startName : view.getNames(HOST)) {
+        for (QualName startName : this.grammar.getNames(HOST)) {
             String namePrefix = ruleName.last() + "-";
             if (startName.parent()
                 .equals(ruleName.parent())
@@ -160,7 +168,7 @@ public class RuleApplicationTest {
                 && !startName.last()
                     .substring(namePrefix.length())
                     .contains("-")) {
-                test(view, ruleName, startName);
+                test(ruleName, startName);
                 found = true;
             }
         }
@@ -177,29 +185,29 @@ public class RuleApplicationTest {
      * graphs with all graphs named {@code startName-<i>j</i>}
      * (for <i>j</i> ranging from zero).
      */
-    private void test(GrammarModel grammarModel, QualName ruleName, QualName startName) {
+    private void test(QualName ruleName, QualName startName) {
         try {
-            grammarModel.setLocalActiveNames(HOST, startName);
+            this.grammar.setLocalActiveNames(HOST, startName);
             List<HostGraph> results = new ArrayList<>();
-            AlgebraFamily family = grammarModel.getProperties()
+            AlgebraFamily family = this.grammar.getProperties()
                 .getAlgebraFamily();
-            for (QualName resultName : grammarModel.getNames(HOST)) {
+            for (QualName resultName : this.grammar.getNames(HOST)) {
                 String namePrefix = startName.last() + "-";
                 if (resultName.parent()
                     .equals(startName.parent())
                     && resultName.last()
                         .startsWith(namePrefix)) {
-                    results.add(grammarModel.getHostModel(resultName)
+                    results.add(this.grammar.getHostModel(resultName)
                         .toResource()
                         .clone(family));
                 }
             }
-            Rule rule = grammarModel.toGrammar()
+            Rule rule = this.grammar.toGrammar()
                 .getRule(ruleName);
             if (rule == null) {
                 Assert.fail(String.format("Rule '%s' is currently disabled", ruleName));
             }
-            test(grammarModel.getStartGraphModel()
+            test(this.grammar.getStartGraphModel()
                 .toHost()
                 .clone(family), rule, results);
         } catch (FormatException e) {
@@ -240,7 +248,7 @@ public class RuleApplicationTest {
             eventSet.add(event);
         }
         for (RuleEvent event : eventSet) {
-            HostGraph target = new RuleApplication(event, start).getTarget();
+            HostGraph target = new RuleApplication(event, start, this.oracle).getTarget();
             // look up this graph in the intended results
             for (int i = 0; target != null && i < results.size(); i++) {
                 if (!found.get(i) && checker.areIsomorphic(target, results.get(i))) {

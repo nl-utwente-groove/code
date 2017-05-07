@@ -15,6 +15,7 @@
 package groove.gui;
 
 import java.awt.Frame;
+import java.io.File;
 import java.io.IOException;
 import java.util.prefs.Preferences;
 
@@ -25,7 +26,6 @@ import javax.swing.SwingUtilities;
 import groove.gui.display.DisplayKind;
 import groove.gui.display.LTSDisplay;
 import groove.io.store.SystemStore;
-import groove.io.store.SystemStoreFactory;
 
 /**
  * Class that saves some basic information on the status of the Simulator.
@@ -95,7 +95,7 @@ public class UserSettings {
             // reoccur forever from now on
             userPrefs.remove(LOCATION_KEY);
             try {
-                final SystemStore store = SystemStoreFactory.newStore(location);
+                final SystemStore store = SystemStore.newStore(new File(location), false);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -179,7 +179,7 @@ public class UserSettings {
         if (model != null) {
             SystemStore store = model.getStore();
             if (store != null) {
-                Object location = store.getLocation();
+                File location = store.getLocation();
                 userPrefs.put(LOCATION_KEY, location.toString());
             }
         }

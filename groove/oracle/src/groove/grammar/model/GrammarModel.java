@@ -53,7 +53,6 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.io.store.EditType;
 import groove.io.store.SystemStore;
-import groove.io.store.SystemStoreFactory;
 import groove.prolog.GrooveEnvironment;
 import groove.util.ChangeCount;
 import groove.util.ChangeCount.Tracker;
@@ -448,7 +447,7 @@ public class GrammarModel implements Observer {
      * @throws FormatException if there are syntax errors in the model
      */
     private Grammar computeGrammar() throws FormatException {
-        Grammar result = new Grammar(getName());
+        Grammar result = new Grammar();
         FormatErrorSet errors = new FormatErrorSet();
         // Construct the composite type graph
         result.setTypeGraph(getTypeGraph());
@@ -739,7 +738,7 @@ public class GrammarModel implements Observer {
      * @throws IOException if a store can be created but not loaded
      */
     static public GrammarModel newInstance(URL url) throws IllegalArgumentException, IOException {
-        SystemStore store = SystemStoreFactory.newStore(url);
+        SystemStore store = SystemStore.newStore(url);
         store.reload();
         GrammarModel result = store.toGrammarModel();
         return result;
@@ -763,7 +762,7 @@ public class GrammarModel implements Observer {
      * if the store exists but does not contain a grammar
      */
     static public GrammarModel newInstance(File file, boolean create) throws IOException {
-        SystemStore store = SystemStoreFactory.newStore(file, create);
+        SystemStore store = SystemStore.newStore(file, create);
         store.reload();
         GrammarModel result = store.toGrammarModel();
         return result;

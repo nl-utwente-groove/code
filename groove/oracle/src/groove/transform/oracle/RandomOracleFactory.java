@@ -16,7 +16,7 @@
  */
 package groove.transform.oracle;
 
-import groove.lts.GTS;
+import groove.grammar.GrammarProperties;
 
 /**
  * Factory for a {@link RandomOracle}.
@@ -37,7 +37,7 @@ public class RandomOracleFactory implements ValueOracleFactory {
     }
 
     @Override
-    public RandomOracle instance(GTS gts) {
+    public RandomOracle instance(GrammarProperties properties) {
         return new RandomOracle(hasSeed(), getSeed());
     }
 

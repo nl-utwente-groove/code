@@ -24,9 +24,9 @@ import java.nio.file.Path;
 
 import groove.algebra.Constant;
 import groove.algebra.Sort;
+import groove.grammar.GrammarProperties;
 import groove.grammar.UnitPar.RulePar;
 import groove.grammar.host.HostGraph;
-import groove.lts.GTS;
 import groove.transform.RuleEvent;
 import groove.util.parse.FormatException;
 
@@ -36,12 +36,12 @@ import groove.util.parse.FormatException;
  * @version $Revision $
  */
 public class ReaderOracle implements ValueOracle {
-    /** Constructor for a file reader to be created for a given filename.
+    /** Constructor for a file reader.
+     * @param properties the grammar properties specifying the location of the file
      * @throws FormatException if the filename does not correspond to an existing file. */
-    ReaderOracle(GTS gts, String filename) throws FormatException {
+    ReaderOracle(GrammarProperties properties, String filename) throws FormatException {
         this.filename = filename;
-        Path home = gts.getGrammar()
-            .getLocation();
+        Path home = properties.getLocation();
         try {
             Path file = home.resolve(filename);
             this.reader = new BufferedReader(new FileReader(file.toFile()));

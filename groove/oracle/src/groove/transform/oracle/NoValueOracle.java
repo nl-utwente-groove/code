@@ -20,9 +20,9 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import groove.algebra.Constant;
+import groove.grammar.GrammarProperties;
 import groove.grammar.UnitPar.RulePar;
 import groove.grammar.host.HostGraph;
-import groove.lts.GTS;
 import groove.transform.RuleEvent;
 import groove.util.parse.FormatException;
 
@@ -34,7 +34,7 @@ import groove.util.parse.FormatException;
 @NonNullByDefault
 public class NoValueOracle implements ValueOracleFactory, ValueOracle {
     @Override
-    public NoValueOracle instance(GTS gts) {
+    public NoValueOracle instance(GrammarProperties properties) {
         return instance();
     }
 

@@ -18,7 +18,7 @@ package groove.transform.oracle;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import groove.lts.GTS;
+import groove.grammar.GrammarProperties;
 import groove.util.parse.FormatException;
 
 /**
@@ -28,9 +28,9 @@ import groove.util.parse.FormatException;
  */
 @NonNullByDefault
 public interface ValueOracleFactory {
-    /** Creates an oracle for a given GTS. 
-     * @throws FormatException TODO*/
-    public ValueOracle instance(GTS gts) throws FormatException;
+    /** Creates an oracle for a grammar with given properties.
+     * @throws FormatException if the oracle is not compatible with the grammar properties. */
+    public ValueOracle instance(GrammarProperties properties) throws FormatException;
 
     /** Returns the kind of value oracle this factory produces. */
     public ValueOracleKind getKind();

@@ -18,7 +18,7 @@ package groove.transform.oracle;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import groove.lts.GTS;
+import groove.grammar.GrammarProperties;
 import groove.util.parse.FormatException;
 
 /**
@@ -34,8 +34,8 @@ public class ReaderOracleFactory implements ValueOracleFactory {
     }
 
     @Override
-    public ValueOracle instance(GTS gts) throws FormatException {
-        return new ReaderOracle(gts, this.filename);
+    public ValueOracle instance(GrammarProperties properties) throws FormatException {
+        return new ReaderOracle(properties, this.filename);
     }
 
     /**

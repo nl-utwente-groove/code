@@ -34,10 +34,8 @@ public class EditRulePropertiesAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getSimulatorModel().getStore() != null && getSimulatorModel().getStore()
-            .isModifiable()
-            && getSimulatorModel().getSelectSet(RULE)
-                .size() == 1);
+        setEnabled(getSimulatorModel().getStore() != null && getSimulatorModel().getSelectSet(RULE)
+            .size() == 1);
     }
 
     @Override

@@ -104,8 +104,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         grammar.testFixed(true);
         this.grammar = grammar;
         this.oracle = grammar.getProperties()
-            .getValueOracle()
-            .instance(this);
+            .getValueOracle();
     }
 
     /** Indicates if the grammar works with simple or multi-graphs. */

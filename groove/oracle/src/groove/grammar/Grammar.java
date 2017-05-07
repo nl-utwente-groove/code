@@ -16,6 +16,9 @@
  */
 package groove.grammar;
 
+import static groove.io.FileType.GRAMMAR;
+
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,7 +33,6 @@ import java.util.TreeSet;
 
 import groove.control.instance.Automaton;
 import groove.grammar.Action.Role;
-import groove.grammar.host.DefaultHostGraph;
 import groove.grammar.host.HostGraph;
 import groove.grammar.type.TypeGraph;
 import groove.prolog.GrooveEnvironment;
@@ -50,38 +52,26 @@ import groove.util.parse.FormatException;
  */
 public class Grammar {
     /**
-     * Constructs an initially empty rule system.
+     * Constructs an initially empty grammar.
      */
-    public Grammar(String name) {
-        this.name = name;
+    public Grammar() {
+        // empty
     }
 
     /**
-     * Constructs a clone of a given rule system.
-     * @param other the rule system to be cloned
-     * @require <tt>ruleSystem != null</tt>
-     * @ensure <tt>equals(ruleSystem)</tt>
-     */
-    public Grammar(Grammar other, DefaultHostGraph startGraph) {
-        this(other.getName());
-        this.startGraph = startGraph;
-        getProperties().putAll(other.getProperties());
-        this.nameRuleMap.putAll(other.nameRuleMap);
-        // the target sets of the priority rule map must be copied, not aliased
-        for (Map.Entry<Integer,Set<Action>> priorityRuleEntry : other.priorityActionMap
-            .entrySet()) {
-            Set<Action> newRuleSet = createActionSet();
-            newRuleSet.addAll(priorityRuleEntry.getValue());
-            this.priorityActionMap.put(priorityRuleEntry.getKey(), newRuleSet);
-        }
-    }
-
-    /**
-     * Returns the name of this rule system. May be <tt>null</tt> if the rule
+     * Returns the location of this rule system. May be <tt>null</tt> if the rule
      * system is anonymous.
      */
+    public Path getLocation() {
+        return getProperties().getLocation();
+    }
+
+    /**
+     * Returns the name of this rule system.
+     */
     public String getName() {
-        return this.name;
+        return GRAMMAR.stripExtension(getLocation().getFileName()
+            .toString());
     }
 
     /**
@@ -90,97 +80,6 @@ public class Grammar {
      */
     public String getId() {
         return buildId(getName(), getStartGraph().getName());
-    }
-
-    /** Convenience method to return the rule with a given name, if any. */
-    public Rule getRule(QualName name) {
-        return this.nameRuleMap.get(name);
-    }
-
-    /** Convenience method to return the recipe with a given name, if any. */
-    public Recipe getRecipe(QualName name) {
-        return this.nameRecipeMap.get(name);
-    }
-
-    /** Indicates if there are any recipes in this grammar. */
-    public boolean hasRecipes() {
-        return !this.nameRecipeMap.isEmpty();
-    }
-
-    /** Convenience method to return the action with a given name, if any. */
-    public Action getAction(QualName name) {
-        Action result = getRule(name);
-        if (result == null) {
-            result = getRecipe(name);
-        }
-        return result;
-    }
-
-    /**
-     * Returns an unmodifiable view upon the map from available priorities to
-     * actions with that priority. The map is sorted from high to low priority.
-     */
-    public SortedMap<Integer,Set<Action>> getActionMap() {
-        return Collections.unmodifiableSortedMap(this.priorityActionMap);
-    }
-
-    /**
-     * Returns the underlying set of actions, i.e., rules and recipes. The
-     * result is ordered by descending priority, and within each priority, by
-     * alphabetical order of the names.
-     */
-    public Set<Action> getActions() {
-        return this.actions;
-    }
-
-    /** Returns the actions with a given role in this grammar. */
-    public Collection<Action> getActions(Role role) {
-        if (this.roleActionMap == null) {
-            this.roleActionMap = new EnumMap<>(Role.class);
-            for (Role r : Role.values()) {
-                this.roleActionMap.put(r, new ArrayList<Action>());
-            }
-            for (Action action : getActions()) {
-                this.roleActionMap.get(action.getRole())
-                    .add(action);
-            }
-        }
-        return this.roleActionMap.get(role);
-    }
-
-    private Map<Role,List<Action>> roleActionMap;
-
-    /** Indicates if the grammar has actions with a given role. */
-    public boolean hasActions(Role role) {
-        return !getActions(role).isEmpty();
-    }
-
-    /**
-     * Returns the underlying set of rules.
-     * This combines the top-level rules and the subrules used in recipes.
-     */
-    public Set<Rule> getAllRules() {
-        return this.allRules;
-    }
-
-    /**
-     * Returns <tt>true</tt> if the rule system has actions at more than one
-     * priority.
-     */
-    public boolean hasMultiplePriorities() {
-        return this.priorityActionMap.size() > 1;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder res = new StringBuilder();
-        res.append("Rule system:\n    ");
-        for (Action action : getActions()) {
-            res.append(action + "\n");
-        }
-        res.append("\nStart graph:\n    ");
-        res.append(getStartGraph().toString());
-        return res.toString();
     }
 
     /**
@@ -227,61 +126,138 @@ public class Grammar {
     }
 
     /**
-     * Indicates if the rule system is fixed. Rules can only be added or edited
-     * in a non-fixed rule system, whereas the rule system can only be used for
-     * derivations when it is fixed.
+     * Returns an unmodifiable view upon the map from available priorities to
+     * actions with that priority. The map is sorted from high to low priority.
      */
-    public final boolean isFixed() {
-        assert!this.fixed || this.typeGraph != null;
-        return this.fixed;
+    public SortedMap<Integer,Set<Action>> getActionMap() {
+        return Collections.unmodifiableSortedMap(this.priorityActionMap);
     }
 
     /**
-     * Sets the rule system to fixed.
-     * @return {@code this}, for convenient chaining of methods.
-     * @throws FormatException if the rules are inconsistent with the system
-     *         properties or there is some other reason why they cannot be used
-     *         in derivations.
+     * A mapping from priorities to sets of rules having that priority. The
+     * ordering is from high to low priority.
      */
-    public Grammar setFixed() throws FormatException {
-        this.fixed = true;
-        return this;
-    }
+    private final SortedMap<Integer,Set<Action>> priorityActionMap =
+        new TreeMap<>(Action.PRIORITY_COMPARATOR);
 
     /**
-     * Tests the the fixedness of the rule system.
-     * @param value the expected fixedness
-     * @throws IllegalStateException if {@link #isFixed()} does not equal
-     *         <code>value</code>
+     * Returns the underlying set of actions, i.e., rules and recipes. The
+     * result is ordered by descending priority, and within each priority, by
+     * alphabetical order of the names.
      */
-    public final void testFixed(boolean value) throws IllegalStateException {
-        if (isFixed() != value) {
-            if (value) {
-                throw new IllegalStateException("Operation not allowed: Rule system is not fixed");
-            } else {
-                throw new IllegalStateException("Operation not allowed: Rule system is fixed");
+    public Set<Action> getActions() {
+        return this.actions;
+    }
+
+    /** Indicates if the grammar has actions with a given role. */
+    public boolean hasActions(Role role) {
+        return !getActions(role).isEmpty();
+    }
+
+    /** Returns the actions with a given role in this grammar. */
+    public Collection<Action> getActions(Role role) {
+        if (this.roleActionMap == null) {
+            this.roleActionMap = new EnumMap<>(Role.class);
+            for (Role r : Role.values()) {
+                this.roleActionMap.put(r, new ArrayList<Action>());
+            }
+            for (Action action : getActions()) {
+                this.roleActionMap.get(action.getRole())
+                    .add(action);
             }
         }
+        return this.roleActionMap.get(role);
+    }
+
+    private Map<Role,List<Action>> roleActionMap;
+
+    /** Convenience method to return the action with a given name, if any. */
+    public Action getAction(QualName name) {
+        Action result = getRule(name);
+        if (result == null) {
+            result = getRecipe(name);
+        }
+        return result;
+    }
+
+    /** Convenience method to return the rule with a given name, if any. */
+    public Rule getRule(QualName name) {
+        return this.nameRuleMap.get(name);
+    }
+
+    /**
+     * A mapping from action names to the available rules.
+     */
+    private final Map<QualName,Rule> nameRuleMap = new TreeMap<>();
+
+    /** Convenience method to return the recipe with a given name, if any. */
+    public Recipe getRecipe(QualName name) {
+        return this.nameRecipeMap.get(name);
+    }
+
+    /**
+     * A mapping from action names to the available transactions.
+     */
+    private final Map<QualName,Recipe> nameRecipeMap = new TreeMap<>();
+
+    /** Indicates if there are any recipes in this grammar. */
+    public boolean hasRecipes() {
+        return !this.nameRecipeMap.isEmpty();
+    }
+
+    /**
+     * Returns the underlying set of rules.
+     * This combines the top-level rules and the subrules used in recipes.
+     */
+    public Set<Rule> getAllRules() {
+        return this.allRules;
+    }
+
+    /**
+     * Set of all rules, being the union of the top-level action rules
+     * and the subrules used in recipes.
+     */
+    private final Set<Rule> allRules = new HashSet<>();
+
+    /**
+     * Returns <tt>true</tt> if the rule system has actions at more than one
+     * priority.
+     */
+    public boolean hasMultiplePriorities() {
+        return this.priorityActionMap.size() > 1;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder res = new StringBuilder();
+        res.append("Rule system:\n    ");
+        for (Action action : getActions()) {
+            res.append(action + "\n");
+        }
+        res.append("\nStart graph:\n    ");
+        res.append(getStartGraph().toString());
+        return res.toString();
     }
 
     /**
      * Sets the properties of this graph grammar by copying a given property
-     * mapping. Clears the current properties first.
+     * mapping.
      * @param properties the new properties mapping
      */
     public void setProperties(java.util.Properties properties) {
         testFixed(false);
-        GrammarProperties currentRuleProperties = getProperties();
-        currentRuleProperties.clear();
-        currentRuleProperties.putAll(properties);
+        assert this.properties == null : "Grammar properties already set";
+        GrammarProperties grammarProperties = createProperties();
+        grammarProperties.putAll(properties);
+        this.properties = grammarProperties;
     }
 
     /**
-     * Convenience method to retrieve the value of a property key.
-     * @see #getProperties()
+     * Callback factory method to create an initially empty
+     * {@link GrammarProperties} object for this graph grammar.
      */
-    public String getProperty(String key) {
-        return getProperties().getProperty(key);
+    private GrammarProperties createProperties() {
+        return new GrammarProperties();
     }
 
     /**
@@ -289,11 +265,13 @@ public class Grammar {
      * object is immutable.
      */
     public GrammarProperties getProperties() {
-        if (this.properties == null) {
-            this.properties = createProperties();
-        }
         return this.properties;
     }
+
+    /**
+     * The properties bundle of this rule system.
+     */
+    private GrammarProperties properties;
 
     /** Sets the type for this grammar.
      * @param type the combined type graph
@@ -308,6 +286,9 @@ public class Grammar {
     public final TypeGraph getTypeGraph() {
         return this.typeGraph;
     }
+
+    /** The labels and subtypes occurring in this rule system. */
+    private TypeGraph typeGraph;
 
     /**
      * Returns the start graph of this graph grammar.
@@ -330,6 +311,11 @@ public class Grammar {
         assert startGraph.isFixed();
         this.startGraph = startGraph;
     }
+
+    /**
+     * The start graph of this graph grammar.
+     */
+    private HostGraph startGraph;
 
     /**
      * Sets a control automaton for this grammar. This is only allowed if the
@@ -374,6 +360,9 @@ public class Grammar {
         return this.prologEnvironment;
     }
 
+    /** The prolog environment derived from the system store. */
+    private GrooveEnvironment prologEnvironment;
+
     /** Tests for equality of the rule system and the start graph. */
     @Override
     public boolean equals(Object obj) {
@@ -388,14 +377,6 @@ public class Grammar {
     }
 
     /**
-     * Callback factory method to create an initially empty
-     * {@link GrammarProperties} object for this graph grammar.
-     */
-    private GrammarProperties createProperties() {
-        return new GrammarProperties();
-    }
-
-    /**
      * Factory method to create a set to contain rules. This implementation
      * returns a {@link TreeSet}.
      */
@@ -404,50 +385,53 @@ public class Grammar {
     }
 
     /**
-     * A mapping from action names to the available rules.
-     */
-    private final Map<QualName,Rule> nameRuleMap = new TreeMap<>();
-    /**
-     * A mapping from action names to the available transactions.
-     */
-    private final Map<QualName,Recipe> nameRecipeMap = new TreeMap<>();
-    /**
-     * A mapping from priorities to sets of rules having that priority. The
-     * ordering is from high to low priority.
-     */
-    private final SortedMap<Integer,Set<Action>> priorityActionMap =
-        new TreeMap<>(Action.PRIORITY_COMPARATOR);
-    /**
      * Set of all actions, collected separately for purposes of speedup.
      * @see #getActions()
      */
     private final Set<Action> actions = new TreeSet<>(Action.ACTION_COMPARATOR);
+
     /**
-     * Set of all rules, being the union of the top-level action rules
-     * and the subrules used in recipes.
+     * Indicates if the rule system is fixed. Rules can only be added or edited
+     * in a non-fixed rule system, whereas the rule system can only be used for
+     * derivations when it is fixed.
      */
-    private final Set<Rule> allRules = new HashSet<>();
+    public final boolean isFixed() {
+        assert !this.fixed || this.typeGraph != null;
+        return this.fixed;
+    }
+
     /**
-     * The properties bundle of this rule system.
+     * Sets the rule system to fixed.
+     * @return {@code this}, for convenient chaining of methods.
+     * @throws FormatException if the rules are inconsistent with the system
+     *         properties or there is some other reason why they cannot be used
+     *         in derivations.
      */
-    private GrammarProperties properties;
-    /** The labels and subtypes occurring in this rule system. */
-    private TypeGraph typeGraph;
+    public Grammar setFixed() throws FormatException {
+        this.fixed = true;
+        return this;
+    }
+
+    /**
+     * Tests the the fixedness of the rule system.
+     * @param value the expected fixedness
+     * @throws IllegalStateException if {@link #isFixed()} does not equal
+     *         <code>value</code>
+     */
+    public final void testFixed(boolean value) throws IllegalStateException {
+        if (isFixed() != value) {
+            if (value) {
+                throw new IllegalStateException("Operation not allowed: Rule system is not fixed");
+            } else {
+                throw new IllegalStateException("Operation not allowed: Rule system is fixed");
+            }
+        }
+    }
+
     /**
      * Flag indicating that the rule system has been fixed and is ready for use.
      */
     private boolean fixed;
-
-    /**
-     * The name of this grammar; <tt>null</tt> if the grammar is anonymous.
-     */
-    private final String name;
-    /**
-     * The start graph of this graph grammar.
-     */
-    private HostGraph startGraph;
-    /** The prolog environment derived from the system store. */
-    private GrooveEnvironment prologEnvironment;
 
     /**
      * Constructs an ID string from the grammar name and start graph name.

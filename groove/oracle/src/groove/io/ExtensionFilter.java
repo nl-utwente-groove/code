@@ -25,7 +25,7 @@ import java.util.List;
  * @version $Revision$ $Date: 2008-03-11 15:46:59 $
  */
 public class ExtensionFilter extends javax.swing.filechooser.FileFilter
-        implements java.io.FileFilter {
+    implements java.io.FileFilter {
     /**
      * Constructs a new extension file filter, to be
      * associated with a given file type.
@@ -61,17 +61,17 @@ public class ExtensionFilter extends javax.swing.filechooser.FileFilter
 
     /**
      * Accepts a file if its name ends on this filter's extension, or it is a
-     * directory.
+     * non-hidden directory with a (non-empty) pure name.
      * @see FileType#hasExtension(File)
      */
     @Override
     public boolean accept(File file) {
-        return getFileType().hasExtension(file) || file.isDirectory();
+        return getFileType().hasExtension(file)
+            || file.isDirectory() && !file.isHidden() && FileType.hasPureName(file);
     }
 
     private String createDescription() {
-        StringBuilder result =
-            new StringBuilder(this.fileType.getDescription());
+        StringBuilder result = new StringBuilder(this.fileType.getDescription());
         result.append(" (");
         boolean first = true;
         for (String extension : getExtensions()) {

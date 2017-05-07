@@ -22,9 +22,7 @@ import groove.graph.GraphInfo;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.VersionDialog;
-import groove.io.store.DefaultArchiveSystemStore;
 import groove.io.store.SystemStore;
-import groove.io.store.SystemStoreFactory;
 import groove.util.ThreeValued;
 import groove.util.Version;
 
@@ -52,13 +50,6 @@ public class LoadGrammarAction extends SimulatorAction {
                 try {
                     load(selectedFile);
                 } catch (IOException exc) {
-                    String msg = exc.getMessage();
-                    if (msg.endsWith(DefaultArchiveSystemStore.NO_JAR_OR_ZIP_SUFFIX)) {
-                        // Can only happen if trying to open a directory.
-                        // Don't throw exception, open selector dialog again.
-                        execute();
-                        return;
-                    }
                     showErrorDialog(exc, exc.getMessage());
                 }
             }
@@ -73,7 +64,7 @@ public class LoadGrammarAction extends SimulatorAction {
     public boolean load(File grammarFile) throws IOException {
         boolean result = false;
         // Load the grammar.
-        final SystemStore store = SystemStoreFactory.newStore(grammarFile, false);
+        final SystemStore store = SystemStore.newStore(grammarFile, false);
         result = load(store);
         // now we know loading succeeded, we can set the current
         // names & files
@@ -114,9 +105,9 @@ public class LoadGrammarAction extends SimulatorAction {
                 return false;
             }
             newGrammarFile = null;
-        } else if (compare > 0 && store.getLocation() instanceof File) {
+        } else if (compare > 0) {
             // Trying to load an older grammar from a file.
-            File grammarFile = (File) store.getLocation();
+            File grammarFile = store.getLocation();
             switch (VersionDialog.showOldFile(this.getFrame(), props)) {
             case 0: // save and overwrite
                 newGrammarFile = grammarFile;

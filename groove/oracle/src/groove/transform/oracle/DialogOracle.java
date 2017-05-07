@@ -25,9 +25,9 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import groove.algebra.Constant;
 import groove.algebra.Sort;
+import groove.grammar.GrammarProperties;
 import groove.grammar.UnitPar.RulePar;
 import groove.grammar.host.HostGraph;
-import groove.lts.GTS;
 import groove.transform.RuleEvent;
 import groove.util.parse.FormatException;
 
@@ -44,7 +44,7 @@ public class DialogOracle implements ValueOracleFactory, ValueOracle {
     }
 
     @Override
-    public DialogOracle instance(GTS gts) {
+    public DialogOracle instance(GrammarProperties properties) {
         return instance();
     }
 

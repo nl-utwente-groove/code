@@ -19,9 +19,9 @@ package groove.transform.oracle;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import groove.algebra.Constant;
+import groove.grammar.GrammarProperties;
 import groove.grammar.UnitPar.RulePar;
 import groove.grammar.host.HostGraph;
-import groove.lts.GTS;
 import groove.transform.RuleEvent;
 import groove.util.parse.FormatException;
 
@@ -38,7 +38,7 @@ public class DefaultOracle implements ValueOracleFactory, ValueOracle {
     }
 
     @Override
-    public ValueOracle instance(GTS gts) throws FormatException {
+    public ValueOracle instance(GrammarProperties properties) throws FormatException {
         return instance();
     }
 

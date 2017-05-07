@@ -31,7 +31,7 @@ public class EditAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        boolean enabled = getGrammarModel() != null && getGrammarStore().isModifiable()
+        boolean enabled = getGrammarModel() != null
             && (getSimulatorModel().isSelected(getResourceKind()) || isForState());
         setEnabled(enabled);
         if (getResourceKind() == HOST) {

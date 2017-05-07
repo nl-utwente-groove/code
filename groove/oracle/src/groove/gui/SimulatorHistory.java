@@ -1,24 +1,25 @@
 package groove.gui;
 
-import groove.gui.SimulatorModel.Change;
-import groove.gui.action.LoadGrammarFromHistoryAction;
-import groove.io.store.SystemStore;
-import groove.io.store.SystemStoreFactory;
-
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Set;
 
 import javax.swing.JMenu;
 
+import groove.gui.SimulatorModel.Change;
+import groove.gui.action.LoadGrammarFromHistoryAction;
+import groove.io.store.SystemStore;
+
 /** Class wrapping a menu of recently opened files. */
 class SimulatorHistory implements SimulatorListener {
     /** Constructs a fresh history instance. */
     public SimulatorHistory(Simulator simulator) {
         this.simulator = simulator;
-        simulator.getModel().addListener(this);
-        String[] savedLocations =
-            Options.userPrefs.get(HISTORY_KEY, "").split(",");
+        simulator.getModel()
+            .addListener(this);
+        String[] savedLocations = Options.userPrefs.get(HISTORY_KEY, "")
+            .split(",");
         for (String location : savedLocations) {
             try {
                 this.history.add(createLoadAction(location));
@@ -43,13 +44,12 @@ class SimulatorHistory implements SimulatorListener {
     }
 
     @Override
-    public void update(SimulatorModel source, SimulatorModel oldModel,
-            Set<Change> changes) {
+    public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
         if (changes.contains(Change.GRAMMAR)) {
             try {
-                Object location = source.getStore().getLocation();
-                LoadGrammarFromHistoryAction newAction =
-                    createLoadAction(location.toString());
+                File location = source.getStore()
+                    .getLocation();
+                LoadGrammarFromHistoryAction newAction = createLoadAction(location.toString());
                 this.history.remove(newAction);
                 this.history.add(0, newAction);
                 // trimming list to 10 elements
@@ -64,10 +64,9 @@ class SimulatorHistory implements SimulatorListener {
         }
     }
 
-    private LoadGrammarFromHistoryAction createLoadAction(String location)
-        throws IOException {
-        SystemStore store = SystemStoreFactory.newStore(location);
-        return new LoadGrammarFromHistoryAction(this.simulator, location, store);
+    private LoadGrammarFromHistoryAction createLoadAction(String location) throws IOException {
+        SystemStore store = SystemStore.newStore(new File(location), false);
+        return new LoadGrammarFromHistoryAction(this.simulator, store);
     }
 
     private void synch() {
@@ -102,8 +101,7 @@ class SimulatorHistory implements SimulatorListener {
     /** Menu of history items. */
     private final JMenu menu = new JMenu();
     /** List of load actions corresponding to the history items. */
-    private final ArrayList<LoadGrammarFromHistoryAction> history =
-        new ArrayList<>();
+    private final ArrayList<LoadGrammarFromHistoryAction> history = new ArrayList<>();
     /**
      * (User) Property that holds the grammar history (max 10 separated by ',')
      * *

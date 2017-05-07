@@ -96,7 +96,7 @@ public class PropertiesTable extends JTable {
         for (Map.Entry<?,?> property : properties.entrySet()) {
             String keyword = (String) property.getKey();
             PropertyKey<?> key = getKey(keyword);
-            if (key == null || !key.isSystem()) {
+            if (key == null || !key.isSystem() || key.isDerived()) {
                 String value = (String) property.getValue();
                 this.properties.put(keyword, value);
             }
