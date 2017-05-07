@@ -18,6 +18,7 @@ package groove.grammar.rule;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
@@ -27,6 +28,7 @@ import groove.algebra.Sort;
 import groove.algebra.syntax.Expression;
 import groove.algebra.syntax.Variable;
 import groove.grammar.AnchorKind;
+import groove.grammar.UnitPar.RulePar;
 import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeNode;
 import groove.graph.ANode;
@@ -62,6 +64,19 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
 
     /** The optional special ID of this rule node. */
     private String id;
+
+    @Override
+    public void setPar(RulePar par) {
+        this.par = par;
+        setId(par.toString());
+    }
+
+    @Override
+    public Optional<RulePar> getPar() {
+        return Optional.ofNullable(this.par);
+    }
+
+    private RulePar par;
 
     /**
      * This methods returns description of the variable, based on its number.

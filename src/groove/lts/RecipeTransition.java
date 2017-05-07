@@ -34,14 +34,12 @@ import groove.control.Valuator;
 import groove.control.instance.Step;
 import groove.control.template.Switch;
 import groove.grammar.Recipe;
-import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.host.HostNode;
 import groove.graph.ALabelEdge;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.Label;
-import groove.transform.RuleApplication;
 import groove.util.line.Line;
 import groove.util.parse.FormatException;
 
@@ -293,12 +291,8 @@ public class RecipeTransition extends ALabelEdge<GraphState>
      */
     protected HostGraphMorphism computeMorphism() {
         HostGraphMorphism result = null;
-        HostGraph host = source().getGraph();
         for (RuleTransition step : getPath()) {
-            RuleApplication appl = step.getEvent()
-                .newApplication(host);
-            result = result == null ? appl.getMorphism() : result.then(appl.getMorphism());
-            host = appl.getTarget();
+            result = result == null ? step.getMorphism() : result.then(step.getMorphism());
         }
         return result;
     }

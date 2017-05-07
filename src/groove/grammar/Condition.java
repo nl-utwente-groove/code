@@ -37,7 +37,6 @@ import groove.grammar.type.TypeGraph;
 import groove.graph.EdgeRole;
 import groove.io.HTMLConverter;
 import groove.io.Util;
-import groove.match.ValueOracle.Kind;
 import groove.util.Fixable;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
@@ -297,9 +296,7 @@ public class Condition implements Fixable {
             if (hasPattern()) {
                 getPattern().setFixed();
                 if (!getGrammarProperties().getAlgebraFamily()
-                    .supportsSymbolic()
-                    && getGrammarProperties().getValueOracle()
-                        .getKind() == Kind.NONE) {
+                    .supportsSymbolic()) {
                     checkResolution();
                 }
                 if (getRule() != null) {
@@ -341,18 +338,14 @@ public class Condition implements Fixable {
             .supportsSymbolic()) {
             return;
         }
-        boolean hasOracle = getGrammarProperties().getValueOracle()
-            .getKind() != Kind.NONE;
         FormatErrorSet errors = new FormatErrorSet();
         Map<VariableNode,List<Set<VariableNode>>> resolverMap = createResolvers();
         stabilise(resolverMap);
         for (RuleNode node : resolverMap.keySet()) {
-            if (!hasOracle) {
-                errors.add(
-                    "Variable node '%s' cannot always be assigned (use %s algebra for symbolic exploration or set a value oracle)",
-                    node,
-                    AlgebraFamily.POINT.getName());
-            }
+            errors.add(
+                "Variable node '%s' cannot always be resolved (use %s algebra for symbolic exploration or set a value oracle)",
+                node,
+                AlgebraFamily.POINT.getName());
         }
         errors.throwException();
     }

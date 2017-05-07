@@ -16,13 +16,6 @@
  */
 package groove.util;
 
-import groove.grammar.GrammarChecker;
-import groove.grammar.model.GrammarModel;
-import groove.util.parse.FormatChecker;
-import groove.util.parse.FormatErrorSet;
-import groove.util.parse.FormatException;
-import groove.util.parse.Parser;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -32,6 +25,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import groove.grammar.GrammarChecker;
+import groove.grammar.model.GrammarModel;
+import groove.util.parse.FormatChecker;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
+import groove.util.parse.Parser;
 
 /**
  * Specialised properties class.
@@ -146,9 +146,9 @@ public abstract class Properties extends java.util.Properties implements Fixable
             // this is a non-system key
             oldValue = (String) super.setProperty(keyword, value);
         } else if (!key.parser()
-            .accepts(value) || key.parser()
-            .getDefaultString()
-            .equals(value)) {
+            .accepts(value)
+            || key.parser()
+                .isDefault(value)) {
             oldValue = (String) remove(keyword);
         } else {
             oldValue = (String) super.setProperty(keyword, value);
@@ -189,8 +189,8 @@ public abstract class Properties extends java.util.Properties implements Fixable
      * @see #setFixed()
      */
     @Override
-    public synchronized void loadFromXML(InputStream in) throws IOException,
-        InvalidPropertiesFormatException {
+    public synchronized void loadFromXML(InputStream in)
+        throws IOException, InvalidPropertiesFormatException {
         testFixed(false);
         clear();
         super.loadFromXML(in);

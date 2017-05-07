@@ -148,23 +148,25 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 result.add(jVertex.getUserObject()
                     .toLines());
             } else {
-                // show data constants and variables correctly
-                result.add(getDataLines(jGraph, node));
-                // show the visible self-edges
                 Line id = getIdLine(node);
+                // show data constants and variables correctly
+                Line data = getDataLine(jGraph, node);
+                if (data != null) {
+                    result.add(insertId(id, data));
+                    id = null;
+                }
+                // show the visible self-edges
                 for (AspectEdge edge : jVertex.getEdges()) {
                     if (!isFiltered(jGraph, jVertex, edge)) {
                         Line line = edge.toLine(true, jVertex.getAspect());
-                        if (id != null) {
-                            if (edge.getRole() == NODE_TYPE) {
-                                line = id.append(" : ")
-                                    .append(line);
-                            } else {
-                                // we're not going to have any node types:
-                                // add the node id on a separate line
-                                result.add(id);
-                            }
+                        if (edge.getRole() == NODE_TYPE) {
+                            line = insertId(id, line);
                             id = null;
+                        }
+                        if (id != null) {
+                            // we're not going to have any node types:
+                            // add the node id on a separate line
+                            result.add(id);
                         }
                         if (showLoopSuffix(jVertex, edge)) {
                             line = line.append(LOOP_SUFFIX);
@@ -188,6 +190,12 @@ public class LabelValue implements VisualValue<MultiLabel> {
     private Line getIdLine(AspectNode node) {
         return node.hasId() ? getIdLine(node.getId()
             .getContentString()) : null;
+    }
+
+    /** Inserts an identifier in front of a given line. */
+    private Line insertId(Line id, Line line) {
+        return id == null ? line : id.append(" : ")
+            .append(line);
     }
 
     /**
@@ -217,7 +225,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                     if (!edge.isLoop()) {
                         Sort type = edge.target()
                             .getAttrKind()
-                            .getSignature();
+                            .getSort();
                         line = line.append(Line.atom(type.getName()));
                     }
                     result.add(line);
@@ -228,7 +236,10 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 result.add(IMPORT_LINE);
             }
             // show data constants and variables correctly
-            result.add(getDataLines(jGraph, node));
+            Line data = getDataLine(jGraph, node);
+            if (data != null) {
+                result.add(data);
+            }
             // show the visible self-edges
             for (AspectEdge edge : jVertex.getEdges()) {
                 if (!isFiltered(jGraph, jVertex, edge)) {
@@ -288,27 +299,30 @@ public class LabelValue implements VisualValue<MultiLabel> {
                     .toString()));
             }
         } else {
-            Line idLine = getIdLine(node);
+            Line id = getIdLine(node);
             // show the quantifier aspect correctly
             if (node.getKind()
                 .isQuantifier()) {
-                result.add(getQuantifierLines(node, idLine));
-                idLine = null;
+                result.add(getQuantifierLines(node, id));
+                id = null;
             }
             // show data constants and variables correctly
-            result.add(getDataLines(jGraph, node));
+            Line data = getDataLine(jGraph, node);
+            if (data != null) {
+                data = insertId(id, data);
+                id = null;
+                result.add(data);
+            }
             // show the visible self-edges
             for (AspectEdge edge : jVertex.getEdges()) {
                 if (!isFiltered(jGraph, jVertex, edge)) {
                     Line line = edge.toLine(true, jVertex.getAspect());
-                    if (idLine != null) {
-                        if (edge.getRole() == NODE_TYPE) {
-                            line = idLine.append(" : ")
-                                .append(line);
-                        } else {
-                            result.add(idLine);
-                        }
-                        idLine = null;
+                    if (edge.getRole() == NODE_TYPE) {
+                        line = insertId(id, line);
+                        id = null;
+                    }
+                    if (id != null) {
+                        result.add(id);
                     }
                     if (showLoopSuffix(jVertex, edge)) {
                         line = line.append(LOOP_SUFFIX);
@@ -316,10 +330,10 @@ public class LabelValue implements VisualValue<MultiLabel> {
                     result.add(line);
                 }
             }
-            if (idLine != null) {
+            if (id != null) {
                 // we're not going to have any node types:
                 // add the node id on a separate line
-                result.add(idLine);
+                result.add(id);
             }
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
                 if (!isFiltered(jGraph, jVertex, edge)) {
@@ -743,7 +757,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             id = null;
         } else if (node.hasAttrAspect()) {
             AspectKind attrKind = node.getAttrKind();
-            if (attrKind.hasSignature()) {
+            if (attrKind.hasSort()) {
                 Object content = node.getAttrAspect()
                     .getContent();
                 if (content == null) {
@@ -768,17 +782,17 @@ public class LabelValue implements VisualValue<MultiLabel> {
     /** Returns lines describing any data content of the JVertex.
      * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
      */
-    private MultiLabel getDataLines(AspectJGraph jGraph, AspectNode node) {
-        MultiLabel result = new MultiLabel();
+    private Line getDataLine(AspectJGraph jGraph, AspectNode node) {
+        Line result = null;
         Aspect attrAspect = node.getAttrAspect();
         if (attrAspect.getKind()
-            .hasSignature()) {
+            .hasSort()) {
             if (!attrAspect.hasContent()) {
-                result.add(getSignatureLine(attrAspect.getKind()
-                    .getSignature()));
+                result = getSortLine(attrAspect.getKind()
+                    .getSort());
             } else if (!jGraph.isShowNodeIdentities()) {
                 // show constants only if they are not already shown as node identities
-                result.add(Line.atom(attrAspect.getContentString()));
+                result = Line.atom(attrAspect.getContentString());
             }
         }
         return result;
@@ -798,12 +812,12 @@ public class LabelValue implements VisualValue<MultiLabel> {
         return result;
     }
 
-    /** Returns the label prefix associated with a given role. */
-    private static Line getSignatureLine(Sort kind) {
-        return sigLineMap.get(kind);
+    /** Returns the label prefix associated with a given sort. */
+    private static Line getSortLine(Sort kind) {
+        return sortLineMap.get(kind);
     }
 
-    static private final Map<Sort,Line> sigLineMap;
+    static private final Map<Sort,Line> sortLineMap;
 
     static {
         Map<Sort,Line> map = new EnumMap<>(Sort.class);
@@ -811,7 +825,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             map.put(kind, Line.atom(kind.getName())
                 .style(Style.BOLD));
         }
-        sigLineMap = map;
+        sortLineMap = map;
     }
 
     static private final String IMPORT_TEXT =

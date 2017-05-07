@@ -21,16 +21,13 @@ import java.util.Collections;
 
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
-import groove.algebra.Constant;
 import groove.algebra.syntax.Expression;
 import groove.algebra.syntax.Variable;
 import groove.grammar.Condition;
-import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.ValueNode;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.VariableNode;
-import groove.match.ValueOracle;
 import groove.match.plan.PlanSearchStrategy.Search;
 
 /**
@@ -42,24 +39,20 @@ class ValueNodeSearchItem extends AbstractSearchItem {
     /**
      * Creates a search item for a value node.
      * @param node the node to be matched
-     * @param oracle source of values for the node, if the node is not bound
      */
-    public ValueNodeSearchItem(VariableNode node, AlgebraFamily family, ValueOracle oracle) {
+    public ValueNodeSearchItem(VariableNode node, AlgebraFamily family) {
         this.node = node;
         this.boundNodes = Collections.<RuleNode>singleton(node);
         this.algebra = family.getAlgebra(node.getSort());
         Expression term = node.getTerm();
-        this.value = term instanceof Variable ? null : family.toValue(node.getTerm());
-        this.oracle = oracle;
+        assert !(term instanceof Variable) || this.algebra.getFamily()
+            .supportsSymbolic();
+        this.value = family.toValue(node.getTerm());
     }
 
     @Override
     public Record createRecord(Search matcher) {
-        if (this.value == null) {
-            return new ValueQueryRecord(matcher);
-        } else {
-            return new ValueNodeRecord(matcher);
-        }
+        return new ValueNodeRecord(matcher);
     }
 
     @Override
@@ -138,8 +131,6 @@ class ValueNodeSearchItem extends AbstractSearchItem {
     int nodeIx;
     /** Condition being matched. */
     Condition condition;
-    /** Source of matches in case the variable node is unbound. */
-    final ValueOracle oracle;
 
     /**
      * Record of a value node search item.
@@ -183,40 +174,5 @@ class ValueNodeSearchItem extends AbstractSearchItem {
 
         /** The constant value of the variable node, if any. */
         private ValueNode image;
-    }
-
-    private class ValueQueryRecord extends MultipleRecord<Constant> {
-        public ValueQueryRecord(Search search) {
-            super(search);
-        }
-
-        @Override
-        public void initialise(HostGraph host) {
-            super.initialise(host);
-            this.factory = host.getFactory();
-            this.values = ValueNodeSearchItem.this.oracle
-                .getValues(ValueNodeSearchItem.this.condition, ValueNodeSearchItem.this.node);
-        }
-
-        @Override
-        void init() {
-            this.imageIter = this.values.iterator();
-        }
-
-        @Override
-        boolean write(Constant image) {
-            Algebra<?> algebra = ValueNodeSearchItem.this.algebra;
-            ValueNode imageNode =
-                this.factory.createNode(algebra, algebra.toValueFromConstant(image));
-            return this.search.putNode(ValueNodeSearchItem.this.nodeIx, imageNode);
-        }
-
-        @Override
-        void erase() {
-            this.search.putNode(ValueNodeSearchItem.this.nodeIx, null);
-        }
-
-        private HostFactory factory;
-        private Iterable<Constant> values;
     }
 }

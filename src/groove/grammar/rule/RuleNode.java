@@ -17,11 +17,13 @@
 package groove.grammar.rule;
 
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
+import groove.grammar.UnitPar.RulePar;
 import groove.grammar.aspect.AspectKind;
 import groove.grammar.type.TypeNode;
 import groove.graph.Node;
@@ -39,6 +41,16 @@ public interface RuleNode extends Node, RuleElement {
      */
     default public String getId() {
         return toString();
+    }
+
+    /** Sets the optional rule parameter associated with this rule node. */
+    default public void setPar(RulePar par) {
+        throw new UnsupportedOperationException();
+    }
+
+    /** Returns the optional rule parameter associated with this rule node. */
+    default public Optional<RulePar> getPar() {
+        return Optional.empty();
     }
 
     /* Specialises the return type. */

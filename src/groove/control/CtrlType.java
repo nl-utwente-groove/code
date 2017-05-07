@@ -16,10 +16,10 @@
  */
 package groove.control;
 
-import groove.algebra.Sort;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import groove.algebra.Sort;
 
 /**
  * Class encapsulating control variable types.
@@ -42,13 +42,13 @@ public enum CtrlType {
 
     /** Constructs a control data type from a given data signature. */
     private CtrlType() {
-        this.signature = null;
+        this.sort = null;
         this.name = NODE_TYPE_NAME;
     }
 
     /** Constructs a control data type from a given data signature. */
     private CtrlType(Sort signature) {
-        this.signature = signature;
+        this.sort = signature;
         this.name = signature.getName();
     }
 
@@ -58,18 +58,26 @@ public enum CtrlType {
     }
 
     /**
-     * Returns the associated data signature, if this type is a data type.
-     * @return the data signature, or {@code null} if this type
+     * Returns the associated data sort, if this type is a data type.
+     * @return the data sort, or {@code null} if this type
      * is a node type.
      */
-    public Sort getSignature() {
-        return this.signature;
+    public Sort getSort() {
+        return this.sort;
+    }
+
+    /** Data sort of this type, in case it is a data type. */
+    private final Sort sort;
+
+    /**
+     * Returns the name of this type.
+     */
+    public String getName() {
+        return this.name;
     }
 
     /** Name of this control type. */
     private final String name;
-    /** Data signature of this type, in case it is a data type. */
-    private final Sort signature;
 
     /**
      * Returns a data type instance for a given signature.

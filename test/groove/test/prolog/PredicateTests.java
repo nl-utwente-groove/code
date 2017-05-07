@@ -19,13 +19,14 @@ package groove.test.prolog;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import org.junit.Test;
+
 import groove.explore.Exploration;
 import groove.grammar.model.GrammarModel;
 import groove.lts.GTS;
 import groove.prolog.GrooveState;
 import groove.util.parse.FormatException;
-
-import org.junit.Test;
 
 /**
  * Tests the graph predicates
@@ -78,8 +79,10 @@ public class PredicateTests {
         //success("start_graph(G), graph_edge(G,E), edge_label(E,'A'), edge_source(E,S), edge_target(E,S)");
 
         // Test label_edge
-        success("start_graph(G), label('f',AL), label_edge(G,AL,E), edge_label(E,'f'), edge_role_binary(E)");
-        success("start_graph(G), label('flag:a',AL), label_edge(G,AL,E), edge_label(E,'a'), edge_role_flag(E)");
+        success(
+            "start_graph(G), label('f',AL), label_edge(G,AL,E), edge_label(E,'f'), edge_role_binary(E)");
+        success(
+            "start_graph(G), label('flag:a',AL), label_edge(G,AL,E), edge_label(E,'a'), edge_role_flag(E)");
         //success("start_graph(G), label('type:A',AL), label_edge(G,AL,E), edge_label(E,'A'), edge_role_node_type(E)");
 
         // Test label_edge_set
@@ -88,8 +91,10 @@ public class PredicateTests {
         //success("start_graph(G), label('type:A', AL), label_edge_set(G,AL,E), length(E,1)");
 
         // Test node_edge
-        success("start_graph(G), graph_node(G,N), node_edge(G,N,E), edge_label(E,'f'), edge_role_binary(E)");
-        success("start_graph(G), graph_node(G,N), node_edge(G,N,E), edge_label(E,'a'), edge_role_flag(E)");
+        success(
+            "start_graph(G), graph_node(G,N), node_edge(G,N,E), edge_label(E,'f'), edge_role_binary(E)");
+        success(
+            "start_graph(G), graph_node(G,N), node_edge(G,N,E), edge_label(E,'a'), edge_role_flag(E)");
         //success("start_graph(G), graph_node(G,N), node_edge(G,N,E), edge_label(E,'A'), edge_role_node_type(E)");
 
         // Test node_edge_set, there should be nodes with 1, 2 and 4 edges
@@ -202,17 +207,20 @@ public class PredicateTests {
         success("start_state(S), state_is_closed(S)");
 
         // Test state_next and final_state
-        success("start_state(S), state_next(S,N1), state_next(N1,N2), state_next(N2,N3), final_state(N3)");
+        success(
+            "start_state(S), state_next(S,N1), state_next(N1,N2), state_next(N2,N3), final_state(N3)");
         failure("start_state(S), state_next(S,N1), state_next(N1,N2), final_state(N2)");
         failure("start_state(S), state_next(S,S)");
         success("start_state(S), state_next_set(S,N), length(N,2), member(NS,N), state_next(S,NS)");
 
         // Assert that the start state has a transition
         success("start_state(S), state_transition(S,T), is_transition(T)");
-        success("start_state(S), state_transition_set(S,T), length(T,2), member(X,T), state_transition(S,X)");
+        success(
+            "start_state(S), state_transition_set(S,T), length(T,2), member(X,T), state_transition(S,X)");
 
         // Assert that the source and target of a transition are right
-        success("start_state(S), state_transition(S,T), transition_source(T,S), transition_target(T,N), state_next(S,N)");
+        success(
+            "start_state(S), state_transition(S,T), transition_source(T,S), transition_target(T,N), state_next(S,N)");
 
         // Assert that transition_event gives a rule event
         success("start_state(S), state_transition(S,T), transition_event(T,E), is_ruleevent(E)");
@@ -248,11 +256,12 @@ public class PredicateTests {
         success("active_ruleevent(RE), is_ruleevent(RE)");
 
         // Assert that created_edge and created_node give a edge and node
-        success("state(S), state_graph(S,G), active_ruleevent(RE), ruleevent_created_edge(RE,G,E), is_edge(E)");
-        success("state(S), state_graph(S,G), active_ruleevent(RE), ruleevent_created_node(RE,G,N), is_node(N)");
+        //        success("state(S), state_graph(S,G), active_ruleevent(RE), ruleevent_created_edge(RE,G,E), is_edge(E)");
+        //        success("state(S), state_graph(S,G), active_ruleevent(RE), ruleevent_created_node(RE,G,N), is_node(N)");
 
         // Test ruleevent_erased_node and ruleevent_erased_edge
-        success("state(S), state_graph(S,G), state_transition(S,T), transition_event(T,RE), ruleevent_erased_node(RE,G,N), is_node(N)");
+        //        success(
+        //            "state(S), state_graph(S,G), state_transition(S,T), transition_event(T,RE), ruleevent_erased_node(RE,G,N), is_node(N)");
         // succ("state(S), state_graph(S,G), state_transition(S,T), transition_event(T,RE), ruleevent_erased_edge(RE,G,E), is_edge(E)");
 
         // Assert that ruleevent_rule gives rule-b
@@ -265,7 +274,8 @@ public class PredicateTests {
         success("active_ruleevent(RE), ruleevent_match(RE,M), is_rulematch(M)");
 
         // Assert that rulematch_rule gives the executed rule
-        success("active_ruleevent(RE), ruleevent_match(RE,M), rulematch_rule(M,R), rule('rule-a',R)");
+        success(
+            "active_ruleevent(RE), ruleevent_match(RE,M), rulematch_rule(M,R), rule('rule-a',R)");
         // failure("active_ruleevent(RE), ruleevent_match(RE,M), rulematch_rule(M,R), rule('rule-b',R)");
 
         // Assert that rulematch_edge gives an edge
@@ -279,7 +289,8 @@ public class PredicateTests {
         // TODO: succ("active_ruleevent(RE), ruleevent_anchor_edge(RE,E), is_edge(E)");
 
         // Test rule event transpose
-        success("active_ruleevent(RE), rule('rule-a',R), rule_rhs(R,RHS), graph_node(RHS,N), ruleevent_transpose(RE,N,T)");
+        success(
+            "active_ruleevent(RE), rule('rule-a',R), rule_rhs(R,RHS), graph_node(RHS,N), ruleevent_transpose(RE,N,T)");
         // TODO: succ("active_ruleevent(RE), rule('rule-a',R), rule_rhs(R,RHS), graph_edge(RHS,E), ruleevent_transpose(RE,E,T)");
 
         // TODO: succ("state(S1), state(S2), state_transition(S1,T1), state_transition(S2,T2), transition_event(T1,E1), transition_event(T2,E2), ruleevent_conflicts(E1,E2)");
@@ -312,9 +323,11 @@ public class PredicateTests {
         // fail("active_type_graph_name('test')");
 
         // Test type_label, subtype, direct_subtype
-        success("composite_type_graph(G), label('type:A',A), label('type:D',D), subtype(G,D,A), direct_subtype(G,D,A)");
+        success(
+            "composite_type_graph(G), label('type:A',A), label('type:D',D), subtype(G,D,A), direct_subtype(G,D,A)");
         success("composite_type_graph(G), label('type:A',A), label('type:D',D), subtype(G,D,A)");
-        failure("composite_type_graph(G), label('type:A',A), label('type:C',C), direct_subtype(G,C,A)");
+        failure(
+            "composite_type_graph(G), label('type:A',A), label('type:C',C), direct_subtype(G,C,A)");
 
         // Test type_label
         success("label('a',L), label(X,L), =(X,'a')");
@@ -363,8 +376,12 @@ public class PredicateTests {
     private boolean test(String predicate) {
         try {
             GTS gts = getGTS();
-            return PrologTestUtil.test(new GrooveState(gts.getGrammar(), gts, gts.startState(),
-                gts.startState().getRuleTransitions().iterator().next().getEvent()), predicate);
+            return PrologTestUtil
+                .test(new GrooveState(gts.getGrammar(), gts, gts.startState(), gts.startState()
+                    .getRuleTransitions()
+                    .iterator()
+                    .next()
+                    .getEvent()), predicate);
         } catch (Exception e) {
             fail(e.getMessage());
             return false;

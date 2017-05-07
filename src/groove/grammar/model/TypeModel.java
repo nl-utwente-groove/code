@@ -190,7 +190,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         }
         TypeNode typeNode;
         Sort signature = modelNode.getAttrKind()
-            .getSignature();
+            .getSort();
         if (signature == null) {
             typeNode = factory.createNode(typeLabel);
         } else {
@@ -244,7 +244,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             elementMap);
         TypeEdge typeEdge = null;
         if (modelEdge.getAttrKind()
-            .hasSignature()) {
+            .hasSort()) {
             TypeNode typeNode = model.getFactory()
                 .getDataType(modelEdge.getSignature());
             typeEdge = model.addEdge(typeSource, modelEdge.getAttrAspect()

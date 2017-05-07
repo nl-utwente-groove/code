@@ -20,6 +20,7 @@ package groove.grammar.model;
 import static groove.grammar.aspect.AspectKind.CONNECT;
 import static groove.grammar.aspect.AspectKind.EXISTS;
 import static groove.grammar.aspect.AspectKind.FORALL_POS;
+import static groove.grammar.aspect.AspectKind.PARAM_ASK;
 import static groove.grammar.aspect.AspectKind.PARAM_BI;
 import static groove.grammar.aspect.AspectKind.PARAM_IN;
 import static groove.grammar.aspect.AspectKind.PRODUCT;
@@ -266,6 +267,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
      * from being computed
      */
     public Signature<UnitPar.RulePar> getSignature() throws FormatException {
+        getErrors().throwException();
         return new Parameters().getSignature();
     }
 
@@ -320,9 +322,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
     @Override
     public RuleModelMap getMap() {
-        synchronise();
         if (hasErrors()) {
-            throw new IllegalStateException();
+            throw new IllegalStateException(
+                "Can't compute map while rule has errors: " + getErrors().toString());
         }
         return this.modelMap;
     }
@@ -1388,7 +1390,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             AspectKind nodeKind = modelNode.getKind();
             this.isRule |= nodeKind.inLHS() != nodeKind.inRHS();
             RuleNode ruleNode = getNodeImage(modelNode);
-            if (nodeKind.inLHS()) {
+            boolean isAskNode = modelNode.getParamKind() == PARAM_ASK;
+            if (nodeKind.inLHS() && !isAskNode) {
                 this.lhs.addNode(ruleNode);
                 if (nodeKind.inRHS()) {
                     this.rhs.addNode(ruleNode);
@@ -1402,7 +1405,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 if (nodeKind.inRHS()) {
                     // creator node
                     this.rhs.addNode(ruleNode);
-                    if (isRhsAsNac()) {
+                    if (isRhsAsNac() && !isAskNode) {
                         this.nacNodeSet.add(ruleNode);
                     }
                 }
@@ -1850,7 +1853,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             }
             AspectKind nodeAttrKind = node.getAttrKind();
             int nr = node.getNumber();
-            if (nodeAttrKind.hasSignature()) {
+            if (nodeAttrKind.hasSort()) {
                 Aspect nodeAttr = node.getAttrAspect();
                 Expression term;
                 String id = node.hasId() ? node.getId()
@@ -1859,7 +1862,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                     term = (Constant) nodeAttr.getContent();
                 } else {
                     String varName = id == null ? VariableNode.TO_STRING_PREFIX + nr : id;
-                    term = new Variable(varName, nodeAttrKind.getSignature());
+                    term = new Variable(varName, nodeAttrKind.getSort());
                 }
                 VariableNode image = this.factory.createVariableNode(nr, term);
                 if (id != null) {
@@ -2589,11 +2592,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             throws FormatException {
             AspectKind nodeKind = node.getKind();
             AspectKind paramKind = node.getParamKind();
-            RuleNode nodeImage = RuleModel.this.modelMap.getNode(node);
+            RuleNode nodeImage = getMap().getNode(node);
             assert nodeImage != null;
-            if (nodeKind.isCreator() && paramKind == PARAM_IN) {
+            if (paramKind == PARAM_IN && nodeKind.isCreator()) {
                 throw new FormatException("Input parameter %d cannot be creator node", nr, node);
-            } else if (nodeKind.inNAC()) {
+            }
+            if (nodeKind.inNAC()) {
                 throw new FormatException("Parameter '%d' may not occur in NAC", nr, node);
             }
             UnitPar.RulePar par = new UnitPar.RulePar(paramKind, nodeImage, nodeKind.isCreator());

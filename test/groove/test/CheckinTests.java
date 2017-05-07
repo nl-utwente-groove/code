@@ -16,9 +16,13 @@
  */
 package groove.test;
 
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+
 import groove.test.algebra.AllAlgebraTests;
 import groove.test.control.AllControlTests;
 import groove.test.criticalpair.AllCriticalPairTests;
+import groove.test.grammar.AllGrammarTests;
 import groove.test.graph.AllGraphTests;
 import groove.test.prolog.AllPrologTests;
 import groove.test.rel.AllRelTests;
@@ -28,9 +32,6 @@ import groove.test.type.AllTypeTests;
 import groove.test.util.AllUtilTests;
 import groove.test.verify.AllVerifyTests;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-
 /**
  * Test suite to be run upon checkin.
  * Also run by the Jenkins build server.
@@ -39,9 +40,9 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({AllAlgebraTests.class, AllControlTests.class, AllCriticalPairTests.class,
-    AllGraphTests.class, AllPrologTests.class, AllRuleTests.class, AllTypeTests.class,
-    AllRelTests.class, AllVerifyTests.class, BinaryEdgeTest.class, ExplorationTest.class,
-    IOTest.class, AllUtilTests.class, AllSTSTests.class})
+    AllGraphTests.class, AllGrammarTests.class, AllPrologTests.class, AllRuleTests.class,
+    AllTypeTests.class, AllRelTests.class, AllVerifyTests.class, BinaryEdgeTest.class,
+    ExplorationTest.class, IOTest.class, AllUtilTests.class, AllSTSTests.class})
 public class CheckinTests {
     // Empty by design.
 }

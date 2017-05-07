@@ -57,6 +57,9 @@ import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
 
+import org.eclipse.jdt.annotation.NonNull;
+
+import groove.grammar.GrammarKey;
 import groove.grammar.GrammarProperties;
 import groove.grammar.ModuleName;
 import groove.grammar.QualName;
@@ -121,27 +124,29 @@ public class SystemStore extends UndoableEditSupport {
     }
 
     /**
-     * Returns the name of this store.
+     * Returns the name of this store. This coincides with the last part of the
+     * location, stripped of its extension.
      * @return the name of this store; cannot be <code>null</code> or empty.
      */
-    public String getName() {
+    public @NonNull String getName() {
         return this.name;
     }
 
-    /** Name of the rule system. */
-    protected final String name;
+    /** Name of the store. */
+    private final @NonNull String name;
 
     /**
-     * Returns the location of this store. The location uniquely identifies the
+     * Returns the location of this store. The location is a directory
+     * whose name ends on {@link FileType#GRAMMAR} extension and uniquely identifies the
      * place from where the store was obtained.
-     * @return the location of this store; cannot be <code>null</code> or empty.
+     * @return the location of this store; cannot be <code>null</code>
      */
-    public File getLocation() {
+    public @NonNull File getLocation() {
         return this.file;
     }
 
     /** The file obtained from <code>location</code>. */
-    protected final File file;
+    private final @NonNull File file;
 
     /** Checks if the store is empty. */
     public boolean isEmpty() {
@@ -820,7 +825,7 @@ public class SystemStore extends UndoableEditSupport {
      * Loads the properties file from file (if any), and returns them.
      */
     private GrammarProperties loadGrammarProperties() throws IOException {
-        GrammarProperties properties = new GrammarProperties();
+        GrammarProperties result = new GrammarProperties();
         File propertiesFile = getDefaultPropertiesFile();
         // backwards compatibility: <grammar name>.properties
         if (!propertiesFile.exists()) {
@@ -831,12 +836,13 @@ public class SystemStore extends UndoableEditSupport {
             try (InputStream s = new FileInputStream(propertiesFile)) {
                 grammarProperties.load(s);
             }
-            properties.putAll(grammarProperties);
+            result.putAll(grammarProperties);
+            result = addDerivedProperties(result);
             this.hasSystemPropertiesFile = true;
         } else {
             this.hasSystemPropertiesFile = false;
         }
-        return properties;
+        return result;
     }
 
     /** Returns the file that by default holds the system properties. */
@@ -886,6 +892,7 @@ public class SystemStore extends UndoableEditSupport {
 
     /** Overwrites the grammar properties file. */
     private void saveProperties(GrammarProperties properties) throws IOException {
+        properties = removeDerivedProperties(properties);
         File propertiesFile = getDefaultPropertiesFile();
         try (Writer propertiesWriter = new FileWriter(propertiesFile)) {
             properties.store(propertiesWriter, null);
@@ -898,6 +905,25 @@ public class SystemStore extends UndoableEditSupport {
     }
 
     private GrammarProperties properties;
+
+    /** Returns a clone of a given properties bundle where the derived properties have been added. */
+    private GrammarProperties addDerivedProperties(GrammarProperties properties) {
+        GrammarProperties result = properties.clone();
+        result.put(GrammarKey.LOCATION.getName(), this.file.toPath()
+            .toString());
+        return result;
+    }
+
+    /** Returns a clone of a given properties bundle where all derived properties have been removed. */
+    private GrammarProperties removeDerivedProperties(GrammarProperties properties) {
+        GrammarProperties result = properties.clone();
+        for (GrammarKey key : GrammarKey.values()) {
+            if (key.isDerived()) {
+                result.remove(key.toString());
+            }
+        }
+        return result;
+    }
 
     private void testInit() throws IllegalStateException {
         if (!this.initialised) {

@@ -21,7 +21,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
-import groove.control.CtrlPar;
+import groove.grammar.UnitPar.ProcedurePar;
+import groove.util.parse.FormatException;
 
 /**
  * Class wrapping the signature of a rule, i.e., the list of parameters.
@@ -54,6 +55,11 @@ public class Signature<P extends UnitPar> implements Iterable<P> {
     }
 
     private final List<P> pars;
+
+    /** Tests if this signature has parameters of a given direction. */
+    public boolean has(UnitPar.Direction dir) {
+        return stream().anyMatch(p -> p.getDirection() == dir);
+    }
 
     @Override
     public Iterator<P> iterator() {
@@ -106,13 +112,32 @@ public class Signature<P extends UnitPar> implements Iterable<P> {
             if (result.length() > 1) {
                 result.append(',');
             }
-            if (par.isOutOnly()) {
-                result.append(CtrlPar.OUT_PREFIX);
-                result.append(' ');
-            }
-            result.append(par.getType());
+            result.append(par.getDirection()
+                .prefix(par.getType()
+                    .toString()));
         }
         result.append(')');
         return result.toString();
+    }
+
+    /** Attempts to parse a given string as a comma-separated list of
+     * procedure parameters.
+     * @param input the input string to be parsed
+     * @return a signature constructed from the parsed parameters
+     * @throws FormatException if the input string cannot be parsed
+     */
+    static public Signature<ProcedurePar> parse(String input) throws FormatException {
+        List<ProcedurePar> pars = new ArrayList<>();
+        int comma;
+        do {
+            comma = input.indexOf(',');
+            if (comma >= 0) {
+                String next = input.substring(0, comma);
+                pars.add(UnitPar.parse(next));
+                input = input.substring(comma + 1);
+            }
+        } while (comma >= 0);
+        pars.add(UnitPar.parse(input));
+        return new Signature<>(pars);
     }
 }

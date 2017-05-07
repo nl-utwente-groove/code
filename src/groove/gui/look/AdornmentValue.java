@@ -33,18 +33,20 @@ public class AdornmentValue extends AspectValue<String> {
         AspectNode node = jVertex.getNode();
         if (node.hasParam()) {
             Aspect param = node.getParam();
-            result = new StringBuilder(5);
+            result = new StringBuilder(param.getContentString());
             switch (param.getKind()) {
             case PARAM_IN:
-                result.append("?");
+                result.insert(0, '?');
                 break;
             case PARAM_OUT:
-                result.append("!");
+                result.insert(0, '!');
+                break;
+            case PARAM_ASK:
+                result.insert(0, '*');
                 break;
             default:
                 // no special decoration
             }
-            result.append(param.getContentString());
         }
         return result == null ? null : result.toString();
     }

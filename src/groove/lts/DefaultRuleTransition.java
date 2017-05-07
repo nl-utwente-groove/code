@@ -21,6 +21,8 @@ import java.util.Collections;
 import java.util.IllegalFormatException;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Const;
 import groove.control.CtrlPar.Var;
@@ -50,22 +52,13 @@ import groove.util.parse.FormatException;
 public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     implements RuleTransitionStub, RuleTransition {
     /**
-     * Constructs a GraphTransition on the basis of a given rule event, between
+     * Constructs a GraphTransition on the basis of a given match and added node set, between
      * a given source and target state.
      */
-    public DefaultRuleTransition(GraphState source, MatchResult match, HostNode[] addedNodes,
-        GraphState target, boolean symmetry) {
+    public DefaultRuleTransition(GraphState source, MatchResult match,
+        @NonNull HostNode[] addedNodes, GraphState target, boolean symmetry) {
         super(source, RuleTransitionLabel.createLabel(source, match, addedNodes), target);
         this.symmetry = symmetry;
-    }
-
-    /**
-     * @param source the source state
-     * @param match the rule event
-     * @param target the target state
-     */
-    public DefaultRuleTransition(GraphState source, MatchResult match, GraphState target) {
-        this(source, match, null, target, false);
     }
 
     @Override
@@ -237,7 +230,8 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
         HostGraphMorphism result;
         HostGraph sourceGraph = source().getGraph();
         if (getAction().isModifying()) {
-            RuleApplication appl = getEvent().newApplication(sourceGraph);
+            // create fresh rule application to account for target isomorphism
+            RuleApplication appl = new RuleApplication(getEvent(), sourceGraph, getAddedNodes());
             result = appl.getMorphism();
             if (isSymmetry()) {
                 HostGraph derivedTarget = appl.getTarget()

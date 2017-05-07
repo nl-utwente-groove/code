@@ -31,6 +31,14 @@ public interface PropertyKey<V> extends ParsableKey<V> {
     /** Indicates if this is a system key. */
     public boolean isSystem();
 
+    /** Indicates if the value for this key is derived, i.e.,
+     * not stored or modifiable.
+     * Derived keys are always system keys.
+     */
+    default public boolean isDerived() {
+        return false;
+    }
+
     /**
      * Start character that distinguishes system properties from user-definable
      * properties. Any string starting with this character is a system key.

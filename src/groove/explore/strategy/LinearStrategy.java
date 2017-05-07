@@ -47,7 +47,7 @@ public class LinearStrategy extends GTSStrategy {
     }
 
     @Override
-    public GraphState doNext() {
+    public GraphState doNext() throws InterruptedException {
         GraphState state = getNextState();
         MatchResult match = getMatch();
         // put the state back in the pool for backtracking of recipes

@@ -1,5 +1,6 @@
 package groove.grammar;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -15,8 +16,9 @@ import groove.grammar.CheckPolicy.PolicyMap;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.type.TypeLabel;
-import groove.match.DefaultValueOracle;
-import groove.match.ValueOracle;
+import groove.transform.oracle.DefaultOracle;
+import groove.transform.oracle.ValueOracle;
+import groove.transform.oracle.ValueOracleFactory;
 import groove.util.Groove;
 import groove.util.Properties;
 import groove.util.ThreeValued;
@@ -116,7 +118,7 @@ public class GrammarProperties extends Properties {
     }
 
     /**
-     * @return the version of Groove that created the grammar.
+     * Returns the version of Groove that created the grammar.
      */
     public String getGrooveVersion() {
         return (String) parseProperty(GrammarKey.GROOVE_VERSION);
@@ -128,10 +130,17 @@ public class GrammarProperties extends Properties {
     }
 
     /**
-     * @return the version of the grammar.
+     * Returns the version of the grammar.
      */
     public String getGrammarVersion() {
         return (String) parseProperty(GrammarKey.GRAMMAR_VERSION);
+    }
+
+    /**
+     * Returns the location of the grammar.
+     */
+    public Path getLocation() {
+        return (Path) parseProperty(GrammarKey.LOCATION);
     }
 
     /**
@@ -322,23 +331,30 @@ public class GrammarProperties extends Properties {
     }
 
     /**
-     * Sets the value oracle to be used.
+     * Indicates if there is an installed value oracle.
      */
-    public void setValueOracle(ValueOracle oracle) {
-        storeProperty(GrammarKey.ORACLE, oracle);
+    public boolean hasValueOracle() {
+        return getValueOracleFactory() != null;
     }
 
     /**
      * Returns the installed value oracle.
      */
-    public ValueOracle getValueOracle() {
+    public ValueOracleFactory getValueOracleFactory() {
         if (getAlgebraFamily() == AlgebraFamily.POINT) {
             // with the point algebra, any value will do and is the same
             // so we can just take the default value
-            return DefaultValueOracle.instance();
+            return DefaultOracle.instance();
         } else {
-            return (ValueOracle) parseProperty(GrammarKey.ORACLE);
+            return (ValueOracleFactory) parseProperty(GrammarKey.ORACLE);
         }
+    }
+
+    /**
+     * Returns an instance of the installed value oracle for the current grammar properties.
+     */
+    public ValueOracle getValueOracle() throws FormatException {
+        return getValueOracleFactory().instance(this);
     }
 
     /**
@@ -460,14 +476,6 @@ public class GrammarProperties extends Properties {
     }
 
     /**
-     * Returns a default, fixed properties object, with a given value for
-     * attribute support.
-     */
-    static public GrammarProperties getInstance() {
-        return instance;
-    }
-
-    /**
      * Tests whether {@link #isCheckDangling()} holds for a given properties
      * object. If the properties object is <code>null</code>, the method returns
      * <code>false</code>.
@@ -478,15 +486,6 @@ public class GrammarProperties extends Properties {
     static public boolean isCheckDangling(GrammarProperties properties) {
         return properties != null && properties.isCheckDangling();
     }
-
-    /** Map storing default property instances. */
-    static private GrammarProperties instance = new GrammarProperties();
-
-    /**
-     * The default rule properties: not attributed and no control or common
-     * labels.
-     */
-    static public final GrammarProperties DEFAULT_PROPERTIES = getInstance();
 
     /** Mapping from resource kinds to corresponding property keys. */
     static private final Map<ResourceKind,GrammarKey> resourceKeyMap =

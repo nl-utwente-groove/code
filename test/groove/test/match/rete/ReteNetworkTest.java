@@ -52,7 +52,7 @@ public class ReteNetworkTest extends TestCase {
      * Tests the static structure of the RETE network for an empty grammar.
      */
     public void testStaticEmptyGrammar() {
-        ReteSearchEngine g = new ReteSearchEngine(new Grammar("empty"));
+        ReteSearchEngine g = new ReteSearchEngine(new Grammar());
         ReteNetwork network = g.getNetwork();
         assertEquals(0, network.getRoot()
             .getSuccessors()

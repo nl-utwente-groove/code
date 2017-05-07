@@ -47,6 +47,7 @@ import groove.grammar.ModuleName;
 import groove.grammar.QualName;
 import groove.grammar.Signature;
 import groove.grammar.UnitPar;
+import groove.grammar.UnitPar.Direction;
 import groove.util.parse.FormatException;
 import groove.util.parse.StringHandler;
 
@@ -316,7 +317,7 @@ public class CtrlHelper {
                 CtrlType type = typeTree.getCtrlType();
                 String name = parTree.getChild(out ? 2 : 1)
                     .getText();
-                result.add(UnitPar.par(procName, name, type, out));
+                result.add(UnitPar.par(procName, name, type, out ? Direction.OUT : Direction.IN));
             }
         }
         return new Signature<>(result);
@@ -510,8 +511,8 @@ public class CtrlHelper {
                 int argCount = 0, targetCount = 0;
                 for (UnitPar par : unit.getSignature()) {
                     CtrlPar arg;
-                    if (par.isOutOnly()) {
-                        // output-only parameters must be assignment targets
+                    if (par.isOutOnly() || par.isAsk()) {
+                        // output-only and user-provided parameters must be assignment targets
                         arg = targets.get(targetCount);
                         targetCount++;
                     } else if (args == null) {

@@ -27,14 +27,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import groove.algebra.Algebra;
+import groove.algebra.Constant;
 import groove.grammar.AnchorKind;
 import groove.grammar.Rule;
+import groove.grammar.UnitPar.RulePar;
 import groove.grammar.host.AnchorValue;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.HostNodeSet;
+import groove.grammar.host.ValueNode;
 import groove.grammar.rule.Anchor;
 import groove.grammar.rule.AnchorKey;
 import groove.grammar.rule.LabelVar;
@@ -47,6 +51,7 @@ import groove.match.TreeMatch;
 import groove.transform.RuleEffect.Fragment;
 import groove.util.Groove;
 import groove.util.cache.CacheReference;
+import groove.util.parse.FormatException;
 
 /**
  * Class representing an instance of an {@link Rule} for a given anchor map.
@@ -308,12 +313,8 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
         return getCache().getAnchorImageSet();
     }
 
-    /**
-     * Records the application of this event, by storing the relevant
-     * information into the record object passed in as a parameter.
-     */
     @Override
-    public void recordEffect(RuleEffect record) {
+    public void recordEffect(RuleEffect record) throws InterruptedException {
         if (getRule().isModifying()) {
             if (getRule().getCreatorNodes().length > 0) {
                 recordCreatedNodes(record);
@@ -348,14 +349,15 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
         record.addErasedEdges(getErasedEdges());
     }
 
-    /** Adds the created nodes to the application record. */
-    private void recordCreatedNodes(RuleEffect record) {
+    /** Adds the created nodes to the application record.
+     * @throws InterruptedException if an oracle input was cancelled
+     */
+    private void recordCreatedNodes(RuleEffect record) throws InterruptedException {
         RuleNode[] creatorNodes = getRule().getCreatorNodes();
         if (record.isNodesPredefined()) {
             record.addCreatorNodes(creatorNodes);
         } else {
-            HostNode[] createdNodes = getCreatedNodes(record.getSource()
-                .nodeSet(), record.getCreatedNodeMap());
+            HostNode[] createdNodes = getCreatedNodes(record);
             record.addCreatedNodes(creatorNodes, createdNodes);
         }
     }
@@ -386,10 +388,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
                     this,
                     target);
             }
-            HostEdge image = getHostFactory().createEdge(sourceImage,
-                anchorMap.mapLabel(edge.label()),
-                targetImage);
-            record.addCreatedEdge(image);
+            record.addCreateEdge(sourceImage, anchorMap.mapLabel(edge.label()), targetImage);
         }
     }
 
@@ -497,12 +496,11 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
     /** Computes an array of created nodes that are fresh both
      * with respect to a given set of source graph nodes and with respect
      * to a set of nodes that were already created.
-     * @param sourceNodes the set of nodes in the source graph
-     * @param created possibly {@code null} mapping from creators to created nodes
+     * @param record the source graph
      * @return array of fresh nodes, in the order of the node creators
+     * @throws InterruptedException if an oracle input was cancelled
      */
-    private HostNode[] getCreatedNodes(Set<? extends HostNode> sourceNodes,
-        Map<RuleNode,HostNode> created) {
+    private HostNode[] getCreatedNodes(RuleEffect record) throws InterruptedException {
         HostNode[] result;
         RuleNode[] creatorNodes = getRule().getCreatorNodes();
         int count = creatorNodes.length;
@@ -510,7 +508,6 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
             result = AbstractRuleEvent.EMPTY_NODE_ARRAY;
         } else {
             result = new HostNode[count];
-            Set<HostNode> current = null;
             for (int i = 0; i < count; i++) {
                 TypeNode type;
                 if (creatorNodes[i].getTypeGuards()
@@ -522,7 +519,12 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
                         .get(0)
                         .getVar());
                 }
-                result[i] = createNode(i, type, sourceNodes, current);
+                if (type.isDataType()) {
+                    result[i] = createValueNode(record, creatorNodes[i].getPar()
+                        .get());
+                } else {
+                    result[i] = createNode(record, i, type);
+                }
             }
             // normalise the result to a previously stored instance
             if (getReuse() != NONE) {
@@ -533,20 +535,36 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
     }
 
     /**
+     * Creates a value node by querying the oracle.
+     * @throws InterruptedException if an oracle input was cancelled
+     */
+    private ValueNode createValueNode(RuleEffect record, RulePar par) throws InterruptedException {
+        try {
+            Constant c = record.getOracle()
+                .getValue(record.getSource(), this, par);
+            Algebra<?> alg = getAction().getGrammarProperties()
+                .getAlgebraFamily()
+                .getAlgebra(c.getSort());
+            return record.getSource()
+                .getFactory()
+                .createNode(alg, alg.toValueFromConstant(c));
+        } catch (FormatException exc) {
+            throw new InterruptedException(exc.getMessage());
+        }
+    }
+
+    /**
      * Adds a node that is fresh with respect to a given graph to a collection
      * of already added nodes. The previously created fresh nodes are tried first
      * (see {@link BasicEvent#getFreshNodes(int)}; only if all of those are
      * already in the graph, a new fresh node is created using
      * {@link #createNode(TypeNode)}.
+     * @param record the rule effect with respect to which the node should be fresh
      * @param creatorIndex index in the creator nodes array indicating the node
      *        of the rule for which a new image is to be created
-     * @param sourceNodes the existing nodes, which should not contain the
-     *        fresh node
-     * @param current the collection of already added nodes; the newly added node
-     *        is guaranteed to be fresh with respect to these
+     * @param type type of the node to be created
      */
-    private HostNode createNode(int creatorIndex, TypeNode type,
-        Set<? extends HostNode> sourceNodes, Set<HostNode> current) {
+    private HostNode createNode(RuleEffect record, int creatorIndex, TypeNode type) {
         HostNode result = null;
         boolean added = false;
         List<HostNode> previous = getFreshNodes(creatorIndex);
@@ -554,14 +572,12 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
             int previousCount = previous.size();
             for (int i = 0; !added && i < previousCount; i++) {
                 result = previous.get(i);
-                added = !sourceNodes.contains(result) && (current == null || current.add(result));
+                added = !record.getSource()
+                    .containsNode(result);
             }
         }
         if (!added) {
             result = createNode(type);
-            if (current != null) {
-                current.add(result);
-            }
             if (previous != null) {
                 previous.add(result);
             }

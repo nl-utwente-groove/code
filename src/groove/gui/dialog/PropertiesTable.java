@@ -16,18 +16,6 @@
  */
 package groove.gui.dialog;
 
-import groove.gui.display.DismissDelayer;
-import groove.gui.look.Values;
-import groove.io.HTMLConverter;
-import groove.io.HTMLConverter.HTMLTag;
-import groove.util.Properties.CheckerMap;
-import groove.util.PropertyKey;
-import groove.util.collect.ListComparator;
-import groove.util.parse.FormatError;
-import groove.util.parse.FormatErrorSet;
-import groove.util.parse.Parser;
-import groove.util.parse.StringHandler;
-
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -50,6 +38,19 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 
+import groove.gui.display.DismissDelayer;
+import groove.gui.look.Values;
+import groove.io.HTMLConverter;
+import groove.io.HTMLConverter.HTMLTag;
+import groove.util.Properties.CheckerMap;
+import groove.util.PropertyKey;
+import groove.util.collect.ListComparator;
+import groove.util.parse.FormatError;
+import groove.util.parse.FormatErrorSet;
+import groove.util.parse.FormatException;
+import groove.util.parse.Parser;
+import groove.util.parse.StringHandler;
+
 /**
  * Dialog for editing a properties map.
  * @author Arend Rensink
@@ -69,8 +70,7 @@ public class PropertiesTable extends JTable {
         for (PropertyKey<?> key : defaultKeys.getEnumConstants()) {
             this.defaultKeys.put(key.getName(), key);
         }
-        this.properties =
-            new TreeMap<>(new ListComparator<>(this.defaultKeys.keySet()));
+        this.properties = new TreeMap<>(new ListComparator<>(this.defaultKeys.keySet()));
         this.keyIndexMap = new HashMap<>();
         this.errorMap = new HashMap<>();
         final TableModel model = getTableModel();
@@ -96,13 +96,13 @@ public class PropertiesTable extends JTable {
         for (Map.Entry<?,?> property : properties.entrySet()) {
             String keyword = (String) property.getKey();
             PropertyKey<?> key = getKey(keyword);
-            if (key == null || !key.isSystem()) {
+            if (key == null || !key.isSystem() || key.isDerived()) {
                 String value = (String) property.getValue();
                 this.properties.put(keyword, value);
             }
         }
-        setPreferredScrollableViewportSize(new Dimension(300,
-            Math.max((getModel().getRowCount() + 2) * ROW_HEIGHT, 80)));
+        setPreferredScrollableViewportSize(
+            new Dimension(300, Math.max((getModel().getRowCount() + 2) * ROW_HEIGHT, 80)));
         setEnabled(true);
         getTableModel().refreshPropertyKeys();
         setChanged(false);
@@ -371,11 +371,10 @@ public class PropertiesTable extends JTable {
          * edit.
          */
         private boolean showContinueDialog(String value) {
-            int response =
-                JOptionPane.showConfirmDialog(PropertiesTable.this,
-                    getContinueQuestion(value),
-                    null,
-                    JOptionPane.YES_NO_OPTION);
+            int response = JOptionPane.showConfirmDialog(PropertiesTable.this,
+                getContinueQuestion(value),
+                null,
+                JOptionPane.YES_NO_OPTION);
             return response == JOptionPane.YES_OPTION;
         }
 
@@ -387,16 +386,24 @@ public class PropertiesTable extends JTable {
                 if (PropertiesTable.this.properties.containsKey(value)) {
                     result.append(String.format("Property key '%s' already exists", value));
                 } else {
-                    result.append(String.format("Property key '%s' is not a valid identifier.",
-                        value));
+                    result.append(
+                        String.format("Property key '%s' is not a valid identifier.", value));
                 }
             } else {
                 // editing a value
                 PropertyKey<?> key = getKey(this.editingValueForKey);
-                String description = StringHandler.toLower(key.parser()
-                    .getDescription());
-                result.append(String.format("Key '%s' expects ", this.editingValueForKey))
-                    .append(description);
+                String message;
+                try {
+                    key.parser()
+                        .parse(value);
+                    message = String.format("Key '%s' expects %s",
+                        this.editingValueForKey,
+                        StringHandler.toLower(key.parser()
+                            .getDescription()));
+                } catch (FormatException exc) {
+                    message = exc.getMessage();
+                }
+                result.append(message);
             }
             result = result.append("<br>Continue?");
             return HTMLConverter.HTML_TAG.on(result)

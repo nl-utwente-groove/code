@@ -29,37 +29,63 @@ public class ApplyMatchAction extends SimulatorAction {
     @Override
     public void execute() {
         if (getSimulatorModel().hasTransition()) {
-            GraphTransition trans = getSimulatorModel().getTransition();
-            getSimulatorModel().doSetStateAndMatch(trans.target(), trans);
+            applySelectedTransition();
         } else if (getSimulatorModel().hasMatch()) {
-            GraphState state = getSimulatorModel().getState();
-            RuleTransition trans;
-            MatchResult match = getSimulatorModel().getMatch();
-            if (match.hasTransitionFrom(state)) {
-                trans = match.getTransition();
-            } else {
-                trans = state.applyMatch(match);
-            }
-            GraphState target = trans.target();
-            if (target.isRealState() || getLtsDisplay().getJGraph()
-                .isShowRecipeSteps()) {
-                getSimulatorModel().doSetStateAndMatch(target, trans);
-            } else {
-                Exploration e = getActions().getExploreAction()
-                    .explore(target, getStateExploration());
-                if (e.getResult()
-                    .isEmpty()) {
-                    getSimulatorModel().doSetStateAndMatch(state, null);
-                } else {
-                    getSimulatorModel().doSetStateAndMatch(e.getResult()
-                        .getLastState(), trans);
-                }
+            try {
+                applySelectedMatch();
+            } catch (InterruptedException exc) {
+                // match was interrupted
             }
         } else {
-            // no match is selected; explore the selected state instead
-            getActions().getExploreAction()
-                .doExploreState();
+            exploreState();
         }
+    }
+
+    /**
+     * Applies the transition selected in the simulator model
+     */
+    private void exploreState() {
+        // no match is selected; explore the selected state instead
+        getActions().getExploreAction()
+            .doExploreState();
+    }
+
+    /**
+     * Applies the match selected in the simulator model
+     * @throws InterruptedException if an oracle input was cancelled
+     */
+    private void applySelectedMatch() throws InterruptedException {
+        GraphState state = getSimulatorModel().getState();
+        RuleTransition trans;
+        MatchResult match = getSimulatorModel().getMatch();
+        if (match.hasTransitionFrom(state)) {
+            trans = match.getTransition();
+        } else {
+            trans = state.applyMatch(match);
+        }
+        GraphState target = trans.target();
+        if (target.isRealState() || getLtsDisplay().getJGraph()
+            .isShowRecipeSteps()) {
+            getSimulatorModel().doSetStateAndMatch(target, trans);
+        } else {
+            Exploration e = getActions().getExploreAction()
+                .explore(target, getStateExploration());
+            if (e.getResult()
+                .isEmpty()) {
+                getSimulatorModel().doSetStateAndMatch(state, null);
+            } else {
+                getSimulatorModel().doSetStateAndMatch(e.getResult()
+                    .getLastState(), trans);
+            }
+        }
+    }
+
+    /**
+     *
+     */
+    private void applySelectedTransition() {
+        GraphTransition trans = getSimulatorModel().getTransition();
+        getSimulatorModel().doSetStateAndMatch(trans.target(), trans);
     }
 
     @Override
