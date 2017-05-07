@@ -90,7 +90,7 @@ import groove.gui.list.ListTabbedPane;
 import groove.gui.list.SearchResult;
 import groove.gui.menu.ModelCheckingMenu;
 import groove.gui.menu.MyJMenu;
-import groove.match.DialogValueOracle;
+import groove.transform.oracle.DialogOracle;
 import groove.util.Groove;
 import groove.util.parse.FormatError;
 import groove.util.parse.FormatErrorSet;
@@ -111,7 +111,7 @@ public class Simulator implements SimulatorListener {
         this.undoManager = new SimulatorUndoManager(this);
         GraphPreviewDialog.setSimulator(this);
         JFrame frame = getFrame();
-        DialogValueOracle.instance()
+        DialogOracle.instance()
             .setParent(frame);
         this.actions.initialiseRemainingActions();
     }

@@ -16,6 +16,9 @@
  */
 package groove.util.parse;
 
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -145,6 +148,8 @@ abstract public interface Parser<T> {
         }
     }
 
+    /** Path parser. */
+    public static PathParser path = new PathParser();
     /** Integer number parser. */
     public static IntParser integer = new IntParser(true);
     /** Natural number parser. */
@@ -303,6 +308,35 @@ abstract public interface Parser<T> {
 
         /** Callback method to extract an integer value from a content object. */
         protected abstract int extractValue(I content);
+    }
+
+    /** Parser for path values. */
+    static public class PathParser implements Parser<Path> {
+
+        @Override
+        public String getDescription() {
+            return "OS-specific file path";
+        }
+
+        @Override
+        public Path parse(String input) throws FormatException {
+            try {
+                return Paths.get(input);
+            } catch (InvalidPathException exc) {
+                throw new FormatException(exc.getMessage());
+            }
+        }
+
+        @Override
+        public String toParsableString(Object value) {
+            return ((Path) value).toString();
+        }
+
+        @Override
+        public Class<? extends Path> getValueType() {
+            return Path.class;
+        }
+
     }
 
     /** Integer parser. */

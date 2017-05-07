@@ -111,7 +111,7 @@ public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.Compos
     }
 
     @Override
-    public void recordEffect(RuleEffect record) {
+    public void recordEffect(RuleEffect record) throws InterruptedException {
         BasicEvent[] events = this.eventArray;
         int eventCount = events.length;
         for (int i = 0; i < eventCount; i++) {

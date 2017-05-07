@@ -447,7 +447,7 @@ public class GrammarModel implements Observer {
      * @throws FormatException if there are syntax errors in the model
      */
     private Grammar computeGrammar() throws FormatException {
-        Grammar result = new Grammar(getName());
+        Grammar result = new Grammar();
         FormatErrorSet errors = new FormatErrorSet();
         // Construct the composite type graph
         result.setTypeGraph(getTypeGraph());

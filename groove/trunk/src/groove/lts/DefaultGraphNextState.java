@@ -131,7 +131,7 @@ public class DefaultGraphNextState extends AbstractGraphState
      */
     @Override
     public RuleTransitionLabel label() {
-        return RuleTransitionLabel.createLabel(source(), getKey(), this.addedNodes);
+        return RuleTransitionLabel.createLabel(source(), getKey(), getAddedNodes());
     }
 
     @Override

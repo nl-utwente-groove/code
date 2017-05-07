@@ -50,7 +50,8 @@ import groove.util.parse.FormatErrorSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>implements HostGraph, Cloneable {
+public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
+    implements HostGraph, Cloneable {
     /**
      * Constructs a graph with an empty basis and a delta determining
      * the elements of the graph.
@@ -538,17 +539,21 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>implements Ho
             child.basis = null;
         }
 
-        /** Adds the node to the node set and the node-edge map. */
+        /* Adds the node to the node set and the node-edge map. */
         @Override
         public boolean addNode(HostNode node) {
             boolean fresh = addKeyToStore(this.nodeEdgeStore, node);
-            assert fresh : String.format("Node %s already occured in graph", node);
-            addKeyToStore(this.nodeInEdgeStore, node);
-            addKeyToStore(this.nodeOutEdgeStore, node);
-            return true;
+            if (fresh) {
+                addKeyToStore(this.nodeInEdgeStore, node);
+                addKeyToStore(this.nodeOutEdgeStore, node);
+            } else {
+                assert node instanceof ValueNode : String.format("Node %s already occured in graph",
+                    node);
+            }
+            return fresh;
         }
 
-        /** Removes the node from the node set and the node-edge map. */
+        /* Removes the node from the node set and the node-edge map. */
         @Override
         public boolean removeNode(HostNode node) {
             HostEdgeSet edges = removeKeyFromStore(this.nodeEdgeStore, node);
@@ -693,8 +698,8 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>implements Ho
          * the label-edge maps (if it is set).
          */
         @Override
-        public boolean addEdge(HostEdge elem) {
-            return super.addEdge(elem, false, false, false);
+        public boolean addEdge(HostEdge edge) {
+            return super.addEdge(edge, false, false, false);
         }
 
         /**
@@ -702,8 +707,8 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>implements Ho
          * and the label-edge maps (if it is set).
          */
         @Override
-        public boolean removeEdge(HostEdge elem) {
-            return super.removeEdge(elem, false, false, false);
+        public boolean removeEdge(HostEdge edge) {
+            return super.removeEdge(edge, false, false, false);
         }
 
         @Override

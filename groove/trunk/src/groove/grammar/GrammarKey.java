@@ -29,7 +29,7 @@ import groove.explore.ExploreType;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.RuleModel;
-import groove.match.ValueOracle.Kind;
+import groove.transform.oracle.ValueOracleKind;
 import groove.util.DocumentedEnum;
 import groove.util.Groove;
 import groove.util.PropertyKey;
@@ -42,9 +42,11 @@ import groove.util.parse.StringParser;
 /** Grammar property keys. */
 public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
     /** Property name for the GROOVE version. */
-    GROOVE_VERSION("grooveVersion", true, "The Groove version that created this grammar"),
+    GROOVE_VERSION("grooveVersion", false, "The Groove version that created this grammar", null),
     /** Property name for the Grammar version. */
-    GRAMMAR_VERSION("grammarVersion", true, "The version of this grammar"),
+    GRAMMAR_VERSION("grammarVersion", false, "The version of this grammar", null),
+    /** Location of this Grammar. */
+    LOCATION("location", true, "The place in the file system where this grammar is stored", Parser.path),
     /** One-line documentation comment on the graph production system. */
     REMARK("remark", "A one-line description of the graph production system"),
 
@@ -52,7 +54,7 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
     ALGEBRA("algebraFamily", "<body>Algebra used for attributes" + DocumentedEnum.document(AlgebraFamily.class), new Parser.EnumParser<>(AlgebraFamily.class, AlgebraFamily.DEFAULT)),
 
     /** Property name for the value oracle to be used for matching unbound value parameters. */
-    ORACLE("valueOracle", "Source of values for unbound value parameters" + DocumentedEnum.document(Kind.class) + "<p>If the algebra family is set to <i>point</i>, the oracle is disregarded", OracleParser.instance()),
+    ORACLE("valueOracle", "Source of values for unbound value parameters" + DocumentedEnum.document(ValueOracleKind.class) + "<p>If the algebra family is set to <i>point</i>, the oracle is disregarded", OracleParser.instance()),
 
     /**
      * Flag determining the injectivity of the rule system. If <code>true</code>,
@@ -139,7 +141,7 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
      * Flag that determines if transition parameters are included in the LTS
      * transition labels
      */
-    TRANSITION_PARAMETERS("transitionParameters", false, "Show parameters", "Flag controlling if transition labels should include rule parameters", new Parser.EnumParser<>(ThreeValued.class, ThreeValued.SOME), null),
+    TRANSITION_PARAMETERS("transitionParameters", false, false, "Show parameters", "Flag controlling if transition labels should include rule parameters", new Parser.EnumParser<>(ThreeValued.class, ThreeValued.SOME), null),
 
     /**
      * Flag that determines if (binary) loops can be shown as vertex labels.
@@ -152,16 +154,19 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
      * @param explanation short explanation of the meaning of the key
      */
     private GrammarKey(String name, String explanation) {
-        this(name, false, null, explanation, null, null);
+        this(name, false, false, null, explanation, null, null);
     }
 
     /**
-     * Constructor for a key with a plain string value
+     * Constructor for a system key.
      * @param name name of the key; should be an identifier possibly prefixed by #SYSTEM_KEY_PREFIX
+     * @param derived flag indicating whether this is a derived key
      * @param explanation short explanation of the meaning of the key
+     * @param parser the parser used to convert key values to string representations and back; if {@code null},
+     * {@link StringParser#identity()} is used
      */
-    private GrammarKey(String name, boolean system, String explanation) {
-        this(name, system, null, explanation, null, null);
+    private GrammarKey(String name, boolean derived, String explanation, Parser<?> parser) {
+        this(name, true, derived, null, explanation, parser, null);
     }
 
     /**
@@ -172,7 +177,7 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
      * {@link StringParser#identity()} is used
      */
     private GrammarKey(String name, String explanation, Parser<?> parser) {
-        this(name, false, null, explanation, parser, null);
+        this(name, false, false, null, explanation, parser, null);
     }
 
     /**
@@ -185,13 +190,14 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
      * {@code this} is used
      */
     private GrammarKey(String name, String explanation, Parser<?> parser, GrammarChecker checker) {
-        this(name, false, null, explanation, parser, checker);
+        this(name, false, false, null, explanation, parser, checker);
     }
 
     /**
      * Constructor for a key with a plain string value
      * @param name name of the key; should be an identifier possibly prefixed by #SYSTEM_KEY_PREFIX
      * @param system flag indicating this is a system key
+     * @param derived flag indicating this is a derived key
      * @param keyPhrase user-readable version of the name; if {@code null},
      * the key phrase is constructed from {@code name}
      * @param explanation short explanation of the meaning of the key
@@ -200,10 +206,12 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
      * @param checker the checker used to test compatibility with a given grammar model; if {@code null},
      * {@code this} is used
      */
-    private GrammarKey(String name, boolean system, String keyPhrase, String explanation,
-        Parser<?> parser, GrammarChecker checker) {
+    private GrammarKey(String name, boolean system, boolean derived, String keyPhrase,
+        String explanation, Parser<?> parser, GrammarChecker checker) {
         this.name = name;
+        assert !derived || system : "Derived keys should be system keys";
         this.system = system;
+        this.derived = derived;
         this.keyPhrase = keyPhrase == null ? StringHandler.unCamel(name, false) : keyPhrase;
         this.explanation = explanation;
         this.parser = parser == null ? StringParser.identity() : parser;
@@ -230,6 +238,13 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
     }
 
     private final boolean system;
+
+    @Override
+    public boolean isDerived() {
+        return this.derived;
+    }
+
+    private final boolean derived;
 
     @Override
     public String getKeyPhrase() {

@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import groove.algebra.AlgebraFamily;
 import groove.control.Binding;
+import groove.grammar.UnitPar.RulePar;
 import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
@@ -327,10 +328,10 @@ public class Rule implements Action, Fixable {
     private List<Binding> computeParBinding() {
         List<Binding> result = new ArrayList<>();
         List<RuleNode> creatorNodes = Arrays.asList(getCreatorNodes());
-        for (UnitPar.RulePar par : getSignature()) {
+        for (RulePar par : getSignature()) {
             Binding binding;
             RuleNode ruleNode = par.getNode();
-            if (par.isCreator()) {
+            if (par.isCreator() || par.isAsk()) {
                 // look up the node in the creator nodes
                 binding = Binding.creator(creatorNodes.indexOf(ruleNode));
             } else {
@@ -693,27 +694,37 @@ public class Rule implements Action, Fixable {
     public boolean setFixed() throws FormatException {
         boolean result = !isFixed();
         if (result && !this.fixing) {
-            this.fixing = true;
-            this.fixed = true;
-            getCondition().setFixed();
-            if (PRINT && isTop()) {
-                System.out.println(toString());
+            try {
+                this.fixing = true;
+                getCondition().setFixed();
+                if (PRINT && isTop()) {
+                    System.out.println(toString());
+                }
+                // check if there is an oracle if one is needed
+                boolean hasAskPars = getSignature().stream()
+                    .anyMatch(v -> v.isAsk());
+                if (hasAskPars && !getGrammarProperties().hasValueOracle()) {
+                    throw new FormatException(
+                        "Rule has on-demand parameter but no oracle has been installed");
+                }
+                // push the colour map to the top rule
+                Rule parent = this.parent;
+                while (parent != null && parent != this) {
+                    parent.getColorMap()
+                        .putAll(getColorMap());
+                    parent = parent == parent.parent ? null : parent.parent;
+                }
+                this.fixed = true;
+            } finally {
+                this.fixing = false;
             }
-            // push the colour map to the top rule
-            Rule parent = this.parent;
-            while (parent != null && parent != this) {
-                parent.getColorMap()
-                    .putAll(getColorMap());
-                parent = parent == parent.parent ? null : parent.parent;
-            }
-            this.fixing = false;
         }
         return result;
     }
 
     @Override
     public boolean isFixed() {
-        return this.fixed;
+        return this.fixing || this.fixed;
     }
 
     /**

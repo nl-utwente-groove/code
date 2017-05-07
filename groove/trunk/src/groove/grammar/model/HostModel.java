@@ -171,13 +171,13 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         // copy the nodes from model to resource
         // first the non-value nodes because their numbers are fixed
         for (AspectNode modelNode : normalSource.nodeSet()) {
-            if (!modelNode.getAttrKind().hasSignature()) {
+            if (!modelNode.getAttrKind().hasSort()) {
                 processModelNode(result, elementMap, modelNode);
             }
         }
         // then the value nodes because their numbers are generated
         for (AspectNode modelNode : normalSource.nodeSet()) {
-            if (modelNode.getAttrKind().hasSignature()) {
+            if (modelNode.getAttrKind().hasSort()) {
                 processModelNode(result, elementMap, modelNode);
             }
         }
@@ -255,7 +255,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         if (!modelNode.getKind().isMeta()) {
             HostNode nodeImage = null;
             AspectKind attrType = modelNode.getAttrKind();
-            if (attrType.hasSignature()) {
+            if (attrType.hasSort()) {
                 Algebra<?> nodeAlgebra =
                     this.algebraFamily.getAlgebra(Sort.getKind(attrType.getName()));
                 Aspect dataType = modelNode.getAttrAspect();

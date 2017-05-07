@@ -160,7 +160,7 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
             AspectKind attrKind = getEdge().getAttrKind();
             if (attrKind == ARGUMENT) {
                 result.append(new StringBuilder("Argument edge"));
-            } else if (attrKind.hasSignature()) {
+            } else if (attrKind.hasSort()) {
                 result.append(new StringBuilder("Operation edge"));
             } else {
                 result.append(super.getEdgeDescription());
@@ -219,11 +219,11 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
             return false;
         }
         if (getSourceNode().getAttrKind()
-            .hasSignature()) {
+            .hasSort()) {
             return false;
         }
         if (!getTargetNode().getAttrKind()
-            .hasSignature()) {
+            .hasSort()) {
             return false;
         }
         if (getTargetNode().hasParam()) {

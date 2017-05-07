@@ -25,6 +25,7 @@ import static groove.grammar.aspect.AspectKind.EDGE;
 import static groove.grammar.aspect.AspectKind.EMBARGO;
 import static groove.grammar.aspect.AspectKind.ID;
 import static groove.grammar.aspect.AspectKind.IMPORT;
+import static groove.grammar.aspect.AspectKind.PARAM_ASK;
 import static groove.grammar.aspect.AspectKind.PRODUCT;
 import static groove.grammar.aspect.AspectKind.READER;
 
@@ -229,6 +230,9 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
                 if (!hasAspect()) {
                     setAspect(READER.getAspect());
                 }
+                if (getParamKind() == PARAM_ASK && !getAttrKind().hasSort()) {
+                    throw new FormatException("User-provided parameter must be a data value");
+                }
                 if (hasAttrAspect() && getKind() != READER && getKind() != EMBARGO) {
                     throw new FormatException("Conflicting aspects %s and %s", getAttrAspect(),
                         getAspect());
@@ -240,7 +244,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
                 setAspect(AspectKind.DEFAULT.getAspect());
             }
             if (hasImport()) {
-                if (getAttrKind().hasSignature()) {
+                if (getAttrKind().hasSort()) {
                     throw new FormatException("Can't import data type", getAttrKind(), this);
                 } else if (getKind() == ABSTRACT) {
                     throw new FormatException("Can't abstract an imported type", getAttrKind(),
@@ -312,9 +316,9 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
             return true;
         }
         if (!one.getKind()
-            .hasSignature()
+            .hasSort()
             || !two.getKind()
-                .hasSignature()) {
+                .hasSort()) {
             return false;
         }
         if (!one.getKind()
@@ -370,7 +374,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         assert !isFixed();
         Aspect newType = Aspect.getAspect(type.getName());
         assert newType.getKind()
-            .hasSignature();
+            .hasSort();
         setAttrAspect(newType);
     }
 
@@ -656,7 +660,6 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
 
     /** Returns the parameter kind of this node, if any. */
     public AspectKind getParamKind() {
-        assert hasParam();
         return hasParam() ? getParam().getKind() : DEFAULT;
     }
 

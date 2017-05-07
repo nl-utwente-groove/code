@@ -87,7 +87,7 @@ public class LTLStrategy extends Strategy {
     }
 
     @Override
-    public GraphState doNext() {
+    public GraphState doNext() throws InterruptedException {
         ProductState prodState = getNextState();
         assert prodState != null;
         // put current state on the stack

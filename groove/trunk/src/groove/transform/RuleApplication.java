@@ -16,7 +16,15 @@
  */
 package groove.transform;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.eclipse.jdt.annotation.NonNull;
+
 import groove.grammar.Rule;
+import groove.grammar.UnitPar.Direction;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostGraph;
@@ -28,18 +36,14 @@ import groove.grammar.rule.Anchor;
 import groove.grammar.rule.AnchorKey;
 import groove.grammar.rule.RuleNode;
 import groove.match.TreeMatch;
+import groove.transform.oracle.ValueOracle;
 import groove.util.Property;
 import groove.util.Visitor;
 import groove.util.Visitor.Finder;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 /**
  * Class representing a particular application of a {@link groove.grammar.Rule} and a
- * graph. This is essentially the combination of a {@link RuleEvent}, the host graph,
+ * graph. This is essentially the combination of an existing {@link RuleEvent}, the host graph,
  * and the created nodes.
  * <p>
  * The main functionality of objects of this class is to apply the rule event's changes
@@ -50,29 +54,43 @@ import java.util.Set;
  */
 public class RuleApplication implements DeltaApplier {
     /**
-     * Constructs a new derivation on the basis of a given rule and host
-     * graph.
+     * Constructs a new application on the basis of a given rule and host
+     * graph. The target graph is computed.
      * @param event the production rule instance involved
      * @param source the host graph to which the rule is to be applied
      */
     public RuleApplication(RuleEvent event, HostGraph source) {
-        this(event, source, null);
+        this(event, source, (ValueOracle) null);
+        assert !event.getRule()
+            .getSignature()
+            .has(Direction.ASK) : "Rule signature should not have user-provided parameters";
+    }
+
+    /**
+     * Constructs a new application on the basis of a given rule, host
+     * graph and value oracle. The target graph is computed.
+     * @param event the production rule instance involved
+     * @param source the host graph to which the rule is to be applied
+     */
+    public RuleApplication(RuleEvent event, HostGraph source, ValueOracle oracle) {
+        this(event, source, (HostNode[]) null);
+        this.oracle = oracle;
     }
 
     /**
      * Constructs a new derivation on the basis of a given production rule, host
-     * graph and rule factory.
+     * graph and added node set.
      * @param event the production rule instance involved
      * @param source the host graph to which the rule is to be applied
-     * @param coanchorImage the created nodes, in the order of the rule's
-     *        coanchor. If <code>null</code>, the coanchor image has to be
-     *        computed from the source graph.
+     * @param addedNodes the non-<code>null</code> array of created nodes,
+     * in the order of the rule's coanchor. If <code>null</code>, the added nodes are yet to be
+     * generated.
      */
-    public RuleApplication(final RuleEvent event, HostGraph source, HostNode[] coanchorImage) {
+    public RuleApplication(final RuleEvent event, HostGraph source, HostNode[] addedNodes) {
         this.event = event;
         this.rule = event.getRule();
         this.source = source;
-        this.addedNodes = coanchorImage;
+        this.addedNodes = addedNodes;
         assert testEvent(event, source) : String.format("Event error for %s applied to %s",
             event,
             source);
@@ -83,13 +101,12 @@ public class RuleApplication implements DeltaApplier {
      * graph and target graph, and created nodes.
      * @param event the production rule instance involved
      * @param source the host graph to which the rule is to be applied
-     * @param coanchorImage the created nodes, in the order of the rule's
-     *        coanchor. If <code>null</code>, the coanchor image has to be
-     *        computed from the source graph.
+     * @param addedNodes the non-<code>null</code> array of created nodes,
+     * in the order of the rule's coanchor.
      */
     public RuleApplication(RuleEvent event, HostGraph source, HostGraph target,
-        HostNode[] coanchorImage) {
-        this(event, source, coanchorImage);
+        @NonNull HostNode[] addedNodes) {
+        this(event, source, addedNodes);
         this.target = target;
     }
 
@@ -153,6 +170,13 @@ public class RuleApplication implements DeltaApplier {
      * to (re)construct the derivation target.
      */
     private final HostNode[] addedNodes;
+
+    /** Returns the optional value oracle. */
+    private ValueOracle getOracle() {
+        return this.oracle;
+    }
+
+    private ValueOracle oracle;
 
     /**
      * Returns a target graph created as a result of the application. The target
@@ -248,7 +272,7 @@ public class RuleApplication implements DeltaApplier {
             }
         }
         for (HostEdge edge : sourceEdges) {
-            if (!getEffect().isErasedEdge(edge)) {
+            if (!record.isErasedEdge(edge)) {
                 HostEdge edgeImage = mergeMap == null ? edge : mergeMap.mapEdge(edge);
                 if (edgeImage != null && getTarget().containsEdge(edgeImage)) {
                     result.putEdge(edge, edgeImage);
@@ -273,17 +297,23 @@ public class RuleApplication implements DeltaApplier {
     private HostGraphMorphism morphism;
 
     private RuleEffect getEffect() {
-        if (this.effect == null) {
+        RuleEffect result = this.effect;
+        if (result == null) {
             // use the predefined created nodes, if available
             if (getAddedNodes() == null) {
-                this.effect = new RuleEffect(getSource());
+                result = new RuleEffect(getSource(), getOracle());
             } else {
-                this.effect = new RuleEffect(getSource(), getAddedNodes());
+                result = new RuleEffect(getSource(), getAddedNodes());
             }
-            getEvent().recordEffect(this.effect);
-            this.effect.setFixed();
+            try {
+                getEvent().recordEffect(result);
+            } catch (InterruptedException exc) {
+                throw new IllegalStateException("By assumption, value oracles are ruled out");
+            }
+            result.setFixed();
+            this.effect = result;
         }
-        return this.effect;
+        return result;
     }
 
     /** The application record. */
@@ -364,6 +394,9 @@ public class RuleApplication implements DeltaApplier {
         if (record.hasAddedNodes()) {
             for (HostNode node : record.getAddedNodes()) {
                 target.addNode(node);
+                if (node instanceof ValueNode) {
+                    registerAddedValueNode((ValueNode) node);
+                }
             }
         }
     }
@@ -532,7 +565,8 @@ public class RuleApplication implements DeltaApplier {
     }
 
     /** Adds a key/value pair to a relational map. */
-    private void addToComatch(Map<RuleNode,HostNodeSet> result, RuleNode ruleNode, HostNode hostNode) {
+    private void addToComatch(Map<RuleNode,HostNodeSet> result, RuleNode ruleNode,
+        HostNode hostNode) {
         assert hostNode != null;
         HostNodeSet image = result.get(ruleNode);
         if (image == null) {

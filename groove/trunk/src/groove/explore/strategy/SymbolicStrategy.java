@@ -91,7 +91,7 @@ public class SymbolicStrategy extends GTSStrategy {
     }
 
     @Override
-    public GraphState doNext() {
+    public GraphState doNext() throws InterruptedException {
         GraphState state = getNextState();
         assert state != null;
         // If the current location is new, determine its outgoing switch

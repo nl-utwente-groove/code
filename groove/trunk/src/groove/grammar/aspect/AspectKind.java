@@ -107,6 +107,8 @@ public enum AspectKind {
     PARAM_IN(Keywords.PAR_IN, ContentKind.PARAM),
     /** Indicates an output rule parameter. */
     PARAM_OUT(Keywords.PAR_OUT, ContentKind.PARAM),
+    /** Indicates an interactive rule parameter. */
+    PARAM_ASK(Keywords.PAR_ASK, ContentKind.PARAM),
 
     // type-related aspects
     /** Indicates a nodified edge type. */
@@ -260,18 +262,18 @@ public enum AspectKind {
 
     /**
      * Indicates if this aspect is among the set of typed data aspects.
-     * @see #getSignature()
+     * @see #getSort()
      */
-    public boolean hasSignature() {
-        return getSignature() != null;
+    public boolean hasSort() {
+        return getSort() != null;
     }
 
     /**
-     * Returns the (possibly {@code null}) signature of this aspect kind.
-     * @see #hasSignature()
+     * Returns the (possibly {@code null}) data sort of this aspect kind.
+     * @see #hasSort()
      */
-    public Sort getSignature() {
-        return this.contentKind.signature;
+    public Sort getSort() {
+        return this.contentKind.sort;
     }
 
     /**
@@ -405,7 +407,7 @@ public enum AspectKind {
         edgeKinds.remove(TEST);
         if (role == GraphRole.TYPE) {
             for (AspectKind kind : edgeKinds) {
-                if (kind.hasSignature()) {
+                if (kind.hasSort()) {
                     edgeKinds.remove(kind);
                 }
             }
@@ -764,6 +766,12 @@ public enum AspectKind {
             b.add("Declares rule output parameter %s (ranging from 0).");
             break;
 
+        case PARAM_ASK:
+            s = "%s.COLON.nr";
+            h = "Interactive rule parameter";
+            b.add("Declares interactive rule parameter %s (ranging from 0).");
+            break;
+
         case PATH:
             s = "%s.COLON.regexpr";
             h = "Regular path expression";
@@ -891,7 +899,7 @@ public enum AspectKind {
     /** Returns a list of operations from a given signature. */
     static private String ops(AspectKind kind) {
         StringBuilder result = new StringBuilder();
-        assert kind.hasSignature();
+        assert kind.hasSort();
         for (OpValue op : Sort.getKind(kind.getName())
             .getOpValues()) {
             if (result.length() > 0) {
@@ -958,7 +966,8 @@ public enum AspectKind {
     public static final Set<AspectKind> meta =
         EnumSet.of(FORALL, FORALL_POS, EXISTS, EXISTS_OPT, NESTED, REMARK, CONNECT);
     /** Set of parameter aspects. */
-    public static final Set<AspectKind> params = EnumSet.of(PARAM_BI, PARAM_IN, PARAM_OUT);
+    public static final Set<AspectKind> params =
+        EnumSet.of(PARAM_BI, PARAM_IN, PARAM_OUT, PARAM_ASK);
     /** Set of existential quantifier aspects, i.e., which do not reflect real graph structure. */
     public static final Set<AspectKind> existsQuantifiers = EnumSet.of(EXISTS, EXISTS_OPT);
     /** Set of universal quantifier aspects, i.e., which do not reflect real graph structure. */
@@ -997,6 +1006,7 @@ public enum AspectKind {
                     PARAM_BI,
                     PARAM_IN,
                     PARAM_OUT,
+                    PARAM_ASK,
                     FORALL,
                     FORALL_POS,
                     EXISTS,
@@ -1400,12 +1410,12 @@ public enum AspectKind {
 
         /** Default, empty constructor. */
         private ContentKind() {
-            this.signature = null;
+            this.sort = null;
         }
 
         /** Constructor for literals of a given signature. */
         private ContentKind(Sort signature) {
-            this.signature = signature;
+            this.sort = signature;
         }
 
         /**
@@ -1425,7 +1435,7 @@ public enum AspectKind {
                 throw new FormatException("Prefix %s should be followed by '%s' in %s",
                     text.substring(0, pos), "" + SEPARATOR, text);
             }
-            if (this.signature == null || pos == text.length() - 1) {
+            if (this.sort == null || pos == text.length() - 1) {
                 return new Pair<>(null, text.substring(pos + 1));
             } else {
                 // the rest of the label should be a constant or operator
@@ -1445,7 +1455,7 @@ public enum AspectKind {
             Object result;
             // This implementation tries to parse the text as a constant of the
             // given signature.
-            if (this.signature == null) {
+            if (this.sort == null) {
                 throw new UnsupportedOperationException("No content allowed");
             }
             if (role == GraphRole.TYPE) {
@@ -1462,22 +1472,22 @@ public enum AspectKind {
             } else if (role == GraphRole.HOST) {
                 // in a host graph, this is a term
                 Expression expr = Expression.parse(text);
-                if (expr.getSort() != this.signature) {
+                if (expr.getSort() != this.sort) {
                     throw new FormatException(
                         "Expression '%s' has type '%s' instead of expected type '%s'", text,
-                        expr.getSort(), this.signature);
+                        expr.getSort(), this.sort);
                 }
                 result = expr;
             } else {
                 try {
-                    result = this.signature.createConstant(text);
+                    result = this.sort.createConstant(text);
                 } catch (FormatException e) {
                     // try for operator
-                    result = this.signature.getOperator(text);
+                    result = this.sort.getOperator(text);
                 }
                 if (result == null) {
                     throw new FormatException("Signature '%s' has no constant or operator %s",
-                        this.signature, text);
+                        this.sort, text);
                 }
             }
             return result;
@@ -1535,7 +1545,7 @@ public enum AspectKind {
          */
         Object relabel(Object content, TypeLabel oldLabel, TypeLabel newLabel) {
             Object result = content;
-            if (this.signature != null && content instanceof String) {
+            if (this.sort != null && content instanceof String) {
                 // this is a field name
                 if (oldLabel.getRole() == EdgeRole.BINARY && oldLabel.text()
                     .equals(content)) {
@@ -1561,7 +1571,7 @@ public enum AspectKind {
             return Character.isJavaIdentifierPart(c);
         }
 
-        private final Sort signature;
+        private final Sort sort;
 
         /** Start character of parameter strings. */
         static public final char PARAM_START_CHAR = '$';
