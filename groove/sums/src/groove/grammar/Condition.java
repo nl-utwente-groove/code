@@ -24,6 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import groove.algebra.AlgebraFamily;
 import groove.grammar.rule.OperatorNode;
@@ -384,28 +386,45 @@ public class Condition implements Fixable {
                 }
             }
         }
-        // first collect the count nodes of subconditions, if this node is conjunctive
-        // or there is only one subcondition
+        // Subcondition-dependent values can only be resolved
+        // if the subcondition is certainly matched
+        // meaning that either this condition has to be conjunctive or it has
+        // to have only one (disjunctive) subcondition
         if (this.disjunctCount <= 1) {
-            for (Condition subCondition : getSubConditions()) {
-                VariableNode countNode = subCondition.getCountNode();
-                // check if the condition has a non-constant count node
-                if (countNode != null && countNode.getConstant() == null
-                    && !resolved.contains(countNode)) {
-                    Set<VariableNode> resolver = new HashSet<>();
-                    // add the unresolved root nodes of the subcondition to the resolver
-                    for (RuleNode rootNode : subCondition.getInputNodes()) {
-                        if (rootNode instanceof VariableNode
-                            && ((VariableNode) rootNode).getConstant() == null) {
-                            resolver.add((VariableNode) rootNode);
-                        }
-                    }
-                    resolver.removeAll(resolved);
-                    if (resolver.isEmpty()) {
-                        resolved.add(countNode);
-                    } else {
-                        addResolver(result, countNode, resolver);
-                    }
+            // Collect the set-based operator nodes in this condition
+            Set<OperatorNode> setOps = this.root.nodeSet()
+                .stream()
+                .filter(n -> n instanceof OperatorNode)
+                .map(n -> (OperatorNode) n)
+                .filter(n -> n.getSetArgument()
+                    .isPresent())
+                .collect(Collectors.toSet());
+            for (Condition sub : getSubConditions()) {
+                // If the subcondition has a count node, it is a dependent node
+                VariableNode countNode = sub.getCountNode();
+                Stream<VariableNode> subDeps =
+                    countNode == null ? Stream.empty() : Stream.of(countNode);
+                // Collect targets of set operators whose sources are in the subcondition
+                Stream<VariableNode> setOpDeps = setOps.stream()
+                    .filter(n -> sub.getRoot()
+                        .containsNode(n.getSetArgument()
+                            .get()))
+                    .map(n -> n.getTarget());
+                // combine count node and set operator targets and restrict to non-constants
+                subDeps = Stream.concat(subDeps, setOpDeps)
+                    .filter(v -> v.getConstant() != null);
+                // The resolver consists of non-constant variable nodes shared by the subcondition
+                Set<VariableNode> resolver = sub.getInputNodes()
+                    .stream()
+                    .filter(n -> n instanceof VariableNode)
+                    .map(v -> (VariableNode) v)
+                    .filter(v -> v.getConstant() == null)
+                    .filter(v -> !resolved.contains(v))
+                    .collect(Collectors.toSet());
+                if (resolver.isEmpty()) {
+                    subDeps.forEach(v -> resolved.add(v));
+                } else {
+                    subDeps.forEach(v -> addResolver(result, v, resolver));
                 }
             }
         }

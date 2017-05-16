@@ -1,20 +1,24 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package groove.grammar.rule;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import groove.algebra.Operator;
 import groove.grammar.AnchorKind;
@@ -24,9 +28,6 @@ import groove.grammar.type.TypeNode;
 import groove.graph.ANode;
 import groove.graph.EdgeRole;
 
-import java.util.List;
-import java.util.Set;
-
 /**
  * Instances of this class represent operator invocations.
  */
@@ -35,7 +36,8 @@ public class OperatorNode extends ANode implements RuleNode {
      * Returns a fresh operator node with a given node number,
      * operator, arguments and target.
      */
-    public OperatorNode(int nr, Operator operator, List<VariableNode> arguments, VariableNode target) {
+    public OperatorNode(int nr, Operator operator, List<VariableNode> arguments,
+        VariableNode target) {
         super(nr);
         this.operator = operator;
         this.arguments = arguments;
@@ -84,6 +86,14 @@ public class OperatorNode extends ANode implements RuleNode {
     /** Retrieves the list of arguments of the operator node. */
     public List<VariableNode> getArguments() {
         return this.arguments;
+    }
+
+    /** Returns the single argument of this operator node,
+     * if the operator is set-based.
+     */
+    public Optional<VariableNode> getSetArgument() {
+        return getOperator().takesCollection() ? Optional.of(getArguments().get(0))
+            : Optional.empty();
     }
 
     /**
@@ -149,6 +159,6 @@ public class OperatorNode extends ANode implements RuleNode {
     static final private char TIMES_CHAR = '\u2a09';
     /** Type label of product nodes. */
     @SuppressWarnings("unused")
-    static private final TypeLabel PROD_LABEL = TypeLabel.createLabel(EdgeRole.NODE_TYPE, ""
-        + TIMES_CHAR);
+    static private final TypeLabel PROD_LABEL =
+        TypeLabel.createLabel(EdgeRole.NODE_TYPE, "" + TIMES_CHAR);
 }

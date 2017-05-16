@@ -473,13 +473,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                     opNodes.add((OperatorNode) node);
                     continue;
                 } else if (node instanceof VariableNode) {
-                    VariableNode varNode = (VariableNode) node;
-                    image = ruleFactory.createVariableNode(varNode.getNumber(), varNode.getTerm());
-                    // check if the type graph actually has the primitive type
-                    if (!nodeSet().contains(image.getType())) {
-                        throw new FormatException("Data type %s not used in type graph",
-                            image.getType(), node);
-                    }
+                    image = cloneVariableNode(ruleFactory, (VariableNode) node);
                 } else if (isImplicit()) {
                     image = ruleFactory.createNode(node.getNumber());
                 } else {
@@ -507,10 +501,15 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
             for (VariableNode arg : opNode.getArguments()) {
                 VariableNode argImage = (VariableNode) result.getNode(arg);
                 if (argImage == null) {
-                    // since we should have already added all variable nodes
-                    // presumably this means that the argument contains an error
-                    imageOk = false;
-                    break;
+                    if (opNode.getOperator()
+                        .takesCollection()) {
+                        argImage = cloneVariableNode(ruleFactory, arg);
+                    } else {
+                        // since we should have already added all variable nodes
+                        // presumably this means that the argument contains an error
+                        imageOk = false;
+                        break;
+                    }
                 }
                 newArgs.add(argImage);
             }
@@ -649,6 +648,21 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
         errors.throwException();
         return result;
 
+    }
+
+    /**
+     * Clones a variable node in a given rule factory.
+     * @throws FormatException if the data type of the variable node does not occur in this type graph
+     */
+    private VariableNode cloneVariableNode(RuleFactory ruleFactory, VariableNode node)
+        throws FormatException {
+        VariableNode image = ruleFactory.createVariableNode(node.getNumber(), node.getTerm());
+        // check if the type graph actually has the primitive type
+        if (!nodeSet().contains(image.getType())) {
+            throw new FormatException("Data type %s does not occur in type graph", image.getType(),
+                node);
+        }
+        return image;
     }
 
     /** Computes typed images for the nodes of an untyped rule graph.

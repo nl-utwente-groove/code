@@ -48,6 +48,7 @@ import javax.swing.SwingUtilities;
 import org.eclipse.jdt.annotation.NonNull;
 
 import groove.algebra.Constant;
+import groove.algebra.Operator;
 import groove.algebra.syntax.Expression;
 import groove.algebra.syntax.Variable;
 import groove.automaton.RegExpr;
@@ -407,9 +408,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     private Rule computeRule(LevelTree levelTree) throws FormatException {
         Rule result;
         FormatErrorSet errors = createErrors();
-        if (TO_RULE_DEBUG) {
-            System.out.println("");
-        }
         // store the derived subrules in order
         TreeMap<Index,Condition> conditionTree = new TreeMap<>();
         // construct the rule tree and add parent rules
@@ -487,9 +485,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         if (result != null) {
             result.setFixed();
         }
-        if (TO_RULE_DEBUG) {
-            System.out.println("Constructed rule: " + result);
-        }
         return result;
     }
 
@@ -525,8 +520,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     private Set<TypeLabel> labelSet;
     /** Mapping from level indices to conditions on those levels. */
     private LevelTree levelTree;
-    /** Debug flag for creating rules. */
-    static private final boolean TO_RULE_DEBUG = false;
     /** Debug flag for the attribute syntax normalisation. */
     static private final boolean NORMALISE_DEBUG = false;
 
@@ -1166,7 +1159,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 // add end nodes to this and all parent levels, if
                 // they are not yet there
                 addNodeToParents(modelEdge.source());
-                addNodeToParents(modelEdge.target());
+                if (!isSetOperator(modelEdge)) {
+                    addNodeToParents(modelEdge.target());
+                }
                 // add variables
                 addToVars(modelEdge);
             }
@@ -1209,6 +1204,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 assert ascendingLevel.modelNodes != null : String
                     .format("Nodes on level %s not yet initialised", ascendingLevel.getIndex());
             }
+        }
+
+        private boolean isSetOperator(AspectEdge edge) {
+            Operator op = edge.getOperator();
+            return op != null && op.takesCollection();
         }
 
         /**
@@ -1506,14 +1506,15 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             }
             AspectNode targetModelNode = operatorEdge.target();
             VariableNode target = (VariableNode) getNodeImage(targetModelNode);
-            if (!(this.lhs.nodeSet()
+            boolean setOperator = operatorEdge.getOperator()
+                .takesCollection();
+            if (!(setOperator || this.lhs.nodeSet()
                 .contains(target) || embargo && this.nacNodeSet.contains(target))) {
                 throw new FormatException(
                     "Operation target must exist on the level of the operator edge", operatorEdge);
             }
             // make sure that set operator targets appear on the parent level already
-            if (operatorEdge.getOperator()
-                .takesCollection()) {
+            if (setOperator) {
                 if (!(this.parent != null && this.parent.lhs.nodeSet()
                     .contains(target))) {
                     throw new FormatException(
@@ -1525,13 +1526,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 operatorEdge.getOperator(),
                 arguments,
                 target);
+            Level2 level = setOperator ? this.parent : this;
             if (operatorEdge.getKind()
                 .inNAC()) {
-                this.nacNodeSet.add(opNode);
+                level.nacNodeSet.add(opNode);
             } else {
-                this.lhs.addNode(opNode);
-                this.mid.addNode(opNode);
-                this.rhs.addNode(opNode);
+                level.lhs.addNode(opNode);
+                level.mid.addNode(opNode);
+                level.rhs.addNode(opNode);
             }
         }
 
