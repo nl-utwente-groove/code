@@ -54,16 +54,17 @@ class ConditionSearchItem extends AbstractSearchItem {
     public ConditionSearchItem(Condition condition, boolean simple) {
         this.condition = condition;
         GrammarProperties properties = condition.getGrammarProperties();
-        this.matcher = MatcherFactory.instance(simple).createMatcher(condition);
+        this.matcher = MatcherFactory.instance(simple)
+            .createMatcher(condition);
         if (condition.hasPattern()) {
-            this.intAlgebra = properties.getAlgebraFamily().getAlgebra(Sort.INT);
+            this.intAlgebra = properties.getAlgebraFamily()
+                .getAlgebra(Sort.INT);
             this.rootGraph = condition.getRoot();
             this.neededNodes = condition.getInputNodes();
             this.neededVars = this.rootGraph.varSet();
             this.positive = condition.isPositive();
             this.countNode = condition.getCountNode();
-            this.boundNodes = this.countNode == null ? Collections.<RuleNode>emptySet()
-                : Collections.singleton(this.countNode);
+            this.boundNodes = condition.getOutputNodes();
         } else {
             this.intAlgebra = null;
             this.rootGraph = null;
@@ -97,7 +98,8 @@ class ConditionSearchItem extends AbstractSearchItem {
             return result;
         }
         ConditionSearchItem other = (ConditionSearchItem) item;
-        return this.condition.getName().compareTo(other.condition.getName());
+        return this.condition.getName()
+            .compareTo(other.condition.getName());
     }
 
     @Override
@@ -106,8 +108,8 @@ class ConditionSearchItem extends AbstractSearchItem {
         case EXISTS:
         case FORALL:
         case NOT:
-            return -this.condition.getPattern().nodeCount()
-                - (this.rootGraph == null ? 0 : this.rootGraph.size());
+            return -this.condition.getPattern()
+                .nodeCount() - (this.rootGraph == null ? 0 : this.rootGraph.size());
         case TRUE:
             return 0;
         case FALSE:
@@ -187,7 +189,8 @@ class ConditionSearchItem extends AbstractSearchItem {
     @Override
     public String toString() {
         return String.format("%s %s: %s",
-            this.condition.getOp().getName(),
+            this.condition.getOp()
+                .getName(),
             this.condition.getName(),
             ((PlanSearchStrategy) this.matcher.getSearchStrategy()).getPlan());
     }
@@ -215,7 +218,8 @@ class ConditionSearchItem extends AbstractSearchItem {
     private boolean isModifying(Condition condition) {
         boolean result = false;
         if (condition.hasRule()) {
-            result = condition.getRule().isModifying();
+            result = condition.getRule()
+                .isModifying();
         } else {
             for (Condition subCondition : condition.getSubConditions()) {
                 if (isModifying(subCondition)) {
@@ -250,7 +254,7 @@ class ConditionSearchItem extends AbstractSearchItem {
     /** The variables occurring in edges of the root map. */
     private final Set<LabelVar> neededVars;
     /** The set containing the count node of the universal condition, if any. */
-    private final Set<RuleNode> boundNodes;
+    private final Set<? extends RuleNode> boundNodes;
     /** Mapping from the needed nodes to indices in the matcher. */
     Map<RuleNode,Integer> nodeIxMap;
     /** Mapping from the needed nodes to indices in the matcher. */
@@ -300,7 +304,8 @@ class ConditionSearchItem extends AbstractSearchItem {
          * the elements found so far during the search.
          */
         final RuleToHostMap createContextMap() {
-            RuleToHostMap result = this.host.getFactory().createRuleToHostMap();
+            RuleToHostMap result = this.host.getFactory()
+                .createRuleToHostMap();
             for (Map.Entry<RuleNode,Integer> nodeIxEntry : ConditionSearchItem.this.nodeIxMap
                 .entrySet()) {
                 result.putNode(nodeIxEntry.getKey(), this.search.getNode(nodeIxEntry.getValue()));
@@ -344,8 +349,8 @@ class ConditionSearchItem extends AbstractSearchItem {
                 result = matches.size() == this.preCount;
             } else if (ConditionSearchItem.this.countNode != null) {
                 Algebra<?> intAlgebra = ConditionSearchItem.this.intAlgebra;
-                this.countImage = this.host.getFactory().createNode(intAlgebra,
-                    intAlgebra.toValueFromJava(matches.size()));
+                this.countImage = this.host.getFactory()
+                    .createNode(intAlgebra, intAlgebra.toValueFromJava(matches.size()));
             }
             if (result) {
                 this.match = createMatch(matches);

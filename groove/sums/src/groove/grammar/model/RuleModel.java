@@ -1189,7 +1189,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
         /** Initialises the match count for this (universal) level. */
         public void setMatchCount(AspectNode matchCount) {
-            this.matchCountNode = matchCount;
+            this.countNode = matchCount;
         }
 
         /**
@@ -1208,7 +1208,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
         private boolean isSetOperator(AspectEdge edge) {
             Operator op = edge.getOperator();
-            return op != null && op.takesCollection();
+            return op != null && op.isSetOperator();
         }
 
         /**
@@ -1311,7 +1311,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         /** Set of label variables used on this level. */
         final Map<LabelVar,Set<AspectEdge>> modelVars = new HashMap<>();
         /** The model node registering the match count. */
-        AspectNode matchCountNode;
+        AspectNode countNode;
     }
 
     /**
@@ -1336,8 +1336,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             this.rhs = createGraph(getQualName() + "-" + index + "-rhs");
             FormatErrorSet errors = createErrors();
             try {
-                if (origin.matchCountNode != null) {
-                    this.matchCountImage = (VariableNode) getNodeImage(origin.matchCountNode);
+                if (origin.countNode != null) {
+                    this.countNode = (VariableNode) getNodeImage(origin.countNode);
+                    this.outputNodes.add(this.countNode);
                 }
             } catch (FormatException exc) {
                 errors.addAll(exc.getErrors());
@@ -1507,7 +1508,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             AspectNode targetModelNode = operatorEdge.target();
             VariableNode target = (VariableNode) getNodeImage(targetModelNode);
             boolean setOperator = operatorEdge.getOperator()
-                .takesCollection();
+                .isSetOperator();
             if (!(setOperator || this.lhs.nodeSet()
                 .contains(target) || embargo && this.nacNodeSet.contains(target))) {
                 throw new FormatException(
@@ -1521,6 +1522,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                         "Set operator target '%s' must be defined on the parent level",
                         targetModelNode, productNode);
                 }
+                // a set operator argument is an output node of the condition
+                this.outputNodes.add(arguments.get(0));
             }
             RuleNode opNode = this.factory.createOperatorNode(productNode.getNumber(),
                 operatorEdge.getOperator(),
@@ -1949,7 +1952,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         /** Map of all connect edges on this level. */
         private final Map<AspectEdge,Set<RuleNode>> connectMap = new HashMap<>();
         /** The rule node registering the match count. */
-        private VariableNode matchCountImage;
+        private VariableNode countNode;
+        /** Condition output nodes. */
+        private final Set<VariableNode> outputNodes = new HashSet<>();
         /** Map from rule nodes to declared colours. */
         private final Map<RuleNode,Color> colorMap = new HashMap<>();
         /** Flag indicating that modifiers have been found at this level. */
@@ -1982,7 +1987,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             this.parent = parent;
             this.factory = globalTypeMap.getFactory();
             this.index = origin.index;
-            this.matchCountImage = origin.matchCountImage;
+            this.countNode = origin.countNode;
+            this.outputNodes = origin.outputNodes;
             this.globalTypeMap = globalTypeMap;
             RuleGraphMorphism parentTypeMap =
                 parent == null ? new RuleGraphMorphism(this.factory) : parent.typeMap;
@@ -2307,8 +2313,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         private final RuleFactory factory;
         /** Index of this level. */
         private final Index index;
+        /** Output nodes of the condition. */
+        private final Set<VariableNode> outputNodes;
         /** The rule node registering the match count. */
-        private final VariableNode matchCountImage;
+        private final VariableNode countNode;
         /** The global, rule-wide mapping from untyped to typed rule elements. */
         private final RuleGraphMorphism globalTypeMap;
         /** Combined type map for this level. */
@@ -2346,7 +2354,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             this.lhs = origin.lhs;
             this.nacs = origin.nacs;
             this.rhs = origin.rhs;
-            this.matchCountImage = origin.matchCountImage;
+            this.countNode = origin.countNode;
+            this.outputNodes = origin.outputNodes;
             this.colorMap = origin.colorMap;
         }
 
@@ -2516,9 +2525,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             if (this.index.isPositive()) {
                 result.setPositive();
             }
-            if (this.matchCountImage != null) {
-                result.setCountNode(this.matchCountImage);
+            if (this.countNode != null) {
+                result.setCountNode(this.countNode);
             }
+            result.addOutputNodes(this.outputNodes);
             return result;
         }
 
@@ -2536,8 +2546,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         private final Index index;
         /** Index of this level. */
         private final Level4 parent;
+        /** Output nodes of the condition. */
+        private final Set<VariableNode> outputNodes;
         /** The rule node registering the match count. */
-        private final VariableNode matchCountImage;
+        private final VariableNode countNode;
         /** Map from rule nodes to declared colours. */
         private final Map<RuleNode,Color> colorMap;
         /** Flag indicating that modifiers have been found at this level. */

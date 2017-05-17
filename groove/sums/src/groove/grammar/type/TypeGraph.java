@@ -502,7 +502,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                 VariableNode argImage = (VariableNode) result.getNode(arg);
                 if (argImage == null) {
                     if (opNode.getOperator()
-                        .takesCollection()) {
+                        .isSetOperator()) {
                         argImage = cloneVariableNode(ruleFactory, arg);
                     } else {
                         // since we should have already added all variable nodes

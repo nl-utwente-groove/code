@@ -27,6 +27,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import groove.algebra.AlgebraFamily;
 import groove.grammar.rule.OperatorNode;
 import groove.grammar.rule.RuleEdge;
@@ -36,7 +39,6 @@ import groove.grammar.rule.RuleLabel;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.VariableNode;
 import groove.grammar.type.TypeGraph;
-import groove.graph.EdgeRole;
 import groove.io.HTMLConverter;
 import groove.io.Util;
 import groove.util.Fixable;
@@ -97,7 +99,8 @@ public class Condition implements Fixable {
         this.factory = null;
         this.pattern = null;
         this.root = null;
-        this.systemProperties = null;
+        this.outputNodes = null;
+        this.grammarProperties = null;
     }
 
     /**
@@ -110,8 +113,8 @@ public class Condition implements Fixable {
      *        ground
      * @param properties properties for matching the condition
      */
-    public Condition(String name, Op operator, RuleGraph pattern, RuleGraph root,
-        GrammarProperties properties) {
+    public Condition(@NonNull String name, @NonNull Op operator, RuleGraph pattern,
+        @Nullable RuleGraph root, GrammarProperties properties) {
         assert name != null;
         assert operator.hasPattern();
         this.op = operator;
@@ -119,13 +122,19 @@ public class Condition implements Fixable {
         this.factory = pattern.getFactory();
         this.root = root == null ? pattern.newGraph(name + "-root") : root;
         this.pattern = pattern;
-        this.systemProperties = properties;
+        this.grammarProperties = properties;
+        this.outputNodes = new HashSet<>();
     }
 
-    /** Returns the secondary properties of this graph condition. */
+    /** Returns the properties of the containing grammar. */
     public GrammarProperties getGrammarProperties() {
-        return this.systemProperties;
+        return this.grammarProperties;
     }
+
+    /**
+     * Properties of the containing grammar.
+     */
+    private final GrammarProperties grammarProperties;
 
     /**
      * Sets the type graph of this graph condition.
@@ -146,6 +155,9 @@ public class Condition implements Fixable {
         return this.typeGraph;
     }
 
+    /** Subtyping relation, derived from the SystemProperties. */
+    private TypeGraph typeGraph;
+
     /**
      * Returns the root graph of this condition.
      * The root graph is the subgraph of the pattern that the
@@ -154,6 +166,12 @@ public class Condition implements Fixable {
     public RuleGraph getRoot() {
         return this.root;
     }
+
+    /**
+     * The root map of this condition, i.e., the element map from the root
+     * graph to the pattern graph.
+     */
+    private final RuleGraph root;
 
     /**
      * Returns the subset of the root nodes that are certainly
@@ -171,7 +189,7 @@ public class Condition implements Fixable {
      * These are the nodes that are certainly
      * bound before the condition has to be matched.
      */
-    Set<RuleNode> computeInputNodes() {
+    private Set<RuleNode> computeInputNodes() {
         if (hasRule() && getRule().isTop()) {
             // collect the input parameters
             return this.rule.computeInputNodes();
@@ -179,6 +197,9 @@ public class Condition implements Fixable {
             return new HashSet<>(this.root.nodeSet());
         }
     }
+
+    /** Subset of the root nodes that are bound to be bound before the condition is matched. */
+    private Set<RuleNode> inputNodes;
 
     /** Indicates if this condition has an associated graph pattern.
      * This is the case if and only if the condition operator is a quantifier.
@@ -197,14 +218,22 @@ public class Condition implements Fixable {
         return this.pattern;
     }
 
+    /** The pattern graph of this morphism. */
+    private final @Nullable RuleGraph pattern;
+
     /**
      * Returns the (non-{@code null}) name of this condition.
      * The name is guaranteed to be unique across all conditions and subconditions
      * in a grammar.
      */
-    public String getName() {
+    public @NonNull String getName() {
         return this.name;
     }
+
+    /**
+     * The name of this condition.
+     */
+    private final @NonNull String name;
 
     /**
      * Indicates if this condition is closed, which is to say that it has
@@ -253,20 +282,16 @@ public class Condition implements Fixable {
         }
     }
 
-    /**
-     * Tests if any of the rules in this condition (or one of its subconditions)
-     * is modifying.
-     */
-    boolean hasModifyingSubrule() {
-        boolean result = false;
-        for (Rule rule : getTopRules()) {
-            if (rule.isModifying()) {
-                result = true;
-                break;
-            }
-        }
-        return result;
+    /** The collection of sub-conditions of this condition. */
+    private final Collection<Condition> subConditions = new ArrayList<>();
+
+    /** Indicates that all subconditions of this condition are evaluated. */
+    private final boolean isConjunctive() {
+        return this.disjunctCount <= 0;
     }
+
+    /** Number of disjunctively interpreted subconditions. */
+    private int disjunctCount;
 
     /** Returns the collection of top-level (sub)rules of this condition.
      * This is either the rule associated with this condition (if any),
@@ -284,6 +309,124 @@ public class Condition implements Fixable {
         }
         return result;
     }
+
+    /** Returns the operator of this condition. */
+    public final Op getOp() {
+        return this.op;
+    }
+
+    /** The operator of this condition. */
+    private final Op op;
+
+    /** Returns true if the operator of this condition is a NOT. */
+    public final boolean isNot() {
+        return getOp() == Op.NOT;
+    }
+
+    /** Returns the rule factory of this condition. */
+    public RuleFactory getFactory() {
+        return this.factory;
+    }
+
+    /** The factory responsible for creating rule nodes and edges. */
+    private final RuleFactory factory;
+
+    /** Sets a count node for this universal condition.
+     * @see #getCountNode() */
+    public void setCountNode(VariableNode countNode) {
+        assert !isFixed();
+        this.countNode = countNode;
+    }
+
+    /**
+     * Returns the count node of this universal condition, if any.
+     * The count node is bound to the number of matches of the condition.
+     * @return the count node, or {@code null} if there is none
+     */
+    public VariableNode getCountNode() {
+        return this.countNode;
+    }
+
+    /**
+     * Tests if this is a universal condition with a count node.
+     */
+    public boolean hasCountNode() {
+        return this.countNode != null;
+    }
+
+    /** Node capturing the match count of this condition. */
+    private VariableNode countNode;
+
+    /** Adds a set of nodes to the output nodes of this condition.
+     * @see #getOutputNodes()
+     */
+    public void addOutputNodes(Set<VariableNode> outputNodes) {
+        this.outputNodes.addAll(outputNodes);
+    }
+
+    /** Returns the set of nodes whose values are used by the parent condition. */
+    public Set<VariableNode> getOutputNodes() {
+        return this.outputNodes;
+    }
+
+    private final Set<VariableNode> outputNodes;
+
+    /** Sets this universal condition to positive (meaning that
+     * it should have at least one match). */
+    public void setPositive() {
+        assert !isFixed();
+        this.positive = true;
+    }
+
+    /**
+     * Indicates if this condition is positive. A universal condition is
+     * positive if it cannot be vacuously fulfilled; i.e., there must always be
+     * at least one match.
+     */
+    public boolean isPositive() {
+        return this.positive;
+    }
+
+    /**
+     * Flag indicating whether the condition is positive, i.e., cannot be
+     * vacuously true.
+     */
+    private boolean positive;
+
+    /** Indicates if this condition should be matched injectively. */
+    public boolean isInjective() {
+        return hasPattern() && getPattern().isInjective();
+    }
+
+    /** Sets the associated rule of this condition. */
+    public void setRule(Rule rule) {
+        assert !isFixed();
+        this.rule = rule;
+    }
+
+    /**
+     * Indicates if there is a rule associated with this condition.
+     * Only existential and universal conditions can have associated rules.
+     * Convenience method for {@code getRule() != null}.
+     * @return {@code true} if there is a rule associated with this condition
+     * @see #getRule()
+     */
+    final public boolean hasRule() {
+        return getRule() != null;
+    }
+
+    /**
+     * Returns the rule associated with this condition, if any.
+     * Only existential and universal conditions can have associated rules.
+     * @return The rule associated with this condition, or {@code null}
+     * if there is no associated rule.
+     */
+    public Rule getRule() {
+        return this.rule;
+    }
+
+    /** The rule associated with this condition, if any. */
+    private Rule rule;
 
     /** Fixes this condition and all its subconditions. */
     @Override
@@ -315,19 +458,11 @@ public class Condition implements Fixable {
         return this.fixed;
     }
 
-    /**
-     * Tests if the condition can be used to tests on graphs rather than
-     * morphisms. This is the case if and only if the condition is ground (i.e.,
-     * the root graph is empty), as determined by {@link #isGround()}.
-     *
-     * @throws IllegalStateException if this condition is not ground.
-     * @see #isGround()
-     */
-    void testGround() throws IllegalStateException {
-        if (!isGround()) {
-            throw new IllegalStateException("Method only allowed on ground condition");
-        }
-    }
+    /** Flag indicating if this condition is now fixed, i.e., unchangeable. */
+    private boolean fixed;
+
+    /** Flag indicating if this condition is in the process of fixing. */
+    private boolean fixing;
 
     /**
      * Tests if the algebra part of the target graph can be matched. This
@@ -388,9 +523,8 @@ public class Condition implements Fixable {
         }
         // Subcondition-dependent values can only be resolved
         // if the subcondition is certainly matched
-        // meaning that either this condition has to be conjunctive or it has
-        // to have only one (disjunctive) subcondition
-        if (this.disjunctCount <= 1) {
+        // meaning that either this condition has to be conjunctive
+        if (isConjunctive()) {
             // Collect the set-based operator nodes in this condition
             Set<OperatorNode> setOps = this.root.nodeSet()
                 .stream()
@@ -406,13 +540,13 @@ public class Condition implements Fixable {
                     countNode == null ? Stream.empty() : Stream.of(countNode);
                 // Collect targets of set operators whose sources are in the subcondition
                 Stream<VariableNode> setOpDeps = setOps.stream()
-                    .filter(n -> sub.getRoot()
-                        .containsNode(n.getSetArgument()
+                    .filter(n -> sub.getOutputNodes()
+                        .contains(n.getSetArgument()
                             .get()))
                     .map(n -> n.getTarget());
                 // combine count node and set operator targets and restrict to non-constants
                 subDeps = Stream.concat(subDeps, setOpDeps)
-                    .filter(v -> v.getConstant() != null);
+                    .filter(v -> v.getConstant() == null);
                 // The resolver consists of non-constant variable nodes shared by the subcondition
                 Set<VariableNode> resolver = sub.getInputNodes()
                     .stream()
@@ -552,180 +686,6 @@ public class Condition implements Fixable {
         // the name uniquely identifies the condition across the grammar
         return getName().equals(other.getName());
     }
-
-    /** Returns the operator of this condition. */
-    public final Op getOp() {
-        return this.op;
-    }
-
-    /** Returns true if the operator of this condition is a NOT. */
-    public final boolean isNot() {
-        return getOp() == Op.NOT;
-    }
-
-    /** Returns the rule factory of this condition. */
-    public RuleFactory getFactory() {
-        return this.factory;
-    }
-
-    /** Sets a count node for this universal condition.
-     * @see #getCountNode() */
-    public void setCountNode(VariableNode countNode) {
-        assert !isFixed();
-        this.countNode = countNode;
-    }
-
-    /**
-     * Returns the count node of this universal condition, if any.
-     * The count node is bound to the number of matches of the condition.
-     * @return the count node, or {@code null} if there is none
-     */
-    public VariableNode getCountNode() {
-        return this.countNode;
-    }
-
-    /**
-     * Tests if this is a universal condition with a count node.
-     */
-    public boolean hasCountNode() {
-        return this.countNode != null;
-    }
-
-    /** Sets this universal condition to positive (meaning that
-     * it should have at least one match). */
-    public void setPositive() {
-        assert !isFixed();
-        this.positive = true;
-    }
-
-    /**
-     * Indicates if this condition is positive. A universal condition is
-     * positive if it cannot be vacuously fulfilled; i.e., there must always be
-     * at least one match.
-     */
-    public boolean isPositive() {
-        return this.positive;
-    }
-
-    /** Indicates if this condition should be matched injectively. */
-    public boolean isInjective() {
-        return hasPattern() && getPattern().isInjective();
-    }
-
-    /** Sets the associated rule of this condition. */
-    public void setRule(Rule rule) {
-        assert !isFixed();
-        this.rule = rule;
-    }
-
-    /**
-     * Indicates if there is a rule associated with this condition.
-     * Only existential and universal conditions can have associated rules.
-     * Convenience method for {@code getRule() != null}.
-     * @return {@code true} if there is a rule associated with this condition
-     * @see #getRule()
-     */
-    final public boolean hasRule() {
-        return getRule() != null;
-    }
-
-    /**
-     * Returns the rule associated with this condition, if any.
-     * Only existential and universal conditions can have associated rules.
-     * @return The rule associated with this condition, or {@code null}
-     * if there is no associated rule.
-     */
-    public Rule getRule() {
-        return this.rule;
-    }
-
-    /**
-     * Returns a new condition object that is the reverse of this one. Hence,
-     * a NAC becomes a Positive Application Condition.
-     * Used in the abstraction code.
-     * Fails in an assertion if this condition is not a NAC.
-     */
-    public Condition reverse() {
-        assert getOp() == Op.NOT;
-        Condition result = new Condition(getName() + "-reverse", Op.FORALL, getPattern(), getRoot(),
-            getGrammarProperties());
-        result.addSubCondition(True);
-        if (getTypeGraph() != null) {
-            result.setTypeGraph(getTypeGraph());
-        }
-        if (isFixed()) {
-            try {
-                result.setFixed();
-            } catch (FormatException e) {
-                // Cannot happen since we already had a fixed condition.
-                throw new IllegalStateException(e);
-            }
-        }
-        return result;
-    }
-
-    /** Returns true if this condition can be reversed. */
-    public boolean isReversable() {
-        return isNot() && hasBinaryEdges();
-    }
-
-    private boolean hasBinaryEdges() {
-        for (RuleEdge ruleEdge : getPattern().edgeSet()) {
-            if (ruleEdge.getRole() == EdgeRole.BINARY) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /** The operator of this condition. */
-    private final Op op;
-    /**
-     * The name of this condition. May be {@code null}.
-     */
-    private final String name;
-    /** The factory responsible for creating rule nodes and edges. */
-    private final RuleFactory factory;
-
-    /** The rule associated with this condition, if any. */
-    private Rule rule;
-
-    /** The collection of sub-conditions of this condition. */
-    private final Collection<Condition> subConditions = new ArrayList<>();
-
-    /** Number of disjunctively interpreted subconditions. */
-    private int disjunctCount;
-    /** Flag indicating if this condition is now fixed, i.e., unchangeable. */
-    private boolean fixed;
-    /** Flag indicating if this condition is in the process of fixing. */
-    private boolean fixing;
-    /**
-     * The root map of this condition, i.e., the element map from the root
-     * graph to the pattern graph.
-     */
-    private final RuleGraph root;
-
-    /** Subset of the root nodes that are bound to be bound before the condition is matched. */
-    private Set<RuleNode> inputNodes;
-
-    /** The pattern graph of this morphism. */
-    private final RuleGraph pattern;
-
-    /**
-     * Factory instance for creating the correct simulation.
-     */
-    private final GrammarProperties systemProperties;
-    /** Subtyping relation, derived from the SystemProperties. */
-    private TypeGraph typeGraph;
-
-    /** Node capturing the match count of this condition. */
-    private VariableNode countNode;
-
-    /**
-     * Flag indicating whether the condition is positive, i.e., cannot be
-     * vacuously true.
-     */
-    private boolean positive;
 
     /** Constant condition that is always satisfied. */
     static public final Condition True = new Condition("true", Op.TRUE);

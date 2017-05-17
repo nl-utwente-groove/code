@@ -98,7 +98,7 @@ public class Operator {
     private final String name;
 
     /** Indicates if this is a collection-based operator. */
-    public boolean takesCollection() {
+    public boolean isSetOperator() {
         return this.collection;
     }
 

@@ -92,7 +92,7 @@ public class OperatorNode extends ANode implements RuleNode {
      * if the operator is set-based.
      */
     public Optional<VariableNode> getSetArgument() {
-        return getOperator().takesCollection() ? Optional.of(getArguments().get(0))
+        return getOperator().isSetOperator() ? Optional.of(getArguments().get(0))
             : Optional.empty();
     }
 
