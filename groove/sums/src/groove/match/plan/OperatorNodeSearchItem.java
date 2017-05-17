@@ -48,6 +48,8 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
      */
     public OperatorNodeSearchItem(OperatorNode node, AlgebraFamily family) {
         this.node = node;
+        this.setOperator = node.getOperator()
+            .isSetOperator();
         this.operation = family.getOperation(node.getOperator());
         assert this.operation != null;
         this.arguments = node.getArguments();
@@ -66,7 +68,8 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
 
     @Override
     public OperatorNodeRecord createRecord(groove.match.plan.PlanSearchStrategy.Search matcher) {
-        return new OperatorNodeRecord(matcher);
+        return this.setOperator ? new SetOperatorNodeRecord(matcher)
+            : new OperatorNodeRecord(matcher);
     }
 
     /**
@@ -170,6 +173,8 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
 
     /** The operator node for which we seek an image. */
     final OperatorNode node;
+    /** Flag signalling that the operator is a set operator. */
+    final boolean setOperator;
     /** The operation determined by the product edge. */
     final Operation operation;
     /** The factory needed to create value nodes for the calculated outcomes. */
@@ -262,7 +267,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
          *         cannot be calculated due to the fact that one of the
          *         arguments was bound to a non-value.
          */
-        private Object calculateResult() throws IllegalArgumentException {
+        Object calculateResult() throws IllegalArgumentException {
             Object[] operands = new Object[OperatorNodeSearchItem.this.arguments.size()];
             for (int i = 0; i < OperatorNodeSearchItem.this.arguments.size(); i++) {
                 HostNode operandImage =
@@ -301,5 +306,20 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
         private ValueNode image;
         /** Flag to control debug printing. */
         static private final boolean PRINT = false;
+    }
+
+    private class SetOperatorNodeRecord extends OperatorNodeRecord {
+        /**
+         * Creates an instance for a given search.
+         */
+        SetOperatorNodeRecord(Search search) {
+            super(search);
+        }
+
+        @Override
+        Object calculateResult() throws IllegalArgumentException {
+            // TODO Auto-generated method stub
+            return super.calculateResult();
+        }
     }
 }
