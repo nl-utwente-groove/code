@@ -16,6 +16,8 @@
  */
 package groove.algebra;
 
+import java.util.List;
+
 import groove.algebra.syntax.Expression;
 
 /**
@@ -87,6 +89,16 @@ public class PointIntAlgebra extends IntAlgebra<Integer,Double,Boolean,String>
     }
 
     @Override
+    public Integer bigmax(List<Integer> arg) {
+        return singleInt;
+    }
+
+    @Override
+    public Integer bigmin(List<Integer> arg) {
+        return singleInt;
+    }
+
+    @Override
     public Integer div(Integer arg0, Integer arg1) {
         return singleInt;
     }
@@ -147,7 +159,7 @@ public class PointIntAlgebra extends IntAlgebra<Integer,Double,Boolean,String>
     }
 
     @Override
-    public Integer prod(Integer... arg) {
+    public Integer prod(List<Integer> arg) {
         return singleInt;
     }
 
@@ -157,7 +169,7 @@ public class PointIntAlgebra extends IntAlgebra<Integer,Double,Boolean,String>
     }
 
     @Override
-    public Integer sum(Integer... arg) {
+    public Integer sum(List<Integer> arg) {
         return singleInt;
     }
 

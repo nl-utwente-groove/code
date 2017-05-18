@@ -22,6 +22,8 @@ import static groove.util.parse.OpKind.EQUAL;
 import static groove.util.parse.OpKind.MULT;
 import static groove.util.parse.OpKind.UNARY;
 
+import java.util.List;
+
 import groove.annotation.InfixSymbol;
 import groove.annotation.PrefixSymbol;
 import groove.annotation.Syntax;
@@ -50,6 +52,18 @@ public abstract class RealSignature<INT,REAL,BOOL,STRING> implements Signature {
     @ToolTipBody("Returns the sum of %s and %s")
     @InfixSymbol(symbol = "+", kind = ADD)
     public abstract REAL add(REAL arg0, REAL arg1);
+
+    /** Maximum of two reals. */
+    @Syntax("Q%s.LPAR.i1.RPAR")
+    @ToolTipHeader("Collective real maximum")
+    @ToolTipBody("Returns the maximum of all quantified values")
+    public abstract REAL bigmax(List<REAL> arg);
+
+    /** Minimum of two reals. */
+    @Syntax("Q%s.LPAR.i1.RPAR")
+    @ToolTipHeader("Collective real minimum")
+    @ToolTipBody("Returns the minimum of all quantified values")
+    public abstract REAL bigmin(List<REAL> arg);
 
     /** Subtraction of two real numbers. */
     @Syntax("Q%s.LPAR.r1.COMMA.r2.RPAR")
@@ -88,13 +102,13 @@ public abstract class RealSignature<INT,REAL,BOOL,STRING> implements Signature {
     @Syntax("Q%s.LPAR.i1.RPAR")
     @ToolTipHeader("Real product")
     @ToolTipBody("Returns the product of all quantified values")
-    public abstract REAL prod(@SuppressWarnings("unchecked") REAL... arg);
+    public abstract REAL prod(List<REAL> arg);
 
     /** Summation over a set of values. */
     @Syntax("Q%s.LPAR.i1.RPAR")
     @ToolTipHeader("Real summation")
     @ToolTipBody("Returns the sum of all quantified values")
-    public abstract REAL sum(@SuppressWarnings("unchecked") REAL... arg);
+    public abstract REAL sum(List<REAL> arg);
 
     /** Lesser-than comparison. */
     @ToolTipHeader("Real number lesser-than test")
@@ -194,11 +208,11 @@ public abstract class RealSignature<INT,REAL,BOOL,STRING> implements Signature {
         NEQ,
         /** Value for {@link #neq(Object, Object)}. */
         NEG,
-        /** Value for {@link #prod(Object...)}. */
+        /** Value for {@link #prod(List)}. */
         PROD,
         /** Value for {@link #sub(Object, Object)}. */
         SUB,
-        /** Value for {@link #sum(Object...)}. */
+        /** Value for {@link #sum(List)}. */
         SUM,
         /** Value for {@link #toInt(Object)}. */
         TO_INT,

@@ -18,7 +18,7 @@ package groove.algebra;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.stream.Stream;
+import java.util.List;
 
 import groove.algebra.syntax.Expression;
 
@@ -41,6 +41,20 @@ public class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolean,Stri
     @Override
     public BigInteger add(BigInteger arg0, BigInteger arg1) {
         return arg0.add(arg1);
+    }
+
+    @Override
+    public BigInteger bigmax(List<BigInteger> arg) {
+        return arg.stream()
+            .max(BigInteger::compareTo)
+            .get();
+    }
+
+    @Override
+    public BigInteger bigmin(List<BigInteger> arg) {
+        return arg.stream()
+            .min(BigInteger::compareTo)
+            .get();
     }
 
     @Override
@@ -108,8 +122,8 @@ public class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolean,Stri
     }
 
     @Override
-    public BigInteger prod(BigInteger... arg) {
-        return Stream.of(arg)
+    public BigInteger prod(List<BigInteger> arg) {
+        return arg.stream()
             .reduce(BigInteger.ONE, (i, j) -> i.multiply(j));
     }
 
@@ -119,8 +133,8 @@ public class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolean,Stri
     }
 
     @Override
-    public BigInteger sum(BigInteger... arg) {
-        return Stream.of(arg)
+    public BigInteger sum(List<BigInteger> arg) {
+        return arg.stream()
             .reduce(BigInteger.ZERO, (i, j) -> i.add(j));
     }
 

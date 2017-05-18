@@ -16,7 +16,7 @@
  */
 package groove.algebra;
 
-import java.util.stream.Stream;
+import java.util.List;
 
 import groove.algebra.syntax.Expression;
 
@@ -39,6 +39,20 @@ public class JavaRealAlgebra extends RealAlgebra<Integer,Double,Boolean,String> 
     @Override
     public Double add(Double arg0, Double arg1) {
         return arg0 + arg1;
+    }
+
+    @Override
+    public Double bigmax(List<Double> arg) {
+        return arg.stream()
+            .max(Double::compareTo)
+            .get();
+    }
+
+    @Override
+    public Double bigmin(List<Double> arg) {
+        return arg.stream()
+            .min(Double::compareTo)
+            .get();
     }
 
     @Override
@@ -97,8 +111,8 @@ public class JavaRealAlgebra extends RealAlgebra<Integer,Double,Boolean,String> 
     }
 
     @Override
-    public Double prod(Double... arg) {
-        return Stream.of(arg)
+    public Double prod(List<Double> arg) {
+        return arg.stream()
             .reduce(1., (i, j) -> i * j);
     }
 
@@ -108,8 +122,8 @@ public class JavaRealAlgebra extends RealAlgebra<Integer,Double,Boolean,String> 
     }
 
     @Override
-    public Double sum(Double... arg) {
-        return Stream.of(arg)
+    public Double sum(List<Double> arg) {
+        return arg.stream()
             .reduce(0., (i, j) -> i + j);
     }
 

@@ -16,7 +16,7 @@
  */
 package groove.algebra;
 
-import java.util.stream.Stream;
+import java.util.List;
 
 import groove.algebra.syntax.Expression;
 
@@ -39,6 +39,20 @@ public class JavaIntAlgebra extends IntAlgebra<Integer,Double,Boolean,String> {
     @Override
     public Integer add(Integer arg0, Integer arg1) {
         return arg0 + arg1;
+    }
+
+    @Override
+    public Integer bigmax(List<Integer> arg) {
+        return arg.stream()
+            .max(Integer::compareTo)
+            .get();
+    }
+
+    @Override
+    public Integer bigmin(List<Integer> arg) {
+        return arg.stream()
+            .min(Integer::compareTo)
+            .get();
     }
 
     @Override
@@ -102,8 +116,8 @@ public class JavaIntAlgebra extends IntAlgebra<Integer,Double,Boolean,String> {
     }
 
     @Override
-    public Integer prod(Integer... arg) {
-        return Stream.of(arg)
+    public Integer prod(List<Integer> arg) {
+        return arg.stream()
             .reduce(1, (i, j) -> i * j);
     }
 
@@ -113,8 +127,8 @@ public class JavaIntAlgebra extends IntAlgebra<Integer,Double,Boolean,String> {
     }
 
     @Override
-    public Integer sum(Integer... arg) {
-        return Stream.of(arg)
+    public Integer sum(List<Integer> arg) {
+        return arg.stream()
             .reduce(0, (i, j) -> i + j);
     }
 

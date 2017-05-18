@@ -6,7 +6,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,13 +38,14 @@ public class Operator {
         this.sort = sort;
         this.opValue = opValue;
         this.arity = methodParameterTypes.length;
-        this.collection = this.arity == 1 && methodParameterTypes[0] instanceof ParameterizedType;
+        this.setOperator = this.arity == 1 && methodParameterTypes[0] instanceof ParameterizedType;
+        this.supportsZero = opValue.isSupportsZero();
         this.name = method.getName();
         this.parameterTypes = new ArrayList<>();
         for (int i = 0; i < this.arity; i++) {
             Type type = methodParameterTypes[i];
-            if (this.collection) {
-                if (((ParameterizedType) type).getRawType() != Collection.class) {
+            if (this.setOperator) {
+                if (((ParameterizedType) type).getRawType() != List.class) {
                     throw new IllegalArgumentException(
                         "Method '%s' does not represent collection operator");
                 }
@@ -99,10 +99,17 @@ public class Operator {
 
     /** Indicates if this is a collection-based operator. */
     public boolean isSetOperator() {
-        return this.collection;
+        return this.setOperator;
     }
 
-    private final boolean collection;
+    private final boolean setOperator;
+
+    /** Indicates if this collection operator supports zero arguments. */
+    public boolean isSupportsZero() {
+        return this.supportsZero;
+    }
+
+    private final boolean supportsZero;
 
     /** Returns the number of parameters of this operator.
      * For a collection-based operator, the arity is 1.

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph role="rule" edgeids="false" edgemode="directed" id="sum">
+    <graph role="rule" edgeids="false" edgemode="directed" id="intMult">
         <attr name="$version">
             <string>curly</string>
         </attr>
@@ -11,27 +11,27 @@
         </node>
         <node id="n1">
             <attr name="layout">
-                <string>326 133 9 15</string>
+                <string>323 125 14 30</string>
             </attr>
         </node>
         <node id="n2">
             <attr name="layout">
-                <string>321 206 17 15</string>
+                <string>321 198 17 30</string>
             </attr>
         </node>
         <node id="n3">
             <attr name="layout">
-                <string>219 200 19 19</string>
+                <string>221 202 14 15</string>
             </attr>
         </node>
         <node id="n4">
             <attr name="layout">
-                <string>217 284 17 15</string>
+                <string>217 276 17 30</string>
             </attr>
         </node>
         <node id="n5">
             <attr name="layout">
-                <string>222 363 8 15</string>
+                <string>219 355 14 30</string>
             </attr>
         </node>
         <edge from="n0" to="n0">
@@ -69,11 +69,6 @@
                 <string>prod:</string>
             </attr>
         </edge>
-        <edge from="n3" to="n2">
-            <attr name="label">
-                <string>arg:0</string>
-            </attr>
-        </edge>
         <edge from="n3" to="n0">
             <attr name="label">
                 <string>at</string>
@@ -81,7 +76,12 @@
         </edge>
         <edge from="n3" to="n4">
             <attr name="label">
-                <string>int:sum</string>
+                <string>int:prod</string>
+            </attr>
+        </edge>
+        <edge from="n3" to="n2">
+            <attr name="label">
+                <string>arg:0</string>
             </attr>
         </edge>
         <edge from="n4" to="n4">

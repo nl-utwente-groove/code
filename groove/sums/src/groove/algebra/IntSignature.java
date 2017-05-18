@@ -22,6 +22,8 @@ import static groove.util.parse.OpKind.EQUAL;
 import static groove.util.parse.OpKind.MULT;
 import static groove.util.parse.OpKind.UNARY;
 
+import java.util.List;
+
 import groove.annotation.InfixSymbol;
 import groove.annotation.PrefixSymbol;
 import groove.annotation.Syntax;
@@ -51,6 +53,18 @@ public abstract class IntSignature<INT,REAL,BOOL,STRING> implements Signature {
     @ToolTipBody("Returns the sum of %s and %s")
     @InfixSymbol(symbol = "+", kind = ADD)
     public abstract INT add(INT arg0, INT arg1);
+
+    /** Maximum of two integers. */
+    @Syntax("Q%s.LPAR.i1.RPAR")
+    @ToolTipHeader("Collective integer maximum")
+    @ToolTipBody("Returns the maximum of all quantified values")
+    public abstract INT bigmax(List<INT> arg);
+
+    /** Minimum of two integers. */
+    @Syntax("Q%s.LPAR.i1.RPAR")
+    @ToolTipHeader("Collective integer minimum")
+    @ToolTipBody("Returns the minimum of all quantified values")
+    public abstract INT bigmin(List<INT> arg);
 
     /** Division of two integers. */
     @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
@@ -138,7 +152,7 @@ public abstract class IntSignature<INT,REAL,BOOL,STRING> implements Signature {
     @Syntax("Q%s.LPAR.i1.RPAR")
     @ToolTipHeader("Integer product")
     @ToolTipBody("Returns the product of all quantified values")
-    public abstract INT prod(@SuppressWarnings("unchecked") INT... arg);
+    public abstract INT prod(List<INT> arg);
 
     /** Subtraction of two integers. */
     @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
@@ -151,7 +165,7 @@ public abstract class IntSignature<INT,REAL,BOOL,STRING> implements Signature {
     @Syntax("Q%s.LPAR.i1.RPAR")
     @ToolTipHeader("Integer summation")
     @ToolTipBody("Returns the sum of all quantified values")
-    public abstract INT sum(@SuppressWarnings("unchecked") INT... arg);
+    public abstract INT sum(List<INT> arg);
 
     /** String representation. */
     @ToolTipHeader("Integer-to-string conversion")
@@ -204,11 +218,11 @@ public abstract class IntSignature<INT,REAL,BOOL,STRING> implements Signature {
         NEQ,
         /** Value for {@link #neq(Object, Object)}. */
         NEG,
-        /** Value for {@link #prod(Object...)}. */
+        /** Value for {@link #prod(List)}. */
         PROD,
         /** Value for {@link #sub(Object, Object)}. */
         SUB,
-        /** Value for {@link #sum(Object...)}. */
+        /** Value for {@link #sum(List)}. */
         SUM,
         /** Value for {@link #toReal(Object)}. */
         TO_REAL,

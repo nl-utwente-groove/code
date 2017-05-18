@@ -16,6 +16,8 @@
  */
 package groove.algebra;
 
+import java.util.List;
+
 import groove.algebra.syntax.Expression;
 
 /**
@@ -80,6 +82,18 @@ public class TermIntAlgebra extends IntAlgebra<Expression,Expression,Expression,
     public Expression add(Expression arg0, Expression arg1) {
         return Op.ADD.getOperator()
             .newTerm(arg0, arg1);
+    }
+
+    @Override
+    public Expression bigmax(List<Expression> arg) {
+        return Op.PROD.getOperator()
+            .newTerm(arg.toArray(new Expression[arg.size()]));
+    }
+
+    @Override
+    public Expression bigmin(List<Expression> arg) {
+        return Op.MIN.getOperator()
+            .newTerm(arg.toArray(new Expression[arg.size()]));
     }
 
     @Override
@@ -155,9 +169,9 @@ public class TermIntAlgebra extends IntAlgebra<Expression,Expression,Expression,
     }
 
     @Override
-    public Expression prod(Expression... arg) {
+    public Expression prod(List<Expression> arg) {
         return Op.PROD.getOperator()
-            .newTerm(arg);
+            .newTerm(arg.toArray(new Expression[arg.size()]));
     }
 
     @Override
@@ -167,9 +181,9 @@ public class TermIntAlgebra extends IntAlgebra<Expression,Expression,Expression,
     }
 
     @Override
-    public Expression sum(Expression... arg) {
+    public Expression sum(List<Expression> arg) {
         return Op.SUM.getOperator()
-            .newTerm(arg);
+            .newTerm(arg.toArray(new Expression[arg.size()]));
     }
 
     @Override
