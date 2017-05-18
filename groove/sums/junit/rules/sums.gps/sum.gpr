@@ -29,6 +29,11 @@
                 <string>217 284 17 15</string>
             </attr>
         </node>
+        <node id="n5">
+            <attr name="layout">
+                <string>222 363 8 15</string>
+            </attr>
+        </node>
         <edge from="n0" to="n0">
             <attr name="label">
                 <string>forall:</string>
@@ -39,14 +44,14 @@
                 <string>type:A</string>
             </attr>
         </edge>
-        <edge from="n1" to="n0">
-            <attr name="label">
-                <string>at</string>
-            </attr>
-        </edge>
         <edge from="n1" to="n2">
             <attr name="label">
                 <string>x</string>
+            </attr>
+        </edge>
+        <edge from="n1" to="n0">
+            <attr name="label">
+                <string>at</string>
             </attr>
         </edge>
         <edge from="n2" to="n2">
@@ -64,11 +69,6 @@
                 <string>prod:</string>
             </attr>
         </edge>
-        <edge from="n3" to="n4">
-            <attr name="label">
-                <string>int:sum</string>
-            </attr>
-        </edge>
         <edge from="n3" to="n2">
             <attr name="label">
                 <string>arg:0</string>
@@ -79,6 +79,11 @@
                 <string>at</string>
             </attr>
         </edge>
+        <edge from="n3" to="n4">
+            <attr name="label">
+                <string>int:sum</string>
+            </attr>
+        </edge>
         <edge from="n4" to="n4">
             <attr name="label">
                 <string>par:0</string>
@@ -87,6 +92,16 @@
         <edge from="n4" to="n4">
             <attr name="label">
                 <string>int:</string>
+            </attr>
+        </edge>
+        <edge from="n5" to="n5">
+            <attr name="label">
+                <string>type:B</string>
+            </attr>
+        </edge>
+        <edge from="n5" to="n4">
+            <attr name="label">
+                <string>cnew:x</string>
             </attr>
         </edge>
     </graph>

@@ -17,6 +17,7 @@
 package groove.match.plan;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,7 +25,6 @@ import java.util.stream.IntStream;
 
 import groove.algebra.AlgebraFamily;
 import groove.algebra.Operation;
-import groove.grammar.Condition.Op;
 import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
@@ -338,13 +338,15 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
         List<Object> calculateArguments() throws ClassCastException, NullPointerException {
             TreeMatch match =
                 this.search.getSubMatch(OperatorNodeSearchItem.this.sourceConditionIx);
-            assert match.getOp() == Op.FORALL;
-            return match.getSubMatches()
+            assert match.getOp()
+                .isConjunctive();
+            List<Object> setArguments = match.getSubMatches()
                 .stream()
                 .map(TreeMatch::getPatternMap)
                 .map(m -> m.getNode(OperatorNodeSearchItem.this.source))
                 .map(n -> ((ValueNode) n).getValue())
                 .collect(Collectors.toList());
+            return Collections.singletonList(setArguments);
         }
     }
 }

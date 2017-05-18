@@ -809,7 +809,7 @@ public class Condition implements Fixable {
          * meaning that its operands (i.e., subconditions) should all be satisfied.
          */
         public boolean isConjunctive() {
-            return this == EXISTS || this == AND;
+            return this == EXISTS || this == AND || this == TRUE;
         }
 
         private final String name;
