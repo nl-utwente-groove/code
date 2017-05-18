@@ -16,7 +16,7 @@
  */
 package groove.algebra;
 
-import java.util.Collection;
+import java.util.stream.Stream;
 
 import groove.algebra.syntax.Expression;
 
@@ -102,13 +102,19 @@ public class JavaIntAlgebra extends IntAlgebra<Integer,Double,Boolean,String> {
     }
 
     @Override
+    public Integer prod(Integer... arg) {
+        return Stream.of(arg)
+            .reduce(1, (i, j) -> i * j);
+    }
+
+    @Override
     public Integer sub(Integer arg0, Integer arg1) {
         return arg0 - arg1;
     }
 
     @Override
-    public Integer sum(Collection<Integer> arg) {
-        return arg.stream()
+    public Integer sum(Integer... arg) {
+        return Stream.of(arg)
             .reduce(0, (i, j) -> i + j);
     }
 

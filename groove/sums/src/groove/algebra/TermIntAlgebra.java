@@ -16,8 +16,6 @@
  */
 package groove.algebra;
 
-import java.util.Collection;
-
 import groove.algebra.syntax.Expression;
 
 /**
@@ -157,15 +155,21 @@ public class TermIntAlgebra extends IntAlgebra<Expression,Expression,Expression,
     }
 
     @Override
+    public Expression prod(Expression... arg) {
+        return Op.PROD.getOperator()
+            .newTerm(arg);
+    }
+
+    @Override
     public Expression sub(Expression arg0, Expression arg1) {
         return Op.SUB.getOperator()
             .newTerm(arg0, arg1);
     }
 
     @Override
-    public Expression sum(Collection<Expression> arg) {
+    public Expression sum(Expression... arg) {
         return Op.SUM.getOperator()
-            .newTerm(arg.toArray(new Expression[arg.size()]));
+            .newTerm(arg);
     }
 
     @Override

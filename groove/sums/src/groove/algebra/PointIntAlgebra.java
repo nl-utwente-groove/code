@@ -16,8 +16,6 @@
  */
 package groove.algebra;
 
-import java.util.Collection;
-
 import groove.algebra.syntax.Expression;
 
 /**
@@ -149,12 +147,17 @@ public class PointIntAlgebra extends IntAlgebra<Integer,Double,Boolean,String>
     }
 
     @Override
+    public Integer prod(Integer... arg) {
+        return singleInt;
+    }
+
+    @Override
     public Integer sub(Integer arg0, Integer arg1) {
         return singleInt;
     }
 
     @Override
-    public Integer sum(Collection<Integer> arg) {
+    public Integer sum(Integer... arg) {
         return singleInt;
     }
 

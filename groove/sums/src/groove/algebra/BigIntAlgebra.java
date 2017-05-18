@@ -18,7 +18,7 @@ package groove.algebra;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Collection;
+import java.util.stream.Stream;
 
 import groove.algebra.syntax.Expression;
 
@@ -108,13 +108,19 @@ public class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolean,Stri
     }
 
     @Override
+    public BigInteger prod(BigInteger... arg) {
+        return Stream.of(arg)
+            .reduce(BigInteger.ONE, (i, j) -> i.multiply(j));
+    }
+
+    @Override
     public BigInteger sub(BigInteger arg0, BigInteger arg1) {
         return arg0.subtract(arg1);
     }
 
     @Override
-    public BigInteger sum(Collection<BigInteger> arg) {
-        return arg.stream()
+    public BigInteger sum(BigInteger... arg) {
+        return Stream.of(arg)
             .reduce(BigInteger.ZERO, (i, j) -> i.add(j));
     }
 

@@ -22,8 +22,6 @@ import static groove.util.parse.OpKind.EQUAL;
 import static groove.util.parse.OpKind.MULT;
 import static groove.util.parse.OpKind.UNARY;
 
-import java.util.Collection;
-
 import groove.annotation.InfixSymbol;
 import groove.annotation.PrefixSymbol;
 import groove.annotation.Syntax;
@@ -136,6 +134,12 @@ public abstract class IntSignature<INT,REAL,BOOL,STRING> implements Signature {
     @PrefixSymbol(symbol = "-", kind = UNARY)
     public abstract INT neg(INT arg);
 
+    /** Product of a set of values. */
+    @Syntax("Q%s.LPAR.i1.RPAR")
+    @ToolTipHeader("Integer product")
+    @ToolTipBody("Returns the product of all quantified values")
+    public abstract INT prod(@SuppressWarnings("unchecked") INT... arg);
+
     /** Subtraction of two integers. */
     @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
     @ToolTipHeader("Integer subtraction")
@@ -147,7 +151,7 @@ public abstract class IntSignature<INT,REAL,BOOL,STRING> implements Signature {
     @Syntax("Q%s.LPAR.i1.RPAR")
     @ToolTipHeader("Integer summation")
     @ToolTipBody("Returns the sum of all quantified values")
-    public abstract INT sum(Collection<INT> arg);
+    public abstract INT sum(@SuppressWarnings("unchecked") INT... arg);
 
     /** String representation. */
     @ToolTipHeader("Integer-to-string conversion")
@@ -200,9 +204,11 @@ public abstract class IntSignature<INT,REAL,BOOL,STRING> implements Signature {
         NEQ,
         /** Value for {@link #neq(Object, Object)}. */
         NEG,
+        /** Value for {@link #prod(Object...)}. */
+        PROD,
         /** Value for {@link #sub(Object, Object)}. */
         SUB,
-        /** Value for {@link #sum(Collection)}. */
+        /** Value for {@link #sum(Object...)}. */
         SUM,
         /** Value for {@link #toReal(Object)}. */
         TO_REAL,

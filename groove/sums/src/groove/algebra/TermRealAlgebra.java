@@ -72,82 +72,110 @@ public class TermRealAlgebra extends RealAlgebra<Expression,Expression,Expressio
 
     @Override
     public Expression abs(Expression arg) {
-        return Op.ABS.getOperator().newTerm(arg);
+        return Op.ABS.getOperator()
+            .newTerm(arg);
     }
 
     @Override
     public Expression add(Expression arg0, Expression arg1) {
-        return Op.ADD.getOperator().newTerm(arg0, arg1);
+        return Op.ADD.getOperator()
+            .newTerm(arg0, arg1);
     }
 
     @Override
     public Expression div(Expression arg0, Expression arg1) {
-        return Op.DIV.getOperator().newTerm(arg0, arg1);
+        return Op.DIV.getOperator()
+            .newTerm(arg0, arg1);
     }
 
     @Override
     public Expression eq(Expression arg0, Expression arg1) {
-        return Op.EQ.getOperator().newTerm(arg0, arg1);
+        return Op.EQ.getOperator()
+            .newTerm(arg0, arg1);
     }
 
     @Override
     public Expression neq(Expression arg0, Expression arg1) {
-        return Op.NEQ.getOperator().newTerm(arg0, arg1);
+        return Op.NEQ.getOperator()
+            .newTerm(arg0, arg1);
     }
 
     @Override
     public Expression ge(Expression arg0, Expression arg1) {
-        return Op.GE.getOperator().newTerm(arg0, arg1);
+        return Op.GE.getOperator()
+            .newTerm(arg0, arg1);
     }
 
     @Override
     public Expression gt(Expression arg0, Expression arg1) {
-        return Op.GT.getOperator().newTerm(arg0, arg1);
+        return Op.GT.getOperator()
+            .newTerm(arg0, arg1);
     }
 
     @Override
     public Expression le(Expression arg0, Expression arg1) {
-        return Op.LE.getOperator().newTerm(arg0, arg1);
+        return Op.LE.getOperator()
+            .newTerm(arg0, arg1);
     }
 
     @Override
     public Expression lt(Expression arg0, Expression arg1) {
-        return Op.LT.getOperator().newTerm(arg0, arg1);
+        return Op.LT.getOperator()
+            .newTerm(arg0, arg1);
     }
 
     @Override
     public Expression max(Expression arg0, Expression arg1) {
-        return Op.MAX.getOperator().newTerm(arg0, arg1);
+        return Op.MAX.getOperator()
+            .newTerm(arg0, arg1);
     }
 
     @Override
     public Expression min(Expression arg0, Expression arg1) {
-        return Op.MIN.getOperator().newTerm(arg0, arg1);
+        return Op.MIN.getOperator()
+            .newTerm(arg0, arg1);
     }
 
     @Override
     public Expression mul(Expression arg0, Expression arg1) {
-        return Op.MUL.getOperator().newTerm(arg0, arg1);
+        return Op.MUL.getOperator()
+            .newTerm(arg0, arg1);
     }
 
     @Override
     public Expression neg(Expression arg) {
-        return Op.NEG.getOperator().newTerm(arg);
+        return Op.NEG.getOperator()
+            .newTerm(arg);
+    }
+
+    @Override
+    public Expression prod(Expression... arg) {
+        return Op.PROD.getOperator()
+            .newTerm(arg);
     }
 
     @Override
     public Expression sub(Expression arg0, Expression arg1) {
-        return Op.SUB.getOperator().newTerm(arg0, arg1);
+        return Op.SUB.getOperator()
+            .newTerm(arg0, arg1);
+    }
+
+    @Override
+    public Expression sum(Expression... arg) {
+        return Op.SUM.getOperator()
+            .newTerm(arg);
     }
 
     @Override
     public Expression toInt(Expression arg) {
-        return Op.TO_INT.getOperator().newTerm(arg);
+        return Op.TO_INT.getOperator()
+            .newTerm(arg);
     }
 
     @Override
     public Expression toString(Expression arg) {
-        return Op.TO_STRING.getOperator().newTerm(arg);
+        return Op.TO_STRING.getOperator()
+            .newTerm(arg);
     }
 
     /** Name of this algebra. */

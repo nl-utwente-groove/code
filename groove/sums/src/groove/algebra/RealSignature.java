@@ -84,6 +84,18 @@ public abstract class RealSignature<INT,REAL,BOOL,STRING> implements Signature {
     @ToolTipBody("Returns the maximum of %s and %s")
     public abstract REAL max(REAL arg0, REAL arg1);
 
+    /** Product of a set of values. */
+    @Syntax("Q%s.LPAR.i1.RPAR")
+    @ToolTipHeader("Real product")
+    @ToolTipBody("Returns the product of all quantified values")
+    public abstract REAL prod(@SuppressWarnings("unchecked") REAL... arg);
+
+    /** Summation over a set of values. */
+    @Syntax("Q%s.LPAR.i1.RPAR")
+    @ToolTipHeader("Real summation")
+    @ToolTipBody("Returns the sum of all quantified values")
+    public abstract REAL sum(@SuppressWarnings("unchecked") REAL... arg);
+
     /** Lesser-than comparison. */
     @ToolTipHeader("Real number lesser-than test")
     @Syntax("Q%s.LPAR.r1.COMMA.r2.RPAR")
@@ -182,8 +194,12 @@ public abstract class RealSignature<INT,REAL,BOOL,STRING> implements Signature {
         NEQ,
         /** Value for {@link #neq(Object, Object)}. */
         NEG,
+        /** Value for {@link #prod(Object...)}. */
+        PROD,
         /** Value for {@link #sub(Object, Object)}. */
         SUB,
+        /** Value for {@link #sum(Object...)}. */
+        SUM,
         /** Value for {@link #toInt(Object)}. */
         TO_INT,
         /** Value for {@link #toString(Object)}. */

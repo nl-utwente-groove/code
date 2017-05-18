@@ -16,10 +16,11 @@
  */
 package groove.algebra;
 
-import groove.algebra.syntax.Expression;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.stream.Stream;
+
+import groove.algebra.syntax.Expression;
 
 /**
  * Double algebra based on reals of arbitrary precision.
@@ -60,22 +61,26 @@ public class BigRealAlgebra extends RealAlgebra<BigInteger,BigDecimal,Boolean,St
 
     @Override
     public Boolean ge(BigDecimal arg0, BigDecimal arg1) {
-        return arg0.subtract(arg1).signum() >= 0 || approximatelyEquals(arg0, arg1);
+        return arg0.subtract(arg1)
+            .signum() >= 0 || approximatelyEquals(arg0, arg1);
     }
 
     @Override
     public Boolean gt(BigDecimal arg0, BigDecimal arg1) {
-        return arg0.subtract(arg1).signum() > 0 && !approximatelyEquals(arg0, arg1);
+        return arg0.subtract(arg1)
+            .signum() > 0 && !approximatelyEquals(arg0, arg1);
     }
 
     @Override
     public Boolean le(BigDecimal arg0, BigDecimal arg1) {
-        return arg0.subtract(arg1).signum() <= 0 || approximatelyEquals(arg0, arg1);
+        return arg0.subtract(arg1)
+            .signum() <= 0 || approximatelyEquals(arg0, arg1);
     }
 
     @Override
     public Boolean lt(BigDecimal arg0, BigDecimal arg1) {
-        return arg0.subtract(arg1).signum() < 0 && !approximatelyEquals(arg0, arg1);
+        return arg0.subtract(arg1)
+            .signum() < 0 && !approximatelyEquals(arg0, arg1);
     }
 
     @Override
@@ -99,8 +104,20 @@ public class BigRealAlgebra extends RealAlgebra<BigInteger,BigDecimal,Boolean,St
     }
 
     @Override
+    public BigDecimal prod(BigDecimal... arg) {
+        return Stream.of(arg)
+            .reduce(BigDecimal.ONE, (i, j) -> i.multiply(j));
+    }
+
+    @Override
     public BigDecimal sub(BigDecimal arg0, BigDecimal arg1) {
         return arg0.subtract(arg1);
+    }
+
+    @Override
+    public BigDecimal sum(BigDecimal... arg) {
+        return Stream.of(arg)
+            .reduce(BigDecimal.ZERO, (i, j) -> i.add(j));
     }
 
     @Override
@@ -159,9 +176,13 @@ public class BigRealAlgebra extends RealAlgebra<BigInteger,BigDecimal,Boolean,St
 
     /** Tests if two numbers are equal up to {@link #TOLERANCE}. */
     public static boolean approximatelyEquals(BigDecimal d1, BigDecimal d2) {
-        return d1.subtract(d2).abs().doubleValue() < (d1.abs().doubleValue()
-            + d2.abs().doubleValue() + TOLERANCE)
-            * TOLERANCE;
+        return d1.subtract(d2)
+            .abs()
+            .doubleValue() < (d1.abs()
+                .doubleValue()
+                + d2.abs()
+                    .doubleValue()
+                + TOLERANCE) * TOLERANCE;
     }
 
     /**
