@@ -16,13 +16,15 @@
  */
 package groove.match.plan;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import groove.algebra.AlgebraFamily;
 import groove.algebra.Operation;
+import groove.grammar.Condition.Op;
 import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
@@ -30,6 +32,7 @@ import groove.grammar.host.ValueNode;
 import groove.grammar.rule.OperatorNode;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.VariableNode;
+import groove.match.TreeMatch;
 import groove.match.plan.PlanSearchStrategy.Search;
 
 /**
@@ -161,16 +164,6 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
         return this.node;
     }
 
-    @Override
-    public void activate(PlanSearchStrategy strategy) {
-        this.targetFound = strategy.isNodeFound(this.target);
-        this.targetIx = strategy.getNodeIx(this.target);
-        this.argumentIxs = new int[this.arguments.size()];
-        for (int i = 0; i < this.arguments.size(); i++) {
-            this.argumentIxs[i] = strategy.getNodeIx(this.arguments.get(i));
-        }
-    }
-
     /** The operator node for which we seek an image. */
     final OperatorNode node;
     /** Flag signalling that the operator is a set operator. */
@@ -188,12 +181,35 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
     final Collection<RuleNode> boundNodes;
     /** Set of the nodes in <code>arguments</code>. */
     final Collection<RuleNode> neededNodes;
+
+    @Override
+    public void activate(PlanSearchStrategy strategy) {
+        this.targetFound = strategy.isNodeFound(this.target);
+        this.targetIx = strategy.getNodeIx(this.target);
+        if (this.setOperator) {
+            this.source = this.arguments.get(0);
+            ConditionSearchItem item = (ConditionSearchItem) strategy.getPlan()
+                .getBinder(this.source);
+            this.sourceConditionIx = strategy.getCondIx(item.getCondition());
+        } else {
+            this.argumentIxs = new int[this.arguments.size()];
+            for (int i = 0; i < this.arguments.size(); i++) {
+                this.argumentIxs[i] = strategy.getNodeIx(this.arguments.get(i));
+            }
+        }
+    }
+
     /** Indices of the argument nodes in the result. */
     int[] argumentIxs;
     /** Flag indicating if the target node has been found at search time. */
     boolean targetFound;
     /** Index of {@link #target} in the result. */
     int targetIx;
+    /** Index (in the result) of the condition binding the set operator,
+     * if the operator is a set operator. */
+    int sourceConditionIx;
+    /** Index of the condition in the result, if the operator is a set operator. */
+    VariableNode source;
 
     /**
      * Record of a node search item, storing an iterator over the candidate
@@ -267,32 +283,34 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
          *         cannot be calculated due to the fact that one of the
          *         arguments was bound to a non-value.
          */
-        Object calculateResult() throws IllegalArgumentException {
-            Object[] operands = new Object[OperatorNodeSearchItem.this.arguments.size()];
-            for (int i = 0; i < OperatorNodeSearchItem.this.arguments.size(); i++) {
-                HostNode operandImage =
-                    this.search.getNode(OperatorNodeSearchItem.this.argumentIxs[i]);
-                if (!(operandImage instanceof ValueNode)) {
-                    // one of the arguments was not bound to a value
-                    // (probably due to some typing error in another rule)
-                    // and so we cannot match the node
-                    return null;
-                }
-                operands[i] = ((ValueNode) operandImage).getValue();
-            }
+        Object calculateResult() {
             try {
-                Object result =
-                    OperatorNodeSearchItem.this.operation.apply(Arrays.asList(operands));
+                List<Object> arguments = calculateArguments();
+                Object result = OperatorNodeSearchItem.this.operation.apply(arguments);
                 if (PRINT) {
                     System.out.printf("Applying %s to %s yields %s%n",
                         OperatorNodeSearchItem.this.operation,
-                        Arrays.asList(operands),
+                        arguments,
                         result);
                 }
                 return result;
-            } catch (IllegalArgumentException exc) {
+            } catch (ClassCastException | NullPointerException | IllegalArgumentException exc) {
+                // one of the arguments was not bound to a value
+                // (probably due to some typing error in another rule)
+                // and so we cannot match the node
                 return null;
             }
+        }
+
+        /**
+         * Calculates the arguments for the operator.
+         */
+        List<Object> calculateArguments() throws ClassCastException, NullPointerException {
+            List<Object> arguments = IntStream.of(OperatorNodeSearchItem.this.argumentIxs)
+                .mapToObj(this.search::getNode)
+                .map(n -> ((ValueNode) n).getValue())
+                .collect(Collectors.toList());
+            return arguments;
         }
 
         /** The pre-matched target node, if any. */
@@ -317,9 +335,16 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
         }
 
         @Override
-        Object calculateResult() throws IllegalArgumentException {
-            // TODO Auto-generated method stub
-            return super.calculateResult();
+        List<Object> calculateArguments() throws ClassCastException, NullPointerException {
+            TreeMatch match =
+                this.search.getSubMatch(OperatorNodeSearchItem.this.sourceConditionIx);
+            assert match.getOp() == Op.FORALL;
+            return match.getSubMatches()
+                .stream()
+                .map(TreeMatch::getPatternMap)
+                .map(m -> m.getNode(OperatorNodeSearchItem.this.source))
+                .map(n -> ((ValueNode) n).getValue())
+                .collect(Collectors.toList());
         }
     }
 }

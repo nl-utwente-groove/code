@@ -260,7 +260,7 @@ public enum AlgebraFamily implements DocumentedEnum {
         @Override
         public Object apply(List<Object> args) throws IllegalArgumentException {
             try {
-                return this.method.invoke(this.algebra, args.toArray());
+                return this.method.invoke(this.algebra, args);
             } catch (IllegalAccessException e) {
                 throw new IllegalArgumentException();
             } catch (InvocationTargetException e) {

@@ -530,8 +530,7 @@ public class Condition implements Fixable {
                 .stream()
                 .filter(n -> n instanceof OperatorNode)
                 .map(n -> (OperatorNode) n)
-                .filter(n -> n.getSetArgument()
-                    .isPresent())
+                .filter(n -> n.isSetOperator())
                 .collect(Collectors.toSet());
             for (Condition sub : getSubConditions()) {
                 // If the subcondition has a count node, it is a dependent node
@@ -541,8 +540,8 @@ public class Condition implements Fixable {
                 // Collect targets of set operators whose sources are in the subcondition
                 Stream<VariableNode> setOpDeps = setOps.stream()
                     .filter(n -> sub.getOutputNodes()
-                        .contains(n.getSetArgument()
-                            .get()))
+                        .contains(n.getArguments()
+                            .get(0)))
                     .map(n -> n.getTarget());
                 // combine count node and set operator targets and restrict to non-constants
                 subDeps = Stream.concat(subDeps, setOpDeps)

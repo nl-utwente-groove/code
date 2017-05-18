@@ -17,7 +17,6 @@
 package groove.grammar.rule;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import groove.algebra.Operator;
@@ -42,6 +41,78 @@ public class OperatorNode extends ANode implements RuleNode {
         this.operator = operator;
         this.arguments = arguments;
         this.target = target;
+    }
+
+    /** Retrieves the list of arguments of the operator node. */
+    public List<VariableNode> getArguments() {
+        return this.arguments;
+    }
+
+    /**
+     * The list of arguments of this product node (which are the value nodes to
+     * which an outgoing AlgebraEdge is pointing).
+     */
+    private final List<VariableNode> arguments;
+
+    /** Convenience method indicating that the wrapped operator is a set operator. */
+    public boolean isSetOperator() {
+        return getOperator().isSetOperator();
+    }
+
+    /**
+     * Returns the arity of this node.
+     */
+    public int arity() {
+        return this.arguments.size();
+    }
+
+    /** Returns the set of variable nodes used as targets of the operations. */
+    public VariableNode getTarget() {
+        return this.target;
+    }
+
+    private final VariableNode target;
+
+    /** Returns the operations associated with this node. */
+    public Operator getOperator() {
+        return this.operator;
+    }
+
+    private final Operator operator;
+
+    @Override
+    public String getToStringPrefix() {
+        return "p";
+    }
+
+    @Override
+    public TypeNode getType() {
+        return getTarget().getType();
+    }
+
+    @Override
+    public List<TypeGuard> getTypeGuards() {
+        return EMPTY_GUARD_LIST;
+    }
+
+    @Override
+    public Set<LabelVar> getVars() {
+        return EMPTY_VAR_SET;
+    }
+
+    @Override
+    public boolean isSharp() {
+        return true;
+    }
+
+    @Override
+    public Set<TypeNode> getMatchingTypes() {
+        return EMPTY_MATCH_SET;
+    }
+
+    @Override
+    public AnchorKind getAnchorKind() {
+        return AnchorKind.NODE;
     }
 
     /**
@@ -82,79 +153,6 @@ public class OperatorNode extends ANode implements RuleNode {
     public boolean stronglyEquals(RuleNode other) {
         return equals(other);
     }
-
-    /** Retrieves the list of arguments of the operator node. */
-    public List<VariableNode> getArguments() {
-        return this.arguments;
-    }
-
-    /** Returns the single argument of this operator node,
-     * if the operator is set-based.
-     */
-    public Optional<VariableNode> getSetArgument() {
-        return getOperator().isSetOperator() ? Optional.of(getArguments().get(0))
-            : Optional.empty();
-    }
-
-    /**
-     * Returns the arity of this node.
-     */
-    public int arity() {
-        return this.arguments.size();
-    }
-
-    /** Returns the set of variable nodes used as targets of the operations. */
-    public VariableNode getTarget() {
-        return this.target;
-    }
-
-    /** Returns the operations associated with this node. */
-    public Operator getOperator() {
-        return this.operator;
-    }
-
-    @Override
-    public String getToStringPrefix() {
-        return "p";
-    }
-
-    @Override
-    public TypeNode getType() {
-        return getTarget().getType();
-    }
-
-    @Override
-    public List<TypeGuard> getTypeGuards() {
-        return EMPTY_GUARD_LIST;
-    }
-
-    @Override
-    public Set<LabelVar> getVars() {
-        return EMPTY_VAR_SET;
-    }
-
-    @Override
-    public boolean isSharp() {
-        return true;
-    }
-
-    @Override
-    public Set<TypeNode> getMatchingTypes() {
-        return EMPTY_MATCH_SET;
-    }
-
-    @Override
-    public AnchorKind getAnchorKind() {
-        return AnchorKind.NODE;
-    }
-
-    /**
-     * The list of arguments of this product node (which are the value nodes to
-     * which an outgoing AlgebraEdge is pointing).
-     */
-    private final List<VariableNode> arguments;
-    private final Operator operator;
-    private final VariableNode target;
 
     static final private char TIMES_CHAR = '\u2a09';
     /** Type label of product nodes. */
