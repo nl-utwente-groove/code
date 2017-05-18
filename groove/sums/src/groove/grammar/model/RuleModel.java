@@ -1507,26 +1507,32 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             }
             AspectNode targetModelNode = operatorEdge.target();
             VariableNode target = (VariableNode) getNodeImage(targetModelNode);
-            boolean setOperator = operatorEdge.getOperator()
-                .isSetOperator();
+            Operator operator = operatorEdge.getOperator();
+            boolean setOperator = operator.isSetOperator();
             if (!(setOperator || this.lhs.nodeSet()
                 .contains(target) || embargo && this.nacNodeSet.contains(target))) {
                 throw new FormatException(
-                    "Operation target must exist on the level of the operator edge", operatorEdge);
+                    "Target of operator '%s' must exist on the level of the operator edge",
+                    operator.getName(), operatorEdge);
             }
             // make sure that set operator targets appear on the parent level already
             if (setOperator) {
                 if (!(this.parent != null && this.parent.lhs.nodeSet()
                     .contains(target))) {
                     throw new FormatException(
-                        "Set operator target '%s' must be defined on the parent level",
-                        targetModelNode, productNode);
+                        "Target of set operator '%s' must be defined on the parent level",
+                        operator.getName(), operatorEdge);
+                }
+                if (!operator.isSupportsZero() && !getIndex().isPositive()) {
+                    throw new FormatException(
+                        "Argument of set operator '%s' needs a non-vacuous quantification",
+                        operator.getName(), operatorEdge);
                 }
                 // a set operator argument is an output node of the condition
                 this.outputNodes.add(arguments.get(0));
             }
             RuleNode opNode = this.factory.createOperatorNode(productNode.getNumber(),
-                operatorEdge.getOperator(),
+                operator,
                 arguments,
                 target);
             Level2 level = setOperator ? this.parent : this;

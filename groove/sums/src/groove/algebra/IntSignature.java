@@ -54,13 +54,13 @@ public abstract class IntSignature<INT,REAL,BOOL,STRING> implements Signature {
     @InfixSymbol(symbol = "+", kind = ADD)
     public abstract INT add(INT arg0, INT arg1);
 
-    /** Maximum of two integers. */
+    /** Maximum of a nonempty set of integers. */
     @Syntax("Q%s.LPAR.i1.RPAR")
     @ToolTipHeader("Collective integer maximum")
     @ToolTipBody("Returns the maximum of all quantified values")
     public abstract INT bigmax(List<INT> arg);
 
-    /** Minimum of two integers. */
+    /** Minimum of a nonempty set of integers. */
     @Syntax("Q%s.LPAR.i1.RPAR")
     @ToolTipHeader("Collective integer minimum")
     @ToolTipBody("Returns the minimum of all quantified values")
@@ -194,6 +194,10 @@ public abstract class IntSignature<INT,REAL,BOOL,STRING> implements Signature {
         ABS,
         /** Value for {@link #add(Object, Object)}. */
         ADD,
+        /** Value for {@link #bigmax(List)}. */
+        BIGMAX,
+        /** Value for {@link #bigmin(List)}. */
+        BIGMIN,
         /** Value for {@link #div(Object, Object)}. */
         DIV,
         /** Value for {@link #eq(Object, Object)}. */
@@ -219,15 +223,29 @@ public abstract class IntSignature<INT,REAL,BOOL,STRING> implements Signature {
         /** Value for {@link #neq(Object, Object)}. */
         NEG,
         /** Value for {@link #prod(List)}. */
-        PROD,
+        PROD(true),
         /** Value for {@link #sub(Object, Object)}. */
         SUB,
         /** Value for {@link #sum(List)}. */
-        SUM,
+        SUM(true),
         /** Value for {@link #toReal(Object)}. */
         TO_REAL,
         /** Value for {@link #toString(Object)}. */
         TO_STRING,;
+
+        /**
+         * Constructs an operator that does not support zero arguments.
+         */
+        private Op() {
+            this(false);
+        }
+
+        /**
+         * Constructs an operator that may or may not support zero arguments.
+         */
+        private Op(boolean supportsZero) {
+            this.supportsZero = supportsZero;
+        }
 
         @Override
         public Operator getOperator() {
@@ -239,5 +257,12 @@ public abstract class IntSignature<INT,REAL,BOOL,STRING> implements Signature {
 
         /** Corresponding operator object. */
         private Operator operator;
+
+        @Override
+        public boolean isSupportsZero() {
+            return this.supportsZero;
+        }
+
+        private final boolean supportsZero;
     }
 }

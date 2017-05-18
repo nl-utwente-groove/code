@@ -53,13 +53,13 @@ public abstract class RealSignature<INT,REAL,BOOL,STRING> implements Signature {
     @InfixSymbol(symbol = "+", kind = ADD)
     public abstract REAL add(REAL arg0, REAL arg1);
 
-    /** Maximum of two reals. */
+    /** Maximum of a nonempty set of reals. */
     @Syntax("Q%s.LPAR.i1.RPAR")
     @ToolTipHeader("Collective real maximum")
     @ToolTipBody("Returns the maximum of all quantified values")
     public abstract REAL bigmax(List<REAL> arg);
 
-    /** Minimum of two reals. */
+    /** Minimum of a nonempty set of reals. */
     @Syntax("Q%s.LPAR.i1.RPAR")
     @ToolTipHeader("Collective real minimum")
     @ToolTipBody("Returns the minimum of all quantified values")
@@ -186,6 +186,10 @@ public abstract class RealSignature<INT,REAL,BOOL,STRING> implements Signature {
         ABS,
         /** Value for {@link #add(Object, Object)}. */
         ADD,
+        /** Value for {@link #bigmax(List)}. */
+        BIGMAX,
+        /** Value for {@link #bigmin(List)}. */
+        BIGMIN,
         /** Value for {@link #div(Object, Object)}. */
         DIV,
         /** Value for {@link #eq(Object, Object)}. */
@@ -209,15 +213,29 @@ public abstract class RealSignature<INT,REAL,BOOL,STRING> implements Signature {
         /** Value for {@link #neq(Object, Object)}. */
         NEG,
         /** Value for {@link #prod(List)}. */
-        PROD,
+        PROD(true),
         /** Value for {@link #sub(Object, Object)}. */
         SUB,
         /** Value for {@link #sum(List)}. */
-        SUM,
+        SUM(true),
         /** Value for {@link #toInt(Object)}. */
         TO_INT,
         /** Value for {@link #toString(Object)}. */
         TO_STRING,;
+
+        /**
+         * Constructs an operator that does not support zero arguments.
+         */
+        private Op() {
+            this(false);
+        }
+
+        /**
+         * Constructs an operator that may or may not support zero arguments.
+         */
+        private Op(boolean supportsZero) {
+            this.supportsZero = supportsZero;
+        }
 
         @Override
         public Operator getOperator() {
@@ -229,5 +247,12 @@ public abstract class RealSignature<INT,REAL,BOOL,STRING> implements Signature {
 
         /** Corresponding operator object. */
         private Operator operator;
+
+        @Override
+        public boolean isSupportsZero() {
+            return this.supportsZero;
+        }
+
+        private final boolean supportsZero;
     }
 }
