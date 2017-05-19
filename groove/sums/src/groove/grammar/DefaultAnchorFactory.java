@@ -85,9 +85,6 @@ public class DefaultAnchorFactory implements AnchorFactory {
                 .map(v -> v.getNode())
                 .forEach(n -> result.add(n));
         }
-        // add the output nodes of the condition
-        result.addAll(rule.getCondition()
-            .getOutputNodes());
         // remove the root elements of the rule itself
         return new Anchor(result);
     }

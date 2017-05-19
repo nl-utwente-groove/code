@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph role="rule" edgeids="false" edgemode="directed" id="intSumAlt">
+    <graph role="graph" edgeids="false" edgemode="directed" id="intSumAlt-0">
         <attr name="$version">
             <string>curly</string>
         </attr>
         <node id="n0">
             <attr name="layout">
-                <string>218 134 10 15</string>
+                <string>216 173 30 45</string>
             </attr>
         </node>
         <node id="n1">
             <attr name="layout">
-                <string>316 132 27 15</string>
+                <string>219 266 30 45</string>
             </attr>
         </node>
-        <node id="n5">
+        <node id="n2">
             <attr name="layout">
-                <string>197 262 75 45</string>
+                <string>68 217 14 30</string>
             </attr>
         </node>
         <edge from="n0" to="n0">
             <attr name="label">
-                <string>forall:</string>
+                <string>type:A</string>
             </attr>
         </edge>
-        <edge from="n1" to="n1">
+        <edge from="n0" to="n0">
             <attr name="label">
-                <string>id:a</string>
+                <string>let:x = 1</string>
             </attr>
         </edge>
         <edge from="n1" to="n1">
@@ -34,19 +34,19 @@
                 <string>type:A</string>
             </attr>
         </edge>
-        <edge from="n1" to="n0">
+        <edge from="n1" to="n1">
             <attr name="label">
-                <string>at</string>
+                <string>let:x = 2</string>
             </attr>
         </edge>
-        <edge from="n5" to="n5">
+        <edge from="n2" to="n2">
             <attr name="label">
                 <string>type:B</string>
             </attr>
         </edge>
-        <edge from="n5" to="n5">
+        <edge from="n2" to="n2">
             <attr name="label">
-                <string>let:x = int:sum(a.x)</string>
+                <string>let:x = 0</string>
             </attr>
         </edge>
     </graph>

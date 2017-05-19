@@ -82,6 +82,7 @@ public class PlanSearchEngine extends SearchEngine {
             anchorKeys.addAll(condition.getRule()
                 .getAnchor());
         }
+        anchorKeys.addAll(condition.getOutputNodes());
         PlanData planData = new PlanData(condition, this.simple);
         if (seed == null) {
             seed = new Anchor();
@@ -148,7 +149,7 @@ public class PlanSearchEngine extends SearchEngine {
     private static PlanSearchEngine multiInstance;
 
     /** Flag to control search plan printing. */
-    static private final boolean PRINT = true;
+    static private final boolean PRINT = false;
 
     /**
      * Plan data extension based on a graph condition. Additionally it takes the

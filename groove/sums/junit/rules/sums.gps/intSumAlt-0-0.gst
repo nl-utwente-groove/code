@@ -1,52 +1,52 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph role="rule" edgeids="false" edgemode="directed" id="intSumAlt">
+    <graph role="graph" edgeids="false" edgemode="directed" id="intSumAlt-0-0">
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n0">
-            <attr name="layout">
-                <string>218 134 10 15</string>
-            </attr>
-        </node>
         <node id="n1">
             <attr name="layout">
-                <string>316 132 27 15</string>
+                <string>219 274 30 30</string>
             </attr>
         </node>
-        <node id="n5">
+        <node id="n0">
             <attr name="layout">
-                <string>197 262 75 45</string>
+                <string>216 181 30 30</string>
             </attr>
         </node>
-        <edge from="n0" to="n0">
-            <attr name="label">
-                <string>forall:</string>
+        <node id="n2">
+            <attr name="layout">
+                <string>61 218 30 30</string>
             </attr>
-        </edge>
-        <edge from="n1" to="n1">
-            <attr name="label">
-                <string>id:a</string>
-            </attr>
-        </edge>
+        </node>
         <edge from="n1" to="n1">
             <attr name="label">
                 <string>type:A</string>
             </attr>
         </edge>
-        <edge from="n1" to="n0">
+        <edge from="n1" to="n1">
             <attr name="label">
-                <string>at</string>
+                <string>let:x = int:2</string>
             </attr>
         </edge>
-        <edge from="n5" to="n5">
+        <edge from="n0" to="n0">
+            <attr name="label">
+                <string>type:A</string>
+            </attr>
+        </edge>
+        <edge from="n0" to="n0">
+            <attr name="label">
+                <string>let:x = int:1</string>
+            </attr>
+        </edge>
+        <edge from="n2" to="n2">
+            <attr name="label">
+                <string>let:x = int:3</string>
+            </attr>
+        </edge>
+        <edge from="n2" to="n2">
             <attr name="label">
                 <string>type:B</string>
-            </attr>
-        </edge>
-        <edge from="n5" to="n5">
-            <attr name="label">
-                <string>let:x = int:sum(a.x)</string>
             </attr>
         </edge>
     </graph>

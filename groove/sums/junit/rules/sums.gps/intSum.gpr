@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
     <graph role="rule" edgeids="false" edgemode="directed" id="intSum">
-        <attr name="enabled">
-            <string>false</string>
-        </attr>
         <attr name="$version">
             <string>curly</string>
         </attr>
@@ -42,11 +39,6 @@
                 <string>forall:</string>
             </attr>
         </edge>
-        <edge from="n1" to="n0">
-            <attr name="label">
-                <string>at</string>
-            </attr>
-        </edge>
         <edge from="n1" to="n1">
             <attr name="label">
                 <string>type:A</string>
@@ -55,6 +47,11 @@
         <edge from="n1" to="n2">
             <attr name="label">
                 <string>x</string>
+            </attr>
+        </edge>
+        <edge from="n1" to="n0">
+            <attr name="label">
+                <string>at</string>
             </attr>
         </edge>
         <edge from="n2" to="n2">
@@ -72,9 +69,9 @@
                 <string>prod:</string>
             </attr>
         </edge>
-        <edge from="n3" to="n2">
+        <edge from="n3" to="n0">
             <attr name="label">
-                <string>arg:0</string>
+                <string>at</string>
             </attr>
         </edge>
         <edge from="n3" to="n4">
@@ -82,9 +79,9 @@
                 <string>int:sum</string>
             </attr>
         </edge>
-        <edge from="n3" to="n0">
+        <edge from="n3" to="n2">
             <attr name="label">
-                <string>at</string>
+                <string>arg:0</string>
             </attr>
         </edge>
         <edge from="n4" to="n4">

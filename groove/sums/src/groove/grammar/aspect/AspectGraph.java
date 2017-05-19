@@ -33,6 +33,9 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import groove.algebra.Constant;
 import groove.algebra.Operator;
 import groove.algebra.syntax.Assignment;
@@ -278,7 +281,11 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         List<FormatError> errors = new ArrayList<>();
         for (AspectEdge edge : letEdges) {
             try {
-                AspectEdge normalisedEdge = addAssignment(edge.source(), edge.getAssign());
+                AspectNode source = edge.source();
+                assert !source.getKind()
+                    .isQuantifier();
+                AspectNode level = source.getNestingLevel();
+                AspectEdge normalisedEdge = addAssignment(level, source, edge.getAssign());
                 if (map != null) {
                     map.putEdge(edge, normalisedEdge);
                 }
@@ -295,7 +302,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                     && !source.getKind()
                         .inNAC();
                 Expression predicate = edge.getPredicate();
-                AspectNode outcome = addExpression(source, predicate);
+                AspectNode level = source.getKind()
+                    .isQuantifier() ? source.getNestingParent() : source.getNestingLevel();
+                AspectNode outcome = addExpression(level, source, predicate);
                 // specify whether the outcome should be true or false
                 Constant value = Constant.instance(!nac);
                 outcome.setAspects(parser.parse(value.toString(), getRole()));
@@ -309,10 +318,14 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
 
     /**
      * Adds the structure corresponding to an assignment.
+     * @param level the nesting level node on which the expression should be computed
+     * @param source node on which the expression occurs
+     * @param assign the parsed assignment
      */
-    private AspectEdge addAssignment(AspectNode source, Assignment assign) throws FormatException {
+    private AspectEdge addAssignment(@Nullable AspectNode level, @NonNull AspectNode source,
+        Assignment assign) throws FormatException {
         // add the expression structure
-        AspectNode target = addExpression(source, assign.getRhs());
+        AspectNode target = addExpression(level, source, assign.getRhs());
         // add a creator edge (for a rule) or normal edge to the assignment target
         String assignLabelText;
         if (getRole() == RULE) {
@@ -329,7 +342,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             // add an eraser edge for the old value
             AspectNode oldTarget = findTarget(source, assign.getLhs(), target.getAttrKind());
             if (oldTarget == null) {
-                oldTarget = addNestedNode(source);
+                oldTarget = addNestedNode(level, source);
                 // use the type of the new target for the new target node
                 oldTarget.setAspects(createLabel(target.getAttrKind()));
             }
@@ -342,23 +355,23 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
 
     /**
      * Adds the structure corresponding to an expression.
-     * @param source node on which the expression edge occurs
+     * @param level the nesting level node on which the expression should be computed
+     * @param source node on which the expression occurs
      * @param expr the parsed expression
      * @return the node holding the value of the expression
      */
-    private AspectNode addExpression(AspectNode source, Expression expr) throws FormatException {
-        // check if the expression is consistent in nesting level
-        getLevel(expr);
+    private AspectNode addExpression(@Nullable AspectNode level, @NonNull AspectNode source,
+        Expression expr) throws FormatException {
         switch (expr.getKind()) {
         case CONST:
             return addConstant(expr);
         case FIELD:
-            return addField(source, (FieldExpr) expr);
+            return addField(level, source, (FieldExpr) expr);
         case CALL:
             if (getRole() == HOST) {
                 return addConstant(expr);
             } else {
-                return addCall(source, (CallExpr) expr);
+                return addCall(level, source, (CallExpr) expr);
             }
         case PAR:
             return addPar(source, (Parameter) expr);
@@ -385,11 +398,13 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
 
     /**
      * Creates the target of a field expression.
+     * @param level the nesting level node on which the expression should be computed
      * @param source the node which currently has the field
      * @param expr the field expression
      * @return the target node of the identifier
      */
-    private AspectNode addField(AspectNode source, FieldExpr expr) throws FormatException {
+    private AspectNode addField(@Nullable AspectNode level, @NonNull AspectNode source,
+        FieldExpr expr) throws FormatException {
         if (getRole() != RULE) {
             throw new FormatException("Field expression '%s' only allowed in rules",
                 expr.toDisplayString(), source);
@@ -416,9 +431,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         AspectKind sigKind = AspectKind.toAspectKind(expr.getSort());
         AspectNode result = findTarget(owner, expr.getField(), sigKind);
         if (result == null) {
-            AspectNode level = owner.getKind()
-                .isQuantifier() ? owner.getNestingParent() : owner;
-            result = addNestedNode(level);
+            result = addNestedNode(level, source);
             result.setAspects(createLabel(sigKind));
         } else {
             if (result.getAttrKind() != sigKind) {
@@ -435,7 +448,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     }
 
     /** Looks for an outgoing edge suitable for a given field expression. */
-    private AspectNode findTarget(AspectNode owner, String fieldName, AspectKind fieldKind) {
+    private AspectNode findTarget(@NonNull AspectNode owner, String fieldName,
+        AspectKind fieldKind) {
         boolean allEdgesOK = getRole() != RULE || owner.getKind()
             .isQuantifier();
         return outEdgeSet(owner).stream()
@@ -451,19 +465,20 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
 
     /**
      * Adds the structure for a call expression
+     * @param level the nesting level node on which the expression should be computed
      * @param source node on which the expression occurs
      * @param call the call expression
      * @return the node representing the value of the expression
      */
-    private AspectNode addCall(AspectNode source, CallExpr call) throws FormatException {
+    private AspectNode addCall(@Nullable AspectNode level, @NonNull AspectNode source,
+        CallExpr call) throws FormatException {
         Operator operator = call.getOperator();
         if (getRole() != RULE) {
             throw new FormatException("Call expression '%s' only allowed in rules",
                 call.toParseString(), source);
         }
-        AspectNode result = addNestedNode(source);
+        AspectNode result = addNestedNode(level, source);
         result.setAspects(createLabel(AspectKind.toAspectKind(call.getSort())));
-        AspectNode level;
         if (operator.isSetOperator()) {
             Expression arg = call.getArgs()
                 .get(0);
@@ -473,10 +488,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                     "Set operator argument '%s' should be one level deeper than source node '%s'",
                     arg, source);
             }
-        } else {
-            level = source;
         }
-        AspectNode product = addNestedNode(level);
+        AspectNode product = addNestedNode(level, source);
         product.setAspects(createLabel(AspectKind.PRODUCT));
         // add the operator edge
         AspectLabel operatorLabel = parser.parse(operator.getFullName(), getRole());
@@ -484,7 +497,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         // add the arguments
         List<groove.algebra.syntax.Expression> args = call.getArgs();
         for (int i = 0; i < args.size(); i++) {
-            AspectNode argResult = addExpression(level, args.get(i));
+            AspectNode argResult = addExpression(level, source, args.get(i));
             AspectLabel argLabel = parser.parse(AspectKind.ARGUMENT.getPrefix() + i, getRole());
             addEdge(product, argLabel, argResult);
         }
@@ -511,16 +524,18 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         return result;
     }
 
-    /** Adds a node with the same nesting level as a given source node. */
-    private AspectNode addNestedNode(AspectNode source) throws FormatException {
+    /** Adds a node on a given nesting level with NAC derived from a source node.
+     * @param level the nesting level node on which the node should be created
+     * @param source node from which the NAC aspect should be copied
+     */
+    private AspectNode addNestedNode(@Nullable AspectNode level, @NonNull AspectNode source)
+        throws FormatException {
         AspectNode result = addNode();
         if (source.getKind() == AspectKind.EMBARGO) {
             result.setAspect(source.getAspect());
         }
-        AspectNode nesting = source.getKind()
-            .isQuantifier() ? source : source.getNestingLevel();
-        if (nesting != null) {
-            addEdge(result, AspectKind.NestedValue.AT.toString(), nesting);
+        if (level != null) {
+            addEdge(result, AspectKind.NestedValue.AT.toString(), level);
         }
         return result;
     }
