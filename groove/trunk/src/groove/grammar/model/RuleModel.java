@@ -48,6 +48,7 @@ import javax.swing.SwingUtilities;
 import org.eclipse.jdt.annotation.NonNull;
 
 import groove.algebra.Constant;
+import groove.algebra.Operator;
 import groove.algebra.syntax.Expression;
 import groove.algebra.syntax.Variable;
 import groove.automaton.RegExpr;
@@ -407,9 +408,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     private Rule computeRule(LevelTree levelTree) throws FormatException {
         Rule result;
         FormatErrorSet errors = createErrors();
-        if (TO_RULE_DEBUG) {
-            System.out.println("");
-        }
         // store the derived subrules in order
         TreeMap<Index,Condition> conditionTree = new TreeMap<>();
         // construct the rule tree and add parent rules
@@ -487,9 +485,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         if (result != null) {
             result.setFixed();
         }
-        if (TO_RULE_DEBUG) {
-            System.out.println("Constructed rule: " + result);
-        }
         return result;
     }
 
@@ -525,8 +520,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     private Set<TypeLabel> labelSet;
     /** Mapping from level indices to conditions on those levels. */
     private LevelTree levelTree;
-    /** Debug flag for creating rules. */
-    static private final boolean TO_RULE_DEBUG = false;
     /** Debug flag for the attribute syntax normalisation. */
     static private final boolean NORMALISE_DEBUG = false;
 
@@ -1021,7 +1014,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             for (Level1 level1 : level1Map.values()) {
                 try {
                     Index index = level1.getIndex();
-                    Level2 level2 = new Level2(level1, modelMap);
+                    Level2 parent = index.isTopLevel() ? null : result.get(index.parent);
+                    Level2 level2 = new Level2(level1, parent, modelMap);
                     result.put(index, level2);
                 } catch (FormatException e) {
                     errors.addAll(e.getErrors());
@@ -1165,7 +1159,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 // add end nodes to this and all parent levels, if
                 // they are not yet there
                 addNodeToParents(modelEdge.source());
-                addNodeToParents(modelEdge.target());
+                if (!isSetOperator(modelEdge)) {
+                    addNodeToParents(modelEdge.target());
+                }
                 // add variables
                 addToVars(modelEdge);
             }
@@ -1193,7 +1189,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
         /** Initialises the match count for this (universal) level. */
         public void setMatchCount(AspectNode matchCount) {
-            this.matchCountNode = matchCount;
+            this.countNode = matchCount;
         }
 
         /**
@@ -1208,6 +1204,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 assert ascendingLevel.modelNodes != null : String
                     .format("Nodes on level %s not yet initialised", ascendingLevel.getIndex());
             }
+        }
+
+        private boolean isSetOperator(AspectEdge edge) {
+            Operator op = edge.getOperator();
+            return op != null && op.isSetOperator();
         }
 
         /**
@@ -1310,7 +1311,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         /** Set of label variables used on this level. */
         final Map<LabelVar,Set<AspectEdge>> modelVars = new HashMap<>();
         /** The model node registering the match count. */
-        AspectNode matchCountNode;
+        AspectNode countNode;
     }
 
     /**
@@ -1321,10 +1322,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         /**
          * Creates a new level, with a given index and parent level.
          * @param origin the level 1 object from which this level 2 object is created
+         * @param parent the parent's level 2 object, if this is not a top level
          */
-        public Level2(Level1 origin, RuleModelMap modelMap) throws FormatException {
+        public Level2(Level1 origin, Level2 parent, RuleModelMap modelMap) throws FormatException {
             this.factory = modelMap.getFactory();
             Index index = this.index = origin.index;
+            this.parent = parent;
             this.modelMap = modelMap;
             this.isRule = index.isTopLevel();
             // initialise the rule data structures
@@ -1333,8 +1336,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             this.rhs = createGraph(getQualName() + "-" + index + "-rhs");
             FormatErrorSet errors = createErrors();
             try {
-                if (origin.matchCountNode != null) {
-                    this.matchCountImage = (VariableNode) getNodeImage(origin.matchCountNode);
+                if (origin.countNode != null) {
+                    this.countNode = (VariableNode) getNodeImage(origin.countNode);
+                    this.outputNodes.add(this.countNode);
                 }
             } catch (FormatException exc) {
                 errors.addAll(exc.getErrors());
@@ -1492,31 +1496,58 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             List<VariableNode> arguments = new ArrayList<>();
             for (AspectNode argModelNode : productNode.getArgNodes()) {
                 VariableNode argument = (VariableNode) getNodeImage(argModelNode);
-                if (!(this.lhs.nodeSet()
-                    .contains(argument) || embargo && this.nacNodeSet.contains(argument))) {
+                boolean argOnThisLevel = this.lhs.nodeSet()
+                    .contains(argument);
+                if (!(argOnThisLevel || embargo && this.nacNodeSet.contains(argument))) {
                     throw new FormatException(
-                        "Argument must exist on the level of the product node", argModelNode,
+                        "Argument '%s' must exist on the level of the product node", argModelNode,
                         productNode);
                 }
                 arguments.add(argument);
             }
-            VariableNode target = (VariableNode) getNodeImage(operatorEdge.target());
-            if (!(this.lhs.nodeSet()
+            AspectNode targetModelNode = operatorEdge.target();
+            VariableNode target = (VariableNode) getNodeImage(targetModelNode);
+            Operator operator = operatorEdge.getOperator();
+            boolean setOperator = operator.isSetOperator();
+            if (!(setOperator || this.lhs.nodeSet()
                 .contains(target) || embargo && this.nacNodeSet.contains(target))) {
                 throw new FormatException(
-                    "Operation target must exist on the level of the operator edge", operatorEdge);
+                    "Target of operator '%s' must exist on the level of the operator edge",
+                    operator.getName(), operatorEdge);
+            }
+            // make sure that set operator targets appear on the parent level already
+            if (setOperator) {
+                if (!(this.parent != null && this.parent.lhs.nodeSet()
+                    .contains(target))) {
+                    throw new FormatException(
+                        "Target of set operator '%s' must be defined on the parent level",
+                        operator.getName(), operatorEdge);
+                }
+                if (!getIndex().isUniversal()) {
+                    throw new FormatException(
+                        "Argument of set operator '%s' must be universally quantified",
+                        operator.getName(), operatorEdge);
+                }
+                if (!operator.isSupportsZero() && !getIndex().isPositive()) {
+                    throw new FormatException(
+                        "Argument of set operator '%s' needs a non-vacuous quantification",
+                        operator.getName(), operatorEdge);
+                }
+                // a set operator argument is an output node of the condition
+                this.outputNodes.add(arguments.get(0));
             }
             RuleNode opNode = this.factory.createOperatorNode(productNode.getNumber(),
-                operatorEdge.getOperator(),
+                operator,
                 arguments,
                 target);
+            Level2 level = setOperator ? this.parent : this;
             if (operatorEdge.getKind()
                 .inNAC()) {
-                this.nacNodeSet.add(opNode);
+                level.nacNodeSet.add(opNode);
             } else {
-                this.lhs.addNode(opNode);
-                this.mid.addNode(opNode);
-                this.rhs.addNode(opNode);
+                level.lhs.addNode(opNode);
+                level.mid.addNode(opNode);
+                level.rhs.addNode(opNode);
             }
         }
 
@@ -1927,10 +1958,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         private final RuleModelMap modelMap;
         /** Index of this level. */
         private final Index index;
+        /** Parent level. */
+        private final Level2 parent;
         /** Map of all connect edges on this level. */
         private final Map<AspectEdge,Set<RuleNode>> connectMap = new HashMap<>();
         /** The rule node registering the match count. */
-        private VariableNode matchCountImage;
+        private VariableNode countNode;
+        /** Condition output nodes. */
+        private final Set<VariableNode> outputNodes = new HashSet<>();
         /** Map from rule nodes to declared colours. */
         private final Map<RuleNode,Color> colorMap = new HashMap<>();
         /** Flag indicating that modifiers have been found at this level. */
@@ -1963,7 +1998,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             this.parent = parent;
             this.factory = globalTypeMap.getFactory();
             this.index = origin.index;
-            this.matchCountImage = origin.matchCountImage;
+            this.countNode = origin.countNode;
+            this.outputNodes = origin.outputNodes;
             this.globalTypeMap = globalTypeMap;
             RuleGraphMorphism parentTypeMap =
                 parent == null ? new RuleGraphMorphism(this.factory) : parent.typeMap;
@@ -2288,8 +2324,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         private final RuleFactory factory;
         /** Index of this level. */
         private final Index index;
+        /** Output nodes of the condition. */
+        private final Set<VariableNode> outputNodes;
         /** The rule node registering the match count. */
-        private final VariableNode matchCountImage;
+        private final VariableNode countNode;
         /** The global, rule-wide mapping from untyped to typed rule elements. */
         private final RuleGraphMorphism globalTypeMap;
         /** Combined type map for this level. */
@@ -2327,7 +2365,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             this.lhs = origin.lhs;
             this.nacs = origin.nacs;
             this.rhs = origin.rhs;
-            this.matchCountImage = origin.matchCountImage;
+            this.countNode = origin.countNode;
+            this.outputNodes = origin.outputNodes;
             this.colorMap = origin.colorMap;
         }
 
@@ -2497,9 +2536,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             if (this.index.isPositive()) {
                 result.setPositive();
             }
-            if (this.matchCountImage != null) {
-                result.setCountNode(this.matchCountImage);
+            if (this.countNode != null) {
+                result.setCountNode(this.countNode);
             }
+            result.addOutputNodes(this.outputNodes);
             return result;
         }
 
@@ -2517,8 +2557,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         private final Index index;
         /** Index of this level. */
         private final Level4 parent;
+        /** Output nodes of the condition. */
+        private final Set<VariableNode> outputNodes;
         /** The rule node registering the match count. */
-        private final VariableNode matchCountImage;
+        private final VariableNode countNode;
         /** Map from rule nodes to declared colours. */
         private final Map<RuleNode,Color> colorMap;
         /** Flag indicating that modifiers have been found at this level. */

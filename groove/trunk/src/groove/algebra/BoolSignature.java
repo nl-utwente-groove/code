@@ -21,6 +21,8 @@ import static groove.util.parse.OpKind.EQUAL;
 import static groove.util.parse.OpKind.NOT;
 import static groove.util.parse.OpKind.OR;
 
+import java.util.List;
+
 import groove.annotation.InfixSymbol;
 import groove.annotation.PrefixSymbol;
 import groove.annotation.Syntax;
@@ -47,6 +49,18 @@ public abstract class BoolSignature<Bool> implements Signature {
     @ToolTipBody("Yields TRUE if booleans %s and %s are both TRUE")
     @InfixSymbol(symbol = "&", kind = AND)
     public abstract Bool and(Bool arg0, Bool arg1);
+
+    /** Conjunction of a set of booleans. */
+    @Syntax("Q%s.LPAR.i1.RPAR")
+    @ToolTipHeader("Collective boolean conjunction")
+    @ToolTipBody("Returns the conjunction of all quantified values")
+    public abstract Bool bigand(List<Bool> arg);
+
+    /** Disjunction of a set of booleans. */
+    @Syntax("Q%s.LPAR.i1.RPAR")
+    @ToolTipHeader("Collective boolean disjunction")
+    @ToolTipBody("Returns the disjunction of all quantified values")
+    public abstract Bool bigor(List<Bool> arg);
 
     /** Disjunction. */
     @ToolTipHeader("Disjunction")
@@ -84,6 +98,10 @@ public abstract class BoolSignature<Bool> implements Signature {
     public enum Op implements Signature.OpValue {
         /** Value for {@link #and(Object,Object)}. */
         AND,
+        /** Value for {@link #bigand(List)}. */
+        BIGAND,
+        /** Value for {@link #bigor(List)}. */
+        BIGOR,
         /** Value for {@link #or(Object, Object)}. */
         OR,
         /** Value for {@link #not(Object)}. */

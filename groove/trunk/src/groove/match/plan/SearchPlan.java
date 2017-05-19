@@ -1,37 +1,39 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2010 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.match.plan;
 
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import groove.grammar.Condition;
 import groove.grammar.rule.Anchor;
 import groove.grammar.rule.LabelVar;
 import groove.grammar.rule.RuleNode;
 
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 /** List of search items with backwards dependencies. */
 public class SearchPlan extends ArrayList<AbstractSearchItem> {
-    /** 
-     * Constructs a search plan with given injectivity. 
+    /**
+     * Constructs a search plan with given injectivity.
      * @param seed subgraph whose image is pre-matched before invoking the search plan
      * @param injective flag indicating that the match should be injective
      */
@@ -66,8 +68,7 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
             // set a dependency if the item at position i binds a required node or variable
             // NOTE: the use of the non-short-circuit logic operator '|' is
             // intentional!
-            if (usedNodes.removeAll(get(i).bindsNodes())
-                | usedVars.removeAll(get(i).bindsVars())) {
+            if (usedNodes.removeAll(get(i).bindsNodes()) | usedVars.removeAll(get(i).bindsVars())) {
                 depend = i;
             }
         }
@@ -89,12 +90,13 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
                 }
             }
         }
-        assert areDisjoint(usedNodes, e.needsNodes()) : String.format(
-            "Required node(s) %s not all bound in search plan %s",
-            e.needsNodes(), this);
+        e.bindsNodes()
+            .stream()
+            .forEach(n -> this.nodeBinding.put(n, e));
+        assert areDisjoint(usedNodes, e.needsNodes()) : String
+            .format("Required node(s) %s not all bound in search plan %s", e.needsNodes(), this);
         assert areDisjoint(usedVars, e.needsVars()) : String.format(
-            "Required label variable(s) %s not all bound in search plan %s",
-            e.needsVars(), this);
+            "Required label variable(s) %s not all bound in search plan %s", e.needsVars(), this);
         this.dependencies.add(depend);
         // transitively close the indirect dependencies
         return result;
@@ -127,7 +129,7 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
     }
 
     /**
-     * Returns the index of the last predecessor on the result of which this one 
+     * Returns the index of the last predecessor on the result of which this one
      * depends for its matching, or {@code -1} if there is no such dependency.
      */
     public int getDependency(int i) {
@@ -147,4 +149,12 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
     private final List<Integer> dependencies = new ArrayList<>();
     /** Flag indicating that the search should be injective on non-attribute nodes. */
     private final boolean injective;
+
+    /** Returns the last search item binding a given rule node. */
+    public SearchItem getBinder(RuleNode node) {
+        return this.nodeBinding.get(node);
+    }
+
+    /** Map from nodes to the (last) search item binding the nodes. */
+    private final Map<RuleNode,SearchItem> nodeBinding = new HashMap<>();
 }

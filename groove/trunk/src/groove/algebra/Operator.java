@@ -2,6 +2,7 @@ package groove.algebra;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
@@ -37,29 +38,42 @@ public class Operator {
         this.sort = sort;
         this.opValue = opValue;
         this.arity = methodParameterTypes.length;
+        this.setOperator = this.arity == 1 && methodParameterTypes[0] instanceof ParameterizedType;
+        this.supportsZero = opValue.isSupportsZero();
         this.name = method.getName();
         this.parameterTypes = new ArrayList<>();
         for (int i = 0; i < this.arity; i++) {
-            if (!(methodParameterTypes[i] instanceof TypeVariable<?>)) {
-                throw new IllegalArgumentException(String.format(
-                    "Method '%s' should only have generic parameter types", method.getName()));
+            Type type = methodParameterTypes[i];
+            if (this.setOperator) {
+                if (((ParameterizedType) type).getRawType() != List.class) {
+                    throw new IllegalArgumentException(
+                        "Method '%s' does not represent collection operator");
+                }
+                type = ((ParameterizedType) type).getActualTypeArguments()[0];
             }
-            String typeName = ((TypeVariable<?>) methodParameterTypes[i]).getName();
-            this.parameterTypes.add(Sort.getKind(typeName.toLowerCase()));
+            this.parameterTypes.add(toSort(type));
         }
-        Type returnType = method.getGenericReturnType();
-        if (!(returnType instanceof TypeVariable<?>)) {
-            throw new IllegalArgumentException(
-                String.format("Method '%s' should have generic return type", method.getName()));
-        }
-        String typeName = ((TypeVariable<?>) returnType).getName();
-        this.returnType = Sort.getKind(typeName.toLowerCase());
+        this.returnType = toSort(method.getGenericReturnType());
         InfixSymbol infix = method.getAnnotation(InfixSymbol.class);
         PrefixSymbol prefix = method.getAnnotation(PrefixSymbol.class);
         this.symbol = infix == null ? (prefix == null ? null : prefix.symbol()) : infix.symbol();
         this.kind = infix == null ? (prefix == null ? OpKind.ATOM : prefix.kind()) : infix.kind();
         this.description = method.getAnnotation(ToolTipHeader.class)
             .value();
+    }
+
+    /** Converts a reflected type into a GROOVE sort. */
+    private Sort toSort(Type type) throws IllegalArgumentException {
+        if (!(type instanceof TypeVariable)) {
+            throw new IllegalArgumentException(String.format("Type '%s' should be generic", type));
+        }
+        String typeName = ((TypeVariable<?>) type).getName();
+        Sort result = Sort.getKind(typeName.toLowerCase());
+        if (result == null) {
+            throw new IllegalArgumentException(
+                String.format("Type '%s' is not an existing sort", typeName));
+        }
+        return result;
     }
 
     /** Returns the sort to which this operator belongs. */
@@ -83,7 +97,23 @@ public class Operator {
 
     private final String name;
 
-    /** Returns the number of parameters of this operator. */
+    /** Indicates if this is a collection-based operator. */
+    public boolean isSetOperator() {
+        return this.setOperator;
+    }
+
+    private final boolean setOperator;
+
+    /** Indicates if this collection operator supports zero arguments. */
+    public boolean isSupportsZero() {
+        return this.supportsZero;
+    }
+
+    private final boolean supportsZero;
+
+    /** Returns the number of parameters of this operator.
+     * For a collection-based operator, the arity is 1.
+     */
     public int getArity() {
         return this.arity;
     }
@@ -91,8 +121,7 @@ public class Operator {
     private final int arity;
 
     /**
-     * Returns the parameter type names of this operator.
-     * The type names are actually the names of the defining signatures.
+     * Returns the parameter types of this operator.
      */
     public List<Sort> getParamTypes() {
         return this.parameterTypes;
@@ -101,8 +130,7 @@ public class Operator {
     private final List<Sort> parameterTypes;
 
     /**
-     * Returns the result type name of this operator.
-     * The type name is actually the name of the defining signature.
+     * Returns the result type of this operator.
      */
     public Sort getResultType() {
         return this.returnType;

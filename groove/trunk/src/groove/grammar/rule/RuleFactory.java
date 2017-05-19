@@ -79,9 +79,9 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
     }
 
     /** Creates an operator node for a given node number and arity. */
-    public RuleNode createOperatorNode(int nr, Operator operator, List<VariableNode> arguments,
+    public OperatorNode createOperatorNode(int nr, Operator operator, List<VariableNode> arguments,
         VariableNode target) {
-        RuleNode result = new OperatorNode(nr, operator, arguments, target);
+        OperatorNode result = new OperatorNode(nr, operator, arguments, target);
         registerNode(result);
         return result;
     }

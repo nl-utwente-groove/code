@@ -16,10 +16,11 @@
  */
 package groove.algebra;
 
-import groove.algebra.syntax.Expression;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.List;
+
+import groove.algebra.syntax.Expression;
 
 /**
  * Integer algebra based on the java type {@link Integer}.
@@ -43,6 +44,20 @@ public class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolean,Stri
     }
 
     @Override
+    public BigInteger bigmax(List<BigInteger> arg) {
+        return arg.stream()
+            .max(BigInteger::compareTo)
+            .get();
+    }
+
+    @Override
+    public BigInteger bigmin(List<BigInteger> arg) {
+        return arg.stream()
+            .min(BigInteger::compareTo)
+            .get();
+    }
+
+    @Override
     public BigInteger div(BigInteger arg0, BigInteger arg1) {
         return arg0.divide(arg1);
     }
@@ -59,22 +74,26 @@ public class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolean,Stri
 
     @Override
     public Boolean ge(BigInteger arg0, BigInteger arg1) {
-        return arg0.subtract(arg1).signum() >= 0;
+        return arg0.subtract(arg1)
+            .signum() >= 0;
     }
 
     @Override
     public Boolean gt(BigInteger arg0, BigInteger arg1) {
-        return arg0.subtract(arg1).signum() > 0;
+        return arg0.subtract(arg1)
+            .signum() > 0;
     }
 
     @Override
     public Boolean le(BigInteger arg0, BigInteger arg1) {
-        return arg0.subtract(arg1).signum() <= 0;
+        return arg0.subtract(arg1)
+            .signum() <= 0;
     }
 
     @Override
     public Boolean lt(BigInteger arg0, BigInteger arg1) {
-        return arg0.subtract(arg1).signum() < 0;
+        return arg0.subtract(arg1)
+            .signum() < 0;
     }
 
     @Override
@@ -103,8 +122,20 @@ public class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolean,Stri
     }
 
     @Override
+    public BigInteger prod(List<BigInteger> arg) {
+        return arg.stream()
+            .reduce(BigInteger.ONE, (i, j) -> i.multiply(j));
+    }
+
+    @Override
     public BigInteger sub(BigInteger arg0, BigInteger arg1) {
         return arg0.subtract(arg1);
+    }
+
+    @Override
+    public BigInteger sum(List<BigInteger> arg) {
+        return arg.stream()
+            .reduce(BigInteger.ZERO, (i, j) -> i.add(j));
     }
 
     @Override

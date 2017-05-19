@@ -16,6 +16,8 @@
  */
 package groove.algebra;
 
+import java.util.List;
+
 import groove.algebra.syntax.Expression;
 
 /**
@@ -24,8 +26,8 @@ import groove.algebra.syntax.Expression;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class PointRealAlgebra extends RealAlgebra<Integer,Double,Boolean,String> implements
-    PointAlgebra<Double> {
+public class PointRealAlgebra extends RealAlgebra<Integer,Double,Boolean,String>
+    implements PointAlgebra<Double> {
     /** Private constructor for the singleton instance. */
     private PointRealAlgebra() {
         // empty
@@ -87,6 +89,16 @@ public class PointRealAlgebra extends RealAlgebra<Integer,Double,Boolean,String>
     }
 
     @Override
+    public Double bigmax(List<Double> arg) {
+        return singleReal;
+    }
+
+    @Override
+    public Double bigmin(List<Double> arg) {
+        return singleReal;
+    }
+
+    @Override
     public Double div(Double arg0, Double arg1) {
         return singleReal;
     }
@@ -142,7 +154,17 @@ public class PointRealAlgebra extends RealAlgebra<Integer,Double,Boolean,String>
     }
 
     @Override
+    public Double prod(List<Double> arg) {
+        return singleReal;
+    }
+
+    @Override
     public Double sub(Double arg0, Double arg1) {
+        return singleReal;
+    }
+
+    @Override
+    public Double sum(List<Double> arg) {
         return singleReal;
     }
 
