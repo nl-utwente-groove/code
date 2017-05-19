@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph role="rule" edgeids="false" edgemode="directed" id="ERR-nonZeroSetOperator">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n0">
+            <attr name="layout">
+                <string>144 191 33 33</string>
+            </attr>
+        </node>
+        <node id="n1">
+            <attr name="layout">
+                <string>243 199 12 24</string>
+            </attr>
+        </node>
+        <node id="n2">
+            <attr name="layout">
+                <string>234 296 22 24</string>
+            </attr>
+        </node>
+        <node id="n3">
+            <attr name="layout">
+                <string>135 297 19 19</string>
+            </attr>
+        </node>
+        <node id="n4">
+            <attr name="layout">
+                <string>130 383 22 24</string>
+            </attr>
+        </node>
+        <node id="n5">
+            <attr name="layout">
+                <string>215 385 22 24</string>
+            </attr>
+        </node>
+        <node id="n6">
+            <attr name="layout">
+                <string>62 19 30 24</string>
+            </attr>
+        </node>
+        <node id="n7">
+            <attr name="layout">
+                <string>160 23 30 24</string>
+            </attr>
+        </node>
+        <node id="n8">
+            <attr name="layout">
+                <string>232 90 30 24</string>
+            </attr>
+        </node>
+        <node id="n9">
+            <attr name="layout">
+                <string>126 106 19 19</string>
+            </attr>
+        </node>
+        <edge from="n0" to="n0">
+            <attr name="label">
+                <string>forall:</string>
+            </attr>
+        </edge>
+        <edge from="n1" to="n1">
+            <attr name="label">
+                <string>type:A</string>
+            </attr>
+        </edge>
+        <edge from="n1" to="n0">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge from="n1" to="n2">
+            <attr name="label">
+                <string>x</string>
+            </attr>
+        </edge>
+        <edge from="n1" to="n8">
+            <attr name="label">
+                <string>y</string>
+            </attr>
+        </edge>
+        <edge from="n2" to="n2">
+            <attr name="label">
+                <string>int:</string>
+            </attr>
+        </edge>
+        <edge from="n2" to="n0">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge from="n3" to="n3">
+            <attr name="label">
+                <string>prod:</string>
+            </attr>
+        </edge>
+        <edge from="n3" to="n2">
+            <attr name="label">
+                <string>arg:0</string>
+            </attr>
+        </edge>
+        <edge from="n3" to="n0">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge from="n3" to="n4">
+            <attr name="label">
+                <string>int:bigmin</string>
+            </attr>
+        </edge>
+        <edge from="n3" to="n5">
+            <attr name="label">
+                <string>int:bigmax</string>
+            </attr>
+        </edge>
+        <edge from="n4" to="n4">
+            <attr name="label">
+                <string>int:</string>
+            </attr>
+        </edge>
+        <edge from="n5" to="n5">
+            <attr name="label">
+                <string>int:</string>
+            </attr>
+        </edge>
+        <edge from="n6" to="n6">
+            <attr name="label">
+                <string>real:</string>
+            </attr>
+        </edge>
+        <edge from="n7" to="n7">
+            <attr name="label">
+                <string>real:</string>
+            </attr>
+        </edge>
+        <edge from="n8" to="n8">
+            <attr name="label">
+                <string>real:</string>
+            </attr>
+        </edge>
+        <edge from="n8" to="n0">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge from="n9" to="n9">
+            <attr name="label">
+                <string>prod:</string>
+            </attr>
+        </edge>
+        <edge from="n9" to="n6">
+            <attr name="label">
+                <string>real:bigmin</string>
+            </attr>
+        </edge>
+        <edge from="n9" to="n0">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge from="n9" to="n8">
+            <attr name="label">
+                <string>arg:0</string>
+            </attr>
+        </edge>
+        <edge from="n9" to="n7">
+            <attr name="label">
+                <string>real:bigmax</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>
