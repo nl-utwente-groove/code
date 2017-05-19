@@ -22,6 +22,8 @@ import static groove.util.parse.OpKind.EQUAL;
 import static groove.util.parse.OpKind.MULT;
 import static groove.util.parse.OpKind.UNARY;
 
+import java.util.List;
+
 import groove.annotation.InfixSymbol;
 import groove.annotation.PrefixSymbol;
 import groove.annotation.Syntax;
@@ -51,6 +53,18 @@ public abstract class IntSignature<INT,REAL,BOOL,STRING> implements Signature {
     @ToolTipBody("Returns the sum of %s and %s")
     @InfixSymbol(symbol = "+", kind = ADD)
     public abstract INT add(INT arg0, INT arg1);
+
+    /** Maximum of a nonempty set of integers. */
+    @Syntax("Q%s.LPAR.i1.RPAR")
+    @ToolTipHeader("Collective integer maximum")
+    @ToolTipBody("Returns the maximum of all quantified values")
+    public abstract INT bigmax(List<INT> arg);
+
+    /** Minimum of a nonempty set of integers. */
+    @Syntax("Q%s.LPAR.i1.RPAR")
+    @ToolTipHeader("Collective integer minimum")
+    @ToolTipBody("Returns the minimum of all quantified values")
+    public abstract INT bigmin(List<INT> arg);
 
     /** Division of two integers. */
     @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
@@ -134,12 +148,24 @@ public abstract class IntSignature<INT,REAL,BOOL,STRING> implements Signature {
     @PrefixSymbol(symbol = "-", kind = UNARY)
     public abstract INT neg(INT arg);
 
+    /** Product of a set of values. */
+    @Syntax("Q%s.LPAR.i1.RPAR")
+    @ToolTipHeader("Integer product")
+    @ToolTipBody("Returns the product of all quantified values")
+    public abstract INT prod(List<INT> arg);
+
     /** Subtraction of two integers. */
     @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
     @ToolTipHeader("Integer subtraction")
     @ToolTipBody("Returns the difference between %s and %s")
     @InfixSymbol(symbol = "-", kind = ADD)
     public abstract INT sub(INT arg0, INT arg1);
+
+    /** Summation over a set of values. */
+    @Syntax("Q%s.LPAR.i1.RPAR")
+    @ToolTipHeader("Integer summation")
+    @ToolTipBody("Returns the sum of all quantified values")
+    public abstract INT sum(List<INT> arg);
 
     /** String representation. */
     @ToolTipHeader("Integer-to-string conversion")
@@ -168,6 +194,10 @@ public abstract class IntSignature<INT,REAL,BOOL,STRING> implements Signature {
         ABS,
         /** Value for {@link #add(Object, Object)}. */
         ADD,
+        /** Value for {@link #bigmax(List)}. */
+        BIGMAX,
+        /** Value for {@link #bigmin(List)}. */
+        BIGMIN,
         /** Value for {@link #div(Object, Object)}. */
         DIV,
         /** Value for {@link #eq(Object, Object)}. */
@@ -192,12 +222,30 @@ public abstract class IntSignature<INT,REAL,BOOL,STRING> implements Signature {
         NEQ,
         /** Value for {@link #neq(Object, Object)}. */
         NEG,
+        /** Value for {@link #prod(List)}. */
+        PROD(true),
         /** Value for {@link #sub(Object, Object)}. */
         SUB,
+        /** Value for {@link #sum(List)}. */
+        SUM(true),
         /** Value for {@link #toReal(Object)}. */
         TO_REAL,
         /** Value for {@link #toString(Object)}. */
         TO_STRING,;
+
+        /**
+         * Constructs an operator that does not support zero arguments.
+         */
+        private Op() {
+            this(false);
+        }
+
+        /**
+         * Constructs an operator that may or may not support zero arguments.
+         */
+        private Op(boolean supportsZero) {
+            this.supportsZero = supportsZero;
+        }
 
         @Override
         public Operator getOperator() {
@@ -209,5 +257,12 @@ public abstract class IntSignature<INT,REAL,BOOL,STRING> implements Signature {
 
         /** Corresponding operator object. */
         private Operator operator;
+
+        @Override
+        public boolean isSupportsZero() {
+            return this.supportsZero;
+        }
+
+        private final boolean supportsZero;
     }
 }

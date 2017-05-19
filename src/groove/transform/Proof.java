@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import groove.grammar.Condition;
-import groove.grammar.Condition.Op;
 import groove.grammar.Rule;
 import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostNodeSet;
@@ -47,8 +46,8 @@ public class Proof {
         this.patternMap = patternMap;
         assert condition.getOp()
             .hasPattern()
-            || (condition.getOp()
-                .isConjunctive() || condition.getOp() == Op.TRUE) && patternMap == null;
+            || condition.getOp()
+                .isConjunctive() && patternMap == null;
     }
 
     /**

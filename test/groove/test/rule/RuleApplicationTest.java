@@ -130,6 +130,12 @@ public class RuleApplicationTest {
         test("oracle-reader");
     }
 
+    /** Collection of regression tests. */
+    @Test
+    public void testSums() {
+        test("sums");
+    }
+
     /** Tests all rules in a named grammar (to be loaded from {@link #INPUT_DIR}). */
     private void test(String grammarName) {
         try {

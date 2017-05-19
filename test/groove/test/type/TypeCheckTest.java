@@ -79,6 +79,12 @@ public class TypeCheckTest {
         test("nodeids");
     }
 
+    /** Tests node identity constraints. */
+    @Test
+    public void testQuantification() {
+        test("quantification");
+    }
+
     /** Tests all rules in a named grammar (to be loaded from {@link #INPUT_DIR}). */
     private void test(String grammarName) {
         try {

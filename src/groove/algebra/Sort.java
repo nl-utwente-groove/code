@@ -220,7 +220,9 @@ public enum Sort {
      */
     public abstract boolean denotesConstant(String symbol);
 
-    /** Returns the sort for a given signature name. */
+    /** Returns the sort for a given sort name.
+     * @return the sort for {@code name}, or {@code null} if {@code name} is not a sort name
+     */
     public static Sort getKind(String sigName) {
         return sigNameMap.get(sigName);
     }

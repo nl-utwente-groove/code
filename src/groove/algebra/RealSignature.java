@@ -22,6 +22,8 @@ import static groove.util.parse.OpKind.EQUAL;
 import static groove.util.parse.OpKind.MULT;
 import static groove.util.parse.OpKind.UNARY;
 
+import java.util.List;
+
 import groove.annotation.InfixSymbol;
 import groove.annotation.PrefixSymbol;
 import groove.annotation.Syntax;
@@ -50,6 +52,18 @@ public abstract class RealSignature<INT,REAL,BOOL,STRING> implements Signature {
     @ToolTipBody("Returns the sum of %s and %s")
     @InfixSymbol(symbol = "+", kind = ADD)
     public abstract REAL add(REAL arg0, REAL arg1);
+
+    /** Maximum of a nonempty set of reals. */
+    @Syntax("Q%s.LPAR.i1.RPAR")
+    @ToolTipHeader("Collective real maximum")
+    @ToolTipBody("Returns the maximum of all quantified values")
+    public abstract REAL bigmax(List<REAL> arg);
+
+    /** Minimum of a nonempty set of reals. */
+    @Syntax("Q%s.LPAR.i1.RPAR")
+    @ToolTipHeader("Collective real minimum")
+    @ToolTipBody("Returns the minimum of all quantified values")
+    public abstract REAL bigmin(List<REAL> arg);
 
     /** Subtraction of two real numbers. */
     @Syntax("Q%s.LPAR.r1.COMMA.r2.RPAR")
@@ -83,6 +97,18 @@ public abstract class RealSignature<INT,REAL,BOOL,STRING> implements Signature {
     @ToolTipHeader("Real number maximum")
     @ToolTipBody("Returns the maximum of %s and %s")
     public abstract REAL max(REAL arg0, REAL arg1);
+
+    /** Product of a set of values. */
+    @Syntax("Q%s.LPAR.i1.RPAR")
+    @ToolTipHeader("Real product")
+    @ToolTipBody("Returns the product of all quantified values")
+    public abstract REAL prod(List<REAL> arg);
+
+    /** Summation over a set of values. */
+    @Syntax("Q%s.LPAR.i1.RPAR")
+    @ToolTipHeader("Real summation")
+    @ToolTipBody("Returns the sum of all quantified values")
+    public abstract REAL sum(List<REAL> arg);
 
     /** Lesser-than comparison. */
     @ToolTipHeader("Real number lesser-than test")
@@ -160,6 +186,10 @@ public abstract class RealSignature<INT,REAL,BOOL,STRING> implements Signature {
         ABS,
         /** Value for {@link #add(Object, Object)}. */
         ADD,
+        /** Value for {@link #bigmax(List)}. */
+        BIGMAX,
+        /** Value for {@link #bigmin(List)}. */
+        BIGMIN,
         /** Value for {@link #div(Object, Object)}. */
         DIV,
         /** Value for {@link #eq(Object, Object)}. */
@@ -182,12 +212,30 @@ public abstract class RealSignature<INT,REAL,BOOL,STRING> implements Signature {
         NEQ,
         /** Value for {@link #neq(Object, Object)}. */
         NEG,
+        /** Value for {@link #prod(List)}. */
+        PROD(true),
         /** Value for {@link #sub(Object, Object)}. */
         SUB,
+        /** Value for {@link #sum(List)}. */
+        SUM(true),
         /** Value for {@link #toInt(Object)}. */
         TO_INT,
         /** Value for {@link #toString(Object)}. */
         TO_STRING,;
+
+        /**
+         * Constructs an operator that does not support zero arguments.
+         */
+        private Op() {
+            this(false);
+        }
+
+        /**
+         * Constructs an operator that may or may not support zero arguments.
+         */
+        private Op(boolean supportsZero) {
+            this.supportsZero = supportsZero;
+        }
 
         @Override
         public Operator getOperator() {
@@ -199,5 +247,12 @@ public abstract class RealSignature<INT,REAL,BOOL,STRING> implements Signature {
 
         /** Corresponding operator object. */
         private Operator operator;
+
+        @Override
+        public boolean isSupportsZero() {
+            return this.supportsZero;
+        }
+
+        private final boolean supportsZero;
     }
 }

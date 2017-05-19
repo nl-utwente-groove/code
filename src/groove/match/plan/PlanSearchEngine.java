@@ -32,6 +32,8 @@ import java.util.Observer;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import groove.algebra.AlgebraFamily;
 import groove.automaton.RegExpr;
 import groove.grammar.Condition;
@@ -80,6 +82,7 @@ public class PlanSearchEngine extends SearchEngine {
             anchorKeys.addAll(condition.getRule()
                 .getAnchor());
         }
+        anchorKeys.addAll(condition.getOutputNodes());
         PlanData planData = new PlanData(condition, this.simple);
         if (seed == null) {
             seed = new Anchor();
@@ -91,12 +94,16 @@ public class PlanSearchEngine extends SearchEngine {
             relevant |= anchorKeys.removeAll(item.bindsVars());
             // universal conditions need to find all matches, so everything is relevant
             relevant |= condition.getOp() == Op.FORALL;
-            // universal conditions may result in a tree match that does
-            // not have any proof; therefore they must be considered relevant
-            // in order not to miss matches
-            relevant |=
-                item instanceof ConditionSearchItem && ((ConditionSearchItem) item).getCondition()
-                    .getOp() == Op.FORALL;
+            if (item instanceof ConditionSearchItem) {
+                Condition sub = ((ConditionSearchItem) item).getCondition();
+                // universal conditions may result in a tree match that does
+                // not have any proof; therefore they must be considered relevant
+                // in order not to miss matches
+                relevant |= sub.getOp() == Op.FORALL;
+                // conditions with output nodes are relevant
+                relevant |= !sub.getOutputNodes()
+                    .isEmpty();
+            }
             item.setRelevant(relevant);
         }
         PlanSearchStrategy result = new PlanSearchStrategy(this, plan);
@@ -162,16 +169,10 @@ public class PlanSearchEngine extends SearchEngine {
             this.condition = condition;
             this.simple = simple;
             this.typeGraph = condition.getTypeGraph();
-            this.remainingNodes = new LinkedHashSet<>();
-            this.remainingEdges = new LinkedHashSet<>();
-            this.remainingVars = new LinkedHashSet<>();
+            this.boundNodes = new LinkedHashSet<>();
+            this.boundEdges = new LinkedHashSet<>();
+            this.boundVars = new LinkedHashSet<>();
             if (condition.hasPattern()) {
-                RuleGraph graph = condition.getPattern();
-                // compute the set of remaining (unmatched) nodes
-                this.remainingNodes.addAll(graph.nodeSet());
-                // compute the set of remaining (unmatched) edges and variables
-                this.remainingEdges.addAll(graph.edgeSet());
-                this.remainingVars.addAll(graph.varSet());
                 this.algebraFamily = condition.getGrammarProperties()
                     .getAlgebraFamily();
             } else {
@@ -197,7 +198,7 @@ public class PlanSearchEngine extends SearchEngine {
          * Creates and returns a search plan on the basis of the given data.
          * @param seed the pre-matched subgraph; non-{@code null}
          */
-        public SearchPlan getPlan(Anchor seed) {
+        public SearchPlan getPlan(@NonNull Anchor seed) {
             testUsed();
             boolean injective = getInjectivity();
             SearchPlan result = new SearchPlan(this.condition, seed, injective);
@@ -205,21 +206,33 @@ public class PlanSearchEngine extends SearchEngine {
             while (!items.isEmpty()) {
                 AbstractSearchItem bestItem = Collections.max(items, this);
                 result.add(bestItem);
-                this.remainingEdges.removeAll(bestItem.bindsEdges());
-                this.remainingNodes.removeAll(bestItem.bindsNodes());
-                this.remainingVars.removeAll(bestItem.bindsVars());
+                this.boundNodes.addAll(bestItem.bindsNodes());
+                this.boundEdges.addAll(bestItem.bindsEdges());
+                this.boundVars.addAll(bestItem.bindsVars());
                 // notify the observing comparators of the change
                 setChanged();
                 notifyObservers(bestItem);
                 items.remove(bestItem);
             }
-            assert this.remainingEdges.isEmpty() : String.format("Unmatched edges %s",
-                this.remainingEdges);
-            assert this.remainingNodes.isEmpty() : String.format("Unmatched nodes %s",
-                this.remainingNodes);
-            assert this.remainingVars.isEmpty() : String.format("Unmatched variables %s",
-                this.remainingVars);
+            assert allMatched(result) : "Unmatched condition elements";
             return result;
+        }
+
+        private boolean allMatched(SearchPlan result) {
+            if (!this.condition.hasPattern()) {
+                return true;
+            }
+            RuleGraph graph = this.condition.getPattern();
+            Set<RuleEdge> remainingEdges = new HashSet<>(graph.edgeSet());
+            remainingEdges.removeAll(this.boundEdges);
+            assert remainingEdges.isEmpty() : "Unmatched edges " + remainingEdges;
+            Set<RuleNode> remainingNodes = new HashSet<>(graph.nodeSet());
+            remainingNodes.removeAll(this.boundNodes);
+            assert remainingNodes.isEmpty() : "Unmatched nodes " + remainingNodes;
+            Set<LabelVar> remainingVars = new HashSet<>(graph.varSet());
+            remainingVars.removeAll(this.boundVars);
+            assert remainingVars.isEmpty() : "Unmatched variables " + remainingVars;
+            return true;
         }
 
         /**
@@ -241,10 +254,10 @@ public class PlanSearchEngine extends SearchEngine {
         }
 
         /**
-         * Adds embargo and injection search items to the super result.
+         * Computes and returns all search items, without taking dependencies into account.
          * @param seed the pre-matched subgraph
          */
-        private Collection<AbstractSearchItem> computeSearchItems(Anchor seed) {
+        private Collection<AbstractSearchItem> computeSearchItems(@NonNull Anchor seed) {
             Collection<AbstractSearchItem> result = new ArrayList<>();
             if (this.condition.hasPattern()) {
                 result.addAll(computePatternSearchItems(seed));
@@ -263,7 +276,10 @@ public class PlanSearchEngine extends SearchEngine {
             return result;
         }
 
-        /** Returned item may be null. */
+        /**
+         * Creates and returns a search item for a single edge embargo NAC.
+         * @return a search item for the subcondition, or <code>null</code> if
+         * the condition is already tested in some other way */
         private AbstractSearchItem createEdgeEmbargoItem(EdgeEmbargo subCondition) {
             AbstractSearchItem item = null;
             RuleEdge embargoEdge = subCondition.getEmbargoEdge();
@@ -272,6 +288,7 @@ public class PlanSearchEngine extends SearchEngine {
                 AbstractSearchItem edgeSearchItem = createEdgeSearchItem(embargoEdge);
                 item = createNegatedSearchItem(edgeSearchItem);
             } else {
+                // if the condition is injective, local injectivity does not need to be tested
                 if (!this.condition.isInjective()) {
                     item = new EqualitySearchItem(embargoEdge, false);
                 }
@@ -283,17 +300,15 @@ public class PlanSearchEngine extends SearchEngine {
          * Adds embargo and injection search items to the super result.
          * @param seed the set of pre-matched nodes
          */
-        Collection<AbstractSearchItem> computePatternSearchItems(Anchor seed) {
+        Collection<AbstractSearchItem> computePatternSearchItems(@NonNull Anchor seed) {
             Collection<AbstractSearchItem> result = new ArrayList<>();
             Map<RuleNode,RuleNode> unmatchedNodes = new LinkedHashMap<>();
-            for (RuleNode node : this.remainingNodes) {
+            RuleGraph graph = this.condition.getPattern();
+            for (RuleNode node : graph.nodeSet()) {
                 unmatchedNodes.put(node, node);
             }
-            Set<RuleEdge> unmatchedEdges = new LinkedHashSet<>(this.remainingEdges);
+            Set<RuleEdge> unmatchedEdges = new LinkedHashSet<>(graph.edgeSet());
             // first a single search item for the pre-matched elements
-            if (seed == null) {
-                seed = new Anchor();
-            }
             Set<RuleNode> constraint = new HashSet<>();
             if (!seed.isEmpty()) {
                 AbstractSearchItem seedItem = new SeedSearchItem(seed);
@@ -371,10 +386,11 @@ public class PlanSearchEngine extends SearchEngine {
         Collection<Comparator<SearchItem>> computeComparators() {
             Collection<Comparator<SearchItem>> result =
                 new TreeSet<>(new ItemComparatorComparator());
-            result.add(new NeededPartsComparator(this.remainingNodes, this.remainingVars));
+            result.add(new NeededPartsComparator(this.boundNodes, this.boundVars));
             result.add(new ItemTypeComparator());
-            result.add(new ConnectedPartsComparator(this.remainingNodes, this.remainingVars));
-            result.add(new IndegreeComparator(this.remainingEdges));
+            result.add(new ConnectedPartsComparator(this.boundNodes, this.boundVars));
+            result.add(new IndegreeComparator(this.condition.getPattern()
+                .edgeSet()));
             GrammarProperties properties = this.condition.getGrammarProperties();
             if (properties != null) {
                 List<String> controlLabels = properties.getControlLabels();
@@ -425,7 +441,7 @@ public class PlanSearchEngine extends SearchEngine {
                     negatedItem = createEdgeSearchItem(negatedEdge);
                 }
                 result = createNegatedSearchItem(negatedItem);
-                this.remainingEdges.remove(edge);
+                this.boundEdges.add(edge);
             } else if (label.getWildcardGuard() != null) {
                 assert !this.typeGraph.isNodeType(edge);
                 result = new VarEdgeSearchItem(edge, this.simple);
@@ -469,17 +485,17 @@ public class PlanSearchEngine extends SearchEngine {
         }
 
         /**
-         * The set of nodes to be matched.
+         * The set of nodes bound by the search items scheduled so far.
          */
-        private final Set<RuleNode> remainingNodes;
+        private final Set<RuleNode> boundNodes;
         /**
-         * The set of edges to be matched.
+         * The set of edges bound by the search items scheduled so far.
          */
-        private final Set<RuleEdge> remainingEdges;
+        private final Set<RuleEdge> boundEdges;
         /**
-         * The set of variables to be matched.
+         * The set of variables bound by the search items scheduled so far.
          */
-        private final Set<LabelVar> remainingVars;
+        private final Set<LabelVar> boundVars;
         /** The label store containing the subtype relation. */
         private final TypeGraph typeGraph;
         /**
@@ -521,10 +537,10 @@ public class PlanSearchEngine extends SearchEngine {
          * Constructs a comparator on the basis of a given set of unmatched
          * edges.
          */
-        IndegreeComparator(Set<? extends RuleEdge> remainingEdges) {
+        IndegreeComparator(Set<? extends RuleEdge> edges) {
             // compute indegrees
             Bag<RuleNode> indegrees = new HashBag<>();
-            for (RuleEdge edge : remainingEdges) {
+            for (RuleEdge edge : edges) {
                 if (!edge.target()
                     .equals(edge.source())) {
                     indegrees.add(edge.target());
@@ -587,9 +603,9 @@ public class PlanSearchEngine extends SearchEngine {
      * @version $Revision$
      */
     static class NeededPartsComparator implements Comparator<SearchItem> {
-        NeededPartsComparator(Set<RuleNode> remainingNodes, Set<LabelVar> remainingVars) {
-            this.remainingNodes = remainingNodes;
-            this.remainingVars = remainingVars;
+        NeededPartsComparator(Set<RuleNode> boundNodes, Set<LabelVar> boundVars) {
+            this.boundNodes = boundNodes;
+            this.boundVars = boundVars;
         }
 
         /**
@@ -606,70 +622,69 @@ public class PlanSearchEngine extends SearchEngine {
          * matched, 1 if all needed parts have been matched.
          */
         private int getNeedCount(SearchItem item) {
-            boolean missing = false;
-            Iterator<RuleNode> neededNodeIter = item.needsNodes()
-                .iterator();
-            while (!missing && neededNodeIter.hasNext()) {
-                missing = this.remainingNodes.contains(neededNodeIter.next());
+            if (item.needsNodes()
+                .stream()
+                .anyMatch(n -> !this.boundNodes.contains(n))) {
+                return 0;
             }
-            Iterator<LabelVar> neededVarIter = item.needsVars()
-                .iterator();
-            while (!missing && neededVarIter.hasNext()) {
-                missing = this.remainingVars.contains(neededVarIter.next());
+            if (item.needsVars()
+                .stream()
+                .anyMatch(v -> !this.boundVars.contains(v))) {
+                return 0;
             }
-            return missing ? 0 : 1;
+            return 1;
         }
 
-        /** The set of (as yet) unscheduled nodes. */
-        private final Set<RuleNode> remainingNodes;
-        /** The set of (as yet) unscheduled variables. */
-        private final Set<LabelVar> remainingVars;
+        /** The set of currently scheduled nodes. */
+        private final Set<RuleNode> boundNodes;
+        /** The set of currently scheduled variables. */
+        private final Set<LabelVar> boundVars;
     }
 
     /**
-     * Search item comparator that gives higher priority to items of which more
-     * parts have been matched.
+     * Search item comparator that gives higher priority to items of which less
+     * parts are as yet unmatched.
      * @author Arend Rensink
      * @version $Revision$
      */
     static class ConnectedPartsComparator implements Comparator<SearchItem> {
-        ConnectedPartsComparator(Set<RuleNode> remainingNodes, Set<LabelVar> remainingVars) {
-            this.remainingNodes = remainingNodes;
-            this.remainingVars = remainingVars;
+        ConnectedPartsComparator(Set<RuleNode> boundNodes, Set<LabelVar> boundVars) {
+            this.boundNodes = boundNodes;
+            this.boundVars = boundVars;
         }
 
         /**
-         * Compares the connect count (higher is better).
+         * Compares the connect count (lower is better).
          */
         @Override
         public int compare(SearchItem o1, SearchItem o2) {
-            return getConnectCount(o1) - getConnectCount(o2);
+            return getConnectCount(o2) - getConnectCount(o1);
         }
 
         /**
-         * Returns the number of nodes and variables bound by the item that have
-         * not yet been matched. More unmatched parts means more
+         * Returns the number of nodes and variables bound by the item that are as yet
+         * unmatched. More unmatched parts means more
          * non-determinism, so the lower the better.
          */
         private int getConnectCount(SearchItem item) {
             int result = 0;
-            for (RuleNode node : item.bindsNodes()) {
-                if (!this.remainingNodes.contains(node)) {
-                    result++;
-                }
-            }
-            for (LabelVar var : item.bindsVars()) {
-                if (!this.remainingVars.contains(var)) {
-                    result++;
-                }
-            }
+            result += item.bindsNodes()
+                .stream()
+                .filter(i -> !this.boundNodes.contains(i))
+                .mapToInt(i -> 1)
+                .sum();
+            result += item.bindsVars()
+                .stream()
+                .filter(i -> !this.boundVars.contains(i))
+                .mapToInt(i -> 1)
+                .sum();
             return result;
         }
 
-        /** The set of (as yet) unscheduled nodes. */
-        private final Set<RuleNode> remainingNodes;
-        /** The set of (as yet) unscheduled variables. */
-        private final Set<LabelVar> remainingVars;
+        /** The set of already bound nodes. */
+        private final Set<RuleNode> boundNodes;
+        /** The set of already bound variables. */
+        private final Set<LabelVar> boundVars;
     }
 
     /**
