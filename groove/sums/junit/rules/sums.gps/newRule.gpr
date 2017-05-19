@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph role="rule" edgeids="false" edgemode="directed" id="intMax">
+    <graph role="rule" edgeids="false" edgemode="directed" id="newRule">
         <attr name="enabled">
             <string>false</string>
         </attr>
@@ -9,47 +9,42 @@
         </attr>
         <node id="n0">
             <attr name="layout">
-                <string>212 132 22 20</string>
+                <string>227 180 10 15</string>
             </attr>
         </node>
         <node id="n1">
             <attr name="layout">
-                <string>323 125 14 30</string>
+                <string>321 177 14 30</string>
             </attr>
         </node>
         <node id="n2">
             <attr name="layout">
-                <string>320 198 17 30</string>
+                <string>307 256 17 30</string>
             </attr>
         </node>
         <node id="n3">
             <attr name="layout">
-                <string>220 202 14 15</string>
-            </attr>
-        </node>
-        <node id="n4">
-            <attr name="layout">
-                <string>219 292 17 30</string>
-            </attr>
-        </node>
-        <node id="n5">
-            <attr name="layout">
-                <string>221 371 14 30</string>
+                <string>203 334 43 45</string>
             </attr>
         </node>
         <edge from="n0" to="n0">
             <attr name="label">
-                <string>forallx:</string>
+                <string>forall:</string>
             </attr>
         </edge>
-        <edge from="n1" to="n2">
+        <edge from="n1" to="n1">
             <attr name="label">
-                <string>x</string>
+                <string>id:a</string>
             </attr>
         </edge>
         <edge from="n1" to="n0">
             <attr name="label">
                 <string>at</string>
+            </attr>
+        </edge>
+        <edge from="n1" to="n2">
+            <attr name="label">
+                <string>x</string>
             </attr>
         </edge>
         <edge from="n1" to="n1">
@@ -69,42 +64,12 @@
         </edge>
         <edge from="n3" to="n3">
             <attr name="label">
-                <string>prod:</string>
+                <string>let:x = int:a.x</string>
             </attr>
         </edge>
-        <edge from="n3" to="n4">
-            <attr name="label">
-                <string>int:bigmax</string>
-            </attr>
-        </edge>
-        <edge from="n3" to="n2">
-            <attr name="label">
-                <string>arg:0</string>
-            </attr>
-        </edge>
-        <edge from="n3" to="n0">
-            <attr name="label">
-                <string>at</string>
-            </attr>
-        </edge>
-        <edge from="n4" to="n4">
-            <attr name="label">
-                <string>par:0</string>
-            </attr>
-        </edge>
-        <edge from="n4" to="n4">
-            <attr name="label">
-                <string>int:</string>
-            </attr>
-        </edge>
-        <edge from="n5" to="n5">
+        <edge from="n3" to="n3">
             <attr name="label">
                 <string>type:B</string>
-            </attr>
-        </edge>
-        <edge from="n5" to="n4">
-            <attr name="label">
-                <string>cnew:x</string>
             </attr>
         </edge>
     </graph>

@@ -1530,6 +1530,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 }
                 // a set operator argument is an output node of the condition
                 this.outputNodes.add(arguments.get(0));
+                // because the outcome of the set operator depends on the matched element
+                // we turn this into a rule
+                //this.isRule = true;
             }
             RuleNode opNode = this.factory.createOperatorNode(productNode.getNumber(),
                 operator,

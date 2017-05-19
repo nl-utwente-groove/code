@@ -63,6 +63,7 @@ import groove.graph.plain.PlainNode;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
 import groove.gui.list.SearchResult;
+import groove.util.Exceptions;
 import groove.util.Keywords;
 import groove.util.parse.FormatError;
 import groove.util.parse.FormatErrorSet;
@@ -346,6 +347,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
      * @return the node holding the value of the expression
      */
     private AspectNode addExpression(AspectNode source, Expression expr) throws FormatException {
+        // check if the expression is consistent in nesting level
+        getLevel(expr);
         switch (expr.getKind()) {
         case CONST:
             return addConstant(expr);
@@ -383,17 +386,17 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     /**
      * Creates the target of a field expression.
      * @param source the node which currently has the field
-     * @param field the field expression
+     * @param expr the field expression
      * @return the target node of the identifier
      */
-    private AspectNode addField(AspectNode source, FieldExpr field) throws FormatException {
+    private AspectNode addField(AspectNode source, FieldExpr expr) throws FormatException {
         if (getRole() != RULE) {
             throw new FormatException("Field expression '%s' only allowed in rules",
-                field.toDisplayString(), source);
+                expr.toDisplayString(), source);
         }
         // look up the field owner
         AspectNode owner;
-        String ownerName = field.getTarget();
+        String ownerName = expr.getTarget();
         if (ownerName == null || ownerName.equals(Keywords.SELF)) {
             owner = source;
         } else {
@@ -404,16 +407,18 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         }
         if (owner.getKind()
             .isQuantifier()
-            && !field.getField()
+            && !expr.getField()
                 .equals(AspectKind.NestedValue.COUNT.toString())) {
-            throw new FormatException("Quantifier node does not have '%s'-edge", field.getField(),
+            throw new FormatException("Quantifier node does not have '%s'-edge", expr.getField(),
                 owner, source);
         }
         // look up the field
-        AspectKind sigKind = AspectKind.toAspectKind(field.getSort());
-        AspectNode result = findTarget(owner, field.getField(), sigKind);
+        AspectKind sigKind = AspectKind.toAspectKind(expr.getSort());
+        AspectNode result = findTarget(owner, expr.getField(), sigKind);
         if (result == null) {
-            result = addNestedNode(owner);
+            AspectNode level = owner.getKind()
+                .isQuantifier() ? owner.getNestingParent() : owner;
+            result = addNestedNode(level);
             result.setAspects(createLabel(sigKind));
         } else {
             if (result.getAttrKind() != sigKind) {
@@ -424,29 +429,24 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             }
         }
         assert sigKind != null;
-        AspectLabel idLabel = parser.parse(field.getField(), getRole());
+        AspectLabel idLabel = parser.parse(expr.getField(), getRole());
         addEdge(owner, idLabel, result).setFixed();
         return result;
     }
 
     /** Looks for an outgoing edge suitable for a given field expression. */
     private AspectNode findTarget(AspectNode owner, String fieldName, AspectKind fieldKind) {
-        AspectNode result = null;
-        for (AspectEdge edge : outEdgeSet(owner)) {
-            if (edge.getInnerText()
-                .equals(fieldName)) {
-                AspectNode target = edge.target();
-                // make sure we have an LHS edge or a count edge
-                if (target.getAttrKind() == fieldKind && (getRole() != RULE || edge.getKind()
-                    .inLHS()
-                    || owner.getKind()
-                        .isQuantifier())) {
-                    result = edge.target();
-                    break;
-                }
-            }
-        }
-        return result;
+        boolean allEdgesOK = getRole() != RULE || owner.getKind()
+            .isQuantifier();
+        return outEdgeSet(owner).stream()
+            .filter(e -> allEdgesOK || e.getKind()
+                .inLHS())
+            .filter(e -> e.getInnerText()
+                .equals(fieldName))
+            .map(AspectEdge::target)
+            .filter(n -> n.getAttrKind() == fieldKind)
+            .findAny()
+            .orElse(null);
     }
 
     /**
@@ -463,7 +463,20 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         }
         AspectNode result = addNestedNode(source);
         result.setAspects(createLabel(AspectKind.toAspectKind(call.getSort())));
-        AspectNode product = addNestedNode(source);
+        AspectNode level;
+        if (operator.isSetOperator()) {
+            Expression arg = call.getArgs()
+                .get(0);
+            level = getLevel(arg);
+            if (level == null || source.getNestingLevel() != level.getNestingParent()) {
+                throw new FormatException(
+                    "Set operator argument '%s' should be one level deeper than source node '%s'",
+                    arg, source);
+            }
+        } else {
+            level = source;
+        }
+        AspectNode product = addNestedNode(level);
         product.setAspects(createLabel(AspectKind.PRODUCT));
         // add the operator edge
         AspectLabel operatorLabel = parser.parse(operator.getFullName(), getRole());
@@ -471,7 +484,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         // add the arguments
         List<groove.algebra.syntax.Expression> args = call.getArgs();
         for (int i = 0; i < args.size(); i++) {
-            AspectNode argResult = addExpression(source, args.get(i));
+            AspectNode argResult = addExpression(level, args.get(i));
             AspectLabel argLabel = parser.parse(AspectKind.ARGUMENT.getPrefix() + i, getRole());
             addEdge(product, argLabel, argResult);
         }
@@ -505,9 +518,56 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             result.setAspect(source.getAspect());
         }
         AspectNode nesting = source.getKind()
-            .isQuantifier() ? source.getNestingParent() : source.getNestingLevel();
+            .isQuantifier() ? source : source.getNestingLevel();
         if (nesting != null) {
             addEdge(result, AspectKind.NestedValue.AT.toString(), nesting);
+        }
+        return result;
+    }
+
+    /** Returns the nesting level on which an expression can be evaluated, in terms
+     * of the associated quantifier node.
+     * @throws FormatException if there is no common nesting level for all sub-expressions
+     */
+    private AspectNode getLevel(Expression expr) throws FormatException {
+        AspectNode result = null;
+        switch (expr.getKind()) {
+        case CALL:
+            for (Expression sub : ((CallExpr) expr).getArgs()) {
+                AspectNode subLevel = getLevel(sub);
+                if (result == null) {
+                    result = subLevel;
+                    continue;
+                } else if (subLevel == null || isChild(result, subLevel)) {
+                    continue;
+                } else if (isChild(subLevel, result)) {
+                    result = subLevel;
+                    continue;
+                }
+                throw new FormatException(
+                    "Incompatible quantified nodes '%s' and '%s' in expression '%s'", result,
+                    subLevel, expr);
+            }
+            break;
+        case PAR:
+        case CONST:
+            break;
+        case FIELD:
+            AspectNode target = this.nodeIdMap.get(((FieldExpr) expr).getTarget());
+            if (target != null) {
+                result = target.getNestingLevel();
+            }
+            break;
+        default:
+            throw Exceptions.UNREACHABLE;
+        }
+        return result;
+    }
+
+    private boolean isChild(AspectNode child, AspectNode parent) {
+        boolean result = child.equals(parent);
+        while (!result && child != null) {
+            child = child.getNestingParent();
         }
         return result;
     }

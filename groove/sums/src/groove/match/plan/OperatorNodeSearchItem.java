@@ -338,8 +338,6 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
         List<Object> calculateArguments() throws ClassCastException, NullPointerException {
             TreeMatch match =
                 this.search.getSubMatch(OperatorNodeSearchItem.this.sourceConditionIx);
-            assert match.getOp()
-                .isConjunctive();
             List<Object> setArguments = match.getSubMatches()
                 .stream()
                 .map(TreeMatch::getPatternMap)

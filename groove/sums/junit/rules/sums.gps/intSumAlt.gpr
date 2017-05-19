@@ -29,24 +29,24 @@
                 <string>id:a</string>
             </attr>
         </edge>
-        <edge from="n1" to="n1">
-            <attr name="label">
-                <string>type:A</string>
-            </attr>
-        </edge>
         <edge from="n1" to="n0">
             <attr name="label">
                 <string>at</string>
             </attr>
         </edge>
-        <edge from="n5" to="n5">
+        <edge from="n1" to="n1">
             <attr name="label">
-                <string>type:B</string>
+                <string>type:A</string>
             </attr>
         </edge>
         <edge from="n5" to="n5">
             <attr name="label">
                 <string>let:x = int:sum(a.x)</string>
+            </attr>
+        </edge>
+        <edge from="n5" to="n5">
+            <attr name="label">
+                <string>type:B</string>
             </attr>
         </edge>
     </graph>
