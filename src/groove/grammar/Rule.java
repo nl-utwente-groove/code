@@ -33,9 +33,10 @@ import java.util.stream.Collectors;
 import groove.algebra.AlgebraFamily;
 import groove.control.Binding;
 import groove.grammar.UnitPar.RulePar;
-import groove.grammar.host.HostEdgeSet;
+import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
+import groove.grammar.host.ValueNode;
 import groove.grammar.rule.Anchor;
 import groove.grammar.rule.DefaultRuleNode;
 import groove.grammar.rule.LabelVar;
@@ -607,13 +608,15 @@ public class Rule implements Action, Fixable {
         boolean result = true;
         for (RuleNode eraserNode : getEraserNodes()) {
             HostNode erasedNode = match.getNode(eraserNode);
-            HostEdgeSet danglingEdges = new HostEdgeSet(host.edgeSet(erasedNode));
-            for (RuleEdge eraserEdge : lhs().edgeSet(eraserNode)) {
-                boolean removed = danglingEdges.remove(match.getEdge(eraserEdge));
-                assert removed : String.format("Match %s not present in incident edges %s",
-                    match.getEdge(eraserEdge),
-                    host.edgeSet(erasedNode));
-            }
+            Set<HostEdge> danglingEdges = host.edgeSet(erasedNode)
+                .stream()
+                .filter(e -> !(e.target() instanceof ValueNode))
+                .collect(Collectors.toSet());
+            lhs().edgeSet(eraserNode)
+                .stream()
+                .filter(e -> !(e.target() instanceof ValueNode))
+                .map(e -> match.getEdge(e))
+                .forEach(e -> danglingEdges.remove(e));
             if (!danglingEdges.isEmpty()) {
                 result = false;
                 break;
