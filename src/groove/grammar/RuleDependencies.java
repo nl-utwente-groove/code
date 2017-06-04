@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import groove.automaton.RegAut;
@@ -37,6 +38,7 @@ import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleGraph;
 import groove.grammar.rule.RuleLabel;
 import groove.grammar.rule.RuleNode;
+import groove.grammar.rule.VariableNode;
 import groove.grammar.type.TypeEdge;
 import groove.grammar.type.TypeElement;
 import groove.grammar.type.TypeGraph;
@@ -374,13 +376,12 @@ public class RuleDependencies {
             sharpEraserTypes.addAll(this.typeGraph.getSubtypes(eraserType));
         }
         addSharpEraserTypes(consumed, sharpEraserTypes);
-        if (this.properties.isCheckDangling()) {
-            // the incident edges of eraser nodes are not eraser edges,
-            // so we have to add them explicitly to the consumed edges
-            for (RuleEdge edge : lhs.edgeSet(eraserNode)) {
-                consumed.addAll(getMatchingTypes(edge));
-            }
-        }
+        boolean checkDangling = this.properties.isCheckDangling();
+        lhs.edgeSet(eraserNode)
+            .stream()
+            .filter(e -> !checkDangling || e.target() instanceof VariableNode)
+            .map(RuleEdge::getMatchingTypes)
+            .forEach(ts -> consumed.addAll(ts));
     }
 
     /**
@@ -390,18 +391,28 @@ public class RuleDependencies {
      */
     private void addSharpEraserTypes(Set<TypeElement> consumed, Set<TypeNode> nodeTypes) {
         consumed.addAll(nodeTypes);
-        if (!this.properties.isCheckDangling()) {
-            Set<TypeNode> superTypes = new HashSet<>();
-            for (TypeNode type : nodeTypes) {
-                superTypes.addAll(type.getSupertypes());
-            }
-            Set<TypeEdge> incidentEdgeTypes = new HashSet<>();
-            for (TypeNode superType : superTypes) {
-                incidentEdgeTypes.addAll(this.typeGraph.inEdgeSet(superType));
-                incidentEdgeTypes.addAll(this.typeGraph.outEdgeSet(superType));
-            }
-            consumed.addAll(incidentEdgeTypes);
+        boolean checkDangling = this.properties.isCheckDangling();
+        Set<TypeNode> superTypes = new HashSet<>();
+        for (TypeNode type : nodeTypes) {
+            superTypes.addAll(type.getSupertypes());
         }
+        Set<TypeEdge> incidentEdgeTypes = new HashSet<>();
+        superTypes.stream()
+            .flatMap(n -> this.typeGraph.inEdgeSet(n)
+                .stream())
+            .filter(e -> !checkDangling)
+            .forEach(e -> incidentEdgeTypes.add(e));
+        superTypes.stream()
+            .flatMap(n -> this.typeGraph.outEdgeSet(n)
+                .stream())
+            .filter(e -> !checkDangling || e.target()
+                .isDataType())
+            .forEach(e -> incidentEdgeTypes.add(e));
+        for (TypeNode superType : superTypes) {
+            incidentEdgeTypes.addAll(this.typeGraph.inEdgeSet(superType));
+            incidentEdgeTypes.addAll(this.typeGraph.outEdgeSet(superType));
+        }
+        consumed.addAll(incidentEdgeTypes);
     }
 
     /**
@@ -478,14 +489,22 @@ public class RuleDependencies {
             for (RuleNode lhsNode : pattern.nodeSet()) {
                 if (!rhs.containsNode(lhsNode)) {
                     Set<TypeEdge> danglingEdges = new HashSet<>();
-                    danglingEdges.addAll(this.typeGraph.inEdgeSet(lhsNode.getType()));
-                    danglingEdges.addAll(this.typeGraph.outEdgeSet(lhsNode.getType()));
-                    for (RuleEdge rhsEdge : pattern.edgeSet(lhsNode)) {
-                        TypeEdge edgeType = rhsEdge.getType();
-                        if (edgeType != null) {
-                            danglingEdges.remove(edgeType);
-                        }
-                    }
+                    // add all incoming edge types
+                    this.typeGraph.inEdgeSet(lhsNode.getType())
+                        .stream()
+                        .forEach(e -> danglingEdges.add(e));
+                    // add all non-attribute outgoing edge types
+                    this.typeGraph.outEdgeSet(lhsNode.getType())
+                        .stream()
+                        .filter(e -> !e.target()
+                            .isDataType())
+                        .forEach(e -> danglingEdges.add(e));
+                    // remove all edges that are explicitly removed
+                    pattern.edgeSet(lhsNode)
+                        .stream()
+                        .map(RuleEdge::getType)
+                        .filter(Objects::nonNull)
+                        .forEach(e -> danglingEdges.remove(e));
                     negative.addAll(danglingEdges);
                 }
             }
