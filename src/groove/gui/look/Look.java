@@ -16,16 +16,16 @@
  */
 package groove.gui.look;
 
-import groove.grammar.aspect.AspectKind;
-import groove.gui.look.VisualKey.Nature;
-import groove.util.Colors;
-import groove.util.NodeShape;
-
 import java.awt.Font;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import groove.grammar.aspect.AspectKind;
+import groove.gui.look.VisualKey.Nature;
+import groove.util.Colors;
+import groove.util.NodeShape;
 
 /**
  * Graph element look values.
@@ -291,17 +291,6 @@ public enum Look {
             }
         }
     },
-    /** Node and edges in a pattern graph. */
-    PATTERN(true, BASIC) {
-        @Override
-        void init() {
-            add(VisualKey.BACKGROUND, Values.NORMAL_BACKGROUND);
-            add(VisualKey.DASH, Values.NESTED_DASH);
-            add(VisualKey.INSET, 8);
-            add(VisualKey.FONT, Font.PLAIN);
-            add(VisualKey.NODE_SHAPE, NodeShape.RECTANGLE);
-        }
-    },
     /** Transient control state look. */
     CTRL_TRANSIENT_STATE(true, STATE) {
         @Override
@@ -314,17 +303,6 @@ public enum Look {
         @Override
         void init() {
             add(VisualKey.DASH, Values.VERDICT_DASH);
-        }
-    },
-    /** Equivalence class of a neighbourhood shape. */
-    EQUIV_CLASS(true, BASIC) {
-        @Override
-        void init() {
-            add(VisualKey.OPAQUE, false);
-            add(VisualKey.DASH, Values.NESTED_DASH);
-            add(VisualKey.INSET, 8);
-            add(VisualKey.NODE_SHAPE, NodeShape.RECTANGLE);
-            add(VisualKey.FOREGROUND, Values.DEFAULT_FOREGROUND);
         }
     },
     /**
@@ -414,8 +392,7 @@ public enum Look {
 
     private final static Map<Set<Look>,VisualMap> looksMap = new HashMap<>();
 
-    private final static Map<AspectKind,Look> aspectLookMap = new EnumMap<>(
-        AspectKind.class);
+    private final static Map<AspectKind,Look> aspectLookMap = new EnumMap<>(AspectKind.class);
 
     static {
         aspectLookMap.put(AspectKind.REMARK, REMARK);
