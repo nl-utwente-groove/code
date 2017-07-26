@@ -363,7 +363,7 @@ public final class GraphToTikz<G extends Graph> {
      */
     private void appendTikzHeader() {
         append(DOC);
-        append(BEGIN_TIKZ_FIG + ENTER);
+        append(String.format(BEGIN_TIKZ_FIG + ENTER, this.graph.getName()));
     }
 
     private void appendTikzFooter() {
@@ -965,7 +965,8 @@ public final class GraphToTikz<G extends Graph> {
     // ------------------------------------------------------------------------
 
     private static final String ENTER = "\n";
-    private static final String BEGIN_TIKZ_FIG = "\\begin{tikzpicture}[scale=\\tikzscale]";
+    private static final String BEGIN_TIKZ_FIG =
+        "\\begin{tikzpicture}[scale=\\tikzscale,name prefix=%s-]";
     private static final String END_TIKZ_FIG = "\\end{tikzpicture}";
     private static final String BEGIN_NODE = "\\node";
     private static final String AT_KEYWORD = "at";

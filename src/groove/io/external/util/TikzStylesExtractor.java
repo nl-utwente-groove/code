@@ -521,7 +521,9 @@ public final class TikzStylesExtractor {
         static void writeDash(float dash[], List<StyleDuo> styles) {
             if (dash == Values.NESTED_DASH) {
                 styles.add(new StyleDuo("densely dotted", null));
-            } else if (dash != Values.NO_DASH) {
+            } else if (dash == Values.NO_DASH) {
+                styles.add(new StyleDuo("solid", null));
+            } else {
                 styles.add(new StyleDuo("densely dashed", null));
             }
         }
