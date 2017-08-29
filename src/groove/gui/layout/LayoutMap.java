@@ -16,11 +16,6 @@
  */
 package groove.gui.layout;
 
-import groove.graph.Edge;
-import groove.graph.ElementMap;
-import groove.graph.Node;
-import groove.gui.look.VisualMap;
-
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
@@ -37,6 +32,11 @@ import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.VertexView;
+
+import groove.graph.Edge;
+import groove.graph.ElementMap;
+import groove.graph.Node;
+import groove.gui.look.VisualMap;
 
 /**
  * Utility class for converting beck and forth between <b>jgraph</b> attribute
@@ -119,14 +119,13 @@ public class LayoutMap implements Cloneable {
      * Inserts layout information for a given node key, using the layout of
      * another node (from which it was mapped). Also adds an offset.
      */
-    public void copyNodeWithOffset(Node newKey, Node oldKey, LayoutMap oldLayoutMap,
-        double offsetX, double offsetY) {
-        JVertexLayout oldLayout = oldLayoutMap.nodeMap.get(oldKey);
+    public void copyNodeWithOffset(Node newKey, Node oldKey, LayoutMap oldLayoutMap, double offsetX,
+        double offsetY) {
+        JVertexLayout oldLayout = oldLayoutMap == null ? null : oldLayoutMap.nodeMap.get(oldKey);
         if (oldLayout != null) {
             Rectangle2D oldBounds = oldLayout.getBounds();
-            Rectangle2D.Double newBounds =
-                new Rectangle2D.Double(oldBounds.getX() + offsetX, oldBounds.getY() + offsetY,
-                    oldBounds.getWidth(), oldBounds.getHeight());
+            Rectangle2D.Double newBounds = new Rectangle2D.Double(oldBounds.getX() + offsetX,
+                oldBounds.getY() + offsetY, oldBounds.getWidth(), oldBounds.getHeight());
             JVertexLayout newLayout = new JVertexLayout(newBounds);
             putNode(newKey, newLayout);
         }
@@ -136,15 +135,15 @@ public class LayoutMap implements Cloneable {
      * Inserts layout information for a given edge key, using the layout of
      * another edge (from which it was mapped). Also adds an offset.
      */
-    public void copyEdgeWithOffset(Edge newKey, Edge oldKey, LayoutMap oldLayoutMap,
-        double offsetX, double offsetY) {
-        JEdgeLayout oldLayout = oldLayoutMap.edgeMap.get(oldKey);
+    public void copyEdgeWithOffset(Edge newKey, Edge oldKey, LayoutMap oldLayoutMap, double offsetX,
+        double offsetY) {
+        JEdgeLayout oldLayout = oldLayoutMap == null ? null : oldLayoutMap.edgeMap.get(oldKey);
         if (oldLayout != null) {
             List<Point2D> oldPoints = oldLayout.getPoints();
             List<Point2D> newPoints = new ArrayList<>();
             for (Point2D oldPoint : oldPoints) {
-                newPoints.add(new Point2D.Double(oldPoint.getX() + offsetX, oldPoint.getY()
-                    + offsetY));
+                newPoints
+                    .add(new Point2D.Double(oldPoint.getX() + offsetX, oldPoint.getY() + offsetY));
             }
             Point2D labelPosition = oldLayout.getLabelPosition();
             JEdgeLayout newLayout =
