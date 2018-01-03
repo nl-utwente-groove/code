@@ -102,7 +102,8 @@ public class GrammarProperties extends Properties {
     public ThreeValued isUseParameters() {
         ThreeValued result = (ThreeValued) parseProperty(GrammarKey.TRANSITION_PARAMETERS);
         if (result == null) {
-            result = ThreeValued.FALSE;
+            result = (ThreeValued) GrammarKey.TRANSITION_PARAMETERS.parser()
+                .getDefaultValue();
         }
         return result;
     }

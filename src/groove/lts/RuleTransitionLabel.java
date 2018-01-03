@@ -26,6 +26,7 @@ import groove.control.CtrlPar;
 import groove.control.CtrlPar.Wild;
 import groove.control.instance.Step;
 import groove.control.template.Switch;
+import groove.grammar.GrammarKey;
 import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.ValueNode;
@@ -234,8 +235,8 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
             List<? extends CtrlPar> args = label.getSwitch()
                 .getCall()
                 .getArgs();
-            // test if all arguments are wildcards
-            boolean allWild = true;
+            // test if there is a showable argument
+            boolean showArgs = false;
             StringBuilder params = new StringBuilder();
             params.append('(');
             boolean first = true;
@@ -253,10 +254,10 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
                 } else {
                     params.append(arg);
                 }
-                allWild &= args.get(i) instanceof Wild;
+                showArgs |= SHOW_NONEMPTY_ARGS || !(args.get(i) instanceof Wild);
             }
             params.append(')');
-            if (!allWild || useParameters.isTrue()) {
+            if (showArgs || useParameters.isTrue()) {
                 result.append(params);
             }
         }
@@ -295,4 +296,11 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
     public static boolean REUSE_LABELS = true;
     /** Global empty set of nodes. */
     static private final HostNode[] EMPTY_NODE_ARRAY = new HostNode[0];
+    /** Flag controlling the behaviour in case the {@link GrammarKey#TRANSITION_PARAMETERS}
+     * key is set to {@link ThreeValued#SOME}.
+     * If this flag is set to <code>true</code>, then parameters are shown for
+     * all rules that have any; otherwise, only if there is a control program that
+     * specifies at least one non-wildcard argument.
+     */
+    static private final boolean SHOW_NONEMPTY_ARGS = true;
 }
