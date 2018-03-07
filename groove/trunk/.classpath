@@ -3,6 +3,9 @@
 	<classpathentry excluding="**/.svn/*" kind="src" path="resources"/>
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="lib/jaxb/jaxb-api.jar"/>
+	<classpathentry kind="lib" path="lib/jaxb/jaxb-core.jar"/>
+	<classpathentry kind="lib" path="lib/jaxb/jaxb-impl.jar"/>
 	<classpathentry kind="lib" path="lib/OSXAdapter.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4_8_2.jar" sourcepath="lib/src/junit-4.8.2-src.zip"/>
 	<classpathentry kind="lib" path="lib/jgraph-5_13_0.jar" sourcepath="lib/src/jgraph-5.13.0.4-src.zip"/>
