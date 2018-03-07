@@ -67,6 +67,7 @@ public class TypeGuard extends Property<TypeElement> {
      * @param textList List of labels which membership is tested; may be {@code null} if only the label type is tested for
      * @param negated if {@code true}, satisfaction is defined as presence in {@code textList}; otherwise as absence
      */
+    @SuppressWarnings("null")
     public void setLabels(List<String> textList, boolean negated) {
         this.labelSet = new LinkedHashSet<>();
         for (String text : textList) {

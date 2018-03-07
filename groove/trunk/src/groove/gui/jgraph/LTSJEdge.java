@@ -48,7 +48,7 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex>implemen
             LTSJVertex targetVertex = getTargetVertex();
             assert targetVertex != null; // because port != null
             GraphState target = targetVertex.getNode();
-            if (target instanceof GraphNextState && getEdges().contains(target)) {
+            if (target instanceof GraphNextState && getEdges().contains((GraphNextState) target)) {
                 targetVertex.setParentEdge(this);
             }
         }

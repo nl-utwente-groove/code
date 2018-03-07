@@ -411,7 +411,7 @@ class ConfluenceAnalyzer {
             .keySet()) {
             HostEdge cHostEdge = confluentMatch.getEdge(re);
             HostEdge tHostEdge = targetMatch.getEdge(re);
-            if (!morphism.nodeMap()
+            if (!morphism.edgeMap()
                 .containsKey(cHostEdge)) {
                 assert cHostEdge != null;
                 assert tHostEdge != null;

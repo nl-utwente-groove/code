@@ -16,14 +16,14 @@
  */
 package groove.control.graph;
 
+import java.awt.Color;
+
 import groove.control.CallStack;
 import groove.graph.ALabelEdge;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.util.line.Line;
 import groove.util.line.Line.Style;
-
-import java.awt.Color;
 
 /**
  * @author rensink
@@ -91,10 +91,13 @@ public class ControlEdge extends ALabelEdge<ControlNode> {
             result = result.style(Style.ITALIC);
         }
         if (!isVerdict()) {
-            Color color = getCallStack().getRule().getRole().getColor();
+            Color color = getCallStack().getRule()
+                .getRole()
+                .getColor();
             if (color != null) {
                 if (source().isStart()) {
-                    color = color.brighter().brighter();
+                    color = color.brighter()
+                        .brighter();
                 }
                 result = result.color(color);
             }
@@ -104,13 +107,14 @@ public class ControlEdge extends ALabelEdge<ControlNode> {
 
     @Override
     public EdgeRole getRole() {
-        return isLoop() && (isVerdict() || getCallStack().getRule().isProperty()) ? EdgeRole.FLAG
-            : EdgeRole.BINARY;
+        return isLoop() && (isVerdict() || getCallStack().getRule()
+            .isProperty()) ? EdgeRole.FLAG : EdgeRole.BINARY;
     }
 
     @Override
     protected int computeLabelHash() {
-        return isVerdict() ? new Boolean(isSuccess()).hashCode() : getCallStack().hashCode();
+        return isVerdict() ? Boolean.valueOf(isSuccess())
+            .hashCode() : getCallStack().hashCode();
     }
 
     @Override

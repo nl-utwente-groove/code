@@ -96,19 +96,19 @@ public abstract class BoolSignature<Bool> implements Signature {
     /** Enumeration of all operators defined in this signature. */
 
     public enum Op implements Signature.OpValue {
-        /** Value for {@link #and(Object,Object)}. */
+        /** Value for {@link BoolSignature#and(Object,Object)}. */
         AND,
-        /** Value for {@link #bigand(List)}. */
+        /** Value for {@link BoolSignature#bigand(List)}. */
         BIGAND,
-        /** Value for {@link #bigor(List)}. */
+        /** Value for {@link BoolSignature#bigor(List)}. */
         BIGOR,
-        /** Value for {@link #or(Object, Object)}. */
+        /** Value for {@link BoolSignature#or(Object, Object)}. */
         OR,
-        /** Value for {@link #not(Object)}. */
+        /** Value for {@link BoolSignature#not(Object)}. */
         NOT,
-        /** Value for {@link #eq(Object, Object)}. */
+        /** Value for {@link BoolSignature#eq(Object, Object)}. */
         EQ,
-        /** Value for {@link #neq(Object, Object)}. */
+        /** Value for {@link BoolSignature#neq(Object, Object)}. */
         NEQ,;
 
         @Override

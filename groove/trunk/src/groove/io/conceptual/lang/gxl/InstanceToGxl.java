@@ -97,8 +97,10 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
         if (id == null) {
             id = getNodeId();
         }
-        NodeType objectNode = createNode(id, "#" + classNodeId, cmClass.getId()
-            .getNamespace());
+        NodeType objectNode = createNode(id,
+            "#" + classNodeId,
+            cmClass.getId()
+                .getNamespace());
         setElement(object, objectNode);
 
         for (Entry<Field,Value> fieldEntry : object.getValue()
@@ -111,9 +113,12 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
 
             if (this.m_typeToGxl.isAttribute(fieldEntry.getKey())) {
                 JAXBElement<?> attrObject = (JAXBElement<?>) getElement(fieldValue);
-                GxlUtil.setAttribute(objectNode, fieldEntry.getKey()
-                    .getName()
-                    .toString(), attrObject.getValue(), AttrTypeEnum.AUTO);
+                GxlUtil.setAttribute(objectNode,
+                    fieldEntry.getKey()
+                        .getName()
+                        .toString(),
+                    attrObject.getValue(),
+                    AttrTypeEnum.AUTO);
             } else {
                 // Create edge or edges
                 String fieldEdgeId = "#" + this.m_typeToGxl.getId(fieldEntry.getKey());
@@ -143,8 +148,8 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
             return;
         }
 
-        JAXBElement<Float> floatElem =
-            GxlUtil.g_objectFactory.createFloat(new Float(realval.getValue()));
+        JAXBElement<Float> floatElem = GxlUtil.g_objectFactory.createFloat(realval.getValue()
+            .floatValue());
         setElement(realval, floatElem);
     }
 
@@ -175,7 +180,7 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
         }
 
         JAXBElement<Boolean> boolElem =
-            GxlUtil.g_objectFactory.createBool(new Boolean(boolval.getValue()));
+            GxlUtil.g_objectFactory.createBool(Boolean.valueOf(boolval.getValue()));
         setElement(boolval, boolElem);
     }
 

@@ -12,16 +12,16 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /**
- * 
+ *
  */
 package groove.test.performance;
-
-import groove.util.Reporter;
-import groove.util.collect.TreeHashSet;
 
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
+import groove.util.Reporter;
+import groove.util.collect.TreeHashSet;
 
 /**
  * Class to test the various implementations of {@link groove.util.collect.IntSet}
@@ -36,22 +36,16 @@ public class SetSpeedTest {
     static private final int SMALL_REPEAT_FACTOR = 25000;
     static private final int LARGE_REPEAT_FACTOR = 1;
 
-    static private final Object[] SMALL_RANDOM_SAMPLE =
-        new Object[SMALL_SAMPLE_SIZE];
-    static private final Object[] LARGE_RANDOM_SAMPLE =
-        new Object[LARGE_SAMPLE_SIZE];
-    static private final Object[] SMALL_REGULAR_SAMPLE =
-        new Object[SMALL_SAMPLE_SIZE];
-    static private final Object[] LARGE_REGULAR_SAMPLE =
-        new Object[LARGE_SAMPLE_SIZE];
-    static private final Object[] DISTINCT_SAMPLE =
-        new Object[LARGE_SAMPLE_SIZE];
+    static private final Object[] SMALL_RANDOM_SAMPLE = new Object[SMALL_SAMPLE_SIZE];
+    static private final Object[] LARGE_RANDOM_SAMPLE = new Object[LARGE_SAMPLE_SIZE];
+    static private final Object[] SMALL_REGULAR_SAMPLE = new Object[SMALL_SAMPLE_SIZE];
+    static private final Object[] LARGE_REGULAR_SAMPLE = new Object[LARGE_SAMPLE_SIZE];
+    static private final Object[] DISTINCT_SAMPLE = new Object[LARGE_SAMPLE_SIZE];
     static {
         Set<Object> sampleSet = new HashSet<>();
         for (int i = 0; i < LARGE_SAMPLE_SIZE; i++) {
-            LARGE_REGULAR_SAMPLE[i] = new Integer(i - (LARGE_SAMPLE_SIZE / 2));
-            sampleSet.add(LARGE_REGULAR_SAMPLE[i] =
-                new Integer(i - (LARGE_SAMPLE_SIZE / 2)));
+            LARGE_REGULAR_SAMPLE[i] = i - (LARGE_SAMPLE_SIZE / 2);
+            sampleSet.add(LARGE_REGULAR_SAMPLE[i] = i - (LARGE_SAMPLE_SIZE / 2));
             if (i < SMALL_SAMPLE_SIZE) {
                 SMALL_REGULAR_SAMPLE[i] = LARGE_REGULAR_SAMPLE[i];
             }
@@ -59,9 +53,9 @@ public class SetSpeedTest {
         for (int i = 0; i < LARGE_SAMPLE_SIZE; i++) {
             Integer random;
             do {
-                random = new Integer((int) (Integer.MAX_VALUE * Math.random()));
+                random = (int) (Integer.MAX_VALUE * Math.random());
                 if (i % 2 == 0) {
-                    random = new Integer(-random.intValue());
+                    random = -random;
                 }
             } while (sampleSet.contains(random));
             sampleSet.add(LARGE_RANDOM_SAMPLE[i] = random);
@@ -72,9 +66,9 @@ public class SetSpeedTest {
         for (int i = 0; i < LARGE_SAMPLE_SIZE; i++) {
             Integer random;
             do {
-                random = new Integer((int) (Integer.MAX_VALUE * Math.random()));
+                random = (int) (Integer.MAX_VALUE * Math.random());
                 if (i % 2 == 0) {
-                    random = new Integer(-random.intValue());
+                    random = -random;
                 }
             } while (sampleSet.contains(random));
             sampleSet.add(DISTINCT_SAMPLE[i] = random);
@@ -100,8 +94,8 @@ public class SetSpeedTest {
         // TreeStoreSet.HASHCODE_EQUATOR)).start();
         // new SetSpeedTest(new TreeHashSet(2, SMALL_SAMPLE_SIZE,
         // TreeHashSet.HASHCODE_EQUATOR)).start();
-        new SetSpeedTest(new TreeHashSet<>(SMALL_SAMPLE_SIZE, 3, 7,
-            TreeHashSet.HASHCODE_EQUATOR)).start();
+        new SetSpeedTest(new TreeHashSet<>(SMALL_SAMPLE_SIZE, 3, 7, TreeHashSet.HASHCODE_EQUATOR))
+            .start();
     }
 
     public SetSpeedTest(Set<Object> object) {
@@ -111,20 +105,16 @@ public class SetSpeedTest {
     public void start() {
         System.out.println("Results for " + this.object.getClass());
         double smallRegularSpace =
-            test(SMALL_REGULAR_SAMPLE, SMALL_REPEAT_FACTOR,
-                this.TEST_REGULAR_SMALL);
+            test(SMALL_REGULAR_SAMPLE, SMALL_REPEAT_FACTOR, this.TEST_REGULAR_SMALL);
         report(this.TEST_REGULAR_SMALL, smallRegularSpace);
         double smallRandomSpace =
-            test(SMALL_RANDOM_SAMPLE, SMALL_REPEAT_FACTOR,
-                this.TEST_RANDOM_SMALL);
+            test(SMALL_RANDOM_SAMPLE, SMALL_REPEAT_FACTOR, this.TEST_RANDOM_SMALL);
         report(this.TEST_RANDOM_SMALL, smallRandomSpace);
         double largeRegularpace =
-            test(LARGE_REGULAR_SAMPLE, LARGE_REPEAT_FACTOR,
-                this.TEST_REGULAR_LARGE);
+            test(LARGE_REGULAR_SAMPLE, LARGE_REPEAT_FACTOR, this.TEST_REGULAR_LARGE);
         report(this.TEST_REGULAR_LARGE, largeRegularpace);
         double largeRandomSpace =
-            test(LARGE_RANDOM_SAMPLE, LARGE_REPEAT_FACTOR,
-                this.TEST_RANDOM_LARGE);
+            test(LARGE_RANDOM_SAMPLE, LARGE_REPEAT_FACTOR, this.TEST_RANDOM_LARGE);
         report(this.TEST_RANDOM_LARGE, largeRandomSpace);
     }
 
@@ -212,38 +202,37 @@ public class SetSpeedTest {
 
     private final Set<Object> object;
 
-    static private final Reporter reporter =
-        Reporter.register(IntSetSpeedTest.class);
-    private final Reporter[] TEST_RANDOM_SMALL = new Reporter[] {
-        reporter.register("Random, small sample:  "),
-        reporter.register("          Fresh addition: "),
-        reporter.register("           Next addition: "),
-        reporter.register("    Positive containment: "),
-        reporter.register("    Negative containment: "),
-        reporter.register("                Iterator: "),
-        reporter.register("             Equals test: ")};
-    private final Reporter[] TEST_RANDOM_LARGE = new Reporter[] {
-        reporter.register("Random, large sample:  "),
-        reporter.register("          Fresh addition: "),
-        reporter.register("           Next addition: "),
-        reporter.register("    Positive containment: "),
-        reporter.register("    Negative containment: "),
-        reporter.register("                Iterator: "),
-        reporter.register("             Equals test: ")};
-    private final Reporter[] TEST_REGULAR_SMALL = new Reporter[] {
-        reporter.register("Regular, small sample: "),
-        reporter.register("          Fresh addition: "),
-        reporter.register("           Next addition: "),
-        reporter.register("    Positive containment: "),
-        reporter.register("    Negative containment: "),
-        reporter.register("                Iterator: "),
-        reporter.register("             Equals test: ")};
-    private final Reporter[] TEST_REGULAR_LARGE = new Reporter[] {
-        reporter.register("Regular, large sample: "),
-        reporter.register("          Fresh addition: "),
-        reporter.register("           Next addition: "),
-        reporter.register("    Positive containment: "),
-        reporter.register("    Negative containment: "),
-        reporter.register("                Iterator: "),
-        reporter.register("             Equals test: ")};
+    static private final Reporter reporter = Reporter.register(IntSetSpeedTest.class);
+    private final Reporter[] TEST_RANDOM_SMALL =
+        new Reporter[] {reporter.register("Random, small sample:  "),
+            reporter.register("          Fresh addition: "),
+            reporter.register("           Next addition: "),
+            reporter.register("    Positive containment: "),
+            reporter.register("    Negative containment: "),
+            reporter.register("                Iterator: "),
+            reporter.register("             Equals test: ")};
+    private final Reporter[] TEST_RANDOM_LARGE =
+        new Reporter[] {reporter.register("Random, large sample:  "),
+            reporter.register("          Fresh addition: "),
+            reporter.register("           Next addition: "),
+            reporter.register("    Positive containment: "),
+            reporter.register("    Negative containment: "),
+            reporter.register("                Iterator: "),
+            reporter.register("             Equals test: ")};
+    private final Reporter[] TEST_REGULAR_SMALL =
+        new Reporter[] {reporter.register("Regular, small sample: "),
+            reporter.register("          Fresh addition: "),
+            reporter.register("           Next addition: "),
+            reporter.register("    Positive containment: "),
+            reporter.register("    Negative containment: "),
+            reporter.register("                Iterator: "),
+            reporter.register("             Equals test: ")};
+    private final Reporter[] TEST_REGULAR_LARGE =
+        new Reporter[] {reporter.register("Regular, large sample: "),
+            reporter.register("          Fresh addition: "),
+            reporter.register("           Next addition: "),
+            reporter.register("    Positive containment: "),
+            reporter.register("    Negative containment: "),
+            reporter.register("                Iterator: "),
+            reporter.register("             Equals test: ")};
 }

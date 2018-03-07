@@ -101,21 +101,21 @@ public abstract class StringSignature<STRING,BOOL,INT> implements Signature {
 
     /** Enumeration of all operators defined in this signature. */
     public enum Op implements Signature.OpValue {
-        /** Value for {@link #concat(Object, Object)}. */
+        /** Value for {@link StringSignature#concat(Object, Object)}. */
         CONCAT,
-        /** Value for {@link #eq(Object, Object)}. */
+        /** Value for {@link StringSignature#eq(Object, Object)}. */
         EQ,
-        /** Value for {@link #ge(Object, Object)}. */
+        /** Value for {@link StringSignature#ge(Object, Object)}. */
         GE,
-        /** Value for {@link #gt(Object, Object)}. */
+        /** Value for {@link StringSignature#gt(Object, Object)}. */
         GT,
-        /** Value for {@link #le(Object, Object)}. */
+        /** Value for {@link StringSignature#le(Object, Object)}. */
         LE,
-        /** Value for {@link #lt(Object, Object)}. */
+        /** Value for {@link StringSignature#lt(Object, Object)}. */
         LT,
-        /** Value for {@link #neq(Object, Object)}. */
+        /** Value for {@link StringSignature#neq(Object, Object)}. */
         LENGTH,
-        /** Value for {@link #lt(Object, Object)}. */
+        /** Value for {@link StringSignature#lt(Object, Object)}. */
         NEQ,;
 
         @Override

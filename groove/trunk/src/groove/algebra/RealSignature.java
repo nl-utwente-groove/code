@@ -182,45 +182,45 @@ public abstract class RealSignature<INT,REAL,BOOL,STRING> implements Signature {
 
     /** Enumeration of all operators defined in this signature. */
     public enum Op implements Signature.OpValue {
-        /** Value for {@link #abs(Object)}. */
+        /** Value for {@link RealSignature#abs(Object)}. */
         ABS,
-        /** Value for {@link #add(Object, Object)}. */
+        /** Value for {@link RealSignature#add(Object, Object)}. */
         ADD,
-        /** Value for {@link #bigmax(List)}. */
+        /** Value for {@link RealSignature#bigmax(List)}. */
         BIGMAX,
-        /** Value for {@link #bigmin(List)}. */
+        /** Value for {@link RealSignature#bigmin(List)}. */
         BIGMIN,
-        /** Value for {@link #div(Object, Object)}. */
+        /** Value for {@link RealSignature#div(Object, Object)}. */
         DIV,
-        /** Value for {@link #eq(Object, Object)}. */
+        /** Value for {@link RealSignature#eq(Object, Object)}. */
         EQ,
-        /** Value for {@link #ge(Object, Object)}. */
+        /** Value for {@link RealSignature#ge(Object, Object)}. */
         GE,
-        /** Value for {@link #gt(Object, Object)}. */
+        /** Value for {@link RealSignature#gt(Object, Object)}. */
         GT,
-        /** Value for {@link #le(Object, Object)}. */
+        /** Value for {@link RealSignature#le(Object, Object)}. */
         LE,
-        /** Value for {@link #lt(Object, Object)}. */
+        /** Value for {@link RealSignature#lt(Object, Object)}. */
         LT,
-        /** Value for {@link #max(Object, Object)}. */
+        /** Value for {@link RealSignature#max(Object, Object)}. */
         MAX,
-        /** Value for {@link #min(Object, Object)}. */
+        /** Value for {@link RealSignature#min(Object, Object)}. */
         MIN,
-        /** Value for {@link #mul(Object, Object)}. */
+        /** Value for {@link RealSignature#mul(Object, Object)}. */
         MUL,
-        /** Value for {@link #neq(Object, Object)}. */
+        /** Value for {@link RealSignature#neq(Object, Object)}. */
         NEQ,
-        /** Value for {@link #neq(Object, Object)}. */
+        /** Value for {@link RealSignature#neq(Object, Object)}. */
         NEG,
-        /** Value for {@link #prod(List)}. */
+        /** Value for {@link RealSignature#prod(List)}. */
         PROD(true),
-        /** Value for {@link #sub(Object, Object)}. */
+        /** Value for {@link RealSignature#sub(Object, Object)}. */
         SUB,
-        /** Value for {@link #sum(List)}. */
+        /** Value for {@link RealSignature#sum(List)}. */
         SUM(true),
-        /** Value for {@link #toInt(Object)}. */
+        /** Value for {@link RealSignature#toInt(Object)}. */
         TO_INT,
-        /** Value for {@link #toString(Object)}. */
+        /** Value for {@link RealSignature#toString(Object)}. */
         TO_STRING,;
 
         /**

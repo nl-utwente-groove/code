@@ -16,13 +16,13 @@
  */
 package groove.io.graph;
 
+import java.io.File;
+import java.net.URL;
+
 import groove.grammar.Action;
 import groove.grammar.Rule;
 import groove.io.FileType;
 import groove.util.Groove;
-
-import java.io.File;
-import java.net.URL;
 
 /**
  * Encoding of a rule name plus priority as a string
@@ -50,7 +50,7 @@ public class PriorityFileName {
             int startNumber;
             boolean validStartNumber;
             try {
-                startNumber = new Integer(fullName.substring(0, separatorPos));
+                startNumber = Integer.valueOf(fullName.substring(0, separatorPos));
                 validStartNumber = true;
             } catch (NumberFormatException nfe) {
                 startNumber = DEFAULT_PRIORITY;
@@ -60,8 +60,7 @@ public class PriorityFileName {
             this.priority = startNumber;
             this.explicitPriority = validStartNumber;
             if (this.priority < 0) {
-                throw new NumberFormatException("Invalid rule priority "
-                    + this.priority);
+                throw new NumberFormatException("Invalid rule priority " + this.priority);
             }
         }
         this.ruleName = fullName.substring(separatorPos + 1);
@@ -74,7 +73,8 @@ public class PriorityFileName {
      */
     public PriorityFileName(File file) {
         this(FileType.getPureName(file));
-        this.extension = file.getName().substring(this.ruleName.length());
+        this.extension = file.getName()
+            .substring(this.ruleName.length());
     }
 
     /**
@@ -88,8 +88,7 @@ public class PriorityFileName {
      * Creates a file name from a given rule name and (possibly explicit)
      * priority.
      */
-    public PriorityFileName(String ruleName, int priority,
-            boolean explicitPriority) {
+    public PriorityFileName(String ruleName, int priority, boolean explicitPriority) {
         this.ruleName = ruleName;
         this.priority = priority;
         this.explicitPriority = explicitPriority;

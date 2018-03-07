@@ -107,7 +107,7 @@ public class ProductTransition {
      * rule and anchor images.
      */
     protected boolean equalsTransition(ProductTransition other) {
-        return graphTransition().equals(other.graphTransition().source());
+        return graphTransition().equals(other.graphTransition());
     }
 
     @Override

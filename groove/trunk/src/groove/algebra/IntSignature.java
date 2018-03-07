@@ -190,47 +190,47 @@ public abstract class IntSignature<INT,REAL,BOOL,STRING> implements Signature {
 
     /** Enumeration of all operators defined in this signature. */
     public enum Op implements Signature.OpValue {
-        /** Value for {@link #abs(Object)}. */
+        /** Value for {@link IntSignature#abs(Object)}. */
         ABS,
-        /** Value for {@link #add(Object, Object)}. */
+        /** Value for {@link IntSignature#add(Object, Object)}. */
         ADD,
-        /** Value for {@link #bigmax(List)}. */
+        /** Value for {@link IntSignature#bigmax(List)}. */
         BIGMAX,
-        /** Value for {@link #bigmin(List)}. */
+        /** Value for {@link IntSignature#bigmin(List)}. */
         BIGMIN,
-        /** Value for {@link #div(Object, Object)}. */
+        /** Value for {@link IntSignature#div(Object, Object)}. */
         DIV,
-        /** Value for {@link #eq(Object, Object)}. */
+        /** Value for {@link IntSignature#eq(Object, Object)}. */
         EQ,
-        /** Value for {@link #ge(Object, Object)}. */
+        /** Value for {@link IntSignature#ge(Object, Object)}. */
         GE,
-        /** Value for {@link #gt(Object, Object)}. */
+        /** Value for {@link IntSignature#gt(Object, Object)}. */
         GT,
-        /** Value for {@link #le(Object, Object)}. */
+        /** Value for {@link IntSignature#le(Object, Object)}. */
         LE,
-        /** Value for {@link #lt(Object, Object)}. */
+        /** Value for {@link IntSignature#lt(Object, Object)}. */
         LT,
-        /** Value for {@link #max(Object, Object)}. */
+        /** Value for {@link IntSignature#max(Object, Object)}. */
         MAX,
-        /** Value for {@link #min(Object, Object)}. */
+        /** Value for {@link IntSignature#min(Object, Object)}. */
         MIN,
-        /** Value for {@link #mod(Object, Object)}. */
+        /** Value for {@link IntSignature#mod(Object, Object)}. */
         MOD,
-        /** Value for {@link #mul(Object, Object)}. */
+        /** Value for {@link IntSignature#mul(Object, Object)}. */
         MUL,
-        /** Value for {@link #neq(Object, Object)}. */
+        /** Value for {@link IntSignature#neq(Object, Object)}. */
         NEQ,
-        /** Value for {@link #neq(Object, Object)}. */
+        /** Value for {@link IntSignature#neq(Object, Object)}. */
         NEG,
-        /** Value for {@link #prod(List)}. */
+        /** Value for {@link IntSignature#prod(List)}. */
         PROD(true),
-        /** Value for {@link #sub(Object, Object)}. */
+        /** Value for {@link IntSignature#sub(Object, Object)}. */
         SUB,
-        /** Value for {@link #sum(List)}. */
+        /** Value for {@link IntSignature#sum(List)}. */
         SUM(true),
-        /** Value for {@link #toReal(Object)}. */
+        /** Value for {@link IntSignature#toReal(Object)}. */
         TO_REAL,
-        /** Value for {@link #toString(Object)}. */
+        /** Value for {@link IntSignature#toString(Object)}. */
         TO_STRING,;
 
         /**

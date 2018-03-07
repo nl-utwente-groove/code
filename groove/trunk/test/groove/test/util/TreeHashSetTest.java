@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /**
- * 
+ *
  */
 package groove.test.util;
 
@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import groove.util.collect.TreeHashSet;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -29,6 +28,8 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import groove.util.collect.TreeHashSet;
 
 /**
  * @author Arend Rensink
@@ -43,10 +44,10 @@ public class TreeHashSetTest {
     {
         for (int i = 0; i < INT_LIST_COUNT; i++) {
             int value = i * i - INT_LIST_COUNT * INT_LIST_COUNT / 2;
-            this.intList1[i] = new Integer(value);
-            this.intList2[i] = new Integer(value);
+            this.intList1[i] = value;
+            this.intList2[i] = value;
             this.longList[i] = new HashSet<>();
-            this.longList[i].add(new Integer(value));
+            this.longList[i].add(value);
         }
     }
 
@@ -55,10 +56,8 @@ public class TreeHashSetTest {
     @Before
     public void setUp() {
         this.defaultSet = new TreeHashSet<>();
-        this.identitySet =
-            new TreeHashSet<Object>(TreeHashSet.IDENTITY_EQUATOR);
-        this.hashcodeSet =
-            new TreeHashSet<Object>(TreeHashSet.HASHCODE_EQUATOR);
+        this.identitySet = new TreeHashSet<Object>(TreeHashSet.IDENTITY_EQUATOR);
+        this.hashcodeSet = new TreeHashSet<Object>(TreeHashSet.HASHCODE_EQUATOR);
     }
 
     @Test
@@ -281,7 +280,8 @@ public class TreeHashSetTest {
         clone.clear();
         fill(clone, this.intList2);
         fill(clone, this.longList);
-        Iterator<Integer> iter = Arrays.asList(this.intList2).iterator();
+        Iterator<Integer> iter = Arrays.asList(this.intList2)
+            .iterator();
         while (iter.hasNext()) {
             Object next = iter.next();
             clone.remove(next);

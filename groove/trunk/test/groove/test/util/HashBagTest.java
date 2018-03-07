@@ -18,7 +18,6 @@ package groove.test.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import groove.util.collect.HashBag;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,6 +25,8 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import groove.util.collect.HashBag;
 
 /**
  * @author Arend Rensink
@@ -75,27 +76,27 @@ public class HashBagTest {
 
     @Test
     public void testClone() {
-        @SuppressWarnings("unchecked")
-        HashBag<Integer> bag122Clone = (HashBag<Integer>) this.bag122.clone();
+        @SuppressWarnings("unchecked") HashBag<Integer> bag122Clone =
+            (HashBag<Integer>) this.bag122.clone();
         assertEquals(1, bag122Clone.multiplicity(i1));
         assertEquals(2, bag122Clone.multiplicity(i2));
         assertEquals(0, bag122Clone.multiplicity(i3));
-        bag122Clone.remove(new Integer(2));
+        bag122Clone.remove(2);
         assertEquals(1, bag122Clone.multiplicity(i2));
         assertEquals(2, this.bag122.multiplicity(i2));
-        this.bag122.remove(new Integer(2));
+        this.bag122.remove(2);
         assertEquals(1, bag122Clone.multiplicity(i2));
         assertEquals(1, this.bag122.multiplicity(i2));
     }
 
     @Test
     public void testContainsObject() {
-        assertTrue(this.bag122.contains(new Integer(1)));
-        assertTrue(!this.bag122.contains(new Integer(3)));
-        this.bag122.remove(new Integer(2));
-        assertTrue(this.bag122.contains(new Integer(2)));
-        this.bag122.remove(new Integer(2));
-        assertTrue(!this.bag122.contains(new Integer(2)));
+        assertTrue(this.bag122.contains(1));
+        assertTrue(!this.bag122.contains(3));
+        this.bag122.remove(2);
+        assertTrue(this.bag122.contains(2));
+        this.bag122.remove(2);
+        assertTrue(!this.bag122.contains(2));
     }
 
     /*
@@ -118,7 +119,7 @@ public class HashBagTest {
         }
         assertEquals(2, this.bag122.multiplicity(i2));
         HashBag<Integer> bag22 = new HashBag<>();
-        bag22.add(new Integer(2));
+        bag22.add(2);
         bag22.add(i2);
         assertEquals(bag22, this.bag122);
         iter = this.bag122.iterator();
@@ -135,10 +136,10 @@ public class HashBagTest {
     }
 
     private HashBag<Integer> bag122, bag233444;
-    private static final Integer i1 = new Integer(1);
-    private static final Integer i2 = new Integer(2);
-    private static final Integer i3 = new Integer(3);
-    private static final Integer i4 = new Integer(4);
-    private static final Integer i5 = new Integer(5);
-    private static final Integer i6 = new Integer(6);
+    private static final Integer i1 = 1;
+    private static final Integer i2 = 2;
+    private static final Integer i3 = 3;
+    private static final Integer i4 = 4;
+    private static final Integer i5 = 5;
+    private static final Integer i6 = 6;
 }

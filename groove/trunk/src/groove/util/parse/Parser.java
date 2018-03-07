@@ -352,7 +352,7 @@ abstract public interface Parser<T> {
 
         @Override
         protected Integer createContent(int value) {
-            return new Integer(value);
+            return value;
         }
 
         @Override
