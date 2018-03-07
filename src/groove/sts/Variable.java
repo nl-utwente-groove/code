@@ -37,11 +37,11 @@ public class Variable {
     public static Object getDefaultValue(Sort s) {
         switch (s) {
         case INT:
-            return new Integer(0);
+            return Integer.valueOf(0);
         case BOOL:
-            return new Boolean(false);
+            return Boolean.valueOf(false);
         case REAL:
-            return new Double(0.0);
+            return Double.valueOf(0.0);
         case STRING:
             return "";
         default:

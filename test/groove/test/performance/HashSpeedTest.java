@@ -16,8 +16,6 @@
  */
 package groove.test.performance;
 
-import groove.util.Reporter;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,6 +26,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import groove.util.Reporter;
 
 /**
  * Tests the speed of various alternatives in a {@link HashSet}:
@@ -59,7 +59,7 @@ public class HashSpeedTest {
         // initialize the test data
         elementMap = new HashMap<>();
         for (int i = 0; i < elementArray.length; i++) {
-            Integer element = new Integer(i);
+            Integer element = i;
             elementArray[i] = element;
             elementMap.put(element, element);
         }

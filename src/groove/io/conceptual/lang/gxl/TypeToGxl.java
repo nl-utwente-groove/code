@@ -144,8 +144,10 @@ public class TypeToGxl extends TypeExporter<NodeType> {
             createEdge(typeNode, attrNode, GxlUtil.g_gxlTypeGraphURI + "#hasAttribute");*/
 
             // Create as a string, GXL has no notion of custom data types
-            typeNode = createNode(getId(t), GxlUtil.g_gxlTypeGraphURI + "#String", t.getId()
-                .getNamespace());
+            typeNode = createNode(getId(t),
+                GxlUtil.g_gxlTypeGraphURI + "#String",
+                t.getId()
+                    .getNamespace());
         }
 
         setElement(t, typeNode);
@@ -162,8 +164,9 @@ public class TypeToGxl extends TypeExporter<NodeType> {
             return;
         }
 
-        NodeType classNode =
-            createNode(getId(cmClass), GxlUtil.g_gxlTypeGraphURI + "#NodeClass", cmClass.getId()
+        NodeType classNode = createNode(getId(cmClass),
+            GxlUtil.g_gxlTypeGraphURI + "#NodeClass",
+            cmClass.getId()
                 .getNamespace());
         setElement(cmClass, classNode);
         GxlUtil.setAttribute(classNode, "name", idToName(cmClass.getId()), AttrTypeEnum.STRING);
@@ -213,8 +216,11 @@ public class TypeToGxl extends TypeExporter<NodeType> {
                 field.getDefiningClass()
                     .getId()
                     .getNamespace());
-            GxlUtil.setAttribute(attrNode, "name", field.getName()
-                .toString(), AttrTypeEnum.STRING);
+            GxlUtil.setAttribute(attrNode,
+                "name",
+                field.getName()
+                    .toString(),
+                AttrTypeEnum.STRING);
 
             createEdge(attrNode, typeNode, GxlUtil.g_gxlTypeGraphURI + "#hasDomain");
             //createEdge(classNode, attrNode, GxlUtil.g_gxlTypeGraphURI + "#hasAttribute");
@@ -229,8 +235,11 @@ public class TypeToGxl extends TypeExporter<NodeType> {
                     field.getDefiningClass()
                         .getId()
                         .getNamespace());
-                GxlUtil.setAttribute(edgeNode, "name", field.getName()
-                    .toString(), AttrTypeEnum.STRING);
+                GxlUtil.setAttribute(edgeNode,
+                    "name",
+                    field.getName()
+                        .toString(),
+                    AttrTypeEnum.STRING);
                 GxlUtil.setAttribute(edgeNode, "isdirected", true, AttrTypeEnum.BOOL);
                 GxlUtil.setAttribute(edgeNode, "isabstract", false, AttrTypeEnum.BOOL);
                 boolean ordered = false;
@@ -326,15 +335,17 @@ public class TypeToGxl extends TypeExporter<NodeType> {
             return;
         }
 
-        NodeType enumNode =
-            createNode(getId(cmEnum), GxlUtil.g_gxlTypeGraphURI + "#Enum", cmEnum.getId()
+        NodeType enumNode = createNode(getId(cmEnum),
+            GxlUtil.g_gxlTypeGraphURI + "#Enum",
+            cmEnum.getId()
                 .getNamespace());
         setElement(cmEnum, enumNode);
 
         for (Name literal : cmEnum.getLiterals()) {
             String literalId = getId(cmEnum) + "_" + literal;
-            NodeType literalNode =
-                createNode(literalId, GxlUtil.g_gxlTypeGraphURI + "#EnumVal", cmEnum.getId()
+            NodeType literalNode = createNode(literalId,
+                GxlUtil.g_gxlTypeGraphURI + "#EnumVal",
+                cmEnum.getId()
                     .getNamespace());
             GxlUtil.setAttribute(literalNode, "value", literal.toString(), AttrTypeEnum.STRING);
 
@@ -600,41 +611,52 @@ public class TypeToGxl extends TypeExporter<NodeType> {
             valNode = createNode(getValueId(v), GxlUtil.g_gxlTypeGraphURI + "#BoolVal", Id.ROOT);
             GxlUtil.setAttribute(valNode,
                 "value",
-                new Boolean(((BoolValue) v).getValue()).toString(),
+                Boolean.valueOf(((BoolValue) v).getValue())
+                    .toString(),
                 AttrTypeEnum.STRING);
             return valNode;
         } else if (v instanceof IntValue) {
             valNode = createNode(getValueId(v), GxlUtil.g_gxlTypeGraphURI + "#IntVal", Id.ROOT);
-            GxlUtil.setAttribute(valNode, "value", ((IntValue) v).getValue()
-                .toString(), AttrTypeEnum.STRING);
+            GxlUtil.setAttribute(valNode,
+                "value",
+                ((IntValue) v).getValue()
+                    .toString(),
+                AttrTypeEnum.STRING);
             return valNode;
         } else if (v instanceof RealValue) {
             valNode = createNode(getValueId(v), GxlUtil.g_gxlTypeGraphURI + "#FloatVal", Id.ROOT);
-            GxlUtil.setAttribute(valNode, "value", ((RealValue) v).getValue()
-                .toString(), AttrTypeEnum.STRING);
+            GxlUtil.setAttribute(valNode,
+                "value",
+                ((RealValue) v).getValue()
+                    .toString(),
+                AttrTypeEnum.STRING);
             return valNode;
         } else if (v instanceof StringValue) {
             valNode = createNode(getValueId(v), GxlUtil.g_gxlTypeGraphURI + "#StringVal", Id.ROOT);
-            GxlUtil.setAttribute(valNode,
-                "value",
-                ((StringValue) v).getValue(),
-                AttrTypeEnum.STRING);
+            GxlUtil
+                .setAttribute(valNode, "value", ((StringValue) v).getValue(), AttrTypeEnum.STRING);
             return valNode;
         } else if (v instanceof EnumValue) {
             valNode = createNode(getValueId(v),
                 GxlUtil.g_gxlTypeGraphURI + "#EnumVal",
                 ((Enum) v.getType()).getId()
                     .getNamespace());
-            GxlUtil.setAttribute(valNode, "value", ((EnumValue) v).getValue()
-                .toString(), AttrTypeEnum.STRING);
+            GxlUtil.setAttribute(valNode,
+                "value",
+                ((EnumValue) v).getValue()
+                    .toString(),
+                AttrTypeEnum.STRING);
             return valNode;
         } else if (v instanceof CustomDataValue) {
             valNode = createNode(getValueId(v),
                 GxlUtil.g_gxlTypeGraphURI + "#StringVal",
                 ((CustomDataType) v.getType()).getId()
                     .getNamespace());
-            GxlUtil.setAttribute(valNode, "value", ((CustomDataValue) v).getValue()
-                .toString(), AttrTypeEnum.STRING);
+            GxlUtil.setAttribute(valNode,
+                "value",
+                ((CustomDataValue) v).getValue()
+                    .toString(),
+                AttrTypeEnum.STRING);
             return valNode;
         }
         // Composite types

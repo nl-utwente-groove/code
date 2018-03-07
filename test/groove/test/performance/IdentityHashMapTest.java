@@ -37,17 +37,20 @@ public class IdentityHashMapTest {
         for (int i = 0; i < 100000; i++) {
             Map<Integer,String> test = new IdentityHashMap<>();
             for (int k = 0; k < 7; k++) {
-                test.put(new Integer(k), "");
+                test.put(k, "");
             }
-            Iterator<Integer> testIter = test.keySet().iterator();
+            Iterator<Integer> testIter = test.keySet()
+                .iterator();
             while (testIter.hasNext()) {
                 Integer elem = testIter.next();
                 if (elem.intValue() != 6) {
                     testIter.remove();
                 }
             }
-            assertEquals(1, test.keySet().size());
-            assertEquals(Collections.singleton(new Integer(6)), test.keySet());
+            assertEquals(1,
+                test.keySet()
+                    .size());
+            assertEquals(Collections.singleton(6), test.keySet());
         }
     }
 }

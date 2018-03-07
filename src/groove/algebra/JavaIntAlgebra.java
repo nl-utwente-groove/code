@@ -134,7 +134,7 @@ public class JavaIntAlgebra extends IntAlgebra<Integer,Double,Boolean,String> {
 
     @Override
     public Double toReal(Integer arg) {
-        return new Double(arg);
+        return Double.valueOf(arg);
     }
 
     @Override

@@ -222,8 +222,9 @@ public class Options implements Cloneable {
     public String toString() {
         Map<String,Boolean> result = new HashMap<>();
         for (Map.Entry<String,JMenuItem> entry : this.itemMap.entrySet()) {
-            result.put(entry.getKey(), entry.getValue()
-                .isSelected());
+            result.put(entry.getKey(),
+                entry.getValue()
+                    .isSelected());
         }
         return result.toString();
     }
@@ -677,12 +678,12 @@ public class Options implements Cloneable {
 
     /** Add point keystroke. */
     public static final KeyStroke ADD_POINT_KEY =
-        KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.ALT_MASK);
+        KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.ALT_DOWN_MASK);
     /**
      * Apply keystroke
      */
     static public final KeyStroke APPLY_KEY =
-        KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_MASK);
+        KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
     /** Back keystroke */
     public static final KeyStroke BACK_KEY = KeyStroke.getKeyStroke("alt LEFT");
     /** Cancel keystroke */
@@ -773,7 +774,7 @@ public class Options implements Cloneable {
     public static final KeyStroke RENAME_KEY = KeyStroke.getKeyStroke("F2");
     /** Remove point keystroke. */
     public static final KeyStroke REMOVE_POINT_KEY =
-        KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_MASK);
+        KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_DOWN_MASK);
     /** Save keystroke */
     public static final KeyStroke SAVE_KEY = KeyStroke.getKeyStroke("control S");
     /** Save keystroke */
@@ -835,10 +836,8 @@ public class Options implements Cloneable {
     }
 
     /** Set of resource kinds for which the display tab is optional. */
-    private static final Set<ResourceKind> optionalTabs = EnumSet.of(ResourceKind.CONTROL,
-        ResourceKind.PROLOG,
-        ResourceKind.TYPE,
-        ResourceKind.GROOVY);
+    private static final Set<ResourceKind> optionalTabs = EnumSet
+        .of(ResourceKind.CONTROL, ResourceKind.PROLOG, ResourceKind.TYPE, ResourceKind.GROOVY);
 
     /** Show anchors option */
     static public final String SHOW_ANCHORS_OPTION = "Show anchors";
@@ -1032,8 +1031,9 @@ public class Options implements Cloneable {
     private static Font loadFont(String name) {
         Font result = null;
         try {
-            result = Font.createFont(Font.TRUETYPE_FONT, Groove.getResource(name)
-                .openStream());
+            result = Font.createFont(Font.TRUETYPE_FONT,
+                Groove.getResource(name)
+                    .openStream());
             result = result.deriveFont(getLabelFont().getSize2D());
         } catch (FileNotFoundException e) {
             // do nothing

@@ -79,7 +79,7 @@ public class GxlUtil {
         public GraphWrapper(GraphType graph) {
             this.m_graph = graph;
             this.m_type = GxlUtil.getElemType(graph);
-            assert(this.m_type != null);
+            assert (this.m_type != null);
         }
 
         protected void addNode(NodeWrapper node) {
@@ -109,16 +109,16 @@ public class GxlUtil {
         public NodeWrapper(NodeType node) {
             this.m_node = node;
             this.m_type = GxlUtil.getElemType(node);
-            assert(this.m_type != null);
+            assert (this.m_type != null);
         }
 
         protected void addEdge(EdgeWrapper edge) {
-            assert(edge.getSource() == this);
+            assert (edge.getSource() == this);
             this.m_edges.add(edge);
         }
 
         protected void addIncomingEdge(EdgeWrapper edge) {
-            assert(edge.getTarget() == this);
+            assert (edge.getTarget() == this);
             this.m_incomingEdges.add(edge);
         }
 
@@ -184,7 +184,7 @@ public class GxlUtil {
         public EdgeWrapper(EdgeType edge) {
             this.m_edge = edge;
             this.m_type = GxlUtil.getElemType(edge);
-            assert(this.m_type != null);
+            assert (this.m_type != null);
         }
 
         public EdgeType getEdge() {
@@ -228,12 +228,12 @@ public class GxlUtil {
         }
 
         protected void addEdge(EdgeWrapper edge) {
-            assert(edge.getSourceEdge() == this);
+            assert (edge.getSourceEdge() == this);
             this.m_edges.add(edge);
         }
 
         protected void addIncomingEdge(EdgeWrapper edge) {
-            assert(edge.getTargetEdge() == this);
+            assert (edge.getTargetEdge() == this);
             this.m_incomingEdges.add(edge);
         }
 
@@ -632,8 +632,9 @@ public class GxlUtil {
             List<Value> values = new ArrayList<>();
             int i = 0;
             for (JAXBElement<?> subElem : elems) {
-                Value v = getTypedValue(subElem, tup.getTypes()
-                    .get(i++));
+                Value v = getTypedValue(subElem,
+                    tup.getTypes()
+                        .get(i++));
                 if (v == null) {
                     return null;
                 }
@@ -655,7 +656,8 @@ public class GxlUtil {
             return g_objectFactory.createString(((StringValue) val).getValue());
         } else if (val instanceof RealValue) {
             // the GXL representation can only take floats
-            return g_objectFactory.createFloat(new Float(((RealValue) val).getValue()));
+            return g_objectFactory.createFloat(((RealValue) val).getValue()
+                .floatValue());
         } else if (val instanceof EnumValue) {
             return GxlUtil.g_objectFactory.createEnum(((EnumValue) val).getValue()
                 .toString());

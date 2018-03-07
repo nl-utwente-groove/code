@@ -91,7 +91,7 @@ public enum CheckPolicy {
          * {@code null} for other actions.
          */
         public CheckPolicy get(Action key) {
-            CheckPolicy result = super.get(key);
+            CheckPolicy result = super.get(key.getQualName());
             if (result == null && key.getRole()
                 .isConstraint()) {
                 result = ERROR;
