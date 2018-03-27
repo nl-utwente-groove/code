@@ -102,14 +102,15 @@ public abstract class Properties extends java.util.Properties implements Fixable
         return result.toString();
     }
 
-    /** Retrieves and parses the value for a given key. */
+    /** Retrieves and parses the value for a given key.
+     * Returns the default value for the key if the stored value contains an error. */
     public Object parseProperty(PropertyKey<?> key) {
         String result = getProperty(key.getName());
         Parser<?> parser = key.parser();
         try {
             return parser.parse(result);
         } catch (FormatException exc) {
-            return null;
+            return parser.getDefaultValue();
         }
     }
 

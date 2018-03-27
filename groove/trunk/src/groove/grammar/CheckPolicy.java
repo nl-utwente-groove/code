@@ -17,9 +17,11 @@
 package groove.grammar;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 
 import groove.grammar.Action.Role;
+import groove.util.parse.FormatError;
 import groove.util.parse.FormatException;
 import groove.util.parse.Parser;
 import groove.util.parse.StringHandler;
@@ -60,9 +62,14 @@ public enum CheckPolicy {
         return this.name;
     }
 
-    /** Tests if this policy is suitable for a given action role. */
-    public boolean isFor(Role role) {
-        return this == OFF || role.isConstraint();
+    /** Tests if this policy is suitable for a given action role.
+     * @return an {@link Optional} error, if the policy is not suitable. */
+    public Optional<FormatError> isFor(Role role) {
+        if (this == OFF || role.isConstraint()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(new FormatError("%s is not a constraint", role));
+        }
     }
 
     private final String name;
