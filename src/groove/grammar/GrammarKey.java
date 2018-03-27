@@ -366,12 +366,12 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
                         unknowns.add(name);
                     } else {
                         CheckPolicy policy = entry.getValue();
-                        if (!policy.isFor(rule.getRole())) {
-                            result.add("Policy '%s' is unsuitable for %s '%s'",
+                        policy.isFor(rule.getRole())
+                            .ifPresent(e -> result.add("Policy '%s' is unsuitable for %s '%s': %s",
                                 policy.getName(),
                                 rule.getRole(),
-                                rule.getQualName());
-                        }
+                                rule.getQualName(),
+                                e));
                     }
                 }
                 if (!unknowns.isEmpty()) {
