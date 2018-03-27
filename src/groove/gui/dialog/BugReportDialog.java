@@ -60,7 +60,7 @@ public class BugReportDialog extends JDialog implements ActionListener, Hyperlin
         + "Please help the developers to improve the tool by submitting a "
         + "<I>Bug Report</i> at the GROOVE project page on SourceForge: "
         + "<A HREF=\"http://sourceforge.net/projects/groove/develop\">http://sourceforge.net/projects/groove/develop</A><BR>"
-        + "In the link given, select menu 'Tracker' and option 'Bugs' to "
+        + "In the link given, select menu 'Tickets' and option 'Bugs' to "
         + "create a new entry.<BR>"
         + "While submitting your report please describe the steps that led "
         + "to the crash and include the exception stack trace shown below." + "</FONT></HTML>";
