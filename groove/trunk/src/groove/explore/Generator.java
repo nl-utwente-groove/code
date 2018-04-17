@@ -73,6 +73,11 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
             transformer.addListener(new GenerateProgressListener());
         }
         ExploreResult result = transformer.explore(getStartGraphs());
+        // close all states, so the cached info cannot get lost
+        result.getGTS()
+            .getStates()
+            .stream()
+            .forEach(s -> s.setClosed(false));
         getReporter().report();
         return result;
     }
@@ -476,7 +481,8 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
                 this.error = String.format("Unknown property key '%s'", key);
             } else if (property.isSystem()) {
                 this.error = String.format("Cannot set system property '%s'", key);
-            } else if (!property.parser().accepts(value)) {
+            } else if (!property.parser()
+                .accepts(value)) {
                 this.error = String.format("Incorrect value '%s' for property '%s'", value, key);
             } else {
                 m.put(property, value);
