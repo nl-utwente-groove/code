@@ -1,0 +1,15 @@
+Antlr;compiling control programs and expressions;http://www.antlr.org;3.4
+Args4J;command-line option parsing;http://args4j.kohsuke.org/;2.0.26
+Asm;Java bytecode manipulation and analysis;http://asm.ow2.org/;4.0
+EMF;converting to and from Eclipse ecore format;http://eclipse.org;2.7.0
+EPSGraphics;exporting displayed graphs to EPS format;http://www.abeel.be/epsgraphics/;1.2
+Gnu Prolog;interpreting Prolog queries;http://www.gnu.org/software/gnuprologjava/;0.2.6
+Groovy;easy and flexible access to the GROOVE API;http://groovy.codehaus.org/;2.0.5
+iText;exporting displayed graphs to PDF format;http://itextpdf.com/;5.3.2
+JGoodies Looks;platform-dependent look&feel;http://www.jgoodies.com/freeware/libraries/looks/;2.4.1
+JGraph;displaying graphs and rules;http://www.jgraph.com;5.13.0
+JPGD;parsing Graphviz documents;http://www.alexander-merz.com/graphviz/;0.8.6beta
+ltl2buchi;translating LTL formulae to Büchi automata;http://ti.arc.nasa.gov/profile/dimitra/projects-tools;
+opencsv;reading (and writing) comma-separated value files;http://opencsv.sourceforge.net/;2.3
+RSyntaxTextArea;editing syntax-highlighted control and Prolog programs;http://fifesoft.com/rsyntaxtextarea;
+Xerces;XML parsing;http://xerces.apache.org;2.11.0

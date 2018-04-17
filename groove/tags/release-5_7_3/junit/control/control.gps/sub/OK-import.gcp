@@ -1,0 +1,9 @@
+package sub;
+import a;
+import b;
+import c;
+
+alap {
+  alap { a| b; } 
+  c;
+}

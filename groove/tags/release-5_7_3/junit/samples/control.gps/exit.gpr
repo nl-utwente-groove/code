@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph edgemode="directed" edgeids="false" role="rule" id="exit">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n1052">
+            <attr name="layout">
+                <string>187 143 39 30</string>
+            </attr>
+        </node>
+        <node id="n1051">
+            <attr name="layout">
+                <string>323 118 38 15</string>
+            </attr>
+        </node>
+        <node id="n1053">
+            <attr name="layout">
+                <string>233 52 28 15</string>
+            </attr>
+        </node>
+        <edge to="n1051" from="n1051">
+            <attr name="label">
+                <string>Station</string>
+            </attr>
+        </edge>
+        <edge to="n1051" from="n1052">
+            <attr name="label">
+                <string>dest</string>
+            </attr>
+        </edge>
+        <edge to="n1052" from="n1052">
+            <attr name="label">
+                <string>Person</string>
+            </attr>
+        </edge>
+        <edge to="n1053" from="n1052">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge to="n1053" from="n1053">
+            <attr name="label">
+                <string>Train</string>
+            </attr>
+        </edge>
+        <edge to="n1051" from="n1053">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge to="n1052" from="n1052">
+            <attr name="label">
+                <string>del:</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>
