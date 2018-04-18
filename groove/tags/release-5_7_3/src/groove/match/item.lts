@@ -1,0 +1,84 @@
+const FALSE = 0
+const TRUE = 1
+range BOOL = FALSE..TRUE
+
+const UPPER = 3
+range DATA = 1..UPPER
+
+SINGULAR = START,
+  // The search starts from scratch
+  START =
+      ( next -> find[b:BOOL] -> return[b]
+             -> if (b) then (write[0] -> FOUND) else EMPTY
+      | repeat -> START
+      | reset -> START ),
+  // The search has failed immediately, and is not yet reset
+  EMPTY =
+      ( next -> return[FALSE] -> EMPTY
+      | repeat -> EMPTY
+      | reset -> START ),
+  // The search has succeeded (once); the next time it will fail
+  FOUND =
+      ( next -> return[FALSE] -> erase -> FULL
+      | repeat -> erase -> FULL
+      | reset -> erase -> START ),
+  // The search has succeeded and then failed, and is starting to repeat
+  FULL =
+      ( next -> return[TRUE] -> write[0] -> FOUND
+      | repeat -> FULL
+      | reset -> START ).
+
+||SING_SYSTEM = SINGULAR\{write,erase}.
+
+MULTIPLE = START,
+  // The search starts from scratch
+  START =
+      ( next -> find[b:BOOL] -> return[b]
+             -> if (b) then (write[0] -> PART[1]) else EMPTY
+      | repeat -> START
+      | reset -> START ),
+  // The search has failed immediately, and is not yet reset
+  EMPTY =
+      ( next -> return[FALSE] -> EMPTY
+      | repeat -> EMPTY
+      | reset -> START ),
+  // The search has yielded some first results, but is not yet completed
+  PART[d:DATA] =
+      ( next -> find[b:BOOL] -> return[b]
+             -> if (b) then (write[d] -> PART[d+1]) else FULL_START[d]
+      | repeat -> PART_START[d]
+      | reset -> erase -> START ),
+  // The search has just started repeating after having yielded some results
+  PART_START[d:DATA] =
+      ( next -> return[TRUE] -> write[0]
+             -> if (d==1) then PART[d] else PART_REPEAT[1][d]
+      | repeat -> PART_START[d]
+      | reset -> START
+      ),
+  // The search is repeating the previously found (partial) results
+  PART_REPEAT[i:DATA][d:DATA] =
+      ( next -> return[TRUE] -> write[i]
+             -> if (i<d-1) then PART_REPEAT[i+1][d] else PART[d]
+      | repeat -> erase -> PART_START[d]
+      | reset -> erase -> START ),
+  // The search has been concluded after yielding at least one result
+  FULL_START[d:DATA] =
+      ( next -> return[TRUE] -> write[0] -> FULL_REPEAT[1][d]
+      | repeat -> FULL_START[d]
+      | reset -> START ),
+  // The search is repeating the previously found (complete) results
+  FULL_REPEAT[i:DATA][d:DATA] =
+      ( next -> if (i<d)
+                then (return[TRUE] -> write[i] -> FULL_REPEAT[i+1][d])
+                else (return[FALSE] -> erase -> FULL_START[d])
+      | repeat -> erase -> FULL_START[d]
+      | reset -> erase -> START ).
+
+SEARCH = CHOOSE,
+  CHOOSE =
+      ( choose[d:DATA] -> SEARCH[UPPER] ),
+  SEARCH[d:0..UPPER] = 
+      ( reset -> CHOOSE
+      | find[d>=2] -> SEARCH[d-1] ).
+ 
+||MULT_SYSTEM = (MULTIPLE || SEARCH)\{choose,write,erase}.
