@@ -254,6 +254,17 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     @Override
+    public void clearCache() {
+        // the cache should not be cleared as long as it contains information that has not
+        // been copied to the state; which is to say, as long as it is not closed.
+        // Note that closing the state changes its status and should only occur when
+        // the exploration asks for it
+        if (isClosed()) {
+            super.clearCache();
+        }
+    }
+
+    @Override
     public boolean setError() {
         int oldStatus = getStatus();
         boolean result = setStatus(Flag.ERROR, true);
