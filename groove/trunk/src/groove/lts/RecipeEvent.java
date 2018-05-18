@@ -17,6 +17,7 @@
 package groove.lts;
 
 import groove.control.template.Switch;
+import groove.grammar.Callable.Kind;
 import groove.grammar.Recipe;
 import groove.transform.Event;
 
@@ -25,7 +26,9 @@ public class RecipeEvent implements GraphTransitionStub, Event, GraphTransitionK
     /** Constructs an instance from a recipe transition. */
     public RecipeEvent(RecipeTransition trans) {
         this.recipeSwitch = trans.getSwitch();
-        this.initial = trans.getInitial().toStub();
+        assert this.recipeSwitch.getKind() == Kind.RECIPE;
+        this.initial = trans.getInitial()
+            .toStub();
         this.target = trans.target();
     }
 
