@@ -264,7 +264,7 @@ public abstract class UnitPar {
         public RulePar(AspectKind kind, RuleNode node, boolean creator) {
             super(getType(node), node.getId(), creator ? Direction.OUT : toDirection(kind));
             assert kind.isParam();
-            assert !creator || toDirection(kind) == Direction.BI;
+            assert !creator || toDirection(kind) != Direction.IN;
             this.node = node;
             this.creator = creator;
             // do this only now, after all instance variables are set

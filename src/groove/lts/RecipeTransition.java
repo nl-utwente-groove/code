@@ -33,6 +33,7 @@ import groove.control.CtrlVar;
 import groove.control.Valuator;
 import groove.control.instance.Step;
 import groove.control.template.Switch;
+import groove.grammar.Callable.Kind;
 import groove.grammar.Recipe;
 import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.host.HostNode;
@@ -62,7 +63,10 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         this.initial = initial;
         Step initialStep = initial.getStep();
         this.recipeSwitch = initialStep.getSwitchStack()
-            .getBottom();
+            .stream()
+            .filter(s -> s.getKind() == Kind.RECIPE)
+            .findFirst()
+            .get();
     }
 
     @Override
