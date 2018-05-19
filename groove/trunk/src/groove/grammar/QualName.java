@@ -101,7 +101,7 @@ public class QualName extends ModuleName implements Comparable<QualName>, Fallib
     @Override
     public int compareTo(QualName o) {
         int result = 0;
-        int minSize = Math.max(size(), o.size());
+        int minSize = Math.min(size(), o.size());
         for (int i = 0; result == 0 && i < minSize; i++) {
             result = get(i).compareTo(o.get(i));
         }
