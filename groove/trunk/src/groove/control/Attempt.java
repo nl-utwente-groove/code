@@ -26,8 +26,18 @@ import java.util.ArrayList;
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class Attempt<P extends Position<P,A>,A extends Attempt.Stage<P,A>> extends
-    ArrayList<A> {
+public abstract class Attempt<P extends Position<P,A>,A extends Attempt.Stage<P,A>>
+    extends ArrayList<A> {
+    /** Constructs an initially empty attempt of default size. */
+    protected Attempt() {
+        super();
+    }
+
+    /** Constructs an initially empty attempt with a given size. */
+    protected Attempt(int size) {
+        super(size);
+    }
+
     /** Sets the success alternate. */
     final public void setSuccess(P onSuccess) {
         this.onSuccess = onSuccess;

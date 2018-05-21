@@ -26,7 +26,8 @@ import java.util.concurrent.Future;
 /** Global thread pool. */
 public class ThreadPool {
     private ThreadPool() {
-        int threadCount = (Runtime.getRuntime().availableProcessors() + 1) / 2;
+        int threadCount = (Runtime.getRuntime()
+            .availableProcessors() + 1) / 2;
         this.exec = Executors.newFixedThreadPool(threadCount);
         this.futures = new ArrayList<>();
     }
@@ -57,6 +58,7 @@ public class ThreadPool {
             this.isShutDown = true;
             this.exec.shutdown();
         }
+        this.futures.clear();
     }
 
     private boolean isShutDown() {
