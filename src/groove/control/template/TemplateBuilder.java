@@ -16,6 +16,20 @@
  */
 package groove.control.template;
 
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import groove.control.Call;
 import groove.control.CallStack;
 import groove.control.CtrlVar;
@@ -34,20 +48,6 @@ import groove.util.Quad;
 import groove.util.ThreadPool;
 import groove.util.Triple;
 import groove.util.collect.NestedIterator;
-
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Class for constructing control automata.
@@ -121,8 +121,7 @@ public class TemplateBuilder {
             map.putAll(norm.three());
         }
         map.build();
-        ThreadPool.instance()
-            .shutdown();
+        threads.shutdown();
         return result;
     }
 
@@ -155,8 +154,7 @@ public class TemplateBuilder {
             // set the initial location
             TermKey initKey = new TermKey(init, new HashSet<Term>(), new HashSet<CtrlVar>());
             Location start = this.result.getStart();
-            Map<TermKey,Location> locMap =
-                this.locMap = new HashMap<>();
+            Map<TermKey,Location> locMap = this.locMap = new HashMap<>();
             locMap.put(initKey, start);
             Deque<TermKey> fresh = this.freshSwitch = new LinkedList<>();
             fresh.add(initKey);
@@ -220,8 +218,8 @@ public class TemplateBuilder {
                     .sameVerdict()) {
                     // we need an intermediate location to go to after the property test
                     Location aux = getResult().addLocation(0);
-                    SwitchAttempt locAttempt = new SwitchAttempt(loc, aux, aux);
-                    locAttempt.addAll(switches);
+                    SwitchAttempt locAttempt =
+                        new SwitchAttempt(loc, aux, aux, switches.size(), switches.stream());
                     loc.setType(Type.TRIAL);
                     loc.setAttempt(locAttempt);
                     loc = aux;
@@ -238,8 +236,8 @@ public class TemplateBuilder {
                 }
                 Location succTarget = addLocation(termAttempt.onSuccess(), next, null);
                 Location failTarget = addLocation(termAttempt.onFailure(), next, null);
-                SwitchAttempt locAttempt = new SwitchAttempt(loc, succTarget, failTarget);
-                locAttempt.addAll(switches);
+                SwitchAttempt locAttempt = new SwitchAttempt(loc, succTarget, failTarget,
+                    switches.size(), switches.stream());
                 loc.setAttempt(locAttempt);
             }
         }
@@ -329,7 +327,8 @@ public class TemplateBuilder {
         }
 
         /**
-         * Returns the mapping from terms to locations for a given template.
+         * Returns the unexplored set of symbolic locations reached by
+         * a verdict or a switch, depending on the parameter.
          */
         private Deque<TermKey> getFresh(boolean verdict) {
             return verdict ? this.freshVerdict : this.freshSwitch;
@@ -356,8 +355,7 @@ public class TemplateBuilder {
         }
 
         /** For each template, a mapping from derivations to switches. */
-        private final List<Map<Derivation,SwitchStack>> switchMaps =
-            new ArrayList<>();
+        private final List<Map<Derivation,SwitchStack>> switchMaps = new ArrayList<>();
     }
 
     /** Computes the quotient of a given template under bisimilarity,
@@ -564,8 +562,7 @@ public class TemplateBuilder {
 
         @Override
         public Iterator<Cell> iterator() {
-            return new NestedIterator<>(this.singles.iterator(),
-                this.multiples.iterator());
+            return new NestedIterator<>(this.singles.iterator(), this.multiples.iterator());
         }
 
         /** Indicates that there are only singular cells. */
