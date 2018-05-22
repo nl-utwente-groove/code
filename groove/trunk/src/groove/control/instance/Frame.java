@@ -16,6 +16,11 @@
  */
 package groove.control.instance;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import groove.control.Call;
 import groove.control.CallStack;
 import groove.control.CtrlVar;
@@ -29,42 +34,12 @@ import groove.grammar.Recipe;
 import groove.util.DefaultFixable;
 import groove.util.Fixable;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 /**
  * Run-time composed control location.
  * @author Arend Rensink
  * @version $Revision $
  */
 public class Frame implements Position<Frame,Step>, Fixable {
-    /** Constructs an error or absence frame.
-     * @param ctrl the control automaton being built
-     * @param stack underlying call stack
-     * @param pred predecessor in a verdict transition; if {@code null}, this is
-     * a prime frame
-     * @param policy if {@link CheckPolicy#ERROR}, this is an error frame, otherwise it is an absence frame
-     */
-    Frame(Automaton ctrl, SwitchStack stack, Frame pred, int transience, CheckPolicy policy) {
-        this.aut = ctrl;
-        this.nr = ctrl.getFrames()
-            .size();
-        List<Assignment> pops = new ArrayList<>();
-        this.pred = pred;
-        if (pred == null) {
-            this.prime = this;
-        } else {
-            this.prime = pred.getPrime();
-            pops.addAll(pred.getPops());
-        }
-        this.pops = pops;
-        // avoid sharing
-        this.switchStack = new SwitchStack(stack);
-        this.location = Location.getSpecial(policy, transience);
-    }
-
     /** Constructs a new live frame.
      * @param ctrl the control automaton being built
      * @param loc top template location of the frame
@@ -376,8 +351,8 @@ public class Frame implements Position<Frame,Step>, Fixable {
             if (isRemoved()) {
                 this.onRemove = this;
             } else {
-                this.onRemove =
-                    newFrame(Location.getSpecial(CheckPolicy.REMOVE, getLocation().getTransience()));
+                this.onRemove = newFrame(
+                    Location.getSpecial(CheckPolicy.REMOVE, getLocation().getTransience()));
             }
         }
         return this.onRemove;

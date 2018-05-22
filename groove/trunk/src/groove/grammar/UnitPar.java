@@ -254,10 +254,10 @@ public abstract class UnitPar {
         private final CtrlVar var;
     }
 
-    /** Class encoding a formal action parameter. */
+    /** Class encoding a formal rule parameter. */
     public static class RulePar extends UnitPar {
         /**
-         * Constructs a new formal action parameter.
+         * Constructs a new formal rule parameter.
          * @param kind the kind of parameter; determines the directionality
          * @param node the associated rule node
          */

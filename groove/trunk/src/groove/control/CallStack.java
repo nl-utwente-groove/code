@@ -17,6 +17,7 @@
 package groove.control;
 
 import java.util.Stack;
+import java.util.stream.Stream;
 
 import groove.grammar.Action;
 import groove.grammar.Recipe;
@@ -35,8 +36,8 @@ public class CallStack extends Stack<Call> {
     /**
      * Constructs an initially empty stack.
      */
-    public CallStack() {
-        // empty
+    public CallStack(Stream<Call> calls) {
+        calls.forEach(c -> this.add(c));
     }
 
     /** Returns the rule invoked in the top element of the call stack. */
