@@ -35,49 +35,34 @@ public class OrTerm extends Term {
             DerivationAttempt ders0 = arg0().getAttempt(nested);
             DerivationAttempt ders1 = arg1().getAttempt(nested);
             result = createAttempt();
-            if (useArg0Only(nested)) {
-                result.addAll(ders0);
-                result.setSuccess(ders0.onSuccess()
-                    .or(arg1()));
-                result.setFailure(ders0.onFailure()
-                    .or(arg1()));
-            } else if (useArg1Only(nested)) {
-                result.addAll(ders1);
-                result.setSuccess(arg0().or(ders1.onSuccess()));
-                result.setFailure(arg0().or(ders1.onFailure()));
-            } else {
+            // first deal with the operand that does not branch
+            // so as to avoid exponential blowup
+            boolean sameVerdict0 = arg0().isTrial() && ders0.sameVerdict();
+            boolean sameVerdict1 = arg1().isTrial() && ders1.sameVerdict();
+            Term success, failure;
+            if (sameVerdict0 && sameVerdict1) {
                 // optimise: combine the attempts of both args
                 result.addAll(ders0);
                 result.addAll(ders1);
-                result.setSuccess(ders0.onSuccess()
-                    .or(ders1.onSuccess()));
-                result.setFailure(ders0.onFailure()
-                    .or(ders1.onFailure()));
+                success = failure = ders0.onSuccess()
+                    .or(ders1.onSuccess());
+            } else if (sameVerdict1 || !arg0().isTrial()) {
+                // first process arg1
+                result.addAll(ders1);
+                success = arg0().or(ders1.onSuccess());
+                failure = sameVerdict1 ? success : arg0().or(ders1.onFailure());
+            } else {
+                // first process arg0
+                result.addAll(ders0);
+                success = ders0.onSuccess()
+                    .or(arg1());
+                failure = sameVerdict0 ? success : ders0.onFailure()
+                    .or(arg1());
             }
+            result.setSuccess(success);
+            result.setFailure(failure);
         }
         return result;
-    }
-
-    /**
-     * Yields true if arg0 is a trial position, and either arg1 is not
-     * or one of them has distinct verdicts.
-     */
-    private boolean useArg0Only(boolean nested) {
-        return arg0().isTrial() && (!arg1().isTrial() || !arg0().getAttempt(nested)
-            .sameVerdict()
-            || !arg1().getAttempt(nested)
-                .sameVerdict());
-        // The following was abandoned, as it leads to exponential blowup if tries are nested inside ors
-        // && !arg0().getAttempt(nested).sameVerdict() || !arg1().isTrial();
-    }
-
-    /**
-     * Yields true if arg0 is not a trial position, and arg1 is.
-     */
-    private boolean useArg1Only(boolean nested) {
-        return !arg0().isTrial() && arg1().isTrial();
-        // The following was abandoned, as it leads to exponential blowup if tries are nested inside ors
-        //|| !useArg0Only(nested)  && !arg1().getAttempt(nested).sameVerdict();
     }
 
     @Override
