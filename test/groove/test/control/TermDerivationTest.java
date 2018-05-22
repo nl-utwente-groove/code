@@ -86,30 +86,32 @@ public class TermDerivationTest {
         setSource(a.seq(a)
             .tryElse(b)
             .or(c));
-        assertEdge(this.aCall, a);
-        assertSuccFail(c, b.or(c));
+        assertEdge(this.cCall, epsilon());
+        assertSuccFail(a.seq(a)
+            .tryElse(b),
+            a.seq(a)
+                .tryElse(b));
         assertDepth(0);
-        // (try <a;a> else b) | c
+        // (try <a;a> else b)
         setSource(a.seq(a)
             .atom()
-            .tryElse(b)
-            .or(c));
+            .tryElse(b));
         assertEdge(this.aCall, a.transit());
-        assertSuccFail(c, b.or(c));
+        assertSuccFail(delta(), b);
         assertDepth(0);
-        // c | (if (a) a else b) | c
+        // c | (if (a) a else b)
         setSource(c.or(a.ifElse(a, b)));
-        assertEdge(this.aCall, a);
-        assertSuccFail(c, c.or(b));
+        assertEdge(this.cCall, epsilon());
+        assertSuccFail(a.ifElse(a, b), a.ifElse(a, b));
         assertDepth(0);
-        // a | { alap other }
-        setSource(a.or(b.or(c)
-            .alap()));
+        // a | { alap { b|c } }
+        setSource(b.or(c)
+            .alap());
         assertEdge(this.bCall, b.or(c)
             .alap());
         assertEdge(this.cCall, b.or(c)
             .alap());
-        assertSuccFail(a, a.or(epsilon()));
+        assertSuccFail(delta(), epsilon());
         assertDepth(0);
     }
 
