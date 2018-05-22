@@ -27,7 +27,7 @@ import groove.util.Pair;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Derivation extends Pair<Call,Term>implements Attempt.Stage<Term,Derivation> {
+public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,Derivation> {
     /**
      * Constructs a derivation out of a call and a target term,
      * with a given caller.

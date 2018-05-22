@@ -16,21 +16,21 @@
  */
 package groove.control.template;
 
+import java.util.Stack;
+
 import groove.control.Attempt;
 import groove.control.Call;
 import groove.control.CallStack;
 import groove.grammar.Recipe;
 import groove.grammar.host.HostFactory;
 
-import java.util.Stack;
-
 /**
  * Stack of switches, corresponding to nested procedure calls.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class SwitchStack extends Stack<Switch> implements Attempt.Stage<Location,SwitchStack>,
-    Comparable<SwitchStack>, Relocatable {
+public class SwitchStack extends Stack<Switch>
+    implements Attempt.Stage<Location,SwitchStack>, Comparable<SwitchStack>, Relocatable {
     /** Constructs a copy of a given stack. */
     public SwitchStack(SwitchStack other) {
         addAll(other);
@@ -83,10 +83,7 @@ public class SwitchStack extends Stack<Switch> implements Attempt.Stage<Location
     @Override
     public CallStack getCallStack() {
         if (this.callStack == null) {
-            this.callStack = new CallStack();
-            for (Switch swit : this) {
-                this.callStack.add(swit.getCall());
-            }
+            this.callStack = new CallStack(stream().map(s -> s.getCall()));
         }
         return this.callStack;
     }
