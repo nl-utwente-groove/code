@@ -20,6 +20,15 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.junit.Before;
+import org.junit.Test;
+
 import groove.control.Call;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
@@ -33,16 +42,7 @@ import groove.control.template.SwitchStack;
 import groove.control.template.Template;
 import groove.grammar.QualName;
 import groove.util.parse.FormatException;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import junit.framework.Assert;
-
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * @author Arend Rensink
@@ -114,15 +114,15 @@ public class TemplateBuildTest extends CtrlTester {
         assertFalse(onFailure(getStart()).isDead());
         //
         build("choice { if (a) b; else { c;c; } } or c;");
-        assertSize(6);
-        loc = getInit(this.aCall);
+        assertSize(7);
+        assertTrue(getInit(this.cCall).isFinal());
+        assertEquals(onSuccess(getStart()), onFailure(getStart()));
+        loc = getNext(onSuccess(getStart()), this.aCall);
         assertTrue(getNext(loc, this.bCall).isFinal());
         assertFalse(hasNext(loc, this.cCall));
-        Location pos = onSuccess(getStart());
-        assertTrue(getNext(pos, this.cCall).isFinal());
-        Set<Location> locs = getNexts(onFailure(getStart()), this.cCall);
-        assertTrue(locs.contains(pos));
-        assertTrue(locs.contains(getNext(pos, this.cCall)));
+        Location pos = onFailure(onSuccess(getStart()));
+        assertFalse(getNext(pos, this.cCall).isFinal());
+        assertTrue(getNext(getNext(pos, this.cCall), this.cCall).isFinal());
         //
         build("< a;b; > c;");
         loc = getInit(this.aCall);
@@ -156,15 +156,14 @@ public class TemplateBuildTest extends CtrlTester {
     @Test
     public void testOther() {
         build("choice a; or { alap other; }");
-        assertSize(6);
-        assertTrue(getNext(onFailure(getStart()), this.aCall).isFinal());
-        Location loc = getInit(this.bCall);
-        assertEquals(loc, getInit(this.cCall));
+        assertSize(4);
+        assertEquals(onFailure(getStart()), onSuccess(getStart()));
+        Location loc = onFailure(getStart());
+        assertTrue(onFailure(loc).isFinal());
+        assertFalse(onSuccess(loc).isFinal());
         assertEquals(loc, getNext(loc, this.bCall));
         assertEquals(loc, getNext(loc, this.cCall));
         assertEquals(loc, getNext(loc, this.dCall));
-        assertTrue(onFailure(loc).isFinal());
-        assertFalse(onSuccess(loc).isFinal());
     }
 
     public void testUntil() {

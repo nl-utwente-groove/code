@@ -20,6 +20,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import groove.algebra.JavaIntAlgebra;
 import groove.control.Binding;
 import groove.control.Binding.Source;
 import groove.control.Call;
@@ -43,14 +53,6 @@ import groove.grammar.Rule;
 import groove.gui.Viewer;
 import groove.util.Groove;
 import groove.util.parse.FormatException;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * @author Arend Rensink
@@ -81,48 +83,56 @@ public class AutomatonBuildTest {
         assertEquals(Position.Type.TRIAL, f.getType());
         StepAttempt s = f.getAttempt();
         assertEquals(2, s.size());
-        Call oNodeCall = call("oNode", CtrlPar.outVar(QualName.parse("r"), "q", "node"));
-        Call bNodeCall = call("bNode", CtrlPar.outVar(QualName.parse("r"), "q", "node"));
-        assertEquals(oNodeCall, s.get(0)
+        Call fCall = call("f");
+        Call aCall = call("a");
+        Call bCall = call("b");
+        assertEquals(2, s.get(0)
+            .getSwitchStack()
+            .size());
+        assertEquals(fCall, s.get(0)
+            .getSwitchStack()
+            .getBottomCall());
+        assertEquals(bCall, s.get(0)
             .getRuleCall());
-        assertEquals(bNodeCall, s.get(1)
+        assertEquals(aCall, s.get(1)
             .getRuleCall());
+        assertEquals(s.onFailure(), s.onSuccess());
         //
         Frame fFail = s.onFailure();
         StepAttempt sFail = fFail.getAttempt();
         assertEquals(2, sFail.size());
-        Call aCall = call("a");
-        Call bCall = call("b");
-        assertEquals(bCall, sFail.get(0)
-            .getRuleCall());
-        assertEquals(aCall, sFail.get(1)
+        Call rCall = call("r",
+            new CtrlPar.Const(JavaIntAlgebra.instance, 1),
+            CtrlPar.outVar(QualName.parse("f"), "arg", "node"));
+        Call oNodeCall = call("oNode", CtrlPar.outVar(QualName.parse("r"), "q", "node"));
+        Call bNodeCall = call("bNode", CtrlPar.outVar(QualName.parse("r"), "q", "node"));
+        SwitchStack swFail0 = sFail.get(0)
+            .getSwitchStack();
+        assertEquals(fCall, swFail0.get(0)
+            .getCall());
+        assertEquals(rCall, swFail0.get(1)
+            .getCall());
+        assertEquals(oNodeCall, swFail0.getRuleCall());
+        assertEquals(bNodeCall, sFail.get(1)
             .getRuleCall());
         //
         Frame fFailFail = sFail.onFailure();
         assertEquals(0, fFailFail.getSwitchStack()
             .size());
         assertTrue(fFailFail.isFinal());
-        assertEquals(fFailFail, sFail.onSuccess());
         //
-        Frame fSucc = s.onSuccess();
-        StepAttempt sSucc = fSucc.getAttempt();
-        assertEquals(2, sSucc.size());
-        assertEquals(bCall, sSucc.get(0)
-            .getRuleCall());
-        assertEquals(aCall, sSucc.get(1)
-            .getRuleCall());
-        //
-        Frame fSuccFail = sSucc.onFailure();
-        assertEquals(0, fSuccFail.getSwitchStack()
-            .size());
-        assertTrue(fSuccFail.isDead());
-        assertEquals(fSuccFail, sSucc.onSuccess());
-        //
-        assertTrue(s.get(0)
+        Frame fFailSucc = sFail.onSuccess();
+        assertTrue(fFailSucc.isDead());
+        assertTrue(sFail.get(0)
             .onFinish()
             .isFinal());
-        Frame fNext = s.get(1)
+        Frame fNext = sFail.get(1)
             .onFinish();
+        SwitchStack swNext = fNext.getSwitchStack();
+        assertEquals(2, swNext.size());
+        assertEquals(fCall, swNext.getBottomCall());
+        assertEquals(rCall, swNext.get(1)
+            .getCall());
         StepAttempt sNext = fNext.getAttempt();
         assertEquals(1, sNext.size());
         Call bIntCall = call("bInt", CtrlPar.inVar(QualName.parse("r"), "p", "int"));

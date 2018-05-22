@@ -25,14 +25,13 @@ import groove.control.Procedure;
 import groove.control.graph.ControlGraph;
 import groove.control.template.Program;
 import groove.control.template.SwitchStack;
-import groove.control.template.Template;
 import groove.grammar.QualName;
 import groove.grammar.host.HostFactory;
 import groove.util.ThreadPool;
 import groove.util.collect.Pool;
 
 /**
- * Instantiated control automaton.
+ * Instantiated control program.
  * @author Arend Rensink
  * @version $Revision $
  */
@@ -43,18 +42,18 @@ public class Automaton {
     public Automaton(Program program) {
         assert program.isFixed();
         this.program = program;
-        this.template = program.getTemplate();
         this.framePool = new Pool<>();
-        Frame start = new Frame(this, getTemplate().getStart(), new SwitchStack(), null);
+        Frame start = new Frame(this, program.getTemplate()
+            .getStart(), new SwitchStack(), null);
         start.setFixed();
         this.start = addFrame(start);
     }
 
     /** Returns the (qualified) name of the automaton.
-     * This equals the automaton template's name.
+     * This equals the instantiated program name.
      */
     public QualName getQualName() {
-        return getTemplate().getQualName();
+        return getProgram().getMainName();
     }
 
     /** Returns the program from which this control automaton has been created. */
@@ -63,13 +62,6 @@ public class Automaton {
     }
 
     private final Program program;
-
-    /** Returns the template from which this control automaton has been created. */
-    public Template getTemplate() {
-        return this.template;
-    }
-
-    private final Template template;
 
     /** Returns the start frame of the automaton. */
     public Frame getStart() {
@@ -164,6 +156,6 @@ public class Automaton {
      * to the same node).
      */
     public ControlGraph toGraph(boolean full) {
-        return ControlGraph.newGraph(this.template.getQualName(), this.getStart(), full);
+        return ControlGraph.newGraph(getQualName(), getStart(), full);
     }
 }
