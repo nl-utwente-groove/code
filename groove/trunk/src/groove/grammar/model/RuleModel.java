@@ -475,9 +475,13 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             Parameters parameters = new Parameters();
             result.setSignature(parameters.getSignature(), parameters.getHiddenPars());
             result.setRole(role);
-            MethodName matchFilter = (MethodName) properties.parseProperty(Key.FILTER);
-            if (matchFilter != null) {
-                result.setMatchFilter(MatchChecker.createChecker(matchFilter, getGrammar()));
+            try {
+                MethodName matchFilter = (MethodName) properties.parseProperty(Key.FILTER);
+                if (matchFilter != null) {
+                    result.setMatchFilter(MatchChecker.createChecker(matchFilter, getGrammar()));
+                }
+            } catch (FormatException exc) {
+                errors.addAll(exc.getErrors());
             }
         }
         transferErrors(errors, levelTree.getModelMap()).throwException();

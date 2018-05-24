@@ -19,6 +19,12 @@ package groove.graph;
 import static groove.graph.GraphProperties.Key.ENABLED;
 import static groove.graph.GraphProperties.Key.INJECTIVE;
 import static groove.graph.GraphProperties.Key.PRIORITY;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import groove.grammar.Action.Role;
 import groove.grammar.Rule;
 import groove.graph.GraphProperties.Key;
@@ -27,11 +33,6 @@ import groove.util.DefaultFixable;
 import groove.util.parse.FormatError;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Class storing additional information about a graph.
@@ -156,8 +157,8 @@ public class GraphInfo extends DefaultFixable {
                 LayoutMap sourceLayoutMap = sourceInfo.getLayoutMap();
                 targetInfo.setLayoutMap(sourceLayoutMap.afterInverse(elementMap));
                 FormatErrorSet sourceErrors = sourceInfo.getErrors();
-                targetInfo.setErrors(sourceErrors.transfer(elementMap.nodeMap()).transfer(
-                    elementMap.edgeMap()));
+                targetInfo.setErrors(sourceErrors.transfer(elementMap.nodeMap())
+                    .transfer(elementMap.edgeMap()));
             }
             // copy rather than clone the graph properties
             GraphProperties properties = sourceInfo.getProperties();
@@ -173,7 +174,9 @@ public class GraphInfo extends DefaultFixable {
      * @see #getErrors(Graph)
      */
     public static boolean hasErrors(Graph graph) {
-        return graph.hasInfo() && !graph.getInfo().getErrors().isEmpty();
+        return graph.hasInfo() && !graph.getInfo()
+            .getErrors()
+            .isEmpty();
     }
 
     /**
@@ -185,7 +188,8 @@ public class GraphInfo extends DefaultFixable {
     public static Collection<FormatError> getErrors(Graph graph) {
         FormatErrorSet result;
         if (graph.hasInfo()) {
-            result = graph.getInfo().getErrors();
+            result = graph.getInfo()
+                .getErrors();
         } else {
             result = new FormatErrorSet();
         }
@@ -200,7 +204,8 @@ public class GraphInfo extends DefaultFixable {
     public static void setErrors(Graph graph, Collection<FormatError> errors) {
         if (!errors.isEmpty()) {
             assert !graph.isFixed();
-            graph.getInfo().setErrors(errors);
+            graph.getInfo()
+                .setErrors(errors);
         }
     }
 
@@ -210,7 +215,9 @@ public class GraphInfo extends DefaultFixable {
      * @param error error to be added; non-{@code null}
      */
     public static void addError(Graph graph, FormatError error) {
-        graph.getInfo().getErrors().add(error);
+        graph.getInfo()
+            .getErrors()
+            .add(error);
     }
 
     /**
@@ -220,7 +227,9 @@ public class GraphInfo extends DefaultFixable {
      */
     public static void addErrors(Graph graph, Collection<FormatError> errors) {
         if (!errors.isEmpty()) {
-            graph.getInfo().getErrors().addAll(errors);
+            graph.getInfo()
+                .getErrors()
+                .addAll(errors);
         }
     }
 
@@ -229,7 +238,9 @@ public class GraphInfo extends DefaultFixable {
      */
     public static void throwException(Graph graph) throws FormatException {
         if (graph.hasInfo()) {
-            graph.getInfo().getErrors().throwException();
+            graph.getInfo()
+                .getErrors()
+                .throwException();
         }
     }
 
@@ -242,7 +253,8 @@ public class GraphInfo extends DefaultFixable {
     public static LayoutMap getLayoutMap(Graph graph) {
         LayoutMap result = null;
         if (graph.hasInfo()) {
-            result = graph.getInfo().getLayoutMap();
+            result = graph.getInfo()
+                .getLayoutMap();
         }
         return result;
     }
@@ -253,7 +265,8 @@ public class GraphInfo extends DefaultFixable {
      * @param layoutMap the new layout map; non-{@code null}
      */
     public static void setLayoutMap(Graph graph, LayoutMap layoutMap) {
-        graph.getInfo().setLayoutMap(layoutMap);
+        graph.getInfo()
+            .setLayoutMap(layoutMap);
     }
 
     /**
@@ -265,7 +278,9 @@ public class GraphInfo extends DefaultFixable {
     public static GraphProperties getProperties(Graph graph) {
         GraphProperties result = null;
         if (graph.hasInfo()) {
-            result = graph.getInfo().getProperties().clone();
+            result = graph.getInfo()
+                .getProperties()
+                .clone();
             result.setFixed();
         } else {
             result = EMPTY_PROPERTIES;
@@ -281,7 +296,8 @@ public class GraphInfo extends DefaultFixable {
      */
     public static void setProperties(Graph graph, GraphProperties properties) {
         assert !graph.isFixed();
-        graph.getInfo().setProperties(properties);
+        graph.getInfo()
+            .setProperties(properties);
     }
 
     /**
@@ -438,11 +454,19 @@ public class GraphInfo extends DefaultFixable {
      * non-{@code null}
      */
     private static Object getProperty(Graph graph, Key key) {
-        Object result;
-        if (graph.hasInfo()) {
-            result = graph.getInfo().getProperties().parseProperty(key);
-        } else {
-            result = key.parser().getDefaultValue();
+        Object result = null;
+        try {
+            if (graph.hasInfo()) {
+                result = graph.getInfo()
+                    .getProperties()
+                    .parseProperty(key);
+            }
+        } catch (FormatException exc) {
+            // do nothing; default value set below
+        }
+        if (result == null) {
+            result = key.parser()
+                .getDefaultValue();
         }
         return result;
     }
@@ -454,7 +478,8 @@ public class GraphInfo extends DefaultFixable {
      */
     private static void setProperty(Graph graph, Key key, Object value) {
         GraphProperties properties;
-        properties = graph.getInfo().getProperties();
+        properties = graph.getInfo()
+            .getProperties();
         properties.storeProperty(key, value);
     }
 

@@ -84,7 +84,7 @@ public class GrammarProperties extends Properties {
      * Default value: <code>true</code>.
      */
     public boolean isShowLoopsAsLabels() {
-        return (Boolean) parseProperty(GrammarKey.LOOPS_AS_LABELS);
+        return (Boolean) parsePropertyOrDefault(GrammarKey.LOOPS_AS_LABELS);
     }
 
     /**
@@ -100,12 +100,7 @@ public class GrammarProperties extends Properties {
      * value: {@link ThreeValued#FALSE}.
      */
     public ThreeValued isUseParameters() {
-        ThreeValued result = (ThreeValued) parseProperty(GrammarKey.TRANSITION_PARAMETERS);
-        if (result == null) {
-            result = (ThreeValued) GrammarKey.TRANSITION_PARAMETERS.parser()
-                .getDefaultValue();
-        }
-        return result;
+        return (ThreeValued) parsePropertyOrDefault(GrammarKey.TRANSITION_PARAMETERS);
     }
 
     /** Sets the {@link GrammarKey#TRANSITION_PARAMETERS} property to the given value * */
@@ -122,7 +117,7 @@ public class GrammarProperties extends Properties {
      * Returns the version of Groove that created the grammar.
      */
     public String getGrooveVersion() {
-        return (String) parseProperty(GrammarKey.GROOVE_VERSION);
+        return (String) parsePropertyOrDefault(GrammarKey.GROOVE_VERSION);
     }
 
     /** Sets the {@link GrammarKey#GRAMMAR_VERSION} property to the given value */
@@ -134,14 +129,14 @@ public class GrammarProperties extends Properties {
      * Returns the version of the grammar.
      */
     public String getGrammarVersion() {
-        return (String) parseProperty(GrammarKey.GRAMMAR_VERSION);
+        return (String) parsePropertyOrDefault(GrammarKey.GRAMMAR_VERSION);
     }
 
     /**
      * Returns the location of the grammar.
      */
     public Path getLocation() {
-        return (Path) parseProperty(GrammarKey.LOCATION);
+        return (Path) parsePropertyOrDefault(GrammarKey.LOCATION);
     }
 
     /**
@@ -151,7 +146,7 @@ public class GrammarProperties extends Properties {
      */
     @SuppressWarnings("unchecked")
     public List<String> getControlLabels() {
-        return (List<String>) parseProperty(GrammarKey.CONTROL_LABELS);
+        return (List<String>) parsePropertyOrDefault(GrammarKey.CONTROL_LABELS);
     }
 
     /**
@@ -176,7 +171,7 @@ public class GrammarProperties extends Properties {
      * @see GrammarKey#ACTION_POLICY
      */
     public PolicyMap getRulePolicy() {
-        return (PolicyMap) parseProperty(GrammarKey.ACTION_POLICY);
+        return (PolicyMap) parsePropertyOrDefault(GrammarKey.ACTION_POLICY);
     }
 
     /**
@@ -193,7 +188,7 @@ public class GrammarProperties extends Properties {
      * @see GrammarKey#DEAD_POLICY
      */
     public CheckPolicy getDeadPolicy() {
-        return (CheckPolicy) parseProperty(GrammarKey.DEAD_POLICY);
+        return (CheckPolicy) parsePropertyOrDefault(GrammarKey.DEAD_POLICY);
     }
 
     /**
@@ -210,7 +205,7 @@ public class GrammarProperties extends Properties {
      * @see GrammarKey#TYPE_POLICY
      */
     public CheckPolicy getTypePolicy() {
-        return (CheckPolicy) parseProperty(GrammarKey.TYPE_POLICY);
+        return (CheckPolicy) parsePropertyOrDefault(GrammarKey.TYPE_POLICY);
     }
 
     /**
@@ -220,7 +215,7 @@ public class GrammarProperties extends Properties {
      */
     @SuppressWarnings("unchecked")
     public List<String> getCommonLabels() {
-        return (List<String>) parseProperty(GrammarKey.COMMON_LABELS);
+        return (List<String>) parsePropertyOrDefault(GrammarKey.COMMON_LABELS);
     }
 
     /**
@@ -246,7 +241,7 @@ public class GrammarProperties extends Properties {
      * @return if <code>true</code>, non-injective matches are disallowed
      */
     public boolean isInjective() {
-        return (Boolean) parseProperty(GrammarKey.INJECTIVE);
+        return (Boolean) parsePropertyOrDefault(GrammarKey.INJECTIVE);
     }
 
     /**
@@ -263,7 +258,7 @@ public class GrammarProperties extends Properties {
      * @return if <code>true</code>, matches with dangling edges are disallowed.
      */
     public boolean isCheckDangling() {
-        return (Boolean) parseProperty(GrammarKey.DANGLING);
+        return (Boolean) parsePropertyOrDefault(GrammarKey.DANGLING);
     }
 
     /**
@@ -279,11 +274,7 @@ public class GrammarProperties extends Properties {
      * is no strategy set.
      */
     public ExploreType getExploreType() {
-        ExploreType result = (ExploreType) parseProperty(GrammarKey.EXPLORATION);
-        if (result == null) {
-            result = ExploreType.DEFAULT;
-        }
-        return result;
+        return (ExploreType) parsePropertyOrDefault(GrammarKey.EXPLORATION);
     }
 
     /**
@@ -307,7 +298,7 @@ public class GrammarProperties extends Properties {
             return Collections.emptySet();
         }
         @SuppressWarnings("unchecked") List<QualName> names =
-            (List<QualName>) parseProperty(resourceKeyMap.get(kind));
+            (List<QualName>) parsePropertyOrDefault(resourceKeyMap.get(kind));
         return new TreeSet<>(names);
     }
 
@@ -324,11 +315,7 @@ public class GrammarProperties extends Properties {
      * if none is selected.
      */
     public AlgebraFamily getAlgebraFamily() {
-        AlgebraFamily result = (AlgebraFamily) parseProperty(GrammarKey.ALGEBRA);
-        if (result == null) {
-            result = AlgebraFamily.DEFAULT;
-        }
-        return result;
+        return (AlgebraFamily) parsePropertyOrDefault(GrammarKey.ALGEBRA);
     }
 
     /**
@@ -347,7 +334,7 @@ public class GrammarProperties extends Properties {
             // so we can just take the default value
             return DefaultOracle.instance();
         } else {
-            return (ValueOracleFactory) parseProperty(GrammarKey.ORACLE);
+            return (ValueOracleFactory) parsePropertyOrDefault(GrammarKey.ORACLE);
         }
     }
 
@@ -373,7 +360,7 @@ public class GrammarProperties extends Properties {
      *         application conditions
      */
     public boolean isCheckCreatorEdges() {
-        return (Boolean) parseProperty(GrammarKey.CREATOR_EDGE);
+        return (Boolean) parsePropertyOrDefault(GrammarKey.CREATOR_EDGE);
     }
 
     /**
@@ -390,7 +377,7 @@ public class GrammarProperties extends Properties {
      * @return if <code>true</code>, state graphs are compared up to isomorphism
      */
     public boolean isCheckIsomorphism() {
-        return (Boolean) parseProperty(GrammarKey.ISOMORPHISM);
+        return (Boolean) parsePropertyOrDefault(GrammarKey.ISOMORPHISM);
     }
 
     /**
@@ -400,7 +387,7 @@ public class GrammarProperties extends Properties {
      *         being applied twice in a row
      */
     public boolean isRhsAsNac() {
-        return (Boolean) parseProperty(GrammarKey.RHS_AS_NAC);
+        return (Boolean) parsePropertyOrDefault(GrammarKey.RHS_AS_NAC);
     }
 
     /**
@@ -452,7 +439,9 @@ public class GrammarProperties extends Properties {
     public void check(GrammarModel grammar) throws FormatException {
         FormatErrorSet errors = new FormatErrorSet();
         for (GrammarKey key : GrammarKey.values()) {
-            for (FormatError error : key.check(grammar, parseProperty(key))) {
+            Object result = key.parser()
+                .parse(getProperty(key.getName()));
+            for (FormatError error : key.check(grammar, result)) {
                 errors.add("Error in property key '%s': %s", key.getKeyPhrase(), error, key);
             }
         }

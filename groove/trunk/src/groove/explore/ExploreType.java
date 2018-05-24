@@ -226,22 +226,18 @@ public class ExploreType {
             @Override
             public ExploreType parse(String input) {
                 if (input == null || input.length() == 0) {
-                    return null;
+                    return getDefaultValue();
                 }
                 try {
                     return ExploreType.parse(input);
                 } catch (FormatException exc) {
-                    return null;
+                    return getDefaultValue();
                 }
             }
 
             @Override
             public String toParsableString(Object value) {
-                if (value == null) {
-                    return "";
-                } else {
-                    return ((ExploreType) value).toParsableString();
-                }
+                return ((ExploreType) value).toParsableString();
             }
 
             @Override
@@ -251,12 +247,12 @@ public class ExploreType {
 
             @Override
             public boolean isValue(Object value) {
-                return value == null || value instanceof ExploreType;
+                return value instanceof ExploreType;
             }
 
             @Override
             public ExploreType getDefaultValue() {
-                return null;
+                return ExploreType.DEFAULT;
             }
         };
     }
