@@ -56,6 +56,7 @@ import groove.match.SearchStrategy;
 import groove.match.TreeMatch;
 import groove.match.plan.PlanSearchStrategy;
 import groove.transform.Proof;
+import groove.util.Exceptions;
 import groove.util.Fixable;
 import groove.util.Visitor;
 import groove.util.parse.FormatException;
@@ -159,9 +160,14 @@ public class Rule implements Action, Fixable {
      */
     public void setProperties(GraphProperties properties) {
         testFixed(false);
-        this.priority = (Integer) properties.parseProperty(Key.PRIORITY);
-        this.transitionLabel = (String) properties.parseProperty(Key.TRANSITION_LABEL);
-        this.formatString = (String) properties.parseProperty(Key.FORMAT);
+        try {
+            this.priority = (Integer) properties.parseProperty(Key.PRIORITY);
+            this.transitionLabel = (String) properties.parseProperty(Key.TRANSITION_LABEL);
+            this.formatString = (String) properties.parseProperty(Key.FORMAT);
+        } catch (FormatException exc) {
+            assert false : "Graph properties should not contain errors at this point";
+            throw Exceptions.UNREACHABLE;
+        }
     }
 
     @Override

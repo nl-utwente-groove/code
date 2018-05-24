@@ -1033,6 +1033,7 @@ public class SimulatorModel implements Cloneable {
      * compatible with the existing grammar
      */
     public void setExploreType(ExploreType exploreType) throws FormatException {
+        assert exploreType != null;
         if (hasGrammar() && !getGrammar().hasErrors()) {
             try {
                 exploreType.test(getGrammar().toGrammar());
@@ -1060,8 +1061,12 @@ public class SimulatorModel implements Cloneable {
         changeExploreType(exploreType);
     }
 
-    /** Changes the exploration field, and adds the ltsListener. */
+    /**
+     * Changes the exploration field, and adds the ltsListener.
+     * @param exploreType the new (non-{@code null}) exploration type
+     */
     private void changeExploreType(ExploreType exploreType) {
+        assert exploreType != null;
         if (exploreType != this.exploreType) {
             this.exploreType = exploreType;
         }
