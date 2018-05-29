@@ -68,7 +68,7 @@ public class StateCache {
         }
         if (trans instanceof RuleTransition) {
             getMatches().remove(trans.getKey());
-            if (trans.isPartial()) {
+            if (trans.isPartial() || trans.isInternalStep()) {
                 getExploreData().notifyOutPartial((RuleTransition) trans);
             }
         }
