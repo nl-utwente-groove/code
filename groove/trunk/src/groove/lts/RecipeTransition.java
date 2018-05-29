@@ -31,8 +31,9 @@ import groove.control.CtrlPar.Var;
 import groove.control.CtrlPar.Wild;
 import groove.control.CtrlVar;
 import groove.control.Valuator;
-import groove.control.instance.Step;
+import groove.control.instance.Assignment;
 import groove.control.template.Switch;
+import groove.control.template.SwitchStack;
 import groove.grammar.Callable.Kind;
 import groove.grammar.Recipe;
 import groove.grammar.host.HostGraphMorphism;
@@ -61,12 +62,15 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         super(source, target);
         assert source == initial.source();
         this.initial = initial;
-        Step initialStep = initial.getStep();
-        this.recipeSwitch = initialStep.getSwitchStack()
-            .stream()
-            .filter(s -> s.getKind() == Kind.RECIPE)
-            .findFirst()
-            .get();
+        SwitchStack initialStack = initial.getStep()
+            .getSwitchStack();
+        int depth = 0;
+        while (initialStack.get(depth)
+            .getKind() != Kind.RECIPE) {
+            depth++;
+        }
+        this.recipeCallDepth = depth;
+        this.recipeSwitch = initialStack.get(depth);
     }
 
     @Override
@@ -101,6 +105,8 @@ public class RecipeTransition extends ALabelEdge<GraphState>
     }
 
     private final Switch recipeSwitch;
+    /** Depth of the recipe switch in the initial call of this transition. */
+    private final int recipeCallDepth;
 
     @Override
     public RecipeEvent getEvent() {
@@ -257,11 +263,28 @@ public class RecipeTransition extends ALabelEdge<GraphState>
                     Map<CtrlVar,Integer> varIxMap = getSwitch().onFinish()
                         .getVarIxMap();
                     int varIndex = varIxMap.get(var);
-                    Object[] values = target().getActualValues();
+                    Object[] values = getFrameValues();
                     node = Valuator.get(values, varIndex);
                 }
             }
             result[i] = node;
+        }
+        return result;
+    }
+
+    /** Retrieves the frame values of the target state
+     * popped to the level corresponding to the switch' target location.
+     */
+    private Object[] getFrameValues() {
+        Object[] result = target().getPrimeValues();
+        List<Assignment> pops = target().getActualFrame()
+            .getPops();
+        int popCount = target().getActualFrame()
+            .getTotalDepth() - this.recipeCallDepth;
+        assert popCount <= pops.size();
+        for (int i = 0; i < popCount; i++) {
+            result = pops.get(i)
+                .apply(result);
         }
         return result;
     }

@@ -38,6 +38,7 @@ import groove.grammar.Rule;
 import groove.grammar.Signature;
 import groove.grammar.UnitPar;
 import groove.grammar.host.HostNode;
+import groove.util.Exceptions;
 
 /**
  * Action to be taken as part of a {@link Step}.
@@ -45,13 +46,6 @@ import groove.grammar.host.HostNode;
  * @version $Revision $
  */
 public class Assignment {
-    /**
-     * Creates an action with all necessary parameters.
-     */
-    private Assignment(Kind kind, Map<CtrlVar,Binding> bindings) {
-        this(kind, bindings.values());
-    }
-
     /**
      * Creates an action with all necessary parameters.
      */
@@ -126,11 +120,6 @@ public class Assignment {
             Binding bind = bindings[i];
             HostNode value;
             switch (bind.getSource()) {
-            case ANCHOR:
-            case CREATOR:
-                assert false;
-                value = null;
-                break;
             case CALLER:
                 assert parentValues != null : String.format(
                     "Can't apply %s: valuation %s does not have parent level",
@@ -146,8 +135,7 @@ public class Assignment {
                 value = Valuator.get(val, bind.getIndex());
                 break;
             default:
-                assert false;
-                value = null;
+                throw Exceptions.UNREACHABLE;
             }
             result[i] = value;
         }
@@ -256,7 +244,7 @@ public class Assignment {
     /**
      * Computes the variable assignment for the location to where control returns
      * after a procedure call, from the variables in the final location of the
-     * procedure template and the source state of the call.
+     * procedure template and the source location of the call.
      * @param top final location of the template
      * @param swit the template call
      */
