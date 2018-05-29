@@ -70,6 +70,11 @@ public class CallStack extends Stack<Call> {
         return this.recipe;
     }
 
+    /** The first recipe in the call stack, or {@code null} if there is none. */
+    private Recipe recipe;
+    /** Flag indicating if the value of {@link #recipe} has been initialised. */
+    private boolean recipeInit;
+
     /**
      * Returns the top-level action in this call stack.
      * This is either the recipe if there is one, or the top-level rule.
@@ -81,11 +86,6 @@ public class CallStack extends Stack<Call> {
         }
         return result;
     }
-
-    /** The first recipe in the call stack, or {@code null} if there is none. */
-    private Recipe recipe;
-    /** Flag indicating if the value of {@link #recipe} has been initialised. */
-    private boolean recipeInit;
 
     @Override
     public String toString() {

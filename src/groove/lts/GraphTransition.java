@@ -51,7 +51,7 @@ public interface GraphTransition extends GEdge<GraphState> {
     /** Returns the GTS in which this transition occurs. */
     public GTS getGTS();
 
-    /** Indicates if this transition is part of an atomic block. */
+    /** Indicates if this transition is part of an atomic block or recipe. */
     public boolean isPartial();
 
     /**
@@ -160,10 +160,12 @@ public interface GraphTransition extends GEdge<GraphState> {
         PRESENT {
             @Override
             public boolean admits(GraphTransition trans) {
-                return !trans.source().isAbsent() && !trans.target().isAbsent();
+                return !trans.source()
+                    .isAbsent()
+                    && !trans.target()
+                        .isAbsent();
             }
-        },
-        ;
+        },;
 
         /** Indicates if a given graph transition belongs to this class. */
         abstract public boolean admits(GraphTransition trans);

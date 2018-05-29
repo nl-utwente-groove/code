@@ -39,8 +39,8 @@ public class AnyTest extends AControlTest {
 
     @Test
     public void testSub1() {
-        explore("sub1.any", 2, 2, 2, 3);
-        explore("sub1.star-any", 2, 5, 2, 6);
+        explore("sub1.any", 2, 2, 2, 4);
+        explore("sub1.star-any", 2, 5, 2, 7);
         explore("sub1.sub1-any", 2, 1, 2, 1);
     }
 }

@@ -16,8 +16,6 @@
  */
 package groove.lts;
 
-import groove.util.Pair;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -28,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+
+import groove.util.Pair;
 
 /**
  * Information required for the proper exploration of transient states.
@@ -40,7 +40,8 @@ class ExploreData {
      */
     ExploreData(StateCache cache) {
         GraphState state = this.state = cache.getState();
-        this.absence = this.state.getActualFrame().getTransience();
+        this.absence = this.state.getActualFrame()
+            .getTransience();
         this.inRecipe = state.isInternalState();
         if (!state.isClosed()) {
             this.recipeTargets = new ArrayList<>();
@@ -48,28 +49,31 @@ class ExploreData {
                 this.recipeTargets.add(state);
             }
         }
-        this.recipeInits =
-            state.isInternalState() ? new ArrayList<>() : null;
+        this.recipeInits = state.isInternalState() ? new ArrayList<>() : null;
     }
 
     private final AbstractGraphState state;
 
     /**
-     * Notifies the cache of the addition of an outgoing partial transition.
-     * @param partial new outgoing partial rule transition from this state
+     * Notifies the cache of the addition of an outgoing partial or internal transition.
+     * @param partial new outgoing partial or internal rule transition from this state
      */
     void notifyOutPartial(RuleTransition partial) {
         if (DEBUG) {
-            System.out.printf("Rule transition added: %s--%s-->%s%n", partial.source(),
-                partial.label(), partial.target());
+            System.out.printf("Rule transition added: %s--%s-->%s%n",
+                partial.source(),
+                partial.label(),
+                partial.target());
         }
-        assert partial.isPartial();
+        assert partial.isPartial() || partial.isInternalStep();
         assert partial.source() == this.state;
         GraphState child = partial.target();
-        if (child.getActualFrame().isRemoved()) {
+        if (child.getActualFrame()
+            .isRemoved()) {
             return;
         }
-        ExploreData childCache = child.getCache().getExploreData();
+        ExploreData childCache = child.getCache()
+            .getExploreData();
         if (childCache == this) {
             return;
         }
@@ -85,7 +89,8 @@ class ExploreData {
                     childCache.rawParents.add(this);
                 }
             }
-        } else if (partial.getStep().isInitial()) {
+        } else if (partial.getStep()
+            .isInitial()) {
             // immediately add recipe transitions to the
             // previously found surface descendants of the child
             for (GraphState target : childCache.getRecipeTargets()) {
@@ -163,7 +168,9 @@ class ExploreData {
         }
         if (change == Change.TOP_LEVEL) {
             if (DEBUG) {
-                System.out.printf("Top-level reachables of %s augmented by %s%n", this.state, child);
+                System.out.printf("Top-level reachables of %s augmented by %s%n",
+                    this.state,
+                    child);
             }
             addRecipeTarget(child);
         }
@@ -206,9 +213,12 @@ class ExploreData {
 
     private void addRecipeTransition(GraphState source, RuleTransition partial, GraphState target) {
         RecipeTransition trans = new RecipeTransition(source, target, partial);
-        this.state.getGTS().addTransition(trans);
+        this.state.getGTS()
+            .addTransition(trans);
         if (DEBUG) {
-            System.out.printf("Recipe transition added: %s--%s-->%s%n", source, trans.label(),
+            System.out.printf("Recipe transition added: %s--%s-->%s%n",
+                source,
+                trans.label(),
                 target);
         }
     }
@@ -285,10 +295,14 @@ class ExploreData {
             while (!this.queue.isEmpty()) {
                 ExploreData source = this.queue.poll();
                 for (GraphTransition trans : source.state.getTransitions()) {
-                    assert trans.target().isDone();
-                    ExploreData target = trans.target().getCache().getExploreData();
+                    assert trans.target()
+                        .isDone();
+                    ExploreData target = trans.target()
+                        .getCache()
+                        .getExploreData();
                     addData(target);
-                    this.backward.get(target).add(source);
+                    this.backward.get(target)
+                        .add(source);
                 }
             }
         }
@@ -304,7 +318,8 @@ class ExploreData {
                 it.remove();
                 Set<GraphState> reachables = this.resultMap.get(next);
                 for (ExploreData pred : this.backward.get(next)) {
-                    if (this.resultMap.get(pred).addAll(reachables)) {
+                    if (this.resultMap.get(pred)
+                        .addAll(reachables)) {
                         changed.add(pred);
                     }
                 }
@@ -319,7 +334,8 @@ class ExploreData {
                 List<GraphState> topLevelReachables = new ArrayList<>(entry.two());
                 entry.one().recipeTargets = topLevelReachables;
                 if (DEBUG) {
-                    System.out.printf("Top-level reachables of %s determined at %s", entry.one(),
+                    System.out.printf("Top-level reachables of %s determined at %s",
+                        entry.one(),
                         topLevelReachables);
                 }
             }
@@ -348,14 +364,11 @@ class ExploreData {
         }
 
         /** backward map from states to direct predecessors. */
-        private final Map<ExploreData,Set<ExploreData>> backward =
-            new LinkedHashMap<>();
+        private final Map<ExploreData,Set<ExploreData>> backward = new LinkedHashMap<>();
         /** map from states to top level reachables. */
-        private final Map<ExploreData,Set<GraphState>> resultMap =
-            new LinkedHashMap<>();
+        private final Map<ExploreData,Set<GraphState>> resultMap = new LinkedHashMap<>();
         /** List of pairs that are actually being built. */
-        private final List<Pair<ExploreData,Set<GraphState>>> resultList =
-            new ArrayList<>();
+        private final List<Pair<ExploreData,Set<GraphState>>> resultList = new ArrayList<>();
         // queue of outstanding states to be explored
         private final Queue<ExploreData> queue = new LinkedList<>();
     }
@@ -367,6 +380,6 @@ class ExploreData {
         /** The state closed. */
         CLOSURE,
         /** The state became top-level. */
-        TOP_LEVEL, ;
+        TOP_LEVEL,;
     }
 }
