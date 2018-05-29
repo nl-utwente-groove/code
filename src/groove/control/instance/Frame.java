@@ -40,10 +40,10 @@ import groove.util.Fixable;
  * @version $Revision $
  */
 public class Frame implements Position<Frame,Step>, Fixable {
-    /** Constructs a new live frame.
+    /** Constructs a new frame.
      * @param ctrl the control automaton being built
-     * @param loc top template location of the frame
-     * @param stack underlying call stack
+     * @param loc top template location of the frame; non-{@code null}
+     * @param stack underlying call stack; non-{@code null}
      * @param pred predecessor in a verdict transition; if {@code null}, this is
      * a prime frame
      */
@@ -106,7 +106,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
     private final SwitchStack switchStack;
 
     /**
-     * Returns the top control location instantiated by this frame.
+     * Returns the top (non-{@code null}) control location instantiated by this frame.
      */
     public Location getLocation() {
         return this.location;
@@ -197,10 +197,18 @@ public class Frame implements Position<Frame,Step>, Fixable {
 
     private final List<Assignment> pops;
 
+    /**
+     * Returns the total call depth of the frame,
+     * being the sum of the switch stack size and number of pop actions.
+     */
+    public int getTotalDepth() {
+        return getSwitchStack().size() + getPops().size();
+    }
+
     @Override
     public Type getType() {
         if (this.type == null) {
-            this.type = getLocation() == null ? Type.DEAD : getLocation().getType();
+            this.type = getLocation().getType();
         }
         return this.type;
     }
