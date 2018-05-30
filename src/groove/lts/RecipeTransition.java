@@ -280,7 +280,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         List<Assignment> pops = target().getActualFrame()
             .getPops();
         int popCount = target().getActualFrame()
-            .getTotalDepth() - this.recipeCallDepth;
+            .getNestingDepth() - this.recipeCallDepth;
         assert popCount <= pops.size();
         for (int i = 0; i < popCount; i++) {
             result = pops.get(i)

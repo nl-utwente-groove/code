@@ -29,6 +29,7 @@ import groove.control.template.Location;
 import groove.control.template.Switch;
 import groove.control.template.SwitchAttempt;
 import groove.control.template.SwitchStack;
+import groove.grammar.Callable.Kind;
 import groove.grammar.CheckPolicy;
 import groove.grammar.Recipe;
 import groove.util.DefaultFixable;
@@ -62,10 +63,16 @@ public class Frame implements Position<Frame,Step>, Fixable {
         }
         stack = new SwitchStack(stack);
         // pop the call stack until we have a non-final location or empty stack
+        // add pop actions if we are not a prime frame
+        boolean addPops = pred != null;
         while (loc.isFinal() && !stack.isEmpty()) {
             Switch done = stack.pop();
-            // add pop actions if we are not a prime frame
-            if (pred != null) {
+            // also start adding pop actions once we pass the outer recipe call,
+            // if the recipe call has out-parameters that we cannot retrieve otherwise
+            addPops |= done.getKind() == Kind.RECIPE && !done.getCall()
+                .getOutVars()
+                .isEmpty() && !stack.inRecipe();
+            if (addPops) {
                 pops.add(Assignment.exit(loc, done));
             }
             loc = done.onFinish();
@@ -188,8 +195,8 @@ public class Frame implements Position<Frame,Step>, Fixable {
     private Set<Call> pastCalls;
 
     /**
-     * Returns the list of frame pop actions corresponding to
-     * procedure exits due to verdict transitions between the prime frame and this frame.
+     * Returns the list of frame pop actions corresponding to procedure exits
+     * up to (but not including) the outer recipe call, if there is one.
      */
     public List<Assignment> getPops() {
         return this.pops;
@@ -198,10 +205,10 @@ public class Frame implements Position<Frame,Step>, Fixable {
     private final List<Assignment> pops;
 
     /**
-     * Returns the total call depth of the frame,
+     * Returns the total nesting depth of the frame,
      * being the sum of the switch stack size and number of pop actions.
      */
-    public int getTotalDepth() {
+    public int getNestingDepth() {
         return getSwitchStack().size() + getPops().size();
     }
 
@@ -401,11 +408,6 @@ public class Frame implements Position<Frame,Step>, Fixable {
     @Override
     public int getTransience() {
         return getSwitchStack().getTransience() + getLocation().getTransience();
-    }
-
-    /** Indicates if this frame is nested inside a procedure. */
-    public boolean isNested() {
-        return !getSwitchStack().isEmpty();
     }
 
     @Override

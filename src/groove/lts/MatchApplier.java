@@ -138,7 +138,7 @@ public class MatchApplier {
             addedNodes = EMPTY_NODE_ARRAY;
         }
         if (hasFrameValues || ctrlStep.onFinish()
-            .isNested()) {
+            .getNestingDepth() > 0) {
             // only compute the effect if it has not yet been done
             if (effectRecord == null) {
                 effectRecord = new RuleEffect(source.getGraph(), addedNodes, Fragment.NODE_ALL);
