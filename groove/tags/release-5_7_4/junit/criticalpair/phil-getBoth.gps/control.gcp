@@ -1,0 +1,5 @@
+alap { node x;
+  go-hungry(out x); 
+  get-left(x);
+  get-right(x);
+}
