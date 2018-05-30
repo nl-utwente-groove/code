@@ -16,6 +16,10 @@
  */
 package groove.control.instance;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import groove.control.Attempt;
 import groove.control.Call;
 import groove.control.CallStack;
@@ -25,10 +29,6 @@ import groove.control.template.SwitchStack;
 import groove.grammar.Callable;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Run-time control step, instantiating a control edge.
@@ -43,7 +43,9 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      * @param onFinish target frame for the step
      */
     public Step(Frame source, SwitchStack newSwitches, Frame onFinish) {
-        assert newSwitches.peek().getUnit().getKind() == Callable.Kind.RULE;
+        assert newSwitches.peek()
+            .getUnit()
+            .getKind() == Callable.Kind.RULE;
         this.stack = new SwitchStack();
         this.stack.addAll(source.getSwitchStack());
         this.stack.addAll(newSwitches);
@@ -83,7 +85,10 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
     /** Returns the number of levels by which the call stack depth changes from source
      * to target frame. */
     public int getCallDepthChange() {
-        return onFinish().getSwitchStack().size() - getSource().getSwitchStack().size();
+        return onFinish().getSwitchStack()
+            .size()
+            - getSource().getSwitchStack()
+                .size();
     }
 
     /** Returns the stack of switches in this step. */
@@ -162,7 +167,8 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
         List<Assignment> result = new ArrayList<>();
         // add push actions for every successive call on the
         // stack of entered calls
-        for (int i = getSource().getSwitchStack().size(); i < getSwitchStack().size() - 1; i++) {
+        for (int i = getSource().getSwitchStack()
+            .size(); i < getSwitchStack().size() - 1; i++) {
             result.add(Assignment.enter(getSwitchStack().get(i)));
         }
         return result;
@@ -188,15 +194,17 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
         SwitchStack stack = getSwitchStack();
         result.add(Assignment.modify(stack.peek()));
         // add pop actions for the calls that are finished
-        for (int i = stack.size() - 2; i >= onFinish().getSwitchStack().size(); i--) {
-            result.add(Assignment.exit(stack.get(i + 1).onFinish(), stack.get(i)));
+        for (int i = stack.size() - 2; i >= onFinish().getNestingDepth(); i--) {
+            result.add(Assignment.exit(stack.get(i + 1)
+                .onFinish(), stack.get(i)));
         }
         return result;
     }
 
     @Override
     public int compareTo(Step other) {
-        int result = getSource().getNumber() - other.getSource().getNumber();
+        int result = getSource().getNumber() - other.getSource()
+            .getNumber();
         if (result != 0) {
             return result;
         }
@@ -204,7 +212,8 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
         if (result != 0) {
             return result;
         }
-        result = onFinish().getNumber() - other.onFinish().getNumber();
+        result = onFinish().getNumber() - other.onFinish()
+            .getNumber();
         return result;
     }
 
