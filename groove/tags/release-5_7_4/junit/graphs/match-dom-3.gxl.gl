@@ -1,5 +1,0 @@
-# Layout information for .\test\graph\.new\match-dom-3.gxl
-# Each line contains layout information about a node or edge
-# Node Format: n <node id> <bounds>
-# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
-n n121 114 90 18 18 

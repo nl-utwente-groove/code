@@ -1,4 +1,0 @@
-node var1, var2, var3;
-b(out var1, out var2);
-b(var2, out var3);
-c(var1,var2,var3);
