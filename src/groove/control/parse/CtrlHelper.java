@@ -276,8 +276,11 @@ public class CtrlHelper {
             .getText());
         Callable unit = this.namespace.getCallable(qualName);
         if (unit != null) {
-            emitErrorMessage(unitTree, "Duplicate name: %s %s already defined", unit.getKind()
-                .getName(true), qualName);
+            emitErrorMessage(unitTree,
+                "Duplicate name: %s %s already defined",
+                unit.getKind()
+                    .getName(true),
+                qualName);
         } else {
             int priority = unitTree.getChildCount() == 3 ? 0 : Integer.parseInt(unitTree.getChild(2)
                 .getText());
@@ -366,7 +369,7 @@ public class CtrlHelper {
      */
     void registerCall(CtrlTree callTree) {
         QualName to = callTree.getQualName();
-        if (!to.hasWildCard()) {
+        if (to != null && !to.hasWildCard()) {
             this.namespace.addCall(this.procName, to);
         }
     }
@@ -484,8 +487,9 @@ public class CtrlHelper {
         } catch (FormatException e) {
             // this cannot occur, as the constant string has just been approved
             // by the control parser
-            assert false : String.format("%s is not a parsable constant", argTree.getChild(0)
-                .getText());
+            assert false : String.format("%s is not a parsable constant",
+                argTree.getChild(0)
+                    .getText());
         }
     }
 
@@ -652,17 +656,26 @@ public class CtrlHelper {
                 emitErrorMessage(callTree, "Unknown unit '%s'", unitName);
             } else if (action != null && action.getPriority() > 0) {
                 String message = "Explicit call of prioritised %s '%s' not allowed";
-                emitErrorMessage(callTree, message, unit.getKind()
-                    .getName(false), unitName);
+                emitErrorMessage(callTree,
+                    message,
+                    unit.getKind()
+                        .getName(false),
+                    unitName);
             } else if (action != null && action.getRole()
                 .isConstraint()) {
                 String message = "Explicit call of %s property '%s' not allowed";
-                emitErrorMessage(callTree, message, action.getRole()
-                    .toString(), unitName);
+                emitErrorMessage(callTree,
+                    message,
+                    action.getRole()
+                        .toString(),
+                    unitName);
             } else if (action != null && action.getPolicy() == CheckPolicy.OFF) {
                 String message = "Explicit call of disabled %s '%s' not allowed";
-                emitErrorMessage(callTree, message, action.getRole()
-                    .toString(), unitName);
+                emitErrorMessage(callTree,
+                    message,
+                    action.getRole()
+                        .toString(),
+                    unitName);
             } else {
                 result.add(unit);
             }
