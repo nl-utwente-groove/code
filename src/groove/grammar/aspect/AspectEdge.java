@@ -82,9 +82,8 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
             if (label.getNodeOnlyAspect() == null) {
                 this.errors.add("Empty edge label not allowed", this);
             } else {
-                this.errors.add("Aspect %s not allowed in edge label",
-                    label.getNodeOnlyAspect(),
-                    this);
+                this.errors
+                    .add("Aspect %s not allowed in edge label", label.getNodeOnlyAspect(), this);
             }
         }
         for (FormatError error : label().getErrors()) {
@@ -208,8 +207,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
             }
             if (source().getParamKind() == PARAM_ASK || target().getParamKind() == PARAM_ASK) {
                 if (!getKind().isCreator()) {
-                    throw new FormatException(
-                        "User-provided parameters may only be used for new attributes");
+                    throw new FormatException("User-provided parameters must be unconstrained");
                 }
             }
         } else if (getKind().isRole()) {

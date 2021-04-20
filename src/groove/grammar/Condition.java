@@ -31,6 +31,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import groove.algebra.AlgebraFamily;
+import groove.grammar.aspect.AspectKind;
 import groove.grammar.rule.OperatorNode;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleFactory;
@@ -113,8 +114,10 @@ public class Condition implements Fixable {
      *        ground
      * @param properties properties for matching the condition
      */
-    public Condition(@NonNull String name, @NonNull Op operator, RuleGraph pattern,
-        @Nullable RuleGraph root, GrammarProperties properties) {
+    public Condition(@NonNull
+    String name, @NonNull
+    Op operator, RuleGraph pattern, @Nullable
+    RuleGraph root, GrammarProperties properties) {
         assert name != null;
         assert operator.hasPattern();
         this.op = operator;
@@ -480,9 +483,11 @@ public class Condition implements Fixable {
         stabilise(resolverMap);
         for (RuleNode node : resolverMap.keySet()) {
             errors.add(
-                "Variable node '%s' cannot always be resolved (use %s algebra for symbolic exploration or set a value oracle)",
+                "Variable node '%s' cannot always be resolved (use '%s' algebra for symbolic exploration or specify a '%s' or '%s' parameter)",
                 node,
-                AlgebraFamily.POINT.getName());
+                AlgebraFamily.POINT.getName(),
+                AspectKind.PARAM_IN.getPrefix(),
+                AspectKind.PARAM_ASK.getPrefix());
         }
         errors.throwException();
     }
