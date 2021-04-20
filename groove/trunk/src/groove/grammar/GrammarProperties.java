@@ -19,6 +19,7 @@ import groove.grammar.type.TypeLabel;
 import groove.transform.oracle.DefaultOracle;
 import groove.transform.oracle.ValueOracle;
 import groove.transform.oracle.ValueOracleFactory;
+import groove.transform.oracle.ValueOracleKind;
 import groove.util.Groove;
 import groove.util.Properties;
 import groove.util.ThreeValued;
@@ -322,7 +323,7 @@ public class GrammarProperties extends Properties {
      * Indicates if there is an installed value oracle.
      */
     public boolean hasValueOracle() {
-        return getValueOracleFactory() != null;
+        return getValueOracleFactory().getKind() != ValueOracleKind.NONE;
     }
 
     /**

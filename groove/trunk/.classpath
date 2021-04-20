@@ -29,10 +29,10 @@
 	<classpathentry kind="lib" path="lib/antlr-3.4-complete.jar" sourcepath="lib/src/antlr-3.4-src.zip"/>
 	<classpathentry kind="lib" path="lib/antlrworks-1.4.2.jar" sourcepath="lib/src/antlrworks-1.4.2-src-only.zip"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.jdt.annotation_2.0.0.v20140415-1436.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/groovy-2.4.10.jar" sourcepath="lib/src/apache-groovy-src-2.4.10.zip"/>
 	<classpathentry kind="lib" path="lib/jakarta.activation-1.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/jgoodies-common-1.8.1.jar"/>
 	<classpathentry kind="lib" path="lib/jgoodies-looks-2.5.3.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.8.0_281"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
