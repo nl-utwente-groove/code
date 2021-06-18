@@ -124,6 +124,12 @@ public abstract class RealSignature<INT,REAL,BOOL,STRING> implements Signature {
     @InfixSymbol(symbol = "<=", kind = COMPARE)
     public abstract BOOL le(REAL arg0, REAL arg1);
 
+    /** If-then-else construct for reals. */
+    @Syntax("Q%s.LPAR.b.COMMA.r1.COMMA.r2.RPAR")
+    @ToolTipHeader("If-then-else for reals")
+    @ToolTipBody("If %s is true, returns %s, otherwise %s")
+    public abstract REAL ite(BOOL arg0, REAL arg1, REAL arg2);
+
     /** Greater-than comparison. */
     @ToolTipHeader("Real number greater-than test")
     @Syntax("Q%s.LPAR.r1.COMMA.r2.RPAR")
@@ -198,6 +204,8 @@ public abstract class RealSignature<INT,REAL,BOOL,STRING> implements Signature {
         GE,
         /** Value for {@link RealSignature#gt(Object, Object)}. */
         GT,
+        /** Value for {@link RealSignature#ite(Object, Object, Object)}. */
+        ITE,
         /** Value for {@link RealSignature#le(Object, Object)}. */
         LE,
         /** Value for {@link RealSignature#lt(Object, Object)}. */

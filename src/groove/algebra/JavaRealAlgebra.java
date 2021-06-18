@@ -86,6 +86,11 @@ public class JavaRealAlgebra extends RealAlgebra<Integer,Double,Boolean,String> 
     }
 
     @Override
+    public Double ite(Boolean arg0, Double arg1, Double arg2) {
+        return arg0 ? arg1 : arg2;
+    }
+
+    @Override
     public Boolean lt(Double arg0, Double arg1) {
         return arg0 < arg1 && !approximatelyEquals(arg0, arg1);
     }
