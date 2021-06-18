@@ -108,14 +108,32 @@ public class TermStringAlgebra extends StringAlgebra<Expression,Expression,Expre
     }
 
     @Override
+    public Expression neq(Expression arg0, Expression arg1) {
+        return Op.NEQ.getOperator()
+            .newTerm(arg0, arg1);
+    }
+
+    @Override
     public Expression length(Expression arg) {
         return Op.LENGTH.getOperator()
             .newTerm(arg);
     }
 
     @Override
-    public Expression neq(Expression arg0, Expression arg1) {
-        return Op.NEQ.getOperator()
+    public Expression substring(Expression arg0, Expression arg1, Expression arg2) {
+        return Op.SUBSTRING.getOperator()
+            .newTerm(arg0, arg1, arg2);
+    }
+
+    @Override
+    public Expression suffix(Expression arg0, Expression arg1) {
+        return Op.SUFFIX.getOperator()
+            .newTerm(arg0, arg1);
+    }
+
+    @Override
+    public Expression lookup(Expression arg0, Expression arg1) {
+        return Op.LOOKUP.getOperator()
             .newTerm(arg0, arg1);
     }
 

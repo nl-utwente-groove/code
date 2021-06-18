@@ -90,7 +90,7 @@ public abstract class StringSignature<INT,REAL,BOOL,STRING> implements Signature
     /** Lesser-or-equal comparison. */
     @ToolTipHeader("String lesser-or-equal test")
     @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
-    @ToolTipBody("Yields TRUE if string %s is a prefix of string %s")
+    @ToolTipBody("Yields TRUE if string %s is a prefix of (or equal to) string %s")
     @InfixSymbol(symbol = "<=", kind = COMPARE)
     public abstract BOOL le(STRING arg0, STRING arg1);
 
@@ -103,14 +103,14 @@ public abstract class StringSignature<INT,REAL,BOOL,STRING> implements Signature
     /** Greater-than comparison. */
     @ToolTipHeader("String greater-than test")
     @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
-    @ToolTipBody("Yields TRUE if string %2$s is a prefix of string %1$s")
+    @ToolTipBody("Yields TRUE if string %2$s is a proper prefix of string %1$s")
     @InfixSymbol(symbol = ">", kind = COMPARE)
     public abstract BOOL gt(STRING arg0, STRING arg1);
 
     /** Greater-or-equal comparison. */
     @ToolTipHeader("String greater-or-equals test")
     @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
-    @ToolTipBody("Yields TRUE if string %2$s is a prefix of string %1$s")
+    @ToolTipBody("Yields TRUE if string %2$s is a prefix of (or equal to) string %1$s")
     @InfixSymbol(symbol = ">=", kind = COMPARE)
     public abstract BOOL ge(STRING arg0, STRING arg1);
 
@@ -133,6 +133,26 @@ public abstract class StringSignature<INT,REAL,BOOL,STRING> implements Signature
     @Syntax("Q%s.LPAR.s.RPAR")
     @ToolTipBody("Yields the number of characters in string %s")
     public abstract INT length(STRING arg);
+
+    /** Substring function. */
+    @ToolTipHeader("Substring function")
+    @Syntax("Q%s.LPAR.s.COMMA.i1.COMMA.i2.RPAR")
+    @ToolTipBody("Returns the substring of %s from position %s up to (but not including) position %s, counting from 0;"
+        + " defaults to empty if %2$s or $%3$s are out of range or %2$s>%3$s")
+    public abstract STRING substring(STRING arg0, INT arg1, INT arg2);
+
+    /** Suffix function. */
+    @ToolTipHeader("Suffix function")
+    @Syntax("Q%s.LPAR.s.COMMA.i1.RPAR")
+    @ToolTipBody("Returns the suffix of %s from position %s (up to the end), counting from 0;"
+        + " defaults to empty if %2$s is out of range")
+    public abstract STRING suffix(STRING arg0, INT arg1);
+
+    /** Substring matching function. */
+    @ToolTipHeader("Substring matching function")
+    @Syntax("Q%s.LPAR.s.COMMA.i1.COMMA.i2.RPAR")
+    @ToolTipBody("Returns the index of the first occurrence of %2$s in %1$s, or -1 if there is no such occurrence")
+    public abstract INT lookup(STRING arg0, STRING arg1);
 
     @Override
     public Sort getSort() {
@@ -171,9 +191,15 @@ public abstract class StringSignature<INT,REAL,BOOL,STRING> implements Signature
         /** Value for {@link StringSignature#lt(Object, Object)}. */
         LT,
         /** Value for {@link StringSignature#neq(Object, Object)}. */
+        NEQ,
+        /** Value for {@link StringSignature#length(Object)}. */
         LENGTH,
-        /** Value for {@link StringSignature#lt(Object, Object)}. */
-        NEQ,;
+        /** Value for {@link StringSignature#substring(Object, Object, Object)}. */
+        SUBSTRING,
+        /** Value for {@link StringSignature#suffix(Object, Object)}. */
+        SUFFIX,
+        /** Value for {@link StringSignature#lookup(Object, Object)}. */
+        LOOKUP,;
 
         @Override
         public Operator getOperator() {

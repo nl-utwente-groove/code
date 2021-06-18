@@ -51,6 +51,29 @@ public class JavaStringAlgebra extends AbstractStringAlgebra<Integer,Double> {
     }
 
     @Override
+    public String substring(String arg0, Integer arg1, Integer arg2) {
+        try {
+            return arg0.substring(arg1, arg2);
+        } catch (IndexOutOfBoundsException exc) {
+            return "";
+        }
+    }
+
+    @Override
+    public String suffix(String arg0, Integer arg1) {
+        try {
+            return arg0.substring(arg1);
+        } catch (IndexOutOfBoundsException exc) {
+            return "";
+        }
+    }
+
+    @Override
+    public Integer lookup(String arg0, String arg1) {
+        return arg0.indexOf(arg1);
+    }
+
+    @Override
     public String getName() {
         return NAME;
     }

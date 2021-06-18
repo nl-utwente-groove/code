@@ -107,6 +107,21 @@ public class PointStringAlgebra extends StringAlgebra<Integer,Double,Boolean,Str
     }
 
     @Override
+    public String substring(String arg0, Integer arg1, Integer arg2) {
+        return singleString;
+    }
+
+    @Override
+    public String suffix(String arg0, Integer arg1) {
+        return singleString;
+    }
+
+    @Override
+    public Integer lookup(String arg0, String arg1) {
+        return singleInt;
+    }
+
+    @Override
     public String getName() {
         return NAME;
     }
