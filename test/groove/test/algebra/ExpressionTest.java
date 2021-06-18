@@ -20,15 +20,20 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Test;
+
 import groove.algebra.Operator;
 import groove.algebra.Signature.OpValue;
 import groove.algebra.Sort;
 import groove.algebra.syntax.ExprTreeParser;
 import groove.algebra.syntax.Expression;
 import groove.algebra.syntax.FieldExpr;
+import groove.util.Exceptions;
 import groove.util.parse.FormatException;
-
-import org.junit.Test;
 
 /** Tests the parsing abilities of the {@link Expression} class. */
 public class ExpressionTest {
@@ -66,10 +71,10 @@ public class ExpressionTest {
     /** Tests all operators. */
     @Test
     public void testOperators() {
-        testOperators(Sort.INT, "1", "2", "3");
-        testOperators(Sort.REAL, "real:1.", "2.", "3.");
-        testOperators(Sort.STRING, "\"1\"", "\"2\"", "\"3\"");
-        testOperators(Sort.BOOL, "true", "false", "true");
+        testOperators(Sort.INT);
+        testOperators(Sort.REAL);
+        testOperators(Sort.STRING);
+        testOperators(Sort.BOOL);
 
         assertEquals(parse("x == 2"), parse("x=2", true));
     }
@@ -81,11 +86,12 @@ public class ExpressionTest {
         parse("int:self.x-max(p1.speed,p2.speed)");
     }
 
-    private void testOperators(Sort sig, String... args) {
+    private void testOperators(Sort sig) {
         for (OpValue opValue : sig.getOpValues()) {
             Operator op = opValue.getOperator();
             String call = op.getFullName() + "(";
             Expression result = null;
+            List<String> args = new ArrayList<>();
             for (int i = 0; i <= 2; i++) {
                 if (i == op.getArity()) {
                     result = parse(call + ")");
@@ -95,19 +101,40 @@ public class ExpressionTest {
                 if (i > 0) {
                     call = call + ",";
                 }
-                call = call + args[i];
+                String arg;
+                Sort type = i < op.getArity() ? op.getParamTypes()
+                    .get(i) : Sort.STRING;
+                switch (type) {
+                case BOOL:
+                    arg = this.boolOperands[i];
+                    break;
+                case INT:
+                    arg = this.intOperands[i];
+                    break;
+                case REAL:
+                    arg = this.realOperands[i];
+                    break;
+                case STRING:
+                    arg = this.stringOperands[i];
+                    break;
+                default:
+                    throw Exceptions.UNREACHABLE;
+                }
+                args.add(arg);
+                call = call + arg;
             }
             String symbol = op.getSymbol();
             if (symbol != null) {
-                switch (op.getKind().getPlace()) {
+                switch (op.getKind()
+                    .getPlace()) {
                 case INFIX:
-                    assertEquals(result, parse(args[0] + symbol + args[1]));
+                    assertEquals(result, parse(args.get(0) + symbol + args.get(1)));
                     break;
                 case POSTFIX:
-                    assertEquals(result, parse(args[0] + symbol));
+                    assertEquals(result, parse(args.get(0) + symbol));
                     break;
                 case PREFIX:
-                    assertEquals(result, parse(symbol + args[0]));
+                    assertEquals(result, parse(symbol + args.get(0)));
                     break;
                 }
             }
@@ -150,9 +177,8 @@ public class ExpressionTest {
     private Expression parse(String expr, boolean test) {
         Expression result = null;
         try {
-            result =
-                (test ? ExprTreeParser.TEST_PARSER : ExprTreeParser.EXPR_PARSER).parse(expr)
-                    .toExpression();
+            result = (test ? ExprTreeParser.TEST_PARSER : ExprTreeParser.EXPR_PARSER).parse(expr)
+                .toExpression();
         } catch (FormatException e) {
             fail(String.format("Expression %s should have been parsable but fails with %s",
                 expr,
@@ -179,4 +205,9 @@ public class ExpressionTest {
             // this is the desired outcome
         }
     }
+
+    private final String[] intOperands = {"1", "2", "3"};
+    private final String[] realOperands = {"real:1.", "2.", "3."};
+    private final String[] stringOperands = {"\"1\"", "\"2\"", "\"3\""};
+    private final String[] boolOperands = {"true", "false", "true"};
 }
