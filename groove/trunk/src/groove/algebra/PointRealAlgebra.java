@@ -129,6 +129,11 @@ public class PointRealAlgebra extends RealAlgebra<Integer,Double,Boolean,String>
     }
 
     @Override
+    public Double ite(Boolean arg0, Double arg1, Double arg2) {
+        return singleReal;
+    }
+
+    @Override
     public Boolean lt(Double arg0, Double arg1) {
         return singleBool;
     }

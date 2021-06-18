@@ -92,6 +92,11 @@ public class BigRealAlgebra extends RealAlgebra<BigInteger,BigDecimal,Boolean,St
     }
 
     @Override
+    public BigDecimal ite(Boolean arg0, BigDecimal arg1, BigDecimal arg2) {
+        return arg0 ? arg1 : arg2;
+    }
+
+    @Override
     public Boolean lt(BigDecimal arg0, BigDecimal arg1) {
         return arg0.subtract(arg1)
             .signum() < 0 && !approximatelyEquals(arg0, arg1);
