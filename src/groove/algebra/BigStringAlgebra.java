@@ -54,6 +54,29 @@ public class BigStringAlgebra extends AbstractStringAlgebra<BigInteger,BigDecima
     }
 
     @Override
+    public String substring(String arg0, BigInteger arg1, BigInteger arg2) {
+        try {
+            return arg0.substring(arg1.intValueExact(), arg2.intValueExact());
+        } catch (IndexOutOfBoundsException | ArithmeticException exc) {
+            return "";
+        }
+    }
+
+    @Override
+    public String suffix(String arg0, BigInteger arg1) {
+        try {
+            return arg0.substring(arg1.intValueExact());
+        } catch (IndexOutOfBoundsException | ArithmeticException exc) {
+            return "";
+        }
+    }
+
+    @Override
+    public BigInteger lookup(String arg0, String arg1) {
+        return BigInteger.valueOf(arg0.indexOf(arg1));
+    }
+
+    @Override
     public String getName() {
         return NAME;
     }
