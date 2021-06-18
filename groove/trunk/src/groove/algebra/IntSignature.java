@@ -83,21 +83,27 @@ public abstract class IntSignature<INT,REAL,BOOL,STRING> implements Signature {
     /** Greater-or-equal comparison. */
     @ToolTipHeader("Integer greater-or-equal test")
     @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipBody("Yields TRUE if integer %s is larger than integer %s")
+    @ToolTipBody("Yields TRUE if integer %s is larger than or equal to integer %s")
     @InfixSymbol(symbol = ">=", kind = COMPARE)
     public abstract BOOL ge(INT arg0, INT arg1);
 
     /** Greater-than comparison. */
     @ToolTipHeader("Integer greater-than test")
     @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipBody("Yields TRUE if integer %2$s is properly larger than integer %1$s")
+    @ToolTipBody("Yields TRUE if integer %s is properly larger than integer %s")
     @InfixSymbol(symbol = ">", kind = COMPARE)
     public abstract BOOL gt(INT arg0, INT arg1);
+
+    /** If-then-else construct for integers. */
+    @Syntax("Q%s.LPAR.b.COMMA.i1.COMMA.i2.RPAR")
+    @ToolTipHeader("If-then-else for integers")
+    @ToolTipBody("If %s is true, returns %s, otherwise %s")
+    public abstract INT ite(BOOL arg0, INT arg1, INT arg2);
 
     /** Lesser-or-equal comparison. */
     @ToolTipHeader("Integer lesser-or-equal test")
     @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipBody("Yields TRUE if integer %s is smaller than integer %s")
+    @ToolTipBody("Yields TRUE if integer %s is smaller than or equal to integer %s")
     @InfixSymbol(symbol = "<=", kind = COMPARE)
     public abstract BOOL le(INT arg0, INT arg1);
 
@@ -206,6 +212,8 @@ public abstract class IntSignature<INT,REAL,BOOL,STRING> implements Signature {
         GE,
         /** Value for {@link IntSignature#gt(Object, Object)}. */
         GT,
+        /** Value for {@link IntSignature#ite(Object, Object, Object)}. */
+        ITE,
         /** Value for {@link IntSignature#le(Object, Object)}. */
         LE,
         /** Value for {@link IntSignature#lt(Object, Object)}. */

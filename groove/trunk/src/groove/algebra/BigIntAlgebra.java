@@ -85,6 +85,11 @@ public class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolean,Stri
     }
 
     @Override
+    public BigInteger ite(Boolean arg0, BigInteger arg1, BigInteger arg2) {
+        return arg0 ? arg1 : arg2;
+    }
+
+    @Override
     public Boolean le(BigInteger arg0, BigInteger arg1) {
         return arg0.subtract(arg1)
             .signum() <= 0;

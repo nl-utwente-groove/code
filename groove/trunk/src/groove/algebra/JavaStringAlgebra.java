@@ -21,10 +21,28 @@ package groove.algebra;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class JavaStringAlgebra extends AbstractStringAlgebra<Integer> {
+public class JavaStringAlgebra extends AbstractStringAlgebra<Integer,Double> {
     /** Empty constructor for the singleton instance. */
     private JavaStringAlgebra() {
         // empty
+    }
+
+    @Override
+    public Integer toInt(String arg0) {
+        try {
+            return Integer.valueOf(arg0);
+        } catch (NumberFormatException exc) {
+            return 0;
+        }
+    }
+
+    @Override
+    public Double toReal(String arg0) {
+        try {
+            return Double.valueOf(arg0);
+        } catch (NumberFormatException exc) {
+            return 0.0;
+        }
     }
 
     @Override
