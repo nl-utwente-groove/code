@@ -19,12 +19,13 @@ package groove.algebra;
 import groove.algebra.syntax.Expression;
 
 /** Abstract superclass of all string algebras.
- * @param <STRING> The representation type of the string algebra
- * @param <BOOL> The representation type of the boolean algebra
  * @param <INT> The representation type of the integer algebra
+ * @param <REAL> The representation type of the reals algebra
+ * @param <BOOL> The representation type of the boolean algebra
+ * @param <STRING> The representation type of the string algebra
  */
-public abstract class StringAlgebra<STRING,BOOL,INT> extends StringSignature<STRING,BOOL,INT>
-    implements Algebra<STRING> {
+public abstract class StringAlgebra<INT,REAL,BOOL,STRING>
+    extends StringSignature<INT,REAL,BOOL,STRING> implements Algebra<STRING> {
     @Override
     @SuppressWarnings("unchecked")
     public STRING toValue(Expression term) {

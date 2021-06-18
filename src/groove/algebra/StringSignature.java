@@ -28,13 +28,14 @@ import groove.annotation.ToolTipPars;
 
 /**
  * Signature for string algebras.
- * @param <STRING> The representation type of the string algebra
- * @param <BOOL> The representation type of the boolean algebra
  * @param <INT> The representation type of the integer algebra
+ * @param <REAL> The representation type of the real algebra
+ * @param <BOOL> The representation type of the boolean algebra
+ * @param <STRING> The representation type of the string algebra
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class StringSignature<STRING,BOOL,INT> implements Signature {
+public abstract class StringSignature<INT,REAL,BOOL,STRING> implements Signature {
     /** String concatenation. */
     @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
     @ToolTipHeader("String concatenation")
@@ -42,6 +43,42 @@ public abstract class StringSignature<STRING,BOOL,INT> implements Signature {
     @ToolTipPars({"First string parameter", "Second string parameter"})
     @InfixSymbol(symbol = "+", kind = ADD)
     public abstract STRING concat(STRING arg0, STRING arg1);
+
+    /** Test if a string represents a boolean value. */
+    @ToolTipHeader("Test whether a string represents a boolean")
+    @Syntax("Q%s.LPAR.s.RPAR")
+    @ToolTipBody("Yields TRUE if string %s equals either (precisely) \"true\" or \"false\"")
+    public abstract BOOL isBool(STRING arg0);
+
+    /** Test if a string represents an integer number. */
+    @ToolTipHeader("Test whether a string represents an integer")
+    @Syntax("Q%s.LPAR.s.RPAR")
+    @ToolTipBody("Yields TRUE if string %s represents an integer number")
+    public abstract BOOL isInt(STRING arg0);
+
+    /** Test if a string represents a real number. */
+    @ToolTipHeader("Test whether a string represents a real number")
+    @Syntax("Q%s.LPAR.s.RPAR")
+    @ToolTipBody("Yields TRUE if string %s represents a real number")
+    public abstract BOOL isReal(STRING arg0);
+
+    /** Converts a string into a boolean. */
+    @ToolTipHeader("String-to-boolean conversion")
+    @Syntax("Q%s.LPAR.s.RPAR")
+    @ToolTipBody("Yields TRUE if %s equals (precisely) \"true\"")
+    public abstract BOOL toBool(STRING arg0);
+
+    /** Converts a string into an integer. */
+    @ToolTipHeader("String-to-integer conversion")
+    @Syntax("Q%s.LPAR.s.RPAR")
+    @ToolTipBody("Yields the integer value represented by %s, or 0 if %1$s does not represent an integer")
+    public abstract INT toInt(STRING arg0);
+
+    /** Converts a string into a real number. */
+    @ToolTipHeader("String-to-real conversion")
+    @Syntax("Q%s.LPAR.s.RPAR")
+    @ToolTipBody("Yields the real number represented by %s, or 0.0 if %1$s does not represent a real")
+    public abstract REAL toReal(STRING arg0);
 
     /** Lesser-than comparison. */
     @ToolTipHeader("String lesser-than test")
@@ -56,6 +93,12 @@ public abstract class StringSignature<STRING,BOOL,INT> implements Signature {
     @ToolTipBody("Yields TRUE if string %s is a prefix of string %s")
     @InfixSymbol(symbol = "<=", kind = COMPARE)
     public abstract BOOL le(STRING arg0, STRING arg1);
+
+    /** If-then-else construct for strings. */
+    @Syntax("Q%s.LPAR.b.COMMA.s1.COMMA.s2.RPAR")
+    @ToolTipHeader("If-then-else for strings")
+    @ToolTipBody("If %s is true, returns %s, otherwise %s")
+    public abstract STRING ite(BOOL arg0, STRING arg1, STRING arg2);
 
     /** Greater-than comparison. */
     @ToolTipHeader("String greater-than test")
@@ -103,12 +146,26 @@ public abstract class StringSignature<STRING,BOOL,INT> implements Signature {
     public enum Op implements Signature.OpValue {
         /** Value for {@link StringSignature#concat(Object, Object)}. */
         CONCAT,
+        /** Value for {@link StringSignature#isBool(Object)}. */
+        IS_BOOL,
+        /** Value for {@link StringSignature#isInt(Object)}. */
+        IS_INT,
+        /** Value for {@link StringSignature#isReal(Object)}. */
+        IS_REAL,
+        /** Value for {@link StringSignature#toBool(Object)}. */
+        TO_BOOL,
+        /** Value for {@link StringSignature#toInt(Object)}. */
+        TO_INT,
+        /** Value for {@link StringSignature#toReal(Object)}. */
+        TO_REAL,
         /** Value for {@link StringSignature#eq(Object, Object)}. */
         EQ,
         /** Value for {@link StringSignature#ge(Object, Object)}. */
         GE,
         /** Value for {@link StringSignature#gt(Object, Object)}. */
         GT,
+        /** Value for {@link StringSignature#ite(Object, Object, Object)}. */
+        ITE,
         /** Value for {@link StringSignature#le(Object, Object)}. */
         LE,
         /** Value for {@link StringSignature#lt(Object, Object)}. */

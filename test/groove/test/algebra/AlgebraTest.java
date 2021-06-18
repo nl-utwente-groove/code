@@ -39,7 +39,7 @@ public abstract class AlgebraTest<B,I,R,S> {
         this.intAlgebra = (IntAlgebra<I,R,B,S>) family.getAlgebra(Sort.INT);
         this.boolAlgebra = (BoolAlgebra<B>) family.getAlgebra(Sort.BOOL);
         this.realAlgebra = (RealAlgebra<I,R,B,S>) family.getAlgebra(Sort.REAL);
-        this.stringAlgebra = (StringAlgebra<S,B,I>) family.getAlgebra(Sort.STRING);
+        this.stringAlgebra = (StringAlgebra<I,R,B,S>) family.getAlgebra(Sort.STRING);
         this.TRUE = this.boolAlgebra.toValueFromJava(true);
         this.FALSE = this.boolAlgebra.toValueFromJava(false);
     }
@@ -383,7 +383,7 @@ public abstract class AlgebraTest<B,I,R,S> {
     final IntAlgebra<I,R,B,S> intAlgebra;
     final BoolAlgebra<B> boolAlgebra;
     final RealAlgebra<I,R,B,S> realAlgebra;
-    final StringAlgebra<S,B,I> stringAlgebra;
+    final StringAlgebra<I,R,B,S> stringAlgebra;
     private final B TRUE;
     private final B FALSE;
 }

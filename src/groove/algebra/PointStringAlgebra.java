@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -24,8 +24,8 @@ import groove.algebra.syntax.Expression;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class PointStringAlgebra extends StringAlgebra<String,Boolean,Integer> implements
-    PointAlgebra<String> {
+public class PointStringAlgebra extends StringAlgebra<Integer,Double,Boolean,String>
+    implements PointAlgebra<String> {
     /** Private constructor for the singleton instance. */
     private PointStringAlgebra() {
         // empty
@@ -34,6 +34,36 @@ public class PointStringAlgebra extends StringAlgebra<String,Boolean,Integer> im
     @Override
     public String concat(String arg0, String arg1) {
         return singleString;
+    }
+
+    @Override
+    public Boolean isBool(String arg0) {
+        return singleBool;
+    }
+
+    @Override
+    public Boolean isInt(String arg0) {
+        return singleBool;
+    }
+
+    @Override
+    public Boolean isReal(String arg0) {
+        return singleBool;
+    }
+
+    @Override
+    public Boolean toBool(String arg0) {
+        return singleBool;
+    }
+
+    @Override
+    public Integer toInt(String arg0) {
+        return singleInt;
+    }
+
+    @Override
+    public Double toReal(String arg0) {
+        return singleReal;
     }
 
     @Override
@@ -49,6 +79,11 @@ public class PointStringAlgebra extends StringAlgebra<String,Boolean,Integer> im
     @Override
     public Boolean ge(String arg0, String arg1) {
         return singleBool;
+    }
+
+    @Override
+    public String ite(Boolean arg0, String arg1, String arg2) {
+        return singleString;
     }
 
     @Override
@@ -119,13 +154,15 @@ public class PointStringAlgebra extends StringAlgebra<String,Boolean,Integer> im
     /** Name of this algebra. */
     public static final String NAME = "pstring";
 
-    /** 
+    /**
      * Representation of the point value of the boolean algebra;
      * redefined literally to avoid class loading dependencies.
      * @see PointBoolAlgebra#singleBool
      */
     public static final Boolean singleBool = PointBoolAlgebra.singleBool;
-    /** Point value of the string algebra. */
+    /** Point value of the real algebra. */
+    public static final Double singleReal = PointRealAlgebra.singleReal;
+    /** Point value of the integer algebra. */
     public static final Integer singleInt = PointIntAlgebra.singleInt;
     /** Point value of the string algebra. */
     public static final String singleString = "";

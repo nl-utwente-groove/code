@@ -16,6 +16,7 @@
  */
 package groove.algebra;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 /**
@@ -23,10 +24,28 @@ import java.math.BigInteger;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class BigStringAlgebra extends AbstractStringAlgebra<BigInteger> {
+public class BigStringAlgebra extends AbstractStringAlgebra<BigInteger,BigDecimal> {
     /** Empty constructor for the singleton instance. */
     private BigStringAlgebra() {
         // empty
+    }
+
+    @Override
+    public BigInteger toInt(String arg0) {
+        try {
+            return new BigInteger(arg0);
+        } catch (NumberFormatException exc) {
+            return new BigInteger("0");
+        }
+    }
+
+    @Override
+    public BigDecimal toReal(String arg0) {
+        try {
+            return new BigDecimal(arg0);
+        } catch (NumberFormatException exc) {
+            return new BigDecimal("0.0");
+        }
     }
 
     @Override

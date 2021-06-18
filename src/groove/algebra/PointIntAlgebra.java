@@ -124,6 +124,11 @@ public class PointIntAlgebra extends IntAlgebra<Integer,Double,Boolean,String>
     }
 
     @Override
+    public Integer ite(Boolean arg0, Integer arg1, Integer arg2) {
+        return singleInt;
+    }
+
+    @Override
     public Boolean le(Integer arg0, Integer arg1) {
         return singleBool;
     }

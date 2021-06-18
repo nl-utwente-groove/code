@@ -127,6 +127,12 @@ public class TermIntAlgebra extends IntAlgebra<Expression,Expression,Expression,
     }
 
     @Override
+    public Expression ite(Expression arg0, Expression arg1, Expression arg2) {
+        return Op.ITE.getOperator()
+            .newTerm(arg0, arg1, arg2);
+    }
+
+    @Override
     public Expression le(Expression arg0, Expression arg1) {
         return Op.LE.getOperator()
             .newTerm(arg0, arg1);
