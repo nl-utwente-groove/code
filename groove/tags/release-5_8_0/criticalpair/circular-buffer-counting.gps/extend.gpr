@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph role="rule" edgeids="false" edgemode="directed" id="extend">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n3">
+            <attr name="layout">
+                <string>257 100 17 18</string>
+            </attr>
+        </node>
+        <node id="n2">
+            <attr name="layout">
+                <string>205 23 19 19</string>
+            </attr>
+        </node>
+        <node id="n1">
+            <attr name="layout">
+                <string>85 101 17 18</string>
+            </attr>
+        </node>
+        <node id="n0">
+            <attr name="layout">
+                <string>154 56 39 18</string>
+            </attr>
+        </node>
+        <node id="n16799">
+            <attr name="layout">
+                <string>94 261 40 18</string>
+            </attr>
+        </node>
+        <node id="n16797">
+            <attr name="layout">
+                <string>231 204 23 18</string>
+            </attr>
+        </node>
+        <node id="n16800">
+            <attr name="layout">
+                <string>103 203 23 18</string>
+            </attr>
+        </node>
+        <node id="n16798">
+            <attr name="layout">
+                <string>158 144 38 18</string>
+            </attr>
+        </node>
+        <node id="n16796">
+            <attr name="layout">
+                <string>166 261 23 18</string>
+            </attr>
+        </node>
+        <edge from="n3" to="n3">
+            <attr name="label">
+                <string>int:</string>
+            </attr>
+        </edge>
+        <edge from="n2" to="n2">
+            <attr name="label">
+                <string>int:1</string>
+            </attr>
+        </edge>
+        <edge from="n1" to="n1">
+            <attr name="label">
+                <string>int:</string>
+            </attr>
+        </edge>
+        <edge from="n0" to="n0">
+            <attr name="label">
+                <string>prod:</string>
+            </attr>
+        </edge>
+        <edge from="n0" to="n1">
+            <attr name="label">
+                <string>arg:0</string>
+            </attr>
+        </edge>
+        <edge from="n0" to="n2">
+            <attr name="label">
+                <string>arg:1</string>
+            </attr>
+        </edge>
+        <edge from="n0" to="n3">
+            <attr name="label">
+                <string>int:add</string>
+            </attr>
+        </edge>
+        <edge from="n16799" to="n16799">
+            <attr name="label">
+                <string>type:Object</string>
+            </attr>
+        </edge>
+        <edge from="n16797" to="n16797">
+            <attr name="label">
+                <string>type:Cell</string>
+            </attr>
+        </edge>
+        <edge from="n16800" to="n16800">
+            <attr name="label">
+                <string>type:Cell</string>
+            </attr>
+        </edge>
+        <edge from="n16800" to="n16797">
+            <attr name="label">
+                <string>del:next</string>
+            </attr>
+        </edge>
+        <edge from="n16800" to="n16799">
+            <attr name="label">
+                <string>val</string>
+            </attr>
+        </edge>
+        <edge from="n16800" to="n16796">
+            <attr name="label">
+                <string>next</string>
+            </attr>
+        </edge>
+        <edge from="n16798" to="n16798">
+            <attr name="label">
+                <string>type:Buffer</string>
+            </attr>
+        </edge>
+        <edge from="n16798" to="n1">
+            <attr name="label">
+                <string>del:empty</string>
+            </attr>
+        </edge>
+        <edge from="n16798" to="n3">
+            <attr name="label">
+                <string>new:empty</string>
+            </attr>
+            <attr name="layout">
+                <string>480 2 201 141 251 115 11</string>
+            </attr>
+        </edge>
+        <edge from="n16798" to="n16800">
+            <attr name="label">
+                <string>last</string>
+            </attr>
+        </edge>
+        <edge from="n16798" to="n16797">
+            <attr name="label">
+                <string>first</string>
+            </attr>
+        </edge>
+        <edge from="n16796" to="n16796">
+            <attr name="label">
+                <string>new:</string>
+            </attr>
+        </edge>
+        <edge from="n16796" to="n16796">
+            <attr name="label">
+                <string>type:Cell</string>
+            </attr>
+        </edge>
+        <edge from="n16796" to="n16797">
+            <attr name="label">
+                <string>next</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

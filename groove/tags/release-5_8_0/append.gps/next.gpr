@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph edgemode="directed" edgeids="false" role="rule" id="next">
+        <attr name="remark">
+            <string>Recursively invokes append on the next list element</string>
+        </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n64837">
+            <attr name="layout">
+                <string>282 187 41 45</string>
+            </attr>
+        </node>
+        <node id="n64836">
+            <attr name="layout">
+                <string>294 38 15 15</string>
+            </attr>
+        </node>
+        <node id="n64838">
+            <attr name="layout">
+                <string>105 39 15 15</string>
+            </attr>
+        </node>
+        <node id="n64835">
+            <attr name="layout">
+                <string>210 144 15 15</string>
+            </attr>
+        </node>
+        <node id="n64839">
+            <attr name="layout">
+                <string>82 196 41 15</string>
+            </attr>
+        </node>
+        <edge to="n64837" from="n64837">
+            <attr name="label">
+                <string>control</string>
+            </attr>
+        </edge>
+        <edge to="n64836" from="n64838">
+            <attr name="label">
+                <string>next</string>
+            </attr>
+        </edge>
+        <edge to="n64836" from="n64837">
+            <attr name="label">
+                <string>this</string>
+            </attr>
+        </edge>
+        <edge to="n64838" from="n64839">
+            <attr name="label">
+                <string>this</string>
+            </attr>
+        </edge>
+        <edge to="n64835" from="n64837">
+            <attr name="label">
+                <string>x</string>
+            </attr>
+        </edge>
+        <edge to="n64839" from="n64839">
+            <attr name="label">
+                <string>del:control</string>
+            </attr>
+            <attr name="layout">
+                <string>541 0 93 217 49 251 104 268 104 217 12</string>
+            </attr>
+        </edge>
+        <edge to="n64835" from="n64839">
+            <attr name="label">
+                <string>x</string>
+            </attr>
+        </edge>
+        <edge to="n64839" from="n64839">
+            <attr name="label">
+                <string>append</string>
+            </attr>
+        </edge>
+        <edge to="n64837" from="n64837">
+            <attr name="label">
+                <string>append</string>
+            </attr>
+        </edge>
+        <edge to="n64839" from="n64837">
+            <attr name="label">
+                <string>caller</string>
+            </attr>
+        </edge>
+        <edge to="n64837" from="n64837">
+            <attr name="label">
+                <string>new:</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

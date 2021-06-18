@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph edgemode="directed" edgeids="false" role="rule" id="append">
+        <attr name="remark">
+            <string>Inserts x at the end of the list</string>
+        </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n65018">
+            <attr name="layout">
+                <string>25 20 41 45</string>
+            </attr>
+        </node>
+        <node id="n65019">
+            <attr name="layout">
+                <string>43 101 15 15</string>
+            </attr>
+        </node>
+        <node id="n65021">
+            <attr name="layout">
+                <string>153 101 15 15</string>
+            </attr>
+        </node>
+        <node id="n65020">
+            <attr name="layout">
+                <string>239 25 23 15</string>
+            </attr>
+        </node>
+        <node id="n65022">
+            <attr name="layout">
+                <string>152 29 15 15</string>
+            </attr>
+        </node>
+        <node id="n65023">
+            <attr name="layout">
+                <string>34 157 28 30</string>
+            </attr>
+        </node>
+        <node id="n65024">
+            <attr name="layout">
+                <string>241 100 28 15</string>
+            </attr>
+        </node>
+        <edge to="n65018" from="n65018">
+            <attr name="label">
+                <string>control</string>
+            </attr>
+        </edge>
+        <edge to="n65018" from="n65018">
+            <attr name="label">
+                <string>append</string>
+            </attr>
+        </edge>
+        <edge to="n65024" from="n65022">
+            <attr name="label">
+                <string>next</string>
+            </attr>
+        </edge>
+        <edge to="n65023" from="n65019">
+            <attr name="label">
+                <string>return</string>
+            </attr>
+            <attr name="layout">
+                <string>282 0 52 118 52 157 11</string>
+            </attr>
+        </edge>
+        <edge to="n65021" from="n65018">
+            <attr name="label">
+                <string>x</string>
+            </attr>
+        </edge>
+        <edge to="n65020" from="n65022">
+            <attr name="label">
+                <string>not:next</string>
+            </attr>
+        </edge>
+        <edge to="n65022" from="n65018">
+            <attr name="label">
+                <string>this</string>
+            </attr>
+        </edge>
+        <edge to="n65023" from="n65023">
+            <attr name="label">
+                <string>void</string>
+            </attr>
+        </edge>
+        <edge to="n65020" from="n65020">
+            <attr name="label">
+                <string>not:</string>
+            </attr>
+        </edge>
+        <edge to="n65019" from="n65018">
+            <attr name="label">
+                <string>caller</string>
+            </attr>
+            <attr name="layout">
+                <string>444 0 51 56 51 101 11</string>
+            </attr>
+        </edge>
+        <edge to="n65018" from="n65018">
+            <attr name="label">
+                <string>del:</string>
+            </attr>
+        </edge>
+        <edge to="n65023" from="n65023">
+            <attr name="label">
+                <string>new:</string>
+            </attr>
+        </edge>
+        <edge to="n65024" from="n65024">
+            <attr name="label">
+                <string>new:</string>
+            </attr>
+        </edge>
+        <edge to="n65021" from="n65024">
+            <attr name="label">
+                <string>val</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

@@ -1,0 +1,16 @@
+recipe fire() {
+  node n;
+  select-transition(out n);
+  alap {
+    select-input(n);
+    consume-input;
+  }
+  alap {
+    select-output(n);
+    produce-output;
+  }
+  alap {
+    unselect;
+  }
+  unselect-transition;
+}

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph role="rule" edgeids="false" edgemode="directed" id="final">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n23">
+            <attr name="layout">
+                <string>172 123 30 30</string>
+            </attr>
+        </node>
+        <node id="n22">
+            <attr name="layout">
+                <string>71 228 23 15</string>
+            </attr>
+        </node>
+        <node id="n24">
+            <attr name="layout">
+                <string>67 127 29 15</string>
+            </attr>
+        </node>
+        <node id="n25">
+            <attr name="layout">
+                <string>59 34 53 15</string>
+            </attr>
+        </node>
+        <edge from="n23" to="n23">
+            <attr name="label">
+                <string>type:Bank</string>
+            </attr>
+        </edge>
+        <edge from="n23" to="n23">
+            <attr name="label">
+                <string>flag:right</string>
+            </attr>
+        </edge>
+        <edge from="n22" to="n22">
+            <attr name="label">
+                <string>type:Wolf</string>
+            </attr>
+        </edge>
+        <edge from="n22" to="n23">
+            <attr name="label">
+                <string>on</string>
+            </attr>
+        </edge>
+        <edge from="n24" to="n24">
+            <attr name="label">
+                <string>type:Goat</string>
+            </attr>
+        </edge>
+        <edge from="n24" to="n23">
+            <attr name="label">
+                <string>on</string>
+            </attr>
+        </edge>
+        <edge from="n25" to="n25">
+            <attr name="label">
+                <string>type:Cabbage</string>
+            </attr>
+        </edge>
+        <edge from="n25" to="n23">
+            <attr name="label">
+                <string>on</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

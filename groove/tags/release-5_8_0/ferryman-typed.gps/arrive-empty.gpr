@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph role="rule" edgeids="false" edgemode="directed" id="arrive-empty">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n329">
+            <attr name="layout">
+                <string>179 185 30 15</string>
+            </attr>
+        </node>
+        <node id="n331">
+            <attr name="layout">
+                <string>26 88 36 15</string>
+            </attr>
+        </node>
+        <node id="n330">
+            <attr name="layout">
+                <string>125 88 29 15</string>
+            </attr>
+        </node>
+        <edge from="n329" to="n329">
+            <attr name="label">
+                <string>type:Bank</string>
+            </attr>
+        </edge>
+        <edge from="n331" to="n331">
+            <attr name="label">
+                <string>not:</string>
+            </attr>
+        </edge>
+        <edge from="n331" to="n331">
+            <attr name="label">
+                <string>type:Cargo</string>
+            </attr>
+        </edge>
+        <edge from="n331" to="n330">
+            <attr name="label">
+                <string>in</string>
+            </attr>
+        </edge>
+        <edge from="n330" to="n330">
+            <attr name="label">
+                <string>type:Boat</string>
+            </attr>
+        </edge>
+        <edge from="n330" to="n329">
+            <attr name="label">
+                <string>del:go</string>
+            </attr>
+        </edge>
+        <edge from="n330" to="n329">
+            <attr name="label">
+                <string>new:moored</string>
+            </attr>
+            <attr name="layout">
+                <string>282 -35 147 96 222 127 194 193 12</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

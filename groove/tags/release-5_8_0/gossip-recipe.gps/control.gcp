@@ -1,0 +1,6 @@
+recipe call() {
+  start;
+  #mutual;
+  #reveals;
+  silence;
+}

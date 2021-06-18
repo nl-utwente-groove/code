@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph role="rule" edgeids="false" edgemode="directed" id="eat">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n35">
+            <attr name="layout">
+                <string>39 76 36 15</string>
+            </attr>
+        </node>
+        <node id="n36">
+            <attr name="layout">
+                <string>51 206 19 19</string>
+            </attr>
+        </node>
+        <node id="n37">
+            <attr name="layout">
+                <string>121 141 30 15</string>
+            </attr>
+        </node>
+        <node id="n34">
+            <attr name="layout">
+                <string>185 61 29 15</string>
+            </attr>
+        </node>
+        <edge from="n35" to="n35">
+            <attr name="label">
+                <string>type:Cargo</string>
+            </attr>
+        </edge>
+        <edge from="n35" to="n36">
+            <attr name="label">
+                <string>likes</string>
+            </attr>
+        </edge>
+        <edge from="n35" to="n37">
+            <attr name="label">
+                <string>on</string>
+            </attr>
+        </edge>
+        <edge from="n36" to="n36">
+            <attr name="label">
+                <string>del:</string>
+            </attr>
+        </edge>
+        <edge from="n36" to="n36">
+            <attr name="label">
+                <string>type:Cargo</string>
+            </attr>
+        </edge>
+        <edge from="n36" to="n37">
+            <attr name="label">
+                <string>on</string>
+            </attr>
+        </edge>
+        <edge from="n37" to="n37">
+            <attr name="label">
+                <string>type:Bank</string>
+            </attr>
+        </edge>
+        <edge from="n34" to="n34">
+            <attr name="label">
+                <string>type:Boat</string>
+            </attr>
+        </edge>
+        <edge from="n34" to="n37">
+            <attr name="label">
+                <string>!moored</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>
