@@ -18,10 +18,8 @@ public class Version {
      */
     public static void main(String[] args) {
         System.out.println(getAbout());
-        JOptionPane.showMessageDialog(null,
-            getAboutHTML(),
-            "About",
-            JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane
+            .showMessageDialog(null, getAboutHTML(), "About", JOptionPane.INFORMATION_MESSAGE);
         System.exit(0);
     }
 
@@ -63,7 +61,7 @@ public class Version {
     }
 
     /** Build number (timestamp with format yyyyMMddHHmmssSSS). */
-    public static final String BUILD = "20180530";
+    public static final String BUILD = "20210618";
 
     /** Release date of this version (date format dd.MM.yyyy). */
     public static final String DATE;
@@ -84,7 +82,7 @@ public class Version {
      * </ul>
      * A '+' sign at the end of the number indicates a development version.
      */
-    public static final String NUMBER = "5.7.4+";
+    public static final String NUMBER = "5.8.0+";
 
     /** Minimum Java JRE version required. */
     static public final String NUMBER_JAVAMIN = "1.8";
@@ -107,7 +105,7 @@ public class Version {
      * @return the latest grammar version.
      */
     public static String getCurrentGrammarVersion() {
-        return GRAMMAR_VERSION_3_6;
+        return GRAMMAR_VERSION_3_7;
     }
 
     /**
@@ -260,5 +258,16 @@ public class Version {
      * or {@code node a := rule(1)}.
      */
     public static final String GRAMMAR_VERSION_3_6 = "3.6";
+    /**
+     * This is the grammar version introduced with Groove version 5.8.0.
+     * It allows more operations:
+     * <ul>
+     * <li> {@code string:isBool}, {@code string:isInt} and {@code string:isReal} to test if a string is formatted as a data type value
+     * <li> {@code string:toBool}, {@code string:toInt} and {@code string:toReal} to convert a string to a data type value
+     * <li> {@code int:ite}, {@code real:ite} and {@code string:ite} to encode if-then-else expressions
+     * <li> {@code string:substring}, {@code string:suffix} and {@code string:lookup} for substring manipulation
+     * </ul>
+     */
+    public static final String GRAMMAR_VERSION_3_7 = "3.7";
 
 }
