@@ -579,23 +579,46 @@ public class CtrlHelper {
             assert callTree.getChild(0)
                 .getType() == CtrlParser.ID || unit instanceof Action;
             if (checkCall(callTree, unit, args)) {
-                List<CtrlPar> unitArgs;
-                if (args == null && callTree.getChild(0)
+                Call call;
+                if (args != null) {
+                    call = new Call(unit, args);
+                } else if (callTree.getChild(0)
                     .getType() != ID) {
-                    // this is a group call, for which we create artificial output parameters
-                    unitArgs = new ArrayList<>();
-                    for (UnitPar par : unit.getSignature()) {
-                        assert !par.isInOnly();
-                        unitArgs.add(CtrlPar.wild());
-                    }
+                    call = new Call(unit, createUnitArgs(unit));
                 } else {
-                    unitArgs = args;
+                    call = new Call(unit);
                 }
-                // create the call
-                Call call = unitArgs == null ? new Call(unit) : new Call(unit, unitArgs);
                 callTree.addCall(call);
             }
         }
+    }
+
+    /**
+     * Creates arguments for a callable unit, based on its signature.
+     */
+    private List<CtrlPar> createUnitArgs(Callable unit) {
+        List<CtrlPar> unitArgs;
+        // this is a group call, for which we create artificial output parameters
+        unitArgs = new ArrayList<>();
+        boolean storeOutPars = getNamespace().getGrammarProperties()
+            .isStoreOutPars();
+        Signature<?> sig = unit.getSignature();
+        for (int i = 0; i < sig.size(); i++) {
+            assert !sig.getPar(i)
+                .isInOnly();
+            CtrlPar arg;
+            if (storeOutPars) {
+                String argName = unit.getQualName() + "$" + i;
+                String argType = sig.getPar(i)
+                    .getType()
+                    .getName();
+                arg = CtrlPar.outVar(null, argName, argType);
+            } else {
+                arg = CtrlPar.wild();
+            }
+            unitArgs.add(arg);
+        }
+        return unitArgs;
     }
 
     /**

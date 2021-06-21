@@ -46,81 +46,126 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
     /** Property name for the Grammar version. */
     GRAMMAR_VERSION("grammarVersion", false, "The version of this grammar", null),
     /** Location of this Grammar. */
-    LOCATION("location", true, "The place in the file system where this grammar is stored", Parser.path),
+    LOCATION("location", true, "The place in the file system where this grammar is stored",
+        Parser.path),
     /** One-line documentation comment on the graph production system. */
     REMARK("remark", "A one-line description of the graph production system"),
 
     /** Property name for the algebra to be used during simulation. */
-    ALGEBRA("algebraFamily", "<body>Algebra used for attributes" + DocumentedEnum.document(AlgebraFamily.class), new Parser.EnumParser<>(AlgebraFamily.class, AlgebraFamily.DEFAULT)),
+    ALGEBRA("algebraFamily",
+        "<body>Algebra used for attributes" + DocumentedEnum.document(AlgebraFamily.class),
+        new Parser.EnumParser<>(AlgebraFamily.class, AlgebraFamily.DEFAULT)),
 
     /** Property name for the value oracle to be used for matching unbound value parameters. */
-    ORACLE("valueOracle", "Source of values for unbound value parameters" + DocumentedEnum.document(ValueOracleKind.class) + "<p>If the algebra family is set to <i>point</i>, the oracle is disregarded", OracleParser.instance()),
+    ORACLE("valueOracle",
+        "Source of values for unbound value parameters"
+            + DocumentedEnum.document(ValueOracleKind.class)
+            + "<p>If the algebra family is set to <i>point</i>, the oracle is disregarded",
+        OracleParser.instance()),
 
     /**
      * Flag determining the injectivity of the rule system. If <code>true</code>,
      * all rules should be matched injectively. Default is <code>false</code>.
      */
-    INJECTIVE("matchInjective", "<body>Flag controlling if all rules should be matched injectively. " + "<p>If true, overrules the local rule injectivity property", Parser.boolFalse),
+    INJECTIVE("matchInjective",
+        "<body>Flag controlling if all rules should be matched injectively. "
+            + "<p>If true, overrules the local rule injectivity property",
+        Parser.boolFalse),
 
     /**
      * Dangling edge check. If <code>true</code>, all
      * matches that leave dangling edges are invalid. Default is
      * <code>false</code>.
      */
-    DANGLING("checkDangling", "Flag controlling if dangling edges should be forbidden rather than deleted", Parser.boolFalse),
+    DANGLING("checkDangling",
+        "Flag controlling if dangling edges should be forbidden rather than deleted",
+        Parser.boolFalse),
 
     /**
      * Creator edge check. If <code>true</code>, creator
      * edges are implicitly treated as (individual) NACs. Default is
      * <code>false</code>.
      */
-    CREATOR_EDGE("checkCreatorEdges", "Flag controlling if creator edges should be treated as implicit NACs", Parser.boolFalse),
+    CREATOR_EDGE("checkCreatorEdges",
+        "Flag controlling if creator edges should be treated as implicit NACs", Parser.boolFalse),
 
     /**
      * RHS-as-NAC property. If <code>true</code>, each RHS
      * is implicitly treated as a NAC. Default is <code>false</code>.
      */
-    RHS_AS_NAC("rhsIsNAC", "Flag controlling if RHSs should be treated as implicit NACs", Parser.boolFalse),
+    RHS_AS_NAC("rhsIsNAC", "Flag controlling if RHSs should be treated as implicit NACs",
+        Parser.boolFalse),
 
     /**
      * Isomorphism check. If <code>true</code>, state
      * graphs are compared up to isomorphism; otherwise, they are compared up to
      * equality. Default is <code>true</code>.
      */
-    ISOMORPHISM("checkIsomorphism", "Flag controlling whether states are checked up to isomorphism", Parser.boolTrue),
+    ISOMORPHISM("checkIsomorphism", "Flag controlling whether states are checked up to isomorphism",
+        Parser.boolTrue),
 
     /**
      * Space-separated list of active start graph names.
      */
-    START_GRAPH_NAMES("startGraph", "List of active start graph names", QualName.listParser(), ResourceChecker.get(ResourceKind.HOST)),
+    START_GRAPH_NAMES("startGraph", "List of active start graph names", QualName.listParser(),
+        ResourceChecker.get(ResourceKind.HOST)),
 
     /**
      * Name of the active control program.
      */
-    CONTROL_NAMES("controlProgram", "List of enabled control programs", QualName.listParser(), ResourceChecker.get(ResourceKind.CONTROL)),
+    CONTROL_NAMES("controlProgram", "List of enabled control programs", QualName.listParser(),
+        ResourceChecker.get(ResourceKind.CONTROL)),
 
     /**
      * Space-separated list of active type graph names.
      */
-    TYPE_NAMES("typeGraph", "List of active type graph names", QualName.listParser(), ResourceChecker.get(ResourceKind.TYPE)),
+    TYPE_NAMES("typeGraph", "List of active type graph names", QualName.listParser(),
+        ResourceChecker.get(ResourceKind.TYPE)),
 
     /**
      * Space-separated list of active prolog program names.
      */
-    PROLOG_NAMES("prolog", "List of active prolog program names", QualName.listParser(), ResourceChecker.get(ResourceKind.PROLOG)),
+    PROLOG_NAMES("prolog", "List of active prolog program names", QualName.listParser(),
+        ResourceChecker.get(ResourceKind.PROLOG)),
 
     /** Policy for rule application. */
-    ACTION_POLICY("actionPolicy", "<body>List of <i>key=value</i> pairs, where <i>key</i> is an action name and <i>value</i> is one of:" + "<li> - <i>off</i>: the action is disabled (overrules the <b>enabled</b> property)" + "<li> - <i>silent</i>: the constraint is checked and flagged on the state as a condition" + "<li> - <i>error</i> (default): applicability is an error" + "<li> - <i>remove</i>: applicability causes the state to be removed from the state space" + "<p>The last three are only valid for forbidden and invariant properties", CheckPolicy.multiParser, ActionPolicyChecker.instance),
+    ACTION_POLICY("actionPolicy",
+        "<body>List of <i>key=value</i> pairs, where <i>key</i> is an action name and <i>value</i> is one of:"
+            + "<li> - <i>off</i>: the action is disabled (overrules the <b>enabled</b> property)"
+            + "<li> - <i>silent</i>: the constraint is checked and flagged on the state as a condition"
+            + "<li> - <i>error</i> (default): applicability is an error"
+            + "<li> - <i>remove</i>: applicability causes the state to be removed from the state space"
+            + "<p>The last three are only valid for forbidden and invariant properties",
+        CheckPolicy.multiParser, ActionPolicyChecker.instance),
     /** Policy for dealing with type violations. */
-    TYPE_POLICY("typePolicy", "<body>Flag controlling how dynamic type constraints (multiplicities, composites) are dealt with." + "<li>- <i>off</i>: dynamic type constraints are not checked" + "<li>- <i>error</i> (default): dynamic type violations are flagged as errors" + "<li>- <i>remove</i>: dynamic type violations cause the state to be removed from the state space", new Parser.EnumParser<>(CheckPolicy.class, CheckPolicy.ERROR, "off", null, "error", "remove")),
+    TYPE_POLICY("typePolicy",
+        "<body>Flag controlling how dynamic type constraints (multiplicities, composites) are dealt with."
+            + "<li>- <i>off</i>: dynamic type constraints are not checked"
+            + "<li>- <i>error</i> (default): dynamic type violations are flagged as errors"
+            + "<li>- <i>remove</i>: dynamic type violations cause the state to be removed from the state space",
+        new Parser.EnumParser<>(CheckPolicy.class, CheckPolicy.ERROR, "off", null, "error",
+            "remove")),
 
     /** Policy for dealing with deadlocks. */
-    DEAD_POLICY("deadlockPolicy", "Flag controlling how deadlocked states are dealt with." + "<br>(A state is considered deadlocked if no scheduled transformer is applicable.)" + "<li>- <i>off</i> (default): deadlocks are not checked" + "<li>- <i>error</i>: deadlocks are flagged as errors", new Parser.EnumParser<>(CheckPolicy.class, CheckPolicy.OFF, "off", null, "error", null)),
+    DEAD_POLICY("deadlockPolicy",
+        "Flag controlling how deadlocked states are dealt with."
+            + "<br>(A state is considered deadlocked if no scheduled transformer is applicable.)"
+            + "<li>- <i>off</i> (default): deadlocks are not checked"
+            + "<li>- <i>error</i>: deadlocks are flagged as errors",
+        new Parser.EnumParser<>(CheckPolicy.class, CheckPolicy.OFF, "off", null, "error", null)),
 
     /**
      * Exploration strategy description.
      */
-    EXPLORATION("explorationStrategy", "Default exploration strategy for this grammar", ExploreType.parser(), ExplorationChecker.instance),
+    EXPLORATION("explorationStrategy", "Default exploration strategy for this grammar",
+        ExploreType.parser(), ExplorationChecker.instance),
+
+    /** Flag that determines if output parameters are added to group calls. */
+    STORE_OUT_PARS("storeOutParameters",
+        "Flag controlling if output parameters are stored for implicit group calls."
+            + "<li>- <i>false</i> (default): no output parameters are stored, hence transition arguments revert to don't-care"
+            + "<li>- <i>true</i>: output parameters are stored and included in transition arguments, increasing the state space",
+        Parser.boolFalse),
 
     /**
      * Space-separated list of control labels of a graph grammar. The
@@ -128,25 +173,33 @@ public enum GrammarKey implements PropertyKey<Object>, GrammarChecker {
      * performance, presumably because they occur infrequently or indicate a
      * place where rules are likely to be applicable.
      */
-    CONTROL_LABELS("controlLabels", "List of rare labels, used to optimise rule matching", Parser.splitter),
+    CONTROL_LABELS("controlLabels", "List of rare labels, used to optimise rule matching",
+        Parser.splitter),
 
     /**
      * Space-separated list of common labels of a graph grammar. The
      * control labels are those labels which should be matched last for optimal
      * performance, presumably because they occur frequently.
      */
-    COMMON_LABELS("commonLabels", "List of frequent labels, used to optimise rule matching", Parser.splitter),
+    COMMON_LABELS("commonLabels", "List of frequent labels, used to optimise rule matching",
+        Parser.splitter),
 
     /**
      * Flag that determines if transition parameters are included in the LTS
      * transition labels
      */
-    TRANSITION_PARAMETERS("transitionParameters", false, false, "Show parameters", "Flag controlling if transition labels should include rule parameters", new Parser.EnumParser<>(ThreeValued.class, ThreeValued.SOME), null),
+    TRANSITION_PARAMETERS("transitionParameters", false, false, "Show parameters",
+        "Flag controlling if transition labels should include a (possibly empty) argument list. Possibly values:"
+            + "<li>- <i>false</i>: no arguments are displayed"
+            + "<li>- <i>some</i> (default): arguments are only displayed for rules with parameters and for recipes"
+            + "<li>- <i>true</i>: arguments are always displayed, also for rules without parameters",
+        new Parser.EnumParser<>(ThreeValued.class, ThreeValued.SOME), null),
 
     /**
      * Flag that determines if (binary) loops can be shown as vertex labels.
      */
-    LOOPS_AS_LABELS("loopsAsLabels", "Flag controlling if binary self-edges may be shown as vertex labels", Parser.boolTrue),;
+    LOOPS_AS_LABELS("loopsAsLabels",
+        "Flag controlling if binary self-edges may be shown as vertex labels", Parser.boolTrue),;
 
     /**
      * Constructor for a key with a plain string value

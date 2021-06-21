@@ -28,6 +28,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -1030,10 +1031,9 @@ public class Options implements Cloneable {
     /** Loads in a TrueType font of a given name. */
     private static Font loadFont(String name) {
         Font result = null;
-        try {
-            result = Font.createFont(Font.TRUETYPE_FONT,
-                Groove.getResource(name)
-                    .openStream());
+        try (InputStream stream = Groove.getResource(name)
+            .openStream()) {
+            result = Font.createFont(Font.TRUETYPE_FONT, stream);
             result = result.deriveFont(getLabelFont().getSize2D());
         } catch (FileNotFoundException e) {
             // do nothing

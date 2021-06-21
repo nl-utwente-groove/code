@@ -97,7 +97,9 @@ public class CtrlDoc {
                 } catch (FileNotFoundException e) {
                     // we have some weird url, e.g. because Groove is used as an OSGi bundle.
                     //let's try to use the url's stream...
-                    grammarText = groove.io.Util.readInputStreamToString(url.openStream());
+                    try (InputStream stream = url.openStream()) {
+                        grammarText = groove.io.Util.readInputStreamToString(stream);
+                    }
                 }
             }
         } catch (IOException e) {
