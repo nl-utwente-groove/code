@@ -97,6 +97,19 @@ public class GrammarProperties extends Properties {
     }
 
     /**
+     * Indicates if states should store output parameters for group calls. Default
+     * value: {@code false}
+     */
+    public boolean isStoreOutPars() {
+        return (Boolean) parsePropertyOrDefault(GrammarKey.STORE_OUT_PARS);
+    }
+
+    /** Sets the {@link GrammarKey#STORE_OUT_PARS} property to the given value * */
+    public void setStoreOutPars(boolean store) {
+        storeProperty(GrammarKey.STORE_OUT_PARS, store);
+    }
+
+    /**
      * Indicates if the LTS labels should contain transition parameters. Default
      * value: {@link ThreeValued#FALSE}.
      */

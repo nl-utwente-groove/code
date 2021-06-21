@@ -9,6 +9,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
@@ -385,13 +386,12 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
             DOMSource source = new DOMSource(doc);
             StreamResult result = new StreamResult(new StringWriter());
             transformer.transform(source, result);
-            String xmlString = result.getWriter()
-                .toString();
-
-            this.m_simulator.getModel()
-                .getStore()
-                .putTexts(ResourceKind.CONFIG,
-                    Collections.singletonMap(this.m_activeModel, xmlString));
+            try (Writer writer = result.getWriter()) {
+                this.m_simulator.getModel()
+                    .getStore()
+                    .putTexts(ResourceKind.CONFIG,
+                        Collections.singletonMap(this.m_activeModel, writer.toString()));
+            }
         } catch (TransformerConfigurationException e) {
             exc = e;
         } catch (IOException e) {
