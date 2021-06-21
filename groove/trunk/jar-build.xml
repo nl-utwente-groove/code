@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: Eclipse auto-generated file.
+              Any modifications will be overwritten.
+              To include a user specific buildfile here, simply create one in the same
+              directory with the processing instruction <?eclipse.ant.import?>
+              as the first entry and export the buildfile again. --><project basedir="." default="build" name="groove">
+    <property environment="env"/>
+    <property name="sscience-parser.location" value="../../../Users/Rensink/Documents/Wijs/ssci/2020-2021/sscience-parser"/>
+    <property name="junit.output.dir" value="junit"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.8"/>
+    <property name="source" value="1.8"/>
+    <path id="groove.classpath">
+        <pathelement location="bin"/>
+        <pathelement location="lib/jaxb/jaxb-api.jar"/>
+        <pathelement location="lib/jaxb/jaxb-core.jar"/>
+        <pathelement location="lib/jaxb/jaxb-impl.jar"/>
+        <pathelement location="lib/OSXAdapter.jar"/>
+        <pathelement location="lib/junit-4_8_2.jar"/>
+        <pathelement location="lib/jgraph-5_13_0.jar"/>
+        <pathelement location="lib/rsyntaxtextarea.jar"/>
+        <pathelement location="lib/ltl2buchi-2010-12.jar"/>
+        <pathelement location="lib/gnuprologjava-0.2.6.jar"/>
+        <pathelement location="lib/io/epsgraphics-1.2.jar"/>
+        <pathelement location="lib/io/itextpdf-5.3.2.jar"/>
+        <pathelement location="lib/io/jaxb-gxl-1_0.jar"/>
+        <pathelement location="lib/opencsv-2.3.jar"/>
+        <pathelement location="lib/io/com.alexmerz.graphviz.jar"/>
+        <pathelement location="lib/jaxfront/jaxfront-core.jar"/>
+        <pathelement location="lib/jaxfront/jaxfront-swing.jar"/>
+        <pathelement location="lib/xerces-2_11_0/xercesImpl.jar"/>
+        <pathelement location="lib/xerces-2_11_0/resolver.jar"/>
+        <pathelement location="lib/xerces-2_11_0/xml-apis.jar"/>
+        <pathelement location="lib/emf-2_7_0/org.eclipse.emf.common_2.7.0.v20120127-1122.jar"/>
+        <pathelement location="lib/emf-2_7_0/org.eclipse.emf.ecore_2.7.0.v20120127-1122.jar"/>
+        <pathelement location="lib/emf-2_7_0/org.eclipse.emf.ecore.xmi_2.7.0.v20120127-1122.jar"/>
+        <pathelement location="lib/args4j-2.0.26.jar"/>
+        <pathelement location="lib/antlr-3.4-complete.jar"/>
+        <pathelement location="lib/antlrworks-1.4.2.jar"/>
+        <pathelement location="lib/org.eclipse.jdt.annotation_2.0.0.v20140415-1436.jar"/>
+        <pathelement location="lib/groovy-2.4.10.jar"/>
+        <pathelement location="lib/jakarta.activation-1.2.1.jar"/>
+        <pathelement location="lib/jgoodies-common-1.8.1.jar"/>
+        <pathelement location="lib/jgoodies-looks-2.5.3.jar"/>
+    </path>
+    <target name="init">
+        <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="resources">
+                <exclude name="**/*.java"/>
+                <exclude name="**/.svn/*"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="test">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+    <target depends="clean" name="cleanall"/>
+    <target depends="build-subprojects,build-project" name="build"/>
+    <target name="build-subprojects"/>
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
+            <src path="resources"/>
+            <src path="test"/>
+            <src path="src"/>
+            <exclude name="**/.svn/*"/>
+            <classpath refid="groove.classpath"/>
+        </javac>
+    </target>
+    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects">
+        <ant antfile="jar-build.xml" dir="${sscience-parser.location}" inheritAll="false" target="clean"/>
+        <ant antfile="jar-build.xml" dir="${sscience-parser.location}" inheritAll="false" target="build">
+            <propertyset>
+                <propertyref name="build.compiler"/>
+            </propertyset>
+        </ant>
+    </target>
+    <target description="copy Eclipse compiler jars to ant lib directory" name="init-eclipse-compiler">
+        <copy todir="${ant.library.dir}">
+            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
+        </copy>
+        <unzip dest="${ant.library.dir}">
+            <patternset includes="jdtCompilerAdapter.jar"/>
+            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
+        </unzip>
+    </target>
+    <target description="compile project with Eclipse compiler" name="build-eclipse-compiler">
+        <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
+        <antcall target="build"/>
+    </target>
+    <target name="ReleaseTests">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="groove.test.ReleaseTests" todir="${junit.output.dir}"/>
+            <jvmarg line="-ea"/>
+            <classpath refid="groove.classpath"/>
+        </junit>
+    </target>
+    <target name="Simulator">
+        <java classname="groove.gui.Simulator" failonerror="true" fork="yes">
+            <jvmarg line="-ea"/>
+            <classpath refid="groove.classpath"/>
+        </java>
+    </target>
+    <target name="junitreport">
+        <junitreport todir="${junit.output.dir}">
+            <fileset dir="${junit.output.dir}">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="${junit.output.dir}"/>
+        </junitreport>
+    </target>
+</project>
