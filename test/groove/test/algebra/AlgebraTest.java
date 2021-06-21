@@ -193,6 +193,11 @@ public abstract class AlgebraTest<B,I,R,S> {
         return this.intAlgebra.gt(arg0, arg1);
     }
 
+    /** Delegates to {@link IntAlgebra#ite} */
+    protected I iIte(B arg0, I arg1, I arg2) {
+        return this.intAlgebra.ite(arg0, arg1, arg2);
+    }
+
     /** Delegates to {@link IntAlgebra#le} */
     protected B iLe(I arg0, I arg1) {
         return this.intAlgebra.le(arg0, arg1);
@@ -294,6 +299,11 @@ public abstract class AlgebraTest<B,I,R,S> {
         return this.realAlgebra.max(arg0, arg1);
     }
 
+    /** Delegates to {@link RealAlgebra#ite} */
+    protected R rIte(B arg0, R arg1, R arg2) {
+        return this.realAlgebra.ite(arg0, arg1, arg2);
+    }
+
     /** Delegates to {@link RealAlgebra#lt} */
     protected B rLt(R arg0, R arg1) {
         return this.realAlgebra.lt(arg0, arg1);
@@ -339,9 +349,44 @@ public abstract class AlgebraTest<B,I,R,S> {
         return this.realAlgebra.neq(arg0, arg1);
     }
 
+    /** Delegates to {@link StringAlgebra#isBool} */
+    protected B sIsBool(S arg0) {
+        return this.stringAlgebra.isBool(arg0);
+    }
+
+    /** Delegates to {@link StringAlgebra#isInt} */
+    protected B sIsInt(S arg0) {
+        return this.stringAlgebra.isInt(arg0);
+    }
+
+    /** Delegates to {@link StringAlgebra#isReal} */
+    protected B sIsReal(S arg0) {
+        return this.stringAlgebra.isReal(arg0);
+    }
+
+    /** Delegates to {@link StringAlgebra#toBool} */
+    protected B sToBool(S arg0) {
+        return this.stringAlgebra.toBool(arg0);
+    }
+
+    /** Delegates to {@link StringAlgebra#toInt} */
+    protected I sToInt(S arg0) {
+        return this.stringAlgebra.toInt(arg0);
+    }
+
+    /** Delegates to {@link StringAlgebra#toReal} */
+    protected R sToReal(S arg0) {
+        return this.stringAlgebra.toReal(arg0);
+    }
+
     /** Delegates to {@link StringAlgebra#concat} */
     protected S sConcat(S arg0, S arg1) {
         return this.stringAlgebra.concat(arg0, arg1);
+    }
+
+    /** Delegates to {@link StringAlgebra#ite} */
+    protected S sIte(B arg0, S arg1, S arg2) {
+        return this.stringAlgebra.ite(arg0, arg1, arg2);
     }
 
     /** Delegates to {@link StringAlgebra#lt} */
@@ -377,6 +422,21 @@ public abstract class AlgebraTest<B,I,R,S> {
     /** Delegates to {@link StringAlgebra#neq} */
     protected B sNeq(S arg0, S arg1) {
         return this.stringAlgebra.neq(arg0, arg1);
+    }
+
+    /** Delegates to {@link StringAlgebra#substring} */
+    protected S sSubstring(S arg0, I arg1, I arg2) {
+        return this.stringAlgebra.substring(arg0, arg1, arg2);
+    }
+
+    /** Delegates to {@link StringAlgebra#suffix} */
+    protected S sSuffix(S arg0, I arg1) {
+        return this.stringAlgebra.suffix(arg0, arg1);
+    }
+
+    /** Delegates to {@link StringAlgebra#lookup} */
+    protected I sLookup(S arg0, S arg1) {
+        return this.stringAlgebra.lookup(arg0, arg1);
     }
 
     private final AlgebraFamily family;

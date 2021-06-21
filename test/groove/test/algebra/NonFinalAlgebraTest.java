@@ -64,6 +64,10 @@ public abstract class NonFinalAlgebraTest<B,I,R,S> extends AlgebraTest<B,I,R,S> 
         assertEquals(bFalse(), iEq(one, two));
         assertEquals(bFalse(), iNeq(one, one));
         assertEquals(bTrue(), iNeq(one, two));
+        // if-then-else
+        assertEquals(one, iIte(bTrue(), one, two));
+        assertEquals(two, iIte(bFalse(), one, two));
+
     }
 
     /** Tests the real-number algebra. */
@@ -100,6 +104,9 @@ public abstract class NonFinalAlgebraTest<B,I,R,S> extends AlgebraTest<B,I,R,S> 
         assertEquals(bFalse(), rEq(one, two));
         assertEquals(bFalse(), rNeq(one, one));
         assertEquals(bTrue(), rNeq(one, two));
+        // if-then-else
+        assertEquals(one, rIte(bTrue(), one, two));
+        assertEquals(two, rIte(bFalse(), one, two));
     }
 
     /** Tests the boolean algebra. */
@@ -126,6 +133,9 @@ public abstract class NonFinalAlgebraTest<B,I,R,S> extends AlgebraTest<B,I,R,S> 
         S a = createString("a");
         S b = createString("b");
         S ab = createString("ab");
+        I zero = createInt(0);
+        I one = createInt(1);
+        I two = createInt(2);
         // concatenation and length
         assertEquals(a, sConcat(empty, a));
         assertEquals(ab, sConcat(a, b));
@@ -149,6 +159,32 @@ public abstract class NonFinalAlgebraTest<B,I,R,S> extends AlgebraTest<B,I,R,S> 
         assertEquals(bFalse(), sEq(empty, a));
         assertEquals(bFalse(), sNeq(empty, empty));
         assertEquals(bTrue(), sNeq(empty, a));
+        // string-to-bool
+        assertEquals(bFalse(), sIsBool(a));
+        assertEquals(bTrue(), sIsBool(createString("false")));
+        assertEquals(bFalse(), sToBool(a));
+        assertEquals(bTrue(), sToBool(createString("true")));
+        // string-to-int
+        assertEquals(bFalse(), sIsInt(a));
+        assertEquals(bTrue(), sIsInt(createString("0")));
+        assertEquals(zero, sToInt(a));
+        assertEquals(one, sToInt(createString("1")));
+        // string-to-real
+        assertEquals(bFalse(), sIsReal(a));
+        assertEquals(bTrue(), sIsReal(createString("1.1")));
+        assertEquals(createReal(0), sToReal(a));
+        assertEquals(createReal(1.01), sToReal(createString("1.01")));
+        // substring
+        assertEquals(a, sSubstring(ab, zero, one));
+        assertEquals(b, sSubstring(ab, one, two));
+        assertEquals(empty, sSubstring(ab, one, zero));
+        assertEquals(b, sSuffix(ab, one));
+        assertEquals(empty, sSuffix(a, two));
+        assertEquals(createInt(-1), sLookup(a, b));
+        assertEquals(zero, sLookup(ab, a));
+        assertEquals(one, sLookup(ab, b));
+        // if-then-else
+        assertEquals(a, sIte(bTrue(), a, b));
+        assertEquals(b, sIte(bFalse(), a, b));
     }
-
 }
