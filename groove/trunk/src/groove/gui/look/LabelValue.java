@@ -466,6 +466,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 if (edge.getRole() == EdgeRole.BINARY) {
                     line = line.append(LOOP_SUFFIX);
                 }
+                if (trans.isInternalStep()) {
+                    line = line.color(Values.RECIPE_COLOR);
+                }
                 transLabels.add(line);
             }
         }
@@ -547,8 +550,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
                     // no annotation value
                 }
                 if (text != null) {
-                    this.statusMap.put(f, Line.atom(text)
-                        .style(Style.BOLD));
+                    this.statusMap.put(f,
+                        Line.atom(text)
+                            .style(Style.BOLD));
                 }
             }
         }
@@ -738,7 +742,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
             // only add edges that have an unfiltered label
             if (!isFiltered(jGraph, jEdge, edge)) {
                 GraphTransition trans = (GraphTransition) edge;
-                result.add(Line.atom(trans.text(isShowAnchors)), jEdge.getDirect(edge));
+                Line line = Line.atom(trans.text(isShowAnchors));
+                result.add(line, jEdge.getDirect(edge));
             }
         }
         return result;
@@ -822,8 +827,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
     static {
         Map<Sort,Line> map = new EnumMap<>(Sort.class);
         for (Sort kind : Sort.values()) {
-            map.put(kind, Line.atom(kind.getName())
-                .style(Style.BOLD));
+            map.put(kind,
+                Line.atom(kind.getName())
+                    .style(Style.BOLD));
         }
         sortLineMap = map;
     }

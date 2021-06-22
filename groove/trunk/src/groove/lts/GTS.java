@@ -385,6 +385,15 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     private boolean absents;
 
     /**
+     * Indicates if this GTS has internal steps.
+     */
+    public boolean hasInternalSteps() {
+        return this.internals;
+    }
+
+    private boolean internals;
+
+    /**
      * Adds a transition to the GTS, under the assumption that the source and
      * target states are already present.
      * @param trans the source state of the transition to be added
@@ -530,6 +539,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      */
     @Override
     protected void fireAddEdge(GraphTransition edge) {
+        this.internals = edge.isInternalStep();
         this.allTransitionCount++;
         super.fireAddEdge(edge);
         for (GTSListener listener : getGraphListeners()) {
@@ -659,15 +669,17 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             }
             if (flags.showTransience() && state.isTransient()) {
                 String label = flags.getTransienceLabel()
-                    .replaceAll("#", "" + state.getActualFrame()
-                        .getTransience());
+                    .replaceAll("#",
+                        "" + state.getActualFrame()
+                            .getTransience());
                 result.addEdge(image, label, image);
             }
             if (flags.showRecipes() && state.isInternalState()) {
                 String label = flags.getRecipeLabel()
-                    .replaceAll("#", "" + state.getActualFrame()
-                        .getRecipe()
-                        .getQualName());
+                    .replaceAll("#",
+                        "" + state.getActualFrame()
+                            .getRecipe()
+                            .getQualName());
                 result.addEdge(image, label, image);
             }
         }
@@ -678,8 +690,10 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             }
             MultiNode sourceImage = nodeMap.get(transition.source());
             MultiNode targetImage = nodeMap.get(transition.target());
-            result.addEdge(sourceImage, transition.label()
-                .text(), targetImage);
+            result.addEdge(sourceImage,
+                transition.label()
+                    .text(),
+                targetImage);
         }
         return result;
     }
@@ -905,10 +919,8 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 return myNodeSet.equals(otherGraph.nodeSet())
                     && myEdgeSet.equals(otherGraph.edgeSet());
             } else {
-                return this.checker.areIsomorphic(myGraph,
-                    otherGraph,
-                    myBoundNodes,
-                    otherBoundNodes);
+                return this.checker
+                    .areIsomorphic(myGraph, otherGraph, myBoundNodes, otherBoundNodes);
             }
         }
 
