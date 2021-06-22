@@ -66,7 +66,7 @@ import groove.lts.RuleTransition;
  * an instance, setupPopupMenu() should be called after all global final
  * variables have been set.
  */
-public class LTSJGraph extends JGraph<GTS>implements Serializable {
+public class LTSJGraph extends JGraph<GTS> implements Serializable {
     /** Constructs an instance of the j-graph for a given simulator. */
     public LTSJGraph(Simulator simulator) {
         super(simulator);
@@ -97,7 +97,7 @@ public class LTSJGraph extends JGraph<GTS>implements Serializable {
                     LTSJModel model = getModel();
                     if (model != null) {
                         GTS gts = getModel().getGraph();
-                        if (gts != null && gts.hasTransientStates()) {
+                        if (gts != null && (gts.hasTransientStates() || gts.hasInternalSteps())) {
                             reloadJModel();
                         }
                     }
