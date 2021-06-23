@@ -74,9 +74,10 @@ class ExploreData {
         }
         ExploreData childCache = child.getCache()
             .getExploreData();
-        if (childCache == this) {
+        // The reason for the following exit condition is lost in the mists of time
+        /*if (childCache == this) {
             return;
-        }
+        }*/
         this.absence = Math.min(this.absence, childCache.absence);
         if (this.state.isTransient()) {
             addReachable(child);
@@ -168,9 +169,8 @@ class ExploreData {
         }
         if (change == Change.TOP_LEVEL) {
             if (DEBUG) {
-                System.out.printf("Top-level reachables of %s augmented by %s%n",
-                    this.state,
-                    child);
+                System.out
+                    .printf("Top-level reachables of %s augmented by %s%n", this.state, child);
             }
             addRecipeTarget(child);
         }
@@ -216,10 +216,8 @@ class ExploreData {
         this.state.getGTS()
             .addTransition(trans);
         if (DEBUG) {
-            System.out.printf("Recipe transition added: %s--%s-->%s%n",
-                source,
-                trans.label(),
-                target);
+            System.out
+                .printf("Recipe transition added: %s--%s-->%s%n", source, trans.label(), target);
         }
     }
 

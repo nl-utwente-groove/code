@@ -1,30 +1,29 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package groove.test;
 
-import groove.io.FileType;
-import groove.transform.Transformer;
-
 import java.io.File;
 import java.io.IOException;
 
-import junit.framework.Assert;
-
 import org.junit.Test;
+
+import groove.io.FileType;
+import groove.transform.Transformer;
+import junit.framework.Assert;
 
 /**
  * Loads and partially explores all grammars provided with the GROOVE release.
@@ -49,11 +48,11 @@ public class GrammarsTest {
         File location = new File(dirName);
         if (!location.isDirectory()) {
             try {
-                Assert.fail(String.format("Directory %s cannot be found",
-                    location.getCanonicalPath()));
+                Assert.fail(
+                    String.format("Directory %s cannot be found", location.getCanonicalPath()));
             } catch (IOException e) {
-                Assert.fail(String.format("Directory %s cannot be parsed",
-                    location.getAbsolutePath()));
+                Assert.fail(
+                    String.format("Directory %s cannot be parsed", location.getAbsolutePath()));
             }
         }
         for (File file : location.listFiles()) {
@@ -70,8 +69,9 @@ public class GrammarsTest {
             transformer.setResultCount(5);
             transformer.explore();
         } catch (Exception e) {
-            Assert.fail(String.format("Error while testing %s:%n%s",
-                grammarLocation.getName(), e.getMessage()));
+            e.printStackTrace();
+            Assert.fail(String
+                .format("Error while testing %s:%n%s", grammarLocation.getName(), e.getMessage()));
         }
     }
 

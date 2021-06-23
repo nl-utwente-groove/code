@@ -12,7 +12,6 @@ import java.util.Set;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
-import groove.grammar.GrammarKey;
 import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
@@ -23,7 +22,6 @@ import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.VersionDialog;
 import groove.io.store.SystemStore;
-import groove.util.ThreeValued;
 import groove.util.Version;
 
 /**
@@ -138,11 +136,6 @@ public class LoadGrammarAction extends SimulatorAction {
         if (Version.compareGrammarVersions(fileGrammarVersion, Version.GRAMMAR_VERSION_3_1) == -1) {
             boolean success = repairIdentifiers(store);
             if (!success) {
-                return false;
-            }
-        }
-        if (Version.compareGrammarVersions(fileGrammarVersion, Version.GRAMMAR_VERSION_3_4) == -1) {
-            if (!repairGrammarProperties(store)) {
                 return false;
             }
         }
@@ -284,37 +277,5 @@ public class LoadGrammarAction extends SimulatorAction {
             null,
             options,
             "Continue") == JOptionPane.OK_OPTION;
-    }
-
-    /**
-     * Changes the value of certain grammar properties to conform to syntax
-     * introduced in grammar version 3.4, and removes grammar
-     * properties that are no longer supported.
-     */
-    private boolean repairGrammarProperties(SystemStore store) throws IOException {
-        boolean changed = false;
-        GrammarProperties props = store.getProperties();
-        changed |= props.remove(GrammarKey.ATTRIBUTE_SUPPORT) != null;
-        changed |= props.remove(GrammarKey.TRANSITION_BRACKETS) != null;
-        // convert numeric value of TRANSITION_PARAMETERS
-        GrammarKey paramsKey = GrammarKey.TRANSITION_PARAMETERS;
-        String paramsVal = (String) props.get(paramsKey.getName());
-        if (paramsVal != null && !paramsKey.parser()
-            .accepts(paramsVal)) {
-            try {
-                int paramsIntVal = Integer.parseInt(paramsVal);
-                props.setUseParameters(paramsIntVal == 0 ? ThreeValued.FALSE : ThreeValued.TRUE);
-            } catch (NumberFormatException exc) {
-                // it was not a number either; remove the key altogether
-                props.remove(paramsKey.getName());
-            }
-            changed = true;
-        }
-        if (changed) {
-            store.setUndoSuspended(true);
-            store.putProperties(props);
-            store.setUndoSuspended(false);
-        }
-        return true;
     }
 }

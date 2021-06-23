@@ -453,10 +453,17 @@ public class GrammarProperties extends Properties {
     public void check(GrammarModel grammar) throws FormatException {
         FormatErrorSet errors = new FormatErrorSet();
         for (GrammarKey key : GrammarKey.values()) {
-            Object result = key.parser()
-                .parse(getProperty(key.getName()));
-            for (FormatError error : key.check(grammar, result)) {
-                errors.add("Error in property key '%s': %s", key.getKeyPhrase(), error, key);
+            try {
+                Object result = key.parser()
+                    .parse(getProperty(key.getName()));
+                for (FormatError error : key.check(grammar, result)) {
+                    errors.add("Error in property key '%s': %s", key.getKeyPhrase(), error, key);
+                }
+            } catch (FormatException exc) {
+                errors.add("Error in property key '%s': %s",
+                    key.getKeyPhrase(),
+                    exc.getMessage(),
+                    key);
             }
         }
         errors.throwException();
