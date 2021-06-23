@@ -75,7 +75,9 @@ import groove.io.graph.AttrGraph;
 import groove.io.graph.GxlIO;
 import groove.util.Exceptions;
 import groove.util.Groove;
+import groove.util.ThreeValued;
 import groove.util.Unzipper;
+import groove.util.Version;
 import groove.util.parse.FormatErrorSet;
 import groove.util.parse.FormatException;
 
@@ -746,9 +748,8 @@ public class SystemStore extends UndoableEditSupport {
             // store graph in corresponding map
             AspectGraph graph = xmlGraph.toAspectGraph();
             Object oldEntry = getGraphMap(kind).put(fileEntry.getKey(), graph);
-            assert oldEntry == null : String.format("Duplicate %s name '%s'",
-                kind.getGraphRole(),
-                fileEntry.getKey());
+            assert oldEntry == null : String
+                .format("Duplicate %s name '%s'", kind.getGraphRole(), fileEntry.getKey());
         }
     }
 
@@ -837,6 +838,7 @@ public class SystemStore extends UndoableEditSupport {
                 grammarProperties.load(s);
             }
             result.putAll(grammarProperties);
+            result = repairProperties(result);
             result = addDerivedProperties(result);
             this.hasSystemPropertiesFile = true;
         } else {
@@ -906,11 +908,40 @@ public class SystemStore extends UndoableEditSupport {
 
     private GrammarProperties properties;
 
+    /** Repair properties, as necessitated because of version changes. */
+    private GrammarProperties repairProperties(GrammarProperties props) {
+        GrammarProperties result;
+        String version = props.getGrammarVersion();
+        if (Version.compareGrammarVersions(version, Version.GRAMMAR_VERSION_3_4) == -1) {
+            result = props.clone();
+            result.remove(GrammarKey.ATTRIBUTE_SUPPORT);
+            result.remove(GrammarKey.TRANSITION_BRACKETS);
+            // convert numeric value of TRANSITION_PARAMETERS
+            GrammarKey paramsKey = GrammarKey.TRANSITION_PARAMETERS;
+            String paramsVal = (String) props.get(paramsKey.getName());
+            if (paramsVal != null && !paramsKey.parser()
+                .accepts(paramsVal)) {
+                try {
+                    int paramsIntVal = Integer.parseInt(paramsVal);
+                    result
+                        .setUseParameters(paramsIntVal == 0 ? ThreeValued.FALSE : ThreeValued.TRUE);
+                } catch (NumberFormatException exc) {
+                    // it was not a number either; remove the key altogether
+                    result.remove(paramsKey.getName());
+                }
+            }
+        } else {
+            result = props;
+        }
+        return result;
+    }
+
     /** Returns a clone of a given properties bundle where the derived properties have been added. */
     private GrammarProperties addDerivedProperties(GrammarProperties properties) {
         GrammarProperties result = properties.clone();
-        result.put(GrammarKey.LOCATION.getName(), this.file.toPath()
-            .toString());
+        result.put(GrammarKey.LOCATION.getName(),
+            this.file.toPath()
+                .toString());
         return result;
     }
 
@@ -1030,8 +1061,10 @@ public class SystemStore extends UndoableEditSupport {
                 } else if (kind.isTextBased()) {
                     result.putTexts(kind, store.getTexts(kind));
                 } else {
-                    result.putGraphs(kind, store.getGraphs(kind)
-                        .values(), false);
+                    result.putGraphs(kind,
+                        store.getGraphs(kind)
+                            .values(),
+                        false);
                 }
             }
             if (newFile != null) {
@@ -1084,8 +1117,9 @@ public class SystemStore extends UndoableEditSupport {
             if (create) {
                 throw new IOException("Can't create zipped grammar " + file.toString());
             }
-            result = newStoreFromTmp(file.getPath(), Unzipper.instance()
-                .unzip(file));
+            result = newStoreFromTmp(file.getPath(),
+                Unzipper.instance()
+                    .unzip(file));
         } else {
             result = new SystemStore(file, create);
         }
@@ -1104,8 +1138,9 @@ public class SystemStore extends UndoableEditSupport {
         try {
             result = newStore(new File(url.toURI()), false);
         } catch (IllegalArgumentException exc) {
-            result = newStoreFromTmp(url.toString(), Unzipper.instance()
-                .unzip(url));
+            result = newStoreFromTmp(url.toString(),
+                Unzipper.instance()
+                    .unzip(url));
         } catch (URISyntaxException exc) {
             throw Exceptions.UNREACHABLE;
         }
