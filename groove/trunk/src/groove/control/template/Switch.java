@@ -31,7 +31,7 @@ import groove.grammar.UnitPar;
 import groove.util.Pair;
 
 /**
- * Transition between control locations, bearing either a call or a verdict.
+ * Transition between control locations, bearing a call.
  * @author Arend Rensink
  * @version $Revision $
  */

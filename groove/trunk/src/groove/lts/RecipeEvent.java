@@ -80,7 +80,7 @@ public class RecipeEvent implements GraphTransitionStub, Event, GraphTransitionK
         return this.recipeSwitch;
     }
 
-    /** Source state of the rule transition. */
+    /** The invocation wrapped in this event. */
     private final Switch recipeSwitch;
 
     /** Returns the initial transition for this event. */

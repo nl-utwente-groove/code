@@ -16,21 +16,34 @@
  */
 package groove.control;
 
-import groove.control.Binding.Source;
-import groove.grammar.host.HostNode;
-import groove.graph.Element;
-import groove.graph.Node;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import groove.control.Binding.Source;
+import groove.control.instance.Assignment;
+import groove.control.instance.Step;
+import groove.grammar.host.HostNode;
+import groove.graph.Element;
+import groove.graph.Node;
 
 /**
  * Type wrapping the functionality to deal with control valuations.
  * The choice of providing the functionality like this is driven
  * by the desire to keep the valuations in the form of node arrays,
  * for the sake of keeping a low memory footprint per state.
+ *
+ * A control valuation is an {@code Object[]}-array of which all but possibly the last element
+ * are {@code HostNode}s, whereas the last element is either also a {@code HostNode} or another
+ * control valuation. In the latter case, the control valuation is called nested.
+ *
+ * The nesting is in inverse stack order; i.e., a control valuation nested in the
+ * last element is actually younger than (i.e., on top of) the current one.
+ *
+ * The values at any given level of a control valuation are in the order of the
+ * {@link Assignment} in a given {@link Step}.
+ *
  * @author Arend Rensink
  * @version $Revision $
  */
@@ -82,7 +95,7 @@ public class Valuator {
      * The node map may be empty, in which case it is regarded as the identity.
      */
     static public boolean areEqual(Object[] val1, Object[] val2,
-            Map<? extends Node,? extends Node> nodeMap) {
+        Map<? extends Node,? extends Node> nodeMap) {
         if (nodeMap == null && val1 == val2) {
             return true;
         }
@@ -132,7 +145,7 @@ public class Valuator {
             result = result * prime + code;
         }
         if (isNested) {
-            result = result * prime + hashCode(pop(val));
+            result = result * prime + hashCode(pop(val), modifier);
         }
         return result;
     }
@@ -141,7 +154,7 @@ public class Valuator {
     static public List<Object> asList(Object[] val) {
         List<Object> result = new ArrayList<>(Arrays.asList(val));
         if (isNested(val)) {
-            result.set(val.length - 1, asList(pop(val)));
+            result.set(val.length - 1, asList((Object[]) val[val.length - 1]));
         }
         return result;
     }
