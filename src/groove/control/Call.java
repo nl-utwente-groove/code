@@ -105,18 +105,16 @@ public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comp
     private void initVars() {
         Map<CtrlVar,Integer> outVars = new LinkedHashMap<>();
         Map<CtrlVar,Integer> inVars = new LinkedHashMap<>();
-        if (getArgs() != null && !getArgs().isEmpty()) {
-            int size = getArgs().size();
-            for (int i = 0; i < size; i++) {
-                CtrlPar arg = getArgs().get(i);
-                if (arg instanceof CtrlPar.Var) {
-                    CtrlVar var = ((CtrlPar.Var) arg).getVar();
-                    if (arg.isInOnly()) {
-                        inVars.put(var, i);
-                    } else {
-                        assert arg.isOutOnly();
-                        outVars.put(var, i);
-                    }
+        int size = getArgs().size();
+        for (int i = 0; i < size; i++) {
+            CtrlPar arg = getArgs().get(i);
+            if (arg instanceof CtrlPar.Var) {
+                CtrlVar var = ((CtrlPar.Var) arg).getVar();
+                if (arg.isInOnly()) {
+                    inVars.put(var, i);
+                } else {
+                    assert arg.isOutOnly();
+                    outVars.put(var, i);
                 }
             }
         }
