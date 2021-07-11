@@ -73,6 +73,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
             transformer.addListener(new GenerateProgressListener());
         }
         ExploreResult result = transformer.explore(getStartGraphs());
+        result.setTransformer(transformer);
         getReporter().report();
         return result;
     }

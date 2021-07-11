@@ -24,6 +24,7 @@ import java.util.LinkedHashSet;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.transform.Transformer;
 
 /**
  * A set of graph states that constitute the result of the execution of some
@@ -36,6 +37,7 @@ public class ExploreResult implements Iterable<GraphState> {
     public ExploreResult(GTS gts) {
         this.gts = gts;
         this.elements = createResultSet();
+        this.transformer = null;
     }
 
     /** Returns the graph transformation system to which this result applies. */
@@ -44,6 +46,21 @@ public class ExploreResult implements Iterable<GraphState> {
     }
 
     private final GTS gts;
+    private Transformer transformer;
+
+    /**
+     * @param transformer Stores the transformer so it can be retrieved in the GroovyChecker.
+     */
+    public void setTransformer(Transformer transformer) {
+        this.transformer = transformer;
+    }
+
+    /**
+     * @return Possibly null transformer.
+     */
+    public Transformer getTransformer() {
+        return this.transformer;
+    }
 
     /**
      * Adds a state to the result.
