@@ -1,0 +1,9 @@
+recipe ab() {
+  a;
+  try b;
+}
+
+recipe ca() {
+  c;
+  a;
+}

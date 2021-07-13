@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph edgemode="directed" edgeids="false" role="shape" id="s83">
+        <node id="n0">
+            <attr name="layout">
+                <string>512 397 20 20</string>
+            </attr>
+            <attr name="nmult">
+                <string>1 1</string>
+            </attr>
+        </node>
+        <node id="n1">
+            <attr name="layout">
+                <string>373 8 20 20</string>
+            </attr>
+            <attr name="nmult">
+                <string>1 1</string>
+            </attr>
+        </node>
+        <node id="n2">
+            <attr name="layout">
+                <string>71 350 20 20</string>
+            </attr>
+            <attr name="nmult">
+                <string>1 w</string>
+            </attr>
+        </node>
+        <node id="n9">
+            <attr name="layout">
+                <string>403 463 20 20</string>
+            </attr>
+            <attr name="nmult">
+                <string>1 1</string>
+            </attr>
+        </node>
+        <node id="n3">
+            <attr name="layout">
+                <string>173 110 20 20</string>
+            </attr>
+            <attr name="nmult">
+                <string>2 w</string>
+            </attr>
+        </node>
+        <node id="n5">
+            <attr name="layout">
+                <string>8 238 20 20</string>
+            </attr>
+            <attr name="nmult">
+                <string>1 w</string>
+            </attr>
+        </node>
+        <node id="n10">
+            <attr name="layout">
+                <string>458 213 20 20</string>
+            </attr>
+            <attr name="nmult">
+                <string>1 w</string>
+            </attr>
+        </node>
+        <node id="n11">
+            <attr name="layout">
+                <string>261 476 20 20</string>
+            </attr>
+            <attr name="nmult">
+                <string>1 w</string>
+            </attr>
+        </node>
+        <node id="n13">
+            <attr name="layout">
+                <string>175 458 20 20</string>
+            </attr>
+            <attr name="nmult">
+                <string>1 1</string>
+            </attr>
+        </node>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>type:Euler</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>flag:start</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>type:Area</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n3">
+            <attr name="label">
+                <string>end</string>
+            </attr>
+            <attr name="omult">
+                <string>1 1</string>
+            </attr>
+            <attr name="imult">
+                <string>2 w</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n3">
+            <attr name="label">
+                <string>type:Bridge</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>type:Area</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n3">
+            <attr name="label">
+                <string>end</string>
+            </attr>
+            <attr name="omult">
+                <string>1 1</string>
+            </attr>
+            <attr name="imult">
+                <string>2 w</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>flag:even</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n5">
+            <attr name="label">
+                <string>end</string>
+            </attr>
+            <attr name="omult">
+                <string>2 w</string>
+            </attr>
+            <attr name="imult">
+                <string>2 w</string>
+            </attr>
+        </edge>
+        <edge to="n5" from="n5">
+            <attr name="label">
+                <string>type:Bridge</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>flag:odd</string>
+            </attr>
+        </edge>
+        <edge to="n9" from="n9">
+            <attr name="label">
+                <string>type:Area</string>
+            </attr>
+        </edge>
+        <edge to="n10" from="n10">
+            <attr name="label">
+                <string>type:Bridge</string>
+            </attr>
+        </edge>
+        <edge to="n11" from="n11">
+            <attr name="label">
+                <string>type:Bridge</string>
+            </attr>
+        </edge>
+        <edge to="n9" from="n10">
+            <attr name="label">
+                <string>end</string>
+            </attr>
+            <attr name="omult">
+                <string>1 1</string>
+            </attr>
+            <attr name="imult">
+                <string>2 w</string>
+            </attr>
+        </edge>
+        <edge to="n9" from="n11">
+            <attr name="label">
+                <string>end</string>
+            </attr>
+            <attr name="omult">
+                <string>1 1</string>
+            </attr>
+            <attr name="imult">
+                <string>2 w</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n10">
+            <attr name="label">
+                <string>end</string>
+            </attr>
+            <attr name="omult">
+                <string>1 1</string>
+            </attr>
+            <attr name="imult">
+                <string>2 w</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n11">
+            <attr name="label">
+                <string>end</string>
+            </attr>
+            <attr name="omult">
+                <string>1 w</string>
+            </attr>
+            <attr name="imult">
+                <string>2 w</string>
+            </attr>
+        </edge>
+        <edge to="n9" from="n0">
+            <attr name="label">
+                <string>here</string>
+            </attr>
+            <attr name="omult">
+                <string>1 1</string>
+            </attr>
+            <attr name="imult">
+                <string>1 1</string>
+            </attr>
+        </edge>
+        <edge to="n9" from="n9">
+            <attr name="label">
+                <string>flag:odd</string>
+            </attr>
+        </edge>
+        <edge to="n9" from="n13">
+            <attr name="label">
+                <string>end</string>
+            </attr>
+            <attr name="omult">
+                <string>1 1</string>
+            </attr>
+            <attr name="imult">
+                <string>2 w</string>
+            </attr>
+        </edge>
+        <edge to="n13" from="n13">
+            <attr name="label">
+                <string>type:Bridge</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n13">
+            <attr name="label">
+                <string>end</string>
+            </attr>
+            <attr name="omult">
+                <string>1 1</string>
+            </attr>
+            <attr name="imult">
+                <string>2 w</string>
+            </attr>
+        </edge>
+        <rel id="ec0">
+            <relend id="n0"/>
+        </rel>
+        <rel id="ec1">
+            <relend id="n1"/>
+        </rel>
+        <rel id="ec2">
+            <relend id="n2"/>
+        </rel>
+        <rel id="ec3">
+            <relend id="n3"/>
+            <relend id="n5"/>
+            <relend id="n10"/>
+            <relend id="n11"/>
+            <relend id="n13"/>
+        </rel>
+        <rel id="ec4">
+            <relend id="n9"/>
+        </rel>
+    </graph>
+</gxl>
