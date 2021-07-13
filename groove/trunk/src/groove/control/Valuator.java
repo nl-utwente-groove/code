@@ -22,8 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import groove.control.Binding.Source;
-import groove.control.instance.Assignment;
-import groove.control.instance.Step;
+import groove.control.template.Location;
 import groove.grammar.host.HostNode;
 import groove.graph.Element;
 import groove.graph.Node;
@@ -34,15 +33,12 @@ import groove.graph.Node;
  * by the desire to keep the valuations in the form of node arrays,
  * for the sake of keeping a low memory footprint per state.
  *
- * A control valuation is an {@code Object[]}-array of which all but possibly the last element
- * are {@code HostNode}s, whereas the last element is either also a {@code HostNode} or another
- * control valuation. In the latter case, the control valuation is called nested.
+ * A control valuation represents a call stack. All but possibly the last elements
+ * form the top level stack frame consisting of {@code HostNode}s; the last element
+ * is either also a {@code HostNode} or another control valuation, corresponding
+ * to the caller.
  *
- * The nesting is in inverse stack order; i.e., a control valuation nested in the
- * last element is actually younger than (i.e., on top of) the current one.
- *
- * The values at any given level of a control valuation are in the order of the
- * {@link Assignment} in a given {@link Step}.
+ * The values in a stack frame are in the order of the variables in a {@link Location}.
  *
  * @author Arend Rensink
  * @version $Revision $
