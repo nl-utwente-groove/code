@@ -328,8 +328,12 @@ public class CtrlDoc {
     public static final String BODY_PATTERN = "@B ";
     /** Comment prefix indicating that the comment is a rule syntax definition. */
     public static final String PARS_PATTERN = "@P ";
+
+    private static final String PACKAGE_NAME = CtrlDoc.class.getPackage()
+        .getName();
+    private static final String PACKAGE_PATH = PACKAGE_NAME.replace('.', '/');
     /** The name of the grammar file providing the documentation. */
-    public static final String CTRL_GRAMMAR_FILE = "groove/control/parse/Ctrl.g";
+    public static final String CTRL_GRAMMAR_FILE = PACKAGE_PATH + '/' + "Ctrl.g";
 
     private class Line {
         public Line(String text) {

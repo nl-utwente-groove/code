@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2010 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -19,6 +19,34 @@ package nl.utwente.groove.prolog.builtin;
 import nl.utwente.groove.annotation.Signature;
 import nl.utwente.groove.annotation.ToolTipBody;
 import nl.utwente.groove.annotation.ToolTipPars;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_edge_label;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_edge_role_binary;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_edge_role_flag;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_edge_role_node_type;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_edge_source;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_edge_target;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_graph_edge;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_graph_edge_count;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_graph_edge_set;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_graph_node;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_graph_node_count;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_graph_node_set;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_is_edge;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_is_graph;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_is_node;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_label_edge;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_label_edge_set;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_node_edge;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_node_edge_set;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_node_number;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_node_out_edge;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_node_out_edge_set;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_node_self_edges;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_node_self_edges_excl;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_save_graph;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_show_graph;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_start_graph;
+import nl.utwente.groove.prolog.builtin.graph.Predicate_start_graph_name;
 
 /** Graph-related GROOVE predicates.
  * Documentation reading guide:
@@ -32,33 +60,33 @@ public class GraphPredicates extends GroovePredicates {
     @Signature({"Graph", "+"})
     @ToolTipBody("Fails if the first argument is not a Groove Graph")
     public void is_graph_1() {
-        s(":-build_in(is_graph/1,'groove.prolog.builtin.graph.Predicate_is_graph').");
+        s(Predicate_is_graph.class, 1);
     }
 
     @Signature({"Node", "+"})
     @ToolTipBody("Fails if the first argument is not a Groove Node")
     public void is_node_1() {
-        s(":-build_in(is_node/1,'groove.prolog.builtin.graph.Predicate_is_node').");
+        s(Predicate_is_node.class, 1);
     }
 
     @Signature({"Edge", "+"})
     @ToolTipBody("Fails if the first argument is not a Groove Edge")
     public void is_edge_1() {
-        s(":-build_in(is_edge/1,'groove.prolog.builtin.graph.Predicate_is_edge').");
+        s(Predicate_is_edge.class, 1);
     }
 
     @Signature({"Graph", "?"})
     @ToolTipBody("Retrieves the start graph")
     @ToolTipPars({"the graph"})
     public void start_graph_1() {
-        s(":-build_in(start_graph/1,'groove.prolog.builtin.graph.Predicate_start_graph').");
+        s(Predicate_start_graph.class, 1);
     }
 
     @Signature({"String", "?"})
     @ToolTipBody("Retrieves the start graph name")
     @ToolTipPars({"the graph name"})
     public void start_graph_name_1() {
-        s(":-build_in(start_graph_name/1,'groove.prolog.builtin.graph.Predicate_start_graph_name').");
+        s(Predicate_start_graph_name.class, 1);
     }
 
     @Signature({"Graph", "Node", "+?"})
@@ -66,7 +94,7 @@ public class GraphPredicates extends GroovePredicates {
     @ToolTipPars({"the graph", "the node"})
     //    % @see groove.graph.GraphShape#nodeSet()"})
     public void graph_node_2() {
-        s(":-build_in(graph_node/2,'groove.prolog.builtin.graph.Predicate_graph_node').");
+        s(Predicate_graph_node.class, 2);
     }
 
     @Signature({"Graph", "NodeSet", "+?"})
@@ -74,7 +102,7 @@ public class GraphPredicates extends GroovePredicates {
     @ToolTipPars({"the graph", "the list of nodes"})
     //    % @see groove.graph.GraphShape#nodeSet()"})
     public void graph_node_set_2() {
-        s(":-build_in(graph_node_set/2,'groove.prolog.builtin.graph.Predicate_graph_node_set').");
+        s(Predicate_graph_node_set.class, 2);
     }
 
     @Signature({"Graph", "Count", "+?"})
@@ -82,7 +110,7 @@ public class GraphPredicates extends GroovePredicates {
     @ToolTipPars({"the graph", "the number of nodes"})
     //    % @see groove.graph.GraphShape#nodeCount()
     public void graph_node_count_2() {
-        s(":-build_in(graph_node_count/2,'groove.prolog.builtin.graph.Predicate_graph_node_count').");
+        s(Predicate_graph_node_count.class, 2);
     }
 
     @Signature({"Graph", "Edge", "+?"})
@@ -90,7 +118,7 @@ public class GraphPredicates extends GroovePredicates {
     @ToolTipPars({"the graph", "the edge"})
     //    % @see groove.graph.GraphShape#edgeSet()
     public void graph_edge_2() {
-        s(":-build_in(graph_edge/2,'groove.prolog.builtin.graph.Predicate_graph_edge').");
+        s(Predicate_graph_edge.class, 2);
     }
 
     @Signature({"Graph", "EdgeSet", "+?"})
@@ -98,7 +126,7 @@ public class GraphPredicates extends GroovePredicates {
     @ToolTipPars({"the graph ", "the list of edges"})
     //    % @see groove.graph.GraphShape#edgeSet()
     public void graph_edge_set_2() {
-        s(":-build_in(graph_edge_set/2,'groove.prolog.builtin.graph.Predicate_graph_edge_set').");
+        s(Predicate_graph_edge_set.class, 2);
     }
 
     @Signature({"Graph", "Count", "+?"})
@@ -106,7 +134,7 @@ public class GraphPredicates extends GroovePredicates {
     @ToolTipPars({"the graph", "the number of edges"})
     //    % @see groove.graph.GraphShape#edgeCount
     public void graph_edge_count_2() {
-        s(":-build_in(graph_edge_count/2,'groove.prolog.builtin.graph.Predicate_graph_edge_count').");
+        s(Predicate_graph_edge_count.class, 2);
     }
 
     @Signature({"Graph", "Node", "Edge", "++?"})
@@ -114,7 +142,7 @@ public class GraphPredicates extends GroovePredicates {
     @ToolTipPars({"the graph", "the node", "the edge"})
     //    % @see groove.graph.GraphShape#edgeSet(Node,int)
     public void node_edge_3() {
-        s(":-build_in(node_edge/3,'groove.prolog.builtin.graph.Predicate_node_edge').");
+        s(Predicate_node_edge.class, 3);
     }
 
     @Signature({"Graph", "Node", "EdgeSet", "++?"})
@@ -122,7 +150,7 @@ public class GraphPredicates extends GroovePredicates {
     @ToolTipPars({"the graph", "the node", "the list of edges"})
     //    % @see groove.graph.GraphShape#edgeSet(Node,int)
     public void node_edge_set_3() {
-        s(":-build_in(node_edge_set/3,'groove.prolog.builtin.graph.Predicate_node_edge_set').");
+        s(Predicate_node_edge_set.class, 3);
     }
 
     @Signature({"Graph", "Node", "Edge", "++?"})
@@ -130,7 +158,7 @@ public class GraphPredicates extends GroovePredicates {
     @ToolTipPars({"the graph", "the node", "list of outgoing edges"})
     //    % @see groove.graph.GraphShape#outEdgeSet(Node)
     public void node_out_edge_3() {
-        s(":-build_in(node_out_edge/3,'groove.prolog.builtin.graph.Predicate_node_out_edge').");
+        s(Predicate_node_out_edge.class, 3);
     }
 
     @Signature({"Graph", "Node", "EdgeSet", "++?"})
@@ -138,7 +166,7 @@ public class GraphPredicates extends GroovePredicates {
     @ToolTipPars({"the graph", "the node", "list of outgoing edges"})
     //    % @see groove.graph.GraphShape#outEdgeSet(Node)
     public void node_out_edge_set_3() {
-        s(":-build_in(node_out_edge_set/3,'groove.prolog.builtin.graph.Predicate_node_out_edge_set').");
+        s(Predicate_node_out_edge_set.class, 3);
     }
 
     @Signature({"Graph", "Label", "Edge", "++?"})
@@ -146,7 +174,7 @@ public class GraphPredicates extends GroovePredicates {
     @ToolTipPars({"the graph", "the label", "the edges"})
     //    % @see groove.graph.GraphShape#labelEdgeSet(int,Label)
     public void label_edge_3() {
-        s(":-build_in(label_edge/3,'groove.prolog.builtin.graph.Predicate_label_edge').");
+        s(Predicate_label_edge.class, 3);
     }
 
     @Signature({"Graph", "Label", "EdgeSet", "++?"})
@@ -154,7 +182,7 @@ public class GraphPredicates extends GroovePredicates {
     @ToolTipPars({"the graph", "the label", "the list of edges"})
     //    % @see groove.graph.GraphShape#labelEdgeSet(int,Label)
     public void label_edge_set_3() {
-        s(":-build_in(label_edge_set/3,'groove.prolog.builtin.graph.Predicate_label_edge_set').");
+        s(Predicate_label_edge_set.class, 3);
     }
 
     @Signature({"Edge", "Node", "+?"})
@@ -162,7 +190,7 @@ public class GraphPredicates extends GroovePredicates {
     @ToolTipPars({"the edge", "the node"})
     //    % @see groove.graph.Edge#source()
     public void edge_source_2() {
-        s(":-build_in(edge_source/2,'groove.prolog.builtin.graph.Predicate_edge_source').");
+        s(Predicate_edge_source.class, 2);
     }
 
     @Signature({"Edge", "Node", "+?"})
@@ -170,7 +198,7 @@ public class GraphPredicates extends GroovePredicates {
     @ToolTipPars({"the edge", "the node"})
     //    % @see groove.graph.Edge#target()
     public void edge_target_2() {
-        s(":-build_in(edge_target/2,'groove.prolog.builtin.graph.Predicate_edge_target').");
+        s(Predicate_edge_target.class, 2);
     }
 
     @Signature({"Edge", "Label", "+?"})
@@ -178,27 +206,27 @@ public class GraphPredicates extends GroovePredicates {
     @ToolTipPars({"the edge", "the label text"})
     //    % @see groove.graph.Edge#label()
     public void edge_label_2() {
-        s(":-build_in(edge_label/2,'groove.prolog.builtin.graph.Predicate_edge_label').");
+        s(Predicate_edge_label.class, 2);
     }
 
     //
     @Signature({"Edge", "+"})
     @ToolTipBody("Checks if the edge has a binary role")
     public void edge_role_binary_1() {
-        s(":-build_in(edge_role_binary/1,'groove.prolog.builtin.graph.Predicate_edge_role_binary').");
+        s(Predicate_edge_role_binary.class, 1);
     }
 
     //
     @Signature({"Edge", "+"})
     @ToolTipBody("Checks if the edge has a flag role")
     public void edge_role_flag_1() {
-        s(":-build_in(edge_role_flag/1,'groove.prolog.builtin.graph.Predicate_edge_role_flag').");
+        s(Predicate_edge_role_flag.class, 1);
     }
 
     @Signature({"Edge", "+"})
     @ToolTipBody("Checks if the edge has a node type role")
     public void edge_role_node_type_1() {
-        s(":-build_in(edge_role_node_type/1,'groove.prolog.builtin.graph.Predicate_edge_role_node_type').");
+        s(Predicate_edge_role_node_type.class, 1);
     }
 
     @Signature({"Graph", "Edge", "+?"})
@@ -254,16 +282,15 @@ public class GraphPredicates extends GroovePredicates {
         "<p>Example: start_graph(G),node_self_edges(G,Node,['Feature','includedFeature'])"})
     @ToolTipPars({"the graph to query", "the node", "the list of labels of the self edges"})
     public void node_self_edges_3() {
-        s(":-build_in(node_self_edges/3,'groove.prolog.builtin.graph.Predicate_node_self_edges').");
+        s(Predicate_node_self_edges.class, 3);
     }
 
     @Signature({"Graph", "Node", "Labels", "+??"})
-    @ToolTipBody({
-        "Same as node_self_edges/3 except that that the list is exclusive, thus the node",
+    @ToolTipBody({"Same as node_self_edges/3 except that that the list is exclusive, thus the node",
         "may not contain more edges"})
     @ToolTipPars({"the graph to query", "the node", "the list of labels of the self edges"})
     public void node_self_edges_excl_3() {
-        s(":-build_in(node_self_edges_excl/3,'groove.prolog.builtin.graph.Predicate_node_self_edges_excl').");
+        s(Predicate_node_self_edges_excl.class, 3);
     }
 
     @ToolTipBody({"Get the \"internal\" number of a node. Node numbers are volatile information,",
@@ -273,7 +300,7 @@ public class GraphPredicates extends GroovePredicates {
     @Signature({"Node", "Integer", "+?"})
     @ToolTipPars({"the node", "the node number"})
     public void node_number_2() {
-        s(":-build_in(node_number/2,'groove.prolog.builtin.graph.Predicate_node_number').");
+        s(Predicate_node_number.class, 2);
     }
 
     @ToolTipBody("Finds the node in the graph with a given number")
@@ -285,7 +312,7 @@ public class GraphPredicates extends GroovePredicates {
     @Signature({"Graph", "+"})
     @ToolTipBody("Displays the given graph in a new preview dialog.")
     public void show_graph_1() {
-        s(":-build_in(show_graph/1,'groove.prolog.builtin.graph.Predicate_show_graph').");
+        s(Predicate_show_graph.class, 1);
     }
 
     @Signature({"Graph", "String", "+?"})
@@ -293,6 +320,6 @@ public class GraphPredicates extends GroovePredicates {
     @ToolTipPars({"the graph to save",
         "file name to save to (the extension .gst is appended), if left empty, the graph name is used."})
     public void save_graph_2() {
-        s(":-build_in(save_graph/2,'groove.prolog.builtin.graph.Predicate_save_graph').");
+        s(Predicate_save_graph.class, 2);
     }
 }

@@ -16,8 +16,10 @@ package nl.utwente.groove.prolog.builtin;
 import nl.utwente.groove.annotation.Signature;
 import nl.utwente.groove.annotation.ToolTipBody;
 import nl.utwente.groove.annotation.ToolTipPars;
+import nl.utwente.groove.prolog.builtin.algebra.Predicate_convert_valuenode;
+import nl.utwente.groove.prolog.builtin.algebra.Predicate_is_valuenode;
 
-/** Algebra-related Groove predicates. 
+/** Algebra-related Groove predicates.
  * Documentation reading guide:
  * <li> +     The argument shall be instantiated.
  * <li> ?     The argument shall be instantiated or a variable.
@@ -29,7 +31,7 @@ public class AlgebraPredicates extends GroovePredicates {
     @Signature({"Node", "@"})
     @ToolTipBody("Succeeds if the given term is a value node")
     public void is_valuenode_1() {
-        s(":-build_in(is_valuenode/1,'groove.prolog.builtin.algebra.Predicate_is_valuenode').");
+        s(Predicate_is_valuenode.class, 1);
     }
 
     @Signature({"Node", "Term", "+?"})
@@ -39,13 +41,13 @@ public class AlgebraPredicates extends GroovePredicates {
         "respectively. All other values are converted to a JavaObjectTerm"})
     @ToolTipPars({"The value node", "The corresponding term"})
     public void convert_valuenode_2() {
-        s(":-build_in(convert_valuenode/2,'groove.prolog.builtin.algebra.Predicate_convert_valuenode').");
+        s(Predicate_convert_valuenode.class, 2);
     }
 
     @Signature({"Graph", "Node", "AttrName", "AttrValue", "+?+?"})
     @ToolTipBody("Get all nodes with a given attribute")
-    @ToolTipPars({"The graph", "The node with the given attribute",
-        "The attribute name", "The value of the attribute"})
+    @ToolTipPars({"The graph", "The node with the given attribute", "The attribute name",
+        "The value of the attribute"})
     public void node_with_attribute_4() {
         s("node_with_attribute(Graph,Node,AttrName,AttrValue):-");
         s("  label_edge(Graph,AttrName,Edge), % get all edges with a given label");
