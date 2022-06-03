@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import de.gupro.gxl.gxl_1_0.EdgeType;
 import de.gupro.gxl.gxl_1_0.GraphType;
