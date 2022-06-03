@@ -19,7 +19,7 @@ package groove.io.conceptual.lang.gxl;
 import java.math.BigInteger;
 import java.util.Map.Entry;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import de.gupro.gxl.gxl_1_0.BagType;
 import de.gupro.gxl.gxl_1_0.CompositeValueType;

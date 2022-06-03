@@ -5,5 +5,5 @@
 // Generated on: 2012.07.20 at 10:40:55 AM CEST 
 //
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "ConfigSchema", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+@jakarta.xml.bind.annotation.XmlSchema(namespace = "ConfigSchema", elementFormDefault = jakarta.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package groove.io.conceptual.configuration.schema;

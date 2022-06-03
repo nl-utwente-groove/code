@@ -27,11 +27,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
 
 import de.gupro.gxl.gxl_1_0.AttrType;
@@ -67,6 +62,11 @@ import groove.io.conceptual.value.StringValue;
 import groove.io.conceptual.value.TupleValue;
 import groove.io.conceptual.value.Value;
 import groove.util.Exceptions;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
 
 @SuppressWarnings("javadoc")
 public class GxlUtil {
