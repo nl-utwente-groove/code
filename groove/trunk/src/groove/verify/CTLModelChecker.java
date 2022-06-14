@@ -177,10 +177,10 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
 
     @Option(name = "-ltl", metaVar = "prop",
         usage = "Check the LTL property <prop> (multiple allowed)",
-        handler = CLTFormulaHandler.class) private List<gov.nasa.ltl.trans.Formula<String>> ltlProps;
+        handler = LTLFormulaHandler.class) private List<gov.nasa.ltl.trans.Formula<String>> ltlProps;
     @Option(name = "-ctl", metaVar = "prop",
         usage = "Check the CTL property <prop> (multiple allowed)",
-        handler = CLTFormulaHandler.class) private List<Formula> ctlProps;
+        handler = CTLFormulaHandler.class) private List<Formula> ctlProps;
     @Option(name = "-g", metaVar = "args",
         usage = "Invoke the generator using <args> as options + arguments",
         handler = GeneratorHandler.class) private GeneratorArgs genArgs;
@@ -208,11 +208,11 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
     }
 
     /** Option handler for CTL formulas. */
-    public static class CLTFormulaHandler extends OneArgumentOptionHandler<Formula> {
+    public static class CTLFormulaHandler extends OneArgumentOptionHandler<Formula> {
         /**
          * Required constructor.
          */
-        public CLTFormulaHandler(CmdLineParser parser, OptionDef option,
+        public CTLFormulaHandler(CmdLineParser parser, OptionDef option,
             Setter<? super Formula> setter) {
             super(parser, option, setter);
         }
