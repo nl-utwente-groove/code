@@ -27,11 +27,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
 
 import de.gupro.gxl.gxl_1_0.AttrType;
@@ -49,6 +44,11 @@ import de.gupro.gxl.gxl_1_0.SetType;
 import de.gupro.gxl.gxl_1_0.TupType;
 import de.gupro.gxl.gxl_1_0.TypeType;
 import de.gupro.gxl.gxl_1_0.TypedElementType;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
 import nl.utwente.groove.io.conceptual.type.BoolType;
 import nl.utwente.groove.io.conceptual.type.Container;
 import nl.utwente.groove.io.conceptual.type.DataType;

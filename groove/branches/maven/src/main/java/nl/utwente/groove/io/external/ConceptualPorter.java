@@ -35,7 +35,6 @@ import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.conceptual.InstanceModel;
 import nl.utwente.groove.io.conceptual.TypeModel;
 import nl.utwente.groove.io.conceptual.configuration.Config;
-import nl.utwente.groove.io.conceptual.configuration.JaxFrontDialog;
 import nl.utwente.groove.io.conceptual.lang.ExportException;
 import nl.utwente.groove.io.conceptual.lang.ExportableResource;
 import nl.utwente.groove.io.conceptual.lang.ImportException;
@@ -148,14 +147,18 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
     abstract protected ExportableResource getResource(File file, boolean isHost, TypeModel tm,
         InstanceModel im) throws PortException;
 
-    /** Opens a configuration dialog and returns the resulting configuration object. */
+    /**
+     * Returns a {@link Config} based on the first configuration file in the grammar.
+     * Used to open a dialog, but that functionality is deprecated.
+     */
     private Config loadConfig(GrammarModel grammar) {
-        JaxFrontDialog dlg = new JaxFrontDialog(getSimulator());
-        QualName cfg = dlg.getConfig();
-        if (cfg != null) {
-            return new Config(grammar, cfg);
+        Config result = null;
+        Set<QualName> configNames = grammar.getNames(ResourceKind.CONFIG);
+        if (!configNames.isEmpty()) {
+            result = new Config(grammar, configNames.iterator()
+                .next());
         }
-        return null;
+        return result;
     }
 
     /**

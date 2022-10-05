@@ -19,8 +19,6 @@ package nl.utwente.groove.io.conceptual.lang.gxl;
 import java.math.BigInteger;
 import java.util.Map.Entry;
 
-import javax.xml.bind.JAXBElement;
-
 import de.gupro.gxl.gxl_1_0.BagType;
 import de.gupro.gxl.gxl_1_0.CompositeValueType;
 import de.gupro.gxl.gxl_1_0.EdgeType;
@@ -29,6 +27,7 @@ import de.gupro.gxl.gxl_1_0.NodeType;
 import de.gupro.gxl.gxl_1_0.SeqType;
 import de.gupro.gxl.gxl_1_0.SetType;
 import de.gupro.gxl.gxl_1_0.TupType;
+import jakarta.xml.bind.JAXBElement;
 import nl.utwente.groove.io.conceptual.Field;
 import nl.utwente.groove.io.conceptual.Id;
 import nl.utwente.groove.io.conceptual.InstanceModel;
@@ -38,8 +37,8 @@ import nl.utwente.groove.io.conceptual.lang.InstanceExporter;
 import nl.utwente.groove.io.conceptual.lang.gxl.GxlUtil.AttrTypeEnum;
 import nl.utwente.groove.io.conceptual.type.Class;
 import nl.utwente.groove.io.conceptual.type.Container;
-import nl.utwente.groove.io.conceptual.type.Tuple;
 import nl.utwente.groove.io.conceptual.type.Container.Kind;
+import nl.utwente.groove.io.conceptual.type.Tuple;
 import nl.utwente.groove.io.conceptual.value.BoolValue;
 import nl.utwente.groove.io.conceptual.value.ContainerValue;
 import nl.utwente.groove.io.conceptual.value.CustomDataValue;
@@ -107,7 +106,8 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
             .entrySet()) {
             Value fieldValue = fieldEntry.getValue();
             // if unset value, dont set it in the Ecore model either
-            if (fieldValue == null || fieldValue == nl.utwente.groove.io.conceptual.value.Object.NIL) {
+            if (fieldValue == null
+                || fieldValue == nl.utwente.groove.io.conceptual.value.Object.NIL) {
                 continue;
             }
 
@@ -302,13 +302,13 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
             subGraph.setEdgemode(EdgemodeType.DEFAULTDIRECTED);
             GxlUtil.setElemType(subGraph, "#" + m_typeToGxl.getId(packageId));
             m_packageGraphs.put(packageId, subGraph);
-    
+
             if (packageId != Id.ROOT) {// && packageId.getNamespace() != Id.ROOT) {
                 // Create intermediate node
                 NodeType intermediateNode = new NodeType();
                 intermediateNode.setId(packageId.toString());
                 GxlUtil.setElemType(intermediateNode, "#" + (packageId.getNamespace() == Id.ROOT ? "ROOT" : packageId.getNamespace().toString()));
-    
+
                 // Insert node into parent graph, and subgraph into node
                 GraphType parentGraph = getPackageGraph(packageId.getNamespace());
                 parentGraph.getNodeOrEdgeOrRel().add(intermediateNode);
@@ -316,7 +316,7 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
             } else {
                 //m_instanceGraph.getNodeOrEdgeOrRel().add(subGraph);
             }
-    
+
             return subGraph;
         }
     }

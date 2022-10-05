@@ -121,5 +121,30 @@
 	    <artifactId>org.eclipse.emf.ecore.xmi</artifactId>
     	<version>2.7.0-v20110520-1406</version>
 	</dependency>
+	<dependency>
+		<groupId>gnu.prolog</groupId>
+		<artifactId>gnuprologjava</artifactId>
+		<version>0.2.6</version>
+	</dependency>
+	<dependency>
+		<groupId>gov.nasa.ltl</groupId>
+		<artifactId>ltl2buchi</artifactId>
+		<version>2010-12</version>
+	</dependency>
+	<dependency>
+	    <groupId>apple.dts.samplecode</groupId>
+		<artifactId>osxadapter</artifactId>
+		<version>2.0</version>
+	</dependency>
+  	<dependency>
+  		<groupId>jakarta.xml.bind</groupId>
+  		<artifactId>jakarta.xml.bind-api</artifactId>
+  		<version>3.0.0</version>
+  	</dependency>
+	<dependency>
+	    <groupId>de.gupro</groupId>
+		<artifactId>jaxb-gxl</artifactId>
+		<version>2.0</version>
+	</dependency>
   </dependencies>
 </project>

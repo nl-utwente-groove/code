@@ -41,7 +41,6 @@ import nl.utwente.groove.io.GrooveFileChooser;
 import nl.utwente.groove.io.external.Importer.Resource;
 import nl.utwente.groove.io.external.format.AutPorter;
 import nl.utwente.groove.io.external.format.ColImporter;
-import nl.utwente.groove.io.external.format.DotPorter;
 import nl.utwente.groove.io.external.format.EcorePorter;
 import nl.utwente.groove.io.external.format.GxlPorter;
 import nl.utwente.groove.io.external.format.NativePorter;
@@ -76,8 +75,7 @@ public class Importers {
         ri.setSimulator(simulator);
         Set<Resource> resources = ri.doImport(file, fileType, grammar);
         if (resources != null) {
-            Map<ResourceKind,Collection<AspectGraph>> newGraphs =
-                new EnumMap<>(ResourceKind.class);
+            Map<ResourceKind,Collection<AspectGraph>> newGraphs = new EnumMap<>(ResourceKind.class);
             Map<ResourceKind,Map<QualName,String>> newTexts = new EnumMap<>(ResourceKind.class);
             for (Resource resource : resources) {
                 QualName name = resource.getQualName();
@@ -142,7 +140,6 @@ public class Importers {
         result.add(ColImporter.getInstance());
         result.add(EcorePorter.instance());
         result.add(GxlPorter.instance());
-        result.add(DotPorter.instance());
         return Collections.unmodifiableList(result);
     }
 

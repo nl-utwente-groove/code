@@ -12,15 +12,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-
 import de.gupro.gxl.gxl_1_0.EdgeType;
 import de.gupro.gxl.gxl_1_0.GraphElementType;
 import de.gupro.gxl.gxl_1_0.GraphType;
 import de.gupro.gxl.gxl_1_0.GxlType;
 import de.gupro.gxl.gxl_1_0.NodeType;
 import de.gupro.gxl.gxl_1_0.TupType;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.io.conceptual.Field;
 import nl.utwente.groove.io.conceptual.Id;
@@ -29,8 +28,8 @@ import nl.utwente.groove.io.conceptual.Timer;
 import nl.utwente.groove.io.conceptual.TypeModel;
 import nl.utwente.groove.io.conceptual.lang.ImportException;
 import nl.utwente.groove.io.conceptual.lang.Message;
-import nl.utwente.groove.io.conceptual.lang.TypeImporter;
 import nl.utwente.groove.io.conceptual.lang.Message.MessageType;
+import nl.utwente.groove.io.conceptual.lang.TypeImporter;
 import nl.utwente.groove.io.conceptual.lang.gxl.GxlUtil.AttrTypeEnum;
 import nl.utwente.groove.io.conceptual.lang.gxl.GxlUtil.EdgeWrapper;
 import nl.utwente.groove.io.conceptual.lang.gxl.GxlUtil.NodeWrapper;
@@ -40,13 +39,13 @@ import nl.utwente.groove.io.conceptual.property.DefaultValueProperty;
 import nl.utwente.groove.io.conceptual.type.BoolType;
 import nl.utwente.groove.io.conceptual.type.Class;
 import nl.utwente.groove.io.conceptual.type.Container;
+import nl.utwente.groove.io.conceptual.type.Container.Kind;
 import nl.utwente.groove.io.conceptual.type.Enum;
 import nl.utwente.groove.io.conceptual.type.IntType;
 import nl.utwente.groove.io.conceptual.type.RealType;
 import nl.utwente.groove.io.conceptual.type.StringType;
 import nl.utwente.groove.io.conceptual.type.Tuple;
 import nl.utwente.groove.io.conceptual.type.Type;
-import nl.utwente.groove.io.conceptual.type.Container.Kind;
 import nl.utwente.groove.io.conceptual.value.ContainerValue;
 import nl.utwente.groove.io.conceptual.value.TupleValue;
 import nl.utwente.groove.io.conceptual.value.Value;
@@ -331,7 +330,7 @@ public class GxlToType extends TypeImporter {
         NodeType node = nodeWrapper.getNode();
         if (this.m_nodeValues.containsKey(node)) {
             Object val = this.m_nodeValues.get(node);
-            assert(val instanceof Class);
+            assert (val instanceof Class);
             return (Class) val;
         }
 
@@ -383,18 +382,17 @@ public class GxlToType extends TypeImporter {
     //TODO: return value used by assign, or assigned in visitor itself?
     private Field visitAttribute(TypeModel tm, Class c, NodeWrapper nodeWrapper,
         Id graphNamespace) {
-        assert("AttributeClass".equals(nodeWrapper.getType()));
+        assert ("AttributeClass".equals(nodeWrapper.getType()));
 
         NodeType node = nodeWrapper.getNode();
         if (this.m_nodeValues.containsKey(node)) {
             Object val = this.m_nodeValues.get(node);
-            assert(val instanceof Field);
+            assert (val instanceof Field);
             return (Field) val;
         }
 
-        String name = (String) GxlUtil.getAttribute(nodeWrapper.getNode(),
-            "name",
-            GxlUtil.AttrTypeEnum.STRING);
+        String name = (String) GxlUtil
+            .getAttribute(nodeWrapper.getNode(), "name", GxlUtil.AttrTypeEnum.STRING);
         Type t = null;
         for (EdgeWrapper ew : nodeWrapper.getEdges()) {
             if (ew.getType()
@@ -402,7 +400,7 @@ public class GxlToType extends TypeImporter {
                 t = visitType(tm, ew.getTarget(), graphNamespace);
             }
         }
-        assert(t != null);
+        assert (t != null);
 
         int lowerBound = 1;
         int upperBound = 1;
@@ -451,9 +449,8 @@ public class GxlToType extends TypeImporter {
             return val;
         }
 
-        String name = (String) GxlUtil.getAttribute(nodeWrapper.getNode(),
-            "name",
-            GxlUtil.AttrTypeEnum.STRING);
+        String name = (String) GxlUtil
+            .getAttribute(nodeWrapper.getNode(), "name", GxlUtil.AttrTypeEnum.STRING);
 
         Class sourceClass = null;
         Class targetClass = null;
@@ -493,7 +490,7 @@ public class GxlToType extends TypeImporter {
             }
         }
 
-        assert(sourceClass != null && targetClass != null);
+        assert (sourceClass != null && targetClass != null);
 
         List<Class> superClasses = new ArrayList<>();
         Boolean isAbstract =
@@ -518,9 +515,8 @@ public class GxlToType extends TypeImporter {
             // Must be aggregate or composite
             isAggregate = true;
             // read the attribute, either "from" or "to"
-            String eVal = (String) GxlUtil.getAttribute(nodeWrapper.getNode(),
-                "aggregate",
-                GxlUtil.AttrTypeEnum.ENUM);
+            String eVal = (String) GxlUtil
+                .getAttribute(nodeWrapper.getNode(), "aggregate", GxlUtil.AttrTypeEnum.ENUM);
             if (eVal != null) {
                 if (eVal.equals("to")) {
                     reverseAggregate = true;
@@ -626,7 +622,7 @@ public class GxlToType extends TypeImporter {
         NodeType node = nodeWrapper.getNode();
         if (this.m_nodeValues.containsKey(node)) {
             Object val = this.m_nodeValues.get(node);
-            assert(val instanceof Type);
+            assert (val instanceof Type);
             return (Type) val;
         }
 
@@ -652,12 +648,12 @@ public class GxlToType extends TypeImporter {
             }
 
             Type t = null;
-            assert(components.size() > 0);
+            assert (components.size() > 0);
 
             if (type.equals("Tup")) {
                 t = new Tuple(components.toArray(new Type[components.size()]));
             } else {
-                assert(components.size() == 1);
+                assert (components.size() == 1);
                 if (type.equals("Set")) {
                     t = new Container(Kind.SET, components.get(0));
                 } else if (type.equals("Bag")) {
@@ -677,7 +673,7 @@ public class GxlToType extends TypeImporter {
             return e;
         }
 
-        assert(false);
+        assert (false);
         return null;
     }
 
@@ -692,7 +688,7 @@ public class GxlToType extends TypeImporter {
         NodeType node = nodeWrapper.getNode();
         if (this.m_nodeValues.containsKey(node)) {
             Object val = this.m_nodeValues.get(node);
-            assert(val instanceof Enum);
+            assert (val instanceof Enum);
             return (Enum) val;
         }
 
@@ -706,11 +702,10 @@ public class GxlToType extends TypeImporter {
             if (ew.getType()
                 .equals("containsValue")) {
                 NodeWrapper valueNode = ew.getTarget();
-                assert("EnumVal".equals(valueNode.getType()));
+                assert ("EnumVal".equals(valueNode.getType()));
 
-                String value = (String) GxlUtil.getAttribute(valueNode.getNode(),
-                    "value",
-                    GxlUtil.AttrTypeEnum.STRING);
+                String value = (String) GxlUtil
+                    .getAttribute(valueNode.getNode(), "value", GxlUtil.AttrTypeEnum.STRING);
                 values.add(Name.getName(value));
             }
         }
@@ -759,7 +754,8 @@ public class GxlToType extends TypeImporter {
             String value = (String) GxlUtil.getAttribute(valueNode, "value", AttrTypeEnum.STRING);
             try {
                 if (type instanceof RealType) {
-                    return new nl.utwente.groove.io.conceptual.value.RealValue(Float.parseFloat(value));
+                    return new nl.utwente.groove.io.conceptual.value.RealValue(
+                        Float.parseFloat(value));
                 } else {
                     addMessage(new Message(
                         "Trying to parse real value " + value + " while expected type is " + type,
@@ -775,7 +771,8 @@ public class GxlToType extends TypeImporter {
             String value = (String) GxlUtil.getAttribute(valueNode, "value", AttrTypeEnum.STRING);
             try {
                 if (type instanceof IntType) {
-                    return new nl.utwente.groove.io.conceptual.value.IntValue(Integer.parseInt(value));
+                    return new nl.utwente.groove.io.conceptual.value.IntValue(
+                        Integer.parseInt(value));
                 } else {
                     addMessage(new Message(
                         "Trying to parse int value " + value + " while expected type is " + type,
@@ -800,7 +797,8 @@ public class GxlToType extends TypeImporter {
         } else if (nodeType.equals("EnumVal")) {
             String value = (String) GxlUtil.getAttribute(valueNode, "value", AttrTypeEnum.STRING);
             if (type instanceof Enum) {
-                return new nl.utwente.groove.io.conceptual.value.EnumValue((Enum) type, Name.getName(value));
+                return new nl.utwente.groove.io.conceptual.value.EnumValue((Enum) type,
+                    Name.getName(value));
             } else {
                 addMessage(new Message(
                     "Trying to parse enum value " + value + " while expected type is " + type,
@@ -850,8 +848,11 @@ public class GxlToType extends TypeImporter {
                         .get(i);
                     if (ew.getType()
                         .equals("hasComponentValue")) {
-                        Value v = visitValue(tm, ew.getTarget(), tupleType.getTypes()
-                            .get(i), graphNamespace);
+                        Value v = visitValue(tm,
+                            ew.getTarget(),
+                            tupleType.getTypes()
+                                .get(i),
+                            graphNamespace);
                         values.add(v);
                     }
                 }

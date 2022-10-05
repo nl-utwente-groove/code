@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Set;
 
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.io.external.format.DotPorter;
 import nl.utwente.groove.io.external.format.EcorePorter;
 import nl.utwente.groove.io.external.format.GxlPorter;
 import nl.utwente.groove.io.graph.AutIO;
@@ -322,10 +321,6 @@ public enum FileType {
             return new ConceptualIO(EcorePorter.instance(), GXL_META, GraphRole.TYPE);
         case ECORE_MODEL:
             return new ConceptualIO(EcorePorter.instance(), GXL_META, GraphRole.HOST);
-        case DOT_META:
-            return new ConceptualIO(DotPorter.instance(), GXL_META, GraphRole.TYPE);
-        case DOT_MODEL:
-            return new ConceptualIO(DotPorter.instance(), GXL_META, GraphRole.HOST);
         case GXL:
         case RULE:
         case TYPE:

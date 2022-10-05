@@ -24,14 +24,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-
 import de.gupro.gxl.gxl_1_0.AttrType;
 import de.gupro.gxl.gxl_1_0.EdgeType;
 import de.gupro.gxl.gxl_1_0.GraphType;
 import de.gupro.gxl.gxl_1_0.GxlType;
 import de.gupro.gxl.gxl_1_0.NodeType;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.io.conceptual.Field;
 import nl.utwente.groove.io.conceptual.Id;
@@ -169,10 +168,10 @@ public class GxlToInstance extends InstanceImporter {
         for (AttrType attr : attrs) {
             String attrName = attr.getName();
             Field f = cmClass.getFieldSuper(Name.getName(attrName));
-            assert(f != null);
+            assert (f != null);
 
             Value v = GxlUtil.getTypedAttrValue(attr, f.getType());
-            assert(v != null);
+            assert (v != null);
 
             o.setFieldValue(f, v);
         }
@@ -192,7 +191,7 @@ public class GxlToInstance extends InstanceImporter {
             Object oTarget = visitObject(m, ew.getTarget(), graphId);
             String refName = GxlUtil.getElemType(ew.getEdge());
             Field f = this.m_gxlToType.getIdField(refName);
-            assert(f != null);
+            assert (f != null);
 
             Value v = null;
             if (currentValues.containsKey(refName)) {
@@ -244,7 +243,7 @@ public class GxlToInstance extends InstanceImporter {
 
         Field fieldFrom = cmClass.getField(Name.getName("from"));
         Field fieldTo = cmClass.getField(Name.getName("to"));
-        assert(fieldFrom != null && fieldTo != null);
+        assert (fieldFrom != null && fieldTo != null);
 
         if (fieldFrom.getType() instanceof Container) {
             ContainerValue cv = new ContainerValue((Container) fieldFrom.getType());
@@ -267,10 +266,10 @@ public class GxlToInstance extends InstanceImporter {
         for (AttrType attr : attrs) {
             String attrName = attr.getName();
             Field f = cmClass.getFieldSuper(Name.getName(attrName));
-            assert(f != null);
+            assert (f != null);
 
             Value v = GxlUtil.getTypedAttrValue(attr, f.getType());
-            assert(v != null);
+            assert (v != null);
 
             o.setFieldValue(f, v);
         }

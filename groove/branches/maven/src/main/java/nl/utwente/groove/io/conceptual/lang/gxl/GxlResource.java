@@ -28,12 +28,11 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-
 import de.gupro.gxl.gxl_1_0.EdgemodeType;
 import de.gupro.gxl.gxl_1_0.GraphType;
 import de.gupro.gxl.gxl_1_0.GxlType;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
 import nl.utwente.groove.io.conceptual.Timer;
 import nl.utwente.groove.io.conceptual.lang.ExportException;
 import nl.utwente.groove.io.conceptual.lang.ExportableResource;
@@ -67,10 +66,10 @@ public class GxlResource extends ExportableResource {
         if (this.m_typeFile == this.m_instanceFile || this.m_typeFile == null) {
             this.relPath = "";
         } else {
-            this.relPath =
-                nl.utwente.groove.io.Util.getRelativePath(new File(this.m_instanceFile.getAbsoluteFile()
+            this.relPath = nl.utwente.groove.io.Util
+                .getRelativePath(new File(this.m_instanceFile.getAbsoluteFile()
                     .getParent()), this.m_typeFile.getAbsoluteFile())
-                    .toString();
+                .toString();
         }
 
         this.m_gxlTypeType = new GxlType();

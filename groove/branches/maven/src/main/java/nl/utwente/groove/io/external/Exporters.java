@@ -31,7 +31,6 @@ import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.GrooveFileChooser;
 import nl.utwente.groove.io.external.Porter.Kind;
 import nl.utwente.groove.io.external.format.AutPorter;
-import nl.utwente.groove.io.external.format.DotPorter;
 import nl.utwente.groove.io.external.format.EcorePorter;
 import nl.utwente.groove.io.external.format.FsmExporter;
 import nl.utwente.groove.io.external.format.GxlPorter;
@@ -62,7 +61,7 @@ public class Exporters {
                 exporters.put(fileType, exporter);
             }
         }
-        assert!exporters.isEmpty();
+        assert !exporters.isEmpty();
         // choose a file and exporter
         GrooveFileChooser chooser = GrooveFileChooser.getInstance(exporters.keySet());
         chooser.setSelectedFile(exportable.getQualName()
@@ -139,7 +138,6 @@ public class Exporters {
         result.add(TikzExporter.getInstance());
         result.add(EcorePorter.instance());
         result.add(GxlPorter.instance());
-        result.add(DotPorter.instance());
         return result;
     }
 
