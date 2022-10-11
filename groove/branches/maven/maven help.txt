@@ -33,9 +33,14 @@ where path-to-jar/y.jar is the path to the actual jar file, from the working dir
 For the GROOVE local libraries, help has been provided by
 
 * Collecting the groupId, artifactId and version (and dependencies) in a single y.pom file, stored in the subdirectory lib/pom of GROOVE
-
 * Creating a m2 launch configuration that invokes the above install-file goal
+* Adding that m2 launch configuration to the launch group "GROOVE install local mvn-deps"
 
-* Adding that m2 launch configurtion to the launch group "GROOVE install local mvn-deps"
+2. Zipping it up
 
+The zip should consist of:
 
+bin - containing Target.jar for all runnable targets, which are empty except for a manifest specifying the main class and class path
+lib - containing the groove jar as well as all its libraries
+   
+ 

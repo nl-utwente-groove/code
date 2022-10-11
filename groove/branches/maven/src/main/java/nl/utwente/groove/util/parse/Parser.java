@@ -400,11 +400,11 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public Class<List<T>> getValueType() {
+        public Class<? extends List<T>> getValueType() {
             return this.valueType;
         }
 
-        private final Class<List<T>> valueType;
+        private final Class<? extends List<T>> valueType;
 
         @Override
         public boolean isValue(Object value) {
@@ -522,7 +522,8 @@ abstract public interface Parser<T> {
          * @param defaultValue the value of {@code T} represented
          * by the empty string
          */
-        public EnumParser(Class<T> enumType, @Nullable T defaultValue, String... texts) {
+        public EnumParser(Class<T> enumType, @Nullable
+        T defaultValue, String... texts) {
             this.defaultValue = defaultValue;
             this.toStringMap = new EnumMap<>(enumType);
             this.toValueMap = new HashMap<>();
@@ -547,7 +548,8 @@ abstract public interface Parser<T> {
          * @param defaultValue if non-{@code null}, the value of {@code T} represented
          * by the empty string
          */
-        public EnumParser(Class<T> enumType, @Nullable T defaultValue) {
+        public EnumParser(Class<T> enumType, @Nullable
+        T defaultValue) {
             this(enumType, defaultValue, camel(enumType.getEnumConstants()));
         }
 
