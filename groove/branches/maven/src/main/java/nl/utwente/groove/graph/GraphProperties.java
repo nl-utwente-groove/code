@@ -21,8 +21,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import nl.utwente.groove.grammar.Action.Role;
-import nl.utwente.groove.grammar.rule.MethodNameParser;
 import nl.utwente.groove.grammar.rule.MethodName.Language;
+import nl.utwente.groove.grammar.rule.MethodNameParser;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.PropertyKey;
@@ -67,19 +67,39 @@ public class GraphProperties extends Properties {
         ENABLED("enabled", "Disabled rules are never evaluated.", Parser.boolTrue),
 
         /** Rule injectivity. */
-        INJECTIVE("injective", "<body>Flag determining if the rule is to be matched injectively. " + "<br>Disregarded if injective matching is set on the grammar level.", Parser.boolFalse),
+        INJECTIVE("injective",
+            "<body>Flag determining if the rule is to be matched injectively. "
+                + "<br>Disregarded if injective matching is set on the grammar level.",
+            Parser.boolFalse),
 
         /** Action role. */
-        ROLE("actionRole", "<body>Role of the action. Values are:" + "<li>* <i>transformer</i>: action that causes the graph to change; scheduled by the (im- or explicit) control" + "<li>- <i>forbidden</i>: forbidden graph pattern, dealt with as dictated by the violation policy" + "<li>- <i>invariant</i>: invariant graph property, dealt with as dictated by the violation policy" + "<li>- <i>condition</i>: unmodifying, parameterless action, checked at every state", new Parser.EnumParser<>(Role.class, null)),
+        ROLE("actionRole", "<body>Role of the action. Values are:"
+            + "<li>* <i>transformer</i>: action that causes the graph to change; scheduled by the (im- or explicit) control"
+            + "<li>- <i>forbidden</i>: forbidden graph pattern, dealt with as dictated by the violation policy"
+            + "<li>- <i>invariant</i>: invariant graph property, dealt with as dictated by the violation policy"
+            + "<li>- <i>condition</i>: unmodifying, parameterless action, checked at every state",
+            new Parser.EnumParser<>(Role.class, null)),
 
         /** Match filter. */
-        FILTER("matchFilter", "<body>Boolean method or predicate that filters the matches of the rule. A match is only considered if the method returns <code>true</code>.<br>" + "Format: <tt>lang:name</tt> where the optional <tt>lang</tt> is the name of a language (by default Java) and <tt>name</tt> the fully qualified method name.<br>" + "The method may optionally take parameters of type <tt>groove.grammar.host.HostGraph</tt> and <tt>groove.transform.RuleEvent</tt><br/>" + "Supported languages are: <tt>" + Groove.toString(Language.values(), "", "", ", ") + "</tt>", MethodNameParser.instance()),
+        FILTER("matchFilter",
+            "<body>Boolean method or predicate that filters the matches of the rule. A match is only considered if the method returns <code>true</code>.<br>"
+                + "Format: <tt>lang:name</tt> where the optional <tt>lang</tt> is the name of a language (by default Java) and <tt>name</tt> the fully qualified method name.<br>"
+                + "The method may optionally take parameters of type <tt>HostGraph</tt> and <tt>RuleEvent</tt><br/>"
+                + "Supported languages are: <tt>" + Groove.toString(Language.values(), "", "", ", ")
+                + "</tt>",
+            MethodNameParser.instance()),
 
         /** Output line format. */
-        FORMAT("printFormat", "<body>If nonempty, is printed on <tt>System.out</tt> upon every rule application. " + "<br>Optional format parameters as in <tt>String.format</tt> are instantiated with rule parameters.", StringParser.identity()),
+        FORMAT("printFormat",
+            "<body>If nonempty, is printed on <tt>System.out</tt> upon every rule application. "
+                + "<br>Optional format parameters as in <tt>String.format</tt> are instantiated with rule parameters.",
+            StringParser.identity()),
 
         /** Alternative transition label. */
-        TRANSITION_LABEL("transitionLabel", "<body>String to be used as the transition label in the LTS. " + "<p>If empty, defaults to the rule name." + "<br>Optional format parameters as in <tt>String.format</tt> are instantiated with rule parameters."),
+        TRANSITION_LABEL("transitionLabel",
+            "<body>String to be used as the transition label in the LTS. "
+                + "<p>If empty, defaults to the rule name."
+                + "<br>Optional format parameters as in <tt>String.format</tt> are instantiated with rule parameters."),
 
         /** Graph version. */
         VERSION("$version", "Graph version");

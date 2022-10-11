@@ -55,7 +55,7 @@ public class TransPredicates extends GroovePredicates {
     @ToolTipBody("The label of a rule event")
     @Signature({"RuleEvent", "Label", "+?"})
     @ToolTipPars({"the rule event", "the label"})
-    //    % @see groove.trans.RuleEvent#getLabel()
+    //    % @see nl.utwente.groove.trans.RuleEvent#getLabel()
     public void ruleevent_label_2() {
         s(Predicate_ruleevent_label.class, 2);
     }
@@ -63,7 +63,7 @@ public class TransPredicates extends GroovePredicates {
     @ToolTipBody("The rule associated with this event")
     @Signature({"RuleEvent", "Rule", "+?"})
     @ToolTipPars({"the rule event", "the rule"})
-    //    % @see groove.trans.RuleEvent#getRule()
+    //    % @see nl.utwente.groove.trans.RuleEvent#getRule()
     public void ruleevent_rule_2() {
         s(Predicate_ruleevent_rule.class, 2);
     }
@@ -81,7 +81,7 @@ public class TransPredicates extends GroovePredicates {
     @ToolTipBody("The rule match")
     @Signature({"RuleEvent", "Graph", "RuleMatch", "++?"})
     @ToolTipPars({"the rule event", "the graph to match against", "the rule match"})
-    //    % @see groove.trans.RuleEvent#getMatch()
+    //    % @see nl.utwente.groove.trans.RuleEvent#getMatch()
     public void ruleevent_match_3() {
         s(Predicate_ruleevent_match.class, 3);
     }

@@ -92,7 +92,7 @@ public class GraphPredicates extends GroovePredicates {
     @Signature({"Graph", "Node", "+?"})
     @ToolTipBody("Gets a node from a graph")
     @ToolTipPars({"the graph", "the node"})
-    //    % @see groove.graph.GraphShape#nodeSet()"})
+    //    % @see nl.utwente.groove.graph.GraphShape#nodeSet()"})
     public void graph_node_2() {
         s(Predicate_graph_node.class, 2);
     }
@@ -100,7 +100,7 @@ public class GraphPredicates extends GroovePredicates {
     @Signature({"Graph", "NodeSet", "+?"})
     @ToolTipBody("Gets the complete node set of a graph")
     @ToolTipPars({"the graph", "the list of nodes"})
-    //    % @see groove.graph.GraphShape#nodeSet()"})
+    //    % @see nl.utwente.groove.graph.GraphShape#nodeSet()"})
     public void graph_node_set_2() {
         s(Predicate_graph_node_set.class, 2);
     }
@@ -108,7 +108,7 @@ public class GraphPredicates extends GroovePredicates {
     @Signature({"Graph", "Count", "+?"})
     @ToolTipBody("Gets the number of nodes in a graph")
     @ToolTipPars({"the graph", "the number of nodes"})
-    //    % @see groove.graph.GraphShape#nodeCount()
+    //    % @see nl.utwente.groove.graph.GraphShape#nodeCount()
     public void graph_node_count_2() {
         s(Predicate_graph_node_count.class, 2);
     }
@@ -116,7 +116,7 @@ public class GraphPredicates extends GroovePredicates {
     @Signature({"Graph", "Edge", "+?"})
     @ToolTipBody("Gets an edge from a graph")
     @ToolTipPars({"the graph", "the edge"})
-    //    % @see groove.graph.GraphShape#edgeSet()
+    //    % @see nl.utwente.groove.graph.GraphShape#edgeSet()
     public void graph_edge_2() {
         s(Predicate_graph_edge.class, 2);
     }
@@ -124,7 +124,7 @@ public class GraphPredicates extends GroovePredicates {
     @Signature({"Graph", "EdgeSet", "+?"})
     @ToolTipBody("Gets a set of edges from a graph")
     @ToolTipPars({"the graph ", "the list of edges"})
-    //    % @see groove.graph.GraphShape#edgeSet()
+    //    % @see nl.utwente.groove.graph.GraphShape#edgeSet()
     public void graph_edge_set_2() {
         s(Predicate_graph_edge_set.class, 2);
     }
@@ -132,7 +132,7 @@ public class GraphPredicates extends GroovePredicates {
     @Signature({"Graph", "Count", "+?"})
     @ToolTipBody("Gets the number of edges in a graph")
     @ToolTipPars({"the graph", "the number of edges"})
-    //    % @see groove.graph.GraphShape#edgeCount
+    //    % @see nl.utwente.groove.graph.GraphShape#edgeCount
     public void graph_edge_count_2() {
         s(Predicate_graph_edge_count.class, 2);
     }
@@ -140,7 +140,7 @@ public class GraphPredicates extends GroovePredicates {
     @Signature({"Graph", "Node", "Edge", "++?"})
     @ToolTipBody("Gets an edge from a node, can be incoming or outgoing")
     @ToolTipPars({"the graph", "the node", "the edge"})
-    //    % @see groove.graph.GraphShape#edgeSet(Node,int)
+    //    % @see nl.utwente.groove.graph.GraphShape#edgeSet(Node,int)
     public void node_edge_3() {
         s(Predicate_node_edge.class, 3);
     }
@@ -148,7 +148,7 @@ public class GraphPredicates extends GroovePredicates {
     @Signature({"Graph", "Node", "EdgeSet", "++?"})
     @ToolTipBody("Gets the set of edges for a single node. Both incoming and outgoing edges.")
     @ToolTipPars({"the graph", "the node", "the list of edges"})
-    //    % @see groove.graph.GraphShape#edgeSet(Node,int)
+    //    % @see nl.utwente.groove.graph.GraphShape#edgeSet(Node,int)
     public void node_edge_set_3() {
         s(Predicate_node_edge_set.class, 3);
     }
@@ -156,7 +156,7 @@ public class GraphPredicates extends GroovePredicates {
     @Signature({"Graph", "Node", "Edge", "++?"})
     @ToolTipBody("Gets an outgoing edge from a node")
     @ToolTipPars({"the graph", "the node", "list of outgoing edges"})
-    //    % @see groove.graph.GraphShape#outEdgeSet(Node)
+    //    % @see nl.utwente.groove.graph.GraphShape#outEdgeSet(Node)
     public void node_out_edge_3() {
         s(Predicate_node_out_edge.class, 3);
     }
@@ -164,7 +164,7 @@ public class GraphPredicates extends GroovePredicates {
     @Signature({"Graph", "Node", "EdgeSet", "++?"})
     @ToolTipBody("Gets the outgoing edges for a given node")
     @ToolTipPars({"the graph", "the node", "list of outgoing edges"})
-    //    % @see groove.graph.GraphShape#outEdgeSet(Node)
+    //    % @see nl.utwente.groove.graph.GraphShape#outEdgeSet(Node)
     public void node_out_edge_set_3() {
         s(Predicate_node_out_edge_set.class, 3);
     }
@@ -172,7 +172,7 @@ public class GraphPredicates extends GroovePredicates {
     @Signature({"Graph", "Label", "Edge", "++?"})
     @ToolTipBody("Gets an edge with a given label")
     @ToolTipPars({"the graph", "the label", "the edges"})
-    //    % @see groove.graph.GraphShape#labelEdgeSet(int,Label)
+    //    % @see nl.utwente.groove.graph.GraphShape#labelEdgeSet(int,Label)
     public void label_edge_3() {
         s(Predicate_label_edge.class, 3);
     }
@@ -180,7 +180,7 @@ public class GraphPredicates extends GroovePredicates {
     @Signature({"Graph", "Label", "EdgeSet", "++?"})
     @ToolTipBody("Gets the edge set of a graph with a given label")
     @ToolTipPars({"the graph", "the label", "the list of edges"})
-    //    % @see groove.graph.GraphShape#labelEdgeSet(int,Label)
+    //    % @see nl.utwente.groove.graph.GraphShape#labelEdgeSet(int,Label)
     public void label_edge_set_3() {
         s(Predicate_label_edge_set.class, 3);
     }
@@ -188,7 +188,7 @@ public class GraphPredicates extends GroovePredicates {
     @Signature({"Edge", "Node", "+?"})
     @ToolTipBody("Gets the source node of an edge")
     @ToolTipPars({"the edge", "the node"})
-    //    % @see groove.graph.Edge#source()
+    //    % @see nl.utwente.groove.graph.Edge#source()
     public void edge_source_2() {
         s(Predicate_edge_source.class, 2);
     }
@@ -196,7 +196,7 @@ public class GraphPredicates extends GroovePredicates {
     @Signature({"Edge", "Node", "+?"})
     @ToolTipBody("Gets the destination node of an edge (opposite of the source)")
     @ToolTipPars({"the edge", "the node"})
-    //    % @see groove.graph.Edge#target()
+    //    % @see nl.utwente.groove.graph.Edge#target()
     public void edge_target_2() {
         s(Predicate_edge_target.class, 2);
     }
@@ -204,7 +204,7 @@ public class GraphPredicates extends GroovePredicates {
     @Signature({"Edge", "Label", "+?"})
     @ToolTipBody("Gets the label text of the edge")
     @ToolTipPars({"the edge", "the label text"})
-    //    % @see groove.graph.Edge#label()
+    //    % @see nl.utwente.groove.graph.Edge#label()
     public void edge_label_2() {
         s(Predicate_edge_label.class, 2);
     }

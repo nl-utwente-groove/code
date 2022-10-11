@@ -1,7 +1,7 @@
 /*
  * Generated on 6/3/11 12:30 AM
  */
-package groove.prolog.util;
+package nl.utwente.groove.prolog.util;
 
 import java.io.*;
 import javax.swing.text.Segment;

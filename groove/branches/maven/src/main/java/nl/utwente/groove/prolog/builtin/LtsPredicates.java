@@ -78,7 +78,7 @@ public class LtsPredicates extends GroovePredicates {
     @ToolTipBody("Retrieves the graph for a state")
     @Signature({"State", "Graph", "+?"})
     @ToolTipPars({"A state", "The graph belonging to the state"})
-    //    % @groove.lts.GraphState#getGraph()
+    //    % @nl.utwente.groove.lts.GraphState#getGraph()
     public void state_graph_2() {
         s(Predicate_state_graph.class, 2);
     }
@@ -92,7 +92,7 @@ public class LtsPredicates extends GroovePredicates {
     @ToolTipBody("Tests if the graph state is closed (i.e. all transitions have been found)")
     @Signature({"State", "+"})
     @ToolTipPars({"the graph state"})
-    //    % @groove.lts.GraphState#isClosed()
+    //    % @nl.utwente.groove.lts.GraphState#isClosed()
     public void state_is_closed_1() {
         s(Predicate_state_is_closed.class, 1);
     }
@@ -106,7 +106,7 @@ public class LtsPredicates extends GroovePredicates {
     @ToolTipBody("Cycles over the outgoing transitions of a state")
     @Signature({"State", "Trans", "+?"})
     @ToolTipPars({"the state", "the transition"})
-    //    % @groove.lts.GraphState#getTransitionSet()
+    //    % @nl.utwente.groove.lts.GraphState#getTransitionSet()
     public void state_transition_2() {
         s(Predicate_state_transition.class, 2);
     }
@@ -114,7 +114,7 @@ public class LtsPredicates extends GroovePredicates {
     @ToolTipBody("Retireves all current outgoing transitions of a state")
     @Signature({"State", "TransSet", "+?"})
     @ToolTipPars({"the state", "the transition set"})
-    //    % @groove.lts.GraphState#getTransitionSet()
+    //    % @nl.utwente.groove.lts.GraphState#getTransitionSet()
     public void state_transition_set_2() {
         s(Predicate_state_transition_set.class, 2);
     }
@@ -122,7 +122,7 @@ public class LtsPredicates extends GroovePredicates {
     @ToolTipBody("Cycles over the successor states of a state")
     @Signature({"State", "NextState", "+?"})
     @ToolTipPars({"the state", "the next state"})
-    //    % @groove.lts.GraphState#getNextState()
+    //    % @nl.utwente.groove.lts.GraphState#getNextState()
     public void state_next_2() {
         s(Predicate_state_next.class, 2);
     }
@@ -130,7 +130,7 @@ public class LtsPredicates extends GroovePredicates {
     @ToolTipBody("Retrieves all successor states of a state")
     @Signature({"State", "NextStateSet", "+?"})
     @ToolTipPars({"the state", "the next state set"})
-    //    % @groove.lts.GraphState#getNextState()
+    //    % @nl.utwente.groove.lts.GraphState#getNextState()
     public void state_next_set_2() {
         s(Predicate_state_next_set.class, 2);
     }
@@ -138,7 +138,7 @@ public class LtsPredicates extends GroovePredicates {
     @ToolTipBody("Retrieves the source state of a transition")
     @Signature({"Trans", "State", "+?"})
     @ToolTipPars({"the transition", "the source state"})
-    //    % @groove.lts.GraphTransition#source()
+    //    % @nl.utwente.groove.lts.GraphTransition#source()
     public void transition_source_2() {
         s(Predicate_transition_source.class, 2);
     }
@@ -146,7 +146,7 @@ public class LtsPredicates extends GroovePredicates {
     @ToolTipBody("Retrieves the target state of a transition")
     @Signature({"Trans", "State", "+?"})
     @ToolTipPars({"the transition", "the target state"})
-    //    % @groove.lts.GraphTransition#target()
+    //    % @nl.utwente.groove.lts.GraphTransition#target()
     public void transition_target_2() {
         s(Predicate_transition_target.class, 2);
     }
@@ -154,7 +154,7 @@ public class LtsPredicates extends GroovePredicates {
     @ToolTipBody("Retrieves the rule event underlying a transition")
     @Signature({"Trans", "RuleEvent", "+?"})
     @ToolTipPars({"the transition", "the rule event"})
-    //    % @see groove.lts.GraphTransition#getEvent()
+    //    % @see nl.utwente.groove.lts.GraphTransition#getEvent()
     public void transition_event_2() {
         s(Predicate_transition_event.class, 2);
     }
@@ -182,7 +182,7 @@ public class LtsPredicates extends GroovePredicates {
     @ToolTipBody("Gets the start graph state of a GTS")
     @Signature({"State", "?"})
     @ToolTipPars({"the start GraphState"})
-    //    % @see groove.lts.LTS#startState()
+    //    % @see nl.utwente.groove.lts.LTS#startState()
     public void start_state_1() {
         s(Predicate_start_state.class, 1);
     }
@@ -190,8 +190,8 @@ public class LtsPredicates extends GroovePredicates {
     @ToolTipBody("Cycles over the final states of a GTS")
     @Signature({"State", "?"})
     @ToolTipPars({"the start GraphState"})
-    //    % @see groove.lts.LTS#getFinalStates()
-    //    % @see groove.lts.LTS#isFinal()
+    //    % @see nl.utwente.groove.lts.LTS#getFinalStates()
+    //    % @see nl.utwente.groove.lts.LTS#isFinal()
     public void final_state_1() {
         s(Predicate_final_state.class, 1);
     }

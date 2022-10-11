@@ -42,6 +42,7 @@ import nl.utwente.groove.explore.util.StateReporter;
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.transform.Transformer;
+import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.cli.DirectoryHandler;
 import nl.utwente.groove.util.cli.GrammarHandler;
 import nl.utwente.groove.util.cli.GrooveCmdLineParser;
@@ -192,8 +193,9 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     @Option(name = "-D", metaVar = "key=val",
         usage = "" + "Set grammar property <key> to <val>. Legal settings are:\n"
             + "  - checkIsomorphism=boolean - switch isomorphism checking on or off\n"
-            + "  - controlProgram=names - set the control program(s) to be used\n"
-            + "See groove.grammar.GrammarProperties " + "for other allowed key/value pairs",
+            + "  - controlProgram=names - set the control program(s) to be used\n" + "See "
+            + Groove.GROOVE_BASE + ".grammar.GrammarProperties "
+            + "for other allowed key/value pairs",
         handler = PropertiesHandler.class)
     private Map<GrammarKey,String> grammarProperties;
 

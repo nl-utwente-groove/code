@@ -83,7 +83,7 @@ public class TreeHashSetTest {
     }
 
     /*
-     * Test method for 'groove.util.TreeStoreSet.size()'
+     * Test method for 'nl.utwente.groove.util.TreeStoreSet.size()'
      */
     @Test
     public void testSize() {
@@ -111,7 +111,7 @@ public class TreeHashSetTest {
     }
 
     /*
-     * Test method for 'groove.util.TreeStoreSet.clear()'
+     * Test method for 'nl.utwente.groove.util.TreeStoreSet.clear()'
      */
     @Test
     public void testClear() {
@@ -121,7 +121,7 @@ public class TreeHashSetTest {
     }
 
     /*
-     * Test method for 'groove.util.TreeStoreSet.iterator()'
+     * Test method for 'nl.utwente.groove.util.TreeStoreSet.iterator()'
      */
     @Test
     public void testIterator() {
@@ -140,7 +140,7 @@ public class TreeHashSetTest {
     }
 
     /*
-     * Test method for 'groove.util.TreeStoreSet.iterator()'
+     * Test method for 'nl.utwente.groove.util.TreeStoreSet.iterator()'
      */
     @Test
     public void testSortedIterator() {
@@ -159,7 +159,7 @@ public class TreeHashSetTest {
     }
 
     /*
-     * Test method for 'groove.util.TreeStoreSet.add(Object)'
+     * Test method for 'nl.utwente.groove.util.TreeStoreSet.add(Object)'
      */
     @Test
     public void testAddObject() {
@@ -237,7 +237,7 @@ public class TreeHashSetTest {
     }
 
     /*
-     * Test method for 'groove.util.TreeStoreSet.contains(Object)'
+     * Test method for 'nl.utwente.groove.util.TreeStoreSet.contains(Object)'
      */
     @Test
     public void testContainsObject() {

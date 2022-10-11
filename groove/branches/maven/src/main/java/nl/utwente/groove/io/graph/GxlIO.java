@@ -33,10 +33,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
 
 import de.gupro.gxl.gxl_1_0.AttrType;
 import de.gupro.gxl.gxl_1_0.EdgeType;
@@ -573,9 +573,9 @@ public class GxlIO extends GraphIO<AttrGraph> {
     /** Reusable context for JAXB (un)marshalling. */
     private final JAXBContext context;
     /** Reusable marshaller. */
-    private final javax.xml.bind.Marshaller marshaller;
+    private final jakarta.xml.bind.Marshaller marshaller;
     /** Reusable unmarshaller. */
-    private final javax.xml.bind.Unmarshaller unmarshaller;
+    private final jakarta.xml.bind.Unmarshaller unmarshaller;
 
     {
         try {

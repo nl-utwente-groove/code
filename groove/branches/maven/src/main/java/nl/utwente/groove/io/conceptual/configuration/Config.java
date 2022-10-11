@@ -6,12 +6,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-
 import org.xml.sax.InputSource;
 
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Unmarshaller;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -20,22 +19,23 @@ import nl.utwente.groove.io.conceptual.Id;
 import nl.utwente.groove.io.conceptual.Name;
 import nl.utwente.groove.io.conceptual.TypeModel;
 import nl.utwente.groove.io.conceptual.configuration.schema.Configuration;
+import nl.utwente.groove.io.conceptual.configuration.schema.Global.IdOverrides;
 import nl.utwente.groove.io.conceptual.configuration.schema.IdModeType;
 import nl.utwente.groove.io.conceptual.configuration.schema.NullableType;
 import nl.utwente.groove.io.conceptual.configuration.schema.OrderType;
 import nl.utwente.groove.io.conceptual.configuration.schema.StringsType;
-import nl.utwente.groove.io.conceptual.configuration.schema.Global.IdOverrides;
 import nl.utwente.groove.io.conceptual.lang.groove.GrooveUtil;
 import nl.utwente.groove.io.conceptual.property.OppositeProperty;
 import nl.utwente.groove.io.conceptual.property.Property;
 import nl.utwente.groove.io.conceptual.type.Class;
 import nl.utwente.groove.io.conceptual.type.Container;
+import nl.utwente.groove.io.conceptual.type.Container.Kind;
 import nl.utwente.groove.io.conceptual.type.CustomDataType;
 import nl.utwente.groove.io.conceptual.type.DataType;
 import nl.utwente.groove.io.conceptual.type.Enum;
 import nl.utwente.groove.io.conceptual.type.Tuple;
 import nl.utwente.groove.io.conceptual.type.Type;
-import nl.utwente.groove.io.conceptual.type.Container.Kind;
+import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatException;
 
 @SuppressWarnings("javadoc")
@@ -64,7 +64,8 @@ public class Config {
         this.m_xmlPath = xmlPath;
 
         try {
-            this.jaxbContext = JAXBContext.newInstance("groove.io.conceptual.configuration.schema");
+            this.jaxbContext =
+                JAXBContext.newInstance(Groove.GROOVE_BASE + ".io.conceptual.configuration.schema");
             this.unmarshaller = this.jaxbContext.createUnmarshaller();
 
             String xmlString = (String) grammar.getResource(ResourceKind.CONFIG, this.m_xmlPath)
@@ -417,8 +418,7 @@ public class Config {
     public String getContainerPostfix(Container c) {
         String postfix = "";
         if (!getConfig().getTypeModel()
-            .isMetaSchema()
-            && getConfig().getTypeModel()
+            .isMetaSchema() && getConfig().getTypeModel()
                 .getFields()
                 .getContainers()
                 .isUseTypeName()) {

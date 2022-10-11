@@ -32,10 +32,10 @@ import gnu.prolog.term.Term;
 import gnu.prolog.term.VariableTerm;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.Interpreter.Goal;
+import gnu.prolog.vm.PrologException;
 import nl.utwente.groove.prolog.util.TermConverter;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
-import gnu.prolog.vm.PrologException;
 
 /**
  * Interface to the prolog engine
@@ -272,7 +272,7 @@ public class PrologEngine {
 
         /*
          * (non-Javadoc)
-         * @see groove.prolog.QueryResult#getExecutionTime()
+         * @see nl.utwente.groove.prolog.QueryResult#getExecutionTime()
          */
         @Override
         public long getExecutionTime() {
@@ -289,7 +289,7 @@ public class PrologEngine {
 
         /*
          * (non-Javadoc)
-         * @see groove.prolog.QueryResult#getReturnValue()
+         * @see nl.utwente.groove.prolog.QueryResult#getReturnValue()
          */
         @Override
         public QueryReturnValue getReturnValue() {
@@ -298,7 +298,7 @@ public class PrologEngine {
 
         /*
          * (non-Javadoc)
-         * @see groove.prolog.QueryResult#getVariables()
+         * @see nl.utwente.groove.prolog.QueryResult#getVariables()
          */
         @Override
         public Map<String,Object> getVariables() {
@@ -307,7 +307,7 @@ public class PrologEngine {
 
         /*
          * (non-Javadoc)
-         * @see groove.prolog.QueryResult#isLastResult()
+         * @see nl.utwente.groove.prolog.QueryResult#isLastResult()
          */
         @Override
         public boolean isLastResult() {
@@ -318,7 +318,7 @@ public class PrologEngine {
 
         /*
          * (non-Javadoc)
-         * @see groove.prolog.QueryResult#nextResult()
+         * @see nl.utwente.groove.prolog.QueryResult#nextResult()
          */
         @Override
         public QueryResult getNextResult() {
@@ -327,7 +327,7 @@ public class PrologEngine {
 
         /*
          * (non-Javadoc)
-         * @see groove.prolog.QueryResult#previousResult()
+         * @see nl.utwente.groove.prolog.QueryResult#previousResult()
          */
         @Override
         public QueryResult getPreviousResult() {
@@ -336,7 +336,7 @@ public class PrologEngine {
 
         /*
          * (non-Javadoc)
-         * @see groove.prolog.QueryResult#queryString()
+         * @see nl.utwente.groove.prolog.QueryResult#queryString()
          */
         @Override
         public String getQuery() {

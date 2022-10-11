@@ -66,9 +66,14 @@ public class Groove {
     /** Default name for property files. */
     public static final String PROPERTY_NAME = "system";
 
+    /** Institution domain as name space. */
+    public static final String UT_NAMESPACE = "nl.utwente";
+    /** Qualified base package name for the GROOVE tool set. */
+    public static final String GROOVE_BASE = UT_NAMESPACE + ".groove";
+
     /** File name for XML properties. */
     public static final String XML_PROPERTIES_FILE =
-        "groove.xml" + FileType.PROPERTY.getExtension();
+        GROOVE_BASE + ".xml" + FileType.PROPERTY.getExtension();
 
     /**
      * Flag to indicate if various types of statistics should be computed. This
@@ -106,7 +111,9 @@ public class Groove {
      * @throws IOException if <code>file</code> cannot be parsed as a graph
      */
     static public PlainGraph loadGraph(File file) throws IOException {
-        return GxlIO.instance().loadGraph(file).toPlainGraph();
+        return GxlIO.instance()
+            .loadGraph(file)
+            .toPlainGraph();
     }
 
     /**
@@ -132,7 +139,8 @@ public class Groove {
      * @throws IOException if saving ran into problems
      */
     static public void saveGraph(Graph graph, File file) throws IOException {
-        GxlIO.instance().saveGraph(graph, file);
+        GxlIO.instance()
+            .saveGraph(graph, file);
     }
 
     /**
@@ -219,7 +227,8 @@ public class Groove {
      * Returns a URL for a given resource name using the class loader.
      */
     public static URL getResource(String name) {
-        return Groove.class.getClassLoader().getResource(name);
+        return Groove.class.getClassLoader()
+            .getResource(name);
     }
 
     /**
@@ -342,7 +351,8 @@ public class Groove {
     public static URL toURL(File file) {
         URL url = null;
         try {
-            url = file.toURI().toURL();
+            url = file.toURI()
+                .toURL();
         } catch (MalformedURLException e) {
             throw new IllegalArgumentException(
                 String.format("File '%s' cannot be converted to URL", file));
@@ -362,7 +372,8 @@ public class Groove {
      * </ul>
      */
     public static File toFile(URL url) {
-        if (url.getProtocol().equals("file")) {
+        if (url.getProtocol()
+            .equals("file")) {
             try {
                 return new File(url.toURI());
             } catch (URISyntaxException e) {
@@ -371,7 +382,8 @@ public class Groove {
                 // possibly thrown by the File constructor
                 return null;
             }
-        } else if (url.getProtocol().equals("jar")) {
+        } else if (url.getProtocol()
+            .equals("jar")) {
             try {
                 URL innerURL = ((JarURLConnection) url.openConnection()).getJarFileURL();
                 return toFile(innerURL);
@@ -435,16 +447,19 @@ public class Groove {
     // Platform dependent information.
 
     /** Detect if we are on Windows.  */
-    public static final boolean IS_PLATFORM_WINDOWS =
-        System.getProperty("os.name").toLowerCase().indexOf("windows") > -1;
+    public static final boolean IS_PLATFORM_WINDOWS = System.getProperty("os.name")
+        .toLowerCase()
+        .indexOf("windows") > -1;
 
     /** Detect if we are on Mac.  */
-    public static final boolean IS_PLATFORM_MAC =
-        System.getProperty("os.name").toLowerCase().indexOf("mac os x") > -1;
+    public static final boolean IS_PLATFORM_MAC = System.getProperty("os.name")
+        .toLowerCase()
+        .indexOf("mac os x") > -1;
 
     /** Detect if we are on Linux.  */
-    public static final boolean IS_PLATFORM_LINUX =
-        System.getProperty("os.name").toLowerCase().indexOf("linux") > -1;
+    public static final boolean IS_PLATFORM_LINUX = System.getProperty("os.name")
+        .toLowerCase()
+        .indexOf("linux") > -1;
 
     static {
         /** Make sure default action names are all in English. */

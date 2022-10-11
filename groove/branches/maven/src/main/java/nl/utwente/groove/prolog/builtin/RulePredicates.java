@@ -54,7 +54,7 @@ public class RulePredicates extends GroovePredicates {
     @ToolTipBody("Retrieves the priority of the rule")
     @Signature({"Rule", "Integer", "+?"})
     @ToolTipPars({"the rule", "the priority"})
-    //    % @see groove.trans.Rule#getPriority()
+    //    % @see nl.utwente.groove.trans.Rule#getPriority()
     public void rule_priority_2() {
         s(Predicate_rule_priority.class, 2);
     }
@@ -63,7 +63,7 @@ public class RulePredicates extends GroovePredicates {
         "Note: this does not use the same nodes as the current graph."})
     @Signature({"Rule", "Graph", "+?"})
     @ToolTipPars({"the rule", "the graph"})
-    //    % @see groove.trans.Rule#getLhs()
+    //    % @see nl.utwente.groove.trans.Rule#getLhs()
     public void rule_lhs_2() {
         s(Predicate_rule_lhs.class, 2);
     }
@@ -72,7 +72,7 @@ public class RulePredicates extends GroovePredicates {
         "Note: this does not use the same nodes as the current graph."})
     @Signature({"Rule", "Graph", "+?"})
     @ToolTipPars({"the rule", "the graph"})
-    //    % @see groove.trans.Rule#getRhs()
+    //    % @see nl.utwente.groove.trans.Rule#getRhs()
     public void rule_rhs_2() {
         s(Predicate_rule_rhs.class, 2);
     }

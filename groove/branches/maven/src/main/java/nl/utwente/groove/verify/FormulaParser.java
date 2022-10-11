@@ -41,7 +41,7 @@ import nl.utwente.groove.util.parse.OpKind;
 import nl.utwente.groove.verify.Proposition.Arg;
 
 /**
- * Parser for temporal formulas, following the {@code groove.util.parse} architecture.
+ * Parser for temporal formulas, following the {@code nl.utwente.groove.util.parse} architecture.
  * @author Arend Rensink
  * @version $Revision $
  */
@@ -185,8 +185,7 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
     private static Map<String,LogicOp> nameToTokenMap = new HashMap<>();
     /** Mapping from token symbols to token values. */
     private static Map<String,String> nameToSymbolMap = new HashMap<>();
-    private static Map<Logic,Map<String,String>> docMapMap =
-        new EnumMap<>(Logic.class);
+    private static Map<Logic,Map<String,String>> docMapMap = new EnumMap<>(Logic.class);
 
     static {
         for (LogicOp token : LogicOp.values()) {

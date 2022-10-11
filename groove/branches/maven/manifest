@@ -11,4 +11,4 @@ Class-Path: lib/antlr_3.2.jar
  lib/ltl2buchi.jar 
  lib/rsyntaxtextarea.jar 
  org.eclipse.jdt.launching.JRE_CONTAINER
-Main-Class: groove.Simulator
+Main-Class: nl.utwente.groove.Simulator

@@ -99,8 +99,7 @@ public class RegExprTyperTest {
         xBin = "xBin";
         xFlag = "xFlag";
         xType = "xType";
-        Map<LabelVar,Set<? extends TypeElement>> implicitVars =
-            new HashMap<>();
+        Map<LabelVar,Set<? extends TypeElement>> implicitVars = new HashMap<>();
         for (TypeEdge edge : implicitType.edgeSet()) {
             String label = edge.label()
                 .toString();
@@ -114,8 +113,7 @@ public class RegExprTyperTest {
             }
         }
         implicitTyper = new RegExprTyper(implicitType, implicitVars);
-        Map<LabelVar,Set<? extends TypeElement>> explicitVars =
-            new HashMap<>();
+        Map<LabelVar,Set<? extends TypeElement>> explicitVars = new HashMap<>();
         for (TypeEdge edge : explicitType.edgeSet()) {
             String label = edge.label()
                 .toString();
@@ -171,9 +169,9 @@ public class RegExprTyperTest {
     @Test
     public void testEmpty() {
         this.implicit = false;
-        TypeNode[][] n1 = {{A, A}, {A, A1}, {A, A2}, {A1, A}, {A1, A1}, {A1, A2}, {A2, A}, {A2, A1},
-            {A2, A2}, {B, B}, {B, B1}, {B1, B}, {B1, B1}, {C, C}, {D, D}, {XInt, XInt},
-            {XReal, XReal}, {XString, XString}, {XBool, XBool}};
+        TypeNode[][] n1 = {{A, A}, {A, A1}, {A, A2}, {A1, A}, {A1, A1}, {A2, A}, {A2, A2}, {B, B},
+            {B, B1}, {B1, B}, {B1, B1}, {C, C}, {D, D}, {XInt, XInt}, {XReal, XReal},
+            {XString, XString}, {XBool, XBool}};
         equals("=", n1);
         this.implicit = true;
         TypeNode[][] n2 =

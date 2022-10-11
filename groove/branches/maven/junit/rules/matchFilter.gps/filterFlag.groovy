@@ -1,7 +1,7 @@
-import groove.grammar.host.HostGraph;
-import groove.grammar.host.HostNode;
-import groove.grammar.host.HostEdge;
-import groove.grammar.rule.RuleToHostMap;
+import nl.utwente.groove.grammar.host.HostGraph;
+import nl.utwente.groove.grammar.host.HostNode;
+import nl.utwente.groove.grammar.host.HostEdge;
+import nl.utwente.groove.grammar.rule.RuleToHostMap;
 
 public static boolean filterFlag(HostGraph host, RuleToHostMap anchorMap) {
         HostNode image = anchorMap.nodeMap()

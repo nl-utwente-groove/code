@@ -2,7 +2,7 @@
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
     <graph role="rule" edgeids="false" edgemode="directed" id="errorFilter">
         <attr name="matchFilter">
-            <string>groove.test.rule.RuleApplicationTest.errorFilter</string>
+            <string>nl.utwente.groove.test.rule.RuleApplicationTest.errorFilter</string>
         </attr>
         <attr name="actionRole">
             <string>transformer</string>

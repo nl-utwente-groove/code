@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <TokenMakerDefinition>
 <general>
-<package>groove.prolog.util</package>
+<package>nl.utwente.groove.prolog.util</package>
 <className>PrologTokenMaker</className>
 <extendedClass>AbstractJFlexTokenMaker</extendedClass>
 <classComment>Token maker for syntax highlighting in Prolog.
