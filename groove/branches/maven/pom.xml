@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>nl.utwente.groove</groupId>
   <artifactId>groove</artifactId>
-  <version>6.0.0</version>
+  <version>6.0.0-SNAPSHOT</version>
   <build>
     <plugins>
 	    <!-- Invoking the Eclipse compiler, see https://stackoverflow.com/questions/33164976/using-eclipse-java-compiler-ecj-in-maven-builds -->
@@ -40,8 +40,30 @@
                     <version>3.31.0</version>
                 </dependency>
             </dependencies>
-      </plugin>
+	    </plugin>
+	    
+	    <plugin>
+	        <groupId>org.apache.maven.plugins</groupId>
+    	    <artifactId>maven-javadoc-plugin</artifactId>
+        	<version>3.4.1</version>
+		    <configuration>
+		      <additionalOptions>-Xdoclint:none</additionalOptions>
+    		</configuration>
+	    </plugin>
     </plugins>
+    
+    <resources>
+    	<resource>
+    		<directory>src/main/java</directory>
+    		<includes>
+    			<include>nl/utwente/groove/control/parse/Ctrl.g</include>
+    			<include>nl/utwente/groove/io/conceptual/configuration/ConfigSchema.xsd</include>
+    		</includes>
+    	</resource>
+    	<resource>
+    		<directory>src/main/resources</directory>
+    	</resource>
+    </resources>
   </build>
   
 	<properties>
