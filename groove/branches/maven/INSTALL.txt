@@ -1,7 +1,27 @@
+To install and compile this project, you have to obtain the Maven dependencies first. These consist of
+
+- Globally available libraries
+- Local libraries
+
+For the first category, you need to nothing, as Maven will be able to get them from the central repository.
+For the second category, however, you first have to install the libraries into your local Maven repository (on your machine).
+Eclipse launch configurations have been provided for this, in the launch directory. Eclipse should find these automatically,
+and allow you to run them from the "Run" menu.
+
+In Eclipse, to do all local installs in one fell swoop, use
+
+  GROOVE install local mvn-deps
+
+Alternatively, you can run the required Maven commands from the command line. Instructions are included
+in the .pom-files under lib/pom.
+
+The local installs need only be done once (on any machine where you want to build GROOVE).
+
+A somewhat more extensive explanation is given below.
+
+
 GROOVE Maven build
 ==================
-
-1. Getting the complete set of (jar) libraries
 
 Globally available libraries
 ----------------------------
@@ -36,11 +56,3 @@ For the GROOVE local libraries, help has been provided by
 * Creating a m2 launch configuration that invokes the above install-file goal
 * Adding that m2 launch configuration to the launch group "GROOVE install local mvn-deps"
 
-2. Zipping it up
-
-The zip should consist of:
-
-bin - containing Target.jar for all runnable targets, which are empty except for a manifest specifying the main class and class path
-lib - containing the groove jar as well as all its libraries
-   
- 

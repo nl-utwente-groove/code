@@ -7,9 +7,9 @@
     <booleanAttribute key="M2_OFFLINE" value="false"/>
     <stringAttribute key="M2_PROFILES" value=""/>
     <listAttribute key="M2_PROPERTIES">
-        <listEntry value="file=lib/gnuprologjava-0.2.6.jar"/>
-        <listEntry value="pomFile=lib/pom/gnuprolog.pom"/>
-        <listEntry value="sources=lib/src/gnuprologjava-0.2.6-src.zip"/>
+        <listEntry value="file=lib/jaxb-gxl-2.0.jar"/>
+        <listEntry value="pomFile=lib/pom/gxl.pom"/>
+        <listEntry value="sources=lib/src/jaxb-gxl-2.0-sources.jar"/>
     </listAttribute>
     <stringAttribute key="M2_RUNTIME" value="EMBEDDED"/>
     <booleanAttribute key="M2_SKIP_TESTS" value="false"/>
@@ -17,7 +17,6 @@
     <booleanAttribute key="M2_UPDATE_SNAPSHOTS" value="false"/>
     <stringAttribute key="M2_USER_SETTINGS" value=""/>
     <booleanAttribute key="M2_WORKSPACE_RESOLUTION" value="false"/>
-    <stringAttribute key="bad_container_name" value="\groove-maven\l"/>
     <booleanAttribute key="org.eclipse.debug.core.ATTR_FORCE_SYSTEM_CONSOLE_ENCODING" value="false"/>
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_ATTR_USE_ARGFILE" value="false"/>
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_SHOW_CODEDETAILS_IN_EXCEPTION_MESSAGES" value="true"/>
