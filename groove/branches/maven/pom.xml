@@ -48,6 +48,8 @@
         	<version>3.4.1</version>
 		    <configuration>
 		      <additionalOptions>-Xdoclint:none</additionalOptions>
+              <reportOutputDirectory>target</reportOutputDirectory>
+		      <destDir>javadoc</destDir>
     		</configuration>
 	    </plugin>
     </plugins>
