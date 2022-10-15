@@ -17,6 +17,7 @@
 package nl.utwente.groove.io.external.format;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -52,12 +53,11 @@ public class VectorExporter extends AbstractExporter {
         try {
             @SuppressWarnings("unchecked") Class<GraphToVector> cls =
                 (Class<GraphToVector>) Class.forName(vectorClassName);
-            result = cls.newInstance();
-        } catch (ClassNotFoundException e) {
-            // Just return
-        } catch (InstantiationException e) {
-            // Just return
-        } catch (IllegalAccessException e) {
+            result = cls.getConstructor()
+                .newInstance();
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+            | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
+            | SecurityException e) {
             // Just return
         }
         return result;

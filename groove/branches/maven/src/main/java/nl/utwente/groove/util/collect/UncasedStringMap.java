@@ -34,7 +34,7 @@ public class UncasedStringMap<V> extends TreeMap<String,V> {
     }
 
     /** String comparator that abstracts away from case. */
-    public static final UncasedComparator COMPARATOR = new UncasedComparator();
+    private static final UncasedComparator COMPARATOR = new UncasedComparator();
 
     private static class UncasedComparator implements Comparator<String> {
         @Override

@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import junit.framework.TestCase;
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.grammar.Grammar;

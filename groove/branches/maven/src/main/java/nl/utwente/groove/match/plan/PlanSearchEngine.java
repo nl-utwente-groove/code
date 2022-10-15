@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.match.plan;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,8 +29,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -37,9 +37,9 @@ import org.eclipse.jdt.annotation.NonNull;
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.grammar.Condition;
+import nl.utwente.groove.grammar.Condition.Op;
 import nl.utwente.groove.grammar.EdgeEmbargo;
 import nl.utwente.groove.grammar.GrammarProperties;
-import nl.utwente.groove.grammar.Condition.Op;
 import nl.utwente.groove.grammar.rule.Anchor;
 import nl.utwente.groove.grammar.rule.AnchorKey;
 import nl.utwente.groove.grammar.rule.DefaultRuleNode;
@@ -57,6 +57,7 @@ import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.match.SearchEngine;
+import nl.utwente.groove.util.Observable;
 import nl.utwente.groove.util.collect.Bag;
 import nl.utwente.groove.util.collect.HashBag;
 
@@ -108,17 +109,18 @@ public class PlanSearchEngine extends SearchEngine {
         }
         PlanSearchStrategy result = new PlanSearchStrategy(this, plan);
         if (PRINT) {
-            System.out.print(String.format("%nPlan for %s, seed %s:%n    %s",
-                condition.getName(),
-                seed,
-                result));
+            System.out.print(String
+                .format("%nPlan for %s, seed %s:%n    %s", condition.getName(), seed, result));
             System.out.printf("%n    Dependencies & Relevance: [");
             for (int i = 0; i < plan.size(); i++) {
                 if (i > 0) {
                     System.out.print(", ");
                 }
-                System.out.printf("%d%s: %s", i, plan.get(i)
-                    .isRelevant() ? "*" : "", plan.getDependency(i));
+                System.out.printf("%d%s: %s",
+                    i,
+                    plan.get(i)
+                        .isRelevant() ? "*" : "",
+                    plan.getDependency(i));
             }
             System.out.println("]");
         }
@@ -198,7 +200,8 @@ public class PlanSearchEngine extends SearchEngine {
          * Creates and returns a search plan on the basis of the given data.
          * @param seed the pre-matched subgraph; non-{@code null}
          */
-        public SearchPlan getPlan(@NonNull Anchor seed) {
+        public SearchPlan getPlan(@NonNull
+        Anchor seed) {
             testUsed();
             boolean injective = getInjectivity();
             SearchPlan result = new SearchPlan(this.condition, seed, injective);
@@ -210,7 +213,6 @@ public class PlanSearchEngine extends SearchEngine {
                 this.boundEdges.addAll(bestItem.bindsEdges());
                 this.boundVars.addAll(bestItem.bindsVars());
                 // notify the observing comparators of the change
-                setChanged();
                 notifyObservers(bestItem);
                 items.remove(bestItem);
             }
@@ -257,7 +259,8 @@ public class PlanSearchEngine extends SearchEngine {
          * Computes and returns all search items, without taking dependencies into account.
          * @param seed the pre-matched subgraph
          */
-        private Collection<AbstractSearchItem> computeSearchItems(@NonNull Anchor seed) {
+        private Collection<AbstractSearchItem> computeSearchItems(@NonNull
+        Anchor seed) {
             Collection<AbstractSearchItem> result = new ArrayList<>();
             if (this.condition.hasPattern()) {
                 result.addAll(computePatternSearchItems(seed));
@@ -300,7 +303,8 @@ public class PlanSearchEngine extends SearchEngine {
          * Adds embargo and injection search items to the super result.
          * @param seed the set of pre-matched nodes
          */
-        Collection<AbstractSearchItem> computePatternSearchItems(@NonNull Anchor seed) {
+        Collection<AbstractSearchItem> computePatternSearchItems(@NonNull
+        Anchor seed) {
             Collection<AbstractSearchItem> result = new ArrayList<>();
             Map<RuleNode,RuleNode> unmatchedNodes = new LinkedHashMap<>();
             RuleGraph graph = this.condition.getPattern();
@@ -370,7 +374,9 @@ public class PlanSearchEngine extends SearchEngine {
                     assert !(node instanceof VariableNode) || ((VariableNode) node).hasConstant()
                         || this.algebraFamily.supportsSymbolic() || seed.nodeSet()
                             .contains(node) : String.format(
-                                "Variable node '%s' should be among anchors %s", node, seed);
+                                "Variable node '%s' should be among anchors %s",
+                                node,
+                                seed);
                     result.add(nodeItem);
                 }
             }
@@ -410,8 +416,8 @@ public class PlanSearchEngine extends SearchEngine {
                 // add those comparators as listeners that implement the
                 // observer interface
                 for (Comparator<SearchItem> comparator : this.comparators) {
-                    if (comparator instanceof Observer) {
-                        addObserver((Observer) comparator);
+                    if (comparator instanceof PropertyChangeListener l) {
+                        addObserver(l);
                     }
                 }
             }
@@ -532,7 +538,7 @@ public class PlanSearchEngine extends SearchEngine {
      * @author Arend Rensink
      * @version $Revision $
      */
-    static class IndegreeComparator implements Comparator<SearchItem>, Observer {
+    static class IndegreeComparator implements Comparator<SearchItem>, PropertyChangeListener {
         /**
          * Constructs a comparator on the basis of a given set of unmatched
          * edges.
@@ -574,10 +580,10 @@ public class PlanSearchEngine extends SearchEngine {
          * indegree of all the edge target.
          */
         @Override
-        public void update(Observable o, Object arg) {
-            if (arg instanceof Edge2SearchItem) {
-                RuleEdge selected = ((Edge2SearchItem) arg).getEdge();
-                this.indegrees.remove(selected.target());
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getNewValue() instanceof Edge2SearchItem item) {
+                this.indegrees.remove(item.getEdge()
+                    .target());
             }
         }
 

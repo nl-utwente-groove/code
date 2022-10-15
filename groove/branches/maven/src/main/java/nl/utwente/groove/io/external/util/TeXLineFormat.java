@@ -24,9 +24,9 @@ import java.util.Map;
 import nl.utwente.groove.io.Util;
 import nl.utwente.groove.util.Duo;
 import nl.utwente.groove.util.Pair;
-import nl.utwente.groove.util.line.LineFormat;
 import nl.utwente.groove.util.line.Line.ColorType;
 import nl.utwente.groove.util.line.Line.Style;
+import nl.utwente.groove.util.line.LineFormat;
 
 /**
  * TeX renderer for node and edge labels.
@@ -95,8 +95,7 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
     private static final Map<Style,Pair<Duo<String>,Mode>> styleMap;
 
     static {
-        Map<Style,Pair<Duo<String>,Mode>> result =
-            new EnumMap<>(Style.class);
+        Map<Style,Pair<Duo<String>,Mode>> result = new EnumMap<>(Style.class);
         for (Style style : Style.values()) {
             String start, end;
             Mode mode;
@@ -140,9 +139,8 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
     private static Duo<String> getColorMarker(ColorType type, Color color) {
         String colorString;
         if (type == ColorType.RGB) {
-            colorString =
-                "\\color[RGB]{" + color.getRed() + "," + color.getGreen() + "," + color.getBlue()
-                    + "}";
+            colorString = "\\color[RGB]{" + color.getRed() + "," + color.getGreen() + ","
+                + color.getBlue() + "}";
         } else {
             colorString = colorMap.get(type);
         }
@@ -161,7 +159,8 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
             case EMBARGO:
             case ERASER:
             case REMARK:
-                color = type.name().toLowerCase() + "_c";
+                color = type.name()
+                    .toLowerCase() + "_c";
                 break;
             default:
                 color = null;
@@ -185,8 +184,7 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
         charMap.put(c, Pair.newPair(s, mode));
     }
 
-    private static Map<Character,Pair<String,Mode>> charMap =
-        new HashMap<>();
+    private static Map<Character,Pair<String,Mode>> charMap = new HashMap<>();
 
     static {
         addChar(Util.EXISTS, "\\exists", Mode.MATH);
@@ -220,7 +218,10 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
         }
     }
 
-    static class TeXBuilder implements LineFormat.Builder<TeXBuilder> {
+    /**
+     * {@link nl.utwente.groove.util.line.LineFormat.Builder} implementation for {@link TeXBuilder}
+     */
+    public static class TeXBuilder implements LineFormat.Builder<TeXBuilder> {
         /* Make sure the result does not need math mode. */
         @Override
         public StringBuilder getResult() {

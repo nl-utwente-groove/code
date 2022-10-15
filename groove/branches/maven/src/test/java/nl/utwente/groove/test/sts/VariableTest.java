@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.test.sts;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import junit.framework.TestCase;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.sts.InteractionVariable;

@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.gui.jgraph;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -26,8 +28,6 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Set;
 
 import javax.swing.undo.UndoableEdit;
@@ -61,8 +61,8 @@ import nl.utwente.groove.gui.layout.JEdgeLayout;
 import nl.utwente.groove.gui.layout.LayoutMap;
 import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.util.ChangeCount;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.ChangeCount.Derived;
+import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -111,9 +111,9 @@ final public class AspectJModel extends JModel<AspectGraph> {
                 return result;
             }
         };
-        this.graphModCount.addObserver(new Observer() {
+        this.graphModCount.addObserver(new PropertyChangeListener() {
             @Override
-            public void update(Observable o, Object arg) {
+            public void propertyChange(PropertyChangeEvent evt) {
                 loadViewErrors();
             }
         });
@@ -133,7 +133,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
 
     /** Sets a grammar model, with respect to which typing is resolved. */
     public void setGrammar(GrammarModel grammar) {
-        assert(this.grammar == null || this.grammar == grammar) && grammar != null;
+        assert (this.grammar == null || this.grammar == grammar) && grammar != null;
         this.grammar = grammar;
     }
 
@@ -542,12 +542,12 @@ final public class AspectJModel extends JModel<AspectGraph> {
     }
 
     /** Adds a listener to graph modifications. */
-    public void addGraphChangeListener(Observer listener) {
+    public void addGraphChangeListener(PropertyChangeListener listener) {
         this.graphModCount.addObserver(listener);
     }
 
     /** Removes a listener to graph modifications. */
-    public void removeGraphChangeListener(Observer listener) {
+    public void removeGraphChangeListener(PropertyChangeListener listener) {
         this.graphModCount.deleteObserver(listener);
     }
 
@@ -572,11 +572,9 @@ final public class AspectJModel extends JModel<AspectGraph> {
     private boolean loading;
 
     /** Role names (for the tool tips). */
-    static final Map<AspectKind,String> ROLE_NAMES =
-        new EnumMap<>(AspectKind.class);
+    static final Map<AspectKind,String> ROLE_NAMES = new EnumMap<>(AspectKind.class);
     /** Role descriptions (for the tool tips). */
-    static final Map<AspectKind,String> ROLE_DESCRIPTIONS =
-        new EnumMap<>(AspectKind.class);
+    static final Map<AspectKind,String> ROLE_DESCRIPTIONS = new EnumMap<>(AspectKind.class);
 
     static private final boolean GUI_DEBUG = false;
 

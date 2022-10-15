@@ -256,10 +256,8 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
 
     /** Convenience method to invoke an edit of a set of visual attributes. */
     void edit(JCell<AspectGraph> jCell, VisualMap newVisuals) {
-        getModel().edit(Collections.singletonMap(jCell, newVisuals.getAttributes()),
-            null,
-            null,
-            null);
+        getModel()
+            .edit(Collections.singletonMap(jCell, newVisuals.getAttributes()), null, null, null);
     }
 
     /**
@@ -410,8 +408,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
     /**
      * Abstract class for j-cell edit actions.
      */
-    private abstract class JCellEditAction extends AbstractAction
-        implements GraphSelectionListener {
+    public abstract class JCellEditAction extends AbstractAction implements GraphSelectionListener {
         /**
          * Constructs an edit action that is enabled for all j-cells.
          * @param name the name of the action

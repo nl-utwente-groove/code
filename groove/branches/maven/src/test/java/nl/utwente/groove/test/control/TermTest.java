@@ -16,17 +16,17 @@
  */
 package nl.utwente.groove.test.control;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 
-import junit.framework.Assert;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.parse.CtrlTree;
 import nl.utwente.groove.control.term.Term;
 import nl.utwente.groove.util.parse.FormatException;
-
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  * Test class for the construction of symbolic control terms.
@@ -77,11 +77,13 @@ public class TermTest extends CtrlTester {
         Term b = this.b;
         Term c = this.c;
         Term d = this.d;
-        equal("a; other;", a.seq(b.or(c)
-            .or(d)));
-        equal("a; any;", a.seq(a.or(b)
-            .or(c)
-            .or(d)));
+        equal("a; other;",
+            a.seq(b.or(c)
+                .or(d)));
+        equal("a; any;",
+            a.seq(a.or(b)
+                .or(c)
+                .or(d)));
     }
 
     @Test
@@ -126,9 +128,8 @@ public class TermTest extends CtrlTester {
                     body = procTree.getChild(2);
                 }
             }
-            assert body != null : String.format("Invoked procedure '%s' not declared in '%s'",
-                procName,
-                program);
+            assert body != null : String
+                .format("Invoked procedure '%s' not declared in '%s'", procName, program);
             return body.toTerm();
         } catch (FormatException e) {
             Assert.fail(e.getMessage());

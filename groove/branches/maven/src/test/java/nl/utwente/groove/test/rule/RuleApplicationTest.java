@@ -31,7 +31,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;

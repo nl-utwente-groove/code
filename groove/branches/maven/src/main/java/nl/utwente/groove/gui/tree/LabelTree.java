@@ -30,8 +30,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -75,8 +73,8 @@ import nl.utwente.groove.io.HTMLConverter;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class LabelTree<G extends Graph> extends CheckboxTree implements GraphModelListener,
-        TreeSelectionListener {
+public class LabelTree<G extends Graph> extends CheckboxTree
+    implements GraphModelListener, TreeSelectionListener {
     /**
      * Constructs a label list associated with a given jgraph. A further
      * parameter indicates if the label tree should support subtypes.
@@ -88,7 +86,8 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
         this.labelFilter = createLabelFilter();
         this.filtering = filtering;
         // make sure tool tips get displayed
-        ToolTipManager.sharedInstance().registerComponent(this);
+        ToolTipManager.sharedInstance()
+            .registerComponent(this);
         setEnabled(jGraph.isEnabled());
         setLargeModel(true);
         installListeners();
@@ -113,12 +112,12 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
                 clearSelection();
             }
         });
-        getFilter().addObserver(new Observer() {
-            @Override
+        getFilter().addObserver(new PropertyChangeListener() {
             @SuppressWarnings("unchecked")
-            public void update(Observable o, Object arg) {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
                 LabelTree.this.repaint();
-                getJGraph().refreshCells((Set<JCell<G>>) arg);
+                getJGraph().refreshCells((Set<JCell<G>>) evt.getNewValue());
             }
         });
         addMouseListener(new MyMouseListener());
@@ -237,7 +236,8 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
      */
     void updateFilter() {
         for (JCell<G> cell : this.jModel.getRoots()) {
-            if (cell.getVisuals().isVisible()) {
+            if (cell.getVisuals()
+                .isVisible()) {
                 getFilter().addJCell(cell);
             }
         }
@@ -329,8 +329,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
                 // the cell may be a port, so we have to check for
                 // JCell-hood
                 if (element instanceof JCell) {
-                    @SuppressWarnings("unchecked")
-                    JCell<G> jCell = (JCell<G>) element;
+                    @SuppressWarnings("unchecked") JCell<G> jCell = (JCell<G>) element;
                     changed |= getFilter().addJCell(jCell);
                 }
                 changeMap.remove(element);
@@ -339,8 +338,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
         for (Object changeEntry : changeMap.entrySet()) {
             Object element = ((Map.Entry<?,?>) changeEntry).getKey();
             if (element instanceof JCell) {
-                @SuppressWarnings("unchecked")
-                JCell<G> jCell = (JCell<G>) element;
+                @SuppressWarnings("unchecked") JCell<G> jCell = (JCell<G>) element;
                 changed |= getFilter().modifyJCell(jCell);
             }
         }
@@ -351,8 +349,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
                 // the cell may be a port, so we have to check for
                 // JCell-hood
                 if (element instanceof JCell) {
-                    @SuppressWarnings("unchecked")
-                    JCell<G> jCell = (JCell<G>) element;
+                    @SuppressWarnings("unchecked") JCell<G> jCell = (JCell<G>) element;
                     changed |= getFilter().removeJCell(jCell);
                 }
             }
@@ -400,7 +397,8 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
         ActionStore actions = getJGraph().getActions();
         if (selectedValues != null && selectedValues.length == 1 && actions != null) {
             result.add(actions.getFindReplaceAction());
-            if (getJGraph() instanceof AspectJGraph && actions.getSelectColorAction().isEnabled()) {
+            if (getJGraph() instanceof AspectJGraph && actions.getSelectColorAction()
+                .isEnabled()) {
                 result.add(actions.getSelectColorAction());
             }
             result.addSeparator();
@@ -420,8 +418,8 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
     /** Adds menu items for graying out. */
     private void addShowHideItems(JPopupMenu result) {
         // add the show/hide menu
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        JPopupMenu restMenu = new ShowHideMenu(this.jGraph).getPopupMenu();
+        @SuppressWarnings({"unchecked", "rawtypes"}) JPopupMenu restMenu =
+            new ShowHideMenu(this.jGraph).getPopupMenu();
         while (restMenu.getComponentCount() > 0) {
             result.add(restMenu.getComponent(0));
         }
@@ -432,8 +430,8 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
      * returns an HTML-formatted string with the text of the label.
      */
     @Override
-    public String convertValueToText(Object value, boolean selected, boolean expanded,
-            boolean leaf, int row, boolean hasFocus) {
+    public String convertValueToText(Object value, boolean selected, boolean expanded, boolean leaf,
+        int row, boolean hasFocus) {
         if (value instanceof LabelTree.EntryNode) {
             Entry entry = ((EntryNode) value).getEntry();
             return getText(entry);
@@ -453,19 +451,23 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
         if (label.equals(TypeLabel.NODE)) {
             text.append(Options.NO_LABEL_TEXT);
             specialLabelColour = true;
-        } else if (label.text().length() == 0) {
+        } else if (label.text()
+            .length() == 0) {
             text.append(Options.EMPTY_LABEL_TEXT);
             specialLabelColour = true;
         } else {
-            text.append(label.toLine().toHTMLString());
+            text.append(label.toLine()
+                .toHTMLString());
         }
         if (specialLabelColour) {
-            HTMLConverter.createColorTag(SPECIAL_COLOR).on(text);
+            HTMLConverter.createColorTag(SPECIAL_COLOR)
+                .on(text);
         }
         if (!getFilter().isSelected(entry)) {
             HTMLConverter.STRIKETHROUGH_TAG.on(text);
         }
-        return HTML_TAG.on(text).toString();
+        return HTML_TAG.on(text)
+            .toString();
     }
 
     /** Indicates if a given jCell is entirely filtered. */
@@ -550,12 +552,14 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
 
         @Override
         public boolean isSelected() {
-            return this.tree.getFilter().isSelected(getEntry());
+            return this.tree.getFilter()
+                .isSelected(getEntry());
         }
 
         @Override
         public void setSelected(boolean selected) {
-            this.tree.getFilter().setSelected(getEntry(), selected);
+            this.tree.getFilter()
+                .setSelected(getEntry(), selected);
         }
 
         @Override
@@ -602,8 +606,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
             this.filter = true;
             this.entries = new ArrayList<>();
             for (Object cell : cells) {
-                @SuppressWarnings("unchecked")
-                JCell<G> jCell = (JCell<G>) cell;
+                @SuppressWarnings("unchecked") JCell<G> jCell = (JCell<G>) cell;
                 this.entries.addAll(getFilter().getEntries(jCell));
             }
         }
@@ -638,7 +641,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
 
         @Override
         public JComponent getTreeCellRendererComponent(JTree tree, Object value, boolean sel,
-                boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            boolean expanded, boolean leaf, int row, boolean hasFocus) {
             JComponent result =
                 super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
             // set a sub- or supertype icon if the node label is a subnode
@@ -667,14 +670,14 @@ public class LabelTree<G extends Graph> extends CheckboxTree implements GraphMod
                     }
                 }
                 if (toolTipText.length() != 0) {
-                    result.setToolTipText(HTMLConverter.HTML_TAG.on(toolTipText).toString());
+                    result.setToolTipText(HTMLConverter.HTML_TAG.on(toolTipText)
+                        .toString());
                 }
                 // set node colour
                 if (entry instanceof TypeEntry) {
                     TypeElement typeElement = ((TypeEntry) entry).getType();
-                    TypeNode typeNode =
-                        typeElement instanceof TypeNode ? (TypeNode) typeElement
-                                : ((TypeEdge) typeElement).source();
+                    TypeNode typeNode = typeElement instanceof TypeNode ? (TypeNode) typeElement
+                        : ((TypeEdge) typeElement).source();
                     Color color = typeNode.getColor();
                     if (color != null) {
                         getInner().setForeground(color);

@@ -38,7 +38,7 @@ import nl.utwente.groove.util.Exceptions;
  * @author Arend Rensink
  * @version $Revision$
  */
-abstract class AbstractSearchItem implements SearchItem {
+public abstract class AbstractSearchItem implements SearchItem {
     /*
      * This implementation returns the empty set.
      */
@@ -317,9 +317,8 @@ abstract class AbstractSearchItem implements SearchItem {
                 throw Exceptions.UNREACHABLE;
             }
             assert this.state.getNext()
-                .contains(nextState) : String.format("Illegal transition %s -next-> %s",
-                    this.state,
-                    nextState);
+                .contains(nextState) : String
+                    .format("Illegal transition %s -next-> %s", this.state, nextState);
             this.state = nextState;
             return nextState.isWritten();
         }
@@ -360,9 +359,8 @@ abstract class AbstractSearchItem implements SearchItem {
 
         @Override
         public String toString() {
-            return String.format("%s: %b",
-                AbstractSearchItem.this.toString(),
-                this.state.isWritten());
+            return String
+                .format("%s: %b", AbstractSearchItem.this.toString(), this.state.isWritten());
         }
 
         /** The state of the search record. */
@@ -464,9 +462,8 @@ abstract class AbstractSearchItem implements SearchItem {
                 throw Exceptions.UNREACHABLE;
             }
             assert this.state.getNext()
-                .contains(nextState) : String.format("Illegal transition %s -next-> %s",
-                    this.state,
-                    nextState);
+                .contains(nextState) : String
+                    .format("Illegal transition %s -next-> %s", this.state, nextState);
             this.state = nextState;
             return nextState.isWritten();
         }

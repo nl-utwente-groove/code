@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package nl.utwente.groove.gui.tree;
@@ -21,13 +21,13 @@ import static nl.utwente.groove.io.HTMLConverter.ITALIC_TAG;
 import static nl.utwente.groove.io.HTMLConverter.STRONG_TAG;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -86,11 +86,11 @@ public class TypeTree extends LabelTree<AspectGraph> {
         ((AspectJModel) jModel).removeGraphChangeListener(getJModelChangeListener());
     }
 
-    private Observer getJModelChangeListener() {
+    private PropertyChangeListener getJModelChangeListener() {
         if (this.jModelChangeListener == null) {
-            this.jModelChangeListener = new Observer() {
+            this.jModelChangeListener = new PropertyChangeListener() {
                 @Override
-                public void update(Observable o, Object arg) {
+                public void propertyChange(PropertyChangeEvent evt) {
                     updateModel();
                 }
             };
@@ -98,7 +98,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
         return this.jModelChangeListener;
     }
 
-    private Observer jModelChangeListener;
+    private PropertyChangeListener jModelChangeListener;
 
     /** Creates a tool bar for the label tree. */
     public JToolBar createToolBar() {
@@ -171,14 +171,15 @@ public class TypeTree extends LabelTree<AspectGraph> {
         return this.collapseAllButton;
     }
 
-    /** 
+    /**
      * Convenience method to return the type graph of the grammar,
-     * or the graph in the jModel if that is a type graph. 
+     * or the graph in the jModel if that is a type graph.
      */
     private TypeGraph getTypeGraph() {
         TypeGraph result = null;
         if (getJGraph().getModel() != null) {
-            result = ((AspectJGraph) getJGraph()).getModel().getTypeGraph();
+            result = ((AspectJGraph) getJGraph()).getModel()
+                .getTypeGraph();
         }
         return result;
     }
@@ -233,7 +234,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
         }
     }
 
-    /** 
+    /**
      * Updates the tree from the information in the type graph.
      * @return the set of tree nodes created for the types
      */
@@ -242,18 +243,20 @@ public class TypeTree extends LabelTree<AspectGraph> {
         List<TreeNode> result = new ArrayList<>();
         TypeGraph typeGraph = getTypeGraph();
         if (typeGraph != null) {
-            Collection<TypeGraph.Sub> typeGraphMap = typeGraph.getComponentMap().values();
+            Collection<TypeGraph.Sub> typeGraphMap = typeGraph.getComponentMap()
+                .values();
             if (typeGraphMap.isEmpty()) {
                 result = fillTree(getTopNode(), getTypeGraph().nodeSet(), getTypeGraph().edgeSet());
             } else if (typeGraphMap.size() == 1) {
-                TypeGraph.Sub subTypeGraph = typeGraphMap.iterator().next();
+                TypeGraph.Sub subTypeGraph = typeGraphMap.iterator()
+                    .next();
                 result = fillTree(getTopNode(), subTypeGraph.getNodes(), subTypeGraph.getEdges());
             } else {
                 result = new ArrayList<>();
                 for (TypeGraph.Sub subTypeGraph : typeGraphMap) {
                     TypeGraphTreeNode typeGraphNode = new TypeGraphTreeNode(subTypeGraph);
-                    result.addAll(fillTree(typeGraphNode, subTypeGraph.getNodes(),
-                        subTypeGraph.getEdges()));
+                    result.addAll(
+                        fillTree(typeGraphNode, subTypeGraph.getNodes(), subTypeGraph.getEdges()));
                     // only add if there were any children
                     if (typeGraphNode.getChildCount() > 0) {
                         getTopNode().add(typeGraphNode);
@@ -266,19 +269,18 @@ public class TypeTree extends LabelTree<AspectGraph> {
     }
 
     /**
-     * Updates part of the tree from a set of type nodes and edges. 
+     * Updates part of the tree from a set of type nodes and edges.
      * @param topNode the node to which the type graph information should be appended
      * @param typeNodes the set of type nodes for which tree nodes should be created
      * @param typeEdges the set of type edges for which tree nodes should be created
      * @return the set of tree nodes created for the types
      */
     private List<TreeNode> fillTree(DefaultMutableTreeNode topNode,
-            Set<? extends TypeNode> typeNodes, Set<? extends TypeEdge> typeEdges) {
+        Set<? extends TypeNode> typeNodes, Set<? extends TypeEdge> typeEdges) {
         List<TreeNode> result = new ArrayList<>();
         // mapping from type nodes to related types (in the combined type graph)
-        Map<TypeNode,Set<TypeNode>> relatedMap =
-            isShowsSubtypes() ? getTypeGraph().getDirectSubtypeMap()
-                    : getTypeGraph().getDirectSupertypeMap();
+        Map<TypeNode,Set<TypeNode>> relatedMap = isShowsSubtypes()
+            ? getTypeGraph().getDirectSubtypeMap() : getTypeGraph().getDirectSupertypeMap();
         for (TypeNode node : new TreeSet<TypeNode>(typeNodes)) {
             if (node.isDataType()) {
                 continue;
@@ -331,14 +333,15 @@ public class TypeTree extends LabelTree<AspectGraph> {
      * @param typeNodes set of type nodes from which the related types are taken
      * @param typeNode tree node for the key type
      * @param map mapping from key types to related node type (in the combined type graph)
-     * @param newNodes set that collects all newly created tree nodes  
+     * @param newNodes set that collects all newly created tree nodes
      */
     private void addRelatedTypes(Set<? extends TypeNode> typeNodes, TypedEntryNode typeNode,
-            Map<TypeNode,Set<TypeNode>> map, List<TreeNode> newNodes) {
-        TypeNode type = (TypeNode) typeNode.getEntry().getType();
+        Map<TypeNode,Set<TypeNode>> map, List<TreeNode> newNodes) {
+        TypeNode type = (TypeNode) typeNode.getEntry()
+            .getType();
         Set<TypeNode> relatedTypes = map.get(type);
-        assert relatedTypes != null : String.format(
-            "Node type '%s' does not occur in type graph '%s'", type, map.keySet());
+        assert relatedTypes != null : String
+            .format("Node type '%s' does not occur in type graph '%s'", type, map.keySet());
         for (TypeNode relType : relatedTypes) {
             // test if the node type label exists in the partial type graph
             if (typeNodes.contains(relType)) {
@@ -359,14 +362,15 @@ public class TypeTree extends LabelTree<AspectGraph> {
      * returns an HTML-formatted string with the text of the label.
      */
     @Override
-    public String convertValueToText(Object value, boolean selected, boolean expanded,
-            boolean leaf, int row, boolean hasFocus) {
+    public String convertValueToText(Object value, boolean selected, boolean expanded, boolean leaf,
+        int row, boolean hasFocus) {
         if (value instanceof TypeGraphTreeNode) {
             StringBuilder result = new StringBuilder();
             result.append("Type graph '");
             result.append(((TypeGraphTreeNode) value).getName());
             result.append("'");
-            return HTML_TAG.on(ITALIC_TAG.on(STRONG_TAG.on(result)).toString());
+            return HTML_TAG.on(ITALIC_TAG.on(STRONG_TAG.on(result))
+                .toString());
         } else {
             return super.convertValueToText(value, selected, expanded, leaf, row, hasFocus);
         }
@@ -549,7 +553,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
          */
         private String computeName() {
             return this.subtypes ? Options.SHOW_SUBTYPES_ACTION_NAME
-                    : Options.SHOW_SUPERTYPES_ACTION_NAME;
+                : Options.SHOW_SUPERTYPES_ACTION_NAME;
         }
 
         /** Flag indicating if this action should show subtypes. */
@@ -580,7 +584,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
          */
         private String computeName() {
             return isShowsAllLabels() ? Options.SHOW_EXISTING_LABELS_ACTION_NAME
-                    : Options.SHOW_ALL_LABELS_ACTION_NAME;
+                : Options.SHOW_ALL_LABELS_ACTION_NAME;
         }
     }
 }

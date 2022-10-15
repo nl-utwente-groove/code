@@ -45,18 +45,27 @@ public enum AlgebraFamily implements DocumentedEnum {
      * {@link String} for {@code string},
      * {@link Double} for {@code real},
      */
-    DEFAULT("default", "Java-based values (<tt>int</tt>, <tt>boolean</tt>, <tt>String</tt>, <tt>double</tt>)", JavaIntAlgebra.instance, JavaBoolAlgebra.instance, JavaStringAlgebra.instance, JavaRealAlgebra.instance),
+    DEFAULT("default",
+        "Java-based values (<tt>int</tt>, <tt>boolean</tt>, <tt>String</tt>, <tt>double</tt>)",
+        JavaIntAlgebra.instance, JavaBoolAlgebra.instance, JavaStringAlgebra.instance,
+        JavaRealAlgebra.instance),
     /** Point algebra family: every sort has a single value. */
-    POINT("point", "A single value for every type (so all values are equal)", PointIntAlgebra.instance, PointBoolAlgebra.instance, PointStringAlgebra.instance, PointRealAlgebra.instance),
+    POINT("point", "A single value for every type (so all values are equal)",
+        PointIntAlgebra.instance, PointBoolAlgebra.instance, PointStringAlgebra.instance,
+        PointRealAlgebra.instance),
     /** High-precision algebra family:
      * {@link BigInteger} for {@code int},
      * {@link Boolean} for {@code bool},
      * {@link String} for {@code string},
      * {@link BigDecimal} for {@code real},
      */
-    BIG("big", "High-precision values (<tt>BigInteger</tt>, <tt>boolean</tt>, <tt>String</tt>, <tt>BigDecimal</tt>)", BigIntAlgebra.instance, BigBoolAlgebra.instance, BigStringAlgebra.instance, BigRealAlgebra.instance),
+    BIG("big",
+        "High-precision values (<tt>BigInteger</tt>, <tt>boolean</tt>, <tt>String</tt>, <tt>BigDecimal</tt>)",
+        BigIntAlgebra.instance, BigBoolAlgebra.instance, BigStringAlgebra.instance,
+        BigRealAlgebra.instance),
     /** Term algebra: symbolic representations for all values. */
-    TERM("term", "Symbolic term representations", TermIntAlgebra.instance, TermBoolAlgebra.instance, TermStringAlgebra.instance, TermRealAlgebra.instance);
+    TERM("term", "Symbolic term representations", TermIntAlgebra.instance, TermBoolAlgebra.instance,
+        TermStringAlgebra.instance, TermRealAlgebra.instance);
 
     /**
      * Constructs a new register, loaded with a given set of algebras.
@@ -84,8 +93,10 @@ public enum AlgebraFamily implements DocumentedEnum {
         Sort sigKind = algebra.getSort();
         Algebra<?> oldAlgebra = this.algebraMap.put(sigKind, algebra);
         if (oldAlgebra != null) {
-            throw new IllegalArgumentException(String.format(
-                "Signature '%s' already implemented by '%s'", sigKind, oldAlgebra.getName()));
+            throw new IllegalArgumentException(
+                String.format("Signature '%s' already implemented by '%s'",
+                    sigKind,
+                    oldAlgebra.getName()));
         }
     }
 
@@ -247,7 +258,7 @@ public enum AlgebraFamily implements DocumentedEnum {
     }
 
     /** Implementation of an algebra operation. */
-    private static class Operation implements nl.utwente.groove.algebra.Operation {
+    public static class Operation implements nl.utwente.groove.algebra.Operation {
         Operation(AlgebraFamily register, Algebra<?> algebra, Method method) {
             this.algebra = algebra;
             this.method = method;

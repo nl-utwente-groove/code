@@ -296,7 +296,7 @@ public class JVertexView extends VertexView {
      * Multi-line vertex renderer, based on a {@link JLabel} with <tt>html</tt>
      * formatting.
      */
-    private static class MyRenderer extends JLabel implements CellViewRenderer {
+    public static class MyRenderer extends JLabel implements CellViewRenderer {
         /** Constructs a renderer instance. */
         MyRenderer() {
             setMinimumSize(JAttr.DEFAULT_NODE_SIZE);

@@ -46,7 +46,8 @@ abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo> ex
     final T newNode(CommonTokenStream tokenStream, I info) {
         T result;
         try {
-            result = (T) getClass().newInstance();
+            result = (T) getClass().getConstructor()
+                .newInstance();
             ((ParseTree<T,I>) result).tokenStream = tokenStream;
             ((ParseTree<T,I>) result).info = info;
         } catch (Exception e) {

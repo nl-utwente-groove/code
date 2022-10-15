@@ -52,8 +52,7 @@ public class PrologChecker extends GrooveCmdLineTool<Object> {
     protected GrooveCmdLineParser createParser(String appName) {
         GrooveCmdLineParser result = new GrooveCmdLineParser(appName, this);
         // move -g to the final position
-        @SuppressWarnings("rawtypes")
-        List<OptionHandler> handlers = result.getOptions();
+        @SuppressWarnings("rawtypes") List<OptionHandler> handlers = result.getOptions();
         OptionHandler<?> genHandler = null;
         for (OptionHandler<?> handler : handlers) {
             if (handler instanceof GeneratorHandler) {
@@ -78,7 +77,8 @@ public class PrologChecker extends GrooveCmdLineTool<Object> {
         long genStartTime = System.currentTimeMillis();
         GTS gts;
         try {
-            gts = Generator.execute(genArgs).getGTS();
+            gts = Generator.execute(genArgs)
+                .getGTS();
         } catch (Exception e) {
             throw new Exception("Error while invoking Generator\n" + e.getMessage(), e);
         }
@@ -171,7 +171,7 @@ public class PrologChecker extends GrooveCmdLineTool<Object> {
      * Option value class collecting all remaining arguments.
      * Wrapped into a class to fool Args4J into understanding this is not a multiple value.
      */
-    private static class GeneratorArgs {
+    public static class GeneratorArgs {
         GeneratorArgs(Parameters params) throws CmdLineException {
             this.args = new ArrayList<>();
             for (int ix = 0; ix < params.size(); ix++) {

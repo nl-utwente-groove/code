@@ -24,14 +24,13 @@ import static nl.utwente.groove.gui.SimulatorModel.Change.STATE;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.geom.Point2D;
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Set;
 import java.util.Stack;
 import java.util.WeakHashMap;
@@ -279,17 +278,14 @@ public class StateDisplay extends Display implements SimulatorListener {
     private TypeTree labelTree;
 
     /** Creates the listener of the error panel. */
-    private Observer createErrorListener() {
-        return new Observer() {
-            @Override
-            public void update(Observable o, Object arg) {
-                if (arg != null) {
-                    AspectJCell errorCell = getJGraph().getModel()
-                        .getErrorMap()
-                        .get(arg);
-                    if (errorCell != null) {
-                        getJGraph().setSelectionCell(errorCell);
-                    }
+    private PropertyChangeListener createErrorListener() {
+        return arg -> {
+            if (arg != null) {
+                AspectJCell errorCell = getJGraph().getModel()
+                    .getErrorMap()
+                    .get(arg.getNewValue());
+                if (errorCell != null) {
+                    getJGraph().setSelectionCell(errorCell);
                 }
             }
         };
@@ -413,9 +409,10 @@ public class StateDisplay extends Display implements SimulatorListener {
                 if (getJGraph().isShowAnchors()) {
                     result.append(String.format("with match '%s'", match.getEvent()));
                 } else {
-                    result.append(String.format("with match of <i>%s</i>", match.getEvent()
-                        .getRule()
-                        .getQualName()));
+                    result.append(String.format("with match of <i>%s</i>",
+                        match.getEvent()
+                            .getRule()
+                            .getQualName()));
                 }
             }
             if (brackets) {

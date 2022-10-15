@@ -18,7 +18,7 @@ package nl.utwente.groove.test.graph;
 
 import static org.junit.Assert.fail;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import nl.utwente.groove.algebra.Algebra;
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.Sort;

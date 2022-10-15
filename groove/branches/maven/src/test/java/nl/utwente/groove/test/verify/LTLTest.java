@@ -21,7 +21,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import nl.utwente.groove.explore.AcceptorValue;
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExploreResult;

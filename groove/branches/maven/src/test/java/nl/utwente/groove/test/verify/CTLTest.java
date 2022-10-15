@@ -27,7 +27,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.explore.Generator;
 import nl.utwente.groove.explore.util.LTSLabels;

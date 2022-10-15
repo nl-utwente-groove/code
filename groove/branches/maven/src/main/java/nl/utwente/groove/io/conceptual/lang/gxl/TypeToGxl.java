@@ -21,12 +21,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import de.gupro.gxl.gxl_1_0.EdgeType;
-import de.gupro.gxl.gxl_1_0.GraphType;
-import de.gupro.gxl.gxl_1_0.NodeType;
-import de.gupro.gxl.gxl_1_0.TupType;
 import jakarta.xml.bind.JAXBElement;
 import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.gxl_1_0.EdgeType;
+import nl.utwente.groove.gxl_1_0.GraphType;
+import nl.utwente.groove.gxl_1_0.NodeType;
+import nl.utwente.groove.gxl_1_0.TupType;
 import nl.utwente.groove.io.conceptual.Field;
 import nl.utwente.groove.io.conceptual.Id;
 import nl.utwente.groove.io.conceptual.Identifiable;

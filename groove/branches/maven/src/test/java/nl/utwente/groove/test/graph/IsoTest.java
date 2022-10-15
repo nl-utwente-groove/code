@@ -25,7 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import nl.utwente.groove.graph.iso.IsoChecker;
 import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.util.Groove;

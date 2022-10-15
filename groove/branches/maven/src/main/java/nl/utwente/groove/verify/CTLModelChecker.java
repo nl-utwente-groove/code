@@ -131,8 +131,9 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         int maxWidth = 0;
         Map<Formula,Boolean> outcome = new HashMap<>();
         for (Formula property : this.ctlProps) {
-            maxWidth = Math.max(maxWidth, property.getParseString()
-                .length());
+            maxWidth = Math.max(maxWidth,
+                property.getParseString()
+                    .length());
             CTLMarker marker = new CTLMarker(property, model);
             outcome.put(property, marker.hasValue(true));
         }
@@ -165,29 +166,33 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         }
     }
 
-    @Option(name = "-ef", metaVar = "flags",
-        usage = "" + "Special GTS labels. Legal values are:\n" //
-            + "  s - start state label (default: 'start')\n" //
-            + "  f - final states label (default: 'final')\n" //
-            + "  o - open states label (default: 'open')\n" //
-            + "  r - result state label (default: 'result')\n" //
-            + "Specify the label to be used by appending flag with 'label' (single-quoted)\n"
-            + "Example: -ef s'begin'f'end' specifies that the start state is labelled 'begin' and final states are labelled 'end'",
-        handler = LTSLabelsHandler.class) private LTSLabels ltsLabels;
+    @Option(name = "-ef", metaVar = "flags", usage = "" + "Special GTS labels. Legal values are:\n" //
+        + "  s - start state label (default: 'start')\n" //
+        + "  f - final states label (default: 'final')\n" //
+        + "  o - open states label (default: 'open')\n" //
+        + "  r - result state label (default: 'result')\n" //
+        + "Specify the label to be used by appending flag with 'label' (single-quoted)\n"
+        + "Example: -ef s'begin'f'end' specifies that the start state is labelled 'begin' and final states are labelled 'end'",
+        handler = LTSLabelsHandler.class)
+    private LTSLabels ltsLabels;
 
     @Option(name = "-ltl", metaVar = "prop",
         usage = "Check the LTL property <prop> (multiple allowed)",
-        handler = CLTFormulaHandler.class) private List<gov.nasa.ltl.trans.Formula<String>> ltlProps;
+        handler = CLTFormulaHandler.class)
+    private List<gov.nasa.ltl.trans.Formula<String>> ltlProps;
     @Option(name = "-ctl", metaVar = "prop",
         usage = "Check the CTL property <prop> (multiple allowed)",
-        handler = CLTFormulaHandler.class) private List<Formula> ctlProps;
+        handler = CLTFormulaHandler.class)
+    private List<Formula> ctlProps;
     @Option(name = "-g", metaVar = "args",
         usage = "Invoke the generator using <args> as options + arguments",
-        handler = GeneratorHandler.class) private GeneratorArgs genArgs;
+        handler = GeneratorHandler.class)
+    private GeneratorArgs genArgs;
 
     @Argument(metaVar = "model",
         usage = "File name of GXL graph or production system to be checked",
-        handler = FileOptionHandler.class) private File modelGraph;
+        handler = FileOptionHandler.class)
+    private File modelGraph;
 
     /**
      * Main method.
@@ -279,7 +284,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
      * Option value class collecting all remaining arguments.
      * Wrapped into a class to fool Args4J into understanding this is not a multiple value.
      */
-    private static class GeneratorArgs {
+    public static class GeneratorArgs {
         GeneratorArgs(Parameters params) throws CmdLineException {
             this.args = new ArrayList<>();
             for (int ix = 0; ix < params.size(); ix++) {

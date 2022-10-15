@@ -28,11 +28,11 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.gupro.gxl.gxl_1_0.EdgemodeType;
-import de.gupro.gxl.gxl_1_0.GraphType;
-import de.gupro.gxl.gxl_1_0.GxlType;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
+import nl.utwente.groove.gxl_1_0.EdgemodeType;
+import nl.utwente.groove.gxl_1_0.GraphType;
+import nl.utwente.groove.gxl_1_0.GxlType;
 import nl.utwente.groove.io.conceptual.Timer;
 import nl.utwente.groove.io.conceptual.lang.ExportException;
 import nl.utwente.groove.io.conceptual.lang.ExportableResource;

@@ -20,7 +20,7 @@ import java.io.File;
 import java.util.Set;
 import java.util.TreeSet;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.Imager;
 

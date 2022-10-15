@@ -25,7 +25,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.StrategyEnumerator;

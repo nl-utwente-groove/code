@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package nl.utwente.groove.match.plan;
@@ -39,8 +39,13 @@ public class EqualitySearchItem extends AbstractSearchItem {
      * @param equals flag that indicates if the node images should be equal or distinct
      */
     public EqualitySearchItem(RuleEdge edge, boolean equals) {
-        assert edge.label().isEmpty() || edge.label().isNeg()
-            && edge.label().getNegOperand().isEmpty();
+        assert edge.label()
+            .isEmpty()
+            || edge.label()
+                .isNeg()
+                && edge.label()
+                    .getNegOperand()
+                    .isEmpty();
         if (nodeComparator.compare(edge.source(), edge.target()) < 0) {
             this.node1 = edge.source();
             this.node2 = edge.target();
@@ -56,7 +61,8 @@ public class EqualitySearchItem extends AbstractSearchItem {
     }
 
     @Override
-    public EqualityRecord createRecord(nl.utwente.groove.match.plan.PlanSearchStrategy.Search matcher) {
+    public EqualityRecord createRecord(
+        nl.utwente.groove.match.plan.PlanSearchStrategy.Search matcher) {
         return new EqualityRecord(matcher);
     }
 
@@ -76,8 +82,10 @@ public class EqualitySearchItem extends AbstractSearchItem {
 
     @Override
     public String toString() {
-        return String.format("Test %s and %s for %s", this.node1, this.node2, this.equals
-                ? "equality" : "inequality");
+        return String.format("Test %s and %s for %s",
+            this.node1,
+            this.node2,
+            this.equals ? "equality" : "inequality");
     }
 
     /**
@@ -145,7 +153,7 @@ public class EqualitySearchItem extends AbstractSearchItem {
      * Second node to be compared.
      */
     final RuleNode node2;
-    /** 
+    /**
      * Flag indicating if the images of {@link #node1} and {@link #node2}
      * should be equal; otherwise, they should be distinct.
      */
@@ -162,19 +170,21 @@ public class EqualitySearchItem extends AbstractSearchItem {
     private static NodeComparator nodeComparator = NodeComparator.instance();
 
     /** The record for this search item. */
-    private class EqualityRecord extends SingularRecord {
+    public class EqualityRecord extends SingularRecord {
         /** Constructs a fresh record, for a given matcher. */
         EqualityRecord(Search search) {
             super(search);
-            assert search.getNode(EqualitySearchItem.this.node1Ix) != null : String.format(
-                "Merge embargo node %s not yet matched", EqualitySearchItem.this.node1);
-            assert search.getNode(EqualitySearchItem.this.node2Ix) != null : String.format(
-                "Merge embargo node %s not yet matched", EqualitySearchItem.this.node2);
+            assert search.getNode(EqualitySearchItem.this.node1Ix) != null : String
+                .format("Merge embargo node %s not yet matched", EqualitySearchItem.this.node1);
+            assert search.getNode(EqualitySearchItem.this.node2Ix) != null : String
+                .format("Merge embargo node %s not yet matched", EqualitySearchItem.this.node2);
         }
 
         @Override
         boolean find() {
-            return EqualitySearchItem.this.equals == (this.search.getNode(EqualitySearchItem.this.node1Ix) == this.search.getNode(EqualitySearchItem.this.node2Ix));
+            return EqualitySearchItem.this.equals == (this.search
+                .getNode(EqualitySearchItem.this.node1Ix) == this.search
+                    .getNode(EqualitySearchItem.this.node2Ix));
         }
 
         @Override

@@ -23,6 +23,8 @@ import static nl.utwente.groove.grammar.model.ResourceKind.PROLOG;
 import static nl.utwente.groove.grammar.model.ResourceKind.RULE;
 import static nl.utwente.groove.grammar.model.ResourceKind.TYPE;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -32,8 +34,6 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -55,9 +55,9 @@ import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.prolog.GrooveEnvironment;
 import nl.utwente.groove.util.ChangeCount;
+import nl.utwente.groove.util.ChangeCount.Tracker;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Version;
-import nl.utwente.groove.util.ChangeCount.Tracker;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -65,7 +65,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Grammar model based on a backing system store.
  */
-public class GrammarModel implements Observer {
+public class GrammarModel implements PropertyChangeListener {
     /**
      * Constructs a grammar model from a rule system store, using the start
      * graph(s) that are stored in the grammar properties.
@@ -324,8 +324,9 @@ public class GrammarModel implements Observer {
         if (this.startGraphModel == null) {
             TreeMap<QualName,AspectGraph> graphMap = new TreeMap<>();
             for (QualName name : getActiveNames(HOST)) {
-                graphMap.put(name, getStore().getGraphs(HOST)
-                    .get(name));
+                graphMap.put(name,
+                    getStore().getGraphs(HOST)
+                        .get(name));
             }
             AspectGraph startGraph = AspectGraph.mergeGraphs(graphMap.values());
             if (startGraph != null) {
@@ -550,8 +551,8 @@ public class GrammarModel implements Observer {
     }
 
     @Override
-    public void update(Observable source, Object obj) {
-        SystemStore.Edit edit = (SystemStore.Edit) obj;
+    public void propertyChange(PropertyChangeEvent evt) {
+        SystemStore.Edit edit = (SystemStore.Edit) evt.getNewValue();
         if (edit.getType() != EditType.LAYOUT) {
             Set<ResourceKind> change = edit.getChange();
             for (ResourceKind resource : change) {

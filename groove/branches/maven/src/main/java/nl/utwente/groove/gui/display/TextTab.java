@@ -1,10 +1,9 @@
 package nl.utwente.groove.gui.display;
 
 import java.awt.BorderLayout;
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Observable;
-import java.util.Observer;
 
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -72,20 +71,16 @@ final public class TextTab extends ResourceTab {
     }
 
     @Override
-    protected Observer createErrorListener() {
-        return new Observer() {
-            @Override
-            public void update(Observable observable, Object arg) {
-                if (arg != null) {
-                    FormatError error = (FormatError) arg;
-                    if (error.getNumbers()
-                        .size() > 1) {
-                        int line = error.getNumbers()
-                            .get(0);
-                        int column = error.getNumbers()
-                            .get(1);
-                        select(line, column);
-                    }
+    protected PropertyChangeListener createErrorListener() {
+        return arg -> {
+            if (arg.getNewValue() instanceof FormatError error) {
+                if (error.getNumbers()
+                    .size() > 1) {
+                    int line = error.getNumbers()
+                        .get(0);
+                    int column = error.getNumbers()
+                        .get(1);
+                    select(line, column);
                 }
             }
         };

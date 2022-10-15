@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -88,10 +88,13 @@ public class RegExprTest {
         assertEquals("a", e.getAtomText());
         assertEquals(Collections.emptyList(), e.getOperands());
         assertEquals("", e.getOperator());
-        assertTrue(e.toLabel().isAtom());
+        assertTrue(e.toLabel()
+            .isAtom());
         assertEquals(this.aLabel, ((Atom) e).toTypeLabel());
-        assertTrue(e.allVarSet().isEmpty());
-        assertTrue(e.boundVarSet().isEmpty());
+        assertTrue(e.allVarSet()
+            .isEmpty());
+        assertTrue(e.boundVarSet()
+            .isEmpty());
         assertNull(e.getWildcardKind());
         // relabelling
         assertEquals(e, e.relabel(this.bLabel, this.bLabel));
@@ -118,7 +121,8 @@ public class RegExprTest {
         assertNull(e.getAtomText());
         assertEquals(Collections.emptyList(), e.getOperands());
         assertEquals("" + RegExpr.EMPTY_OPERATOR, e.getOperator());
-        assertTrue(e.toLabel().isEmpty());
+        assertTrue(e.toLabel()
+            .isEmpty());
         // relabelling
         assertEquals(e, e.relabel(this.aLabel, this.bLabel));
     }
@@ -137,7 +141,8 @@ public class RegExprTest {
         assertNull(parse("a").getSharpLabel());
         assertEquals(Collections.emptyList(), e.getOperands());
         assertEquals("" + RegExpr.SHARP_OPERATOR, e.getOperator());
-        assertTrue(e.toLabel().isSharp());
+        assertTrue(e.toLabel()
+            .isSharp());
         // relabelling
         assertEquals(e, e.relabel(this.aLabel, this.bLabel));
         assertEquals(parse("type:#b"), e.relabel(this.aType, this.bType));
@@ -162,14 +167,21 @@ public class RegExprTest {
         assertEquals(e, wildcard(BINARY));
         assertTrue(e.isWildcard());
         assertEquals(BINARY, e.getWildcardKind());
-        assertTrue(e.getWildcardId().getName().isEmpty());
-        assertNull(e.getWildcardGuard().getLabels());
-        assertTrue(e.getTypeLabels().isEmpty());
+        assertTrue(e.getWildcardId()
+            .getName()
+            .isEmpty());
+        assertNull(e.getWildcardGuard()
+            .getLabels());
+        assertTrue(e.getTypeLabels()
+            .isEmpty());
         assertEquals(Collections.emptyList(), e.getOperands());
         assertEquals("" + RegExpr.WILDCARD_OPERATOR, e.getOperator());
-        assertTrue(e.toLabel().isWildcard());
-        assertTrue(e.boundVarSet().isEmpty());
-        assertTrue(e.allVarSet().isEmpty());
+        assertTrue(e.toLabel()
+            .isWildcard());
+        assertTrue(e.boundVarSet()
+            .isEmpty());
+        assertTrue(e.allVarSet()
+            .isEmpty());
         // relabelling
         assertEquals(e, e.relabel(this.bLabel, this.aLabel));
         // named wildcard
@@ -177,23 +189,21 @@ public class RegExprTest {
         testBasic(e);
         assertEquals(e, wildcard(FLAG, "x"));
         assertEquals(FLAG, e.getWildcardKind());
-        assertEquals("x", e.getWildcardId().getName());
-        assertEquals(Collections.singleton(new LabelVar("x", FLAG)),
-            e.boundVarSet());
-        assertEquals(Collections.singleton(new LabelVar("x", FLAG)),
-            e.allVarSet());
+        assertEquals("x",
+            e.getWildcardId()
+                .getName());
+        assertEquals(Collections.singleton(new LabelVar("x", FLAG)), e.boundVarSet());
+        assertEquals(Collections.singleton(new LabelVar("x", FLAG)), e.allVarSet());
         // wildcard with label constraint
         e = parse("?[a,b]");
         testBasic(e);
         assertEquals(e, wildcard(BINARY, null, false, "a", "b"));
-        Set<TypeLabel> abFlags =
-            new HashSet<>(Arrays.asList(this.aLabel, this.bLabel));
+        Set<TypeLabel> abFlags = new HashSet<>(Arrays.asList(this.aLabel, this.bLabel));
         assertEquals(abFlags, e.getTypeLabels());
         e = parse("type:?[^a,b]");
         testBasic(e);
         assertEquals(e, wildcard(NODE_TYPE, null, true, "a", "b"));
-        Set<TypeLabel> abTypes =
-            new HashSet<>(Arrays.asList(this.aType, this.bType));
+        Set<TypeLabel> abTypes = new HashSet<>(Arrays.asList(this.aType, this.bType));
         assertEquals(abTypes, e.getTypeLabels());
         // relabelling
         assertEquals(e, e.relabel(this.cLabel, this.aLabel));
@@ -215,7 +225,8 @@ public class RegExprTest {
         assertEquals(null, e.getNegOperand());
         assertEquals(Arrays.asList(this.aAtom), e.getOperands());
         assertEquals("" + RegExpr.INV_OPERATOR, e.getOperator());
-        assertTrue(e.toLabel().isInv());
+        assertTrue(e.toLabel()
+            .isInv());
         // relabelling
         assertEquals(e, e.relabel(this.bLabel, this.aLabel));
         assertEquals(parse("-b"), e.relabel(this.aLabel, this.bLabel));
@@ -235,7 +246,8 @@ public class RegExprTest {
         assertEquals(this.aAtom, e.getNegOperand());
         assertEquals(Arrays.asList(this.aAtom), e.getOperands());
         assertEquals("" + RegExpr.NEG_OPERATOR, e.getOperator());
-        assertTrue(e.toLabel().isNeg());
+        assertTrue(e.toLabel()
+            .isNeg());
         // relabelling
         assertEquals(e, e.relabel(this.bLabel, this.aLabel));
         assertEquals(parse("!b"), e.relabel(this.aLabel, this.bLabel));
@@ -252,13 +264,12 @@ public class RegExprTest {
         assertEquals(e, this.aAtom.choice(this.bAtom.choice(this.bAtom)));
         assertTrue(e.isChoice());
         assertFalse(e.isSeq());
-        assertEquals(Arrays.asList(this.aAtom, this.bAtom, this.bAtom),
-            e.getChoiceOperands());
+        assertEquals(Arrays.asList(this.aAtom, this.bAtom, this.bAtom), e.getChoiceOperands());
         assertEquals(null, e.getSeqOperands());
-        assertEquals(Arrays.asList(this.aAtom, this.bAtom, this.bAtom),
-            e.getOperands());
+        assertEquals(Arrays.asList(this.aAtom, this.bAtom, this.bAtom), e.getOperands());
         assertEquals("" + RegExpr.CHOICE_OPERATOR, e.getOperator());
-        assertTrue(e.toLabel().isChoice());
+        assertTrue(e.toLabel()
+            .isChoice());
         // relabelling
         assertEquals(e, e.relabel(this.cLabel, this.aLabel));
         assertEquals(parse("a|c|c"), e.relabel(this.bLabel, this.cLabel));
@@ -276,12 +287,11 @@ public class RegExprTest {
         assertFalse(e.isChoice());
         assertTrue(e.isSeq());
         assertEquals(null, e.getChoiceOperands());
-        assertEquals(Arrays.asList(this.aAtom, this.bAtom, this.bAtom),
-            e.getSeqOperands());
-        assertEquals(Arrays.asList(this.aAtom, this.bAtom, this.bAtom),
-            e.getOperands());
+        assertEquals(Arrays.asList(this.aAtom, this.bAtom, this.bAtom), e.getSeqOperands());
+        assertEquals(Arrays.asList(this.aAtom, this.bAtom, this.bAtom), e.getOperands());
         assertEquals("" + RegExpr.SEQ_OPERATOR, e.getOperator());
-        assertTrue(e.toLabel().isSeq());
+        assertTrue(e.toLabel()
+            .isSeq());
         // relabelling
         assertEquals(e, e.relabel(this.cLabel, this.aLabel));
         assertEquals(parse("a.c.c"), e.relabel(this.bLabel, this.cLabel));
@@ -333,54 +343,68 @@ public class RegExprTest {
         testError("(<a)");
         RegExpr e = parse("((a).(b))*");
         testBasic(e);
-        assertEquals(e, this.aAtom.seq(this.bAtom).star());
+        assertEquals(e,
+            this.aAtom.seq(this.bAtom)
+                .star());
         e = parse("((a)*|type:#b)+");
         testBasic(e);
         assertEquals(e,
-            this.aAtom.star().choice(RegExpr.sharp(this.bType)).plus());
+            this.aAtom.star()
+                .choice(RegExpr.sharp(this.bType))
+                .plus());
         e = parse("?.'b.c'. 'b'. \"c\". (d*)");
         testBasic(e);
-        assertEquals(
-            e,
-            wildcard(BINARY).seq(
-                atom("b.c").seq(
-                    this.bAtom.seq(atom("\"c\"").seq(atom("d").star())))));
+        assertEquals(e,
+            wildcard(BINARY)
+                .seq(atom("b.c").seq(this.bAtom.seq(atom("\"c\"").seq(atom("d").star())))));
         e = parse("a+*");
         testBasic(e);
-        assertEquals(e, this.aAtom.plus().star());
+        assertEquals(e,
+            this.aAtom.plus()
+                .star());
         e = parse("a.?*");
         testBasic(e);
         assertEquals(e, this.aAtom.seq(wildcard(BINARY).star()));
         e = parse("(a . b)* .c. d|e*");
         testBasic(e);
-        assertEquals(
-            e,
-            this.aAtom.seq(this.bAtom).star().seq(this.cAtom.seq(atom("d"))).choice(
-                atom("e").star()));
+        assertEquals(e,
+            this.aAtom.seq(this.bAtom)
+                .star()
+                .seq(this.cAtom.seq(atom("d")))
+                .choice(atom("e").star()));
         e = parse("=. flag:?|c*");
         testBasic(e);
-        assertEquals(e, empty().seq(wildcard(FLAG)).choice(this.cAtom.star()));
+        assertEquals(e,
+            empty().seq(wildcard(FLAG))
+                .choice(this.cAtom.star()));
         e = parse("!a*");
         testBasic(e);
-        assertEquals(e, this.aAtom.star().neg());
+        assertEquals(e,
+            this.aAtom.star()
+                .neg());
         e = parse("!a.flag:?x[a] | (!a.(!type:?[^b]))");
         testBasic(e);
-        assertEquals(
-            e,
-            this.aAtom.seq(wildcard(FLAG, "x", false, "a")).choice(
-                this.aAtom.seq(wildcard(NODE_TYPE, true, "b").neg()).neg()).neg());
+        assertEquals(e,
+            this.aAtom.seq(wildcard(FLAG, "x", false, "a"))
+                .choice(this.aAtom.seq(wildcard(NODE_TYPE, true, "b").neg())
+                    .neg())
+                .neg());
     }
 
     /** Tests the basic methods of a regular expression. */
     private void testBasic(RegExpr e) {
         assertEquals(e, e);
         assertFalse(e.equals(null));
-        assertFalse(e.equals(""));
         assertNotNull(e.toString());
         assertNotNull(e.getDescription());
-        assertEquals(e, e.toLabel().getMatchExpr());
-        assertTrue(e.getOperands().isEmpty()
-            || e.containsOperator(e.getOperands().iterator().next()));
+        assertEquals(e,
+            e.toLabel()
+                .getMatchExpr());
+        assertTrue(e.getOperands()
+            .isEmpty()
+            || e.containsOperator(e.getOperands()
+                .iterator()
+                .next()));
     }
 
     /** Tests that a string cannot be parsed as regular expression. */

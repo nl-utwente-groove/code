@@ -29,8 +29,8 @@ import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.IntSignature;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.RealSignature;
-import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.Signature.OpValue;
+import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.util.parse.AExprTree;
 import nl.utwente.groove.util.parse.DefaultOp;
@@ -106,7 +106,8 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
      * @param varMap mapping from known variables to types. Only variables in this map are
      * allowed to occur in the term.
      */
-    public Expression toExpression(@NonNull Typing varMap) throws FormatException {
+    public Expression toExpression(@NonNull
+    Typing varMap) throws FormatException {
         assert isFixed();
         getErrors().throwException();
         Map<Sort,? extends Expression> choice = toExpressions(varMap);
@@ -126,7 +127,8 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
      * @param varMap mapping from known variables to types. Only variables in this map are
      * allowed to occur in the term.
      */
-    private MultiExpression toExpressions(@NonNull Typing varMap) throws FormatException {
+    private MultiExpression toExpressions(@NonNull
+    Typing varMap) throws FormatException {
         MultiExpression result;
         if (hasConstant()) {
             Constant constant = toConstant();
@@ -158,7 +160,8 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
      * Chained field expressions are currently unsupported.
      * @param varMap variable typing
      */
-    private MultiExpression toAtomExprs(@NonNull Typing varMap) throws FormatException {
+    private MultiExpression toAtomExprs(@NonNull
+    Typing varMap) throws FormatException {
         assert getOp().getKind() == OpKind.ATOM;
         MultiExpression result = new MultiExpression();
         if (hasSort()) {
@@ -179,8 +182,9 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
      * @param varMap variable typing
      * @param sort expected type of the expression
      */
-    private Expression toAtomExpr(@NonNull Typing varMap, @NonNull Sort sort)
-        throws FormatException {
+    private Expression toAtomExpr(@NonNull
+    Typing varMap, @NonNull
+    Sort sort) throws FormatException {
         Expression result;
         assert hasId();
         QualName id = getId();
@@ -209,7 +213,9 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
      * @param name variable name
      * @param sort expected type of the expression
      */
-    private Expression toVarExpr(@NonNull String name, @NonNull Sort sort) throws FormatException {
+    private Expression toVarExpr(@NonNull
+    String name, @NonNull
+    Sort sort) throws FormatException {
         Expression result;
         if (name.charAt(0) == '$') {
             int number;
@@ -231,7 +237,8 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
      * Returns the set of derivable expressions in case the top level is
      * a non-atomic operator.
      */
-    private MultiExpression toCallExprs(@NonNull Typing varMap) throws FormatException {
+    private MultiExpression toCallExprs(@NonNull
+    Typing varMap) throws FormatException {
         MultiExpression result = new MultiExpression();
         List<MultiExpression> resultArgs = new ArrayList<>();
         // all children are arguments
@@ -361,7 +368,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
      * @author Arend Rensink
      * @version $Revision $
      */
-    static class ExprOp extends DefaultOp {
+    static public class ExprOp extends DefaultOp {
         /**
          * Constructs the unique atomic operator, with empty symbol.
          */

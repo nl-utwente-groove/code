@@ -62,7 +62,9 @@ public class ClosurePathChecker extends AbstractPathChecker implements ReteState
 
         assert (expression.getPlusOperand() != null) || (expression.getStarOperand() != null);
         if (expression.isStar()) {
-            this.getOwner().getState().subscribe(this);
+            this.getOwner()
+                .getState()
+                .subscribe(this);
         }
         this.leftMemory = new HashSet<>();
         this.rightMemory = new HashSet<>();
@@ -70,7 +72,8 @@ public class ClosurePathChecker extends AbstractPathChecker implements ReteState
 
     @Override
     public void receive(ReteNetworkNode source, int repeatIndex, RetePathMatch newMatch) {
-        if (this.loop && !newMatch.isEmpty() && !newMatch.start().equals(newMatch.end())) {
+        if (this.loop && !newMatch.isEmpty() && !newMatch.start()
+            .equals(newMatch.end())) {
             return;
         }
         receiveNewIncomingMatch(source, newMatch);
@@ -131,7 +134,8 @@ public class ClosurePathChecker extends AbstractPathChecker implements ReteState
         RetePathMatch m = new RetePathMatch(this, newMatch);
         m.setClosureInfo(new ClosureInfo(m));
         resultingMatches.add(m);
-        if (newMatch.start().equals(newMatch.end())) {
+        if (newMatch.start()
+            .equals(newMatch.end())) {
             passDownMatches(resultingMatches);
         } else {
             this.leftMemory.add(newMatch);
@@ -146,10 +150,11 @@ public class ClosurePathChecker extends AbstractPathChecker implements ReteState
             }
             passDownMatches(resultingMatches);
             if (!this.loop) {
-                receiveLoopBackMatches(resultingMatches, this.getOwner()
-                    .getState()
-                    .getHostGraph()
-                    .nodeCount());
+                receiveLoopBackMatches(resultingMatches,
+                    this.getOwner()
+                        .getState()
+                        .getHostGraph()
+                        .nodeCount());
                 //                altReceiveLoopBackMatches(resultingMatches);
             }
         }
@@ -172,7 +177,8 @@ public class ClosurePathChecker extends AbstractPathChecker implements ReteState
      *
      */
     protected boolean test(RetePathMatch left, RetePathMatch right) {
-        return left.isEmpty() || right.isEmpty() || left.end().equals(right.start());
+        return left.isEmpty() || right.isEmpty() || left.end()
+            .equals(right.start());
     }
 
     /**
@@ -216,7 +222,8 @@ public class ClosurePathChecker extends AbstractPathChecker implements ReteState
     @Override
     public List<? extends Object> initialize() {
         super.initialize();
-        if (this.getExpression().isStar()) {
+        if (this.getExpression()
+            .isStar()) {
             passDownMatchToSuccessors(this.emptyMatch);
         }
         return null;
@@ -245,7 +252,7 @@ public class ClosurePathChecker extends AbstractPathChecker implements ReteState
      * @author Arash Jalali
      * @version $Revision $
      */
-    protected static class ClosureInfo {
+    public static class ClosureInfo {
         /** The network node to which this closure belongs. */
         private final ReteNetworkNode origin;
         /** Set of relevant nodes, excluding the final node. */

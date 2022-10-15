@@ -134,7 +134,8 @@ public class HTMLLineFormat extends LineFormat<HTMLLineFormat.HTMLBuilder> {
     /** HTML tag for the text display font. */
     private static HTMLTag fontTag;
 
-    static class HTMLBuilder implements LineFormat.Builder<HTMLBuilder> {
+    /** Helper class in HTML line formatting. */
+    static public class HTMLBuilder implements LineFormat.Builder<HTMLBuilder> {
         @Override
         public StringBuilder getResult() {
             return this.content;

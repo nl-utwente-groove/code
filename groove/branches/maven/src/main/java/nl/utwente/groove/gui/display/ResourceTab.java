@@ -19,9 +19,9 @@ package nl.utwente.groove.gui.display;
 import java.awt.BorderLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Observer;
 
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -130,7 +130,7 @@ abstract public class ResourceTab extends JPanel {
      * Creates an observer for the error panel that will select the
      * erroneous part of the resource upon selection of an error.
      */
-    abstract protected Observer createErrorListener();
+    abstract protected PropertyChangeListener createErrorListener();
 
     /**
      * Displays a list of errors, or hides the error panel if the list is empty.

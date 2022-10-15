@@ -15,7 +15,7 @@
     <booleanAttribute key="org.eclipse.debug.core.launchGroup.2.adoptIfRunning" value="false"/>
     <booleanAttribute key="org.eclipse.debug.core.launchGroup.2.enabled" value="true"/>
     <stringAttribute key="org.eclipse.debug.core.launchGroup.2.mode" value="inherit"/>
-    <stringAttribute key="org.eclipse.debug.core.launchGroup.2.name" value="install gxl"/>
+    <stringAttribute key="org.eclipse.debug.core.launchGroup.2.name" value="install groove-gxl"/>
     <stringAttribute key="org.eclipse.debug.core.launchGroup.3.action" value="NONE"/>
     <booleanAttribute key="org.eclipse.debug.core.launchGroup.3.adoptIfRunning" value="false"/>
     <booleanAttribute key="org.eclipse.debug.core.launchGroup.3.enabled" value="true"/>

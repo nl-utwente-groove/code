@@ -432,8 +432,10 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
                 }
                 if (result.getArgs()
                     .size() != op.getArity()) {
-                    throw argumentMismatch(op, result.getArgs()
-                        .size(), opToken);
+                    throw argumentMismatch(op,
+                        result.getArgs()
+                            .size(),
+                        opToken);
                 }
             }
         } else if (op.getArity() == 1) {
@@ -829,7 +831,8 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
         return createFamilyToken(family, start, end);
     }
 
-    private Token createFamilyToken(@NonNull TokenFamily family, int start, int end) {
+    private Token createFamilyToken(@NonNull
+    TokenFamily family, int start, int end) {
         return new Token(family, createFragment(start, end));
     }
 
@@ -892,7 +895,9 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
      */
     protected static class Token extends Pair<@NonNull TokenFamily,@NonNull LineFragment> {
         /** Constructs a token of a given type family. */
-        Token(@NonNull TokenFamily family, @NonNull LineFragment fragment) {
+        Token(@NonNull
+        TokenFamily family, @NonNull
+        LineFragment fragment) {
             super(family, fragment);
         }
 
@@ -1086,7 +1091,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
      * @author Arend Rensink
      * @version $Revision $
      */
-    protected static class TokenType extends Pair<TokenClaz,Object> {
+    public static class TokenType extends Pair<TokenClaz,Object> {
         /**
          * Constructs a token type for a singular type class.
          */

@@ -21,10 +21,11 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Observer;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
@@ -86,11 +87,12 @@ public abstract class ListPanel extends JPanel {
      * The observer is notified whenever the selection changes or
      * focus is regained.
      */
-    public void addSelectionListener(final Observer listener) {
+    public void addSelectionListener(final PropertyChangeListener listener) {
         getEntryArea().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                listener.update(null, getEntryArea().getSelectedValue());
+                listener.propertyChange(new PropertyChangeEvent(e.getSource(), "LIST_SELECTION",
+                    null, getEntryArea().getSelectedValue()));
             }
         });
         getEntryArea().addMouseListener(new MouseAdapter() {
@@ -98,7 +100,8 @@ public abstract class ListPanel extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 int index = getIndexAt(e.getPoint());
                 if (index >= 0 && getEntryArea().isSelectedIndex(index)) {
-                    listener.update(null, getEntryArea().getSelectedValue());
+                    listener.propertyChange(new PropertyChangeEvent(e.getSource(), "MOUSE", null,
+                        getEntryArea().getSelectedValue()));
                 }
             }
         });

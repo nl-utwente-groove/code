@@ -21,7 +21,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.transform.Transformer;
 

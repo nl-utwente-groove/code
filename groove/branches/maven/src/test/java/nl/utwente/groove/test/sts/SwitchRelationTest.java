@@ -18,7 +18,7 @@ package nl.utwente.groove.test.sts;
 
 import java.util.HashSet;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import junit.framework.TestCase;
 import nl.utwente.groove.sts.Gate;
 import nl.utwente.groove.sts.InteractionVariable;

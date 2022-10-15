@@ -19,7 +19,7 @@ package nl.utwente.groove.test.control;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import nl.utwente.groove.control.CtrlLoader;
 import nl.utwente.groove.control.instance.Automaton;
 import nl.utwente.groove.control.parse.CtrlTree;

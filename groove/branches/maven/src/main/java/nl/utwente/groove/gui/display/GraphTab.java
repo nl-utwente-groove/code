@@ -1,10 +1,9 @@
 package nl.utwente.groove.gui.display;
 
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -55,16 +54,13 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     }
 
     @Override
-    protected Observer createErrorListener() {
-        return new Observer() {
-            @Override
-            public void update(Observable o, Object arg) {
-                if (arg != null) {
-                    JCell<?> errorCell = getJModel().getErrorMap()
-                        .get(arg);
-                    if (errorCell != null) {
-                        getJGraph().setSelectionCell(errorCell);
-                    }
+    protected PropertyChangeListener createErrorListener() {
+        return arg -> {
+            if (arg != null) {
+                JCell<?> errorCell = getJModel().getErrorMap()
+                    .get(arg.getNewValue());
+                if (errorCell != null) {
+                    getJGraph().setSelectionCell(errorCell);
                 }
             }
         };
@@ -198,7 +194,8 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     private TypeTree labelTree;
 
     @Override
-    public boolean setResource(@Nullable QualName name) {
+    public boolean setResource(@Nullable
+    QualName name) {
         AspectJModel jModel = this.jModelMap.get(name);
         if (jModel == null && name != null) {
             AspectGraph graph = getSimulatorModel().getStore()

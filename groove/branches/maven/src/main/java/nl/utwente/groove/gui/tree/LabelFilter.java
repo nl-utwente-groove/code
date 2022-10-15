@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Observable;
 import java.util.Set;
 
 import nl.utwente.groove.graph.EdgeRole;
@@ -30,6 +29,7 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.jgraph.JCell;
 import nl.utwente.groove.gui.look.VisualKey;
+import nl.utwente.groove.util.Observable;
 
 /**
  * Class that maintains a set of filtered entries
@@ -83,7 +83,8 @@ public class LabelFilter<G extends Graph> extends Observable {
             // also modify the inverse map
             for (Entry entry : entries) {
                 result |= addEntry(entry);
-                this.entryJCellMap.get(entry).add(jCell);
+                this.entryJCellMap.get(entry)
+                    .add(jCell);
             }
         }
         return result;
@@ -98,7 +99,8 @@ public class LabelFilter<G extends Graph> extends Observable {
         Set<Entry> jCellEntries = this.jCellEntryMap.remove(jCell);
         if (jCellEntries != null) {
             for (Entry jCellEntry : jCellEntries) {
-                result |= this.entryJCellMap.get(jCellEntry).remove(jCell);
+                result |= this.entryJCellMap.get(jCellEntry)
+                    .remove(jCell);
             }
         }
         return result;
@@ -119,14 +121,16 @@ public class LabelFilter<G extends Graph> extends Observable {
             // remove the obsolete entries
             for (Entry oldEntry : oldEntrySet) {
                 if (!newEntrySet.contains(oldEntry)) {
-                    result |= this.entryJCellMap.get(oldEntry).remove(jCell);
+                    result |= this.entryJCellMap.get(oldEntry)
+                        .remove(jCell);
                 }
             }
             // add the new entries
             for (Entry newEntry : newEntrySet) {
                 if (!oldEntrySet.contains(newEntry)) {
                     result |= addEntry(newEntry);
-                    this.entryJCellMap.get(newEntry).add(jCell);
+                    this.entryJCellMap.get(newEntry)
+                        .add(jCell);
                 }
             }
         }
@@ -223,8 +227,8 @@ public class LabelFilter<G extends Graph> extends Observable {
      * returns the corresponding set of {@link JCell}s.
      */
     private Set<JCell<G>> getSelection(Entry entry, boolean selected) {
-        assert this.entryJCellMap.containsKey(entry) : String.format("Label %s unknown in map %s",
-            entry, this.entryJCellMap);
+        assert this.entryJCellMap.containsKey(entry) : String
+            .format("Label %s unknown in map %s", entry, this.entryJCellMap);
         Set<JCell<G>> result = this.entryJCellMap.get(entry);
         if (result == null) {
             result = Collections.<JCell<G>>emptySet();
@@ -247,10 +251,10 @@ public class LabelFilter<G extends Graph> extends Observable {
                 jCell.setStale(changedKeys);
                 Iterator<? extends JCell<G>> iter = jCell.getContext();
                 while (iter.hasNext()) {
-                    iter.next().setStale(changedKeys);
+                    iter.next()
+                        .setStale(changedKeys);
                 }
             }
-            setChanged();
             notifyObservers(changedCells);
         }
     }
@@ -292,7 +296,8 @@ public class LabelFilter<G extends Graph> extends Observable {
                 hasUnfilteredElements = true;
             } else {
                 // the entry is unselected
-                if (entry.getLabel().getRole() == EdgeRole.NODE_TYPE) {
+                if (entry.getLabel()
+                    .getRole() == EdgeRole.NODE_TYPE) {
                     hasFilteredNodeTypes = true;
                 }
             }
@@ -359,7 +364,10 @@ public class LabelFilter<G extends Graph> extends Observable {
 
         @Override
         public int hashCode() {
-            return this.label.getRole().hashCode() ^ this.label.text().hashCode();
+            return this.label.getRole()
+                .hashCode()
+                ^ this.label.text()
+                    .hashCode();
         }
 
         @Override
@@ -377,7 +385,8 @@ public class LabelFilter<G extends Graph> extends Observable {
             if (getLabel().getRole() != otherLabel.getRole()) {
                 return false;
             }
-            if (!getLabel().text().equals(otherLabel.text())) {
+            if (!getLabel().text()
+                .equals(otherLabel.text())) {
                 return false;
             }
             return true;

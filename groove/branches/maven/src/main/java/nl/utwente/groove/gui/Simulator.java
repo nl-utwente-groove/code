@@ -38,12 +38,12 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
@@ -74,6 +74,7 @@ import nl.utwente.groove.gui.dialog.ErrorDialog;
 import nl.utwente.groove.gui.dialog.GraphPreviewDialog;
 import nl.utwente.groove.gui.dialog.PropertiesTable;
 import nl.utwente.groove.gui.display.Display;
+import nl.utwente.groove.gui.display.Display.ListPanel;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.display.DisplaysPanel;
 import nl.utwente.groove.gui.display.GraphEditorTab;
@@ -82,12 +83,11 @@ import nl.utwente.groove.gui.display.JGraphPanel;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.display.ResourceTab;
 import nl.utwente.groove.gui.display.TextTab;
-import nl.utwente.groove.gui.display.Display.ListPanel;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.list.ListPanel.SelectableListEntry;
 import nl.utwente.groove.gui.list.ListTabbedPane;
 import nl.utwente.groove.gui.list.SearchResult;
-import nl.utwente.groove.gui.list.ListPanel.SelectableListEntry;
 import nl.utwente.groove.gui.menu.ModelCheckingMenu;
 import nl.utwente.groove.gui.menu.MyJMenu;
 import nl.utwente.groove.transform.oracle.DialogOracle;
@@ -225,8 +225,9 @@ public class Simulator implements SimulatorListener {
             // register doQuit() for the Command-Q shortcut on MacOS
             if (Groove.IS_PLATFORM_MAC) {
                 try {
-                    OSXAdapter.setQuitHandler(this, this.getClass()
-                        .getDeclaredMethod("tryQuit"));
+                    OSXAdapter.setQuitHandler(this,
+                        this.getClass()
+                            .getDeclaredMethod("tryQuit"));
                 } catch (NoSuchMethodException e1) {
                     // should not happen (thrown when 'tryQuit' does not exist)
                     // ignore
@@ -358,12 +359,12 @@ public class Simulator implements SimulatorListener {
      * Creates an observer for the error panel that will select the
      * erroneous part of the resource upon selection of an error.
      */
-    private Observer createListListener() {
-        return new Observer() {
+    private PropertyChangeListener createListListener() {
+        return new PropertyChangeListener() {
             @Override
-            public void update(Observable observable, Object arg) {
-                if (arg != null) {
-                    selectDisplayPart((SelectableListEntry) arg);
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getNewValue() instanceof SelectableListEntry arg) {
+                    selectDisplayPart(arg);
                 }
             }
         };

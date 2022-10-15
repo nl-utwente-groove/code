@@ -25,7 +25,7 @@ import java.util.Collections;
 
 import org.junit.Test;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.Function;
 import nl.utwente.groove.control.term.Derivation;

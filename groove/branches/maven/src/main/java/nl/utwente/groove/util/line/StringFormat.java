@@ -63,7 +63,10 @@ public class StringFormat extends LineFormat<StringFormat.Builder> {
 
     private static final StringFormat instance = new StringFormat();
 
-    static class Builder implements LineFormat.Builder<Builder> {
+    /**
+     * {@link LineFormat.Builder} implementation for the {@link StringFormat}
+     */
+    public static class Builder implements LineFormat.Builder<Builder> {
         @Override
         public boolean isEmpty() {
             return this.content.length() == 0;

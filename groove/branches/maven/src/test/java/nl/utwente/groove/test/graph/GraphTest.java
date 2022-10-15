@@ -29,7 +29,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import nl.utwente.groove.graph.GGraph;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.iso.IsoChecker;

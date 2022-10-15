@@ -21,6 +21,7 @@ package nl.utwente.groove.prolog;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -115,7 +116,8 @@ public class GrooveEnvironment extends Environment {
     private Map<CompoundTermTag,String> ensureLoaded(Class<? extends GroovePredicates> source) {
         Map<CompoundTermTag,String> result = null;
         try {
-            GroovePredicates instance = source.newInstance();
+            GroovePredicates instance = source.getConstructor()
+                .newInstance();
             // load the predicates
             for (Map.Entry<CompoundTermTag,String> definition : instance.getDefinitions()
                 .entrySet()) {
@@ -123,11 +125,8 @@ public class GrooveEnvironment extends Environment {
             }
             // retrieve the tool tip map
             result = instance.getToolTipMap();
-        } catch (InstantiationException e) {
-            throw new IllegalArgumentException(String.format("Can't load predicate class %s: %s",
-                source.getSimpleName(),
-                e.getMessage()));
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException
+            | IllegalArgumentException | NoSuchMethodException | SecurityException e) {
             throw new IllegalArgumentException(String.format("Can't load predicate class %s: %s",
                 source.getSimpleName(),
                 e.getMessage()));

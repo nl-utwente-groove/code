@@ -28,8 +28,6 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -146,16 +144,13 @@ final public class GraphEditorTab extends ResourceTab
     }
 
     @Override
-    protected Observer createErrorListener() {
-        return new Observer() {
-            @Override
-            public void update(Observable o, Object arg) {
-                if (arg != null) {
-                    JCell<?> errorCell = getJModel().getErrorMap()
-                        .get(arg);
-                    if (errorCell != null) {
-                        getJGraph().setSelectionCell(errorCell);
-                    }
+    protected PropertyChangeListener createErrorListener() {
+        return arg -> {
+            if (arg != null) {
+                JCell<?> errorCell = getJModel().getErrorMap()
+                    .get(arg.getNewValue());
+                if (errorCell != null) {
+                    getJGraph().setSelectionCell(errorCell);
                 }
             }
         };
@@ -552,10 +547,16 @@ final public class GraphEditorTab extends ResourceTab
             createSyntaxList(this.edgeKeys),
             "Label prefixes that are allowed on edges");
         if (this.role == GraphRole.RULE) {
-            tabbedPane.addTab("RegExpr", null, createSyntaxList(RegExpr.getDocMap()
-                .keySet()), "Syntax for regular expressions over labels");
-            tabbedPane.addTab("Expr", null, createSyntaxList(Algebras.getDocMap()
-                .keySet()), "Available attribute operators");
+            tabbedPane.addTab("RegExpr",
+                null,
+                createSyntaxList(RegExpr.getDocMap()
+                    .keySet()),
+                "Syntax for regular expressions over labels");
+            tabbedPane.addTab("Expr",
+                null,
+                createSyntaxList(Algebras.getDocMap()
+                    .keySet()),
+                "Available attribute operators");
         }
         JPanel result = new TitledPanel("Label syntax help", tabbedPane, null, false);
         // add a listener that switches the syntax help between nodes and edges

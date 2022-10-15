@@ -36,8 +36,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Set;
 
 import javax.swing.Box;
@@ -371,12 +369,11 @@ public class LTSDisplay extends Display implements SimulatorListener {
     /** Panel displaying format error messages. */
     private nl.utwente.groove.gui.list.ListPanel errorPanel;
 
-    private Observer createErrorListener() {
-        return new Observer() {
+    private PropertyChangeListener createErrorListener() {
+        return new PropertyChangeListener() {
             @Override
-            public void update(Observable o, Object arg) {
-                FormatError error = (FormatError) arg;
-                if (error != null) {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getNewValue() instanceof FormatError error) {
                     getSimulatorModel().setState(error.getState());
                 }
             }

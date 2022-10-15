@@ -58,13 +58,15 @@ public class GroovyMatchChecker extends MatchChecker {
         }
         try (GroovyClassLoader loader = new GroovyClassLoader()) {
             Class<?> scriptClass = loader.parseClass(model.getProgram());
-            this.target = scriptClass.newInstance();
+            this.target = scriptClass.getConstructor()
+                .newInstance();
             this.method = getMethod(scriptClass);
         } catch (IOException exc) {
             throw new FormatException("Error while loading Groovy script: %s", exc.getMessage());
         } catch (CompilationFailedException exc) {
             throw new FormatException("Failure to compile Groovy script '%s': %s", scriptName, exc);
-        } catch (InstantiationException | IllegalAccessException exc) {
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+            | InvocationTargetException | NoSuchMethodException | SecurityException exc) {
             throw new FormatException("Groovy script '%s' defines non-instantiable class");
         } catch (FormatException exc) {
             throw new FormatException(exc.getErrors());

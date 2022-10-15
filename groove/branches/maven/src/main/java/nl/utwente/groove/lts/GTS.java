@@ -969,7 +969,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     }
 
     /** Mode type for isomorphism collapsing. */
-    static protected enum CollapseMode {
+    static public enum CollapseMode {
         /**
          * No states should be collapsed.
          */

@@ -52,16 +52,16 @@ import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Variable;
 import nl.utwente.groove.automaton.RegExpr;
+import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.Condition;
+import nl.utwente.groove.grammar.Condition.Op;
 import nl.utwente.groove.grammar.EdgeEmbargo;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.Signature;
 import nl.utwente.groove.grammar.UnitPar;
-import nl.utwente.groove.grammar.Action.Role;
-import nl.utwente.groove.grammar.Condition.Op;
 import nl.utwente.groove.grammar.aspect.Aspect;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectElement;
@@ -90,8 +90,8 @@ import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphProperties;
-import nl.utwente.groove.graph.NodeComparator;
 import nl.utwente.groove.graph.GraphProperties.Key;
+import nl.utwente.groove.graph.NodeComparator;
 import nl.utwente.groove.gui.dialog.GraphPreviewDialog;
 import nl.utwente.groove.util.DefaultFixable;
 import nl.utwente.groove.util.Fixable;
@@ -284,13 +284,15 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         this.typeMap = new TypeModelMap(getType().getFactory());
         for (Map.Entry<AspectNode,RuleNode> nodeEntry : this.modelMap.nodeMap()
             .entrySet()) {
-            this.typeMap.putNode(nodeEntry.getKey(), nodeEntry.getValue()
-                .getType());
+            this.typeMap.putNode(nodeEntry.getKey(),
+                nodeEntry.getValue()
+                    .getType());
         }
         for (Map.Entry<AspectEdge,RuleEdge> edgeEntry : this.modelMap.edgeMap()
             .entrySet()) {
-            this.typeMap.putEdge(edgeEntry.getKey(), edgeEntry.getValue()
-                .getType());
+            this.typeMap.putEdge(edgeEntry.getKey(),
+                edgeEntry.getValue()
+                    .getType());
         }
         Rule result = computeRule(this.levelTree);
         return result;
@@ -1419,8 +1421,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 }
             }
             if (modelNode.hasColor()) {
-                this.colorMap.put(ruleNode, (Color) modelNode.getColor()
-                    .getContent());
+                this.colorMap.put(ruleNode,
+                    (Color) modelNode.getColor()
+                        .getContent());
             }
         }
 
@@ -1540,10 +1543,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 // a set operator argument is an output node of the condition
                 this.outputNodes.add(arguments.get(0));
             }
-            RuleNode opNode = this.factory.createOperatorNode(productNode.getNumber(),
-                operator,
-                arguments,
-                target);
+            RuleNode opNode = this.factory
+                .createOperatorNode(productNode.getNumber(), operator, arguments, target);
             Level2 level = setOperator ? this.parent : this;
             if (operatorEdge.getKind()
                 .inNAC()) {
@@ -1835,8 +1836,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 .removeAll(this.parentVars);
             for (Map.Entry<LabelVar,Set<RuleElement>> varEntry : allVars.entrySet()) {
                 LabelVar var = varEntry.getKey();
-                errors.add("Unassigned label variable %s", var, varEntry.getValue()
-                    .toArray());
+                errors.add("Unassigned label variable %s",
+                    var,
+                    varEntry.getValue()
+                        .toArray());
             }
         }
 
@@ -2124,8 +2127,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 TypeNode nodeType = node.getType();
                 if (nodeType.isAbstract() && !lhs.containsNode(node) && node.getTypeGuards()
                     .isEmpty()) {
-                    errors.add("Creation of abstract %s-node not allowed", nodeType.label()
-                        .text(), node);
+                    errors.add("Creation of abstract %s-node not allowed",
+                        nodeType.label()
+                            .text(),
+                        node);
                 }
             }
             // check for ambiguous mergers
@@ -2145,8 +2150,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                                 .text(),
                             edge);
                     } else if (!mergedNodes.add(source)) {
-                        errors.add("%s-node is merged with two distinct nodes", sourceType.label()
-                            .text(), source);
+                        errors.add("%s-node is merged with two distinct nodes",
+                            sourceType.label()
+                                .text(),
+                            source);
                     } else if (isUniversal(target) && !haveMinType(target)) {
                         errors.add("Actual target types of %s-merger may be ambiguous",
                             sourceType.label()
@@ -2161,14 +2168,18 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                             source);
                     } else if (source.getType()
                         .isDataType()) {
-                        errors.add("Primitive %s-node can't be merged", sourceType.label()
-                            .text(), source);
+                        errors.add("Primitive %s-node can't be merged",
+                            sourceType.label()
+                                .text(),
+                            source);
                     }
                 } else {
                     TypeEdge edgeType = edge.getType();
                     if (edgeType != null && edgeType.isAbstract() && !lhs.containsEdge(edge)) {
-                        errors.add("Creation of abstract %s-edge not allowed", edgeType.label()
-                            .text(), edge);
+                        errors.add("Creation of abstract %s-edge not allowed",
+                            edgeType.label()
+                                .text(),
+                            edge);
                     }
                 }
             }
@@ -2671,7 +2682,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     }
 
     /** Mapping from aspect graph elements to rule graph elements. */
-    private static class RuleModelMap extends ModelMap<RuleNode,RuleEdge> {
+    public static class RuleModelMap extends ModelMap<RuleNode,RuleEdge> {
         /**
          * Creates a new, empty map to a rule graph with a given type factory.
          */

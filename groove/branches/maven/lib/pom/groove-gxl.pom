@@ -3,15 +3,15 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <groupId>nl.utwente.groove</groupId>
-  <artifactId>jaxb-gxl</artifactId>
-  <version>2.0</version>
+  <artifactId>groove-gxl</artifactId>
+  <version>3.0</version>
   <description>
   Helper POM to install library in maven repository. Use in either of the following ways:
   
   - From the lib directory run
-    mvn install:install-file -DpomFile=pom/gxl.pom -Dfile=jaxb-gxl-2.0.jar -Dsources=src/jaxb-gxl-2.0-sources.jar
+    mvn install:install-file -DpomFile=pom/groove-gxl.pom -Dfile=groove-gxl-3.0.jar -Dsources=src/groove-gxl-3.0-sources.jar
   
-  - In Eclipse, invoke the "m2 install gxl" launch configuration
+  - In Eclipse, invoke the "m2 install groove-gxl" launch configuration
   </description>
 
   <dependencies>

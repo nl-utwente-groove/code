@@ -22,6 +22,7 @@ import static nl.utwente.groove.grammar.model.ResourceKind.RULE;
 import static nl.utwente.groove.io.FileType.GRAMMAR;
 import static nl.utwente.groove.io.store.EditType.LAYOUT;
 
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
@@ -41,8 +42,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -75,6 +74,7 @@ import nl.utwente.groove.io.graph.AttrGraph;
 import nl.utwente.groove.io.graph.GxlIO;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.Observable;
 import nl.utwente.groove.util.ThreeValued;
 import nl.utwente.groove.util.Unzipper;
 import nl.utwente.groove.util.Version;
@@ -989,7 +989,7 @@ public class SystemStore extends UndoableEditSupport {
      * Adds an observer to the model.
      * The observer is notified of all {@link Edit} occurrences.
      */
-    public void addObserver(Observer observer) {
+    public void addObserver(PropertyChangeListener observer) {
         this.observable.addObserver(observer);
     }
 
@@ -999,14 +999,8 @@ public class SystemStore extends UndoableEditSupport {
     }
 
     /** The observable object associated with this system store. */
-    private final Observable observable = new Observable() {
-        /** Always invokes {@link #setChanged()}. */
-        @Override
-        public void notifyObservers(Object arg) {
-            setChanged();
-            super.notifyObservers(arg);
-        }
-    };
+    private final Observable observable = new Observable();
+
     /** The grammar view associated with this store. */
     private GrammarModel model;
 

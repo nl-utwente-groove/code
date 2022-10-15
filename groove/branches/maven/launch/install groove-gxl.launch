@@ -7,9 +7,9 @@
     <booleanAttribute key="M2_OFFLINE" value="false"/>
     <stringAttribute key="M2_PROFILES" value=""/>
     <listAttribute key="M2_PROPERTIES">
-        <listEntry value="file=lib/jaxb-gxl-2.0.jar"/>
-        <listEntry value="pomFile=lib/pom/gxl.pom"/>
-        <listEntry value="sources=lib/src/jaxb-gxl-2.0-sources.jar"/>
+        <listEntry value="file=lib/groove-gxl-3.0.jar"/>
+        <listEntry value="pomFile=lib/pom/groove-gxl.pom"/>
+        <listEntry value="sources=lib/src/groove-gxl-3.0-sources.jar"/>
     </listAttribute>
     <stringAttribute key="M2_RUNTIME" value="EMBEDDED"/>
     <booleanAttribute key="M2_SKIP_TESTS" value="false"/>
