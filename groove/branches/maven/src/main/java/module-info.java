@@ -101,6 +101,7 @@ module nl.utwente.groove {
     requires jgoodies.looks;
     requires transitive jgraph;
     requires junit;
+    requires ltl2buchi;
     requires transitive nl.utwente.groove.gxl;
     requires opencsv;
     requires org.apache.groovy;

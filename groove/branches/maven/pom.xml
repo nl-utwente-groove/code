@@ -214,7 +214,7 @@
 		<dependency>
 			<groupId>nl.utwente.groove</groupId>
 			<artifactId>ltl2buchi</artifactId>
-			<version>2010-12</version>
+			<version>2010.12</version>
 		</dependency>
 		<dependency>
 			<groupId>nl.utwente.groove</groupId>

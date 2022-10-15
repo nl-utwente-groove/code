@@ -4,12 +4,12 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>nl.utwente.groove</groupId>
   <artifactId>ltl2buchi</artifactId>
-  <version>2010-12</version>
+  <version>2010.12</version>
   <description>
   Helper POM to install library in maven repository. Use in either of the following ways:
   
   - From the lib directory run
-    mvn install:install-file -Dfile=ltl2buchi-2010-12.jar -DpomFile=pom/ltl2buchi-2010-12.pom -Dsources=src/ltl2buchi-2010-12.zip
+    mvn install:install-file -Dfile=ltl2buchi-2010.12.jar -DpomFile=pom/ltl2buchi-2010.12.pom -Dsources=src/ltl2buchi-2010.12.zip
 
   - In Eclipse, invoke the "m2 install ltl2buchi" launch configuration
   </description>

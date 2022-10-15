@@ -7,9 +7,9 @@
     <booleanAttribute key="M2_OFFLINE" value="false"/>
     <stringAttribute key="M2_PROFILES" value=""/>
     <listAttribute key="M2_PROPERTIES">
-        <listEntry value="file=lib/ltl2buchi-2010-12.jar"/>
+        <listEntry value="file=lib/ltl2buchi-2010.12.jar"/>
         <listEntry value="pomFile=lib/pom/ltl2buchi.pom"/>
-        <listEntry value="sources=lib/src/ltl2buchi-2010-12.zip"/>
+        <listEntry value="sources=lib/src/ltl2buchi-2010.12.zip"/>
     </listAttribute>
     <stringAttribute key="M2_RUNTIME" value="EMBEDDED"/>
     <booleanAttribute key="M2_SKIP_TESTS" value="false"/>
