@@ -24,9 +24,9 @@ import java.util.Set;
 
 import nl.utwente.groove.control.CallStack;
 import nl.utwente.groove.grammar.Action;
+import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.QualName;
-import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.host.DeltaHostGraph;
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostElement;
@@ -57,6 +57,11 @@ public class StateCache {
         this.record = state.getRecord();
         this.freezeGraphs = this.record.isCollapse();
         this.graphFactory = DeltaHostGraph.getInstance(this.record.isCopyGraphs());
+        if (DEBUG && state.isDone()) {
+            System.out.printf("Recreating cache for done state %s (#%s) %n",
+                state,
+                System.identityHashCode(state));
+        }
     }
 
     /** Adds a transition stub to the data structures stored in this cache. */
@@ -182,9 +187,8 @@ public class StateCache {
         HostElement[] frozenGraph = this.state.getFrozenGraph();
         DeltaHostGraph result;
         if (frozenGraph != null) {
-            result = this.graphFactory.newGraph(getState().toString(),
-                frozenGraph,
-                this.record.getFactory());
+            result = this.graphFactory
+                .newGraph(getState().toString(), frozenGraph, this.record.getFactory());
         } else if (!(this.state instanceof GraphNextState)) {
             throw new IllegalStateException(
                 "Underlying state does not have information to reconstruct the graph");
@@ -458,4 +462,6 @@ public class StateCache {
      * The depth of the graph above which the underlying graph will be frozen.
      */
     static private final int FREEZE_BOUND = 10;
+    /** Debug flag. */
+    private static final boolean DEBUG = false;
 }

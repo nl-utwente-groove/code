@@ -90,7 +90,11 @@ public class GTSCounter implements GTSListener {
     }
 
     private void register(GraphTransition trans) {
-        if (trans.isPartial()) {
+        if (DEBUG && trans instanceof RecipeTransition) {
+            System.out.printf("Registering recipe transition %s%n", trans);
+        }
+
+        if (trans.isInternalStep()) {
             this.recipeStepCount++;
         }
         if (trans instanceof RuleTransition) {
@@ -183,4 +187,5 @@ public class GTSCounter implements GTSListener {
     private int ruleTransitionCount;
     private int absentTransitionCount;
     private final Map<GraphState,List<RuleTransition>> inTransMap = new HashMap<>();
+    private final static boolean DEBUG = false;
 }
