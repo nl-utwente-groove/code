@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Set;
 
 import nl.utwente.groove.grammar.GrammarChecker;
 import nl.utwente.groove.grammar.model.GrammarModel;
@@ -31,8 +31,6 @@ import nl.utwente.groove.util.parse.FormatChecker;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.Parser;
-
-import java.util.Set;
 
 /**
  * Specialised properties class.
@@ -74,8 +72,9 @@ public abstract class Properties extends java.util.Properties implements Fixable
                     @Override
                     public FormatErrorSet check(String value) {
                         try {
-                            return checkerKey.check(grammar, key.parser()
-                                .parse(value));
+                            return checkerKey.check(grammar,
+                                key.parser()
+                                    .parse(value));
                         } catch (FormatException exc) {
                             return exc.getErrors();
                         }
@@ -155,8 +154,7 @@ public abstract class Properties extends java.util.Properties implements Fixable
             // this is a non-system key
             oldValue = (String) super.setProperty(keyword, value);
         } else if (!key.parser()
-            .accepts(value)
-            || key.parser()
+            .accepts(value) || key.parser()
                 .isDefault(value)) {
             oldValue = (String) remove(keyword);
         } else {
@@ -254,7 +252,7 @@ public abstract class Properties extends java.util.Properties implements Fixable
 
     /* Returns an unmodifiable set. */
     @Override
-    public Set<Entry<Object,Object>> entrySet() {
+    public Set<java.util.Map.Entry<Object,Object>> entrySet() {
         return Collections.unmodifiableSet(super.entrySet());
     }
 
