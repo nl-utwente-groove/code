@@ -28,7 +28,6 @@ import java.util.Queue;
 import java.util.Set;
 
 import nl.utwente.groove.lts.GraphTransition.Claz;
-import nl.utwente.groove.util.Pair;
 
 /**
  * Information required for the proper exploration of transient states.
@@ -365,9 +364,10 @@ class ExploreData {
          * Stores the computed results in the topLevelReachable fields.
          */
         private void fill() {
-            for (Pair<ExploreData,Set<GraphState>> entry : this.resultList) {
-                List<GraphState> topLevelReachables = new ArrayList<>(entry.two());
-                ExploreData keyData = entry.one();
+            for (java.util.Map.Entry<ExploreData,Set<GraphState>> entry : this.resultMap
+                .entrySet()) {
+                List<GraphState> topLevelReachables = new ArrayList<>(entry.getValue());
+                ExploreData keyData = entry.getKey();
                 if (DEBUG) {
                     System.out.printf("Top-level reachables of %s determined as %s%n",
                         keyData.getState(),
@@ -391,7 +391,6 @@ class ExploreData {
                 List<GraphState> targets = data.recipeTargets;
                 if (targets == null) {
                     // we're going to traverse further
-                    this.resultList.add(Pair.newPair(data, resultEntry));
                     if (data.getState()
                         .isInternalState()) {
                         if (DEBUG) {
@@ -420,8 +419,6 @@ class ExploreData {
         private final Map<ExploreData,Set<ExploreData>> backward = new LinkedHashMap<>();
         /** map from states to top level reachables. */
         private final Map<ExploreData,Set<GraphState>> resultMap = new LinkedHashMap<>();
-        /** List of pairs that are actually being built. */
-        private final List<Pair<ExploreData,Set<GraphState>>> resultList = new ArrayList<>();
         /** queue of outstanding states to be explored. */
         private final Queue<ExploreData> queue = new LinkedList<>();
     }
