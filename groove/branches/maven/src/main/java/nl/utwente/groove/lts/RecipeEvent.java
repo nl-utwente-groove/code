@@ -72,7 +72,7 @@ public class RecipeEvent implements GraphTransitionStub, Event, GraphTransitionK
 
     @Override
     public RecipeTransition toTransition(GraphState source) {
-        return new RecipeTransition(source, this.target, this.initial.toTransition(source));
+        return new RecipeTransition(this.initial.toTransition(source), this.target);
     }
 
     /** Returns the switch corresponding to the invocation wrapped in this event. */

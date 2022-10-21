@@ -51,7 +51,7 @@ public interface GraphTransition extends GEdge<GraphState> {
     /** Returns the GTS in which this transition occurs. */
     public GTS getGTS();
 
-    /** Indicates if this transition is part of an atomic block or recipe. */
+    /** Indicates if this transition is part of an atomic block. */
     public boolean isPartial();
 
     /**

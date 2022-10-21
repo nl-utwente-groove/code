@@ -26,16 +26,16 @@ import java.util.Set;
 import java.util.Stack;
 
 import nl.utwente.groove.control.CtrlPar;
-import nl.utwente.groove.control.CtrlVar;
-import nl.utwente.groove.control.Valuator;
 import nl.utwente.groove.control.CtrlPar.Const;
 import nl.utwente.groove.control.CtrlPar.Var;
 import nl.utwente.groove.control.CtrlPar.Wild;
+import nl.utwente.groove.control.CtrlVar;
+import nl.utwente.groove.control.Valuator;
 import nl.utwente.groove.control.instance.Assignment;
 import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.control.template.SwitchStack;
-import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Callable.Kind;
+import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.host.HostGraphMorphism;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.graph.ALabelEdge;
@@ -58,9 +58,8 @@ public class RecipeTransition extends ALabelEdge<GraphState>
      * a given source and target state, on the basis of
      * an initial underlying rule transition.
      */
-    public RecipeTransition(GraphState source, GraphState target, RuleTransition initial) {
-        super(source, target);
-        assert source == initial.source();
+    public RecipeTransition(RuleTransition initial, GraphState target) {
+        super(initial.source(), target);
         this.initial = initial;
         SwitchStack initialStack = initial.getStep()
             .getSwitchStack();
