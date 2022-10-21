@@ -539,7 +539,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      */
     @Override
     protected void fireAddEdge(GraphTransition edge) {
-        this.internals = edge.isInternalStep();
+        this.internals |= edge.isInternalStep();
         this.allTransitionCount++;
         super.fireAddEdge(edge);
         for (GTSListener listener : getGraphListeners()) {
