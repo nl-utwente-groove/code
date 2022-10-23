@@ -22,18 +22,21 @@ import java.util.Set;
 
 import nl.utwente.groove.graph.iso.CertificateStrategy;
 import nl.utwente.groove.graph.iso.PartitionRefiner;
+import nl.utwente.groove.util.DefaultFixable;
 import nl.utwente.groove.util.Dispenser;
+import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.cache.AbstractCacheHolder;
+import nl.utwente.groove.util.parse.FormatException;
 
 /**
- * Partial implementation of a graph. Adds to the AbstractGraphShape the ability
- * to add nodes and edges, and some morphism capabilities.
+ * Partial implementation of a graph.
  * @author Arend Rensink
  * @version $Revision$
  */
 public abstract class AGraph<N extends Node,E extends GEdge<N>>
-    extends AbstractCacheHolder<GraphCache<N,E>>implements GGraph<N,E> {
+    extends AbstractCacheHolder<GraphCache<N,E>> implements GGraph<N,E> {
     /**
      * Constructs an abstract named graph.
      * @param name the (non-{@code null}) name of the graph.
@@ -141,14 +144,18 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>>
 
     @Override
     public boolean isFixed() {
-        return isCacheCollectable();
+        return this.fixable.isFixed();
     }
 
     @Override
     public boolean setFixed() {
-        boolean result = !isFixed();
+        boolean result = false;
+        try {
+            result = this.fixable.setFixed();
+        } catch (FormatException exc) {
+            throw Exceptions.UNREACHABLE;
+        }
         if (result) {
-            setCacheCollectable();
             if (hasInfo()) {
                 getInfo().setFixed();
             }
@@ -158,6 +165,8 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>>
         }
         return result;
     }
+
+    private final Fixable fixable = new DefaultFixable();
 
     /** Calls {@link #toString(Graph)}. */
     @Override
@@ -242,9 +251,8 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>>
     @Override
     public N addNode() {
         N freshNode = getFactory().createNode(getNodeCounter());
-        assert!nodeSet().contains(freshNode) : String.format("Fresh node %s already in node set %s",
-            freshNode,
-            nodeSet());
+        assert !nodeSet().contains(freshNode) : String
+            .format("Fresh node %s already in node set %s", freshNode, nodeSet());
         addNode(freshNode);
         return freshNode;
     }
@@ -330,7 +338,7 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>>
 
     @Override
     public void setName(String name) {
-        assert!isFixed();
+        assert !isFixed();
         assert name != null;
         this.name = name;
     }
