@@ -21,12 +21,12 @@ import java.util.Collection;
 import java.util.Stack;
 
 import nl.utwente.groove.explore.result.Acceptor;
+import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.lts.DefaultGraphNextState;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.MatchResult;
-import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.match.MatcherFactory;
 import nl.utwente.groove.match.SearchEngine;
 import nl.utwente.groove.match.rete.ReteSearchEngine;
@@ -58,17 +58,20 @@ public class ReteStrategy extends GTSStrategy {
     @Override
     public GraphState doNext() throws InterruptedException {
         GraphState state = getNextState();
+
+        if (DEBUG) {
+            System.out.printf("Exploring state %s%n", state);
+        }
         ReteStrategyNextReporter.start();
         Collection<? extends MatchResult> ruleMatches = state.getMatches();
-        Collection<GraphState> outTransitions = new ArrayList<>(ruleMatches.size());
-
         for (MatchResult nextMatch : ruleMatches) {
-            RuleTransition trans = getNextState().applyMatch(nextMatch);
-            outTransitions.add(trans.target());
+            if (DEBUG) {
+                System.out.printf("  Exploring match %s%n", nextMatch);
+            }
+            state.applyMatch(nextMatch);
         }
 
-        addToPool(outTransitions);
-        this.deltaAccumulator = new DeltaStore();
+        addToPool();
         setNextState();
         ReteStrategyNextReporter.stop();
         return state;
@@ -84,33 +87,48 @@ public class ReteStrategy extends GTSStrategy {
 
     @Override
     protected GraphState computeNextState() {
-        GraphState result = topOfPool();
-        GraphState triedState = null;
+        DefaultGraphNextState result = topOfPool();
         if (result == null) {
+            // nothing left to be done
             return result;
         }
+        HostGraph reteGraph = this.rete.getNetwork()
+            .getState()
+            .getHostGraph();
+        boolean reteIsConsistent = reteGraph == getNextState().getGraph();
+        DeltaStore delta = new DeltaStore();
         if (getNextState() == result) {
+            DefaultGraphNextState triedState;
+            // no transitions were generated since the last attempt
+            // so we backtrack until the first forward step
             do {
-                ((DefaultGraphNextState) result).getDelta()
-                    .applyDelta(this.deltaAccumulator);
+                if (reteIsConsistent) {
+                    result.getDelta()
+                        .applyDelta(delta);
+                }
                 triedState = result;
                 popPool();
                 result = topOfPool();
                 if (result == null) {
+                    // we've backtracked all the way to the top;
+                    // nothing left to be done
                     return result;
                 }
-            } while (((DefaultGraphNextState) result)
-                .source() != ((DefaultGraphNextState) triedState).source());
+            } while (result.source() != triedState.source());
+            delta = delta.invert();
         }
-        this.deltaAccumulator = this.deltaAccumulator.invert();
-        ((DefaultGraphNextState) result).getDelta()
-            .applyDelta(this.deltaAccumulator);
-        this.rete.transitionOccurred(result.getGraph(), this.deltaAccumulator);
+        if (!reteIsConsistent) {
+            this.rete.graphChanged(result.source()
+                .getGraph());
+        }
+        result.getDelta()
+            .applyDelta(delta);
+        this.rete.transitionOccurred(result.getGraph(), delta);
         return result;
     }
 
-    private void addToPool(Collection<GraphState> newStates) {
-        for (GraphState newState : this.newStates) {
+    private void addToPool() {
+        for (DefaultGraphNextState newState : this.newStates) {
             this.stack.push(newState);
         }
         this.newStates.clear();
@@ -124,7 +142,7 @@ public class ReteStrategy extends GTSStrategy {
     }
 
     /** Returns the next element from the pool of explorable states. */
-    protected GraphState topOfPool() {
+    protected DefaultGraphNextState topOfPool() {
         if (this.stack.isEmpty()) {
             return null;
         } else {
@@ -137,11 +155,8 @@ public class ReteStrategy extends GTSStrategy {
         this.stack.clear();
     }
 
-    DeltaStore deltaAccumulator;
-    /** Internal store of newly generated state. */
-
     /** Internal store of newly generated states. */
-    private final Collection<GraphState> newStates = new ArrayList<>();
+    private final Collection<DefaultGraphNextState> newStates = new ArrayList<>();
 
     /** Listener to keep track of states added to the GTS. */
     private final ExploreListener exploreListener = new ExploreListener();
@@ -151,16 +166,18 @@ public class ReteStrategy extends GTSStrategy {
         @Override
         public void addUpdate(GTS gts, GraphState state) {
             if (!state.isClosed()) {
-                ReteStrategy.this.newStates.add(state);
+                ReteStrategy.this.newStates.add((DefaultGraphNextState) state);
             }
         }
     }
 
-    private final Stack<GraphState> stack = new Stack<>();
+    private final Stack<DefaultGraphNextState> stack = new Stack<>();
 
     private ReteSearchEngine rete;
 
     private SearchEngine oldEngine;
+
+    static private final boolean DEBUG = false;
 
     /**
      * The reporter object
