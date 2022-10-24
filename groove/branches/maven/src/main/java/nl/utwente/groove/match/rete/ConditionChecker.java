@@ -23,8 +23,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import nl.utwente.groove.grammar.Condition;
 import nl.utwente.groove.grammar.host.HostEdge;
@@ -40,8 +42,6 @@ import nl.utwente.groove.match.rete.ReteNetwork.ReteStaticMapping;
 import nl.utwente.groove.util.collect.FilterIterator;
 import nl.utwente.groove.util.collect.HashBag;
 import nl.utwente.groove.util.collect.TreeHashSet;
-
-import java.util.Set;
 
 /**
  * @author Arash Jalali
@@ -69,7 +69,7 @@ public class ConditionChecker extends ReteNetworkNode
      * used if the matches are stored in the tree-liked index structure of
      * the {@link #conflictSetSearchTree}.
      */
-    protected Set<ReteSimpleMatch> conflictSet = new HashSet<>();
+    protected Set<ReteSimpleMatch> conflictSet = new LinkedHashSet<>();
 
     /**
      * A bag structure that keeps the record of number of times (one or more)
@@ -307,11 +307,11 @@ public class ConditionChecker extends ReteNetworkNode
             result = this.oneEmptyMatch.iterator();
         } else if (!this.inhibitionMap.isEmpty()) {
             if (this.conflictSetSearchTree != null) {
-                result = new FilterIterator<ReteSimpleMatch>(
-                    (anchorMap != null) ? this.conflictSetSearchTree.getStorageFor(anchorMap)
+                result = new FilterIterator<ReteSimpleMatch>((anchorMap != null)
+                    ? this.conflictSetSearchTree.getStorageFor(anchorMap)
                         .iterator()
-                        : this.getConflictSet()
-                            .iterator()) {
+                    : this.getConflictSet()
+                        .iterator()) {
 
                     @Override
                     protected boolean approves(Object obj) {
@@ -357,6 +357,7 @@ public class ConditionChecker extends ReteNetworkNode
                 };
 
             }
+
         }
 
         return result;
