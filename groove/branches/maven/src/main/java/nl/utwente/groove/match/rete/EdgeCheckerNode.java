@@ -16,8 +16,6 @@
  */
 package nl.utwente.groove.match.rete;
 
-import java.util.List;
-
 import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.grammar.host.HostEdge;
@@ -131,18 +129,14 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
         this.sourceType = e.source()
             .isSharp() || this.type == null
             || e.source()
-                .getType() != this.type.source()
-                    ? e.source()
-                        .getType()
-                    : null;
+                .getType() != this.type.source() ? e.source()
+                    .getType() : null;
 
         this.targetType = e.target()
             .isSharp() || this.type == null
             || e.target()
-                .getType() != this.type.target()
-                    ? e.target()
-                        .getType()
-                    : null;
+                .getType() != this.type.target() ? e.target()
+                    .getType() : null;
         this.selfEdge = e.source()
             .equals(e.target());
         this.sourceNode = e.source();
@@ -150,10 +144,6 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
 
         //This is just to fill up the lookup table
         getPatternLookupTable();
-        this.getOwner()
-            .getState()
-            .subscribe(this);
-
     }
 
     @Override
@@ -439,12 +429,6 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
     }
 
     @Override
-    public List<? extends Object> initialize() {
-        // TODO ARASH:implement on-demand
-        return null;
-    }
-
-    @Override
     public int demandOneMatch() {
         int result = this.ondemandBuffer.size();
         if (this.getOwner()
@@ -465,16 +449,5 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
     public void receive(ReteNetworkNode source, int repeatIndex, AbstractReteMatch subgraph) {
         throw new UnsupportedOperationException();
 
-    }
-
-    @Override
-    public void updateBegin() {
-        //Do nothing
-
-    }
-
-    @Override
-    public void updateEnd() {
-        //Do nothing
     }
 }

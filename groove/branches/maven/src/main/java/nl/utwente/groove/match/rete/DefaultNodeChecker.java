@@ -16,8 +16,6 @@
  */
 package nl.utwente.groove.match.rete;
 
-import java.util.List;
-
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.host.HostNodeSet;
 import nl.utwente.groove.grammar.rule.RuleElement;
@@ -69,9 +67,6 @@ public class DefaultNodeChecker extends NodeChecker implements ReteStateSubscrib
         this.type = node.getType();
         this.sharpType = node.isSharp() || this.type.getSubtypes()
             .size() == 1;
-        this.getOwner()
-            .getState()
-            .subscribe(this);
     }
 
     /**
@@ -108,7 +103,7 @@ public class DefaultNodeChecker extends NodeChecker implements ReteStateSubscrib
             .isInjective());
 
         if (action == Action.ADD) {
-            assert!this.memory.contains(m);
+            assert !this.memory.contains(m);
             this.memory.add(m);
             passDownMatchToSuccessors(m);
         } else { // action == Action.REMOVE
@@ -177,12 +172,6 @@ public class DefaultNodeChecker extends NodeChecker implements ReteStateSubscrib
     }
 
     @Override
-    public List<? extends Object> initialize() {
-        // TODO ARASH:implement on-demand
-        return null;
-    }
-
-    @Override
     public int demandOneMatch() {
         int result = this.ondemandBuffer.size();
         if (this.getOwner()
@@ -202,16 +191,6 @@ public class DefaultNodeChecker extends NodeChecker implements ReteStateSubscrib
     @Override
     public void receive(ReteNetworkNode source, int repeatIndex, AbstractReteMatch subgraph) {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void updateBegin() {
-        //Do nothing
-    }
-
-    @Override
-    public void updateEnd() {
-        //Do nothing
     }
 
     @Override

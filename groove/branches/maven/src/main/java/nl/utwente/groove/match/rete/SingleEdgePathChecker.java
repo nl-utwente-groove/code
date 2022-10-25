@@ -16,8 +16,6 @@
  */
 package nl.utwente.groove.match.rete;
 
-import java.util.List;
-
 import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.automaton.RegExpr.Atom;
 import nl.utwente.groove.automaton.RegExpr.Wildcard;
@@ -50,10 +48,7 @@ public abstract class SingleEdgePathChecker extends AbstractPathChecker
      */
     public SingleEdgePathChecker(ReteNetwork network, RegExpr expression, boolean isLoop) {
         super(network, expression, isLoop);
-        this.getOwner()
-            .getState()
-            .subscribe(this);
-        assert(expression instanceof Atom) || (expression instanceof Wildcard);
+        assert (expression instanceof Atom) || (expression instanceof Wildcard);
     }
 
     /**
@@ -71,7 +66,7 @@ public abstract class SingleEdgePathChecker extends AbstractPathChecker
 
         if (action == Action.ADD) {
 
-            assert!this.memory.contains(m);
+            assert !this.memory.contains(m);
             this.memory.add(m);
             passDownMatchToSuccessors(m);
 
@@ -116,12 +111,6 @@ public abstract class SingleEdgePathChecker extends AbstractPathChecker
     public void receive(ReteNetworkNode source, int repeatedIndex, RetePathMatch newMatch) {
         //This method will not be called for this type of n-node
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public List<? extends Object> initialize() {
-        super.initialize();
-        return null;
     }
 
     @Override

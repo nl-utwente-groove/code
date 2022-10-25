@@ -1601,8 +1601,8 @@ public class ReteNetwork {
 
         private ReteNetwork owner;
         private HostGraph hostGraph;
-        private Set<ReteStateSubscriber> subscribers = new HashSet<>();
-        private Set<ReteStateSubscriber> updateSubscribers = new HashSet<>();
+        private List<ReteStateSubscriber> subscribers = new ArrayList<>();
+        private List<ReteStateUpdateSubscriber> updateSubscribers = new ArrayList<>();
         private ReteUpdateMode updateMode = ReteUpdateMode.NORMAL;
 
         protected ReteState(ReteNetwork owner) {
@@ -1620,15 +1620,9 @@ public class ReteNetwork {
         public synchronized void subscribe(ReteStateSubscriber sb,
             boolean receiveUpdateNotifications) {
             this.subscribers.add(sb);
-            if (receiveUpdateNotifications) {
-                this.updateSubscribers.add(sb);
+            if (sb instanceof ReteStateUpdateSubscriber usb) {
+                this.updateSubscribers.add(usb);
             }
-        }
-
-        public void unsubscribe(ReteStateSubscriber sb) {
-            sb.clear();
-            this.subscribers.remove(sb);
-            this.updateSubscribers.remove(sb);
         }
 
         public void clearSubscribers() {
@@ -1644,13 +1638,13 @@ public class ReteNetwork {
         }
 
         public synchronized void notifyUpdateBegin() {
-            for (ReteStateSubscriber sb : this.updateSubscribers) {
+            for (ReteStateUpdateSubscriber sb : this.updateSubscribers) {
                 sb.updateBegin();
             }
         }
 
         public synchronized void notifyUpdateEnd() {
-            for (ReteStateSubscriber sb : this.updateSubscribers) {
+            for (ReteStateUpdateSubscriber sb : this.updateSubscribers) {
                 sb.updateEnd();
             }
         }

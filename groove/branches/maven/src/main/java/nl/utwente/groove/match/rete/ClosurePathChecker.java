@@ -61,11 +61,6 @@ public class ClosurePathChecker extends AbstractPathChecker implements ReteState
         super(network, expression, isLoop);
 
         assert (expression.getPlusOperand() != null) || (expression.getStarOperand() != null);
-        if (expression.isStar()) {
-            this.getOwner()
-                .getState()
-                .subscribe(this);
-        }
         this.leftMemory = new HashSet<>();
         this.rightMemory = new HashSet<>();
     }
@@ -220,23 +215,12 @@ public class ClosurePathChecker extends AbstractPathChecker implements ReteState
     }
 
     @Override
-    public List<? extends Object> initialize() {
+    public void initialize() {
         super.initialize();
         if (this.getExpression()
             .isStar()) {
             passDownMatchToSuccessors(this.emptyMatch);
         }
-        return null;
-    }
-
-    @Override
-    public void updateBegin() {
-        // Do nothing
-    }
-
-    @Override
-    public void updateEnd() {
-        // Do nothing
     }
 
     /**

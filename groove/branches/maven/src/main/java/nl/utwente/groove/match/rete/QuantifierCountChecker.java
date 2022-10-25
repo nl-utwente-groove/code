@@ -47,7 +47,7 @@ import nl.utwente.groove.util.collect.TreeHashSet;
  * @author Arash Jalali
  * @version $Revision $
  */
-public class QuantifierCountChecker extends ReteNetworkNode implements ReteStateSubscriber {
+public class QuantifierCountChecker extends ReteNetworkNode implements ReteStateUpdateSubscriber {
 
     private Condition condition;
     private RuleElement[] pattern;
@@ -204,11 +204,6 @@ public class QuantifierCountChecker extends ReteNetworkNode implements ReteState
         this.dummyMatch = null;
         this.updatesSent = false;
         this.conditionMatcher = null;
-    }
-
-    @Override
-    public List<? extends Object> initialize() {
-        return null;
     }
 
     @Override

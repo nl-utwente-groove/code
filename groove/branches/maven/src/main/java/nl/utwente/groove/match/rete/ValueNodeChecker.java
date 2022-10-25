@@ -16,8 +16,6 @@
  */
 package nl.utwente.groove.match.rete;
 
-import java.util.List;
-
 import nl.utwente.groove.algebra.Algebra;
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.Constant;
@@ -47,9 +45,6 @@ public class ValueNodeChecker extends NodeChecker implements ReteStateSubscriber
         super(network);
         this.pattern[0] = variableNode;
         this.node = variableNode;
-        this.getOwner()
-            .getState()
-            .subscribe(this);
     }
 
     @Override
@@ -101,7 +96,7 @@ public class ValueNodeChecker extends NodeChecker implements ReteStateSubscriber
     }
 
     @Override
-    public List<? extends Object> initialize() {
+    public void initialize() {
         VariableNode varNode = (VariableNode) this.pattern[0];
         Algebra<?> algebra = AlgebraFamily.getInstance()
             .getAlgebra(varNode.getSort());
@@ -109,22 +104,11 @@ public class ValueNodeChecker extends NodeChecker implements ReteStateSubscriber
             .createNode(algebra, algebra.toValue(varNode.getConstant()));
         ReteSimpleMatch match = new ReteSimpleMatch(this, valueNode, getOwner().isInjective());
         passDownMatchToSuccessors(match);
-        return null;
-    }
-
-    @Override
-    public void updateBegin() {
-        //Do nothing
-    }
-
-    @Override
-    public void updateEnd() {
-        //Do nothing
     }
 
     @Override
     public boolean canBeStaticallyMappedTo(RuleNode node) {
-        assert(node instanceof VariableNode) && (((VariableNode) node).getConstant() != null);
+        assert (node instanceof VariableNode) && (((VariableNode) node).getConstant() != null);
         return (node instanceof VariableNode) && ((VariableNode) node).getConstant()
             .equals(this.node.getConstant());
     }

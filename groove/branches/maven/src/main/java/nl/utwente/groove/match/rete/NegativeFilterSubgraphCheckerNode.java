@@ -39,7 +39,7 @@ import nl.utwente.groove.util.collect.TreeHashSet;
 public class NegativeFilterSubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMatchType extends AbstractReteMatch>
     extends SubgraphCheckerNode<LeftMatchType,RightMatchType> {
 
-    private NegativeFilterSubgraphCheckerNode<LeftMatchType,RightMatchType>.BidirectionalInhibitionMap inhibitionMap;
+    private NegativeFilterSubgraphCheckerNode.BidirectionalInhibitionMap inhibitionMap;
 
     /**
      * Creates a negative filter
@@ -51,7 +51,7 @@ public class NegativeFilterSubgraphCheckerNode<LeftMatchType extends AbstractRet
     public NegativeFilterSubgraphCheckerNode(ReteNetwork network, ReteStaticMapping left,
         ReteStaticMapping right, boolean keepPrefix) {
         super(network, left, right, keepPrefix);
-        this.inhibitionMap = this.new BidirectionalInhibitionMap();
+        this.inhibitionMap = new BidirectionalInhibitionMap();
     }
 
     @Override
@@ -241,6 +241,12 @@ public class NegativeFilterSubgraphCheckerNode<LeftMatchType extends AbstractRet
         return result;
     }
 
+    @Override
+    public void clear() {
+        super.clear();
+        this.inhibitionMap.clear();
+    }
+
     /**
      * A bidirectional internal record of inhibition of positive matches by
      * negative matches used by the negative filter subgraph-checker.
@@ -248,7 +254,7 @@ public class NegativeFilterSubgraphCheckerNode<LeftMatchType extends AbstractRet
      * @author Arash Jalali
      * @version $Revision $
      */
-    protected class BidirectionalInhibitionMap {
+    static protected class BidirectionalInhibitionMap {
         private HashMap<AbstractReteMatch,Set<AbstractReteMatch>> positiveToNegative =
             new HashMap<>();
         private HashMap<AbstractReteMatch,Set<AbstractReteMatch>> negativeToPositive =
@@ -365,6 +371,12 @@ public class NegativeFilterSubgraphCheckerNode<LeftMatchType extends AbstractRet
 
                 }
             }
+        }
+
+        /** Clears the match data structures in this map. */
+        public void clear() {
+            this.negativeToPositive.clear();
+            this.positiveToNegative.clear();
         }
     }
 

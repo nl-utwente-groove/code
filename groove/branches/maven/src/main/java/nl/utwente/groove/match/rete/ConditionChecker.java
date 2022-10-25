@@ -113,7 +113,7 @@ public class ConditionChecker extends ReteNetworkNode
      */
     protected boolean notifyParent = false;
 
-    private Set<ReteSimpleMatch> oneEmptyMatch;
+    private final Set<ReteSimpleMatch> oneEmptyMatch;
 
     /**
      * @param network The owner network of this checker node.
@@ -123,9 +123,6 @@ public class ConditionChecker extends ReteNetworkNode
         ConditionChecker parentConditionChecker, ReteStaticMapping antecedent) {
         super(network);
         this.condition = c;
-        this.getOwner()
-            .getState()
-            .subscribe(this);
         this.parent = parentConditionChecker;
         makeRootSearchOrder(c);
         this.subConditionCheckers = new ArrayList<>();
@@ -530,11 +527,6 @@ public class ConditionChecker extends ReteNetworkNode
     }
 
     @Override
-    public List<? extends Object> initialize() {
-        return null;
-    }
-
-    @Override
     public RuleElement[] getPattern() {
         return this.pattern;
     }
@@ -803,16 +795,6 @@ public class ConditionChecker extends ReteNetworkNode
             this.getParent()
                 .notifyChange(sender);
         }
-    }
-
-    @Override
-    public void updateBegin() {
-        //Do nothing
-    }
-
-    @Override
-    public void updateEnd() {
-        // Do nothing
     }
 
     @Override

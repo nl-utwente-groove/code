@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
- * $Id$
+ * $Id: ReteStateSubscriber.java 6072 2021-07-14 18:23:50Z rensink $
  */
 package nl.utwente.groove.match.rete;
 
@@ -26,22 +26,18 @@ import nl.utwente.groove.match.rete.ReteNetwork.ReteState;
  * @author Arash Jalali
  * @version $Revision $
  */
-public interface ReteStateSubscriber {
+public interface ReteStateUpdateSubscriber extends ReteStateSubscriber {
     /**
-     * This method instructs the subscriber to create new runtime data
-     * structures anew.
-     *
-     * The subscriber is responsible for making sure the objects are actually
-     * freshly created and not merely cleared.
+     * This method tells the subscriber that a new round of updates
+     * to the RETE network has just begun.
      */
-    default public void initialize() {
-        // does nothing
-    }
+    public void updateBegin();
 
     /**
-     * This method instructs the subscriber to clean up its existing runtime
-     * data objects without creating new ones.
-     *
+     * This method tells the subscriber that all updates
+     * have been delivered to the RETE network. However, it does
+     * not necessarily mean that these updates
+     * have fully propagated through the network.
      */
-    public void clear();
+    public void updateEnd();
 }
