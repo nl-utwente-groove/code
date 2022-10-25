@@ -4,6 +4,8 @@ package nl.utwente.groove.util.cache;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.lts.GraphState;
+
 /**
  * Abstract implementation of the {@link CacheHolder} interface. Provides a
  * {@link CacheReference} field with the required get and set method, and a hook
@@ -45,10 +47,21 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
      * pre-existing one and {@code create} is set, or {@code null} otherwise
      */
     final public @Nullable C getCache(boolean create) {
-        @Nullable C result = getCacheReference().get();
+        CacheReference<C> cacheReference = getCacheReference();
+        C result = cacheReference.get();
         if (result == null && create) {
+            assert cacheReference.refersTo(null) : "Old cache reference inconsistent for state "
+                + this;
+            if (DEBUG && (this instanceof GraphState s) && s.isDone()) {
+                System.out.printf("Recreating cache for done state %s, reference #%s%n",
+                    this,
+                    cacheReference);
+            }
             result = createCache();
-            setCacheReference(getCacheReference().newReference(this, result));
+            cacheReference = cacheReference.newReference(this, result);
+            assert cacheReference.refersTo(result) : "New cache reference inconsistent for state "
+                + this;
+            setCacheReference(cacheReference);
         }
         return result;
     }
@@ -66,7 +79,7 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
      * Tests if the cache is currently cleared.
      */
     final public boolean hasCache() {
-        return getCacheReference().get() != null;
+        return !getCacheReference().refersTo(null);
     }
 
     /**
@@ -130,4 +143,6 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
 
     /** The internally stored reference. */
     private CacheReference<C> reference;
+
+    private final static boolean DEBUG = true;
 }

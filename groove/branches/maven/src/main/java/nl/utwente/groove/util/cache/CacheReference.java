@@ -38,9 +38,13 @@ public class CacheReference<C> extends SoftReference<@Nullable C> {
         this.holder = holder;
         this.incarnation = template.incarnation + 1;
         incFrequency(this.incarnation);
-        this.strong = template.strong;
+        if (REINCARNATE_STRONG) {
+            this.strong = true;
+        } else {
+            this.strong = template.strong;
+        }
         if (this.strong) {
-            this.referent = referent;
+            this.strongLink = referent;
         }
         this.strongNull = template.strongNull;
         this.softNull = template.softNull;
@@ -95,11 +99,11 @@ public class CacheReference<C> extends SoftReference<@Nullable C> {
      * @see #isStrong()
      */
     final public void setSoft() {
-        if (this.holder != null) {
-            assert!this.strong
-                || this.referent != null : "Referent cannot be null for strong reference";
+        if (!NEVER_SOFTEN && this.holder != null) {
+            assert !this.strong
+                || this.strongLink != null : "Referent cannot be null for strong reference";
             this.strong = false;
-            this.referent = null;
+            this.strongLink = null;
         }
     }
 
@@ -183,6 +187,9 @@ public class CacheReference<C> extends SoftReference<@Nullable C> {
                     cacheClearCount++;
                 }
             }
+            if (DEBUG) {
+                System.out.printf("Cache cleared for %s%n", this.holder);
+            }
         }
     }
 
@@ -191,7 +198,7 @@ public class CacheReference<C> extends SoftReference<@Nullable C> {
     /** Flag set as long as the reference is tied. */
     private boolean strong;
     /** Strong reference to the referent, set only if the reference is strong. */
-    private @Nullable C referent;
+    private @Nullable C strongLink;
     /** The incarnation count of this reference. */
     private final int incarnation;
 
@@ -291,11 +298,11 @@ public class CacheReference<C> extends SoftReference<@Nullable C> {
     static private List<Integer> frequencies = new ArrayList<>();
 
     /** The singleton null instance for strong references. */
-    @SuppressWarnings("rawtypes") static private final CacheReference strongInstance =
-        new CacheReference<>(true, 0, null);
+    @SuppressWarnings("rawtypes")
+    static private final CacheReference strongInstance = new CacheReference<>(true, 0, null);
     /** The singleton null instance for weak references. */
-    @SuppressWarnings("rawtypes") static private final CacheReference softInstance =
-        new CacheReference<>(false, 0, null);
+    @SuppressWarnings("rawtypes")
+    static private final CacheReference softInstance = new CacheReference<>(false, 0, null);
 
     /**
      * Global counter of the total number of cache reincarnations.
@@ -318,4 +325,11 @@ public class CacheReference<C> extends SoftReference<@Nullable C> {
      * Queue for garbage collected {@link CacheReference} objects.
      */
     static final private ReferenceQueue<@Nullable Object> queue = new ReferenceQueue<>();
+
+    /** Debug flag. */
+    static final private boolean DEBUG = false;
+    /** Debug flag preventing references from becoming soft. */
+    static final private boolean NEVER_SOFTEN = false;
+    /** Debug flag ensuring resurrected references are always strong. */
+    static final private boolean REINCARNATE_STRONG = false;
 }

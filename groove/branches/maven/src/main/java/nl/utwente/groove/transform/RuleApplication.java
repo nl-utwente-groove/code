@@ -91,9 +91,8 @@ public class RuleApplication implements DeltaApplier {
         this.rule = event.getRule();
         this.source = source;
         this.addedNodes = addedNodes;
-        assert testEvent(event, source) : String.format("Event error for %s applied to %s",
-            event,
-            source);
+        assert !DEBUG || testEvent(event, source) : String
+            .format("Event error for %s applied to %s", event, source);
     }
 
     /**
@@ -104,8 +103,8 @@ public class RuleApplication implements DeltaApplier {
      * @param addedNodes the non-<code>null</code> array of created nodes,
      * in the order of the rule's coanchor.
      */
-    public RuleApplication(RuleEvent event, HostGraph source, HostGraph target,
-        @NonNull HostNode[] addedNodes) {
+    public RuleApplication(RuleEvent event, HostGraph source, HostGraph target, @NonNull
+    HostNode[] addedNodes) {
         this(event, source, addedNodes);
         this.target = target;
     }
@@ -580,4 +579,6 @@ public class RuleApplication implements DeltaApplier {
      * constructed in the course of rule application.
      */
     private Map<RuleNode,HostNodeSet> comatch;
+
+    private final static boolean DEBUG = false;
 }
