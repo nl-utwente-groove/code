@@ -141,8 +141,10 @@ public class ExplorationTest {
     /** Tests the As-and-Bs grammar meant to test path-match cache behavior  sample. */
     @Test
     public void testAsAndBs() {
-        testExploration("As-and-Bs-reg-exp-benchmark.gps", "start", "bfs", 8240, 44774);
-        testExploration("As-and-Bs-reg-exp-benchmark.gps", "start", "rete", 8240, 44774);
+        if (!DEBUG) {
+            testExploration("As-and-Bs-reg-exp-benchmark.gps", "start", "bfs", 8240, 44774);
+            testExploration("As-and-Bs-reg-exp-benchmark.gps", "start", "rete", 8240, 44774);
+        }
     }
 
     /** Tests the lose-nodes sample. */
@@ -173,7 +175,7 @@ public class ExplorationTest {
     /** Tests the counting sample. */
     @Test
     public void testCounting() {
-        //testExploration("counting.gps", "start", "bfs", 10, 9);
+        testExploration("counting.gps", "start", "bfs", 10, 9);
         testExploration("counting.gps", "start", "rete", 10, 9);
     }
 
@@ -229,9 +231,6 @@ public class ExplorationTest {
     @Test
     public void testWildcards() {
         testExploration("wildcards.gps", 8, 12);
-        if (DEBUG) {
-            System.out.println("RETE wildcard test starting here");
-        }
         testExploration("wildcards.gps", "start", "rete", 8, 12);
     }
 
