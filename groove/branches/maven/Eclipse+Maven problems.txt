@@ -1,0 +1,48 @@
+BASIC SOLUTIONS
+===============
+
+JUnit on the class path
+=======================
+Problem: org.junit is not found during compilation of the test sources
+Reason: (?) the test sources are considered to be part of the module. Modular code can't read from the class path
+
+Correction: the above only applies if junit is in the Maven dependencies (as well). Excluding it there does the trick.
+
+
+Specially marked test classes, JUnit on the module path
+=======================================================
+- Then junit has to be required (or does it?)
+
+Problem: test (sub)packages not opened to junit, so junit fails at runtime
+Exporting them doesn't work, as they are marked as test classes, not included in the built package
+
+
+
+
+OBSERVED ERRORS
+===============
+IllegalAccessException at test runtime (in Eclipse)
+---------------------------------------------------
+Exception caused by: class org.junit.runners.BlockJUnit4ClassRunner (in module junit) cannot access class nl.utwente.groove.test.algebra.AlgebrasTest (in module nl.utwente.groove) because module nl.utwente.groove does not export nl.utwente.groove.test.algebra to module junit
+
+Circumstances:
+- Test classes are marked as such
+- The test being run is the test suite CheckinTests, which tries to run tests from a different package
+- "Dependencies" are set to --add-modules ALL-SYSTEM
+
+Apparent cause: when running a test this way, Eclipse does not open other packages to junit than the one in which the test is located
+
+Solution: I haven't found one, except to abandon this way of running a test suite altogether and relying on Eclipse's ability to run all tests. That does work; apparently all test packages are opened to junit in that case.
+
+Test classes marked as erroneous
+--------------------------------
+Test classes are marked as erroneous at compile time when opening them in the editor, yet they are in fact compiled and run fine as tests. Als the errors are not propagated to the project level view.
+
+Circumstances:
+- Test classes are marked as such on the 
+- JUnit is on module path
+- junit is not required in module-info
+
+Apparent cause: the test classes are part of the module and rely on junit, so they require junit when the project is on the module path. The fact that they are marked as test classes does not make a difference here
+
+Modification: This problem is gone when junit is no longer among the Maven dependencies. This was achieved using exlusion.
