@@ -34,6 +34,7 @@ Apparent cause: when running a test this way, Eclipse does not open other packag
 
 Solution: I haven't found one, except to abandon this way of running a test suite altogether and relying on Eclipse's ability to run all tests. That does work; apparently all test packages are opened to junit in that case.
 
+
 Test classes marked as erroneous
 --------------------------------
 Test classes are marked as erroneous at compile time when opening them in the editor, yet they are in fact compiled and run fine as tests. Als the errors are not propagated to the project level view.
@@ -46,3 +47,15 @@ Circumstances:
 Apparent cause: the test classes are part of the module and rely on junit, so they require junit when the project is on the module path. The fact that they are marked as test classes does not make a difference here
 
 Modification: This problem is gone when junit is no longer among the Maven dependencies. This was achieved using exlusion.
+
+
+Tests can't be run from Maven
+-----------------------------
+Maven reports "Failed to run the ecj compiler: Unrecognized option : --patch-module". I don't think this is true, as Eclipse manages to path the module for testing just fine. However, I'm stumped.
+
+UPDATE: According to the comment I received to my StackOverflow question (https://stackoverflow.com/questions/74208293/maven-error-failed-to-run-the-ecj-compiler-unrecognized-option-patch-modul), ecj really doesn't support --patch-module. See also https://help.eclipse.org/2022-09/topic/org.eclipse.jdt.doc.user/tasks/task-using_batch_compiler.htm?cp=1_3_8_0 which supports this.
+
+The only solution I currently see (short of reverting to the standard javac) is to run tests directly from Eclipse, and skip them during the Maven build.
+
+
+

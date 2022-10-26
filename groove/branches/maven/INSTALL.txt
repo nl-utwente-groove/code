@@ -1,4 +1,20 @@
-To install and compile this project, you have to obtain the Maven dependencies first. These consist of
+Releasing
+=========
+To prepare for a release, three things need to be done:
+
+- Running all tests
+- Building and installing the Maven artefact
+- Generating the Javadoc
+
+For this purpose, in Eclipse invoke the Launch configuration
+
+  GROOVE core - do all
+
+
+Compiling
+=========
+
+To compile and run this project, you have to obtain the Maven dependencies first. These consist of
 
 - Globally available libraries
 - Local libraries
@@ -10,7 +26,7 @@ and allow you to run them from the "Run" menu.
 
 In Eclipse, to do all local installs in one fell swoop, use
 
-  GROOVE install local mvn-deps
+  GROOVE core - install local mvn-deps
 
 Alternatively, you can run the required Maven commands from the command line. Instructions are included
 in the .pom-files under lib/pom.
@@ -54,5 +70,5 @@ For the GROOVE local libraries, help has been provided by
 
 * Collecting the groupId, artifactId and version (and dependencies) in a single y.pom file, stored in the subdirectory lib/pom of GROOVE
 * Creating a m2 launch configuration that invokes the above install-file goal
-* Adding that m2 launch configuration to the launch group "GROOVE install local mvn-deps"
+* Adding that m2 launch configuration to the launch group "GROOVE core - install local mvn-deps"
 
