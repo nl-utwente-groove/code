@@ -80,13 +80,14 @@ public abstract class ALabel implements Cloneable, Label {
         if (obj == this) {
             return true;
         }
-        if (!(obj instanceof Label)) {
+        if (obj instanceof Label other) {
+            if (getRole() != other.getRole()) {
+                return false;
+            }
+            return text().equals(other.text());
+        } else {
             return false;
         }
-        if (getRole() != ((Label) obj).getRole()) {
-            return false;
-        }
-        return text().equals(((Label) obj).text());
     }
 
     /** The hash code is computed by {@link #computeHashCode()}. */

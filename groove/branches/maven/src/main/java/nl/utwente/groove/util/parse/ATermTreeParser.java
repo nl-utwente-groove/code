@@ -893,22 +893,17 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
      * though only of distinct token classes.
      * A token also contains the line fragment where it has been found.
      */
-    protected static class Token extends Pair<@NonNull TokenFamily,@NonNull LineFragment> {
-        /** Constructs a token of a given type family. */
-        Token(@NonNull
-        TokenFamily family, @NonNull
-        LineFragment fragment) {
-            super(family, fragment);
-        }
-
+    protected static record Token(@NonNull
+    TokenFamily family, @NonNull
+    LineFragment fragment) {
         /** Returns the type of this token. */
         public TokenType type(TokenClaz claz) {
-            return one().get(claz);
+            return family().get(claz);
         }
 
         /** Indicates if this token may be of a given token class. */
         public boolean has(TokenClaz claz) {
-            return one().containsKey(claz);
+            return family().containsKey(claz);
         }
 
         /** Returns the operator of a given token class, if there is
@@ -922,17 +917,17 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
 
         /** Returns the start position of this token. */
         public int start() {
-            return two().start();
+            return fragment().start();
         }
 
         /** Returns the end position of this token. */
         public int end() {
-            return two().end();
+            return fragment().end();
         }
 
         /** Returns the string representation of the token content. */
         public @NonNull String substring() {
-            return two().substring();
+            return fragment().substring();
         }
 
         /** Creates a constant from this token,

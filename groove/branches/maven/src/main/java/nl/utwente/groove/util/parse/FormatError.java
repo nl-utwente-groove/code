@@ -37,7 +37,6 @@ import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.NodeComparator;
 import nl.utwente.groove.gui.list.ListPanel.SelectableListEntry;
 import nl.utwente.groove.lts.GraphState;
-import nl.utwente.groove.util.Pair;
 
 /**
  * Class encoding a single message reporting an error in a graph view.
@@ -73,37 +72,36 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
      * {@link #elements}) from a given object.
      */
     private void addContext(Object par) {
-        if (par instanceof FormatError) {
-            this.subError = (FormatError) par;
-            this.subError.transferTo(null, this);
-        } else if (par instanceof GraphState) {
-            this.state = (GraphState) par;
-        } else if (par instanceof AspectGraph) {
-            this.graph = (AspectGraph) par;
-            setResource(ResourceKind.toResource(this.graph.getRole()),
-                QualName.parse(this.graph.getName()));
-        } else if (par instanceof ControlModel) {
-            this.control = (ControlModel) par;
-            setResource(ResourceKind.CONTROL, this.control.getQualName());
-        } else if (par instanceof PrologModel) {
-            this.prolog = (PrologModel) par;
-            setResource(ResourceKind.PROLOG, this.prolog.getQualName());
-        } else if (par instanceof Element) {
-            this.elements.add((Element) par);
-        } else if (par instanceof Integer) {
-            this.numbers.add((Integer) par);
-        } else if (par instanceof Object[]) {
-            for (Object subpar : (Object[]) par) {
+        if (par instanceof FormatError e) {
+            this.subError = e;
+            e.transferTo(null, this);
+        } else if (par instanceof GraphState s) {
+            this.state = s;
+        } else if (par instanceof AspectGraph g) {
+            this.graph = g;
+            setResource(ResourceKind.toResource(g.getRole()), QualName.parse(g.getName()));
+        } else if (par instanceof ControlModel c) {
+            this.control = c;
+            setResource(ResourceKind.CONTROL, c.getQualName());
+        } else if (par instanceof PrologModel p) {
+            this.prolog = p;
+            setResource(ResourceKind.PROLOG, p.getQualName());
+        } else if (par instanceof Element e) {
+            this.elements.add(e);
+        } else if (par instanceof Integer i) {
+            this.numbers.add(i);
+        } else if (par instanceof Object[] a) {
+            for (Object subpar : a) {
                 addContext(subpar);
             }
-        } else if (par instanceof Rule) {
-            setResource(ResourceKind.RULE, ((Rule) par).getQualName());
-        } else if (par instanceof Recipe) {
-            setResource(ResourceKind.CONTROL, ((Recipe) par).getControlName());
-        } else if (par instanceof GrammarKey) {
-            setResource(ResourceKind.PROPERTIES, QualName.name(((GrammarKey) par).getName()));
-        } else if (par instanceof Resource) {
-            setResource(((Resource) par).one(), ((Resource) par).two());
+        } else if (par instanceof Rule r) {
+            setResource(ResourceKind.RULE, r.getQualName());
+        } else if (par instanceof Recipe r) {
+            setResource(ResourceKind.CONTROL, r.getControlName());
+        } else if (par instanceof GrammarKey k) {
+            setResource(ResourceKind.PROPERTIES, QualName.name(k.getName()));
+        } else if (par instanceof Resource r) {
+            setResource(r.kind(), r.name());
         }
     }
 
@@ -331,10 +329,8 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     }
 
     /** Resource parameter class. */
-    public static class Resource extends Pair<ResourceKind,QualName> {
-        /** Constructs a resource parameter. */
-        public Resource(ResourceKind one, QualName two) {
-            super(one, two);
-        }
+    public static record Resource(ResourceKind kind, QualName name) {
+        // empty by design
+
     }
 }

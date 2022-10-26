@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2010 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -43,7 +43,7 @@ public class Assignment {
         return this.rhs;
     }
 
-    /** 
+    /**
      * Returns a string representation from which
      * this assignment can be been parsed.
      * If the assignment has been constructed rather
@@ -64,7 +64,7 @@ public class Assignment {
     /** The string from which this expression has been parsed, if any. */
     private String parseString;
 
-    /** 
+    /**
      * Returns the display line used by the GUI.
      * @param assignSymbol the assignment symbol to be used
      */
@@ -73,7 +73,8 @@ public class Assignment {
         result.append(' ');
         result.append(assignSymbol == null ? "=" : assignSymbol);
         result.append(' ');
-        return Line.atom(result.toString()).append(getRhs().toLine());
+        return Line.atom(result.toString())
+            .append(getRhs().toLine());
     }
 
     @Override
@@ -95,11 +96,11 @@ public class Assignment {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof Assignment)) {
+        if (!(obj instanceof Assignment other)) {
             return false;
+        } else {
+            return this.lhs.equals(other.lhs) && this.rhs.equals(other.rhs);
         }
-        Assignment other = (Assignment) obj;
-        return this.lhs.equals(other.lhs) && this.rhs.equals(other.rhs);
     }
 
     /**
@@ -114,7 +115,8 @@ public class Assignment {
         Assignment result = this;
         if (oldLabel.getRole() == EdgeRole.BINARY) {
             Expression newRhs = getRhs().relabel(oldLabel, newLabel);
-            String newLhs = oldLabel.text().equals(getLhs()) ? newLabel.text() : getLhs();
+            String newLhs = oldLabel.text()
+                .equals(getLhs()) ? newLabel.text() : getLhs();
             if (newRhs != getRhs() || newLhs != getLhs()) {
                 result = new Assignment(newLhs, newRhs);
             }
@@ -132,6 +134,7 @@ public class Assignment {
      * @throws FormatException if the input string contains syntax errors
      */
     public static Assignment parse(String text) throws FormatException {
-        return ExprTreeParser.parseAssign(text).toAssignment();
+        return ExprTreeParser.parseAssign(text)
+            .toAssignment();
     }
 }

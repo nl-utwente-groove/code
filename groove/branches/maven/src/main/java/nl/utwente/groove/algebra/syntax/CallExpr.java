@@ -129,15 +129,15 @@ public final class CallExpr extends Expression {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof CallExpr)) {
+        if (!(obj instanceof CallExpr other)) {
             return false;
-        }
-        CallExpr other = (CallExpr) obj;
-        if (!this.op.equals(other.op)) {
-            return false;
-        }
-        if (!this.args.equals(other.args)) {
-            return false;
+        } else {
+            if (!this.op.equals(other.op)) {
+                return false;
+            }
+            if (!this.args.equals(other.args)) {
+                return false;
+            }
         }
         return true;
     }

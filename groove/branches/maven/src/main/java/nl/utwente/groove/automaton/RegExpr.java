@@ -62,7 +62,7 @@ import nl.utwente.groove.util.parse.StringHandler;
  * @author Arend Rensink
  * @version $Revision$
  */
-abstract public class RegExpr { // implements VarSetSupport {
+abstract sealed public class RegExpr { // implements VarSetSupport {
     /**
      * Constructs a regular expression with a given operator name and operator
      * symbol. This constructor is there for subclassing purposes.
@@ -535,9 +535,8 @@ abstract public class RegExpr { // implements VarSetSupport {
                     break;
                 }
             case INV_OPERATOR:
-                String error = String.format("Atom '%s' contains invalid first character '%c'",
-                    text,
-                    INV_OPERATOR);
+                String error = String
+                    .format("Atom '%s' contains invalid first character '%c'", text, INV_OPERATOR);
                 throw new FormatException(error);
             default:
                 // default atoms
@@ -929,7 +928,7 @@ abstract public class RegExpr { // implements VarSetSupport {
     /**
      * Abstract superclass for all regular expressions that are not constants.
      */
-    abstract static protected class Composite extends RegExpr {
+    abstract static sealed protected class Composite extends RegExpr {
         /**
          * Constructs an instance of a composite regular expression with a given
          * operator name and operator symbol. This constructor is there only for
@@ -956,7 +955,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      * Abstract class modelling a sequence of (more than one) operand separated
      * by a given operator string.
      */
-    abstract static protected class Infix extends Composite {
+    abstract sealed static protected class Infix extends Composite {
         /**
          * Creates a regular expression from an infix operator and a list of
          * operands. The operands are themselves regular expressions.
@@ -1107,7 +1106,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      * Abstract class modelling a postfix operatior. This corresponds to one
      * operand followed by a operator string, fixed in the specializing class.
      */
-    abstract static protected class Postfix extends Composite {
+    abstract sealed static protected class Postfix extends Composite {
         /**
          * Creates a prototye regular expression.
          */
@@ -1219,7 +1218,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      * operator string, fixed in the specializing class, followed by one
      * operand.
      */
-    abstract static protected class Prefix extends Composite {
+    abstract sealed static protected class Prefix extends Composite {
         /**
          * Creates a prototye regular expression.
          */
@@ -1329,7 +1328,7 @@ abstract public class RegExpr { // implements VarSetSupport {
     /**
      * Abstract class modelling a constant regular expression.
      */
-    abstract static protected class Constant extends RegExpr {
+    abstract sealed static protected class Constant extends RegExpr {
         /**
          * Creates a prototye regular expression.
          */
@@ -1384,7 +1383,7 @@ abstract public class RegExpr { // implements VarSetSupport {
     @ToolTipHeader("Concatenation")
     @ToolTipBody({"Satisfied by a path <i>p</i> if it is the concatenation",
         "of a path <i>p1</i> satisfying %1$s, followed by a path <i>p2</i>", "satisfying %2$s"})
-    static public class Seq extends Infix {
+    static final public class Seq extends Infix {
         /** Creates a sequential composition of a list of expressions. */
         public Seq(List<RegExpr> innerRegExps) {
             super("" + SEQ_OPERATOR, SEQ_SYMBOLIC_NAME, innerRegExps);
@@ -1432,7 +1431,7 @@ abstract public class RegExpr { // implements VarSetSupport {
     @Syntax("expr1 %s expr2")
     @ToolTipHeader("Choice")
     @ToolTipBody({"Satisfied by a path <i>p</i> if satisfies either %1$s or %2$s"})
-    static public class Choice extends Infix {
+    static final public class Choice extends Infix {
         /** Creates a choice between a list of expressions. */
         public Choice(List<RegExpr> tokenList) {
             super("" + CHOICE_OPERATOR, CHOICE_SYMBOLIC_NAME, tokenList);
@@ -1492,7 +1491,7 @@ abstract public class RegExpr { // implements VarSetSupport {
     @ToolTipPars({"the optional role of the label: either FLAG or TYPE",
         "the optional wildcard variable name",
         "comma-separated list of labels, either containing or excluding the matched label"})
-    static public class Wildcard extends Constant {
+    static final public class Wildcard extends Constant {
         /** Creates an prototype instance. */
         Wildcard() {
             this(null);
@@ -1546,16 +1545,12 @@ abstract public class RegExpr { // implements VarSetSupport {
         @Override
         protected Line computeLine() {
             Line result = Line.atom(super.toString() + getLabelVar().getName() + getGuard());
-            switch (getGuard().getKind()) {
-            case FLAG:
-                result = result.style(Style.ITALIC);
-                break;
-            case NODE_TYPE:
-                result = result.style(Style.BOLD);
-                break;
-            default:
-                // no style imposed
-            }
+            // add extra formatting
+            result = switch (getGuard().getKind()) {
+            case FLAG -> result.style(Style.ITALIC);
+            case NODE_TYPE -> result.style(Style.BOLD);
+            default -> result;
+            };
             return result;
         }
 
@@ -1694,9 +1689,8 @@ abstract public class RegExpr { // implements VarSetSupport {
             if (negated) {
                 constraintList = constraintList.substring(1);
             }
-            String[] constraintParts = StringHandler.splitExpr(constraintList,
-                "" + TypeGuard.SEPARATOR,
-                StringHandler.INFIX_POSITION);
+            String[] constraintParts = StringHandler
+                .splitExpr(constraintList, "" + TypeGuard.SEPARATOR, StringHandler.INFIX_POSITION);
             if (constraintParts.length == 0) {
                 throw new FormatException("Invalid constraint parameter '%s'", parameter);
             }
@@ -1752,7 +1746,7 @@ abstract public class RegExpr { // implements VarSetSupport {
     @Syntax("%s label")
     @ToolTipHeader("Sharp type")
     @ToolTipBody({"Satisfied only by the node type %s (and not by any subtype of it)"})
-    static public class Sharp extends Constant {
+    static final public class Sharp extends Constant {
         /** Creates an instance without variable identifier. */
         public Sharp() {
             super("" + SHARP_OPERATOR, SHARP_SYMBOLIC_NAME);
@@ -1874,7 +1868,7 @@ abstract public class RegExpr { // implements VarSetSupport {
     @Syntax("%s")
     @ToolTipHeader("Equality or merging")
     @ToolTipBody({"Satisfied only by an empty path; i.e., a path not containing any edges."})
-    static public class Empty extends Constant {
+    static final public class Empty extends Constant {
         /** Creates an instance of this expression. */
         public Empty() {
             super("" + EMPTY_OPERATOR, EMPTY_SYMBOLIC_NAME);
@@ -1932,7 +1926,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         "In the latter case, any subtype of %2$s is also correct."})
     @ToolTipPars({"optional role: either TYPE or FLAG",
         "edge label; should be single-quoted if it contains non-identifier characters."})
-    static public class Atom extends Constant {
+    static final public class Atom extends Constant {
         /**
          * Creates a new atomic expression, based on a given text.
          * @param token the text to create the atom from
@@ -2007,11 +2001,12 @@ abstract public class RegExpr { // implements VarSetSupport {
          */
         @Override
         public RegExpr parseOperator(String expr) throws FormatException {
+            RegExpr result;
             expr = expr.trim();
             if (expr.length() == 0) {
                 throw new FormatException("Empty string not allowed in expression");
             } else if (isAtom(expr)) {
-                return newInstance(expr);
+                result = newInstance(expr);
             } else {
                 // the only hope is that the expression is quoted or bracketed
                 Pair<String,List<String>> parseResult = StringHandler.parseExpr(expr);
@@ -2021,19 +2016,18 @@ abstract public class RegExpr { // implements VarSetSupport {
                         .charAt(0) == PLACEHOLDER) {
                     String parsedExpr = parseResult.two()
                         .get(0);
-                    switch (parsedExpr.charAt(0)) {
-                    case LPAR_CHAR:
-                        return parse(parsedExpr.substring(1, expr.length() - 1));
-                    case SINGLE_QUOTE_CHAR:
-                        return newInstance(StringHandler.toUnquoted(parsedExpr, SINGLE_QUOTE_CHAR));
-                    default:
-                        return null;
-                    }
+                    result = switch (parsedExpr.charAt(0)) {
+                    case LPAR_CHAR -> parse(parsedExpr.substring(1, expr.length() - 1));
+                    case SINGLE_QUOTE_CHAR -> newInstance(
+                        StringHandler.toUnquoted(parsedExpr, SINGLE_QUOTE_CHAR));
+                    default -> null;
+                    };
                 } else {
                     // the expression is not atomic when parsed
-                    return null;
+                    result = null;
                 }
             }
+            return result;
         }
 
         /**
@@ -2085,7 +2079,7 @@ abstract public class RegExpr { // implements VarSetSupport {
     @ToolTipHeader("Zero or more")
     @ToolTipBody({"Matched by a path <i>p</i> if it is the concatenation of multiple",
         "fragments satisfying %1$s"})
-    static public class Star extends Postfix {
+    static final public class Star extends Postfix {
         /** Creates the repetition of a given regular expression. */
         public Star(RegExpr operand) {
             super("" + STAR_OPERATOR, STAR_SYMBOLIC_NAME, operand);
@@ -2125,7 +2119,7 @@ abstract public class RegExpr { // implements VarSetSupport {
     @ToolTipHeader("One or more")
     @ToolTipBody({"Matched by a path <i>p</i> if it is the concatenation of at least one",
         "fragment satisfying %1$s"})
-    static public class Plus extends Postfix {
+    static final public class Plus extends Postfix {
         /** Creates a non-empty repetition of a given regular expression. */
         public Plus(RegExpr operand) {
             super("" + PLUS_OPERATOR, PLUS_SYMBOLIC_NAME, operand);
@@ -2164,7 +2158,7 @@ abstract public class RegExpr { // implements VarSetSupport {
     @Syntax("%s expr")
     @ToolTipHeader("Inversion")
     @ToolTipBody({"Matched by a path <i>p</i> that, when traversed backwards, satisfies %1$s."})
-    static public class Inv extends Prefix {
+    static final public class Inv extends Prefix {
         /** Creates the inversion of a given regular expression. */
         public Inv(RegExpr operand) {
             super("" + INV_OPERATOR, INV_SYMBOLIC_NAME, operand);
@@ -2203,7 +2197,7 @@ abstract public class RegExpr { // implements VarSetSupport {
     @Syntax("%s expr")
     @ToolTipHeader("Negation")
     @ToolTipBody({"Matched by any path <i>p</i> that does <i>not</i> satisfy %1$s."})
-    static public class Neg extends Prefix {
+    static final public class Neg extends Prefix {
         /** Creates the negation of a given regular expression. */
         public Neg(RegExpr operand) {
             super(NEG_OPERATOR, NEG_SYMBOLIC_NAME, operand);

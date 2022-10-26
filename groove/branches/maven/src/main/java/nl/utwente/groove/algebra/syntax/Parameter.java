@@ -79,11 +79,11 @@ public final class Parameter extends Expression {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof Parameter)) {
+        if (!(obj instanceof Parameter other)) {
             return false;
+        } else {
+            return this.nr == other.nr;
         }
-        Parameter other = (Parameter) obj;
-        return this.nr == other.nr;
     }
 
     @Override

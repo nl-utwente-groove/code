@@ -106,22 +106,21 @@ public final class FieldExpr extends Expression {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof FieldExpr)) {
-            return false;
-        }
-        FieldExpr other = (FieldExpr) obj;
-        if (this.type != other.type) {
-            return false;
-        }
-        String target = this.target;
-        if (target == null) {
-            if (other.target != null) {
+        if (obj instanceof FieldExpr other) {
+            if (this.type != other.type) {
                 return false;
             }
-        } else if (!target.equals(other.target)) {
-            return false;
+            String target = this.target;
+            if (target == null) {
+                if (other.target != null) {
+                    return false;
+                }
+            } else if (!target.equals(other.target)) {
+                return false;
+            }
+            return this.field.equals(other.field);
         }
-        return this.field.equals(other.field);
+        return false;
     }
 
     @Override
