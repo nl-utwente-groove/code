@@ -1,7 +1,5 @@
-/* $Id$ */
 /**
- * @author Rensink
- *
+ * Module declaration for GROOVE
  */
 module nl.utwente.groove {
     exports nl.utwente.groove.control.template;
@@ -100,7 +98,6 @@ module nl.utwente.groove {
     requires java.xml;
     requires jgoodies.looks;
     requires transitive jgraph;
-    requires junit;
     requires ltl2buchi;
     requires transitive nl.utwente.groove.gxl;
     requires opencsv;
@@ -111,4 +108,12 @@ module nl.utwente.groove {
     requires org.eclipse.jdt.annotation;
     requires osxadapter;
     requires rsyntaxtextarea;
+
+    opens nl.utwente.groove.explore to args4j;
+    opens nl.utwente.groove.gui to args4j;
+    opens nl.utwente.groove.io to args4j;
+    opens nl.utwente.groove.match.rete to args4j;
+    opens nl.utwente.groove.prolog to args4j;
+    opens nl.utwente.groove.util to args4j;
+    opens nl.utwente.groove.util.cli to args4j;
 }

@@ -168,6 +168,10 @@
 					<groupId>org.antlr</groupId>
 					<artifactId>antlr</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>junit</groupId>
+					<artifactId>junit</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
