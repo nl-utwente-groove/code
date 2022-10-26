@@ -23,9 +23,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-import org.junit.Assert;
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.Function;
 import nl.utwente.groove.control.term.Derivation;
@@ -107,10 +107,12 @@ public class TermDerivationTest {
         // a | { alap { b|c } }
         setSource(b.or(c)
             .alap());
-        assertEdge(this.bCall, b.or(c)
-            .alap());
-        assertEdge(this.cCall, b.or(c)
-            .alap());
+        assertEdge(this.bCall,
+            b.or(c)
+                .alap());
+        assertEdge(this.cCall,
+            b.or(c)
+                .alap());
         assertSuccFail(delta(), epsilon());
         assertDepth(0);
     }
@@ -204,19 +206,23 @@ public class TermDerivationTest {
         // while (a|b) {}
         setSource(a.or(b)
             .whileDo(epsilon()));
-        assertEdge(this.aCall, a.or(b)
-            .whileDo(epsilon()));
-        assertEdge(this.bCall, a.or(b)
-            .whileDo(epsilon()));
+        assertEdge(this.aCall,
+            a.or(b)
+                .whileDo(epsilon()));
+        assertEdge(this.bCall,
+            a.or(b)
+                .whileDo(epsilon()));
         assertSuccFail(delta(), epsilon());
         assertDepth(0);
         // while (a|b) { c }
         setSource(a.or(b)
             .whileDo(c));
-        assertEdge(this.aCall, c.seq(a.or(b)
-            .whileDo(c)));
-        assertEdge(this.bCall, c.seq(a.or(b)
-            .whileDo(c)));
+        assertEdge(this.aCall,
+            c.seq(a.or(b)
+                .whileDo(c)));
+        assertEdge(this.bCall,
+            c.seq(a.or(b)
+                .whileDo(c)));
         assertSuccFail(delta(), epsilon());
         assertDepth(0);
         // while (if a) {}
@@ -274,8 +280,9 @@ public class TermDerivationTest {
         setSource(a.ifElse(b, b.seq(c))
             .atom());
         assertEdge(this.aCall, b.transit());
-        assertSuccFail(delta().atom(), b.seq(c)
-            .atom());
+        assertSuccFail(delta().atom(),
+            b.seq(c)
+                .atom());
         assertDepth(0);
     }
 
@@ -286,7 +293,7 @@ public class TermDerivationTest {
         // @a
         setSource(a.transit());
         assertEdge(this.aCall, epsilon());
-        assertSuccFail(p.delta(1), p.delta(1));
+        assertSuccFail(this.p.delta(1), this.p.delta(1));
         assertDepth(1);
         // @((a|skip).c)
         setSource(a.or(epsilon())
@@ -299,22 +306,24 @@ public class TermDerivationTest {
         setSource(a.seq(a)
             .alap()
             .transit());
-        assertEdge(this.aCall, a.seq(a.seq(a)
-            .alap())
-            .transit());
-        assertSuccFail(p.delta(1), epsilon());
+        assertEdge(this.aCall,
+            a.seq(a.seq(a)
+                .alap())
+                .transit());
+        assertSuccFail(this.p.delta(1), epsilon());
         assertDepth(1);
         // @(alap < a;a; >)
         setSource(a.seq(a)
             .atom()
             .alap()
             .transit());
-        assertEdge(this.aCall, a.transit()
-            .seq(a.seq(a)
-                .atom()
-                .alap())
-            .transit());
-        assertSuccFail(p.delta(1), epsilon());
+        assertEdge(this.aCall,
+            a.transit()
+                .seq(a.seq(a)
+                    .atom()
+                    .alap())
+                .transit());
+        assertSuccFail(this.p.delta(1), epsilon());
         assertDepth(1);
     }
 
@@ -322,7 +331,7 @@ public class TermDerivationTest {
     public void testFunction() {
         Function f = function("f", this.a.star());
         Call fCall = new Call(f);
-        Term fb = p.call(fCall)
+        Term fb = this.p.call(fCall)
             .seq(this.b);
         setSource(fb);
         assertEdge(fCall, this.b, new Derivation(this.aCall, this.a.star()));
@@ -359,11 +368,11 @@ public class TermDerivationTest {
     }
 
     private Term delta() {
-        return p.delta();
+        return this.p.delta();
     }
 
     private Term epsilon() {
-        return p.epsilon();
+        return this.p.epsilon();
     }
 
     private Term source() {
@@ -387,7 +396,7 @@ public class TermDerivationTest {
 
     private Term call(String name) {
         Callable unit = rule(name);
-        return p.call(new Call(unit));
+        return this.p.call(new Call(unit));
     }
 
     /** Constructs a function with a given name and body, and an empty signature. */
@@ -424,18 +433,17 @@ public class TermDerivationTest {
     }
 
     private final Call aCall, bCall, cCall;
+    private final Term p = Term.prototype();
     private final Term a, b, c;
 
     {
         this.aCall = new Call(rule("a"));
         this.bCall = new Call(rule("b"));
         this.cCall = new Call(rule("c"));
-        this.a = p.call(this.aCall);
-        this.b = p.call(this.bCall);
-        this.c = p.call(this.cCall);
+        this.a = this.p.call(this.aCall);
+        this.b = this.p.call(this.bCall);
+        this.c = this.p.call(this.cCall);
     }
-
-    private final static Term p = Term.prototype();
     private static final String CONTROL_DIR = "junit/control/";
     private static final boolean DEBUG = false;
 
