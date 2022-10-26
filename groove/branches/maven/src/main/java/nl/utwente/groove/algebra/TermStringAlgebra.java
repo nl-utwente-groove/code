@@ -23,7 +23,8 @@ import nl.utwente.groove.algebra.syntax.Expression;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TermStringAlgebra extends StringAlgebra<Expression,Expression,Expression,Expression> {
+public final class TermStringAlgebra
+    extends StringAlgebra<Expression,Expression,Expression,Expression> {
     /** Private constructor for the singleton instance. */
     private TermStringAlgebra() {
         // empty

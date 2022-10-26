@@ -24,8 +24,9 @@ import nl.utwente.groove.algebra.syntax.Expression;
  * @param <BOOL> The representation type of the boolean algebra
  * @param <STRING> The representation type of the string algebra
  */
-public abstract class StringAlgebra<INT,REAL,BOOL,STRING>
-    extends StringSignature<INT,REAL,BOOL,STRING> implements Algebra<STRING> {
+public sealed abstract class StringAlgebra<INT,REAL,BOOL,STRING>
+    extends StringSignature<INT,REAL,BOOL,STRING> implements
+    Algebra<STRING>permits AbstractStringAlgebra<INT,REAL>, PointStringAlgebra, TermStringAlgebra {
     @Override
     @SuppressWarnings("unchecked")
     public STRING toValue(Expression term) {

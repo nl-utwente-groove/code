@@ -25,7 +25,7 @@ import nl.utwente.groove.algebra.syntax.Expression;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class JavaIntAlgebra extends IntAlgebra<Integer,Double,Boolean,String> {
+public final class JavaIntAlgebra extends IntAlgebra<Integer,Double,Boolean,String> {
     /** Private constructor for the singleton instance. */
     private JavaIntAlgebra() {
         // empty

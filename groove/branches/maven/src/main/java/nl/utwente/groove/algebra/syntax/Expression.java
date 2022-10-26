@@ -35,7 +35,7 @@ import nl.utwente.groove.util.parse.OpKind;
  * @version $Revision $
  */
 @NonNullByDefault
-public abstract class Expression {
+public sealed abstract class Expression permits Constant, Parameter, Variable, FieldExpr, CallExpr {
     /**
      * Constructor for subclasses.
      * @param prefixed indicates if the expression was explicitly typed
@@ -193,8 +193,9 @@ public abstract class Expression {
             System.out.printf("Original expression: %s%n", args[0]);
             System.out.printf("Flattened term tree: %s%n", tree.toString());
             System.out.printf("Corresponding term:  %s%n", tree.toExpression());
-            System.out.printf("Display string:      %s%n", tree.toExpression()
-                .toDisplayString());
+            System.out.printf("Display string:      %s%n",
+                tree.toExpression()
+                    .toDisplayString());
         } catch (FormatException e) {
             e.printStackTrace();
         }

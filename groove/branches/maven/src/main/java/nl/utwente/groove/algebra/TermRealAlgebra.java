@@ -26,7 +26,8 @@ import nl.utwente.groove.algebra.syntax.Expression;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TermRealAlgebra extends RealAlgebra<Expression,Expression,Expression,Expression> {
+public final class TermRealAlgebra
+    extends RealAlgebra<Expression,Expression,Expression,Expression> {
     /** Private constructor for the singleton instance. */
     private TermRealAlgebra() {
         // empty

@@ -24,8 +24,9 @@ import nl.utwente.groove.algebra.syntax.Expression;
  * @param <BOOL> The representation type of the boolean algebra
  * @param <STRING> The representation type of the string algebra
  */
-public abstract class RealAlgebra<INT,REAL,BOOL,STRING> extends RealSignature<INT,REAL,BOOL,STRING>
-    implements Algebra<REAL> {
+public abstract sealed class RealAlgebra<INT,REAL,BOOL,STRING>
+    extends RealSignature<INT,REAL,BOOL,STRING> implements
+    Algebra<REAL>permits BigRealAlgebra, JavaRealAlgebra, PointRealAlgebra, TermRealAlgebra {
     @Override
     @SuppressWarnings("unchecked")
     public REAL toValue(Expression term) {
@@ -39,9 +40,11 @@ public abstract class RealAlgebra<INT,REAL,BOOL,STRING> extends RealSignature<IN
     @Override
     public final REAL toValueFromJava(Object value) {
         if (!(value instanceof Double)) {
-            throw new IllegalArgumentException(java.lang.String.format(
-                "Native double type is %s, not %s", Double.class.getSimpleName(), value.getClass()
-                    .getSimpleName()));
+            throw new IllegalArgumentException(
+                java.lang.String.format("Native double type is %s, not %s",
+                    Double.class.getSimpleName(),
+                    value.getClass()
+                        .getSimpleName()));
         }
         return toValueFromJavaDouble((Double) value);
     }

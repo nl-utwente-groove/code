@@ -27,13 +27,11 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.gui.dialog.ExplorationDialog;
 
 /**
- * <!=========================================================================>
  * An EncodedEnumeratedType<A> represents a (partial) encoding of a value of
  * type A by means of an enumeration of Strings. The generation of the
  * enumeration must be overridden by the subclass, as well as the parse()
  * method. The creation of the editor is defined locally, using an inspection
  * of the enumeration.
- * <!=========================================================================>
  * @author Maarten de Mol
  */
 public abstract class EncodedEnumeratedType<A> implements EncodedType<A,String> {
@@ -54,11 +52,9 @@ public abstract class EncodedEnumeratedType<A> implements EncodedType<A,String> 
     public abstract Map<String,String> generateOptions(GrammarModel grammar);
 
     /**
-     * <!--------------------------------------------------------------------->
      * An EnumeratedEditor<A> is the type-specific editor that is associated
      * with the EncodedEnumeratedType. It basically consists of a JComboBox
      * that presents all available options.
-     * <!--------------------------------------------------------------------->
      */
     private class EnumeratedEditor<X> extends EncodedTypeEditor<X,String> {
 

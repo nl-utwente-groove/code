@@ -38,7 +38,7 @@ import nl.utwente.groove.util.parse.OpKind.Placement;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CallExpr extends Expression {
+public final class CallExpr extends Expression {
     /** Constructs a term from a given operator and list of arguments. */
     public CallExpr(boolean prefixed, Operator op, List<Expression> args) {
         super(prefixed);

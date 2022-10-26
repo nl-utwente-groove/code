@@ -39,7 +39,8 @@ import nl.utwente.groove.annotation.ToolTipHeader;
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class RealSignature<INT,REAL,BOOL,STRING> implements Signature {
+public sealed abstract class RealSignature<INT,REAL,BOOL,STRING>
+    implements Signature permits RealAlgebra<INT,REAL,BOOL,STRING> {
     /** Absolute value of a real number. */
     @Syntax("Q%s.LPAR.i.RPAR")
     @ToolTipHeader("Absolute value")

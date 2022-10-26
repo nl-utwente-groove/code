@@ -40,7 +40,8 @@ import nl.utwente.groove.annotation.ToolTipHeader;
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class IntSignature<INT,REAL,BOOL,STRING> implements Signature {
+public sealed abstract class IntSignature<INT,REAL,BOOL,STRING>
+    implements Signature permits IntAlgebra<INT,REAL,BOOL,STRING> {
     /** Absolute value of an integer. */
     @Syntax("Q%s.LPAR.i.RPAR")
     @ToolTipHeader("Absolute integer value")

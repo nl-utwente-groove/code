@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -24,13 +24,11 @@ import javax.swing.JPanel;
 import nl.utwente.groove.grammar.model.GrammarModel;
 
 /**
- * <!=========================================================================>
- * An EncodedTypeEditor<B> is an editor for values of type B that represent
+ * An {@link EncodedTypeEditor} is an editor for values of type B that represent
  * values of a type A. It is basically an arbitrary JPanel that is extended
  * with a getter and a setter for a B.
  * Note that the type A is never used locally; it is only provided as
  * additional documentation.
- * <!=========================================================================>
  * @author Maarten de Mol
  */
 public abstract class EncodedTypeEditor<A,B> extends JPanel {
@@ -78,7 +76,7 @@ public abstract class EncodedTypeEditor<A,B> extends JPanel {
         this.listeners.remove(listener);
     }
 
-    /** 
+    /**
      * Notifies all registered {@link TemplateListener}s
      * by invoking {@link TemplateListener#templateEdited()}.
      */

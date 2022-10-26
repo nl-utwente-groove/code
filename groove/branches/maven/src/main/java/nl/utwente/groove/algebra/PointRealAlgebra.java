@@ -26,7 +26,7 @@ import nl.utwente.groove.algebra.syntax.Expression;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class PointRealAlgebra extends RealAlgebra<Integer,Double,Boolean,String>
+public final class PointRealAlgebra extends RealAlgebra<Integer,Double,Boolean,String>
     implements PointAlgebra<Double> {
     /** Private constructor for the singleton instance. */
     private PointRealAlgebra() {

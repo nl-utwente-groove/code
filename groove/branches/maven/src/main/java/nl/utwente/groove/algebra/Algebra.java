@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package nl.utwente.groove.algebra;
@@ -23,7 +23,8 @@ import nl.utwente.groove.algebra.syntax.Expression;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface Algebra<T> extends Signature {
+public sealed interface Algebra<T> extends
+    Signature permits BoolAlgebra<T>, IntAlgebra<T,?,?,?>, PointAlgebra<T>, StringAlgebra<T,?,?,?>, RealAlgebra<T,?,?,?> {
     /** Tests if a given object is a value of this algebra. */
     boolean isValue(Object value);
 
@@ -50,26 +51,26 @@ public interface Algebra<T> extends Signature {
      */
     T toValueFromJava(Object value) throws IllegalArgumentException;
 
-    /** 
+    /**
      * Converts a given algebra value to the corresponding Java algebra value.
      * @param value a value from this algebra; must satisfy {@link #isValue(Object)}
      */
     Object toJavaValue(Object value);
 
-    /** 
+    /**
      * Converts an algebra value to the canonical term representing it.
      * Typically this will be a constant, but for the term algebras it is the value itself.
      * @param value a value from this algebra; must satisfy {@link #isValue(Object)}
      */
     Expression toTerm(Object value);
 
-    /** 
-     * Converts an algebra value to its symbolic string representation. 
+    /**
+     * Converts an algebra value to its symbolic string representation.
      * @param value a value from this algebra; must satisfy {@link #isValue(Object)}
      */
     String getSymbol(Object value);
 
-    /** 
+    /**
      * Returns the name of the algebra.
      * Note that this is <i>not</i> the same as the name of the signature;
      * for the signature name, use {@code getKind().getName()}

@@ -24,7 +24,7 @@ import java.math.BigInteger;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class BigStringAlgebra extends AbstractStringAlgebra<BigInteger,BigDecimal> {
+public final class BigStringAlgebra extends AbstractStringAlgebra<BigInteger,BigDecimal> {
     /** Empty constructor for the singleton instance. */
     private BigStringAlgebra() {
         // empty

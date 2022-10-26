@@ -25,8 +25,8 @@ import nl.utwente.groove.util.parse.StringHandler;
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class AbstractStringAlgebra<INT,REAL>
-    extends StringAlgebra<INT,REAL,Boolean,String> {
+public abstract sealed class AbstractStringAlgebra<INT,REAL>
+    extends StringAlgebra<INT,REAL,Boolean,String>permits BigStringAlgebra, JavaStringAlgebra {
     /** Empty constructor for the singleton instance. */
     AbstractStringAlgebra() {
         // empty

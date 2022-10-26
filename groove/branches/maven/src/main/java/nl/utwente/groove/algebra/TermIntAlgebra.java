@@ -26,7 +26,7 @@ import nl.utwente.groove.algebra.syntax.Expression;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TermIntAlgebra extends IntAlgebra<Expression,Expression,Expression,Expression> {
+public final class TermIntAlgebra extends IntAlgebra<Expression,Expression,Expression,Expression> {
     /** Private constructor for the singleton instance. */
     private TermIntAlgebra() {
         // empty

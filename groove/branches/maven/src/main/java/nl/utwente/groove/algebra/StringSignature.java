@@ -35,7 +35,8 @@ import nl.utwente.groove.annotation.ToolTipPars;
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class StringSignature<INT,REAL,BOOL,STRING> implements Signature {
+public sealed abstract class StringSignature<INT,REAL,BOOL,STRING>
+    implements Signature permits StringAlgebra<INT,REAL,BOOL,STRING> {
     /** String concatenation. */
     @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
     @ToolTipHeader("String concatenation")

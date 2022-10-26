@@ -35,7 +35,7 @@ import nl.utwente.groove.annotation.ToolTipHeader;
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class BoolSignature<Bool> implements Signature {
+public sealed abstract class BoolSignature<Bool> implements Signature permits BoolAlgebra<Bool> {
     /** Negation. */
     @ToolTipHeader("Inversion")
     @Syntax("Q%s.LPAR.b1.RPAR")

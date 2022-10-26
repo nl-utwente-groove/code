@@ -161,7 +161,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
     /**
       * Returns the image of a label under this map.
       * This implementation calls {@link ElementFactory#createLabel(String)}
-      * with as parameter {@link Label#toString()} called on the parameter.
+      * with as parameter {@link #toString()} called on the parameter.
       */
     public Label mapLabel(Label label) {
         return this.factory.createLabel(label.toString());

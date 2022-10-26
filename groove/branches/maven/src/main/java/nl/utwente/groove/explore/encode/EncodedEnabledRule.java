@@ -27,17 +27,15 @@ import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
- * <!=========================================================================>
  * An EncodedEnabledRule describes an encoding of a Rule by means of a String.
- * <!=========================================================================>
  * @author Maarten de Mol
  */
 public class EncodedEnabledRule extends EncodedEnumeratedType<Rule> {
 
     /**
      * Finds all enabled rules in the current grammar, and returns them as
-     * a <String,String> mapping. The entries in this map are simply
-     * <ruleName, ruleName>.
+     * a {@code <String,String>} mapping. The entries in this map are simply
+     * {@code <ruleName, ruleName>}.
      */
     @Override
     public Map<String,String> generateOptions(GrammarModel grammar) {

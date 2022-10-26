@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -28,12 +28,10 @@ import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
- * <!=========================================================================>
  * AcceptorEnumerator enumerates all acceptors that are available in GROOVE.
  * With this enumeration, it is possible to create an editor for acceptors
  * (inherited method createEditor, stored results as a Serialized) and to
  * parse an acceptor from a Serialized (inherited method parse).
- * <!=========================================================================>
  * @author Maarten de Mol
  */
 public class AcceptorEnumerator extends TemplateList<Acceptor> {
@@ -98,8 +96,7 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
 
     private static final String ACCEPTOR_TOOLTIP = "<HTML>"
         + "An acceptor is a predicate that is applied each time the LTS is "
-        + "updated<I>*</I>.<BR>"
-        + "Information about each acceptor success is added to the result "
+        + "updated<I>*</I>.<BR>" + "Information about each acceptor success is added to the result "
         + "set of the exploration.<BR>"
         + "This result set can be used to interrupt exploration.<BR>"
         + "<I>(*)<I>The LTS is updated when a transition is applied, or "

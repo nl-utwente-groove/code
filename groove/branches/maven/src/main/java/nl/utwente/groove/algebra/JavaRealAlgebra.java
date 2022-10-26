@@ -25,7 +25,7 @@ import nl.utwente.groove.algebra.syntax.Expression;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class JavaRealAlgebra extends RealAlgebra<Integer,Double,Boolean,String> {
+public final class JavaRealAlgebra extends RealAlgebra<Integer,Double,Boolean,String> {
     /** Private constructor for the singleton instance. */
     private JavaRealAlgebra() {
         // empty

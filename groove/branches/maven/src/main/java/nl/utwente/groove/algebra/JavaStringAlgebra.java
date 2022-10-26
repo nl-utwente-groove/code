@@ -21,7 +21,7 @@ package nl.utwente.groove.algebra;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class JavaStringAlgebra extends AbstractStringAlgebra<Integer,Double> {
+public final class JavaStringAlgebra extends AbstractStringAlgebra<Integer,Double> {
     /** Empty constructor for the singleton instance. */
     private JavaStringAlgebra() {
         // empty

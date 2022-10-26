@@ -29,7 +29,7 @@ import nl.utwente.groove.util.parse.OpKind;
  * @version $Revision $
  */
 @NonNullByDefault
-public class Variable extends Expression {
+public final class Variable extends Expression {
     /** Constructs a new variable with a given name and sort. */
     public Variable(boolean prefixed, String name, Sort sort) {
         super(prefixed);
@@ -78,7 +78,8 @@ public class Variable extends Expression {
     }
 
     @Override
-    public boolean equals(@Nullable Object obj) {
+    public boolean equals(@Nullable
+    Object obj) {
         if (this == obj) {
             return true;
         }

@@ -34,7 +34,8 @@ package nl.utwente.groove.algebra;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface Signature {
+public sealed interface Signature permits Algebra<?>, BoolSignature<?>, IntSignature<?,?,?,?>, RealSignature<?,?,?,?>, StringSignature<?,?,?,?> {
+
     /** Returns the primary sort of this signature. */
     public Sort getSort();
 

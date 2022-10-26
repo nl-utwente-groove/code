@@ -24,8 +24,9 @@ import nl.utwente.groove.algebra.syntax.Expression;
  * @param <BOOL> The representation type of the boolean algebra
  * @param <STRING> The representation type of the string algebra
  */
-public abstract class IntAlgebra<INT,REAL,BOOL,STRING> extends IntSignature<INT,REAL,BOOL,STRING>
-    implements Algebra<INT> {
+public abstract sealed class IntAlgebra<INT,REAL,BOOL,STRING>
+    extends IntSignature<INT,REAL,BOOL,STRING>
+    implements Algebra<INT>permits BigIntAlgebra, JavaIntAlgebra, PointIntAlgebra, TermIntAlgebra {
     @Override
     @SuppressWarnings("unchecked")
     public INT toValue(Expression term) {
@@ -39,9 +40,11 @@ public abstract class IntAlgebra<INT,REAL,BOOL,STRING> extends IntSignature<INT,
     @Override
     public final INT toValueFromJava(Object value) {
         if (!(value instanceof Integer)) {
-            throw new IllegalArgumentException(java.lang.String.format(
-                "Native int type is %s, not %s", Integer.class.getSimpleName(), value.getClass()
-                    .getSimpleName()));
+            throw new IllegalArgumentException(
+                java.lang.String.format("Native int type is %s, not %s",
+                    Integer.class.getSimpleName(),
+                    value.getClass()
+                        .getSimpleName()));
         }
         return toValue((Integer) value);
     }

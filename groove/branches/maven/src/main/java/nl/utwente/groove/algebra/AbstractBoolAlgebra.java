@@ -26,7 +26,8 @@ import nl.utwente.groove.algebra.syntax.Expression;
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class AbstractBoolAlgebra extends BoolAlgebra<Boolean> {
+public abstract sealed class AbstractBoolAlgebra
+    extends BoolAlgebra<Boolean>permits BigBoolAlgebra, JavaBoolAlgebra {
     /** Private constructor for the singleton instance. */
     AbstractBoolAlgebra() {
         // empty

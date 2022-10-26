@@ -28,12 +28,10 @@ import nl.utwente.groove.util.Reporter;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
- * <!=========================================================================>
  * An Exploration is a combination of a serialized strategy, a serialized
  * acceptor and a number of results. By parsing its fields (relative to the
  * Simulator), the exploration can be executed. The result of the execution
  * (which is a Result set) is remembered in the Exploration.
- * <!=========================================================================>
  * @author Maarten de Mol
  */
 public class Exploration {

@@ -28,7 +28,7 @@ import nl.utwente.groove.algebra.syntax.Expression;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class BigRealAlgebra extends RealAlgebra<BigInteger,BigDecimal,Boolean,String> {
+public final class BigRealAlgebra extends RealAlgebra<BigInteger,BigDecimal,Boolean,String> {
     /** Private constructor for the singleton instance. */
     private BigRealAlgebra() {
         // empty

@@ -26,7 +26,7 @@ import nl.utwente.groove.algebra.syntax.Expression;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class PointIntAlgebra extends IntAlgebra<Integer,Double,Boolean,String>
+public final class PointIntAlgebra extends IntAlgebra<Integer,Double,Boolean,String>
     implements PointAlgebra<Integer> {
     /** Private constructor for the singleton instance. */
     private PointIntAlgebra() {

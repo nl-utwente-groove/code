@@ -27,7 +27,7 @@ import nl.utwente.groove.util.parse.OpKind;
 import nl.utwente.groove.util.parse.StringHandler;
 
 /** A constant symbol for a particular signature. */
-public class Constant extends Expression {
+public final class Constant extends Expression {
     /**
      * Constructs a new string constant from a given (non-{@code null}) string value.
      */

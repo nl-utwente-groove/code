@@ -33,9 +33,10 @@ import nl.utwente.groove.util.parse.OpKind;
  * @version $Revision $
  */
 @NonNullByDefault
-public class FieldExpr extends Expression {
+public final class FieldExpr extends Expression {
     /** Constructs a new field expression. */
-    public FieldExpr(boolean prefixed, @Nullable String target, String field, Sort type) {
+    public FieldExpr(boolean prefixed, @Nullable
+    String target, String field, Sort type) {
         super(prefixed);
         assert field != null && type != null;
         this.target = target;
@@ -100,7 +101,8 @@ public class FieldExpr extends Expression {
     }
 
     @Override
-    public boolean equals(@Nullable Object obj) {
+    public boolean equals(@Nullable
+    Object obj) {
         if (this == obj) {
             return true;
         }

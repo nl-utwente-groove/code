@@ -29,7 +29,7 @@ import nl.utwente.groove.util.parse.OpKind;
  * @version $Revision $
  */
 @NonNullByDefault
-public class Parameter extends Expression {
+public final class Parameter extends Expression {
     /** Constructs a new parameter. */
     public Parameter(boolean prefixed, int nr, Sort type) {
         super(prefixed);
@@ -74,7 +74,8 @@ public class Parameter extends Expression {
     }
 
     @Override
-    public boolean equals(@Nullable Object obj) {
+    public boolean equals(@Nullable
+    Object obj) {
         if (this == obj) {
             return true;
         }

@@ -21,7 +21,7 @@ package nl.utwente.groove.algebra;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class BigBoolAlgebra extends AbstractBoolAlgebra {
+public final class BigBoolAlgebra extends AbstractBoolAlgebra {
     /** Private constructor for the singleton instance. */
     private BigBoolAlgebra() {
         // empty
