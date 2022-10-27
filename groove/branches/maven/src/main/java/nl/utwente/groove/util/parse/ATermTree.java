@@ -24,7 +24,6 @@ import java.util.Stack;
 import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.util.DefaultFixable;
-import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.OpKind.Direction;
 import nl.utwente.groove.util.parse.OpKind.Placement;
@@ -113,25 +112,30 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
     public final String toTreeString() {
         assert isFixed();
         StringBuilder result = new StringBuilder();
-        toTree(new Stack<Pair<Integer,Boolean>>(), result);
+        toTree(new Stack<IndentEntry>(), result);
         result.append('\n');
         return result.toString();
     }
 
-    private final void toTree(Stack<Pair<Integer,Boolean>> indent, StringBuilder result) {
+    /** Record of the length of an indentation, and whether it is the first of a new level. */
+    private static final record IndentEntry(int length, boolean first) {
+        // no additional functionality
+    }
+
+    private final void toTree(Stack<IndentEntry> indent, StringBuilder result) {
         if (getArgs().size() > 0) {
             String symbol = getOp().getSymbol();
             result.append(symbol);
             result.append(getArgs().size() == 1 ? " --- " : " +-- ");
             int i;
             for (i = 0; i < getArgs().size() - 1; i++) {
-                indent.push(Pair.newPair(symbol.length(), true));
+                indent.push(new IndentEntry(symbol.length(), true));
                 getUpArg(i).toTree(indent, result);
                 result.append('\n');
                 addIndent(indent, result);
                 indent.pop();
             }
-            indent.push(Pair.newPair(symbol.length(), false));
+            indent.push(new IndentEntry(symbol.length(), false));
             getUpArg(i).toTree(indent, result);
             indent.pop();
         } else if (getOp().getKind() == OpKind.ATOM) {
@@ -139,13 +143,13 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
         }
     }
 
-    private static final void addIndent(Stack<Pair<Integer,Boolean>> indent, StringBuilder result) {
+    private static final void addIndent(Stack<IndentEntry> indent, StringBuilder result) {
         for (int i = 0; i < indent.size(); i++) {
-            Pair<Integer,Boolean> p = indent.get(i);
-            for (int s = 0; s < p.one(); s++) {
+            IndentEntry p = indent.get(i);
+            for (int s = 0; s < p.length(); s++) {
                 result.append(" ");
             }
-            result.append(p.two() ? (i == indent.size() - 1 ? " +-- " : " |   ") : "     ");
+            result.append(p.first() ? (i == indent.size() - 1 ? " +-- " : " |   ") : "     ");
         }
     }
 

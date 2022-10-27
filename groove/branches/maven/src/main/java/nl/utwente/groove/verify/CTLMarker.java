@@ -77,8 +77,7 @@ public class CTLMarker {
         // & initialise the outgoing transition count
         // as well as the satisfaction of the atoms
         this.states = new Node[nodeCount];
-        @SuppressWarnings("unchecked")
-        List<Integer>[] backward = new List[nodeCount];
+        @SuppressWarnings("unchecked") List<Integer>[] backward = new List[nodeCount];
         this.outCount = new int[nodeCount];
         // collect the special flag labels used in the formula
         Map<Flag,Integer> flagNrs = new EnumMap<>(Flag.class);
@@ -112,7 +111,8 @@ public class CTLMarker {
                     markAtom(nodeNr, label);
                 } else {
                     assert outEdge.isLoop() : String.format(
-                        "Special state marker '%s' occurs as edge label in model", outEdge.label());
+                        "Special state marker '%s' occurs as edge label in model",
+                        outEdge.label());
                     markSpecialAtom(nodeNr, flag);
                     specialEdgeCount++;
                 }
@@ -256,42 +256,23 @@ public class CTLMarker {
         case 2:
             arg1 = mark(property.getArg1());
             arg2 = mark(property.getArg2());
+            break;
+        default: // nothing needs to be set
         }
         // compose the arguments according to the top level operator
-        switch (token) {
-        case TRUE:
-            result = computeTrue();
-            break;
-        case FALSE:
-            result = computeFalse();
-            break;
-        case NOT:
-            result = computeNeg(arg1);
-            break;
-        case OR:
-            result = computeOr(arg1, arg2);
-            break;
-        case AND:
-            result = computeAnd(arg1, arg2);
-            break;
-        case IMPLIES:
-            result = computeImplies(arg1, arg2);
-            break;
-        case FOLLOWS:
-            result = computeImplies(arg2, arg1);
-            break;
-        case EQUIV:
-            result = computeEquiv(arg1, arg2);
-            break;
-        case FORALL:
-            result = markForall(property.getArg1());
-            break;
-        case EXISTS:
-            result = markExists(property.getArg1());
-            break;
-        default:
-            throw new IllegalArgumentException();
-        }
+        result = switch (token) {
+        case TRUE -> computeTrue();
+        case FALSE -> computeFalse();
+        case NOT -> computeNeg(arg1);
+        case OR -> computeOr(arg1, arg2);
+        case AND -> computeAnd(arg1, arg2);
+        case IMPLIES -> computeImplies(arg1, arg2);
+        case FOLLOWS -> computeImplies(arg2, arg1);
+        case EQUIV -> computeEquiv(arg1, arg2);
+        case FORALL -> markForall(property.getArg1());
+        case EXISTS -> markExists(property.getArg1());
+        default -> throw new IllegalArgumentException();
+        };
         this.marking[nr] = result;
         return result;
     }

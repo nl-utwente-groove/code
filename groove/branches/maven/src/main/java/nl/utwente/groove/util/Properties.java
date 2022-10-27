@@ -66,8 +66,7 @@ public abstract class Properties extends java.util.Properties implements Fixable
         CheckerMap result = new CheckerMap();
         for (final PropertyKey<?> key : getKeyType().getEnumConstants()) {
             FormatChecker<String> checker;
-            if (key instanceof GrammarChecker) {
-                final GrammarChecker checkerKey = (GrammarChecker) key;
+            if (key instanceof GrammarChecker checkerKey) {
                 checker = new FormatChecker<String>() {
                     @Override
                     public FormatErrorSet check(String value) {
@@ -224,7 +223,7 @@ public abstract class Properties extends java.util.Properties implements Fixable
     @Override
     public synchronized Object put(Object key, Object value) {
         testFixed(false);
-        if (value == null || (value instanceof String && ((String) value).length() == 0)) {
+        if (value == null || (value instanceof String s && s.length() == 0)) {
             return super.remove(key);
         } else {
             return super.put(key, value);

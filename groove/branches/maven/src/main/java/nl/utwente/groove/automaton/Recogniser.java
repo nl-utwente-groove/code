@@ -31,7 +31,6 @@ import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.host.HostNodeSet;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.Direction;
-import nl.utwente.groove.util.Pair;
 
 /**
  * Class that finds matches for a regular automaton
@@ -121,9 +120,9 @@ public class Recogniser {
             HostNodeSet ns = this.reachMap.get(p);
             if (ns == null) {
                 this.reachMap.put(p, ns = new HostNodeSet());
-                if (p.two()
+                if (p.state()
                     .isFinal()) {
-                    ns.add(p.one());
+                    ns.add(p.node());
                 }
             }
             newReachMap.put(p, ns);
@@ -142,8 +141,8 @@ public class Recogniser {
         TupleSet result = this.nextMap.get(from);
         if (result == null) {
             this.nextMap.put(from, result = new TupleSet());
-            HostNode fromNode = from.one();
-            Map<Direction,Map<TypeLabel,DFAState>> succMaps = from.two()
+            HostNode fromNode = from.node();
+            Map<Direction,Map<TypeLabel,DFAState>> succMaps = from.state()
                 .getLabelMap();
             // Add successor according to node type label
             DFAState ns = succMaps.get(Direction.OUTGOING)
@@ -178,7 +177,8 @@ public class Recogniser {
         return this.reachMap.get(createStartTuple(from));
     }
 
-    private void propagateBackwards(Map<Tuple,TupleSet> predMap, Map<Tuple,HostNodeSet> newReachMap) {
+    private void propagateBackwards(Map<Tuple,TupleSet> predMap,
+        Map<Tuple,HostNodeSet> newReachMap) {
         while (!newReachMap.isEmpty()) {
             Iterator<Map.Entry<Tuple,HostNodeSet>> newReachIter = newReachMap.entrySet()
                 .iterator();
@@ -223,11 +223,8 @@ public class Recogniser {
     /** Mapping from product states to sets of reachable host nodes. */
     private final Map<Tuple,HostNodeSet> reachMap;
 
-    private static class Tuple extends Pair<HostNode,DFAState> {
-        /** Constructs a product node. */
-        public Tuple(HostNode node, DFAState state) {
-            super(node, state);
-        }
+    private static record Tuple(HostNode node, DFAState state) {
+        // no added functionality
     }
 
     private static class TupleSet extends HashSet<Tuple> {

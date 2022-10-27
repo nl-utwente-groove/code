@@ -43,9 +43,7 @@ import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.io.Util;
-import nl.utwente.groove.util.Duo;
 import nl.utwente.groove.util.Pair;
-import nl.utwente.groove.util.Triple;
 import nl.utwente.groove.util.parse.OpKind.Direction;
 import nl.utwente.groove.util.parse.OpKind.Placement;
 
@@ -577,8 +575,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
             result = scanName();
         } else {
             switch (curChar()) {
-            case StringHandler.SINGLE_QUOTE_CHAR:
-            case StringHandler.DOUBLE_QUOTE_CHAR:
+            case StringHandler.SINGLE_QUOTE_CHAR, StringHandler.DOUBLE_QUOTE_CHAR:
                 result = scanString();
                 break;
             case '.':
@@ -588,6 +585,8 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
                 if (isNumber) {
                     result = scanNumber();
                 }
+                break;
+            default: // do nothing
             }
         }
         if (result == null) {
@@ -995,66 +994,47 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
     }
 
     /** A placement-indexed family of operators with the same symbol. */
-    static class OpFamily<O extends Op> extends Duo<O> {
+    static record OpFamily<O extends Op> (O op, String symbol) {
         /** Returns an operator family, initialised with a given operator. */
         OpFamily(O op) {
-            super(null, null);
-            this.symbol = op.getSymbol();
-            add(op);
-        }
-
-        /** Adds an operator to this family. */
-        public void add(O value) {
-            @Nullable O oldValue;
-            if (value.getKind()
-                .getPlace() == Placement.PREFIX) {
-                oldValue = setOne(value);
-            } else {
-                oldValue = setTwo(value);
-            }
-            assert oldValue == null;
-            assert value.getSymbol()
-                .equals(symbol());
+            this(op, op.getSymbol());
         }
 
         /** Indicates if there is a prefix operator in this family. */
         public boolean hasPrefixOp() {
-            return prefixOp() != null;
+            return op().getKind()
+                .getPlace() == Placement.PREFIX;
         }
 
         /** Returns the prefix operator in this family. */
         public O prefixOp() {
-            return one();
+            return hasPrefixOp() ? op() : null;
         }
 
         /** Indicates if there is a non-prefix operator in this family. */
         public boolean hasLatefixOp() {
-            return latefixOp() != null;
+            return op().getKind()
+                .getPlace() == Placement.PREFIX;
         }
 
         /** Returns the non-prefix operator in this family. */
         public O latefixOp() {
-            return two();
+            return hasLatefixOp() ? op() : null;
         }
-
-        /** Returns the common symbol for the operators in this family. */
-        String symbol() {
-            return this.symbol;
-        }
-
-        private final String symbol;
     }
 
     /** A string fragment, consisting of an input line with start and end position. */
-    static class LineFragment extends Triple<String,Integer,Integer> {
+    static record LineFragment(String line, int start, int end) {
         /**
          * Constructs a string fragment.
          * @param line the input line
          * @param start start position
          * @param end end position
          */
-        public LineFragment(String line, Integer start, Integer end) {
-            super(line, start, end);
+        public LineFragment(String line, int start, int end) {
+            this.line = line;
+            this.start = start;
+            this.end = end;
             assert start >= 0;
             assert end >= start && end <= line.length();
         }
@@ -1062,21 +1042,6 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
         /** Returns the fragment substring. */
         public @NonNull String substring() {
             return line().substring(start(), end());
-        }
-
-        /** Returns complete input line. */
-        public String line() {
-            return one();
-        }
-
-        /** Returns the start position of the fragment. */
-        public int start() {
-            return two();
-        }
-
-        /** Returns the end position of the fragment. */
-        public int end() {
-            return three();
         }
     }
 

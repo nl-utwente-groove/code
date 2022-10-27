@@ -27,8 +27,8 @@ import java.util.List;
 import org.junit.Test;
 
 import nl.utwente.groove.algebra.Operator;
-import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.Signature.OpValue;
+import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.syntax.ExprTreeParser;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.FieldExpr;
@@ -101,25 +101,14 @@ public class ExpressionTest {
                 if (i > 0) {
                     call = call + ",";
                 }
-                String arg;
                 Sort type = i < op.getArity() ? op.getParamTypes()
                     .get(i) : Sort.STRING;
-                switch (type) {
-                case BOOL:
-                    arg = this.boolOperands[i];
-                    break;
-                case INT:
-                    arg = this.intOperands[i];
-                    break;
-                case REAL:
-                    arg = this.realOperands[i];
-                    break;
-                case STRING:
-                    arg = this.stringOperands[i];
-                    break;
-                default:
-                    throw Exceptions.UNREACHABLE;
-                }
+                String arg = switch (type) {
+                case BOOL -> this.boolOperands[i];
+                case INT -> this.intOperands[i];
+                case REAL -> this.realOperands[i];
+                case STRING -> this.stringOperands[i];
+                };
                 args.add(arg);
                 call = call + arg;
             }
@@ -127,15 +116,10 @@ public class ExpressionTest {
             if (symbol != null) {
                 switch (op.getKind()
                     .getPlace()) {
-                case INFIX:
-                    assertEquals(result, parse(args.get(0) + symbol + args.get(1)));
-                    break;
-                case POSTFIX:
-                    assertEquals(result, parse(args.get(0) + symbol));
-                    break;
-                case PREFIX:
-                    assertEquals(result, parse(symbol + args.get(0)));
-                    break;
+                case INFIX -> assertEquals(result, parse(args.get(0) + symbol + args.get(1)));
+                case POSTFIX -> assertEquals(result, parse(args.get(0) + symbol));
+                case PREFIX -> assertEquals(result, parse(symbol + args.get(0)));
+                default -> throw Exceptions.UNREACHABLE;
                 }
             }
         }

@@ -18,17 +18,8 @@ package nl.utwente.groove.io.conceptual.lang;
 
 @SuppressWarnings("javadoc")
 public class Message {
-    public enum MessageType {
-        /** Ordinary message. */
-        MSG,
-        /** Warning message. */
-        WARNING,
-        /** Error message. */
-        ERROR
-    }
-
-    private String m_message;
-    private MessageType m_messageType;
+    private final String m_message;
+    private final MessageType m_messageType;
 
     public Message(String message) {
         this.m_message = message;
@@ -42,19 +33,21 @@ public class Message {
 
     @Override
     public String toString() {
-        String message = "";
-        switch (this.m_messageType) {
-        case MSG:
-            message += "[MSG] ";
-            break;
-        case WARNING:
-            message += "[WARN] ";
-            break;
-        case ERROR:
-            message += "[ERROR] ";
-            break;
-        }
+        String message = switch (this.m_messageType) {
+        case MSG -> "[MSG] ";
+        case WARNING -> "[WARN] ";
+        case ERROR -> "[ERROR] ";
+        };
         message += this.m_message;
         return message;
+    }
+
+    public enum MessageType {
+        /** Ordinary message. */
+        MSG,
+        /** Warning message. */
+        WARNING,
+        /** Error message. */
+        ERROR
     }
 }

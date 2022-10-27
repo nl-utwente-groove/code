@@ -108,11 +108,13 @@ public class FindReplaceDialog {
      */
     private void propagateSelection() {
         TypeLabel selection = (TypeLabel) getOldField().getSelectedItem();
-        getOldTypeLabel().setText(selection.getRole().getDescription(true));
+        getOldTypeLabel().setText(selection.getRole()
+            .getDescription(true));
         getNewTypeCombobox().setSelectedIndex(EdgeRole.getIndex(selection.getRole()));
         getNewField().setText(selection.text());
         getNewField().setSelectionStart(0);
-        getNewField().setSelectionEnd(selection.text().length());
+        getNewField().setSelectionEnd(selection.text()
+            .length());
         getNewField().requestFocus();
     }
 
@@ -276,7 +278,8 @@ public class FindReplaceDialog {
     private JTextField getNewField() {
         if (this.newField == null) {
             this.newField = new JTextField();
-            this.newField.getDocument().addDocumentListener(new OverlapListener());
+            this.newField.getDocument()
+                .addDocumentListener(new OverlapListener());
             this.newField.addActionListener(getNameFieldListener());
         }
         return this.newField;
@@ -312,7 +315,8 @@ public class FindReplaceDialog {
     private JLabel getOldTypeLabel() {
         if (this.oldTypeLabel == null) {
             final JLabel result = this.oldTypeLabel = new JLabel();
-            result.setText(getOldLabel().getRole().getDescription(true));
+            result.setText(getOldLabel().getRole()
+                .getDescription(true));
             result.setPreferredSize(getNewTypeCombobox().getPreferredSize());
             result.setBorder(new EtchedBorder());
             result.setEnabled(true);
@@ -334,7 +338,8 @@ public class FindReplaceDialog {
             public Component getListCellRendererComponent(JList list, Object value, int index,
                 boolean isSelected, boolean cellHasFocus) {
                 if (value instanceof TypeLabel) {
-                    value = HTMLConverter.HTML_TAG.on(((TypeLabel) value).toLine().toHTMLString());
+                    value = HTMLConverter.HTML_TAG.on(((TypeLabel) value).toLine()
+                        .toHTMLString());
                 }
                 return super.getListCellRendererComponent(list,
                     value,
@@ -357,16 +362,12 @@ public class FindReplaceDialog {
         List<TypeLabel> flags = new ArrayList<>();
         List<TypeLabel> binary = new ArrayList<>();
         for (TypeLabel label : labels) {
-            switch (label.getRole()) {
-            case NODE_TYPE:
-                nodeTypes.add(label);
-                break;
-            case FLAG:
-                flags.add(label);
-                break;
-            case BINARY:
-                binary.add(label);
-            }
+            var list = switch (label.getRole()) {
+            case NODE_TYPE -> nodeTypes;
+            case FLAG -> flags;
+            case BINARY -> binary;
+            };
+            list.add(label);
         }
         Collections.sort(nodeTypes);
         Collections.sort(flags);

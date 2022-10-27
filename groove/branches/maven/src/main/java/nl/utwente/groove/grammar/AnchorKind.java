@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -28,7 +28,7 @@ import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.NodeComparator;
 
-/** 
+/**
  * Kind of anchor keys and images.
  */
 public enum AnchorKind implements Comparable<AnchorKind> {
@@ -44,23 +44,17 @@ public enum AnchorKind implements Comparable<AnchorKind> {
      * For the meaning of the return values see {@link Comparable#compareTo(Object)}.
      */
     public static int compare(AnchorValue one, AnchorValue two) {
-        int result = one.getAnchorKind().compareTo(one.getAnchorKind());
+        int result = one.getAnchorKind()
+            .compareTo(one.getAnchorKind());
         if (result == 0) {
-            switch (one.getAnchorKind()) {
-            case NODE:
-                result =
-                    NodeComparator.instance().compare(AnchorKind.node(one),
-                        AnchorKind.node(two));
-                break;
-            case EDGE:
-                result =
-                    EdgeComparator.instance().compare(AnchorKind.edge(one),
-                        AnchorKind.edge(two));
-                break;
-            case LABEL:
-                result = AnchorKind.label(one).compareTo(AnchorKind.label(two));
-                break;
-            }
+            result = switch (one.getAnchorKind()) {
+            case NODE -> NodeComparator.instance()
+                .compare(AnchorKind.node(one), AnchorKind.node(two));
+            case EDGE -> EdgeComparator.instance()
+                .compare(AnchorKind.edge(one), AnchorKind.edge(two));
+            case LABEL -> AnchorKind.label(one)
+                .compareTo(AnchorKind.label(two));
+            };
         }
         return result;
     }

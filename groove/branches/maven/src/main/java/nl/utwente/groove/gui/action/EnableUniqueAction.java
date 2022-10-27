@@ -35,7 +35,7 @@ public class EnableUniqueAction extends SimulatorAction {
     /** Constructs a new action. */
     public EnableUniqueAction(Simulator simulator, ResourceKind kind) {
         super(simulator, EditType.ENABLE, kind);
-        putValue(NAME, this.ACTION_NAME(kind));
+        putValue(NAME, ACTION_NAME(kind));
         putValue(SHORT_DESCRIPTION, HOVER_DESCRIPTION(kind));
         putValue(Action.SMALL_ICON, Icons.ENABLE_UNIQUE_ICON);
     }
@@ -66,12 +66,12 @@ public class EnableUniqueAction extends SimulatorAction {
     }
 
     /** Name of the action on the menu. */
-    private final String ACTION_NAME(ResourceKind kind) {
+    static private final String ACTION_NAME(ResourceKind kind) {
         return "Enable This " + kind.getName() + " Only";
     }
 
     /** Hover text for this action. */
-    private final String HOVER_DESCRIPTION(ResourceKind kind) {
+    static private final String HOVER_DESCRIPTION(ResourceKind kind) {
         return "Enable this " + kind.getDescription() + ", and disable all " + "other "
             + kind.getDescription() + "s";
     }

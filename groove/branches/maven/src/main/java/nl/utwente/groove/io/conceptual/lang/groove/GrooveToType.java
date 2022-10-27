@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.grammar.type.Multiplicity;
 import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeNode;
@@ -23,14 +24,15 @@ import nl.utwente.groove.io.conceptual.configuration.schema.NullableType;
 import nl.utwente.groove.io.conceptual.configuration.schema.OrderType;
 import nl.utwente.groove.io.conceptual.lang.ImportException;
 import nl.utwente.groove.io.conceptual.lang.Message;
-import nl.utwente.groove.io.conceptual.lang.TypeImporter;
 import nl.utwente.groove.io.conceptual.lang.Message.MessageType;
+import nl.utwente.groove.io.conceptual.lang.TypeImporter;
 import nl.utwente.groove.io.conceptual.lang.groove.GraphNodeTypes.ModelType;
 import nl.utwente.groove.io.conceptual.property.AbstractProperty;
 import nl.utwente.groove.io.conceptual.property.ContainmentProperty;
 import nl.utwente.groove.io.conceptual.type.BoolType;
 import nl.utwente.groove.io.conceptual.type.Class;
 import nl.utwente.groove.io.conceptual.type.Container;
+import nl.utwente.groove.io.conceptual.type.Container.Kind;
 import nl.utwente.groove.io.conceptual.type.CustomDataType;
 import nl.utwente.groove.io.conceptual.type.Enum;
 import nl.utwente.groove.io.conceptual.type.IntType;
@@ -38,7 +40,6 @@ import nl.utwente.groove.io.conceptual.type.RealType;
 import nl.utwente.groove.io.conceptual.type.StringType;
 import nl.utwente.groove.io.conceptual.type.Tuple;
 import nl.utwente.groove.io.conceptual.type.Type;
-import nl.utwente.groove.io.conceptual.type.Container.Kind;
 
 @SuppressWarnings("javadoc")
 public class GrooveToType extends TypeImporter {
@@ -121,64 +122,64 @@ public class GrooveToType extends TypeImporter {
                 // Enums end with EnumPostfix
                 if (this.m_cfg.getStrings()
                     .getEnumPostfix()
-                    .length() > 0
-                    && nameStr.endsWith(this.m_cfg.getStrings()
-                        .getEnumPostfix())) {
+                    .length() > 0 && nameStr.endsWith(
+                        this.m_cfg.getStrings()
+                            .getEnumPostfix())) {
                     enumIds.put(id, null);
                     this.m_types.addModelType(getLabel(n), ModelType.TypeEnum);
                 } else if (this.m_cfg.getStrings()
                     .getProperPostfix()
-                    .length() > 0
-                    && nameStr.endsWith(this.m_cfg.getStrings()
-                        .getProperPostfix())) {
+                    .length() > 0 && nameStr.endsWith(
+                        this.m_cfg.getStrings()
+                            .getProperPostfix())) {
                     this.m_types.addModelType(getLabel(n), ModelType.TypeClass);
                 } else if (this.m_cfg.getStrings()
                     .getNullablePostfix()
-                    .length() > 0
-                    && nameStr.endsWith(this.m_cfg.getStrings()
-                        .getNullablePostfix())) {
+                    .length() > 0 && nameStr.endsWith(
+                        this.m_cfg.getStrings()
+                            .getNullablePostfix())) {
                     this.m_types.addModelType(getLabel(n), ModelType.TypeClassNullable);
                 } else if (this.m_cfg.getStrings()
                     .getDataPostfix()
-                    .length() > 0
-                    && nameStr.endsWith(this.m_cfg.getStrings()
-                        .getDataPostfix())) {
+                    .length() > 0 && nameStr.endsWith(
+                        this.m_cfg.getStrings()
+                            .getDataPostfix())) {
                     this.m_types.addModelType(getLabel(n), ModelType.TypeDatatype);
                 } else if (this.m_cfg.getStrings()
                     .getIntermediatePostfix()
-                    .length() > 0
-                    && nameStr.endsWith(this.m_cfg.getStrings()
-                        .getIntermediatePostfix())) { //Non-container intermediates
+                    .length() > 0 && nameStr.endsWith(
+                        this.m_cfg.getStrings()
+                            .getIntermediatePostfix())) { //Non-container intermediates
                     this.m_types.addModelType(getLabel(n), ModelType.TypeIntermediate);
                 } else if (this.m_cfg.getStrings()
                     .getMetaContainerSet()
-                    .length() > 0
-                    && nameStr.endsWith(this.m_cfg.getStrings()
-                        .getMetaContainerSet())) { //Container intermediates when postfix enabled
+                    .length() > 0 && nameStr.endsWith(
+                        this.m_cfg.getStrings()
+                            .getMetaContainerSet())) { //Container intermediates when postfix enabled
                     this.m_types.addModelType(getLabel(n), ModelType.TypeIntermediate);
                 } else if (this.m_cfg.getStrings()
                     .getMetaContainerBag()
-                    .length() > 0
-                    && nameStr.endsWith(this.m_cfg.getStrings()
-                        .getMetaContainerBag())) { //Container intermediates when postfix enabled
+                    .length() > 0 && nameStr.endsWith(
+                        this.m_cfg.getStrings()
+                            .getMetaContainerBag())) { //Container intermediates when postfix enabled
                     this.m_types.addModelType(getLabel(n), ModelType.TypeIntermediate);
                 } else if (this.m_cfg.getStrings()
                     .getMetaContainerOrd()
-                    .length() > 0
-                    && nameStr.endsWith(this.m_cfg.getStrings()
-                        .getMetaContainerOrd())) { //Container intermediates when postfix enabled
+                    .length() > 0 && nameStr.endsWith(
+                        this.m_cfg.getStrings()
+                            .getMetaContainerOrd())) { //Container intermediates when postfix enabled
                     this.m_types.addModelType(getLabel(n), ModelType.TypeIntermediate);
                 } else if (this.m_cfg.getStrings()
                     .getMetaContainerSeq()
-                    .length() > 0
-                    && nameStr.endsWith(this.m_cfg.getStrings()
-                        .getMetaContainerSeq())) { //Container intermediates when postfix enabled
+                    .length() > 0 && nameStr.endsWith(
+                        this.m_cfg.getStrings()
+                            .getMetaContainerSeq())) { //Container intermediates when postfix enabled
                     this.m_types.addModelType(getLabel(n), ModelType.TypeIntermediate);
                 } else if (this.m_cfg.getStrings()
                     .getTuplePostfix()
-                    .length() > 0
-                    && nameStr.endsWith(this.m_cfg.getStrings()
-                        .getTuplePostfix())) {
+                    .length() > 0 && nameStr.endsWith(
+                        this.m_cfg.getStrings()
+                            .getTuplePostfix())) {
                     this.m_types.addModelType(getLabel(n), ModelType.TypeTuple);
                 } else {
                     // If no actual postfix, try other options later on
@@ -385,14 +386,10 @@ public class GrooveToType extends TypeImporter {
                 // Default multiplicity is 0..*
                 int lower = 0;
                 int upper = -1;
-                if (e.getOutMult() != null) {
-                    lower = e.getOutMult()
-                        .one();
-                    upper = e.getOutMult()
-                        .two();
-                    if (upper == Integer.MAX_VALUE) {
-                        upper = -1;
-                    }
+                Multiplicity m = e.getOutMult();
+                if (m != null) {
+                    lower = m.lower();
+                    upper = m.isUnbounded() ? -1 : m.upper();
                 }
 
                 // Check if field edge is containment
@@ -415,8 +412,8 @@ public class GrooveToType extends TypeImporter {
 
                 // If no intermediate node but is container type, try to resolve value node as container type
                 // Is container if upper > 1, or 0..1 but not nullable class
-                if ((upper > 1
-                    || (lower == 0 && (targetType instanceof Class) && this.m_cfg.getConfig()
+                if ((upper > 1 || (lower == 0 && (targetType instanceof Class)
+                    && this.m_cfg.getConfig()
                         .getGlobal()
                         .getNullable() != NullableType.NONE))
                     && !(targetModelType == ModelType.TypeIntermediate
@@ -644,27 +641,27 @@ public class GrooveToType extends TypeImporter {
             .text();
         if (this.m_cfg.getStrings()
             .getMetaContainerSet()
-            .length() > 0
-            && typeName.endsWith(this.m_cfg.getStrings()
-                .getMetaContainerSet())) { //Container intermediates when postfix enabled
+            .length() > 0 && typeName.endsWith(
+                this.m_cfg.getStrings()
+                    .getMetaContainerSet())) { //Container intermediates when postfix enabled
             return Kind.SET;
         } else if (this.m_cfg.getStrings()
             .getMetaContainerBag()
-            .length() > 0
-            && typeName.endsWith(this.m_cfg.getStrings()
-                .getMetaContainerBag())) { //Container intermediates when postfix enabled
+            .length() > 0 && typeName.endsWith(
+                this.m_cfg.getStrings()
+                    .getMetaContainerBag())) { //Container intermediates when postfix enabled
             return Kind.BAG;
         } else if (this.m_cfg.getStrings()
             .getMetaContainerOrd()
-            .length() > 0
-            && typeName.endsWith(this.m_cfg.getStrings()
-                .getMetaContainerOrd())) { //Container intermediates when postfix enabled
+            .length() > 0 && typeName.endsWith(
+                this.m_cfg.getStrings()
+                    .getMetaContainerOrd())) { //Container intermediates when postfix enabled
             return Kind.ORD;
         } else if (this.m_cfg.getStrings()
             .getMetaContainerSeq()
-            .length() > 0
-            && typeName.endsWith(this.m_cfg.getStrings()
-                .getMetaContainerSeq())) { //Container intermediates when postfix enabled
+            .length() > 0 && typeName.endsWith(
+                this.m_cfg.getStrings()
+                    .getMetaContainerSeq())) { //Container intermediates when postfix enabled
             return Kind.SEQ;
         }
 

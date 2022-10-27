@@ -70,12 +70,12 @@ import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
+import nl.utwente.groove.lts.GraphTransition.Claz;
 import nl.utwente.groove.lts.GraphTransitionKey;
 import nl.utwente.groove.lts.MatchResult;
 import nl.utwente.groove.lts.RecipeEvent;
 import nl.utwente.groove.lts.RecipeTransition;
 import nl.utwente.groove.lts.StartGraphState;
-import nl.utwente.groove.lts.GraphTransition.Claz;
 import nl.utwente.groove.transform.RuleEvent;
 
 /**
@@ -389,14 +389,12 @@ public class StateTree extends JTree implements SimulatorListener {
             matches.add(trans.getKey());
         }
         matches.addAll(state.getMatches());
-        Map<Action,Set<GraphTransitionKey>> matchMap =
-            new TreeMap<>(Action.PARTIAL_COMPARATOR);
+        Map<Action,Set<GraphTransitionKey>> matchMap = new TreeMap<>(Action.PARTIAL_COMPARATOR);
         for (GraphTransitionKey match : matches) {
             Action action = match.getAction();
             Set<GraphTransitionKey> ruleMatches = matchMap.get(action);
             if (ruleMatches == null) {
-                matchMap.put(action,
-                    ruleMatches = new TreeSet<>(GraphTransitionKey.COMPARATOR));
+                matchMap.put(action, ruleMatches = new TreeSet<>(GraphTransitionKey.COMPARATOR));
             }
             ruleMatches.add(match);
         }
@@ -457,8 +455,8 @@ public class StateTree extends JTree implements SimulatorListener {
                             }
                             break;
                         }
-                    } else
-                        if (trans instanceof RecipeTransition && child instanceof RecipeTreeNode) {
+                    } else if (trans instanceof RecipeTransition
+                        && child instanceof RecipeTreeNode) {
                         RecipeTreeNode recipeNode = (RecipeTreeNode) child;
                         if (recipeNode.getRecipe()
                             .equals(trans.getAction())) {
@@ -749,6 +747,8 @@ public class StateTree extends JTree implements SimulatorListener {
             case 2:
                 getActions().getApplyMatchAction()
                     .execute();
+                break;
+            default: // nothing happens
             }
         }
 

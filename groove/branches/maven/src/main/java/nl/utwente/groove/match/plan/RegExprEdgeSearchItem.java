@@ -31,7 +31,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
     /**
      * Constructs a new search item. The item will match according to the
      * regular expression on the edge label.
-     * @param typeGraph label store used to determine subtypes for 
+     * @param typeGraph label store used to determine subtypes for
      * node type labels in the regular expression
      */
     public RegExprEdgeSearchItem(RuleEdge edge, TypeGraph typeGraph) {
@@ -46,8 +46,10 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         RuleLabel label = edge.label();
         this.labelAutomaton = label.getAutomaton(typeGraph);
         this.edgeExpr = label.getMatchExpr();
-        this.boundVars = label.getMatchExpr().boundVarSet();
-        this.allVars = label.getMatchExpr().allVarSet();
+        this.boundVars = label.getMatchExpr()
+            .boundVarSet();
+        this.allVars = label.getMatchExpr()
+            .allVarSet();
         this.neededVars = new HashSet<>(this.allVars);
         this.neededVars.removeAll(this.boundVars);
     }
@@ -68,7 +70,8 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
             return result;
         }
         RegExprEdgeSearchItem other = (RegExprEdgeSearchItem) item;
-        return EdgeComparator.instance().compare(this.edge, other.edge);
+        return EdgeComparator.instance()
+            .compare(this.edge, other.edge);
     }
 
     @Override
@@ -161,8 +164,8 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
     }
 
     MultipleRecord<RegAut.Result> createMultipleRecord(Search search) {
-        return new RegExprEdgeMultipleRecord(search, this.sourceIx, this.targetIx,
-            this.sourceFound, this.targetFound);
+        return new RegExprEdgeMultipleRecord(search, this.sourceIx, this.targetIx, this.sourceFound,
+            this.targetFound);
     }
 
     @Override
@@ -221,7 +224,8 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         /** Constructs a new record, for a given matcher. */
         RegExprEdgeSingularRecord(Search search) {
             super(search);
-            assert RegExprEdgeSearchItem.this.varIxMap.keySet().containsAll(needsVars());
+            assert RegExprEdgeSearchItem.this.varIxMap.keySet()
+                .containsAll(needsVars());
         }
 
         @Override
@@ -267,8 +271,8 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
             if (targetFind == null && RegExprEdgeSearchItem.this.targetFound) {
                 targetFind = this.search.getNode(RegExprEdgeSearchItem.this.targetIx);
             }
-            return RegExprEdgeSearchItem.this.labelAutomaton.getMatches(this.host, sourceFind,
-                targetFind, valuation);
+            return RegExprEdgeSearchItem.this.labelAutomaton
+                .getMatches(this.host, sourceFind, targetFind, valuation);
         }
 
         @Override
@@ -285,14 +289,14 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
     private class RegExprEdgeMultipleRecord extends MultipleRecord<RegAut.Result> {
         /** Constructs a new record, for a given matcher. */
         RegExprEdgeMultipleRecord(Search search, int sourceIx, int targetIx, boolean sourceFound,
-                boolean targetFound) {
+            boolean targetFound) {
             super(search);
             this.sourceIx = sourceIx;
             this.targetIx = targetIx;
             this.sourceFound = sourceFound;
             this.targetFound = targetFound;
-            assert RegExprEdgeSearchItem.this.varIxMap.keySet().containsAll(
-                RegExprEdgeSearchItem.this.neededVars);
+            assert RegExprEdgeSearchItem.this.varIxMap.keySet()
+                .containsAll(RegExprEdgeSearchItem.this.neededVars);
         }
 
         @Override
@@ -325,16 +329,15 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
                 assert image != null;
                 valuation.put(var, image);
             }
-            Set<RegAut.Result> matches =
-                RegExprEdgeSearchItem.this.labelAutomaton.getMatches(this.host, this.sourceFind,
-                    this.targetFind, valuation);
+            Set<RegAut.Result> matches = RegExprEdgeSearchItem.this.labelAutomaton
+                .getMatches(this.host, this.sourceFind, this.targetFind, valuation);
             this.imageIter = matches.iterator();
         }
 
         @Override
         boolean write(RegAut.Result image) {
             boolean result = true;
-            HostNode source = image.one();
+            HostNode source = image.source();
             if (this.sourceFind == null) {
                 // maybe the prospective source image was used as
                 // target image of this same edge in the previous attempt
@@ -344,7 +347,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
                 }
             }
             if (result) {
-                HostNode target = image.two();
+                HostNode target = image.target();
                 if (RegExprEdgeSearchItem.this.selfEdge) {
                     if (target != source) {
                         return false;

@@ -16,10 +16,10 @@
  */
 package nl.utwente.groove.test.grammar;
 
+import static nl.utwente.groove.grammar.UnitPar.parse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
-import static nl.utwente.groove.grammar.UnitPar.parse;
 
 import java.util.Arrays;
 
@@ -114,11 +114,13 @@ public class UnitParTest {
         ProcedurePar myP1 = new ProcedurePar(new CtrlVar(null, "p1", CtrlType.INT), Direction.IN);
         assertEquals(myP1, this.p1);
         assertFalse(this.p1.equals(this.p2));
-        assertFalse(this.p1.equals(this.r1));
         // RulePar.equals
         try {
             assertEquals(this.r1, this.r1);
+            assertEquals(this.r2, this.r2);
+            assertEquals(this.r3, this.r3);
             assertFalse(this.r1.equals(this.r2));
+            assertFalse(this.r3.equals(this.r3));
             RulePar myR1 = new RulePar(AspectKind.PARAM_IN,
                 new VariableNode(0, Expression.parse("1"), this.intNode), false);
             assertEquals(myR1, this.r1);
@@ -140,10 +142,6 @@ public class UnitParTest {
             assertEquals(this.p1, parse("int p1"));
             assertEquals(this.p2, parse("ask bool p2"));
             assertEquals(this.p3, parse("out node p3"));
-
-            assertFalse(parse("int r1").equals(this.r1));
-            assertFalse(parse("bi int r2").equals(this.r2));
-            assertFalse(parse("out bool r3").equals(this.r3));
         } catch (FormatException exc) {
             fail(exc.getMessage());
         }

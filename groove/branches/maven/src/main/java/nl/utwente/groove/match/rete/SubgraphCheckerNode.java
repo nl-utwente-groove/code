@@ -548,13 +548,12 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
         sb.append("--- Equalities-\n");
         for (int i = 0; i < this.leftLookupTable.length; i++) {
             sb.append(String.format("--- left[%d]%s = right[%d]%s \n",
-                this.leftLookupTable[i].getPos(),
-                (this.leftLookupTable[i].getRole() == Role.NODE) ? ""
-                    : ((this.leftLookupTable[i].getRole() == Role.SOURCE) ? ".source" : ".target"),
-                this.rightLookupTable[i].getPos(),
-                (this.rightLookupTable[i].getRole() == Role.NODE) ? ""
-                    : ((this.rightLookupTable[i].getRole() == Role.SOURCE) ? ".source"
-                        : ".target")));
+                this.leftLookupTable[i].pos(),
+                (this.leftLookupTable[i].role() == Role.NODE) ? ""
+                    : ((this.leftLookupTable[i].role() == Role.SOURCE) ? ".source" : ".target"),
+                this.rightLookupTable[i].pos(),
+                (this.rightLookupTable[i].role() == Role.NODE) ? ""
+                    : ((this.rightLookupTable[i].role() == Role.SOURCE) ? ".source" : ".target")));
         }
         return sb.toString();
     }
@@ -762,14 +761,14 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
                 LookupEntry leftEquality = sgChecker.leftLookupTable[i];
                 LookupEntry rightEquality = sgChecker.rightLookupTable[i];
                 //This equality is about the start point of the path edge
-                if (rightEquality.getRole() == Role.SOURCE) {
+                if (rightEquality.role() == Role.SOURCE) {
                     this.leftPathStartEntry = leftEquality;
                     if (sgChecker.leftLookupTable.length == 1) {
                         this.leftPathEndEntry = this.leftPathStartEntry;
                     }
                 }
                 //This equality is about the start point of the path edge
-                else if (rightEquality.getRole() == Role.TARGET) {
+                else if (rightEquality.role() == Role.TARGET) {
                     this.leftPathEndEntry = leftEquality;
                     //If the path checker antecedent is a loop edge
                     if (sgChecker.leftLookupTable.length == 1) {

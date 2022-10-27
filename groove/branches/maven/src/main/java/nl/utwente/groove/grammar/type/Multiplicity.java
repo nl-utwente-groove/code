@@ -1,22 +1,21 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package nl.utwente.groove.grammar.type;
 
-import nl.utwente.groove.util.Duo;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -24,47 +23,33 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Multiplicity extends Duo<Integer> {
+public record Multiplicity(int lower, int upper) {
     /**
-     * Constructs a multiplicity.
-     * @param lower the lower bound of the multiplicity.
-     * @param upper the upper bound of the multiplicity. {@link Integer#MAX_VALUE}
-     * stands for unbounded.
-     */
-    public Multiplicity(Integer lower, Integer upper) {
-        super(lower, upper);
-        setFixed();
-    }
-
-    /** 
-     * Constructor for a constant or unbounded multiplicity. 
+     * Constructor for a constant or unbounded multiplicity.
      * @param lower the lower bound of the multiplicity.
      * @param unbounded if {@code true}, the upper bound is unbounded, otherwise
      * it equals {@code lower}.
      */
     public Multiplicity(int lower, boolean unbounded) {
-        super(lower, unbounded ? Integer.MAX_VALUE : lower);
+        this(lower, unbounded ? Integer.MAX_VALUE : lower);
     }
 
     @Override
     public String toString() {
-        if (one().equals(two()) && !isUnbounded()) {
+        if (lower() == upper() && !isUnbounded()) {
             // constant value
-            return one().toString();
+            return "" + lower();
         }
-        if (one() == 0 && isUnbounded()) {
+        if (lower() == 0 && isUnbounded()) {
             // this is the default
             return "*";
         }
-        StringBuilder result = new StringBuilder(one().toString());
-        result.append("..");
-        result.append(isUnbounded() ? "*" : two());
-        return result.toString();
+        return "" + lower() + ".." + (isUnbounded() ? "*" : upper());
     }
 
     /** Indicates if the upper bound is unbounded (i.e., equals {@link Integer#MAX_VALUE}.  */
     public boolean isUnbounded() {
-        return two() == Integer.MAX_VALUE;
+        return upper() == Integer.MAX_VALUE;
     }
 
     /** Returns a multiplicity by parsing a string as
@@ -89,8 +74,7 @@ public class Multiplicity extends Duo<Integer> {
                 }
             } else {
                 lower = Integer.parseInt(text.substring(0, dotdot));
-                String upperText =
-                    text.substring(dotdot + MULT_SEPARATOR.length());
+                String upperText = text.substring(dotdot + MULT_SEPARATOR.length());
                 if (upperText.equals(UNBOUNDED)) {
                     upper = Integer.MAX_VALUE;
                 } else {
@@ -103,15 +87,14 @@ public class Multiplicity extends Duo<Integer> {
         if (lower < 0) {
             throw new FormatException("Negative lower bound %d", lower);
         } else if (lower > upper) {
-            throw new FormatException(
-                "Lower bound %d larger than upper bound %d", lower, upper);
+            throw new FormatException("Lower bound %d larger than upper bound %d", lower, upper);
         }
         return new Multiplicity(lower, upper);
     }
 
     /** Checks if a given integer is in the range of the multiplicity. */
     public boolean inRange(int count) {
-        return one() <= count && count <= two();
+        return lower() <= count && count <= upper();
     }
 
     /** Separator sequence in a multiplicity value. */

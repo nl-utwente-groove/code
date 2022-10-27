@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package nl.utwente.groove.automaton;
@@ -29,7 +29,6 @@ import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.graph.GGraph;
 import nl.utwente.groove.graph.plain.PlainEdge;
 import nl.utwente.groove.graph.plain.PlainNode;
-import nl.utwente.groove.util.Duo;
 
 /**
  * Interface for regular automata. An automaton extends a graph with a start
@@ -92,8 +91,7 @@ public interface RegAut extends GGraph<RegNode,RegEdge> {
      *        matching paths should end; if <code>null</code>, there is no
      *        constraint
      */
-    Set<Result> getMatches(HostGraph graph, HostNode startImage,
-            HostNode endImage);
+    Set<Result> getMatches(HostGraph graph, HostNode startImage, HostNode endImage);
 
     /** Construct a new automaton, with a given start node, end node and type graph. */
     RegAut newAutomaton(RegNode start, RegNode end, TypeGraph typeGraph);
@@ -114,13 +112,11 @@ public interface RegAut extends GGraph<RegNode,RegEdge> {
      *        adhered to in the matching; if <code>null</code>, there is no
      *        constraint
      */
-    Set<Result> getMatches(HostGraph graph, HostNode startImage,
-            HostNode endImage, Valuation valuation);
+    Set<Result> getMatches(HostGraph graph, HostNode startImage, HostNode endImage,
+        Valuation valuation);
 
     /** Type of the automaton's match results. */
-    class Result extends Duo<HostNode> {
-        public Result(HostNode one, HostNode two) {
-            super(one, two);
-        }
+    record Result(HostNode source, HostNode target) {
+        // no added functionality
     }
 }

@@ -40,50 +40,19 @@ public class ConfigAction extends SimulatorAction {
 
     @Override
     public void execute() {
-
-        QualName modelName = null;
-        switch (this.m_type) {
-        case NEW:
-            final QualName newName =
-                askNewName(Options.getNewResourceName(getResourceKind()), true);
-            if (newName == null) {
-                return;
-            }
-            modelName = newName;
-            break;
-        case SAVE:
-            if (!this.m_dlg.hasModels()) {
-                // Go into save as mode and ask for name
-                final QualName saveName =
-                    askNewName(Options.getNewResourceName(getResourceKind()), true);
-                if (saveName == null) {
-                    return;
-                }
-                modelName = saveName;
-            }
-            break;
-        case DELETE:
-            break;
-        case RENAME:
+        QualName modelName = switch (this.m_type) {
+        case NEW -> askNewName(Options.getNewResourceName(getResourceKind()), true);
+        case SAVE -> this.m_dlg.hasModels() ? null
+            : askNewName(Options.getNewResourceName(getResourceKind()), true);
+        case DELETE -> null;
+        case RENAME ->
             //TODO: find old name
-            String oldName = "configuration";
-            final QualName renameName = askNewName(oldName, false);
-            if (renameName == null) {
-                return;
-            }
-            modelName = renameName;
-            break;
-        case COPY:
-            final QualName copyName =
-                askNewName(Options.getNewResourceName(getResourceKind()), true);
-            if (copyName == null) {
-                return;
-            }
-            modelName = copyName;
-            break;
+            askNewName("configuration", false);
+        case COPY -> askNewName(Options.getNewResourceName(getResourceKind()), true);
+        };
+        if (modelName != null) {
+            this.m_dlg.executeAction(this.m_type, modelName);
         }
-
-        this.m_dlg.executeAction(this.m_type, modelName);
     }
 
     /** Action type. */

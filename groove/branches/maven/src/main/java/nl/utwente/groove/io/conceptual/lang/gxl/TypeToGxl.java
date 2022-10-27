@@ -303,22 +303,13 @@ public class TypeToGxl extends TypeExporter<NodeType> {
             return;
         }
 
-        String gxlType = GxlUtil.g_gxlTypeGraphURI;
         //if type is ORD, revert to SEQ.
-        switch (container.getContainerType()) {
-        case SET:
-            gxlType += "#Set";
-            break;
-        case BAG:
-            gxlType += "#Bag";
-            break;
-        case SEQ:
-            gxlType += "#Seq";
-            break;
-        case ORD:
-            gxlType += "#Seq";
-            break;
-        }
+        String gxlType = GxlUtil.g_gxlTypeGraphURI + switch (container.getContainerType()) {
+        case SET -> "#Set";
+        case BAG -> "#Bag";
+        case SEQ -> "#Seq";
+        case ORD -> "#Seq";
+        };
 
         NodeType containerNode = createNode(getId(container), gxlType, Id.ROOT);
         setElement(container, containerNode);
@@ -659,21 +650,13 @@ public class TypeToGxl extends TypeExporter<NodeType> {
             return valNode;
         }
         // Composite types
-        else if (v instanceof ContainerValue) {
-            ContainerValue cv = (ContainerValue) v;
-            String type = GxlUtil.g_gxlTypeGraphURI + "#";
-            switch (((Container) cv.getType()).getContainerType()) {
-            case SET:
-                type += "SetVal";
-                break;
-            case BAG:
-                type += "BagVal";
-                break;
-            case ORD:
-            case SEQ:
-                type += "SeqVal";
-                break;
-            }
+        else if (v instanceof ContainerValue cv) {
+            String type = GxlUtil.g_gxlTypeGraphURI + "#"
+                + switch (((Container) cv.getType()).getContainerType()) {
+                case SET -> "SetVal";
+                case BAG -> "BagVal";
+                case ORD, SEQ -> "SeqVal";
+                };
             valNode = createNode(getValueId(v), type, Id.ROOT);
 
             int index = 0;
@@ -686,9 +669,7 @@ public class TypeToGxl extends TypeExporter<NodeType> {
             }
 
             return valNode;
-        } else if (v instanceof TupleValue) {
-            TupleValue tv = (TupleValue) v;
-
+        } else if (v instanceof TupleValue tv) {
             valNode = createNode(getValueId(v), GxlUtil.g_gxlTypeGraphURI + "#TupVal", Id.ROOT);
 
             for (Entry<Integer,Value> subEntry : tv.getValue()

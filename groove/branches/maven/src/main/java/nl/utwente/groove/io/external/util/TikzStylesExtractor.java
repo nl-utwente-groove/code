@@ -88,7 +88,6 @@ import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
-import nl.utwente.groove.util.Duo;
 import nl.utwente.groove.util.NodeShape;
 import nl.utwente.groove.util.line.Line.ColorType;
 
@@ -649,22 +648,16 @@ public final class TikzStylesExtractor {
     }
 
     /** Special duo definition that prints itself nicely. */
-    private static final class StyleDuo extends Duo<String> {
-
-        public StyleDuo(String one, String two) {
-            super(one, two);
-        }
-
+    private static final record StyleDuo(String key, String text) {
         @Override
         public String toString() {
-            String one = one();
-            String two = two();
-            if (two == null) {
-                return one;
+            String key = key();
+            String text = text();
+            if (text == null) {
+                return key;
             } else {
-                return String.format("%s=%s", one, two);
+                return String.format("%s=%s", key, text);
             }
         }
-
     }
 }

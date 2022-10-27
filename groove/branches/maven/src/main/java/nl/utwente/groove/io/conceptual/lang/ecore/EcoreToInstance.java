@@ -289,9 +289,9 @@ public class EcoreToInstance extends InstanceImporter {
     private Name getObjectName(EObject eObject) {
         String fragment = "";
         EObject current = eObject;
-        while (current.eContainer() != null && current.eContainer() instanceof InternalEObject) {
-            fragment = "/" + ((InternalEObject) current.eContainer())
-                .eURIFragmentSegment(current.eContainingFeature(), current) + fragment;
+        while (current.eContainer() != null && current.eContainer() instanceof InternalEObject io) {
+            fragment =
+                "/" + io.eURIFragmentSegment(current.eContainingFeature(), current) + fragment;
             current = current.eContainer();
         }
         fragment = "/" + fragment;

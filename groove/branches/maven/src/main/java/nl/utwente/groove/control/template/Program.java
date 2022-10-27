@@ -39,7 +39,6 @@ import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Rule;
-import nl.utwente.groove.util.Duo;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -184,8 +183,10 @@ public class Program implements Fixable {
             // check that procedure bodies satisfy their requirements
             for (Procedure proc : this.procs.values()) {
                 QualName name = proc.getQualName();
-                String error = String.format("%s %s", proc.getKind()
-                    .getName(true), name);
+                String error = String.format("%s %s",
+                    proc.getKind()
+                        .getName(true),
+                    name);
                 if (getRecursion().contains(name)) {
                     errors.add(error + " has unguarded recursion", proc);
                 }
@@ -490,21 +491,8 @@ public class Program implements Fixable {
     }
 
     /** Class storing potential and certain finality values. */
-    private static class Finality extends Duo<Boolean> {
-        /**
-         * Constructs a pair of may/will succeed.
-         */
-        public Finality(boolean may, boolean will) {
-            super(may, will);
-        }
-
-        boolean may() {
-            return one();
-        }
-
-        boolean will() {
-            return two();
-        }
+    private static record Finality(boolean may, boolean will) {
+        // no additional functionality
     }
 
     /** Indicates if the given procedure will always terminate. */

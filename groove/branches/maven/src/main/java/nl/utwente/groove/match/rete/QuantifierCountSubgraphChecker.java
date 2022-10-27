@@ -52,7 +52,7 @@ import nl.utwente.groove.util.collect.TreeHashSet;
  * @version $Revision $
  */
 public class QuantifierCountSubgraphChecker
-    extends SubgraphCheckerNode<AbstractReteMatch,ReteCountMatch>implements DominoEventListener {
+    extends SubgraphCheckerNode<AbstractReteMatch,ReteCountMatch> implements DominoEventListener {
 
     /**
      * This is the special dummy (count=0) match
@@ -71,8 +71,7 @@ public class QuantifierCountSubgraphChecker
      * to count matches. This is to make the removal of count-bindings
      * faster.
      */
-    protected HashMap<ReteCountMatch,Set<AbstractReteMatch>> countBindings =
-        new HashMap<>();
+    protected HashMap<ReteCountMatch,Set<AbstractReteMatch>> countBindings = new HashMap<>();
 
     /**
      * @param network The RETE network to which this n-node is to belong to.
@@ -98,7 +97,7 @@ public class QuantifierCountSubgraphChecker
     }
 
     private int receiveRightMatch(ReteCountMatch countMatch) {
-        assert!this.countBindings.containsKey(countMatch);
+        assert !this.countBindings.containsKey(countMatch);
         int result = 0;
         countMatch.addDominoListener(this);
         Set<AbstractReteMatch> toBeDeletedFromLeft = new TreeHashSet<>();
@@ -263,9 +262,8 @@ public class QuantifierCountSubgraphChecker
          */
         public JoinWithCountStrategy(SubgraphCheckerNode<?,?> sgChecker) {
             super(sgChecker);
-            assert!(sgChecker.getAntecedents()
-                .get(0) instanceof QuantifierCountChecker)
-                && (sgChecker.getAntecedents()
+            assert !(sgChecker.getAntecedents()
+                .get(0) instanceof QuantifierCountChecker) && (sgChecker.getAntecedents()
                     .get(1) instanceof QuantifierCountChecker);
             QuantifierCountChecker qcc = (QuantifierCountChecker) sgChecker.getAntecedents()
                 .get(1);
@@ -275,7 +273,7 @@ public class QuantifierCountSubgraphChecker
             for (int i = 0; i < leftTable.length; i++) {
                 LookupEntry leftEntry = leftTable[i];
                 LookupEntry rightEntry = rightTable[i];
-                this.leftAnchorLookup[rightEntry.getPos()] = leftEntry;
+                this.leftAnchorLookup[rightEntry.pos()] = leftEntry;
             }
         }
 

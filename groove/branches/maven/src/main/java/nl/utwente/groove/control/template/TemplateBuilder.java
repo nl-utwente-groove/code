@@ -34,8 +34,8 @@ import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.CallStack;
 import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.Position;
-import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.control.Position.Type;
+import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.control.term.Derivation;
 import nl.utwente.groove.control.term.DerivationAttempt;
 import nl.utwente.groove.control.term.Term;
@@ -44,9 +44,7 @@ import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.util.Pair;
-import nl.utwente.groove.util.Quad;
 import nl.utwente.groove.util.ThreadPool;
-import nl.utwente.groove.util.Triple;
 import nl.utwente.groove.util.collect.NestedIterator;
 
 /**
@@ -95,8 +93,7 @@ public class TemplateBuilder {
         //        for (final Builder builder : this.builderMap.values()) {
         //            builder.build();
         //        }
-        final Queue<Triple<Template,Template,Map<Location,Location>>> normQ =
-            new ConcurrentLinkedQueue<>();
+        final Queue<Quotient> normQ = new ConcurrentLinkedQueue<>();
         for (final Builder template : this.builderMap.values()) {
             threads.start(new Runnable() {
                 @Override
@@ -108,9 +105,9 @@ public class TemplateBuilder {
         threads.sync();
         Template result = null;
         Relocation map = new Relocation();
-        for (Triple<Template,Template,Map<Location,Location>> norm : normQ) {
-            Template key = norm.one();
-            Template value = norm.two();
+        for (Quotient norm : normQ) {
+            Template key = norm.original();
+            Template value = norm.result();
             if (value.hasOwner()) {
                 value.getOwner()
                     .setTemplate(value);
@@ -118,7 +115,7 @@ public class TemplateBuilder {
                 result = value;
             }
             map.addTemplate(key, value);
-            map.putAll(norm.three());
+            map.putAll(norm.locMap());
         }
         map.build();
         threads.shutdown();
@@ -196,7 +193,7 @@ public class TemplateBuilder {
         private void buildAttempt(TermKey next) {
             Location loc = getLocMap().get(next);
             assert loc.getType() == null;
-            Term term = next.one();
+            Term term = next.term();
             Type locType = term.getType();
             // property switches
             Set<SwitchStack> switches = new LinkedHashSet<>();
@@ -204,7 +201,7 @@ public class TemplateBuilder {
             // start states of procedures are exempt
             boolean isProcStartOrFinal =
                 (loc.isStart() || term.isFinal()) && getResult().hasOwner();
-            if (!isProcStartOrFinal && loc.getTransience() == 0 && next.two()
+            if (!isProcStartOrFinal && loc.getTransience() == 0 && next.preds()
                 .isEmpty() && !getProperties().isEmpty()) {
                 for (Action prop : getProperties()) {
                     assert prop.isProperty() && prop instanceof Rule;
@@ -259,15 +256,15 @@ public class TemplateBuilder {
             if (incoming == null) {
                 // this is due to a verdict transition
                 assert predKey != null;
-                predTerms.addAll(predKey.two());
-                predTerms.add(predKey.one());
+                predTerms.addAll(predKey.preds());
+                predTerms.add(predKey.term());
                 if (predTerms.contains(term)) {
                     // there is a verdict loop from this term to itself
                     // this cannot give rise to new transitions, so deadlock
                     term = term.delta(term.getTransience());
                 }
                 // preserve the variables of the predecessor
-                vars = predKey.three();
+                vars = predKey.ctrlVars();
             } else {
                 // this is due to a non-verdict transition
                 assert predKey == null;
@@ -363,7 +360,7 @@ public class TemplateBuilder {
      * new template, and a mapping from original locations to their
      * images in the new template.
      */
-    private Triple<Template,Template,Map<Location,Location>> computeQuotient(Template template) {
+    private Quotient computeQuotient(Template template) {
         Template result = template.newInstance();
         /** Mapping from locations to their records, in terms of target locations. */
         List<Record<Location>> locRecords = new ArrayList<>();
@@ -391,7 +388,17 @@ public class TemplateBuilder {
                 locMap.put(loc, image);
             }
         }
-        return Triple.newTriple(template, result, locMap);
+        return new Quotient(template, result, locMap);
+    }
+
+    /** Represents the quotient of a given template under bisimilarity,
+     * consisting of the original template, the
+     * new template, and a mapping from original locations to their
+     * images in the new template.
+     */
+    private final static record Quotient(Template original, Template result,
+        Map<Location,Location> locMap) {
+        // empty by design
     }
 
     /**
@@ -461,10 +468,10 @@ public class TemplateBuilder {
 
     /** Converts a record pointing to locations, to a record pointing to cells. */
     private Record<Cell> append(Record<Location> record, Partition part) {
-        Cell success = part.getCell(record.getSuccess());
-        Cell failure = part.getCell(record.getFailure());
+        Cell success = part.getCell(record.success());
+        Cell failure = part.getCell(record.failure());
         List<Cell> targets = new ArrayList<>();
-        for (Location targetLoc : record.getTargets()) {
+        for (Location targetLoc : record.targets()) {
             targets.add(part.getCell(targetLoc));
         }
         return new Record<>(success, failure, targets);
@@ -482,10 +489,8 @@ public class TemplateBuilder {
      * The distinction is made on the basis of underlying term,
      * set of verdict predecessor terms, and set of control variables.
      */
-    private static class TermKey extends Triple<Term,Set<Term>,Set<CtrlVar>> {
-        TermKey(Term one, Set<Term> two, Set<CtrlVar> three) {
-            super(one, two, three);
-        }
+    private static record TermKey(Term term, Set<Term> preds, Set<CtrlVar> ctrlVars) {
+        // empty by design
     }
 
     /**
@@ -493,9 +498,10 @@ public class TemplateBuilder {
      * The distinction is made on the basis of template, final status,
      * transient depth and sets of control variables.
      */
-    private static class LocationKey extends Quad<Position.Type,AttemptKey,Integer,List<CtrlVar>> {
+    private static record LocationKey(Position.Type type, AttemptKey attempt, int transcience,
+        List<CtrlVar> ctrlVars) {
         LocationKey(Location loc) {
-            super(loc.getType(), loc.isTrial() ? new AttemptKey(loc.getAttempt()) : null,
+            this(loc.getType(), loc.isTrial() ? new AttemptKey(loc.getAttempt()) : null,
                 loc.getTransience(), loc.getVars());
         }
     }
@@ -595,21 +601,7 @@ public class TemplateBuilder {
      * of a given location.
      * @param <L> type of the targets
      */
-    private static class Record<L> extends Triple<L,L,List<L>> {
-        Record(L success, L failure, List<L> targets) {
-            super(success, failure, targets);
-        }
-
-        L getSuccess() {
-            return one();
-        }
-
-        L getFailure() {
-            return two();
-        }
-
-        List<L> getTargets() {
-            return three();
-        }
+    private static record Record<L> (L success, L failure, List<L> targets) {
+        // empty by design
     }
 }

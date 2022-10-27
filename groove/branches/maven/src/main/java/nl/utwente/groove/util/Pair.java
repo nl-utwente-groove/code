@@ -83,7 +83,7 @@ public class Pair<T,U> implements Fixable {
         if (this == obj) {
             return true;
         }
-        return obj instanceof Pair<?,?> && equalsOne((Pair<?,?>) obj) && equalsTwo((Pair<?,?>) obj);
+        return obj instanceof Pair<?,?> p && equalsOne(p) && equalsTwo(p);
     }
 
     /** Tests if the {@link #one()} field of this pair equals that of another. */

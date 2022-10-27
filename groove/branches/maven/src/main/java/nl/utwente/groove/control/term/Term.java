@@ -23,6 +23,7 @@ import java.util.List;
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.Position;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.collect.Pool;
 
 /**
@@ -189,7 +190,8 @@ abstract public class Term implements Position<Term,Derivation> {
     /** Indicates if the failure verdicts transitively lead to a final term. */
     public final boolean willSucceed() {
         if (isTrial()) {
-            return getAttempt().onFailure().willSucceed();
+            return getAttempt().onFailure()
+                .willSucceed();
         } else {
             return isFinal();
         }
@@ -269,19 +271,20 @@ abstract public class Term implements Position<Term,Derivation> {
     public String toDebugString() {
         String result = toString() + ": transient depth " + getTransience();
         switch (getType()) {
-        case DEAD:
-            result = result + ", deadlocked";
-            break;
-        case FINAL:
-            result = result + ", final";
-            break;
-        case TRIAL:
+        case DEAD -> result = result + ", deadlocked";
+        case FINAL -> result = result + ", final";
+        case TRIAL -> {
             DerivationAttempt attempt = getAttempt(false);
             for (Derivation deriv : attempt) {
-                result = result + "\n  --" + deriv.getCall() + "--> " + deriv.onFinish().toString();
+                result = result + "\n  --" + deriv.getCall() + "--> " + deriv.onFinish()
+                    .toString();
             }
-            result = result + "\nSuccess: " + attempt.onSuccess().toString();
-            result = result + "\nFailure: " + attempt.onFailure().toString();
+            result = result + "\nSuccess: " + attempt.onSuccess()
+                .toString();
+            result = result + "\nFailure: " + attempt.onFailure()
+                .toString();
+        }
+        default -> throw Exceptions.UNREACHABLE;
         }
         return result;
     }
@@ -514,7 +517,7 @@ abstract public class Term implements Position<Term,Derivation> {
         /** Transient term. */
         TRANSIT(1),
         /** Procedure body. */
-        BODY(1), ;
+        BODY(1),;
 
         private Op(int arity) {
             this.arity = arity;

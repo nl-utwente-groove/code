@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package nl.utwente.groove.gui.dialog;
@@ -34,6 +34,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
+
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Implements a dialog with the ability to show details about the error.
@@ -76,9 +78,8 @@ public class ErrorDialog extends JDialog {
         messagePane.add(this.detailsPane, BorderLayout.CENTER);
 
         // setup option pane
-        JOptionPane optionPane =
-            new JOptionPane(message, JOptionPane.ERROR_MESSAGE, JOptionPane.DEFAULT_OPTION, null,
-                new Object[] {messagePane});
+        JOptionPane optionPane = new JOptionPane(message, JOptionPane.ERROR_MESSAGE,
+            JOptionPane.DEFAULT_OPTION, null, new Object[] {messagePane});
         optionPane.add(messagePane, BorderLayout.SOUTH);
         // setup content pane
         Container contentPane = getContentPane();
@@ -92,7 +93,7 @@ public class ErrorDialog extends JDialog {
         this.detailsTextPane = new JScrollPane(this.detailsArea);
         this.detailsTextPane.setPreferredSize(new Dimension(300, 100));
         this.detailsTextPane.setBorder(new EmptyBorder(5, 0, 5, 0));
-        setDetailsLevel(NO_DETAILS);
+        setDetailsLevel(Details.NO);
 
         // setup button listener
         ActionListener buttonListener = new ButtonListener();
@@ -113,17 +114,17 @@ public class ErrorDialog extends JDialog {
      * </ul>
      * @param detailsLevel the desired level of details
      */
-    public void setDetailsLevel(int detailsLevel) {
+    public void setDetailsLevel(Details detailsLevel) {
         switch (detailsLevel) {
-        case NO_DETAILS:
+        case NO:
             this.detailsPane.remove(this.detailsTextPane);
             break;
-        case SOME_DETAILS:
+        case SOME:
             this.detailsArea.setText(this.exc.getMessage() + "\n");
             this.detailsPane.add(this.detailsTextPane, BorderLayout.CENTER);
             this.detailsTextPane.scrollRectToVisible(new Rectangle(0, 0, 10, 10));
             break;
-        case FULL_DETAILS:
+        case FULL:
             this.detailsArea.setText("");
             this.detailsArea.append(this.exc.toString() + "\n");
             StackTraceElement[] traceElems = this.exc.getStackTrace();
@@ -132,8 +133,11 @@ public class ErrorDialog extends JDialog {
             }
             this.detailsPane.add(this.detailsTextPane, BorderLayout.CENTER);
             this.detailsArea.scrollRectToVisible(new Rectangle(0, 0, 10, 10));
+            break;
+        default:
+            throw Exceptions.UNREACHABLE;
         }
-        this.detailsButton.setText(DETAILS_LEVEL_TEXT[detailsLevel]);
+        this.detailsButton.setText(detailsLevel.text());
         repaint();
     }
 
@@ -151,7 +155,7 @@ public class ErrorDialog extends JDialog {
     protected final Throwable exc;
 
     /** The level of details in the error dialog. */
-    protected int detailsLevel = NO_DETAILS;
+    protected Details detailsLevel = Details.NO;
 
     /**
      * Searches upwards in the hierarchy of parent components until it finds a
@@ -184,15 +188,36 @@ public class ErrorDialog extends JDialog {
     public static final String ALL_DETAILS_BUTTON_TEXT = "Details <<";
     /** Button text of the Cancel button. */
     public static final String CANCEL_BUTTON_TEXT = "OK";
-    /** Details status: no details. */
-    public static final int NO_DETAILS = 0;
-    /** Details status: some details. */
-    public static final int SOME_DETAILS = 1;
-    /** Details status: full details. */
-    public static final int FULL_DETAILS = 2;
-    /** Details text array. */
-    private static final String[] DETAILS_LEVEL_TEXT = {NO_DETAILS_BUTTON_TEXT,
-        SOME_DETAILS_BUTTON_TEXT, ALL_DETAILS_BUTTON_TEXT};
+
+    /** Level of detail shown in dialog. */
+    public static enum Details {
+        /** Details status: no details. */
+        NO("Details >>"),
+        /** Details status: some details. */
+        SOME("More >>"),
+        /** Details status: full details. */
+        FULL("Details <<");
+
+        private Details(String text) {
+            this.text = text;
+        }
+
+        /** Returns the text corresponding to this detail level. */
+        public String text() {
+            return this.text;
+        }
+
+        /** Returns the next level in a round-robin scheme. */
+        public Details next() {
+            return switch (this) {
+            case NO -> SOME;
+            case SOME -> FULL;
+            case FULL -> NO;
+            };
+        }
+
+        private final String text;
+    }
 
     /** Action listener that takes care of the dialog buttons. */
     protected class ButtonListener implements ActionListener {
@@ -200,10 +225,10 @@ public class ErrorDialog extends JDialog {
         public void actionPerformed(ActionEvent evt) {
             Object source = evt.getSource();
             if (source.equals(ErrorDialog.this.detailsButton)) {
-                ErrorDialog.this.detailsLevel = (ErrorDialog.this.detailsLevel + 1) % 3;
-                if (ErrorDialog.this.detailsLevel == SOME_DETAILS
+                ErrorDialog.this.detailsLevel = ErrorDialog.this.detailsLevel.next();
+                if (ErrorDialog.this.detailsLevel == Details.SOME
                     && ErrorDialog.this.exc.getMessage() == null) {
-                    ErrorDialog.this.detailsLevel = (ErrorDialog.this.detailsLevel + 1) % 3;
+                    ErrorDialog.this.detailsLevel = ErrorDialog.this.detailsLevel.next();
                 }
                 setDetailsLevel(ErrorDialog.this.detailsLevel);
             } else if (source.equals(ErrorDialog.this.cancelButton)) {

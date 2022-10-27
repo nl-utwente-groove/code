@@ -134,10 +134,8 @@ public enum VisualKey {
             error = !this.type.isAssignableFrom(value.getClass());
         }
         if (error) {
-            throw new IllegalArgumentException(String.format("%s value %s should be of type %s",
-                this,
-                value,
-                this.type));
+            throw new IllegalArgumentException(
+                String.format("%s value %s should be of type %s", this, value, this.type));
         }
     }
 
@@ -191,17 +189,12 @@ public enum VisualKey {
         List<VisualKey> refreshables = new ArrayList<>();
         List<VisualKey> controlleds = new ArrayList<>();
         for (VisualKey key : VisualKey.values()) {
-            switch (key.getNature()) {
-            case CONTROLLED:
-                controlleds.add(key);
-                break;
-            case DERIVED:
-                deriveds.add(key);
-                break;
-            case REFRESHABLE:
-                refreshables.add(key);
-                break;
-            }
+            var list = switch (key.getNature()) {
+            case CONTROLLED -> controlleds;
+            case DERIVED -> deriveds;
+            case REFRESHABLE -> refreshables;
+            };
+            list.add(key);
         }
         DERIVEDS = deriveds.toArray(new VisualKey[deriveds.size()]);
         REFRESHABLES = refreshables.toArray(new VisualKey[refreshables.size()]);

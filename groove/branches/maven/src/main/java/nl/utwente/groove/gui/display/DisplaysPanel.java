@@ -46,6 +46,7 @@ import nl.utwente.groove.gui.SimulatorListener;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.SimulatorModel.Change;
 import nl.utwente.groove.gui.display.Display.ListPanel;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * The main panel of the simulator.
@@ -212,15 +213,11 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
 
     /** Indicates if a list panel should go onto the upper or the lower pane. */
     private JTabbedPane getListsPanel(DisplayKind kind) {
-        JTabbedPane result = null;
-        switch (kind.getListPanel()) {
-        case 0:
-            result = getUpperListsPanel();
-            break;
-        case 1:
-            result = getLowerListsPanel();
-        }
-        return result;
+        return switch (kind.getListPanel()) {
+        case 0 -> getUpperListsPanel();
+        case 1 -> getLowerListsPanel();
+        default -> throw Exceptions.UNREACHABLE;
+        };
     }
 
     @Override
@@ -353,8 +350,9 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         }
         if (myKind.showDisplay()) {
             // add the info panel
-            getInfoPanel().add(display.getInfoPanel(), display.getKind()
-                .toString());
+            getInfoPanel().add(display.getInfoPanel(),
+                display.getKind()
+                    .toString());
             // now add the display panel
             int index;
             for (index = 0; index < getTabCount(); index++) {
@@ -511,8 +509,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     /** Mapping from display kinds to the corresponding panels. */
     private final Map<DisplayKind,Display> displaysMap = new HashMap<>();
     /** Mapping of currently detached displays. */
-    private final Map<DisplayKind,DisplayWindow> detachedMap =
-        new HashMap<>();
+    private final Map<DisplayKind,DisplayWindow> detachedMap = new HashMap<>();
     /** Panel with the rules and states lists. */
     private JTabbedPane upperListsPanel;
     /** Panel with the other resource lists. */

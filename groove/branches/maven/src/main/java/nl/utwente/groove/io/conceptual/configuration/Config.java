@@ -275,29 +275,29 @@ public class Config {
             } else {
                 return false;
             }
+        default:
+            return true;
         }
-        return true;
     }
 
     public boolean useIntermediate(Container c) {
-        switch (this.m_xmlConfig.getTypeModel()
+        return switch (this.m_xmlConfig.getTypeModel()
             .getFields()
             .getIntermediates()
             .getWhen()) {
-        case ALWAYS:
-            return true;
-        case CONTAINER:
-            return true;
-        case REQUIRED:
+        case ALWAYS -> true;
+        case CONTAINER -> true;
+        case REQUIRED -> {
             // The somewhat more difficult case. Some factors include:
-            // If indexing is required on an intermediate, then the intermediate is required (affects ORD, SEQ), but if preferValue then only if the value is shared
+            // If indexing is required on an intermediate, then the intermediate is required
+            // (affects ORD, SEQ), but if preferValue then only if the value is shared
             // Otherwise, if non-unique, then required (BAG)
             // Otherwise, not required
             boolean useIndex = useIndex(c);
             boolean unique = c.getContainerType() == Kind.SET || c.getContainerType() == Kind.ORD;
 
             if (!unique) {
-                return true;
+                yield true;
             }
 
             //TODO: Intermediate required when:
@@ -311,23 +311,23 @@ public class Config {
             // required when index on identity/keyset
             if (useIndex) {
                 //TODO: for now, just say yes
-                return true;
+                yield true;
             }
 
             if (c.getType() instanceof Container) {
-                return true;
+                yield true;
             }
             if (c.getParent() != null) {
-                return true;
+                yield true;
             }
 
             // In case of opposite
             if (c.getField() != null) {
-                return useIntermediate(c.getField(), false);
+                yield useIntermediate(c.getField(), false);
             }
-            return false;
+            yield false;
         }
-        return false;
+        };
     }
 
     public boolean useIndex(Container c) {
@@ -422,21 +422,12 @@ public class Config {
                 .getFields()
                 .getContainers()
                 .isUseTypeName()) {
-            postfix = "_";
-            switch (c.getContainerType()) {
-            case SET:
-                postfix += getStrings().getMetaContainerSet();
-                break;
-            case BAG:
-                postfix += getStrings().getMetaContainerBag();
-                break;
-            case ORD:
-                postfix += getStrings().getMetaContainerOrd();
-                break;
-            case SEQ:
-                postfix += getStrings().getMetaContainerSeq();
-                break;
-            }
+            postfix = "_" + switch (c.getContainerType()) {
+            case SET -> getStrings().getMetaContainerSet();
+            case BAG -> getStrings().getMetaContainerBag();
+            case ORD -> getStrings().getMetaContainerOrd();
+            case SEQ -> getStrings().getMetaContainerSeq();
+            };
         }
         return postfix;
     }

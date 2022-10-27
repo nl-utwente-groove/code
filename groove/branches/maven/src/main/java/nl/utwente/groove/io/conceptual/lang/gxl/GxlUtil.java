@@ -571,16 +571,16 @@ public class GxlUtil {
                 o = ((JAXBElement<?>) o).getValue();
             }
 
-            if (type instanceof IntType && o instanceof BigInteger) {
-                return new IntValue(((BigInteger) o).intValue());
-            } else if (type instanceof RealType && o instanceof Float) {
-                return new RealValue((Float) o);
-            } else if (type instanceof BoolType && o instanceof Boolean) {
-                return BoolValue.getInstance((Boolean) o);
-            } else if (type instanceof StringType && o instanceof String) {
-                return new StringValue((String) o);
-            } else if (type instanceof StringType && o instanceof LocatorType) {
-                return new StringValue(((LocatorType) o).toString());
+            if (type instanceof IntType && o instanceof BigInteger i) {
+                return new IntValue(i.intValue());
+            } else if (type instanceof RealType && o instanceof Float f) {
+                return new RealValue(f);
+            } else if (type instanceof BoolType && o instanceof Boolean b) {
+                return BoolValue.getInstance(b);
+            } else if (type instanceof StringType && o instanceof String s) {
+                return new StringValue(s);
+            } else if (type instanceof StringType && o instanceof LocatorType l) {
+                return new StringValue(l.toString());
             }
             //No valid conversion
             return null;
@@ -606,6 +606,8 @@ public class GxlUtil {
                 break;
             case ORD:
                 throw new IllegalArgumentException("ORD not supported as GXL import type");
+            default:
+                throw Exceptions.UNREACHABLE;
             }
 
             CompositeValueType gxlContainer = (CompositeValueType) o;

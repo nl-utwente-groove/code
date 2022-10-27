@@ -42,6 +42,7 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.dialog.ErrorDialog;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
 
 //ActionListener: change selection
@@ -333,6 +334,8 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
                 refreshGUI();
                 loadModel();
                 break;
+            default:
+                throw Exceptions.UNREACHABLE;
             }
         } catch (ConfigurationException e) {
             //TODO:

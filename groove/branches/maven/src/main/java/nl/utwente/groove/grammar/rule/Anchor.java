@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -24,6 +24,7 @@ import java.util.Set;
 import nl.utwente.groove.grammar.AnchorKind;
 import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.NodeComparator;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Collection of rule elements that together completely determine the
@@ -37,7 +38,7 @@ public class Anchor extends ArrayList<AnchorKey> implements Comparable<Anchor> {
         super();
     }
 
-    /** 
+    /**
      * Constructs an anchor initialised to a given collection of keys.
      * @param keys the collection of keys
      */
@@ -62,11 +63,15 @@ public class Anchor extends ArrayList<AnchorKey> implements Comparable<Anchor> {
         if (result) {
             super.add(e);
             if (e.getAnchorKind() == AnchorKind.NODE) {
-                addAll(AnchorKind.node(e).getVars());
+                addAll(AnchorKind.node(e)
+                    .getVars());
             } else if (e.getAnchorKind() == AnchorKind.EDGE) {
-                addAll(AnchorKind.edge(e).getVars());
-                add(AnchorKind.edge(e).source());
-                add(AnchorKind.edge(e).target());
+                addAll(AnchorKind.edge(e)
+                    .getVars());
+                add(AnchorKind.edge(e)
+                    .source());
+                add(AnchorKind.edge(e)
+                    .target());
             }
         }
         return result;
@@ -103,15 +108,20 @@ public class Anchor extends ArrayList<AnchorKey> implements Comparable<Anchor> {
         this.varSet = new HashSet<>();
         for (AnchorKey key : this) {
             switch (key.getAnchorKind()) {
-            case NODE:
+            case NODE -> {
                 this.nodeSet.add(AnchorKind.node(key));
-                assert containsAll(AnchorKind.node(key).getVars());
-                break;
-            case EDGE:
+                assert containsAll(AnchorKind.node(key)
+                    .getVars());
+            }
+            case EDGE -> {
                 this.edgeSet.add(AnchorKind.edge(key));
-                break;
-            case LABEL:
+            }
+            case LABEL -> {
                 this.varSet.add(AnchorKind.label(key));
+            }
+            default -> {
+                throw Exceptions.UNREACHABLE;
+            }
             }
         }
     }
@@ -132,20 +142,19 @@ public class Anchor extends ArrayList<AnchorKey> implements Comparable<Anchor> {
     }
 
     private int compare(AnchorKey one, AnchorKey two) {
-        int result = one.getAnchorKind().compareTo(two.getAnchorKind());
+        int result = one.getAnchorKind()
+            .compareTo(two.getAnchorKind());
         if (result != 0) {
             return result;
         }
-        switch (one.getAnchorKind()) {
-        case EDGE:
-            result = EdgeComparator.instance().compare(AnchorKind.edge(one), AnchorKind.edge(two));
-            break;
-        case LABEL:
-            result = AnchorKind.label(one).compareTo(AnchorKind.label(two));
-            break;
-        case NODE:
-            result = NodeComparator.instance().compare(AnchorKind.node(one), AnchorKind.node(two));
-        }
+        result = switch (one.getAnchorKind()) {
+        case EDGE -> EdgeComparator.instance()
+            .compare(AnchorKind.edge(one), AnchorKind.edge(two));
+        case LABEL -> AnchorKind.label(one)
+            .compareTo(AnchorKind.label(two));
+        case NODE -> NodeComparator.instance()
+            .compare(AnchorKind.node(one), AnchorKind.node(two));
+        };
         return result;
     }
 
