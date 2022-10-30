@@ -108,12 +108,12 @@ public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comp
         int size = getArgs().size();
         for (int i = 0; i < size; i++) {
             CtrlPar arg = getArgs().get(i);
-            if (arg instanceof CtrlPar.Var) {
-                CtrlVar var = ((CtrlPar.Var) arg).getVar();
-                if (arg.isInOnly()) {
+            if (arg instanceof CtrlPar.Var v) {
+                CtrlVar var = v.var();
+                if (arg.inOnly()) {
                     inVars.put(var, i);
                 } else {
-                    assert arg.isOutOnly();
+                    assert arg.outOnly();
                     outVars.put(var, i);
                 }
             }

@@ -44,6 +44,7 @@ import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.transform.BasicEvent;
 import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.transform.RuleEvent.Reuse;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * CriticalPairs consist of two dependent transformations (RuleApplications)
@@ -111,14 +112,10 @@ public class CriticalPair {
      * @return the match with the given number
      */
     RuleToHostMap getMatch(MatchNumber matchnum) {
-        switch (matchnum) {
-        case ONE:
-            return getMatch1();
-        case TWO:
-            return getMatch2();
-        default:
-            throw new IllegalArgumentException("matchnum must be one or two");
-        }
+        return switch (matchnum) {
+        case ONE -> getMatch1();
+        case TWO -> getMatch2();
+        };
     }
 
     /**
@@ -139,14 +136,10 @@ public class CriticalPair {
      * Returns the rule with the given number
      */
     Rule getRule(MatchNumber matchnum) {
-        switch (matchnum) {
-        case ONE:
-            return getRule1();
-        case TWO:
-            return getRule2();
-        default:
-            throw new IllegalArgumentException("matchnum must be one or two");
-        }
+        return switch (matchnum) {
+        case ONE -> getRule1();
+        case TWO -> getRule2();
+        };
     }
 
     /**
@@ -173,14 +166,10 @@ public class CriticalPair {
      * returns the rule application with the given number
      */
     RuleApplication getRuleApplication(MatchNumber matchnum) {
-        switch (matchnum) {
-        case ONE:
-            return getRuleApplication1();
-        case TWO:
-            return getRuleApplication2();
-        default:
-            throw new IllegalArgumentException("matchnum must be one or two");
-        }
+        return switch (matchnum) {
+        case ONE -> getRuleApplication1();
+        case TWO -> getRuleApplication2();
+        };
     }
 
     /**
@@ -206,7 +195,7 @@ public class CriticalPair {
      */
     public ConfluenceStatus getStrictlyConfluent(Grammar grammar) {
         if (grammar == null) {
-            throw new IllegalArgumentException("grammar may not be null");
+            throw Exceptions.illegalArg("grammar may not be null");
         }
         if (this.confluent != ConfluenceStatus.UNTESTED && grammar.equals(this.grammar)) {
             //confluence has already been analyzed for this critical pair
@@ -240,9 +229,9 @@ public class CriticalPair {
         //check if all the rules are compatible
         for (Rule rule : rules) {
             if (!canComputePairs(rule)) {
-                throw new IllegalArgumentException("Cannot compute critical pairs for rule '"
-                    + rule.getQualName()
-                    + "', because the algorithm can not compute Critical pairs for this type of rule");
+                throw Exceptions.illegalArg("Cannot compute critical pairs for rule '%s', "
+                    + "because the algorithm can not compute Critical pairs for this type of rule",
+                    rule.getQualName());
             }
         }
 
@@ -260,13 +249,13 @@ public class CriticalPair {
         assert canComputePairs(rule2);
         //algebraFamily must be TERM, because the host graph will be constructed in the TERM algebra
         //If the rule has no variables, then the algebra does not matter
-        assert(!hasVariableNodes(rule1.lhs()) && !hasVariableNodes(rule2.lhs()))
+        assert (!hasVariableNodes(rule1.lhs()) && !hasVariableNodes(rule2.lhs()))
             || rule1.getGrammarProperties()
                 .getAlgebraFamily()
                 .equals(AlgebraFamily.TERM);
         if ((rule1.getTypeGraph() == null && rule2.getTypeGraph() != null) || !rule1.getTypeGraph()
             .equals(rule2.getTypeGraph())) {
-            throw new IllegalArgumentException("Type graphs must be equal");
+            throw Exceptions.illegalArg("Type graphs must be equal");
         }
         //Special case, both of the two rules are nondeleting, then there are no critical pairs
         if (!(rule1.hasNodeErasers() || rule1.hasEdgeErasers() || rule2.hasNodeErasers()
@@ -349,16 +338,19 @@ public class CriticalPair {
         LinkedHashSet<ParallelPair> parrPairs, Rule rule1, Rule rule2, MatchNumber matchnum) {
         boolean injectiveOnly;
         RuleGraph ruleGraph;
-        if (matchnum == MatchNumber.ONE) {
+        switch (matchnum) {
+        case ONE:
             ruleGraph = rule1.lhs();
             injectiveOnly = rule1.getCondition()
                 .isInjective();
-        } else if (matchnum == MatchNumber.TWO) {
+            break;
+        case TWO:
             ruleGraph = rule2.lhs();
             injectiveOnly = rule2.getCondition()
                 .isInjective();
-        } else {
-            throw new IllegalArgumentException("matchnum must be ONE or TWO");
+            break;
+        default:
+            throw Exceptions.UNREACHABLE;
         }
 
         //Always use the term algebra, other algebras are not yet supported
@@ -499,11 +491,11 @@ public class CriticalPair {
                 return false;
             }
         } else if (ruleNode instanceof OperatorNode) {
-            throw new IllegalArgumentException("OperatorNodes may not be in matches");
+            throw Exceptions.illegalArg("Rule node %s of type OperatorNodes may not be in matches",
+                ruleNode);
         } else {
-            throw new UnsupportedOperationException("Unknown type for RuleNode " + ruleNode);
+            throw Exceptions.unsupportedOp("Unknown type for RuleNode %s", ruleNode);
         }
-
     }
 
     /**
@@ -685,11 +677,6 @@ enum MatchNumber {
     TWO;
 
     MatchNumber getOther() {
-        if (this == ONE) {
-            return TWO;
-        } else {
-            //this == Two
-            return ONE;
-        }
+        return this == ONE ? TWO : ONE;
     }
 }

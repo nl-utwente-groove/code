@@ -30,8 +30,11 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlEnum
 @SuppressWarnings("javadoc")
 public enum EnumModeType {
-    @XmlEnumValue("node") NODE("node"),
-    @XmlEnumValue("flag") FLAG("flag");
+    @XmlEnumValue("node")
+    NODE("node"),
+    @XmlEnumValue("flag")
+    FLAG("flag");
+
     private final String value;
 
     EnumModeType(String v) {
@@ -41,14 +44,4 @@ public enum EnumModeType {
     public String value() {
         return this.value;
     }
-
-    public static EnumModeType fromValue(String v) {
-        for (EnumModeType c : EnumModeType.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-        throw new IllegalArgumentException(v);
-    }
-
 }

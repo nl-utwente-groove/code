@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nl.utwente.groove.io.conceptual.type.Type;
+import nl.utwente.groove.util.Exceptions;
 
 @SuppressWarnings("javadoc")
 public class GraphNodeTypes {
@@ -59,7 +60,7 @@ public class GraphNodeTypes {
         }
 
         if (!this.m_modelTypes.containsKey(typeName)) {
-            throw new IllegalArgumentException("Setting type without model type");
+            throw Exceptions.illegalArg("Setting type without model type");
         }
 
         this.m_types.put(typeName, cmType);

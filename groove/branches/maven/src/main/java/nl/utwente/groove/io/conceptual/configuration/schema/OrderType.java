@@ -31,9 +31,13 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlEnum
 @SuppressWarnings("javadoc")
 public enum OrderType {
-    @XmlEnumValue("index") INDEX("index"),
-    @XmlEnumValue("edge") EDGE("edge"),
-    @XmlEnumValue("none") NONE("none");
+    @XmlEnumValue("index")
+    INDEX("index"),
+    @XmlEnumValue("edge")
+    EDGE("edge"),
+    @XmlEnumValue("none")
+    NONE("none");
+
     private final String value;
 
     OrderType(String v) {
@@ -43,14 +47,4 @@ public enum OrderType {
     public String value() {
         return this.value;
     }
-
-    public static OrderType fromValue(String v) {
-        for (OrderType c : OrderType.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-        throw new IllegalArgumentException(v);
-    }
-
 }

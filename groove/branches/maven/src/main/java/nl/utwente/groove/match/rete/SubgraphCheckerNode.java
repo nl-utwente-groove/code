@@ -29,6 +29,7 @@ import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.match.rete.LookupEntry.Role;
 import nl.utwente.groove.match.rete.ReteNetwork.ReteStaticMapping;
 import nl.utwente.groove.match.rete.RetePathMatch.EmptyPathMatch;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  *
@@ -177,19 +178,15 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
                                 .isInjective(),
                             this.subgraphChecker.shouldPreservePrefix);
                     }
-
                 };
-
         } else {
-
-            throw new UnsupportedOperationException(
-                String.format("Left is of type %s and right is of type %s",
-                    left.getNNode()
-                        .getClass()
-                        .toString(),
-                    right.getNNode()
-                        .getClass()
-                        .toString()));
+            throw Exceptions.unsupportedOp("Left is of type %s and right is of type %s",
+                left.getNNode()
+                    .getClass()
+                    .toString(),
+                right.getNNode()
+                    .getClass()
+                    .toString());
         }
     }
 
@@ -848,7 +845,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
             return new SubgraphCheckerNode<ReteSimpleMatch,ReteSimpleMatch>(network, left, right,
                 keepPrefix);
         } else {
-            throw new UnsupportedOperationException("Antecent types are not supported.");
+            throw Exceptions.unsupportedOp("Antecent types are not supported.");
         }
     }
 }

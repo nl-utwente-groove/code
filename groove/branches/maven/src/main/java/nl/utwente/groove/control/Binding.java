@@ -19,78 +19,23 @@ package nl.utwente.groove.control;
 import nl.utwente.groove.control.CtrlPar.Const;
 
 /** Source for a variable assignment in a control step. */
-public class Binding {
-    /**
-     * Internal constructor setting all fields.
-     */
-    private Binding(Binding.Source type, int index, Const value) {
-        this.type = type;
-        this.index = index;
-        this.value = value;
-    }
-
-    /** Returns the type of assignment source. */
-    public Binding.Source getSource() {
-        return this.type;
-    }
+public record Binding(Binding.Source type, int index, Const value) {
 
     /** Returns the index, if this is not a constant assignment. */
-    public int getIndex() {
-        assert getSource() != Source.CONST;
+    public int index() {
+        assert type() != Source.CONST;
         return this.index;
     }
 
     /** Returns the assigned value, if this is a value binding. */
-    public Const getValue() {
-        assert getSource() == Source.CONST;
+    public Const value() {
+        assert type() == Source.CONST;
         return this.value;
     }
 
-    private final Binding.Source type;
-    private final int index;
-    private final Const value;
-
     @Override
     public String toString() {
-        return this.type.name() + ":" + (getSource() == Source.CONST ? this.value : this.index);
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + this.index;
-        result = prime * result + this.type.hashCode();
-        result = prime * result + ((this.value == null) ? 0 : this.value.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof Binding)) {
-            return false;
-        }
-        Binding other = (Binding) obj;
-        if (this.index != other.index) {
-            return false;
-        }
-        if (this.type != other.type) {
-            return false;
-        }
-        if (this.value == null) {
-            if (other.value != null) {
-                return false;
-            }
-        } else if (!this.value.equals(other.value)) {
-            return false;
-        }
-        return true;
+        return this.type.name() + ":" + (type() == Source.CONST ? value() : index());
     }
 
     /** Constructs a binding to a constant value.

@@ -31,7 +31,6 @@ import java.util.Set;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.Direction;
-import nl.utwente.groove.util.Duo;
 
 /**
  * Deterministic automaton optimised towards matching.
@@ -141,18 +140,18 @@ public class DFA {
         }
         boolean result = true;
         Map<DFAState,DFAState> isoMap = new HashMap<>();
-        Set<Duo<DFAState>> newPairs = new HashSet<>();
+        Set<Pair> newPairs = new HashSet<>();
         isoMap.put(getStartState(), other.getStartState());
-        newPairs.add(Duo.newDuo(getStartState(), other.getStartState()));
+        newPairs.add(new Pair(getStartState(), other.getStartState()));
         do {
-            Iterator<Duo<DFAState>> newIter = newPairs.iterator();
-            Duo<DFAState> current = newIter.next();
+            Iterator<Pair> newIter = newPairs.iterator();
+            Pair current = newIter.next();
             newIter.remove();
-            Set<Duo<DFAState>> targetPairs = compareStates(current);
+            Set<Pair> targetPairs = compareStates(current);
             if (targetPairs == null) {
                 result = false;
             } else {
-                for (Duo<DFAState> pair : targetPairs) {
+                for (Pair pair : targetPairs) {
                     DFAState old = isoMap.put(pair.one(), pair.two());
                     if (old == null) {
                         newPairs.add(pair);
@@ -179,8 +178,8 @@ public class DFA {
      * transitions, or {@code null} if there is no one-to-one correspondence
      * between the transitions.
      */
-    private Set<Duo<DFAState>> compareStates(Duo<DFAState> statePair) {
-        Set<Duo<DFAState>> result = new HashSet<>();
+    private Set<Pair> compareStates(Pair statePair) {
+        Set<Pair> result = new HashSet<>();
         DFAState one = statePair.one();
         DFAState two = statePair.two();
         if (one.isFinal() != two.isFinal()) {
@@ -200,7 +199,7 @@ public class DFA {
                 if (twoTarget == null) {
                     return null;
                 }
-                result.add(Duo.newDuo(oneEntry.getValue(), twoTarget));
+                result.add(new Pair(oneEntry.getValue(), twoTarget));
             }
         }
         return result;
@@ -352,6 +351,10 @@ public class DFA {
     private final Map<Set<RegNode>,DFAState> stateMap = new LinkedHashMap<>();
     /** Currently instantiated recogniser for this automaton. */
     private Recogniser recogniser;
+
+    private record Pair(DFAState one, DFAState two) {
+        // no additional functionality
+    }
 
     private static class Cell extends HashSet<DFAState> {
         /** Constructs a singleton cell. */

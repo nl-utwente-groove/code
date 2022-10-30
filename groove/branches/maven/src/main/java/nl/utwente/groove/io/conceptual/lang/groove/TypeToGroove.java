@@ -33,6 +33,7 @@ import nl.utwente.groove.io.conceptual.type.Tuple;
 import nl.utwente.groove.io.conceptual.type.Type;
 import nl.utwente.groove.io.conceptual.value.Object;
 import nl.utwente.groove.io.external.PortException;
+import nl.utwente.groove.util.Exceptions;
 
 //separate different graphs for various elements where applicable.
 @SuppressWarnings("javadoc")
@@ -360,7 +361,7 @@ public class TypeToGroove extends TypeExporter<AbsNode> {
             return;
         }
         if (object != Object.NIL) {
-            throw new IllegalArgumentException("Cannot create object node in type model");
+            throw Exceptions.illegalArg("Cannot create object node in type model");
         }
 
         String name = this.m_cfg.getStrings()

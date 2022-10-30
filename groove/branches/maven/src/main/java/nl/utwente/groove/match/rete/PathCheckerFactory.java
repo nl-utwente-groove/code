@@ -30,6 +30,7 @@ import nl.utwente.groove.automaton.RegExpr.Choice;
 import nl.utwente.groove.automaton.RegExpr.Inv;
 import nl.utwente.groove.automaton.RegExpr.Seq;
 import nl.utwente.groove.automaton.RegExpr.Wildcard;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Factory class that creates path-checkers for each regular expression
@@ -39,8 +40,7 @@ import nl.utwente.groove.automaton.RegExpr.Wildcard;
  */
 public class PathCheckerFactory {
     private ReteNetwork owner;
-    private HashMap<String,Set<AbstractPathChecker>> pathCheckers =
-        new HashMap<>();
+    private HashMap<String,Set<AbstractPathChecker>> pathCheckers = new HashMap<>();
 
     /**
      * Creates a path-checker factory for a given RETE network
@@ -93,7 +93,7 @@ public class PathCheckerFactory {
             operands.add(exp.getInvOperand());
             result = new InversionPathChecker(this.owner, (Inv) exp, isLoop);
         } else if (exp.isNeg()) {
-            throw new UnsupportedOperationException("Negation is not supported by this factory.");
+            throw Exceptions.unsupportedOp("Negation is not supported by this factory.");
         } else if (exp.isPlus() || exp.isStar()) {
             operands = new ArrayList<>();
             operands.add(exp.isPlus() ? exp.getPlusOperand() : exp.getStarOperand());

@@ -17,6 +17,7 @@
 package nl.utwente.groove.algebra;
 
 import nl.utwente.groove.algebra.syntax.Expression;
+import nl.utwente.groove.util.Exceptions;
 
 /** Abstract superclass of all boolean algebras.
  * <Bool> Representation type for boolean values
@@ -36,11 +37,10 @@ public abstract sealed class BoolAlgebra<BOOL> extends BoolSignature<BOOL>
     @Override
     public final BOOL toValueFromJava(Object value) {
         if (!(value instanceof Boolean)) {
-            throw new IllegalArgumentException(
-                java.lang.String.format("Native boolean type is %s, not %s",
-                    Boolean.class.getSimpleName(),
-                    value.getClass()
-                        .getSimpleName()));
+            throw Exceptions.illegalArg("Native boolean type is %s, not %s",
+                Boolean.class.getSimpleName(),
+                value.getClass()
+                    .getSimpleName());
         }
         return toValueFromJavaBoolean((Boolean) value);
     }

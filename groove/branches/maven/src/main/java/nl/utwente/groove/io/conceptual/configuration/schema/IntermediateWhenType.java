@@ -31,9 +31,13 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlEnum
 @SuppressWarnings("javadoc")
 public enum IntermediateWhenType {
-    @XmlEnumValue("always") ALWAYS("always"),
-    @XmlEnumValue("container") CONTAINER("container"),
-    @XmlEnumValue("required") REQUIRED("required");
+    @XmlEnumValue("always")
+    ALWAYS("always"),
+    @XmlEnumValue("container")
+    CONTAINER("container"),
+    @XmlEnumValue("required")
+    REQUIRED("required");
+
     private final String value;
 
     IntermediateWhenType(String v) {
@@ -43,14 +47,4 @@ public enum IntermediateWhenType {
     public String value() {
         return this.value;
     }
-
-    public static IntermediateWhenType fromValue(String v) {
-        for (IntermediateWhenType c : IntermediateWhenType.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-        throw new IllegalArgumentException(v);
-    }
-
 }

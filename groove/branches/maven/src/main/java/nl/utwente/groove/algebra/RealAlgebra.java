@@ -17,6 +17,7 @@
 package nl.utwente.groove.algebra;
 
 import nl.utwente.groove.algebra.syntax.Expression;
+import nl.utwente.groove.util.Exceptions;
 
 /** Abstract superclass of all real-number algebras.
  * @param <INT> The representation type of the integer algebra
@@ -40,11 +41,10 @@ public abstract sealed class RealAlgebra<INT,REAL,BOOL,STRING>
     @Override
     public final REAL toValueFromJava(Object value) {
         if (!(value instanceof Double)) {
-            throw new IllegalArgumentException(
-                java.lang.String.format("Native double type is %s, not %s",
-                    Double.class.getSimpleName(),
-                    value.getClass()
-                        .getSimpleName()));
+            throw Exceptions.illegalArg("Native double type is %s, not %s",
+                Double.class.getSimpleName(),
+                value.getClass()
+                    .getSimpleName());
         }
         return toValueFromJavaDouble((Double) value);
     }

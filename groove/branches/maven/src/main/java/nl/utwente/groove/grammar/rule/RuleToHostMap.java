@@ -30,6 +30,7 @@ import nl.utwente.groove.grammar.type.TypeGuard;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.AElementMap;
 import nl.utwente.groove.graph.Label;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Mapping from rule graph elements (including label variables) to host graph elements.
@@ -67,8 +68,7 @@ public class RuleToHostMap extends AElementMap<RuleNode,RuleEdge,HostNode,HostEd
         if (ruleLabel.isWildcard()) {
             TypeGuard guard = ruleLabel.getWildcardGuard();
             if (!guard.isNamed()) {
-                throw new IllegalArgumentException(
-                    String.format("Label %s cannot be mapped", ruleLabel));
+                throw Exceptions.illegalArg("Label %s cannot be mapped", ruleLabel);
             } else {
                 result = getVar(guard.getVar()).label();
             }

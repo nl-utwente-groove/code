@@ -31,9 +31,13 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlEnum
 @SuppressWarnings("javadoc")
 public enum NullableType {
-    @XmlEnumValue("all") ALL("all"),
-    @XmlEnumValue("required") REQUIRED("required"),
-    @XmlEnumValue("none") NONE("none");
+    @XmlEnumValue("all")
+    ALL("all"),
+    @XmlEnumValue("required")
+    REQUIRED("required"),
+    @XmlEnumValue("none")
+    NONE("none");
+
     private final String value;
 
     NullableType(String v) {
@@ -43,14 +47,4 @@ public enum NullableType {
     public String value() {
         return this.value;
     }
-
-    public static NullableType fromValue(String v) {
-        for (NullableType c : NullableType.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-        throw new IllegalArgumentException(v);
-    }
-
 }

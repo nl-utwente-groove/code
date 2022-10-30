@@ -30,8 +30,11 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlEnum
 @SuppressWarnings("javadoc")
 public enum GraphType {
-    @XmlEnumValue("typeGraph") TYPE_GRAPH("typeGraph"),
-    @XmlEnumValue("ruleGraph") RULE_GRAPH("ruleGraph");
+    @XmlEnumValue("typeGraph")
+    TYPE_GRAPH("typeGraph"),
+    @XmlEnumValue("ruleGraph")
+    RULE_GRAPH("ruleGraph");
+
     private final String value;
 
     GraphType(String v) {
@@ -41,14 +44,4 @@ public enum GraphType {
     public String value() {
         return this.value;
     }
-
-    public static GraphType fromValue(String v) {
-        for (GraphType c : GraphType.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-        throw new IllegalArgumentException(v);
-    }
-
 }

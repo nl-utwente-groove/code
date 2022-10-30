@@ -62,6 +62,7 @@ import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.NodeSetEdgeSetGraph;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -206,12 +207,12 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
 
     @Override
     public boolean removeEdge(TypeEdge edge) {
-        throw new UnsupportedOperationException("Edge removal not allowed in type graphs");
+        throw Exceptions.unsupportedOp("Edge removal (%s) not allowed in type graphs", edge);
     }
 
     @Override
     public boolean removeNode(TypeNode node) {
-        throw new UnsupportedOperationException("Node removal not allowed in type graphs");
+        throw Exceptions.unsupportedOp("Node removal (%s) not allowed in type graphs", node);
     }
 
     /**
@@ -232,8 +233,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
         }
         if (this.nodeSupertypeMap.get(supertype)
             .contains(subtype)) {
-            throw new FormatException(String.format(
-                "The relation '%s -> %s' introduces a cyclic type dependency", subtype, supertype));
+            throw new FormatException(
+                String.format("The relation '%s -> %s' introduces a cyclic type dependency",
+                    subtype,
+                    supertype));
         }
         this.nodeDirectSubtypeMap.get(supertype)
             .add(subtype);
@@ -559,9 +562,12 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
             }
             if (image.getMatchingTypes()
                 .isEmpty()) {
-                errors.add("%s wildcard %s cannot match anything", image.label()
-                    .getRole()
-                    .getDescription(true), image.label(), varEdge);
+                errors.add("%s wildcard %s cannot match anything",
+                    image.label()
+                        .getRole()
+                        .getDescription(true),
+                    image.label(),
+                    varEdge);
             }
             result.putEdge(varEdge, image);
         }
@@ -1058,7 +1064,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
      * if there is such a node in the type graph. Returns {@code null}
      * if the label is not a known node type.
      */
-    public @Nullable TypeNode getNode(@NonNull Label label) {
+    public @Nullable TypeNode getNode(@NonNull
+    Label label) {
         assert label.getRole() == NODE_TYPE;
         if (isImplicit()) {
             return this.factory.getTopNode();
@@ -1097,12 +1104,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
         }
         Set<TypeNode> sub1 = getSubtypes(node1);
         Set<TypeNode> sub2 = getSubtypes(node2);
-        assert sub1 != null : String.format("Node type %s does not exist in type graph %s",
-            node1,
-            this);
-        assert sub2 != null : String.format("Node type %s does not exist in type graph %s",
-            node2,
-            this);
+        assert sub1 != null : String
+            .format("Node type %s does not exist in type graph %s", node1, this);
+        assert sub2 != null : String
+            .format("Node type %s does not exist in type graph %s", node2, this);
         if (sub1.size() == 1) {
             // sub1 doesn't have a proper subtype
             return sub2.size() > 1 && sub2.contains(node1);

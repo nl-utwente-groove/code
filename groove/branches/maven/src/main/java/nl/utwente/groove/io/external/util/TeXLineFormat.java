@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nl.utwente.groove.io.Util;
-import nl.utwente.groove.util.Duo;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.line.Line.ColorType;
 import nl.utwente.groove.util.line.Line.Style;
@@ -40,15 +40,15 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
 
     @Override
     public TeXBuilder applyColored(ColorType type, Color color, TeXBuilder subline) {
-        Duo<String> marker = getColorMarker(type, color);
+        Marker marker = getColorMarker(type, color);
         subline.surround(marker, Mode.TEXT);
         return subline;
     }
 
     @Override
     public TeXBuilder applyStyled(Style style, TeXBuilder subline) {
-        Pair<Duo<String>,Mode> marker = getStyleMarker(style);
-        subline.surround(marker.one(), marker.two());
+        StyleMarker styleMarker = getStyleMarker(style);
+        subline.surround(styleMarker.marker(), styleMarker.mode());
         return subline;
     }
 
@@ -87,15 +87,15 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
 
     /** Returns the prefix and postfix to set text in a given character style,
      * together with a flag indicating if the pre-and postfix require math mode. */
-    private static Pair<Duo<String>,Mode> getStyleMarker(Style style) {
+    private static StyleMarker getStyleMarker(Style style) {
         return styleMap.get(style);
     }
 
     /** Mapping from character styles to the pre- and postfix achieving that style. */
-    private static final Map<Style,Pair<Duo<String>,Mode>> styleMap;
+    private static final Map<Style,StyleMarker> styleMap;
 
     static {
-        Map<Style,Pair<Duo<String>,Mode>> result = new EnumMap<>(Style.class);
+        Map<Style,StyleMarker> result = new EnumMap<>(Style.class);
         for (Style style : Style.values()) {
             String start, end;
             Mode mode;
@@ -126,17 +126,15 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
                 mode = Mode.MATH;
                 break;
             default:
-                start = end = null;
-                mode = null;
-                assert false;
+                throw Exceptions.UNREACHABLE;
             }
-            result.put(style, Pair.newPair(Duo.newDuo(start, end), mode));
+            result.put(style, new StyleMarker(new Marker(start, end), mode));
         }
         styleMap = result;
     }
 
     /** Returns a colour specification for a given colour. */
-    private static Duo<String> getColorMarker(ColorType type, Color color) {
+    private static Marker getColorMarker(ColorType type, Color color) {
         String colorString;
         if (type == ColorType.RGB) {
             colorString = "\\color[RGB]{" + color.getRed() + "," + color.getGreen() + ","
@@ -144,7 +142,7 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
         } else {
             colorString = colorMap.get(type);
         }
-        return Duo.newDuo("{" + colorString, "}");
+        return new Marker("{" + colorString, "}");
     }
 
     /** Mapping from logical colours to LaTeX xcolor specifications. */
@@ -275,7 +273,7 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
          * Surrounds the text with a pre- and postfix,
          * set in a certain mode.
          */
-        void surround(Duo<String> marker, Mode mode) {
+        void surround(Marker marker, Mode mode) {
             boolean math = (mode == Mode.MATH);
             if (!isEmpty()) {
                 if (math) {
@@ -288,8 +286,8 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
                     setTextMode();
                 }
             }
-            this.content.insert(0, marker.one());
-            this.content.append(marker.two());
+            this.content.insert(0, marker.prefix());
+            this.content.append(marker.postfix());
             this.requiresMath = this.providesMath = this.mathOnly = math;
         }
 
@@ -327,5 +325,13 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
         TEXT,
         /** Either math or text mode. */
         BOTH;
+    }
+
+    private record Marker(String prefix, String postfix) {
+        // no additional functionality
+    }
+
+    private record StyleMarker(Marker marker, Mode mode) {
+        // no additional functionality
     }
 }

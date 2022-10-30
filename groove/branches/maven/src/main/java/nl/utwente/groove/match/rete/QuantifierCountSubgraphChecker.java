@@ -21,6 +21,7 @@ import java.util.Set;
 
 import nl.utwente.groove.match.rete.ReteNetwork.ReteStaticMapping;
 import nl.utwente.groove.match.rete.ReteSimpleMatch.ReteCountMatch;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.collect.TreeHashSet;
 
 /**
@@ -180,14 +181,13 @@ public class QuantifierCountSubgraphChecker
             this.joinStrategy = new JoinWithCountStrategy<>(this);
         } else if ((left.getNNode() instanceof QuantifierCountChecker)
             && !(right.getNNode() instanceof QuantifierCountChecker)) {
-            throw new UnsupportedOperationException(
-                String.format("Left is of type %s and right is of type %s",
-                    left.getNNode()
-                        .getClass()
-                        .toString(),
-                    right.getNNode()
-                        .getClass()
-                        .toString()));
+            throw Exceptions.unsupportedOp("Left is of type %s and right is of type %s",
+                left.getNNode()
+                    .getClass()
+                    .toString(),
+                right.getNNode()
+                    .getClass()
+                    .toString());
         }
     }
 

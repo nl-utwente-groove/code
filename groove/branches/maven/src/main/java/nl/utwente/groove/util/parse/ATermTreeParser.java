@@ -43,7 +43,7 @@ import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.io.Util;
-import nl.utwente.groove.util.Pair;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.OpKind.Direction;
 import nl.utwente.groove.util.parse.OpKind.Placement;
 
@@ -340,7 +340,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
             if (!has(LATE_OP)) {
                 break;
             }
-            O op = next().op(LATE_OP);
+            @SuppressWarnings("unchecked") var op = (O) next().op(LATE_OP);
             OpKind kind = op.getKind();
             if (context.compareTo(kind) > 0) {
                 break;
@@ -412,7 +412,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
      * guaranteed to contain a prefix operator
      */
     protected X parsePrefixed(Token opToken) throws FormatException {
-        @Nullable O op = opToken.type(TokenClaz.PRE_OP)
+        @SuppressWarnings("unchecked") var op = (O) opToken.type(TokenClaz.PRE_OP)
             .op();
         assert op != null; // never for pre-ops
         X result = createTree(op);
@@ -865,7 +865,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
                 }
                 if (symbol.equals(prefix)) {
                     if (family != null) {
-                        throw new IllegalArgumentException("Duplicate token " + symbol);
+                        throw Exceptions.illegalArg("Duplicate token %s", symbol);
                     }
                     family = token;
                 } else {
@@ -907,9 +907,9 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
 
         /** Returns the operator of a given token class, if there is
          * one in this token. */
-        public <O extends Op> O op(TokenClaz claz) {
+        public Op op(TokenClaz claz) {
             assert claz == TokenClaz.PRE_OP || claz == TokenClaz.LATE_OP;
-            @Nullable O result = type(claz).op();
+            @Nullable Op result = type(claz).op();
             assert result != null; // never null for pre- or late-ops
             return result;
         }
@@ -1051,12 +1051,12 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
      * @author Arend Rensink
      * @version $Revision $
      */
-    public static class TokenType extends Pair<TokenClaz,Object> {
+    public static record TokenType(TokenClaz claz, Sort sort, Op op) {
         /**
          * Constructs a token type for a singular type class.
          */
         public TokenType(TokenClaz claz) {
-            super(claz, null);
+            this(claz, null, null);
         }
 
         /**
@@ -1064,8 +1064,8 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
          * @param op the (non-{@code null}) associated operator.
          */
         public TokenType(Op op) {
-            super(getClaz(op.getKind()
-                .getPlace()), op);
+            this(getClaz(op.getKind()
+                .getPlace()), null, op);
         }
 
         /**
@@ -1074,26 +1074,9 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
          * @param sort the (non-{@code null}) associated sort.
          */
         public TokenType(TokenClaz claz, Sort sort) {
-            super(claz, sort);
+            this(claz, sort, null);
             assert claz == TokenClaz.CONST || claz == TokenClaz.SORT;
             assert sort != null;
-        }
-
-        /** Returns the type class of this token type. */
-        public TokenClaz claz() {
-            return one();
-        }
-
-        /** Returns the operator wrapped in this token type, if any. */
-        @SuppressWarnings("unchecked")
-        public <O extends Op> @Nullable O op() {
-            return claz() == TokenClaz.PRE_OP || claz() == TokenClaz.LATE_OP ? (O) two() : null;
-        }
-
-        /** Returns the sort wrapped in this token type, if any. */
-        public Sort sort() {
-            assert claz() == TokenClaz.SORT || claz() == TokenClaz.CONST;
-            return (Sort) two();
         }
 
         /** Indicates if this token type has a parsable symbol.
@@ -1107,36 +1090,20 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
          * it is a single (parsable) type.
          */
         public String symbol() {
-            String result;
-            switch (claz()) {
-            case PRE_OP:
-            case LATE_OP:
-                @Nullable Op op = op();
-                assert op != null; // never null for pre- or late-ops
-                result = op.getSymbol();
-                break;
-            case SORT:
-                result = sort().getName();
-                break;
-            default:
-                result = claz().symbol();
-            }
-            return result;
+            return switch (claz()) {
+            case PRE_OP, LATE_OP -> op().getSymbol();
+            case SORT -> sort().getName();
+            default -> claz().symbol();
+            };
         }
     }
 
     /** Returns the operator token class for  a given operator placement. */
     static TokenClaz getClaz(Placement place) {
-        switch (place) {
-        case INFIX:
-        case POSTFIX:
-            return TokenClaz.LATE_OP;
-        case PREFIX:
-            return TokenClaz.PRE_OP;
-        default:
-            assert false;
-            return null;
-        }
+        return switch (place) {
+        case INFIX, POSTFIX -> TokenClaz.LATE_OP;
+        case PREFIX -> TokenClaz.PRE_OP;
+        };
     }
 
     /**

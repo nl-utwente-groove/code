@@ -30,8 +30,11 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlEnum
 @SuppressWarnings("javadoc")
 public enum RepresentationType {
-    @XmlEnumValue("internal") INTERNAL("internal"),
-    @XmlEnumValue("asClass") AS_CLASS("asClass");
+    @XmlEnumValue("internal")
+    INTERNAL("internal"),
+    @XmlEnumValue("asClass")
+    AS_CLASS("asClass");
+
     private final String value;
 
     RepresentationType(String v) {
@@ -41,14 +44,4 @@ public enum RepresentationType {
     public String value() {
         return this.value;
     }
-
-    public static RepresentationType fromValue(String v) {
-        for (RepresentationType c : RepresentationType.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-        throw new IllegalArgumentException(v);
-    }
-
 }

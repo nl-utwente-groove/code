@@ -27,7 +27,6 @@ import nl.utwente.groove.grammar.UnitPar.Direction;
 import nl.utwente.groove.grammar.host.HostFactory;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.host.ValueNode;
-import nl.utwente.groove.grammar.rule.RuleNode;
 
 /**
  * Class representing a control argument in an action call.
@@ -41,25 +40,25 @@ import nl.utwente.groove.grammar.rule.RuleNode;
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class CtrlPar {
+public interface CtrlPar {
 
     /**
      * Indicates whether this parameter is input-only.
      * A parameter is either input-only, output-only, or don't care.
      */
-    public abstract boolean isInOnly();
+    public abstract boolean inOnly();
 
     /**
      * Indicates whether this parameter is output-only.
      * A parameter is either input-only, output-only, or don't care.
      */
-    public abstract boolean isOutOnly();
+    public abstract boolean outOnly();
 
     /**
      * Indicates if this parameter is a don't care; i.e., its direction is irrelevant.
      * A parameter is either input-only, output-only, or don't care.
      */
-    public abstract boolean isDontCare();
+    public abstract boolean dontCare();
 
     /**
      * Returns the control type of this parameter.
@@ -69,7 +68,7 @@ public abstract class CtrlPar {
     public abstract CtrlType getType();
 
     /** Computes and inserts the host nodes to be used for constant value arguments. */
-    public void initialise(HostFactory factory) {
+    public default void initialise(HostFactory factory) {
         // empty
     }
 
@@ -102,9 +101,9 @@ public abstract class CtrlPar {
 
     /** Returns a wildcard parameter with a given type and number. */
     public static Var wild(CtrlType type, int nr) {
-        List<Var> typeVars = wildMap.get(type);
+        List<Var> typeVars = Var.wildMap.get(type);
         if (typeVars == null) {
-            wildMap.put(type, typeVars = new ArrayList<>());
+            Var.wildMap.put(type, typeVars = new ArrayList<>());
         }
         for (int i = typeVars.size(); i <= nr; i++) {
             typeVars.add(new Var(CtrlVar.wild(type, i), false));
@@ -112,16 +111,10 @@ public abstract class CtrlPar {
         return typeVars.get(nr);
     }
 
-    /** Store of wildcard variables. */
-    private static Map<CtrlType,List<Var>> wildMap = new EnumMap<>(CtrlType.class);
-
     /** Returns the single untyped wildcard argument. */
     public static Wild wild() {
-        return WILD;
+        return Wild.WILD;
     }
-
-    /** The singleton instance of the untyped wildcard argument. */
-    private static Wild WILD = new Wild();
 
     /**
      * Variable control parameter.
@@ -129,15 +122,13 @@ public abstract class CtrlPar {
      * and an optional direction.
      * Can be used as formal parameter or argument.
      */
-    public static class Var extends CtrlPar {
+    public static record Var(CtrlVar var, boolean inOnly, boolean outOnly) implements CtrlPar {
         /**
          * Constructs a new, non-directional variable control parameter.
          * @param var the control variable of this parameter
          */
         public Var(CtrlVar var) {
-            this.var = var;
-            this.inOnly = false;
-            this.outOnly = false;
+            this(var, false, false);
         }
 
         /**
@@ -147,64 +138,24 @@ public abstract class CtrlPar {
          * otherwise it is output-only
          */
         public Var(CtrlVar var, boolean inOnly) {
+            this(var, inOnly, !inOnly);
             assert var != null;
-            this.var = var;
-            this.inOnly = inOnly;
-            this.outOnly = !inOnly;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj instanceof CtrlVar) {
-                return this.var.equals(obj);
-            }
-            if (!(obj instanceof Var)) {
-                return false;
-            }
-            Var other = (Var) obj;
-            return isOutOnly() == other.isOutOnly() && isInOnly() == other.isInOnly()
-                && getVar().equals(other.getVar());
         }
 
         @Override
         public CtrlType getType() {
-            return getVar().getType();
-        }
-
-        /** Returns the control variable wrapped in this variable parameter. */
-        public CtrlVar getVar() {
-            return this.var;
+            return var().type();
         }
 
         @Override
-        public int hashCode() {
-            int result = isInOnly() ? 0 : isOutOnly() ? 1 : 2;
-            result = result * 31 + getVar().hashCode();
-            return result;
-        }
-
-        @Override
-        public boolean isDontCare() {
-            return !(this.inOnly || this.outOnly);
-        }
-
-        @Override
-        public boolean isInOnly() {
-            return this.inOnly;
-        }
-
-        @Override
-        public boolean isOutOnly() {
-            return this.outOnly;
+        public boolean dontCare() {
+            return !(inOnly() || outOnly());
         }
 
         @Override
         public String toString() {
-            String result = isOutOnly() ? OUT_PREFIX + " " : "";
-            result += getVar().toString();
+            String result = outOnly() ? OUT_PREFIX + " " : "";
+            result += var().toString();
             return result;
         }
 
@@ -221,51 +172,25 @@ public abstract class CtrlPar {
             if (argType != null && !getType().equals(argType)) {
                 return false;
             }
-            if (isDontCare()) {
+            if (dontCare()) {
                 return true;
-            } else if (isInOnly()) {
-                return arg.isInOnly();
+            } else if (inOnly()) {
+                return arg.inOnly();
             } else {
-                assert isOutOnly();
-                return !arg.isInOnly();
+                assert outOnly();
+                return !arg.inOnly();
             }
         }
 
-        /** Returns the (possibly {@code null} rule node in this parameter. */
-        public RuleNode getRuleNode() {
-            return this.ruleNode;
-        }
+        /** Store of wildcard variables. */
+        private static Map<CtrlType,List<Var>> wildMap = new EnumMap<>(CtrlType.class);
 
-        /**
-         * Sets the rule node of this parameter.
-         * Also indicates if it is a creator node.
-         */
-        public void setRuleNode(RuleNode ruleNode, boolean creator) {
-            this.ruleNode = ruleNode;
-            this.creator = creator;
-        }
-
-        /** Indicates if this is a rule parameter corresponding to a creator node. */
-        public final boolean isCreator() {
-            return this.creator;
-        }
-
-        /** Associated node if this is a rule parameter. */
-        private RuleNode ruleNode;
-        /** Flag indicating if this is a rule parameter referring to a creator node. */
-        private boolean creator;
-        /** The control variable wrapped in this variable parameter. */
-        private final CtrlVar var;
-        /** Flag indicating if this is an input-only parameter. */
-        private final boolean inOnly;
-        /** Flag indicating if this is an output-only parameter. */
-        private final boolean outOnly;
     }
 
     /**
      * Constant control argument.
      */
-    public static class Const extends CtrlPar {
+    public static class Const implements CtrlPar {
         /**
          * Constructs a constant argument from an algebra value
          * @param algebra the algebra from which the value is taken
@@ -309,17 +234,17 @@ public abstract class CtrlPar {
         }
 
         @Override
-        public boolean isDontCare() {
+        public boolean dontCare() {
             return false;
         }
 
         @Override
-        public boolean isInOnly() {
+        public boolean inOnly() {
             return true;
         }
 
         @Override
-        public boolean isOutOnly() {
+        public boolean outOnly() {
             return false;
         }
 
@@ -351,20 +276,11 @@ public abstract class CtrlPar {
     /**
      * Wildcard parameter.
      */
-    public static class Wild extends CtrlPar {
-        /** Constructor for the singleton instance. */
-        private Wild() {
-            // empty
-        }
+    public record Wild() implements CtrlPar {
 
         @Override
         public boolean equals(Object obj) {
             return obj instanceof Wild;
-        }
-
-        @Override
-        public CtrlType getType() {
-            return null;
         }
 
         @Override
@@ -373,17 +289,22 @@ public abstract class CtrlPar {
         }
 
         @Override
-        public boolean isDontCare() {
+        public CtrlType getType() {
+            return null;
+        }
+
+        @Override
+        public boolean dontCare() {
             return true;
         }
 
         @Override
-        public boolean isInOnly() {
+        public boolean inOnly() {
             return false;
         }
 
         @Override
-        public boolean isOutOnly() {
+        public boolean outOnly() {
             return false;
         }
 
@@ -391,5 +312,8 @@ public abstract class CtrlPar {
         public String toString() {
             return DONT_CARE;
         }
+
+        /** The singleton instance of the untyped wildcard argument. */
+        private static Wild WILD = new Wild();
     }
 }

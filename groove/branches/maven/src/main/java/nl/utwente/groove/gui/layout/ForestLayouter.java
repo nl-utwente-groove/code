@@ -44,6 +44,7 @@ import nl.utwente.groove.gui.jgraph.JModel;
 import nl.utwente.groove.gui.jgraph.JVertex;
 import nl.utwente.groove.gui.jgraph.LTSJGraph;
 import nl.utwente.groove.gui.jgraph.LTSJModel;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Pair;
 
 /**
@@ -182,8 +183,8 @@ public class ForestLayouter extends AbstractLayouter {
                 }
                 LayoutNode layoutable = ForestLayouter.this.layoutMap.get(root);
                 if (layoutable == null) {
-                    throw new IllegalArgumentException(
-                        "Suggested root " + root + " is not a known graph cell");
+                    throw Exceptions.illegalArg("Suggested root %s is not a known graph cell",
+                        root);
                 }
                 remaining.add(layoutable);
             }

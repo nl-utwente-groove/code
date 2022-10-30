@@ -56,6 +56,7 @@ import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.prolog.GrooveEnvironment;
 import nl.utwente.groove.util.ChangeCount;
 import nl.utwente.groove.util.ChangeCount.Tracker;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Version;
 import nl.utwente.groove.util.parse.FormatError;
@@ -346,8 +347,7 @@ public class GrammarModel implements PropertyChangeListener {
     public void setStartGraph(AspectGraph startGraph) {
         assert startGraph != null;
         if (startGraph.getRole() != GraphRole.HOST) {
-            throw new IllegalArgumentException(
-                String.format("Prospective start graph '%s' is not a graph", startGraph));
+            throw Exceptions.illegalArg("Prospective start graph '%s' is not a graph", startGraph);
         }
         this.startGraphModel = new HostModel(this, startGraph);
         this.isExternalStartGraphModel = true;

@@ -42,6 +42,7 @@ import nl.utwente.groove.grammar.rule.VariableNode;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.io.Util;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -265,8 +266,8 @@ public class Condition implements Fixable {
      */
     public void addSubCondition(Condition condition) {
         if (!getOp().hasOperands()) {
-            throw new UnsupportedOperationException(
-                String.format("%s conditions cannot have subconditions", condition.getOp()));
+            throw Exceptions.unsupportedOp("%s conditions cannot have subconditions",
+                condition.getOp());
         }
         condition.testFixed(true);
         testFixed(false);
@@ -718,8 +719,7 @@ public class Condition implements Fixable {
     /** Constructs a disjunctive condition for a non-empty list of operands. */
     static private final Condition newCondition(Op op, String descr, Condition... operands) {
         if (operands.length == 0) {
-            throw new IllegalArgumentException(
-                String.format("Can't build '%s' with empty operand list", descr));
+            throw Exceptions.illegalArg("Can't build '%s' with empty operand list", descr);
         }
         StringBuilder name = new StringBuilder();
         for (int i = 0; i < operands.length; i++) {
@@ -739,8 +739,8 @@ public class Condition implements Fixable {
         try {
             result.setFixed();
         } catch (FormatException e) {
-            throw new IllegalArgumentException(
-                String.format("Error while fixing new condition %s: %s", name, e.getMessage()));
+            throw Exceptions
+                .illegalArg("Error while fixing new condition %s: %s", name, e.getMessage());
         }
         return result;
     }

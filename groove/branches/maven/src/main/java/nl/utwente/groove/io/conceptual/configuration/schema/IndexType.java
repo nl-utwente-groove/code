@@ -30,8 +30,11 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlEnum
 @SuppressWarnings("javadoc")
 public enum IndexType {
-    @XmlEnumValue("useIntermediate") USE_INTERMEDIATE("useIntermediate"),
-    @XmlEnumValue("preferValue") PREFER_VALUE("preferValue");
+    @XmlEnumValue("useIntermediate")
+    USE_INTERMEDIATE("useIntermediate"),
+    @XmlEnumValue("preferValue")
+    PREFER_VALUE("preferValue");
+
     private final String value;
 
     IndexType(String v) {
@@ -41,14 +44,4 @@ public enum IndexType {
     public String value() {
         return this.value;
     }
-
-    public static IndexType fromValue(String v) {
-        for (IndexType c : IndexType.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-        throw new IllegalArgumentException(v);
-    }
-
 }

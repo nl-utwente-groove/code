@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.utwente.groove.grammar.Rule;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * @author Ruud Welling
@@ -38,8 +39,7 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
     /**
      * The set of critical pair which have already been computed
      */
-    private Map<RuleTuple,LinkedHashSet<CriticalPair>> pairMap =
-        new LinkedHashMap<>();
+    private Map<RuleTuple,LinkedHashSet<CriticalPair>> pairMap = new LinkedHashMap<>();
 
     /**
      * Set of ruleTuples for which the critical pairs still need to be computed
@@ -123,12 +123,12 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
 
     @Override
     public boolean add(CriticalPair e) {
-        throw new UnsupportedOperationException("Not supported for LazyCriticalPairSet");
+        throw Exceptions.unsupportedOp("Not supported for LazyCriticalPairSet");
     }
 
     @Override
     public boolean addAll(Collection<? extends CriticalPair> c) {
-        throw new UnsupportedOperationException("Not supported for LazyCriticalPairSet");
+        throw Exceptions.unsupportedOp("Not supported for LazyCriticalPairSet");
     }
 
     @Override

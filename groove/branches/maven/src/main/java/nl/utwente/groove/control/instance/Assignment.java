@@ -23,13 +23,13 @@ import java.util.List;
 import java.util.Map;
 
 import nl.utwente.groove.control.Binding;
+import nl.utwente.groove.control.Binding.Source;
 import nl.utwente.groove.control.CtrlPar;
+import nl.utwente.groove.control.CtrlPar.Const;
+import nl.utwente.groove.control.CtrlPar.Var;
 import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.control.Valuator;
-import nl.utwente.groove.control.Binding.Source;
-import nl.utwente.groove.control.CtrlPar.Const;
-import nl.utwente.groove.control.CtrlPar.Var;
 import nl.utwente.groove.control.template.Location;
 import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.control.template.SwitchStack;
@@ -118,26 +118,19 @@ public class Assignment {
         Object[] parentValues = Valuator.pop(val);
         for (int i = 0; i < bindings.length; i++) {
             Binding bind = bindings[i];
-            HostNode value;
-            switch (bind.getSource()) {
-            case CALLER:
+            result[i] = switch (bind.type()) {
+            case CALLER -> {
                 assert parentValues != null : String.format(
                     "Can't apply %s: valuation %s does not have parent level",
                     this,
                     Valuator.toString(val));
-                value = Valuator.get(parentValues, bind.getIndex());
-                break;
-            case CONST:
-                value = bind.getValue()
-                    .getNode();
-                break;
-            case VAR:
-                value = Valuator.get(val, bind.getIndex());
-                break;
-            default:
-                throw Exceptions.UNREACHABLE;
+                yield Valuator.get(parentValues, bind.index());
             }
-            result[i] = value;
+            case CONST -> bind.value()
+                .getNode();
+            case VAR -> Valuator.get(val, bind.index());
+            default -> throw Exceptions.UNREACHABLE;
+            };
         }
         return result;
     }
@@ -231,10 +224,10 @@ public class Assignment {
             CtrlPar arg = swit.getArgs()
                 .get(ix);
             Binding rhs;
-            if (arg instanceof Const) {
-                rhs = Binding.value((Const) arg);
+            if (arg instanceof Const c) {
+                rhs = Binding.value(c);
             } else {
-                rhs = Binding.var(sourceVars.indexOf(((Var) arg).getVar()));
+                rhs = Binding.var(sourceVars.indexOf(((Var) arg).var()));
             }
             result.add(rhs);
         }

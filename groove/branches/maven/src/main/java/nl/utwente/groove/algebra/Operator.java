@@ -16,6 +16,7 @@ import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.annotation.InfixSymbol;
 import nl.utwente.groove.annotation.PrefixSymbol;
 import nl.utwente.groove.annotation.ToolTipHeader;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.OpKind;
 
@@ -46,8 +47,8 @@ public class Operator {
             Type type = methodParameterTypes[i];
             if (this.setOperator) {
                 if (((ParameterizedType) type).getRawType() != List.class) {
-                    throw new IllegalArgumentException(
-                        "Method '%s' does not represent collection operator");
+                    throw Exceptions
+                        .illegalArg("Method '%s' does not represent collection operator");
                 }
                 type = ((ParameterizedType) type).getActualTypeArguments()[0];
             }
@@ -65,13 +66,12 @@ public class Operator {
     /** Converts a reflected type into a GROOVE sort. */
     private Sort toSort(Type type) throws IllegalArgumentException {
         if (!(type instanceof TypeVariable)) {
-            throw new IllegalArgumentException(String.format("Type '%s' should be generic", type));
+            throw Exceptions.illegalArg("Type '%s' should be generic", type);
         }
         String typeName = ((TypeVariable<?>) type).getName();
         Sort result = Sort.getKind(typeName.toLowerCase());
         if (result == null) {
-            throw new IllegalArgumentException(
-                String.format("Type '%s' is not an existing sort", typeName));
+            throw Exceptions.illegalArg("Type '%s' is not an existing sort", typeName);
         }
         return result;
     }
@@ -219,23 +219,22 @@ public class Operator {
             if (method.getName()
                 .equals(name)) {
                 if (result != null) {
-                    throw new IllegalArgumentException(java.lang.String
-                        .format("Operator overloading for '%s:%s' not allowed", sigName, name));
+                    throw Exceptions
+                        .illegalArg("Operator overloading for '%s:%s' not allowed", sigName, name);
                 }
                 result = method;
             }
         }
         if (result == null) {
-            throw new IllegalArgumentException(
-                java.lang.String.format("No method found for operator '%s:%s'", sigName, name));
+            throw Exceptions.illegalArg("No method found for operator '%s:%s'", sigName, name);
         }
         if (!Modifier.isAbstract(result.getModifiers())) {
-            throw new IllegalArgumentException(java.lang.String
-                .format("Method for operator '%s:%s' should be abstract", sigName, name));
+            throw Exceptions
+                .illegalArg("Method for operator '%s:%s' should be abstract", sigName, name);
         }
         if (!Modifier.isPublic(result.getModifiers())) {
-            throw new IllegalArgumentException(java.lang.String
-                .format("Method for operator '%s:%s' should be public", sigName, name));
+            throw Exceptions
+                .illegalArg("Method for operator '%s:%s' should be public", sigName, name);
         }
         return result;
     }

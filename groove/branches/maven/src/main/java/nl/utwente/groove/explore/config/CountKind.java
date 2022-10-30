@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.explore.config;
 
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.NullParser;
 import nl.utwente.groove.util.parse.Parser;
 
@@ -69,15 +70,10 @@ public enum CountKind implements SettingKey {
     }
 
     @Override
-    public Setting<CountKind,Integer> createSettting() throws IllegalArgumentException {
-        return createSetting(null);
-    }
-
-    @Override
     public Setting<CountKind,Integer> createSetting(Object content)
         throws IllegalArgumentException {
         if (!isValue(content)) {
-            throw new IllegalArgumentException();
+            throw Exceptions.illegalArg("Illegal value '%s' for count kind '%s'", content, this);
         }
         return new DefaultSetting<>(this, (Integer) content);
     }

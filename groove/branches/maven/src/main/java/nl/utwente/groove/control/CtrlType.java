@@ -100,6 +100,7 @@ public enum CtrlType {
             typeMap.put(type.toString(), type);
         }
     }
+
     /** The name of the node type. */
     static public final String NODE_TYPE_NAME = "node";
 }

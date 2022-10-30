@@ -19,6 +19,7 @@ package nl.utwente.groove.test.grammar;
 import static nl.utwente.groove.grammar.UnitPar.parse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
@@ -120,7 +121,7 @@ public class UnitParTest {
             assertEquals(this.r2, this.r2);
             assertEquals(this.r3, this.r3);
             assertFalse(this.r1.equals(this.r2));
-            assertFalse(this.r3.equals(this.r3));
+            assertTrue(this.r3.equals(this.r3));
             RulePar myR1 = new RulePar(AspectKind.PARAM_IN,
                 new VariableNode(0, Expression.parse("1"), this.intNode), false);
             assertEquals(myR1, this.r1);

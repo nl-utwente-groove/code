@@ -101,8 +101,7 @@ public class Aspect {
      */
     public Aspect newInstance(String text, GraphRole role) throws FormatException {
         if (!this.prototype) {
-            throw new UnsupportedOperationException(
-                "New aspects can only be created from prototypes");
+            throw Exceptions.unsupportedOp("New aspects can only be created from prototypes");
         }
         return new Aspect(getKind(), this.contentKind, this.contentKind.parseContent(text, role));
     }

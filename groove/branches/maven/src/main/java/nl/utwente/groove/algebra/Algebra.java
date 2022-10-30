@@ -23,8 +23,7 @@ import nl.utwente.groove.algebra.syntax.Expression;
  * @author Arend Rensink
  * @version $Revision $
  */
-public sealed interface Algebra<T> extends
-    Signature permits BoolAlgebra<T>, IntAlgebra<T,?,?,?>, PointAlgebra<T>, StringAlgebra<T,?,?,?>, RealAlgebra<T,?,?,?> {
+public interface Algebra<T> extends Signature {
     /** Tests if a given object is a value of this algebra. */
     boolean isValue(Object value);
 

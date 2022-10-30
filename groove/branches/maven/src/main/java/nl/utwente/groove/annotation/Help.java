@@ -32,6 +32,7 @@ import java.util.Map;
 
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.io.HTMLConverter.HTMLTag;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Pair;
 
 /**
@@ -96,8 +97,7 @@ public class Help {
     /** Sets to the tool tip main body. */
     public void setBody(List<String> text) {
         if (this.body.length() > 0) {
-            throw new IllegalStateException(String.format("Tool tip body already set to %s",
-                this.body));
+            throw Exceptions.illegalState("Tool tip body already set to %s", this.body);
         }
         for (String line : text) {
             addBody(line);
@@ -128,8 +128,7 @@ public class Help {
     /** Adds a documentation line for the next parameter. */
     public void addPar(String parDoc) {
         if (!isFormatSyntax()) {
-            throw new IllegalStateException(String.format("Parameter name for %s must be provided",
-                parDoc));
+            throw Exceptions.illegalState("Parameter name for %s must be provided", parDoc);
         }
         this.parDocs.add(parDoc);
     }
@@ -137,7 +136,7 @@ public class Help {
     /** Returns the text of the help item. */
     public String getItem() {
         if (this.syntax == null) {
-            throw new IllegalStateException("Syntax of item is not set.");
+            throw Exceptions.illegalState("Syntax of item is not set.");
         }
         return this.syntax;
     }
@@ -154,9 +153,10 @@ public class Help {
         }
         if (!this.parDocs.isEmpty()) {
             if (this.parNames.size() != this.parDocs.size()) {
-                throw new IllegalStateException(String.format(
+                throw Exceptions.illegalState(
                     "Parameter count error: %s documentation lines for %s parameters",
-                    this.parDocs.size(), this.parNames.size()));
+                    this.parDocs.size(),
+                    this.parNames.size());
             }
             StringBuilder paramText = new StringBuilder();
             for (int p = 0; p < this.parNames.size(); p++) {
@@ -168,7 +168,8 @@ public class Help {
             result.append(HTML_LINEBREAK);
             result.append(TABLE_TAG.on(paramText));
         }
-        return result.length() == 0 ? null : HTML_TAG.on(result).toString();
+        return result.length() == 0 ? null : HTML_TAG.on(result)
+            .toString();
     }
 
     private boolean isFormatSyntax() {
@@ -182,7 +183,7 @@ public class Help {
         try {
             return String.format(text, this.parNames.toArray());
         } catch (Exception e) {
-            throw new IllegalArgumentException(e.getMessage());
+            throw Exceptions.illegalArg(e.getMessage());
         }
     }
 
@@ -252,9 +253,11 @@ public class Help {
     private static String getContextName(Object object) {
         String result = null;
         if (object instanceof Field) {
-            result = ((Field) object).getDeclaringClass().getSimpleName();
+            result = ((Field) object).getDeclaringClass()
+                .getSimpleName();
         } else if (object instanceof Method) {
-            result = ((Method) object).getDeclaringClass().getSimpleName();
+            result = ((Method) object).getDeclaringClass()
+                .getSimpleName();
         }
         return result;
     }
@@ -385,7 +388,8 @@ public class Help {
             } else if (Character.isJavaIdentifierStart(first)) {
                 int start = i;
                 int end = i + 1;
-                while (end < result.length() && Character.isJavaIdentifierPart(result.charAt(end))) {
+                while (end < result.length()
+                    && Character.isJavaIdentifierPart(result.charAt(end))) {
                     end++;
                 }
                 String id = result.substring(start, end);
@@ -404,7 +408,7 @@ public class Help {
     }
 
     private static HTMLTag DIV_TAG = HTMLConverter.createDivTag("width: 250px;");
-    static private final HTMLTag TABLE_TAG = HTMLConverter.createHtmlTag(
-        HTMLConverter.TABLE_TAG_NAME, "cellpadding", "0");
+    static private final HTMLTag TABLE_TAG =
+        HTMLConverter.createHtmlTag(HTMLConverter.TABLE_TAG_NAME, "cellpadding", "0");
     static private final HTMLTag SOURCE_TAG = HTMLConverter.createHtmlTag("font", "color", "green");
 }

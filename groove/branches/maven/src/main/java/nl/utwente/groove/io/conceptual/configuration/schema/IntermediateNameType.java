@@ -31,9 +31,13 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlEnum
 @SuppressWarnings("javadoc")
 public enum IntermediateNameType {
-    @XmlEnumValue("field") FIELD("field"),
-    @XmlEnumValue("type") TYPE("type"),
-    @XmlEnumValue("combined") COMBINED("combined");
+    @XmlEnumValue("field")
+    FIELD("field"),
+    @XmlEnumValue("type")
+    TYPE("type"),
+    @XmlEnumValue("combined")
+    COMBINED("combined");
+
     private final String value;
 
     IntermediateNameType(String v) {
@@ -43,14 +47,4 @@ public enum IntermediateNameType {
     public String value() {
         return this.value;
     }
-
-    public static IntermediateNameType fromValue(String v) {
-        for (IntermediateNameType c : IntermediateNameType.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-        throw new IllegalArgumentException(v);
-    }
-
 }

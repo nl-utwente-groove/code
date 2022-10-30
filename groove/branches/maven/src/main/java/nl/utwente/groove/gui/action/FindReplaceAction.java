@@ -41,7 +41,6 @@ import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.list.SearchResult;
 import nl.utwente.groove.gui.tree.LabelTree;
 import nl.utwente.groove.gui.tree.LabelTree.EntryNode;
-import nl.utwente.groove.util.Duo;
 
 /**
  * Action for changing one label into another throughout the grammar.
@@ -78,21 +77,21 @@ public class FindReplaceAction extends SimulatorAction
     @Override
     public void execute() {
         if (getDisplaysPanel().saveAllEditors(false)) {
-            Duo<TypeLabel> result = askFindSearch(this.oldLabel);
+            Relabelling result = askFindSearch(this.oldLabel);
             if (result != null) {
-                if (result.two() == null) {
+                if (result.to() == null) {
                     // Find label.
                     List<SearchResult> searchResults =
-                        getSimulatorModel().searchLabel(result.one());
+                        getSimulatorModel().searchLabel(result.from());
                     getSimulator().setSearchResults(searchResults);
                 } else { // Replace label.
                     try {
-                        getSimulatorModel().doRelabel(result.one(), result.two());
+                        getSimulatorModel().doRelabel(result.from(), result.to());
                     } catch (IOException exc) {
                         showErrorDialog(exc,
                             String.format("Error while renaming '%s' into '%s':",
-                                result.one(),
-                                result.two()));
+                                result.from(),
+                                result.to()));
                     }
                 }
             }

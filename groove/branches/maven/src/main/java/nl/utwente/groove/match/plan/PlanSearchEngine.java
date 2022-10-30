@@ -57,6 +57,7 @@ import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.match.SearchEngine;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Observable;
 import nl.utwente.groove.util.collect.Bag;
 import nl.utwente.groove.util.collect.HashBag;
@@ -184,7 +185,7 @@ public class PlanSearchEngine extends SearchEngine {
 
         private void testUsed() {
             if (this.used) {
-                throw new IllegalStateException("Method getPlan() was already called");
+                throw Exceptions.illegalState("Method getPlan() was already called");
             } else {
                 this.used = true;
             }
@@ -773,7 +774,7 @@ public class PlanSearchEngine extends SearchEngine {
             if (itemClass == SeedSearchItem.class) {
                 return result;
             }
-            throw new IllegalArgumentException(String.format("Unrecognised search item %s", item));
+            throw Exceptions.illegalArg("Unrecognised search item %s", item);
         }
     }
 
@@ -903,8 +904,7 @@ public class PlanSearchEngine extends SearchEngine {
             if (compClass == IndegreeComparator.class) {
                 return result;
             }
-            throw new IllegalArgumentException(
-                String.format("Unknown comparator class %s", compClass));
+            throw Exceptions.illegalArg("Unknown comparator class %s", compClass);
         }
     }
 }

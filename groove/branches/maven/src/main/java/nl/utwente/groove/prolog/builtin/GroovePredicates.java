@@ -32,6 +32,7 @@ import nl.utwente.groove.annotation.Signature;
 import nl.utwente.groove.annotation.ToolTipBody;
 import nl.utwente.groove.annotation.ToolTipPars;
 import nl.utwente.groove.control.parse.CtrlDoc;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Abstract superclass for classes containing derived predicate declarations.
@@ -77,10 +78,8 @@ abstract public class GroovePredicates {
                         this.text = new StringBuilder();
                         method.invoke(this);
                         this.definitions.put(getTag(method.getName()), this.text.toString());
-                    } catch (IllegalAccessException e) {
-                        throw new IllegalStateException(e.getMessage());
-                    } catch (InvocationTargetException e) {
-                        throw new IllegalStateException(e.getMessage());
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        throw Exceptions.illegalState(e.getMessage());
                     }
                     addToolTipText(method);
                 }
@@ -116,18 +115,18 @@ abstract public class GroovePredicates {
     private CompoundTermTag getTag(String methodName) {
         int arityPos = methodName.lastIndexOf('_');
         if (arityPos < 0) {
-            throw new IllegalArgumentException(
-                String.format("Predicate method name %s should end on '_i' (where i is the arity)",
-                    methodName));
+            throw Exceptions.illegalArg(
+                "Predicate method name %s should end on '_i' (where i is the arity)",
+                methodName);
         }
         String functorName = methodName.substring(0, arityPos);
         int arity;
         try {
             arity = Integer.parseInt(methodName.substring(arityPos + 1));
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(
-                String.format("Predicate method name %s should end on '_i' (where i is the arity)",
-                    methodName));
+            throw Exceptions.illegalArg(
+                "Predicate method name %s should end on '_i' (where i is the arity)",
+                methodName);
         }
         return CompoundTermTag.get(functorName, arity);
     }
@@ -151,23 +150,23 @@ abstract public class GroovePredicates {
             int arity = tag.arity;
             String[] sigValue = sigAnn.value();
             if (sigValue.length <= arity) {
-                throw new IllegalStateException(
-                    String.format("Malformed annotation %s for %s/%s: insufficient arguments",
-                        sigAnn,
-                        name,
-                        arity));
+                throw Exceptions.illegalState(
+                    "Malformed annotation %s for %s/%s: insufficient arguments",
+                    sigAnn,
+                    name,
+                    arity);
             }
             // construct the (multi-line) header
             StringBuilder header = new StringBuilder();
             for (int i = arity; i < sigValue.length; i++) {
                 String io = sigValue[i];
                 if (io.length() != arity) {
-                    throw new IllegalStateException(
-                        String.format("Malformed annodation %s for %s/%s: incorrect IO spec %s",
-                            sigAnn,
-                            name,
-                            arity,
-                            io));
+                    throw Exceptions.illegalState(
+                        "Malformed annodation %s for %s/%s: incorrect IO spec %s",
+                        sigAnn,
+                        name,
+                        arity,
+                        io);
                 }
                 StringBuilder sigText = new StringBuilder();
                 sigText.append(name);

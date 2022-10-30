@@ -31,4 +31,16 @@ public class Exceptions {
     public static final IllegalArgumentException illegalArg(String message, Object... args) {
         return new IllegalArgumentException(String.format(message, args));
     }
+
+    /** Constructs an {@link IllegalStateException} for a given message and set of message parameters. */
+    public static final IllegalStateException illegalState(String message, Object... args) {
+        return new IllegalStateException(String.format(message, args));
+    }
+
+    /** Constructs an {@link UnsupportedOperationException} for a given message and set of message parameters. */
+    public static final UnsupportedOperationException unsupportedOp(String message,
+        Object... args) {
+        return new UnsupportedOperationException(String.format(message, args));
+    }
+
 }

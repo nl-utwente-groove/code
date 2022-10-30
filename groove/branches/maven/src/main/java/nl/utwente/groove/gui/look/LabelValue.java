@@ -584,7 +584,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                         content.append(',');
                     }
                     content.append(vars.get(i)
-                        .getName());
+                        .name());
                     content.append('=');
                     HostNode val = (HostNode) values[i];
                     if (val instanceof ValueNode) {
@@ -629,9 +629,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
         }
         // add location variables
         for (CtrlVar var : state.getVars()) {
-            Line line = Line.atom(var.getName())
+            Line line = Line.atom(var.name())
                 .append(" : ")
-                .append(Line.atom(var.getType()
+                .append(Line.atom(var.type()
                     .toString())
                     .style(Style.BOLD));
             result.add(line);

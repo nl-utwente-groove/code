@@ -35,6 +35,7 @@ import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.transform.RuleEvent;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.ThreeValued;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.line.Line.Style;
@@ -99,20 +100,12 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
             result = new HostNode[callArgs.size()];
             HostNode[] added = getAddedNodes();
             for (int i = 0; i < callArgs.size(); i++) {
-                HostNode arg;
                 Binding binding = getAction().getParBinding(i);
-                switch (binding.getSource()) {
-                case ANCHOR:
-                    arg = (HostNode) getEvent().getAnchorImage(binding.getIndex());
-                    break;
-                case CREATOR:
-                    arg = added == null ? null : added[binding.getIndex()];
-                    break;
-                default:
-                    assert false;
-                    arg = null;
-                }
-                result[i] = arg;
+                result[i] = switch (binding.type()) {
+                case ANCHOR -> (HostNode) getEvent().getAnchorImage(binding.index());
+                case CREATOR -> added == null ? null : added[binding.index()];
+                default -> throw Exceptions.illegalState("Binding %s is of a wrong type", binding);
+                };
             }
         }
         return result;
@@ -199,8 +192,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
     @Override
     public int compareTo(Label obj) {
         if (!(obj instanceof ActionLabel)) {
-            throw new IllegalArgumentException(
-                String.format("Can't compare %s and %s", this.getClass(), obj.getClass()));
+            throw Exceptions.illegalArg("Can't compare %s and %s", this.getClass(), obj.getClass());
         }
         int result = super.compareTo(obj);
         if (result != 0) {

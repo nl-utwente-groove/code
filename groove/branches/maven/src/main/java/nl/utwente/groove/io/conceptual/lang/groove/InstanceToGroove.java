@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.io.conceptual.Acceptor;
@@ -38,9 +39,8 @@ import nl.utwente.groove.io.conceptual.value.StringValue;
 import nl.utwente.groove.io.conceptual.value.TupleValue;
 import nl.utwente.groove.io.conceptual.value.Value;
 import nl.utwente.groove.io.external.PortException;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.IdValidator;
-
-import java.util.Set;
 
 //separate different graphs for various elements where applicable.
 //TODO: add translate messages here as well?
@@ -54,8 +54,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
     // Used to find all opposite properties
     private Collection<Property> m_properties;
     // This is used to generate opposite edges
-    private Map<Triple<Object,Field,Object>,AbsNode> m_objectNodes =
-        new HashMap<>();
+    private Map<Triple<Object,Field,Object>,AbsNode> m_objectNodes = new HashMap<>();
 
     public InstanceToGroove(GrooveResource grooveResource) {
         this.m_grooveResource = grooveResource;
@@ -172,7 +171,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
             .entrySet()) {
             Field f = fieldEntry.getKey();
             Value v = fieldEntry.getValue();
-            assert(v != null);
+            assert (v != null);
 
             if (v == Object.NIL && this.m_cfg.getConfig()
                 .getGlobal()
@@ -189,9 +188,8 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
                         .toString());
                     if (cv.getValue()
                         .get(i) instanceof Object) {
-                        this.m_objectNodes
-                            .put(new Triple<>(object, f, (Object) cv.getValue()
-                                .get(i)), valNode);
+                        this.m_objectNodes.put(new Triple<>(object, f, (Object) cv.getValue()
+                            .get(i)), valNode);
                     }
                     i++;
                 }
@@ -206,8 +204,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
                 }
 
                 if (v instanceof Object) {
-                    this.m_objectNodes.put(new Triple<>(object, f, (Object) v),
-                        valNode);
+                    this.m_objectNodes.put(new Triple<>(object, f, (Object) v), valNode);
                 }
 
                 /*AbsEdge valEdge = */new AbsEdge(objectNode, valNode, f.getName()
@@ -250,8 +247,8 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
                     OppositeProperty op = (OppositeProperty) p;
                     if (op.getField1() == f) {
 
-                        Triple<Object,Field,Object> opTriple = new Triple<>(
-                            triple.getRight(), op.getField2(), triple.getLeft());
+                        Triple<Object,Field,Object> opTriple =
+                            new Triple<>(triple.getRight(), op.getField2(), triple.getLeft());
                         if (!this.m_objectNodes.containsKey(opTriple)) {
                             continue;
                         }
@@ -359,7 +356,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
         }
 
         if (param == null) {
-            throw new IllegalArgumentException("Container value visitor requires String argument");
+            throw Exceptions.illegalArg("Container value visitor requires String argument");
         }
         String containerId = param;
 

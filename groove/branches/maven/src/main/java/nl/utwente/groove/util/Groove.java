@@ -349,15 +349,12 @@ public class Groove {
      * Converts a File to a URL.
      */
     public static URL toURL(File file) {
-        URL url = null;
         try {
-            url = file.toURI()
+            return file.toURI()
                 .toURL();
         } catch (MalformedURLException e) {
-            throw new IllegalArgumentException(
-                String.format("File '%s' cannot be converted to URL", file));
+            throw Exceptions.illegalArg("File '%s' cannot be converted to URL", file);
         }
-        return url;
     }
 
     /**

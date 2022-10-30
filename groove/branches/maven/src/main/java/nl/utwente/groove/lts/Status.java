@@ -19,6 +19,8 @@ package nl.utwente.groove.lts;
 import java.util.EnumSet;
 import java.util.Set;
 
+import nl.utwente.groove.util.Exceptions;
+
 /**
  * Set of graph state status flags.
  * @author Arend Rensink
@@ -56,8 +58,8 @@ public class Status {
     static public int setAbsence(int status, int absence) {
         assert getAbsence(status) == 0 : String.format("Absence level already set in %x", absence);
         if (absence > Status.MAX_ABSENCE) {
-            throw new IllegalArgumentException(
-                String.format("Absence level %d too large: max. %s", absence, Status.MAX_ABSENCE));
+            throw Exceptions
+                .illegalArg("Absence level %d too large: max. %s", absence, Status.MAX_ABSENCE);
         }
         return status | (absence << Status.ABSENCE_SHIFT);
     }

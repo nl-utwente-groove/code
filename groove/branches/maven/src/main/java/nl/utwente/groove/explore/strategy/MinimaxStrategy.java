@@ -177,7 +177,7 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
         Rule r = s.getAction();
         RuleEvent ev = s.getEvent();
         result = ev.getAnchorImage(r.getParBinding(num)
-            .getIndex());
+            .index());
         return result;
     }
 

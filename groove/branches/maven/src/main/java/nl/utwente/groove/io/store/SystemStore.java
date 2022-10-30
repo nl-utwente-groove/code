@@ -874,7 +874,7 @@ public class SystemStore extends UndoableEditSupport {
             this.saveProperties(prop);
             this.hasSystemPropertiesFile = true;
         } catch (IOException e) {
-            throw new IllegalArgumentException("Could not create properties file.");
+            throw Exceptions.illegalArg("Could not create properties file: %s", e);
         }
         prop.setShowLoopsAsLabels(false);
     }
@@ -958,7 +958,7 @@ public class SystemStore extends UndoableEditSupport {
 
     private void testInit() throws IllegalStateException {
         if (!this.initialised) {
-            throw new IllegalStateException("Operation should only be called after initialisation");
+            throw Exceptions.illegalState("Operation should only be called after initialisation");
         }
     }
 

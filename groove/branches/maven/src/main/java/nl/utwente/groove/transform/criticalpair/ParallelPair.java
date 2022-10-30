@@ -24,6 +24,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
 
 import nl.utwente.groove.algebra.Algebra;
 import nl.utwente.groove.algebra.AlgebraFamily;
@@ -46,9 +48,7 @@ import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
 import nl.utwente.groove.grammar.rule.VariableNode;
 import nl.utwente.groove.graph.NodeFactory;
-
-import java.util.Set;
-import java.util.TreeSet;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Class that models combinations of ruleNodes for two rules. Used for generation of critical pairs
@@ -103,13 +103,10 @@ class ParallelPair {
      * @return either this.rule1 or this.rule2
      */
     public Rule getRule(MatchNumber matchnum) {
-        if (matchnum == MatchNumber.ONE) {
-            return this.rule1;
-        } else if (matchnum == MatchNumber.TWO) {
-            return this.rule2;
-        } else {
-            throw new IllegalArgumentException("matchnum must be ONE or TWO");
-        }
+        return switch (matchnum) {
+        case ONE -> this.rule1;
+        case TWO -> this.rule2;
+        };
     }
 
     /**
@@ -160,15 +157,10 @@ class ParallelPair {
      * @return either this.nodeMatch1 or this.nodeMatch2
      */
     public Map<Long,Set<RuleNode>> getNodeMatch(MatchNumber matchnum) {
-        Map<Long,Set<RuleNode>> nodeMatch;
-        if (matchnum == MatchNumber.ONE) {
-            nodeMatch = this.nodeMatch1;
-        } else if (matchnum == MatchNumber.TWO) {
-            nodeMatch = this.nodeMatch2;
-        } else {
-            throw new IllegalArgumentException("matchnum must be One or Two");
-        }
-        return nodeMatch;
+        return switch (matchnum) {
+        case ONE -> this.nodeMatch1;
+        case TWO -> this.nodeMatch2;
+        };
     }
 
     /**
@@ -216,8 +208,9 @@ class ParallelPair {
      */
     CriticalPair getCriticalPair() {
         if (!this.criticalPairComputed) {
-            DefaultHostGraph host = new DefaultHostGraph("target",
-                HostFactory.newInstance(this.rule1.getTypeGraph().getFactory(), true));
+            DefaultHostGraph host =
+                new DefaultHostGraph("target", HostFactory.newInstance(this.rule1.getTypeGraph()
+                    .getFactory(), true));
             RuleToHostMap match1 = createRuleToHostMap(this.nodeMatch1, host, this.rule1.lhs());
             RuleToHostMap match2 = createRuleToHostMap(this.nodeMatch2, host, this.rule2.lhs());
 
@@ -263,11 +256,12 @@ class ParallelPair {
                 target = this.hostNodes.get(entry.getKey());
             } else {
                 //else create a hostnode depending on its type
-                RuleNode firstNode = ruleNodes.iterator().next();
+                RuleNode firstNode = ruleNodes.iterator()
+                    .next();
                 if (firstNode instanceof DefaultRuleNode) {
                     //use the typefactory to ensure that the typenode is correct
-                    NodeFactory<HostNode> typeFactory =
-                        host.getFactory().nodes(firstNode.getType());
+                    NodeFactory<HostNode> typeFactory = host.getFactory()
+                        .nodes(firstNode.getType());
                     target = typeFactory.createNode();
                 } else if (firstNode instanceof VariableNode) {
                     VariableNode varNode = (VariableNode) firstNode;
@@ -276,14 +270,15 @@ class ParallelPair {
                     //in the algebra of the rule is the same
                     Constant constant = getFirstConstant(getCombination(entry.getKey()));
                     if (constant == null) {
-                        target = host.getFactory().createNode(alg,
-                            new Variable("x" + variableCounter++, varNode.getSort()));
+                        target = host.getFactory()
+                            .createNode(alg,
+                                new Variable("x" + variableCounter++, varNode.getSort()));
                     } else {
-                        target = host.getFactory().createNode(alg, constant);
+                        target = host.getFactory()
+                            .createNode(alg, constant);
                     }
                 } else {
-                    throw new UnsupportedOperationException(
-                        "Unknown type for RuleNode " + firstNode);
+                    throw Exceptions.unsupportedOp("Unknown type for RuleNode %s", firstNode);
                 }
 
                 //Add the target node to the hostgraph (this does nothing if if was already added)
@@ -301,11 +296,15 @@ class ParallelPair {
         for (RuleNode rn : ruleGraph.nodeSet()) {
             if (rn instanceof OperatorNode) {
                 OperatorNode opNode = (OperatorNode) rn;
-                Sort sig = opNode.getOperator().getResultType();
+                Sort sig = opNode.getOperator()
+                    .getResultType();
                 Algebra<?> alg = AlgebraFamily.TERM.getAlgebra(sig);
-                Expression[] args = new Expression[opNode.getArguments().size()];
-                for (int i = 0; i < opNode.getArguments().size(); i++) {
-                    VariableNode varNode = opNode.getArguments().get(i);
+                Expression[] args = new Expression[opNode.getArguments()
+                    .size()];
+                for (int i = 0; i < opNode.getArguments()
+                    .size(); i++) {
+                    VariableNode varNode = opNode.getArguments()
+                        .get(i);
                     Expression term;
                     if (varNode.hasConstant()) {
                         term = varNode.getConstant();
@@ -316,11 +315,12 @@ class ParallelPair {
                     args[i] = term;
                 }
 
-                HostNode target =
-                    host.getFactory().createNode(alg, new CallExpr(opNode.getOperator(), args));
+                HostNode target = host.getFactory()
+                    .createNode(alg, new CallExpr(opNode.getOperator(), args));
                 host.addNode(target);
                 result.putNode(opNode.getTarget(), target);
-            } else if (rn instanceof VariableNode && !result.nodeMap().containsKey(rn)) {
+            } else if (rn instanceof VariableNode && !result.nodeMap()
+                .containsKey(rn)) {
                 VariableNode varNode = (VariableNode) rn;
                 //add unconnected constants to the match
                 if (varNode.hasConstant()) {
@@ -328,7 +328,8 @@ class ParallelPair {
                     Algebra<?> alg = AlgebraFamily.TERM.getAlgebra(sig);
                     //Create this node in the host graph
                     //(if a node with this constant already exists, it will be reused)
-                    HostNode constant = host.getFactory().createNode(alg, varNode.getConstant());
+                    HostNode constant = host.getFactory()
+                        .createNode(alg, varNode.getConstant());
                     host.addNode(constant);
                     result.putNode(rn, constant);
                 }
@@ -348,8 +349,8 @@ class ParallelPair {
                 //this is because source or target is a ProductNode,
                 //or a constant which is only connected to a ProductNode
             } else {
-                HostEdge newEdge =
-                    host.getFactory().createEdge(hostSource, re.getType(), hostTarget);
+                HostEdge newEdge = host.getFactory()
+                    .createEdge(hostSource, re.getType(), hostTarget);
                 host.addEdge(newEdge);
                 result.putEdge(re, newEdge);
             }
@@ -397,7 +398,8 @@ class ParallelPair {
         Map<RuleNode,String> nodeName1 = new LinkedHashMap<>();
         Map<RuleNode,String> nodeName2 = new LinkedHashMap<>();
         int counter = 1;
-        for (RuleNode rn : this.rule1.lhs().nodeSet()) {
+        for (RuleNode rn : this.rule1.lhs()
+            .nodeSet()) {
             if (rn instanceof OperatorNode) {
                 nodeName1.put(rn, "o-" + counter++);
             } else if (rn instanceof VariableNode) {
@@ -406,7 +408,8 @@ class ParallelPair {
                 nodeName1.put(rn, "d-" + counter++);
             }
         }
-        for (RuleNode rn : this.rule2.lhs().nodeSet()) {
+        for (RuleNode rn : this.rule2.lhs()
+            .nodeSet()) {
             if (rn instanceof OperatorNode) {
                 nodeName2.put(rn, "o-" + counter++);
             } else if (rn instanceof VariableNode) {
@@ -416,7 +419,8 @@ class ParallelPair {
             }
         }
         result += "nodes in rule1: {";
-        Iterator<String> it = nodeName1.values().iterator();
+        Iterator<String> it = nodeName1.values()
+            .iterator();
         while (it.hasNext()) {
             String name = it.next();
             result += " " + name;
@@ -425,7 +429,8 @@ class ParallelPair {
             }
         }
         result += " }\nnodes in rule2: {";
-        it = nodeName2.values().iterator();
+        it = nodeName2.values()
+            .iterator();
         while (it.hasNext()) {
             String name = it.next();
             result += " " + name;

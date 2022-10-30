@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package nl.utwente.groove.gui;
@@ -30,6 +30,8 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 
+import nl.utwente.groove.util.Exceptions;
+
 /**
  * Option type that can take either two or three values: <i>Ask</i> and <i>Auto</i>,
  * or <i>Ask</i>, <i>Always</i> or <i>Never</i>. This refers to the setting
@@ -44,8 +46,7 @@ public class BehaviourOption extends JMenu implements ItemListener {
     public BehaviourOption(String name, int choiceCount) {
         super(name);
         if (choiceCount != 2 && choiceCount != 3) {
-            throw new IllegalArgumentException(String.format("Number of options cannot be %d",
-                choiceCount));
+            throw Exceptions.illegalArg("Number of options cannot be %d", choiceCount);
         }
         this.answers = choiceCount == 2 ? standardAnswers2 : standardAnswers3;
         this.answerGroup = new ButtonGroup();
@@ -76,8 +77,7 @@ public class BehaviourOption extends JMenu implements ItemListener {
      */
     public final void setValue(int value) {
         if (value < 0 || value >= getItemCount()) {
-            throw new IllegalArgumentException(String.format("Value should be in the range %d-%d",
-                0, getItemCount()));
+            throw Exceptions.illegalArg("Value should be in the range %d-%d", 0, getItemCount());
         }
         if (value != this.value) {
             int oldValue = this.value;
@@ -107,10 +107,10 @@ public class BehaviourOption extends JMenu implements ItemListener {
                 question = getText();
             }
             List<String> options = getDialogOptions();
-            JOptionPane pane =
-                new JOptionPane(question, JOptionPane.QUESTION_MESSAGE,
-                    JOptionPane.YES_NO_CANCEL_OPTION, null, options.toArray());
-            pane.createDialog(owner, DIALOG_TITLE).setVisible(true);
+            JOptionPane pane = new JOptionPane(question, JOptionPane.QUESTION_MESSAGE,
+                JOptionPane.YES_NO_CANCEL_OPTION, null, options.toArray());
+            pane.createDialog(owner, DIALOG_TITLE)
+                .setVisible(true);
             int dialogValue = options.indexOf(pane.getValue());
             if (dialogValue > NO) {
                 setValue(dialogValue - 1);

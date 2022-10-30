@@ -9,6 +9,7 @@ import nl.utwente.groove.grammar.aspect.AspectLabel;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.aspect.AspectParser;
 import nl.utwente.groove.graph.GraphRole;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Node representation for wrapper around AspectGraph. Keeps track of incoming and outgoing edges (references set by AbsEdge).
@@ -99,7 +100,7 @@ public class AbsNode {
      */
     public void addToGraph(AbsGraph g, int id) {
         if (this.m_parent != null && this.m_parent != g) {
-            throw new IllegalArgumentException("AbsNode already element of a graph");
+            throw Exceptions.illegalArg("AbsNode already element of a graph");
         }
 
         this.m_parent = g;
@@ -124,7 +125,7 @@ public class AbsNode {
 
     public void buildAspect(GraphRole role) {
         if (this.m_parent == null) {
-            throw new IllegalArgumentException("Node not part of graph");
+            throw Exceptions.illegalArg("Node not part of graph");
         }
 
         if (this.m_aspectNode != null) {

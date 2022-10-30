@@ -8,6 +8,7 @@ import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.graph.GraphRole;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Thin layer between {@link AspectGraph} and the conceptual model.
@@ -40,7 +41,7 @@ public class AbsGraph {
     /** Adds a node to this graph. */
     public void addNode(AbsNode node) {
         if (node.getParent() != null && node.getParent() != this) {
-            throw new IllegalArgumentException("Node already added to some other graph!");
+            throw Exceptions.illegalArg("Node already added to some other graph!");
         }
         if (this.m_nodes.contains(node)) {
             return;

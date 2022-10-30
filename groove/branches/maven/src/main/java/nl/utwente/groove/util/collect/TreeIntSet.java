@@ -12,11 +12,13 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /**
- * 
+ *
  */
 package nl.utwente.groove.util.collect;
 
 import java.util.Arrays;
+
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Implementation of a {@link IntSet} on the basis of an internally built up
@@ -48,7 +50,7 @@ final public class TreeIntSet implements IntSet {
      */
     public TreeIntSet(int resolution) {
         if (resolution < 1) {
-            throw new IllegalArgumentException("Resolution should be at least 1");
+            throw Exceptions.illegalArg("Resolution should be at least 1, and not %s", resolution);
         }
         this.resolution = resolution;
         this.width = 1 << resolution;

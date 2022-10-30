@@ -28,7 +28,6 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.Signature;
 import nl.utwente.groove.grammar.UnitPar;
-import nl.utwente.groove.util.Pair;
 
 /**
  * Transition between control locations, bearing a call.
@@ -128,7 +127,7 @@ public class Switch implements Comparable<Switch>, Relocatable {
      * bindings to source location variables and constant values.
      * This is only valid for rule calls.
      */
-    public List<Pair<UnitPar.RulePar,Binding>> getCallBinding() {
+    public List<ParBinding> getCallBinding() {
         assert getKind() == Callable.Kind.RULE;
         if (this.callBinding == null) {
             this.callBinding = computeCallBinding();
@@ -137,7 +136,7 @@ public class Switch implements Comparable<Switch>, Relocatable {
     }
 
     /** Binding of in-parameter positions to source variables and constant arguments. */
-    private List<Pair<UnitPar.RulePar,Binding>> callBinding;
+    private List<ParBinding> callBinding;
 
     /**
      * Computes the binding of formal call parameters to source location
@@ -145,8 +144,8 @@ public class Switch implements Comparable<Switch>, Relocatable {
      * @return a list of pairs of call parameter variables and bindings.
      * The binding is {@code null} for a non-input-parameter.
      */
-    private List<Pair<UnitPar.RulePar,Binding>> computeCallBinding() {
-        List<Pair<UnitPar.RulePar,Binding>> result = new LinkedList<>();
+    private List<ParBinding> computeCallBinding() {
+        List<ParBinding> result = new LinkedList<>();
         List<? extends CtrlPar> args = getArgs();
         Signature<UnitPar.RulePar> sig = ((Rule) getUnit()).getSignature();
         int size = args == null ? 0 : args.size();
@@ -155,27 +154,34 @@ public class Switch implements Comparable<Switch>, Relocatable {
             assert args != null; // size is at least one
             CtrlPar arg = args.get(i);
             Binding bind;
-            if (arg instanceof CtrlPar.Var) {
-                CtrlPar.Var varArg = (CtrlPar.Var) arg;
-                if (arg.isInOnly()) {
-                    int ix = sourceVars.indexOf(varArg.getVar());
+            if (arg instanceof CtrlPar.Var v) {
+                if (arg.inOnly()) {
+                    int ix = sourceVars.indexOf(v.var());
                     assert ix >= 0;
                     bind = Binding.var(ix);
-                } else if (arg.isOutOnly()) {
+                } else if (arg.outOnly()) {
                     bind = null;
                 } else {
                     assert false;
                     bind = null;
                 }
-            } else if (arg instanceof CtrlPar.Const) {
-                bind = Binding.value((CtrlPar.Const) arg);
+            } else if (arg instanceof CtrlPar.Const c) {
+                bind = Binding.value(c);
             } else {
                 assert arg instanceof CtrlPar.Wild;
                 bind = null;
             }
-            result.add(Pair.newPair(sig.getPar(i), bind));
+            result.add(new ParBinding(sig.getPar(i), bind));
         }
         return result;
+    }
+
+    /**
+     * Binding of a formal call parameter to source location
+     * variable or constant value.
+     */
+    public record ParBinding(UnitPar.RulePar par, Binding bind) {
+        // no additional functionality
     }
 
     @Override

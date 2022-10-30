@@ -42,6 +42,7 @@ import nl.utwente.groove.graph.iso.IsoChecker;
 import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.transform.RuleEvent;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -55,8 +56,8 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
      * Constructs a GraphTransition on the basis of a given match and added node set, between
      * a given source and target state.
      */
-    public DefaultRuleTransition(GraphState source, MatchResult match,
-        @NonNull HostNode[] addedNodes, GraphState target, boolean symmetry) {
+    public DefaultRuleTransition(GraphState source, MatchResult match, @NonNull
+    HostNode[] addedNodes, GraphState target, boolean symmetry) {
         super(source, RuleTransitionLabel.createLabel(source, match, addedNodes), target);
         this.symmetry = symmetry;
     }
@@ -135,9 +136,8 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
         if (isSymmetry()) {
             return new SymmetryTransitionStub(getKey(), getAddedNodes(), target());
         } else if (target() instanceof DefaultGraphNextState) {
-            return ((DefaultGraphNextState) target()).createInTransitionStub(source(),
-                getKey(),
-                getAddedNodes());
+            return ((DefaultGraphNextState) target())
+                .createInTransitionStub(source(), getKey(), getAddedNodes());
         } else {
             return new IdentityTransitionStub(getKey(), getAddedNodes(), target());
         }
@@ -156,7 +156,8 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     @Override
     public GraphTransitionKey getKey(GraphState source) {
         if (source != source()) {
-            throw new IllegalArgumentException("Source state incompatible");
+            throw Exceptions
+                .illegalArg("Source state %s should coincide with argument %s", source(), source);
         } else {
             return getKey();
         }
@@ -170,7 +171,8 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     @Override
     public HostNode[] getAddedNodes(GraphState source) {
         if (source != source()) {
-            throw new IllegalArgumentException("Source state incompatible");
+            throw Exceptions
+                .illegalArg("Source state %s should coincide with argument %s", source(), source);
         } else {
             return getAddedNodes();
         }
@@ -184,7 +186,8 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     @Override
     public RuleTransition toTransition(GraphState source) {
         if (source != source()) {
-            throw new IllegalArgumentException("Source state incompatible");
+            throw Exceptions
+                .illegalArg("Source state %s should coincide with argument %s", source(), source);
         } else {
             return this;
         }
@@ -198,7 +201,8 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     @Override
     public GraphState getTarget(GraphState source) {
         if (source != source()) {
-            throw new IllegalArgumentException("Source state incompatible");
+            throw Exceptions
+                .illegalArg("Source state %s should coincide with argument %s", source(), source);
         } else {
             return target();
         }
@@ -383,10 +387,10 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
                 CtrlPar par = args.get(i);
                 if (par instanceof Var) {
                     Var var = (Var) par;
-                    if (var.isInOnly()) {
+                    if (var.inOnly()) {
                         // look up value in source state
                     } else {
-                        assert var.isOutOnly();
+                        assert var.outOnly();
                         // look up value in target state
                     }
                 } else {

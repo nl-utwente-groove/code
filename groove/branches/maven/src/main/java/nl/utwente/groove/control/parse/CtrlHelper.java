@@ -860,7 +860,7 @@ public class CtrlHelper {
             if (result.length() > 1) {
                 result.append(',');
             }
-            if (brackets && par.isOutOnly()) {
+            if (brackets && par.outOnly()) {
                 result.append(CtrlPar.OUT_PREFIX);
                 result.append(' ');
             }

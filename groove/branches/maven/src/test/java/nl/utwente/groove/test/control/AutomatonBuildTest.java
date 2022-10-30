@@ -31,12 +31,12 @@ import org.junit.Test;
 
 import nl.utwente.groove.algebra.JavaIntAlgebra;
 import nl.utwente.groove.control.Binding;
+import nl.utwente.groove.control.Binding.Source;
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.CtrlLoader;
 import nl.utwente.groove.control.CtrlPar;
 import nl.utwente.groove.control.Position;
 import nl.utwente.groove.control.Procedure;
-import nl.utwente.groove.control.Binding.Source;
 import nl.utwente.groove.control.instance.Assignment;
 import nl.utwente.groove.control.instance.Automaton;
 import nl.utwente.groove.control.instance.Frame;
@@ -86,16 +86,20 @@ public class AutomatonBuildTest {
         Call fCall = call("f");
         Call aCall = call("a");
         Call bCall = call("b");
-        assertEquals(2, s.get(0)
-            .getSwitchStack()
-            .size());
-        assertEquals(fCall, s.get(0)
-            .getSwitchStack()
-            .getBottomCall());
-        assertEquals(bCall, s.get(0)
-            .getRuleCall());
-        assertEquals(aCall, s.get(1)
-            .getRuleCall());
+        assertEquals(2,
+            s.get(0)
+                .getSwitchStack()
+                .size());
+        assertEquals(fCall,
+            s.get(0)
+                .getSwitchStack()
+                .getBottomCall());
+        assertEquals(bCall,
+            s.get(0)
+                .getRuleCall());
+        assertEquals(aCall,
+            s.get(1)
+                .getRuleCall());
         assertEquals(s.onFailure(), s.onSuccess());
         //
         Frame fFail = s.onFailure();
@@ -108,17 +112,21 @@ public class AutomatonBuildTest {
         Call bNodeCall = call("bNode", CtrlPar.outVar(QualName.parse("r"), "q", "node"));
         SwitchStack swFail0 = sFail.get(0)
             .getSwitchStack();
-        assertEquals(fCall, swFail0.get(0)
-            .getCall());
-        assertEquals(rCall, swFail0.get(1)
-            .getCall());
+        assertEquals(fCall,
+            swFail0.get(0)
+                .getCall());
+        assertEquals(rCall,
+            swFail0.get(1)
+                .getCall());
         assertEquals(oNodeCall, swFail0.getRuleCall());
-        assertEquals(bNodeCall, sFail.get(1)
-            .getRuleCall());
+        assertEquals(bNodeCall,
+            sFail.get(1)
+                .getRuleCall());
         //
         Frame fFailFail = sFail.onFailure();
-        assertEquals(0, fFailFail.getSwitchStack()
-            .size());
+        assertEquals(0,
+            fFailFail.getSwitchStack()
+                .size());
         assertTrue(fFailFail.isFinal());
         //
         Frame fFailSucc = sFail.onSuccess();
@@ -131,13 +139,15 @@ public class AutomatonBuildTest {
         SwitchStack swNext = fNext.getSwitchStack();
         assertEquals(2, swNext.size());
         assertEquals(fCall, swNext.getBottomCall());
-        assertEquals(rCall, swNext.get(1)
-            .getCall());
+        assertEquals(rCall,
+            swNext.get(1)
+                .getCall());
         StepAttempt sNext = fNext.getAttempt();
         assertEquals(1, sNext.size());
         Call bIntCall = call("bInt", CtrlPar.inVar(QualName.parse("r"), "p", "int"));
-        assertEquals(bIntCall, sNext.get(0)
-            .getRuleCall());
+        assertEquals(bIntCall,
+            sNext.get(0)
+                .getRuleCall());
     }
 
     @Test
@@ -152,33 +162,39 @@ public class AutomatonBuildTest {
             Viewer.showGraph(p.toGraph(FULL_GRAPH), true);
         }
         Frame f0 = p.getStart();
-        assertEquals(1, f0.getAttempt()
-            .size());
+        assertEquals(1,
+            f0.getAttempt()
+                .size());
         Step s0 = f0.getAttempt()
             .get(0);
         Frame f1 = s0.onFinish();
-        assertEquals(1, f1.getAttempt()
-            .size());
+        assertEquals(1,
+            f1.getAttempt()
+                .size());
         Step s1 = f1.getAttempt()
             .get(0);
         Frame f2 = s1.onFinish();
-        assertEquals(1, f2.getAttempt()
-            .size());
+        assertEquals(1,
+            f2.getAttempt()
+                .size());
         Step s2 = f2.getAttempt()
             .get(0);
         Frame f3 = s2.onFinish();
-        assertEquals(1, f3.getAttempt()
-            .size());
+        assertEquals(1,
+            f3.getAttempt()
+                .size());
         Step s3 = f3.getAttempt()
             .get(0);
         Frame f4 = s3.onFinish();
-        assertEquals(1, f4.getAttempt()
-            .size());
+        assertEquals(1,
+            f4.getAttempt()
+                .size());
         Step s4 = f4.getAttempt()
             .get(0);
         Frame f5 = s4.onFinish();
-        assertEquals(1, f5.getAttempt()
-            .size());
+        assertEquals(1,
+            f5.getAttempt()
+                .size());
         Step s5 = f5.getAttempt()
             .get(0);
         Frame f6 = s5.onFinish();
@@ -190,8 +206,8 @@ public class AutomatonBuildTest {
         assertEquals(Assignment.Kind.MODIFY, a00.getKind());
         Binding[] b00 = a00.getBindings();
         assertEquals(1, b00.length);
-        assertEquals(Source.CREATOR, b00[0].getSource());
-        assertEquals(0, b00[0].getIndex());
+        assertEquals(Source.CREATOR, b00[0].type());
+        assertEquals(0, b00[0].index());
         //
         assertEquals(2, s1.getCallDepthChange());
         change = s1.getApplyAssignments();
@@ -247,8 +263,9 @@ public class AutomatonBuildTest {
         Automaton p = build("alap-choice", "alap a|b;");
         p.explore();
         Frame f = p.getStart();
-        assertEquals(2, f.getAttempt()
-            .size());
+        assertEquals(2,
+            f.getAttempt()
+                .size());
         assertTrue(f.getAttempt()
             .onSuccess()
             .isDead());
@@ -258,12 +275,14 @@ public class AutomatonBuildTest {
         Step s = f.getAttempt()
             .get(0);
         assertEquals(f, s.onFinish());
-        assertEquals(call("a"), s.getCallStack()
-            .peek());
+        assertEquals(call("a"),
+            s.getCallStack()
+                .peek());
         s = f.getAttempt()
             .get(1);
-        assertEquals(call("b"), s.getCallStack()
-            .peek());
+        assertEquals(call("b"),
+            s.getCallStack()
+                .peek());
         assertEquals(f, s.onFinish());
         //
         p = build("nested", "function f() { a; alap a; } recipe r() { f; alap f; } r;");
@@ -342,14 +361,17 @@ public class AutomatonBuildTest {
         assertTrue(a0.onFailure()
             .isFinal());
         Step s0 = a0.get(0);
-        assertEquals(2, s0.getCallStack()
-            .size());
-        assertEquals(proc("f"), s0.getCallStack()
-            .get(0)
-            .getUnit());
-        assertEquals(rule("a"), s0.getCallStack()
-            .get(1)
-            .getUnit());
+        assertEquals(2,
+            s0.getCallStack()
+                .size());
+        assertEquals(proc("f"),
+            s0.getCallStack()
+                .get(0)
+                .getUnit());
+        assertEquals(rule("a"),
+            s0.getCallStack()
+                .get(1)
+                .getUnit());
         Frame f1 = s0.onFinish();
         StepAttempt a1 = f1.getAttempt();
         assertEquals(1, a1.size());
@@ -357,14 +379,17 @@ public class AutomatonBuildTest {
             .isDead());
         Step s1 = a1.get(0);
         assertEquals(f1, s1.onFinish());
-        assertEquals(2, s1.getCallStack()
-            .size());
-        assertEquals(proc("f"), s1.getCallStack()
-            .get(0)
-            .getUnit());
-        assertEquals(rule("b"), s1.getCallStack()
-            .get(1)
-            .getUnit());
+        assertEquals(2,
+            s1.getCallStack()
+                .size());
+        assertEquals(proc("f"),
+            s1.getCallStack()
+                .get(0)
+                .getUnit());
+        assertEquals(rule("b"),
+            s1.getCallStack()
+                .get(1)
+                .getUnit());
         Frame f2 = a1.onFailure();
         StepAttempt a2 = f2.getAttempt();
         assertEquals(1, a2.size());
@@ -372,14 +397,17 @@ public class AutomatonBuildTest {
             .isDead());
         Step s2 = a2.get(0);
         assertEquals(f0, s2.onFinish());
-        assertEquals(2, s2.getCallStack()
-            .size());
-        assertEquals(proc("f"), s2.getCallStack()
-            .get(0)
-            .getUnit());
-        assertEquals(rule("c"), s2.getCallStack()
-            .get(1)
-            .getUnit());
+        assertEquals(2,
+            s2.getCallStack()
+                .size());
+        assertEquals(proc("f"),
+            s2.getCallStack()
+                .get(0)
+                .getUnit());
+        assertEquals(rule("c"),
+            s2.getCallStack()
+                .get(1)
+                .getUnit());
         p.explore();
         if (DEBUG) {
             Viewer.showGraph(p.toGraph(FULL_GRAPH), true);

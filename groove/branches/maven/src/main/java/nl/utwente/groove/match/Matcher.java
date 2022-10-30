@@ -34,6 +34,7 @@ import nl.utwente.groove.grammar.rule.RuleEdge;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
 import nl.utwente.groove.grammar.rule.Valuation;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Visitor;
 import nl.utwente.groove.util.Visitor.Collector;
 import nl.utwente.groove.util.Visitor.Finder;
@@ -149,7 +150,7 @@ public class Matcher implements SearchStrategy {
         if (seedMap == null) {
             // the seed map is null, so there should not be any seed nodes or edges
             if (this.seed != null && !this.seed.isEmpty()) {
-                throw new IllegalArgumentException("Unmatched seed keys: " + this.seed);
+                throw Exceptions.illegalArg("Unmatched seed keys: %s", this.seed);
             }
         } else {
             if (!seedMap.nodeMap()
@@ -160,7 +161,7 @@ public class Matcher implements SearchStrategy {
                 seedNodes.removeAll(seedMap.nodeMap()
                     .keySet());
                 if (!seedNodes.isEmpty()) {
-                    throw new IllegalArgumentException("Unmatched seed nodes: " + seedNodes);
+                    throw Exceptions.illegalArg("Unmatched seed nodes: %s", seedNodes);
                 }
                 Map<RuleNode,HostNode> seedNodeMap = new HashMap<>(seedMap.nodeMap());
                 Set<RuleNode> seedNodeKeys = seedNodeMap.keySet();
@@ -172,7 +173,7 @@ public class Matcher implements SearchStrategy {
                 seedNodeKeys.retainAll(getCondition().getPattern()
                     .nodeSet());
                 if (!seedNodeMap.isEmpty()) {
-                    throw new IllegalArgumentException("Spurious node seeding: " + seedNodeMap);
+                    throw Exceptions.illegalArg("Spurious node seeding: %s", seedNodeMap);
                 }
             }
             if (!seedMap.edgeMap()
@@ -182,7 +183,7 @@ public class Matcher implements SearchStrategy {
                 seedEdges.removeAll(seedMap.edgeMap()
                     .keySet());
                 if (!seedEdges.isEmpty()) {
-                    throw new IllegalArgumentException("Unmatched seed edges: " + seedEdges);
+                    throw Exceptions.illegalArg("Unmatched seed edges: %s", seedEdges);
                 }
                 Map<RuleEdge,HostEdge> seedEdgeMap = new HashMap<>(seedMap.edgeMap());
                 seedEdgeMap.keySet()
@@ -191,7 +192,7 @@ public class Matcher implements SearchStrategy {
                     .retainAll(getCondition().getPattern()
                         .edgeSet());
                 if (!seedEdges.isEmpty()) {
-                    throw new IllegalArgumentException("Spurious edge seeding: " + seedEdgeMap);
+                    throw Exceptions.illegalArg("Spurious edge seeding: %s", seedEdgeMap);
                 }
             }
             if (!seedMap.getValuation()
@@ -201,7 +202,7 @@ public class Matcher implements SearchStrategy {
                 seedVars.removeAll(seedMap.getValuation()
                     .keySet());
                 if (!seedVars.isEmpty()) {
-                    throw new IllegalArgumentException("Unmatched seed variables: " + seedVars);
+                    throw Exceptions.illegalArg("Unmatched seed variables: %s", seedVars);
                 }
                 Valuation seedValuation = new Valuation(seedMap.getValuation());
                 seedValuation.keySet()
@@ -210,8 +211,7 @@ public class Matcher implements SearchStrategy {
                     .retainAll(getCondition().getPattern()
                         .varSet());
                 if (!seedVars.isEmpty()) {
-                    throw new IllegalArgumentException(
-                        "Spurious variable seeding: " + seedValuation);
+                    throw Exceptions.illegalArg("Spurious variable seeding: %s", seedValuation);
                 }
             }
         }

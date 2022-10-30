@@ -25,7 +25,6 @@ import java.util.Set;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.util.Duo;
 
 /**
  * @author Arend Rensink
@@ -103,11 +102,11 @@ public class NodeRelation implements Cloneable {
         Set<Entry> oldRelatedSet = new HashSet<>(getAllRelated());
         clear();
         for (Entry oldRel : oldRelatedSet) {
-            Set<Entry> otherEntries = other.getEntries(oldRel.two());
+            Set<Entry> otherEntries = other.getEntries(oldRel.target());
             if (otherEntries != null) {
                 for (Entry otherRel : otherEntries) {
-                    assert otherRel.one()
-                        .equals(oldRel.two());
+                    assert otherRel.source()
+                        .equals(oldRel.target());
                     Entry newRel = oldRel.append(otherRel);
                     addRelated(newRel);
                 }
@@ -205,7 +204,7 @@ public class NodeRelation implements Cloneable {
         } else {
             result = existing.addSupport(entry);
         }
-        this.allSupport.addAll(entry.getSupport());
+        this.allSupport.addAll(entry.support());
         return result;
     }
 
@@ -217,11 +216,11 @@ public class NodeRelation implements Cloneable {
         boolean result = false;
         Set<Entry> oldRelatedSet = new HashSet<>(getAllRelated());
         for (Entry oldRel : oldRelatedSet) {
-            Set<Entry> otherEntries = other.getEntries(oldRel.two());
+            Set<Entry> otherEntries = other.getEntries(oldRel.target());
             if (otherEntries != null) {
                 for (Entry otherRel : otherEntries) {
-                    assert otherRel.one()
-                        .equals(oldRel.two());
+                    assert otherRel.source()
+                        .equals(oldRel.target());
                     Entry newRel = oldRel.append(otherRel);
                     result |= addRelated(newRel);
                 }
@@ -276,9 +275,9 @@ public class NodeRelation implements Cloneable {
 
     /** Adds a given entry to the one-to-entry-map. */
     private boolean addToOneToEntryMap(Entry entry, Map<Node,Set<Entry>> result) {
-        Set<Entry> entries = result.get(entry.one());
+        Set<Entry> entries = result.get(entry.source());
         if (entries == null) {
-            result.put(entry.one(), entries = new HashSet<>());
+            result.put(entry.source(), entries = new HashSet<>());
         }
         return entries.add(entry);
     }
@@ -296,30 +295,30 @@ public class NodeRelation implements Cloneable {
     private Set<Element> allSupport = new HashSet<>();
 
     /** Entry in the relation. */
-    static public class Entry extends Duo<Node> {
+    static public record Entry(Node source, Node target, Set<Element> support) {
         /** Constructs a self-entry from a given node. */
         public Entry(Node node) {
-            super(node, node);
+            this(node, node);
         }
 
         /** Constructs an entry between two nodes. */
         protected Entry(Node one, Node two) {
-            super(one, two);
-            this.support.add(one);
-            this.support.add(two);
+            this(one, two, new HashSet<>());
+            addSupport(one);
+            addSupport(two);
         }
 
         /** Constructs an entry from a given edge. */
         public Entry(Edge edge) {
             this(edge.source(), edge.target());
-            this.support.add(edge);
+            addSupport(edge);
         }
 
         /** Constructs the inverse of this entry.
          * This means the two elements of the duo are swapped.
          */
         public Entry invert() {
-            Entry result = new Entry(two(), one());
+            Entry result = new Entry(target(), source());
             result.addSupport(this);
             return result;
         }
@@ -329,28 +328,33 @@ public class NodeRelation implements Cloneable {
          * @param other the other entry
          */
         public Entry append(Entry other) {
-            assert two().equals(other.one());
-            Entry result = new Entry(one(), other.two());
+            assert target().equals(other.source());
+            Entry result = new Entry(source(), other.target());
             result.addSupport(this);
             result.addSupport(other);
             return result;
         }
 
-        /** Returns the support of this entry. */
-        public Set<Element> getSupport() {
-            return this.support;
+        /** Entries can be hash keys, we revert to object identity. */
+        @Override
+        public boolean equals(Object obj) {
+            return this == obj;
+        }
+
+        /** Entries can be hash keys, we revert to object identity. */
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(this);
+        }
+
+        /** Augments the support of this entry with a single element. */
+        private boolean addSupport(Element elem) {
+            return support().add(elem);
         }
 
         /** Augments the support of this entry with that of another. */
-        public boolean addSupport(Entry other) {
-            return this.support.addAll(other.support);
+        private boolean addSupport(Entry other) {
+            return support().addAll(other.support());
         }
-
-        @Override
-        public String toString() {
-            return super.toString() + ", support: " + this.support.toString();
-        }
-
-        final private Set<Element> support = new HashSet<>();
     }
 }

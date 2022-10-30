@@ -23,7 +23,8 @@ import nl.utwente.groove.grammar.QualName;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CtrlVar implements Comparable<CtrlVar> {
+public record CtrlVar(QualName scope, String name, CtrlType type, int nr)
+    implements Comparable<CtrlVar> {
     /**
      * Constructs a control variable with a given (non-{@code null}) name, type
      * and distinguishing number.
@@ -31,12 +32,8 @@ public class CtrlVar implements Comparable<CtrlVar> {
      * @param name variable name
      * @param type type of the variable
      */
-    private CtrlVar(QualName scope, String name, CtrlType type, int nr) {
+    public CtrlVar {
         assert name != null && type != null;
-        this.scope = scope;
-        this.name = name;
-        this.type = type;
-        this.nr = nr;
     }
 
     /** Constructs a control variable with a given (non-{@code null}) name and type.
@@ -49,88 +46,22 @@ public class CtrlVar implements Comparable<CtrlVar> {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + (this.scope == null ? 0 : this.scope.hashCode());
-        result = prime * result + this.name.hashCode();
-        result = prime * result + this.type.hashCode();
-        result = prime * result + this.nr;
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-        CtrlVar other = (CtrlVar) obj;
-        if (this.scope == null) {
-            if (other.scope != null) {
-                return false;
-            }
-        } else if (!this.scope.equals(other.scope)) {
-            return false;
-        }
-        if (!this.name.equals(other.name)) {
-            return false;
-        }
-        if (!this.type.equals(other.type)) {
-            return false;
-        }
-        if (this.nr != other.nr) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
     public String toString() {
         return this.name;
     }
 
     @Override
     public int compareTo(CtrlVar o) {
-        int result = getName().compareTo(o.getName());
+        int result = name().compareTo(o.name());
         if (result != 0) {
             return result;
         }
-        result = getType().compareTo(o.getType());
+        result = type().compareTo(o.type());
         if (result != 0) {
             return result;
         }
         return this.nr - o.nr;
     }
-
-    /** Returns the scope name of this control variable. */
-    public QualName getScope() {
-        return this.scope;
-    }
-
-    /** The scope of this control variable. */
-    private final QualName scope;
-
-    /** Returns the name of this control variable. */
-    public String getName() {
-        return this.name;
-    }
-
-    /** The name of this control variable. */
-    private final String name;
-
-    /** Returns the type of this control variable. */
-    public CtrlType getType() {
-        return this.type;
-    }
-
-    /** The type of this control variable. */
-    private final CtrlType type;
-
-    /** The distinguishing number; used to distinguish between wildcard variables. */
-    private final int nr;
 
     /** Returns a fresh wildcard variable of a given type and number. */
     public static CtrlVar wild(CtrlType type, int nr) {

@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.explore.config;
 
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.Parser;
 
 /**
@@ -32,6 +33,7 @@ public enum TraverseKind implements SettingKey, Setting<TraverseKind,Null> {
     LINEAR("Linear", "Linear search: never backtracks"),
     /** Best-first search, driven by some heuristic. */
     BEST_FIRST("Heuristic", "Heuristic search according to a given function"),
+
     /** LTL model checking, driven by some property to be checked. */
     //LTL("LTL", "LTL model checking of a given formula"),
     ;
@@ -60,14 +62,15 @@ public enum TraverseKind implements SettingKey, Setting<TraverseKind,Null> {
     }
 
     @Override
-    public TraverseKind createSettting() {
+    public TraverseKind createNullSettting() {
         return this;
     }
 
     @Override
     public TraverseKind createSetting(Object content) throws IllegalArgumentException {
         if (content != null) {
-            throw new IllegalArgumentException();
+            throw Exceptions
+                .illegalArg("No setting exists for algebra '%s' and content '%s'", this, content);
         }
         return this;
     }

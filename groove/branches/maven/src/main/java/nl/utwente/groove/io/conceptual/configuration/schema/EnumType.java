@@ -30,8 +30,11 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlEnum
 @SuppressWarnings("javadoc")
 public enum EnumType {
-    @XmlEnumValue("subClasses") SUB_CLASSES("subClasses"),
-    @XmlEnumValue("flags") FLAGS("flags");
+    @XmlEnumValue("subClasses")
+    SUB_CLASSES("subClasses"),
+    @XmlEnumValue("flags")
+    FLAGS("flags");
+
     private final String value;
 
     EnumType(String v) {
@@ -41,14 +44,4 @@ public enum EnumType {
     public String value() {
         return this.value;
     }
-
-    public static EnumType fromValue(String v) {
-        for (EnumType c : EnumType.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-        throw new IllegalArgumentException(v);
-    }
-
 }

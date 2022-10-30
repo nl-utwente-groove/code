@@ -52,6 +52,7 @@ import nl.utwente.groove.prolog.builtin.LtsPredicates;
 import nl.utwente.groove.prolog.builtin.RulePredicates;
 import nl.utwente.groove.prolog.builtin.TransPredicates;
 import nl.utwente.groove.prolog.builtin.TypePredicates;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -127,9 +128,9 @@ public class GrooveEnvironment extends Environment {
             result = instance.getToolTipMap();
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException
             | IllegalArgumentException | NoSuchMethodException | SecurityException e) {
-            throw new IllegalArgumentException(String.format("Can't load predicate class %s: %s",
+            throw Exceptions.illegalArg("Can't load predicate class %s: %s",
                 source.getSimpleName(),
-                e.getMessage()));
+                e.getMessage());
         }
         return result;
     }
@@ -146,21 +147,19 @@ public class GrooveEnvironment extends Environment {
         getModule().removePredicateListener(listener);
         Set<CompoundTermTag> predicates = listener.getPredicates();
         if (!predicates.contains(tag)) {
-            throw new IllegalArgumentException(
-                String.format("%s#%s_%d does not define predicate %s",
-                    source.getName(),
-                    tag.functor,
-                    tag.arity,
-                    tag));
+            throw Exceptions.illegalArg("%s#%s_%d does not define predicate %s",
+                source.getName(),
+                tag.functor,
+                tag.arity,
+                tag);
         }
         predicates.remove(tag);
         if (!predicates.isEmpty()) {
-            throw new IllegalArgumentException(
-                String.format("%s#%s_%d defines additional predicates %s",
-                    source.getName(),
-                    tag.functor,
-                    tag.arity,
-                    predicates));
+            throw Exceptions.illegalArg("%s#%s_%d defines additional predicates %s",
+                source.getName(),
+                tag.functor,
+                tag.arity,
+                predicates);
         }
         // tests if the predicate relies on a non-existent or inappropriate class
         String className = getModule().getDefinedPredicate(tag)
@@ -169,30 +168,28 @@ public class GrooveEnvironment extends Environment {
             try {
                 Class<?> builtInClass = Class.forName(className);
                 if (!PrologCode.class.isAssignableFrom(builtInClass)) {
-                    throw new IllegalArgumentException(
-                        String.format("%s#%s_%d builds in class %s that does not subtype %s",
-                            source.getName(),
-                            tag.functor,
-                            tag.arity,
-                            className,
-                            PrologCode.class.getName()));
-                }
-                Deprecated annotation = builtInClass.getAnnotation(Deprecated.class);
-                if (annotation != null) {
-                    throw new IllegalArgumentException(
-                        String.format("%s#%s_%d builds in deprecated class %s",
-                            source.getName(),
-                            tag.functor,
-                            tag.arity,
-                            className));
-                }
-            } catch (ClassNotFoundException e) {
-                throw new IllegalArgumentException(
-                    String.format("%s#%s_%d builds in non-existing class %s",
+                    throw Exceptions.illegalArg(
+                        "%s#%s_%d builds in class %s that does not subtype %s",
                         source.getName(),
                         tag.functor,
                         tag.arity,
-                        className));
+                        className,
+                        PrologCode.class.getName());
+                }
+                Deprecated annotation = builtInClass.getAnnotation(Deprecated.class);
+                if (annotation != null) {
+                    throw Exceptions.illegalArg("%s#%s_%d builds in deprecated class %s",
+                        source.getName(),
+                        tag.functor,
+                        tag.arity,
+                        className);
+                }
+            } catch (ClassNotFoundException e) {
+                throw Exceptions.illegalArg("%s#%s_%d builds in non-existing class %s",
+                    source.getName(),
+                    tag.functor,
+                    tag.arity,
+                    className);
             }
         }
     }

@@ -105,11 +105,6 @@ public abstract class AEdge<N extends Node,L extends Label> implements GEdge<N> 
 
     private final int number;
 
-    @Override
-    public boolean isLoop() {
-        return source() == target();
-    }
-
     /**
      * Returns a description consisting of the source node, an arrow with the
      * label inscribed, and the target node.

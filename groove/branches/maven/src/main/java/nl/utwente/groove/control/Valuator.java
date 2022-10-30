@@ -46,8 +46,8 @@ import nl.utwente.groove.graph.Node;
 public class Valuator {
     /** Returns the value for a given binding. */
     static public HostNode get(Object[] val, Binding bind) {
-        assert bind.getSource() == Source.VAR || bind.getSource() == Source.CALLER;
-        return (HostNode) val[bind.getIndex()];
+        assert bind.type() == Source.VAR || bind.type() == Source.CALLER;
+        return (HostNode) val[bind.index()];
     }
 
     /** Returns the value at a given position of a valuation. */

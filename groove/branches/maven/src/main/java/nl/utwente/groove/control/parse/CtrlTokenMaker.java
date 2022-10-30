@@ -29,6 +29,8 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxUtilities;
 import org.fife.ui.rsyntaxtextarea.Token;
 import org.fife.ui.rsyntaxtextarea.TokenMap;
 
+import nl.utwente.groove.util.Exceptions;
+
 /**
  * A token maker that turns text into a linked list of <code>Token</code>s for
  * syntax highlighting in the JavaScript programming language.
@@ -104,7 +106,7 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
             break;
 
         default:
-            throw new IllegalArgumentException("Unknown tokenType: '" + tokenType + "'");
+            throw Exceptions.illegalArg("Unknown tokenType: '%s'", tokenType);
         }
 
         super.addToken(segment, start, end, tokenType, startOffset);
@@ -224,8 +226,11 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
                 case '"':
                     if (backslash) { // Escaped double quote => call '"' an
                         // identifier..
-                        addToken(text, this.currentTokenStart, i, Token.IDENTIFIER, newStartOffset
-                            + this.currentTokenStart);
+                        addToken(text,
+                            this.currentTokenStart,
+                            i,
+                            Token.IDENTIFIER,
+                            newStartOffset + this.currentTokenStart);
                         backslash = false;
                     } else {
                         this.currentTokenType = Token.ERROR_STRING_DOUBLE;
@@ -235,8 +240,11 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
                 case '\'':
                     if (backslash) { // Escaped single quote => call '\'' an
                         // identifier.
-                        addToken(text, this.currentTokenStart, i, Token.IDENTIFIER, newStartOffset
-                            + this.currentTokenStart);
+                        addToken(text,
+                            this.currentTokenStart,
+                            i,
+                            Token.IDENTIFIER,
+                            newStartOffset + this.currentTokenStart);
                         backslash = false;
                     } else {
                         this.currentTokenType = Token.ERROR_CHAR;
@@ -244,8 +252,11 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
                     break;
 
                 case '\\':
-                    addToken(text, this.currentTokenStart, i, Token.IDENTIFIER, newStartOffset
-                        + this.currentTokenStart);
+                    addToken(text,
+                        this.currentTokenStart,
+                        i,
+                        Token.IDENTIFIER,
+                        newStartOffset + this.currentTokenStart);
                     this.currentTokenType = Token.NULL;
                     backslash = !backslash;
                     break;
@@ -266,15 +277,21 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
                     }
                     indexOf = this.separators.indexOf(c, 0);
                     if (indexOf > -1) {
-                        addToken(text, this.currentTokenStart, i, Token.SEPARATOR, newStartOffset
-                            + this.currentTokenStart);
+                        addToken(text,
+                            this.currentTokenStart,
+                            i,
+                            Token.SEPARATOR,
+                            newStartOffset + this.currentTokenStart);
                         this.currentTokenType = Token.NULL;
                         break;
                     }
                     indexOf = this.separators2.indexOf(c, 0);
                     if (indexOf > -1) {
-                        addToken(text, this.currentTokenStart, i, Token.IDENTIFIER, newStartOffset
-                            + this.currentTokenStart);
+                        addToken(text,
+                            this.currentTokenStart,
+                            i,
+                            Token.IDENTIFIER,
+                            newStartOffset + this.currentTokenStart);
                         this.currentTokenType = Token.NULL;
                         break;
                     } else {
@@ -295,8 +312,11 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
                     break; // Still whitespace.
 
                 case '\\':
-                    addToken(text, this.currentTokenStart, i - 1, Token.WHITESPACE, newStartOffset
-                        + this.currentTokenStart);
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.WHITESPACE,
+                        newStartOffset + this.currentTokenStart);
                     addToken(text, i, i, Token.IDENTIFIER, newStartOffset + i);
                     this.currentTokenType = Token.NULL;
                     backslash = true; // Previous char whitespace => this must
@@ -305,8 +325,11 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
                 case '"': // Don't need to worry about backslashes as previous
                     // char is space.
-                    addToken(text, this.currentTokenStart, i - 1, Token.WHITESPACE, newStartOffset
-                        + this.currentTokenStart);
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.WHITESPACE,
+                        newStartOffset + this.currentTokenStart);
                     this.currentTokenStart = i;
                     this.currentTokenType = Token.ERROR_STRING_DOUBLE;
                     backslash = false;
@@ -314,8 +337,11 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
                 case '\'': // Don't need to worry about backslashes as previous
                     // char is space.
-                    addToken(text, this.currentTokenStart, i - 1, Token.WHITESPACE, newStartOffset
-                        + this.currentTokenStart);
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.WHITESPACE,
+                        newStartOffset + this.currentTokenStart);
                     this.currentTokenStart = i;
                     this.currentTokenType = Token.ERROR_CHAR;
                     backslash = false;
@@ -323,8 +349,11 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
                 default: // Add the whitespace token and start anew.
 
-                    addToken(text, this.currentTokenStart, i - 1, Token.WHITESPACE, newStartOffset
-                        + this.currentTokenStart);
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.WHITESPACE,
+                        newStartOffset + this.currentTokenStart);
                     this.currentTokenStart = i;
 
                     if (RSyntaxUtilities.isDigit(c)) {
@@ -366,16 +395,22 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
                 case ' ':
                 case '\t':
-                    addToken(text, this.currentTokenStart, i - 1, Token.IDENTIFIER, newStartOffset
-                        + this.currentTokenStart);
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.IDENTIFIER,
+                        newStartOffset + this.currentTokenStart);
                     this.currentTokenStart = i;
                     this.currentTokenType = Token.WHITESPACE;
                     break;
 
                 case '"': // Don't need to worry about backslashes as previous
                     // char is non-backslash.
-                    addToken(text, this.currentTokenStart, i - 1, Token.IDENTIFIER, newStartOffset
-                        + this.currentTokenStart);
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.IDENTIFIER,
+                        newStartOffset + this.currentTokenStart);
                     this.currentTokenStart = i;
                     this.currentTokenType = Token.ERROR_STRING_DOUBLE;
                     backslash = false;
@@ -383,16 +418,22 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
                 case '\'': // Don't need to worry about backslashes as previous
                     // char is non-backslash.
-                    addToken(text, this.currentTokenStart, i - 1, Token.IDENTIFIER, newStartOffset
-                        + this.currentTokenStart);
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.IDENTIFIER,
+                        newStartOffset + this.currentTokenStart);
                     this.currentTokenStart = i;
                     this.currentTokenType = Token.ERROR_CHAR;
                     backslash = false;
                     break;
 
                 case '\\':
-                    addToken(text, this.currentTokenStart, i - 1, Token.IDENTIFIER, newStartOffset
-                        + this.currentTokenStart);
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.IDENTIFIER,
+                        newStartOffset + this.currentTokenStart);
                     addToken(text, i, i, Token.IDENTIFIER, newStartOffset + i);
                     this.currentTokenType = Token.NULL;
                     backslash = true;
@@ -404,7 +445,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
                     }
                     int indexOf = this.operators.indexOf(c);
                     if (indexOf > -1) {
-                        addToken(text, this.currentTokenStart, i - 1, Token.IDENTIFIER,
+                        addToken(text,
+                            this.currentTokenStart,
+                            i - 1,
+                            Token.IDENTIFIER,
                             newStartOffset + this.currentTokenStart);
                         this.currentTokenStart = i;
                         this.currentTokenType = Token.OPERATOR;
@@ -412,7 +456,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
                     }
                     indexOf = this.separators.indexOf(c, 0);
                     if (indexOf > -1) {
-                        addToken(text, this.currentTokenStart, i - 1, Token.IDENTIFIER,
+                        addToken(text,
+                            this.currentTokenStart,
+                            i - 1,
+                            Token.IDENTIFIER,
                             newStartOffset + this.currentTokenStart);
                         addToken(text, i, i, Token.SEPARATOR, newStartOffset + i);
                         this.currentTokenType = Token.NULL;
@@ -420,7 +467,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
                     }
                     indexOf = this.separators2.indexOf(c, 0);
                     if (indexOf > -1) {
-                        addToken(text, this.currentTokenStart, i - 1, Token.IDENTIFIER,
+                        addToken(text,
+                            this.currentTokenStart,
+                            i - 1,
+                            Token.IDENTIFIER,
                             newStartOffset + this.currentTokenStart);
                         addToken(text, i, i, Token.IDENTIFIER, newStartOffset + i);
                         this.currentTokenType = Token.NULL;
@@ -447,7 +497,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
                 case ' ':
                 case '\t':
-                    addToken(text, this.currentTokenStart, i - 1, Token.LITERAL_NUMBER_DECIMAL_INT,
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.LITERAL_NUMBER_DECIMAL_INT,
                         newStartOffset + this.currentTokenStart);
                     this.currentTokenStart = i;
                     this.currentTokenType = Token.WHITESPACE;
@@ -455,7 +508,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
                 case '"': // Don't need to worry about backslashes as previous
                     // char is non-backslash.
-                    addToken(text, this.currentTokenStart, i - 1, Token.LITERAL_NUMBER_DECIMAL_INT,
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.LITERAL_NUMBER_DECIMAL_INT,
                         newStartOffset + this.currentTokenStart);
                     this.currentTokenStart = i;
                     this.currentTokenType = Token.ERROR_STRING_DOUBLE;
@@ -464,7 +520,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
                 case '\'': // Don't need to worry about backslashes as previous
                     // char is non-backslash.
-                    addToken(text, this.currentTokenStart, i - 1, Token.LITERAL_NUMBER_DECIMAL_INT,
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.LITERAL_NUMBER_DECIMAL_INT,
                         newStartOffset + this.currentTokenStart);
                     this.currentTokenStart = i;
                     this.currentTokenType = Token.ERROR_CHAR;
@@ -472,7 +531,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
                     break;
 
                 case '\\':
-                    addToken(text, this.currentTokenStart, i - 1, Token.LITERAL_NUMBER_DECIMAL_INT,
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.LITERAL_NUMBER_DECIMAL_INT,
                         newStartOffset + this.currentTokenStart);
                     addToken(text, i, i, Token.IDENTIFIER, newStartOffset + i);
                     this.currentTokenType = Token.NULL;
@@ -510,27 +572,33 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
                     }
                     indexOf = this.operators.indexOf(c);
                     if (indexOf > -1) {
-                        addToken(text, this.currentTokenStart, i - 1,
-                            Token.LITERAL_NUMBER_DECIMAL_INT, newStartOffset
-                                + this.currentTokenStart);
+                        addToken(text,
+                            this.currentTokenStart,
+                            i - 1,
+                            Token.LITERAL_NUMBER_DECIMAL_INT,
+                            newStartOffset + this.currentTokenStart);
                         this.currentTokenStart = i;
                         this.currentTokenType = Token.OPERATOR;
                         break;
                     }
                     indexOf = this.separators.indexOf(c);
                     if (indexOf > -1) {
-                        addToken(text, this.currentTokenStart, i - 1,
-                            Token.LITERAL_NUMBER_DECIMAL_INT, newStartOffset
-                                + this.currentTokenStart);
+                        addToken(text,
+                            this.currentTokenStart,
+                            i - 1,
+                            Token.LITERAL_NUMBER_DECIMAL_INT,
+                            newStartOffset + this.currentTokenStart);
                         addToken(text, i, i, Token.SEPARATOR, newStartOffset + i);
                         this.currentTokenType = Token.NULL;
                         break;
                     }
                     indexOf = this.separators2.indexOf(c);
                     if (indexOf > -1) {
-                        addToken(text, this.currentTokenStart, i - 1,
-                            Token.LITERAL_NUMBER_DECIMAL_INT, newStartOffset
-                                + this.currentTokenStart);
+                        addToken(text,
+                            this.currentTokenStart,
+                            i - 1,
+                            Token.LITERAL_NUMBER_DECIMAL_INT,
+                            newStartOffset + this.currentTokenStart);
                         addToken(text, i, i, Token.IDENTIFIER, newStartOffset + i);
                         this.currentTokenType = Token.NULL;
                         break;
@@ -549,7 +617,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
                 case ' ':
                 case '\t':
-                    addToken(text, this.currentTokenStart, i - 1, Token.LITERAL_NUMBER_FLOAT,
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.LITERAL_NUMBER_FLOAT,
                         newStartOffset + this.currentTokenStart);
                     this.currentTokenStart = i;
                     this.currentTokenType = Token.WHITESPACE;
@@ -557,7 +628,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
                 case '"': // Don't need to worry about backslashes as previous
                     // char is non-backslash.
-                    addToken(text, this.currentTokenStart, i - 1, Token.LITERAL_NUMBER_FLOAT,
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.LITERAL_NUMBER_FLOAT,
                         newStartOffset + this.currentTokenStart);
                     this.currentTokenStart = i;
                     this.currentTokenType = Token.ERROR_STRING_DOUBLE;
@@ -566,7 +640,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
                 case '\'': // Don't need to worry about backslashes as previous
                     // char is non-backslash.
-                    addToken(text, this.currentTokenStart, i - 1, Token.LITERAL_NUMBER_FLOAT,
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.LITERAL_NUMBER_FLOAT,
                         newStartOffset + this.currentTokenStart);
                     this.currentTokenStart = i;
                     this.currentTokenType = Token.ERROR_CHAR;
@@ -574,7 +651,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
                     break;
 
                 case '\\':
-                    addToken(text, this.currentTokenStart, i - 1, Token.LITERAL_NUMBER_FLOAT,
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.LITERAL_NUMBER_FLOAT,
                         newStartOffset + this.currentTokenStart);
                     addToken(text, i, i, Token.IDENTIFIER, newStartOffset + i);
                     this.currentTokenType = Token.NULL;
@@ -610,7 +690,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
                     }
                     indexOf = this.operators.indexOf(c);
                     if (indexOf > -1) {
-                        addToken(text, this.currentTokenStart, i - 1, Token.LITERAL_NUMBER_FLOAT,
+                        addToken(text,
+                            this.currentTokenStart,
+                            i - 1,
+                            Token.LITERAL_NUMBER_FLOAT,
                             newStartOffset + this.currentTokenStart);
                         this.currentTokenStart = i;
                         this.currentTokenType = Token.OPERATOR;
@@ -618,7 +701,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
                     }
                     indexOf = this.separators.indexOf(c);
                     if (indexOf > -1) {
-                        addToken(text, this.currentTokenStart, i - 1, Token.LITERAL_NUMBER_FLOAT,
+                        addToken(text,
+                            this.currentTokenStart,
+                            i - 1,
+                            Token.LITERAL_NUMBER_FLOAT,
                             newStartOffset + this.currentTokenStart);
                         addToken(text, i, i, Token.SEPARATOR, newStartOffset + i);
                         this.currentTokenType = Token.NULL;
@@ -626,7 +712,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
                     }
                     indexOf = this.separators2.indexOf(c);
                     if (indexOf > -1) {
-                        addToken(text, this.currentTokenStart, i - 1, Token.LITERAL_NUMBER_FLOAT,
+                        addToken(text,
+                            this.currentTokenStart,
+                            i - 1,
+                            Token.LITERAL_NUMBER_FLOAT,
                             newStartOffset + this.currentTokenStart);
                         addToken(text, i, i, Token.IDENTIFIER, newStartOffset + i);
                         this.currentTokenType = Token.NULL;
@@ -646,7 +735,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
                 case ' ':
                 case '\t':
-                    addToken(text, this.currentTokenStart, i - 1, Token.LITERAL_NUMBER_HEXADECIMAL,
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.LITERAL_NUMBER_HEXADECIMAL,
                         newStartOffset + this.currentTokenStart);
                     this.currentTokenStart = i;
                     this.currentTokenType = Token.WHITESPACE;
@@ -654,7 +746,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
                 case '"': // Don't need to worry about backslashes as previous
                     // char is non-backslash.
-                    addToken(text, this.currentTokenStart, i - 1, Token.LITERAL_NUMBER_HEXADECIMAL,
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.LITERAL_NUMBER_HEXADECIMAL,
                         newStartOffset + this.currentTokenStart);
                     this.currentTokenStart = i;
                     this.currentTokenType = Token.ERROR_STRING_DOUBLE;
@@ -663,7 +758,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
                 case '\'': // Don't need to worry about backslashes as previous
                     // char is non-backslash.
-                    addToken(text, this.currentTokenStart, i - 1, Token.LITERAL_NUMBER_HEXADECIMAL,
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.LITERAL_NUMBER_HEXADECIMAL,
                         newStartOffset + this.currentTokenStart);
                     this.currentTokenStart = i;
                     this.currentTokenType = Token.ERROR_CHAR;
@@ -671,7 +769,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
                     break;
 
                 case '\\':
-                    addToken(text, this.currentTokenStart, i - 1, Token.LITERAL_NUMBER_HEXADECIMAL,
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.LITERAL_NUMBER_HEXADECIMAL,
                         newStartOffset + this.currentTokenStart);
                     addToken(text, i, i, Token.IDENTIFIER, newStartOffset + i);
                     this.currentTokenType = Token.NULL;
@@ -704,27 +805,33 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
                     }
                     indexOf = this.operators.indexOf(c);
                     if (indexOf > -1) {
-                        addToken(text, this.currentTokenStart, i - 1,
-                            Token.LITERAL_NUMBER_HEXADECIMAL, newStartOffset
-                                + this.currentTokenStart);
+                        addToken(text,
+                            this.currentTokenStart,
+                            i - 1,
+                            Token.LITERAL_NUMBER_HEXADECIMAL,
+                            newStartOffset + this.currentTokenStart);
                         this.currentTokenStart = i;
                         this.currentTokenType = Token.OPERATOR;
                         break;
                     }
                     indexOf = this.separators.indexOf(c);
                     if (indexOf > -1) {
-                        addToken(text, this.currentTokenStart, i - 1,
-                            Token.LITERAL_NUMBER_HEXADECIMAL, newStartOffset
-                                + this.currentTokenStart);
+                        addToken(text,
+                            this.currentTokenStart,
+                            i - 1,
+                            Token.LITERAL_NUMBER_HEXADECIMAL,
+                            newStartOffset + this.currentTokenStart);
                         addToken(text, i, i, Token.SEPARATOR, newStartOffset + i);
                         this.currentTokenType = Token.NULL;
                         break;
                     }
                     indexOf = this.separators2.indexOf(c);
                     if (indexOf > -1) {
-                        addToken(text, this.currentTokenStart, i - 1,
-                            Token.LITERAL_NUMBER_HEXADECIMAL, newStartOffset
-                                + this.currentTokenStart);
+                        addToken(text,
+                            this.currentTokenStart,
+                            i - 1,
+                            Token.LITERAL_NUMBER_HEXADECIMAL,
+                            newStartOffset + this.currentTokenStart);
                         addToken(text, i, i, Token.IDENTIFIER, newStartOffset + i);
                         this.currentTokenType = Token.NULL;
                         break;
@@ -742,7 +849,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
                 // Find either end of MLC or end of the current line.
                 while (i < end - 1) {
                     if (array[i] == '*' && array[i + 1] == '/') {
-                        addToken(text, this.currentTokenStart, i + 1, Token.COMMENT_MULTILINE,
+                        addToken(text,
+                            this.currentTokenStart,
+                            i + 1,
+                            Token.COMMENT_MULTILINE,
                             newStartOffset + this.currentTokenStart);
                         i = i + 1;
                         this.currentTokenType = Token.NULL;
@@ -757,8 +867,11 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
             case Token.COMMENT_EOL:
                 i = end - 1;
-                addToken(text, this.currentTokenStart, i, Token.COMMENT_EOL, newStartOffset
-                    + this.currentTokenStart);
+                addToken(text,
+                    this.currentTokenStart,
+                    i,
+                    Token.COMMENT_EOL,
+                    newStartOffset + this.currentTokenStart);
                 // We need to set token type to null so at the bottom we don't
                 // add one more token.
                 this.currentTokenType = Token.NULL;
@@ -789,7 +902,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
                         // operators accumulate before we print them, we will
                         // mess up syntax
                         // highlighting if we get an end-of-line comment.
-                        addToken(text, this.currentTokenStart, i - 1, Token.OPERATOR,
+                        addToken(text,
+                            this.currentTokenStart,
+                            i - 1,
+                            Token.OPERATOR,
                             newStartOffset + this.currentTokenStart);
                         this.currentTokenType = Token.NULL;
                         i = i - 1;
@@ -799,8 +915,11 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
                 else {
 
-                    addToken(text, this.currentTokenStart, i - 1, Token.OPERATOR, newStartOffset
-                        + this.currentTokenStart);
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.OPERATOR,
+                        newStartOffset + this.currentTokenStart);
 
                     // Hack to keep code size down...
                     i--;
@@ -816,7 +935,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
                 case ' ':
                 case '\t':
-                    addToken(text, this.currentTokenStart, i - 1, Token.ERROR_IDENTIFIER,
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.ERROR_IDENTIFIER,
                         newStartOffset + this.currentTokenStart);
                     this.currentTokenStart = i;
                     this.currentTokenType = Token.WHITESPACE;
@@ -824,7 +946,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
                 case '"': // Don't need to worry about backslashes as previous
                     // char is non-backslash.
-                    addToken(text, this.currentTokenStart, i - 1, Token.ERROR_IDENTIFIER,
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.ERROR_IDENTIFIER,
                         newStartOffset + this.currentTokenStart);
                     this.currentTokenStart = i;
                     this.currentTokenType = Token.ERROR_STRING_DOUBLE;
@@ -833,7 +958,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
                 case '\'': // Don't need to worry about backslashes as previous
                     // char is non-backslash.
-                    addToken(text, this.currentTokenStart, i - 1, Token.ERROR_IDENTIFIER,
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.ERROR_IDENTIFIER,
                         newStartOffset + this.currentTokenStart);
                     this.currentTokenStart = i;
                     this.currentTokenType = Token.ERROR_CHAR;
@@ -841,14 +969,20 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
                     break;
 
                 case ';':
-                    addToken(text, this.currentTokenStart, i - 1, Token.ERROR_IDENTIFIER,
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.ERROR_IDENTIFIER,
                         newStartOffset + this.currentTokenStart);
                     addToken(text, i, i, Token.IDENTIFIER, newStartOffset + i);
                     this.currentTokenType = Token.NULL;
                     break;
 
                 case '\\':
-                    addToken(text, this.currentTokenStart, i - 1, Token.ERROR_IDENTIFIER,
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.ERROR_IDENTIFIER,
                         newStartOffset + this.currentTokenStart);
                     addToken(text, i, i, Token.IDENTIFIER, newStartOffset + i);
                     this.currentTokenType = Token.NULL;
@@ -859,21 +993,30 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
                 default:
                     int indexOf = this.operators.indexOf(c);
                     if (indexOf > -1) {
-                        addToken(text, this.currentTokenStart, i - 1, Token.ERROR_IDENTIFIER,
+                        addToken(text,
+                            this.currentTokenStart,
+                            i - 1,
+                            Token.ERROR_IDENTIFIER,
                             newStartOffset + this.currentTokenStart);
                         this.currentTokenStart = i;
                         this.currentTokenType = Token.OPERATOR;
                     }
                     indexOf = this.separators.indexOf(c);
                     if (indexOf > -1) {
-                        addToken(text, this.currentTokenStart, i - 1, Token.ERROR_IDENTIFIER,
+                        addToken(text,
+                            this.currentTokenStart,
+                            i - 1,
+                            Token.ERROR_IDENTIFIER,
                             newStartOffset + this.currentTokenStart);
                         addToken(text, i, i, Token.SEPARATOR, newStartOffset + i);
                         this.currentTokenType = Token.NULL;
                     }
                     indexOf = this.separators2.indexOf(c);
                     if (indexOf > -1) {
-                        addToken(text, this.currentTokenStart, i - 1, Token.ERROR_IDENTIFIER,
+                        addToken(text,
+                            this.currentTokenStart,
+                            i - 1,
+                            Token.ERROR_IDENTIFIER,
                             newStartOffset + this.currentTokenStart);
                         addToken(text, i, i, Token.IDENTIFIER, newStartOffset + i);
                         this.currentTokenType = Token.NULL;
@@ -889,7 +1032,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
                 case ' ':
                 case '\t':
-                    addToken(text, this.currentTokenStart, i - 1, Token.ERROR_NUMBER_FORMAT,
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.ERROR_NUMBER_FORMAT,
                         newStartOffset + this.currentTokenStart);
                     this.currentTokenStart = i;
                     this.currentTokenType = Token.WHITESPACE;
@@ -897,7 +1043,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
                 case '"': // Don't need to worry about backslashes as previous
                     // char is non-backslash.
-                    addToken(text, this.currentTokenStart, i - 1, Token.ERROR_NUMBER_FORMAT,
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.ERROR_NUMBER_FORMAT,
                         newStartOffset + this.currentTokenStart);
                     this.currentTokenStart = i;
                     this.currentTokenType = Token.ERROR_STRING_DOUBLE;
@@ -906,7 +1055,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
                 case '\'': // Don't need to worry about backslashes as previous
                     // char is non-backslash.
-                    addToken(text, this.currentTokenStart, i - 1, Token.ERROR_NUMBER_FORMAT,
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.ERROR_NUMBER_FORMAT,
                         newStartOffset + this.currentTokenStart);
                     this.currentTokenStart = i;
                     this.currentTokenType = Token.ERROR_CHAR;
@@ -914,14 +1066,20 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
                     break;
 
                 case ';':
-                    addToken(text, this.currentTokenStart, i - 1, Token.ERROR_NUMBER_FORMAT,
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.ERROR_NUMBER_FORMAT,
                         newStartOffset + this.currentTokenStart);
                     addToken(text, i, i, Token.IDENTIFIER, newStartOffset + i);
                     this.currentTokenType = Token.NULL;
                     break;
 
                 case '\\':
-                    addToken(text, this.currentTokenStart, i - 1, Token.ERROR_NUMBER_FORMAT,
+                    addToken(text,
+                        this.currentTokenStart,
+                        i - 1,
+                        Token.ERROR_NUMBER_FORMAT,
                         newStartOffset + this.currentTokenStart);
                     addToken(text, i, i, Token.IDENTIFIER, newStartOffset + i);
                     this.currentTokenType = Token.NULL;
@@ -933,29 +1091,38 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
                     // Could be going into hexadecimal.
                     int indexOf = this.hexCharacters.indexOf(c);
-                    if (indexOf > -1
-                        && (i - this.currentTokenStart == 2 && array[i - 1] == 'x' && array[i - 2] == '0')) {
+                    if (indexOf > -1 && (i - this.currentTokenStart == 2 && array[i - 1] == 'x'
+                        && array[i - 2] == '0')) {
                         this.currentTokenType = Token.LITERAL_NUMBER_HEXADECIMAL;
                         break;
                     }
 
                     indexOf = this.operators.indexOf(c);
                     if (indexOf > -1) {
-                        addToken(text, this.currentTokenStart, i - 1, Token.ERROR_NUMBER_FORMAT,
+                        addToken(text,
+                            this.currentTokenStart,
+                            i - 1,
+                            Token.ERROR_NUMBER_FORMAT,
                             newStartOffset + this.currentTokenStart);
                         this.currentTokenStart = i;
                         this.currentTokenType = Token.OPERATOR;
                     }
                     indexOf = this.separators.indexOf(c);
                     if (indexOf > -1) {
-                        addToken(text, this.currentTokenStart, i - 1, Token.ERROR_NUMBER_FORMAT,
+                        addToken(text,
+                            this.currentTokenStart,
+                            i - 1,
+                            Token.ERROR_NUMBER_FORMAT,
                             newStartOffset + this.currentTokenStart);
                         addToken(text, i, i, Token.SEPARATOR, newStartOffset + i);
                         this.currentTokenType = Token.NULL;
                     }
                     indexOf = this.separators2.indexOf(c);
                     if (indexOf > -1) {
-                        addToken(text, this.currentTokenStart, i - 1, Token.ERROR_NUMBER_FORMAT,
+                        addToken(text,
+                            this.currentTokenStart,
+                            i - 1,
+                            Token.ERROR_NUMBER_FORMAT,
                             newStartOffset + this.currentTokenStart);
                         addToken(text, i, i, Token.IDENTIFIER, newStartOffset + i);
                         this.currentTokenType = Token.NULL;
@@ -973,7 +1140,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
                 } else {
 
                     if (c == '\'' && !backslash) {
-                        addToken(text, this.currentTokenStart, i, Token.LITERAL_CHAR,
+                        addToken(text,
+                            this.currentTokenStart,
+                            i,
+                            Token.LITERAL_CHAR,
                             newStartOffset + this.currentTokenStart);
                         this.currentTokenType = Token.NULL;
                         // backslash is definitely false when we leave.
@@ -994,9 +1164,11 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
                     // backslash was initially false.
                 } else {
                     if (c == '"' && !backslash) {
-                        addToken(text, this.currentTokenStart, i,
-                            Token.LITERAL_STRING_DOUBLE_QUOTE, newStartOffset
-                                + this.currentTokenStart);
+                        addToken(text,
+                            this.currentTokenStart,
+                            i,
+                            Token.LITERAL_STRING_DOUBLE_QUOTE,
+                            newStartOffset + this.currentTokenStart);
                         this.currentTokenType = Token.NULL;
                         // backslash is definitely false when we leave.
                     }
@@ -1015,8 +1187,11 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
 
         // Deal with the (possibly there) last token.
         if (this.currentTokenType != Token.NULL) {
-            addToken(text, this.currentTokenStart, end - 1, this.currentTokenType, newStartOffset
-                + this.currentTokenStart);
+            addToken(text,
+                this.currentTokenStart,
+                end - 1,
+                this.currentTokenType,
+                newStartOffset + this.currentTokenStart);
         }
         if (this.currentTokenType != Token.COMMENT_MULTILINE) {
             addNullToken();

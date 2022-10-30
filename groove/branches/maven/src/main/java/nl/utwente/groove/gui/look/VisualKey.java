@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import nl.utwente.groove.gui.layout.JCellLayout;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.NodeShape;
 import nl.utwente.groove.util.line.LineStyle;
 
@@ -134,8 +135,7 @@ public enum VisualKey {
             error = !this.type.isAssignableFrom(value.getClass());
         }
         if (error) {
-            throw new IllegalArgumentException(
-                String.format("%s value %s should be of type %s", this, value, this.type));
+            throw Exceptions.illegalArg("%s value %s should be of type %s", this, value, this.type);
         }
     }
 

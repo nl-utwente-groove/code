@@ -30,7 +30,7 @@ public enum ThreeValued {
     /** Middle value. */
     SOME,
     /** Upper value. */
-    TRUE, ;
+    TRUE,;
 
     /** Indicates if this is the {@link #FALSE} value. */
     public boolean isFalse() {
@@ -92,12 +92,11 @@ public enum ThreeValued {
             } else if (isSome(text) || hasDefault()) {
                 result = SOME;
             } else {
-                throw new IllegalArgumentException(
-                    String.format("Value %s should be one of %s, %s or %s",
-                                  text,
-                                  getFalse(),
-                                  getSome(),
-                                  getTrue()));
+                throw Exceptions.illegalArg("Value %s should be one of %s, %s or %s",
+                    text,
+                    getFalse(),
+                    getSome(),
+                    getTrue());
             }
             return result;
         }
@@ -158,8 +157,7 @@ public enum ThreeValued {
             return getText(TRUE);
         }
 
-        private final Map<ThreeValued,String> textMap = new EnumMap<>(
-            ThreeValued.class);
+        private final Map<ThreeValued,String> textMap = new EnumMap<>(ThreeValued.class);
 
         @Override
         public String toString() {

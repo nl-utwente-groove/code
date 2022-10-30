@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package nl.utwente.groove.transform;
@@ -27,6 +27,7 @@ import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.AElementMap;
 import nl.utwente.groove.graph.Morphism;
 import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Variation on a map that only stores non-identity mappings for nodes; hence
@@ -60,13 +61,14 @@ public class MergeMap extends Morphism<HostNode,HostEdge> {
     public void putAll(AElementMap<HostNode,HostEdge,HostNode,HostEdge> other) {
         assert other instanceof MergeMap;
         // first copy the edges
-        for (Map.Entry<HostEdge,? extends HostEdge> edgeEntry : other.edgeMap().entrySet()) {
-            HostEdge oldTarget =
-                putEdge(edgeEntry.getKey(), edgeEntry.getValue());
+        for (Map.Entry<HostEdge,? extends HostEdge> edgeEntry : other.edgeMap()
+            .entrySet()) {
+            HostEdge oldTarget = putEdge(edgeEntry.getKey(), edgeEntry.getValue());
             assert oldTarget == null : "Edges should not be remapped during merging";
         }
         // override to make sure putNode is called
-        for (Map.Entry<HostNode,? extends HostNode> nodeEntry : other.nodeMap().entrySet()) {
+        for (Map.Entry<HostNode,? extends HostNode> nodeEntry : other.nodeMap()
+            .entrySet()) {
             putNode(nodeEntry.getKey(), nodeEntry.getValue());
         }
     }
@@ -117,15 +119,17 @@ public class MergeMap extends Morphism<HostNode,HostEdge> {
         // choose node with most specialised type as image
         TypeNode oldType = n1.getType();
         TypeNode newType = n2.getType();
-        if (newType.getSubtypes().contains(oldType)) {
+        if (newType.getSubtypes()
+            .contains(oldType)) {
             key = n2;
             image = n1;
-        } else if (oldType.getSubtypes().contains(newType)) {
+        } else if (oldType.getSubtypes()
+            .contains(newType)) {
             key = n1;
             image = n2;
         } else {
-            throw new IllegalStateException(String.format(
-                "Merge targets %s and %s have incompatible types", n1, n2));
+            throw Exceptions
+                .illegalState("Merge targets %s and %s have incompatible types", n1, n2);
         }
         super.putNode(key, image);
         this.mergeTargets.add(image);
@@ -148,8 +152,7 @@ public class MergeMap extends Morphism<HostNode,HostEdge> {
     @Override
     public HostEdge mapEdge(HostEdge key) {
         Map<HostNode,HostNode> nodeMap = nodeMap();
-        if (!nodeMap.containsKey(key.source())
-            && !nodeMap.containsKey(key.target())) {
+        if (!nodeMap.containsKey(key.source()) && !nodeMap.containsKey(key.target())) {
             return key;
         } else {
             return super.mapEdge(key);

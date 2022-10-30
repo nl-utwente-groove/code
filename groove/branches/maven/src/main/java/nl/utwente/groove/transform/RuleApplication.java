@@ -37,6 +37,7 @@ import nl.utwente.groove.grammar.rule.AnchorKey;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.match.TreeMatch;
 import nl.utwente.groove.transform.oracle.ValueOracle;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Property;
 import nl.utwente.groove.util.Visitor;
 import nl.utwente.groove.util.Visitor.Finder;
@@ -307,7 +308,7 @@ public class RuleApplication implements DeltaApplier {
             try {
                 getEvent().recordEffect(result);
             } catch (InterruptedException exc) {
-                throw new IllegalStateException("By assumption, value oracles are ruled out");
+                throw Exceptions.illegalState("By assumption, value oracles are ruled out");
             }
             result.setFixed();
             this.effect = result;

@@ -84,6 +84,7 @@ import nl.utwente.groove.io.external.Exporters;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.external.Porter;
 import nl.utwente.groove.io.external.Porter.Kind;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.cli.ExistingFileHandler;
@@ -117,8 +118,8 @@ public class Imager extends GrooveCmdLineTool<Object> {
         nl.utwente.groove.gui.Options.initLookAndFeel();
         if (gui) {
             if (args.length > 0) {
-                throw new IllegalArgumentException(
-                    "GUI-based imager is not compatible with arguments" + Arrays.toString(args));
+                throw Exceptions.illegalArg("GUI-based imager is not compatible with arguments %s",
+                    Arrays.toString(args));
             }
             setVerbosity(Verbosity.HIGH);
             this.imagerFrame = new ImagerFrame();

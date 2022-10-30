@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.explore.config;
 
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.Parser;
 
 /**
@@ -60,14 +61,16 @@ public enum BooleanKey implements SettingKey, Setting<BooleanKey,Null> {
     }
 
     @Override
-    public BooleanKey createSettting() throws IllegalArgumentException {
+    public BooleanKey createNullSettting() throws IllegalArgumentException {
         return this;
     }
 
     @Override
     public BooleanKey createSetting(Object content) throws IllegalArgumentException {
         if (content != null) {
-            throw new IllegalArgumentException();
+            throw Exceptions.illegalArg("No setting exists for boolean key '%s' and content '%s'",
+                this,
+                content);
         }
         return this;
     }

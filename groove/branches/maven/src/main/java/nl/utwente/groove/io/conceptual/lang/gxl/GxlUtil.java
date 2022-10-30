@@ -605,7 +605,7 @@ public class GxlUtil {
                 }
                 break;
             case ORD:
-                throw new IllegalArgumentException("ORD not supported as GXL import type");
+                throw Exceptions.illegalArg("ORD not supported as GXL import type");
             default:
                 throw Exceptions.UNREACHABLE;
             }

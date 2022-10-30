@@ -42,6 +42,7 @@ import nl.utwente.groove.graph.ALabelEdge;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -245,20 +246,20 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         for (int i = 0; i < args.size(); i++) {
             CtrlPar arg = args.get(i);
             HostNode node;
-            if (arg instanceof Const) {
-                node = ((Const) arg).getNode();
+            if (arg instanceof Const c) {
+                node = c.getNode();
             } else if (arg instanceof Wild) {
                 node = null;
             } else {
                 assert arg instanceof Var;
-                CtrlVar var = ((Var) arg).getVar();
-                if (arg.isInOnly()) {
+                CtrlVar var = ((Var) arg).var();
+                if (arg.inOnly()) {
                     int varIndex = getSwitch().getSource()
                         .getVars()
                         .indexOf(var);
                     node = Valuator.get(source().getPrimeValues(), varIndex);
                 } else {
-                    assert arg.isOutOnly();
+                    assert arg.outOnly();
                     Map<CtrlVar,Integer> varIxMap = getSwitch().onFinish()
                         .getVarIxMap();
                     int varIndex = varIxMap.get(var);
@@ -340,7 +341,8 @@ public class RecipeTransition extends ALabelEdge<GraphState>
      */
     public RecipeTransition toTransition(GraphState source) {
         if (source != source()) {
-            throw new IllegalArgumentException("Source state incompatible");
+            throw Exceptions
+                .illegalArg("Source state %s should coincide with argument %s", source(), source);
         } else {
             return this;
         }
@@ -349,8 +351,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
     @Override
     public int compareTo(Label obj) {
         if (!(obj instanceof ActionLabel)) {
-            throw new IllegalArgumentException(
-                String.format("Can't compare %s and %s", this.getClass(), obj.getClass()));
+            throw Exceptions.illegalArg("Can't compare %s and %s", this.getClass(), obj.getClass());
         }
         if (obj instanceof RuleTransitionLabel) {
             return -obj.compareTo(this);

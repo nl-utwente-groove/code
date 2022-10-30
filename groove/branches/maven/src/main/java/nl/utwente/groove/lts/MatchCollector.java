@@ -26,8 +26,8 @@ import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.Valuator;
 import nl.utwente.groove.control.instance.Assignment;
 import nl.utwente.groove.control.instance.Step;
+import nl.utwente.groove.control.template.Switch.ParBinding;
 import nl.utwente.groove.grammar.Rule;
-import nl.utwente.groove.grammar.UnitPar;
 import nl.utwente.groove.grammar.host.AnchorValue;
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostGraph;
@@ -42,7 +42,7 @@ import nl.utwente.groove.transform.CompositeEvent;
 import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.transform.RuleEvent;
-import nl.utwente.groove.util.Pair;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Visitor;
 import nl.utwente.groove.util.collect.KeySet;
 import nl.utwente.groove.util.parse.FormatError;
@@ -187,17 +187,15 @@ public class MatchCollector {
                 switch (anchorImage.getAnchorKind()) {
                 case EDGE:
                     if (!host.containsEdge((HostEdge) anchorImage)) {
-                        assert false : String.format("Edge %s does not occur in graph %s",
-                            anchorImage,
-                            host);
+                        assert false : String
+                            .format("Edge %s does not occur in graph %s", anchorImage, host);
                     }
                     break;
                 case NODE:
                     if (!(anchorImage instanceof ValueNode)
                         && !host.containsNode((HostNode) anchorImage)) {
-                        assert false : String.format("Node %s does not occur in graph %s",
-                            anchorImage,
-                            host);
+                        assert false : String
+                            .format("Node %s does not occur in graph %s", anchorImage, host);
                     }
                     break;
                 default:
@@ -260,27 +258,22 @@ public class MatchCollector {
         for (Assignment assign : step.getEnterAssignments()) {
             sourceValues = assign.compute(sourceValues);
         }
-        for (Pair<UnitPar.RulePar,Binding> entry : step.getRuleSwitch()
+        for (ParBinding entry : step.getRuleSwitch()
             .getCallBinding()) {
-            Binding bind = entry.two();
-            HostNode value;
+            Binding bind = entry.bind();
             if (bind == null) {
                 // this corresponds to an output parameter of the call
                 continue;
             }
-            switch (bind.getSource()) {
-            case CONST:
-                value = bind.getValue()
-                    .getNode();
-                break;
-            case VAR:
-                value = Valuator.get(sourceValues, bind);
-                break;
-            default:
-                assert false;
-                value = null;
-            }
-            RuleNode ruleNode = entry.one()
+            HostNode value = switch (bind.type()) {
+            case CONST -> bind.value()
+                .getNode();
+            case VAR -> Valuator.get(sourceValues, bind);
+            default -> throw Exceptions.illegalState(
+                "Input parameter %s should be constant or initialised variable",
+                entry.par());
+            };
+            RuleNode ruleNode = entry.par()
                 .getNode();
             if (isCompatible(ruleNode, value)) {
                 result.putNode(ruleNode, value);

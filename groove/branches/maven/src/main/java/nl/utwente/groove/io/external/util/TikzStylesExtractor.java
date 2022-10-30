@@ -88,6 +88,7 @@ import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.NodeShape;
 import nl.utwente.groove.util.line.Line.ColorType;
 
@@ -349,7 +350,7 @@ public final class TikzStylesExtractor {
             Style.writeForegroundColor(visuals.getForeground(), styles);
             break;
         default:
-            throw new IllegalArgumentException("Invalid modifying look " + look);
+            throw Exceptions.illegalArg("Invalid modifying look ", look);
         }
     }
 
@@ -560,23 +561,15 @@ public final class TikzStylesExtractor {
         }
 
         static String getEdgeEndShape(EdgeEnd end) {
-            switch (end) {
-            case ARROW:
-            case UNFILLED:
-            case NESTING:
-                return "stealth'";
-            case COMPOSITE:
-                return "diamond";
-            case NONE:
-                return "";
-            case SIMPLE:
-                return "to";
-            case SUBTYPE:
-                return "open triangle 60";
-            default:
-                throw new IllegalArgumentException(
-                    "Default fall-through in edge end shape! Did you add a new edge end shape?");
-            }
+            return switch (end) {
+            case ARROW, UNFILLED, NESTING -> "stealth'";
+            case COMPOSITE -> "diamond";
+            case NONE -> "";
+            case SIMPLE -> "to";
+            case SUBTYPE -> "open triangle 60";
+            default -> throw Exceptions.illegalArg(
+                "Default fall-through in edge end shape! Did you add a new edge end shape?");
+            };
         }
 
         static void writeNodeShape(NodeShape nodeShape, List<StyleDuo> styles) {
@@ -609,7 +602,7 @@ public final class TikzStylesExtractor {
                 styles.add(new StyleDuo(ROUNDED_CORNERS_KEY, JAttr.NORMAL_ARC_SIZE / 5 + "pt"));
                 break;
             default:
-                throw new IllegalArgumentException(
+                throw Exceptions.illegalArg(
                     "Default fall-thought in node shape! Did you add a new node shape?");
             }
         }

@@ -33,8 +33,8 @@ import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Operator;
-import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.Signature.OpValue;
+import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.syntax.Assignment;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Expression.Kind;
@@ -45,6 +45,7 @@ import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.util.Colors;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Keywords;
 import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.parse.FormatException;
@@ -1036,16 +1037,8 @@ public enum AspectKind {
                     TEST);
                 break;
             case TYPE:
-                nodeKinds = EnumSet.of(DEFAULT,
-                    REMARK,
-                    INT,
-                    BOOL,
-                    REAL,
-                    STRING,
-                    ABSTRACT,
-                    IMPORT,
-                    COLOR,
-                    EDGE);
+                nodeKinds = EnumSet
+                    .of(DEFAULT, REMARK, INT, BOOL, REAL, STRING, ABSTRACT, IMPORT, COLOR, EDGE);
                 edgeKinds = EnumSet.of(REMARK,
                     INT,
                     BOOL,
@@ -1451,12 +1444,13 @@ public enum AspectKind {
          * @param role graph role for which the content is parsed
          * @return the resulting content value
          */
-        Object parseContent(@NonNull String text, GraphRole role) throws FormatException {
+        Object parseContent(@NonNull
+        String text, GraphRole role) throws FormatException {
             Object result;
             // This implementation tries to parse the text as a constant of the
             // given signature.
             if (this.sort == null) {
-                throw new UnsupportedOperationException("No content allowed");
+                throw Exceptions.unsupportedOp("No content allowed");
             }
             if (role == GraphRole.TYPE) {
                 // in a type graph, this is the declaration of an attribute

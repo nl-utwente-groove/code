@@ -31,8 +31,11 @@ import jakarta.xml.bind.annotation.XmlType;
 @SuppressWarnings("javadoc")
 public enum EdgeType {
 
-    @XmlEnumValue("useIntermediate") USE_INTERMEDIATE("useIntermediate"),
-    @XmlEnumValue("preferValue") PREFER_VALUE("preferValue");
+    @XmlEnumValue("useIntermediate")
+    USE_INTERMEDIATE("useIntermediate"),
+    @XmlEnumValue("preferValue")
+    PREFER_VALUE("preferValue");
+
     private final String value;
 
     EdgeType(String v) {
@@ -42,14 +45,4 @@ public enum EdgeType {
     public String value() {
         return this.value;
     }
-
-    public static EdgeType fromValue(String v) {
-        for (EdgeType c : EdgeType.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-        throw new IllegalArgumentException(v);
-    }
-
 }

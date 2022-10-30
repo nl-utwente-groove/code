@@ -41,7 +41,6 @@ import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.GrooveFileChooser;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.io.store.SystemStore;
-import nl.utwente.groove.util.Duo;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -281,23 +280,16 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
      *         replacement, neither of which can be <code>null</code>; or
      *         <code>null</code> if the dialog was cancelled.
      */
-    final protected Duo<TypeLabel> askFindSearch(TypeLabel oldLabel) {
+    final protected Relabelling askFindSearch(TypeLabel oldLabel) {
         FindReplaceDialog dialog = new FindReplaceDialog(getSimulatorModel().getGrammar()
             .getTypeGraph(), oldLabel);
         int dialogResult = dialog.showDialog(getFrame(), null);
-        Duo<TypeLabel> result;
-        switch (dialogResult) {
-        case FindReplaceDialog.FIND:
-            result = new Duo<>(dialog.getOldLabel(), null);
-            break;
-        case FindReplaceDialog.REPLACE:
-            result = new Duo<>(dialog.getOldLabel(), dialog.getNewLabel());
-            break;
-        case FindReplaceDialog.CANCEL:
-        default:
-            result = null;
-        }
-        return result;
+        return switch (dialogResult) {
+        case FindReplaceDialog.FIND -> new Relabelling(dialog.getOldLabel(), null);
+        case FindReplaceDialog.REPLACE -> new Relabelling(dialog.getOldLabel(),
+            dialog.getNewLabel());
+        default -> null;
+        };
     }
 
     /**
@@ -469,4 +461,9 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
     private final EditType edit;
     /** Possibly {@code null} resource being edited by this action. */
     private final ResourceKind resource;
+
+    /** Pair of old and new type labels. */
+    public record Relabelling(TypeLabel from, TypeLabel to) {
+        // no additional functionality
+    }
 }

@@ -19,6 +19,7 @@
 package nl.utwente.groove.prolog;
 
 import gnu.prolog.vm.PrologCode;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * The status of the current query result
@@ -56,8 +57,7 @@ public enum QueryReturnValue {
         case PrologCode.SUCCESS -> SUCCESS;
         case PrologCode.SUCCESS_LAST -> SUCCESS_LAST;
         case PrologCode.HALT -> HALT;
-        default -> throw new IllegalArgumentException(
-            String.format("Unknown return value %d", value));
+        default -> throw Exceptions.illegalArg("Unknown return value %d", value);
 
         };
     }

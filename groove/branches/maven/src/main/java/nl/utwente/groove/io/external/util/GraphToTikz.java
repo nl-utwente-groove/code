@@ -50,6 +50,7 @@ import nl.utwente.groove.gui.layout.LayoutMap;
 import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.MultiLabel;
 import nl.utwente.groove.io.external.util.TikzStylesExtractor.Style;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Class to perform the conversion from Groove graphs to Tikz format.
@@ -437,8 +438,9 @@ public final class GraphToTikz<G extends Graph> {
         styles.add(""); // Placeholder for the main style.
         for (Look look : node.getLooks()) {
             if (TikzStylesExtractor.mainLooks.contains(look)) {
-                styles.set(0, look.name()
-                    .toLowerCase() + TikzStylesExtractor.NODE_SUFFIX);
+                styles.set(0,
+                    look.name()
+                        .toLowerCase() + TikzStylesExtractor.NODE_SUFFIX);
             } else if (!TikzStylesExtractor.unusedLooks.contains(look)) {
                 styles.add(look.name()
                     .toLowerCase());
@@ -611,7 +613,7 @@ public final class GraphToTikz<G extends Graph> {
                 appendManhattanLayout(edge, layout);
                 break;
             default:
-                throw new IllegalArgumentException("Unknown line style!");
+                throw Exceptions.illegalArg("Unknown line style %s", layout.getLineStyle());
             }
         } else {
             appendDefaultLayout(edge);
@@ -629,8 +631,9 @@ public final class GraphToTikz<G extends Graph> {
         styles.add(""); // Placeholder for the main style.
         for (Look look : edge.getLooks()) {
             if (TikzStylesExtractor.mainLooks.contains(look)) {
-                styles.set(0, look.name()
-                    .toLowerCase() + TikzStylesExtractor.EDGE_SUFFIX);
+                styles.set(0,
+                    look.name()
+                        .toLowerCase() + TikzStylesExtractor.EDGE_SUFFIX);
             } else if (!TikzStylesExtractor.unusedLooks.contains(look)) {
                 styles.add(look.name()
                     .toLowerCase());

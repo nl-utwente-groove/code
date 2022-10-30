@@ -17,7 +17,7 @@
 package nl.utwente.groove.explore.config;
 
 import nl.utwente.groove.io.HTMLConverter;
-import nl.utwente.groove.util.Duo;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.Parser;
 import nl.utwente.groove.util.parse.StringHandler;
@@ -80,14 +80,14 @@ public class SettingParser implements Parser<Setting<?,?>> {
         } else if (getKey().isSingular()) {
             return parseSingle(input);
         } else {
-            throw new UnsupportedOperationException("Non-singular keys not yet implemented");
+            throw Exceptions.unsupportedOp("Non-singular keys not yet implemented");
         }
     }
 
     /** Parses a string holding a single setting value. */
     public Setting<?,?> parseSingle(String text) throws FormatException {
-        Duo<String> splitText = split(text);
-        String name = splitText.one();
+        SplitPair splitText = split(text);
+        String name = splitText.name();
         SettingKey kind = getKind(name);
         if (kind == null) {
             if (name.isEmpty()) {
@@ -97,7 +97,7 @@ public class SettingParser implements Parser<Setting<?,?>> {
             }
         }
         Object content = kind.parser()
-            .parse(splitText.two());
+            .parse(splitText.content());
         return kind.createSetting(content);
     }
 
@@ -108,17 +108,17 @@ public class SettingParser implements Parser<Setting<?,?>> {
      * is an identifier, {@code input} is assumed to be a name with empty content;
      * otherwise, it is assumed to be content for an empty (default) name.
      */
-    private Duo<String> split(String input) {
-        Duo<String> result;
+    private SplitPair split(String input) {
+        SplitPair result;
         int pos = input.indexOf(CONTENT_SEPARATOR);
         if (pos < 0) {
             if (StringHandler.isIdentifier(input)) {
-                result = Duo.newDuo(input, "");
+                result = new SplitPair(input, "");
             } else {
-                result = Duo.newDuo("", input);
+                result = new SplitPair("", input);
             }
         } else {
-            result = Duo.newDuo(input.substring(0, pos), input.substring(pos + 1));
+            result = new SplitPair(input.substring(0, pos), input.substring(pos + 1));
         }
         return result;
     }
@@ -188,4 +188,8 @@ public class SettingParser implements Parser<Setting<?,?>> {
 
     /** Separator between kind name and (optional) setting content. */
     private static final char CONTENT_SEPARATOR = ':';
+
+    private record SplitPair(String name, String content) {
+        // no additional functionality
+    }
 }

@@ -29,6 +29,7 @@ import nl.utwente.groove.grammar.rule.RuleElement;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
 import nl.utwente.groove.grammar.rule.Valuation;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * @author Arash Jalali
@@ -233,7 +234,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             int thisSize = this.size();
             for (int i = 0; i < thisSize; i++) {
                 if (thisList[i] != mList[i]) {
-                    assert!thisList[i].equals(mList[i]);
+                    assert !thisList[i].equals(mList[i]);
                     result = false;
                     break;
                 }
@@ -479,7 +480,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
         AbstractReteMatch source) {
         ReteSimpleMatch result = new ReteSimpleMatch(origin, injective);
         result.specialPrefix = source.specialPrefix;
-        assert(source.specialPrefix == null)
+        assert (source.specialPrefix == null)
             || (origin.getPattern().length == source.specialPrefix.getOrigin()
                 .getPattern().length);
         result.units = source.getAllUnits();
@@ -508,7 +509,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             super(owner, owner.getOwner()
                 .isInjective());
             Object[] myUnits = getAllUnits();
-            assert(owner instanceof QuantifierCountChecker)
+            assert (owner instanceof QuantifierCountChecker)
                 && (anchors.length + 1 == owner.getPattern().length);
             this.dummy = false;
             for (int i = 0; i < anchors.length; i++) {
@@ -538,10 +539,10 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             }
             if (!value.getValue()
                 .equals(0)) {
-                throw new IllegalArgumentException(String.format(
+                throw Exceptions.illegalArg(
                     "The given value for the wildcard match must be zero. It is now %s",
                     value.getValue()
-                        .toString()));
+                        .toString());
             } else {
                 myUnits[size() - 1] = value;
             }

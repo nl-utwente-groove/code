@@ -22,6 +22,7 @@ import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.rule.VariableNode;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Represents a node-checker that produces ONE match containing
@@ -82,7 +83,7 @@ public class ValueNodeChecker extends NodeChecker implements ReteStateSubscriber
 
     @Override
     public void receive(ReteNetworkNode source, int repeatIndex, AbstractReteMatch match) {
-        throw new UnsupportedOperationException("This method is not supposed to have been called.");
+        throw Exceptions.unsupportedOp("This method is not supposed to have been called.");
     }
 
     @Override

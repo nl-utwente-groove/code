@@ -94,6 +94,7 @@ import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.graph.NodeComparator;
 import nl.utwente.groove.gui.dialog.GraphPreviewDialog;
 import nl.utwente.groove.util.DefaultFixable;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatError;
@@ -326,8 +327,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     @Override
     public RuleModelMap getMap() {
         if (hasErrors()) {
-            throw new IllegalStateException(
-                "Can't compute map while rule has errors: " + getErrors().toString());
+            throw Exceptions.illegalState("Can't compute map while rule has errors: %s",
+                getErrors());
         }
         return this.modelMap;
     }

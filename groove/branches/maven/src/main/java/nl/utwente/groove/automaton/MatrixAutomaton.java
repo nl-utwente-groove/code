@@ -48,6 +48,7 @@ import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.ElementFactory;
 import nl.utwente.groove.graph.NodeSetEdgeSetGraph;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * An implementation of regular automata that also keeps track of the valuation
@@ -254,10 +255,8 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
         initPosLabelSet.toArray(this.initPosLabels);
         this.initInvLabels = new TypeLabel[initInvLabelSet.size()];
         initInvLabelSet.toArray(this.initInvLabels);
-        this.nodePosLabelEdgeIndicesMap =
-            new EnumMap<>(Direction.class);
-        this.nodeInvLabelEdgeIndicesMap =
-            new EnumMap<>(Direction.class);
+        this.nodePosLabelEdgeIndicesMap = new EnumMap<>(Direction.class);
+        this.nodeInvLabelEdgeIndicesMap = new EnumMap<>(Direction.class);
         for (Direction direction : Direction.values()) {
             Map<TypeLabel,int[]>[] posLabelEdgeIndices = new Map[indexedNodeCount];
             Map<TypeLabel,int[]>[] invLabelEdgeIndices = new Map[indexedNodeCount];
@@ -329,8 +328,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
             for (int index = 0; !accepts && !matchSet.isEmpty() && index < word.size(); index++) {
                 boolean lastIndex = index == word.size() - 1;
                 TypeEdge letter = getLetter(word.get(index));
-                Map<RegNode,HashMap<LabelVar,TypeElement>> newMatchSet =
-                    new HashMap<>();
+                Map<RegNode,HashMap<LabelVar,TypeElement>> newMatchSet = new HashMap<>();
                 Iterator<? extends Map.Entry<RegNode,HashMap<LabelVar,TypeElement>>> matchIter =
                     matchSet.entrySet()
                         .iterator();
@@ -399,10 +397,8 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
         }
         if (startImage != null) {
             // do forward matching from the start images
-            return getMatchingAlgorithm(OUTGOING).computeMatches(graph,
-                startImage,
-                endImage,
-                valuation);
+            return getMatchingAlgorithm(OUTGOING)
+                .computeMatches(graph, startImage, endImage, valuation);
         } else if (endImage != null) {
             // do backwards matching from the end images
             return getMatchingAlgorithm(INCOMING).computeMatches(graph, endImage, null, valuation);
@@ -535,8 +531,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
         RegNode node, TypeLabel label, RegEdge edge) {
         Map<TypeLabel,Set<RegEdge>> labelEdgeMap = nodeLabelEdgeSetMap[getIndex(node)];
         if (labelEdgeMap == null) {
-            nodeLabelEdgeSetMap[getIndex(node)] =
-                labelEdgeMap = new HashMap<>();
+            nodeLabelEdgeSetMap[getIndex(node)] = labelEdgeMap = new HashMap<>();
         }
         Set<RegEdge> edgeSet = labelEdgeMap.get(label);
         if (edgeSet == null) {
@@ -632,7 +627,8 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
         Map<TypeLabel,? extends Collection<? extends Element>> labelSetMap) {
         if (labelSetMap != null) {
             Map<TypeLabel,int[]> result = new HashMap<>();
-            for (Map.Entry<TypeLabel,? extends Collection<? extends Element>> entry : labelSetMap.entrySet()) {
+            for (Map.Entry<TypeLabel,? extends Collection<? extends Element>> entry : labelSetMap
+                .entrySet()) {
                 result.put(entry.getKey(), toIntArray(entry.getValue()));
             }
             return result;
@@ -645,9 +641,8 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
         int[] result = new int[elementSet.size()];
         int i = 0;
         for (Element element : elementSet) {
-            result[i] =
-                (element instanceof RegNode) ? getIndex((RegNode) element)
-                    : getIndex((RegEdge) element);
+            result[i] = (element instanceof RegNode) ? getIndex((RegNode) element)
+                : getIndex((RegEdge) element);
             i++;
         }
         return result;
@@ -755,8 +750,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
      * Array of dummy labels for each label kind.
      * Can be used to match wildcards in case there is no proper match for them.
      */
-    private static final Map<EdgeRole,TypeLabel> DUMMY_LABELS = new EnumMap<>(
-        EdgeRole.class);
+    private static final Map<EdgeRole,TypeLabel> DUMMY_LABELS = new EnumMap<>(EdgeRole.class);
     static {
         for (EdgeRole kind : EdgeRole.values()) {
             DUMMY_LABELS.put(kind, TypeLabel.createLabel(kind, DUMMY_LABEL_TEXT));
@@ -883,7 +877,8 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
              *        so far
              */
             private void extend(Map<TypeLabel,int[]> keyLabelEdgeMap, HostNode image,
-                Collection<? extends HostEdge> imageEdgeSet, Valuation valuation, boolean positive) {
+                Collection<? extends HostEdge> imageEdgeSet, Valuation valuation,
+                boolean positive) {
                 if (keyLabelEdgeMap != null) {
                     if (!MatrixAutomaton.this.typeGraph.isImplicit()) {
                         TypeElement imageType = image.getType();
@@ -1068,9 +1063,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
                 Map<HostNode,MatchingComputation> matched =
                     MatchingAlgorithm.this.auxResults[result.keyIndex];
                 if (matched == null) {
-                    matched =
-                        MatchingAlgorithm.this.auxResults[result.keyIndex] =
-                            new HashMap<>();
+                    matched = MatchingAlgorithm.this.auxResults[result.keyIndex] = new HashMap<>();
                 }
                 matched.put(result.image, result);
             }
@@ -1088,9 +1081,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
                 Map<HostNode,MatchingComputation> matched =
                     MatchingAlgorithm.this.auxResults[keyIndex];
                 if (matched == null) {
-                    matched =
-                        MatchingAlgorithm.this.auxResults[keyIndex] =
-                            new HashMap<>();
+                    matched = MatchingAlgorithm.this.auxResults[keyIndex] = new HashMap<>();
                 }
                 matched.put(image, MatchingAlgorithm.this.MATCH_DUMMY);
             }
@@ -1161,7 +1152,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implem
                 this.endIndex = getStartNodeIndex();
                 break;
             default:
-                throw new IllegalArgumentException("Illegal matching direction value" + direction);
+                throw Exceptions.illegalArg("Illegal matching direction value %s", direction);
             }
             this.nodePosLabelEdgeMap = getNodePosLabelEdgeMap(direction);
             this.nodeInvLabelEdgeMap = getNodeInvLabelEdgeMap(direction);

@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import nl.utwente.groove.util.Duo;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.Parser;
@@ -32,17 +31,22 @@ import nl.utwente.groove.util.parse.StringHandler;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class MatchHint extends Duo<List<String>> {
+public record MatchHint(List<String> rare, List<String> common) {
     /**
      * Constructs an empty match hint.
      */
     public MatchHint() {
-        super(Collections.<String>emptyList(), Collections.<String>emptyList());
+        this(Collections.<String>emptyList(), Collections.<String>emptyList());
     }
 
-    /** Constructs a hint from lists of common and control labels. */
-    public MatchHint(List<String> common, List<String> control) {
-        super(common, control);
+    /** Indicates if there are any rare labels in this hint. */
+    public boolean hasRare() {
+        return !rare().isEmpty();
+    }
+
+    /** Indicates if there are any common labels in this hint. */
+    public boolean hasCommon() {
+        return !common().isEmpty();
     }
 
     /** Parser for match hints. */
@@ -87,14 +91,14 @@ public class MatchHint extends Duo<List<String>> {
 
         @Override
         public String toParsableString(Object value) {
-            MatchHint hint = (MatchHint) value;
-            List<String> rare = hint.one();
-            List<String> common = hint.two();
-            if (rare.isEmpty() && common.isEmpty()) {
+            var hint = (MatchHint) value;
+            if (!hint.hasRare() && !hint.hasCommon()) {
                 return "";
             } else {
-                String rareString = Groove.toString(rare.toArray(), "\"", "\"", " ");
-                String commonString = Groove.toString(common.toArray(), "\"", "\"", " ");
+                String rareString = Groove.toString(hint.rare()
+                    .toArray(), "\"", "\"", " ");
+                String commonString = Groove.toString(hint.common()
+                    .toArray(), "\"", "\"", " ");
                 return rareString + "," + commonString;
             }
         }

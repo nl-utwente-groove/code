@@ -48,5 +48,7 @@ public interface Edge extends Element {
     public EdgeRole getRole();
 
     /** Convenience method to tests if the source and target nodes of this edge coincide. */
-    public boolean isLoop();
+    public default boolean isLoop() {
+        return source() == target();
+    }
 }

@@ -39,6 +39,7 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.lts.GTS;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Implementation of the CTL model checking algorithm.
@@ -271,44 +272,41 @@ public class CTLMarker {
         case EQUIV -> computeEquiv(arg1, arg2);
         case FORALL -> markForall(property.getArg1());
         case EXISTS -> markExists(property.getArg1());
-        default -> throw new IllegalArgumentException();
+        default -> throw Exceptions
+            .illegalArg("Top level operator '%s' in formula %s not allowed", token, property);
         };
         this.marking[nr] = result;
         return result;
     }
 
     private BitSet markExists(Formula property) {
-        switch (property.getOp()) {
-        case NEXT:
-            return computeEX(mark(property.getArg1()));
-        case UNTIL:
-            return computeEU(mark(property.getArg1()), mark(property.getArg2()));
-        case EVENTUALLY:
-            throw new UnsupportedOperationException(
-                "The EF(phi) construction should have been rewritten to a E(true U phi) construction.");
-        case ALWAYS:
-            throw new UnsupportedOperationException(
-                "The EG(phi) construction should have been rewritten to a !(AF(!phi)) construction.");
-        default:
-            throw new IllegalArgumentException();
-        }
+        return switch (property.getOp()) {
+        case NEXT -> computeEX(mark(property.getArg1()));
+        case UNTIL -> computeEU(mark(property.getArg1()), mark(property.getArg2()));
+        case EVENTUALLY -> throw Exceptions.unsupportedOp(
+            "The EF(phi) construction in %s should have been rewritten to a E(true U phi) construction",
+            property);
+        case ALWAYS -> throw Exceptions.unsupportedOp(
+            "The EG(phi) construction in %s should have been rewritten to a !(AF(!phi)) construction",
+            property);
+        default -> throw Exceptions.illegalArg("Operator '%s' should not occur here",
+            property.getOp());
+        };
     }
 
     private BitSet markForall(Formula property) {
-        switch (property.getOp()) {
-        case NEXT:
-            return computeAX(mark(property.getArg1()));
-        case UNTIL:
-            return computeAU(mark(property.getArg1()), mark(property.getArg2()));
-        case EVENTUALLY:
-            throw new UnsupportedOperationException(
-                "The AF(phi) construction should have been rewritten to a A(true U phi) construction.");
-        case ALWAYS:
-            throw new UnsupportedOperationException(
-                "The AG(phi) construction should have been rewritten to a !(EF(!phi)) construction.");
-        default:
-            throw new IllegalArgumentException();
-        }
+        return switch (property.getOp()) {
+        case NEXT -> computeAX(mark(property.getArg1()));
+        case UNTIL -> computeAU(mark(property.getArg1()), mark(property.getArg2()));
+        case EVENTUALLY -> throw Exceptions.unsupportedOp(
+            "The AF(phi) construction in %s should have been rewritten to a A(true U phi) construction",
+            property);
+        case ALWAYS -> throw Exceptions.unsupportedOp(
+            "The AG(phi) construction in %s should have been rewritten to a !(EF(!phi)) construction",
+            property);
+        default -> throw Exceptions.illegalArg("Operator %s should not occur here",
+            property.getOp());
+        };
     }
 
     /** Returns the (bit) set of all states. */

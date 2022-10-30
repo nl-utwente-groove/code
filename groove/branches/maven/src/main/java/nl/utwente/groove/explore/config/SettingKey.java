@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.explore.config;
 
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.ParsableKey;
 import nl.utwente.groove.util.parse.Parser;
 
@@ -40,10 +41,16 @@ public interface SettingKey extends ParsableKey<Object> {
      */
     public Setting<?,?> getDefaultSetting();
 
-    /** Convenience method for {@code createValue(null)}
-     * @throws IllegalArgumentException if {@code null} does not satisfy {@link Parser#isValue}
+    /** Convenience method for {@code createSetting(null)}
+     * @throws UnsupportedOperationException if {@code null} does not satisfy {@link Parser#isValue}
      */
-    public Setting<?,?> createSettting() throws IllegalArgumentException;
+    public default Setting<?,?> createNullSettting() throws UnsupportedOperationException {
+        try {
+            return createSetting(null);
+        } catch (IllegalArgumentException exc) {
+            throw Exceptions.unsupportedOp("Setting key '%s' does not allow null value", this);
+        }
+    }
 
     /**
      * Creates an exploration value of this kind, and a given content.

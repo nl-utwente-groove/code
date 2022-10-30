@@ -30,6 +30,7 @@ import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.ALabel;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.line.Line;
 
 /**
@@ -46,7 +47,7 @@ public class RuleLabel extends ALabel {
      */
     public RuleLabel(RegExpr regExpr) {
         if (regExpr == null) {
-            throw new IllegalArgumentException("Can't create rule label from null expression");
+            throw Exceptions.illegalArg("Can't create rule label from null expression");
         }
         //assert !regExpr.isNeg() : "Rule label expressions may not be negated";
         this.regExpr = regExpr;

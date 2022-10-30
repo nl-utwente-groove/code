@@ -36,6 +36,7 @@ import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.prolog.GrooveEnvironment;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -366,7 +367,7 @@ public class Grammar {
     /** Tests for equality of the rule system and the start graph. */
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof Grammar) && getStartGraph().equals(((Grammar) obj).getStartGraph())
+        return (obj instanceof Grammar g) && getStartGraph().equals(g.getStartGraph())
             && super.equals(obj);
     }
 
@@ -421,9 +422,9 @@ public class Grammar {
     public final void testFixed(boolean value) throws IllegalStateException {
         if (isFixed() != value) {
             if (value) {
-                throw new IllegalStateException("Operation not allowed: Rule system is not fixed");
+                throw Exceptions.illegalState("Operation not allowed: Rule system is not fixed");
             } else {
-                throw new IllegalStateException("Operation not allowed: Rule system is fixed");
+                throw Exceptions.illegalState("Operation not allowed: Rule system is fixed");
             }
         }
     }

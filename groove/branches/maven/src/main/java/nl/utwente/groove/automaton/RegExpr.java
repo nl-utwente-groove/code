@@ -50,12 +50,14 @@ import nl.utwente.groove.grammar.type.TypeGuard;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.line.Line.Style;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.StringHandler;
+import nl.utwente.groove.util.parse.StringHandler.OpPosition;
 
 /**
  * Class implementing a regular expression.
@@ -977,8 +979,7 @@ abstract sealed public class RegExpr { // implements VarSetSupport {
 
         @Override
         public RegExpr parseOperator(String expr) throws FormatException {
-            String[] operands =
-                StringHandler.splitExpr(expr, getOperator(), StringHandler.INFIX_POSITION);
+            String[] operands = StringHandler.splitExpr(expr, getOperator(), OpPosition.INFIX);
             if (operands.length < 2) {
                 return null;
             }
@@ -1171,8 +1172,7 @@ abstract sealed public class RegExpr { // implements VarSetSupport {
          */
         @Override
         protected RegExpr parseOperator(String expr) throws FormatException {
-            String[] operands =
-                StringHandler.splitExpr(expr, getOperator(), StringHandler.POSTFIX_POSITION);
+            String[] operands = StringHandler.splitExpr(expr, getOperator(), OpPosition.POSTFIX);
             if (operands == null) {
                 return null;
             }
@@ -1283,8 +1283,7 @@ abstract sealed public class RegExpr { // implements VarSetSupport {
          */
         @Override
         protected RegExpr parseOperator(String expr) throws FormatException {
-            String[] operands =
-                StringHandler.splitExpr(expr, getOperator(), StringHandler.PREFIX_POSITION);
+            String[] operands = StringHandler.splitExpr(expr, getOperator(), OpPosition.PREFIX);
             if (operands == null) {
                 return null;
             }
@@ -1689,8 +1688,8 @@ abstract sealed public class RegExpr { // implements VarSetSupport {
             if (negated) {
                 constraintList = constraintList.substring(1);
             }
-            String[] constraintParts = StringHandler
-                .splitExpr(constraintList, "" + TypeGuard.SEPARATOR, StringHandler.INFIX_POSITION);
+            String[] constraintParts =
+                StringHandler.splitExpr(constraintList, "" + TypeGuard.SEPARATOR, OpPosition.INFIX);
             if (constraintParts.length == 0) {
                 throw new FormatException("Invalid constraint parameter '%s'", parameter);
             }
@@ -2036,7 +2035,7 @@ abstract sealed public class RegExpr { // implements VarSetSupport {
          */
         @Override
         protected Constant newInstance() {
-            throw new UnsupportedOperationException("Atom instances must have a parameter");
+            throw Exceptions.unsupportedOp("Atom instances must have a parameter");
         }
 
         /**

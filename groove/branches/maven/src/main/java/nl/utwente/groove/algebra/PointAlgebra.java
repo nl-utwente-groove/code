@@ -17,8 +17,7 @@
 package nl.utwente.groove.algebra;
 
 /** Special algebra that guarantees the existence of a single value. */
-public sealed interface PointAlgebra<T> extends
-    Algebra<T>permits PointBoolAlgebra, PointIntAlgebra, PointRealAlgebra, PointStringAlgebra {
+public interface PointAlgebra<T> extends Algebra<T> {
     /** Returns the single value of the algebra. */
     public T getPointValue();
 }

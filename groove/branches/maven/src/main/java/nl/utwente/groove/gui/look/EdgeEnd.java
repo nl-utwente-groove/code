@@ -21,6 +21,8 @@ import java.util.Map;
 
 import org.jgraph.graph.GraphConstants;
 
+import nl.utwente.groove.util.Exceptions;
+
 /**
  * Edge end decorations.
  * @author Arend Rensink
@@ -87,7 +89,7 @@ public enum EdgeEnd {
     public static EdgeEnd getEdgeEnd(int code) {
         EdgeEnd result = codeMap.get(code);
         if (result == null) {
-            throw new IllegalArgumentException(String.format("Unknown edge style code %s", code));
+            throw Exceptions.illegalArg("Unknown edge style code %s", code);
         }
         return result;
     }

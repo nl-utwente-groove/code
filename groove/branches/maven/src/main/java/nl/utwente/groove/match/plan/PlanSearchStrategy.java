@@ -37,6 +37,7 @@ import nl.utwente.groove.grammar.type.TypeElement;
 import nl.utwente.groove.match.SearchEngine;
 import nl.utwente.groove.match.SearchStrategy;
 import nl.utwente.groove.match.TreeMatch;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Reporter;
 import nl.utwente.groove.util.Visitor;
 
@@ -263,8 +264,7 @@ public class PlanSearchStrategy implements SearchStrategy {
      */
     private void testFixed(boolean fixed) {
         if (this.fixed != fixed) {
-            throw new IllegalStateException(
-                String.format("Search plan is %s fixed", fixed ? "not yet" : ""));
+            throw Exceptions.illegalState("Search plan is %s fixed", fixed ? "not yet" : "");
         }
     }
 
@@ -470,9 +470,8 @@ public class PlanSearchStrategy implements SearchStrategy {
         final boolean putNode(int index, HostNode image) {
             if (CHECK_IMAGES) {
                 if (image instanceof DefaultHostNode && !this.host.containsNode(image)) {
-                    assert false : String.format("Node %s does not occur in graph %s",
-                        image,
-                        this.host);
+                    assert false : String
+                        .format("Node %s does not occur in graph %s", image, this.host);
                 }
             }
             RuleNode nodeKey = PlanSearchStrategy.this.nodeKeys[index];
@@ -499,9 +498,8 @@ public class PlanSearchStrategy implements SearchStrategy {
                 HostNode oldImage = this.nodeImages[index];
                 if (oldImage != null) {
                     boolean removed = getUsedNodes().remove(oldImage);
-                    assert removed : String.format("Node image %s not in used nodes %s",
-                        oldImage,
-                        getUsedNodes());
+                    assert removed : String
+                        .format("Node image %s not in used nodes %s", oldImage, getUsedNodes());
                 }
                 if (image != null && !getUsedNodes().add(image)) {
                     this.nodeImages[index] = null;
@@ -516,9 +514,8 @@ public class PlanSearchStrategy implements SearchStrategy {
         final boolean putEdge(int index, HostEdge image) {
             if (CHECK_IMAGES) {
                 if (image != null && !this.host.containsEdge(image)) {
-                    assert false : String.format("Edge %s does not occur in graph %s",
-                        image,
-                        this.host);
+                    assert false : String
+                        .format("Edge %s does not occur in graph %s", image, this.host);
                 }
             }
             this.edgeImages[index] = image;

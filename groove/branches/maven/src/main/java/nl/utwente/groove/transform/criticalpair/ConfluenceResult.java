@@ -22,6 +22,7 @@ import java.util.Set;
 
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.Rule;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Utility class which allows checking whether a graph transformation system (grammar without hostgraph)
@@ -70,9 +71,10 @@ public class ConfluenceResult {
         Set<Rule> rules = grammar.getAllRules();
         for (Rule rule : rules) {
             if (!CriticalPair.canComputePairs(rule)) {
-                throw new IllegalArgumentException("Cannot compute critical pairs for rule '"
-                    + rule.getQualName()
-                    + "', because the algorithm can not compute Critical pairs for this type of rule");
+                throw Exceptions.illegalArg(
+                    "Cannot compute critical pairs for rule '%s', because the algorithm can not compute "
+                        + "critical pairs for this type of rule",
+                    rule.getQualName());
             }
         }
         this.untestedPairs = new LazyCriticalPairSet(rules);

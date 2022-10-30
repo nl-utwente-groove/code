@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.explore.config;
 
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.NullParser;
 import nl.utwente.groove.util.parse.Parser;
 import nl.utwente.groove.verify.Formula;
@@ -74,21 +75,16 @@ public enum CheckingKind implements SettingKey {
     }
 
     @Override
-    public FormulaSetting createSettting() throws IllegalArgumentException {
-        switch (this) {
-        case NONE:
-            return null;
-        case LTL_CHECK:
-        case CTL_CHECK:
-            throw new IllegalArgumentException();
-        default:
-            assert false;
-            return null;
-        }
+    public FormulaSetting createNullSettting() throws UnsupportedOperationException {
+        return switch (this) {
+        case NONE -> null;
+        case LTL_CHECK, CTL_CHECK -> throw Exceptions
+            .unsupportedOp("No null setting exists for '%s'", this);
+        };
     }
 
     @Override
-    public FormulaSetting createSetting(Object content) throws IllegalArgumentException {
+    public FormulaSetting createSetting(Object content) {
         return new FormulaSetting(getLogic(), (Formula) content);
     }
 

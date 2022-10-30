@@ -25,7 +25,6 @@ import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.graph.Direction;
-import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
@@ -55,7 +54,8 @@ public class MultiplicityChecker implements TypeChecker {
 
     private void addCheck(TypeEdge edge, Direction dir) {
         Check check = new Check(edge, dir);
-        for (TypeNode node : dir.origin(edge).getSubtypes()) {
+        for (TypeNode node : dir.origin(edge)
+            .getSubtypes()) {
             List<Check> nodeChecks = this.checks.get(node);
             if (nodeChecks == null) {
                 this.checks.put(node, nodeChecks = new ArrayList<>());
@@ -85,8 +85,8 @@ public class MultiplicityChecker implements TypeChecker {
                 continue;
             }
             for (Check c : nodeChecks) {
-                TypeEdge type = c.one();
-                Direction dir = c.two();
+                TypeEdge type = c.type();
+                Direction dir = c.dir();
                 Multiplicity mult =
                     dir == Direction.INCOMING ? type.getInMult() : type.getOutMult();
                 int count = 0;
@@ -96,7 +96,8 @@ public class MultiplicityChecker implements TypeChecker {
                     }
                 }
                 if (!mult.inRange(count)) {
-                    result.add("Node %s violates %s edge multiplicity %s for edge type %s: actual count = %s",
+                    result.add(
+                        "Node %s violates %s edge multiplicity %s for edge type %s: actual count = %s",
                         node,
                         dir,
                         mult,
@@ -111,9 +112,7 @@ public class MultiplicityChecker implements TypeChecker {
     /** The set of node types for which we want to check a multiplicity. */
     private final Map<TypeNode,List<Check>> checks;
 
-    private static class Check extends Pair<TypeEdge,Direction> {
-        public Check(TypeEdge one, Direction two) {
-            super(one, two);
-        }
+    private record Check(TypeEdge type, Direction dir) {
+        // no additional functionality
     }
 }

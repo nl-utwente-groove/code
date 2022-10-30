@@ -194,9 +194,8 @@ public class STS {
      * Removes a switch relation from this STS.
      */
     public void removeSwitchRelation(SwitchRelation relation) {
-        this.switchRelationMap.remove(SwitchRelation.getSwitchIdentifier(relation.getGate(),
-            relation.getGuard(),
-            relation.getUpdate()));
+        this.switchRelationMap.remove(SwitchRelation
+            .getSwitchIdentifier(relation.getGate(), relation.getGuard(), relation.getUpdate()));
     }
 
     /**
@@ -239,8 +238,7 @@ public class STS {
 
         // Map variable nodes to interaction variables in the LHS of this rule
         // (datatype node labeled as parameter in lhs).
-        Map<VariableNode,InteractionVariable> iVarMap =
-            new HashMap<>();
+        Map<VariableNode,InteractionVariable> iVarMap = new HashMap<>();
         mapInteractionVariables(event, iVarMap);
 
         // Map variable nodes to location variables in the LHS of this rule
@@ -381,7 +379,7 @@ public class STS {
      */
     private void mapLocationVariables(RuleEvent event, HostGraph sourceGraph,
         Map<VariableNode,LocationVariable> lVarMap, Map<VariableNode,LocationVariable> lValueMap)
-            throws STSException {
+        throws STSException {
 
         RuleGraph lhs = event.getRule()
             .lhs();
@@ -443,11 +441,10 @@ public class STS {
             .size();
         for (int i = 0; i < end; i++) {
             Binding bind = rule.getParBinding(i);
-            assert bind.getSource() == Source.ANCHOR;
+            assert bind.type() == Source.ANCHOR;
             AnchorKey k = rule.getAnchor()
-                .get(bind.getIndex());
-            if (k instanceof VariableNode) {
-                VariableNode v = (VariableNode) k;
+                .get(bind.index());
+            if (k instanceof VariableNode v) {
                 InteractionVariable iVar = addInteractionVariable(v, rule);
                 iVarMap.put(v, iVar);
             } else {
@@ -480,11 +477,8 @@ public class STS {
         }
         for (VariableNode v : lVarMap.keySet()) {
             if (!iVarMap.containsKey(v)) {
-                guard += this.ruleInspector.parseGuardExpression(rule,
-                    v,
-                    lVarMap.get(v),
-                    iVarMap,
-                    lVarMap);
+                guard += this.ruleInspector
+                    .parseGuardExpression(rule, v, lVarMap.get(v), iVarMap, lVarMap);
             }
         }
 
@@ -532,8 +526,7 @@ public class STS {
         String update = "";
         // first find the location variables undergoing an update, by finding
         // eraser edges to these variables
-        Map<Pair<RuleNode,RuleLabel>,RuleEdge> possibleUpdates =
-            new HashMap<>();
+        Map<Pair<RuleNode,RuleLabel>,RuleEdge> possibleUpdates = new HashMap<>();
         for (RuleEdge e : rule.getEraserEdges()) {
             if (e.target()
                 .getType()
@@ -548,8 +541,8 @@ public class STS {
                 .isDataType() && !isFinal(rule.lhs(), creatorEdge.source())) {
                 // A creator edge has been detected to a data node,
                 // this indicates an update for a location variable.
-                RuleEdge eraserEdge = possibleUpdates.remove(
-                    new Pair<>(creatorEdge.source(), creatorEdge.label()));
+                RuleEdge eraserEdge =
+                    possibleUpdates.remove(new Pair<>(creatorEdge.source(), creatorEdge.label()));
                 if (eraserEdge == null) {
                     // Modeling constraint, updates have to be done in
                     // eraser/creator pairs.
@@ -567,11 +560,8 @@ public class STS {
                 RuleNode node = creatorEdge.target();
                 // Parse the resulting value. This can be a variable or an
                 // expression over variables and primitive data types.
-                String updateValue = this.ruleInspector.parseExpression(rule,
-                    nac.getPattern(),
-                    node,
-                    iVarMap,
-                    lVarMap);
+                String updateValue = this.ruleInspector
+                    .parseExpression(rule, nac.getPattern(), node, iVarMap, lVarMap);
                 if (updateValue.length() == 0) {
                     // Update can't be empty. This should never happen.
                     throw new STSException("ERROR: Update of " + var.toString() + " in rule "

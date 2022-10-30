@@ -64,6 +64,7 @@ import nl.utwente.groove.io.conceptual.value.StringValue;
 import nl.utwente.groove.io.conceptual.value.TupleValue;
 import nl.utwente.groove.io.conceptual.value.Value;
 import nl.utwente.groove.io.external.PortException;
+import nl.utwente.groove.util.Exceptions;
 
 //Thing to note here: Instance graphs are referred to by their ID, since they dont have a name attribute.
 //Type graphs are referred to by the ID (often coinciding with the name) of the GraphClass node. The actual ID
@@ -435,8 +436,7 @@ public class TypeToGxl extends TypeExporter<NodeType> {
         setElement(defaultValueProperty, null);
 
         if (!isAttribute(defaultValueProperty.getField())) {
-            throw new IllegalArgumentException(
-                "Field must be an attribute for use with default value");
+            throw Exceptions.illegalArg("Field must be an attribute for use with default value");
         }
 
         NodeType fieldNode = getElement(defaultValueProperty.getField());

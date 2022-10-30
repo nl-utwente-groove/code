@@ -17,6 +17,7 @@
 package nl.utwente.groove.algebra;
 
 import nl.utwente.groove.algebra.syntax.Expression;
+import nl.utwente.groove.util.Exceptions;
 
 /** Abstract superclass of all string algebras.
  * @param <INT> The representation type of the integer algebra
@@ -40,11 +41,10 @@ public sealed abstract class StringAlgebra<INT,REAL,BOOL,STRING>
     @Override
     public final STRING toValueFromJava(Object value) {
         if (!(value instanceof java.lang.String)) {
-            throw new IllegalArgumentException(
-                java.lang.String.format("Native int type is %s, not %s",
-                    java.lang.String.class.getSimpleName(),
-                    value.getClass()
-                        .getSimpleName()));
+            throw Exceptions.illegalArg("Native int type is %s, not %s",
+                java.lang.String.class.getSimpleName(),
+                value.getClass()
+                    .getSimpleName());
         }
         return toValueFromJavaString((java.lang.String) value);
     }

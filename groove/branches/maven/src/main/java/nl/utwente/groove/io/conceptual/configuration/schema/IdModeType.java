@@ -31,9 +31,13 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlEnum
 @SuppressWarnings("javadoc")
 public enum IdModeType {
-    @XmlEnumValue("full") FULL("full"),
-    @XmlEnumValue("flat") FLAT("flat"),
-    @XmlEnumValue("disambiguate") DISAMBIGUATE("disambiguate");
+    @XmlEnumValue("full")
+    FULL("full"),
+    @XmlEnumValue("flat")
+    FLAT("flat"),
+    @XmlEnumValue("disambiguate")
+    DISAMBIGUATE("disambiguate");
+
     private final String value;
 
     IdModeType(String v) {
@@ -43,14 +47,4 @@ public enum IdModeType {
     public String value() {
         return this.value;
     }
-
-    public static IdModeType fromValue(String v) {
-        for (IdModeType c : IdModeType.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-        throw new IllegalArgumentException(v);
-    }
-
 }

@@ -110,6 +110,7 @@ import nl.utwente.groove.gui.menu.ShowHideMenu;
 import nl.utwente.groove.gui.menu.ZoomMenu;
 import nl.utwente.groove.gui.tree.LabelTree;
 import nl.utwente.groove.lts.GTS;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Pair;
 
 /**
@@ -161,8 +162,10 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     public void removeListeners() {
         getActions().removeRefreshable(getExportAction());
         for (Pair<JMenuItem,RefreshListener> record : this.optionListeners) {
-            record.one().removeItemListener(record.two());
-            record.one().removePropertyChangeListener(record.two());
+            record.one()
+                .removeItemListener(record.two());
+            record.one()
+                .removePropertyChangeListener(record.two());
         }
         this.optionListeners.clear();
         this.exportAction = null;
@@ -184,7 +187,8 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
      * @param option the name of the option
      */
     public boolean getOptionValue(String option) {
-        return getOptions().getItem(option).isEnabled() && getOptions().isSelected(option);
+        return getOptions().getItem(option)
+            .isEnabled() && getOptions().isSelected(option);
     }
 
     /**
@@ -195,7 +199,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     public void addOptionListener(String option) {
         JMenuItem optionItem = getOptions().getItem(option);
         if (optionItem == null) {
-            throw new IllegalArgumentException(String.format("Unknown option: %s", option));
+            throw Exceptions.illegalArg("Unknown option: %s", option);
         }
         RefreshListener listener = getRefreshListener(option);
         if (listener != null) {
@@ -205,8 +209,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         }
     }
 
-    private final List<Pair<JMenuItem,RefreshListener>> optionListeners =
-        new LinkedList<>();
+    private final List<Pair<JMenuItem,RefreshListener>> optionListeners = new LinkedList<>();
 
     /**
      * Returns the refresh listener for a given option.
@@ -287,8 +290,8 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
      * May return {@code null} if the simulator is not set.
      */
     private GrammarProperties getProperties() {
-        return getSimulatorModel() == null ? null
-            : getSimulatorModel().getGrammar().getProperties();
+        return getSimulatorModel() == null ? null : getSimulatorModel().getGrammar()
+            .getProperties();
     }
 
     /*
@@ -304,10 +307,13 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         if (value instanceof String) {
             result = (String) value;
         } else if (value instanceof JVertex) {
-            MultiLabel label = ((JVertex<?>) value).getVisuals().getLabel();
+            MultiLabel label = ((JVertex<?>) value).getVisuals()
+                .getLabel();
             result = label.toString();
         } else if (value instanceof JEdgeView) {
-            MultiLabel label = ((JEdgeView) value).getCell().getVisuals().getLabel();
+            MultiLabel label = ((JEdgeView) value).getCell()
+                .getVisuals()
+                .getLabel();
             result = label.toString();
         }
         if (result == null || result.length() == 0) {
@@ -322,7 +328,8 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     @Override
     public String getToolTipText(MouseEvent evt) {
         JCell<?> jCell = getFirstCellForLocation(evt.getX(), evt.getY());
-        if (jCell != null && jCell.getVisuals().isVisible()) {
+        if (jCell != null && jCell.getVisuals()
+            .isVisible()) {
             return jCell.getToolTipText();
         } else {
             return null;
@@ -364,9 +371,8 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     @Override
     public void updateAutoSize(CellView view) {
         if (view != null && !isEditing()) {
-            Rectangle2D bounds =
-                (view.getAttributes() != null) ? GraphConstants.getBounds(view.getAttributes())
-                    : null;
+            Rectangle2D bounds = (view.getAttributes() != null)
+                ? GraphConstants.getBounds(view.getAttributes()) : null;
             AttributeMap attrs = getModel().getAttributes(view.getCell());
             if (bounds == null) {
                 bounds = GraphConstants.getBounds(attrs);
@@ -380,13 +386,16 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
                     // adjust the x,y corner so that the center stays in place
                     double shiftX = (bounds.getWidth() - d.getWidth() - inset) / 2;
                     double shiftY = (bounds.getHeight() - d.getHeight() - inset) / 2;
-                    bounds.setFrame(bounds.getX() + shiftX, bounds.getY() + shiftY, d.getWidth(),
+                    bounds.setFrame(bounds.getX() + shiftX,
+                        bounds.getY() + shiftY,
+                        d.getWidth(),
                         d.getHeight());
                     // Remove resize attribute
                     snap(bounds);
                     if (resize) {
                         if (view.getAttributes() != null) {
-                            view.getAttributes().remove(GraphConstants.RESIZE);
+                            view.getAttributes()
+                                .remove(GraphConstants.RESIZE);
                         }
                         attrs.remove(GraphConstants.RESIZE);
                     }
@@ -406,7 +415,8 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
                 result = getUI().getPreferredSize(this, view);
                 vertex.putVisual(VisualKey.TEXT_SIZE, result);
             } else {
-                result = vertex.getVisuals().getTextSize();
+                result = vertex.getVisuals()
+                    .getTextSize();
             }
         }
         return result;
@@ -428,7 +438,8 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
             for (JCell<G> jCell : jCellSet) {
                 CellView jView = cache.getMapping(jCell, false);
                 boolean wasVisible = jView != null;
-                boolean isVisible = jCell.getVisuals().isVisible();
+                boolean isVisible = jCell.getVisuals()
+                    .isVisible();
                 Collection<JCell<G>> changeCells = wasVisible ? hiddenCells : visibleCells;
                 if (isVisible != wasVisible) {
                     changeCells.add(jCell);
@@ -436,7 +447,8 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
                     Iterator<? extends JCell<G>> iter = jCell.getContext();
                     while (iter.hasNext()) {
                         JCell<G> c = iter.next();
-                        if (c.getVisuals().isVisible() != wasVisible) {
+                        if (c.getVisuals()
+                            .isVisible() != wasVisible) {
                             changeCells.add(c);
                         }
                     }
@@ -541,8 +553,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
             if (!(jCellView.getCell() instanceof JCell)) {
                 continue;
             }
-            @SuppressWarnings("unchecked")
-            JCell<G> jCell = (JCell<G>) jCellView.getCell();
+            @SuppressWarnings("unchecked") JCell<G> jCell = (JCell<G>) jCellView.getCell();
             boolean typeCorrect =
                 vertex ? jCell instanceof JVertex : edge ? jCell instanceof JEdge : true;
             if (typeCorrect && !jCell.isGrayedOut()) {
@@ -592,8 +603,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         // This should be OK, but if not, please comment here!
         if ((model == null || model instanceof JModel) && model != getModel()) {
             JModel<G> oldJModel = getModel();
-            @SuppressWarnings("unchecked")
-            JModel<G> newJModel = (JModel<G>) model;
+            @SuppressWarnings("unchecked") JModel<G> newJModel = (JModel<G>) model;
             if (oldJModel != null) {
                 // if we don't clear the selection, the old selection
                 // gives trouble when setting the model
@@ -757,9 +767,8 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
             // insert some extra space at the borders
             int extraSpace = 5;
             // Create a Buffered Image
-            BufferedImage img =
-                new BufferedImage((int) bounds.getWidth() + 2 * extraSpace,
-                    (int) bounds.getHeight() + 2 * extraSpace, BufferedImage.TYPE_INT_RGB);
+            BufferedImage img = new BufferedImage((int) bounds.getWidth() + 2 * extraSpace,
+                (int) bounds.getHeight() + 2 * extraSpace, BufferedImage.TYPE_INT_RGB);
             final Graphics2D graphics = img.createGraphics();
             graphics.setColor(getBackground());
             graphics.fillRect(0, 0, img.getWidth(), img.getHeight());
@@ -918,9 +927,11 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
      */
     public void setToolTipEnabled(boolean enabled) {
         if (enabled) {
-            ToolTipManager.sharedInstance().registerComponent(this);
+            ToolTipManager.sharedInstance()
+                .registerComponent(this);
         } else {
-            ToolTipManager.sharedInstance().unregisterComponent(this);
+            ToolTipManager.sharedInstance()
+                .unregisterComponent(this);
         }
         this.toolTipEnabled = enabled;
     }
@@ -1050,7 +1061,8 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         if (isPopupMenuEvent(evt) && getActions() != null) {
             getUI().cancelEdgeAdding();
             Point atPoint = evt.getPoint();
-            createPopupMenu(atPoint).getPopupMenu().show(this, atPoint.x, atPoint.y);
+            createPopupMenu(atPoint).getPopupMenu()
+                .show(this, atPoint.x, atPoint.y);
         }
     }
 
@@ -1094,7 +1106,8 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         boolean itemAdded = false;
         if (cells != null && cells.length > 0 && getActions() != null) {
             result.add(getActions().getFindReplaceAction());
-            if (getActions().getSelectColorAction().isEnabled()) {
+            if (getActions().getSelectColorAction()
+                .isEnabled()) {
                 result.add(getActions().getSelectColorAction());
             }
             itemAdded = true;
@@ -1166,7 +1179,8 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     }
 
     private Action getShowLayoutDialogAction() {
-        return this.getActions().getLayoutDialogAction();
+        return this.getActions()
+            .getLayoutDialogAction();
     }
 
     /**
@@ -1234,7 +1248,8 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
                 this.modeButtonMap.put(any, button);
                 modeButtonGroup.add(button);
             }
-            this.modeButtonMap.get(EDIT_MODE).setSelected(true);
+            this.modeButtonMap.get(EDIT_MODE)
+                .setSelected(true);
         }
         return this.modeButtonMap;
     }
@@ -1317,8 +1332,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         return result;
     }
 
-    private final Map<VisualKey,VisualValue<?>> visualValueMap =
-        new EnumMap<>(VisualKey.class);
+    private final Map<VisualKey,VisualValue<?>> visualValueMap = new EnumMap<>(VisualKey.class);
 
     /** Simulator tool to which this JGraph belongs. */
     private final Simulator simulator;
@@ -1414,8 +1428,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
             for (int i = 0; i < cells.length; i++) {
                 Object c = cells[i];
                 if (c instanceof JCell) {
-                    @SuppressWarnings("unchecked")
-                    JCell<G> jCell = (JCell<G>) c;
+                    @SuppressWarnings("unchecked") JCell<G> jCell = (JCell<G>) c;
                     jCell.putVisual(VisualKey.EMPHASIS, e.isAddedCell(i));
                 }
             }
@@ -1436,8 +1449,8 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(AccessibleState.ENABLED.toDisplayString())
-                && isEnabled()) {
+            if (evt.getPropertyName()
+                .equals(AccessibleState.ENABLED.toDisplayString()) && isEnabled()) {
                 doRefresh();
             }
         }

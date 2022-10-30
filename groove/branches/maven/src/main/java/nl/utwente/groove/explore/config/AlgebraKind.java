@@ -17,6 +17,7 @@
 package nl.utwente.groove.explore.config;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.Parser;
 
 /**
@@ -61,14 +62,15 @@ public enum AlgebraKind implements SettingKey, Setting<AlgebraKind,Null> {
     }
 
     @Override
-    public AlgebraKind createSettting() {
+    public AlgebraKind createNullSettting() {
         return this;
     }
 
     @Override
     public AlgebraKind createSetting(Object content) throws IllegalArgumentException {
         if (content != null) {
-            throw new IllegalArgumentException();
+            throw Exceptions
+                .illegalArg("No setting exists for algebra '%s' and content '%s'", this, content);
         }
         return this;
     }

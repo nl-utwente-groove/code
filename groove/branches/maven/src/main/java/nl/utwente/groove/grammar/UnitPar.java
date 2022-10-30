@@ -117,10 +117,10 @@ public abstract class UnitPar {
             return false;
         }
         if (isInOnly()) {
-            return arg.isInOnly();
+            return arg.inOnly();
         }
         if (isOutOnly() || isAsk()) {
-            return !arg.isInOnly();
+            return !arg.inOnly();
         }
         assert isBidirectional();
         return true;
@@ -135,7 +135,8 @@ public abstract class UnitPar {
     }
 
     @Override
-    public boolean equals(@Nullable Object obj) {
+    public boolean equals(@Nullable
+    Object obj) {
         if (this == obj) {
             return true;
         }
@@ -201,8 +202,8 @@ public abstract class UnitPar {
      * Convenience method to construct a parameter with a given scope, name, type and direction.
      * @param scope defining scope of the variable; possibly {@code null}
      */
-    public static ProcedurePar par(@Nullable QualName scope, String name, CtrlType type,
-        Direction dir) {
+    public static ProcedurePar par(@Nullable
+    QualName scope, String name, CtrlType type, Direction dir) {
         return new ProcedurePar(new CtrlVar(scope, name, type), dir);
     }
 
@@ -221,7 +222,7 @@ public abstract class UnitPar {
          * @param dir value-passing direction of the parameter
          */
         public ProcedurePar(CtrlVar var, Direction dir) {
-            super(var.getType(), var.getName(), dir);
+            super(var.type(), var.name(), dir);
             this.var = var;
         }
 
@@ -238,7 +239,8 @@ public abstract class UnitPar {
         }
 
         @Override
-        public boolean equals(@Nullable Object obj) {
+        public boolean equals(@Nullable
+        Object obj) {
             if (this == obj) {
                 return true;
             }
@@ -296,7 +298,8 @@ public abstract class UnitPar {
         }
 
         @Override
-        public boolean equals(@Nullable Object obj) {
+        public boolean equals(@Nullable
+        Object obj) {
             if (obj == this) {
                 return true;
             }

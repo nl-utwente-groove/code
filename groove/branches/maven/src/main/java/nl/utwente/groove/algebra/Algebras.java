@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import nl.utwente.groove.annotation.Help;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Helper class for algebra manipulation.
@@ -46,8 +47,8 @@ public class Algebras {
                 String typeName = type.getName()
                     .toLowerCase();
                 if (Sort.getKind(typeName) == null) {
-                    throw new IllegalArgumentException(
-                        String.format("Type '%s' not declared by any signature", typeName));
+                    throw Exceptions.illegalArg("Type '%s' not declared by any signature",
+                        typeName);
                 }
             }
         }

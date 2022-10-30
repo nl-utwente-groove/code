@@ -52,7 +52,7 @@ public interface Fixable {
      */
     default void testFixed(boolean fixed) {
         if (fixed != isFixed()) {
-            throw new IllegalStateException(String.format("Expected fixed = %b", fixed));
+            throw Exceptions.illegalState("Expected fixed = %b", fixed);
         }
     }
 }

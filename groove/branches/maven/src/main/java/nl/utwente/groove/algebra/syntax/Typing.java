@@ -24,6 +24,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Sort;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.NoNonNull;
 
 /**
@@ -53,8 +54,8 @@ public class Typing {
     public void add(String var, Sort type) {
         Sort oldType = this.sortMap.put(var, type);
         if (oldType != null && !oldType.equals(type)) {
-            throw new IllegalArgumentException(String
-                .format("Variable % occurs with distinct sorts %s and %s", var, type, oldType));
+            throw Exceptions
+                .illegalArg("Variable % occurs with distinct sorts %s and %s", var, type, oldType);
         }
     }
 
@@ -81,7 +82,8 @@ public class Typing {
     }
 
     @Override
-    public boolean equals(@Nullable Object obj) {
+    public boolean equals(@Nullable
+    Object obj) {
         if (this == obj) {
             return true;
         }

@@ -28,6 +28,8 @@ import java.util.Stack;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.util.Exceptions;
+
 /**
  * Set implementation that uses a search tree over "hash" code. If the number of
  * elements is small or the keys are evenly distributed, this outperforms the
@@ -50,16 +52,14 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      */
     public TreeHashSet(int capacity, int resolution, int rootResolution, Equator<T> equator) {
         if (resolution < 1) {
-            throw new IllegalArgumentException(
-                String.format("Invalid resolution %d (max %d)", resolution, 1));
+            throw Exceptions.illegalArg("Invalid resolution %d (max %d)", resolution, 1);
         }
         if (rootResolution < 1) {
-            throw new IllegalArgumentException(
-                String.format("Invalid root resolution %d (min %d)", rootResolution, 1));
+            throw Exceptions.illegalArg("Invalid root resolution %d (min %d)", rootResolution, 1);
         }
         if (resolution > MAX_RESOLUTION) {
-            throw new IllegalArgumentException(
-                String.format("Invalid resolution %d (max %d)", resolution, MAX_RESOLUTION));
+            throw Exceptions
+                .illegalArg("Invalid resolution %d (max %d)", resolution, MAX_RESOLUTION);
         }
         this.resolution = resolution;
         this.mask = (1 << resolution) - 1;
@@ -163,9 +163,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         this.recordCount = other.recordCount;
         this.freeKeyIx = other.freeKeyIx;
         this.keyCount = other.keyCount;
-        assert containsAll(other) : String.format("Clone    %s does not equal%noriginal %s",
-            this,
-            other);
+        assert containsAll(other) : String
+            .format("Clone    %s does not equal%noriginal %s", this, other);
     }
 
     /**
@@ -233,8 +232,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
             public T next() {
                 if (hasNext()) {
                     // assert removeKey == null || !next.equals(removeKey);
-                    @Nullable
-                    T result = this.next;
+                    @Nullable T result = this.next;
                     assert result != null; // because hasNext holds
                     this.next = null;
                     // this.removeKey = next;
@@ -333,8 +331,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
             @Override
             public T next() {
                 if (hasNext()) {
-                    @Nullable
-                    T result = this.next;
+                    @Nullable T result = this.next;
                     assert result != null; // because hasNext() holds
                     this.next = null;
                     return result;
@@ -394,8 +391,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      *         <code>areEqual(key, result)</code>.
      */
     public @Nullable T put(T key) {
-        @Nullable
-        T result;
+        @Nullable T result;
         int code = getCode(key);
         if (this.size == 0) {
             // at the first key, we still have to create the root of the tree
@@ -586,8 +582,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         if (this.size == 0) {
             return false;
         }
-        @SuppressWarnings("unchecked")
-        T key = (T) obj;
+        @SuppressWarnings("unchecked") T key = (T) obj;
         int index = indexOf(getCode(key));
         if (index < 0) {
             // the key is a new one
@@ -709,9 +704,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
             this.tree[treeIx],
             treeIx,
             value);
-        assert value < 0 : String.format("Tree value at %d set to positive value %d",
-            treeIx,
-            value);
+        assert value < 0 : String
+            .format("Tree value at %d set to positive value %d", treeIx, value);
         this.tree[treeIx] = value;
         setFilled(treeIx);
     }
@@ -722,9 +716,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * reference to another tree record, then the record is freed.
      */
     private void disposeTreeSlot(int treeIx) {
-        assert this.tree[treeIx] < 0 : String.format("tree[%d] == %d cannot be disposed",
-            treeIx,
-            this.tree[treeIx]);
+        assert this.tree[treeIx] < 0 : String
+            .format("tree[%d] == %d cannot be disposed", treeIx, this.tree[treeIx]);
         this.tree[treeIx] = 0;
         resetFilled(treeIx);
         // dispose records
@@ -982,9 +975,9 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         int freeRecordNr = this.freeRecordNr;
         while (freeRecordNr > 0) {
             if (freeRecordNr >= this.recordCount) {
-                throw new IllegalStateException(String.format("Free record %d > record count %d",
+                throw Exceptions.illegalState("Free record %d > record count %d",
                     freeRecordNr,
-                    this.recordCount));
+                    this.recordCount);
             }
             freeRecordNrs.add(freeRecordNr);
             freeRecordNr = getParentIx(freeRecordNr);
@@ -997,16 +990,16 @@ public class TreeHashSet<T> extends AbstractSet<T> {
                     int value = this.tree[treeIx];
                     if (value > 0) {
                         if (getOffset(value) != 0) {
-                            throw new IllegalStateException(String.format(
+                            throw Exceptions.illegalState(
                                 "Child record index %d at %d is not at record boundary",
                                 value,
-                                treeIx));
+                                treeIx);
                         } else if (getParentIx(getRecordNr(value)) != treeIx) {
-                            throw new IllegalStateException(
-                                String.format("Child record index %d at %d points back to %d",
-                                    value,
-                                    treeIx,
-                                    getParentIx(getRecordNr(value))));
+                            throw Exceptions.illegalState(
+                                "Child record index %d at %d points back to %d",
+                                value,
+                                treeIx,
+                                getParentIx(getRecordNr(value)));
                         }
                     }
                     if (value != 0) {
@@ -1014,32 +1007,29 @@ public class TreeHashSet<T> extends AbstractSet<T> {
                     }
                 }
                 if (recordFill == 0) {
-                    throw new IllegalStateException(
-                        String.format("Non-empty record %d has no entries", recordNr));
+                    throw Exceptions.illegalState("Non-empty record %d has no entries", recordNr);
                 } else if (this.fill[recordNr] != recordFill) {
-                    throw new IllegalStateException(
-                        String.format("Record fill of %d should be %d rather than %d",
-                            recordNr,
-                            recordFill,
-                            this.fill[recordNr]));
+                    throw Exceptions.illegalState("Record fill of %d should be %d rather than %d",
+                        recordNr,
+                        recordFill,
+                        this.fill[recordNr]);
                 }
                 int parentIx = getParentIx(recordNr);
                 int parentNr = getRecordNr(parentIx);
                 if (parentNr >= this.recordCount) {
-                    throw new IllegalStateException(
-                        String.format("Parent %d of record %d larger than count %d",
-                            parentNr,
-                            recordNr,
-                            this.recordCount));
+                    throw Exceptions.illegalState("Parent %d of record %d larger than count %d",
+                        parentNr,
+                        recordNr,
+                        this.recordCount);
                 } else if (freeRecordNrs.contains(parentNr)) {
-                    throw new IllegalStateException(
-                        String.format("Parent %d of record %d is free record", parentNr, recordNr));
+                    throw Exceptions
+                        .illegalState("Parent %d of record %d is free record", parentNr, recordNr);
                 } else if (getRecordNr(this.tree[parentIx]) != recordNr) {
-                    throw new IllegalStateException(
-                        String.format("Parent index %d of record %d points to record %d",
-                            parentIx,
-                            recordNr,
-                            getRecordNr(this.tree[parentIx])));
+                    throw Exceptions.illegalState(
+                        "Parent index %d of record %d points to record %d",
+                        parentIx,
+                        recordNr,
+                        getRecordNr(this.tree[parentIx]));
                 }
             }
         }

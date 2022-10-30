@@ -30,8 +30,11 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlEnum
 @SuppressWarnings("javadoc")
 public enum ModeType {
-    @XmlEnumValue("useIntermediate") USE_INTERMEDIATE("useIntermediate"),
-    @XmlEnumValue("preferValue") PREFER_VALUE("preferValue");
+    @XmlEnumValue("useIntermediate")
+    USE_INTERMEDIATE("useIntermediate"),
+    @XmlEnumValue("preferValue")
+    PREFER_VALUE("preferValue");
+
     private final String value;
 
     ModeType(String v) {
@@ -41,14 +44,4 @@ public enum ModeType {
     public String value() {
         return this.value;
     }
-
-    public static ModeType fromValue(String v) {
-        for (ModeType c : ModeType.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-        throw new IllegalArgumentException(v);
-    }
-
 }

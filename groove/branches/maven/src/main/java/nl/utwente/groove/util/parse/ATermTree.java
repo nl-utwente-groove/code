@@ -24,6 +24,7 @@ import java.util.Stack;
 import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.util.DefaultFixable;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.OpKind.Direction;
 import nl.utwente.groove.util.parse.OpKind.Placement;
@@ -347,7 +348,6 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
     /** Returns a string representation of this tree, assuming it is an atom without symbol. */
     protected String toAtomString() {
         assert getOp().getKind() == OpKind.ATOM && !getOp().hasSymbol();
-        throw new UnsupportedOperationException(
-            "This tree type does not support atoms without symbol");
+        throw Exceptions.unsupportedOp("This tree type does not support atoms without symbol");
     }
 }

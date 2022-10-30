@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.explore.config;
 
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.NullParser;
 import nl.utwente.groove.util.parse.Parser;
 import nl.utwente.groove.util.parse.StringParser;
@@ -29,26 +30,28 @@ public enum AcceptorKind implements SettingKey {
     /** Final states. */
     FINAL("final", null, "Final states are results", null),
     /** States satisfying a graph condition. */
-    CONDITION("condition", "Property name", "Any state satisfying a given property", StringParser.identity()) {
+    CONDITION("condition", "Property name", "Any state satisfying a given property",
+        StringParser.identity()) {
         @Override
-        public Setting<?,?> createSettting() throws IllegalArgumentException {
-            throw new IllegalArgumentException();
+        public Setting<?,?> createNullSettting() throws UnsupportedOperationException {
+            throw Exceptions.unsupportedOp("Key '%s' does not have setting for null value", this);
         }
 
         @Override
-        public Setting<?,?> createSetting(Object content) throws IllegalArgumentException {
+        public Setting<?,?> createSetting(Object content) {
             return new DefaultSetting<>(this, content);
         }
     },
     /** States satisfying a propositional formula. */
-    FORMULA("formula", "Property formula", "Any state satisfying a propositional formula", StringParser.identity()) {
+    FORMULA("formula", "Property formula", "Any state satisfying a propositional formula",
+        StringParser.identity()) {
         @Override
-        public Setting<?,?> createSettting() throws IllegalArgumentException {
-            throw new IllegalArgumentException();
+        public Setting<?,?> createNullSettting() throws UnsupportedOperationException {
+            throw Exceptions.unsupportedOp("Key '%s' does not have setting for null value", this);
         }
 
         @Override
-        public Setting<?,?> createSetting(Object content) throws IllegalArgumentException {
+        public Setting<?,?> createSetting(Object content) {
             return new DefaultSetting<>(this, content);
         }
     },
@@ -84,12 +87,12 @@ public enum AcceptorKind implements SettingKey {
     }
 
     @Override
-    public Setting<?,?> createSettting() throws IllegalArgumentException {
+    public Setting<?,?> createNullSettting() throws UnsupportedOperationException {
         return new DefaultSetting<AcceptorKind,Null>(this);
     }
 
     @Override
-    public Setting<?,?> createSetting(Object content) throws IllegalArgumentException {
+    public Setting<?,?> createSetting(Object content) throws UnsupportedOperationException {
         return new DefaultSetting<AcceptorKind,Null>(this);
     }
 

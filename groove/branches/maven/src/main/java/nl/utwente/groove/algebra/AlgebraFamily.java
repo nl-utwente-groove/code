@@ -32,6 +32,7 @@ import java.util.Set;
 import nl.utwente.groove.algebra.syntax.CallExpr;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.util.DocumentedEnum;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Register for the currently used algebras.
@@ -93,10 +94,9 @@ public enum AlgebraFamily implements DocumentedEnum {
         Sort sigKind = algebra.getSort();
         Algebra<?> oldAlgebra = this.algebraMap.put(sigKind, algebra);
         if (oldAlgebra != null) {
-            throw new IllegalArgumentException(
-                String.format("Signature '%s' already implemented by '%s'",
-                    sigKind,
-                    oldAlgebra.getName()));
+            throw Exceptions.illegalArg("Signature '%s' already implemented by '%s'",
+                sigKind,
+                oldAlgebra.getName());
         }
     }
 
@@ -108,8 +108,8 @@ public enum AlgebraFamily implements DocumentedEnum {
     private void checkCompleteness() throws IllegalStateException {
         for (Sort sigKind : Sort.values()) {
             if (!this.algebraMap.containsKey(sigKind)) {
-                throw new IllegalStateException(
-                    String.format("Implementation of signature '%s' is missing", sigKind));
+                throw Exceptions.illegalState("Implementation of signature '%s' is missing",
+                    sigKind);
             }
         }
     }
@@ -273,12 +273,12 @@ public enum AlgebraFamily implements DocumentedEnum {
             try {
                 return this.method.invoke(this.algebra, args.toArray());
             } catch (IllegalAccessException e) {
-                throw new IllegalArgumentException();
+                throw Exceptions.illegalArg("Caused by %s", e);
             } catch (InvocationTargetException e) {
-                if (e.getCause() instanceof Error) {
-                    throw (Error) e.getCause();
+                if (e.getCause() instanceof Error err) {
+                    throw err;
                 } else {
-                    throw new IllegalArgumentException();
+                    throw Exceptions.illegalArg("Caused by %s", e);
                 }
             }
         }

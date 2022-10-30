@@ -36,6 +36,7 @@ import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.transform.DeltaApplier;
 import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.transform.RuleApplication;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.collect.KeySet;
 import nl.utwente.groove.util.collect.SetView;
@@ -188,7 +189,7 @@ public class StateCache {
             result = this.graphFactory
                 .newGraph(getState().toString(), frozenGraph, this.record.getFactory());
         } else if (!(this.state instanceof GraphNextState)) {
-            throw new IllegalStateException(
+            throw Exceptions.illegalState(
                 "Underlying state does not have information to reconstruct the graph");
         } else {
             int depth = 0; // depth of reconstruction

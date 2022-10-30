@@ -21,6 +21,7 @@ import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.EdgeRole;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.StringHandler;
 
@@ -55,8 +56,8 @@ public class AntlrGrapher {
         this.textTypes = new BitSet(this.tokens.length);
         for (int type : textTypes) {
             if (type < 0 || type > this.tokens.length) {
-                throw new IllegalArgumentException(
-                    String.format("Token type %d does not exist in parser class %s", type, parser));
+                throw Exceptions
+                    .illegalArg("Token type %d does not exist in parser class %s", type, parser);
             } else {
                 this.textTypes.set(type);
             }

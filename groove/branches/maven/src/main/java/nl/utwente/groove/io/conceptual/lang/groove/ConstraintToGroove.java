@@ -26,12 +26,12 @@ import nl.utwente.groove.io.conceptual.property.OppositeProperty;
 import nl.utwente.groove.io.conceptual.property.Property;
 import nl.utwente.groove.io.conceptual.type.Class;
 import nl.utwente.groove.io.conceptual.type.Container;
+import nl.utwente.groove.io.conceptual.type.Container.Kind;
 import nl.utwente.groove.io.conceptual.type.CustomDataType;
 import nl.utwente.groove.io.conceptual.type.DataType;
 import nl.utwente.groove.io.conceptual.type.Enum;
 import nl.utwente.groove.io.conceptual.type.Tuple;
 import nl.utwente.groove.io.conceptual.type.Type;
-import nl.utwente.groove.io.conceptual.type.Container.Kind;
 import nl.utwente.groove.io.conceptual.value.BoolValue;
 import nl.utwente.groove.io.conceptual.value.CustomDataValue;
 import nl.utwente.groove.io.conceptual.value.EnumValue;
@@ -40,6 +40,7 @@ import nl.utwente.groove.io.conceptual.value.Object;
 import nl.utwente.groove.io.conceptual.value.RealValue;
 import nl.utwente.groove.io.conceptual.value.StringValue;
 import nl.utwente.groove.io.external.PortException;
+import nl.utwente.groove.util.Exceptions;
 
 //separate different graphs for various elements where applicable.
 @SuppressWarnings("javadoc")
@@ -275,7 +276,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
 
     @Override
     public void visit(Object object, String param) {
-        throw new IllegalArgumentException("Cannot create object node in constraints");
+        throw Exceptions.illegalArg("Cannot create object node in constraints");
     }
 
     @Override

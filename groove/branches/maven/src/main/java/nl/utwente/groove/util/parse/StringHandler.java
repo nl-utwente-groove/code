@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Pair;
 
 /**
@@ -202,8 +203,7 @@ public class StringHandler {
             throw new FormatException("Unbalanced brackets in expression '%s': '%c' is not closed",
                 expr, bracketStack.pop());
         }
-        return new Pair<>(strippedExpr.toString(),
-            Collections.unmodifiableList(replacements));
+        return new Pair<>(strippedExpr.toString(), Collections.unmodifiableList(replacements));
     }
 
     /**
@@ -255,7 +255,8 @@ public class StringHandler {
         // Parse the expression first, so only non-quoted substrings are used to split
         Pair<String,List<String>> parseResult = parse(expr);
         String parseExpr = parseResult.one();
-        Iterator<String> replacements = parseResult.two().iterator();
+        Iterator<String> replacements = parseResult.two()
+            .iterator();
         // go through the parsed expression
         SimpleStringBuilder subResult = new SimpleStringBuilder(expr.length());
         for (int i = 0; i < parseExpr.length(); i++) {
@@ -295,10 +296,10 @@ public class StringHandler {
      * @throws FormatException if <tt>expr</tt> has unbalanced quotes or brackets, or the
      *         positioning of the operator is not as required
      */
-    public String[] split(String expr, String oper, int position) throws FormatException {
+    public String[] split(String expr, String oper, OpPosition position) throws FormatException {
         expr = expr.trim();
         switch (position) {
-        case INFIX_POSITION:
+        case INFIX:
             String[] result = split(expr, oper);
             if (result.length == 1) {
                 if (result[0].length() == 0) {
@@ -314,7 +315,7 @@ public class StringHandler {
                 }
             }
             return result;
-        case PREFIX_POSITION:
+        case PREFIX:
             Pair<String,List<String>> parsedExpr = parse(expr);
             String parsedBasis = parsedExpr.one();
             List<String> replacements = parsedExpr.two();
@@ -330,7 +331,7 @@ public class StringHandler {
             } else {
                 return new String[] {unparse(parsedBasis.substring(oper.length()), replacements)};
             }
-        case POSTFIX_POSITION:
+        case POSTFIX:
             parsedExpr = parse(expr);
             parsedBasis = parsedExpr.one();
             replacements = parsedExpr.two();
@@ -348,8 +349,7 @@ public class StringHandler {
             }
         default:
             // this case should not occur
-            throw new IllegalArgumentException(
-                "Illegal position parameter value '" + position + "'");
+            throw Exceptions.UNREACHABLE;
         }
     }
 
@@ -502,14 +502,12 @@ public class StringHandler {
      * A map from open bracket characters to indices. The corresponding closing bracket
      * character is at the same index of <tt>closeBrackets</tt>.
      */
-    private final Map<Character,Integer> openBracketsIndexMap =
-        new LinkedHashMap<>();
+    private final Map<Character,Integer> openBracketsIndexMap = new LinkedHashMap<>();
     /**
      * A map of closing bracket characters to indices. The corresponding opening bracket
      * character is at the same index of <tt>openBrackets</tt>.
      */
-    private final Map<Character,Integer> closeBracketsIndexMap =
-        new LinkedHashMap<>();
+    private final Map<Character,Integer> closeBracketsIndexMap = new LinkedHashMap<>();
     /**
      * The character to use as a placeholder in the parse result of this parser.
      */
@@ -611,9 +609,9 @@ public class StringHandler {
      * information (infix, prefix or postfix) Quoted strings and bracketed
      * sub-expressions are treated as atomic. Convenience method; abbreviates
      * <tt>new ExprParser().split(expr,split,position)</tt>.
-     * @see #split(String,String,int)
+     * @see #split(String,String,OpPosition)
      */
-    static public String[] splitExpr(String expr, String split, int position)
+    static public String[] splitExpr(String expr, String split, OpPosition position)
         throws FormatException {
         return prototype.split(expr, split, position);
     }
@@ -633,7 +631,11 @@ public class StringHandler {
     static public String toTrimmed(String expr, char open, char close) throws FormatException {
         Pair<String,List<String>> parseResult =
             new StringHandler(new char[] {open, close}).parse(expr);
-        if (parseResult.one().length() != 1 || parseResult.two().get(0).charAt(0) != open) {
+        if (parseResult.one()
+            .length() != 1
+            || parseResult.two()
+                .get(0)
+                .charAt(0) != open) {
             throw new FormatException("Expression %s not surrounded by bracket pair %c%c", expr,
                 open, close);
         } else {
@@ -795,12 +797,12 @@ public class StringHandler {
             testSplit("a|(b.c)*", "*");
             testSplit("a|(b.c)*", ".");
             //
-            testSplit("a|(b.c)*", "|", INFIX_POSITION);
-            testSplit("a|(b.c)*", "|", POSTFIX_POSITION);
-            testSplit("a|(b.c)*", "*", INFIX_POSITION);
-            testSplit("a|(b.c)*", "*", POSTFIX_POSITION);
-            testSplit("a|(b.c)*", "a", PREFIX_POSITION);
-            testSplit("a|(b.c)*", "a", POSTFIX_POSITION);
+            testSplit("a|(b.c)*", "|", OpPosition.INFIX);
+            testSplit("a|(b.c)*", "|", OpPosition.POSTFIX);
+            testSplit("a|(b.c)*", "*", OpPosition.INFIX);
+            testSplit("a|(b.c)*", "*", OpPosition.POSTFIX);
+            testSplit("a|(b.c)*", "a", OpPosition.PREFIX);
+            testSplit("a|(b.c)*", "a", OpPosition.POSTFIX);
             //
             testTrim("(b.c ) ", '(', ')');
             testTrim("a|(b.c)*", '(', ')');
@@ -857,12 +859,12 @@ public class StringHandler {
         System.out.println();
     }
 
-    static private void testSplit(String expr, String oper, int position) {
+    static private void testSplit(String expr, String oper, OpPosition position) {
         try {
-            System.out.print("Splitting: \"" + expr + "\" according to ");
-            System.out.print(position == INFIX_POSITION ? "infix"
-                : position == PREFIX_POSITION ? "prefix" : "postfix");
-            System.out.println(" operator \"" + oper + "\"");
+            System.out.printf("Splitting: \'%s\' according to %s operator \'%s\'%n",
+                expr,
+                position.text(),
+                oper);
             String[] result = splitExpr(expr, oper, position);
             System.out.print("Result: ");
             if (result == null) {
@@ -966,21 +968,35 @@ public class StringHandler {
     /** Pair of angle brackets, to control parsing. */
     static private final char[] ANGLE_BRACKETS = {LANGLE_CHAR, RANGLE_CHAR};
 
-    /**
-     * Positioning value for an infix operator.
-     * @see #split(String,String,int)
-     */
-    static public final int INFIX_POSITION = 0;
-    /**
-     * Positioning value for an infix operator.
-     * @see #split(String,String,int)
-     */
-    static public final int PREFIX_POSITION = 1;
-    /**
-     * Positioning value for an infix operator.
-     * @see #split(String,String,int)
-     */
-    static public final int POSTFIX_POSITION = 2;
+    /** Position value for operators. */
+    public enum OpPosition {
+        /**
+         * Positioning value for an infix operator.
+         * @see #split(String,String,OpPosition)
+         */
+        INFIX("infix"),
+        /**
+         * Positioning value for a prefix operator.
+         * @see #split(String,String,OpPosition)
+         */
+        PREFIX("prefix"),
+        /**
+         * Positioning value for a postfix operator.
+         * @see #split(String,String,OpPosition)
+         */
+        POSTFIX("postfix");
+
+        OpPosition(String text) {
+            this.text = text;
+        }
+
+        /** Returns the text descriptor for this position. */
+        public String text() {
+            return this.text;
+        }
+
+        private final String text;
+    }
 
     /**
      * Array of default quote characters, containing the single and double

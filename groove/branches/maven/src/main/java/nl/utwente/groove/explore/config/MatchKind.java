@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.explore.config;
 
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.NullParser;
 import nl.utwente.groove.util.parse.Parser;
 
@@ -68,7 +69,7 @@ public enum MatchKind implements SettingKey {
     }
 
     @Override
-    public Setting<MatchKind,MatchHint> createSettting() throws IllegalArgumentException {
+    public Setting<MatchKind,MatchHint> createNullSettting() throws IllegalArgumentException {
         return createSetting(null);
     }
 
@@ -76,8 +77,7 @@ public enum MatchKind implements SettingKey {
     public Setting<MatchKind,MatchHint> createSetting(Object content)
         throws IllegalArgumentException {
         if (!isValue(content)) {
-            throw new IllegalArgumentException(
-                String.format("'%s' is not a valid value for '%s'", content, this));
+            throw Exceptions.illegalArg("'%s' is not a valid value for '%s'", content, this);
         }
         return new DefaultSetting<>(this, (MatchHint) content);
     }

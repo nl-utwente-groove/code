@@ -27,8 +27,8 @@ import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.transform.CompositeEvent;
 import nl.utwente.groove.transform.MergeMap;
 import nl.utwente.groove.transform.RuleEffect;
-import nl.utwente.groove.transform.RuleEvent;
 import nl.utwente.groove.transform.RuleEffect.Fragment;
+import nl.utwente.groove.transform.RuleEvent;
 import nl.utwente.groove.util.Reporter;
 
 /**
@@ -239,7 +239,7 @@ public class MatchApplier {
         for (int i = 0; i < valueCount; i++) {
             Binding bind = bindings[i];
             HostNode value = null;
-            switch (bind.getSource()) {
+            switch (bind.type()) {
             case VAR:
                 // this is an input parameter of the rule
                 HostNode sourceValue = Valuator.get(sourceValues, bind);
@@ -247,12 +247,12 @@ public class MatchApplier {
                 break;
             case ANCHOR:
                 // the parameter is not a creator node
-                sourceValue = (HostNode) event.getAnchorImage(bind.getIndex());
+                sourceValue = (HostNode) event.getAnchorImage(bind.index());
                 value = getNodeImage(sourceValue, mergeMap, removedNodes);
                 break;
             case CREATOR:
                 // the parameter is a creator node
-                value = createdNodes[bind.getIndex()];
+                value = createdNodes[bind.index()];
                 break;
             default:
                 assert false;

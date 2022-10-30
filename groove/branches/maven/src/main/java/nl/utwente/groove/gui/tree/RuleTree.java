@@ -74,11 +74,10 @@ import nl.utwente.groove.gui.display.TextTab;
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
+import nl.utwente.groove.lts.GraphTransition.Claz;
 import nl.utwente.groove.lts.GraphTransitionKey;
 import nl.utwente.groove.lts.MatchResult;
 import nl.utwente.groove.lts.RecipeEvent;
-import nl.utwente.groove.lts.GraphTransition.Claz;
-import nl.utwente.groove.util.Duo;
 import nl.utwente.groove.util.Exceptions;
 
 /**
@@ -454,9 +453,9 @@ public class RuleTree extends AbstractResourceTree {
         // clean up current match node map
         this.subruleNodeMap.clear();
         Collection<DisplayTreeNode> treeNodes = new ArrayList<>();
-        Set<Duo<QualName>> triedPairs = getTried(state);
+        Set<NamePair> triedPairs = getTried(state);
         // construct rule nodes for subrules
-        for (Duo<QualName> pair : triedPairs) {
+        for (NamePair pair : triedPairs) {
             if (pair.two() == null) {
                 // only do this for subrules
                 continue;
@@ -473,7 +472,7 @@ public class RuleTree extends AbstractResourceTree {
         for (RuleTreeNode ruleNode : this.ruleNodeMap.values()) {
             treeNodes.add(ruleNode);
             QualName ruleName = ruleNode.getQualName();
-            boolean tried = triedPairs.contains(Duo.newDuo(ruleName, null));
+            boolean tried = triedPairs.contains(new NamePair(ruleName, null));
             ruleNode.setTried(tried);
         }
         // expand all rule nodes and subsequently collapse all directory nodes
@@ -501,7 +500,7 @@ public class RuleTree extends AbstractResourceTree {
                     .getQualName();
                 // find the correct rule tree node
                 parentNode = recipe == null ? this.ruleNodeMap.get(ruleName)
-                    : this.subruleNodeMap.get(Duo.newDuo(ruleName, recipe.getQualName()));
+                    : this.subruleNodeMap.get(new NamePair(ruleName, recipe.getQualName()));
                 matchCount = parentNode.getChildCount();
                 newNode = new MatchTreeNode(getSimulatorModel(), state, match, matchCount + 1,
                     getSimulator().getOptions()
@@ -525,19 +524,19 @@ public class RuleTree extends AbstractResourceTree {
     /** Returns the set of pairs of rule/recipe name that have been tried
      * in the current state.
      */
-    private Set<Duo<QualName>> getTried(GraphState state) {
+    private Set<NamePair> getTried(GraphState state) {
         // set the tried status of the rules
         Set<? extends CallStack> pastAttempts =
             state == null ? Collections.<CallStack>emptySet() : state.getActualFrame()
                 .getPastAttempts();
         // convert the transitions to pairs of rule name + recipe name
-        Set<Duo<QualName>> triedPairs = new HashSet<>();
+        Set<NamePair> triedPairs = new HashSet<>();
         for (CallStack t : pastAttempts) {
             QualName ruleName = t.getRule()
                 .getQualName();
             QualName recipeName = t.inRecipe() ? t.getRecipe()
                 .getQualName() : null;
-            triedPairs.add(Duo.newDuo(ruleName, recipeName));
+            triedPairs.add(new NamePair(ruleName, recipeName));
         }
         return triedPairs;
     }
@@ -592,7 +591,7 @@ public class RuleTree extends AbstractResourceTree {
      * Mapping from {@link MatchResult} in the current LTS to match nodes in the rule
      * directory
      */
-    private final Map<Duo<QualName>,RuleTreeNode> subruleNodeMap = new HashMap<>();
+    private final Map<NamePair,RuleTreeNode> subruleNodeMap = new HashMap<>();
 
     /** Flag to indicate that the anchor image option listener has been set. */
     private boolean anchorImageOptionListenerSet = false;
@@ -890,5 +889,9 @@ public class RuleTree extends AbstractResourceTree {
             return HTMLConverter.UNDERLINE_TAG.on(result)
                 .toString();
         }
+    }
+
+    private record NamePair(QualName one, QualName two) {
+        // no additional functionality
     }
 }

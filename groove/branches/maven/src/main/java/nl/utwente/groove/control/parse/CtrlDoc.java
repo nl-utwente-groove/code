@@ -39,6 +39,7 @@ import org.antlr.works.grammar.syntax.GrammarSyntaxParser;
 
 import nl.utwente.groove.annotation.Help;
 import nl.utwente.groove.io.FileType;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.parse.FormatException;
@@ -103,9 +104,9 @@ public class CtrlDoc {
                 }
             }
         } catch (IOException e) {
-            throw new IllegalStateException(String.format("Error while reading grammar file %s: %s",
+            throw Exceptions.illegalState("Error while reading grammar file %s: %s",
                 CTRL_GRAMMAR_FILE,
-                e.getMessage()));
+                e.getMessage());
         }
 
         return grammarText;
@@ -192,11 +193,11 @@ public class CtrlDoc {
             } else {
                 List<Line> otherEntries = this.nameToEntriesMap.get(help.one());
                 if (otherEntries == null) {
-                    throw new IllegalStateException(
-                        String.format("Reference to non-existent rule '%s' in comment line '%s'",
-                            help.one(),
-                            help.two()
-                                .getItem()));
+                    throw Exceptions.illegalState(
+                        "Reference to non-existent rule '%s' in comment line '%s'",
+                        help.one(),
+                        help.two()
+                            .getItem());
                 }
                 otherEntries.add(line);
             }

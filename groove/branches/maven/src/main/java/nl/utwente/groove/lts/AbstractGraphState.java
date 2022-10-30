@@ -25,8 +25,8 @@ import java.util.Set;
 
 import nl.utwente.groove.control.instance.Assignment;
 import nl.utwente.groove.control.instance.Frame;
-import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.Action.Role;
+import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.host.HostElement;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
@@ -35,6 +35,7 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.lts.Status.Flag;
 import nl.utwente.groove.transform.Record;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.cache.AbstractCacheHolder;
 import nl.utwente.groove.util.cache.CacheReference;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -383,8 +384,8 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
             return getNumber() - ((GraphTransition) obj).source()
                 .getNumber();
         } else {
-            throw new UnsupportedOperationException(
-                String.format("Classes %s and %s cannot be compared", getClass(), obj.getClass()));
+            throw Exceptions
+                .unsupportedOp("Classes %s and %s cannot be compared", getClass(), obj.getClass());
         }
     }
 

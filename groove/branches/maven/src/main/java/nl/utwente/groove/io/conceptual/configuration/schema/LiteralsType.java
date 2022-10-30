@@ -30,8 +30,11 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlEnum
 @SuppressWarnings("javadoc")
 public enum LiteralsType {
-    @XmlEnumValue("singleton") SINGLETON("singleton"),
-    @XmlEnumValue("multiple") MULTIPLE("multiple");
+    @XmlEnumValue("singleton")
+    SINGLETON("singleton"),
+    @XmlEnumValue("multiple")
+    MULTIPLE("multiple");
+
     private final String value;
 
     LiteralsType(String v) {
@@ -41,14 +44,4 @@ public enum LiteralsType {
     public String value() {
         return this.value;
     }
-
-    public static LiteralsType fromValue(String v) {
-        for (LiteralsType c : LiteralsType.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-        throw new IllegalArgumentException(v);
-    }
-
 }

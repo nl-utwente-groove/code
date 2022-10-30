@@ -47,6 +47,7 @@ import nl.utwente.groove.io.conceptual.value.RealValue;
 import nl.utwente.groove.io.conceptual.value.StringValue;
 import nl.utwente.groove.io.conceptual.value.TupleValue;
 import nl.utwente.groove.io.external.PortException;
+import nl.utwente.groove.util.Exceptions;
 
 @SuppressWarnings("javadoc")
 public abstract class InstanceExporter<E> implements Messenger, Visitor {
@@ -70,7 +71,7 @@ public abstract class InstanceExporter<E> implements Messenger, Visitor {
     }
 
     protected void setElement(Acceptor acceptor, E element) {
-        assert!(this.m_elements.containsKey(acceptor));
+        assert !(this.m_elements.containsKey(acceptor));
         this.m_elements.put(acceptor, element);
     }
 
@@ -88,8 +89,7 @@ public abstract class InstanceExporter<E> implements Messenger, Visitor {
         }
 
         if (!this.m_elements.containsKey(acceptor)) {
-            throw new IllegalArgumentException(
-                "Cannot get element for acceptor " + acceptor.toString());
+            throw Exceptions.illegalArg("Cannot get element for acceptor ", acceptor);
         }
 
         return this.m_elements.get(acceptor);
