@@ -41,15 +41,15 @@ import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Callable;
+import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.ModuleName;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Signature;
 import nl.utwente.groove.grammar.UnitPar;
-import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.UnitPar.Direction;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.FormatException;
-import nl.utwente.groove.util.parse.StringHandler;
 
 /**
  * Helper class for GCL parsing.
@@ -70,9 +70,8 @@ public class CtrlHelper {
         ModuleName parentName = this.namespace.getModuleName();
         if (!parentName.equals(this.packageName)) {
             emitErrorMessage(packageTree,
-                "Package declaration '%s' does not equal program location '%s'",
-                this.packageName,
-                parentName);
+                             "Package declaration '%s' does not equal program location '%s'",
+                             this.packageName, parentName);
         }
     }
 
@@ -162,8 +161,7 @@ public class CtrlHelper {
             assert !qualName.hasErrors();
             topToken = call;
         } else {
-            qualName = QualName.name(getText(asterisk))
-                .extend(getText(call));
+            qualName = QualName.name(getText(asterisk)).extend(getText(call));
             topToken = asterisk;
         }
         CommonToken top = new CommonToken(call.getType(), qualName.toString());
@@ -192,8 +190,7 @@ public class CtrlHelper {
             result = toQualName(null, init);
         } else {
             Token subTop = subTree.getToken();
-            QualName qualName = subTree.getQualName()
-                .nest(getText(init));
+            QualName qualName = subTree.getQualName().nest(getText(init));
             CommonToken top = new CommonToken(subTop.getType(), qualName.toString());
             top.setLine(init.getLine());
             top.setTokenIndex(init.getTokenIndex());
@@ -212,8 +209,7 @@ public class CtrlHelper {
     CtrlTree qualify(CtrlTree ruleNameToken) {
         CtrlTree result = ruleNameToken;
         QualName qualName = ruleNameToken.getQualName();
-        if (!this.namespace.hasErrors() && qualName.parent()
-            .isTop()) {
+        if (!this.namespace.hasErrors() && qualName.parent().isTop()) {
             String simpleName = qualName.last();
             Map<String,QualName> importMap = getNamespace().getImportMap();
             if (importMap.containsKey(simpleName)) {
@@ -223,8 +219,7 @@ public class CtrlHelper {
             }
             CommonToken token = new CommonToken(ruleNameToken.getType(), qualName.toString());
             token.setLine(ruleNameToken.getLine());
-            token.setTokenIndex(ruleNameToken.getToken()
-                .getTokenIndex());
+            token.setTokenIndex(ruleNameToken.getToken().getTokenIndex());
             result = new CtrlTree(token);
             result.setQualName(qualName);
             result.addChild(ruleNameToken.getChild(0));
@@ -253,8 +248,7 @@ public class CtrlHelper {
     /** Qualifies a given name by prefixing it with the package name,
      * if it is not already a qualified name. */
     QualName qualify(String name) {
-        return this.namespace.getModuleName()
-            .extend(name);
+        return this.namespace.getModuleName().extend(name);
     }
 
     /** Sets the control name (from the name space) of this given program tree. */
@@ -272,28 +266,21 @@ public class CtrlHelper {
         boolean result = false;
         assert (unitTree.getType() == CtrlParser.FUNCTION
             || unitTree.getType() == CtrlParser.RECIPE) && unitTree.getChildCount() <= 4;
-        QualName qualName = qualify(unitTree.getChild(0)
-            .getText());
+        QualName qualName = qualify(unitTree.getChild(0).getText());
         Callable unit = this.namespace.getCallable(qualName);
         if (unit != null) {
-            emitErrorMessage(unitTree,
-                "Duplicate name: %s %s already defined",
-                unit.getKind()
-                    .getName(true),
-                qualName);
+            emitErrorMessage(unitTree, "Duplicate name: %s %s already defined",
+                             unit.getKind().getName(true), qualName);
         } else {
-            int priority = unitTree.getChildCount() == 3 ? 0 : Integer.parseInt(unitTree.getChild(2)
-                .getText());
+            int priority = unitTree.getChildCount() == 3
+                ? 0
+                : Integer.parseInt(unitTree.getChild(2).getText());
             Signature<UnitPar.ProcedurePar> parList = getPars(qualName, unitTree.getChild(1));
             QualName controlName = this.namespace.getControlName();
             Kind kind = toProcKind(unitTree);
-            this.namespace.addProcedure(Procedure.newInstance(qualName,
-                kind,
-                priority,
-                parList,
-                controlName,
-                unitTree.getLine(),
-                this.namespace.getGrammarProperties()));
+            this.namespace.addProcedure(Procedure
+                .newInstance(qualName, kind, priority, parList, controlName, unitTree.getLine(),
+                             this.namespace.getGrammarProperties()));
             result = true;
         }
         return result;
@@ -303,7 +290,9 @@ public class CtrlHelper {
      * Converts a tree token type to a procedure kind.
      */
     private Kind toProcKind(CtrlTree tree) {
-        return tree.getType() == CtrlParser.FUNCTION ? Kind.FUNCTION : Kind.RECIPE;
+        return tree.getType() == CtrlParser.FUNCTION
+            ? Kind.FUNCTION
+            : Kind.RECIPE;
     }
 
     /**
@@ -316,11 +305,16 @@ public class CtrlHelper {
             for (int i = 0; i < parListTree.getChildCount(); i++) {
                 CtrlTree parTree = parListTree.getChild(i);
                 boolean out = parTree.getChildCount() == 3;
-                CtrlTree typeTree = parTree.getChild(out ? 1 : 0);
+                CtrlTree typeTree = parTree.getChild(out
+                    ? 1
+                    : 0);
                 CtrlType type = typeTree.getCtrlType();
-                String name = parTree.getChild(out ? 2 : 1)
-                    .getText();
-                result.add(UnitPar.par(procName, name, type, out ? Direction.OUT : Direction.IN));
+                String name = parTree.getChild(out
+                    ? 2
+                    : 1).getText();
+                result.add(UnitPar.par(procName, name, type, out
+                    ? Direction.OUT
+                    : Direction.IN));
             }
         }
         return new Signature<>(result);
@@ -338,9 +332,8 @@ public class CtrlHelper {
         for (String outPar : this.symbolTable.getOutPars()) {
             if (!this.initVars
                 .contains(new CtrlVar(this.procName, outPar, this.symbolTable.getType(outPar)))) {
-                emitErrorMessage(bodyTree,
-                    "Output parameter %s may fail to be initialised",
-                    outPar);
+                emitErrorMessage(bodyTree, "Output parameter %s may fail to be initialised",
+                                 outPar);
             }
         }
         closeScope();
@@ -350,8 +343,7 @@ public class CtrlHelper {
     /** Sets the context being processed to a given procedure. */
     void setContext(CtrlTree unitTree) {
         assert this.procName == null;
-        QualName procName = qualify(unitTree.getChild(0)
-            .getText());
+        QualName procName = qualify(unitTree.getChild(0).getText());
         this.procName = procName;
     }
 
@@ -409,10 +401,8 @@ public class CtrlHelper {
         QualName packageName = packageTree.getQualName();
         ModuleName moduleName = this.namespace.getModuleName();
         if (packageName == null && !moduleName.isTop()) {
-            emitErrorMessage(packageTree,
-                "No declared package; should be %s",
-                packageName,
-                moduleName);
+            emitErrorMessage(packageTree, "No declared package; should be %s", packageName,
+                             moduleName);
         } else if (packageName != null && !packageName.equals(moduleName)) {
             emitErrorMessage(packageTree, "Package %s should be %s", packageName, moduleName);
         }
@@ -477,19 +467,16 @@ public class CtrlHelper {
     void checkConstArg(CtrlTree argTree) {
         assert argTree.getType() == CtrlChecker.ARG && argTree.getChildCount() == 1;
         try {
-            Expression constant = Expression.parse(argTree.getChild(0)
-                .getText());
-            AlgebraFamily family = this.namespace.getGrammarProperties()
-                .getAlgebraFamily();
-            CtrlPar result =
-                new CtrlPar.Const(family.getAlgebra(constant.getSort()), family.toValue(constant));
+            Expression constant = Expression.parse(argTree.getChild(0).getText());
+            AlgebraFamily family = this.namespace.getGrammarProperties().getAlgebraFamily();
+            CtrlPar result = new CtrlPar.Const(family.getAlgebra(constant.getSort()),
+                family.toValue(constant));
             argTree.setCtrlPar(result);
         } catch (FormatException e) {
             // this cannot occur, as the constant string has just been approved
             // by the control parser
             assert false : String.format("%s is not a parsable constant",
-                argTree.getChild(0)
-                    .getText());
+                                         argTree.getChild(0).getText());
         }
     }
 
@@ -551,8 +538,7 @@ public class CtrlHelper {
             assert targetTree.getType() == CtrlParser.VAR;
             // skip the first child: it is the declared type
             for (int i = 1; i < targetTree.getChildCount(); i++) {
-                CtrlVar var = targetTree.getChild(i)
-                    .getCtrlVar();
+                CtrlVar var = targetTree.getChild(i).getCtrlVar();
                 if (var == null) {
                     throw new PreviousErrorException();
                 }
@@ -576,14 +562,12 @@ public class CtrlHelper {
             return;
         }
         for (Callable unit : collectActions(callTree)) {
-            assert callTree.getChild(0)
-                .getType() == CtrlParser.ID || unit instanceof Action;
+            assert callTree.getChild(0).getType() == CtrlParser.ID || unit instanceof Action;
             if (checkCall(callTree, unit, args)) {
                 Call call;
                 if (args != null) {
                     call = new Call(unit, args);
-                } else if (callTree.getChild(0)
-                    .getType() != ID) {
+                } else if (callTree.getChild(0).getType() != ID) {
                     call = new Call(unit, createUnitArgs(unit));
                 } else {
                     call = new Call(unit);
@@ -600,18 +584,14 @@ public class CtrlHelper {
         List<CtrlPar> unitArgs;
         // this is a group call, for which we create artificial output parameters
         unitArgs = new ArrayList<>();
-        boolean storeOutPars = getNamespace().getGrammarProperties()
-            .isStoreOutPars();
+        boolean storeOutPars = getNamespace().getGrammarProperties().isStoreOutPars();
         Signature<?> sig = unit.getSignature();
         for (int i = 0; i < sig.size(); i++) {
-            assert !sig.getPar(i)
-                .isInOnly();
+            assert !sig.getPar(i).isInOnly();
             CtrlPar arg;
             if (storeOutPars) {
                 String argName = unit.getQualName() + "$" + i;
-                String argType = sig.getPar(i)
-                    .getType()
-                    .getName();
+                String argType = sig.getPar(i).getType().getName();
                 arg = CtrlPar.outVar(null, argName, argType);
             } else {
                 arg = CtrlPar.wild();
@@ -650,8 +630,7 @@ public class CtrlHelper {
         result = new ArrayList<>();
         // stop at the closing RPAR
         for (int i = 0; i < argsTree.getChildCount() - 1; i++) {
-            CtrlPar arg = argsTree.getChild(i)
-                .getCtrlPar();
+            CtrlPar arg = argsTree.getChild(i).getCtrlPar();
             // if any of the arguments is null, an error was detected
             // and reported earlier; we silently fail
             if (arg == null) {
@@ -674,31 +653,20 @@ public class CtrlHelper {
         List<Callable> result = new ArrayList<>();
         if (nameTree.getType() == ID) {
             Callable unit = this.namespace.getCallable(unitName);
-            Action action = unit instanceof Action ? (Action) unit : null;
+            Action action = unit instanceof Action
+                ? (Action) unit
+                : null;
             if (unit == null) {
                 emitErrorMessage(callTree, "Unknown unit '%s'", unitName);
             } else if (action != null && action.getPriority() > 0) {
                 String message = "Explicit call of prioritised %s '%s' not allowed";
-                emitErrorMessage(callTree,
-                    message,
-                    unit.getKind()
-                        .getName(false),
-                    unitName);
-            } else if (action != null && action.getRole()
-                .isConstraint()) {
+                emitErrorMessage(callTree, message, unit.getKind().getName(false), unitName);
+            } else if (action != null && action.getRole().isConstraint()) {
                 String message = "Explicit call of %s property '%s' not allowed";
-                emitErrorMessage(callTree,
-                    message,
-                    action.getRole()
-                        .toString(),
-                    unitName);
+                emitErrorMessage(callTree, message, action.getRole().toString(), unitName);
             } else if (action != null && action.getPolicy() == CheckPolicy.OFF) {
                 String message = "Explicit call of disabled %s '%s' not allowed";
-                emitErrorMessage(callTree,
-                    message,
-                    action.getRole()
-                        .toString(),
-                    unitName);
+                emitErrorMessage(callTree, message, action.getRole().toString(), unitName);
             } else {
                 result.add(unit);
             }
@@ -724,8 +692,7 @@ public class CtrlHelper {
                     // the any or other was unqualified;
                     // only use the action if it is in scope
                     // meaning declared in the current package or imported
-                    matches = actionName.parent()
-                        .equals(this.namespace.getModuleName())
+                    matches = actionName.parent().equals(this.namespace.getModuleName())
                         || this.namespace.hasImport(actionName);
                 }
                 if (!matches) {
@@ -745,22 +712,19 @@ public class CtrlHelper {
      * the declared signature.
      */
     private boolean checkAssign(CtrlTree callTree, Callable unit, List<CtrlPar> args,
-        List<CtrlPar> targets) {
+                                List<CtrlPar> targets) {
         assert unit != null;
         assert targets != null;
         Signature<?> sig = unit.getSignature();
         // extract the non-output-only arguments
-        List<UnitPar> inPars = sig.stream()
-            .filter(v -> !v.isOutOnly())
-            .collect(Collectors.toList());
+        List<UnitPar> inPars
+            = sig.stream().filter(v -> !v.isOutOnly()).collect(Collectors.toList());
         // extract the output-only arguments
-        List<UnitPar> outPars = sig.stream()
-            .filter(v -> v.isOutOnly())
-            .collect(Collectors.toList());
+        List<UnitPar> outPars
+            = sig.stream().filter(v -> v.isOutOnly()).collect(Collectors.toList());
         QualName unitName = unit.getQualName();
-        String kindName = unit.getKind()
-            .getName(true);
-        String ruleSig = new Signature<UnitPar>(inPars).toString();
+        String kindName = unit.getKind().getName(true);
+        String ruleSig = new Signature<>(inPars).toString();
         // check the assignment targets against the output-only parameters
         boolean outResult = true;
         if (outPars.isEmpty()) {
@@ -770,25 +734,19 @@ public class CtrlHelper {
         } else {
             outResult = outPars.size() == targets.size();
             for (int i = 0; outResult && i < targets.size(); i++) {
-                outResult = outPars.get(i)
-                    .compatibleWith(targets.get(i));
+                outResult = outPars.get(i).compatibleWith(targets.get(i));
             }
             if (!outResult) {
                 String message = "Outcome of %s %s%s not assignable to variables %s";
                 String targetSig = toTypeString(targets, false);
-                emitErrorMessage(callTree,
-                    message,
-                    StringHandler.toLower(kindName),
-                    unitName,
-                    ruleSig,
-                    targetSig);
+                emitErrorMessage(callTree, message, Strings.toLower(kindName), unitName, ruleSig,
+                                 targetSig);
             }
         }
         // check the arguments against the input and in/out-parameters
         boolean inResult = true;
         if (args == null) {
-            inResult = inPars.stream()
-                .allMatch(v -> v.compatibleWith(CtrlPar.wild()));
+            inResult = inPars.stream().allMatch(v -> v.compatibleWith(CtrlPar.wild()));
             if (!inResult) {
                 String message = "%s %s%s not assignable without arguments";
                 emitErrorMessage(callTree, message, kindName, unitName, ruleSig);
@@ -796,8 +754,7 @@ public class CtrlHelper {
         } else {
             inResult = args.size() == inPars.size();
             for (int i = 0; inResult && i < args.size(); i++) {
-                inResult = inPars.get(i)
-                    .compatibleWith(args.get(i));
+                inResult = inPars.get(i).compatibleWith(args.get(i));
             }
             if (!inResult) {
                 String message = "%s %s%s not callable with arguments %s";
@@ -819,8 +776,7 @@ public class CtrlHelper {
         Signature<?> sig = unit.getSignature();
         Kind unitKind = unit.getKind();
         if (args == null) {
-            result = sig.stream()
-                .allMatch(v -> v.compatibleWith(CtrlPar.wild()));
+            result = sig.stream().allMatch(v -> v.compatibleWith(CtrlPar.wild()));
             if (!result) {
                 String message = "%s %s%s not applicable without arguments";
                 String ruleSig = sig.toString();
@@ -829,8 +785,7 @@ public class CtrlHelper {
         } else {
             result = args.size() == sig.size();
             for (int i = 0; result && i < args.size(); i++) {
-                result = sig.getPar(i)
-                    .compatibleWith(args.get(i));
+                result = sig.getPar(i).compatibleWith(args.get(i));
             }
             if (!result) {
                 String message = "%s %s%s not applicable for arguments %s";
@@ -843,11 +798,9 @@ public class CtrlHelper {
     }
 
     void checkEOF(CtrlTree EOFToken) {
-        if (this.packageName.isTop() && !this.namespace.getModuleName()
-            .isTop()) {
-            emitErrorMessage(EOFToken,
-                "Missing package declaration",
-                this.namespace.getControlName());
+        if (this.packageName.isTop() && !this.namespace.getModuleName().isTop()) {
+            emitErrorMessage(EOFToken, "Missing package declaration",
+                             this.namespace.getControlName());
         }
     }
 
@@ -875,8 +828,7 @@ public class CtrlHelper {
     /** Clears the name space errors. */
     void clearErrors() {
         // we're starting a new control expression forget the old errors
-        this.namespace.getErrors()
-            .clear();
+        this.namespace.getErrors().clear();
     }
 
     /**Adds an error to the name space, if possible prefixed with the line and

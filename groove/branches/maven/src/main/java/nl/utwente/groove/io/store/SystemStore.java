@@ -45,9 +45,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
@@ -187,7 +185,7 @@ public class SystemStore extends UndoableEditSupport {
      * @throws IOException if an error occurred while storing the rule
      */
     public Collection<AspectGraph> putGraphs(ResourceKind kind, Collection<AspectGraph> graphs,
-        boolean layout) throws IOException {
+                                             boolean layout) throws IOException {
         Collection<AspectGraph> result = Collections.emptySet();
         GraphBasedEdit edit = doPutGraphs(kind, graphs, layout);
         if (edit != null) {
@@ -204,10 +202,10 @@ public class SystemStore extends UndoableEditSupport {
      * @param layout flag indicating that this is a layout change only,
      * which should be propagated as {@link EditType#LAYOUT}.
      */
-    GraphBasedEdit doPutGraphs(ResourceKind kind, Collection<AspectGraph> newGraphs, boolean layout)
-        throws IOException {
+    GraphBasedEdit doPutGraphs(ResourceKind kind, Collection<AspectGraph> newGraphs,
+                               boolean layout) throws IOException {
         testInit();
-        Set<QualName> newNames = new HashSet<>();
+        List<QualName> newNames = new ArrayList<>();
         // if we're relabelling, it may be that there are already graphs
         // under the names of the new ones
         Set<AspectGraph> oldGraphs = new HashSet<>();
@@ -241,8 +239,8 @@ public class SystemStore extends UndoableEditSupport {
      * @return the named resources, insofar they existed
      * @throws IOException if the store is immutable
      */
-    public Collection<AspectGraph> deleteGraphs(ResourceKind kind, Collection<QualName> names)
-        throws IOException {
+    public Collection<AspectGraph> deleteGraphs(ResourceKind kind,
+                                                Collection<QualName> names) throws IOException {
         Collection<AspectGraph> result = Collections.emptySet();
         GraphBasedEdit edit = doDeleteGraphs(kind, names);
         if (edit != null) {
@@ -257,11 +255,11 @@ public class SystemStore extends UndoableEditSupport {
      * Implements the functionality of the {@link #deleteGraphs(ResourceKind, Collection)} method.
      * Returns a corresponding undoable edit.
      */
-    GraphBasedEdit doDeleteGraphs(ResourceKind kind, Collection<QualName> names)
-        throws IOException {
+    GraphBasedEdit doDeleteGraphs(ResourceKind kind,
+                                  Collection<QualName> names) throws IOException {
         testInit();
         List<AspectGraph> deletedGraphs = new ArrayList<>(names.size());
-        Set<QualName> activeNames = getRecordedActiveNames(kind);
+        List<QualName> activeNames = getRecordedActiveNames(kind);
         boolean activeChanged = false;
         for (QualName name : names) {
             AspectGraph graph = getGraphMap(kind).remove(name);
@@ -300,8 +298,8 @@ public class SystemStore extends UndoableEditSupport {
      * @return old (replaced) resources
      * @throws IOException if an error occurred while storing the rule
      */
-    public Map<QualName,String> putTexts(ResourceKind kind, Map<QualName,String> texts)
-        throws IOException {
+    public Map<QualName,String> putTexts(ResourceKind kind,
+                                         Map<QualName,String> texts) throws IOException {
         Map<QualName,String> result = null;
         TextBasedEdit edit = doPutTexts(kind, texts);
         if (edit != null) {
@@ -319,7 +317,7 @@ public class SystemStore extends UndoableEditSupport {
     TextBasedEdit doPutTexts(ResourceKind kind, Map<QualName,String> newTexts) throws IOException {
         testInit();
         Map<QualName,String> oldTexts = new HashMap<>();
-        Set<QualName> newNames = new HashSet<>();
+        List<QualName> newNames = new ArrayList<>();
         for (Map.Entry<QualName,String> entry : newTexts.entrySet()) {
             QualName name = entry.getKey();
             String newText = entry.getValue();
@@ -333,8 +331,9 @@ public class SystemStore extends UndoableEditSupport {
         }
         GrammarProperties oldProps = getProperties();
         GrammarProperties newProps = doEnableDefaultName(kind, newNames);
-        return new TextBasedEdit(kind, oldTexts.isEmpty() ? EditType.CREATE : EditType.MODIFY,
-            oldTexts, newTexts, oldProps, newProps);
+        return new TextBasedEdit(kind, oldTexts.isEmpty()
+            ? EditType.CREATE
+            : EditType.MODIFY, oldTexts, newTexts, oldProps, newProps);
     }
 
     /**
@@ -344,8 +343,8 @@ public class SystemStore extends UndoableEditSupport {
      * @return the named resources, insofar they existed
      * @throws IOException if the store is immutable
      */
-    public Map<QualName,String> deleteTexts(ResourceKind kind, Collection<QualName> names)
-        throws IOException {
+    public Map<QualName,String> deleteTexts(ResourceKind kind,
+                                            Collection<QualName> names) throws IOException {
         Map<QualName,String> result = null;
         TextBasedEdit deleteEdit = doDeleteTexts(kind, names);
         if (deleteEdit != null) {
@@ -364,7 +363,7 @@ public class SystemStore extends UndoableEditSupport {
         testInit();
         Map<QualName,String> oldTexts = new HashMap<>();
         boolean activeChanged = false;
-        Set<QualName> activeNames = getRecordedActiveNames(kind);
+        var activeNames = getRecordedActiveNames(kind);
         for (QualName name : names) {
             assert name != null;
             String text = getTextMap(kind).remove(name);
@@ -397,7 +396,8 @@ public class SystemStore extends UndoableEditSupport {
      * @throws IOException if an error occurred while storing the renamed rule
      */
     public void rename(ResourceKind kind, QualName oldName, QualName newName) throws IOException {
-        MyEdit edit = kind.isGraphBased() ? doRenameGraph(kind, oldName, newName)
+        MyEdit edit = kind.isGraphBased()
+            ? doRenameGraph(kind, oldName, newName)
             : doRenameText(kind, oldName, newName);
         if (edit != null) {
             edit.checkAndSetVersion();
@@ -410,8 +410,8 @@ public class SystemStore extends UndoableEditSupport {
      * for text-based resources.
      * Returns an undoable edit wrapping this functionality.
      */
-    TextBasedEdit doRenameText(ResourceKind kind, QualName oldName, QualName newName)
-        throws IOException {
+    TextBasedEdit doRenameText(ResourceKind kind, QualName oldName,
+                               QualName newName) throws IOException {
         testInit();
         Map<QualName,String> oldTexts = new HashMap<>();
         Map<QualName,String> newTexts = new HashMap<>();
@@ -425,7 +425,7 @@ public class SystemStore extends UndoableEditSupport {
         // check if this affects the system properties
         GrammarProperties oldProps = null;
         GrammarProperties newProps = null;
-        Set<QualName> activeNames = getRecordedActiveNames(kind);
+        List<QualName> activeNames = getRecordedActiveNames(kind);
         if (activeNames.remove(oldName)) {
             oldProps = getProperties();
             newProps = getProperties().clone();
@@ -441,8 +441,8 @@ public class SystemStore extends UndoableEditSupport {
      * for graph-based resources.
      * Returns an undoable edit wrapping this functionality.
      */
-    GraphBasedEdit doRenameGraph(ResourceKind kind, QualName oldName, QualName newName)
-        throws IOException {
+    GraphBasedEdit doRenameGraph(ResourceKind kind, QualName oldName,
+                                 QualName newName) throws IOException {
         testInit();
         AspectGraph oldGraph = getGraphMap(kind).remove(oldName);
         assert oldGraph != null;
@@ -456,7 +456,7 @@ public class SystemStore extends UndoableEditSupport {
         // change the properties if there is a change in the enabled types
         GrammarProperties oldProps = null;
         GrammarProperties newProps = null;
-        Set<QualName> activeNames = getRecordedActiveNames(kind);
+        List<QualName> activeNames = getRecordedActiveNames(kind);
         if (activeNames.remove(oldName)) {
             oldProps = getProperties();
             newProps = oldProps.clone();
@@ -543,8 +543,9 @@ public class SystemStore extends UndoableEditSupport {
             result.addEdit(edit);
         }
         result.end();
-        return result.getChange()
-            .isEmpty() ? null : result;
+        return result.getChange().isEmpty()
+            ? null
+            : result;
     }
 
     /**
@@ -595,8 +596,8 @@ public class SystemStore extends UndoableEditSupport {
     }
 
     /** The name-to-graph maps of the store. */
-    private final Map<ResourceKind,Map<QualName,AspectGraph>> graphMap =
-        new EnumMap<>(ResourceKind.class);
+    private final Map<ResourceKind,Map<QualName,AspectGraph>> graphMap
+        = new EnumMap<>(ResourceKind.class);
 
     /** Returns the resource map for a given text-based resource kind. */
     private final Map<QualName,String> getTextMap(ResourceKind kind) {
@@ -608,8 +609,8 @@ public class SystemStore extends UndoableEditSupport {
     }
 
     /** The name-to-text maps of the store. */
-    private final Map<ResourceKind,Map<QualName,String>> textMap =
-        new EnumMap<>(ResourceKind.class);
+    private final Map<ResourceKind,Map<QualName,String>> textMap
+        = new EnumMap<>(ResourceKind.class);
 
     /**
      * Edits the system properties by setting the default name of a given
@@ -617,14 +618,14 @@ public class SystemStore extends UndoableEditSupport {
      * and no resource of that kind is currently active.
      * @return the new stored) properties, or {@code null} if no change was made
      */
-    private GrammarProperties doEnableDefaultName(ResourceKind kind, Set<QualName> newNames)
-        throws IOException {
+    private GrammarProperties doEnableDefaultName(ResourceKind kind,
+                                                  List<QualName> newNames) throws IOException {
         GrammarProperties result = null;
         Optional<QualName> defaultName = kind.getDefaultName();
-        if (defaultName.isPresent() && getProperties().getActiveNames(kind)
-            .isEmpty() && newNames.contains(defaultName.get())) {
+        if (defaultName.isPresent() && getProperties().getActiveNames(kind).isEmpty()
+            && newNames.contains(defaultName.get())) {
             result = getProperties().clone();
-            result.setActiveNames(kind, Collections.singleton(defaultName.get()));
+            result.setActiveNames(kind, Collections.singletonList(defaultName.get()));
             doPutProperties(result);
         }
         return result;
@@ -675,8 +676,9 @@ public class SystemStore extends UndoableEditSupport {
             }
         }
         result.end();
-        return result.getChange()
-            .isEmpty() ? null : result;
+        return result.getChange().isEmpty()
+            ? null
+            : result;
     }
 
     /**
@@ -686,8 +688,8 @@ public class SystemStore extends UndoableEditSupport {
      */
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof SystemStore) && ((SystemStore) obj).getLocation()
-            .equals(getLocation());
+        return (obj instanceof SystemStore)
+            && ((SystemStore) obj).getLocation().equals(getLocation());
     }
 
     /**
@@ -715,12 +717,13 @@ public class SystemStore extends UndoableEditSupport {
      * Returns a copy of the currently activated names of a given resource kind,
      * as stored in the grammar properties.
      */
-    private SortedSet<QualName> getRecordedActiveNames(ResourceKind kind) {
-        if (kind == RULE || kind == GROOVY || kind == PROPERTIES) {
-            return new TreeSet<>();
-        } else {
-            return new TreeSet<>(getProperties().getActiveNames(kind));
+    private List<QualName> getRecordedActiveNames(ResourceKind kind) {
+        List<QualName> result = new ArrayList<>();
+        if (kind != RULE && kind != GROOVY && kind != PROPERTIES) {
+            result.addAll(getProperties().getActiveNames(kind));
+            result.sort(null);
         }
+        return result;
     }
 
     /**
@@ -742,14 +745,13 @@ public class SystemStore extends UndoableEditSupport {
 
             // backwards compatibility: set role and name
             xmlGraph.setRole(kind.getGraphRole());
-            xmlGraph.setName(fileEntry.getKey()
-                .toString());
+            xmlGraph.setName(fileEntry.getKey().toString());
 
             // store graph in corresponding map
             AspectGraph graph = xmlGraph.toAspectGraph();
             Object oldEntry = getGraphMap(kind).put(fileEntry.getKey(), graph);
-            assert oldEntry == null : String
-                .format("Duplicate %s name '%s'", kind.getGraphRole(), fileEntry.getKey());
+            assert oldEntry == null : String.format("Duplicate %s name '%s'", kind.getGraphRole(),
+                                                    fileEntry.getKey());
         }
     }
 
@@ -785,12 +787,12 @@ public class SystemStore extends UndoableEditSupport {
      * @throws IOException if an error occurs while trying to list the files
      * @throws FormatException if there is a subdirectory name with an error
      */
-    private Map<QualName,File> collectResources(ResourceKind kind, File path, ModuleName pathName)
-        throws IOException, FormatException {
+    private Map<QualName,File> collectResources(ResourceKind kind, File path,
+                                                ModuleName pathName) throws IOException,
+                                                                     FormatException {
         Map<QualName,File> result = new HashMap<>();
         // find all files in the current path
-        File[] curfiles = path.listFiles(kind.getFileType()
-            .getFilter());
+        File[] curfiles = path.listFiles(kind.getFileType().getFilter());
         if (curfiles == null) {
             throw new IOException(
                 LOAD_ERROR + ": unable to get list of files " + "in path " + path);
@@ -800,10 +802,8 @@ public class SystemStore extends UndoableEditSupport {
         // process all files one by one
         for (File file : curfiles) {
             // get qualified name of file
-            String fileName = kind.getFileType()
-                .stripExtension(file.getName());
-            QualName qualFileName = pathName.extend(fileName)
-                .testValid();
+            String fileName = kind.getFileType().stripExtension(file.getName());
+            QualName qualFileName = pathName.extend(fileName).testValid();
             if (file.isDirectory()) {
                 result.putAll(collectResources(kind, file, qualFileName));
             } else {
@@ -849,14 +849,12 @@ public class SystemStore extends UndoableEditSupport {
 
     /** Returns the file that by default holds the system properties. */
     private File getDefaultPropertiesFile() {
-        return new File(this.file, PROPERTIES.getFileType()
-            .addExtension(Groove.PROPERTY_NAME));
+        return new File(this.file, PROPERTIES.getFileType().addExtension(Groove.PROPERTY_NAME));
     }
 
     /** Returns the file that held the system properties in the distant past. */
     private File getOldDefaultPropertiesFile() {
-        return new File(this.file, PROPERTIES.getFileType()
-            .addExtension(this.name));
+        return new File(this.file, PROPERTIES.getFileType().addExtension(this.name));
     }
 
     private void saveText(ResourceKind kind, QualName name, String program) throws IOException {
@@ -919,12 +917,12 @@ public class SystemStore extends UndoableEditSupport {
             // convert numeric value of TRANSITION_PARAMETERS
             GrammarKey paramsKey = GrammarKey.TRANSITION_PARAMETERS;
             String paramsVal = (String) props.get(paramsKey.getName());
-            if (paramsVal != null && !paramsKey.parser()
-                .accepts(paramsVal)) {
+            if (paramsVal != null && !paramsKey.parser().accepts(paramsVal)) {
                 try {
                     int paramsIntVal = Integer.parseInt(paramsVal);
-                    result
-                        .setUseParameters(paramsIntVal == 0 ? ThreeValued.FALSE : ThreeValued.TRUE);
+                    result.setUseParameters(paramsIntVal == 0
+                        ? ThreeValued.FALSE
+                        : ThreeValued.TRUE);
                 } catch (NumberFormatException exc) {
                     // it was not a number either; remove the key altogether
                     result.remove(paramsKey.getName());
@@ -939,9 +937,7 @@ public class SystemStore extends UndoableEditSupport {
     /** Returns a clone of a given properties bundle where the derived properties have been added. */
     private GrammarProperties addDerivedProperties(GrammarProperties properties) {
         GrammarProperties result = properties.clone();
-        result.put(GrammarKey.LOCATION.getName(),
-            this.file.toPath()
-                .toString());
+        result.put(GrammarKey.LOCATION.getName(), this.file.toPath().toString());
         return result;
     }
 
@@ -972,8 +968,7 @@ public class SystemStore extends UndoableEditSupport {
             basis.mkdir();
         }
         String shortName = name.last();
-        return new File(basis, kind.getFileType()
-            .addExtension(shortName));
+        return new File(basis, kind.getFileType().addExtension(shortName));
     }
 
     /** Posts the edit, and also notifies the observers. */
@@ -1022,8 +1017,8 @@ public class SystemStore extends UndoableEditSupport {
     private boolean initialised;
 
     /** Saves the content of a given system store to file. */
-    static public SystemStore save(File file, SystemStore store, boolean clearDir)
-        throws IOException {
+    static public SystemStore save(File file, SystemStore store,
+                                   boolean clearDir) throws IOException {
         if (!GRAMMAR.hasExtension(file)) {
             throw new IOException(
                 String.format("File '%s' does not refer to a production system", file));
@@ -1055,10 +1050,7 @@ public class SystemStore extends UndoableEditSupport {
                 } else if (kind.isTextBased()) {
                     result.putTexts(kind, store.getTexts(kind));
                 } else {
-                    result.putGraphs(kind,
-                        store.getGraphs(kind)
-                            .values(),
-                        false);
+                    result.putGraphs(kind, store.getGraphs(kind).values(), false);
                 }
             }
             if (newFile != null) {
@@ -1111,9 +1103,7 @@ public class SystemStore extends UndoableEditSupport {
             if (create) {
                 throw new IOException("Can't create zipped grammar " + file.toString());
             }
-            result = newStoreFromTmp(file.getPath(),
-                Unzipper.instance()
-                    .unzip(file));
+            result = newStoreFromTmp(file.getPath(), Unzipper.instance().unzip(file));
         } else {
             result = new SystemStore(file, create);
         }
@@ -1132,9 +1122,7 @@ public class SystemStore extends UndoableEditSupport {
         try {
             result = newStore(new File(url.toURI()), false);
         } catch (IllegalArgumentException exc) {
-            result = newStoreFromTmp(url.toString(),
-                Unzipper.instance()
-                    .unzip(url));
+            result = newStoreFromTmp(url.toString(), Unzipper.instance().unzip(url));
         } catch (URISyntaxException exc) {
             throw Exceptions.UNREACHABLE;
         }
@@ -1142,8 +1130,7 @@ public class SystemStore extends UndoableEditSupport {
     }
 
     static private SystemStore newStoreFromTmp(String orig, Path path) throws IOException {
-        File[] files = path.toFile()
-            .listFiles();
+        File[] files = path.toFile().listFiles();
         if (files.length != 1) {
             throw new IOException(
                 String.format("Zip file %s should only contain production system", orig));
@@ -1257,7 +1244,8 @@ public class SystemStore extends UndoableEditSupport {
     /** Edit consisting of additions and deletions of text-based resources. */
     class TextBasedEdit extends MyEdit {
         public TextBasedEdit(ResourceKind kind, EditType type, Map<QualName,String> oldTexts,
-            Map<QualName,String> newTexts, GrammarProperties oldProps, GrammarProperties newProps) {
+                             Map<QualName,String> newTexts, GrammarProperties oldProps,
+                             GrammarProperties newProps) {
             super(type, kind);
             this.oldTexts = oldTexts;
             this.newTexts = newTexts;
@@ -1332,8 +1320,8 @@ public class SystemStore extends UndoableEditSupport {
     /** Edit consisting of additions and deletions of graph-based resources. */
     class GraphBasedEdit extends MyEdit {
         public GraphBasedEdit(ResourceKind kind, EditType type, Collection<AspectGraph> oldGraphs,
-            Collection<AspectGraph> newGraphs, GrammarProperties oldProps,
-            GrammarProperties newProps) {
+                              Collection<AspectGraph> newGraphs, GrammarProperties oldProps,
+                              GrammarProperties newProps) {
             super(type, kind);
             this.oldGraphs = oldGraphs;
             this.newGraphs = newGraphs;
@@ -1415,10 +1403,8 @@ public class SystemStore extends UndoableEditSupport {
     class PutPropertiesEdit extends MyEdit {
         public PutPropertiesEdit(GrammarProperties oldProperties, GrammarProperties newProperties) {
             super(EditType.MODIFY, PROPERTIES);
-            for (ResourceKind kind : EnumSet.of(ResourceKind.PROLOG,
-                ResourceKind.TYPE,
-                ResourceKind.HOST,
-                ResourceKind.CONTROL)) {
+            for (ResourceKind kind : EnumSet.of(ResourceKind.PROLOG, ResourceKind.TYPE,
+                                                ResourceKind.HOST, ResourceKind.CONTROL)) {
                 Set<QualName> oldNames = oldProperties.getActiveNames(kind);
                 Set<QualName> newNames = newProperties.getActiveNames(kind);
                 if (!oldNames.equals(newNames)) {

@@ -78,7 +78,7 @@ public class DeltaSet<T> extends AbstractSet<T> {
         // the following is eqivalent to a nested iterator consisting of an
         // iterator over the added set followed by a filtered iterator over
         // the lower set. Presumably it is more efficient this way?
-        return new Iterator<T>() {
+        return new Iterator<>() {
             @Override
             public void remove() {
                 this.iter.remove();

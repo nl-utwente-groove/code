@@ -41,7 +41,7 @@ abstract public class TransformSet<T,U> extends AbstractSet<U> {
      */
     @Override
     public Iterator<U> iterator() {
-        return new TransformIterator<T,U>(this.inner.iterator()) {
+        return new TransformIterator<>(this.inner.iterator()) {
             /**
              * Delegates the method to the enclosing
              * {@link TransformSet#toOuter(Object)}.

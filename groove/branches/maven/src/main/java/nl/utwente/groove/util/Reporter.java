@@ -21,8 +21,6 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.TreeMap;
 
-import nl.utwente.groove.util.parse.StringHandler;
-
 /**
  * Class used to generate performance reports. Performance reports concern
  * number of calls made and time taken.
@@ -160,8 +158,8 @@ public class Reporter {
         for (Reporter subreporter : this.subreporters.values()) {
             this.methodNameLength = Math.max(subreporter.getName().length(), this.methodNameLength);
             maxTopCount = Math.max(subreporter.topCount, maxTopCount);
-            maxNestedCount =
-                Math.max(subreporter.nestedCount - subreporter.topCount, maxNestedCount);
+            maxNestedCount
+                = Math.max(subreporter.nestedCount - subreporter.topCount, maxNestedCount);
             maxTotTime = Math.max(subreporter.duration, maxTotTime);
             long avgDuration = 0;
             if (TIME_TOP_ONLY) {
@@ -186,19 +184,19 @@ public class Reporter {
      * </ul>
      */
     private void myReport(PrintWriter out, int methodNameLength, int topCountLength,
-            int nestedCountLength, int totTimeLength, int avgTimeLength) {
+                          int nestedCountLength, int totTimeLength, int avgTimeLength) {
         out.println("Reporting " + this.type);
         for (Reporter subreporter : this.subreporters.values()) {
-            out.print(INDENT + StringHandler.pad(subreporter.getName(), methodNameLength, false) + " ");
+            out.print(INDENT + Strings.pad(subreporter.getName(), methodNameLength, false) + " ");
             out.print(TOP_COUNT_FIELD + "="
-                + StringHandler.pad("" + subreporter.topCount, topCountLength, false) + " ");
-            out.print(NESTED_COUNT_FIELD
-                + "="
-                + StringHandler.pad("" + (subreporter.nestedCount - subreporter.topCount),
-                    nestedCountLength, false) + " ");
+                + Strings.pad("" + subreporter.topCount, topCountLength, false) + " ");
+            out.print(NESTED_COUNT_FIELD + "="
+                + Strings.pad("" + (subreporter.nestedCount - subreporter.topCount),
+                              nestedCountLength, false)
+                + " ");
             if (TIME_METHODS) {
                 out.print(TOT_TIME_FIELD + "="
-                    + StringHandler.pad("" + subreporter.duration, totTimeLength, false) + " ");
+                    + Strings.pad("" + subreporter.duration, totTimeLength, false) + " ");
                 long avgDuration;
                 if (subreporter.duration > 0) {
                     if (TIME_TOP_ONLY) {
@@ -209,7 +207,7 @@ public class Reporter {
                 } else {
                     avgDuration = 0;
                 }
-                out.print(AVG_TIME_FIELD + "=" + StringHandler.pad("" + avgDuration, avgTimeLength, false)
+                out.print(AVG_TIME_FIELD + "=" + Strings.pad("" + avgDuration, avgTimeLength, false)
                     + " ");
             }
             out.println();
@@ -290,13 +288,13 @@ public class Reporter {
             // print the method reports from the individual reporters
             for (Reporter reporter : getAllReporters()) {
                 reporter.myReport(out, methodNameLength, topCountLength, nestedCountLength,
-                    totTimeLength, avgTimeLength);
+                                  totTimeLength, avgTimeLength);
                 out.println();
             }
             // print the total amounts of time measured by the reporters
             out.println("Total measured time spent in");
             for (Reporter reporter : getAllReporters()) {
-                out.println(INDENT + StringHandler.pad(reporter.type.toString(), classNameLength, false)
+                out.println(INDENT + Strings.pad(reporter.type.toString(), classNameLength, false)
                     + ": " + reporter.totalTime + " ms");
             }
             out.println();
@@ -359,13 +357,12 @@ public class Reporter {
     static private final boolean TIME_TOP_ONLY = TIME_METHODS && false;
     static private final boolean REPORT = true;
     /** Sorted map of all registered reporters */
-    static private Map<Class<?>,Reporter> reporters = new TreeMap<>(
-        new Comparator<Class<?>>() {
-            @Override
-            public int compare(Class<?> o1, Class<?> o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
+    static private Map<Class<?>,Reporter> reporters = new TreeMap<>(new Comparator<Class<?>>() {
+        @Override
+        public int compare(Class<?> o1, Class<?> o2) {
+            return o1.getName().compareTo(o2.getName());
+        }
+    });
     /** System time spent reporting */
     static private long reportTime;
 }

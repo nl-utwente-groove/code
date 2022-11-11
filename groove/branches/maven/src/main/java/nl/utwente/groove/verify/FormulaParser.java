@@ -49,8 +49,8 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
     /**
      * Constructs a new parser.
      */
-    private FormulaParser() {
-        super(new Formula(LogicOp.PROP));
+    private FormulaParser(String description) {
+        super(description, new Formula(LogicOp.PROP));
         setQualIds(true);
     }
 
@@ -119,14 +119,12 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
     protected Formula parseConst() throws FormatException {
         Formula result = createTree(LogicOp.PROP);
         Token constToken = consume(CONST);
-        Sort sort = constToken.type(CONST)
-            .sort();
+        Sort sort = constToken.type(CONST).sort();
         if (sort != Sort.STRING) {
             throw new FormatException("Can't parse '%s' constant as formula at index '%s'", sort,
                 constToken.start());
         }
-        String label = constToken.createConstant()
-            .getStringRepr();
+        String label = constToken.createConstant().getStringRepr();
         result = Formula.atom(label);
         setParseString(result, constToken);
         return result;
@@ -169,8 +167,7 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
         for (Field field : LogicOp.class.getFields()) {
             if (field.isEnumConstant()) {
                 LogicOp token = nameToTokenMap.get(field.getName());
-                if (logic.getOps()
-                    .contains(token)) {
+                if (logic.getOps().contains(token)) {
                     Help help = Help.createHelp(field, nameToSymbolMap);
                     if (help != null) {
                         result.put(help.getItem(), help.getTip());
@@ -201,11 +198,13 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
 
     /** Returns the singleton instance of this parser for CTL or LTL. */
     public final static FormulaParser instance(Logic logic) {
-        return logic == Logic.LTL ? LTL_INSTANCE : CTL_INSTANCE;
+        return logic == Logic.LTL
+            ? LTL_INSTANCE
+            : CTL_INSTANCE;
     }
 
-    private final static FormulaParser INSTANCE = new FormulaParser();
-    private final static FormulaParser LTL_INSTANCE = new FormulaParser() {
+    private final static FormulaParser INSTANCE = new FormulaParser("Temporal logic formula");
+    private final static FormulaParser LTL_INSTANCE = new FormulaParser("LTL formula") {
         @Override
         public Formula parse(String input) {
             Formula result = super.parse(input);
@@ -217,7 +216,7 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
             return result;
         }
     };
-    private final static FormulaParser CTL_INSTANCE = new FormulaParser() {
+    private final static FormulaParser CTL_INSTANCE = new FormulaParser("CTL formula") {
         @Override
         public Formula parse(String input) {
             Formula result = super.parse(input);

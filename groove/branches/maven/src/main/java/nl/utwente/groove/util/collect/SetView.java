@@ -16,7 +16,6 @@
  */
 package nl.utwente.groove.util.collect;
 
-
 import java.util.AbstractSet;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -80,7 +79,7 @@ public abstract class SetView<T> extends AbstractSet<T> {
      */
     @Override
     public Iterator<T> iterator() {
-        return new FilterIterator<T>(this.set.iterator()) {
+        return new FilterIterator<>(this.set.iterator()) {
             /** Delegates the approval to the surrounding {@link SetView}. */
             @Override
             protected boolean approves(Object obj) {

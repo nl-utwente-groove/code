@@ -18,62 +18,76 @@ package nl.utwente.groove.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
-import nl.utwente.groove.grammar.GrammarChecker;
+import org.eclipse.jdt.annotation.Nullable;
+
+import nl.utwente.groove.algebra.Algebra;
+import nl.utwente.groove.algebra.AlgebraFamily;
+import nl.utwente.groove.explore.ExploreType;
+import nl.utwente.groove.grammar.Action.Role;
+import nl.utwente.groove.grammar.CheckPolicy;
+import nl.utwente.groove.grammar.CheckPolicy.PolicyMap;
+import nl.utwente.groove.grammar.GrammarKey;
+import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
+import nl.utwente.groove.grammar.rule.MethodName;
+import nl.utwente.groove.transform.oracle.ValueOracleFactory;
 import nl.utwente.groove.util.parse.FormatChecker;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
+import nl.utwente.groove.util.parse.ParsableKey;
 import nl.utwente.groove.util.parse.Parser;
 
 /**
  * Specialised properties class.
+ * The underlying map is from {@link String} keys to {@link String} values, but this class
+ * adds functionality to
+ * <ul>
+ * <li> access the keys using {@link Key}-typed objects, each of which accommodates actual values of a dedicated type
+ * <li> access the values using {@link Entry}-typed objects wrapping the actual values for the {@link Key}s
+ * <li> parsing and unparsing between {@link String}s and {@link Entry}s
+ * <li> wrapping and unwrapping between {@link Entry}s and the actual values for the corresponding keys
+ * </ul>
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class Properties extends java.util.Properties implements Fixable {
+public abstract class Properties<K extends Properties.Key<K,E>,E extends Properties.Entry<K,E>>
+    extends java.util.Properties implements Fixable {
     /** Constructs a properties object with keys of a given type. */
-    protected Properties(Class<? extends PropertyKey<?>> keyType) {
+    protected Properties(Class<K> keyType) {
         this.keyType = keyType;
-        this.keyMap = new LinkedHashMap<>();
-        for (PropertyKey<?> key : keyType.getEnumConstants()) {
-            this.keyMap.put(key.getName(), key);
-        }
     }
 
     /** Returns the key type of this properties class. */
-    public Class<? extends PropertyKey<?>> getKeyType() {
+    public Class<K> getKeyType() {
         return this.keyType;
     }
 
-    private final Class<? extends PropertyKey<?>> keyType;
+    private final Class<K> keyType;
 
-    /** Returns the key with a given name, if any. */
-    public PropertyKey<?> getKey(String name) {
-        return this.keyMap.get(name);
-    }
-
-    private final Map<String,PropertyKey<?>> keyMap;
+    /** Returns the key with a given name, if any; or {@code null} if the name is not a recognisable key */
+    abstract public K getKey(String name);
 
     /** Returns a map from property keys to checkers driven by a given grammar model. */
-    public CheckerMap getCheckers(final GrammarModel grammar) {
-        CheckerMap result = new CheckerMap();
-        for (final PropertyKey<?> key : getKeyType().getEnumConstants()) {
+    public CheckerMap<K> getCheckers(final GrammarModel grammar) {
+        CheckerMap<K> result = new CheckerMap<>();
+        for (final K key : getKeyType().getEnumConstants()) {
             FormatChecker<String> checker;
-            if (key instanceof GrammarChecker checkerKey) {
-                checker = new FormatChecker<String>() {
+            if (key instanceof GrammarKey checkerKey) {
+                checker = new FormatChecker<>() {
                     @Override
                     public FormatErrorSet check(String value) {
                         try {
-                            return checkerKey.check(grammar,
-                                key.parser()
-                                    .parse(value));
+                            return checkerKey.check(grammar, checkerKey.parse(value));
                         } catch (FormatException exc) {
                             return exc.getErrors();
                         }
@@ -101,61 +115,71 @@ public abstract class Properties extends java.util.Properties implements Fixable
         return result.toString();
     }
 
-    /** Retrieves and parses the value for a given key.
-     * Returns the default value for the key if the stored value contains an error. */
-    protected Object parsePropertyOrDefault(PropertyKey<?> key) {
+    /** Retrieves and parses the stored value for a given key.
+     * Returns the default entry for the key if the stored value contains an error. */
+    protected E parsePropertyOrDefault(K key) {
         try {
             return parseProperty(key);
         } catch (FormatException exc) {
-            return key.parser()
-                .getDefaultValue();
+            return key.parser().getDefaultValue();
         }
     }
 
-    /** Retrieves and parses the value for a given key.
-     * Returns the default value for the key if the stored value contains an error. */
-    public Object parseProperty(PropertyKey<?> key) throws FormatException {
+    /** Retrieves and parses the entry for a given key.
+     * Throws a {@link FormatException} if the stored (string) value contains an error. */
+    public E parseProperty(K key) throws FormatException {
         String result = getProperty(key.getName());
-        Parser<?> parser = key.parser();
-        return parser.parse(result);
+        return key.parser().parse(result == null
+            ? ""
+            : result);
     }
 
-    /** Stores a property value, converted to a parsable string. */
-    public void storeProperty(PropertyKey<?> key, Object value) {
-        assert key.parser()
-            .isValue(value) : String.format("%s is not appropriate for %s", value, key);
-        Parser<?> parser = key.parser();
-        if (parser.isDefault(value)) {
-            remove(key.getName());
+    /** Stores a property value in the map.
+     * The value should be of the type expected by the key.
+     * @throws IllegalArgumentException if {@code value} is not a valid value for {@code key}
+     */
+    public void storeValue(K key, Object value) throws IllegalArgumentException {
+        setEntry(key, key.wrap(value));
+    }
+
+    /** Stores a property entry in the map. */
+    public void setEntry(K key, E entry) {
+        if (key.isDefault(entry)) {
+            remove(key);
         } else {
-            setProperty(key.getName(), parser.toParsableString(value));
+            setProperty(key, entry.unparse());
         }
     }
 
-    /** Convenience method to retrieve a property by key value rather than string. */
-    public String getProperty(PropertyKey<?> key) {
-        String result = getProperty(key.getName());
-        if (result == null) {
-            result = key.parser()
-                .getDefaultString();
-        }
-        return result;
+    /** Convenience method to retrieve a property by key value rather than key name. */
+    public @Nullable String getProperty(K key) {
+        return getProperty(key.getName());
+    }
+
+    /** Convenience method to remove a property by key value rather than key name. */
+    public @Nullable Object remove(K key) {
+        return remove(key.getName());
+    }
+
+    /** Convenience method to store a property value by key value rather than key name. */
+    public String setProperty(Key<K,E> key, String value) {
+        return setProperty(key.getName(), value);
     }
 
     @Override
-    public String setProperty(String keyword, String value) {
+    public String setProperty(String keyword, String value) throws IllegalArgumentException {
         testFixed(false);
+        assert keyword != null;
         String oldValue;
-        PropertyKey<?> key = getKey(keyword);
-        if (value == null || value.length() == 0) {
-            oldValue = (String) remove(keyword);
-        } else if (key == null) {
+        K key = getKey(keyword);
+        if (key == null) {
             // this is a non-system key
             oldValue = (String) super.setProperty(keyword, value);
-        } else if (!key.parser()
-            .accepts(value) || key.parser()
-                .isDefault(value)) {
+        } else if (value == null || key.parser().isDefault(value)) {
             oldValue = (String) remove(keyword);
+        } else if (!key.parser().accepts(value)) {
+            throw Exceptions.illegalArg("Value '%s' is not appropriate for key '%s'", value,
+                                        keyword);
         } else {
             oldValue = (String) super.setProperty(keyword, value);
         }
@@ -195,8 +219,8 @@ public abstract class Properties extends java.util.Properties implements Fixable
      * @see #setFixed()
      */
     @Override
-    public synchronized void loadFromXML(InputStream in)
-        throws IOException, InvalidPropertiesFormatException {
+    public synchronized void loadFromXML(InputStream in) throws IOException,
+                                                         InvalidPropertiesFormatException {
         testFixed(false);
         clear();
         super.loadFromXML(in);
@@ -255,8 +279,353 @@ public abstract class Properties extends java.util.Properties implements Fixable
         return Collections.unmodifiableSet(super.entrySet());
     }
 
+    /**
+     * Interface for property keys; that is,
+     * keys that are used in a {@link Properties} object.
+     * @author Arend Rensink
+     * @version $Id$
+     */
+    public static interface Key<K extends Key<K,E>,E extends Entry<K,E>> extends ParsableKey<E> {
+        /** Short description for user consumption. */
+        String getKeyPhrase();
+
+        /** Indicates if this is a system key. */
+        boolean isSystem();
+
+        /** Indicates if the value for this key is derived, i.e.,
+         * not stored or modifiable.
+         * Derived keys are always system keys.
+         */
+        default boolean isDerived() {
+            return false;
+        }
+
+        /** Specialises the type of the interface. */
+        @Override
+        KeyParser<K,E> parser();
+
+        /** Convenience method for {@code parser().getDefaultValue()}. */
+        @Override
+        default public E getDefaultValue() {
+            return parser().getDefaultValue();
+        }
+
+        /** Wraps a given value into an entry for this key.
+         * First checks whether the value is of the right type for this key.
+         * @throws IllegalArgumentException of {@code value} is not of the right type for this key.
+         * */
+        E wrap(Object value) throws IllegalArgumentException;
+
+        /** Checks whether the value is of the right type for this key, using #cast.
+         * @throws IllegalArgumentException of {@code value} is not of the right type for this key.
+         * */
+        default void check(E value) throws IllegalArgumentException {
+            wrap(value);
+        }
+
+        /** Unwraps the value in a given {@link Entry}.
+         * First tests whether the entry's key equals {@code this}, and throws
+         * an {@link IllegalArgumentException} otherwise.
+         * The return type defaults to {@link Object}, but may be specialised by implementations
+         * to cast to the actual type for this key.
+         * @throws IllegalArgumentException if the key of {@code entry} does not equal {@code this}
+         */
+        default Object unwrap(E entry) throws IllegalArgumentException {
+            if (entry.key() != this) {
+                throw Exceptions.illegalArg("Entry '%s' does not correspond to key '%s'", entry,
+                                            this);
+            }
+            return entry.value();
+        }
+
+        /** Parses a given string value into an entry for this key.
+         * Convenience method for {@link KeyParser#parse(String)} called on {@code value}
+         * @throws FormatException if {@code value} cannot be parsed.
+         */
+        @Override
+        default E parse(String value) throws FormatException {
+            return parser().parse(value);
+        }
+
+        /** Returns the value for this key stored in the given map.
+         * Returns the default value if the key is not in the map, or the stored value is not a parsable string.
+         * Concrete keys may specialise the return type of this method.
+         */
+        @SuppressWarnings("unchecked")
+        default Object parseFrom(Properties<K,E> properties) {
+            E entry;
+            try {
+                entry = properties.parseProperty((K) this);
+            } catch (FormatException exc) {
+                entry = getDefaultValue();
+            }
+            return entry.value();
+        }
+
+        /** Returns the type of the actual values of this key.
+         * Note that this is <i>not</i> the value type of the parser (which is {@link Entry})
+         * but the value type of the inner parser.
+         */
+        ValueType getKeyType();
+
+        /**
+         * Start character that distinguishes system properties from user-definable
+         * properties. Any string starting with this character is a system key.
+         */
+        static public final String SYSTEM_KEY_PREFIX = "$";
+    }
+
+    /** Exhaustive enumeration of all value types occurring for {@link Key} implementations. */
+    public static enum ValueType {
+        /** Value for type {@link Boolean}. */
+        BOOLEAN(Boolean.class),
+        /** Value for type {@link Integer}. */
+        INTEGER(Integer.class),
+        /** Value for type {@link Integer}. */
+        STRING(String.class),
+        /** Value for type {@link List}. */
+        QUAL_NAME_LIST(List.class),
+        /** Value for type {@link MethodName}. */
+        METHOD_NAME(Optional.class),
+        /** Value for type {@link List}. */
+        STRING_LIST(List.class),
+        /** Value for type {@link CheckPolicy}. */
+        CHECK_POLICY(CheckPolicy.class),
+        /** Value for type {@link PolicyMap}. */
+        POLICY_MAP(CheckPolicy.PolicyMap.class),
+        /** Value for type {@link Algebra}. */
+        ALGEBRA_FAMILY(AlgebraFamily.class),
+        /** Value for type {@link Role}. */
+        ROLE(Optional.class),
+        /** Value for type {@link ExploreType}. */
+        EXPLORE_TYPE(ExploreType.class),
+        /** Value for type {@link ThreeValued}. */
+        THREE_VALUED(ThreeValued.class),
+        /** Value for type {@link Path}. */
+        PATH(Path.class),
+        /** Value for type {@link ThreeValued}. */
+        ORACLE_FACTORY(ValueOracleFactory.class),;
+
+        ValueType(Class<?> type) {
+            this.type = type;
+        }
+
+        Class<?> type() {
+            return this.type;
+        }
+
+        private final Class<?> type;
+    }
+
+    /** Property entry, consisting of a key and a wrapped value for that key.
+     * Includes functionality to cast the wrapped value to any of the types supported by {@link ValueType}.
+     */
+    public static interface Entry<K extends Key<K,E>,E extends Entry<K,E>> {
+        /** Returns the key type of this entry.
+         * The key type determines which of the other getters returns a valid value.
+         */
+        public Key<K,E> key();
+
+        /** Returns the object wrapped in this entry. */
+        public Object value();
+
+        /** Helper method for subclasses to assert the required invariant for this entry.
+         * @throws IllegalArgumentException if the entry's key and value type are incompatible.
+         */
+        default void checkInvariant(K key, Object value) throws IllegalArgumentException {
+            assert key != null : "Key should not be null";
+            assert value != null : String.format("Value for '%s' should not be null", key);
+            if (!key.getKeyType().type().isInstance(value)) {
+                throw Exceptions.illegalArg("Key type '%s' does not admit value '%s' of type %s",
+                                            key, value, value.getClass());
+            }
+        }
+
+        /** Unparses this entry to a {@link String} value that the key's parser can understand. */
+        @SuppressWarnings("unchecked")
+        default String unparse() {
+            return key().parser().unparse((E) this);
+        }
+
+        /**
+         * Casts the wrapped value to an {@link AlgebraFamily}.
+         * This is only valid if this entry's key type is {@link ValueType#ALGEBRA_FAMILY}
+         * @throws UnsupportedOperationException if this entry's key type is inappropriate
+         */
+        default AlgebraFamily getAlgebraFamily() {
+            check(ValueType.ALGEBRA_FAMILY);
+            return (AlgebraFamily) value();
+        }
+
+        /**
+         * Casts the wrapped value to a {@link Boolean}.
+         * This is only valid if this entry's key type is {@link ValueType#BOOLEAN}
+         * @throws UnsupportedOperationException if this entry's key type is inappropriate
+         */
+        default Boolean getBoolean() {
+            check(ValueType.BOOLEAN);
+            return (Boolean) value();
+        }
+
+        /**
+         * Casts the wrapped value to a {@link CheckPolicy}.
+         * This is only valid if this entry's key type is {@link ValueType#CHECK_POLICY}
+         * @throws UnsupportedOperationException if this entry's key type is inappropriate
+         */
+        default CheckPolicy getCheckPolicy() {
+            check(ValueType.CHECK_POLICY);
+            return (CheckPolicy) value();
+        }
+
+        /**
+         * Casts the wrapped value to an {@link ExploreType}.
+         * This is only valid if this entry's key type is {@link ValueType#EXPLORE_TYPE}
+         * @throws UnsupportedOperationException if this entry's key type is inappropriate
+         */
+        default ExploreType getExploreType() {
+            check(ValueType.EXPLORE_TYPE);
+            return (ExploreType) value();
+        }
+
+        /**
+         * Casts the wrapped value to an {@link Integer}.
+         * This is only valid if this entry's key type is {@link ValueType#INTEGER}
+         * @throws UnsupportedOperationException if this entry's key type is inappropriate
+         */
+        default Integer getInteger() {
+            check(ValueType.INTEGER);
+            return (Integer) value();
+        }
+
+        /**
+         * Casts the wrapped value to a {@link MethodName}.
+         * This is only valid if this entry's key type is {@link ValueType#METHOD_NAME}
+         * @throws UnsupportedOperationException if this entry's key type is inappropriate
+         */
+        @SuppressWarnings("unchecked")
+        default Optional<MethodName> getMethodName() {
+            check(ValueType.METHOD_NAME);
+            return (Optional<MethodName>) value();
+        }
+
+        /**
+         * Casts the wrapped value to a {@link ValueOracleFactory}.
+         * This is only valid if this entry's key type is {@link ValueType#ORACLE_FACTORY}
+         * @throws UnsupportedOperationException if this entry's key type is inappropriate
+         */
+        default ValueOracleFactory getOracleFactory() {
+            check(ValueType.ORACLE_FACTORY);
+            return (ValueOracleFactory) value();
+        }
+
+        /**
+         * Casts the wrapped value to a {@link Path}.
+         * This is only valid if this entry's key type is {@link ValueType#PATH}
+         * @throws UnsupportedOperationException if this entry's key type is inappropriate
+         */
+        default Path getPath() {
+            check(ValueType.PATH);
+            return (Path) value();
+        }
+
+        /**
+         * Casts the wrapped value to a {@link PolicyMap}.
+         * This is only valid if this entry's key type is {@link ValueType#POLICY_MAP}
+         * @throws UnsupportedOperationException if this entry's key type is inappropriate
+         */
+        default PolicyMap getPolicyMap() {
+            check(ValueType.POLICY_MAP);
+            return (PolicyMap) value();
+        }
+
+        /**
+         * Casts the wrapped value to a {@link List} of {@link QualName}s.
+         * This is only valid if this entry's key type is {@link ValueType#QUAL_NAME_LIST}
+         * @throws UnsupportedOperationException if this entry's key type is inappropriate
+         */
+        @SuppressWarnings("unchecked")
+        default List<QualName> getQualNameList() {
+            check(ValueType.QUAL_NAME_LIST);
+            return (List<QualName>) value();
+        }
+
+        /**
+         * Casts the wrapped value to a {@link Role}.
+         * This is only valid if this entry's key type is {@link ValueType#ROLE}
+         * @throws UnsupportedOperationException if this entry's key type is inappropriate
+         */
+        @SuppressWarnings("unchecked")
+        default Optional<Role> getRole() {
+            check(ValueType.ROLE);
+            return (Optional<Role>) value();
+        }
+
+        /**
+         * Casts the wrapped value to a {@link String}.
+         * This is only valid if this entry's key type is {@link ValueType#STRING}
+         * @throws UnsupportedOperationException if this entry's key type is inappropriate
+         */
+        default String getString() {
+            check(ValueType.STRING);
+            return (String) value();
+        }
+
+        /**
+         * Casts the wrapped value to a {@link List} of {@link String}s.
+         * This is only valid if this entry's key type is {@link ValueType#STRING_LIST}
+         * @throws UnsupportedOperationException if this entry's key type is inappropriate
+         */
+        @SuppressWarnings("unchecked")
+        default List<String> getStringList() {
+            check(ValueType.STRING_LIST);
+            return (List<String>) value();
+        }
+
+        /**
+         * Casts the wrapped value to a {@link ThreeValued}.
+         * This is only valid if this entry's key type is {@link ValueType#THREE_VALUED}
+         * @throws UnsupportedOperationException if this entry's key type is inappropriate
+         */
+        default ThreeValued getThreeValued() {
+            check(ValueType.THREE_VALUED);
+            return (ThreeValued) value();
+        }
+
+        /** Checks whether the key type of this entry equals a given key type.
+         * Throws an {@link UnsupportedOperationException} if the two key types do not coincide.
+         * @param keyType they key type to check for
+         * @throws UnsupportedOperationException of {@code keyType} does not equal this entry's key type
+         */
+        private void check(ValueType keyType) {
+            if (this.key().getKeyType() != keyType) {
+                throw Exceptions.unsupportedOp("Can't extract %s value from %s entry",
+                                               keyType.type(), this.key());
+            }
+        }
+    }
+
+    /** Parser for {@link Key} of this properties class.
+     * Parses to {@link Entry} values as a wrapped parser, where the inner parser is {@link Key}-specific.
+     */
+    public static abstract class KeyParser<K extends Key<K,E>,E extends Entry<K,E>>
+        extends Parser.Wrap<E> {
+        /** Constructs a wrapped parser from a given inner parser, target type, and wrapping function. */
+        @SuppressWarnings("unchecked")
+        protected <T> KeyParser(Key<K,E> key, Parser<T> inner, Class<E> type, Function<T,E> wrap) {
+            super(inner, type, wrap, e -> (T) e.value());
+            this.key = key;
+        }
+
+        /** Returns the key of this parser. */
+        public Key<K,E> key() {
+            return this.key;
+        }
+
+        private final Key<K,E> key;
+    }
+
     /** Map from property keys to format checkers for those keys. */
-    public static class CheckerMap extends HashMap<PropertyKey<?>,FormatChecker<String>> {
+    public static class CheckerMap<K extends Key<K,?>> extends HashMap<K,FormatChecker<String>> {
         @Override
         public FormatChecker<String> get(Object key) {
             FormatChecker<String> result = super.get(key);

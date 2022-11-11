@@ -34,14 +34,13 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
 import nl.utwente.groove.explore.config.ExploreKey;
-import nl.utwente.groove.explore.config.Null;
 import nl.utwente.groove.explore.config.Setting;
-import nl.utwente.groove.explore.config.SettingKey;
+import nl.utwente.groove.explore.config.Setting.ContentType;
 import nl.utwente.groove.gui.action.Refreshable;
 import nl.utwente.groove.gui.dialog.ExploreConfigDialog;
 import nl.utwente.groove.io.HTMLConverter;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.FormatException;
-import nl.utwente.groove.util.parse.StringHandler;
 
 /**
  * Editor for an explore key, consisting of buttons for each valid setting kind
@@ -59,9 +58,8 @@ public class ButtonEditor extends SettingEditor {
         this.factory = new EditorFactory(dialog);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         boolean content = false;
-        for (SettingKey kind : key.getKindType()
-            .getEnumConstants()) {
-            content |= kind.getContentType() != Null.class;
+        for (var kind : key.getKindType().getEnumConstants()) {
+            content |= kind.contentType() != ContentType.NULL;
         }
         add(createButtonsPanel());
         if (content) {
@@ -87,19 +85,18 @@ public class ButtonEditor extends SettingEditor {
     private JPanel createButtonsPanel() {
         JPanel buttons = new JPanel();
         buttons.setLayout(new BoxLayout(buttons, BoxLayout.X_AXIS));
-        for (SettingKey kind : getKey().getKindType()
-            .getEnumConstants()) {
+        for (var kind : getKey().getKindType().getEnumConstants()) {
             buttons.add(getButton(kind));
             buttons.add(Box.createGlue());
         }
         return buttons;
     }
 
-    private SettingButton getButton(SettingKey kind) {
+    private SettingButton getButton(Setting.Key kind) {
         return getButtonMap().get(kind);
     }
 
-    private Map<SettingKey,SettingButton> getButtonMap() {
+    private Map<Setting.Key,SettingButton> getButtonMap() {
         if (this.buttonMap == null) {
             this.buttonMap = createButtonMap();
         }
@@ -109,10 +106,9 @@ public class ButtonEditor extends SettingEditor {
     /**
      * Computes and returns a mapping from keys to buttons.
      */
-    private Map<SettingKey,SettingButton> createButtonMap() {
-        Map<SettingKey,SettingButton> buttonMap = new HashMap<>();
-        for (SettingKey kind : getKey().getKindType()
-            .getEnumConstants()) {
+    private Map<Setting.Key,SettingButton> createButtonMap() {
+        Map<Setting.Key,SettingButton> buttonMap = new HashMap<>();
+        for (var kind : getKey().getKindType().getEnumConstants()) {
             SettingButton button = new SettingButton(kind, getEditor(kind));
             getButtonGroup().add(button);
             buttonMap.put(kind, button);
@@ -120,7 +116,7 @@ public class ButtonEditor extends SettingEditor {
         return buttonMap;
     }
 
-    private Map<SettingKey,SettingButton> buttonMap;
+    private Map<Setting.Key,SettingButton> buttonMap;
 
     private ButtonGroup getButtonGroup() {
         if (this.buttonGroup == null) {
@@ -143,23 +139,22 @@ public class ButtonEditor extends SettingEditor {
 
     private JPanel contentPanel;
 
-    private SettingEditor getEditor(SettingKey kind) {
+    private SettingEditor getEditor(Setting.Key kind) {
         return getEditorMap().get(kind);
     }
 
-    private Map<SettingKey,SettingEditor> getEditorMap() {
+    private Map<Setting.Key,SettingEditor> getEditorMap() {
         if (this.editorMap == null) {
             this.editorMap = createEditorMap();
         }
         return this.editorMap;
     }
 
-    private Map<SettingKey,SettingEditor> editorMap;
+    private Map<Setting.Key,SettingEditor> editorMap;
 
-    private Map<SettingKey,SettingEditor> createEditorMap() {
-        Map<SettingKey,SettingEditor> result = new HashMap<>();
-        for (SettingKey kind : getKey().getKindType()
-            .getEnumConstants()) {
+    private Map<Setting.Key,SettingEditor> createEditorMap() {
+        Map<Setting.Key,SettingEditor> result = new HashMap<>();
+        for (var kind : getKey().getKindType().getEnumConstants()) {
             result.put(kind, this.factory.createEditor(getContentPanel(), getKey(), kind));
         }
         return result;
@@ -178,7 +173,7 @@ public class ButtonEditor extends SettingEditor {
     private final ExploreKey key;
 
     @Override
-    public SettingKey getKind() {
+    public Setting.Key getKind() {
         return null;
     }
 
@@ -188,16 +183,16 @@ public class ButtonEditor extends SettingEditor {
     }
 
     @Override
-    public Setting<?,?> getSetting() throws FormatException {
-        SettingKey selected = getSelectedKind();
+    public Setting getSetting() throws FormatException {
+        Setting.Key selected = getSelectedKind();
         return getEditor(selected).getSetting();
     }
 
     /**
      * Returns the currently selected setting kind.
      */
-    private SettingKey getSelectedKind() {
-        SettingKey selected = null;
+    private Setting.Key getSelectedKind() {
+        Setting.Key selected = null;
         ButtonModel model = getButtonGroup().getSelection();
         for (SettingButton button : getButtonMap().values()) {
             if (button.getModel() == model) {
@@ -209,8 +204,8 @@ public class ButtonEditor extends SettingEditor {
     }
 
     @Override
-    public void setSetting(Setting<?,?> content) {
-        SettingKey kind = content.getKind();
+    public void setSetting(Setting content) {
+        Setting.Key kind = content.key();
         getButton(kind).setSelected(true);
         getEditor(kind).setSetting(content);
     }
@@ -221,14 +216,14 @@ public class ButtonEditor extends SettingEditor {
     }
 
     private class SettingButton extends JRadioButton implements Refreshable {
-        SettingButton(final SettingKey kind, final SettingEditor kindEditor) {
-            super(StringHandler.toUpper(kind.getName()));
+        SettingButton(final Setting.Key kind, final SettingEditor kindEditor) {
+            super(Strings.toUpper(kind.getName()));
             this.kind = kind;
             if (getKey().getDefaultKind() == kind) {
                 setSelected(true);
             }
             addItemListener(getDialog().getDirtyListener());
-            setToolTipText(HTMLConverter.HTML_TAG.on(StringHandler.toUpper(kind.getExplanation())));
+            setToolTipText(HTMLConverter.HTML_TAG.on(Strings.toUpper(kind.getExplanation())));
             getDialog().addRefreshable(this);
             addItemListener(new ItemListener() {
                 @Override
@@ -246,11 +241,11 @@ public class ButtonEditor extends SettingEditor {
             });
         }
 
-        SettingKey getKind() {
+        Setting.Key getKind() {
             return this.kind;
         }
 
-        private final SettingKey kind;
+        private final Setting.Key kind;
 
         @Override
         public void refresh() {

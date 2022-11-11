@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.grammar.rule;
 
-import java.util.stream.Stream;
+import java.util.NoSuchElementException;
 
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.rule.MethodName.Language;
@@ -27,59 +27,38 @@ import nl.utwente.groove.util.parse.Parser;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class MethodNameParser implements Parser<MethodName> {
+public class MethodNameParser extends Parser.AParser<MethodName> {
     /** Private constructor for the singleton instance. */
     private MethodNameParser() {
-        // empty
-    }
-
-    @Override
-    public String getDescription() {
-        return "Format: [&lt;language&gt;COLON]&lt;qualName&gt;";
+        super("Method name, formatted according to [&lt;language&gt;COLON]&lt;qualName&gt;",
+              MethodName.class);
     }
 
     @Override
     public MethodName parse(String input) throws FormatException {
-        MethodName result;
-        if (input == null || input.isEmpty()) {
-            result = getDefaultValue();
+        int colon = input.indexOf(':');
+        Language language;
+        String name;
+        if (colon < 0) {
+            language = Language.JAVA;
+            name = input;
         } else {
-            int colon = input.indexOf(':');
-            Language language;
-            String name;
-            if (colon < 0) {
-                language = Language.JAVA;
-                name = input;
-            } else {
-                String langName = input.substring(0, colon);
-                language = Stream.of(Language.values())
-                    .filter(s -> s.getName()
-                        .equals(langName))
-                    .findAny()
-                    .orElseThrow(() -> new FormatException("Unknown language '%s'", langName));
-                name = input.substring(colon + 1);
+            String langName = input.substring(0, colon);
+            try {
+                language = Language.fromName(langName);
+            } catch (NoSuchElementException exc) {
+                throw new FormatException("Unknown language '%s'", langName);
             }
-            QualName qualName = QualName.parse(name);
-            qualName.getErrors()
-                .throwException();
-            result = new MethodName(language, qualName);
+            name = input.substring(colon + 1);
         }
-        return result;
+        QualName qualName = QualName.parse(name);
+        qualName.getErrors().throwException();
+        return new MethodName(language, qualName);
     }
 
     @Override
-    public String toParsableString(Object value) {
-        return isDefault(value) ? getDefaultString() : ((MethodName) value).toString();
-    }
-
-    @Override
-    public MethodName getDefaultValue() {
-        return null;
-    }
-
-    @Override
-    public Class<? extends MethodName> getValueType() {
-        return MethodName.class;
+    public <V extends MethodName> String unparse(V value) {
+        return value.toString();
     }
 
     /** Returns the singleton instance of this parser. */

@@ -105,8 +105,7 @@ public class ExprParseTest {
     /** Asserts that parsing a string and converting at back results in the same string. */
     private void roundtrip(String text) {
         MyTree expr = parse(text);
-        assertEquals(text, expr.toLine()
-            .toFlatString());
+        assertEquals(text, expr.toLine().toFlatString());
     }
 
     private void parseToEqual(String one, String two) {
@@ -124,23 +123,23 @@ public class ExprParseTest {
     }
 
     private void parseError(String text) {
-        assertTrue(parser.parse(text)
-            .hasErrors());
+        assertTrue(parser.parse(text).hasErrors());
     }
 
     /** Main method: prints all its arguments and writes the result to stdout. */
     public static void main(String[] args) {
         for (String arg : args) {
             MyTree expr = parser.parse(arg);
-            String error = expr.hasErrors() ? " with errors " + expr.getErrors()
-                .toString() : "";
-            System.out.printf("%s parsed to %s%s%n -> %s", arg, expr, error, expr.toLine()
-                .toFlatString());
+            String error = expr.hasErrors()
+                ? " with errors " + expr.getErrors().toString()
+                : "";
+            System.out.printf("%s parsed to %s%s%n -> %s", arg, expr, error,
+                              expr.toLine().toFlatString());
         }
     }
 
-    static AExprTreeParser<MyOp,MyTree> parser =
-        new AExprTreeParser<MyOp,MyTree>(new MyTree(MyOp.ATOM)) {
+    static AExprTreeParser<MyOp,MyTree> parser
+        = new AExprTreeParser<>("Expression", new MyTree(MyOp.ATOM)) {
             // empty
         };
 

@@ -92,11 +92,9 @@ public class Transformer {
      */
     public void setProperty(GrammarKey key, String value) throws FormatException {
         assert !key.isSystem();
-        assert value != null && key.parser()
-            .accepts(value);
+        assert value != null && key.parser().accepts(value);
         if (this.properties == null) {
-            this.properties = getGrammarModel().getProperties()
-                .clone();
+            this.properties = getGrammarModel().getProperties().clone();
         }
         this.properties.put(key.getName(), value);
         getGrammarModel().setProperties(this.properties);
@@ -152,7 +150,9 @@ public class Transformer {
      * or the exploration is not compatible with the grammar
      */
     public ExploreResult explore(Model start) throws FormatException {
-        return explore(start == null ? null : start.toAspectGraph());
+        return explore(start == null
+            ? null
+            : start.toAspectGraph());
     }
 
     /**
@@ -188,16 +188,15 @@ public class Transformer {
         AspectGraph result = null;
         if (startGraphName != null) {
             // first see if the name refers to a local host graph
-            GraphBasedModel<?> hostModel = getGrammarModel().getGraphResource(ResourceKind.HOST,
-                QualName.name(startGraphName));
+            GraphBasedModel<?> hostModel = getGrammarModel()
+                .getGraphResource(ResourceKind.HOST, QualName.name(startGraphName));
             if (hostModel == null) {
                 // try to load the graph as a standalone file
                 startGraphName = FileType.STATE.addExtension(startGraphName);
                 File startGraphFile = new File(startGraphName);
                 if (!startGraphFile.exists()) {
                     // look for the name within the grammar location
-                    File grammarLocation = getGrammarModel().getStore()
-                        .getLocation();
+                    File grammarLocation = getGrammarModel().getStore().getLocation();
                     startGraphFile = new File(grammarLocation, startGraphName);
                 }
                 if (!startGraphFile.exists()) {
@@ -236,9 +235,7 @@ public class Transformer {
         setResultCount(1);
         ExploreResult exploreResult = explore();
         if (!exploreResult.isEmpty()) {
-            result = createModel(exploreResult.iterator()
-                .next()
-                .getGraph());
+            result = createModel(exploreResult.iterator().next().getGraph());
         }
         setResultCount(oldResultCount);
         return result;
@@ -252,7 +249,7 @@ public class Transformer {
      */
     public Collection<Model> computeAll() throws FormatException {
         Collection<GraphState> exploreResult = explore().getStates();
-        return new TransformCollection<GraphState,Model>(exploreResult) {
+        return new TransformCollection<>(exploreResult) {
             @Override
             protected Model toOuter(GraphState key) {
                 return createModel(key.getGraph());
@@ -325,9 +322,15 @@ public class Transformer {
         ExploreType result = getGrammarModel().getDefaultExploreType();
         boolean rebuild = hasStrategy() || hasAcceptor() || hasResultCount();
         if (rebuild) {
-            Serialized strategy = hasStrategy() ? getStrategy() : result.getStrategy();
-            Serialized acceptor = hasAcceptor() ? getAcceptor() : result.getAcceptor();
-            int resultCount = hasResultCount() ? getResultCount() : result.getBound();
+            Serialized strategy = hasStrategy()
+                ? getStrategy()
+                : result.getStrategy();
+            Serialized acceptor = hasAcceptor()
+                ? getAcceptor()
+                : result.getAcceptor();
+            int resultCount = hasResultCount()
+                ? getResultCount()
+                : result.getBound();
             result = new ExploreType(strategy, acceptor, resultCount);
         }
         return result;

@@ -47,7 +47,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
 
     @Override
     public Iterator<T> iterator() {
-        return new Iterator<T>() {
+        return new Iterator<>() {
             @Override
             public boolean hasNext() {
                 if (this.count == 0) {
@@ -89,8 +89,8 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
                 this.count = this.mult.getValue();
             }
 
-            private final Iterator<Map.Entry<T,MyMultiplicity>> entryIter =
-                HashBag.this.bag.entrySet().iterator();
+            private final Iterator<Map.Entry<T,MyMultiplicity>> entryIter
+                = HashBag.this.bag.entrySet().iterator();
             private Map.Entry<T,MyMultiplicity> entry;
             private MyMultiplicity mult;
             private int count;

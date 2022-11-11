@@ -16,30 +16,32 @@
  */
 package nl.utwente.groove.explore.config;
 
-import nl.utwente.groove.verify.Formula;
-import nl.utwente.groove.verify.Logic;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * LTL or CTL formula.
+ * Mapping from setting key names to the corresponding keys.
+ * The mapping is normalised to lowercase.
  * @author Arend Rensink
  * @version $Revision $
  */
-public record FormulaSetting(CheckingKind kind, Formula formula)
-    implements Setting<CheckingKind,Formula> {
-    /**
-     * Creates new content, from a given formula of a given logic.
-     */
-    public FormulaSetting(Logic logic, Formula formula) {
-        this(CheckingKind.getKind(logic), formula);
+public class SettingKeyMap {
+    /** Creates a map initialised to a given setting key. */
+    public SettingKeyMap(Class<? extends Setting.Key> keyType) {
+        for (var kind : keyType.getEnumConstants()) {
+            put(kind.getName(), kind);
+        }
     }
 
-    @Override
-    public CheckingKind getKind() {
-        return kind();
+    /** Inserts a name-value pair into the map. */
+    public void put(String name, Setting.Key kind) {
+        this.map.put(name.toLowerCase(), kind);
     }
 
-    @Override
-    public Formula getContent() {
-        return formula();
+    /** Returns the setting kind corresponding to a given name. */
+    public Setting.Key get(String name) {
+        return this.map.get(name.toLowerCase());
     }
+
+    private final Map<String,Setting.Key> map = new HashMap<>();
 }

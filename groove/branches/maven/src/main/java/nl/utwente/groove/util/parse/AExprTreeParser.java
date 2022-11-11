@@ -28,8 +28,8 @@ public class AExprTreeParser<O extends Op,T extends AExprTree<O,T>> extends ATer
     /**
      * Constructs an expression parser, from a given prototype tree.
      */
-    protected AExprTreeParser(T prototype) {
-        super(prototype);
+    protected AExprTreeParser(String description, T prototype) {
+        super(description, prototype);
     }
 
     @Override

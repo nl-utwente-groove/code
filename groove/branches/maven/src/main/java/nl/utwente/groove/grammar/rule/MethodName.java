@@ -16,6 +16,9 @@
  */
 package nl.utwente.groove.grammar.rule;
 
+import java.util.Arrays;
+import java.util.NoSuchElementException;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -112,6 +115,14 @@ public class MethodName {
         @Override
         public String toString() {
             return getName();
+        }
+
+        /** Returns the language with a given name.
+         * @throws NoSuchElementException if no language with the given name exists.
+         */
+        public static Language fromName(String name) throws NoSuchElementException {
+            return Arrays.asList(Language.values()).stream().filter(l -> l.getName().equals(name))
+                .findFirst().get();
         }
     }
 }

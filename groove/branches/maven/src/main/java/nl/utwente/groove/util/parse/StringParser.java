@@ -21,24 +21,34 @@ package nl.utwente.groove.util.parse;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class StringParser extends Parser.AbstractStringParser<String> {
+public class StringParser extends Parser.AParser<String> {
     private StringParser(boolean trim) {
-        super(String.class, trim);
+        super("Any string value", "");
+        this.trim = trim;
+    }
+
+    private final boolean trim;
+
+    @Override
+    public boolean accepts(String text) {
+        return true;
     }
 
     @Override
-    protected String createContent(String value) {
+    public String parse(String input) {
+        return this.trim
+            ? input.trim()
+            : input;
+    }
+
+    @Override
+    public String unparse(String value) {
         return value;
     }
 
     @Override
-    protected String extractValue(String content) {
-        return content;
-    }
-
-    @Override
     public boolean isValue(Object value) {
-        return value == null || value instanceof String;
+        return value instanceof String;
     }
 
     /** Returns the singleton trimming string parser. */

@@ -71,8 +71,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
 
     private void addTab(Display component) {
         DisplayKind kind = component.getKind();
-        if (Options.getOptionalTabs()
-            .contains(kind.getResource())) {
+        if (Options.getOptionalTabs().contains(kind.getResource())) {
             showOrHideTab(kind.getResource());
         } else {
             attach(component);
@@ -85,12 +84,10 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
      */
     private boolean showOrHideTab(ResourceKind resource) {
         String optionName = Options.getShowTabOption(resource);
-        boolean show = this.simulator.getOptions()
-            .isSelected(optionName);
+        boolean show = this.simulator.getOptions().isSelected(optionName);
         if (!show) {
             GrammarModel grammar = getSimulatorModel().getGrammar();
-            show = grammar != null && !grammar.getResourceSet(resource)
-                .isEmpty();
+            show = grammar != null && !grammar.getResourceSet(resource).isEmpty();
         }
         Display display = getDisplayFor(resource);
         DisplayKind displayKind = DisplayKind.toDisplay(resource);
@@ -142,18 +139,16 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         Options options = this.simulator.getOptions();
         for (final ResourceKind optionalTab : Options.getOptionalTabs()) {
             String optionName = Options.getShowTabOption(optionalTab);
-            options.getItem(optionName)
-                .addItemListener(new ItemListener() {
-                    @Override
-                    public void itemStateChanged(ItemEvent e) {
-                        if (showOrHideTab(optionalTab)) {
-                            getSimulatorModel().setDisplay(DisplayKind.toDisplay(optionalTab));
-                        }
+            options.getItem(optionName).addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    if (showOrHideTab(optionalTab)) {
+                        getSimulatorModel().setDisplay(DisplayKind.toDisplay(optionalTab));
                     }
-                });
+                }
+            });
         }
-        this.simulator.getModel()
-            .addListener(this, Change.DISPLAY, Change.GRAMMAR);
+        this.simulator.getModel().addListener(this, Change.DISPLAY, Change.GRAMMAR);
         activateListeners();
     }
 
@@ -214,6 +209,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     /** Indicates if a list panel should go onto the upper or the lower pane. */
     private JTabbedPane getListsPanel(DisplayKind kind) {
         return switch (kind.getListPanel()) {
+        case -1 -> null;
         case 0 -> getUpperListsPanel();
         case 1 -> getLowerListsPanel();
         default -> throw Exceptions.UNREACHABLE;
@@ -249,8 +245,8 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             boolean changeList = listsTabPane != null;
             if (changeList) {
                 assert listsTabPane != null; // implied by changeList
-                DisplayKind oldListDisplayKind =
-                    ((ListPanel) listsTabPane.getSelectedComponent()).getDisplayKind();
+                DisplayKind oldListDisplayKind
+                    = ((ListPanel) listsTabPane.getSelectedComponent()).getDisplayKind();
                 changeList = oldListDisplayKind != newDisplayKind && newListPanel != null
                     && listsTabPane.indexOfComponent(newListPanel) >= 0;
                 // do not automatically switch lists panel between state and rule mode
@@ -270,15 +266,14 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             }
             // change the info panel
             ((CardLayout) getInfoPanel().getLayout()).show(getInfoPanel(),
-                newDisplayKind.toString());
+                                                           newDisplayKind.toString());
         } else if (getSelectedComponent() != null) {
             // switch tabs if the selection on the currently displayed tab
             // was set to null
             QualName changedTo = null;
             ResourceKind resource = getSelectedDisplay().getResourceKind();
             if (changes.contains(Change.toChange(resource)) && source.isSelected(resource)) {
-                changedTo = source.getResource(resource)
-                    .getQualName();
+                changedTo = source.getResource(resource).getQualName();
             }
             if (changedTo == null) {
                 Display panel = getDisplay(source.getDisplay());
@@ -303,8 +298,8 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         JGraphPanel<?> result = null;
         Display display = getSelectedDisplay();
         if (display.getResourceKind() != null) {
-            Component selectedComponent = ((ResourceDisplay) display).getTabPane()
-                .getSelectedComponent();
+            Component selectedComponent
+                = ((ResourceDisplay) display).getTabPane().getSelectedComponent();
             if (selectedComponent instanceof GraphEditorTab) {
                 result = ((GraphEditorTab) selectedComponent).getEditArea();
             } else if (selectedComponent instanceof GraphTab) {
@@ -339,8 +334,8 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         if (listPanel != null && listsPanel.indexOfComponent(listPanel) < 0) {
             int index;
             for (index = 0; index < listsPanel.getTabCount(); index++) {
-                DisplayKind otherKind =
-                    ((ListPanel) listsPanel.getComponentAt(index)).getDisplayKind();
+                DisplayKind otherKind
+                    = ((ListPanel) listsPanel.getComponentAt(index)).getDisplayKind();
                 if (otherKind == null || myKind.compareTo(otherKind) < 0) {
                     // insert here
                     break;
@@ -350,9 +345,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         }
         if (myKind.showDisplay()) {
             // add the info panel
-            getInfoPanel().add(display.getInfoPanel(),
-                display.getKind()
-                    .toString());
+            getInfoPanel().add(display.getInfoPanel(), display.getKind().toString());
             // now add the display panel
             int index;
             for (index = 0; index < getTabCount(); index++) {
@@ -436,8 +429,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         JPopupMenu result = new JPopupMenu();
         for (ResourceKind optionalTab : Options.getOptionalTabs()) {
             String optionName = Options.getShowTabOption(optionalTab);
-            result.add(this.simulator.getOptions()
-                .getItem(optionName));
+            result.add(this.simulator.getOptions().getItem(optionName));
         }
         return result;
     }
@@ -459,11 +451,11 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     private void setTabEnabled(int index, boolean enabled) {
         TabLabel label = (TabLabel) getTabComponentAt(index);
         if (label != null) {
-            label.setFont(label.getFont()
-                .deriveFont(Font.BOLD));
+            label.setFont(label.getFont().deriveFont(Font.BOLD));
             label.setEnabled(enabled);
-            label.setTitle(enabled ? getDisplayAt(index).getKind()
-                .getTitle() : null);
+            label.setTitle(enabled
+                ? getDisplayAt(index).getKind().getTitle()
+                : null);
         }
     }
 

@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -31,8 +31,7 @@ import java.util.TreeSet;
  */
 class OrderedCriticalPairSet implements Set<CriticalPair> {
 
-    private HashMap<Integer,LinkedHashSet<CriticalPair>> pairMap =
-        new HashMap<>();
+    private HashMap<Integer,LinkedHashSet<CriticalPair>> pairMap = new HashMap<>();
 
     /**
      * Creates a new set of CriticalPairs for rules
@@ -113,7 +112,7 @@ class OrderedCriticalPairSet implements Set<CriticalPair> {
 
     @Override
     public Iterator<CriticalPair> iterator() {
-        return new Iterator<CriticalPair>() {
+        return new Iterator<>() {
 
             private CriticalPair last = null;
 
@@ -121,19 +120,19 @@ class OrderedCriticalPairSet implements Set<CriticalPair> {
             //this is needed to implement remove() correctly
             private boolean currentItReplaced = false;
 
-            Iterator<Integer> keyIt = new TreeSet<>(
-                OrderedCriticalPairSet.this.pairMap.keySet()).descendingIterator();
+            Iterator<Integer> keyIt
+                = new TreeSet<>(OrderedCriticalPairSet.this.pairMap.keySet()).descendingIterator();
 
             Iterator<CriticalPair> currentIt = this.keyIt.hasNext()
-                    ? OrderedCriticalPairSet.this.pairMap.get(this.keyIt.next()).iterator()
-                    //initialize with emptySet iterator if the pairMap was empty
-                    : new HashSet<CriticalPair>().iterator();
+                ? OrderedCriticalPairSet.this.pairMap.get(this.keyIt.next()).iterator()
+                //initialize with emptySet iterator if the pairMap was empty
+                : new HashSet<CriticalPair>().iterator();
 
             @Override
             public boolean hasNext() {
                 while (this.keyIt.hasNext() && !this.currentIt.hasNext()) {
-                    this.currentIt =
-                        OrderedCriticalPairSet.this.pairMap.get(this.keyIt.next()).iterator();
+                    this.currentIt
+                        = OrderedCriticalPairSet.this.pairMap.get(this.keyIt.next()).iterator();
                     this.currentItReplaced = true;
                 }
                 return this.currentIt.hasNext();

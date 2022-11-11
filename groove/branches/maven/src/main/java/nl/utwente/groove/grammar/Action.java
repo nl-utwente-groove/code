@@ -23,6 +23,7 @@ import java.util.Map;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.io.HTMLConverter.HTMLTag;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.collect.Comparator;
 
 /**
@@ -86,7 +87,7 @@ public interface Action extends Callable, Comparable<Action> {
      * A comparator for priorities, encoded as {@link Integer} objects. This
      * implementation orders priorities from high to low.
      */
-    public static final Comparator<Integer> PRIORITY_COMPARATOR = new Comparator<Integer>() {
+    public static final Comparator<Integer> PRIORITY_COMPARATOR = new Comparator<>() {
         @Override
         public int compare(Integer o1, Integer o2) {
             return o2.intValue() - o1.intValue();
@@ -99,7 +100,7 @@ public interface Action extends Callable, Comparable<Action> {
      * implementation orders priorities from high to low, and within priority,
      * according to the action (full) name.
      */
-    public static final Comparator<Action> ACTION_COMPARATOR = new Comparator<Action>() {
+    public static final Comparator<Action> ACTION_COMPARATOR = new Comparator<>() {
         @Override
         public int compare(Action o1, Action o2) {
             if (o1 == o2) {
@@ -113,8 +114,7 @@ public interface Action extends Callable, Comparable<Action> {
             if (result != 0) {
                 return result;
             }
-            result = o1.getQualName()
-                .compareTo(o2.getQualName());
+            result = o1.getQualName().compareTo(o2.getQualName());
             return result;
         }
 
@@ -123,7 +123,7 @@ public interface Action extends Callable, Comparable<Action> {
     /** A comparator for actions that orders all non-partial rules before
      * partial rules, and otherwise behaves like @{link #ACTION_COMPARATOR}.
      */
-    public static final Comparator<Action> PARTIAL_COMPARATOR = new Comparator<Action>() {
+    public static final Comparator<Action> PARTIAL_COMPARATOR = new Comparator<>() {
         @Override
         public int compare(Action o1, Action o2) {
             int result = compare(!o1.isPartial(), !o2.isPartial());
@@ -174,9 +174,7 @@ public interface Action extends Callable, Comparable<Action> {
         /** Returns the name of this role, with the first letter optionally capitalised. */
         public String text(boolean capitalised) {
             if (capitalised) {
-                StringBuffer result = new StringBuffer(toString());
-                result.setCharAt(0, Character.toUpperCase(result.charAt(0)));
-                return result.toString();
+                return Strings.toUpper(toString());
             } else {
                 return toString();
             }

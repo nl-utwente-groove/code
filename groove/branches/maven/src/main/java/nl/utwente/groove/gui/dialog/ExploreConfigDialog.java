@@ -38,12 +38,13 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import com.itextpdf.text.Font;
 
 import nl.utwente.groove.explore.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreKey;
 import nl.utwente.groove.explore.config.Setting;
-import nl.utwente.groove.explore.config.SettingKey;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.action.Refreshable;
 import nl.utwente.groove.gui.dialog.config.EditorFactory;
@@ -134,9 +135,9 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
         panel.add(getEditorMap().get(key));
     }
 
-    private final Map<ExploreKey,SettingsPanel> panelMap = new EnumMap<>(ExploreKey.class);
+    private final Map<@NonNull ExploreKey,SettingsPanel> panelMap = new EnumMap<>(ExploreKey.class);
 
-    private Map<ExploreKey,SettingEditor> getEditorMap() {
+    private Map<@NonNull ExploreKey,SettingEditor> getEditorMap() {
         if (this.editorMap == null) {
             EditorFactory factory = new EditorFactory(this);
             this.editorMap = new EnumMap<>(ExploreKey.class);
@@ -147,7 +148,7 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
         return this.editorMap;
     }
 
-    private Map<ExploreKey,SettingEditor> editorMap;
+    private Map<@NonNull ExploreKey,SettingEditor> editorMap;
 
     /** Adds a given settings panel as tab to the tabbed pane of the main panel. */
     private void addTab(JTabbedPane pane, SettingsPanel panel) {
@@ -207,9 +208,10 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
         if (config != null) {
             for (SettingEditor editor : getEditorMap().values()) {
                 try {
-                    Setting<?,?> selectedValue = config.get(editor.getKey());
-                    Setting<?,?> editedValue = editor.getSetting();
-                    result = selectedValue == null ? editedValue != null
+                    Setting selectedValue = config.get(editor.getKey());
+                    Setting editedValue = editor.getSetting();
+                    result = selectedValue == null
+                        ? editedValue != null
                         : !selectedValue.equals(editedValue);
                 } catch (FormatException exc) {
                     // there is an error in a setting, so the state must be dirty
@@ -228,7 +230,7 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
         ExploreConfig result = createConfig();
         for (SettingEditor editor : getEditorMap().values()) {
             try {
-                Setting<?,?> editedValue = editor.getSetting();
+                Setting editedValue = editor.getSetting();
                 if (editedValue != null) {
                     result.put(editor.getKey(), editedValue);
                 }
@@ -267,8 +269,7 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
             return;
         }
         try (OutputStream out = new FileOutputStream(getFile(name))) {
-            config.getProperties()
-                .store(out, "Exploration configuration '" + name + "'");
+            config.getProperties().store(out, "Exploration configuration '" + name + "'");
         } catch (IOException exc) {
             // give up
         }
@@ -281,7 +282,7 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
     }
 
     /** Sets the help panel for a given combination of exploration key and setting kind. */
-    public void setHelp(ExploreKey key, SettingKey kind) {
+    public void setHelp(ExploreKey key, Setting.Key kind) {
         SettingsPanel panel = this.panelMap.get(key);
         if (panel != null) {
             panel.setHelp(key, kind);

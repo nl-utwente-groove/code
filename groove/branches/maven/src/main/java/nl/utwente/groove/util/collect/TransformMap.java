@@ -39,11 +39,11 @@ abstract public class TransformMap<T,U,V> extends AbstractMap<T,V> {
      */
     @Override
     public Set<Entry<T,V>> entrySet() {
-        return new TransformSet<Entry<T,U>,Entry<T,V>>(this.inner.entrySet()) {
+        return new TransformSet<>(this.inner.entrySet()) {
             @Override
             public Entry<T,V> toOuter(Entry<T,U> obj) {
                 final Entry<T,U> innerEntry = obj;
-                return new Entry<T,V>() {
+                return new Entry<>() {
                     /**
                      * Delegates the method to the inner entry.
                      */
@@ -66,7 +66,8 @@ abstract public class TransformMap<T,U,V> extends AbstractMap<T,V> {
                      */
                     @Override
                     public V setValue(V value) {
-                        return TransformMap.this.toOuter(innerEntry.setValue(TransformMap.this.toInner(value)));
+                        return TransformMap.this
+                            .toOuter(innerEntry.setValue(TransformMap.this.toInner(value)));
                     }
                 };
             }

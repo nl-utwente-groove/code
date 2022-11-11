@@ -77,17 +77,17 @@ public class CtrlDoc {
 
     /** Returns the content of the file that specifies the control grammar. */
     private String readGrammarText() {
-        URL url = Groove.getResource(CTRL_GRAMMAR_FILE);
+        URL url = Groove.getResource("Ctrl.g");
+        assert url != null : String.format("%s cannot be found", CTRL_GRAMMAR_FILE);
         String grammarText = "";
 
         try {
-            if (FileType.JAR.getExtensionName()
-                .equals(url.getProtocol())) {
+            if (FileType.JAR.getExtensionName().equals(url.getProtocol())) {
                 // We are running from a JAR file so we cannot read the file
                 // directly because it is compressed.
                 JarURLConnection conn = ((JarURLConnection) url.openConnection());
                 try (ZipFile zipFile = conn.getJarFile();
-                    InputStream in = zipFile.getInputStream(conn.getJarEntry());) {
+                     InputStream in = zipFile.getInputStream(conn.getJarEntry());) {
                     grammarText = nl.utwente.groove.io.Util.readInputStreamToString(in);
                 }
             } else {
@@ -105,8 +105,7 @@ public class CtrlDoc {
             }
         } catch (IOException e) {
             throw Exceptions.illegalState("Error while reading grammar file %s: %s",
-                CTRL_GRAMMAR_FILE,
-                e.getMessage());
+                                          CTRL_GRAMMAR_FILE, e.getMessage());
         }
 
         return grammarText;
@@ -187,17 +186,14 @@ public class CtrlDoc {
         List<Line> entries = new ArrayList<>();
         for (Pair<String,Help> help : content) {
             Line line = createLine(help.two());
-            if (help.one()
-                .equals(rule.name)) {
+            if (help.one().equals(rule.name)) {
                 entries.add(line);
             } else {
                 List<Line> otherEntries = this.nameToEntriesMap.get(help.one());
                 if (otherEntries == null) {
-                    throw Exceptions.illegalState(
-                        "Reference to non-existent rule '%s' in comment line '%s'",
-                        help.one(),
-                        help.two()
-                            .getItem());
+                    throw Exceptions
+                        .illegalState("Reference to non-existent rule '%s' in comment line '%s'",
+                                      help.one(), help.two().getItem());
                 }
                 otherEntries.add(line);
             }
@@ -219,8 +215,7 @@ public class CtrlDoc {
             remove(text, MULTI_SUFFIX);
             String header = null;
             List<String> body = new ArrayList<>();
-            for (String line : text.toString()
-                .split("\n")) {
+            for (String line : text.toString().split("\n")) {
                 if (header == null) {
                     header = getSuffix(line, HEADER_PATTERN);
                 }
@@ -303,13 +298,11 @@ public class CtrlDoc {
     /** Tests the class by printing out the resulting documentation. */
     public static void main(String[] args) {
         CtrlDoc doc = new CtrlDoc();
-        for (Map.Entry<?,? extends List<?>> ruleEntry : doc.getItemTree()
-            .entrySet()) {
+        for (Map.Entry<?,? extends List<?>> ruleEntry : doc.getItemTree().entrySet()) {
             System.out.printf("Nonterminal: %s%n", ruleEntry.getKey());
             for (Object rule : ruleEntry.getValue()) {
                 System.out.printf("* %s%n", rule);
-                String tip = doc.getToolTipMap()
-                    .get(rule);
+                String tip = doc.getToolTipMap().get(rule);
                 if (tip != null) {
                     System.out.printf("  (%s)%n", tip);
                 }
@@ -330,8 +323,7 @@ public class CtrlDoc {
     /** Comment prefix indicating that the comment is a rule syntax definition. */
     public static final String PARS_PATTERN = "@P ";
 
-    private static final String PACKAGE_NAME = CtrlDoc.class.getPackage()
-        .getName();
+    private static final String PACKAGE_NAME = CtrlDoc.class.getPackage().getName();
     private static final String PACKAGE_PATH = PACKAGE_NAME.replace('.', '/');
     /** The name of the grammar file providing the documentation. */
     public static final String CTRL_GRAMMAR_FILE = PACKAGE_PATH + '/' + "Ctrl.g";

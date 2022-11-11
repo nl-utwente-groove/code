@@ -180,8 +180,7 @@ public class RuleEffect extends DefaultFixable {
 
     /** Creates and adds an edge by invoking the source graph's factory. */
     void addCreateEdge(HostNode source, TypeLabel label, HostNode target) {
-        HostEdge edge = getSource().getFactory()
-            .createEdge(source, label, target);
+        HostEdge edge = getSource().getFactory().createEdge(source, label, target);
         addCreatedEdge(edge);
     }
 
@@ -209,8 +208,8 @@ public class RuleEffect extends DefaultFixable {
                     this.erasedNodesAliased = true;
                 } else {
                     if (this.erasedNodesAliased) {
-                        newErasedNodes =
-                            new HostNodeSet((oldErasedNodes.size() + erasedNodes.size()) * 2);
+                        newErasedNodes
+                            = new HostNodeSet((oldErasedNodes.size() + erasedNodes.size()) * 2);
                         newErasedNodes.addAll(oldErasedNodes);
                         this.erasedNodesAliased = false;
                     } else {
@@ -278,8 +277,8 @@ public class RuleEffect extends DefaultFixable {
             this.createdEdgesAliased = true;
         } else {
             if (this.createdEdgesAliased) {
-                newCreatedEdges =
-                    new HostEdgeSet((oldCreatedEdges.size() + createdEdges.size()) * 2);
+                newCreatedEdges
+                    = new HostEdgeSet((oldCreatedEdges.size() + createdEdges.size()) * 2);
                 newCreatedEdges.addAll(oldCreatedEdges);
                 this.createdEdgesAliased = false;
             } else {
@@ -393,8 +392,7 @@ public class RuleEffect extends DefaultFixable {
             result = this.removedNodes;
             if (result == null) {
                 this.removedNodes = result = new HostNodeSet();
-                for (HostNode node : getMergeMap().nodeMap()
-                    .keySet()) {
+                for (HostNode node : getMergeMap().nodeMap().keySet()) {
                     if (getSource().containsNode(node)) {
                         result.add(node);
                     }
@@ -535,8 +533,7 @@ public class RuleEffect extends DefaultFixable {
                     }
                 }
                 // add the incident edges of the merged nodes
-                for (HostNode node : mergeMap.nodeMap()
-                    .keySet()) {
+                for (HostNode node : mergeMap.nodeMap().keySet()) {
                     // only consider nodes that are not removed
                     if (mergeMap.getNode(node) == null) {
                         continue;
@@ -560,10 +557,10 @@ public class RuleEffect extends DefaultFixable {
         } else if (createdEdges != null) {
             final Set<HostNode> removedNodes = getRemovedNodes();
             // filter the added edges through the set of removed nodes
-            result = new Iterable<HostEdge>() {
+            result = new Iterable<>() {
                 @Override
                 public Iterator<HostEdge> iterator() {
-                    return new FilterIterator<HostEdge>(RuleEffect.this.createdEdges.iterator()) {
+                    return new FilterIterator<>(RuleEffect.this.createdEdges.iterator()) {
                         @Override
                         protected boolean approves(Object obj) {
                             if (!(obj instanceof HostEdge)) {

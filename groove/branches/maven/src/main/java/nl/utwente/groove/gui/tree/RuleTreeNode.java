@@ -23,10 +23,10 @@ import java.util.Set;
 
 import javax.swing.Icon;
 
+import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Signature;
-import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.RuleModel;
 import nl.utwente.groove.graph.GraphInfo;
@@ -64,7 +64,9 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
             if (getRule().isProperty()) {
                 result = getIconMap(injective).get(getRule().getRole());
             } else {
-                result = injective ? Icons.RULE_I_TREE_ICON : Icons.RULE_TREE_ICON;
+                result = injective
+                    ? Icons.RULE_I_TREE_ICON
+                    : Icons.RULE_TREE_ICON;
             }
         }
         return result;
@@ -95,8 +97,9 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     @Override
     public String getTip() {
         StringBuilder result = new StringBuilder();
-        result.append(getRule().getRole() == Role.TRANSFORMER ? "Rule" : getRule().getRole()
-            .text(true));
+        result.append(getRule().getRole() == Role.TRANSFORMER
+            ? "Rule"
+            : getRule().getRole().text(true));
         result.append(" ");
         result.append(HTMLConverter.ITALIC_TAG.on(getQualName()));
         AspectGraph source = getRule().getSource();
@@ -111,11 +114,9 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
             result
                 .append(HTMLConverter.ITALIC_TAG.on(((RecipeTreeNode) getParent()).getQualName()));
         }
-        if (getRule().getRole()
-            .isConstraint()) {
+        if (getRule().getRole().isConstraint()) {
             result.append(HTMLConverter.HTML_LINEBREAK);
-            result.append(getRule().getPolicy()
-                .getExplanation());
+            result.append(getRule().getPolicy().getExplanation());
         }
         if (!GraphInfo.isEnabled(source)) {
             result.append(HTMLConverter.HTML_LINEBREAK);
@@ -127,9 +128,11 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
             Set<QualName> recipes = getRule().getRecipes();
             result.append(HTMLConverter.HTML_LINEBREAK);
             result.append("Not enabled stand-alone because it is invoked from ");
-            result.append(recipes.size() == 1 ? "recipe " : "recipes ");
-            result.append(Groove.toString(getRule().getRecipes()
-                .toArray(), "<i>", "</i>", "</i>, <i>", "</i> and <i>"));
+            result.append(recipes.size() == 1
+                ? "recipe "
+                : "recipes ");
+            result.append(Groove.toString(getRule().getRecipes().toArray(), "<i>", "</i>",
+                                          "</i>, <i>", "</i> and <i>"));
         } else if (!isTried()) {
             result.append(HTMLConverter.HTML_LINEBREAK);
             result.append("Not scheduled in this state, due to rule priorities or control");
@@ -147,12 +150,11 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
             if (key.isSystem()) {
                 continue;
             }
-            if (key == Key.PRIORITY && getRule().getRole()
-                .isConstraint()) {
+            if (key == Key.PRIORITY && getRule().getRole().isConstraint()) {
                 continue;
             }
             String value = properties.getProperty(key);
-            if (!value.isEmpty()) {
+            if (value != null && !value.isEmpty()) {
                 filteredProps.put(key.getKeyPhrase(), value);
             }
         }
@@ -200,8 +202,11 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         } catch (FormatException exc) {
             // don't add a suffix string
         }
-        suffix += getRule().isProperty() ? roleSuffixMap.get(getRule().getRole())
-            : isRecipeChild() ? INGREDIENT_SUFFIX : RULE_SUFFIX;
+        suffix += getRule().isProperty()
+            ? roleSuffixMap.get(getRule().getRole())
+            : isRecipeChild()
+                ? INGREDIENT_SUFFIX
+                : RULE_SUFFIX;
         return getDisplay().getLabelText(getQualName(), suffix, showEnabled);
     }
 
@@ -218,14 +223,16 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     /** Flag indicating whether the rule has been tried on the displayed state. */
     private boolean tried;
 
-    private final static String INGREDIENT_SUFFIX =
-        " : " + HTMLConverter.STRONG_TAG.on("ingredient");
+    private final static String INGREDIENT_SUFFIX
+        = " : " + HTMLConverter.STRONG_TAG.on("ingredient");
     private final static String RULE_SUFFIX = " : " + HTMLConverter.STRONG_TAG.on("rule");
     private final static Map<Role,String> roleSuffixMap;
 
     /** Returns the icon map for normal or injective properties. */
     static private Map<Role,Icon> getIconMap(boolean injective) {
-        return injective ? roleInjectiveIconMap : roleNormalIconMap;
+        return injective
+            ? roleInjectiveIconMap
+            : roleNormalIconMap;
     }
 
     private final static Map<Role,Icon> roleNormalIconMap;

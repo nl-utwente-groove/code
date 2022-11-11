@@ -19,11 +19,11 @@ package nl.utwente.groove.grammar;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
-/** Functionality to check the consistency of a key value with a grammar. */
+/** Functionality to check the consistency of a grammar property with a grammar. */
 public interface GrammarChecker {
     /**
-     * Checks the consistency of a value with a given grammar model.
+     * Checks the consistency of a property with a given grammar model.
      * @return the (possibly empty) set of errors in the value
      */
-    public FormatErrorSet check(GrammarModel grammar, Object value);
+    public FormatErrorSet check(GrammarModel grammar, GrammarProperties.Entry value);
 }

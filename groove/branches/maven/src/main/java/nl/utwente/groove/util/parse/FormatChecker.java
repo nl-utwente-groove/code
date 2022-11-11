@@ -16,12 +16,15 @@
  */
 package nl.utwente.groove.util.parse;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Checker interface that tests for format errors in objects of a given type.
  * @param <T> type of the objects to be checked
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public interface FormatChecker<T> {
     /**
      * Checks the errors in a given value.
@@ -30,7 +33,7 @@ public interface FormatChecker<T> {
     public FormatErrorSet check(T value);
 
     /** Default checker that always return the empty error set. */
-    public static final FormatChecker<Object> EMPTY_CHECKER = new FormatChecker<Object>() {
+    public static final FormatChecker<Object> EMPTY_CHECKER = new FormatChecker<>() {
         @Override
         public FormatErrorSet check(Object value) {
             return new FormatErrorSet();
@@ -38,7 +41,7 @@ public interface FormatChecker<T> {
     };
 
     /** Default checker that always return the empty error set. */
-    public static final FormatChecker<String> EMPTY_STRING_CHECKER = new FormatChecker<String>() {
+    public static final FormatChecker<String> EMPTY_STRING_CHECKER = new FormatChecker<>() {
         @Override
         public FormatErrorSet check(String value) {
             return new FormatErrorSet();

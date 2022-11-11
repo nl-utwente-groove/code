@@ -91,7 +91,7 @@ public class StackedSet<T> extends AbstractSet<T> {
         // the following is eqivalent to a nested iterator consisting of an
         // iterator over the added set followed by a filtered iterator over
         // the lower set. Presumably it is more efficient this way?
-        return new Iterator<T>() {
+        return new Iterator<>() {
             @Override
             public void remove() {
                 if (this.lowerLatest == null) {
@@ -108,7 +108,8 @@ public class StackedSet<T> extends AbstractSet<T> {
                     return true;
                 } else {
                     Iterator<? extends T> lowerIter = this.lowerIter;
-                    @Nullable T next = this.lowerNext;
+                    @Nullable
+                    T next = this.lowerNext;
                     // look for the first acceptable element
                     while (next == null && lowerIter.hasNext()) {
                         next = lowerIter.next();

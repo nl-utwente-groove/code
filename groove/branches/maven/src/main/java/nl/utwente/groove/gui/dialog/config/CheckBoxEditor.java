@@ -26,10 +26,10 @@ import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
-import nl.utwente.groove.explore.config.BooleanKey;
 import nl.utwente.groove.explore.config.ExploreKey;
+import nl.utwente.groove.explore.config.Flag;
+import nl.utwente.groove.explore.config.Null;
 import nl.utwente.groove.explore.config.Setting;
-import nl.utwente.groove.explore.config.SettingKey;
 import nl.utwente.groove.gui.action.Refreshable;
 import nl.utwente.groove.gui.dialog.ExploreConfigDialog;
 
@@ -90,8 +90,8 @@ public class CheckBoxEditor extends SettingEditor {
     private final ExploreKey key;
 
     @Override
-    public SettingKey getKind() {
-        return getSetting();
+    public Setting.Key getKind() {
+        return getSetting().key();
     }
 
     @Override
@@ -100,14 +100,15 @@ public class CheckBoxEditor extends SettingEditor {
     }
 
     @Override
-    public BooleanKey getSetting() {
-        return (getCheckBox().isSelected() ? BooleanKey.TRUE : BooleanKey.FALSE)
-            .getDefaultSetting();
+    public Flag getSetting() {
+        return (getCheckBox().isSelected()
+            ? Flag.Kind.TRUE
+            : Flag.Kind.FALSE).createSetting(Null.instance());
     }
 
     @Override
-    public void setSetting(Setting<?,?> content) {
-        getCheckBox().setSelected(content.getKind() == BooleanKey.TRUE);
+    public void setSetting(Setting content) {
+        getCheckBox().setSelected(content.key() == Flag.Kind.TRUE);
     }
 
     @Override

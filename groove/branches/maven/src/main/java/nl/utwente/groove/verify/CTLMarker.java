@@ -78,7 +78,8 @@ public class CTLMarker {
         // & initialise the outgoing transition count
         // as well as the satisfaction of the atoms
         this.states = new Node[nodeCount];
-        @SuppressWarnings("unchecked") List<Integer>[] backward = new List[nodeCount];
+        @SuppressWarnings("unchecked")
+        List<Integer>[] backward = new List[nodeCount];
         this.outCount = new int[nodeCount];
         // collect the special flag labels used in the formula
         Map<Flag,Integer> flagNrs = new EnumMap<>(Flag.class);
@@ -97,8 +98,7 @@ public class CTLMarker {
             this.states[nodeNr] = node;
             int specialEdgeCount = 0;
             for (Edge outEdge : outEdges) {
-                String label = outEdge.label()
-                    .text();
+                String label = outEdge.label().text();
                 Flag flag = this.model.getFlag(label);
                 if (flag == null) {
                     Node target = outEdge.target();
@@ -111,9 +111,9 @@ public class CTLMarker {
                     backward[targetNr].add(nodeNr);
                     markAtom(nodeNr, label);
                 } else {
-                    assert outEdge.isLoop() : String.format(
-                        "Special state marker '%s' occurs as edge label in model",
-                        outEdge.label());
+                    assert outEdge.isLoop() : String
+                        .format("Special state marker '%s' occurs as edge label in model",
+                                outEdge.label());
                     markSpecialAtom(nodeNr, flag);
                     specialEdgeCount++;
                 }
@@ -131,7 +131,9 @@ public class CTLMarker {
         // Calculate the backward structure
         this.backward = new int[nodeCount][];
         for (int i = 0; i < nodeCount; i++) {
-            int backCount = backward[i] == null ? 0 : backward[i].size();
+            int backCount = backward[i] == null
+                ? 0
+                : backward[i].size();
             int[] backEntry = new int[backCount];
             for (int j = 0; j < backCount; j++) {
                 backEntry[j] = backward[i].get(j);
@@ -148,8 +150,7 @@ public class CTLMarker {
         if (!this.formulaNr.containsKey(formula)) {
             Integer index = this.formulaNr.size();
             this.formulaNr.put(formula, index);
-            switch (formula.getOp()
-                .getArity()) {
+            switch (formula.getOp().getArity()) {
             case 0:
                 if (formula.getOp() == LogicOp.PROP) {
                     registerProposition(formula.getProp(), index);
@@ -204,16 +205,12 @@ public class CTLMarker {
             this.marking[propIx].set(nodeNr);
         }
         // Additionally try the label as a parsable ID or CALL
-        Proposition prop = FormulaParser.instance()
-            .parse(label)
-            .getProp();
+        Proposition prop = FormulaParser.instance().parse(label).getProp();
         if (prop != null && prop.getKind() != LABEL) {
             // retrieve the action name being called
             QualName callId = prop.getId();
             if (this.calls.containsKey(callId)) {
-                this.calls.get(callId)
-                    .stream()
-                    .filter(c -> c.matches(prop))
+                this.calls.get(callId).stream().filter(c -> c.matches(prop))
                     .forEach(c -> this.marking[this.propNr.get(c)].set(nodeNr));
             }
         }
@@ -272,8 +269,8 @@ public class CTLMarker {
         case EQUIV -> computeEquiv(arg1, arg2);
         case FORALL -> markForall(property.getArg1());
         case EXISTS -> markExists(property.getArg1());
-        default -> throw Exceptions
-            .illegalArg("Top level operator '%s' in formula %s not allowed", token, property);
+        default -> throw Exceptions.illegalArg("Top level operator '%s' in formula %s not allowed",
+                                               token, property);
         };
         this.marking[nr] = result;
         return result;
@@ -283,14 +280,14 @@ public class CTLMarker {
         return switch (property.getOp()) {
         case NEXT -> computeEX(mark(property.getArg1()));
         case UNTIL -> computeEU(mark(property.getArg1()), mark(property.getArg2()));
-        case EVENTUALLY -> throw Exceptions.unsupportedOp(
-            "The EF(phi) construction in %s should have been rewritten to a E(true U phi) construction",
-            property);
-        case ALWAYS -> throw Exceptions.unsupportedOp(
-            "The EG(phi) construction in %s should have been rewritten to a !(AF(!phi)) construction",
-            property);
+        case EVENTUALLY -> throw Exceptions
+            .unsupportedOp("The EF(phi) construction in %s should have been rewritten to a E(true U phi) construction",
+                           property);
+        case ALWAYS -> throw Exceptions
+            .unsupportedOp("The EG(phi) construction in %s should have been rewritten to a !(AF(!phi)) construction",
+                           property);
         default -> throw Exceptions.illegalArg("Operator '%s' should not occur here",
-            property.getOp());
+                                               property.getOp());
         };
     }
 
@@ -298,14 +295,14 @@ public class CTLMarker {
         return switch (property.getOp()) {
         case NEXT -> computeAX(mark(property.getArg1()));
         case UNTIL -> computeAU(mark(property.getArg1()), mark(property.getArg2()));
-        case EVENTUALLY -> throw Exceptions.unsupportedOp(
-            "The AF(phi) construction in %s should have been rewritten to a A(true U phi) construction",
-            property);
-        case ALWAYS -> throw Exceptions.unsupportedOp(
-            "The AG(phi) construction in %s should have been rewritten to a !(EF(!phi)) construction",
-            property);
+        case EVENTUALLY -> throw Exceptions
+            .unsupportedOp("The AF(phi) construction in %s should have been rewritten to a A(true U phi) construction",
+                           property);
+        case ALWAYS -> throw Exceptions
+            .unsupportedOp("The AG(phi) construction in %s should have been rewritten to a !(EF(!phi)) construction",
+                           property);
         default -> throw Exceptions.illegalArg("Operator %s should not occur here",
-            property.getOp());
+                                               property.getOp());
         };
     }
 
@@ -560,10 +557,10 @@ public class CTLMarker {
             verify();
         }
         final BitSet sat = this.marking[this.formulaNr.get(formula)];
-        return new Iterable<Node>() {
+        return new Iterable<>() {
             @Override
             public Iterator<Node> iterator() {
-                return new Iterator<Node>() {
+                return new Iterator<>() {
                     @Override
                     public boolean hasNext() {
                         return this.stateIx >= 0 && this.stateIx < CTLMarker.this.nodeCount;
@@ -575,7 +572,8 @@ public class CTLMarker {
                             throw new NoSuchElementException();
                         }
                         Node result = CTLMarker.this.states[this.stateIx];
-                        this.stateIx = value ? sat.nextSetBit(this.stateIx + 1)
+                        this.stateIx = value
+                            ? sat.nextSetBit(this.stateIx + 1)
                             : sat.nextClearBit(this.stateIx + 1);
                         return result;
                     }
@@ -585,7 +583,9 @@ public class CTLMarker {
                         throw new UnsupportedOperationException();
                     }
 
-                    int stateIx = value ? sat.nextSetBit(0) : sat.nextClearBit(0);
+                    int stateIx = value
+                        ? sat.nextSetBit(0)
+                        : sat.nextClearBit(0);
                 };
             }
         };

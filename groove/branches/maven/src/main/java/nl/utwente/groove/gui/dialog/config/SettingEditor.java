@@ -20,7 +20,6 @@ import javax.swing.JPanel;
 
 import nl.utwente.groove.explore.config.ExploreKey;
 import nl.utwente.groove.explore.config.Setting;
-import nl.utwente.groove.explore.config.SettingKey;
 import nl.utwente.groove.gui.action.Refreshable;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -34,7 +33,7 @@ abstract public class SettingEditor extends JPanel implements Refreshable {
     abstract public ExploreKey getKey();
 
     /** Returns the setting kind for which this is an editor. */
-    abstract public SettingKey getKind();
+    abstract public Setting.Key getKind();
 
     /** Activates the editor. */
     abstract public void activate();
@@ -43,10 +42,10 @@ abstract public class SettingEditor extends JPanel implements Refreshable {
      * Returns the content according to the current state of the editor.
      * @throws FormatException if the current state cannot be parsed.
      */
-    abstract public Setting<?,?> getSetting() throws FormatException;
+    abstract public Setting getSetting() throws FormatException;
 
     /** Fills the editor with a certain content. */
-    abstract public void setSetting(Setting<?,?> content);
+    abstract public void setSetting(Setting content);
 
     /** Indicates that the editor is in an erroneous state. */
     public boolean hasError() {

@@ -18,13 +18,13 @@ package nl.utwente.groove.gui.dialog.config;
 
 import javax.swing.JPanel;
 
-import nl.utwente.groove.explore.config.AcceptorKind;
-import nl.utwente.groove.explore.config.CheckingKind;
-import nl.utwente.groove.explore.config.CountKind;
+import nl.utwente.groove.explore.config.Acceptor;
+import nl.utwente.groove.explore.config.Count;
 import nl.utwente.groove.explore.config.ExploreKey;
-import nl.utwente.groove.explore.config.MatchKind;
-import nl.utwente.groove.explore.config.SettingKey;
-import nl.utwente.groove.explore.config.TraverseKind;
+import nl.utwente.groove.explore.config.Matcher;
+import nl.utwente.groove.explore.config.ModelChecking;
+import nl.utwente.groove.explore.config.Setting;
+import nl.utwente.groove.explore.config.Traversal;
 import nl.utwente.groove.gui.dialog.ExploreConfigDialog;
 import nl.utwente.groove.util.Exceptions;
 
@@ -69,11 +69,11 @@ public class EditorFactory {
      * Creates a settings editor for a given combination of exploration key and
      * setting kind.
      */
-    public SettingEditor createEditor(JPanel holder, ExploreKey key, SettingKey kind) {
+    public SettingEditor createEditor(JPanel holder, ExploreKey key, Setting.Key kind) {
         SettingEditor result;
         switch (key) {
         case ACCEPTOR:
-            switch ((AcceptorKind) kind) {
+            switch ((Acceptor.Key) kind) {
             case CONDITION:
                 result = new TextFieldEditor(getDialog(), holder, key, kind);
                 break;
@@ -85,7 +85,7 @@ public class EditorFactory {
             }
             break;
         case COUNT:
-            switch ((CountKind) kind) {
+            switch ((Count.Key) kind) {
             case COUNT:
                 result = new TextFieldEditor(getDialog(), holder, key, kind);
                 break;
@@ -94,7 +94,7 @@ public class EditorFactory {
             }
             break;
         case MATCHER:
-            switch ((MatchKind) kind) {
+            switch ((Matcher.Key) kind) {
             case PLAN:
                 result = new TextFieldEditor(getDialog(), holder, key, kind);
                 break;
@@ -103,7 +103,7 @@ public class EditorFactory {
             }
             break;
         case TRAVERSE:
-            switch ((TraverseKind) kind) {
+            switch ((Traversal.Kind) kind) {
             default:
                 result = null;
                 //case BEST_FIRST:
@@ -112,7 +112,7 @@ public class EditorFactory {
             }
             break;
         case CHECKING:
-            switch ((CheckingKind) kind) {
+            switch ((ModelChecking.Kind) kind) {
             case LTL_CHECK:
             case CTL_CHECK:
                 result = new TextFieldEditor(getDialog(), holder, key, kind);

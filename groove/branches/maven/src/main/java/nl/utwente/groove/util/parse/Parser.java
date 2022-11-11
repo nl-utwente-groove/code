@@ -20,36 +20,41 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.io.HTMLConverter;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.Strings;
 
 /**
- * Interface for basic parser functionality.
- * @param <T> the type being parsed
+ * Abstract class for basic parser functionality.
+ * @param <T> the type being parsed. It may be the case that not all values of type {@code T} are possible
+ * outputs of the parser. A {@code T}-value is called <i>valid</i> if it is a possible output of the parser.
  * @author Arend Rensink
  * @version $Id $
  */
-abstract public interface Parser<T> {
+@NonNullByDefault
+public interface Parser<T> {
     /**
-     * Returns a HTML-formatted description of the parsable strings, starting with uppercase.
+     * Returns a HTML-formatted description of a parsable string, starting with uppercase.
      */
     public String getDescription();
 
     /**
-     * Indicates if a given (possibly {@code null}) textual value can be parsed.
-     * The {@code null} and empty string can only be accepted if the parser
-     * has a default value.
+     * Indicates if a given (possible {@code null}) textual value can be parsed.
      */
-    public default boolean accepts(String text) {
+    default public boolean accepts(String text) {
         try {
             parse(text);
         } catch (FormatException exc) {
@@ -59,179 +64,263 @@ abstract public interface Parser<T> {
     }
 
     /**
-     * Converts a given (possibly {@code null}) textual value to an instance of the
+     * Converts a given (non-{@code null}) textual value to an instance of the
      * type of this parser.
-     * Will return the default value on {@code null} or the empty string, if
-     * the parser has a default value.
-     * @param input the text to be parsed
-     * @return a value corresponding to {@code text}. If {@code text} is {@code null} or
-     * empty, returns the default value if any.
+     * @param input the text to be parsed; non-{@code null}
+     * @return a value corresponding to {@code input}
      * @throws FormatException if the input string cannot be parsed
      */
-    public T parse(String input) throws FormatException;
+    abstract public T parse(String input) throws FormatException;
 
     /**
      * Turns a given value into a string that, when fed into {@link #parse(String)},
      * will return the original value.
      * @param value a non-{@code null} value of the type of this parser;
      * should satisfy {@link #isValue(Object)}
+     * @throws IllegalArgumentException if {@code value} is not a valid instance of type {@code T}
      */
-    public String toParsableString(Object value);
+    abstract public <V extends T> String unparse(@NonNull V value) throws IllegalArgumentException;
 
-    /** Returns the type of values that this parser parses to. */
-    public Class<? extends T> getValueType();
-
-    /**
-     * Tests if a given value of the type of this parser can be
-     * represented as a string that can be parsed back.
+    /** Casts an object to a value of the target type of this parser, if possible.
+     * This requires the object to be a valid value of this parser's target type {@code T},
+     * which is checked (in the default implementation) by a call to {@link #isValid(Object)}.
+     * @throws IllegalArgumentException if {@code value} is not a valid instance of type {@code T}
      */
-    public default boolean isValue(Object value) {
-        return isDefault(value) || getValueType().isInstance(value);
+    default public T cast(Object value) throws IllegalArgumentException {
+        try {
+            T result = getValueType().cast(value);
+            if (!isValid(result)) {
+                throw Exceptions.illegalArg("Value '%s' is not valid for this parser", result);
+            }
+            return result;
+        } catch (ClassCastException exc) {
+            throw Exceptions.illegalArg(exc.getMessage());
+        }
     }
 
+    /** Returns the value type that this parser generates, as a class object. */
+    abstract public Class<? extends T> getValueType();
+
     /**
-     * Indicates if this parser has a default value.
-     * If there is a default value, then this is the value that both
-     * {@code null} and the empty string parse to.
+     * Checks if a given object is a valid value of the type of this parser
+     * (where a value is considered <i>valid</i> if it can be the result of a parsing operation).
+     * (Convenience method: the default implementation calls {@link #cast(Object)} for the actual check.)
      */
-    public default boolean hasDefault() {
-        // the parser has a default value if getDefaultValue does not throw an exception
+    default public boolean isValue(Object value) {
         try {
-            getDefaultValue();
-        } catch (UnsupportedOperationException exc) {
+            cast(value);
+            return true;
+        } catch (IllegalArgumentException e) {
             return false;
         }
+    }
+
+    /** Indicates if a given value is valid in terms of this parser;
+     * i.e., if it has a corresponding parsable string.
+     * The default implementation always returns <code>true</code>.
+     * @param value the value being checked
+     * @return {@code true} if {@code value} is valid in terms of this parser
+     */
+    default public boolean isValid(@NonNull T value) {
         return true;
     }
 
-    /** Tests whether a given value is the default value. */
-    public default boolean isDefault(Object value) {
-        // By default, compare with the default value
-        if (!hasDefault()) {
+    /** Indicates if this parser has a default value.
+     * The default value is what the empty string gets parsed to.
+     * @return {@code true} if the parser has a default value
+     */
+    default public boolean hasDefault() {
+        try {
+            getDefaultValue();
+            return true;
+        } catch (UnsupportedOperationException e) {
             return false;
         }
-        if (getDefaultValue() == null) {
-            return value == null;
-        }
-        return getDefaultValue().equals(value);
     }
 
     /**
-     * Returns the default value of this parser, if any.
-     * If the empty and {@code null} string are accepted, then they parse to this value.
-     * Only valid if the parser has a default value according to {@link #hasDefault()}.
-     * @return the default value if {@link #hasDefault()} holds; may be {@code null},
-     * so use {@link #isDefault(Object)} rather than {@link Object#equals(Object)} to test equality!
-     * @throws UnsupportedOperationException if the parser has no default value
-     * @see #hasDefault()
+     * Tests whether a given value is the default value.
+     * Always returns {@code false} if the parse has no default value.
      */
-    public default T getDefaultValue() throws UnsupportedOperationException {
-        throw new UnsupportedOperationException();
+    default public boolean isDefault(Object value) {
+        try {
+            return getDefaultValue().equals(value);
+        } catch (UnsupportedOperationException e) {
+            return false;
+        }
     }
 
     /**
-     * Returns a human-readable string representation of the default value.
-     * The default string may be (but does not have to be) the empty string.
-     * Only valid if the parser has a default value according to {@link #hasDefault()}.
-     * Note that if the empty string is accepted, it parses to the same object
-     * as the default string.
-     * @return a non-{@code null} string representation of the default value
-     * @see #hasDefault()
-     * @see #getDefaultValue()
-     * @throws UnsupportedOperationException if the parser has no default value
+     * Returns the (non-{@code null}) default value of this parser, i it has one.
+     * The default value is what the empty string is parsed to.
+     * @return the default value of this parser.
+     * @throws UnsupportedOperationException if this parser has no default value
      */
-    public default String getDefaultString() throws UnsupportedOperationException {
-        if (hasDefault()) {
-            return "";
-        } else {
-            throw new UnsupportedOperationException();
-        }
-    }
+    abstract public T getDefaultValue() throws UnsupportedOperationException;
 
     /** Path parser. */
-    public static PathParser path = new PathParser();
+    PathParser path = new PathParser();
     /** Integer number parser. */
-    public static IntParser integer = new IntParser(true);
+    IntParser integer = new IntParser(true);
     /** Natural number parser. */
-    public static IntParser natural = new IntParser(false);
+    IntParser natural = new IntParser(false);
     /** Splitting parser based on whitespace. */
-    public static SplitParser<String> splitter = new SplitParser<>(StringParser.identity());
+    SplitParser<String> splitter = new SplitParser<>(StringParser.identity());
     /** Boolean parser with default value {@code false}. */
-    public static BooleanParser boolTrue = new BooleanParser(true);
+    BooleanParser boolTrue = new Parser.BooleanParser(true);
     /** Boolean parser with default value {@code true}. */
-    public static BooleanParser boolFalse = new BooleanParser(false);
+    BooleanParser boolFalse = new Parser.BooleanParser(false);
 
-    /** Identity string parser. */
-    static abstract public class AbstractStringParser<S> implements Parser<S> {
+    /** Bare-bones abstract implementation of a {@link Parser}. */
+    abstract public class AParser<T> implements Parser<T> {
         /**
-         * Constructor for subclassing.
-         * @param trim if {@code true}, spaces are stripped of the values.
+         * Constructs a parser with a given description of its parsable strings.
+         * Whether the parser has a default value will depend on whether the empty string parses
+         * without format exceptions
+         * @param description HTML-formatted description of a parsable string, starting with uppercase.
+         * @param valueType the value type of this parser
          */
-        protected AbstractStringParser(Class<S> valueType, boolean trim) {
-            this.trim = trim;
+        protected AParser(String description, Class<? extends T> valueType) {
+            this.description = description;
             this.valueType = valueType;
-            this.defaultValue = createContent(getDefaultString());
         }
 
-        private final boolean trim;
-
-        @Override
-        public boolean accepts(String text) {
-            return true;
-        }
-
-        @Override
-        public S parse(String input) {
-            if (input == null || input.length() == 0) {
-                return getDefaultValue();
-            } else {
-                return createContent(this.trim ? input.trim() : input);
-            }
-        }
-
-        /** Callback factory method to create the right content object. */
-        protected abstract S createContent(String value);
-
-        @Override
-        public String getDescription() {
-            return "Any string value";
+        /**
+         * Constructs a parser with a given description of its parsable strings.
+         * @param description HTML-formatted description of a parsable string, starting with uppercase.
+         * @param defaultValue the explicit default value of this parser
+         */
+        @SuppressWarnings("unchecked")
+        protected AParser(String description, T defaultValue) {
+            this.description = description;
+            this.valueType = (Class<? extends T>) defaultValue.getClass();
+            this.defaultValue = Optional.of(defaultValue);
         }
 
         @Override
-        public Class<S> getValueType() {
+        final public String getDescription() {
+            return this.description;
+        }
+
+        private final String description;
+
+        @Override
+        final public Class<? extends T> getValueType() {
             return this.valueType;
         }
 
-        private final Class<S> valueType;
+        /** The value type that this parser generates, as a class object. */
+        private final Class<? extends T> valueType;
 
         @Override
-        public S getDefaultValue() {
-            return this.defaultValue;
+        public T getDefaultValue() {
+            var result = this.defaultValue;
+            if (result == null) {
+                try {
+                    result = Optional.of(parse(""));
+                } catch (FormatException e) {
+                    result = Optional.empty();
+                }
+                assert result != null;
+                this.defaultValue = result;
+            }
+            return result.orElseThrow(() -> Exceptions
+                .unsupportedOp("This parser does not have a default value"));
         }
 
-        private final S defaultValue;
+        private @Nullable Optional<T> defaultValue;
+    }
 
-        @SuppressWarnings("unchecked")
+    /** Parser constructed by wrapping/unwrapping the values of wrapping another ('inner') parser.
+     * @param <T> Type produced by this (wrapped) parser
+     */
+    public class Wrap<T> extends AParser<T> {
+        /**
+         * Constructs a wrapped parser.
+         * @param inner the inner parser
+         * @param wrap conversion function from inner to outer type
+         * @param unwrap conversion function from outer to inner type
+         */
+        public <I> Wrap(Parser<I> inner, Class<? extends T> valueType, Function<I,T> wrap,
+                        Function<T,I> unwrap) {
+            super(inner.getDescription(), valueType);
+            this.inner = new Inner<>(inner, valueType, wrap, unwrap);
+        }
+
+        private final Inner<?> inner;
+
         @Override
-        public String toParsableString(Object value) {
-            return "" + extractValue((S) value);
+        public T parse(String input) throws FormatException {
+            return this.inner.parse(input);
         }
 
-        /** Callback method to extract an integer value from a content object. */
-        protected abstract String extractValue(S content);
+        @Override
+        public <V extends T> String unparse(V value) {
+            return this.inner.unparse(value);
+        }
+
+        @Override
+        public boolean isValid(T value) {
+            return this.inner.isValid(value);
+        }
+
+        private class Inner<I> extends AParser<T> {
+            /**
+             * Constructs a wrapped parser.
+             * @param inner the inner parser
+             * @param wrap conversion function from inner to outer type
+             * @param unwrap conversion function from outer to inner type
+             */
+            public Inner(Parser<I> inner, Class<? extends T> valueType, Function<I,T> wrap,
+                         Function<T,I> unwrap) {
+                super(inner.getDescription(), valueType);
+                this.inner = inner;
+                this.wrap = wrap;
+                this.unwrap = unwrap;
+            }
+
+            private final Parser<I> inner;
+            private final Function<I,T> wrap;
+            private final Function<T,I> unwrap;
+
+            @Override
+            public T parse(String input) throws FormatException {
+                return wrap(this.inner.parse(input));
+            }
+
+            @Override
+            public <V extends T> String unparse(V value) {
+                return this.inner.unparse(unwrap(value));
+            }
+
+            @Override
+            public boolean isValid(T value) {
+                return this.inner.isValid(unwrap(value));
+            }
+
+            /** Wraps a value of the inner type into the type produced by this parser. */
+            public T wrap(I value) {
+                return this.wrap.apply(value);
+            }
+
+            /** Unwraps a value as produced by this parser into a value of the inner type. */
+            public I unwrap(T value) {
+                return this.unwrap.apply(value);
+            }
+        }
     }
 
     /** Integer parser. */
-    static abstract public class AbstractIntParser<I> implements Parser<I> {
+    class IntParser extends AParser<Integer> {
         /** Creates a parser, with a parameter to determine if
          * negative values are allowed.
          * @param neg if {@code true}, the parser allows negative values.
          */
-        protected AbstractIntParser(Class<I> valueType, int defaultValue, boolean neg) {
-            this.valueType = valueType;
+        protected IntParser(boolean neg) {
+            super(neg
+                ? "Integer value"
+                : "Natural number", 0);
             this.neg = neg;
-            this.defaultValue = createContent(defaultValue);
-            this.defaultString = "" + defaultValue;
         }
 
         /**
@@ -244,78 +333,33 @@ abstract public interface Parser<T> {
         private final boolean neg;
 
         @Override
-        public boolean accepts(String text) {
-            if (text == null || text.length() == 0) {
-                return true;
-            }
-            try {
-                int number = Integer.parseInt(text);
-                return this.neg || number >= 0;
-            } catch (NumberFormatException ext) {
-                return false;
-            }
-        }
-
-        @Override
-        public I parse(String input) throws FormatException {
-            if (input == null || input.length() == 0) {
+        public Integer parse(String input) throws FormatException {
+            if (input.isEmpty()) {
                 return getDefaultValue();
             } else {
                 try {
-                    return createContent(Integer.parseInt(input));
+                    return Integer.parseInt(input);
                 } catch (NumberFormatException exc) {
                     throw new FormatException(exc.getMessage());
                 }
             }
         }
 
-        /** Callback factory method to create the right content object. */
-        protected abstract I createContent(int value);
-
         @Override
-        public String getDescription() {
-            StringBuffer result = new StringBuffer(this.neg ? "Integer value" : "Natural number");
-            result.append(" (default " + getDefaultString() + ")");
-            return result.toString();
+        public boolean isValid(Integer value) {
+            return allowsNeg() || value >= 0;
         }
 
         @Override
-        public Class<I> getValueType() {
-            return this.valueType;
+        public String unparse(Integer value) {
+            return value.toString();
         }
-
-        private final Class<I> valueType;
-
-        @Override
-        public I getDefaultValue() {
-            return this.defaultValue;
-        }
-
-        private final I defaultValue;
-
-        @Override
-        public String getDefaultString() {
-            return this.defaultString;
-        }
-
-        private final String defaultString;
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public String toParsableString(Object value) {
-            return "" + extractValue((I) value);
-        }
-
-        /** Callback method to extract an integer value from a content object. */
-        protected abstract int extractValue(I content);
     }
 
-    /** Parser for path values. */
-    static public class PathParser implements Parser<Path> {
-
-        @Override
-        public String getDescription() {
-            return "OS-specific file path";
+    /** Parser for path values. Does not support a default value. */
+    class PathParser extends AParser<Path> {
+        private PathParser() {
+            super("OS-specific file path", Path.of(""));
         }
 
         @Override
@@ -328,46 +372,17 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public String toParsableString(Object value) {
-            return ((Path) value).toString();
-        }
-
-        @Override
-        public Class<? extends Path> getValueType() {
-            return Path.class;
-        }
-
-    }
-
-    /** Integer parser. */
-    static public class IntParser extends AbstractIntParser<Integer> {
-        private IntParser(boolean neg) {
-            super(Integer.class, 0, neg);
-        }
-
-        @Override
-        public boolean isValue(Object value) {
-            return value instanceof Integer && (allowsNeg() || ((Integer) value).intValue() >= 0);
-        }
-
-        @Override
-        protected Integer createContent(int value) {
-            return value;
-        }
-
-        @Override
-        protected int extractValue(Integer content) {
-            return content;
+        public String unparse(Path value) {
+            return value.toString();
         }
     }
 
-    /** Parser that concatenates and splits lines at whitespaces. */
-    static public class SplitParser<T> implements Parser<List<T>> {
+    /** Parser that concatenates values from an inner parsers and splits lines at whitespaces. */
+    class SplitParser<T> extends AParser<List<T>> {
         /** Constructs a parser. */
-        @SuppressWarnings("unchecked")
         public SplitParser(Parser<T> inner) {
-            assert inner != null;
-            this.valueType = (Class<List<T>>) new ArrayList<T>().getClass();
+            super("Space-separated list of " + Strings.toLower(inner.getDescription()) + "values",
+                  Collections.<T>emptyList());
             this.inner = inner;
         }
 
@@ -377,7 +392,7 @@ abstract public interface Parser<T> {
         @Override
         public List<T> parse(String input) throws FormatException {
             List<T> result;
-            if (input == null || input.length() == 0) {
+            if (input.isBlank()) {
                 result = getDefaultValue();
             } else {
                 result = new ArrayList<>();
@@ -389,41 +404,14 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public String getDescription() {
-            return "A space-separated list of " + this.inner.getValueType()
-                .getSimpleName() + " values";
+        public <V extends List<T>> String unparse(V value) {
+            List<String> strings = value.stream().map(this.inner::unparse).toList();
+            return Groove.toString(strings.toArray(), "", "", " ");
         }
 
         @Override
-        public String toParsableString(Object value) {
-            return Groove.toString(((Collection<?>) value).toArray(), "", "", " ");
-        }
-
-        @Override
-        public Class<? extends List<T>> getValueType() {
-            return this.valueType;
-        }
-
-        private final Class<? extends List<T>> valueType;
-
-        @Override
-        public boolean isValue(Object value) {
-            boolean result = value instanceof Collection;
-            if (result) {
-                for (Object part : (Collection<?>) value) {
-                    if (!this.inner.isValue(part) || this.inner.toParsableString(part)
-                        .indexOf(' ') >= 0) {
-                        result = false;
-                        break;
-                    }
-                }
-            }
-            return result;
-        }
-
-        @Override
-        public List<T> getDefaultValue() {
-            return Collections.<T>emptyList();
+        public boolean isValid(List<T> value) {
+            return value.stream().allMatch(this.inner::isValid);
         }
 
         /** String parser recognising no quotes or brackets. */
@@ -435,74 +423,51 @@ abstract public interface Parser<T> {
      * @author Arend Rensink
      * @version $Revision $
      */
-    static public class BooleanParser implements Parser<Boolean> {
+    class BooleanParser extends AParser<Boolean> {
         /**
-         * Constructs an instance that accepts the empty string as
+         * Constructs an instance that accepts the empty string as standing for
          * a given default value.
          */
         public BooleanParser(boolean defaultValue) {
-            this.defaultValue = defaultValue;
+            super(createDescription(defaultValue), defaultValue);
         }
 
-        @Override
-        public String getDescription() {
+        static private String createDescription(boolean defaultValue) {
             StringBuffer result = new StringBuffer("Either ");
             result.append(HTMLConverter.ITALIC_TAG.on(TRUE));
-            if (this.defaultValue) {
+            if (defaultValue) {
                 result.append(" (default)");
             }
-            result.append(" or ")
-                .append(HTMLConverter.ITALIC_TAG.on(FALSE));
-            if (!this.defaultValue) {
+            result.append(" or ").append(HTMLConverter.ITALIC_TAG.on(FALSE));
+            if (!defaultValue) {
                 result.append(" (default)");
             }
             return result.toString();
         }
 
         @Override
-        public boolean accepts(String text) {
-            return TRUE.equals(text) || FALSE.equals(text) || "".equals(text) || text == null;
-        }
-
-        @Override
-        public Boolean parse(String input) {
-            Boolean result = null;
-            if (input == null || input.length() == 0) {
+        public Boolean parse(String input) throws FormatException {
+            Boolean result;
+            if (input.length() == 0) {
                 result = getDefaultValue();
             } else if (TRUE.equals(input)) {
                 result = true;
             } else if (FALSE.equals(input)) {
                 result = false;
+            } else {
+                throw new FormatException("'%s' is not a valid boolean", input);
             }
             return result;
         }
 
         @Override
-        public String toParsableString(Object value) {
+        public String unparse(Boolean value) {
             if (value.equals(getDefaultValue())) {
                 return "";
             } else {
                 return value.toString();
             }
         }
-
-        @Override
-        public Class<Boolean> getValueType() {
-            return Boolean.class;
-        }
-
-        @Override
-        public Boolean getDefaultValue() {
-            return this.defaultValue;
-        }
-
-        @Override
-        public String getDefaultString() {
-            return "" + this.defaultValue;
-        }
-
-        /** Value that the empty string converts to. */
-        private final boolean defaultValue;
 
         /** Representation of <code>true</code>. */
         static private final String TRUE = Boolean.toString(true);
@@ -511,84 +476,67 @@ abstract public interface Parser<T> {
     }
 
     /**
-     * Properties subclass that tests whether a given value is a correct value
+     * Parser subclass that tests whether a given value is a correct value
      * of an {@link Enum} type (passed in as a type parameter).
      */
-    static public class EnumParser<T extends Enum<T>> implements Parser<T> {
+    class EnumParser<T extends Enum<T>> extends AParser<T> {
         /**
-         * Constructs an instance with a flag to indicate if the empty string
-         * should be approved.
+         * Constructs an instance with a given textual representations of the values, and without default value.
+         * @param enumType the enum type supported by this property
+         * by the empty string
+         * @param texts textual values that will be parsed to the corresponding enum values.
+         * A {@code null} element in the texts means that the corresponding enum value is considered invalid.
+         */
+        public EnumParser(Class<T> enumType, String... texts) {
+            super(createDescription(enumType.getEnumConstants(), null, texts), enumType);
+            this.toStringMap = new EnumMap<>(enumType);
+            this.toValueMap = new HashMap<>();
+            T[] values = enumType.getEnumConstants();
+            assert values.length == texts.length;
+            for (int i = 0; i < values.length; i++) {
+                var text = texts[i];
+                if (text != null) {
+                    this.toStringMap.put(values[i], text);
+                    var oldValue = this.toValueMap.put(text, values[i]);
+                    assert oldValue == null : "Duplicate key " + texts[i];
+                }
+            }
+        }
+
+        /**
+         * Constructs an instance with an default value and given textual representations of the values.
+         * @param enumType the enum type supported by this property
+         * @param defaultValue the value of {@code T} represented
+         * by the empty string
+         * @param texts textual values that will be parsed to the corresponding enum values.
+         * A {@code null} element in the texts means that the corresponding enum value is considered invalid.
+         */
+        public EnumParser(Class<T> enumType, @NonNull T defaultValue, String... texts) {
+            this(enumType, texts);
+            this.toValueMap.put("", defaultValue);
+        }
+
+        /**
+         * Constructs an instance without default value.
+         * @param enumType the enum type supported by this property
+         */
+        public EnumParser(Class<T> enumType) {
+            this(enumType, toCamel(enumType.getEnumConstants()));
+        }
+
+        /**
+         * Constructs an instance with a default value.
          * @param enumType the enum type supported by this property
          * @param defaultValue the value of {@code T} represented
          * by the empty string
          */
-        public EnumParser(Class<T> enumType, @Nullable
-        T defaultValue, String... texts) {
-            this.defaultValue = defaultValue;
-            this.toStringMap = new EnumMap<>(enumType);
-            this.toValueMap = new HashMap<>();
-            this.valueType = enumType;
-            T[] values = enumType.getEnumConstants();
-            assert values.length == texts.length;
-            for (int i = 0; i < values.length; i++) {
-                if (texts[i] != null) {
-                    this.toStringMap.put(values[i], texts[i]);
-                    T oldValue = this.toValueMap.put(texts[i], values[i]);
-                    assert oldValue == null : "Duplicate key " + texts[i];
-                }
-            }
-            this.toValueMap.put("", defaultValue);
-            this.toValueMap.put(null, defaultValue);
-        }
-
-        /**
-         * Constructs an instance with a flag to indicate if the empty string
-         * should be approved.
-         * @param enumType the enum type supported by this property
-         * @param defaultValue if non-{@code null}, the value of {@code T} represented
-         * by the empty string
-         */
-        public EnumParser(Class<T> enumType, @Nullable
-        T defaultValue) {
-            this(enumType, defaultValue, camel(enumType.getEnumConstants()));
-        }
-
-        @Override
-        public T getDefaultValue() {
-            return this.defaultValue;
-        }
-
-        @Override
-        public String getDefaultString() {
-            String result = this.toStringMap.get(this.defaultValue);
-            return result == null ? "" : result;
-        }
-
-        /** Flag indicating if the empty string is approved. */
-        private final T defaultValue;
-
-        @Override
-        public String getDescription() {
-            StringBuffer result = new StringBuffer("One of ");
-            int i = 0;
-            for (Map.Entry<T,String> e : this.toStringMap.entrySet()) {
-                result = result.append(HTMLConverter.ITALIC_TAG.on(e.getValue()));
-                if (isDefault(e.getKey())) {
-                    result.append(" (default)");
-                }
-                if (i < this.toStringMap.size() - 2) {
-                    result.append(", ");
-                } else if (i < this.toStringMap.size() - 1) {
-                    result.append(" or ");
-                }
-                i++;
-            }
-            return result.toString();
+        public EnumParser(Class<T> enumType, @NonNull T defaultValue) {
+            this(enumType, defaultValue, toCamel(enumType.getEnumConstants()));
         }
 
         @Override
         public T parse(String input) throws FormatException {
-            T result = this.toValueMap.get(input);
+            var result = this.toValueMap.get(input);
             if (result == null) {
                 throw new FormatException("Unknown value '%s'", input);
             }
@@ -596,26 +544,110 @@ abstract public interface Parser<T> {
         }
 
         @Override
-        public String toParsableString(Object value) {
-            return isDefault(value) ? "" : this.toStringMap.get(value);
-        }
-
-        @Override
-        public Class<T> getValueType() {
-            return this.valueType;
-        }
-
-        private final Class<T> valueType;
-
-        private final Map<T,String> toStringMap;
-        private final Map<String,T> toValueMap;
-
-        private static final <T extends Enum<T>> String[] camel(T[] vals) {
-            String[] result = new String[vals.length];
-            for (int i = 0; i < vals.length; i++) {
-                result[i] = StringHandler.toCamel(vals[i].name());
+        public <V extends @NonNull T> String unparse(V value) {
+            var result = this.toStringMap.get(value);
+            if (result == null) {
+                throw Exceptions.illegalArg("'%s' is not valid in this use of %s", value,
+                                            getValueType());
             }
             return result;
         }
+
+        @Override
+        public boolean isValid(@NonNull T value) {
+            return this.toStringMap.get(value) != null;
+        }
+
+        private final Map<T,@Nullable String> toStringMap;
+        private final Map<String,@Nullable T> toValueMap;
+
+        private static <T> String createDescription(T[] values, @Nullable T defaultValue,
+                                                    @Nullable String[] texts) {
+            StringBuffer result = new StringBuffer("One of ");
+            for (int i = 0; i < values.length; i++) {
+                var text = texts[i];
+                if (text == null) {
+                    continue;
+                }
+                result = result.append(HTMLConverter.ITALIC_TAG.on(text));
+                if (values[i].equals(defaultValue)) {
+                    result.append(" (default)");
+                }
+                if (i < values.length - 2) {
+                    result.append(", ");
+                } else if (i < values.length - 1) {
+                    result.append(" or ");
+                }
+            }
+            return result.toString();
+        }
+
+        private static final <T extends Enum<T>> String[] toCamel(T[] vals) {
+            String[] result = new String[vals.length];
+            for (int i = 0; i < vals.length; i++) {
+                result[i] = Strings.toCamel(vals[i].name());
+            }
+            return result;
+        }
+    }
+
+    /** Parser constructed by wrapping the values of another (non-defaulting) "inner" parser into {@link Optional}s
+     * and using the empty {@link Optional} as a default value.
+     * @param <T> Type produced by this (wrapped) parser
+     */
+    class OptionalParser<T> extends AParser<Optional<T>> {
+        /**
+         * Constructs a wrapped parser.
+         * @param inner the inner parser
+         */
+        public OptionalParser(Parser<T> inner) {
+            super("Optional" + Strings.toLower(inner.getDescription()), Optional.empty());
+            this.inner = inner;
+        }
+
+        private final Parser<T> inner;
+
+        /** Returns the inner parser of this wrap-parser. */
+        final public Parser<T> inner() {
+            return this.inner;
+        }
+
+        @Override
+        public Optional<T> parse(String input) throws FormatException {
+            return input.isEmpty()
+                ? Optional.empty()
+                : Optional.of(this.inner.parse(input));
+        }
+
+        @Override
+        public <V extends Optional<T>> String unparse(V value) {
+            return value.map(this.inner::unparse).orElse("");
+        }
+    }
+
+    /** Returns a parser, based on given parsing and unparsing functions.
+     * It is required that parsing never throws exceptions.
+     */
+    @SuppressWarnings("exports")
+    public static <T extends Fallible> Parser<T> newParser(String description,
+                                                           Class<? extends T> valueType,
+                                                           Function<String,@NonNull T> parse,
+                                                           Function<@NonNull T,String> unparse) {
+        return new AParser<>(description, valueType) {
+            @Override
+            public @NonNull T parse(String input) throws FormatException {
+                var result = parse.apply(input);
+                result.getErrors().throwException();
+                return result;
+            }
+
+            @Override
+            public <V extends T> String unparse(V value) throws IllegalArgumentException {
+                if (value.hasErrors()) {
+                    throw Exceptions.illegalArg("Valye has errors: %s", value.getErrors());
+                }
+                return unparse.apply(value);
+            }
+        };
     }
 }

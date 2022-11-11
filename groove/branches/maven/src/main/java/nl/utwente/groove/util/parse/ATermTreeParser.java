@@ -69,7 +69,8 @@ import nl.utwente.groove.util.parse.OpKind.Placement;
  * @author Arend Rensink
  * @version $Id$
  */
-abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> implements Parser<X> {
+abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
+    extends Parser.AParser<X> {
     /**
      * Constructs a parser recognising a given enumeration of operators.
      * Neither sort declarations nor qualified identifiers are recognised
@@ -80,9 +81,9 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
      * term instances for atomic terms
      */
     @SuppressWarnings("unchecked")
-    protected ATermTreeParser(X prototype) {
-        this(prototype, Arrays.asList(((Class<? extends O>) prototype.getOp()
-            .getClass()).getEnumConstants()));
+    protected ATermTreeParser(String description, X prototype) {
+        this(description, prototype,
+             Arrays.asList(((Class<? extends O>) prototype.getOp().getClass()).getEnumConstants()));
     }
 
     /**
@@ -96,7 +97,9 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
      * @param ops collection of operators to be recognised by this parser;
      * should contain exactly one instance of type {@link OpKind#ATOM}
      */
-    protected ATermTreeParser(X prototype, Collection<? extends O> ops) {
+    @SuppressWarnings("unchecked")
+    protected ATermTreeParser(String description, X prototype, Collection<? extends O> ops) {
+        super(description, (Class<X>) prototype.getClass());
         this.prototype = prototype;
         this.atomOp = prototype.getOp();
         assert !this.atomOp.hasSymbol();
@@ -154,18 +157,6 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
 
     private IdValidator idValidator;
 
-    /** Sets the description of the expressions being parsed. */
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    @Override
-    public String getDescription() {
-        return this.description;
-    }
-
-    private String description;
-
     /**
      * Callback factory method for the term trees to be constructed.
      */
@@ -181,7 +172,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
     }
 
     @Override
-    public X parse(String input) {
+    public @NonNull X parse(String input) {
         init(input);
         X result = parse();
         result.setFixed();
@@ -189,14 +180,8 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
     }
 
     @Override
-    public String toParsableString(Object value) {
-        return ((ATermTree<?,?>) value).getParseString();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Class<X> getValueType() {
-        return (Class<X>) this.prototype.getClass();
+    public <V extends X> String unparse(V value) {
+        return value.getParseString();
     }
 
     /** Returns the list of all token types recognised by this parser. */
@@ -306,9 +291,8 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
         try {
             result = parse(OpKind.NONE);
             if (!has(EOT)) {
-                result.getErrors()
-                    .add("Unparsed suffix: %s",
-                        this.input.substring(next().start(), this.input.length()));
+                result.getErrors().add("Unparsed suffix: %s",
+                                       this.input.substring(next().start(), this.input.length()));
             }
         } catch (FormatException exc) {
             result = createErrorTree(exc);
@@ -321,7 +305,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
      * in the context of an operator of a certain kind.
      * @param context the priority level and association direction within which parsing takes place
      */
-    protected X parse(OpKind context) throws FormatException {
+    protected @NonNull X parse(OpKind context) throws FormatException {
         X result;
         Token nextToken = next();
         // first parse for prefix operators to accommodate casts
@@ -340,7 +324,8 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
             if (!has(LATE_OP)) {
                 break;
             }
-            @SuppressWarnings("unchecked") var op = (O) next().op(LATE_OP);
+            @SuppressWarnings("unchecked")
+            var op = (O) next().op(LATE_OP);
             OpKind kind = op.getKind();
             if (context.compareTo(kind) > 0) {
                 break;
@@ -369,7 +354,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
      * Attempts to parse the string as a constant expression.
      * The next token is known to be a constant token.
      */
-    abstract protected X parseConst() throws FormatException;
+    abstract protected @NonNull X parseConst() throws FormatException;
 
     /**
      * Attempts to parse the string as a bracketed expression.
@@ -377,7 +362,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
      * @return the expression in brackets, or {@code null} if the input string does not
      * correspond to a bracketed expression
      */
-    protected X parseBracketed() throws FormatException {
+    protected @NonNull X parseBracketed() throws FormatException {
         X result;
         Token lparToken = consume(LPAR);
         assert lparToken != null;
@@ -394,7 +379,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
      * The next token is known to be a prefix operator;
      * it might still be the start of a qualified identifier.
      */
-    protected X parsePrefixed() throws FormatException {
+    protected @NonNull X parsePrefixed() throws FormatException {
         X result;
         Token opToken = consume(TokenClaz.PRE_OP);
         if (hasQualIds() && opToken.has(NAME) && has(TokenClaz.QUAL_SEP)) {
@@ -411,9 +396,9 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
      * @param opToken the operator token for the prefix expression;
      * guaranteed to contain a prefix operator
      */
-    protected X parsePrefixed(Token opToken) throws FormatException {
-        @SuppressWarnings("unchecked") var op = (O) opToken.type(TokenClaz.PRE_OP)
-            .op();
+    protected @NonNull X parsePrefixed(Token opToken) throws FormatException {
+        @SuppressWarnings("unchecked")
+        var op = (O) opToken.type(TokenClaz.PRE_OP).op();
         assert op != null; // never for pre-ops
         X result = createTree(op);
         if (op.getKind() == OpKind.CALL) {
@@ -428,12 +413,8 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
                 if (consume(RPAR) == null) {
                     throw expectedToken(RPAR, next());
                 }
-                if (result.getArgs()
-                    .size() != op.getArity()) {
-                    throw argumentMismatch(op,
-                        result.getArgs()
-                            .size(),
-                        opToken);
+                if (result.getArgs().size() != op.getArity()) {
+                    throw argumentMismatch(op, result.getArgs().size(), opToken);
                 }
             }
         } else if (op.getArity() == 1) {
@@ -451,7 +432,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
      * The name is guaranteed to be the start of an identifier,
      * and does not have to be investigated as operator.
      */
-    abstract protected X parseName() throws FormatException;
+    abstract protected @NonNull X parseName() throws FormatException;
 
     /**
      * Parses the input as an identifier.
@@ -476,8 +457,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
     protected X createErrorTree(FormatException exc) {
         X result = createTree(getAtomOp());
         result.setParseString(this.input);
-        result.getErrors()
-            .addAll(exc.getErrors());
+        result.getErrors().addAll(exc.getErrors());
         return result;
     }
 
@@ -533,7 +513,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
     /** Returns the next unconsumed token in the input stream.
      * @throws ScanException if an error was encountered during scanning
      */
-    protected final Token next() throws ScanException {
+    protected final @NonNull Token next() throws ScanException {
         if (this.nextToken == null) {
             this.nextToken = scan();
         }
@@ -564,7 +544,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
      * Scans and returns the next token in the input string.
      * @throws ScanException if an error was encountered during scanning
      */
-    private Token scan() throws ScanException {
+    private @NonNull Token scan() throws ScanException {
         Token result = null;
         // the hasNext() call skips all whitespace
         if (!hasNext()) {
@@ -647,7 +627,9 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
         while (!atEnd() && Character.isDigit(curChar())) {
             incChar();
         }
-        Sort sort = !atEnd() && curChar() == '.' ? REAL : INT;
+        Sort sort = !atEnd() && curChar() == '.'
+            ? REAL
+            : INT;
         if (sort == REAL) {
             incChar();
             while (!atEnd() && Character.isDigit(curChar())) {
@@ -687,7 +669,9 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
                 decChar(symbol.length());
             }
         }
-        return family == null ? null : createFamilyToken(family, start, this.ix);
+        return family == null
+            ? null
+            : createFamilyToken(family, start, this.ix);
     }
 
     private Token scanString() throws ScanException {
@@ -830,8 +814,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
         return createFamilyToken(family, start, end);
     }
 
-    private Token createFamilyToken(@NonNull
-    TokenFamily family, int start, int end) {
+    private Token createFamilyToken(@NonNull TokenFamily family, int start, int end) {
         return new Token(family, createFragment(start, end));
     }
 
@@ -892,9 +875,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
      * though only of distinct token classes.
      * A token also contains the line fragment where it has been found.
      */
-    protected static record Token(@NonNull
-    TokenFamily family, @NonNull
-    LineFragment fragment) {
+    protected static record Token(@NonNull TokenFamily family, @NonNull LineFragment fragment) {
         /** Returns the type of this token. */
         public TokenType type(TokenClaz claz) {
             return family().get(claz);
@@ -909,7 +890,8 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
          * one in this token. */
         public Op op(TokenClaz claz) {
             assert claz == TokenClaz.PRE_OP || claz == TokenClaz.LATE_OP;
-            @Nullable Op result = type(claz).op();
+            @Nullable
+            Op result = type(claz).op();
             assert result != null; // never null for pre- or late-ops
             return result;
         }
@@ -943,10 +925,9 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
                 result = sort.createConstant(symbol);
                 result.setParseString(symbol);
             } catch (FormatException exc) {
-                assert false : String.format(
-                    "'%s' has been scanned as a token; how can it fail to be one? (%s)",
-                    substring(),
-                    exc.getMessage());
+                assert false : String
+                    .format("'%s' has been scanned as a token; how can it fail to be one? (%s)",
+                            substring(), exc.getMessage());
             }
             return result;
         }
@@ -1002,24 +983,26 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
 
         /** Indicates if there is a prefix operator in this family. */
         public boolean hasPrefixOp() {
-            return op().getKind()
-                .getPlace() == Placement.PREFIX;
+            return op().getKind().getPlace() == Placement.PREFIX;
         }
 
         /** Returns the prefix operator in this family. */
         public O prefixOp() {
-            return hasPrefixOp() ? op() : null;
+            return hasPrefixOp()
+                ? op()
+                : null;
         }
 
         /** Indicates if there is a non-prefix operator in this family. */
         public boolean hasLatefixOp() {
-            return op().getKind()
-                .getPlace() == Placement.PREFIX;
+            return op().getKind().getPlace() == Placement.PREFIX;
         }
 
         /** Returns the non-prefix operator in this family. */
         public O latefixOp() {
-            return hasLatefixOp() ? op() : null;
+            return hasLatefixOp()
+                ? op()
+                : null;
         }
     }
 
@@ -1064,8 +1047,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
          * @param op the (non-{@code null}) associated operator.
          */
         public TokenType(Op op) {
-            this(getClaz(op.getKind()
-                .getPlace()), null, op);
+            this(getClaz(op.getKind().getPlace()), null, op);
         }
 
         /**
@@ -1171,7 +1153,9 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>> imp
         private TokenClaz(boolean single, String text) {
             this.symbol = text;
             this.single = single;
-            this.type = single ? new TokenType(this) : null;
+            this.type = single
+                ? new TokenType(this)
+                : null;
         }
 
         /**

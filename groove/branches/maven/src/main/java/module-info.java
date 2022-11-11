@@ -105,7 +105,7 @@ module nl.utwente.groove {
     requires org.eclipse.emf.common;
     requires org.eclipse.emf.ecore;
     requires org.eclipse.emf.ecore.xmi;
-    requires org.eclipse.jdt.annotation;
+    requires transitive org.eclipse.jdt.annotation;
     requires osxadapter;
     requires rsyntaxtextarea;
 

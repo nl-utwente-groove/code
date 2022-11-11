@@ -24,15 +24,14 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import nl.utwente.groove.explore.config.ExploreKey;
-import nl.utwente.groove.explore.config.Null;
 import nl.utwente.groove.explore.config.Setting;
-import nl.utwente.groove.explore.config.SettingKey;
+import nl.utwente.groove.explore.config.Setting.ContentParser;
+import nl.utwente.groove.explore.config.Setting.ContentType;
 import nl.utwente.groove.gui.dialog.ConfigDialog;
 import nl.utwente.groove.gui.dialog.ConfigDialog.DirtyListener;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.Fallible;
 import nl.utwente.groove.util.parse.FormatException;
-import nl.utwente.groove.util.parse.Parser;
-import nl.utwente.groove.util.parse.StringHandler;
 
 /**
  * @author rensink
@@ -42,11 +41,12 @@ public class TextFieldEditor extends ContentEditor {
     /**
      * Constructs an editor with a text field for user-defined input.
      */
-    public TextFieldEditor(ConfigDialog<?> dialog, JPanel holder, ExploreKey key, SettingKey kind) {
+    public TextFieldEditor(ConfigDialog<?> dialog, JPanel holder, ExploreKey key,
+                           Setting.Key kind) {
         super(dialog, holder, key, kind);
         setLayout(new BorderLayout());
-        assert kind.getContentType() != Null.class;
-        JLabel label = this.label = new JLabel(StringHandler.toUpper(kind.getContentName()) + ": ");
+        assert kind.contentType() != ContentType.NULL;
+        JLabel label = this.label = new JLabel(Strings.toUpper(kind.description()) + ": ");
         add(label, BorderLayout.WEST);
         add(getTextField(), BorderLayout.CENTER);
         this.contentParser = kind.parser();
@@ -54,11 +54,11 @@ public class TextFieldEditor extends ContentEditor {
         dialog.addRefreshable(this);
     }
 
-    private final Parser<?> getContentParser() {
+    private final ContentParser getContentParser() {
         return this.contentParser;
     }
 
-    private final Parser<?> contentParser;
+    private final ContentParser contentParser;
 
     private JLabel getLabel() {
         return this.label;
@@ -93,7 +93,7 @@ public class TextFieldEditor extends ContentEditor {
     }
 
     @Override
-    public Setting<?,?> getSetting() throws FormatException {
+    public Setting getSetting() throws FormatException {
         String error = getError();
         if (error == null) {
             return getKind().createSetting(getContentParser().parse(getTextField().getText()));
@@ -103,8 +103,8 @@ public class TextFieldEditor extends ContentEditor {
     }
 
     @Override
-    public void setSetting(Setting<?,?> setting) {
-        getTextField().setText(getContentParser().toParsableString(setting.getContent()));
+    public void setSetting(Setting setting) {
+        getTextField().setText(getContentParser().unparse(setting));
     }
 
     @Override
@@ -123,17 +123,20 @@ public class TextFieldEditor extends ContentEditor {
             if (text.isEmpty()) {
                 result = "Empty string is not valid";
             } else {
-                result =
-                    "Value '" + text + "' is not valid (" + StringHandler.toLower(exc.getMessage())
-                        + ")";
+                result = "Value '" + text + "' is not valid (" + Strings.toLower(exc.getMessage())
+                    + ")";
             }
         }
-        return result == null ? null : "Error in " + getKind().getContentName() + ": " + result;
+        return result == null
+            ? null
+            : "Error in " + getKind().getName() + ": " + result;
     }
 
     @Override
     protected void testError() {
-        getTextField().setForeground(hasError() ? Color.RED : Color.BLACK);
+        getTextField().setForeground(hasError()
+            ? Color.RED
+            : Color.BLACK);
         super.testError();
     }
 

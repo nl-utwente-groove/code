@@ -16,8 +16,6 @@
  */
 package nl.utwente.groove.graph;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import nl.utwente.groove.grammar.Action.Role;
@@ -25,9 +23,8 @@ import nl.utwente.groove.grammar.rule.MethodName.Language;
 import nl.utwente.groove.grammar.rule.MethodNameParser;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Properties;
-import nl.utwente.groove.util.PropertyKey;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.Parser;
-import nl.utwente.groove.util.parse.StringHandler;
 import nl.utwente.groove.util.parse.StringParser;
 
 /**
@@ -36,7 +33,7 @@ import nl.utwente.groove.util.parse.StringParser;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GraphProperties extends Properties {
+public class GraphProperties extends Properties<GraphProperties.Key,GraphProperties.Entry> {
     /** Constructs an empty properties object. */
     public GraphProperties() {
         super(Key.class);
@@ -51,26 +48,36 @@ public class GraphProperties extends Properties {
     }
 
     @Override
+    public Key getKey(String name) {
+        try {
+            return Key.valueOf(name);
+        } catch (IllegalArgumentException exc) {
+            return null;
+        }
+    }
+
+    @Override
     public synchronized GraphProperties clone() {
         return new GraphProperties(this);
     }
 
     /** Predefined graph property keys. */
-    public static enum Key implements PropertyKey<Object> {
+    public static enum Key implements Properties.Key<Key,Entry> {
         /** User-defined comment. */
-        REMARK("remark", "One-line explanation of the rule, shown e.g. as tool tip"),
+        REMARK("remark", "One-line explanation of the rule, shown e.g. as tool tip",
+            ValueType.STRING),
 
         /** Rule priority. */
-        PRIORITY("priority", "Higher-priority rules are evaluated first.", Parser.natural),
+        PRIORITY("priority", "Higher-priority rules are evaluated first.", ValueType.INTEGER),
 
         /** Rule enabledness. */
-        ENABLED("enabled", "Disabled rules are never evaluated.", Parser.boolTrue),
+        ENABLED("enabled", "Disabled rules are never evaluated.", ValueType.BOOLEAN),
 
         /** Rule injectivity. */
         INJECTIVE("injective",
             "<body>Flag determining if the rule is to be matched injectively. "
                 + "<br>Disregarded if injective matching is set on the grammar level.",
-            Parser.boolFalse),
+            ValueType.BOOLEAN),
 
         /** Action role. */
         ROLE("actionRole", "<body>Role of the action. Values are:"
@@ -78,7 +85,7 @@ public class GraphProperties extends Properties {
             + "<li>- <i>forbidden</i>: forbidden graph pattern, dealt with as dictated by the violation policy"
             + "<li>- <i>invariant</i>: invariant graph property, dealt with as dictated by the violation policy"
             + "<li>- <i>condition</i>: unmodifying, parameterless action, checked at every state",
-            new Parser.EnumParser<>(Role.class, null)),
+            ValueType.ROLE),
 
         /** Match filter. */
         FILTER("matchFilter",
@@ -87,41 +94,31 @@ public class GraphProperties extends Properties {
                 + "The method may optionally take parameters of type <tt>HostGraph</tt> and <tt>RuleEvent</tt><br/>"
                 + "Supported languages are: <tt>" + Groove.toString(Language.values(), "", "", ", ")
                 + "</tt>",
-            MethodNameParser.instance()),
+            ValueType.METHOD_NAME),
 
         /** Output line format. */
         FORMAT("printFormat",
             "<body>If nonempty, is printed on <tt>System.out</tt> upon every rule application. "
                 + "<br>Optional format parameters as in <tt>String.format</tt> are instantiated with rule parameters.",
-            StringParser.identity()),
+            ValueType.STRING),
 
         /** Alternative transition label. */
         TRANSITION_LABEL("transitionLabel",
             "<body>String to be used as the transition label in the LTS. "
                 + "<p>If empty, defaults to the rule name."
-                + "<br>Optional format parameters as in <tt>String.format</tt> are instantiated with rule parameters."),
+                + "<br>Optional format parameters as in <tt>String.format</tt> are instantiated with rule parameters.",
+            ValueType.STRING),
 
         /** Graph version. */
-        VERSION("$version", "Graph version");
+        VERSION("$version", "Graph version", ValueType.STRING);
 
         /**
          * Constructor for a key with a plain string value
          * @param name name of the key; should be an identifier possibly prefixed by #SYSTEM_KEY_PREFIX
          * @param explanation short explanation of the meaning of the key
          */
-        private Key(String name, String explanation) {
-            this(name, null, explanation, null);
-        }
-
-        /**
-         * Constructor for a key with values parsed by a given parser
-         * @param name name of the key; should be an identifier possibly prefixed by #SYSTEM_KEY_PREFIX
-         * @param explanation short explanation of the meaning of the key
-         * @param parser parser for values for this key; if {@code null},
-         * {@link StringParser#identity()} is used
-         */
-        private Key(String name, String explanation, Parser<?> parser) {
-            this(name, null, explanation, parser);
+        private Key(String name, String explanation, ValueType keyType) {
+            this(name, null, explanation, keyType);
         }
 
         /**
@@ -131,17 +128,19 @@ public class GraphProperties extends Properties {
          * the key phrase is constructed from {@code name}
          * @param explanation short explanation of the meaning of the key
          */
-        private Key(String name, String keyPhrase, String explanation, Parser<?> parser) {
+        private Key(String name, String keyPhrase, String explanation, ValueType keyType) {
             this.name = name;
             this.system = name.startsWith(SYSTEM_KEY_PREFIX);
             if (keyPhrase == null) {
-                String properName = name.substring(this.system ? SYSTEM_KEY_PREFIX.length() : 0);
-                this.keyPhrase = StringHandler.unCamel(properName, false);
+                String properName = name.substring(this.system
+                    ? SYSTEM_KEY_PREFIX.length()
+                    : 0);
+                this.keyPhrase = Strings.unCamel(properName, false);
             } else {
                 this.keyPhrase = keyPhrase;
             }
             this.explanation = explanation;
-            this.parser = parser == null ? StringParser.identity() : parser;
+            this.valueType = keyType;
         }
 
         @Override
@@ -172,27 +171,66 @@ public class GraphProperties extends Properties {
 
         private final String keyPhrase;
 
+        /** Returns the type of the values belonging to this key. */
         @Override
-        public Parser<?> parser() {
-            return this.parser;
+        public ValueType getKeyType() {
+            return this.valueType;
         }
 
-        private final Parser<?> parser;
+        private final ValueType valueType;
+
+        @Override
+        public KeyParser parser() {
+            var result = this.parser;
+            if (result == null) {
+                var inner = switch (this) {
+                case ENABLED -> Parser.boolTrue;
+                case FILTER -> new Parser.OptionalParser<>(MethodNameParser.instance());
+                case INJECTIVE -> Parser.boolFalse;
+                case PRIORITY -> Parser.natural;
+                case ROLE -> new Parser.OptionalParser<>(new EnumParser<>(Role.class));
+                default -> StringParser.identity();
+                };
+                this.parser = result = new KeyParser(this, inner);
+            }
+            return result;
+        }
+
+        private KeyParser parser;
+
+        @Override
+        public Entry wrap(Object value) throws IllegalArgumentException {
+            return new Entry(this, value);
+        }
 
         /** Indicates if a given string corresponds to a property key. */
         static public boolean isKey(String key) {
-            return keyMap.containsKey(key);
-        }
-
-        /** Mapping from graph property key names to keys. */
-        private final static Map<String,Key> keyMap;
-
-        static {
-            Map<String,Key> keys = new LinkedHashMap<>();
-            for (Key key : Key.values()) {
-                keys.put(key.getName(), key);
+            try {
+                valueOf(key);
+                return true;
+            } catch (IllegalArgumentException e) {
+                return false;
             }
-            keyMap = Collections.unmodifiableMap(keys);
+        }
+    }
+
+    /** Graph property entry. */
+    public static record Entry(Key key, Object value) implements Properties.Entry<Key,Entry> {
+        /** Constructs a new instance. */
+        public Entry {
+            checkInvariant(key, value);
+        }
+    }
+
+    /** Parser for {@link Key} values */
+    public static class KeyParser extends Properties.KeyParser<Key,Entry> {
+        /**
+         * @param key key for which this parser is constructed.
+         * @param inner the inner (wrapped) parser
+         */
+        public <T> KeyParser(Key key, Parser<T> inner) {
+            super(key, inner, Entry.class, v -> new Entry(key, v));
+            assert key != null;
         }
     }
 }

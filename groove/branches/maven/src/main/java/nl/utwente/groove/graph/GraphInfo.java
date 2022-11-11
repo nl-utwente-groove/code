@@ -24,9 +24,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
-import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.Action.Role;
+import nl.utwente.groove.grammar.Rule;
+import nl.utwente.groove.graph.GraphProperties.Entry;
 import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.gui.layout.LayoutMap;
 import nl.utwente.groove.util.DefaultFixable;
@@ -174,9 +176,7 @@ public class GraphInfo extends DefaultFixable {
      * @see #getErrors(Graph)
      */
     public static boolean hasErrors(Graph graph) {
-        return graph.hasInfo() && !graph.getInfo()
-            .getErrors()
-            .isEmpty();
+        return graph.hasInfo() && !graph.getInfo().getErrors().isEmpty();
     }
 
     /**
@@ -188,8 +188,7 @@ public class GraphInfo extends DefaultFixable {
     public static Collection<FormatError> getErrors(Graph graph) {
         FormatErrorSet result;
         if (graph.hasInfo()) {
-            result = graph.getInfo()
-                .getErrors();
+            result = graph.getInfo().getErrors();
         } else {
             result = new FormatErrorSet();
         }
@@ -204,8 +203,7 @@ public class GraphInfo extends DefaultFixable {
     public static void setErrors(Graph graph, Collection<FormatError> errors) {
         if (!errors.isEmpty()) {
             assert !graph.isFixed();
-            graph.getInfo()
-                .setErrors(errors);
+            graph.getInfo().setErrors(errors);
         }
     }
 
@@ -215,9 +213,7 @@ public class GraphInfo extends DefaultFixable {
      * @param error error to be added; non-{@code null}
      */
     public static void addError(Graph graph, FormatError error) {
-        graph.getInfo()
-            .getErrors()
-            .add(error);
+        graph.getInfo().getErrors().add(error);
     }
 
     /**
@@ -227,9 +223,7 @@ public class GraphInfo extends DefaultFixable {
      */
     public static void addErrors(Graph graph, Collection<FormatError> errors) {
         if (!errors.isEmpty()) {
-            graph.getInfo()
-                .getErrors()
-                .addAll(errors);
+            graph.getInfo().getErrors().addAll(errors);
         }
     }
 
@@ -238,9 +232,7 @@ public class GraphInfo extends DefaultFixable {
      */
     public static void throwException(Graph graph) throws FormatException {
         if (graph.hasInfo()) {
-            graph.getInfo()
-                .getErrors()
-                .throwException();
+            graph.getInfo().getErrors().throwException();
         }
     }
 
@@ -253,8 +245,7 @@ public class GraphInfo extends DefaultFixable {
     public static LayoutMap getLayoutMap(Graph graph) {
         LayoutMap result = null;
         if (graph.hasInfo()) {
-            result = graph.getInfo()
-                .getLayoutMap();
+            result = graph.getInfo().getLayoutMap();
         }
         return result;
     }
@@ -265,8 +256,7 @@ public class GraphInfo extends DefaultFixable {
      * @param layoutMap the new layout map; non-{@code null}
      */
     public static void setLayoutMap(Graph graph, LayoutMap layoutMap) {
-        graph.getInfo()
-            .setLayoutMap(layoutMap);
+        graph.getInfo().setLayoutMap(layoutMap);
     }
 
     /**
@@ -278,9 +268,7 @@ public class GraphInfo extends DefaultFixable {
     public static GraphProperties getProperties(Graph graph) {
         GraphProperties result = null;
         if (graph.hasInfo()) {
-            result = graph.getInfo()
-                .getProperties()
-                .clone();
+            result = graph.getInfo().getProperties().clone();
             result.setFixed();
         } else {
             result = EMPTY_PROPERTIES;
@@ -296,8 +284,7 @@ public class GraphInfo extends DefaultFixable {
      */
     public static void setProperties(Graph graph, GraphProperties properties) {
         assert !graph.isFixed();
-        graph.getInfo()
-            .setProperties(properties);
+        graph.getInfo().setProperties(properties);
     }
 
     /**
@@ -308,13 +295,13 @@ public class GraphInfo extends DefaultFixable {
      * @see Key#PRIORITY
      */
     static public int getPriority(Graph graph) {
-        return (Integer) getProperty(graph, PRIORITY);
+        return getProperty(graph, PRIORITY).getInteger();
     }
 
     /**
      * Sets the role of a given rule graph to a certain value.
      * @param graph the graph to be modified; non-{@code null} and non-fixed
-     * @param role the new role
+     * @param role the new role; non-{@code null}
      */
     static public void setRole(Graph graph, Role role) {
         setProperty(graph, Key.ROLE, role);
@@ -323,11 +310,11 @@ public class GraphInfo extends DefaultFixable {
     /**
      * Returns the role of a given rule graph.
      * @param graph the queried graph; non-{@code null}
-     * @return the role; may be {@code null}
+     * @return the role; non-{@code null}
      * @see Key#ROLE
      */
-    static public Role getRole(Graph graph) {
-        return (Role) getProperty(graph, Key.ROLE);
+    static public Optional<Role> getRole(Graph graph) {
+        return getProperty(graph, Key.ROLE).getRole();
     }
 
     /**
@@ -346,7 +333,7 @@ public class GraphInfo extends DefaultFixable {
      * @see Key#ENABLED
      */
     static public boolean isEnabled(Graph graph) {
-        return (Boolean) getProperty(graph, ENABLED);
+        return getProperty(graph, ENABLED).getBoolean();
     }
 
     /**
@@ -365,7 +352,7 @@ public class GraphInfo extends DefaultFixable {
      * @see Key#INJECTIVE
      */
     static public boolean isInjective(Graph graph) {
-        return (Boolean) getProperty(graph, INJECTIVE);
+        return getProperty(graph, INJECTIVE).getBoolean();
     }
 
     /**
@@ -384,7 +371,7 @@ public class GraphInfo extends DefaultFixable {
      * @see Key#REMARK
      */
     static public String getRemark(Graph graph) {
-        return (String) getProperty(graph, Key.REMARK);
+        return getProperty(graph, Key.REMARK).getString();
     }
 
     /**
@@ -404,7 +391,7 @@ public class GraphInfo extends DefaultFixable {
      * @see Key#FORMAT
      */
     static public String getFormatString(Graph graph) {
-        return (String) getProperty(graph, Key.FORMAT);
+        return getProperty(graph, Key.FORMAT).getString();
     }
 
     /**
@@ -423,7 +410,7 @@ public class GraphInfo extends DefaultFixable {
      * @see Key#TRANSITION_LABEL
      */
     static public String getTransitionLabel(Graph graph) {
-        return (String) getProperty(graph, Key.TRANSITION_LABEL);
+        return getProperty(graph, Key.TRANSITION_LABEL).getString();
     }
 
     /**
@@ -443,7 +430,7 @@ public class GraphInfo extends DefaultFixable {
      * @see Key#VERSION
      */
     static public String getVersion(Graph graph) {
-        return (String) getProperty(graph, Key.VERSION);
+        return getProperty(graph, Key.VERSION).getString();
     }
 
     /**
@@ -453,20 +440,17 @@ public class GraphInfo extends DefaultFixable {
      * @return the stored or default property value for the given key;
      * non-{@code null}
      */
-    private static Object getProperty(Graph graph, Key key) {
-        Object result = null;
+    private static Entry getProperty(Graph graph, Key key) {
+        Entry result = null;
         try {
             if (graph.hasInfo()) {
-                result = graph.getInfo()
-                    .getProperties()
-                    .parseProperty(key);
+                result = graph.getInfo().getProperties().parseProperty(key);
             }
         } catch (FormatException exc) {
             // do nothing; default value set below
         }
         if (result == null) {
-            result = key.parser()
-                .getDefaultValue();
+            result = key.parser().getDefaultValue();
         }
         return result;
     }
@@ -477,10 +461,8 @@ public class GraphInfo extends DefaultFixable {
      * @param graph the graph to be modified; non-{@code null} and non-fixed
      */
     private static void setProperty(Graph graph, Key key, Object value) {
-        GraphProperties properties;
-        properties = graph.getInfo()
-            .getProperties();
-        properties.storeProperty(key, value);
+        GraphProperties properties = graph.getInfo().getProperties();
+        properties.storeValue(key, value);
     }
 
     /**

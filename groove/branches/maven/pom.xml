@@ -56,10 +56,15 @@
 
 		<resources>
 			<resource>
-				<directory>src/main/java</directory>
+				<directory>src/main/java/nl/utwente/groove/control/parse</directory>
 				<includes>
-					<include>nl/utwente/groove/control/parse/Ctrl.g</include>
-					<include>nl/utwente/groove/io/conceptual/configuration/ConfigSchema.xsd</include>
+					<include>Ctrl.g</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/java/nl/utwente/groove/io/conceptual/configuration</directory>
+				<includes>
+					<include>ConfigSchema.xsd</include>
 				</includes>
 			</resource>
 			<resource>
@@ -192,7 +197,7 @@
 		<dependency>
 			<groupId>org.eclipse.jdt</groupId>
 			<artifactId>org.eclipse.jdt.annotation</artifactId>
-			<version>2.0.0</version>
+			<version>2.2.700</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.emf</groupId>

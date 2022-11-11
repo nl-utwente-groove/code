@@ -18,6 +18,7 @@ package nl.utwente.groove.explore.config;
 
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.Parser;
 import nl.utwente.groove.util.parse.StringHandler;
@@ -27,11 +28,12 @@ import nl.utwente.groove.util.parse.StringHandler;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class SettingParser implements Parser<Setting<?,?>> {
+public class SettingParser extends Parser.AParser<Setting> {
     /**
      * Constructs a parser for settings of a given key.
      */
     public SettingParser(ExploreKey key) {
+        super(createDescription(key), key.getDefaultKind().getDefaultValue());
         this.key = key;
         this.kindMap = key.getKindMap();
     }
@@ -44,38 +46,36 @@ public class SettingParser implements Parser<Setting<?,?>> {
     private final ExploreKey key;
 
     /** Returns the kind corresponding to a given kind name, converted to lower case. */
-    private SettingKey getKind(String name) {
+    private Setting.Key getKind(String name) {
         return this.kindMap.get(name.toLowerCase());
     }
 
-    private final KindMap kindMap;
+    private final SettingKeyMap kindMap;
 
-    @Override
-    public String getDescription() {
+    /** Creates a description of values expected for a given exploration key. */
+    static private String createDescription(ExploreKey key) {
         StringBuilder result = new StringBuilder("<body>");
-        if (getKey().isSingular()) {
+        if (key.isSingular()) {
             result.append("A value ");
         } else {
             result.append("One or more values ");
         }
-        result.append(
-            "of the form <i>kind</i> <i>args</i> (without the space), where <i>kind</i> is one of");
-        for (SettingKey key : getKey().getKindType()
-            .getEnumConstants()) {
+        result
+            .append("of the form <i>kind</i> <i>args</i> (without the space), where <i>kind</i> is one of");
+        for (var k : key.getKindType().getEnumConstants()) {
             result.append("<li> - ");
-            result.append(HTMLConverter.ITALIC_TAG.on(key.getName()));
+            result.append(HTMLConverter.ITALIC_TAG.on(k.getName()));
             result.append(": ");
-            result.append(key.getExplanation());
+            result.append(k.getExplanation());
             result.append(", with <i>arg</i> ");
-            result.append(StringHandler.toLower(key.parser()
-                .getDescription()));
+            result.append(Strings.toLower(k.parser().getDescription()));
         }
         return result.toString();
     }
 
     @Override
-    public Setting<?,?> parse(String input) throws FormatException {
-        if (input == null || input.length() == 0) {
+    public Setting parse(String input) throws FormatException {
+        if (input.length() == 0) {
             return getDefaultValue();
         } else if (getKey().isSingular()) {
             return parseSingle(input);
@@ -85,10 +85,10 @@ public class SettingParser implements Parser<Setting<?,?>> {
     }
 
     /** Parses a string holding a single setting value. */
-    public Setting<?,?> parseSingle(String text) throws FormatException {
+    public Setting parseSingle(String text) throws FormatException {
         SplitPair splitText = split(text);
         String name = splitText.name();
-        SettingKey kind = getKind(name);
+        Setting.Key kind = getKind(name);
         if (kind == null) {
             if (name.isEmpty()) {
                 throw new FormatException("Value '%s' should start with setting kind", text);
@@ -96,8 +96,7 @@ public class SettingParser implements Parser<Setting<?,?>> {
                 throw new FormatException("Unknown setting kind '%s' in '%s'", name, text);
             }
         }
-        Object content = kind.parser()
-            .parse(splitText.content());
+        Object content = kind.parser().parse(splitText.content());
         return kind.createSetting(content);
     }
 
@@ -124,16 +123,13 @@ public class SettingParser implements Parser<Setting<?,?>> {
     }
 
     @Override
-    public String toParsableString(Object value) {
+    public <V extends Setting> String unparse(V value) {
         String result = "";
-        Setting<?,?> setting = (Setting<?,?>) value;
         if (!isDefault(value)) {
             StringBuilder builder = new StringBuilder();
-            SettingKey kind = setting.getKind();
-            String kindName = kind.getName()
-                .toLowerCase();
-            String contentString = kind.parser()
-                .toParsableString(setting.getContent());
+            Setting.Key kind = value.key();
+            String kindName = kind.getName().toLowerCase();
+            String contentString = kind.parser().unparse(value);
             if (contentString.isEmpty()) {
                 builder.append(kindName);
             } else if (getKind("") == kind) {
@@ -148,43 +144,15 @@ public class SettingParser implements Parser<Setting<?,?>> {
         return result;
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public Class<? extends Setting<?,?>> getValueType() {
-        return (Class<? extends Setting<?,?>>) Setting.class;
-    }
-
     @Override
     public boolean isValue(Object value) {
         boolean result = value instanceof Setting;
         if (result) {
-            Setting<?,?> setting = (Setting<?,?>) value;
-            result = setting.getKind()
-                .isValue(setting.getContent());
+            Setting setting = (Setting) value;
+            result = setting.key().isValue(setting);
         }
         return result;
     }
-
-    @Override
-    public Setting<?,?> getDefaultValue() {
-        if (this.defaultValue == null) {
-            SettingKey defaultKind = getKey().getDefaultKind();
-            this.defaultValue = defaultKind.createSetting(defaultKind.getDefaultValue());
-        }
-        return this.defaultValue;
-    }
-
-    private Setting<?,?> defaultValue;
-
-    @Override
-    public String getDefaultString() {
-        if (this.defaultString == null) {
-            this.defaultString = toParsableString(getDefaultValue());
-        }
-        return this.defaultString;
-    }
-
-    private String defaultString;
 
     /** Separator between kind name and (optional) setting content. */
     private static final char CONTENT_SEPARATOR = ':';

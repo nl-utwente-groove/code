@@ -16,37 +16,39 @@
  */
 package nl.utwente.groove.explore.config;
 
-import nl.utwente.groove.util.PropertyKey;
-import nl.utwente.groove.util.parse.StringHandler;
+import nl.utwente.groove.util.Strings;
+import nl.utwente.groove.util.parse.ParsableKey;
 
 /**
  * Key type of the exploration configuration.
+ * The key determines the kind of setting.
  * @author Arend Rensink
  */
-public enum ExploreKey implements PropertyKey<Setting<?,?>> {
+public enum ExploreKey implements ParsableKey<Setting> {
     /** The search traversal strategy. */
-    TRAVERSE("traverse", "State space traversal strategy", TraverseKind.DEPTH_FIRST, true),
+    TRAVERSE("traverse", "State space traversal strategy", Traversal.Kind.DEPTH_FIRST, true),
     /** Model checking settings. */
-    CHECKING("checking", "Model checking mode", CheckingKind.NONE, true),
+    CHECKING("checking", "Model checking mode", ModelChecking.Kind.NONE, true),
     /** The acceptor for results. */
-    RANDOM("random", "Pick random successor of explored state?", BooleanKey.FALSE, true),
+    RANDOM("random", "Pick random successor of explored state?", Flag.Kind.FALSE, true),
     /** The acceptor for results. */
-    ACCEPTOR("accept", "Criterion for results", AcceptorKind.FINAL, true),
+    ACCEPTOR("accept", "Criterion for results", Acceptor.Key.FINAL, true),
     /** The matching strategy. */
-    MATCHER("match", "Match strategy", MatchKind.PLAN, true),
+    MATCHER("match", "Match strategy", Matcher.Key.PLAN, true),
     /** The algebra for data values. */
-    ALGEBRA("algebra", "Algebra for data values", AlgebraKind.DEFAULT, true),
+    ALGEBRA("algebra", "Algebra for data values", Algebra.Kind.DEFAULT, true),
     /** Collapsing of isomorphic states. */
-    ISO("iso", "Collapse isomorphic states?", BooleanKey.TRUE, true),
+    ISO("iso", "Collapse isomorphic states?", Flag.Kind.TRUE, true),
     /** Conditions for where to stop exploring. */
     //BOUNDARY("bound", "Boundary conditions for exploration", null, false),
     /** Number of results after which to stop exploring. */
-    COUNT("count", "Result count before exploration halts", CountKind.ALL, true),;
+    COUNT("count", "Result count before exploration halts", Count.Key.ALL, true),;
 
-    private ExploreKey(String name, String explanation, SettingKey defaultKind, boolean singular) {
+    private ExploreKey(String name, String explanation, Setting.Key defaultKind, boolean singular) {
         this.name = name;
-        this.keyPhrase = StringHandler.unCamel(name, false);
+        this.keyPhrase = Strings.unCamel(name, false);
         this.explanation = explanation;
+        assert defaultKind.hasDefault();
         this.defaultKind = defaultKind;
         this.singular = singular;
     }
@@ -58,17 +60,12 @@ public enum ExploreKey implements PropertyKey<Setting<?,?>> {
 
     private final String name;
 
-    @Override
+    /** Short description for user consumption. */
     public String getKeyPhrase() {
         return this.keyPhrase;
     }
 
     private final String keyPhrase;
-
-    @Override
-    public boolean isSystem() {
-        return false;
-    }
 
     @Override
     public String getExplanation() {
@@ -88,14 +85,15 @@ public enum ExploreKey implements PropertyKey<Setting<?,?>> {
     private SettingParser parser;
 
     /** Returns the default setting kind for this exploration key. */
-    public SettingKey getDefaultKind() {
+    public Setting.Key getDefaultKind() {
         return this.defaultKind;
     }
 
-    private final SettingKey defaultKind;
+    private final Setting.Key defaultKind;
 
     /** Returns the type of the setting key for this explore key. */
-    public Class<? extends SettingKey> getKindType() {
+    @SuppressWarnings("unchecked")
+    public Class<? extends Setting.Key> getKindType() {
         return getDefaultKind().getClass();
     }
 
@@ -109,17 +107,17 @@ public enum ExploreKey implements PropertyKey<Setting<?,?>> {
     private final boolean singular;
 
     /** Returns a mapping from strings to corresponding values of this key's setting kind. */
-    public KindMap getKindMap() {
+    public SettingKeyMap getKindMap() {
         if (this.kindMap == null) {
-            this.kindMap = new KindMap(getKindType());
+            this.kindMap = new SettingKeyMap(getKindType());
             switch (this) {
             case COUNT:
-                this.kindMap.put("", CountKind.COUNT);
+                this.kindMap.put("", Count.Key.COUNT);
                 break;
             case ISO:
             case RANDOM:
-                this.kindMap.put("yes", BooleanKey.TRUE);
-                this.kindMap.put("no", BooleanKey.FALSE);
+                this.kindMap.put("yes", Flag.Kind.TRUE);
+                this.kindMap.put("no", Flag.Kind.FALSE);
                 break;
             default:
                 // no mappings
@@ -128,5 +126,5 @@ public enum ExploreKey implements PropertyKey<Setting<?,?>> {
         return this.kindMap;
     }
 
-    private KindMap kindMap;
+    private SettingKeyMap kindMap;
 }

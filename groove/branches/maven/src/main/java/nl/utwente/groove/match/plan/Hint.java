@@ -14,29 +14,25 @@
  *
  * $Id$
  */
-package nl.utwente.groove.explore.config;
-
-import static nl.utwente.groove.util.parse.StringHandler.DOUBLE_QUOTE_CHAR;
+package nl.utwente.groove.match.plan;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatException;
-import nl.utwente.groove.util.parse.Parser;
+import nl.utwente.groove.util.parse.Parser.AParser;
 import nl.utwente.groove.util.parse.StringHandler;
 
-/**
- * @author Arend Rensink
- * @version $Revision $
- */
-public record MatchHint(List<String> rare, List<String> common) {
-    /**
-     * Constructs an empty match hint.
-     */
-    public MatchHint() {
-        this(Collections.<String>emptyList(), Collections.<String>emptyList());
+/** Hint for a search plan, consisting of a set of commonly occurring and a set of rare labels. */
+public record Hint(@NonNull List<String> common, @NonNull List<String> rare) {
+    /** Constructs an empty hint. */
+    public Hint() {
+        this(Collections.emptyList(), Collections.emptyList());
     }
 
     /** Indicates if there are any rare labels in this hint. */
@@ -49,17 +45,17 @@ public record MatchHint(List<String> rare, List<String> common) {
         return !common().isEmpty();
     }
 
-    /** Parser for match hints. */
-    public static final Parser<MatchHint> PARSER = new Parser<MatchHint>() {
-        @Override
-        public String getDescription() {
-            return "Either empty, or a comma-separated pair of strings <i>rare,common</i>"
-                + "where <i>rare</i> and <i>common</i> are quoted, space-separated lists of labels";
+    /** Parser for {@link Hint} objects. */
+    static public class Parser extends AParser<Hint> {
+        private Parser() {
+            super("Either empty, or a comma-separated pair of strings <i>rare,common</i>"
+                + "where <i>rare</i> and <i>common</i> are quoted, space-separated lists of labels",
+                  new Hint());
         }
 
         @Override
-        public MatchHint parse(String input) throws FormatException {
-            MatchHint result;
+        public Hint parse(@Nullable String input) throws FormatException {
+            Hint result;
             if (input == null || input.isEmpty()) {
                 result = getDefaultValue();
             } else {
@@ -69,7 +65,7 @@ public record MatchHint(List<String> rare, List<String> common) {
                     String common = toUnquoted(split[1]);
                     List<String> rareList = Arrays.asList(exprParser.split(rare, " "));
                     List<String> commonList = Arrays.asList(exprParser.split(common, " "));
-                    result = new MatchHint(rareList, commonList);
+                    result = new Hint(rareList, commonList);
                 } else {
                     throw new FormatException(
                         "Match hint should be comma-separated pair of label lists");
@@ -83,38 +79,30 @@ public record MatchHint(List<String> rare, List<String> common) {
             if (text.length() < 2) {
                 throw new FormatException("Label list '%s' should be double-quoted string", text);
             }
-            if (text.charAt(0) != DOUBLE_QUOTE_CHAR) {
+            if (text.charAt(0) != StringHandler.DOUBLE_QUOTE_CHAR) {
                 throw new FormatException("Label list '%s' should be double-quoted string", text);
             }
-            return StringHandler.toUnquoted(text, DOUBLE_QUOTE_CHAR);
+            return StringHandler.toUnquoted(text, StringHandler.DOUBLE_QUOTE_CHAR);
         }
 
         @Override
-        public String toParsableString(Object value) {
-            var hint = (MatchHint) value;
-            if (!hint.hasRare() && !hint.hasCommon()) {
+        public <V extends nl.utwente.groove.match.plan.Hint> String unparse(V value) {
+            if (!value.hasRare() && !value.hasCommon()) {
                 return "";
             } else {
-                String rareString = Groove.toString(hint.rare()
-                    .toArray(), "\"", "\"", " ");
-                String commonString = Groove.toString(hint.common()
-                    .toArray(), "\"", "\"", " ");
+                String rareString = Groove.toString(value.rare().toArray(), "\"", "\"", " ");
+                String commonString = Groove.toString(value.common().toArray(), "\"", "\"", " ");
                 return rareString + "," + commonString;
             }
         }
 
-        @Override
-        public Class<MatchHint> getValueType() {
-            return MatchHint.class;
+        /** Returns the singleton instance of this parser. */
+        static final public Parser instance() {
+            return INSTANCE;
         }
 
-        @Override
-        public MatchHint getDefaultValue() {
-            return this.defaultValue;
-        }
+        static private final Parser INSTANCE = new Parser();
 
-        private final MatchHint defaultValue = new MatchHint();
-    };
-
-    private static final StringHandler exprParser = new StringHandler("\'");
+        static final StringHandler exprParser = new StringHandler("\'");
+    }
 }

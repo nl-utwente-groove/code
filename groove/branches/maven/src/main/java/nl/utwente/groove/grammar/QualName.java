@@ -162,11 +162,8 @@ public class QualName extends ModuleName implements Comparable<QualName>, Fallib
         int maxSize = Math.max(size() - 1, other.size());
         boolean equal = true;
         for (int i = 0; equal && i < maxSize; i++) {
-            if (tokens().get(i)
-                .equals(other.tokens()
-                    .get(i))) {
-                result.tokens.add(this.tokens()
-                    .get(i));
+            if (tokens().get(i).equals(other.tokens().get(i))) {
+                result.tokens.add(this.tokens().get(i));
             } else {
                 equal = false;
             }
@@ -280,31 +277,25 @@ public class QualName extends ModuleName implements Comparable<QualName>, Fallib
         }
     };
 
+    /** Returns a parser for qualified names. */
+    public static final Parser<QualName> parser() {
+        var result = PARSER;
+        if (result == null) {
+            result = Parser.newParser("Qualified name", QualName.class, QualName::parse,
+                                      n -> n.toString());
+            PARSER = result;
+        }
+        return result;
+    }
+
+    /** Parser for qualified names. */
+    private static Parser<QualName> PARSER;
+
     /** Returns a parser for space-separated lists of qualified names. */
     public static final Parser<List<QualName>> listParser() {
-        if (LIST_PARSER == null) {
-            Parser<QualName> parser = new Parser<QualName>() {
-                @Override
-                public String getDescription() {
-                    return "Qualified name";
-                }
-
-                @Override
-                public QualName parse(String input) {
-                    return QualName.parse(input);
-                }
-
-                @Override
-                public String toParsableString(Object value) {
-                    return ((QualName) value).toString();
-                }
-
-                @Override
-                public Class<? extends QualName> getValueType() {
-                    return QualName.class;
-                }
-            };
-            LIST_PARSER = new Parser.SplitParser<>(parser);
+        var result = LIST_PARSER;
+        if (result == null) {
+            LIST_PARSER = result = new Parser.SplitParser<>(parser());
         }
         return LIST_PARSER;
     }

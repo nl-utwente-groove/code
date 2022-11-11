@@ -130,7 +130,8 @@ public class Rule implements Action, Fixable {
     public void setParent(Rule parent, int[] level) {
         testFixed(false);
         assert getCoRoot() != null : String.format(
-            "Sub-rule at level %s must have a non-trivial co-root map", Arrays.toString(level));
+            "Sub-rule at level %s must have a non-trivial co-root map",
+            Arrays.toString(level));
         if (parent != null) {
             assert parent.rhs()
                 .nodeSet()
@@ -161,12 +162,14 @@ public class Rule implements Action, Fixable {
     public void setProperties(GraphProperties properties) {
         testFixed(false);
         try {
-            this.priority = (Integer) properties.parseProperty(Key.PRIORITY);
-            this.transitionLabel = (String) properties.parseProperty(Key.TRANSITION_LABEL);
-            this.formatString = (String) properties.parseProperty(Key.FORMAT);
+            this.priority = properties.parseProperty(Key.PRIORITY)
+                .getInteger();
+            this.transitionLabel = properties.parseProperty(Key.TRANSITION_LABEL)
+                .getString();
+            this.formatString = properties.parseProperty(Key.FORMAT)
+                .getString();
         } catch (FormatException exc) {
-            assert false : "Graph properties should not contain errors at this point";
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.illegalState("Error in graph properties: %s", exc.getMessage());
         }
     }
 
@@ -238,7 +241,7 @@ public class Rule implements Action, Fixable {
         // if this is a top-level rule, the (only) input nodes
         // are the input-only parameter nodes
         if (isTop()) {
-            result = new HashSet<RuleNode>(getSignature().stream()
+            result = new HashSet<>(getSignature().stream()
                 .filter(v -> v.isInOnly())
                 .map(v -> v.getNode())
                 .collect(Collectors.toSet()));
@@ -523,9 +526,10 @@ public class Rule implements Action, Fixable {
             for (int i = 0; i < sigSize; i++) {
                 // set initPars if the seed map contains a value
                 // for this parameter
-                initPars.set(i, seedMap.nodeMap()
-                    .containsKey(sig.getPar(i)
-                        .getNode()));
+                initPars.set(i,
+                    seedMap.nodeMap()
+                        .containsKey(sig.getPar(i)
+                            .getNode()));
             }
             result = this.matcherMap.get(initPars);
             if (result == null) {

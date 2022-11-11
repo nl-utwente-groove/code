@@ -50,13 +50,13 @@ abstract public class FreshNameDialog<Name> {
      *        be among the existing names
      */
     public FreshNameDialog(Set<Name> existingNames, String suggestion, boolean mustBeFresh) {
-        this.existingNames = existingNames.stream()
-            .map(n -> n.toString())
-            .collect(Collectors.toSet());
-        this.existingLowerCaseNames = this.existingNames.stream()
-            .map(n -> n.toLowerCase())
-            .collect(Collectors.toSet());
-        this.suggestion = mustBeFresh ? generateNewName(suggestion) : suggestion;
+        this.existingNames
+            = existingNames.stream().map(n -> n.toString()).collect(Collectors.toSet());
+        this.existingLowerCaseNames
+            = this.existingNames.stream().map(n -> n.toLowerCase()).collect(Collectors.toSet());
+        this.suggestion = mustBeFresh
+            ? generateNewName(suggestion)
+            : suggestion;
     }
 
     /**
@@ -94,10 +94,11 @@ abstract public class FreshNameDialog<Name> {
         JTextField nameField = getNameField();
         nameField.setText(this.suggestion.toString());
         nameField.setSelectionStart(0);
-        nameField.setSelectionEnd(nameField.getText()
-            .length());
+        nameField.setSelectionEnd(nameField.getText().length());
         setOkEnabled();
-        JDialog dialog = getOptionPane().createDialog(frame, title == null ? DEFAULT_TITLE : title);
+        JDialog dialog = getOptionPane().createDialog(frame, title == null
+            ? DEFAULT_TITLE
+            : title);
         dialog.setVisible(true);
         Object response = getOptionPane().getValue();
         boolean result = response == getOkButton() || response == getNameField();
@@ -178,7 +179,13 @@ abstract public class FreshNameDialog<Name> {
     private JButton getCancelButton() {
         if (this.cancelButton == null) {
             this.cancelButton = new JButton("Cancel");
-            this.cancelButton.addActionListener(new CloseListener());
+            this.cancelButton.addActionListener(new CloseListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    setName(null);
+                    super.actionPerformed(e);
+                }
+            });
         }
         return this.cancelButton;
     }
@@ -190,8 +197,7 @@ abstract public class FreshNameDialog<Name> {
     private JTextField getNameField() {
         if (this.nameField == null) {
             this.nameField = new JTextField(30);
-            this.nameField.getDocument()
-                .addDocumentListener(new OverlapListener());
+            this.nameField.getDocument().addDocumentListener(new OverlapListener());
             this.nameField.addActionListener(getNameFieldListener());
         }
         return this.nameField;

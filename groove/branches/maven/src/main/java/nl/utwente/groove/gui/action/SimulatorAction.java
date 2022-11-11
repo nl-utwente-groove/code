@@ -55,7 +55,7 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
      * Internal constructor to set all fields.
      */
     protected SimulatorAction(Simulator simulator, String name, Icon icon, EditType edit,
-        ResourceKind resource) {
+                              ResourceKind resource) {
         super(name, icon);
         this.simulator = simulator;
         this.resource = resource;
@@ -63,8 +63,7 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
         putValue(SHORT_DESCRIPTION, name);
         setEnabled(false);
         if (simulator != null) {
-            simulator.getActions()
-                .addRefreshable(this);
+            simulator.getActions().addRefreshable(this);
         }
     }
 
@@ -84,7 +83,7 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
      */
     protected SimulatorAction(Simulator simulator, EditType edit, ResourceKind resource) {
         this(simulator, Options.getEditActionName(edit, resource, false),
-            Icons.getEditIcon(edit, resource), edit, resource);
+             Icons.getEditIcon(edit, resource), edit, resource);
     }
 
     /** Returns the edit name for this action, if it is an edit action. */
@@ -242,16 +241,15 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
      */
     final protected QualName askNewName(String name, boolean mustBeFresh) {
         ResourceKind kind = getResourceKind();
-        String title =
-            String.format("Select %s%s name", mustBeFresh ? "new " : "", kind.getDescription());
-        Set<QualName> existingNames = getSimulatorModel().getGrammar()
-            .getNames(kind);
-        FreshNameDialog<QualName> nameDialog =
-            new FreshNameDialog<QualName>(existingNames, name, mustBeFresh) {
+        String title = String.format("Select %s%s name", mustBeFresh
+            ? "new "
+            : "", kind.getDescription());
+        Set<QualName> existingNames = getSimulatorModel().getGrammar().getNames(kind);
+        FreshNameDialog<QualName> nameDialog
+            = new FreshNameDialog<>(existingNames, name, mustBeFresh) {
                 @Override
                 protected QualName createName(String name) throws FormatException {
-                    return QualName.parse(name)
-                        .testValid();
+                    return QualName.parse(name).testValid();
                 }
             };
         nameDialog.showDialog(getFrame(), title);
@@ -267,7 +265,9 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
         GrooveFileChooser chooser = GrooveFileChooser.getInstance(filter);
         File file = null;
         for (String token : name.tokens()) {
-            file = file == null ? new File(token) : new File(file, token);
+            file = file == null
+                ? new File(token)
+                : new File(file, token);
         }
         chooser.setSelectedFile(file);
         return SaveDialog.show(chooser, getFrame(), null);
@@ -281,8 +281,8 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
      *         <code>null</code> if the dialog was cancelled.
      */
     final protected Relabelling askFindSearch(TypeLabel oldLabel) {
-        FindReplaceDialog dialog = new FindReplaceDialog(getSimulatorModel().getGrammar()
-            .getTypeGraph(), oldLabel);
+        FindReplaceDialog dialog
+            = new FindReplaceDialog(getSimulatorModel().getGrammar().getTypeGraph(), oldLabel);
         int dialogResult = dialog.showDialog(getFrame(), null);
         return switch (dialogResult) {
         case FindReplaceDialog.FIND -> new Relabelling(dialog.getOldLabel(), null);
@@ -328,8 +328,7 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
      * explicitly.
      */
     final protected boolean confirmBehaviour(String option, String question) {
-        BehaviourOption menu = (BehaviourOption) getSimulator().getOptions()
-            .getItem(option);
+        BehaviourOption menu = (BehaviourOption) getSimulator().getOptions().getItem(option);
         return menu.confirm(getFrame(), question);
     }
 
@@ -347,9 +346,9 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
      */
     final protected boolean confirmOverwrite(ResourceKind resource, String name) {
         int response = JOptionPane.showConfirmDialog(getFrame(),
-            String.format("Replace existing %s '%s'?", resource.getDescription(), name),
-            null,
-            JOptionPane.OK_CANCEL_OPTION);
+                                                     String.format("Replace existing %s '%s'?",
+                                                                   resource.getDescription(), name),
+                                                     null, JOptionPane.OK_CANCEL_OPTION);
         return response == JOptionPane.OK_OPTION;
     }
 
@@ -359,10 +358,8 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
      */
     final protected boolean confirmOverwriteGrammar(File grammarFile) {
         if (grammarFile.exists()) {
-            int response = JOptionPane.showConfirmDialog(getFrame(),
-                "Overwrite existing grammar?",
-                null,
-                JOptionPane.OK_CANCEL_OPTION);
+            int response = JOptionPane.showConfirmDialog(getFrame(), "Overwrite existing grammar?",
+                                                         null, JOptionPane.OK_CANCEL_OPTION);
             return response == JOptionPane.OK_OPTION;
         } else {
             return true;
@@ -418,7 +415,9 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
      */
     final protected File getLastGrammarFile() {
         SystemStore store = getSimulatorModel().getStore();
-        return store == null ? null : store.getLocation();
+        return store == null
+            ? null
+            : store.getLocation();
     }
 
     /**
@@ -432,24 +431,22 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
         // find out if this is within the grammar directory
         String selectedPath = filter.stripExtension(selectedFile.getCanonicalPath());
         QualName result = null;
-        File location = getSimulatorModel().getStore()
-            .getLocation();
+        File location = getSimulatorModel().getStore().getLocation();
         String grammarPath = location.getCanonicalPath();
         if (selectedPath.startsWith(grammarPath)) {
             String diff = selectedPath.substring(grammarPath.length());
             File pathDiff = new File(diff);
             List<String> pathFragments = new LinkedList<>();
-            while (!pathDiff.getName()
-                .isEmpty()) {
+            while (!pathDiff.getName().isEmpty()) {
                 pathFragments.add(0, pathDiff.getName());
                 pathDiff = pathDiff.getParentFile();
             }
             try {
                 result = new QualName(pathFragments).testValid();
             } catch (FormatException e) {
-                throw new IOException(String.format("Malformed %s name: %s",
-                    getResourceKind().getDescription(),
-                    e.getMessage()));
+                throw new IOException(
+                    String.format("Malformed %s name: %s", getResourceKind().getDescription(),
+                                  e.getMessage()));
             }
         }
         return result;

@@ -16,27 +16,48 @@
  */
 package nl.utwente.groove.util.parse;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Interface for keys with values that can be parsed from strings.
  * @author Arend Rensink
  */
-public interface ParsableKey<V> {
+@NonNullByDefault
+public interface ParsableKey<V> extends Parser<V> {
     /** Key name, in camel case (starting with lowercase). */
     public String getName();
 
     /** Returns an explanation of this key. */
     public String getExplanation();
 
-    /** Returns a parser for values of this key. */
-    public Parser<? extends V> parser();
+    /** Returns the internal parser for values of this key.
+     * All parse methods are delegated to this parser.
+     */
+    public Parser<V> parser();
 
-    /** Convenience method for {@code parser().getDefaultValue()}. */
-    default public V getDefaultValue() {
-        return parser().getDefaultValue();
+    @Override
+    default @NonNull String getDescription() {
+        return parser().getDescription();
     }
 
-    /** Convenience method for {@code parser().isValue(value)}. */
-    default public boolean isValue(Object value) {
-        return parser().isValue(value);
+    @Override
+    default V parse(@NonNull String input) throws FormatException {
+        return parser().parse(input);
+    }
+
+    @Override
+    default <T extends V> String unparse(@NonNull T value) throws IllegalArgumentException {
+        return parser().unparse(value);
+    }
+
+    @Override
+    default @NonNull Class<? extends V> getValueType() {
+        return parser().getValueType();
+    }
+
+    @Override
+    default V getDefaultValue() throws UnsupportedOperationException {
+        return parser().getDefaultValue();
     }
 }

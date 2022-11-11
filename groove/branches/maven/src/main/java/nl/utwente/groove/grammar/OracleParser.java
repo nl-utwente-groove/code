@@ -26,7 +26,6 @@ import nl.utwente.groove.transform.oracle.RandomOracle;
 import nl.utwente.groove.transform.oracle.RandomOracleFactory;
 import nl.utwente.groove.transform.oracle.ReaderOracle;
 import nl.utwente.groove.transform.oracle.ReaderOracleFactory;
-import nl.utwente.groove.transform.oracle.ValueOracle;
 import nl.utwente.groove.transform.oracle.ValueOracleFactory;
 import nl.utwente.groove.transform.oracle.ValueOracleKind;
 import nl.utwente.groove.util.Exceptions;
@@ -38,52 +37,45 @@ import nl.utwente.groove.util.parse.Parser;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class OracleParser implements Parser<ValueOracleFactory> {
+public class OracleParser extends Parser.AParser<ValueOracleFactory> {
     /** Private constructor for the singleton instance. */
     private OracleParser() {
-        // empty
+        super(createDescription(), NoValueOracle.instance());
     }
 
-    @Override
-    public String getDescription() {
-        if (this.description == null) {
-            StringBuilder buffer = new StringBuilder();
-            buffer.append("One of");
-            boolean first = true;
-            for (ValueOracleKind kind : ValueOracleKind.values()) {
-                buffer.append(first ? ": " : ", ");
-                buffer.append(HTMLConverter.ITALIC_TAG.on(kind.getName()));
-                if (first) {
-                    buffer.append(" (default)");
-                    first = false;
-                }
+    /** Creates a description of the values of this parser. */
+    static public String createDescription() {
+        StringBuilder result = new StringBuilder("One of");
+        boolean first = true;
+        for (ValueOracleKind kind : ValueOracleKind.values()) {
+            result.append(first
+                ? ": "
+                : ", ");
+            result.append(HTMLConverter.ITALIC_TAG.on(kind.getName()));
+            if (first) {
+                result.append(" (default)");
+                first = false;
             }
-            this.description = buffer.toString();
         }
-        return this.description;
+        return result.toString();
     }
-
-    private String description;
 
     @Override
     public ValueOracleFactory parse(String input) throws FormatException {
         ValueOracleFactory result;
-        if (input == null || input.length() == 0) {
+        if (input.isEmpty()) {
             result = createOracle(ValueOracleKind.NONE, null);
         } else {
-            FormatException exc =
-                new FormatException("%s is not a valid oracle specification", input);
+            FormatException exc
+                = new FormatException("%s is not a valid oracle specification", input);
             ValueOracleKind kind = Arrays.stream(ValueOracleKind.values())
-                .filter(k -> input.startsWith(k.getName()))
-                .findAny()
-                .orElseThrow(() -> exc);
+                .filter(k -> input.startsWith(k.getName())).findAny().orElseThrow(() -> exc);
             String par;
             if (input.equals(kind.getName())) {
                 par = null;
             } else {
                 int colon = input.indexOf(':');
-                if (colon != kind.getName()
-                    .length()) {
+                if (colon != kind.getName().length()) {
                     throw exc;
                 }
                 par = input.substring(colon + 1);
@@ -98,8 +90,8 @@ public class OracleParser implements Parser<ValueOracleFactory> {
     }
 
     /** Returns an oracle of the desired kind. */
-    private ValueOracleFactory createOracle(ValueOracleKind kind, String par)
-        throws FormatException {
+    private ValueOracleFactory createOracle(ValueOracleKind kind,
+                                            String par) throws FormatException {
         FormatException exc = new FormatException("Unexpected parameter '%s'", par);
         switch (kind) {
         case DEFAULT:
@@ -139,32 +131,24 @@ public class OracleParser implements Parser<ValueOracleFactory> {
     }
 
     @Override
-    public String toParsableString(Object value) {
+    public <V extends ValueOracleFactory> String unparse(V value) {
         String result;
-        Class<? extends ValueOracle> oracle = ((ValueOracle) value).getClass();
+        Class<? extends ValueOracleFactory> oracle = value.getClass();
         if (oracle == NoValueOracle.class) {
             result = ValueOracleKind.NONE.getName();
         } else if (oracle == DefaultOracle.class) {
             result = ValueOracleKind.DEFAULT.getName();
         } else if (oracle == RandomOracle.class) {
             RandomOracle random = (RandomOracle) value;
-            result = ValueOracleKind.RANDOM + (random.hasSeed() ? ":" + random.getSeed() : "");
+            result = ValueOracleKind.RANDOM + (random.hasSeed()
+                ? ":" + random.getSeed()
+                : "");
         } else if (oracle == ReaderOracle.class) {
             result = ValueOracleKind.READER + ":" + ((ReaderOracle) value).getFilename();
         } else {
             throw Exceptions.UNREACHABLE;
         }
         return result;
-    }
-
-    @Override
-    public Class<? extends ValueOracleFactory> getValueType() {
-        return ValueOracleFactory.class;
-    }
-
-    @Override
-    public ValueOracleFactory getDefaultValue() {
-        return NoValueOracle.instance();
     }
 
     /** Returns the singleton instance of this parser. */

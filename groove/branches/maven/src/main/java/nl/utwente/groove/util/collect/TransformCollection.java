@@ -41,7 +41,7 @@ abstract public class TransformCollection<T,U> extends AbstractCollection<U> {
      */
     @Override
     public Iterator<U> iterator() {
-        return new TransformIterator<T,U>(this.inner.iterator()) {
+        return new TransformIterator<>(this.inner.iterator()) {
             /**
              * Delegates the method to the enclosing
              * {@link TransformSet#toOuter(Object)}.

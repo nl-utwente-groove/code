@@ -184,14 +184,16 @@ public class ExploreType {
      * @see #test(Grammar)
      */
     final public Exploration newExploration(GTS gts, GraphState start) throws FormatException {
-        return new Exploration(this, start == null ? gts.startState() : start);
+        return new Exploration(this, start == null
+            ? gts.startState()
+            : start);
     }
 
     /**
      * Returns a string that, when used as input for {@link #parse(String)},
      * will return an exploration equal to this one.
      */
-    public String toParsableString() {
+    public String unparse() {
         String result = StrategyEnumerator.toParsableStrategy(this.strategy) + " "
             + AcceptorEnumerator.toParsableAcceptor(this.acceptor) + " " + this.bound;
         return result;
@@ -199,60 +201,23 @@ public class ExploreType {
 
     @Override
     public String toString() {
-        return toParsableString();
+        return unparse();
     }
 
     /** Parser for serialised explorations. */
     static public Parser<ExploreType> parser() {
-        return new Parser<ExploreType>() {
+        return new Parser.AParser<>(SYNTAX_MESSAGE, ExploreType.DEFAULT) {
             @Override
-            public String getDescription() {
-                return SYNTAX_MESSAGE;
-            }
-
-            @Override
-            public boolean accepts(String text) {
-                if (text == null || text.length() == 0) {
-                    return true;
-                }
-                try {
-                    ExploreType.parse(text);
-                    return true;
-                } catch (FormatException exc) {
-                    return false;
-                }
-            }
-
-            @Override
-            public ExploreType parse(String input) {
-                if (input == null || input.length() == 0) {
+            public ExploreType parse(String input) throws FormatException {
+                if (input.length() == 0) {
                     return getDefaultValue();
                 }
-                try {
-                    return ExploreType.parse(input);
-                } catch (FormatException exc) {
-                    return getDefaultValue();
-                }
+                return ExploreType.parse(input);
             }
 
             @Override
-            public String toParsableString(Object value) {
-                return ((ExploreType) value).toParsableString();
-            }
-
-            @Override
-            public Class<ExploreType> getValueType() {
-                return ExploreType.class;
-            }
-
-            @Override
-            public boolean isValue(Object value) {
-                return value instanceof ExploreType;
-            }
-
-            @Override
-            public ExploreType getDefaultValue() {
-                return ExploreType.DEFAULT;
+            public <V extends ExploreType> String unparse(V value) {
+                return value.unparse();
             }
         };
     }
@@ -273,20 +238,18 @@ public class ExploreType {
         if (parts.length < 2 || parts.length > 3) {
             throw new FormatException(SYNTAX_MESSAGE);
         }
-        Serialized strategy = StrategyEnumerator.instance()
-            .parseCommandline(parts[0]);
+        Serialized strategy = StrategyEnumerator.instance().parseCommandline(parts[0]);
         if (strategy == null) {
             throw new FormatException("Can't parse strategy %s", parts[0]);
         }
-        Serialized acceptor = AcceptorEnumerator.instance()
-            .parseCommandline(parts[1]);
+        Serialized acceptor = AcceptorEnumerator.instance().parseCommandline(parts[1]);
         if (acceptor == null) {
             throw new FormatException("Can't parse acceptor %s", parts[1]);
         }
         int resultCount = 0;
         if (parts.length == 3) {
-            String countMessage =
-                String.format("Result count '%s' must be a non-negative number", parts[2]);
+            String countMessage
+                = String.format("Result count '%s' must be a non-negative number", parts[2]);
             try {
                 resultCount = Integer.parseInt(parts[2]);
             } catch (NumberFormatException e) {
@@ -300,8 +263,8 @@ public class ExploreType {
     }
 
     /** Message describing the syntax of a parsable exploration strategy. */
-    static public final String SYNTAX_MESSAGE =
-        "Exploration syntax: \"<strategy> <acceptor> [<resultcount>]\"";
+    static public final String SYNTAX_MESSAGE
+        = "Exploration syntax: \"<strategy> <acceptor> [<resultcount>]\"";
     /** Default exploration (DFS, final states, infinite). */
     static public final ExploreType DEFAULT = new ExploreType();
 }

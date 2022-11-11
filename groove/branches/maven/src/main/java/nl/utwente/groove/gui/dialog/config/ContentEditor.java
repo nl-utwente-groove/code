@@ -21,7 +21,7 @@ import java.awt.CardLayout;
 import javax.swing.JPanel;
 
 import nl.utwente.groove.explore.config.ExploreKey;
-import nl.utwente.groove.explore.config.SettingKey;
+import nl.utwente.groove.explore.config.Setting;
 import nl.utwente.groove.gui.dialog.ConfigDialog;
 
 /**
@@ -34,7 +34,7 @@ public abstract class ContentEditor extends SettingEditor {
      * Constructs an editor.
      */
     protected ContentEditor(ConfigDialog<?> dialog, JPanel holder, ExploreKey key,
-        SettingKey kind) {
+                            Setting.Key kind) {
         this.dialog = dialog;
         this.holder = holder;
         this.key = key;
@@ -69,11 +69,11 @@ public abstract class ContentEditor extends SettingEditor {
     private final ExploreKey key;
 
     @Override
-    public SettingKey getKind() {
+    public Setting.Key getKind() {
         return this.kind;
     }
 
-    private final SettingKey kind;
+    private final Setting.Key kind;
 
     /**
      * The parent panel, on which this is placed.

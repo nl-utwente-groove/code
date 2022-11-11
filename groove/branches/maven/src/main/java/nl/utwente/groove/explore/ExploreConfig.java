@@ -22,7 +22,7 @@ import java.util.Properties;
 
 import nl.utwente.groove.explore.config.ExploreKey;
 import nl.utwente.groove.explore.config.Setting;
-import nl.utwente.groove.explore.config.TraverseKind;
+import nl.utwente.groove.explore.config.Traversal;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.StringHandler;
 
@@ -47,34 +47,34 @@ public class ExploreConfig {
     }
 
     /** Returns the currently set search strategy. */
-    public TraverseKind getStrategy() {
-        return (TraverseKind) this.pars.get(ExploreKey.TRAVERSE);
+    public Traversal getStrategy() {
+        return (Traversal) this.pars.get(ExploreKey.TRAVERSE);
     }
 
     /** Sets the search strategy to a non-{@code null} value. */
-    public void setStrategy(TraverseKind order) {
+    public void setStrategy(Traversal order) {
         this.pars.put(ExploreKey.TRAVERSE, order);
     }
 
     /** Returns the current setting for a given key. */
-    public Setting<?,?> get(ExploreKey key) {
+    public Setting get(ExploreKey key) {
         return this.pars.get(key);
     }
 
     /** Changes the setting for a given key. */
-    public Setting<?,?> put(ExploreKey key, Setting<?,?> value) {
+    public Setting put(ExploreKey key, Setting value) {
         return this.pars.put(key, value);
     }
 
     /** Parameter map of this configuration. */
-    private final Map<ExploreKey,Setting<?,?>> pars;
+    private final Map<ExploreKey,Setting> pars;
 
     /** Converts this properties object to a command-line string. */
     public String toCommandLine() {
         StringBuilder result = new StringBuilder();
-        for (Map.Entry<ExploreKey,Setting<?,?>> e : this.pars.entrySet()) {
+        for (Map.Entry<ExploreKey,Setting> e : this.pars.entrySet()) {
             ExploreKey key = e.getKey();
-            Setting<?,?> setting = e.getValue();
+            Setting setting = e.getValue();
             if (key.parser().isDefault(setting)) {
                 continue;
             }
@@ -82,7 +82,7 @@ public class ExploreConfig {
             StringBuilder arg = new StringBuilder();
             arg.append(key.getName());
             arg.append(SEPARATOR);
-            arg.append(key.parser().toParsableString(setting));
+            arg.append(key.parser().unparse(setting));
             if (arg.indexOf(" ") > 0) {
                 result.append(StringHandler.toQuoted(arg.toString(), '"'));
             } else {
@@ -96,11 +96,11 @@ public class ExploreConfig {
     /** Converts this configuration into a properties map. */
     public Properties getProperties() {
         Properties result = new Properties();
-        for (Map.Entry<ExploreKey,Setting<?,?>> e : this.pars.entrySet()) {
+        for (Map.Entry<ExploreKey,Setting> e : this.pars.entrySet()) {
             ExploreKey key = e.getKey();
-            Setting<?,?> setting = e.getValue();
+            Setting setting = e.getValue();
             if (!key.parser().isDefault(setting)) {
-                result.setProperty(key.getName(), key.parser().toParsableString(setting));
+                result.setProperty(key.getName(), key.parser().unparse(setting));
             }
         }
         return result;

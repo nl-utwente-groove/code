@@ -19,11 +19,11 @@ package nl.utwente.groove.gui.dialog.config;
 import javax.swing.JPanel;
 
 import nl.utwente.groove.explore.config.ExploreKey;
+import nl.utwente.groove.explore.config.Null;
 import nl.utwente.groove.explore.config.Setting;
-import nl.utwente.groove.explore.config.SettingKey;
+import nl.utwente.groove.explore.config.Setting.ContentType;
 import nl.utwente.groove.gui.dialog.ConfigDialog;
 import nl.utwente.groove.util.parse.FormatException;
-import nl.utwente.groove.util.parse.NullParser;
 
 /**
  * Editor for the null content.
@@ -35,9 +35,9 @@ public class NullEditor extends ContentEditor {
      * Constructs a null editor for a given exploration key and setting kind.
      * @param dialog the configuration dialog for which this is an editor
      */
-    public NullEditor(ConfigDialog<?> dialog, JPanel holder, ExploreKey key, SettingKey kind) {
+    public NullEditor(ConfigDialog<?> dialog, JPanel holder, ExploreKey key, Setting.Key kind) {
         super(dialog, holder, key, kind);
-        assert kind.parser() instanceof NullParser;
+        assert kind.contentType() == ContentType.NULL;
     }
 
     @Override
@@ -46,13 +46,13 @@ public class NullEditor extends ContentEditor {
     }
 
     @Override
-    public Setting<?,?> getSetting() throws FormatException {
-        return getKind().getDefaultSetting();
+    public Setting getSetting() throws FormatException {
+        return getKind().createSetting(Null.instance());
     }
 
     @Override
-    public void setSetting(Setting<?,?> content) {
-        assert content.getKind() == getKind();
+    public void setSetting(Setting content) {
+        assert content.key() == getKind();
     }
 
     @Override

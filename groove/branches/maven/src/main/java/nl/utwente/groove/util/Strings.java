@@ -34,7 +34,7 @@ public final class Strings {
      * <p>A string comparator that does case sensitive comparisons and handles embedded numbers correctly.</p>
      * <p><b>Do not use</b> if your app might ever run on any locale that uses more than 7-bit ascii characters.</p>
      */
-    private static final Comparator<String> NATURAL_COMPARATOR_ASCII = new Comparator<String>() {
+    private static final Comparator<String> NATURAL_COMPARATOR_ASCII = new Comparator<>() {
         @Override
         public int compare(String o1, String o2) {
             return compareNaturalAscii(o1, o2);
@@ -45,8 +45,8 @@ public final class Strings {
      * <p>A string comparator that does case insensitive comparisons and handles embedded numbers correctly.</p>
      * <p><b>Do not use</b> if your app might ever run on any locale that uses more than 7-bit ascii characters.</p>
      */
-    private static final Comparator<String> IGNORE_CASE_NATURAL_COMPARATOR_ASCII =
-        new Comparator<String>() {
+    private static final Comparator<String> IGNORE_CASE_NATURAL_COMPARATOR_ASCII
+        = new Comparator<>() {
             @Override
             public int compare(String o1, String o2) {
                 return compareNaturalIgnoreCaseAscii(o1, o2);
@@ -90,7 +90,7 @@ public final class Strings {
             // unrelated code that tries to use the comparator
             throw new NullPointerException("collator must not be null");
         }
-        return new Comparator<String>() {
+        return new Comparator<>() {
             @Override
             public int compare(String o1, String o2) {
                 return compareNatural(collator, o1, o2);
@@ -194,7 +194,8 @@ public final class Strings {
      *         a value less than zero iff <code>s</code> lexicographically precedes <code>t</code>
      *         and a value larger than zero iff <code>s</code> lexicographically follows <code>t</code>
      */
-    private static int compareNatural(String s, String t, boolean caseSensitive, Collator collator) {
+    private static int compareNatural(String s, String t, boolean caseSensitive,
+                                      Collator collator) {
         int sIndex = 0;
         int tIndex = 0;
 
@@ -264,19 +265,25 @@ public final class Strings {
                     ++sIndex;
                     ++tIndex;
                     if (sIndex == sLength && tIndex == tLength) {
-                        return diff != 0 ? diff : sLeadingZeroCount - tLeadingZeroCount;
+                        return diff != 0
+                            ? diff
+                            : sLeadingZeroCount - tLeadingZeroCount;
                     }
                     if (sIndex == sLength) {
                         if (diff == 0) {
                             return -1;
                         }
-                        return Character.isDigit(t.charAt(tIndex)) ? -1 : diff;
+                        return Character.isDigit(t.charAt(tIndex))
+                            ? -1
+                            : diff;
                     }
                     if (tIndex == tLength) {
                         if (diff == 0) {
                             return 1;
                         }
-                        return Character.isDigit(s.charAt(sIndex)) ? 1 : diff;
+                        return Character.isDigit(s.charAt(sIndex))
+                            ? 1
+                            : diff;
                     }
                     sChar = s.charAt(sIndex);
                     tChar = t.charAt(tIndex);
@@ -351,6 +358,143 @@ public final class Strings {
                     } while (!sCharIsDigit && !tCharIsDigit);
                 }
             }
+        }
+    }
+
+    /**
+     * Fills out a string to a given length by padding it with white space on
+     * the left or right. Has no effect if the string is already longer than the
+     * desired length.
+     * @param text the string to be padded
+     * @param length the desired length
+     * @param right <tt>true</tt> if the space should be added on the right
+     * @return A new string, consisting of <tt>text</tt> preceded or followed by
+     *         spaces, up to minimum length <tt>length</tt>
+     */
+    static public String pad(String text, int length, boolean right) {
+        StringBuffer result = new StringBuffer(text);
+        while (result.length() < length) {
+            if (right) {
+                result.append(' ');
+            } else {
+                result.insert(0, ' ');
+            }
+        }
+        return result.toString();
+    }
+
+    /**
+     * Fills out a string to a given length by padding it with white space on
+     * the right. Has no effect if the string is already longer than the desired
+     * length.
+     * @param text the string to be padded
+     * @param length the desired length
+     * @return A new string, with <tt>text</tt> as prefix, followed by spaces,
+     *         up to minimum length <tt>length</tt>
+     */
+    static public String pad(String text, int length) {
+        return pad(text, length, true);
+    }
+
+    /**
+     * Turns a camel-case string into a space-separated string.
+     * The first character is capitalised in any case; next
+     * words are capitalised optionally.
+     * @param input the (non-{@code null}) input string, in camel case
+     * @param caps if {@code true}, all words (not just the first) are capitalised
+     * @return a converted string
+     */
+    public static String unCamel(String input, boolean caps) {
+        StringBuilder result = new StringBuilder(input);
+        int ix = 0;
+        boolean wasLower = true;
+        while (ix < result.length()) {
+            char c = result.charAt(ix);
+            boolean isLower = Character.isLowerCase(c);
+            boolean atStart = ix == 0;
+            if (atStart || wasLower && !isLower) {
+                if (!atStart) {
+                    result.insert(ix, ' ');
+                    ix++;
+                }
+                // determine if next character should be upper or lower case
+                boolean toUpper = atStart || caps;
+                if (!toUpper) {
+                    toUpper
+                        = ix < result.length() - 1 && Character.isUpperCase(result.charAt(ix + 1));
+                }
+                result.setCharAt(ix, toUpper
+                    ? Character.toUpperCase(c)
+                    : Character.toLowerCase(c));
+            }
+            wasLower = isLower;
+            ix++;
+        }
+        return result.toString();
+    }
+
+    /**
+     * Converts a space- or underscore-separated string into camel case
+     * @param input the (non-{@code null}) input string; should
+     * consist of alphanumeric characters separated by (but not beginning with)
+     * spaces or underscores
+     * @return a converted string
+     */
+    public static String toCamel(String input) {
+        StringBuilder result = new StringBuilder(input);
+        int ix = 0;
+        boolean wasSep = false;
+        while (ix < result.length()) {
+            char c = result.charAt(ix);
+            boolean isSep = c == ' ' || c == '_';
+            if (isSep) {
+                result.delete(ix, ix + 1);
+            } else {
+                assert Character.isLetterOrDigit(c);
+                c = wasSep
+                    ? Character.toUpperCase(c)
+                    : Character.toLowerCase(c);
+                result.setCharAt(ix, c);
+                ix++;
+            }
+            wasSep = isSep;
+        }
+        return result.toString();
+    }
+
+    /**
+     * Converts the initial character of a given input string to uppercase.
+     * @param input the input string
+     */
+    public static String toUpper(String input) {
+        if (!Character.isLowerCase(input.charAt(0))) {
+            return input;
+        } else {
+            StringBuilder result = new StringBuilder(input);
+            if (result.length() > 0) {
+                char c = result.charAt(0);
+                c = Character.toUpperCase(c);
+                result.setCharAt(0, c);
+            }
+            return result.toString();
+        }
+    }
+
+    /**
+     * Converts the initial character of a given input string to lowercase.
+     * @param input the input string
+     */
+    public static String toLower(String input) {
+        if (!Character.isUpperCase(input.charAt(0))) {
+            return input;
+        } else {
+            StringBuilder result = new StringBuilder(input);
+            if (result.length() > 0) {
+                char c = result.charAt(0);
+                c = Character.toLowerCase(c);
+                result.setCharAt(0, c);
+            }
+            return result.toString();
         }
     }
 }

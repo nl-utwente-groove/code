@@ -30,7 +30,7 @@ import javax.swing.JScrollPane;
 import javax.swing.border.CompoundBorder;
 
 import nl.utwente.groove.explore.config.ExploreKey;
-import nl.utwente.groove.explore.config.SettingKey;
+import nl.utwente.groove.explore.config.Setting;
 import nl.utwente.groove.gui.dialog.ConfigDialog;
 
 /**
@@ -109,7 +109,7 @@ public class SettingsPanel extends JPanel {
     }
 
     /** Sets the syntax help for a given combination of exploration key and setting kind. */
-    public void setHelp(ExploreKey key, SettingKey kind) {
+    public void setHelp(ExploreKey key, Setting.Key kind) {
         String name = getName(key, kind);
         if (this.knownHelp.add(name)) {
             JComponent help = this.helpFactory.createHelp(key, kind);
@@ -123,7 +123,7 @@ public class SettingsPanel extends JPanel {
     /** Converts a combination of exploration key and setting kind to
      * a single name, for the {@link CardLayout} of the help panel.
      */
-    private String getName(ExploreKey key, SettingKey kind) {
+    private String getName(ExploreKey key, Setting.Key kind) {
         return key.getName() + ":" + kind.getName();
     }
 

@@ -62,8 +62,7 @@ public class RuleApplication implements DeltaApplier {
      */
     public RuleApplication(RuleEvent event, HostGraph source) {
         this(event, source, (ValueOracle) null);
-        assert !event.getRule()
-            .getSignature()
+        assert !event.getRule().getSignature()
             .has(Direction.ASK) : "Rule signature should not have user-provided parameters";
     }
 
@@ -104,8 +103,8 @@ public class RuleApplication implements DeltaApplier {
      * @param addedNodes the non-<code>null</code> array of created nodes,
      * in the order of the rule's coanchor.
      */
-    public RuleApplication(RuleEvent event, HostGraph source, HostGraph target, @NonNull
-    HostNode[] addedNodes) {
+    public RuleApplication(RuleEvent event, HostGraph source, HostGraph target,
+                           @NonNull HostNode[] addedNodes) {
         this(event, source, addedNodes);
         this.target = target;
     }
@@ -114,15 +113,14 @@ public class RuleApplication implements DeltaApplier {
      * Tests if a given event has a match at a given source graph.
      */
     private boolean testEvent(final RuleEvent event, HostGraph source) {
-        final Property<Proof> proofContainsEvent = new Property<Proof>() {
+        final Property<Proof> proofContainsEvent = new Property<>() {
             @Override
             public boolean isSatisfied(Proof proof) {
-                return event.createEvent(proof)
-                    .equals(event);
+                return event.createEvent(proof).equals(event);
             }
         };
         final Finder<Proof> eventFinder = Visitor.newFinder(proofContainsEvent);
-        final Property<TreeMatch> matchContainsProof = new Property<TreeMatch>() {
+        final Property<TreeMatch> matchContainsProof = new Property<>() {
             @Override
             public boolean isSatisfied(TreeMatch value) {
                 return value.traverseProofs(eventFinder) != null;
@@ -266,14 +264,18 @@ public class RuleApplication implements DeltaApplier {
         HostNodeSet sourceNodes = new HostNodeSet(this.source.nodeSet());
         HostEdgeSet sourceEdges = new HostEdgeSet(this.source.edgeSet());
         for (HostNode node : sourceNodes) {
-            HostNode nodeImage = mergeMap == null ? node : mergeMap.getNode(node);
+            HostNode nodeImage = mergeMap == null
+                ? node
+                : mergeMap.getNode(node);
             if (nodeImage != null && getTarget().containsNode(nodeImage)) {
                 result.putNode(node, nodeImage);
             }
         }
         for (HostEdge edge : sourceEdges) {
             if (!record.isErasedEdge(edge)) {
-                HostEdge edgeImage = mergeMap == null ? edge : mergeMap.mapEdge(edge);
+                HostEdge edgeImage = mergeMap == null
+                    ? edge
+                    : mergeMap.mapEdge(edge);
                 if (edgeImage != null && getTarget().containsEdge(edgeImage)) {
                     result.putEdge(edge, edgeImage);
                 }
@@ -287,8 +289,7 @@ public class RuleApplication implements DeltaApplier {
      * Note that this is <i>not</i> the same kind of object as the matching.
      */
     private HostGraphMorphism createMorphism() {
-        return getSource().getFactory()
-            .createMorphism();
+        return getSource().getFactory().createMorphism();
     }
 
     /**
@@ -566,7 +567,7 @@ public class RuleApplication implements DeltaApplier {
 
     /** Adds a key/value pair to a relational map. */
     private void addToComatch(Map<RuleNode,HostNodeSet> result, RuleNode ruleNode,
-        HostNode hostNode) {
+                              HostNode hostNode) {
         assert hostNode != null;
         HostNodeSet image = result.get(ruleNode);
         if (image == null) {

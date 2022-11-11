@@ -31,14 +31,14 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 
-import nl.utwente.groove.explore.config.BooleanKey;
-import nl.utwente.groove.explore.config.CheckingKind;
 import nl.utwente.groove.explore.config.ExploreKey;
-import nl.utwente.groove.explore.config.SettingKey;
+import nl.utwente.groove.explore.config.Flag;
+import nl.utwente.groove.explore.config.ModelChecking;
+import nl.utwente.groove.explore.config.Setting;
 import nl.utwente.groove.gui.display.DismissDelayer;
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.io.HTMLConverter.HTMLTag;
-import nl.utwente.groove.util.parse.StringHandler;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.verify.FormulaParser;
 import nl.utwente.groove.verify.Logic;
 
@@ -58,17 +58,17 @@ public class HelpFactory {
     /** Creates an returns a panel showing syntax help for a given combination of exploration key
      * and setting kind.
      */
-    public JComponent createHelp(ExploreKey key, SettingKey kind) {
+    public JComponent createHelp(ExploreKey key, Setting.Key kind) {
         JComponent result;
         switch (key) {
         case ISO:
-            result = createIsoHelp((BooleanKey) kind);
+            result = createIsoHelp((Flag.Kind) kind);
             break;
         case RANDOM:
-            result = createRandomHelp((BooleanKey) kind);
+            result = createRandomHelp((Flag.Kind) kind);
             break;
         case CHECKING:
-            result = createCheckingHelp((CheckingKind) kind);
+            result = createCheckingHelp((ModelChecking.Kind) kind);
             break;
         default:
             result = createDefaultHelp(key);
@@ -77,7 +77,7 @@ public class HelpFactory {
     }
 
     /** Creates the help panel for the isomorphism checking setting. */
-    protected JTextPane createRandomHelp(BooleanKey kind) {
+    protected JTextPane createRandomHelp(Flag.Kind kind) {
         JTextPane result = createTextPane();
         StringBuilder text = getExplanation(ExploreKey.RANDOM);
         text.append("Determines if successor states are explored in random order.");
@@ -85,10 +85,9 @@ public class HelpFactory {
         text.append(HTMLConverter.HTML_LINEBREAK);
         switch (kind) {
         case FALSE:
-            text.append(
-                "Currently set to <b>false</b>, meaning that when the successors of a given state "
-                    + "are explored, the next state to be picked is determined by the search strategy "
-                    + "and deterministally fixed between one exploration and the next.");
+            text.append("Currently set to <b>false</b>, meaning that when the successors of a given state "
+                + "are explored, the next state to be picked is determined by the search strategy "
+                + "and deterministally fixed between one exploration and the next.");
             break;
         case TRUE:
             text.append("Currently set to <b>true</b>, meaning that whenever the next successor of "
@@ -103,7 +102,7 @@ public class HelpFactory {
     }
 
     /** Creates the help panel for the isomorphism checking setting. */
-    protected JTextPane createIsoHelp(BooleanKey kind) {
+    protected JTextPane createIsoHelp(Flag.Kind kind) {
         JTextPane result = createTextPane();
         StringBuilder text = getExplanation(ExploreKey.ISO);
         text.append("Determines if isomorphic states are detected and collapsed");
@@ -111,10 +110,9 @@ public class HelpFactory {
         text.append(HTMLConverter.HTML_LINEBREAK);
         switch (kind) {
         case FALSE:
-            text.append(
-                "Currently set to <b>false</b>, meaning that no isomorphism check is performed. "
-                    + "This will speed up exploration, but may result in a far greater number of states "
-                    + "if there is any symmetry.");
+            text.append("Currently set to <b>false</b>, meaning that no isomorphism check is performed. "
+                + "This will speed up exploration, but may result in a far greater number of states "
+                + "if there is any symmetry.");
             break;
         case TRUE:
             text.append("Currently set to <b>true</b>, meaning that a state is only added if no "
@@ -130,16 +128,12 @@ public class HelpFactory {
     }
 
     /** Creates a help panel for a given model checking kind. */
-    protected JComponent createCheckingHelp(CheckingKind kind) {
-        JComponent result;
-        switch (kind) {
-        case CTL_CHECK:
-        case LTL_CHECK:
-            result = createSyntaxPanel(kind.getLogic());
-            break;
-        default:
-            result = createDefaultHelp(ExploreKey.CHECKING);
-        }
+    protected JComponent createCheckingHelp(ModelChecking.Kind kind) {
+        JComponent result = switch (kind) {
+        case CTL_CHECK -> createSyntaxPanel(Logic.CTL);
+        case LTL_CHECK -> createSyntaxPanel(Logic.LTL);
+        default -> createDefaultHelp(ExploreKey.CHECKING);
+        };
         return result;
     }
 
@@ -177,9 +171,8 @@ public class HelpFactory {
         HTMLTag dt = new HTMLTag("dt");
         HTMLTag dd = new HTMLTag("dd");
         HTMLTag strong = HTMLConverter.STRONG_TAG;
-        for (SettingKey kind : key.getKindType()
-            .getEnumConstants()) {
-            list.append(dt.on(strong.on(StringHandler.toUpper(kind.getName()))));
+        for (var kind : key.getKindType().getEnumConstants()) {
+            list.append(dt.on(strong.on(Strings.toUpper(kind.getName()))));
             list.append(dd.on(kind.getExplanation()));
         }
         new HTMLTag("dl").on(list);
@@ -212,9 +205,9 @@ public class HelpFactory {
         @SuppressWarnings("rawtypes")
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index,
-            boolean isSelected, boolean cellHasFocus) {
-            Component result =
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                                                      boolean isSelected, boolean cellHasFocus) {
+            Component result
+                = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             if (result == this) {
                 setToolTipText(this.tipMap.get(value));
             }

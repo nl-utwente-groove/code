@@ -12,7 +12,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExplorationListener;
@@ -89,19 +88,17 @@ public class SimulatorModel implements Cloneable {
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the action failed due to an IO error
      */
-    public boolean doRename(ResourceKind resource, QualName oldName, QualName newName)
-        throws IOException {
+    public boolean doRename(ResourceKind resource, QualName oldName,
+                            QualName newName) throws IOException {
         boolean result = false;
         start();
         try {
-            result = getGrammar().getActiveNames(resource)
-                .contains(oldName);
+            result = getGrammar().getActiveNames(resource).contains(oldName);
             getStore().rename(resource, oldName, newName);
             if (resource == ResourceKind.RULE) {
                 // rename rules in control programs
-                Map<QualName,String> renamedControl = getGrammar().getControlModel()
-                    .getLoader()
-                    .rename(oldName, newName);
+                Map<QualName,String> renamedControl
+                    = getGrammar().getControlModel().getLoader().rename(oldName, newName);
                 if (!renamedControl.isEmpty()) {
                     getStore().putTexts(ResourceKind.CONTROL, renamedControl);
                 }
@@ -141,8 +138,7 @@ public class SimulatorModel implements Cloneable {
         case RULE:
             Collection<AspectGraph> newRules = new ArrayList<>(names.size());
             for (QualName ruleName : names) {
-                AspectGraph oldRule = getStore().getGraphs(ResourceKind.RULE)
-                    .get(ruleName);
+                AspectGraph oldRule = getStore().getGraphs(ResourceKind.RULE).get(ruleName);
                 AspectGraph newRule = oldRule.clone();
                 GraphInfo.setEnabled(newRule, !GraphInfo.isEnabled(oldRule));
                 newRule.setFixed();
@@ -154,9 +150,9 @@ public class SimulatorModel implements Cloneable {
         case TYPE:
         case PROLOG:
         case CONTROL:
-            GrammarProperties newProperties = getGrammar().getProperties()
-                .clone();
-            Set<QualName> actives = new TreeSet<>(newProperties.getActiveNames(kind));
+            GrammarProperties newProperties = getGrammar().getProperties().clone();
+            List<QualName> actives = new ArrayList<>(newProperties.getActiveNames(kind));
+            actives.sort(null);
             for (QualName typeName : names) {
                 if (!actives.remove(typeName)) {
                     actives.add(typeName);
@@ -197,9 +193,8 @@ public class SimulatorModel implements Cloneable {
         case TYPE:
         case PROLOG:
         case CONTROL:
-            GrammarProperties newProperties = getGrammar().getProperties()
-                .clone();
-            newProperties.setActiveNames(kind, Collections.singleton(name));
+            GrammarProperties newProperties = getGrammar().getProperties().clone();
+            newProperties.setActiveNames(kind, Collections.singletonList(name));
             getStore().putProperties(newProperties);
             break;
         case PROPERTIES:
@@ -216,8 +211,8 @@ public class SimulatorModel implements Cloneable {
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the add action failed
      */
-    public boolean doAddGraph(ResourceKind kind, AspectGraph newGraph, boolean layout)
-        throws IOException {
+    public boolean doAddGraph(ResourceKind kind, AspectGraph newGraph,
+                              boolean layout) throws IOException {
         assert newGraph.isFixed();
         start();
         try {
@@ -240,8 +235,7 @@ public class SimulatorModel implements Cloneable {
 
     /** Tests if a given aspect graph corresponds to an enabled resource. */
     private boolean isEnabled(ResourceKind kind, QualName name) {
-        return getGrammar().getActiveNames(kind)
-            .contains(name);
+        return getGrammar().getActiveNames(kind).contains(name);
     }
 
     /**
@@ -255,8 +249,7 @@ public class SimulatorModel implements Cloneable {
         start();
         try {
             GrammarModel grammar = getGrammar();
-            boolean result = grammar.getActiveNames(kind)
-                .contains(name);
+            boolean result = grammar.getActiveNames(kind).contains(name);
             getStore().putTexts(kind, Collections.singletonMap(name, program));
             changeGrammar(result);
             changeSelected(kind, name);
@@ -277,16 +270,14 @@ public class SimulatorModel implements Cloneable {
         start();
         Set<AspectGraph> newGraphs = new HashSet<>();
         for (Map.Entry<QualName,Integer> entry : priorityMap.entrySet()) {
-            AspectGraph oldGraph = getStore().getGraphs(ResourceKind.RULE)
-                .get(entry.getKey());
+            AspectGraph oldGraph = getStore().getGraphs(ResourceKind.RULE).get(entry.getKey());
             AspectGraph newGraph = oldGraph.clone();
             GraphInfo.setPriority(newGraph, entry.getValue());
             newGraph.setFixed();
             newGraphs.add(newGraph);
         }
-        Map<QualName,String> newControl = getGrammar().getControlModel()
-            .getLoader()
-            .changePriority(priorityMap);
+        Map<QualName,String> newControl
+            = getGrammar().getControlModel().getLoader().changePriority(priorityMap);
         try {
             if (!newGraphs.isEmpty()) {
                 getStore().putGraphs(ResourceKind.RULE, newGraphs, false);
@@ -440,8 +431,9 @@ public class SimulatorModel implements Cloneable {
         changeState(state);
         MatchResult match = getMatch(state);
         changeMatch(match);
-        changeTransition(
-            match != null && match.hasTransitionFrom(state) ? match.getTransition() : null);
+        changeTransition(match != null && match.hasTransitionFrom(state)
+            ? match.getTransition()
+            : null);
         if (getDisplay() != DisplayKind.LTS) {
             changeDisplay(DisplayKind.STATE);
         }
@@ -460,8 +452,7 @@ public class SimulatorModel implements Cloneable {
             for (RuleTransition trans : state.getRuleTransitions()) {
                 if (trans.target() != state) {
                     result = trans.getKey();
-                    if (!trans.target()
-                        .isClosed()) {
+                    if (!trans.target().isClosed()) {
                         break;
                     }
                 }
@@ -490,8 +481,7 @@ public class SimulatorModel implements Cloneable {
         try {
             Grammar grammar = getGrammar().toGrammar();
             GTS gts = new GTS(grammar);
-            gts.getRecord()
-                .setRandomAccess(true);
+            gts.getRecord().setRandomAccess(true);
             return setGTS(gts);
         } catch (FormatException e) {
             return setGTS(null);
@@ -548,7 +538,9 @@ public class SimulatorModel implements Cloneable {
             changeState(null);
             changeMatch(null);
             changeTransition(null);
-            changeExploreResult(gts == null ? null : new ExploreResult(gts));
+            changeExploreResult(gts == null
+                ? null
+                : new ExploreResult(gts));
             this.trace.clear();
         }
         if (gts != null && getState() == null) {
@@ -575,7 +567,9 @@ public class SimulatorModel implements Cloneable {
      * The new result should have the currently set GTS.
      */
     private void changeExploreResult(ExploreResult result) {
-        assert result == null ? this.gts == null : result.getGTS() == this.gts;
+        assert result == null
+            ? this.gts == null
+            : result.getGTS() == this.gts;
         this.exploreResult = result;
         changeGTS();
     }
@@ -686,8 +680,9 @@ public class SimulatorModel implements Cloneable {
             }
         }
         if (matchChanged) {
-            changeSelected(ResourceKind.RULE, match == null ? null : match.getAction()
-                .getQualName());
+            changeSelected(ResourceKind.RULE, match == null
+                ? null
+                : match.getAction().getQualName());
         }
         return finish();
     }
@@ -741,8 +736,7 @@ public class SimulatorModel implements Cloneable {
             RuleTransition ruleTrans = trans.getInitial();
             MatchResult match = ruleTrans.getKey();
             changeMatch(match);
-            changeSelected(ResourceKind.RULE, match.getAction()
-                .getQualName());
+            changeSelected(ResourceKind.RULE, match.getAction().getQualName());
             changeState(trans.source());
             if (getDisplay() != DisplayKind.LTS) {
                 changeDisplay(DisplayKind.STATE);
@@ -755,7 +749,9 @@ public class SimulatorModel implements Cloneable {
      * Changes the selected rule match.
      */
     private final boolean changeMatch(MatchResult match) {
-        boolean result = match == null ? this.match != null : !match.equals(this.match);
+        boolean result = match == null
+            ? this.match != null
+            : !match.equals(this.match);
         if (result) {
             this.match = match;
             this.changes.add(Change.MATCH);
@@ -770,7 +766,9 @@ public class SimulatorModel implements Cloneable {
      * Changes the selected transition.
      */
     private final boolean changeTransition(GraphTransition trans) {
-        boolean result = trans == null ? this.trans != null : !trans.equals(this.trans);
+        boolean result = trans == null
+            ? this.trans != null
+            : !trans.equals(this.trans);
         if (result) {
             this.trans = trans;
             this.changes.add(Change.MATCH);
@@ -862,7 +860,9 @@ public class SimulatorModel implements Cloneable {
      * grammar view, if any.
      */
     public final SystemStore getStore() {
-        return hasGrammar() ? getGrammar().getStore() : null;
+        return hasGrammar()
+            ? getGrammar().getStore()
+            : null;
     }
 
     /**
@@ -872,7 +872,9 @@ public class SimulatorModel implements Cloneable {
      */
     public final NamedResourceModel<?> getResource(ResourceKind resource) {
         QualName name = getSelected(resource);
-        return name == null ? null : getGrammar().getResource(resource, name);
+        return name == null
+            ? null
+            : getGrammar().getResource(resource, name);
     }
 
     /**
@@ -883,7 +885,9 @@ public class SimulatorModel implements Cloneable {
      */
     public final GraphBasedModel<?> getGraphResource(ResourceKind resource) {
         QualName name = getSelected(resource);
-        return name == null ? null : getGrammar().getGraphResource(resource, name);
+        return name == null
+            ? null
+            : getGrammar().getGraphResource(resource, name);
     }
 
     /**
@@ -894,7 +898,9 @@ public class SimulatorModel implements Cloneable {
      */
     public final TextBasedModel<?> getTextResource(ResourceKind resource) {
         QualName name = getSelected(resource);
-        return name == null ? null : getGrammar().getTextResource(resource, name);
+        return name == null
+            ? null
+            : getGrammar().getTextResource(resource, name);
     }
 
     /** Returns a list of search results for the given label. */
@@ -905,8 +911,7 @@ public class SimulatorModel implements Cloneable {
                 continue;
             }
             for (QualName name : getGrammar().getNames(kind)) {
-                AspectGraph graph = getGrammar().getGraphResource(kind, name)
-                    .getSource();
+                AspectGraph graph = getGrammar().getGraphResource(kind, name).getSource();
                 graph.getSearchResults(label, searchResults);
             }
         }
@@ -941,8 +946,9 @@ public class SimulatorModel implements Cloneable {
      */
     public final QualName getSelected(ResourceKind kind) {
         Set<QualName> resourceSet = this.resources.get(kind);
-        return resourceSet.isEmpty() ? null : resourceSet.iterator()
-            .next();
+        return resourceSet.isEmpty()
+            ? null
+            : resourceSet.iterator().next();
     }
 
     /**
@@ -977,8 +983,9 @@ public class SimulatorModel implements Cloneable {
      * Changes the selected value of a given resource kind.
      */
     private boolean changeSelected(ResourceKind kind, QualName name) {
-        return changeSelectedSet(kind,
-            name == null ? Collections.<QualName>emptySet() : Collections.singleton(name));
+        return changeSelectedSet(kind, name == null
+            ? Collections.<QualName>emptySet()
+            : Collections.singleton(name));
     }
 
     /**
@@ -997,13 +1004,11 @@ public class SimulatorModel implements Cloneable {
             Set<QualName> activeNames = getGrammar().getActiveNames(resource);
             if (!activeNames.isEmpty()) {
                 // take the first active name (if there is one)
-                newSelection.add(activeNames.iterator()
-                    .next());
+                newSelection.add(activeNames.iterator().next());
             }
             if (newSelection.isEmpty() && !allNames.isEmpty()) {
                 // otherwise, just take the first existing name (if there is one)
-                name = allNames.iterator()
-                    .next();
+                name = allNames.iterator().next();
             }
             if (name != null) {
                 newSelection.add(name);
@@ -1242,8 +1247,7 @@ public class SimulatorModel implements Cloneable {
             changes = Change.values();
         }
         for (Change change : changes) {
-            this.listeners.get(change)
-                .remove(listener);
+            this.listeners.get(change).remove(listener);
         }
     }
 
@@ -1351,8 +1355,8 @@ public class SimulatorModel implements Cloneable {
             return resourceToChangeMap.get(resource);
         }
 
-        private static Map<ResourceKind,Change> resourceToChangeMap =
-            new EnumMap<>(ResourceKind.class);
+        private static Map<ResourceKind,Change> resourceToChangeMap
+            = new EnumMap<>(ResourceKind.class);
 
         static {
             for (Change change : Change.values()) {

@@ -21,10 +21,10 @@ import java.util.Optional;
 import java.util.TreeMap;
 
 import nl.utwente.groove.grammar.Action.Role;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.Parser;
-import nl.utwente.groove.util.parse.StringHandler;
 
 /**
  * Policy for dealing with run-time checks,
@@ -82,8 +82,8 @@ public enum CheckPolicy {
     private final String explanation;
 
     /** Parser that returns a policy. */
-    public static final Parser<CheckPolicy> singleParser =
-        new Parser.EnumParser<>(CheckPolicy.class, ERROR);
+    public static final Parser<CheckPolicy> singleParser
+        = new Parser.EnumParser<>(CheckPolicy.class, ERROR);
     /** Parser that returns a policy map. */
     public static final Parser<PolicyMap> multiParser = new PolicyMapParser();
 
@@ -99,84 +99,61 @@ public enum CheckPolicy {
          */
         public CheckPolicy get(Action key) {
             CheckPolicy result = super.get(key.getQualName());
-            if (result == null && key.getRole()
-                .isConstraint()) {
+            if (result == null && key.getRole().isConstraint()) {
                 result = ERROR;
             }
             return result;
         }
     }
 
-    private static class PolicyMapParser implements Parser<PolicyMap> {
-        @Override
-        public String getDescription() {
-            StringBuilder result = new StringBuilder();
-            result.append(
-                "A space-separated list of <i>name:value</i> pairs,<br>" + "with <i>value</i> ");
-            result.append(StringHandler.toLower(singleParser.getDescription()));
-            return result.toString();
+    private static class PolicyMapParser extends Parser.AParser<PolicyMap> {
+        private PolicyMapParser() {
+            super(createDescription(), new PolicyMap());
         }
 
-        @Override
-        public boolean accepts(String text) {
-            try {
-                return parse(text) != null;
-            } catch (FormatException exc) {
-                return false;
-            }
+        /** Creates a description of PolicyMap values. */
+        static public String createDescription() {
+            StringBuilder result = new StringBuilder();
+            result.append("A space-separated list of <i>name:value</i> pairs,<br>"
+                + "with <i>value</i> ");
+            result.append(Strings.toLower(singleParser.getDescription()));
+            return result.toString();
         }
 
         @Override
         public PolicyMap parse(String input) throws FormatException {
             PolicyMap result = new PolicyMap();
-            if (input != null) {
-                String[] split = input.trim()
-                    .split("\\s");
-                for (String pair : split) {
-                    if (pair.length() == 0) {
-                        continue;
-                    }
-                    int pos = pair.indexOf(ASSIGN_CHAR);
-                    if (pos < 0) {
-                        result = null;
-                        break;
-                    }
-                    QualName name = QualName.parse(pair.substring(0, pos))
-                        .testValid();
-                    String value = pair.substring(pos + 1, pair.length());
-                    CheckPolicy policy = singleParser.parse(value);
-                    result.put(name, policy);
+            String[] split = input.trim().split("\\s");
+            for (String pair : split) {
+                if (pair.length() == 0) {
+                    continue;
                 }
+                int pos = pair.indexOf(ASSIGN_CHAR);
+                if (pos < 0) {
+                    throw new FormatException(
+                        "Assignment character '%s' missing in substring '%s' of %s", ASSIGN_CHAR,
+                        pair, input);
+                }
+                QualName name = QualName.parse(pair.substring(0, pos)).testValid();
+                String value = pair.substring(pos + 1, pair.length());
+                CheckPolicy policy = singleParser.parse(value);
+                result.put(name, policy);
             }
             return result;
         }
 
         @Override
-        public String toParsableString(Object value) {
+        public String unparse(PolicyMap value) {
             StringBuffer result = new StringBuffer();
-            if (value instanceof PolicyMap) {
-                for (Map.Entry<QualName,CheckPolicy> e : ((PolicyMap) value).entrySet()) {
-                    if (e.getValue() != ERROR) {
-                        result.append(e.getKey());
-                        result.append(ASSIGN_CHAR);
-                        result.append(e.getValue());
-                        result.append(' ');
-                    }
+            for (Map.Entry<QualName,CheckPolicy> e : value.entrySet()) {
+                if (e.getValue() != ERROR) {
+                    result.append(e.getKey());
+                    result.append(ASSIGN_CHAR);
+                    result.append(e.getValue());
+                    result.append(' ');
                 }
             }
             return result.toString();
         }
-
-        @Override
-        public Class<? extends PolicyMap> getValueType() {
-            return PolicyMap.class;
-        }
-
-        @Override
-        public PolicyMap getDefaultValue() {
-            return EMPTY;
-        }
-
-        private final static PolicyMap EMPTY = new PolicyMap();
     }
 }

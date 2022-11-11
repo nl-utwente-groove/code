@@ -37,6 +37,9 @@ import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.KeyStroke;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.plain.PlainGraph;
@@ -72,8 +75,8 @@ public class Groove {
     public static final String GROOVE_BASE = UT_NAMESPACE + ".groove";
 
     /** File name for XML properties. */
-    public static final String XML_PROPERTIES_FILE =
-        GROOVE_BASE + ".xml" + FileType.PROPERTY.getExtension();
+    public static final String XML_PROPERTIES_FILE
+        = GROOVE_BASE + ".xml" + FileType.PROPERTY.getExtension();
 
     /**
      * Flag to indicate if various types of statistics should be computed. This
@@ -111,9 +114,7 @@ public class Groove {
      * @throws IOException if <code>file</code> cannot be parsed as a graph
      */
     static public PlainGraph loadGraph(File file) throws IOException {
-        return GxlIO.instance()
-            .loadGraph(file)
-            .toPlainGraph();
+        return GxlIO.instance().loadGraph(file).toPlainGraph();
     }
 
     /**
@@ -139,8 +140,7 @@ public class Groove {
      * @throws IOException if saving ran into problems
      */
     static public void saveGraph(Graph graph, File file) throws IOException {
-        GxlIO.instance()
-            .saveGraph(graph, file);
+        GxlIO.instance().saveGraph(graph, file);
     }
 
     /**
@@ -182,7 +182,9 @@ public class Groove {
         long time = (System.currentTimeMillis() / lossfactor);
         StringBuffer res = new StringBuffer();
         while (modulo > 1) {
-            res.insert(0, time > 0 ? "" + time % 10 : "");
+            res.insert(0, time > 0
+                ? "" + time % 10
+                : "");
             time /= 10;
             fraction /= 10;
             if (fraction == 1) {
@@ -227,8 +229,7 @@ public class Groove {
      * Returns a URL for a given resource name using the class loader.
      */
     public static URL getResource(String name) {
-        return Groove.class.getClassLoader()
-            .getResource(name);
+        return Groove.class.getClassLoader().getResource(name);
     }
 
     /**
@@ -253,8 +254,9 @@ public class Groove {
             return null;
         }
         try {
-            StringTokenizer tokenizer =
-                delims == null ? new StringTokenizer(text) : new StringTokenizer(text, delims);
+            StringTokenizer tokenizer = delims == null
+                ? new StringTokenizer(text)
+                : new StringTokenizer(text, delims);
             int[] result = new int[tokenizer.countTokens()];
             int count = 0;
             while (tokenizer.hasMoreTokens()) {
@@ -331,7 +333,7 @@ public class Groove {
      *        resulting text representation
      */
     static public String toString(Object[] array, String start, String end, String separator,
-        String finalSeparator) {
+                                  String finalSeparator) {
         StringBuffer result = new StringBuffer(start);
         for (int i = 0; i < array.length; i++) {
             result.append(array[i]);
@@ -350,8 +352,7 @@ public class Groove {
      */
     public static URL toURL(File file) {
         try {
-            return file.toURI()
-                .toURL();
+            return file.toURI().toURL();
         } catch (MalformedURLException e) {
             throw Exceptions.illegalArg("File '%s' cannot be converted to URL", file);
         }
@@ -369,8 +370,7 @@ public class Groove {
      * </ul>
      */
     public static File toFile(URL url) {
-        if (url.getProtocol()
-            .equals("file")) {
+        if (url.getProtocol().equals("file")) {
             try {
                 return new File(url.toURI());
             } catch (URISyntaxException e) {
@@ -379,8 +379,7 @@ public class Groove {
                 // possibly thrown by the File constructor
                 return null;
             }
-        } else if (url.getProtocol()
-            .equals("jar")) {
+        } else if (url.getProtocol().equals("jar")) {
             try {
                 URL innerURL = ((JarURLConnection) url.openConnection()).getJarFileURL();
                 return toFile(innerURL);
@@ -441,22 +440,35 @@ public class Groove {
         return result.toString();
     }
 
+    /** Returns a given value if it is {@code null}, or an alternative (non-{@code null}) value otherwise. */
+    static public <T> @NonNull T orElse(@Nullable T value, @NonNull T alt) {
+        return value == null
+            ? alt
+            : value;
+    }
+
+    /** Returns a given value if it is {@code null}, or throws a given exception otherwise. */
+    static public <T,E extends Exception> @NonNull T orElseThrow(@Nullable T value,
+                                                                 @NonNull E exc) throws E {
+        if (value == null) {
+            throw exc;
+        }
+        return value;
+    }
+
     // Platform dependent information.
 
     /** Detect if we are on Windows.  */
-    public static final boolean IS_PLATFORM_WINDOWS = System.getProperty("os.name")
-        .toLowerCase()
-        .indexOf("windows") > -1;
+    public static final boolean IS_PLATFORM_WINDOWS
+        = System.getProperty("os.name").toLowerCase().indexOf("windows") > -1;
 
     /** Detect if we are on Mac.  */
-    public static final boolean IS_PLATFORM_MAC = System.getProperty("os.name")
-        .toLowerCase()
-        .indexOf("mac os x") > -1;
+    public static final boolean IS_PLATFORM_MAC
+        = System.getProperty("os.name").toLowerCase().indexOf("mac os x") > -1;
 
     /** Detect if we are on Linux.  */
-    public static final boolean IS_PLATFORM_LINUX = System.getProperty("os.name")
-        .toLowerCase()
-        .indexOf("linux") > -1;
+    public static final boolean IS_PLATFORM_LINUX
+        = System.getProperty("os.name").toLowerCase().indexOf("linux") > -1;
 
     static {
         /** Make sure default action names are all in English. */

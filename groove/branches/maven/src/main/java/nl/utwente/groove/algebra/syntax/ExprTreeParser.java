@@ -43,7 +43,8 @@ import nl.utwente.groove.util.parse.OpKind;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class ExprTreeParser extends nl.utwente.groove.util.parse.ATermTreeParser<ExprTree.ExprOp,ExprTree> {
+public class ExprTreeParser
+    extends nl.utwente.groove.util.parse.ATermTreeParser<ExprTree.ExprOp,ExprTree> {
     /** Constructs a parser, with optional flags for assignment and test mode.
      * {@code assign} and {@code test} may not be simultaneously true
      * @param assign if {@code true}, the parser expects a top-level assignment
@@ -51,7 +52,7 @@ public class ExprTreeParser extends nl.utwente.groove.util.parse.ATermTreeParser
      * (having a "=" on the top level), which is converted to
      */
     private ExprTreeParser(boolean assign, boolean test) {
-        super(new ExprTree(getAtom()), getOpList());
+        super("Attribute expression", new ExprTree(getAtom()), getOpList());
         super.setQualIds(true);
         assert !assign || !test;
         this.assign = assign;
@@ -179,8 +180,7 @@ public class ExprTreeParser extends nl.utwente.groove.util.parse.ATermTreeParser
                 // this wasn't meant to be a sort prefix after all
                 rollBack();
             } else {
-                result = sortToken.type(TokenClaz.SORT)
-                    .sort();
+                result = sortToken.type(TokenClaz.SORT).sort();
             }
         }
         return result;
@@ -224,7 +224,7 @@ public class ExprTreeParser extends nl.utwente.groove.util.parse.ATermTreeParser
     }
 
     private static void registerOp(Map<String,Map<OpKind,ExprOp>> mapMap, List<ExprOp> opList,
-        Operator sortOp, OpKind opKind, String symbol) {
+                                   Operator sortOp, OpKind opKind, String symbol) {
         Map<OpKind,ExprOp> opMap = mapMap.get(symbol);
         if (opMap == null) {
             opMap = new EnumMap<>(OpKind.class);
@@ -250,14 +250,16 @@ public class ExprTreeParser extends nl.utwente.groove.util.parse.ATermTreeParser
      * @throws FormatException if there is a parse error.
      */
     public static @NonNull ExprTree parseExpr(String input, boolean test) throws FormatException {
-        return parse(test ? TEST_PARSER : EXPR_PARSER, input);
+        return parse(test
+            ? TEST_PARSER
+            : EXPR_PARSER, input);
     }
 
     /** Parses a given input with a given parser.
      * @throws FormatException if there is a parse error.
      */
-    private static @NonNull ExprTree parse(ExprTreeParser parser, String input)
-        throws FormatException {
+    private static @NonNull ExprTree parse(ExprTreeParser parser,
+                                           String input) throws FormatException {
         ExprTree result = parser.parse(input);
         FormatErrorSet errors = new FormatErrorSet();
         for (FormatError error : result.getErrors()) {
@@ -291,8 +293,8 @@ public class ExprTreeParser extends nl.utwente.groove.util.parse.ATermTreeParser
     private static ExprOp getEquality() {
         ExprOp result = null;
         for (ExprOp op : getOpList()) {
-            if (op.getKind() == OpKind.EQUAL && op.getSymbol()
-                .equals(EQUALS_SYMBOL) && op.getArity() == 2) {
+            if (op.getKind() == OpKind.EQUAL && op.getSymbol().equals(EQUALS_SYMBOL)
+                && op.getArity() == 2) {
                 result = op;
                 break;
             }

@@ -24,15 +24,13 @@ import nl.utwente.groove.util.parse.Parser;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class BracketParser<V> implements Parser<V> {
+public class BracketParser<V> extends Parser.AParser<V> {
     /**
      * Creates a parser with '(' and ')' as brackets.
      * @param inner the parser for the content between the brackets
-     * @param allowsEmpty if {@code true}, the empty string is allowed;
-     * it will be passed on to the inner parser to get the default value
      */
-    public BracketParser(Parser<? extends V> inner, boolean allowsEmpty) {
-        this(inner, '(', ')', allowsEmpty);
+    public BracketParser(Parser<V> inner) {
+        this(inner, '(', ')');
     }
 
     /**
@@ -40,34 +38,23 @@ public class BracketParser<V> implements Parser<V> {
      * @param inner the parser for the content between the brackets
      * @param start the opening bracket
      * @param end the closing bracket
-     * @param allowsEmpty if {@code true}, the empty string is allowed;
-     * it will be passed on to the inner parser to get the default value
      */
-    public BracketParser(Parser<? extends V> inner, char start, char end, boolean allowsEmpty) {
+    public BracketParser(Parser<V> inner, char start, char end) {
+        super(String.format("%s between '%s' and '%s'", inner.getDescription(), start, end),
+              inner.getDefaultValue());
         this.inner = inner;
         this.start = start;
         this.end = end;
-        this.allowsEmpty = allowsEmpty;
     }
 
-    private final Parser<? extends V> inner;
+    private final Parser<V> inner;
     private final char start;
     private final char end;
-    private final boolean allowsEmpty;
-
-    @Override
-    public String getDescription() {
-        return this.inner.getDescription() + " between " + this.start + " and " + this.end;
-    }
 
     @Override
     public V parse(String input) throws FormatException {
-        if (input == null || input.length() == 0) {
-            if (this.allowsEmpty) {
-                return this.inner.parse(input);
-            } else {
-                throw new FormatException("Empty string not allowed");
-            }
+        if (input.length() == 0) {
+            return getDefaultValue();
         }
         if (input.charAt(0) != this.start) {
             throw new FormatException("Expected input '%s' to start with '%s'", input, this.start);
@@ -80,34 +67,15 @@ public class BracketParser<V> implements Parser<V> {
     }
 
     @Override
-    public String toParsableString(Object value) {
-        String result = this.inner.toParsableString(value);
-        return result.length() == 0 ? result : "" + this.start + result + this.end;
-    }
-
-    @Override
-    public Class<? extends V> getValueType() {
-        return this.inner.getValueType();
+    public <U extends V> String unparse(U value) {
+        String result = this.inner.unparse(value);
+        return result.length() == 0
+            ? result
+            : "" + this.start + result + this.end;
     }
 
     @Override
     public boolean isValue(Object value) {
         return this.inner.isValue(value);
-    }
-
-    @Override
-    public V getDefaultValue() {
-        return this.inner.getDefaultValue();
-    }
-
-    @Override
-    public String getDefaultString() {
-        String result = this.inner.getDefaultString();
-        return result.length() == 0 ? result : "" + this.start + result + this.end;
-    }
-
-    @Override
-    public boolean isDefault(Object value) {
-        return this.inner.isDefault(value);
     }
 }

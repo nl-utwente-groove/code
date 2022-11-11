@@ -255,8 +255,7 @@ public class StringHandler {
         // Parse the expression first, so only non-quoted substrings are used to split
         Pair<String,List<String>> parseResult = parse(expr);
         String parseExpr = parseResult.one();
-        Iterator<String> replacements = parseResult.two()
-            .iterator();
+        Iterator<String> replacements = parseResult.two().iterator();
         // go through the parsed expression
         SimpleStringBuilder subResult = new SimpleStringBuilder(expr.length());
         for (int i = 0; i < parseExpr.length(); i++) {
@@ -350,139 +349,6 @@ public class StringHandler {
         default:
             // this case should not occur
             throw Exceptions.UNREACHABLE;
-        }
-    }
-
-    /**
-     * Fills out a string to a given length by padding it with white space on
-     * the left or right. Has no effect if the string is already longer than the
-     * desired length.
-     * @param text the string to be padded
-     * @param length the desired length
-     * @param right <tt>true</tt> if the space should be added on the right
-     * @return A new string, consisting of <tt>text</tt> preceded or followed by
-     *         spaces, up to minimum length <tt>length</tt>
-     */
-    static public String pad(String text, int length, boolean right) {
-        StringBuffer result = new StringBuffer(text);
-        while (result.length() < length) {
-            if (right) {
-                result.append(' ');
-            } else {
-                result.insert(0, ' ');
-            }
-        }
-        return result.toString();
-    }
-
-    /**
-     * Fills out a string to a given length by padding it with white space on
-     * the right. Has no effect if the string is already longer than the desired
-     * length.
-     * @param text the string to be padded
-     * @param length the desired length
-     * @return A new string, with <tt>text</tt> as prefix, followed by spaces,
-     *         up to minimum length <tt>length</tt>
-     */
-    static public String pad(String text, int length) {
-        return pad(text, length, true);
-    }
-
-    /**
-     * Turns a camel-case string into a space-separated string.
-     * The first character is capitalised in any case; next
-     * words are capitalised optionally.
-     * @param input the (non-{@code null}) input string, in camel case
-     * @param caps if {@code true}, all words (not just the first) are capitalised
-     * @return a converted string
-     */
-    public static String unCamel(String input, boolean caps) {
-        StringBuilder result = new StringBuilder(input);
-        int ix = 0;
-        boolean wasLower = true;
-        while (ix < result.length()) {
-            char c = result.charAt(ix);
-            boolean isLower = Character.isLowerCase(c);
-            boolean atStart = ix == 0;
-            if (atStart || wasLower && !isLower) {
-                if (!atStart) {
-                    result.insert(ix, ' ');
-                    ix++;
-                }
-                // determine if next character should be upper or lower case
-                boolean toUpper = atStart || caps;
-                if (!toUpper) {
-                    toUpper =
-                        ix < result.length() - 1 && Character.isUpperCase(result.charAt(ix + 1));
-                }
-                result.setCharAt(ix, toUpper ? Character.toUpperCase(c) : Character.toLowerCase(c));
-            }
-            wasLower = isLower;
-            ix++;
-        }
-        return result.toString();
-    }
-
-    /**
-     * Converts a space- or underscore-separated string into camel case
-     * @param input the (non-{@code null}) input string; should
-     * consist of alphanumeric characters separated by (but not beginning with)
-     * spaces or underscores
-     * @return a converted string
-     */
-    public static String toCamel(String input) {
-        StringBuilder result = new StringBuilder(input);
-        int ix = 0;
-        boolean wasSep = false;
-        while (ix < result.length()) {
-            char c = result.charAt(ix);
-            boolean isSep = c == ' ' || c == '_';
-            if (isSep) {
-                result.delete(ix, ix + 1);
-            } else {
-                assert Character.isLetterOrDigit(c);
-                c = wasSep ? Character.toUpperCase(c) : Character.toLowerCase(c);
-                result.setCharAt(ix, c);
-                ix++;
-            }
-            wasSep = isSep;
-        }
-        return result.toString();
-    }
-
-    /**
-     * Converts the initial character of a given input string to uppercase.
-     * @param input the input string
-     */
-    public static String toUpper(String input) {
-        if (!Character.isLowerCase(input.charAt(0))) {
-            return input;
-        } else {
-            StringBuilder result = new StringBuilder(input);
-            if (result.length() > 0) {
-                char c = result.charAt(0);
-                c = Character.toUpperCase(c);
-                result.setCharAt(0, c);
-            }
-            return result.toString();
-        }
-    }
-
-    /**
-     * Converts the initial character of a given input string to lowercase.
-     * @param input the input string
-     */
-    public static String toLower(String input) {
-        if (!Character.isUpperCase(input.charAt(0))) {
-            return input;
-        } else {
-            StringBuilder result = new StringBuilder(input);
-            if (result.length() > 0) {
-                char c = result.charAt(0);
-                c = Character.toLowerCase(c);
-                result.setCharAt(0, c);
-            }
-            return result.toString();
         }
     }
 
@@ -611,8 +477,8 @@ public class StringHandler {
      * <tt>new ExprParser().split(expr,split,position)</tt>.
      * @see #split(String,String,OpPosition)
      */
-    static public String[] splitExpr(String expr, String split, OpPosition position)
-        throws FormatException {
+    static public String[] splitExpr(String expr, String split,
+                                     OpPosition position) throws FormatException {
         return prototype.split(expr, split, position);
     }
 
@@ -629,13 +495,9 @@ public class StringHandler {
      * @throws FormatException if the string could not be correctly parsed
      */
     static public String toTrimmed(String expr, char open, char close) throws FormatException {
-        Pair<String,List<String>> parseResult =
-            new StringHandler(new char[] {open, close}).parse(expr);
-        if (parseResult.one()
-            .length() != 1
-            || parseResult.two()
-                .get(0)
-                .charAt(0) != open) {
+        Pair<String,List<String>> parseResult
+            = new StringHandler(new char[] {open, close}).parse(expr);
+        if (parseResult.one().length() != 1 || parseResult.two().get(0).charAt(0) != open) {
             throw new FormatException("Expression %s not surrounded by bracket pair %c%c", expr,
                 open, close);
         } else {
@@ -720,7 +582,9 @@ public class StringHandler {
      */
     static public String toUnquoted(String string, char quote) throws FormatException {
         boolean startsWithQuote = !string.isEmpty() && string.charAt(0) == quote;
-        int start = startsWithQuote ? 1 : 0;
+        int start = startsWithQuote
+            ? 1
+            : 0;
         int end = string.length();
         // count of the number of consecutive escapes
         boolean escaped = false;
@@ -749,7 +613,9 @@ public class StringHandler {
             result.append(ESCAPE_CHAR);
         }
         // check for errors
-        if (startsWithQuote ? quoteIndex != end - 1 : quoteIndex >= 0) {
+        if (startsWithQuote
+            ? quoteIndex != end - 1
+            : quoteIndex >= 0) {
             throw new FormatException("Unbalanced quotes in %s", string);
         } else {
             return result.toString();
@@ -861,10 +727,8 @@ public class StringHandler {
 
     static private void testSplit(String expr, String oper, OpPosition position) {
         try {
-            System.out.printf("Splitting: \'%s\' according to %s operator \'%s\'%n",
-                expr,
-                position.text(),
-                oper);
+            System.out.printf("Splitting: \'%s\' according to %s operator \'%s\'%n", expr,
+                              position.text(), oper);
             String[] result = splitExpr(expr, oper, position);
             System.out.print("Result: ");
             if (result == null) {
@@ -1008,8 +872,8 @@ public class StringHandler {
      * {@link #ANGLE_BRACKETS}, {@link #CURLY_BRACKETS} and
      * {@link #SQUARE_BRACKETS}.
      */
-    static private final char[][] DEFAULT_BRACKETS =
-        {ROUND_BRACKETS, ANGLE_BRACKETS, CURLY_BRACKETS, SQUARE_BRACKETS};
+    static private final char[][] DEFAULT_BRACKETS
+        = {ROUND_BRACKETS, ANGLE_BRACKETS, CURLY_BRACKETS, SQUARE_BRACKETS};
     /** The default character to use as a placeholder in the parse result. */
     static public final char PLACEHOLDER = '\uFFFF';
 

@@ -58,8 +58,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
             throw Exceptions.illegalArg("Invalid root resolution %d (min %d)", rootResolution, 1);
         }
         if (resolution > MAX_RESOLUTION) {
-            throw Exceptions
-                .illegalArg("Invalid resolution %d (max %d)", resolution, MAX_RESOLUTION);
+            throw Exceptions.illegalArg("Invalid resolution %d (max %d)", resolution,
+                                        MAX_RESOLUTION);
         }
         this.resolution = resolution;
         this.mask = (1 << resolution) - 1;
@@ -163,8 +163,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         this.recordCount = other.recordCount;
         this.freeKeyIx = other.freeKeyIx;
         this.keyCount = other.keyCount;
-        assert containsAll(other) : String
-            .format("Clone    %s does not equal%noriginal %s", this, other);
+        assert containsAll(other) : String.format("Clone    %s does not equal%noriginal %s", this,
+                                                  other);
     }
 
     /**
@@ -182,10 +182,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         this.freeKeyIx = -1;
         // clean the record tree
         Arrays.fill(this.tree, 0, getRecordIx(this.recordCount), 0);
-        Arrays.fill(this.tree,
-            getRecordIx(this.fill.length),
-            getRecordIx(this.fill.length) + this.recordCount,
-            0);
+        Arrays.fill(this.tree, getRecordIx(this.fill.length),
+                    getRecordIx(this.fill.length) + this.recordCount, 0);
         Arrays.fill(this.fill, 0, this.recordCount, (byte) 0);
         this.recordCount = 1;
         this.freeRecordNr = 0;
@@ -202,7 +200,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     @Override
     @SuppressWarnings("unchecked")
     public Iterator<T> iterator() {
-        return new Iterator<T>() {
+        return new Iterator<>() {
             @Override
             public boolean hasNext() {
                 if (this.expectedModCount != TreeHashSet.this.modCount) {
@@ -219,8 +217,9 @@ public class TreeHashSet<T> extends AbstractSet<T> {
                         next = keys[index];
                         index++;
                     } while (next == null);
-                    this.next =
-                        next instanceof MyListEntry ? ((MyListEntry<T>) next).getValue() : (T) next;
+                    this.next = next instanceof MyListEntry
+                        ? ((MyListEntry<T>) next).getValue()
+                        : (T) next;
                     this.index = index;
                     assert this.next != null;
                     this.remainingCount--;
@@ -232,7 +231,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
             public T next() {
                 if (hasNext()) {
                     // assert removeKey == null || !next.equals(removeKey);
-                    @Nullable T result = this.next;
+                    @Nullable
+                    T result = this.next;
                     assert result != null; // because hasNext holds
                     this.next = null;
                     // this.removeKey = next;
@@ -278,7 +278,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * of hash codes. This order is guaranteed to be stable for the same set.
      */
     public Iterator<T> sortedIterator() {
-        return new Iterator<T>() {
+        return new Iterator<>() {
             @Override
             @SuppressWarnings("unchecked")
             public boolean hasNext() {
@@ -331,7 +331,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
             @Override
             public T next() {
                 if (hasNext()) {
-                    @Nullable T result = this.next;
+                    @Nullable
+                    T result = this.next;
                     assert result != null; // because hasNext() holds
                     this.next = null;
                     return result;
@@ -391,7 +392,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      *         <code>areEqual(key, result)</code>.
      */
     public @Nullable T put(T key) {
-        @Nullable T result;
+        @Nullable
+        T result;
         int code = getCode(key);
         if (this.size == 0) {
             // at the first key, we still have to create the root of the tree
@@ -462,17 +464,15 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     public Iterator<T> get(int code) {
         final int index = indexOf(code);
         if (index < 0) {
-            return Collections.<T>emptySet()
-                .iterator();
+            return Collections.<T>emptySet().iterator();
         } else if (allEqual()) {
             int keyIndex = -this.tree[index] - 1;
-            return Collections.<T>singleton((T) this.keys[keyIndex])
-                .iterator();
+            return Collections.<T>singleton((T) this.keys[keyIndex]).iterator();
         } else {
             // iteratively go over the list of entries
             final Object[] keys = this.keys;
             final int keyIndex = -this.tree[index] - 1;
-            return new Iterator<T>() {
+            return new Iterator<>() {
                 @Override
                 public boolean hasNext() {
                     if (this.next == null) {
@@ -582,7 +582,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         if (this.size == 0) {
             return false;
         }
-        @SuppressWarnings("unchecked") T key = (T) obj;
+        @SuppressWarnings("unchecked")
+        T key = (T) obj;
         int index = indexOf(getCode(key));
         if (index < 0) {
             // the key is a new one
@@ -601,8 +602,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         int treeSpace = BYTES_PER_INT * this.tree.length;
         int codesSpace = BYTES_PER_INT * this.codes.length;
         int keysSpace = BYTES_PER_REF * this.keys.length;
-        int myEntrySpace =
-            (BYTES_PER_OBJECT + BYTES_PER_INT + BYTES_PER_REF) * getMyListEntryCount();
+        int myEntrySpace
+            = (BYTES_PER_OBJECT + BYTES_PER_INT + BYTES_PER_REF) * getMyListEntryCount();
         return (treeSpace + codesSpace + keysSpace + myEntrySpace) / (double) this.size;
     }
 
@@ -701,11 +702,9 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      */
     private void setTreeSlot(int treeIx, int value) {
         assert this.tree[treeIx] == 0 : String.format("Tree value %d at index %d overwritten by %d",
-            this.tree[treeIx],
-            treeIx,
-            value);
-        assert value < 0 : String
-            .format("Tree value at %d set to positive value %d", treeIx, value);
+                                                      this.tree[treeIx], treeIx, value);
+        assert value < 0 : String.format("Tree value at %d set to positive value %d", treeIx,
+                                         value);
         this.tree[treeIx] = value;
         setFilled(treeIx);
     }
@@ -716,8 +715,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * reference to another tree record, then the record is freed.
      */
     private void disposeTreeSlot(int treeIx) {
-        assert this.tree[treeIx] < 0 : String
-            .format("tree[%d] == %d cannot be disposed", treeIx, this.tree[treeIx]);
+        assert this.tree[treeIx] < 0 : String.format("tree[%d] == %d cannot be disposed", treeIx,
+                                                     this.tree[treeIx]);
         this.tree[treeIx] = 0;
         resetFilled(treeIx);
         // dispose records
@@ -766,13 +765,10 @@ public class TreeHashSet<T> extends AbstractSet<T> {
                 int newTreeSize = getRecordIx(newMaxRecordCount);
                 int[] newTree = new int[newTreeSize + newMaxRecordCount];
                 if (SIZE_PRINT) {
-                    System.out.printf(
-                        "Set %s (size %d, record count %d) from %d to %d tree nodes%n",
-                        System.identityHashCode(this),
-                        this.size,
-                        this.recordCount,
-                        this.tree.length,
-                        newTree.length);
+                    System.out
+                        .printf("Set %s (size %d, record count %d) from %d to %d tree nodes%n",
+                                System.identityHashCode(this), this.size, this.recordCount,
+                                this.tree.length, newTree.length);
                 }
                 int oldTreeSize = getRecordIx(oldMaxRecordCount);
                 System.arraycopy(this.tree, 0, newTree, 0, oldTreeSize);
@@ -783,10 +779,9 @@ public class TreeHashSet<T> extends AbstractSet<T> {
                 this.fill = newFill;
                 if (FILL_PRINT) {
                     System.out.printf("Extending: %d records (%d slots) for %d keys (average %f)%n",
-                        this.recordCount,
-                        getRecordIx(this.recordCount),
-                        this.size + 1,
-                        getAverageFill(getRecordIx(this.recordCount), this.size + 1));
+                                      this.recordCount, getRecordIx(this.recordCount),
+                                      this.size + 1,
+                                      getAverageFill(getRecordIx(this.recordCount), this.size + 1));
                 }
             }
             setParentIx(resultNr, parentIx);
@@ -843,10 +838,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
                 Object[] newKeys = new Object[newLength];
                 if (SIZE_PRINT) {
                     System.out.printf("Set %s (size %d) from %d to %d keys %n",
-                        System.identityHashCode(this),
-                        this.size,
-                        this.keys.length,
-                        newKeys.length);
+                                      System.identityHashCode(this), this.size, this.keys.length,
+                                      newKeys.length);
                 }
                 System.arraycopy(this.keys, 0, newKeys, 0, oldLength);
                 this.keys = newKeys;
@@ -927,12 +920,16 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 
     /** Returns the start index of the tree record with a given number. */
     private int getRecordIx(int recordNr) {
-        return recordNr == 0 ? 0 : ((recordNr - 1) << this.resolution) + rootSize();
+        return recordNr == 0
+            ? 0
+            : ((recordNr - 1) << this.resolution) + rootSize();
     }
 
     /** Returns the record number of a given record index. */
     private int getRecordNr(int treeIx) {
-        return treeIx < rootSize() ? 0 : ((treeIx - rootSize()) >>> this.resolution) + 1;
+        return treeIx < rootSize()
+            ? 0
+            : ((treeIx - rootSize()) >>> this.resolution) + 1;
     }
 
     /**
@@ -940,7 +937,9 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * where a given tree index is pointing.
      */
     private int getOffset(int treeIx) {
-        return treeIx < rootSize() ? treeIx : (treeIx - rootSize()) & this.mask;
+        return treeIx < rootSize()
+            ? treeIx
+            : (treeIx - rootSize()) & this.mask;
     }
 
     /** Returns the size of root record. */
@@ -975,9 +974,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         int freeRecordNr = this.freeRecordNr;
         while (freeRecordNr > 0) {
             if (freeRecordNr >= this.recordCount) {
-                throw Exceptions.illegalState("Free record %d > record count %d",
-                    freeRecordNr,
-                    this.recordCount);
+                throw Exceptions.illegalState("Free record %d > record count %d", freeRecordNr,
+                                              this.recordCount);
             }
             freeRecordNrs.add(freeRecordNr);
             freeRecordNr = getParentIx(freeRecordNr);
@@ -990,16 +988,13 @@ public class TreeHashSet<T> extends AbstractSet<T> {
                     int value = this.tree[treeIx];
                     if (value > 0) {
                         if (getOffset(value) != 0) {
-                            throw Exceptions.illegalState(
-                                "Child record index %d at %d is not at record boundary",
-                                value,
-                                treeIx);
+                            throw Exceptions
+                                .illegalState("Child record index %d at %d is not at record boundary",
+                                              value, treeIx);
                         } else if (getParentIx(getRecordNr(value)) != treeIx) {
-                            throw Exceptions.illegalState(
-                                "Child record index %d at %d points back to %d",
-                                value,
-                                treeIx,
-                                getParentIx(getRecordNr(value)));
+                            throw Exceptions
+                                .illegalState("Child record index %d at %d points back to %d",
+                                              value, treeIx, getParentIx(getRecordNr(value)));
                         }
                     }
                     if (value != 0) {
@@ -1010,26 +1005,20 @@ public class TreeHashSet<T> extends AbstractSet<T> {
                     throw Exceptions.illegalState("Non-empty record %d has no entries", recordNr);
                 } else if (this.fill[recordNr] != recordFill) {
                     throw Exceptions.illegalState("Record fill of %d should be %d rather than %d",
-                        recordNr,
-                        recordFill,
-                        this.fill[recordNr]);
+                                                  recordNr, recordFill, this.fill[recordNr]);
                 }
                 int parentIx = getParentIx(recordNr);
                 int parentNr = getRecordNr(parentIx);
                 if (parentNr >= this.recordCount) {
                     throw Exceptions.illegalState("Parent %d of record %d larger than count %d",
-                        parentNr,
-                        recordNr,
-                        this.recordCount);
+                                                  parentNr, recordNr, this.recordCount);
                 } else if (freeRecordNrs.contains(parentNr)) {
-                    throw Exceptions
-                        .illegalState("Parent %d of record %d is free record", parentNr, recordNr);
+                    throw Exceptions.illegalState("Parent %d of record %d is free record", parentNr,
+                                                  recordNr);
                 } else if (getRecordNr(this.tree[parentIx]) != recordNr) {
-                    throw Exceptions.illegalState(
-                        "Parent index %d of record %d points to record %d",
-                        parentIx,
-                        recordNr,
-                        getRecordNr(this.tree[parentIx]));
+                    throw Exceptions
+                        .illegalState("Parent index %d of record %d points to record %d", parentIx,
+                                      recordNr, getRecordNr(this.tree[parentIx]));
                 }
             }
         }
@@ -1157,7 +1146,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * <code>Equator.areEqual(Object, Object)</code>.
      */
     @SuppressWarnings({"rawtypes"})
-    static public final Equator EQUALS_EQUATOR = new Equator<Object>() {
+    static public final Equator EQUALS_EQUATOR = new Equator<>() {
         /**
          * @return <code>key.hashCode()</code>.
          */
@@ -1187,7 +1176,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * <code>Equator.areEqual(Object, Object)</code>.
      */
     @SuppressWarnings({"rawtypes"})
-    static public final Equator IDENTITY_EQUATOR = new Equator<Object>() {
+    static public final Equator IDENTITY_EQUATOR = new Equator<>() {
         /**
          * @return <code>System.identityHashCode(key)</code>
          */
@@ -1217,7 +1206,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * in <code>Equator.areEqual(Object, Object)</code>.
      */
     @SuppressWarnings({"rawtypes"})
-    static public final Equator HASHCODE_EQUATOR = new Equator<Object>() {
+    static public final Equator HASHCODE_EQUATOR = new Equator<>() {
         /**
          * @return <code>key.hashCode()</code>
          */

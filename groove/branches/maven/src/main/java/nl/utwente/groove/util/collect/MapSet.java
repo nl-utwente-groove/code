@@ -1,21 +1,20 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package nl.utwente.groove.util.collect;
-
 
 import java.util.AbstractSet;
 import java.util.Collections;
@@ -34,7 +33,7 @@ import java.util.Set;
 abstract public class MapSet<K,E> extends AbstractSet<E> implements Set<E> {
     @Override
     public Iterator<E> iterator() {
-        return new AbstractNestedIterator<E>() {
+        return new AbstractNestedIterator<>() {
             @Override
             protected Iterator<E> nextIterator() {
                 return Collections.unmodifiableSet(this.setIterator.next()).iterator();
@@ -45,8 +44,7 @@ abstract public class MapSet<K,E> extends AbstractSet<E> implements Set<E> {
                 return this.setIterator.hasNext();
             }
 
-            private final Iterator<Set<E>> setIterator =
-                MapSet.this.map.values().iterator();
+            private final Iterator<Set<E>> setIterator = MapSet.this.map.values().iterator();
         };
     }
 
@@ -106,7 +104,7 @@ abstract public class MapSet<K,E> extends AbstractSet<E> implements Set<E> {
         return this.map.get(key);
     }
 
-    /** 
+    /**
      * Method to retrieve the key from a given value.
      * @param value the value to construct the key from
      * @return the non-{@code null} key for {@code value}
