@@ -86,7 +86,7 @@ public class StateCache {
         if (claz == GraphTransition.Claz.ANY) {
             return getTransitionMap();
         } else {
-            return new SetView<GraphTransition>(getTransitionMap()) {
+            return new SetView<>(getTransitionMap()) {
                 @Override
                 public boolean approves(Object obj) {
                     return obj instanceof GraphTransition && claz.admits((GraphTransition) obj);
@@ -171,10 +171,9 @@ public class StateCache {
      */
     private DeltaApplier createDelta() {
         DeltaApplier result = null;
-        if (this.state instanceof DefaultGraphNextState) {
-            DefaultGraphNextState state = (DefaultGraphNextState) this.state;
-            return new RuleApplication(state.getEvent(), state.source()
-                .getGraph(), state.getAddedNodes());
+        if (this.state instanceof DefaultGraphNextState state) {
+            return new RuleApplication(state.getEvent(), state.source().getGraph(),
+                state.getAddedNodes());
         }
         return result;
     }
@@ -186,11 +185,11 @@ public class StateCache {
         HostElement[] frozenGraph = this.state.getFrozenGraph();
         DeltaHostGraph result;
         if (frozenGraph != null) {
-            result = this.graphFactory
-                .newGraph(getState().toString(), frozenGraph, this.record.getFactory());
+            result = this.graphFactory.newGraph(getState().toString(), frozenGraph,
+                                                this.record.getFactory());
         } else if (!(this.state instanceof GraphNextState)) {
-            throw Exceptions.illegalState(
-                "Underlying state does not have information to reconstruct the graph");
+            throw Exceptions
+                .illegalState("Underlying state does not have information to reconstruct the graph");
         } else {
             int depth = 0; // depth of reconstruction
             DefaultGraphNextState state = (DefaultGraphNextState) this.state;
@@ -219,8 +218,7 @@ public class StateCache {
             }
         }
         if (getState().isDone() && getState().isError()) {
-            if (getState().getGTS()
-                .getTypePolicy() != CheckPolicy.OFF) {
+            if (getState().getGTS().getTypePolicy() != CheckPolicy.OFF) {
                 // apparently we're reconstructing the graph after the state was already
                 // done and found to be erroneous; so reconstruct the type errors
                 GraphInfo.addErrors(result, result.checkTypeConstraints());
@@ -230,8 +228,7 @@ public class StateCache {
             // check for liveness
             boolean alive = false;
             // collect all property matches
-            Set<Action> erroneous = new HashSet<>(gts.getGrammar()
-                .getActions(Role.INVARIANT));
+            Set<Action> erroneous = new HashSet<>(gts.getGrammar().getActions(Role.INVARIANT));
             for (GraphTransition trans : getTransitions(GraphTransition.Claz.REAL)) {
                 Action action = trans.getAction();
                 switch (action.getRole()) {
@@ -263,12 +260,9 @@ public class StateCache {
      */
     void addDeadlockError(HostGraph graph) {
         Set<QualName> actions = new LinkedHashSet<>();
-        for (CallStack call : getState().getActualFrame()
-            .getPastAttempts()) {
-            if (call.getAction()
-                .getRole() == Role.TRANSFORMER) {
-                actions.add(call.getRule()
-                    .getQualName());
+        for (CallStack call : getState().getActualFrame().getPastAttempts()) {
+            if (call.getAction().getRole() == Role.TRANSFORMER) {
+                actions.add(call.getRule().getQualName());
             }
         }
         FormatError error;
@@ -276,7 +270,9 @@ public class StateCache {
             error = new FormatError("Deadlock (no transformer scheduled)");
         } else {
             error = new FormatError("Deadlock: scheduled transformer%s %s failed to be applicable",
-                actions.size() == 1 ? "" : "s",
+                actions.size() == 1
+                    ? ""
+                    : "s",
                 Groove.toString(actions.toArray(), "'", "'", "', '", "' and '"));
         }
         GraphInfo.addError(graph, error);
@@ -348,13 +344,12 @@ public class StateCache {
      * outgoing transitions of this state.
      */
     private KeySet<GraphTransitionKey,GraphTransition> computeTransitionMap() {
-        KeySet<GraphTransitionKey,GraphTransition> result =
-            new KeySet<GraphTransitionKey,GraphTransition>() {
-                @Override
-                protected GraphTransitionKey getKey(Object value) {
-                    return ((GraphTransition) value).getKey();
-                }
-            };
+        KeySet<GraphTransitionKey,GraphTransition> result = new KeySet<>() {
+            @Override
+            protected GraphTransitionKey getKey(Object value) {
+                return ((GraphTransition) value).getKey();
+            }
+        };
         for (GraphTransitionStub stub : getStubSet()) {
             GraphTransition trans = stub.toTransition(this.state);
             result.add(trans);
@@ -398,7 +393,7 @@ public class StateCache {
      * Factory method for the outgoing transition set.
      */
     private Set<GraphTransitionStub> createStubSet() {
-        return new TreeHashSet<GraphTransitionStub>() {
+        return new TreeHashSet<>() {
             @Override
             protected boolean areEqual(GraphTransitionStub stub, GraphTransitionStub otherStub) {
                 return getKey(stub).equals(getKey(otherStub));
@@ -407,7 +402,9 @@ public class StateCache {
             @Override
             protected int getCode(GraphTransitionStub stub) {
                 GraphTransitionKey keyEvent = getKey(stub);
-                return keyEvent == null ? 0 : keyEvent.hashCode();
+                return keyEvent == null
+                    ? 0
+                    : keyEvent.hashCode();
             }
 
             private GraphTransitionKey getKey(GraphTransitionStub stub) {

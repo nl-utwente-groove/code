@@ -28,10 +28,10 @@ import java.util.Optional;
 
 import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.Rule;
-import nl.utwente.groove.graph.GraphProperties.Entry;
 import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.gui.layout.LayoutMap;
 import nl.utwente.groove.util.DefaultFixable;
+import nl.utwente.groove.util.Properties.Entry;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -440,7 +440,7 @@ public class GraphInfo extends DefaultFixable {
      * @return the stored or default property value for the given key;
      * non-{@code null}
      */
-    private static Entry getProperty(Graph graph, Key key) {
+    private static nl.utwente.groove.util.Properties.Entry getProperty(Graph graph, Key key) {
         Entry result = null;
         try {
             if (graph.hasInfo()) {

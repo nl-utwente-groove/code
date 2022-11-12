@@ -628,7 +628,6 @@ public interface Parser<T> {
     /** Returns a parser, based on given parsing and unparsing functions.
      * It is required that parsing never throws exceptions.
      */
-    @SuppressWarnings("exports")
     public static <T extends Fallible> Parser<T> newParser(String description,
                                                            Class<? extends T> valueType,
                                                            Function<String,@NonNull T> parse,

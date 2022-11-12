@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -21,7 +21,7 @@ import java.util.Comparator;
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.transform.Event;
 
-/** 
+/**
  * Type encoding the essential ingredients for a graph transition.
  * The implementation differs for rule and recipe transitions.
  */
@@ -34,8 +34,8 @@ public interface GraphTransitionKey {
 
     /** Fixed comparator for graph transition keys.
      */
-    public static final Comparator<GraphTransitionKey> COMPARATOR =
-        new nl.utwente.groove.util.collect.Comparator<GraphTransitionKey>() {
+    public static final Comparator<GraphTransitionKey> COMPARATOR
+        = new nl.utwente.groove.util.collect.Comparator<>() {
             @Override
             public int compare(GraphTransitionKey o1, GraphTransitionKey o2) {
                 // Recipe transitions come before match results

@@ -92,7 +92,6 @@ public enum ExploreKey implements ParsableKey<Setting> {
     private final Setting.Key defaultKind;
 
     /** Returns the type of the setting key for this explore key. */
-    @SuppressWarnings("unchecked")
     public Class<? extends Setting.Key> getKindType() {
         return getDefaultKind().getClass();
     }

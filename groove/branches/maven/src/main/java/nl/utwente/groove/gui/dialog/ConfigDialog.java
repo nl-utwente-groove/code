@@ -88,12 +88,13 @@ abstract public class ConfigDialog<C> extends JDialog {
         contentPanel.setBorder(createEmptyBorder());
         contentPanel.add(getListPanel(), BorderLayout.WEST);
         contentPanel.add(getConfigPanel(), BorderLayout.CENTER);
-        ToolTipManager.sharedInstance()
-            .registerComponent(contentPanel);
+        ToolTipManager.sharedInstance().registerComponent(contentPanel);
         setContentPane(contentPanel);
         pack();
         setVisible(true);
-        return isStart() ? getConfigMap().get(getSelectedName()) : null;
+        return isStart()
+            ? getConfigMap().get(getSelectedName())
+            : null;
     }
 
     /** Lazily creates and returns the panel containing the list of configuration names. */
@@ -274,8 +275,7 @@ abstract public class ConfigDialog<C> extends JDialog {
                             boolean validFile;
                             try {
                                 File file = new File(editedName).getCanonicalFile();
-                                validFile = file.getName()
-                                    .equals(editedName);
+                                validFile = file.getName().equals(editedName);
                             } catch (IOException exc) {
                                 validFile = false;
                             } catch (SecurityException exc) {
@@ -329,7 +329,9 @@ abstract public class ConfigDialog<C> extends JDialog {
 
     /** Returns the currently selected configuration, if any. */
     protected final @Nullable C getSelectedConfig() {
-        return hasSelectedName() ? getConfigMap().get(getSelectedName()) : null;
+        return hasSelectedName()
+            ? getConfigMap().get(getSelectedName())
+            : null;
     }
 
     /** Returns the mapping from names (modulo case distinctions) to configurations. */
@@ -376,10 +378,11 @@ abstract public class ConfigDialog<C> extends JDialog {
         if (!isDirty()) {
             return true;
         }
-        int answer = JOptionPane.showConfirmDialog(this,
-            String.format("Configuration '%s' has been modified. Save changes?", getSelectedName()),
-            null,
-            JOptionPane.YES_NO_CANCEL_OPTION);
+        int answer = JOptionPane
+            .showConfirmDialog(this,
+                               String.format("Configuration '%s' has been modified. Save changes?",
+                                             getSelectedName()),
+                               null, JOptionPane.YES_NO_CANCEL_OPTION);
         if (answer == JOptionPane.YES_OPTION) {
             saveConfig();
         } else if (answer == JOptionPane.NO_OPTION) {
@@ -568,8 +571,7 @@ abstract public class ConfigDialog<C> extends JDialog {
         assert !isDirty();
         assert !this.configMap.containsKey(newName);
         getConfigMap().put(newName, newConfig);
-        int index = getConfigMap().headMap(newName)
-            .size();
+        int index = getConfigMap().headMap(newName).size();
         getConfigListModel().add(index, newName);
         selectConfig(newName);
     }
@@ -758,9 +760,9 @@ abstract public class ConfigDialog<C> extends JDialog {
         /** Asks and attempts to save the current configuration, if it is dirty. */
         boolean askDelete() {
             int answer = JOptionPane.showConfirmDialog(ConfigDialog.this,
-                String.format("Delete configuration '%s'?", getSelectedName()),
-                null,
-                JOptionPane.YES_NO_OPTION);
+                                                       String.format("Delete configuration '%s'?",
+                                                                     getSelectedName()),
+                                                       null, JOptionPane.YES_NO_OPTION);
             return answer == JOptionPane.YES_OPTION;
         }
 
@@ -900,9 +902,7 @@ abstract public class ConfigDialog<C> extends JDialog {
             if (this.errorMap.isEmpty()) {
                 setText("");
             } else {
-                setText(this.errorMap.values()
-                    .iterator()
-                    .next());
+                setText(this.errorMap.values().iterator().next());
             }
         }
 
@@ -927,7 +927,7 @@ abstract public class ConfigDialog<C> extends JDialog {
 
     /** Main method, for testing purposes. */
     public static void main(String[] args) {
-        new ConfigDialog<Object>() {
+        new ConfigDialog<>() {
             @Override
             protected Object createConfig() {
                 return new Object();

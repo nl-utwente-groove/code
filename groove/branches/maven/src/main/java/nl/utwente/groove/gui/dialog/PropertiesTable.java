@@ -68,7 +68,7 @@ public class PropertiesTable extends JTable {
      * default keys that treated specially: they are added by default during
      * editing, and are ordered first in the list.
      */
-    public PropertiesTable(Class<? extends Key<?,?>> defaultKeys, boolean editable) {
+    public PropertiesTable(Class<? extends Key> defaultKeys, boolean editable) {
         this.editable = editable;
         this.defaultKeys = new LinkedHashMap<>();
         for (var key : defaultKeys.getEnumConstants()) {
@@ -89,7 +89,7 @@ public class PropertiesTable extends JTable {
     public void setProperties(Properties properties) {
         this.properties.clear();
         this.keyIndexMap.clear();
-        this.checkerMap = new CheckerMap<>();
+        this.checkerMap = new CheckerMap();
         this.errorMap.clear();
         for (var key : this.defaultKeys.values()) {
             if (!key.isSystem()) {
@@ -116,7 +116,7 @@ public class PropertiesTable extends JTable {
      * Sets a checker map for the properties that were set before.
      * If no checker map is set, the empty map is used.
      */
-    public void setCheckerMap(CheckerMap<?> checkerMap) {
+    public void setCheckerMap(CheckerMap checkerMap) {
         this.checkerMap = checkerMap;
         this.errorMap.clear();
         for (var key : this.defaultKeys.values()) {
@@ -161,20 +161,20 @@ public class PropertiesTable extends JTable {
     private final SortedMap<String,String> properties;
 
     /** The number of non-system keys. */
-    private final Map<Key<?,?>,Integer> keyIndexMap;
+    private final Map<Key,Integer> keyIndexMap;
 
-    private CheckerMap<?> checkerMap;
+    private CheckerMap checkerMap;
 
     /**
      * Checks the value currently entered for a given key,
      * and puts the resulting errors into the error map.
      */
-    void check(Key<?,?> key) {
+    void check(Key key) {
         String value = Groove.orElse(this.properties.get(key.getName()), "");
         this.errorMap.put(key, this.checkerMap.get(key).check(value));
     }
 
-    private final Map<Key<?,?>,FormatErrorSet> errorMap;
+    private final Map<Key,FormatErrorSet> errorMap;
 
     /**
      * Indicates if the properties are editable.
@@ -263,15 +263,15 @@ public class PropertiesTable extends JTable {
     private CellEditor cellEditor;
 
     /** Returns the key with a given name, if any. */
-    Key<?,?> getKey(String name) {
+    Key getKey(String name) {
         return this.defaultKeys.get(name);
     }
 
     /** A list of default property keys; possibly <code>null</code>. */
-    private final Map<String,Key<?,?>> defaultKeys;
+    private final Map<String,Key> defaultKeys;
 
     /** Sets the selection to a given property key. */
-    public void setSelected(Key<?,?> key) {
+    public void setSelected(Key key) {
         if (this.keyIndexMap.containsKey(key)) {
             int index = this.keyIndexMap.get(key);
             getSelectionModel().setSelectionInterval(index, index);

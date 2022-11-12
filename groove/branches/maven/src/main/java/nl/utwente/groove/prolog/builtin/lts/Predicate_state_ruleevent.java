@@ -1,22 +1,24 @@
 /*
  * Groove Prolog Interface
  * Copyright (C) 2009 Michiel Hendriks, University of Twente
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package nl.utwente.groove.prolog.builtin.lts;
+
+import java.util.Iterator;
 
 import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
@@ -27,8 +29,6 @@ import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.transform.RuleEvent;
 import nl.utwente.groove.util.collect.TransformIterator;
-
-import java.util.Iterator;
 
 /**
  * Predicate gts_match(+GraphState,?RuleEvent)
@@ -46,7 +46,7 @@ public class Predicate_state_ruleevent extends LtsPrologCode {
     }
 
     private static int nextSolution(Interpreter interpreter,
-            GtsMatchBacktrackInfo bi) throws PrologException {
+                                    GtsMatchBacktrackInfo bi) throws PrologException {
         while (bi.it.hasNext()) {
             Term res = new JavaObjectTerm(bi.it.next());
             int rc = interpreter.unify(bi.dest, res);
@@ -62,17 +62,15 @@ public class Predicate_state_ruleevent extends LtsPrologCode {
 
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
-            Term[] args) throws PrologException {
+                       Term[] args) throws PrologException {
         if (backtrackMode) {
-            GtsMatchBacktrackInfo bi =
-                (GtsMatchBacktrackInfo) interpreter.popBacktrackInfo();
+            GtsMatchBacktrackInfo bi = (GtsMatchBacktrackInfo) interpreter.popBacktrackInfo();
             interpreter.undo(bi.startUndoPosition);
             return nextSolution(interpreter, bi);
         } else {
             GraphState graphState = getGraphState(args[0]);
-            Iterator<RuleEvent> it =
-                new TransformIterator<RuleTransition,RuleEvent>(
-                    graphState.getRuleTransitions().iterator()) {
+            Iterator<RuleEvent> it
+                = new TransformIterator<>(graphState.getRuleTransitions().iterator()) {
                     @Override
                     protected RuleEvent toOuter(RuleTransition from) {
                         return from.getEvent();

@@ -25,7 +25,6 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.explore.ExploreType;
-import nl.utwente.groove.grammar.GrammarProperties.Entry;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.RuleModel;
@@ -33,6 +32,8 @@ import nl.utwente.groove.transform.oracle.ValueOracleKind;
 import nl.utwente.groove.util.DocumentedEnum;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Properties;
+import nl.utwente.groove.util.Properties.Entry;
+import nl.utwente.groove.util.Properties.KeyParser;
 import nl.utwente.groove.util.Properties.ValueType;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.ThreeValued;
@@ -41,7 +42,7 @@ import nl.utwente.groove.util.parse.Parser;
 import nl.utwente.groove.util.parse.StringParser;
 
 /** Grammar property keys. */
-public enum GrammarKey implements Properties.Key<GrammarKey,GrammarProperties.Entry>, GrammarChecker {
+public enum GrammarKey implements Properties.Key, GrammarChecker {
     /** Property name for the GROOVE version. */
     GROOVE_VERSION("grooveVersion", false, "The Groove version that created this grammar",
         ValueType.STRING),
@@ -300,7 +301,7 @@ public enum GrammarKey implements Properties.Key<GrammarKey,GrammarProperties.En
     private final String keyPhrase;
 
     @Override
-    public GrammarProperties.KeyParser parser() {
+    public KeyParser parser() {
         var result = this.parser;
         if (result == null) {
             var inner = switch (this) {
@@ -322,12 +323,12 @@ public enum GrammarKey implements Properties.Key<GrammarKey,GrammarProperties.En
             case ORACLE -> OracleParser.instance();
             default -> StringParser.identity();
             };
-            this.parser = result = new GrammarProperties.KeyParser(this, inner);
+            this.parser = result = new KeyParser(this, inner);
         }
         return result;
     }
 
-    private GrammarProperties.KeyParser parser;
+    private KeyParser parser;
 
     @Override
     public FormatErrorSet check(GrammarModel grammar, Entry value) {

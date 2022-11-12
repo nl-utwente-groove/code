@@ -31,20 +31,19 @@ import nl.utwente.groove.util.collect.MapSet;
 public class SequenceOperatorPathChecker extends AbstractPathChecker
     implements ReteStateSubscriber {
     /** Mapping from target nodes to matches of the left hand operand. */
-    private final MapSet<HostNode,RetePathMatch> leftMemory = new MapSet<HostNode,RetePathMatch>() {
+    private final MapSet<HostNode,RetePathMatch> leftMemory = new MapSet<>() {
         @Override
         protected HostNode getKey(Object value) {
             return ((RetePathMatch) value).end();
         }
     };
     private RetePathMatch leftEmpty;
-    private final MapSet<HostNode,RetePathMatch> rightMemory =
-        new MapSet<HostNode,RetePathMatch>() {
-            @Override
-            protected HostNode getKey(Object value) {
-                return ((RetePathMatch) value).start();
-            }
-        };
+    private final MapSet<HostNode,RetePathMatch> rightMemory = new MapSet<>() {
+        @Override
+        protected HostNode getKey(Object value) {
+            return ((RetePathMatch) value).start();
+        }
+    };
     private RetePathMatch rightEmpty;
 
     /**
@@ -60,11 +59,8 @@ public class SequenceOperatorPathChecker extends AbstractPathChecker
     public void receive(ReteNetworkNode source, int repeatIndex, RetePathMatch newMatch) {
         // determine if the new match is from the left or right ancestor
         boolean fromLeft;
-        if (this.getAntecedents()
-            .get(0) != this.getAntecedents()
-                .get(1)) {
-            fromLeft = (this.getAntecedents()
-                .get(0) == source);
+        if (this.getAntecedents().get(0) != this.getAntecedents().get(1)) {
+            fromLeft = (this.getAntecedents().get(0) == source);
         } else {
             fromLeft = (repeatIndex == 0);
         }
@@ -99,13 +95,15 @@ public class SequenceOperatorPathChecker extends AbstractPathChecker
      * @param oldMatches the set of existing matches; may be {@code null}
      */
     private void constructAndPassDown(boolean fromLeft, RetePathMatch newMatch,
-        Set<RetePathMatch> oldMatches) {
+                                      Set<RetePathMatch> oldMatches) {
         if (oldMatches != null) {
             for (RetePathMatch oldMatch : oldMatches) {
                 constructAndPassDown(fromLeft, newMatch, oldMatch);
             }
         }
-        RetePathMatch empty = fromLeft ? this.rightEmpty : this.leftEmpty;
+        RetePathMatch empty = fromLeft
+            ? this.rightEmpty
+            : this.leftEmpty;
         if (empty != null) {
             constructAndPassDown(fromLeft, newMatch, empty);
         }
@@ -119,9 +117,13 @@ public class SequenceOperatorPathChecker extends AbstractPathChecker
      * @param oldMatch the existing match
      */
     private void constructAndPassDown(boolean fromLeft, RetePathMatch newMatch,
-        RetePathMatch oldMatch) {
-        RetePathMatch left = fromLeft ? newMatch : oldMatch;
-        RetePathMatch right = fromLeft ? oldMatch : newMatch;
+                                      RetePathMatch oldMatch) {
+        RetePathMatch left = fromLeft
+            ? newMatch
+            : oldMatch;
+        RetePathMatch right = fromLeft
+            ? oldMatch
+            : newMatch;
         RetePathMatch combined = construct(left, right);
         if (combined != null) {
             passDownMatchToSuccessors(combined);
@@ -137,8 +139,7 @@ public class SequenceOperatorPathChecker extends AbstractPathChecker
      *
      */
     protected boolean test(RetePathMatch left, RetePathMatch right) {
-        return left.isEmpty() || right.isEmpty() || left.end()
-            .equals(right.start());
+        return left.isEmpty() || right.isEmpty() || left.end().equals(right.start());
     }
 
     /**

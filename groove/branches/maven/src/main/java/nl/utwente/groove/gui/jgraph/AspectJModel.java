@@ -80,7 +80,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
     AspectJModel(AspectJGraph jGraph) {
         super(jGraph);
         this.graphModCount = new ChangeCount();
-        this.resource = new Derived<GraphBasedModel<?>>(this.graphModCount) {
+        this.resource = new Derived<>(this.graphModCount) {
             @Override
             protected GraphBasedModel<?> computeValue() {
                 GraphBasedModel<?> result;
@@ -94,7 +94,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
                 return result;
             }
         };
-        this.typeGraph = new Derived<TypeGraph>(this.graphModCount) {
+        this.typeGraph = new Derived<>(this.graphModCount) {
             @Override
             protected TypeGraph computeValue() {
                 TypeGraph result;
@@ -204,8 +204,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
         Map<AspectEdge,AspectJCell> edgeJCellMap = new HashMap<>();
         AspectGraph graph = new AspectGraph(getName(), role);
         for (AspectJCell jCell : getRoots()) {
-            if (jCell instanceof AspectJVertex) {
-                AspectJVertex jVertex = (AspectJVertex) jCell;
+            if (jCell instanceof AspectJVertex jVertex) {
                 jVertex.loadFromUserObject(role);
                 graph.addNode(jVertex.getNode());
                 nodeJVertexMap.put(jVertex.getNode(), jVertex);
@@ -216,8 +215,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
             }
         }
         for (AspectJCell jCell : getRoots()) {
-            if (jCell instanceof AspectJEdge) {
-                AspectJEdge jEdge = (AspectJEdge) jCell;
+            if (jCell instanceof AspectJEdge jEdge) {
                 jEdge.loadFromUserObject(role);
                 for (AspectEdge edge : jEdge.getEdges()) {
                     edgeJCellMap.put(edge, jEdge);
@@ -231,14 +229,12 @@ final public class AspectJModel extends JModel<AspectGraph> {
         // collect the layout information
         LayoutMap layoutMap = new LayoutMap();
         for (AspectJCell jCell : getRoots()) {
-            if (jCell instanceof AspectJVertex) {
-                AspectJVertex jVertex = (AspectJVertex) jCell;
+            if (jCell instanceof AspectJVertex jVertex) {
                 layoutMap.putNode(jVertex.getNode(), jVertex.getVisuals());
             } else {
                 AspectJEdge jEdge = (AspectJEdge) jCell;
                 VisualMap visuals = jEdge.getVisuals();
-                if (!JEdgeLayout.newInstance(visuals)
-                    .isDefault()) {
+                if (!JEdgeLayout.newInstance(visuals).isDefault()) {
                     for (AspectEdge edge : jEdge.getEdges()) {
                         layoutMap.putEdge(edge, visuals);
                     }
@@ -269,8 +265,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
             return;
         }
         for (AspectJCell jCell : getRoots()) {
-            jCell.getErrors()
-                .clear();
+            jCell.getErrors().clear();
         }
         this.errorMap.clear();
         for (FormatError error : getResourceModel().getErrors()) {
@@ -281,8 +276,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
                 }
                 if (errorCell != null) {
                     this.errorMap.put(error, errorCell);
-                    errorCell.getErrors()
-                        .addError(error, true);
+                    errorCell.getErrors().addError(error, true);
                 }
             }
         }
@@ -361,10 +355,8 @@ final public class AspectJModel extends JModel<AspectGraph> {
     public void remove(Object[] roots) {
         List<Object> removables = new LinkedList<>(Arrays.asList(roots));
         for (Object element : roots) {
-            if (element instanceof AspectJVertex) {
-                AspectJVertex cell = (AspectJVertex) element;
-                removables.addAll(cell.getPort()
-                    .getEdges());
+            if (element instanceof AspectJVertex cell) {
+                removables.addAll(cell.getPort().getEdges());
             }
         }
         super.remove(removables.toArray());
@@ -373,13 +365,12 @@ final public class AspectJModel extends JModel<AspectGraph> {
     @SuppressWarnings("rawtypes")
     @Override
     public void insert(Object[] roots, Map attributes, ConnectionSet cs, ParentMap pm,
-        UndoableEdit[] edits) {
+                       UndoableEdit[] edits) {
         Set<Object> insertables = new LinkedHashSet<>();
         // only copy edges whose source and target ports are connected
         for (Object root : roots) {
             boolean insert = true;
-            if (root instanceof AspectJEdge) {
-                AspectJEdge jEdge = (AspectJEdge) root;
+            if (root instanceof AspectJEdge jEdge) {
                 DefaultPort sourcePort = (DefaultPort) cs.getPort(jEdge, true);
                 DefaultPort targetPort = (DefaultPort) cs.getPort(jEdge, false);
                 insert = sourcePort != null && targetPort != null;
@@ -416,8 +407,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
         List<AspectJVertex> newJVertices = new ArrayList<>();
         for (Object cell : result.values()) {
             AspectJCell jCell = null;
-            if (cell instanceof AspectJVertex) {
-                AspectJVertex jVertex = ((AspectJVertex) cell);
+            if (cell instanceof AspectJVertex jVertex) {
                 jVertex.setNode(createAspectNode());
                 newJVertices.add(jVertex);
                 jCell = jVertex;
@@ -460,8 +450,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
             // (and not just the layout)
             boolean changed = edit.getInserted() != null && edit.getInserted().length > 0
                 || edit.getRemoved() != null && edit.getRemoved().length > 0
-                || edit.getConnectionSet() != null && !edit.getConnectionSet()
-                    .isEmpty();
+                || edit.getConnectionSet() != null && !edit.getConnectionSet().isEmpty();
             // only user object changes in the attribute should trigger a reload
             if (!changed && edit.getAttributes() != null) {
                 for (Object attrValue : ((Map<?,?>) edit.getAttributes()).values()) {
@@ -587,11 +576,12 @@ final public class AspectJModel extends JModel<AspectGraph> {
         ROLE_NAMES.put(AspectKind.REMARK, "Remark");
 
         ROLE_DESCRIPTIONS.put(AspectKind.EMBARGO,
-            "Must be absent from a graph for this rule to apply");
+                              "Must be absent from a graph for this rule to apply");
         ROLE_DESCRIPTIONS.put(AspectKind.READER, "Must be matched for this rule to apply");
         ROLE_DESCRIPTIONS.put(AspectKind.CREATOR, "Will be created by applying this rule");
-        ROLE_DESCRIPTIONS.put(AspectKind.ADDER,
-            "Must be absent from a graph for this rule to apply, and will be created when applying this rule");
+        ROLE_DESCRIPTIONS
+            .put(AspectKind.ADDER,
+                 "Must be absent from a graph for this rule to apply, and will be created when applying this rule");
         ROLE_DESCRIPTIONS.put(AspectKind.ERASER, "Will be deleted by applying this rule");
         ROLE_DESCRIPTIONS.put(AspectKind.REMARK, "Has no effect on the execution of the rule");
     }

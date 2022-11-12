@@ -33,7 +33,7 @@ import nl.utwente.groove.util.parse.StringParser;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GraphProperties extends Properties<GraphProperties.Key,GraphProperties.Entry> {
+public class GraphProperties extends Properties {
     /** Constructs an empty properties object. */
     public GraphProperties() {
         super(Key.class);
@@ -62,7 +62,7 @@ public class GraphProperties extends Properties<GraphProperties.Key,GraphPropert
     }
 
     /** Predefined graph property keys. */
-    public static enum Key implements Properties.Key<Key,Entry> {
+    public static enum Key implements Properties.Key {
         /** User-defined comment. */
         REMARK("remark", "One-line explanation of the rule, shown e.g. as tool tip",
             ValueType.STRING),
@@ -211,26 +211,6 @@ public class GraphProperties extends Properties<GraphProperties.Key,GraphPropert
             } catch (IllegalArgumentException e) {
                 return false;
             }
-        }
-    }
-
-    /** Graph property entry. */
-    public static record Entry(Key key, Object value) implements Properties.Entry<Key,Entry> {
-        /** Constructs a new instance. */
-        public Entry {
-            checkInvariant(key, value);
-        }
-    }
-
-    /** Parser for {@link Key} values */
-    public static class KeyParser extends Properties.KeyParser<Key,Entry> {
-        /**
-         * @param key key for which this parser is constructed.
-         * @param inner the inner (wrapped) parser
-         */
-        public <T> KeyParser(Key key, Parser<T> inner) {
-            super(key, inner, Entry.class, v -> new Entry(key, v));
-            assert key != null;
         }
     }
 }

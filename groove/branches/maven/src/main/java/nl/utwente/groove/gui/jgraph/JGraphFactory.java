@@ -64,7 +64,7 @@ abstract public class JGraphFactory<G extends Graph> {
 
     /** Constructs a new JModel suitable for the JGraph of this factory. */
     public JModel<G> newModel() {
-        return new JModel<G>(getJGraph()) {
+        return new JModel<>(getJGraph()) {
             // empty
         };
     }

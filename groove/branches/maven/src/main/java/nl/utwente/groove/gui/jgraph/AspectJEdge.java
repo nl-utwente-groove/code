@@ -129,8 +129,7 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
         RuleLabel ruleLabel = edge.getRuleLabel();
         if (ruleLabel != null) {
             if (ruleLabel.isEmpty() && this.aspect != AspectKind.CREATOR
-                || ruleLabel.isNeg() && ruleLabel.getNegOperand()
-                    .isEmpty()) {
+                || ruleLabel.isNeg() && ruleLabel.getNegOperand().isEmpty()) {
                 // remove edge arrow
                 setLook(Look.NO_ARROW, true);
             } else if (!ruleLabel.isAtom()) {
@@ -203,8 +202,7 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
     }
 
     private TypeModelMap getTypeMap() {
-        return getJModel().getResourceModel()
-            .getTypeMap();
+        return getJModel().getResourceModel().getTypeMap();
     }
 
     /**
@@ -218,20 +216,17 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
         if (graph != null && graph.isShowValueNodes()) {
             return false;
         }
-        if (getSourceNode().getAttrKind()
-            .hasSort()) {
+        if (getSourceNode().getAttrKind().hasSort()) {
             return false;
         }
-        if (!getTargetNode().getAttrKind()
-            .hasSort()) {
+        if (!getTargetNode().getAttrKind().hasSort()) {
             return false;
         }
         if (getTargetNode().hasParam()) {
             return false;
         }
         if (graph != null && graph.getGraphRole() != GraphRole.TYPE
-            && !getTargetNode().getAttrAspect()
-                .hasContent()) {
+            && !getTargetNode().getAttrAspect().hasContent()) {
             return false;
         }
         return true;
@@ -302,15 +297,14 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
         return COMPARATOR;
     }
 
-    private final static Comparator<Edge> COMPARATOR = new Comparator<Edge>() {
+    private final static Comparator<Edge> COMPARATOR = new Comparator<>() {
         @Override
         public int compare(Edge o1, Edge o2) {
             int result = getKind(o1).compareTo(getKind(o2));
             if (result != 0) {
                 return result;
             }
-            return EdgeComparator.instance()
-                .compare(o1, o2);
+            return EdgeComparator.instance().compare(o1, o2);
         }
 
         private AspectKind getKind(Edge e) {

@@ -26,14 +26,13 @@ import nl.utwente.groove.util.Version;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
-import nl.utwente.groove.util.parse.Parser;
 
 /**
  * Properties class for graph production systems.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class GrammarProperties extends Properties<GrammarKey,GrammarProperties.Entry> {
+public class GrammarProperties extends Properties {
     /**
      * Default constructor.
      */
@@ -508,26 +507,5 @@ public class GrammarProperties extends Properties<GrammarKey,GrammarProperties.E
         resourceKeyMap.put(ResourceKind.CONTROL, GrammarKey.CONTROL_NAMES);
         resourceKeyMap.put(ResourceKind.PROLOG, GrammarKey.PROLOG_NAMES);
         resourceKeyMap.put(ResourceKind.HOST, GrammarKey.START_GRAPH_NAMES);
-
-    }
-
-    /** Graph property value. */
-    public static record Entry(GrammarKey key, Object value)
-        implements Properties.Entry<GrammarKey,Entry> {
-        /** Default constructor checks the entry invariant. */
-        public Entry {
-            checkInvariant(key, value);
-        }
-    }
-
-    /** Parser for {@link GrammarKey} values */
-    public static class KeyParser extends Properties.KeyParser<GrammarKey,Entry> {
-        /**
-         * @param key key for which this parser is constructed.
-         * @param inner the inner (wrapped) parser
-         */
-        public <T> KeyParser(GrammarKey key, Parser<T> inner) {
-            super(key, inner, Entry.class, v -> new Entry(key, v));
-        }
     }
 }

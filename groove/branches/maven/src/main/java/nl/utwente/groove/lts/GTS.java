@@ -103,14 +103,12 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         super(grammar.getName() + "-gts");
         grammar.testFixed(true);
         this.grammar = grammar;
-        this.oracle = grammar.getProperties()
-            .getValueOracle();
+        this.oracle = grammar.getProperties().getValueOracle();
     }
 
     /** Indicates if the grammar works with simple or multi-graphs. */
     public boolean isSimple() {
-        return getGrammar().getStartGraph()
-            .isSimple();
+        return getGrammar().getStartGraph().isSimple();
     }
 
     /**
@@ -119,9 +117,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     public GraphState startState() {
         if (this.startState == null) {
             this.startState = createStartState();
-            getGrammar().getControl()
-                .initialise(this.startState.getGraph()
-                    .getFactory());
+            getGrammar().getControl().initialise(this.startState.getGraph().getFactory());
             addState(this.startState);
         }
         return this.startState;
@@ -132,8 +128,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      * cloning a given host graph.
      */
     protected HostGraph createStartGraph() {
-        HostGraph result = getGrammar().getStartGraph()
-            .clone(getAlgebraFamily());
+        HostGraph result = getGrammar().getStartGraph().clone(getAlgebraFamily());
         result.setFixed();
         return result;
     }
@@ -158,16 +153,14 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      */
     public HostFactory getHostFactory() {
         if (this.hostFactory == null) {
-            this.hostFactory = this.grammar.getStartGraph()
-                .getFactory();
+            this.hostFactory = this.grammar.getStartGraph().getFactory();
         }
         return this.hostFactory;
     }
 
     /** Returns the algebra family of the GTS. */
     public AlgebraFamily getAlgebraFamily() {
-        return getGrammar().getProperties()
-            .getAlgebraFamily();
+        return getGrammar().getProperties().getAlgebraFamily();
     }
 
     // ----------------------- OBJECT OVERRIDES ------------------------
@@ -196,14 +189,12 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
 
     /** Returns the policy for type checking. */
     public CheckPolicy getTypePolicy() {
-        return getGrammar().getProperties()
-            .getTypePolicy();
+        return getGrammar().getProperties().getTypePolicy();
     }
 
     /** Indicates if deadlock errors should be checked on all graphs. */
     public boolean isCheckDeadlock() {
-        return getGrammar().getProperties()
-            .getDeadPolicy() == CheckPolicy.ERROR;
+        return getGrammar().getProperties().getDeadPolicy() == CheckPolicy.ERROR;
     }
 
     @Override
@@ -251,7 +242,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      */
     public Set<GraphState> getStates() {
         if (this.realStateSet == null) {
-            this.realStateSet = new SetView<GraphState>(nodeSet()) {
+            this.realStateSet = new SetView<>(nodeSet()) {
                 @Override
                 public boolean approves(Object obj) {
                     if (!(obj instanceof GraphState)) {
@@ -400,8 +391,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      */
     public void addTransition(GraphTransition trans) {
         // add (possibly isomorphically modified) edge to LTS
-        if (trans.source()
-            .addTransition(trans)) {
+        if (trans.source().addTransition(trans)) {
             fireAddEdge(trans);
         } else {
             spuriousTransitionCount++;
@@ -453,7 +443,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      */
     public Set<GraphTransition> getTransitions() {
         if (this.realTransitionSet == null) {
-            this.realTransitionSet = new SetView<GraphTransition>(edgeSet()) {
+            this.realTransitionSet = new SetView<>(edgeSet()) {
                 @Override
                 public boolean approves(Object obj) {
                     if (!(obj instanceof GraphTransition)) {
@@ -558,7 +548,9 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         boolean wasReal = Status.isReal(oldStatus);
         boolean isReal = state.isRealState();
         if (wasReal != isReal) {
-            this.realStateCount += wasReal ? -1 : +1;
+            this.realStateCount += wasReal
+                ? -1
+                : +1;
         }
         for (Flag recorded : FLAG_ARRAY) {
             boolean had = wasReal && recorded.test(oldStatus);
@@ -567,15 +559,13 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 if (!had) {
                     this.stateCounts[index]++;
                     if (this.statesMap.containsKey(recorded)) {
-                        this.statesMap.get(recorded)
-                            .add(state);
+                        this.statesMap.get(recorded).add(state);
                     }
                 }
             } else if (had) {
                 this.stateCounts[index]--;
                 if (this.statesMap.containsKey(recorded)) {
-                    this.statesMap.get(recorded)
-                        .remove(state);
+                    this.statesMap.get(recorded).remove(state);
                 }
             }
         }
@@ -663,23 +653,17 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 result.addEdge(image, flags.getOpenLabel(), image);
             }
             if (flags.showNumber()) {
-                String label = flags.getNumberLabel()
-                    .replaceAll("#", "" + state.getNumber());
+                String label = flags.getNumberLabel().replaceAll("#", "" + state.getNumber());
                 result.addEdge(image, label, image);
             }
             if (flags.showTransience() && state.isTransient()) {
                 String label = flags.getTransienceLabel()
-                    .replaceAll("#",
-                        "" + state.getActualFrame()
-                            .getTransience());
+                    .replaceAll("#", "" + state.getActualFrame().getTransience());
                 result.addEdge(image, label, image);
             }
             if (flags.showRecipes() && state.isInternalState()) {
                 String label = flags.getRecipeLabel()
-                    .replaceAll("#",
-                        "" + state.getActualFrame()
-                            .getRecipe()
-                            .getQualName());
+                    .replaceAll("#", "" + state.getActualFrame().getRecipe().getQualName());
                 result.addEdge(image, label, image);
             }
         }
@@ -690,10 +674,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             }
             MultiNode sourceImage = nodeMap.get(transition.source());
             MultiNode targetImage = nodeMap.get(transition.target());
-            result.addEdge(sourceImage,
-                transition.label()
-                    .text(),
-                targetImage);
+            result.addEdge(sourceImage, transition.label().text(), targetImage);
         }
         return result;
     }
@@ -703,7 +684,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      * the internal recipe steps.
      */
     private Set<GraphTransition> getSpanningTransitions(Collection<? extends GraphState> targets,
-        boolean internal) {
+                                                        boolean internal) {
         Set<GraphTransition> result = new LinkedHashSet<>();
         Queue<GraphState> queue = new LinkedList<>(targets);
         Set<GraphState> reached = new HashSet<>();
@@ -749,10 +730,9 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             // leading from source to target
             // look for the corresponding recipe transition
             for (GraphTransition outgoing : source.getTransitions()) {
-                if (!(outgoing instanceof RecipeTransition)) {
+                if (!(outgoing instanceof RecipeTransition candidate)) {
                     continue;
                 }
-                RecipeTransition candidate = (RecipeTransition) outgoing;
                 if (candidate.getInitial() == incoming && candidate.target() == target) {
                     result.add(candidate);
                     break;
@@ -919,8 +899,8 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 return myNodeSet.equals(otherGraph.nodeSet())
                     && myEdgeSet.equals(otherGraph.edgeSet());
             } else {
-                return this.checker
-                    .areIsomorphic(myGraph, otherGraph, myBoundNodes, otherBoundNodes);
+                return this.checker.areIsomorphic(myGraph, otherGraph, myBoundNodes,
+                                                  otherBoundNodes);
             }
         }
 
@@ -935,25 +915,22 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 result = System.identityHashCode(stateKey);
             } else if (this.collapse == COLLAPSE_EQUAL) {
                 HostGraph graph = stateKey.getGraph();
-                result = graph.nodeSet()
-                    .hashCode()
-                    + graph.edgeSet()
-                        .hashCode();
+                result = graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
                 Frame ctrlState = stateKey.getPrimeFrame();
                 if (ctrlState != null) {
                     result += ctrlState.hashCode();
                     result += Valuator.hashCode(stateKey.getPrimeValues());
                 }
             } else {
-                CertificateStrategy certifier =
-                    this.checker.getCertifier(stateKey.getGraph(), true);
+                CertificateStrategy certifier
+                    = this.checker.getCertifier(stateKey.getGraph(), true);
                 Object certificate = certifier.getGraphCertificate();
                 result = certificate.hashCode();
                 Frame ctrlState = stateKey.getPrimeFrame();
                 if (ctrlState != null) {
                     result += ctrlState.hashCode();
-                    result +=
-                        Valuator.hashCode(stateKey.getPrimeValues(), certifier.getCertificateMap());
+                    result += Valuator.hashCode(stateKey.getPrimeValues(),
+                                                certifier.getCertificateMap());
                 }
             }
             if (CHECK_CONTROL_LOCATION) {
@@ -1030,8 +1007,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         @Override
         public boolean contains(Object o) {
             boolean result = false;
-            if (o instanceof GraphTransition) {
-                GraphTransition transition = (GraphTransition) o;
+            if (o instanceof GraphTransition transition) {
                 GraphState source = transition.source();
                 result = (containsNode(source) && outEdgeSet(source).contains(transition));
             }
@@ -1044,8 +1020,8 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
          */
         @Override
         public Iterator<GraphTransition> iterator() {
-            Iterator<Iterator<? extends GraphTransition>> stateOutTransitionIter =
-                new TransformIterator<GraphState,Iterator<? extends GraphTransition>>(
+            Iterator<Iterator<? extends GraphTransition>> stateOutTransitionIter
+                = new TransformIterator<GraphState,Iterator<? extends GraphTransition>>(
                     nodeSet().iterator()) {
                     @Override
                     public Iterator<? extends GraphTransition> toOuter(GraphState state) {

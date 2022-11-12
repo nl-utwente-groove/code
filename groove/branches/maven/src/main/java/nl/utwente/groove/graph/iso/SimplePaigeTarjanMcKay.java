@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package nl.utwente.groove.graph.iso;
@@ -123,9 +123,8 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
         // first iteration
         split(splitters);
         if (TRACE) {
-            System.out.printf(
-                "First iteration done; %d partitions for %d nodes in %d iterations%n",
-                this.nodePartitionCount, this.nodeCertCount, this.iterateCount);
+            System.out.printf("First iteration done; %d partitions for %d nodes in %d iterations%n",
+                              this.nodePartitionCount, this.nodeCertCount, this.iterateCount);
         }
     }
 
@@ -204,7 +203,9 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
                 this.partitionRecord.add(clone);
             }
             if (newBlocks.length > 0) {
-                int last = block.isSplitter() ? newBlocks.length : newBlocks.length - 1;
+                int last = block.isSplitter()
+                    ? newBlocks.length
+                    : newBlocks.length - 1;
                 for (int i = 0; i < last; i++) {
                     splitterList.add(newBlocks[i]);
                     newBlocks[i].setSplitter(true);
@@ -230,7 +231,8 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
     }
 
     @Override
-    EdgeCertificate createEdge2Certificate(Edge edge, NodeCertificate source, NodeCertificate target) {
+    EdgeCertificate createEdge2Certificate(Edge edge, NodeCertificate source,
+                                           NodeCertificate target) {
         return new MyEdge2Cert(this, edge, (MyNodeCert) source, (MyNodeCert) target);
     }
 
@@ -274,8 +276,7 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
     /**
      * Store for node certificates, to count the number of partitions
      */
-    static private final TreeHashSet<MyNodeCert> certStore = new TreeHashSet<MyNodeCert>(
-        TREE_RESOLUTION) {
+    static private final TreeHashSet<MyNodeCert> certStore = new TreeHashSet<>(TREE_RESOLUTION) {
         /**
          * For the purpose of this set, only the certificate value is of
          * importance.
@@ -296,7 +297,7 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
      * Static empty array of blocks, to be returned in case of singular split
      * blocks.
      */
-    private static final Block[] EMPTY_BLOCK_ARRAY = new Block[0];
+    private static final Block[] EMPTY_BLOCK_ARRAY = {};
 
     /** Debug flag to switch the use of duplicate breaking on and off. */
     @SuppressWarnings("unused")
@@ -345,10 +346,9 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
             if (this == obj) {
                 return true;
             }
-            if (!(obj instanceof MyNodeCert)) {
+            if (!(obj instanceof MyNodeCert other)) {
                 return false;
             }
-            MyNodeCert other = ((MyNodeCert) obj);
             if (this.value != other.value) {
                 return false;
             }
@@ -503,10 +503,9 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
             if (this == obj) {
                 return true;
             }
-            if (!(obj instanceof MyEdge1Cert)) {
+            if (!(obj instanceof MyEdge1Cert other)) {
                 return false;
             }
-            MyEdge1Cert other = (MyEdge1Cert) obj;
             return other.sourceCert.equals(this.sourceCert) && other.label.equals(this.label);
         }
 
@@ -541,7 +540,7 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
 
     static class MyEdge2Cert extends MyEdge1Cert {
         MyEdge2Cert(SimplePaigeTarjanMcKay strategy, Edge edge, MyNodeCert sourceCert,
-                MyNodeCert targetCert) {
+                    MyNodeCert targetCert) {
             super(edge, sourceCert);
             this.targetCert = targetCert;
             sourceCert.addOutgoing(this);
@@ -591,10 +590,8 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
             int shift = (this.initValue & 0xf) + 1;
             int targetValue = this.targetCert.getValue();
             int sourceValue = getSource().getValue();
-            int result =
-                ((sourceValue << shift) | (sourceValue >>> (INT_WIDTH - shift)))
-                    + ((targetValue >>> shift) | (targetValue << (INT_WIDTH - shift)))
-                    + this.initValue;
+            int result = ((sourceValue << shift) | (sourceValue >>> (INT_WIDTH - shift)))
+                + ((targetValue >>> shift) | (targetValue << (INT_WIDTH - shift))) + this.initValue;
             this.strategy.graphCertificate += result;
             return result;
         }
@@ -659,7 +656,7 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
                         block = blockMap.get(node.getValue());
                         if (block == null) {
                             blockMap.put(node.getValue(),
-                                block = new Block(this.strategy, node.getValue()));
+                                         block = new Block(this.strategy, node.getValue()));
                         }
                     }
                     block.append(node);
@@ -680,8 +677,8 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
 
         /** Merges this block with another with the same hash code. */
         void merge(Block other) {
-            assert this.value == other.value : String.format(
-                "Merging blocks %s and %s with distinct hash codes", this, other);
+            assert this.value == other.value : String
+                .format("Merging blocks %s and %s with distinct hash codes", this, other);
             for (MyNodeCert otherNode : other.getNodes()) {
                 otherNode.setBlock(this);
                 this.nodes.add(otherNode);
@@ -716,7 +713,11 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
             if (result != 0) {
                 return result;
             }
-            return this.value < other.value ? -1 : this.value > other.value ? +1 : 0;
+            return this.value < other.value
+                ? -1
+                : this.value > other.value
+                    ? +1
+                    : 0;
         }
 
         @Override

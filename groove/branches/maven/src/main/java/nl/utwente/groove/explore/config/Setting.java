@@ -83,7 +83,6 @@ public abstract class Setting {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        @SuppressWarnings("unchecked")
         Setting other = (Setting) obj;
         return Objects.equals(this.content, other.content) && Objects.equals(this.key, other.key);
     }

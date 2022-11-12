@@ -111,12 +111,10 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
         // first iteration
         split(splitters);
         if (TRACE) {
-            System.err.printf(
-                "First iteration done; %d partitions for %d nodes in %d iterations, certificate = %d%n",
-                this.partition.size(),
-                this.nodeCertCount,
-                this.iterateCount,
-                this.graphCertificate);
+            System.err
+                .printf("First iteration done; %d partitions for %d nodes in %d iterations, certificate = %d%n",
+                        this.partition.size(), this.nodeCertCount, this.iterateCount,
+                        this.graphCertificate);
         }
         // check if duplicate
         if ((this.strong || BREAK_DUPLICATES) && this.partition.size() < this.nodeCertCount) {
@@ -134,11 +132,9 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
                 checkpointCertificates();
                 // successively break the symmetry at each of the nodes in the
                 // nontrivial block
-                for (MyNodeCert duplicate : nontrivialBlock.getNodes()
-                    .toArray()) {
+                for (MyNodeCert duplicate : nontrivialBlock.getNodes().toArray()) {
                     duplicate.breakSymmetry();
-                    split(new LinkedList<>(duplicate.getBlock()
-                        .split()));
+                    split(new LinkedList<>(duplicate.getBlock().split()));
                     rollBackCertificates();
                     this.partition = new NodePartition(this.nodeCerts);
                 }
@@ -148,12 +144,10 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
                 // node partition count
                 this.partition = new NodePartition(this.nodeCerts);
                 if (TRACE) {
-                    System.err.printf(
-                        "Next iteration done; %d partitions for %d nodes in %d iterations, certificate = %d%n",
-                        this.partition.size(),
-                        this.nodeCertCount,
-                        this.iterateCount,
-                        this.graphCertificate);
+                    System.err
+                        .printf("Next iteration done; %d partitions for %d nodes in %d iterations, certificate = %d%n",
+                                this.partition.size(), this.nodeCertCount, this.iterateCount,
+                                this.graphCertificate);
                 }
             } while (true);
         }
@@ -166,8 +160,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
         // && !splitterList.isEmpty()) {
         while (!splitterList.isEmpty()) {
             // find the first non-empty splitter in the queue
-            if (splitterList.peek()
-                .size() > 0) {
+            if (splitterList.peek().size() > 0) {
                 splitNext(splitterList);
                 this.iterateCount++;
             } else {
@@ -239,12 +232,10 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
     private void markNodes(Block splitter, NodePartition splitBlocks) {
         // first we copy the splitter's nodes into an array, to prevent
         // concurrent modifications due to the marking of nodes
-        for (MyNodeCert splitterNode : splitter.getNodes()
-            .toArray()) {
+        for (MyNodeCert splitterNode : splitter.getNodes().toArray()) {
             for (MyEdge2Cert outEdge : splitterNode.getOutEdges()) {
                 outEdge.updateTarget();
-                Block splitBlock = outEdge.getTarget()
-                    .mark();
+                Block splitBlock = outEdge.getTarget().mark();
                 if (splitBlock != null) {
                     // add the new split block to the set
                     boolean isNew = splitBlocks.add(splitBlock);
@@ -253,8 +244,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
             }
             for (MyEdge2Cert inEdge : splitterNode.getInEdges()) {
                 inEdge.updateSource();
-                Block splitBlock = inEdge.getSource()
-                    .mark();
+                Block splitBlock = inEdge.getSource().mark();
                 if (splitBlock != null) {
                     // add the new split block to the set
                     boolean isNew = splitBlocks.add(splitBlock);
@@ -331,7 +321,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
 
     @Override
     EdgeCertificate createEdge2Certificate(Edge edge, NodeCertificate source,
-        NodeCertificate target) {
+                                           NodeCertificate target) {
         return new MyEdge2Cert(edge, (MyNodeCert) source, (MyNodeCert) target);
     }
 
@@ -406,8 +396,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
         public MyNodeCert(Node node) {
             this.element = node;
             if (node instanceof HostNode) {
-                this.label = ((HostNode) node).getType()
-                    .label();
+                this.label = ((HostNode) node).getType().label();
                 this.value = this.label.hashCode();
             } else {
                 this.label = null;
@@ -577,7 +566,9 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
                 return null;
             } else {
                 this.marked = true;
-                return (getBlock().markNode(this)) ? getBlock() : null;
+                return (getBlock().markNode(this))
+                    ? getBlock()
+                    : null;
             }
         }
 
@@ -683,10 +674,9 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
             if (this == obj) {
                 return true;
             }
-            if (!(obj instanceof MyValueNodeCert)) {
+            if (!(obj instanceof MyValueNodeCert other)) {
                 return false;
             }
-            MyValueNodeCert other = (MyValueNodeCert) obj;
             return this.nodeValue.equals(other.nodeValue);
         }
 
@@ -718,10 +708,9 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
             if (this == obj) {
                 return true;
             }
-            if (!(obj instanceof PaigeTarjanMcKay.MyEdge1Cert)) {
+            if (!(obj instanceof PaigeTarjanMcKay.MyEdge1Cert other)) {
                 return false;
             }
-            MyEdge1Cert other = (MyEdge1Cert) obj;
             return other.sourceCert.equals(this.sourceCert) && other.label.equals(this.label);
         }
 
@@ -775,8 +764,8 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
             if (!super.equals(obj)) {
                 return false;
             }
-            return obj instanceof PaigeTarjanMcKay.MyEdge2Cert && ((MyEdge2Cert) obj).getTarget()
-                .equals(getTarget());
+            return obj instanceof PaigeTarjanMcKay.MyEdge2Cert
+                && ((MyEdge2Cert) obj).getTarget().equals(getTarget());
         }
 
         @Override
@@ -829,7 +818,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
 
         @Override
         public Iterator<MyNodeCert> iterator() {
-            return new Iterator<MyNodeCert>() {
+            return new Iterator<>() {
                 @Override
                 public boolean hasNext() {
                     if (this.next == null) {
@@ -864,7 +853,9 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
 
         /** Returns the first certificate in the list. */
         MyNodeCert first() {
-            return this.next == this ? null : this.next;
+            return this.next == this
+                ? null
+                : this.next;
         }
 
         /** Returns an array containing all certificates in this list. */
@@ -872,8 +863,8 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
             // this implementation works under the assumption
             // that this is the array of nodes in the container block.
             assert this == getBlock().getNodes();
-            MyNodeCert[] result =
-                new PaigeTarjanMcKay.MyNodeCert[getBlock().size() - getBlock().markedSize()];
+            MyNodeCert[] result
+                = new PaigeTarjanMcKay.MyNodeCert[getBlock().size() - getBlock().markedSize()];
             int i = 0;
             for (MyNodeCert cert = this.next; cert != this; cert = cert.next, i++) {
                 result[i] = cert;
@@ -926,7 +917,9 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
             boolean isNew = add(block);
             if (!isNew) {
                 // find a certificate value that works
-                incr = incr == 0 ? 1 : incr;
+                incr = incr == 0
+                    ? 1
+                    : incr;
                 int newValue = block.getValue();
                 do {
                     newValue += incr;
@@ -1103,7 +1096,11 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
             if (result != 0) {
                 return result;
             }
-            return this.value < other.value ? -1 : this.value > other.value ? +1 : 0;
+            return this.value < other.value
+                ? -1
+                : this.value > other.value
+                    ? +1
+                    : 0;
         }
 
         @Override
@@ -1145,8 +1142,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
                 // clone the marked nodes
                 result.markedNodes = new NodeCertificateList(result);
                 for (MyNodeCert markedNode : this.markedNodes) {
-                    markedNode.clone()
-                        .insertAfter(result.markedNodes);
+                    markedNode.clone().insertAfter(result.markedNodes);
                 }
                 result.markedSize = this.markedSize;
                 return result;

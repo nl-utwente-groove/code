@@ -34,7 +34,7 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>implements HostGraph {
+public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge> implements HostGraph {
     /**
      * Constructs an empty simple host graph.
      * @param name name of the new host graph.
@@ -75,10 +75,9 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>impl
         HostGraphMorphism morphism = getFactory().createMorphism();
         for (HostNode sn : graph.nodeSet()) {
             HostNode tn;
-            if (sn instanceof ValueNode && family != null) {
-                ValueNode vn = (ValueNode) sn;
+            if (sn instanceof ValueNode vn && family != null) {
                 tn = getFactory().createNode(family.getAlgebra(vn.getSort()),
-                    family.toValue(vn.getTerm()));
+                                             family.toValue(vn.getTerm()));
             } else {
                 tn = sn;
             }
@@ -96,10 +95,9 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>impl
      */
     public DefaultHostGraph(Graph graph) {
         this(graph.getName(), true);
-        AElementMap<Node,Edge,HostNode,HostEdge> map =
-            new AElementMap<Node,Edge,HostNode,HostEdge>(getFactory()) {
-                // empty
-            };
+        AElementMap<Node,Edge,HostNode,HostEdge> map = new AElementMap<>(getFactory()) {
+            // empty
+        };
         for (Node node : graph.nodeSet()) {
             HostNode newNode = addNode(node.getNumber());
             map.putNode(node, newNode);
@@ -107,8 +105,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>impl
         for (Edge edge : graph.edgeSet()) {
             HostNode sourceImage = map.getNode(edge.source());
             HostNode targetImage = map.getNode(edge.target());
-            HostEdge edgeImage = addEdge(sourceImage, edge.label()
-                .text(), targetImage);
+            HostEdge edgeImage = addEdge(sourceImage, edge.label().text(), targetImage);
             map.putEdge(edge, edgeImage);
         }
         GraphInfo.transfer(graph, this, map);

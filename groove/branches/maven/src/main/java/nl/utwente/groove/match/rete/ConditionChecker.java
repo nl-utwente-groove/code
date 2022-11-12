@@ -120,7 +120,7 @@ public class ConditionChecker extends ReteNetworkNode
      * @param c The condition object for which this checker is to be created.
      */
     public ConditionChecker(ReteNetwork network, Condition c,
-        ConditionChecker parentConditionChecker, ReteStaticMapping antecedent) {
+                            ConditionChecker parentConditionChecker, ReteStaticMapping antecedent) {
         super(network);
         this.condition = c;
         this.parent = parentConditionChecker;
@@ -134,11 +134,9 @@ public class ConditionChecker extends ReteNetworkNode
     }
 
     private void makeRootSearchOrder(Condition c) {
-        if (!c.getRoot()
-            .isEmpty()) {
+        if (!c.getRoot().isEmpty()) {
             ArrayList<RuleNode> nodes = new ArrayList<>();
-            nodes.addAll(c.getRoot()
-                .nodeSet());
+            nodes.addAll(c.getRoot().nodeSet());
             Collections.sort(nodes, NodeComparator.instance());
             this.conflictSetSearchTree = new SearchTree(nodes);
         }
@@ -156,8 +154,7 @@ public class ConditionChecker extends ReteNetworkNode
     private void connectToAntecedent(ReteStaticMapping antecedent) {
         if (antecedent != null) {
             this.addAntecedent(antecedent.getNNode());
-            antecedent.getNNode()
-                .addSuccessor(this);
+            antecedent.getNNode().addSuccessor(this);
             this.pattern = Arrays.copyOf(antecedent.getElements(), antecedent.getElements().length);
         } else {
             this.pattern = new RuleElement[0];
@@ -213,12 +210,8 @@ public class ConditionChecker extends ReteNetworkNode
      */
     @Override
     public int size() {
-        assert this.getAntecedents()
-            .size() == 1;
-        return this.getAntecedents()
-            .iterator()
-            .next()
-            .size();
+        assert this.getAntecedents().size() == 1;
+        return this.getAntecedents().iterator().next().size();
     }
 
     /**
@@ -229,7 +222,9 @@ public class ConditionChecker extends ReteNetworkNode
     public Set<ReteSimpleMatch> getConflictSet() {
         assert this.conflictSetSearchTree == null;
         demandUpdate();
-        Set<ReteSimpleMatch> cs = this.isEmpty() ? this.oneEmptyMatch : this.conflictSet;
+        Set<ReteSimpleMatch> cs = this.isEmpty()
+            ? this.oneEmptyMatch
+            : this.conflictSet;
         Set<ReteSimpleMatch> result = cs;
 
         if (!this.inhibitionMap.isEmpty() && (cs.size() > 0)) {
@@ -270,11 +265,11 @@ public class ConditionChecker extends ReteNetworkNode
         Iterator<ReteSimpleMatch> result;
         demandUpdate();
         if (this.isEmpty()) {
-            result =
-                this.inhibitionMap.isEmpty() ? this.oneEmptyMatch.iterator() : this.getConflictSet()
-                    .iterator();
+            result = this.inhibitionMap.isEmpty()
+                ? this.oneEmptyMatch.iterator()
+                : this.getConflictSet().iterator();
         } else if (!this.inhibitionMap.isEmpty() && (this.conflictSet.size() > 0)) {
-            result = new FilterIterator<ReteSimpleMatch>(this.conflictSet.iterator()) {
+            result = new FilterIterator<>(this.conflictSet.iterator()) {
                 @Override
                 protected boolean approves(Object obj) {
                     AbstractReteMatch m = (AbstractReteMatch) obj;
@@ -304,11 +299,9 @@ public class ConditionChecker extends ReteNetworkNode
             result = this.oneEmptyMatch.iterator();
         } else if (!this.inhibitionMap.isEmpty()) {
             if (this.conflictSetSearchTree != null) {
-                result = new FilterIterator<ReteSimpleMatch>((anchorMap != null)
-                    ? this.conflictSetSearchTree.getStorageFor(anchorMap)
-                        .iterator()
-                    : this.getConflictSet()
-                        .iterator()) {
+                result = new FilterIterator<>((anchorMap != null)
+                    ? this.conflictSetSearchTree.getStorageFor(anchorMap).iterator()
+                    : this.getConflictSet().iterator()) {
 
                     @Override
                     protected boolean approves(Object obj) {
@@ -320,8 +313,7 @@ public class ConditionChecker extends ReteNetworkNode
 
             } else {
 
-                result = new FilterIterator<ReteSimpleMatch>(this.getConflictSet()
-                    .iterator()) {
+                result = new FilterIterator<>(this.getConflictSet().iterator()) {
 
                     RuleToHostMap anchor = anchorMap;
 
@@ -337,11 +329,9 @@ public class ConditionChecker extends ReteNetworkNode
             }
         } else {
             if (this.conflictSetSearchTree != null) {
-                result = this.conflictSetSearchTree.getStorageFor(anchorMap)
-                    .iterator();
+                result = this.conflictSetSearchTree.getStorageFor(anchorMap).iterator();
             } else {
-                result = new FilterIterator<ReteSimpleMatch>(this.getConflictSet()
-                    .iterator()) {
+                result = new FilterIterator<>(this.getConflictSet().iterator()) {
 
                     RuleToHostMap anchor = anchorMap;
 
@@ -371,12 +361,11 @@ public class ConditionChecker extends ReteNetworkNode
         Set<RuleToHostMap> result = null;
         if (this.conflictSetSearchTree != null) {
             result = new HashSet<>();
-            HashMap<Set<ReteSimpleMatch>,RuleToHostMap> g =
-                this.conflictSetSearchTree.getCollectionsToAnchorsMap();
+            HashMap<Set<ReteSimpleMatch>,RuleToHostMap> g
+                = this.conflictSetSearchTree.getCollectionsToAnchorsMap();
             for (Entry<Set<ReteSimpleMatch>,RuleToHostMap> s : g.entrySet()) {
 
-                if (includeEmpty || !s.getKey()
-                    .isEmpty()) {
+                if (includeEmpty || !s.getKey().isEmpty()) {
 
                     result.add(s.getValue());
                 }
@@ -393,8 +382,7 @@ public class ConditionChecker extends ReteNetworkNode
      * @param match The match object that is to added/removed to/from the conflict set.
      */
     public void receive(AbstractReteMatch match) {
-        ReteSimpleMatch m = new ReteSimpleMatch(this, this.getOwner()
-            .isInjective(), match);
+        ReteSimpleMatch m = new ReteSimpleMatch(this, this.getOwner().isInjective(), match);
         updateConflictSet(m, Action.ADD);
     }
 
@@ -490,14 +478,13 @@ public class ConditionChecker extends ReteNetworkNode
       * {@literal false} otherwise.
       */
     public boolean isEmpty() {
-        return this.getAntecedents()
-            .size() == 0;
+        return this.getAntecedents().size() == 0;
     }
 
     @Override
     public boolean equals(ReteNetworkNode node) {
-        return (node instanceof ConditionChecker) && this.getCondition()
-            .equals(((ConditionChecker) node).getCondition());
+        return (node instanceof ConditionChecker)
+            && this.getCondition().equals(((ConditionChecker) node).getCondition());
     }
 
     @Override
@@ -626,11 +613,9 @@ public class ConditionChecker extends ReteNetworkNode
             for (int i = 0; i < this.rootSearchOrder.length - 1; i++) {
                 HostElement ei;
                 if (this.rootSearchOrder[i] instanceof RuleNode) {
-                    ei = anchorMap.nodeMap()
-                        .get(this.rootSearchOrder[i]);
+                    ei = anchorMap.nodeMap().get(this.rootSearchOrder[i]);
                 } else {
-                    ei = anchorMap.edgeMap()
-                        .get(this.rootSearchOrder[i]);
+                    ei = anchorMap.edgeMap().get(this.rootSearchOrder[i]);
                 }
                 HashMap<HostElement,Object> treeNode = (HashMap<HostElement,Object>) leaf.get(ei);
                 if (treeNode == null) {
@@ -639,10 +624,9 @@ public class ConditionChecker extends ReteNetworkNode
                 }
                 leaf = treeNode;
             }
-            HostElement ei =
-                (this.rootSearchOrder[this.rootSearchOrder.length - 1] instanceof RuleNode)
-                    ? anchorMap.nodeMap()
-                        .get(this.rootSearchOrder[this.rootSearchOrder.length - 1])
+            HostElement ei
+                = (this.rootSearchOrder[this.rootSearchOrder.length - 1] instanceof RuleNode)
+                    ? anchorMap.nodeMap().get(this.rootSearchOrder[this.rootSearchOrder.length - 1])
                     : anchorMap.edgeMap()
                         .get(this.rootSearchOrder[this.rootSearchOrder.length - 1]);
             Object o = leaf.get(ei);
@@ -657,8 +641,7 @@ public class ConditionChecker extends ReteNetworkNode
 
         HostFactory getFactory() {
             if (this.factory == null) {
-                this.factory = ConditionChecker.this.getOwner()
-                    .getHostFactory();
+                this.factory = ConditionChecker.this.getOwner().getHostFactory();
             }
             return this.factory;
         }
@@ -672,8 +655,7 @@ public class ConditionChecker extends ReteNetworkNode
     public boolean demandUpdate() {
         boolean result = false;
         if (!this.isUpToDate()) {
-            if (this.getOwner()
-                .isInOnDemandMode()) {
+            if (this.getOwner().isInOnDemandMode()) {
                 if (!this.isEmpty()) {
                     for (ReteNetworkNode nnode : this.getAntecedents()) {
                         result = result || nnode.demandUpdate();
@@ -696,16 +678,11 @@ public class ConditionChecker extends ReteNetworkNode
     @Override
     public int demandOneMatch() {
         int result = 0;
-        if (this.getOwner()
-            .isInOnDemandMode()) {
-            result = this.getAntecedents()
-                .get(0)
-                .demandOneMatch();
-            while ((result > 0) && (this.conflictSet.size() == this.inhibitionMap.elementSet()
-                .size())) {
-                result = this.getAntecedents()
-                    .get(0)
-                    .demandOneMatch();
+        if (this.getOwner().isInOnDemandMode()) {
+            result = this.getAntecedents().get(0).demandOneMatch();
+            while ((result > 0)
+                && (this.conflictSet.size() == this.inhibitionMap.elementSet().size())) {
+                result = this.getAntecedents().get(0).demandOneMatch();
             }
         }
         return result;
@@ -729,8 +706,9 @@ public class ConditionChecker extends ReteNetworkNode
      * return <code>null</code>
      */
     public ReteSimpleMatch getEmptyMatch() {
-        return this.isEmpty() ? this.oneEmptyMatch.iterator()
-            .next() : null;
+        return this.isEmpty()
+            ? this.oneEmptyMatch.iterator().next()
+            : null;
     }
 
     /**
@@ -749,8 +727,8 @@ public class ConditionChecker extends ReteNetworkNode
      * that are universal and have an associated count node.
      */
     public void setCountCheckerNode(QuantifierCountChecker value) {
-        assert (this.condition.getCountNode() != null) && value.getCountNode()
-            .equals(this.condition.getCountNode());
+        assert (this.condition.getCountNode() != null)
+            && value.getCountNode().equals(this.condition.getCountNode());
         this.countCheckerNode = value;
     }
 
@@ -770,8 +748,7 @@ public class ConditionChecker extends ReteNetworkNode
     public void setNotifyParent(boolean value) {
         this.notifyParent = value;
         for (ConditionChecker cc : this.getSubConditionCheckers()) {
-            if (cc.getCondition()
-                .isPositive()) {
+            if (cc.getCondition().isPositive()) {
                 cc.setNotifyParent(value);
             }
         }
@@ -792,8 +769,7 @@ public class ConditionChecker extends ReteNetworkNode
             this.countCheckerNode.invalidateCount();
         }
         if (this.getParent() != null) {
-            this.getParent()
-                .notifyChange(sender);
+            this.getParent().notifyChange(sender);
         }
     }
 
