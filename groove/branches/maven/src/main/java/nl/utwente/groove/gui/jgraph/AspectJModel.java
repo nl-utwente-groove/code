@@ -99,9 +99,9 @@ final public class AspectJModel extends JModel<AspectGraph> {
             protected TypeGraph computeValue() {
                 TypeGraph result;
                 GraphBasedModel<?> resourceModel = getResourceModel();
-                if (resourceModel instanceof TypeModel) {
+                if (resourceModel instanceof TypeModel t) {
                     try {
-                        result = ((TypeModel) resourceModel).toResource();
+                        result = t.toResource();
                     } catch (FormatException e) {
                         result = ImplicitTypeGraph.newInstance(resourceModel.getLabels());
                     }
@@ -271,8 +271,8 @@ final public class AspectJModel extends JModel<AspectGraph> {
         for (FormatError error : getResourceModel().getErrors()) {
             for (Element errorObject : error.getElements()) {
                 AspectJCell errorCell = getJCell(errorObject);
-                if (errorCell == null && errorObject instanceof Edge) {
-                    errorCell = getJCell(((Edge) errorObject).source());
+                if (errorCell == null && errorObject instanceof Edge e) {
+                    errorCell = getJCell(e.source());
                 }
                 if (errorCell != null) {
                     this.errorMap.put(error, errorCell);
@@ -411,8 +411,8 @@ final public class AspectJModel extends JModel<AspectGraph> {
                 jVertex.setNode(createAspectNode());
                 newJVertices.add(jVertex);
                 jCell = jVertex;
-            } else if (cell instanceof AspectJEdge) {
-                jCell = (AspectJEdge) cell;
+            } else if (cell instanceof AspectJEdge jEdge) {
+                jCell = jEdge;
             }
             if (jCell != null) {
                 jCell.setJModel(this);
@@ -498,8 +498,8 @@ final public class AspectJModel extends JModel<AspectGraph> {
         if (result) {
             this.usedNrs = new HashSet<>();
             for (Object root : getRoots()) {
-                if (root instanceof AspectJVertex) {
-                    this.usedNrs.add(((AspectJVertex) root).getNumber());
+                if (root instanceof AspectJVertex v) {
+                    this.usedNrs.add(v.getNumber());
                 }
             }
         }

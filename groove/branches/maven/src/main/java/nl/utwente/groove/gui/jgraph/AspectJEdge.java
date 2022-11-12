@@ -276,8 +276,8 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
     public void setUserObject(Object value) {
         // we do need to create a new object, otherwise undos do not work
         AspectJObject myObject = new AspectJObject();
-        if (value instanceof AspectJObject) {
-            myObject.addAll((AspectJObject) value);
+        if (value instanceof AspectJObject o) {
+            myObject.addAll(o);
         } else if (value != null) {
             myObject.load(value.toString());
         }

@@ -137,9 +137,8 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
      */
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof AElementMap)
-            && nodeMap().equals(((AElementMap<?,?,?,?>) obj).nodeMap())
-            && edgeMap().equals(((AElementMap<?,?,?,?>) obj).edgeMap());
+        return (obj instanceof AElementMap<?,?,?,?> m) && nodeMap().equals(m.nodeMap())
+            && edgeMap().equals(m.edgeMap());
     }
 
     /**
@@ -176,7 +175,8 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
      * {@link #createImage(Edge)}.
      */
     public @Nullable TE mapEdge(SE key) {
-        @Nullable TE result = getEdge(key);
+        @Nullable
+        TE result = getEdge(key);
         if (result == null) {
             result = createImage(key);
             if (result != null) {

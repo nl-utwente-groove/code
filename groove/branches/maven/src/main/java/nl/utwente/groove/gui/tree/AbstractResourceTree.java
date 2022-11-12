@@ -52,8 +52,7 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
     protected AbstractResourceTree(ResourceDisplay parentDisplay) {
         this.parentDisplay = parentDisplay;
         this.resourceKind = parentDisplay.getResourceKind();
-        ToolTipManager.sharedInstance()
-            .registerComponent(this);
+        ToolTipManager.sharedInstance().registerComponent(this);
         addMouseListener(new DismissDelayer(this));
     }
 
@@ -229,8 +228,7 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
 
         /** Collects the selected resources by descending into the tree nodes with children. */
         private void collectResources(TreeNode node, Collection<TreeNode> result) {
-            if (node instanceof FolderTreeNode) {
-                FolderTreeNode path = (FolderTreeNode) node;
+            if (node instanceof FolderTreeNode path) {
                 for (int i = 0; i < path.getChildCount(); i++) {
                     collectResources(path.getChildAt(i), result);
                 }
@@ -242,8 +240,8 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
         void setSelection(Collection<TreeNode> selectedNodes) {
             List<QualName> selectedNames = new ArrayList<>();
             for (TreeNode node : selectedNodes) {
-                if (node instanceof ResourceTreeNode) {
-                    selectedNames.add(((ResourceTreeNode) node).getQualName());
+                if (node instanceof ResourceTreeNode t) {
+                    selectedNames.add(t.getQualName());
                 }
             }
             getSimulatorModel().doSelectSet(getResourceKind(), selectedNames);

@@ -80,7 +80,9 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
         super(simulator);
         this.editing = editing;
         this.forState = kind == DisplayKind.STATE;
-        this.graphRole = this.forState ? GraphRole.HOST : kind.getGraphRole();
+        this.graphRole = this.forState
+            ? GraphRole.HOST
+            : kind.getGraphRole();
         setEditable(editing);
         getGraphLayoutCache().setSelectsLocalInsertedCells(editing);
         setCloneable(editing);
@@ -256,8 +258,8 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
 
     /** Convenience method to invoke an edit of a set of visual attributes. */
     void edit(JCell<AspectGraph> jCell, VisualMap newVisuals) {
-        getModel()
-            .edit(Collections.singletonMap(jCell, newVisuals.getAttributes()), null, null, null);
+        getModel().edit(Collections.singletonMap(jCell, newVisuals.getAttributes()), null, null,
+                        null);
     }
 
     /**
@@ -269,12 +271,12 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
         stopEditing();
         Point2D atPoint = fromScreen(snap(screenPoint));
         // define the j-cell to be inserted
-        AspectJVertex jVertex =
-            (AspectJVertex) getModel().createJVertex(getModel().createAspectNode());
+        AspectJVertex jVertex
+            = (AspectJVertex) getModel().createJVertex(getModel().createAspectNode());
         jVertex.setNodeFixed();
         jVertex.putVisual(VisualKey.NODE_POS, atPoint);
         // add the cell to the jGraph
-        Object[] insert = new Object[] {jVertex};
+        Object[] insert = {jVertex};
         getModel().insert(insert, null, null, null, null);
         setSelectionCell(jVertex);
         // immediately add a label, if so indicated by startEditingNewNode
@@ -312,11 +314,10 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
         // define the edge to be inserted
         AspectJEdge newEdge = (AspectJEdge) getModel().createJEdge(null);
         // add a single, empty label so the edge will be displayed
-        newEdge.getUserObject()
-            .add("");
+        newEdge.getUserObject().add("");
         // to make sure there is at least one graph edge wrapped by this JEdge,
         // we add a dummy edge label to the JEdge's user object
-        Object[] insert = new Object[] {newEdge};
+        Object[] insert = {newEdge};
         // define connections between edge and nodes, if any
         ConnectionSet cs = new ConnectionSet();
         cs.connect(newEdge, fromPort, true);
@@ -340,7 +341,9 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
 
     @Override
     protected JGraphMode getDefaultMode() {
-        return this.editing ? EDIT_MODE : super.getDefaultMode();
+        return this.editing
+            ? EDIT_MODE
+            : super.getDefaultMode();
     }
 
     /**
@@ -350,14 +353,14 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
      */
     public boolean selectJCell(Element elem) {
         JCell<?> cell = null;
-        if (elem instanceof Node) {
-            cell = getModel().getJCellForNode((Node) elem);
-        } else if (elem instanceof Edge) {
-            cell = getModel().getJCellForEdge((Edge) elem);
+        if (elem instanceof Node n) {
+            cell = getModel().getJCellForNode(n);
+        } else if (elem instanceof Edge e) {
+            cell = getModel().getJCellForEdge(e);
         }
         if (cell != null) {
-            if (cell instanceof AspectJEdge && ((AspectJEdge) cell).isSourceLabel()) {
-                cell = ((AspectJEdge) cell).getSourceVertex();
+            if (cell instanceof AspectJEdge e && e.isSourceLabel()) {
+                cell = e.getSourceVertex();
             }
             setSelectionCell(cell);
         }
@@ -386,8 +389,8 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
     /** The JTree of rule levels, if any. */
     private RuleLevelTree levelTree;
     /** Map from line style names to corresponding actions. */
-    private final Map<LineStyle,JCellEditAction> setLineStyleActionMap =
-        new EnumMap<>(LineStyle.class);
+    private final Map<LineStyle,JCellEditAction> setLineStyleActionMap
+        = new EnumMap<>(LineStyle.class);
 
     /** Returns the grammar that has manually been set for this JGraph. */
     public GrammarModel getGrammar() {
@@ -499,8 +502,8 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
             int result = 0;
             double closestDistance = Double.MAX_VALUE;
             for (int i = 1; i < points.size(); i++) {
-                double distance =
-                    location.distance(points.get(i - 1)) + location.distance(points.get(i));
+                double distance
+                    = location.distance(points.get(i - 1)) + location.distance(points.get(i));
                 if (distance < closestDistance) {
                     result = i;
                     closestDistance = distance;
@@ -686,9 +689,11 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
          */
         private List<Point2D> removePointAt(List<Point2D> points, Point2D location) {
             LinkedList<Point2D> result = new LinkedList<>(points);
-            if (result.size() > 2 && (!result.getFirst()
-                .equals(result.getLast()) || result.size() > 3)) {
-                int ix = location == null ? 1 : getClosestIndex(points, location);
+            if (result.size() > 2
+                && (!result.getFirst().equals(result.getLast()) || result.size() > 3)) {
+                int ix = location == null
+                    ? 1
+                    : getClosestIndex(points, location);
                 result.remove(ix);
             }
             return result;
@@ -844,8 +849,8 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName()
-                .equals(AccessibleState.ENABLED.toDisplayString()) && isEnabled()) {
+            if (evt.getPropertyName().equals(AccessibleState.ENABLED.toDisplayString())
+                && isEnabled()) {
                 rebuild();
             }
         }

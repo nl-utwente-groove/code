@@ -63,7 +63,9 @@ public abstract class AbstractPathChecker extends ReteNetworkNode implements Ret
         this.expression = expression;
         RuleFactory f = RuleFactory.newInstance();
         RuleNode n1 = f.createNode();
-        RuleNode n2 = (isLoop) ? n1 : f.createNode();
+        RuleNode n2 = (isLoop)
+            ? n1
+            : f.createNode();
         this.pattern = new RuleEdge[] {f.createEdge(n1, new RuleLabel(expression), n2)};
         this.loop = isLoop;
         this.cache = new PathMatchCache();
@@ -91,10 +93,8 @@ public abstract class AbstractPathChecker extends ReteNetworkNode implements Ret
      * generate non-positive matches.
      */
     public boolean isPositivePathGenerator() {
-        return this.getExpression()
-            .isAcceptsEmptyWord()
-            || (this.getExpression()
-                .getNegOperand() != null);
+        return this.getExpression().isAcceptsEmptyWord()
+            || (this.getExpression().getNegOperand() != null);
     }
 
     @Override
@@ -114,22 +114,19 @@ public abstract class AbstractPathChecker extends ReteNetworkNode implements Ret
 
     @Override
     public boolean equals(ReteNetworkNode node) {
-        return (this == node) || ((node instanceof AbstractPathChecker) && this.getOwner()
-            .equals(node.getOwner())
-            && this.expression.equals(((AbstractPathChecker) node).getExpression()));
+        return (this == node)
+            || ((node instanceof AbstractPathChecker c) && this.getOwner().equals(node.getOwner())
+                && this.expression.equals(c.getExpression()));
     }
 
     @Override
     public int size() {
-        return -this.getExpression()
-            .getOperands()
-            .size();
+        return -this.getExpression().getOperands().size();
     }
 
     @Override
     public String toString() {
-        return "- Path-checker for: " + this.getExpression()
-            .toString();
+        return "- Path-checker for: " + this.getExpression().toString();
     }
 
     /** Indicates if path matches must have the same start and end node. */
@@ -153,7 +150,9 @@ public abstract class AbstractPathChecker extends ReteNetworkNode implements Ret
         }
         for (ReteNetworkNode n : this.getSuccessors()) {
 
-            repeatCount = (n != previous) ? 0 : (repeatCount + 1);
+            repeatCount = (n != previous)
+                ? 0
+                : (repeatCount + 1);
             if ((n instanceof AbstractPathChecker) || ((RetePathMatch) m).isEmpty()) {
                 n.receive(this, repeatCount, m);
             } else if (ent != null) {
@@ -214,8 +213,7 @@ public abstract class AbstractPathChecker extends ReteNetworkNode implements Ret
         @Override
         public String toString() {
             return String.format("Cache Entry key for %s. count: %d",
-                this.representative.getCacheKey(),
-                this.count);
+                                 this.representative.getCacheKey(), this.count);
         }
     }
 

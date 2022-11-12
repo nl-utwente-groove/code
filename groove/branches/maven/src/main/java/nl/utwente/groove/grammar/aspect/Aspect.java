@@ -55,8 +55,12 @@ public class Aspect {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((this.aspectKind == null) ? 0 : this.aspectKind.hashCode());
-        result = prime * result + ((this.content == null) ? 0 : this.content.hashCode());
+        result = prime * result + ((this.aspectKind == null)
+            ? 0
+            : this.aspectKind.hashCode());
+        result = prime * result + ((this.content == null)
+            ? 0
+            : this.content.hashCode());
         return result;
     }
 
@@ -155,8 +159,7 @@ public class Aspect {
 
     /** Indicates that this aspect kind is allowed to appear on edges of a particular graph kind. */
     public boolean isForEdge(GraphRole role) {
-        boolean result = AspectKind.allowedEdgeKinds.get(role)
-            .contains(getKind());
+        boolean result = AspectKind.allowedEdgeKinds.get(role).contains(getKind());
         if (result && getKind().hasSort()) {
             result = !(getContent() instanceof Constant);
         }
@@ -165,23 +168,14 @@ public class Aspect {
 
     /** Indicates that this aspect kind is allowed to appear on nodes of a particular graph kind. */
     public boolean isForNode(GraphRole role) {
-        boolean result = AspectKind.allowedNodeKinds.get(role)
-            .contains(getKind());
+        boolean result = AspectKind.allowedNodeKinds.get(role).contains(getKind());
         if (result && getKind().hasSort()) {
-            switch (role) {
-            case TYPE:
-                result = !hasContent();
-                break;
-            case RULE:
-                result = !hasContent() || (getContent() instanceof Expression);
-                break;
-            case HOST:
-                result =
-                    (getContent() instanceof Expression) && ((Expression) getContent()).isTerm();
-                break;
-            default:
-                throw Exceptions.UNREACHABLE;
-            }
+            result = switch (role) {
+            case TYPE -> !hasContent();
+            case RULE -> !hasContent() || (getContent() instanceof Expression);
+            case HOST -> (getContent() instanceof Expression e) && e.isTerm();
+            default -> throw Exceptions.UNREACHABLE;
+            };
         }
         return result;
     }

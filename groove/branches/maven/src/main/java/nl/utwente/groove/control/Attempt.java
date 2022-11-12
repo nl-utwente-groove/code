@@ -30,7 +30,6 @@ public abstract class Attempt<P extends Position<P,A>,A extends Attempt.Stage<P,
     extends ArrayList<A> {
     /** Constructs an initially empty attempt of default size. */
     protected Attempt() {
-        super();
     }
 
     /** Constructs an initially empty attempt with a given size. */
@@ -89,10 +88,9 @@ public abstract class Attempt<P extends Position<P,A>,A extends Attempt.Stage<P,
         if (!super.equals(obj)) {
             return false;
         }
-        if (!(obj instanceof Attempt)) {
+        if (!(obj instanceof Attempt<?,?> other)) {
             return false;
         }
-        Attempt<?,?> other = (Attempt<?,?>) obj;
         if (!this.onFailure.equals(other.onFailure)) {
             return false;
         }

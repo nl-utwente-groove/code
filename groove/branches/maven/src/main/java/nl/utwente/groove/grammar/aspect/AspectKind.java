@@ -423,7 +423,7 @@ public enum AspectKind {
     }
 
     private static Help computeHelp(AspectKind kind, GraphRole role, boolean forNode,
-        boolean withLabel) {
+                                    boolean withLabel) {
         String h = null;
         String s = null;
         List<String> b = new ArrayList<>();
@@ -438,8 +438,7 @@ public enum AspectKind {
                 s = "%s.COLON.label";
                 h = "Abstract edge type";
                 b.add("Declares an abstract %s-edge between node types.");
-                b.add(
-                    "The edge can only occur between subtypes where it is redeclared concretely.");
+                b.add("The edge can only occur between subtypes where it is redeclared concretely.");
                 p.add(edgePar);
             } else if (withLabel) {
                 s = "%s.COLON.flag";
@@ -741,8 +740,7 @@ public enum AspectKind {
                 s = "%s.COLON.nr";
                 h = "Bidirectional rule parameter";
                 b.add("Declares bidirectional rule parameter %1$s (ranging from 0).");
-                b.add(
-                    "When used from a control program this parameter may be instantiated with a concrete value,");
+                b.add("When used from a control program this parameter may be instantiated with a concrete value,");
                 b.add("or be used as an output parameter, in which case the value");
                 b.add("is determined by the matching.");
                 p.add("the parameter number, ranging from 0");
@@ -901,23 +899,21 @@ public enum AspectKind {
     static private String ops(AspectKind kind) {
         StringBuilder result = new StringBuilder();
         assert kind.hasSort();
-        for (OpValue op : Sort.getKind(kind.getName())
-            .getOpValues()) {
+        for (OpValue op : Sort.getKind(kind.getName()).getOpValues()) {
             if (result.length() > 0) {
                 result.append(", ");
             }
-            result.append(Help.it(op.getOperator()
-                .getName()));
+            result.append(Help.it(op.getOperator().getName()));
         }
         return result.toString();
     }
 
     /** For every relevant graph role the node syntax help entries. */
-    private static final Map<GraphRole,Map<String,String>> nodeDocMapMap =
-        new EnumMap<>(GraphRole.class);
+    private static final Map<GraphRole,Map<String,String>> nodeDocMapMap
+        = new EnumMap<>(GraphRole.class);
     /** For every relevant graph role the edge syntax help entries. */
-    private static final Map<GraphRole,Map<String,String>> edgeDocMapMap =
-        new EnumMap<>(GraphRole.class);
+    private static final Map<GraphRole,Map<String,String>> edgeDocMapMap
+        = new EnumMap<>(GraphRole.class);
     /** Static mapping from all aspect names to aspects. */
     private static final Map<String,AspectKind> kindMap = new HashMap<>();
     /** Static mapping from nested value texts to values. */
@@ -955,8 +951,8 @@ public enum AspectKind {
     }
 
     /** Set of role aspects. */
-    public static final Set<AspectKind> roles =
-        EnumSet.of(ERASER, ADDER, CREATOR, READER, EMBARGO, CONNECT);
+    public static final Set<AspectKind> roles
+        = EnumSet.of(ERASER, ADDER, CREATOR, READER, EMBARGO, CONNECT);
     /** Set of role aspects appearing (only) in NACs. */
     public static final Set<AspectKind> nac = EnumSet.of(EMBARGO, ADDER, CONNECT);
     /** Set of role aspects appearing in LHSs. */
@@ -964,25 +960,25 @@ public enum AspectKind {
     /** Set of role aspects appearing in RHSs. */
     public static final Set<AspectKind> rhs = EnumSet.of(READER, CREATOR, ADDER);
     /** Set of meta-aspects, i.e., which do not reflect real graph structure. */
-    public static final Set<AspectKind> meta =
-        EnumSet.of(FORALL, FORALL_POS, EXISTS, EXISTS_OPT, NESTED, REMARK, CONNECT);
+    public static final Set<AspectKind> meta
+        = EnumSet.of(FORALL, FORALL_POS, EXISTS, EXISTS_OPT, NESTED, REMARK, CONNECT);
     /** Set of parameter aspects. */
-    public static final Set<AspectKind> params =
-        EnumSet.of(PARAM_BI, PARAM_IN, PARAM_OUT, PARAM_ASK);
+    public static final Set<AspectKind> params
+        = EnumSet.of(PARAM_BI, PARAM_IN, PARAM_OUT, PARAM_ASK);
     /** Set of existential quantifier aspects, i.e., which do not reflect real graph structure. */
     public static final Set<AspectKind> existsQuantifiers = EnumSet.of(EXISTS, EXISTS_OPT);
     /** Set of universal quantifier aspects, i.e., which do not reflect real graph structure. */
     public static final Set<AspectKind> forallQuantifiers = EnumSet.of(FORALL, FORALL_POS);
     /** Set of attribute-related aspects. */
-    public static final Set<AspectKind> attributers =
-        EnumSet.of(PRODUCT, ARGUMENT, STRING, INT, BOOL, REAL, TEST);
+    public static final Set<AspectKind> attributers
+        = EnumSet.of(PRODUCT, ARGUMENT, STRING, INT, BOOL, REAL, TEST);
 
     /** Mapping from graph roles to the node aspects allowed therein. */
-    public static final Map<GraphRole,Set<AspectKind>> allowedNodeKinds =
-        new EnumMap<>(GraphRole.class);
+    public static final Map<GraphRole,Set<AspectKind>> allowedNodeKinds
+        = new EnumMap<>(GraphRole.class);
     /** Mapping from graph roles to the edge aspects allowed therein. */
-    public static final Map<GraphRole,Set<AspectKind>> allowedEdgeKinds =
-        new EnumMap<>(GraphRole.class);
+    public static final Map<GraphRole,Set<AspectKind>> allowedEdgeKinds
+        = new EnumMap<>(GraphRole.class);
 
     static {
         for (GraphRole role : GraphRole.values()) {
@@ -993,62 +989,19 @@ public enum AspectKind {
                 edgeKinds = EnumSet.of(DEFAULT, REMARK, LITERAL, LET);
                 break;
             case RULE:
-                nodeKinds = EnumSet.of(REMARK,
-                    READER,
-                    ERASER,
-                    CREATOR,
-                    ADDER,
-                    EMBARGO,
-                    BOOL,
-                    INT,
-                    REAL,
-                    STRING,
-                    PRODUCT,
-                    PARAM_BI,
-                    PARAM_IN,
-                    PARAM_OUT,
-                    PARAM_ASK,
-                    FORALL,
-                    FORALL_POS,
-                    EXISTS,
-                    EXISTS_OPT,
-                    ID,
-                    COLOR);
-                edgeKinds = EnumSet.of(REMARK,
-                    READER,
-                    ERASER,
-                    CREATOR,
-                    ADDER,
-                    EMBARGO,
-                    CONNECT,
-                    BOOL,
-                    INT,
-                    REAL,
-                    STRING,
-                    ARGUMENT,
-                    PATH,
-                    LITERAL,
-                    FORALL,
-                    FORALL_POS,
-                    EXISTS,
-                    EXISTS_OPT,
-                    NESTED,
-                    LET,
-                    TEST);
+                nodeKinds
+                    = EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, BOOL, INT, REAL,
+                                 STRING, PRODUCT, PARAM_BI, PARAM_IN, PARAM_OUT, PARAM_ASK, FORALL,
+                                 FORALL_POS, EXISTS, EXISTS_OPT, ID, COLOR);
+                edgeKinds = EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, CONNECT,
+                                       BOOL, INT, REAL, STRING, ARGUMENT, PATH, LITERAL, FORALL,
+                                       FORALL_POS, EXISTS, EXISTS_OPT, NESTED, LET, TEST);
                 break;
             case TYPE:
-                nodeKinds = EnumSet
-                    .of(DEFAULT, REMARK, INT, BOOL, REAL, STRING, ABSTRACT, IMPORT, COLOR, EDGE);
-                edgeKinds = EnumSet.of(REMARK,
-                    INT,
-                    BOOL,
-                    REAL,
-                    STRING,
-                    ABSTRACT,
-                    SUBTYPE,
-                    MULT_IN,
-                    MULT_OUT,
-                    COMPOSITE);
+                nodeKinds = EnumSet.of(DEFAULT, REMARK, INT, BOOL, REAL, STRING, ABSTRACT, IMPORT,
+                                       COLOR, EDGE);
+                edgeKinds = EnumSet.of(REMARK, INT, BOOL, REAL, STRING, ABSTRACT, SUBTYPE, MULT_IN,
+                                       MULT_OUT, COMPOSITE);
                 break;
             default:
                 assert !role.inGrammar();
@@ -1117,7 +1070,9 @@ public enum AspectKind {
             String parseContent(String text, GraphRole role) throws FormatException {
                 for (int i = 0; i < text.length(); i++) {
                     char c = text.charAt(i);
-                    if (i == 0 ? !isValidFirstChar(c) : !isValidNextChar(c)) {
+                    if (i == 0
+                        ? !isValidFirstChar(c)
+                        : !isValidNextChar(c)) {
                         throw new FormatException("Invalid quantification level");
                     }
                 }
@@ -1312,7 +1267,9 @@ public enum AspectKind {
             String parseContent(String text, GraphRole role) throws FormatException {
                 for (int i = 0; i < text.length(); i++) {
                     char c = text.charAt(i);
-                    if (i == 0 ? !isValidFirstChar(c) : !isValidNextChar(c)) {
+                    if (i == 0
+                        ? !isValidFirstChar(c)
+                        : !isValidNextChar(c)) {
                         throw new FormatException("Invalid node id '%s'", text);
                     }
                 }
@@ -1444,8 +1401,7 @@ public enum AspectKind {
          * @param role graph role for which the content is parsed
          * @return the resulting content value
          */
-        Object parseContent(@NonNull
-        String text, GraphRole role) throws FormatException {
+        Object parseContent(@NonNull String text, GraphRole role) throws FormatException {
             Object result;
             // This implementation tries to parse the text as a constant of the
             // given signature.
@@ -1496,20 +1452,21 @@ public enum AspectKind {
         String toString(Object content) {
             if (content == null) {
                 return "";
-            } else if (content instanceof Constant) {
-                return ((Constant) content).getSymbol();
-            } else if (content instanceof Operator) {
-                return ((Operator) content).getName();
-            } else if (content instanceof Color) {
-                Color color = (Color) content;
+            } else if (content instanceof Constant c) {
+                return c.getSymbol();
+            } else if (content instanceof Operator o) {
+                return o.getName();
+            } else if (content instanceof Color color) {
                 int red = color.getRed();
                 int green = color.getGreen();
                 int blue = color.getBlue();
                 int alpha = color.getAlpha();
-                String colorString = alpha == 255 ? "%s,%s,%s" : "%s,%s,%s,%s";
+                String colorString = alpha == 255
+                    ? "%s,%s,%s"
+                    : "%s,%s,%s,%s";
                 return String.format(colorString, red, green, blue, alpha);
-            } else if (content instanceof Expression) {
-                return ((Expression) content).toDisplayString();
+            } else if (content instanceof Expression e) {
+                return e.toDisplayString();
             } else {
                 return "" + content;
             }
@@ -1541,8 +1498,7 @@ public enum AspectKind {
             Object result = content;
             if (this.sort != null && content instanceof String) {
                 // this is a field name
-                if (oldLabel.getRole() == EdgeRole.BINARY && oldLabel.text()
-                    .equals(content)) {
+                if (oldLabel.getRole() == EdgeRole.BINARY && oldLabel.text().equals(content)) {
                     result = newLabel.text();
                 }
             }

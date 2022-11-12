@@ -57,25 +57,24 @@ public class AspectLabel extends ALabel implements Fixable {
 
     @Override
     public EdgeRole getRole() {
-        return EdgeRole.parseLabel(getInnerText())
-            .one();
+        return EdgeRole.parseLabel(getInnerText()).one();
     }
 
     @Override
     public int compareTo(Label obj) {
         int result = getRole().compareTo(obj.getRole());
-        if (result == 0 && obj instanceof AspectLabel) {
+        if (result == 0 && obj instanceof AspectLabel label) {
             // Labels starting with letters precede all other labels
-            String myText = EdgeRole.parseLabel(getInnerText())
-                .two();
-            boolean myTextIsAlpha =
-                myText.length() > 0 && Character.isJavaIdentifierStart(myText.charAt(0));
-            String hisText = EdgeRole.parseLabel(((AspectLabel) obj).getInnerText())
-                .two();
-            boolean hisTextIsAlpha =
-                hisText.length() > 0 && Character.isJavaIdentifierStart(hisText.charAt(0));
+            String myText = EdgeRole.parseLabel(getInnerText()).two();
+            boolean myTextIsAlpha
+                = myText.length() > 0 && Character.isJavaIdentifierStart(myText.charAt(0));
+            String hisText = EdgeRole.parseLabel(label.getInnerText()).two();
+            boolean hisTextIsAlpha
+                = hisText.length() > 0 && Character.isJavaIdentifierStart(hisText.charAt(0));
             if (myTextIsAlpha != hisTextIsAlpha) {
-                result = myTextIsAlpha ? -1 : +1;
+                result = myTextIsAlpha
+                    ? -1
+                    : +1;
             }
         }
         if (result == 0) {
@@ -152,10 +151,8 @@ public class AspectLabel extends ALabel implements Fixable {
         boolean notForEdge = !value.isForEdge(this.role);
         if (notForNode) {
             if (notForEdge) {
-                addError("Aspect %s not allowed in %s",
-                    value,
-                    roleDescription.get(this.role),
-                    this.role);
+                addError("Aspect %s not allowed in %s", value, roleDescription.get(this.role),
+                         this.role);
             } else {
                 this.edgeOnly = value;
             }
@@ -202,7 +199,7 @@ public class AspectLabel extends ALabel implements Fixable {
     /** Tests if the aspects and text of this object equal those of another. */
     @Override
     public boolean equals(Object obj) {
-        return this == obj || obj instanceof AspectLabel && equalsAspects((AspectLabel) obj)
+        return this == obj || obj instanceof AspectLabel label && equalsAspects(label)
             && equalsText((AspectLabel) obj);
     }
 
@@ -225,9 +222,9 @@ public class AspectLabel extends ALabel implements Fixable {
      * Indicates if the {@link #innerText} of this map equals that of another.
      */
     private boolean equalsText(AspectLabel other) {
-        boolean result =
-            this.innerText == null ? other.innerText == null
-                : this.innerText.equals(other.innerText);
+        boolean result = this.innerText == null
+            ? other.innerText == null
+            : this.innerText.equals(other.innerText);
         return result;
     }
 
@@ -266,8 +263,8 @@ public class AspectLabel extends ALabel implements Fixable {
      * for edges, or if the label text is empty and the label is not edge-only.
      */
     public final boolean isNodeOnly() {
-        return this.nodeOnly != null || this.edgeOnly == null && this.innerText != null
-            && this.innerText.length() == 0;
+        return this.nodeOnly != null
+            || this.edgeOnly == null && this.innerText != null && this.innerText.length() == 0;
     }
 
     /** Returns an aspect of this label that makes it suitable for edges only.
@@ -345,11 +342,9 @@ public class AspectLabel extends ALabel implements Fixable {
      */
     public AspectLabel unwrap() {
         AspectLabel result = new AspectLabel(this);
-        Iterator<Aspect> aspects = result.getAspects()
-            .iterator();
+        Iterator<Aspect> aspects = result.getAspects().iterator();
         while (aspects.hasNext()) {
-            if (aspects.next()
-                .getKind() == AspectKind.LITERAL) {
+            if (aspects.next().getKind() == AspectKind.LITERAL) {
                 aspects.remove();
             }
         }
@@ -358,8 +353,7 @@ public class AspectLabel extends ALabel implements Fixable {
     }
 
     /** The set of all allowed nesting labels. */
-    private static final Map<GraphRole,String> roleDescription = new EnumMap<>(
-        GraphRole.class);
+    private static final Map<GraphRole,String> roleDescription = new EnumMap<>(GraphRole.class);
     static {
         roleDescription.put(GraphRole.HOST, "host graph");
         roleDescription.put(GraphRole.TYPE, "type graph");

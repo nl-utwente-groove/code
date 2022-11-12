@@ -137,12 +137,11 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
             AspectKind attrKind = getNode().getAttrKind();
             if (attrKind.hasSort()) {
                 // this is a constant or variable node
-                Object content = getNode().getAttrAspect()
-                    .getContent();
+                Object content = getNode().getAttrAspect().getContent();
                 if (content == null) {
                     return VariableNode.TO_STRING_PREFIX + getNode().getNumber();
-                } else if (content instanceof Expression) {
-                    return ((Expression) content).toDisplayString();
+                } else if (content instanceof Expression e) {
+                    return e.toDisplayString();
                 } else {
                     return content.toString();
                 }
@@ -172,10 +171,8 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
             }
             HTMLConverter.EMBARGO_TAG.on(result);
         } else {
-            if (getNode().getAttrKind()
-                .hasSort()) {
-                if (getNode().getAttrAspect()
-                    .hasContent()) {
+            if (getNode().getAttrKind().hasSort()) {
+                if (getNode().getAttrAspect().hasContent()) {
                     result.append("Constant node");
                 } else {
                     result.append("Variable node");
@@ -233,12 +230,13 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
     @Override
     public TypeEdge getKey(Edge edge) {
         TypeModelMap typeMap = getTypeMap();
-        return typeMap == null ? null : typeMap.getEdge(edge);
+        return typeMap == null
+            ? null
+            : typeMap.getEdge(edge);
     }
 
     private TypeModelMap getTypeMap() {
-        return getJModel().getResourceModel()
-            .getTypeMap();
+        return getJModel().getResourceModel().getTypeMap();
     }
 
     @Override
@@ -281,7 +279,9 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
      */
     public TypeNode getNodeType() {
         TypeModelMap typeMap = getTypeMap();
-        return typeMap == null ? null : typeMap.getNode(getNode());
+        return typeMap == null
+            ? null
+            : typeMap.getNode(getNode());
     }
 
     @Override
@@ -347,8 +347,8 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
     public void setUserObject(Object value) {
         // we do need to create a new object, otherwise undos do not work
         AspectJObject myObject = new AspectJObject();
-        if (value instanceof AspectJObject) {
-            myObject.addAll((AspectJObject) value);
+        if (value instanceof AspectJObject o) {
+            myObject.addAll(o);
         } else if (value != null) {
             myObject.load(value.toString());
         }

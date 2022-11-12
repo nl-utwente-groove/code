@@ -31,11 +31,11 @@ import nl.utwente.groove.gui.jgraph.JGraph;
 public abstract class AspectValue<T> implements VisualValue<T> {
     @Override
     public <G extends Graph> T get(JGraph<G> jGraph, JCell<G> cell) {
-        if (cell instanceof AspectJVertex) {
-            return getForJVertex((AspectJVertex) cell);
+        if (cell instanceof AspectJVertex v) {
+            return getForJVertex(v);
         }
-        if (cell instanceof AspectJEdge) {
-            return getForJEdge((AspectJEdge) cell);
+        if (cell instanceof AspectJEdge e) {
+            return getForJEdge(e);
         }
         return null;
     }

@@ -79,8 +79,7 @@ abstract class AbstractRuleTransitionStub implements RuleTransitionStub {
         if (this == obj) {
             return true;
         } else {
-            return obj instanceof AbstractRuleTransitionStub
-                && equalsStub((AbstractRuleTransitionStub) obj);
+            return obj instanceof AbstractRuleTransitionStub stub && equalsStub(stub);
         }
     }
 
@@ -95,9 +94,8 @@ abstract class AbstractRuleTransitionStub implements RuleTransitionStub {
      * from {@link #equals(Object)}.
      */
     protected boolean equalsStub(AbstractRuleTransitionStub other) {
-        boolean result =
-            this.target == other.target && getEvent() == other.getEvent()
-                && isSymmetry() == other.isSymmetry();
+        boolean result = this.target == other.target && getEvent() == other.getEvent()
+            && isSymmetry() == other.isSymmetry();
         assert !result || Arrays.equals(this.addedNodes, other.addedNodes);
         return result;
     }

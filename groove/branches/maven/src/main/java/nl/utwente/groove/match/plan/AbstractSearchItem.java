@@ -94,9 +94,7 @@ public abstract class AbstractSearchItem implements SearchItem {
      */
     @Override
     public int compareTo(SearchItem other) {
-        int result = getClass().getName()
-            .compareTo(other.getClass()
-                .getName());
+        int result = getClass().getName().compareTo(other.getClass().getName());
         if (result == 0) {
             result = getRating() - getRating(other);
         }
@@ -110,8 +108,8 @@ public abstract class AbstractSearchItem implements SearchItem {
      * from the item's class name.
      */
     private int getRating(SearchItem other) {
-        if (other instanceof AbstractSearchItem) {
-            return ((AbstractSearchItem) other).getRating();
+        if (other instanceof AbstractSearchItem item) {
+            return item.getRating();
         } else {
             return 0;
         }
@@ -298,7 +296,9 @@ public abstract class AbstractSearchItem implements SearchItem {
             State nextState = null;
             switch (this.state) {
             case START:
-                nextState = find() ? State.FOUND : State.EMPTY;
+                nextState = find()
+                    ? State.FOUND
+                    : State.EMPTY;
                 break;
             case FOUND:
                 erase();
@@ -316,9 +316,8 @@ public abstract class AbstractSearchItem implements SearchItem {
             default:
                 throw Exceptions.UNREACHABLE;
             }
-            assert this.state.getNext()
-                .contains(nextState) : String
-                    .format("Illegal transition %s -next-> %s", this.state, nextState);
+            assert this.state.getNext().contains(nextState) : String
+                .format("Illegal transition %s -next-> %s", this.state, nextState);
             this.state = nextState;
             return nextState.isWritten();
         }
@@ -359,8 +358,8 @@ public abstract class AbstractSearchItem implements SearchItem {
 
         @Override
         public String toString() {
-            return String
-                .format("%s: %b", AbstractSearchItem.this.toString(), this.state.isWritten());
+            return String.format("%s: %b", AbstractSearchItem.this.toString(),
+                                 this.state.isWritten());
         }
 
         /** The state of the search record. */
@@ -420,7 +419,8 @@ public abstract class AbstractSearchItem implements SearchItem {
                 nextState = State.FULL_REPEAT;
                 break;
             case PART:
-                @Nullable E image = find();
+                @Nullable
+                E image = find();
                 if (image == null) {
                     erase();
                     nextState = State.FULL_START;
@@ -461,9 +461,8 @@ public abstract class AbstractSearchItem implements SearchItem {
             default:
                 throw Exceptions.UNREACHABLE;
             }
-            assert this.state.getNext()
-                .contains(nextState) : String
-                    .format("Illegal transition %s -next-> %s", this.state, nextState);
+            assert this.state.getNext().contains(nextState) : String
+                .format("Illegal transition %s -next-> %s", this.state, nextState);
             this.state = nextState;
             return nextState.isWritten();
         }
@@ -497,7 +496,8 @@ public abstract class AbstractSearchItem implements SearchItem {
          * has not succeeded
          */
         final @Nullable E find() {
-            @Nullable E result = null;
+            @Nullable
+            E result = null;
             if (this.imageIter == null) {
                 init();
             }

@@ -120,14 +120,12 @@ public class Assignment {
             Binding bind = bindings[i];
             result[i] = switch (bind.type()) {
             case CALLER -> {
-                assert parentValues != null : String.format(
-                    "Can't apply %s: valuation %s does not have parent level",
-                    this,
-                    Valuator.toString(val));
+                assert parentValues != null : String
+                    .format("Can't apply %s: valuation %s does not have parent level", this,
+                            Valuator.toString(val));
                 yield Valuator.get(parentValues, bind.index());
             }
-            case CONST -> bind.value()
-                .getNode();
+            case CONST -> bind.value().getNode();
             case VAR -> Valuator.get(val, bind.index());
             default -> throw Exceptions.UNREACHABLE;
             };
@@ -152,10 +150,9 @@ public class Assignment {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof Assignment)) {
+        if (!(obj instanceof Assignment other)) {
             return false;
         }
-        Assignment other = (Assignment) obj;
         if (!Arrays.equals(this.bindings, other.bindings)) {
             return false;
         }
@@ -178,12 +175,9 @@ public class Assignment {
     static Assignment modify(Switch swit) {
         assert swit.getKind() == Callable.Kind.RULE;
         List<Binding> result = new ArrayList<>();
-        List<CtrlVar> sourceVars = swit.getSource()
-            .getVars();
-        Map<CtrlVar,Integer> outVars = swit.getCall()
-            .getOutVars();
-        for (CtrlVar var : swit.onFinish()
-            .getVars()) {
+        List<CtrlVar> sourceVars = swit.getSource().getVars();
+        Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
+        for (CtrlVar var : swit.onFinish().getVars()) {
             Integer ix = outVars.get(var);
             Binding rhs;
             if (ix == null) {
@@ -207,22 +201,17 @@ public class Assignment {
      * @param swit the template call
      */
     static Assignment enter(Switch swit) {
-        assert swit.getKind()
-            .isProcedure();
+        assert swit.getKind().isProcedure();
         List<Binding> result = new ArrayList<>();
-        List<CtrlVar> sourceVars = swit.getSource()
-            .getVars();
+        List<CtrlVar> sourceVars = swit.getSource().getVars();
         Procedure proc = (Procedure) swit.getUnit();
         Map<CtrlVar,Integer> sig = proc.getInPars();
-        for (CtrlVar var : proc.getTemplate()
-            .getStart()
-            .getVars()) {
+        for (CtrlVar var : proc.getTemplate().getStart().getVars()) {
             // all initial state variables are formal input parameters
             Integer ix = sig.get(var);
             assert ix != null;
             // look up the corresponding argument in the call
-            CtrlPar arg = swit.getArgs()
-                .get(ix);
+            CtrlPar arg = swit.getArgs().get(ix);
             Binding rhs;
             if (arg instanceof Const c) {
                 rhs = Binding.value(c);
@@ -242,17 +231,13 @@ public class Assignment {
      * @param swit the template call
      */
     static Assignment exit(Location top, Switch swit) {
-        assert swit.getKind()
-            .isProcedure();
+        assert swit.getKind().isProcedure();
         List<Binding> result = new ArrayList<>();
         Signature<UnitPar.ProcedurePar> sig = ((Procedure) swit.getUnit()).getSignature();
-        List<CtrlVar> callerVars = swit.getSource()
-            .getVars();
-        Map<CtrlVar,Integer> outVars = swit.getCall()
-            .getOutVars();
+        List<CtrlVar> callerVars = swit.getSource().getVars();
+        Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
         Map<CtrlVar,Integer> finalVars = top.getVarIxMap();
-        for (CtrlVar var : swit.onFinish()
-            .getVars()) {
+        for (CtrlVar var : swit.onFinish().getVars()) {
             Integer ix = outVars.get(var);
             Binding rhs;
             if (ix == null) {
@@ -261,8 +246,7 @@ public class Assignment {
             } else {
                 // the value comes from an output parameter of the call
                 // find the corresponding formal parameter
-                CtrlVar par = sig.getPar(ix)
-                    .getVar();
+                CtrlVar par = sig.getPar(ix).getVar();
                 // look it up in the final location variables
                 rhs = Binding.var(finalVars.get(par));
             }
@@ -283,8 +267,7 @@ public class Assignment {
         for (int i = stack.size() - 1; i >= remaining; i--) {
             assert top.isFinal();
             result.add(Assignment.exit(top, stack.get(i)));
-            top = stack.get(i)
-                .onFinish();
+            top = stack.get(i).onFinish();
         }
         return result;
     }

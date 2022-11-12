@@ -39,16 +39,13 @@ public class AtomPathChecker extends SingleEdgePathChecker {
      * n-node finds matches for
      */
     public String getText() {
-        return this.getExpression()
-            .getAtomText();
+        return this.getExpression().getAtomText();
     }
 
     @Override
     public boolean equals(ReteNetworkNode node) {
-        return (this == node) || ((node instanceof AtomPathChecker) && this.getOwner()
-            .equals(node.getOwner())
-            && this.getText()
-                .equals(((AtomPathChecker) node).getText()));
+        return (this == node) || ((node instanceof AtomPathChecker c)
+            && this.getOwner().equals(node.getOwner()) && this.getText().equals(c.getText()));
     }
 
     @Override

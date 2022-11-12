@@ -39,7 +39,7 @@ import nl.utwente.groove.io.HTMLConverter;
  * @version $Revision $
  */
 public abstract class AJVertex<G extends Graph,JG extends JGraph<G>,JM extends JModel<G>,JE extends JEdge<G>>
-    extends AJCell<G,JG,JM>implements JVertex<G> {
+    extends AJCell<G,JG,JM> implements JVertex<G> {
     /**
      * Constructs a fresh, uninitialised JVertex.
      * Call {@link #setJModel(JModel)} and {@link #setNode(Node)}
@@ -97,8 +97,8 @@ public abstract class AJVertex<G extends Graph,JG extends JGraph<G>,JM extends J
     public DefaultPort getPort() {
         DefaultPort result = null;
         for (Object child : getChildren()) {
-            if (child instanceof DefaultPort) {
-                result = (DefaultPort) child;
+            if (child instanceof DefaultPort port) {
+                result = port;
                 break;
             }
         }
@@ -110,8 +110,8 @@ public abstract class AJVertex<G extends Graph,JG extends JGraph<G>,JM extends J
      */
     @Override
     public JVertex<G> clone() {
-        @SuppressWarnings("unchecked") AJVertex<G,JG,JM,JE> clone =
-            (AJVertex<G,JG,JM,JE>) super.clone();
+        @SuppressWarnings("unchecked")
+        AJVertex<G,JG,JM,JE> clone = (AJVertex<G,JG,JM,JE>) super.clone();
         clone.initialise();
         return clone;
     }
@@ -187,10 +187,8 @@ public abstract class AJVertex<G extends Graph,JG extends JGraph<G>,JM extends J
 
     @Override
     public String toString() {
-        return String.format("%s %d with labels %s",
-            getClass().getSimpleName(),
-            getNumber(),
-            getKeys());
+        return String.format("%s %d with labels %s", getClass().getSimpleName(), getNumber(),
+                             getKeys());
     }
 
     /**
@@ -198,7 +196,6 @@ public abstract class AJVertex<G extends Graph,JG extends JGraph<G>,JM extends J
      */
     @Override
     public String getToolTipText() {
-        return HTMLConverter.HTML_TAG.on(getNodeDescription())
-            .toString();
+        return HTMLConverter.HTML_TAG.on(getNodeDescription()).toString();
     }
 }

@@ -95,10 +95,8 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
         if (result) {
             if (!hasErrors() && getOp().getArity() >= 0 && getOp().getArity() != getArgs().size()) {
                 getErrors().add("Operator '%s' expects %s but has %s operands in %s",
-                    getOp().getSymbol(),
-                    getOp().getArity(),
-                    getArgs().size(),
-                    getParseString());
+                                getOp().getSymbol(), getOp().getArity(), getArgs().size(),
+                                getParseString());
             }
             for (T arg : getArgs()) {
                 arg.setFixed();
@@ -127,7 +125,9 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
         if (getArgs().size() > 0) {
             String symbol = getOp().getSymbol();
             result.append(symbol);
-            result.append(getArgs().size() == 1 ? " --- " : " +-- ");
+            result.append(getArgs().size() == 1
+                ? " --- "
+                : " +-- ");
             int i;
             for (i = 0; i < getArgs().size() - 1; i++) {
                 indent.push(new IndentEntry(symbol.length(), true));
@@ -150,7 +150,11 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
             for (int s = 0; s < p.length(); s++) {
                 result.append(" ");
             }
-            result.append(p.first() ? (i == indent.size() - 1 ? " +-- " : " |   ") : "     ");
+            result.append(p.first()
+                ? (i == indent.size() - 1
+                    ? " +-- "
+                    : " |   ")
+                : "     ");
         }
     }
 
@@ -167,7 +171,9 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
      */
     public Line toLine(boolean spaces) {
         assert isFixed();
-        return hasErrors() ? Line.atom(toString()) : toLine(OpKind.NONE, spaces);
+        return hasErrors()
+            ? Line.atom(toString())
+            : toLine(OpKind.NONE, spaces);
     }
 
     /**
@@ -211,7 +217,9 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
         boolean firstArg = true;
         for (ATermTree<O,T> arg : getArgs()) {
             if (!firstArg) {
-                result.add(Line.atom(spaces ? ", " : ","));
+                result.add(Line.atom(spaces
+                    ? ", "
+                    : ","));
 
             } else {
                 firstArg = false;
@@ -235,8 +243,9 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
         }
         if (me.getPlace() != Placement.PREFIX) {
             // add left argument
-            result.add(getUpArg(nextArgIx)
-                .toLine(me.getDirection() == Direction.LEFT ? me : me.increase(), spaces));
+            result.add(getUpArg(nextArgIx).toLine(me.getDirection() == Direction.LEFT
+                ? me
+                : me.increase(), spaces));
             nextArgIx++;
             if (addSpaces) {
                 result.add(Line.atom(" "));
@@ -248,8 +257,9 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
             if (addSpaces) {
                 result.add(Line.atom(" "));
             }
-            result.add(getUpArg(nextArgIx)
-                .toLine(me.getDirection() == Direction.RIGHT ? me : me.increase(), spaces));
+            result.add(getUpArg(nextArgIx).toLine(me.getDirection() == Direction.RIGHT
+                ? me
+                : me.increase(), spaces));
             nextArgIx++;
         }
         if (addPars) {
@@ -313,10 +323,9 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof ATermTree)) {
+        if (!(obj instanceof ATermTree<?,?> other)) {
             return false;
         }
-        ATermTree<?,?> other = (ATermTree<?,?>) obj;
         if (!this.op.equals(other.op)) {
             return false;
         }
@@ -333,14 +342,18 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
     public String toString() {
         String result;
         if (hasErrors()) {
-            result =
-                String.format("Parse errors in '%s': %s", getParseString(), getErrors().toString());
+            result = String.format("Parse errors in '%s': %s", getParseString(),
+                                   getErrors().toString());
         } else if (getOp().getKind() == OpKind.ATOM) {
-            result = getOp().hasSymbol() ? getOp().getSymbol() : toAtomString();
+            result = getOp().hasSymbol()
+                ? getOp().getSymbol()
+                : toAtomString();
         } else {
             result = this.op.toString();
             List<T> args = getArgs();
-            return result + (args.isEmpty() ? "" : args);
+            return result + (args.isEmpty()
+                ? ""
+                : args);
         }
         return result;
     }

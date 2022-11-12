@@ -81,9 +81,8 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         Iterator<? extends GraphTransitionStub> outTransIter = getTransitionStubIter();
         while (outTransIter.hasNext()) {
             GraphTransitionStub stub = outTransIter.next();
-            if (stub instanceof RuleTransitionStub
-                && ((RuleTransitionStub) stub).getKey(this) == match) {
-                result = (RuleTransitionStub) stub;
+            if (stub instanceof RuleTransitionStub rule && rule.getKey(this) == match) {
+                result = rule;
                 break;
             }
         }
@@ -98,9 +97,9 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
      * {@link IdentityTransitionStub}.
      */
     protected RuleTransitionStub createTransitionStub(MatchResult match, HostNode[] addedNodes,
-        GraphState target) {
-        if (target instanceof AbstractGraphState) {
-            return ((AbstractGraphState) target).createInTransitionStub(this, match, addedNodes);
+                                                      GraphState target) {
+        if (target instanceof AbstractGraphState state) {
+            return state.createInTransitionStub(this, match, addedNodes);
         } else {
             return new IdentityTransitionStub(match, addedNodes, target);
         }
@@ -111,7 +110,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
      * from a given graph and with a given rule event.
      */
     protected RuleTransitionStub createInTransitionStub(GraphState source, MatchResult match,
-        HostNode[] addedNodes) {
+                                                        HostNode[] addedNodes) {
         return new IdentityTransitionStub(match, addedNodes, this);
     }
 
@@ -173,8 +172,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
                 setFrame(getActualFrame().onPolicy(typePolicy));
             }
         }
-        getCache().getMatches()
-            .checkConstraints();
+        getCache().getMatches().checkConstraints();
     }
 
     /**
@@ -188,8 +186,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         if (isRealState() && getActualFrame().isDead() && getGTS().isCheckDeadlock()) {
             boolean alive = false;
             for (GraphTransition trans : getTransitions()) {
-                if (trans.getAction()
-                    .getRole() == Role.TRANSFORMER) {
+                if (trans.getAction().getRole() == Role.TRANSFORMER) {
                     alive = true;
                     break;
                 }
@@ -204,28 +201,24 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     @Override
     public List<MatchResult> getMatches() {
         // copy the match set to prevent sharing errors
-        return new ArrayList<>(getCache().getMatches()
-            .getAll());
+        return new ArrayList<>(getCache().getMatches().getAll());
     }
 
     @Override
     public MatchResult getMatch() {
-        return getCache().getMatches()
-            .getOne();
+        return getCache().getMatches().getOne();
     }
 
     @Override
     public RuleTransition applyMatch(MatchResult match) throws InterruptedException {
         RuleTransition result = null;
-        if (match instanceof RuleTransition) {
-            RuleTransition trans = (RuleTransition) match;
+        if (match instanceof RuleTransition trans) {
             if (trans.source() == this) {
                 result = trans;
             }
         }
         if (result == null) {
-            result = getGTS().getMatchApplier()
-                .apply(this, match);
+            result = getGTS().getMatchApplier().apply(this, match);
         }
         return result;
     }
@@ -328,7 +321,9 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     private boolean setStatus(Flag flag, boolean value) {
         boolean result = value != hasFlag(flag);
         if (result) {
-            this.status = value ? flag.set(this.status) : flag.reset(this.status);
+            this.status = value
+                ? flag.set(this.status)
+                : flag.reset(this.status);
         }
         return result;
     }
@@ -378,14 +373,13 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
      * Otherwise, the method throws an {@link UnsupportedOperationException}.
      */
     public int compareTo(Element obj) {
-        if (obj instanceof GraphState) {
-            return getNumber() - ((GraphState) obj).getNumber();
-        } else if (obj instanceof GraphTransition) {
-            return getNumber() - ((GraphTransition) obj).source()
-                .getNumber();
+        if (obj instanceof GraphState state) {
+            return getNumber() - state.getNumber();
+        } else if (obj instanceof GraphTransition trans) {
+            return getNumber() - trans.source().getNumber();
         } else {
-            throw Exceptions
-                .unsupportedOp("Classes %s and %s cannot be compared", getClass(), obj.getClass());
+            throw Exceptions.unsupportedOp("Classes %s and %s cannot be compared", getClass(),
+                                           obj.getClass());
         }
     }
 
@@ -515,5 +509,5 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     /** Constant empty array of out transition, shared for memory efficiency. */
     private static final GraphTransitionStub[] EMPTY_TRANSITION_STUBS = new RuleTransitionStub[0];
     /** Fixed empty array of (created) nodes. */
-    private static final HostNode[] EMPTY_NODE_LIST = new HostNode[0];
+    private static final HostNode[] EMPTY_NODE_LIST = {};
 }

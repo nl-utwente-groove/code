@@ -38,8 +38,8 @@ import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.gui.layout.JEdgeLayout;
 import nl.utwente.groove.gui.look.Look;
-import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.look.MultiLabel.Direct;
+import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatError;
@@ -71,8 +71,8 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
      */
     @Override
     public JEdge<G> clone() {
-        @SuppressWarnings("unchecked") AJEdge<G,JG,JM,JV> clone =
-            (AJEdge<G,JG,JM,JV>) super.clone();
+        @SuppressWarnings("unchecked")
+        AJEdge<G,JG,JM,JV> clone = (AJEdge<G,JG,JM,JV>) super.clone();
         clone.initialise();
         return clone;
     }
@@ -124,7 +124,8 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
     public @NonNull Node getSourceNode() {
         Node result = this.sourceNode;
         if (result == null) {
-            @Nullable JV source = getSourceVertex();
+            @Nullable
+            JV source = getSourceVertex();
             assert source != null; // method should not be invoked otherwise
             this.sourceNode = result = source.getNode();
         }
@@ -141,7 +142,8 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
     public @NonNull Node getTargetNode() {
         Node result = this.targetNode;
         if (result == null) {
-            @Nullable JV target = getTargetVertex();
+            @Nullable
+            JV target = getTargetVertex();
             assert target != null; // method should not be invoked otherwise
             this.targetNode = result = target.getNode();
         }
@@ -188,8 +190,8 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
             return true;
         }
         if (edge.source() == getTargetNode() && edge.target() == getSourceNode()) {
-            return getJModel().isMergeBidirectionalEdges() && getEdges().size() == 1 && edge.label()
-                .equals(getEdge().label()) || getJModel().isMergeAllEdges();
+            return getJModel().isMergeBidirectionalEdges() && getEdges().size() == 1
+                && edge.label().equals(getEdge().label()) || getJModel().isMergeAllEdges();
         }
         return false;
     }
@@ -206,10 +208,8 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
         if (myLayout.equals(edgeLayout)) {
             return true;
         }
-        if (myLayout.getPoints()
-            .size() == 2
-            && (edgeLayout == null || edgeLayout.getPoints()
-                .size() == 2)) {
+        if (myLayout.getPoints().size() == 2
+            && (edgeLayout == null || edgeLayout.getPoints().size() == 2)) {
             return true;
         }
         return false;
@@ -226,8 +226,7 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
      */
     @Override
     public String getToolTipText() {
-        return HTML_TAG.on(getEdgeDescription())
-            .toString(); // +
+        return HTML_TAG.on(getEdgeDescription()).toString(); // +
         // getLabelDescription());
     }
 
@@ -236,8 +235,9 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
      */
     @Override
     public Edge getEdge() {
-        return getEdges().isEmpty() ? null : getEdges().iterator()
-            .next();
+        return getEdges().isEmpty()
+            ? null
+            : getEdges().iterator().next();
     }
 
     /**
@@ -254,10 +254,9 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
     public Direct getDirect(Edge edge) {
         Direct result;
         boolean regular = false;
-        if (edge instanceof RuleEdge) {
-            RuleLabel label = ((RuleEdge) edge).label();
-            regular = label.isEmpty() || label.isNeg() && label.getNegOperand()
-                .isEmpty();
+        if (edge instanceof RuleEdge r) {
+            RuleLabel label = r.label();
+            regular = label.isEmpty() || label.isNeg() && label.getNegOperand().isEmpty();
         }
         if (regular) {
             result = Direct.NONE;
@@ -297,21 +296,27 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
             result.insert(0, "Multiple ");
             result.append("s");
         }
-        @Nullable JV source = getSourceVertex();
-        String sourceIdentity = source == null ? null : source.getNodeIdString();
+        @Nullable
+        JV source = getSourceVertex();
+        String sourceIdentity = source == null
+            ? null
+            : source.getNodeIdString();
         if (sourceIdentity != null) {
             result.append(" from ");
             result.append(HTMLConverter.ITALIC_TAG.on(sourceIdentity));
         }
-        @Nullable JV target = getTargetVertex();
-        String targetIdentity = target == null ? null : target.getNodeIdString();
+        @Nullable
+        JV target = getTargetVertex();
+        String targetIdentity = target == null
+            ? null
+            : target.getNodeIdString();
         if (targetIdentity != null) {
             result.append(" to ");
             result.append(HTMLConverter.ITALIC_TAG.on(targetIdentity));
         }
         if (hasErrors()) {
-            HTMLConverter.HTMLTag errorTag =
-                HTMLConverter.createColorTag(Values.ERROR_NORMAL_FOREGROUND);
+            HTMLConverter.HTMLTag errorTag
+                = HTMLConverter.createColorTag(Values.ERROR_NORMAL_FOREGROUND);
             for (FormatError error : getErrors()) {
                 result.append(HTMLConverter.HTML_LINEBREAK);
                 result.append(errorTag.on(error));
@@ -353,14 +358,18 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
     @Override
     public JV getSourceVertex() {
         DefaultPort source = getSource();
-        return source == null ? null : (JV) source.getParent();
+        return source == null
+            ? null
+            : (JV) source.getParent();
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public JV getTargetVertex() {
         DefaultPort target = getTarget();
-        return target == null ? null : (JV) target.getParent();
+        return target == null
+            ? null
+            : (JV) target.getParent();
     }
 
     @Override
@@ -370,11 +379,9 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
         JV target = getTargetVertex();
         assert source != null && target != null; // should not be invoked otherwise
         if (isLoop()) {
-            return Collections.singletonList(source)
-                .iterator();
+            return Collections.singletonList(source).iterator();
         } else {
-            result = Arrays.asList(source, target)
-                .iterator();
+            result = Arrays.asList(source, target).iterator();
         }
         return result;
     }
