@@ -71,8 +71,7 @@ public class Grammar {
      * Returns the name of this rule system.
      */
     public String getName() {
-        return GRAMMAR.stripExtension(getLocation().getFileName()
-            .toString());
+        return GRAMMAR.stripExtension(getLocation().getFileName().toString());
     }
 
     /**
@@ -95,7 +94,9 @@ public class Grammar {
      */
     public void add(Action action) {
         testFixed(false);
-        assert action instanceof Fixable ? ((Fixable) action).isFixed() : false;
+        assert action instanceof Fixable fix
+            ? fix.isFixed()
+            : false;
         QualName actionName = action.getQualName();
         int priority = action.getPriority();
         // add the rule to the priority map
@@ -138,8 +139,8 @@ public class Grammar {
      * A mapping from priorities to sets of rules having that priority. The
      * ordering is from high to low priority.
      */
-    private final SortedMap<Integer,Set<Action>> priorityActionMap =
-        new TreeMap<>(Action.PRIORITY_COMPARATOR);
+    private final SortedMap<Integer,Set<Action>> priorityActionMap
+        = new TreeMap<>(Action.PRIORITY_COMPARATOR);
 
     /**
      * Returns the underlying set of actions, i.e., rules and recipes. The
@@ -163,8 +164,7 @@ public class Grammar {
                 this.roleActionMap.put(r, new ArrayList<Action>());
             }
             for (Action action : getActions()) {
-                this.roleActionMap.get(action.getRole())
-                    .add(action);
+                this.roleActionMap.get(action.getRole()).add(action);
             }
         }
         return this.roleActionMap.get(role);

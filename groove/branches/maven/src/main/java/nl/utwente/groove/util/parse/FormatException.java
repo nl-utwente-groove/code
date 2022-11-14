@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package nl.utwente.groove.util.parse;
@@ -50,8 +50,8 @@ public class FormatException extends Exception {
     public FormatException(Collection<?> errors) {
         this.errors = new FormatErrorSet();
         for (Object error : errors) {
-            if (error instanceof FormatError) {
-                this.errors.add((FormatError) error);
+            if (error instanceof FormatError e) {
+                this.errors.add(e);
             } else {
                 this.errors.add(error.toString());
             }
@@ -89,10 +89,10 @@ public class FormatException extends Exception {
         return Groove.toString(getErrors().toArray(), "", "", "\n");
     }
 
-    /** 
-     * Returns a new format exception that extends all the errors 
+    /**
+     * Returns a new format exception that extends all the errors
      * stored in this exception with additional context information.
-     * @see FormatError#extend(Object...) 
+     * @see FormatError#extend(Object...)
      */
     public FormatException extend(Object par) {
         FormatErrorSet newErrors = new FormatErrorSet();

@@ -84,7 +84,7 @@ public class Formula extends ATermTree<LogicOp,Formula> {
     }
 
     void setProp(Proposition prop) {
-        assert!isFixed();
+        assert !isFixed();
         this.prop = prop;
     }
 
@@ -107,8 +107,7 @@ public class Formula extends ATermTree<LogicOp,Formula> {
             break;
         default:
             assert false : String.format("Arity %d of operator %s not supported",
-                getOp().getArity(),
-                getOp());
+                                         getOp().getArity(), getOp());
         }
     }
 
@@ -116,12 +115,9 @@ public class Formula extends ATermTree<LogicOp,Formula> {
      * Appends a given string builder with a string description of this nullary formula.
      */
     private void toString2(StringBuilder b) {
-        boolean arg1Par = getArg1().getOp()
-            .getPriority() <= getOp().getPriority();
-        boolean arg2Par = getArg2().getOp()
-            .getPriority() < getOp().getPriority();
-        boolean opLetter = Character.isLetter(getOp().toString()
-            .charAt(0));
+        boolean arg1Par = getArg1().getOp().getPriority() <= getOp().getPriority();
+        boolean arg2Par = getArg2().getOp().getPriority() < getOp().getPriority();
+        boolean opLetter = Character.isLetter(getOp().toString().charAt(0));
         if (arg1Par) {
             getArg1().toParString(b);
         } else {
@@ -163,12 +159,10 @@ public class Formula extends ATermTree<LogicOp,Formula> {
      */
     private void toString1(StringBuilder b) {
         b.append(getOp());
-        if (getArg1().getOp()
-            .getPriority() < getOp().getPriority()) {
+        if (getArg1().getOp().getPriority() < getOp().getPriority()) {
             getArg1().toParString(b);
         } else {
-            if (Character.isLetter(getOp().toString()
-                .charAt(0))) {
+            if (Character.isLetter(getOp().toString().charAt(0))) {
                 b.append(' ');
             }
             getArg1().toString(b);
@@ -187,12 +181,16 @@ public class Formula extends ATermTree<LogicOp,Formula> {
 
     /** Returns the first argument of the top-level operator, if any. */
     public Formula getArg1() {
-        return getArgs().size() >= 1 ? getArg(0) : null;
+        return getArgs().size() >= 1
+            ? getArg(0)
+            : null;
     }
 
     /** Returns the second argument of the top-level operator, if any. */
     public Formula getArg2() {
-        return getArgs().size() >= 2 ? getArg(1) : null;
+        return getArgs().size() >= 2
+            ? getArg(1)
+            : null;
     }
 
     /**
@@ -308,15 +306,17 @@ public class Formula extends ATermTree<LogicOp,Formula> {
                 result = new Formula(getOp(), next(subArg1.toCtlFormula()));
                 break;
             case ALWAYS:
-                LogicOp dual = getOp() == EXISTS ? FORALL : EXISTS;
+                LogicOp dual = getOp() == EXISTS
+                    ? FORALL
+                    : EXISTS;
                 result = not(new Formula(dual, until(tt(), not(subArg1.toCtlFormula()))));
                 break;
             case EVENTUALLY:
                 result = new Formula(getOp(), until(tt(), subArg1.toCtlFormula()));
                 break;
             case UNTIL:
-                result =
-                    new Formula(getOp(), until(subArg1.toCtlFormula(), subArg2.toCtlFormula()));
+                result
+                    = new Formula(getOp(), until(subArg1.toCtlFormula(), subArg2.toCtlFormula()));
                 break;
             case W_UNTIL:
             case RELEASE:
@@ -374,10 +374,12 @@ public class Formula extends ATermTree<LogicOp,Formula> {
      * that are illegal in LTL.
      */
     private gov.nasa.ltl.trans.Formula<Proposition> computeLtlFormula() throws FormatException {
-        gov.nasa.ltl.trans.Formula<Proposition> arg1 =
-            getArg1() == null ? null : getArg1().toLtlFormula();
-        gov.nasa.ltl.trans.Formula<Proposition> arg2 =
-            getArg2() == null ? null : getArg2().toLtlFormula();
+        gov.nasa.ltl.trans.Formula<Proposition> arg1 = getArg1() == null
+            ? null
+            : getArg1().toLtlFormula();
+        gov.nasa.ltl.trans.Formula<Proposition> arg2 = getArg2() == null
+            ? null
+            : getArg2().toLtlFormula();
         switch (getOp()) {
         case FORALL:
         case EXISTS:
@@ -449,10 +451,9 @@ public class Formula extends ATermTree<LogicOp,Formula> {
         if (!super.equals(obj)) {
             return false;
         }
-        if (!(obj instanceof Formula)) {
+        if (!(obj instanceof Formula other)) {
             return false;
         }
-        Formula other = (Formula) obj;
         if (getOp() == PROP && !this.prop.equals(other.prop)) {
             return false;
         }
@@ -470,8 +471,7 @@ public class Formula extends ATermTree<LogicOp,Formula> {
             int priority = getOp().getPriority();
             switch (getOp().getKind()) {
             case TEMP_PREFIX:
-                if (getArg1().getOp()
-                    .getPriority() <= priority) {
+                if (getArg1().getOp().getPriority() <= priority) {
                     // operand has lower priority and hence parentheses are inserted
                     // or operand is another temporal prefix
                     // so no extra spaces are needed
@@ -481,10 +481,12 @@ public class Formula extends ATermTree<LogicOp,Formula> {
                 }
                 break;
             case TEMP_INFIX:
-                String left = getArg1().getOp()
-                    .getPriority() <= priority ? "" : " ";
-                String right = getArg2().getOp()
-                    .getPriority() <= priority ? "" : " ";
+                String left = getArg1().getOp().getPriority() <= priority
+                    ? ""
+                    : " ";
+                String right = getArg2().getOp().getPriority() <= priority
+                    ? ""
+                    : " ";
                 result = Line.atom(left + getOp().getSymbol() + right);
                 break;
             default:
@@ -547,8 +549,7 @@ public class Formula extends ATermTree<LogicOp,Formula> {
         List<Arg> callArgs = new ArrayList<>();
         for (Object arg : args) {
             Arg callArg;
-            if (arg instanceof String) {
-                String stringArg = (String) arg;
+            if (arg instanceof String stringArg) {
                 if (isId(stringArg)) {
                     callArg = Arg.arg(stringArg);
                 } else if (arg.equals(Arg.WILD_TEXT)) {
@@ -697,10 +698,8 @@ public class Formula extends ATermTree<LogicOp,Formula> {
      * @throws FormatException if there were parse errors
      */
     public static Formula parse(String input) throws FormatException {
-        Formula result = FormulaParser.instance()
-            .parse(input);
-        result.getErrors()
-            .throwException();
+        Formula result = FormulaParser.instance().parse(input);
+        result.getErrors().throwException();
         return result;
     }
 
@@ -711,10 +710,8 @@ public class Formula extends ATermTree<LogicOp,Formula> {
      * @throws FormatException if there were parse errors
      */
     public static Formula parse(Logic logic, String input) throws FormatException {
-        Formula result = FormulaParser.instance(logic)
-            .parse(input);
-        result.getErrors()
-            .throwException();
+        Formula result = FormulaParser.instance(logic).parse(input);
+        result.getErrors().throwException();
         return result;
     }
 }

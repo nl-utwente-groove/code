@@ -46,12 +46,12 @@ public class GraphConverter {
     /** Constructs an aspect graph from an arbitrary graph. */
     static public AspectGraph toAspect(Graph graph) {
         AspectGraph result;
-        if (graph instanceof AspectGraph) {
-            result = (AspectGraph) graph;
-        } else if (graph instanceof HostGraph) {
-            result = toAspectMap((HostGraph) graph).getAspectGraph();
-        } else if (graph instanceof TypeGraph) {
-            result = toAspectMap((TypeGraph) graph).getAspectGraph();
+        if (graph instanceof AspectGraph ag) {
+            result = ag;
+        } else if (graph instanceof HostGraph hg) {
+            result = toAspectMap(hg).getAspectGraph();
+        } else if (graph instanceof TypeGraph tg) {
+            result = toAspectMap(tg).getAspectGraph();
         } else {
             result = AspectGraph.newInstance(graph);
         }
@@ -69,10 +69,7 @@ public class GraphConverter {
         for (TypeNode node : type.nodeSet()) {
             AspectNode nodeImage = target.addNode(node.getNumber());
             result.putNode(node, nodeImage);
-            target.addEdge(nodeImage,
-                node.label()
-                    .toParsableString(),
-                nodeImage);
+            target.addEdge(nodeImage, node.label().toParsableString(), nodeImage);
             if (node.isAbstract()) {
                 target.addEdge(nodeImage, ABSTRACT.getPrefix(), nodeImage);
             }
@@ -88,8 +85,7 @@ public class GraphConverter {
         // add type edges
         for (TypeEdge edge : type.edgeSet()) {
             StringBuilder text = new StringBuilder();
-            if (edge.label()
-                .getRole() == EdgeRole.FLAG) {
+            if (edge.label().getRole() == EdgeRole.FLAG) {
                 text.append(EdgeRole.FLAG.getPrefix());
             }
             if (edge.isAbstract()) {
@@ -105,9 +101,8 @@ public class GraphConverter {
                 text.append(MULTIPLICITY.toString(MULT_OUT, edge.getOutMult()));
             }
             text.append(edge.text());
-            AspectEdge edgeImage = target.addEdge(result.getNode(edge.source()),
-                text.toString(),
-                result.getNode(edge.target()));
+            AspectEdge edgeImage = target.addEdge(result.getNode(edge.source()), text.toString(),
+                                                  result.getNode(edge.target()));
             result.putEdge(edge, edgeImage);
         }
         GraphInfo.transfer(type, target, result);
@@ -127,8 +122,7 @@ public class GraphConverter {
             if (!(node instanceof ValueNode)) {
                 AspectNode nodeImage = targetGraph.addNode(node.getNumber());
                 result.putNode(node, nodeImage);
-                TypeLabel typeLabel = node.getType()
-                    .label();
+                TypeLabel typeLabel = node.getType().label();
                 if (typeLabel != TypeLabel.NODE) {
                     targetGraph.addEdge(nodeImage, result.mapLabel(typeLabel), nodeImage);
                 }
@@ -136,32 +130,27 @@ public class GraphConverter {
         }
         // add edge images
         for (HostEdge edge : host.edgeSet()) {
-            String edgeText = edge.label()
-                .text();
+            String edgeText = edge.label().text();
             AspectNode imageSource = result.getNode(edge.source());
             AspectNode imageTarget;
             String text;
-            if (edge.target() instanceof ValueNode) {
+            if (edge.target() instanceof ValueNode vn) {
                 imageTarget = imageSource;
-                String constant = ((ValueNode) edge.target()).getTerm()
-                    .toParseString();
+                String constant = vn.getTerm().toParseString();
                 text = AspectKind.LET.getPrefix() + edgeText + "=" + constant;
             } else if (edge.getRole() == EdgeRole.BINARY) {
                 imageTarget = result.getNode(edge.target());
                 // precede with literal aspect prefix if this is necessary
                 // to parse the label
-                AspectLabel tryLabel = AspectParser.getInstance()
-                    .parse(edgeText, HOST);
-                if (tryLabel.hasErrors() || !tryLabel.getInnerText()
-                    .equals(edgeText)) {
+                AspectLabel tryLabel = AspectParser.getInstance().parse(edgeText, HOST);
+                if (tryLabel.hasErrors() || !tryLabel.getInnerText().equals(edgeText)) {
                     text = AspectKind.LITERAL.getPrefix() + edgeText;
                 } else {
                     text = edgeText;
                 }
             } else {
                 imageTarget = imageSource;
-                text = edge.label()
-                    .toString();
+                text = edge.label().toString();
             }
             AspectEdge edgeImage = targetGraph.addEdge(imageSource, text, imageTarget);
             result.putEdge(edge, edgeImage);

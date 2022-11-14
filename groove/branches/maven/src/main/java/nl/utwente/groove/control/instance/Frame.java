@@ -29,9 +29,9 @@ import nl.utwente.groove.control.template.Location;
 import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.control.template.SwitchAttempt;
 import nl.utwente.groove.control.template.SwitchStack;
+import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.Recipe;
-import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.util.DefaultFixable;
 import nl.utwente.groove.util.Fixable;
 
@@ -50,8 +50,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
      */
     Frame(Automaton ctrl, Location loc, SwitchStack stack, Frame pred) {
         this.aut = ctrl;
-        this.nr = ctrl.getFrames()
-            .size();
+        this.nr = ctrl.getFrames().size();
         List<Assignment> pops = new ArrayList<>();
         // avoid sharing
         this.pred = pred;
@@ -69,9 +68,8 @@ public class Frame implements Position<Frame,Step>, Fixable {
             Switch done = stack.pop();
             // also start adding pop actions once we pass the outer recipe call,
             // if the recipe call has out-parameters that we cannot retrieve otherwise
-            addPops |= done.getKind() == Kind.RECIPE && !done.getCall()
-                .getOutVars()
-                .isEmpty() && !stack.inRecipe();
+            addPops |= done.getKind() == Kind.RECIPE && !done.getCall().getOutVars().isEmpty()
+                && !stack.inRecipe();
             if (addPops) {
                 pops.add(Assignment.exit(loc, done));
             }
@@ -257,11 +255,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
         List<SwitchStack> constraintCalls = new ArrayList<>();
         List<SwitchStack> properCalls = new ArrayList<>();
         for (SwitchStack sw : locAttempt) {
-            if (sw.peek()
-                .getCall()
-                .getRule()
-                .getRole()
-                .isConstraint()) {
+            if (sw.peek().getCall().getRule().getRole().isConstraint()) {
                 constraintCalls.add(sw);
             } else {
                 properCalls.add(sw);
@@ -351,8 +345,8 @@ public class Frame implements Position<Frame,Step>, Fixable {
             if (isError() || isRemoved()) {
                 this.onError = this;
             } else {
-                this.onError =
-                    newFrame(Location.getSpecial(CheckPolicy.ERROR, getLocation().getTransience()));
+                this.onError = newFrame(Location.getSpecial(CheckPolicy.ERROR,
+                                                            getLocation().getTransience()));
             }
         }
         return this.onError;
@@ -366,8 +360,8 @@ public class Frame implements Position<Frame,Step>, Fixable {
             if (isRemoved()) {
                 this.onRemove = this;
             } else {
-                this.onRemove = newFrame(
-                    Location.getSpecial(CheckPolicy.REMOVE, getLocation().getTransience()));
+                this.onRemove = newFrame(Location.getSpecial(CheckPolicy.REMOVE,
+                                                             getLocation().getTransience()));
             }
         }
         return this.onRemove;
@@ -440,7 +434,9 @@ public class Frame implements Position<Frame,Step>, Fixable {
         assert isFixed();
         final int prime = 31;
         // use identity of prime frame as it has already been normalised
-        int result = (isPrime() ? 1237 : System.identityHashCode(this.prime));
+        int result = (isPrime()
+            ? 1237
+            : System.identityHashCode(this.prime));
         result = prime * result + System.identityHashCode(this.pred);
         result = prime * result + this.location.hashCode();
         result = prime * result + this.pops.hashCode();
@@ -454,11 +450,12 @@ public class Frame implements Position<Frame,Step>, Fixable {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof Frame)) {
+        if (!(obj instanceof Frame other)) {
             return false;
         }
-        Frame other = (Frame) obj;
-        if (isPrime() ? !other.isPrime() : this.prime != other.prime) {
+        if (isPrime()
+            ? !other.isPrime()
+            : this.prime != other.prime) {
             return false;
         }
         if (this.pred != other.pred) {

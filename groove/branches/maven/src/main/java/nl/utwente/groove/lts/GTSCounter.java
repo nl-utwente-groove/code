@@ -103,9 +103,8 @@ public class GTSCounter implements GTSListener {
         GraphState target = trans.target();
         if (target.isAbsent()) {
             this.absentTransitionCount++;
-        } else if (trans instanceof RuleTransition && !target.isDone()) {
-            this.inTransMap.get(target)
-                .add((RuleTransition) trans);
+        } else if (trans instanceof RuleTransition rt && !target.isDone()) {
+            this.inTransMap.get(target).add(rt);
         }
     }
 
@@ -140,8 +139,7 @@ public class GTSCounter implements GTSListener {
 
     /** Returns the number of final states in the GTS. */
     public int getFinalStateCount() {
-        return this.gts.getFinalStates()
-            .size();
+        return this.gts.getFinalStates().size();
     }
 
     /** Returns the number of incompletely explored states in the GTS. */

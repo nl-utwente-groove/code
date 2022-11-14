@@ -76,8 +76,8 @@ public class GrooveFileChooser extends JFileChooser {
     public void setSelectedFile(File file) {
         super.setSelectedFile(file);
         FileChooserUI ui = getUI();
-        if (file != null && ui instanceof BasicFileChooserUI) {
-            ((BasicFileChooserUI) ui).setFileName(file.getName());
+        if (file != null && ui instanceof BasicFileChooserUI bfc) {
+            bfc.setFileName(file.getName());
         }
     }
 
@@ -105,15 +105,15 @@ public class GrooveFileChooser extends JFileChooser {
         return getFileFilter() instanceof ExtensionFilter;
     }
 
-    /** 
-     * Returns the file type of the currently selected file filter, 
+    /**
+     * Returns the file type of the currently selected file filter,
      * if that file filter is an {@link ExtensionFilter}.
      */
     public FileType getFileType() {
         FileType result = null;
         FileFilter current = getFileFilter();
-        if (current instanceof ExtensionFilter) {
-            result = ((ExtensionFilter) current).getFileType();
+        if (current instanceof ExtensionFilter ef) {
+            result = ef.getFileType();
         }
         return result;
     }
@@ -124,15 +124,14 @@ public class GrooveFileChooser extends JFileChooser {
             File f = getSelectedFile();
             // When saving, check if file already exists. If so, ask for overwrite confirmation
             if (f.exists()) {
-                int result =
-                    JOptionPane.showConfirmDialog(this,
-                        f.getName() + " already exists, overwrite?", "Overwrite existing file",
-                        JOptionPane.YES_NO_OPTION);
+                int result = JOptionPane
+                    .showConfirmDialog(this, f.getName() + " already exists, overwrite?",
+                                       "Overwrite existing file", JOptionPane.YES_NO_OPTION);
                 switch (result) {
                 case JOptionPane.YES_OPTION:
                     super.approveSelection();
                     return;
-                    // If no or close, do not approve
+                // If no or close, do not approve
                 case JOptionPane.NO_OPTION:
                 default:
                     return;
@@ -160,7 +159,7 @@ public class GrooveFileChooser extends JFileChooser {
     }
 
     /**
-     * If true, a dialog will show asking if a file should be overwritten 
+     * If true, a dialog will show asking if a file should be overwritten
      * during save if it already exists. Defaults to {@code true}.
      */
     private boolean askOverwrite = true;
@@ -174,8 +173,7 @@ public class GrooveFileChooser extends JFileChooser {
     }
 
     // Maps from filters to choosers.
-    private static final Map<Set<FileType>,GrooveFileChooser> listMap =
-        new HashMap<>();
+    private static final Map<Set<FileType>,GrooveFileChooser> listMap = new HashMap<>();
 
     /** Returns a file chooser object for selecting directories. */
     public static GrooveFileChooser getInstance() {
@@ -209,8 +207,8 @@ public class GrooveFileChooser extends JFileChooser {
             result.setFileFilter(first);
             listMap.put(fileTypes, result);
         }
-        result.setCurrentDirectory(result.getFileSystemView().createFileObject(
-            Groove.CURRENT_WORKING_DIR));
+        result.setCurrentDirectory(result.getFileSystemView()
+            .createFileObject(Groove.CURRENT_WORKING_DIR));
         return result;
     }
 }

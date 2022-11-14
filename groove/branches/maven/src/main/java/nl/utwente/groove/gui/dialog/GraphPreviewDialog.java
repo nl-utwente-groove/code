@@ -50,14 +50,15 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
 
     /** Constructs a new dialog, for a given graph. */
     private GraphPreviewDialog(Simulator simulator, GrammarModel grammar, G graph) {
-        super(simulator == null ? null : simulator.getFrame());
+        super(simulator == null
+            ? null
+            : simulator.getFrame());
         this.simulator = simulator;
         this.grammar = grammar;
         this.graph = graph;
         setTitle(graph.getName());
         if (simulator != null) {
-            Point p = simulator.getFrame()
-                .getLocation();
+            Point p = simulator.getFrame().getLocation();
             setLocation(new Point(p.x + 50, p.y + 50));
         }
         add(getContent());
@@ -79,10 +80,9 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
             this.contentPanel.addHierarchyListener(new HierarchyListener() {
                 @Override
                 public void hierarchyChanged(HierarchyEvent e) {
-                    Window window =
-                        SwingUtilities.getWindowAncestor(GraphPreviewDialog.this.contentPanel);
-                    if (window instanceof Dialog) {
-                        Dialog dialog = (Dialog) window;
+                    Window window
+                        = SwingUtilities.getWindowAncestor(GraphPreviewDialog.this.contentPanel);
+                    if (window instanceof Dialog dialog) {
                         if (!dialog.isResizable()) {
                             dialog.setResizable(true);
                         }
@@ -121,8 +121,8 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
         case RULE:
             if (this.simulator != null || this.grammar != null) {
                 shownGraph = GraphConverter.toAspect(this.graph);
-                DisplayKind kind =
-                    DisplayKind.toDisplay(ResourceKind.toResource(this.graph.getRole()));
+                DisplayKind kind
+                    = DisplayKind.toDisplay(ResourceKind.toResource(this.graph.getRole()));
                 AspectJGraph aspectJGraph = new AspectJGraph(this.simulator, kind, false);
                 if (this.simulator == null) {
                     aspectJGraph.setGrammar(this.grammar);
@@ -179,8 +179,7 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
         final GraphRole role = graph.getRole();
         final String name = graph.getName();
         synchronized (recentPreviews) {
-            if (!TIMER || recentPreviews.get(role)
-                .add(name)) {
+            if (!TIMER || recentPreviews.get(role).add(name)) {
                 new GraphPreviewDialog<>(simulator, graph).setVisible(true);
                 if (TIMER) {
                     final Timer timer = new Timer();
@@ -188,8 +187,7 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
                         @Override
                         public void run() {
                             synchronized (recentPreviews) {
-                                recentPreviews.get(role)
-                                    .remove(name);
+                                recentPreviews.get(role).remove(name);
                             }
                             timer.cancel();
                         }
@@ -205,8 +203,7 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
     }
 
     private static Simulator globalSimulator;
-    private static Map<GraphRole,Set<String>> recentPreviews =
-        new EnumMap<>(GraphRole.class);
+    private static Map<GraphRole,Set<String>> recentPreviews = new EnumMap<>(GraphRole.class);
 
     static {
         for (GraphRole role : GraphRole.values()) {

@@ -63,15 +63,13 @@ public class FindReplaceAction extends SimulatorAction
     private void addAsListener(ResourceDisplay display) {
         JGraph<?> jGraph = ((GraphTab) display.getMainTab()).getJGraph();
         jGraph.addGraphSelectionListener(this);
-        jGraph.getLabelTree()
-            .addTreeSelectionListener(this);
+        jGraph.getLabelTree().addTreeSelectionListener(this);
     }
 
     @Override
     public void refresh() {
-        setEnabled(getGrammarStore() != null && !getGrammarModel().getTypeGraph()
-            .getLabels()
-            .isEmpty());
+        setEnabled(getGrammarStore() != null
+            && !getGrammarModel().getTypeGraph().getLabels().isEmpty());
     }
 
     @Override
@@ -81,17 +79,15 @@ public class FindReplaceAction extends SimulatorAction
             if (result != null) {
                 if (result.to() == null) {
                     // Find label.
-                    List<SearchResult> searchResults =
-                        getSimulatorModel().searchLabel(result.from());
+                    List<SearchResult> searchResults
+                        = getSimulatorModel().searchLabel(result.from());
                     getSimulator().setSearchResults(searchResults);
                 } else { // Replace label.
                     try {
                         getSimulatorModel().doRelabel(result.from(), result.to());
                     } catch (IOException exc) {
-                        showErrorDialog(exc,
-                            String.format("Error while renaming '%s' into '%s':",
-                                result.from(),
-                                result.to()));
+                        showErrorDialog(exc, String.format("Error while renaming '%s' into '%s':",
+                                                           result.from(), result.to()));
                     }
                 }
             }
@@ -106,10 +102,9 @@ public class FindReplaceAction extends SimulatorAction
         if (selection != null && selection.length > 0) {
             Collection<? extends Label> selectedEntries = ((JCell<?>) selection[0]).getKeys();
             if (selectedEntries.size() > 0) {
-                Label selectedEntry = selectedEntries.iterator()
-                    .next();
-                if (selectedEntry instanceof TypeElement) {
-                    this.oldLabel = ((TypeElement) selectedEntry).label();
+                Label selectedEntry = selectedEntries.iterator().next();
+                if (selectedEntry instanceof TypeElement te) {
+                    this.oldLabel = te.label();
                 }
             }
         }
@@ -121,12 +116,9 @@ public class FindReplaceAction extends SimulatorAction
         TreePath[] selection = ((LabelTree<?>) e.getSource()).getSelectionPaths();
         if (selection != null && selection.length > 0) {
             Object treeNode = selection[0].getLastPathComponent();
-            if (treeNode instanceof EntryNode) {
-                Label selectedLabel = ((EntryNode) treeNode).getEntry()
-                    .getLabel();
-                if (selectedLabel instanceof TypeLabel) {
-                    this.oldLabel = (TypeLabel) selectedLabel;
-                }
+            if (treeNode instanceof EntryNode en
+                && en.getEntry().getLabel() instanceof TypeLabel tl) {
+                this.oldLabel = tl;
             }
         }
     }

@@ -131,11 +131,12 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     /** Compares the error graph, error object and message. */
     @Override
     public boolean equals(Object obj) {
-        boolean result = obj instanceof FormatError;
-        if (result) {
-            FormatError err = (FormatError) obj;
+        boolean result;
+        if (obj instanceof FormatError err) {
             result = Arrays.equals(getArguments(), err.getArguments());
             result &= toString().equals(err.toString());
+        } else {
+            result = false;
         }
         return result;
     }
@@ -300,10 +301,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     }
 
     private static int compare(Element o1, Element o2) {
-        int result = o1.getClass()
-            .getName()
-            .compareTo(o2.getClass()
-                .getName());
+        int result = o1.getClass().getName().compareTo(o2.getClass().getName());
         if (result != 0) {
             return result;
         }

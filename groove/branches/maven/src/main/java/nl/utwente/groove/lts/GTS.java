@@ -180,8 +180,8 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         if (result == null) {
             // otherwise, add it to the GTS
             fireAddNode(newState);
-            if (newState instanceof AbstractGraphState) {
-                ((AbstractGraphState) newState).checkInitConstraints();
+            if (newState instanceof AbstractGraphState s) {
+                s.checkInitConstraints();
             }
         }
         return result;
@@ -245,10 +245,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             this.realStateSet = new SetView<>(nodeSet()) {
                 @Override
                 public boolean approves(Object obj) {
-                    if (!(obj instanceof GraphState)) {
-                        return false;
-                    }
-                    return ((GraphState) obj).isRealState();
+                    return obj instanceof GraphState gs && gs.isRealState();
                 }
             };
         }
@@ -396,9 +393,9 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         } else {
             spuriousTransitionCount++;
         }
-        if (trans instanceof RuleTransition) {
+        if (trans instanceof RuleTransition rt) {
             try {
-                String outputString = ((RuleTransition) trans).getOutputString();
+                String outputString = rt.getOutputString();
                 if (outputString != null) {
                     System.out.print(outputString);
                 }
@@ -446,10 +443,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             this.realTransitionSet = new SetView<>(edgeSet()) {
                 @Override
                 public boolean approves(Object obj) {
-                    if (!(obj instanceof GraphTransition)) {
-                        return false;
-                    }
-                    return ((GraphTransition) obj).isRealStep();
+                    return obj instanceof GraphTransition gt && gt.isRealStep();
                 }
             };
         }
@@ -694,10 +688,9 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 continue;
             }
             // it's a new target
-            if (!(target instanceof GraphNextState)) {
+            if (!(target instanceof GraphNextState incoming)) {
                 continue;
             }
-            GraphTransition incoming = (GraphNextState) target;
             // it's not the start state
             if (target.isInternalState()) {
                 if (internal) {

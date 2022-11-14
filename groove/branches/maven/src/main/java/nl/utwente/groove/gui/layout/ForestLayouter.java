@@ -201,11 +201,11 @@ public class ForestLayouter extends AbstractLayouter {
     protected Collection<?> getSuggestedRoots() {
         Collection<?> result;
         JGraph<?> jGraph = getJGraph();
-        if (jGraph instanceof LTSJGraph) {
-            LTSJModel jModel = ((LTSJGraph) jGraph).getModel();
+        if (jGraph instanceof LTSJGraph lts) {
+            LTSJModel jModel = lts.getModel();
             result = Collections.singleton(jModel.getJCellForNode(jModel.getGraph().startState()));
-        } else if (jGraph instanceof CtrlJGraph) {
-            JModel<ControlGraph> jModel = ((CtrlJGraph) jGraph).getModel();
+        } else if (jGraph instanceof CtrlJGraph ctrl) {
+            JModel<ControlGraph> jModel = ctrl.getModel();
             ControlNode start = jModel.getGraph().getStart();
             result = Collections.singleton(jModel.getJCellForNode(start));
         } else {

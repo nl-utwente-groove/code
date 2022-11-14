@@ -2,8 +2,8 @@ package nl.utwente.groove.io.conceptual;
 
 import nl.utwente.groove.io.conceptual.type.Class;
 import nl.utwente.groove.io.conceptual.type.Container;
-import nl.utwente.groove.io.conceptual.type.Type;
 import nl.utwente.groove.io.conceptual.type.Container.Kind;
+import nl.utwente.groove.io.conceptual.type.Type;
 
 /**
  * Represents Fields in the TypeModel
@@ -30,11 +30,11 @@ public class Field implements Acceptor {
         this.m_name = name;
 
         // Force class to nullable or proper depending on bounds
-        if (type instanceof Class) {
+        if (type instanceof Class c) {
             if (lower == 0 && upper == 1) {
-                type = ((Class) type).getNullableClass();
+                type = c.getNullableClass();
             } else if (upper > 1) {
-                type = ((Class) type).getProperClass();
+                type = c.getProperClass();
             }
         }
 
@@ -47,9 +47,9 @@ public class Field implements Acceptor {
             type = new Container(Kind.SET, type);
         }
 
-        if (type instanceof Container) {
-            assert ((Container) type).getField() == null;
-            ((Container) type).setField(this);
+        if (type instanceof Container con) {
+            assert con.getField() == null;
+            con.setField(this);
         }
 
         this.m_type = type;

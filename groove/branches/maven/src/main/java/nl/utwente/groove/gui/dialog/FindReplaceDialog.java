@@ -89,7 +89,9 @@ public class FindReplaceDialog {
             propagateSelection();
         }
         setReplaceEnabled();
-        JDialog dialog = getOptionPane().createDialog(frame, title == null ? DEFAULT_TITLE : title);
+        JDialog dialog = getOptionPane().createDialog(frame, title == null
+            ? DEFAULT_TITLE
+            : title);
         dialog.setVisible(true);
         Object response = getOptionPane().getValue();
         int result;
@@ -108,13 +110,11 @@ public class FindReplaceDialog {
      */
     private void propagateSelection() {
         TypeLabel selection = (TypeLabel) getOldField().getSelectedItem();
-        getOldTypeLabel().setText(selection.getRole()
-            .getDescription(true));
+        getOldTypeLabel().setText(selection.getRole().getDescription(true));
         getNewTypeCombobox().setSelectedIndex(EdgeRole.getIndex(selection.getRole()));
         getNewField().setText(selection.text());
         getNewField().setSelectionStart(0);
-        getNewField().setSelectionEnd(selection.text()
-            .length());
+        getNewField().setSelectionEnd(selection.text().length());
         getNewField().requestFocus();
     }
 
@@ -278,8 +278,7 @@ public class FindReplaceDialog {
     private JTextField getNewField() {
         if (this.newField == null) {
             this.newField = new JTextField();
-            this.newField.getDocument()
-                .addDocumentListener(new OverlapListener());
+            this.newField.getDocument().addDocumentListener(new OverlapListener());
             this.newField.addActionListener(getNameFieldListener());
         }
         return this.newField;
@@ -315,8 +314,7 @@ public class FindReplaceDialog {
     private JLabel getOldTypeLabel() {
         if (this.oldTypeLabel == null) {
             final JLabel result = this.oldTypeLabel = new JLabel();
-            result.setText(getOldLabel().getRole()
-                .getDescription(true));
+            result.setText(getOldLabel().getRole().getDescription(true));
             result.setPreferredSize(getNewTypeCombobox().getPreferredSize());
             result.setBorder(new EtchedBorder());
             result.setEnabled(true);
@@ -336,16 +334,13 @@ public class FindReplaceDialog {
             @SuppressWarnings("rawtypes")
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index,
-                boolean isSelected, boolean cellHasFocus) {
-                if (value instanceof TypeLabel) {
-                    value = HTMLConverter.HTML_TAG.on(((TypeLabel) value).toLine()
-                        .toHTMLString());
+                                                          boolean isSelected,
+                                                          boolean cellHasFocus) {
+                if (value instanceof TypeLabel tl) {
+                    value = HTMLConverter.HTML_TAG.on(tl.toLine().toHTMLString());
                 }
-                return super.getListCellRendererComponent(list,
-                    value,
-                    index,
-                    isSelected,
-                    cellHasFocus);
+                return super.getListCellRendererComponent(list, value, index, isSelected,
+                                                          cellHasFocus);
             }
         });
         for (TypeLabel label : sortLabels(typeGraph.getLabels())) {

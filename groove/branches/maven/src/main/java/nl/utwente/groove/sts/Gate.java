@@ -31,12 +31,10 @@ public class Gate {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof Gate)) {
+        if (!(o instanceof Gate other)) {
             return false;
         }
-        Gate other = (Gate) o;
-        return other.getLabel()
-            .equals(getLabel());
+        return other.getLabel().equals(getLabel());
     }
 
     @Override

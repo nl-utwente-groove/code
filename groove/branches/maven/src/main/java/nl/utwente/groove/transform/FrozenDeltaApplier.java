@@ -19,6 +19,7 @@ package nl.utwente.groove.transform;
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostElement;
 import nl.utwente.groove.grammar.host.HostNode;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Delta applier constructed from a frozen delta array. A frozen delta array is
@@ -37,11 +38,12 @@ public class FrozenDeltaApplier implements StoredDeltaApplier {
     @Override
     public void applyDelta(DeltaTarget target) {
         for (HostElement elem : this.elements) {
-            if (elem instanceof HostNode) {
-                target.addNode((HostNode) elem);
+            if (elem instanceof HostNode hn) {
+                target.addNode(hn);
+            } else if (elem instanceof HostEdge he) {
+                target.addEdge(he);
             } else {
-                assert (elem instanceof HostEdge);
-                target.addEdge((HostEdge) elem);
+                throw Exceptions.UNREACHABLE;
             }
         }
     }

@@ -208,7 +208,7 @@ public final class GraphToTikz<G extends Graph> {
      * @return the absolute label position.
      */
     private static Point2D convertRelativeLabelPositionToAbsolute(Point2D geometry,
-        List<Point2D> points) {
+                                                                  List<Point2D> points) {
 
         Point2D pt = points.get(0);
 
@@ -287,23 +287,23 @@ public final class GraphToTikz<G extends Graph> {
     }
 
     private static boolean isNodifiedEdge(JVertex<?> node) {
-        return node instanceof AspectJVertex && ((AspectJVertex) node).isNodeEdge();
+        return node instanceof AspectJVertex v && v.isNodeEdge();
     }
 
     private static boolean hasParameter(JVertex<?> node) {
-        return node instanceof AspectJVertex ? ((AspectJVertex) node).getNode()
-            .hasParam() : false;
+        return node instanceof AspectJVertex v
+            ? v.getNode().hasParam()
+            : false;
     }
 
     private static boolean hasNonEmptyLabel(JEdge<?> edge) {
-        return !edge.getVisuals()
-            .getLabel()
-            .isEmptyLine();
+        return !edge.getVisuals().getLabel().isEmptyLine();
     }
 
     private static AspectKind getAttributeKind(JVertex<?> node) {
-        return node instanceof AspectJVertex ? ((AspectJVertex) node).getNode()
-            .getAttrKind() : DEFAULT;
+        return node instanceof AspectJVertex v
+            ? v.getNode().getAttrKind()
+            : DEFAULT;
     }
 
     private static boolean isProductNode(JVertex<?> node) {
@@ -379,8 +379,7 @@ public final class GraphToTikz<G extends Graph> {
      * @param layout information regarding layout of the node.
     */
     private void appendTikzNode(JVertex<G> node, JVertexLayout layout) {
-        if (!node.getVisuals()
-            .isVisible()) {
+        if (!node.getVisuals().isVisible()) {
             return;
         }
 
@@ -397,8 +396,7 @@ public final class GraphToTikz<G extends Graph> {
         }
 
         // Node Labels.
-        MultiLabel lines = node.getVisuals()
-            .getLabel();
+        MultiLabel lines = node.getVisuals().getLabel();
         if (lines.isEmpty() || isNodifiedEdge(node)) {
             append(EMPTY_NODE_LAB);
         } else {
@@ -414,10 +412,8 @@ public final class GraphToTikz<G extends Graph> {
     }
 
     private void appendParameterNode(AspectJVertex node) {
-        String nodeId = node.getNode()
-            .toString();
-        String nr = node.getNode()
-            .getParamNr() + "";
+        String nodeId = node.getNode().toString();
+        String nr = node.getNode().getParamNr() + "";
         // New node line.
         append(BEGIN_NODE + encloseBrack(PAR_NODE_STYLE));
         // Node name.
@@ -438,12 +434,9 @@ public final class GraphToTikz<G extends Graph> {
         styles.add(""); // Placeholder for the main style.
         for (Look look : node.getLooks()) {
             if (TikzStylesExtractor.mainLooks.contains(look)) {
-                styles.set(0,
-                    look.name()
-                        .toLowerCase() + TikzStylesExtractor.NODE_SUFFIX);
+                styles.set(0, look.name().toLowerCase() + TikzStylesExtractor.NODE_SUFFIX);
             } else if (!TikzStylesExtractor.unusedLooks.contains(look)) {
-                styles.add(look.name()
-                    .toLowerCase());
+                styles.add(look.name().toLowerCase());
             }
         }
         addAdditionalStyles(node, styles);
@@ -453,20 +446,17 @@ public final class GraphToTikz<G extends Graph> {
     private void addAdditionalStyles(JVertex<G> node, List<String> styles) {
         // Check if there are some extra styles, for now we just look for
         // a color.
-        Color color = node.getVisuals()
-            .getColor();
+        Color color = node.getVisuals().getColor();
         if (color != null) {
             Style.getForegroundColor(color, styles);
-            Style.getBackgroundColor(node.getVisuals()
-                .getBackground(), styles);
+            Style.getBackgroundColor(node.getVisuals().getBackground(), styles);
         }
     }
 
     private void addAdditionalStyles(JEdge<G> edge, List<String> styles) {
         // Check if there are some extra styles, for now we just look for
         // a color.
-        Color color = edge.getVisuals()
-            .getColor();
+        Color color = edge.getVisuals().getColor();
         if (color != null) {
             Style.getEdgeColor(color, styles);
         }
@@ -474,8 +464,7 @@ public final class GraphToTikz<G extends Graph> {
 
     /** Appends the node name to the result string. */
     private void appendNode(JVertex<G> node) {
-        append(encloseSpace(enclosePar(node.getNode()
-            .toString())));
+        append(encloseSpace(enclosePar(node.getNode().toString())));
     }
 
     /**
@@ -490,8 +479,7 @@ public final class GraphToTikz<G extends Graph> {
             appendNode(node);
         } else {
             String coord = getCoordString(side);
-            String nodeName = node.getNode()
-                .toString();
+            String nodeName = node.getNode().toString();
             append(enclosePar(nodeName + coord + getPointString(point, false)));
         }
     }
@@ -531,8 +519,7 @@ public final class GraphToTikz<G extends Graph> {
             if (usePar) {
                 format = enclosePar(format);
             }
-            s.append(f.format(Locale.US, format, adjX, adjY)
-                .toString());
+            s.append(f.format(Locale.US, format, adjX, adjY).toString());
         }
     }
 
@@ -578,8 +565,7 @@ public final class GraphToTikz<G extends Graph> {
      * @param layout information regarding layout of the node.
      */
     private void appendTikzEdge(JCell<G> cell, JEdgeLayout layout) {
-        if (cell instanceof JEdge) {
-            JEdge<G> edge = (JEdge<G>) cell;
+        if (cell instanceof JEdge<G> edge) {
             appendTikzEdge(edge, layout);
         }
     }
@@ -590,8 +576,7 @@ public final class GraphToTikz<G extends Graph> {
      * @param layout information regarding layout of the edge.
      */
     private void appendTikzEdge(JEdge<G> edge, JEdgeLayout layout) {
-        if (!edge.getVisuals()
-            .isVisible()) {
+        if (!edge.getVisuals().isVisible()) {
             return;
         }
 
@@ -631,12 +616,9 @@ public final class GraphToTikz<G extends Graph> {
         styles.add(""); // Placeholder for the main style.
         for (Look look : edge.getLooks()) {
             if (TikzStylesExtractor.mainLooks.contains(look)) {
-                styles.set(0,
-                    look.name()
-                        .toLowerCase() + TikzStylesExtractor.EDGE_SUFFIX);
+                styles.set(0, look.name().toLowerCase() + TikzStylesExtractor.EDGE_SUFFIX);
             } else if (!TikzStylesExtractor.unusedLooks.contains(look)) {
-                styles.add(look.name()
-                    .toLowerCase());
+                styles.add(look.name().toLowerCase());
             }
         }
         addAdditionalStyles(edge, styles);
@@ -747,8 +729,7 @@ public final class GraphToTikz<G extends Graph> {
             // This is needed to make the Tikz figure look similar to what
             // is shown in Groove. Otherwise, the bezier curve in Tikz is not
             // smooth enough.
-            boolean isLoop = srcVertex.getNode()
-                .equals(tgtVertex.getNode());
+            boolean isLoop = srcVertex.getNode().equals(tgtVertex.getNode());
             appendNode(srcVertex);
             int i = 1; // Index for edge points.
             int j = 0; // Index for bezier points. Always j = i - 1;
@@ -828,8 +809,8 @@ public final class GraphToTikz<G extends Graph> {
      * @param layout information regarding layout of the edge.
      */
     private void appendSplineLayout(JEdge<G> edge, JEdgeLayout layout) {
-        System.err.println(
-            "Sorry, the SPLINE line style is not yet " + "supported, using BEZIER style...");
+        System.err.println("Sorry, the SPLINE line style is not yet "
+            + "supported, using BEZIER style...");
         appendBezierLayout(edge, layout);
     }
 
@@ -855,8 +836,8 @@ public final class GraphToTikz<G extends Graph> {
             JVertexLayout tgtLayout = this.layoutMap.getLayout(tgtNode.getNode());
             if (tgtLayout != null) {
                 Rectangle2D tgtBounds = tgtLayout.getBounds();
-                Point2D tgtCenter =
-                    new Point2D.Double(tgtBounds.getCenterX(), tgtBounds.getCenterY());
+                Point2D tgtCenter
+                    = new Point2D.Double(tgtBounds.getCenterX(), tgtBounds.getCenterY());
                 appendNode(srcNode, tgtCenter);
             }
         } else {
@@ -876,13 +857,13 @@ public final class GraphToTikz<G extends Graph> {
             JVertexLayout tgtLayout = this.layoutMap.getLayout(tgtNode.getNode());
             if (srcLayout != null && tgtLayout != null) {
                 Rectangle2D tgtBounds = tgtLayout.getBounds();
-                Point2D tgtCenter =
-                    new Point2D.Double(tgtBounds.getCenterX(), tgtBounds.getCenterY());
+                Point2D tgtCenter
+                    = new Point2D.Double(tgtBounds.getCenterX(), tgtBounds.getCenterY());
                 int side = getSide(srcNode, tgtCenter);
                 if (side == 0) {
                     Rectangle2D srcBounds = srcLayout.getBounds();
-                    Point2D srcCenter =
-                        new Point2D.Double(srcBounds.getCenterX(), srcBounds.getCenterY());
+                    Point2D srcCenter
+                        = new Point2D.Double(srcBounds.getCenterX(), srcBounds.getCenterY());
                     appendNode(tgtNode, srcCenter);
                 } else {
                     appendNode(tgtNode);
@@ -903,10 +884,8 @@ public final class GraphToTikz<G extends Graph> {
 
     private void appendEdgeLabel(JEdge<G> edge) {
         if (hasNonEmptyLabel(edge)) {
-            MultiLabel lines = edge.getVisuals()
-                .getLabel();
-            List<Point2D> points = edge.getVisuals()
-                .getPoints();
+            MultiLabel lines = edge.getVisuals().getLabel();
+            List<Point2D> points = edge.getVisuals().getPoints();
             StringBuilder text;
             if (this.jGraph.isShowArrowsOnLabels()) {
                 Point2D start = points.get(0);
@@ -927,8 +906,8 @@ public final class GraphToTikz<G extends Graph> {
      */
     private void appendEdgeLabel(JEdge<G> edge, JEdgeLayout layout, List<Point2D> points) {
         if (hasNonEmptyLabel(edge)) {
-            Point2D labelPos =
-                convertRelativeLabelPositionToAbsolute(layout.getLabelPosition(), points);
+            Point2D labelPos
+                = convertRelativeLabelPositionToAbsolute(layout.getLabelPosition(), points);
             // Extra path for the label position.
             append(NODE);
             append(encloseSpace(AT_KEYWORD));
@@ -951,10 +930,7 @@ public final class GraphToTikz<G extends Graph> {
             JVertexLayout layout = this.layoutMap.getLayout(tgtVertex.getNode());
             if (layout != null) {
                 Rectangle2D tgtBounds = layout.getBounds();
-                if (Math.abs(points.get(index)
-                    .getY()
-                    - points.get(index + 1)
-                        .getY()) < 0.0001
+                if (Math.abs(points.get(index).getY() - points.get(index + 1).getY()) < 0.0001
                     || getSide(tgtBounds, points.get(index)) != 0) {
                     result = true;
                 }
@@ -968,8 +944,8 @@ public final class GraphToTikz<G extends Graph> {
     // ------------------------------------------------------------------------
 
     private static final String ENTER = "\n";
-    private static final String BEGIN_TIKZ_FIG =
-        "\\begin{tikzpicture}[scale=\\tikzscale,name prefix=%s-]";
+    private static final String BEGIN_TIKZ_FIG
+        = "\\begin{tikzpicture}[scale=\\tikzscale,name prefix=%s-]";
     private static final String END_TIKZ_FIG = "\\end{tikzpicture}";
     private static final String BEGIN_NODE = "\\node";
     private static final String AT_KEYWORD = "at";

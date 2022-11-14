@@ -46,13 +46,11 @@ public abstract class GraphPrologCode implements PrologCode {
      * @return          A graph
      */
     public static final Graph getGraph(Term term) throws PrologException {
-        if (term instanceof JavaObjectTerm) {
-            JavaObjectTerm jot = (JavaObjectTerm) term;
-            if (jot.value instanceof GraphState) {
-                return ((GraphState) jot.value).getGraph();
-            }
-            if (jot.value instanceof Graph) {
-                return (Graph) jot.value;
+        if (term instanceof JavaObjectTerm jot) {
+            if (jot.value instanceof GraphState gs) {
+                return gs.getGraph();
+            } else if (jot.value instanceof Graph g) {
+                return g;
             }
             PrologException.domainError(GraphPrologCode.GRAPH_ATOM, term);
         } else {
@@ -67,13 +65,11 @@ public abstract class GraphPrologCode implements PrologCode {
      * @return          A host graph
      */
     public static final HostGraph getHostGraph(Term term) throws PrologException {
-        if (term instanceof JavaObjectTerm) {
-            JavaObjectTerm jot = (JavaObjectTerm) term;
-            if (jot.value instanceof GraphState) {
-                return ((GraphState) jot.value).getGraph();
-            }
-            if (jot.value instanceof HostGraph) {
-                return (HostGraph) jot.value;
+        if (term instanceof JavaObjectTerm jot) {
+            if (jot.value instanceof GraphState gs) {
+                return gs.getGraph();
+            } else if (jot.value instanceof HostGraph hg) {
+                return hg;
             }
             PrologException.domainError(GraphPrologCode.GRAPH_ATOM, term);
         } else {
@@ -88,12 +84,12 @@ public abstract class GraphPrologCode implements PrologCode {
      * @return          An edge
      */
     public static final Edge getEdge(Term term) throws PrologException {
-        if (term instanceof JavaObjectTerm) {
-            JavaObjectTerm jot = (JavaObjectTerm) term;
-            if (!(jot.value instanceof Edge)) {
+        if (term instanceof JavaObjectTerm jot) {
+            if (!(jot.value instanceof Edge edge)) {
                 PrologException.domainError(GraphPrologCode.EDGE_ATOM, term);
+            } else {
+                return edge;
             }
-            return (Edge) jot.value;
         } else {
             PrologException.typeError(GraphPrologCode.EDGE_ATOM, term);
         }
@@ -106,12 +102,12 @@ public abstract class GraphPrologCode implements PrologCode {
      * @return          A node
      */
     public static final Node getNode(Term term) throws PrologException {
-        if (term instanceof JavaObjectTerm) {
-            JavaObjectTerm jot = (JavaObjectTerm) term;
-            if (!(jot.value instanceof Node)) {
+        if (term instanceof JavaObjectTerm jot) {
+            if (!(jot.value instanceof Node node)) {
                 PrologException.domainError(GraphPrologCode.NODE_ATOM, term);
+            } else {
+                return node;
             }
-            return (Node) jot.value;
         } else {
             PrologException.typeError(GraphPrologCode.NODE_ATOM, term);
         }
@@ -122,19 +118,18 @@ public abstract class GraphPrologCode implements PrologCode {
      * Returns true if the input contains the option with the given values
      */
     public static final boolean hasOption(Interpreter interpreter, Term input, CompoundTermTag opt,
-        Term[] values) throws PrologException {
-        if (!(input instanceof CompoundTerm)) {
+                                          Term[] values) throws PrologException {
+        if (!(input instanceof CompoundTerm ct)) {
             return false;
         }
-        CompoundTerm ct = (CompoundTerm) input;
         while (ct != null) {
             CompoundTerm entry = null;
             if (CompoundTerm.isListPair(ct)) {
-                if (ct.args[0] instanceof CompoundTerm) {
-                    entry = (CompoundTerm) ct.args[0];
+                if (ct.args[0] instanceof CompoundTerm ct0) {
+                    entry = ct0;
                 }
-                if (ct.args[1] instanceof CompoundTerm) {
-                    ct = (CompoundTerm) ct.args[1];
+                if (ct.args[1] instanceof CompoundTerm ct1) {
+                    ct = ct1;
                 } else {
                     // end of list?
                     break;
