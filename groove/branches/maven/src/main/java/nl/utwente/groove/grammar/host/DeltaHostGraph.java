@@ -62,7 +62,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
      *        copied from one graph to the next; otherwise, they will be reused
      */
     private DeltaHostGraph(String name, HostElement[] delta, HostFactory factory,
-        boolean copyData) {
+                           boolean copyData) {
         super(name);
         this.factory = factory;
         this.basis = null;
@@ -79,17 +79,15 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
      * @param copyData if <code>true</code>, the data structures will be
      *        copied from one graph to the next; otherwise, they will be reused
      */
-    private DeltaHostGraph(String name, final DeltaHostGraph basis, final DeltaApplier delta,
-        boolean copyData) {
+    private DeltaHostGraph(String name, @NonNull DeltaHostGraph basis, @NonNull DeltaApplier delta,
+                           boolean copyData) {
         super(name);
         this.basis = basis;
         this.factory = basis.getFactory();
         this.copyData = copyData;
-        if (delta == null || delta instanceof StoredDeltaApplier) {
-            this.delta = (StoredDeltaApplier) delta;
-        } else {
-            this.delta = new DeltaStore(delta);
-        }
+        this.delta = delta instanceof StoredDeltaApplier sda
+            ? sda
+            : new DeltaStore(delta);
         setFixed();
     }
 
@@ -199,7 +197,9 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
             initData();
         }
         Set<HostNode> result = this.nodeEdgeStore.keySet();
-        return ALIAS_SETS || this.copyData ? result : createNodeSet(result);
+        return ALIAS_SETS || this.copyData
+            ? result
+            : createNodeSet(result);
     }
 
     @Override
@@ -208,13 +208,17 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
             initData();
         }
         HostEdgeSet result = this.edgeSet;
-        return ALIAS_SETS || this.copyData ? result : createEdgeSet(result);
+        return ALIAS_SETS || this.copyData
+            ? result
+            : createEdgeSet(result);
     }
 
     @Override
     public HostEdgeSet inEdgeSet(Node node) {
         HostEdgeSet result = getInEdgeStore().get(node);
-        return (ALIAS_SETS || this.copyData) && result != null ? result : createEdgeSet(result);
+        return (ALIAS_SETS || this.copyData) && result != null
+            ? result
+            : createEdgeSet(result);
     }
 
     /** Returns a mapping from labels to sets of edges. */
@@ -238,8 +242,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
             HostNode key = nodeEdgeEntry.getKey();
             HostEdgeSet inEdges = createEdgeSet(null);
             for (HostEdge edge : nodeEdgeEntry.getValue()) {
-                if (edge.target()
-                    .equals(key)) {
+                if (edge.target().equals(key)) {
                     inEdges.add(edge);
                 }
             }
@@ -251,7 +254,9 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
     @Override
     public HostEdgeSet outEdgeSet(Node node) {
         HostEdgeSet result = getOutEdgeStore().get(node);
-        return (ALIAS_SETS || this.copyData) && result != null ? result : createEdgeSet(result);
+        return (ALIAS_SETS || this.copyData) && result != null
+            ? result
+            : createEdgeSet(result);
     }
 
     /** Returns a mapping from nodes to sets of outgoing edges. */
@@ -275,8 +280,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
             HostNode key = nodeEdgeEntry.getKey();
             HostEdgeSet inEdges = createEdgeSet(null);
             for (HostEdge edge : nodeEdgeEntry.getValue()) {
-                if (edge.source()
-                    .equals(key)) {
+                if (edge.source().equals(key)) {
                     inEdges.add(edge);
                 }
             }
@@ -288,7 +292,9 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
     @Override
     public HostEdgeSet edgeSet(Label label) {
         HostEdgeSet result = getLabelEdgeStore().get(label);
-        return (ALIAS_SETS || this.copyData) && result != null ? result : createEdgeSet(result);
+        return (ALIAS_SETS || this.copyData) && result != null
+            ? result
+            : createEdgeSet(result);
     }
 
     /** Returns a mapping from labels to sets of edges. */
@@ -321,7 +327,9 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
     @Override
     public HostEdgeSet edgeSet(Node node) {
         HostEdgeSet result = getNodeEdgeStore().get(node);
-        return (ALIAS_SETS || this.copyData) && result != null ? result : createEdgeSet(result);
+        return (ALIAS_SETS || this.copyData) && result != null
+            ? result
+            : createEdgeSet(result);
     }
 
     /** Returns the mapping from nodes to sets of incident edges. */
@@ -395,7 +403,9 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
         if (exceedsCopyBound(chainLength, totalDelta)) {
             result = new CopyTarget(!this.copyData);
         } else {
-            result = this.copyData ? new CopyTarget(false) : new SwingTarget();
+            result = this.copyData
+                ? new CopyTarget(false)
+                : new SwingTarget();
         }
         return result;
     }
@@ -427,10 +437,11 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
 
     @Override
     public CertificateStrategy getCertifier(boolean strong) {
-        CertificateStrategy result = this.certifier == null ? null : this.certifier.get();
+        CertificateStrategy result = this.certifier == null
+            ? null
+            : this.certifier.get();
         if (result == null || result.getStrength() != strong) {
-            result = AGraph.getCertificateFactory()
-                .newInstance(this, strong);
+            result = AGraph.getCertificateFactory().newInstance(this, strong);
             this.certifier = new WeakReference<>(result);
         }
         return result;
@@ -438,12 +449,12 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
 
     @Override
     protected boolean isTypeCorrect(Node node) {
-        return node instanceof HostNode && getFactory().containsNode((HostNode) node);
+        return node instanceof HostNode hn && getFactory().containsNode(hn);
     }
 
     @Override
     protected boolean isTypeCorrect(Edge edge) {
-        return edge instanceof HostEdge && getFactory().containsEdge((HostEdge) edge);
+        return edge instanceof HostEdge he && getFactory().containsEdge(he);
     }
 
     @Override
@@ -492,11 +503,11 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
      */
     static private final boolean ALIAS_SETS = true;
     /** Factory instance of this class, in which data is copied. */
-    static private final DeltaHostGraph copyInstance =
-        new DeltaHostGraph("copy prototype", (HostElement[]) null, null, true);
+    static private final DeltaHostGraph copyInstance
+        = new DeltaHostGraph("copy prototype", (HostElement[]) null, null, true);
     /** Factory instance of this class, in which data is aliased. */
-    static private final DeltaHostGraph swingInstance =
-        new DeltaHostGraph("swing prototype", (HostElement[]) null, null, false);
+    static private final DeltaHostGraph swingInstance
+        = new DeltaHostGraph("swing prototype", (HostElement[]) null, null, false);
 
     /**
      * Returns a fixed factory instance of the {@link DeltaHostGraph} class,
@@ -507,7 +518,9 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
      *        often)
      */
     static public DeltaHostGraph getInstance(boolean copyData) {
-        return copyData ? copyInstance : swingInstance;
+        return copyData
+            ? copyInstance
+            : swingInstance;
     }
 
     /**
@@ -548,7 +561,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
                 addKeyToStore(this.nodeOutEdgeStore, node);
             } else {
                 assert node instanceof ValueNode : String.format("Node %s already occured in graph",
-                    node);
+                                                                 node);
             }
             return fresh;
         }
@@ -558,9 +571,8 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
         public boolean removeNode(HostNode node) {
             HostEdgeSet edges = removeKeyFromStore(this.nodeEdgeStore, node);
             assert edges != null : String.format("Node %s did not occur in graph", node);
-            assert edges.isEmpty() : String.format("Node %s still had incident edges %s",
-                node,
-                edges);
+            assert edges.isEmpty() : String.format("Node %s still had incident edges %s", node,
+                                                   edges);
             removeKeyFromStore(this.nodeOutEdgeStore, node);
             removeKeyFromStore(this.nodeInEdgeStore, node);
             return true;
@@ -571,7 +583,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
          * if they are not {@code null}.
          */
         final boolean addEdge(HostEdge edge, boolean refreshSource, boolean refreshTarget,
-            boolean refreshLabel) {
+                              boolean refreshLabel) {
             boolean result = this.edgeSet.add(edge);
             assert result : String.format("Edge %s already occured in graph", edge);
             // adapt node-edge map
@@ -595,7 +607,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
          * in the map should be copied upon modification.
          */
         final boolean removeEdge(HostEdge edge, boolean refreshSource, boolean refreshTarget,
-            boolean refreshLabel) {
+                                 boolean refreshLabel) {
             boolean result = this.edgeSet.remove(edge);
             assert result : String.format("Edge %s did not occur in graph", edge);
             // adapt node-edge map
@@ -648,7 +660,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
          * @return the edgeset for the key, if the map was not {@code null}
          */
         private <T> HostEdgeSet addToEdgeToStore(HostEdgeStore<T> map, T key, HostEdge edge,
-            boolean refresh) {
+                                                 boolean refresh) {
             HostEdgeSet result = null;
             if (map != null) {
                 result = map.addEdge(key, edge, refresh);
@@ -660,7 +672,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
          * if the mapping is not {@code null}.
          */
         private <T> HostEdgeSet removeEdgeFromStore(HostEdgeStore<T> store, T key, HostEdge edge,
-            boolean refresh) {
+                                                    boolean refresh) {
             HostEdgeSet result = null;
             if (store != null) {
                 result = store.removeEdge(key, edge, refresh);
@@ -739,8 +751,12 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
             DeltaHostGraph graph = DeltaHostGraph.this;
             this.edgeSet = createEdgeSet(graph.edgeSet);
             this.nodeEdgeStore = copy(graph.nodeEdgeStore, deepCopy);
-            this.freshSourceKeys = createNodeSet(deepCopy ? this.nodeEdgeStore.keySet() : null);
-            this.freshTargetKeys = createNodeSet(deepCopy ? this.nodeEdgeStore.keySet() : null);
+            this.freshSourceKeys = createNodeSet(deepCopy
+                ? this.nodeEdgeStore.keySet()
+                : null);
+            this.freshTargetKeys = createNodeSet(deepCopy
+                ? this.nodeEdgeStore.keySet()
+                : null);
             if (graph.labelEdgeStore != null) {
                 this.labelEdgeStore = copy(graph.labelEdgeStore, deepCopy);
                 this.freshLabelKeys = new HashSet<>();
@@ -772,8 +788,8 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
             HostNode target = edge.target();
             boolean refreshSource = this.freshSourceKeys.add(source);
             boolean refreshTarget = this.freshTargetKeys.add(target);
-            boolean refreshLabel =
-                this.freshLabelKeys != null && this.freshLabelKeys.add(edge.label());
+            boolean refreshLabel
+                = this.freshLabelKeys != null && this.freshLabelKeys.add(edge.label());
             return super.addEdge(edge, refreshSource, refreshTarget, refreshLabel);
         }
 
@@ -787,8 +803,8 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
             HostNode target = edge.target();
             boolean refreshSource = this.freshSourceKeys.add(source);
             boolean refreshTarget = this.freshTargetKeys.add(target);
-            boolean refreshLabel =
-                this.freshLabelKeys != null && this.freshLabelKeys.add(edge.label());
+            boolean refreshLabel
+                = this.freshLabelKeys != null && this.freshLabelKeys.add(edge.label());
             return super.removeEdge(edge, refreshSource, refreshTarget, refreshLabel);
         }
 

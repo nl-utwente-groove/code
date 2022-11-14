@@ -40,20 +40,19 @@ class DisplayTreeCellRenderer extends DefaultTreeCellRenderer {
 
     @Override
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean isSelected,
-            boolean expanded, boolean leaf, int row, boolean hasFocus) {
+                                                  boolean expanded, boolean leaf, int row,
+                                                  boolean hasFocus) {
         boolean cellSelected = isSelected || hasFocus;
         boolean cellFocused = cellSelected && this.displayList.isFocusOwner();
-        Component result =
-                super.getTreeCellRendererComponent(tree, value, cellSelected, expanded, leaf, row,
-                    false);
+        Component result = super.getTreeCellRendererComponent(tree, value, cellSelected, expanded,
+                                                              leaf, row, false);
         Icon icon = null;
         String tip = null;
         String text = value.toString();
         boolean enabled = true;
         boolean error = false;
         boolean inRecipe = false;
-        if (value instanceof DisplayTreeNode) {
-            DisplayTreeNode node = (DisplayTreeNode) value;
+        if (value instanceof DisplayTreeNode node) {
             tip = node.getTip();
             icon = node.getIcon();
             text = node.getText();
@@ -64,10 +63,15 @@ class DisplayTreeCellRenderer extends DefaultTreeCellRenderer {
         if (icon != null) {
             setIcon(icon);
         }
-        setText(text == null ? null : HTMLConverter.HTML_TAG.on(text));
+        setText(text == null
+            ? null
+            : HTMLConverter.HTML_TAG.on(text));
         setToolTipText(tip);
-        Values.ColorSet colors =
-                inRecipe ? Values.RECIPE_COLORS : error ? Values.ERROR_COLORS : Values.NORMAL_COLORS;
+        Values.ColorSet colors = inRecipe
+            ? Values.RECIPE_COLORS
+            : error
+                ? Values.ERROR_COLORS
+                : Values.NORMAL_COLORS;
         Color foreground = colors.getForeground(cellSelected, cellFocused);
         setForeground(foreground);
         Color background = colors.getBackground(cellSelected, cellFocused);
@@ -118,6 +122,6 @@ class DisplayTreeCellRenderer extends DefaultTreeCellRenderer {
     /** Transparency value for disabled entries. */
     private static final int TRANSPARANCY = 125;
     /** Transparency composite for disabled entries. */
-    private static final Composite TRANSPARENT_COMPOSITE = AlphaComposite.getInstance(
-        AlphaComposite.SRC_OVER, TRANSPARANCY / 255.0f);
+    private static final Composite TRANSPARENT_COMPOSITE
+        = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, TRANSPARANCY / 255.0f);
 }

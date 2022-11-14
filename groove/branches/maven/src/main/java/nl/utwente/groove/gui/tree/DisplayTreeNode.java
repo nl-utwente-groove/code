@@ -101,9 +101,8 @@ public class DisplayTreeNode extends DefaultMutableTreeNode {
             if (result != 0) {
                 return result;
             }
-            if (o1 instanceof ActionTreeNode) {
-                result =
-                    compare(((ActionTreeNode) o2).isProperty(), ((ActionTreeNode) o1).isProperty());
+            if (o1 instanceof ActionTreeNode atn1) {
+                result = compare(((ActionTreeNode) o2).isProperty(), atn1.isProperty());
                 if (result != 0) {
                     return result;
                 }
@@ -111,7 +110,7 @@ public class DisplayTreeNode extends DefaultMutableTreeNode {
             return stringComparator.compare(o1.toString(), o2.toString());
         }
 
-        private final static java.util.Comparator<String> stringComparator =
-            Strings.getNaturalComparator();
+        private final static java.util.Comparator<String> stringComparator
+            = Strings.getNaturalComparator();
     }
 }

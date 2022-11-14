@@ -300,12 +300,12 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         if (display.getResourceKind() != null) {
             Component selectedComponent
                 = ((ResourceDisplay) display).getTabPane().getSelectedComponent();
-            if (selectedComponent instanceof GraphEditorTab) {
-                result = ((GraphEditorTab) selectedComponent).getEditArea();
-            } else if (selectedComponent instanceof GraphTab) {
-                result = ((GraphTab) selectedComponent).getEditArea();
-            } else if (selectedComponent instanceof JGraphPanel<?>) {
-                result = (JGraphPanel<?>) selectedComponent;
+            if (selectedComponent instanceof GraphEditorTab get) {
+                result = get.getEditArea();
+            } else if (selectedComponent instanceof GraphTab gt) {
+                result = gt.getEditArea();
+            } else if (selectedComponent instanceof JGraphPanel<?> jgp) {
+                result = jgp;
             }
         } else if (display.getKind() == DisplayKind.LTS) {
             result = ((LTSDisplay) display).getGraphPanel();
@@ -482,8 +482,8 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     public boolean saveAllEditors(boolean dispose) {
         boolean result = true;
         for (DisplayKind kind : DisplayKind.values()) {
-            if (getDisplay(kind) instanceof ResourceDisplay) {
-                result = ((ResourceDisplay) getDisplay(kind)).saveAllEditors(dispose);
+            if (getDisplay(kind) instanceof ResourceDisplay rd) {
+                result = rd.saveAllEditors(dispose);
                 if (!result) {
                     break;
                 }

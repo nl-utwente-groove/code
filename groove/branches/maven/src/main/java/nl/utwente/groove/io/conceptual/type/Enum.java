@@ -53,14 +53,4 @@ public class Enum extends DataType {
             return null;
         }
     }
-
-    /*@Override
-    public boolean equals(Object o) {
-        if (!(o instanceof Enum)) {
-            return false;
-        }
-
-        Enum e = (Enum) o;
-        return (e == this);
-    }*/
 }

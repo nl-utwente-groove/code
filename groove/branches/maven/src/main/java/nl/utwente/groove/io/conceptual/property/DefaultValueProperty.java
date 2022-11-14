@@ -49,6 +49,7 @@ public class DefaultValueProperty implements Property {
     public void resolveFields() {
         this.m_field = this.m_class.getFieldSuper(this.m_fieldName);
         assert this.m_field.getUpperBound() == 1;
-        assert (this.m_field.getType() instanceof DataType || (this.m_field.getType() instanceof Container && ((Container) this.m_field.getType()).getType() instanceof DataType));
+        assert (this.m_field.getType() instanceof DataType
+            || (this.m_field.getType() instanceof Container c && c.getType() instanceof DataType));
     }
 }

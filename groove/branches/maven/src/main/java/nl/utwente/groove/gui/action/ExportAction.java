@@ -31,8 +31,7 @@ public class ExportAction extends SimulatorAction {
         super(simulator, Options.EXPORT_ACTION_NAME, Icons.EXPORT_ICON);
         putValue(ACCELERATOR_KEY, Options.EXPORT_KEY);
         this.displayKind = displayKind;
-        this.display = simulator.getDisplaysPanel()
-            .getDisplay(displayKind);
+        this.display = simulator.getDisplaysPanel().getDisplay(displayKind);
         this.jGraph = null;
         this.isGraph = this.displayKind.isGraphBased();
     }
@@ -40,8 +39,7 @@ public class ExportAction extends SimulatorAction {
     /** Constructs an instance of the action. */
     public ExportAction(JGraph<?> jGraph) {
         // fill in a generic name, as the JGraph may not yet hold a graph.
-        super(jGraph.getActions()
-            .getSimulator(), Options.EXPORT_ACTION_NAME, Icons.EXPORT_ICON);
+        super(jGraph.getActions().getSimulator(), Options.EXPORT_ACTION_NAME, Icons.EXPORT_ICON);
         putValue(ACCELERATOR_KEY, Options.EXPORT_KEY);
         this.display = null;
         this.displayKind = null;
@@ -93,15 +91,14 @@ public class ExportAction extends SimulatorAction {
         String type = null;
         if (this.isGraph) {
             JGraph<?> jGraph = getJGraph();
-            Graph graph = jGraph.getModel()
-                .getGraph();
+            Graph graph = jGraph.getModel().getGraph();
             GraphRole role = graph.getRole();
-            boolean isState =
-                jGraph instanceof AspectJGraph && ((AspectJGraph) jGraph).isForState();
-            type = isState ? "State" : role.getDescription();
+            boolean isState = jGraph instanceof AspectJGraph ag && ag.isForState();
+            type = isState
+                ? "State"
+                : role.getDescription();
         } else {
-            type = this.displayKind.getResource()
-                .getDescription();
+            type = this.displayKind.getResource().getDescription();
         }
         return "Export " + type + " ...";
     }
@@ -121,15 +118,17 @@ public class ExportAction extends SimulatorAction {
 
     // Get active graph if any
     private final JGraph<?> getJGraph() {
-        assert(this.isGraph);
+        assert (this.isGraph);
         if (this.jGraph == null) {
             switch (this.displayKind) {
             case HOST:
             case RULE:
             case TYPE:
                 ResourceTab selectedTab = ((ResourceDisplay) this.display).getSelectedTab();
-                return selectedTab == null ? null
-                    : selectedTab instanceof GraphTab ? ((GraphTab) selectedTab).getJGraph()
+                return selectedTab == null
+                    ? null
+                    : selectedTab instanceof GraphTab gt
+                        ? gt.getJGraph()
                         : ((GraphEditorTab) selectedTab).getJGraph();
             case STATE:
                 return getStateDisplay().getJGraph();

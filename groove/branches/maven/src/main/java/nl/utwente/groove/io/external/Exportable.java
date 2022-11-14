@@ -57,7 +57,7 @@ public class Exportable {
         this.jGraph = jGraph;
         this.graph = jGraph.getModel()
             .getGraph();
-        this.model = jGraph instanceof AspectJGraph ? ((AspectJGraph) jGraph).getModel()
+        this.model = jGraph instanceof AspectJGraph ag ? ag.getModel()
             .getResourceModel() : null;
         if (this.model != null) {
             this.porterKinds.add(Kind.RESOURCE);

@@ -56,8 +56,9 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
      * Constructs a GraphTransition on the basis of a given match and added node set, between
      * a given source and target state.
      */
-    public DefaultRuleTransition(GraphState source, MatchResult match, @NonNull
-    HostNode[] addedNodes, GraphState target, boolean symmetry) {
+    public DefaultRuleTransition(GraphState source, @NonNull MatchResult match,
+                                 @NonNull HostNode[] addedNodes, GraphState target,
+                                 boolean symmetry) {
         super(source, RuleTransitionLabel.createLabel(source, match, addedNodes), target);
         this.symmetry = symmetry;
     }
@@ -135,9 +136,8 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     public RuleTransitionStub toStub() {
         if (isSymmetry()) {
             return new SymmetryTransitionStub(getKey(), getAddedNodes(), target());
-        } else if (target() instanceof DefaultGraphNextState) {
-            return ((DefaultGraphNextState) target())
-                .createInTransitionStub(source(), getKey(), getAddedNodes());
+        } else if (target() instanceof DefaultGraphNextState dgns) {
+            return dgns.createInTransitionStub(source(), getKey(), getAddedNodes());
         } else {
             return new IdentityTransitionStub(getKey(), getAddedNodes(), target());
         }
@@ -156,8 +156,8 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     @Override
     public GraphTransitionKey getKey(GraphState source) {
         if (source != source()) {
-            throw Exceptions
-                .illegalArg("Source state %s should coincide with argument %s", source(), source);
+            throw Exceptions.illegalArg("Source state %s should coincide with argument %s",
+                                        source(), source);
         } else {
             return getKey();
         }
@@ -171,8 +171,8 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     @Override
     public HostNode[] getAddedNodes(GraphState source) {
         if (source != source()) {
-            throw Exceptions
-                .illegalArg("Source state %s should coincide with argument %s", source(), source);
+            throw Exceptions.illegalArg("Source state %s should coincide with argument %s",
+                                        source(), source);
         } else {
             return getAddedNodes();
         }
@@ -186,8 +186,8 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     @Override
     public RuleTransition toTransition(GraphState source) {
         if (source != source()) {
-            throw Exceptions
-                .illegalArg("Source state %s should coincide with argument %s", source(), source);
+            throw Exceptions.illegalArg("Source state %s should coincide with argument %s",
+                                        source(), source);
         } else {
             return this;
         }
@@ -201,8 +201,8 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     @Override
     public GraphState getTarget(GraphState source) {
         if (source != source()) {
-            throw Exceptions
-                .illegalArg("Source state %s should coincide with argument %s", source(), source);
+            throw Exceptions.illegalArg("Source state %s should coincide with argument %s",
+                                        source(), source);
         } else {
             return target();
         }
@@ -238,12 +238,10 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
             RuleApplication appl = new RuleApplication(getEvent(), sourceGraph, getAddedNodes());
             result = appl.getMorphism();
             if (isSymmetry()) {
-                HostGraph derivedTarget = appl.getTarget()
-                    .clone();
-                HostGraph realTarget = target().getGraph()
-                    .clone();
-                final Morphism<HostNode,HostEdge> iso = IsoChecker.getInstance(true)
-                    .getIsomorphism(derivedTarget, realTarget);
+                HostGraph derivedTarget = appl.getTarget().clone();
+                HostGraph realTarget = target().getGraph().clone();
+                final Morphism<HostNode,HostEdge> iso
+                    = IsoChecker.getInstance(true).getIsomorphism(derivedTarget, realTarget);
                 assert iso != null : "Can't reconstruct derivation from graph transition " + this
                     + ": \n" + AGraph.toString(derivedTarget) + " and \n"
                     + AGraph.toString(realTarget) + " \nnot isomorphic";
@@ -251,8 +249,7 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
             }
         } else {
             // create an identity morphism
-            result = sourceGraph.getFactory()
-                .createMorphism();
+            result = sourceGraph.getFactory().createMorphism();
             for (HostNode node : sourceGraph.nodeSet()) {
                 result.putNode(node, node);
             }
@@ -296,8 +293,7 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
      */
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof RuleTransition && equalsSource((RuleTransition) obj)
-            && equalsEvent((RuleTransition) obj);
+        return obj instanceof RuleTransition rt && equalsSource(rt) && equalsEvent(rt);
     }
 
     /*
@@ -353,14 +349,12 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
      */
     public static String getOutputString(GraphTransition trans) throws FormatException {
         String result = null;
-        String formatString = trans.getAction()
-            .getFormatString();
+        String formatString = trans.getAction().getFormatString();
         if (formatString != null && !formatString.isEmpty()) {
             List<Object> args = new ArrayList<>();
-            for (HostNode arg : trans.label()
-                .getArguments()) {
-                if (arg instanceof ValueNode) {
-                    args.add(((ValueNode) arg).getValue());
+            for (HostNode arg : trans.label().getArguments()) {
+                if (arg instanceof ValueNode vn) {
+                    args.add(vn.getValue());
                 } else {
                     args.add(arg.toString());
                 }
@@ -377,25 +371,24 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     /** Computes the list of call arguments for a given graph transition. */
     public static List<HostNode> getArguments(GraphTransition trans) {
         List<HostNode> result;
-        List<? extends CtrlPar> args = trans.getSwitch()
-            .getArgs();
+        List<? extends CtrlPar> args = trans.getSwitch().getArgs();
         if (args.isEmpty()) {
             result = EMPTY_ARGS;
         } else {
             result = new ArrayList<>();
             for (int i = 0; i < args.size(); i++) {
                 CtrlPar par = args.get(i);
-                if (par instanceof Var) {
-                    Var var = (Var) par;
-                    if (var.inOnly()) {
+                if (par instanceof Var v) {
+                    if (v.inOnly()) {
                         // look up value in source state
                     } else {
-                        assert var.outOnly();
+                        assert v.outOnly();
                         // look up value in target state
                     }
+                } else if (par instanceof Const c) {
+                    result.add(c.getNode());
                 } else {
-                    assert par instanceof Const;
-                    result.add(((Const) par).getNode());
+                    throw Exceptions.UNREACHABLE;
                 }
             }
         }

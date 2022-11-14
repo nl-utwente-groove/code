@@ -47,8 +47,7 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
 
     @Override
     public Call getRuleCall() {
-        return getStack().peekLast()
-            .getCall();
+        return getStack().peekLast().getCall();
     }
 
     /**
@@ -105,7 +104,9 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
 
     /** Creates a new derivation, with the call and derivation stack of this one but another target term. */
     public Derivation newInstance(Term target, boolean enterAtom) {
-        int depth = getTransience() + (enterAtom ? 1 : 0);
+        int depth = getTransience() + (enterAtom
+            ? 1
+            : 0);
         return new Derivation(getCall(), depth, target, getNested());
     }
 
@@ -140,10 +141,9 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
         if (!super.equals(obj)) {
             return false;
         }
-        if (!(obj instanceof Derivation)) {
+        if (!(obj instanceof Derivation other)) {
             return false;
         }
-        Derivation other = (Derivation) obj;
         if (hasNested()) {
             if (!getNested().equals(other.getNested())) {
                 return false;
@@ -167,7 +167,9 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
     private int computeHashCode() {
         int prime = 31;
         int result = super.hashCode();
-        result = prime * result + (hasNested() ? getNested().hashCode() : 0);
+        result = prime * result + (hasNested()
+            ? getNested().hashCode()
+            : 0);
         return result;
     }
 

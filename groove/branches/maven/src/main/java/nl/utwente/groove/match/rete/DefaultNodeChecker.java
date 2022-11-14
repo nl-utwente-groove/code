@@ -55,8 +55,8 @@ public class DefaultNodeChecker extends NodeChecker implements ReteStateSubscrib
     /**
      * The reporter collecting statistics for the {@link #receiveNode} method.
      */
-    protected static final Reporter receiveNodeReporter =
-        reporter.register("receiveNode(node, action)");
+    protected static final Reporter receiveNodeReporter
+        = reporter.register("receiveNode(node, action)");
 
     /**
      * @param network The {@link ReteNetwork} object to which this node will belong.
@@ -65,8 +65,7 @@ public class DefaultNodeChecker extends NodeChecker implements ReteStateSubscrib
         super(network);
         this.pattern[0] = node;
         this.type = node.getType();
-        this.sharpType = node.isSharp() || this.type.getSubtypes()
-            .size() == 1;
+        this.sharpType = node.isSharp() || this.type.getSubtypes().size() == 1;
     }
 
     /**
@@ -79,8 +78,7 @@ public class DefaultNodeChecker extends NodeChecker implements ReteStateSubscrib
     public void receiveNode(HostNode node, Action action) {
         receiveNodeReporter.start();
         if (checkType(node)) {
-            if (!this.getOwner()
-                .isInOnDemandMode()) {
+            if (!this.getOwner().isInOnDemandMode()) {
                 sendDownReceivedNode(node, action);
             } else if ((action == Action.REMOVE) && !this.ondemandBuffer.contains(node)) {
                 sendDownReceivedNode(node, action);
@@ -99,8 +97,7 @@ public class DefaultNodeChecker extends NodeChecker implements ReteStateSubscrib
 
     private void sendDownReceivedNode(HostNode node, Action action) {
 
-        ReteSimpleMatch m = new ReteSimpleMatch(this, node, this.getOwner()
-            .isInjective());
+        ReteSimpleMatch m = new ReteSimpleMatch(this, node, this.getOwner().isInjective());
 
         if (action == Action.ADD) {
             assert !this.memory.contains(m);
@@ -129,9 +126,7 @@ public class DefaultNodeChecker extends NodeChecker implements ReteStateSubscrib
 
     @Override
     public boolean equals(ReteNetworkNode node) {
-        return (node != null) && (node instanceof DefaultNodeChecker)
-            && (((DefaultNodeChecker) node).getType()
-                .equals(this.getType()));
+        return node instanceof DefaultNodeChecker dnc && dnc.getType().equals(this.getType());
     }
 
     /**
@@ -153,8 +148,7 @@ public class DefaultNodeChecker extends NodeChecker implements ReteStateSubscrib
     public boolean demandUpdate() {
         boolean result = this.ondemandBuffer.size() > 0;
         if (!this.isUpToDate()) {
-            if (this.getOwner()
-                .isInOnDemandMode()) {
+            if (this.getOwner().isInOnDemandMode()) {
                 for (HostNode n : this.ondemandBuffer) {
                     sendDownReceivedNode(n, Action.ADD);
                 }
@@ -174,11 +168,9 @@ public class DefaultNodeChecker extends NodeChecker implements ReteStateSubscrib
     @Override
     public int demandOneMatch() {
         int result = this.ondemandBuffer.size();
-        if (this.getOwner()
-            .isInOnDemandMode()) {
+        if (this.getOwner().isInOnDemandMode()) {
             if (!this.isUpToDate() && (result > 0)) {
-                HostNode n = this.ondemandBuffer.iterator()
-                    .next();
+                HostNode n = this.ondemandBuffer.iterator().next();
                 this.ondemandBuffer.remove(n);
                 sendDownReceivedNode(n, Action.ADD);
                 setUpToDate(this.ondemandBuffer.size() == 0);
@@ -195,8 +187,7 @@ public class DefaultNodeChecker extends NodeChecker implements ReteStateSubscrib
 
     @Override
     public boolean canBeStaticallyMappedTo(RuleNode node) {
-        return this.getNode()
-            .getType() == node.getType();
+        return this.getNode().getType() == node.getType();
     }
 
     /**

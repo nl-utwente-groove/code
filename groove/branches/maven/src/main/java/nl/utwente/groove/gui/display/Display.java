@@ -55,7 +55,7 @@ abstract public class Display extends JPanel {
         while (top != null && top.getParent() != null) {
             top = top.getParent();
         }
-        return (top instanceof Window) && ((Window) top).isActive();
+        return (top instanceof Window w) && w.isActive();
     }
 
     /**
@@ -74,8 +74,7 @@ abstract public class Display extends JPanel {
         if (this.listPanel == null) {
             this.listPanel = createListPanel();
             if (this.listPanel != null) {
-                ToolTipManager.sharedInstance()
-                    .registerComponent(this.listPanel);
+                ToolTipManager.sharedInstance().registerComponent(this.listPanel);
             }
         }
         return this.listPanel;
@@ -259,8 +258,7 @@ abstract public class Display extends JPanel {
         @Override
         public void setEnabled(boolean enabled) {
             super.setEnabled(enabled);
-            this.scrollPane.getViewport()
-                .setBackground(this.list.getBackground());
+            this.scrollPane.getViewport().setBackground(this.list.getBackground());
         }
 
         /** Returns the list component wrapped in this panel. */

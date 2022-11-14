@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -46,7 +46,7 @@ public class ExploreWarningDialog {
         this.listener = new MyPropertyListener();
     }
 
-    /** 
+    /**
      * Shows the dialog, and returns {@code true} if the user chose to continue.
      * Afterwards, {@link #getBound()} shows the next bound to which to explore.
      */
@@ -69,9 +69,8 @@ public class ExploreWarningDialog {
 
     private JOptionPane getOptionPane() {
         if (this.optionPane == null) {
-            this.optionPane =
-                new JOptionPane(getMessagePanel(), JOptionPane.QUESTION_MESSAGE,
-                    JOptionPane.OK_CANCEL_OPTION);
+            this.optionPane = new JOptionPane(getMessagePanel(), JOptionPane.QUESTION_MESSAGE,
+                JOptionPane.OK_CANCEL_OPTION);
             this.optionPane.addPropertyChangeListener(this.listener);
         }
         return this.optionPane;
@@ -228,9 +227,8 @@ public class ExploreWarningDialog {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (this.dialog != null && this.dialog.isVisible()
-                && evt.getNewValue() instanceof Integer
+                && evt.getNewValue() instanceof Integer value
                 && evt.getPropertyName().equals(JOptionPane.VALUE_PROPERTY)) {
-                Integer value = (Integer) evt.getNewValue();
                 setAnswer(value == JOptionPane.OK_OPTION);
                 if (getBoundedButton().isSelected()) {
                     setBound((Integer) getBoundSpinnerModel().getValue());

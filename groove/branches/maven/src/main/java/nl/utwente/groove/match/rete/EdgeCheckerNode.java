@@ -68,8 +68,8 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
      * For collecting reports on the number of time the
      * {@link #receiveEdge(ReteNetworkNode, HostEdge, Action)} method is called.
      */
-    protected static final Reporter receiveEdgeReporter =
-        reporter.register("receiveEdge(source, gEdge, action)");
+    protected static final Reporter receiveEdgeReporter
+        = reporter.register("receiveEdge(source, gEdge, action)");
 
     /**
      * Determines if this edge checker strictly checks against loop edges.
@@ -126,19 +126,16 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
         this.pattern[0] = e;
 
         this.type = e.getType();
-        this.sourceType = e.source()
-            .isSharp() || this.type == null
-            || e.source()
-                .getType() != this.type.source() ? e.source()
-                    .getType() : null;
+        this.sourceType = e.source().isSharp() || this.type == null
+            || e.source().getType() != this.type.source()
+                ? e.source().getType()
+                : null;
 
-        this.targetType = e.target()
-            .isSharp() || this.type == null
-            || e.target()
-                .getType() != this.type.target() ? e.target()
-                    .getType() : null;
-        this.selfEdge = e.source()
-            .equals(e.target());
+        this.targetType = e.target().isSharp() || this.type == null
+            || e.target().getType() != this.type.target()
+                ? e.target().getType()
+                : null;
+        this.selfEdge = e.source().equals(e.target());
         this.sourceNode = e.source();
         this.targetNode = e.target();
 
@@ -148,8 +145,8 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
 
     @Override
     public void addSuccessor(ReteNetworkNode nnode) {
-        boolean isValid =
-            (nnode instanceof SubgraphCheckerNode) || (nnode instanceof ConditionChecker)
+        boolean isValid
+            = (nnode instanceof SubgraphCheckerNode) || (nnode instanceof ConditionChecker)
                 || (nnode instanceof DisconnectedSubgraphChecker);
 
         assert isValid;
@@ -174,17 +171,14 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
         //condition 1: node types for end-points of the patter and host edge must be compatible
         //condition 2: labels must match <-- commented out because we check this in the root
         //condition 3: if this is an edge checker for a loop then e should also be a loop
-        assert isWildcardEdge() ? this.edge.label()
-            .getMatchExpr()
-            .getWildcardGuard()
-            .isSatisfied(e.getType())
-            : e.getType()
-                .equals(this.edge.getType());
+        assert isWildcardEdge()
+            ? this.edge.label().getMatchExpr().getWildcardGuard().isSatisfied(e.getType())
+            : e.getType().equals(this.edge.getType());
 
         return (this.type == null || this.type.subsumes(e.getType())) && checkSourceType(e.source())
             && checkTargetType(e.target()) && checkValues(this.sourceNode, e.source())
-            && checkValues(this.targetNode, e.target()) && (!this.selfEdge || (e.source()
-                .equals(e.target())));
+            && checkValues(this.targetNode, e.target())
+            && (!this.selfEdge || (e.source().equals(e.target())));
     }
 
     /** Tests if a given host edge source type matches the source type of
@@ -202,16 +196,13 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
     }
 
     private boolean checkValues(RuleNode n1, HostNode n2) {
-        return !(n1 instanceof VariableNode)
-            || (((n2 instanceof ValueNode) && (((ValueNode) n2).getSort()
-                .equals(((VariableNode) n1).getSort())))
-                && valuesMatch((VariableNode) n1, (ValueNode) n2));
+        return !(n1 instanceof VariableNode var1) || (n2 instanceof ValueNode val2)
+            && val2.getSort().equals(var1.getSort()) && valuesMatch(var1, val2);
 
     }
 
     private boolean valuesMatch(VariableNode n1, ValueNode n2) {
-        assert n2.getSort()
-            .equals((n2.getSort()));
+        assert n2.getSort().equals((n2.getSort()));
         Constant c = n1.getConstant();
         return (c == null) || (c.equals(n2.getTerm()));
     }
@@ -221,8 +212,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
      * wild-card edges.
      */
     public boolean isWildcardEdge() {
-        return this.edge.label()
-            .isWildcard();
+        return this.edge.label().isWildcard();
     }
 
     /**
@@ -230,8 +220,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
      * and if the wildcard is positive.
      */
     public boolean isPositiveWildcard() {
-        TypeGuard lc = ((RegExpr.Wildcard) this.edge.label()
-            .getMatchExpr()).getGuard();
+        TypeGuard lc = ((RegExpr.Wildcard) this.edge.label().getMatchExpr()).getGuard();
         return this.isWildcardEdge() && (lc == null || !lc.isNegated());
     }
 
@@ -240,11 +229,10 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
      *
      */
     public boolean isWildcardGuarded() {
-        return this.isWildcardEdge() && (((RegExpr.Wildcard) this.edge.label()
-            .getMatchExpr()).getGuard() != null)
-            && (((RegExpr.Wildcard) this.edge.label()
-                .getMatchExpr()).getGuard()
-                    .getLabels() != null);
+        return this.isWildcardEdge()
+            && (((RegExpr.Wildcard) this.edge.label().getMatchExpr()).getGuard() != null)
+            && (((RegExpr.Wildcard) this.edge.label().getMatchExpr()).getGuard()
+                .getLabels() != null);
     }
 
     /**
@@ -253,8 +241,9 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
      */
     public boolean isAcceptingLabel(TypeElement e) {
         RuleLabel rl = this.edge.label();
-        return isWildcardEdge() ? rl.getWildcardGuard()
-            .isSatisfied(e) : e.equals(this.edge.getType());
+        return isWildcardEdge()
+            ? rl.getWildcardGuard().isSatisfied(e)
+            : e.equals(this.edge.getType());
     }
 
     /**
@@ -273,13 +262,10 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
         //condition 2: if this is an edge checker for a loop then e should also be a loop and vice versa
         //condition 3: the end-points of this n-node's pattern and the given rule node are of the same type
         //condition 4: if any of the end points in the rule are constant then the values must match
-        return this.edge.label()
-            .equals(e.label()) //condition 1
+        return this.edge.label().equals(e.label()) //condition 1
             && (!this.selfEdge || (e.source() == e.target())) //condition 2
-            && (this.sourceNode.getType() == e.source()
-                .getType()) //condition 3
-            && (this.targetNode.getType() == e.target()
-                .getType())
+            && (this.sourceNode.getType() == e.source().getType()) //condition 3
+            && (this.targetNode.getType() == e.target().getType())
             && endPointValuesStaticallyCompatible(e); //condition 4
     }
 
@@ -290,16 +276,13 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
 
     private boolean nodeValuesStaticallyCompatible(RuleNode n1, RuleNode n2) {
         boolean result = (n1 instanceof VariableNode) == (n2 instanceof VariableNode);
-        if (result && (n1 instanceof VariableNode)) {
-            VariableNode vn1 = (VariableNode) n1;
+        if (result && (n1 instanceof VariableNode vn1)) {
             VariableNode vn2 = (VariableNode) n2;
-            result = vn1.getSort()
-                .equals(vn2.getSort());
+            result = vn1.getSort().equals(vn2.getSort());
             if (result) {
                 result = (vn1.getConstant() == null) == (vn2.getConstant() == null);
                 if (result && (vn1.getConstant() != null)) {
-                    result = vn1.getConstant()
-                        .equals(vn2.getConstant());
+                    result = vn1.getConstant().equals(vn2.getConstant());
                 }
             }
         }
@@ -320,8 +303,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
     public void receiveEdge(ReteNetworkNode source, HostEdge gEdge, Action action) {
         receiveEdgeReporter.start();
         if (this.canBeMappedToEdge(gEdge)) {
-            if (!this.getOwner()
-                .isInOnDemandMode()) {
+            if (!this.getOwner().isInOnDemandMode()) {
                 sendDownReceivedEdge(gEdge, action);
             } else if ((action == Action.REMOVE) && !this.ondemandBuffer.contains(gEdge)) {
                 sendDownReceivedEdge(gEdge, action);
@@ -343,17 +325,15 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
 
     private void sendDownReceivedEdge(HostEdge gEdge, Action action) {
 
-        LabelVar variable = this.isWildcardEdge() ? this.edge.label()
-            .getWildcardGuard()
-            .getVar() : null;
+        LabelVar variable = this.isWildcardEdge()
+            ? this.edge.label().getWildcardGuard().getVar()
+            : null;
 
         ReteSimpleMatch m;
         if (variable != null) {
-            m = new ReteSimpleMatch(this, gEdge, variable, this.getOwner()
-                .isInjective());
+            m = new ReteSimpleMatch(this, gEdge, variable, this.getOwner().isInjective());
         } else {
-            m = new ReteSimpleMatch(this, gEdge, this.getOwner()
-                .isInjective());
+            m = new ReteSimpleMatch(this, gEdge, this.getOwner().isInjective());
         }
 
         if (action == Action.ADD) {
@@ -409,8 +389,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
     public boolean demandUpdate() {
         boolean result = this.ondemandBuffer.size() > 0;
         if (!this.isUpToDate()) {
-            if (this.getOwner()
-                .isInOnDemandMode()) {
+            if (this.getOwner().isInOnDemandMode()) {
                 for (HostEdge e : this.ondemandBuffer) {
                     sendDownReceivedEdge(e, Action.ADD);
                 }
@@ -431,11 +410,9 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
     @Override
     public int demandOneMatch() {
         int result = this.ondemandBuffer.size();
-        if (this.getOwner()
-            .isInOnDemandMode()) {
+        if (this.getOwner().isInOnDemandMode()) {
             if (!this.isUpToDate() && (result > 0)) {
-                HostEdge e = this.ondemandBuffer.iterator()
-                    .next();
+                HostEdge e = this.ondemandBuffer.iterator().next();
                 this.ondemandBuffer.remove(e);
                 sendDownReceivedEdge(e, Action.ADD);
                 setUpToDate(this.ondemandBuffer.size() == 0);

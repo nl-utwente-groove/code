@@ -16,6 +16,9 @@ package nl.utwente.groove.lts;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+
+import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.control.instance.Step;
 import nl.utwente.groove.control.template.Switch;
@@ -44,7 +47,7 @@ public class DefaultGraphNextState extends AbstractGraphState
      * @param frameValues nodes that are bound to the variables in the control frame
      */
     public DefaultGraphNextState(int number, AbstractGraphState source, MatchResult match,
-        HostNode[] addedNodes, Object[] frameValues) {
+                                 HostNode[] addedNodes, Object[] frameValues) {
         super(source.getCacheReference(), number);
         this.source = source;
         this.event = match.getEvent();
@@ -161,24 +164,26 @@ public class DefaultGraphNextState extends AbstractGraphState
     }
 
     @Override
-    public GraphTransitionKey getKey(GraphState source) {
+    public @NonNull GraphTransitionKey getKey(GraphState source) {
         if (source == source()) {
             return getKey();
         } else {
             // we are acting as a transition stub aliasing the source state
             // (interpreted as a transition)
-            return getSourceKey();
+            assert getSourceKey().isPresent();
+            return getSourceKey().get();
         }
     }
 
     @Override
-    public HostNode[] getAddedNodes(GraphState source) {
+    public @NonNull HostNode[] getAddedNodes(GraphState source) {
         if (source == source()) {
             return getAddedNodes();
         } else {
             // we are acting as a transition stub aliasing the source state
             // (interpreted as a transition)
-            return getSourceAddedNodes();
+            assert getSourceKey().isPresent();
+            return getSourceAddedNodes().get();
         }
     }
 
@@ -194,26 +199,26 @@ public class DefaultGraphNextState extends AbstractGraphState
         }
         // find the initial rule transition
         RuleTransition initial = this;
-        while (initial.source()
-            .isInternalState()) {
+        while (initial.source().isInternalState()) {
             // recipe states cannot be the initial state, so it's a GraphNextState
             initial = (GraphNextState) initial.source();
         }
         // look for the corresponding outgoing transition
         RecipeTransition result = null;
-        for (GraphTransition trans : initial.source()
-            .getTransitions()) {
-            if (!(trans instanceof RecipeTransition)) {
+        for (GraphTransition trans : initial.source().getTransitions()) {
+            if (!(trans instanceof RecipeTransition rt)) {
                 continue;
             }
-            result = (RecipeTransition) trans;
+            result = rt;
             if (result.target() == this && result.getInitial() == initial) {
                 break;
             } else {
                 result = null;
             }
         }
-        return result == null ? this : result;
+        return result == null
+            ? this
+            : result;
     }
 
     @Override
@@ -234,8 +239,10 @@ public class DefaultGraphNextState extends AbstractGraphState
     @Override
     public RuleTransition toTransition(GraphState source) {
         if (source != source()) {
-            return new DefaultRuleTransition(source, getSourceKey(), getSourceAddedNodes(), this,
-                isSymmetry());
+            assert !getSourceKey().isEmpty();
+            assert !getSourceAddedNodes().isEmpty();
+            return new DefaultRuleTransition(source, getSourceKey().get(),
+                getSourceAddedNodes().get(), this, isSymmetry());
         } else {
             return this;
         }
@@ -267,24 +274,20 @@ public class DefaultGraphNextState extends AbstractGraphState
      * Returns the match from the source of this transition, if that is itself a
      * {@link nl.utwente.groove.lts.RuleTransitionStub}.
      */
-    protected MatchResult getSourceKey() {
-        if (source() instanceof GraphNextState) {
-            return ((GraphNextState) source()).getKey();
-        } else {
-            return null;
-        }
+    protected Optional<MatchResult> getSourceKey() {
+        return source() instanceof GraphNextState gns
+            ? Optional.of(gns.getKey())
+            : Optional.empty();
     }
 
     /**
      * Returns the event from the source of this transition, if that is itself a
      * {@link nl.utwente.groove.lts.RuleTransitionStub}.
      */
-    protected HostNode[] getSourceAddedNodes() {
-        if (source() instanceof GraphNextState) {
-            return ((GraphNextState) source()).getAddedNodes();
-        } else {
-            return null;
-        }
+    protected Optional<HostNode[]> getSourceAddedNodes() {
+        return source() instanceof GraphNextState gns
+            ? Optional.of(getAddedNodes())
+            : Optional.empty();
     }
 
     /**
@@ -295,11 +298,7 @@ public class DefaultGraphNextState extends AbstractGraphState
      */
     @Override
     public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        } else {
-            return (obj instanceof RuleTransition) && equalsTransition((RuleTransition) obj);
-        }
+        return obj == this || (obj instanceof RuleTransition rt) && equalsTransition(rt);
     }
 
     /**
@@ -326,10 +325,10 @@ public class DefaultGraphNextState extends AbstractGraphState
      */
     @Override
     protected RuleTransitionStub createInTransitionStub(GraphState source, MatchResult match,
-        HostNode[] addedNodes) {
+                                                        HostNode[] addedNodes) {
         if (source == source() && match.getEvent() == getEvent()) {
             return this;
-        } else if (source != source() && match == getSourceKey()) {
+        } else if (source != source() && getSourceKey().map(k -> k == match).orElse(false)) {
             return this;
         } else {
             return super.createInTransitionStub(source, match, addedNodes);

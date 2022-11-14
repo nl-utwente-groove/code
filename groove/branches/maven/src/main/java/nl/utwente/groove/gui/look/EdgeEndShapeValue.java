@@ -39,19 +39,18 @@ public class EdgeEndShapeValue implements VisualValue<EdgeEnd> {
     public <G extends Graph> EdgeEnd get(JGraph<G> jGraph, JCell<G> cell) {
         // first see what the looks have to say
         VisualMap looksMap = Look.getVisualsFor(cell.getLooks());
-        EdgeEnd result =
-            this.source ? looksMap.getEdgeSourceShape() : looksMap.getEdgeTargetShape();
+        EdgeEnd result = this.source
+            ? looksMap.getEdgeSourceShape()
+            : looksMap.getEdgeTargetShape();
         Set<Look> looks = cell.getLooks();
         if (looks.contains(Look.NO_ARROW)) {
             result = EdgeEnd.NONE;
         } else if (jGraph.isShowArrowsOnLabels()) {
             // only show some arrows
             boolean show = false;
-            if (cell instanceof AspectJEdge) {
-                AspectJEdge jEdge = (AspectJEdge) cell;
+            if (cell instanceof AspectJEdge jEdge) {
                 show |= jEdge.getAspect() == AspectKind.SUBTYPE;
-                show |= this.source && jEdge.getEdge() != null && jEdge.getEdge()
-                    .isComposite();
+                show |= this.source && jEdge.getEdge() != null && jEdge.getEdge().isComposite();
                 show |= jEdge.isNodeEdgeOut();
             }
             if (!show) {

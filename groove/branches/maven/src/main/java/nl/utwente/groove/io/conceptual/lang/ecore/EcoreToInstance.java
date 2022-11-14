@@ -112,10 +112,7 @@ public class EcoreToInstance extends InstanceImporter {
         while (it.hasNext()) {
             EObject obj = it.next();
             // This check is probably unnecessary
-            if (obj.eClass()
-                .eClass()
-                .getName()
-                .equals("EClass")) {
+            if (obj.eClass().eClass().getName().equals("EClass")) {
                 //count++;
                 visitObject(m, obj);
             }
@@ -144,8 +141,8 @@ public class EcoreToInstance extends InstanceImporter {
         Id clsId = EcoreUtil.idFromClassifier(eObject.eClass());
         Class cmClass = this.m_typeModel.getClass(clsId);
         if (cmClass == null) {
-            addMessage(
-                new Message("Cannot find class " + clsId + " in type model", MessageType.ERROR));
+            addMessage(new Message("Cannot find class " + clsId + " in type model",
+                MessageType.ERROR));
             return null;
         }
 
@@ -154,15 +151,10 @@ public class EcoreToInstance extends InstanceImporter {
         this.m_objects.put(eObject, cmObject);
 
         // Run through structural features in metamodel, and map the values (if any)
-        for (EStructuralFeature feature : eObject.eClass()
-            .getEAllStructuralFeatures()) {
-            if (feature.eClass()
-                .getName()
-                .equals("EReference")) {
+        for (EStructuralFeature feature : eObject.eClass().getEAllStructuralFeatures()) {
+            if (feature.eClass().getName().equals("EReference")) {
                 visitReference(m, cmObject, (EReference) feature, eObject.eGet(feature));
-            } else if (feature.eClass()
-                .getName()
-                .equals("EAttribute")) {
+            } else if (feature.eClass().getName().equals("EAttribute")) {
                 visitAttribute(m, cmObject, (EAttribute) feature, eObject.eGet(feature));
             }
         }
@@ -180,7 +172,7 @@ public class EcoreToInstance extends InstanceImporter {
      */
     @SuppressWarnings("unchecked")
     private Value visitReference(InstanceModel m, Object cmObject, EReference eReference,
-        java.lang.Object value) {
+                                 java.lang.Object value) {
         // Happens if no value is assigned.
         if (value == null) {
             return null;
@@ -190,8 +182,8 @@ public class EcoreToInstance extends InstanceImporter {
         Id classId = EcoreUtil.idFromClassifier(eReference.getEContainingClass());
         Class refClass = this.m_typeModel.getClass(classId);
         if (refClass == null) {
-            addMessage(
-                new Message("Cannot find class of reference " + eReference, MessageType.ERROR));
+            addMessage(new Message("Cannot find class of reference " + eReference,
+                MessageType.ERROR));
             return null;
         }
         Field f = refClass.getField(Name.getName(eReference.getName()));
@@ -226,7 +218,7 @@ public class EcoreToInstance extends InstanceImporter {
      */
     @SuppressWarnings("unchecked")
     private Value visitAttribute(InstanceModel m, Object cmObject, EAttribute eAttribute,
-        java.lang.Object value) {
+                                 java.lang.Object value) {
         // Happens if no value is assigned.
         if (value == null) {
             return null;
@@ -236,14 +228,13 @@ public class EcoreToInstance extends InstanceImporter {
         Id classId = EcoreUtil.idFromClassifier(eAttribute.getEContainingClass());
         Class attrClass = this.m_typeModel.getClass(classId);
         if (attrClass == null) {
-            addMessage(
-                new Message("Cannot find class of attribute " + eAttribute, MessageType.ERROR));
+            addMessage(new Message("Cannot find class of attribute " + eAttribute,
+                MessageType.ERROR));
             return null;
         }
         Field f = attrClass.getField(Name.getName(eAttribute.getName()));
 
-        if (f.getType() instanceof Container) {
-            Container containerType = (Container) f.getType();
+        if (f.getType() instanceof Container containerType) {
             ContainerValue cv = new ContainerValue(containerType);
             cmObject.setFieldValue(f, cv);
 
@@ -252,8 +243,8 @@ public class EcoreToInstance extends InstanceImporter {
             if (eAttribute.isMany()) {
                 for (java.lang.Object target : (EList<Object>) value) {
                     try {
-                        Value cmVal =
-                            this.m_ecoreType.objectToDataType(this.m_typeModel, subType, target);
+                        Value cmVal
+                            = this.m_ecoreType.objectToDataType(this.m_typeModel, subType, target);
                         cv.addValue(cmVal);
                     } catch (InvalidTypeException e) {
                         addMessage(new Message(e.getMessage(), MessageType.ERROR));
@@ -262,8 +253,8 @@ public class EcoreToInstance extends InstanceImporter {
                 }
             } else {
                 try {
-                    Value cmVal =
-                        this.m_ecoreType.objectToDataType(this.m_typeModel, subType, value);
+                    Value cmVal
+                        = this.m_ecoreType.objectToDataType(this.m_typeModel, subType, value);
                     cv.addValue(cmVal);
                 } catch (InvalidTypeException e) {
                     addMessage(new Message(e.getMessage(), MessageType.ERROR));
@@ -273,8 +264,8 @@ public class EcoreToInstance extends InstanceImporter {
             return cv;
         } else {
             try {
-                Value cmVal =
-                    this.m_ecoreType.objectToDataType(this.m_typeModel, f.getType(), value);
+                Value cmVal
+                    = this.m_ecoreType.objectToDataType(this.m_typeModel, f.getType(), value);
                 cmObject.setFieldValue(f, cmVal);
                 return cmVal;
             } catch (InvalidTypeException e) {
@@ -290,8 +281,8 @@ public class EcoreToInstance extends InstanceImporter {
         String fragment = "";
         EObject current = eObject;
         while (current.eContainer() != null && current.eContainer() instanceof InternalEObject io) {
-            fragment =
-                "/" + io.eURIFragmentSegment(current.eContainingFeature(), current) + fragment;
+            fragment
+                = "/" + io.eURIFragmentSegment(current.eContainingFeature(), current) + fragment;
             current = current.eContainer();
         }
         fragment = "/" + fragment;
