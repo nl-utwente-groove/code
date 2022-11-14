@@ -67,7 +67,7 @@ public class GrooveToConstraint implements Messenger {
     private GraphNodeTypes m_types;
 
     public GrooveToConstraint(Collection<RuleModel> ruleModels, GraphNodeTypes types, Config cfg,
-        TypeModel typeModel) {
+                              TypeModel typeModel) {
         this.m_ruleModels = ruleModels;
         this.m_types = types;
         this.m_cfg = cfg;
@@ -77,9 +77,7 @@ public class GrooveToConstraint implements Messenger {
     }
 
     private void parseRules() {
-        Constraints constraints = this.m_cfg.getConfig()
-            .getTypeModel()
-            .getConstraints();
+        Constraints constraints = this.m_cfg.getConfig().getTypeModel().getConstraints();
         for (RuleModel model : this.m_ruleModels) {
             if (!model.isEnabled() || model.hasErrors()) {
                 continue;
@@ -87,56 +85,35 @@ public class GrooveToConstraint implements Messenger {
             String lastName = model.getLastName();
             if (constraints.isCheckUniqueness()
                 && lastName.startsWith(ConstraintToGroove.UNIQUE_PRF)) {
-                if (!this.m_cfg.getConfig()
-                    .getTypeModel()
-                    .getFields()
-                    .getContainers()
+                if (!this.m_cfg.getConfig().getTypeModel().getFields().getContainers()
                     .isUseTypeName()) {
                     parseUniqueRule(model);
                 }
             } else if (constraints.isCheckOrdering()
                 && lastName.startsWith(ConstraintToGroove.ORDERED_PRF)) {
-                if (!this.m_cfg.getConfig()
-                    .getTypeModel()
-                    .getFields()
-                    .getContainers()
+                if (!this.m_cfg.getConfig().getTypeModel().getFields().getContainers()
                     .isUseTypeName()) {
                     parseOrderedRule(model);
                 }
             } else if (constraints.isCheckIdentifier()
                 && lastName.startsWith(ConstraintToGroove.IDENTITY_PRF)) {
-                if (this.m_cfg.getConfig()
-                    .getTypeModel()
-                    .getProperties()
-                    .isUseIdentity()) {
+                if (this.m_cfg.getConfig().getTypeModel().getProperties().isUseIdentity()) {
                     parseIdentityRule(model);
                 }
             } else if (constraints.isCheckKeyset()
                 && lastName.startsWith(ConstraintToGroove.KEYSET_PRF)) {
-                if (this.m_cfg.getConfig()
-                    .getTypeModel()
-                    .getProperties()
-                    .isUseKeyset()) {
+                if (this.m_cfg.getConfig().getTypeModel().getProperties().isUseKeyset()) {
 
                     parseKeysetRule(model);
                 }
             } else if (constraints.isCheckOpposite()
                 && lastName.startsWith(ConstraintToGroove.OPPOSITE_PRF)) {
-                if (this.m_cfg.getConfig()
-                    .getTypeModel()
-                    .getProperties()
-                    .isUseOpposite()) {
+                if (this.m_cfg.getConfig().getTypeModel().getProperties().isUseOpposite()) {
                     parseOppositeRule(model);
                 }
-            } else if (this.m_cfg.getConfig()
-                .getTypeModel()
-                .getFields()
-                .getDefaults()
-                .isUseRule() && lastName.startsWith(ConstraintToGroove.DEFAULT_PRF)) {
-                if (this.m_cfg.getConfig()
-                    .getTypeModel()
-                    .getProperties()
-                    .isUseDefaultValue()) {
+            } else if (this.m_cfg.getConfig().getTypeModel().getFields().getDefaults().isUseRule()
+                && lastName.startsWith(ConstraintToGroove.DEFAULT_PRF)) {
+                if (this.m_cfg.getConfig().getTypeModel().getProperties().isUseDefaultValue()) {
                     parseDefaultRule(model);
                 }
             }
@@ -159,19 +136,13 @@ public class GrooveToConstraint implements Messenger {
 
         for (AbsNode n : ruleGraph.getNodes()) {
             // Find root node
-            if (n.getTargetEdges()
-                .size() == 0 && getType(n) != null) {
+            if (n.getTargetEdges().size() == 0 && getType(n) != null) {
                 // Get field of first outgoing edge and change its type to something unique
                 Class c = (Class) this.m_types.getType(getType(n));
-                if (n.getEdges()
-                    .size() > 0) {
-                    Name fieldName = Name.getName(n.getEdges()
-                        .get(0)
-                        .getName());
-                    if (c.getField(fieldName)
-                        .getType() instanceof Container) {
-                        ((Container) c.getField(fieldName)
-                            .getType()).setUnique(true);
+                if (n.getEdges().size() > 0) {
+                    Name fieldName = Name.getName(n.getEdges().get(0).getName());
+                    if (c.getField(fieldName).getType() instanceof Container con) {
+                        con.setUnique(true);
                     }
                 }
             }
@@ -184,19 +155,13 @@ public class GrooveToConstraint implements Messenger {
 
         for (AbsNode n : ruleGraph.getNodes()) {
             // Find root node (NAC check is for edge roots)
-            if (n.getTargetEdges()
-                .size() == 0 && !isNAC(n) && getType(n) != null) {
+            if (n.getTargetEdges().size() == 0 && !isNAC(n) && getType(n) != null) {
                 // Get field of first outgoing edge and change its type to something ordered
                 Class c = (Class) this.m_types.getType(getType(n));
-                if (n.getEdges()
-                    .size() > 0) {
-                    Name fieldName = Name.getName(n.getEdges()
-                        .get(0)
-                        .getName());
-                    if (c.getField(fieldName)
-                        .getType() instanceof Container) {
-                        ((Container) c.getField(fieldName)
-                            .getType()).setOrdered(true);
+                if (n.getEdges().size() > 0) {
+                    Name fieldName = Name.getName(n.getEdges().get(0).getName());
+                    if (c.getField(fieldName).getType() instanceof Container) {
+                        ((Container) c.getField(fieldName).getType()).setOrdered(true);
                     }
                 }
             }
@@ -214,8 +179,7 @@ public class GrooveToConstraint implements Messenger {
             //Find the inequality edge, connects two class nodes for the identity property, with outgoing field names
             //Use incoming edges, can be only one
             for (AbsEdge edge : node.getTargetEdges()) {
-                if (edge.getName()
-                    .equals("!=")) {
+                if (edge.getName().equals("!=")) {
                     classNode = edge.getSource();
                     idClass = (Class) this.m_types.getType(getType(classNode));
                     break outloop;
@@ -233,8 +197,8 @@ public class GrooveToConstraint implements Messenger {
                 }
             }
             if (fieldNames.size() > 0) {
-                IdentityProperty ip =
-                    new IdentityProperty(idClass, fieldNames.toArray(new Name[fieldNames.size()]));
+                IdentityProperty ip = new IdentityProperty(idClass,
+                    fieldNames.toArray(new Name[fieldNames.size()]));
                 this.m_typeModel.addProperty(ip);
             }
         }
@@ -251,8 +215,7 @@ public class GrooveToConstraint implements Messenger {
 
         // Find main class node for keyset relation. Node has no incoming edges
         for (AbsNode node : ruleGraph.getNodes()) {
-            if (node.getTargetEdges()
-                .size() == 0) {
+            if (node.getTargetEdges().size() == 0) {
                 relClassNode = node;
                 relClass = (Class) this.m_types.getType(getType(node));
                 break;
@@ -263,16 +226,13 @@ public class GrooveToConstraint implements Messenger {
             return;
         }
 
-        Name relField = Name.getName(relClassNode.getEdges()
-            .get(0)
-            .getName());
+        Name relField = Name.getName(relClassNode.getEdges().get(0).getName());
 
         outloop: for (AbsNode node : ruleGraph.getNodes()) {
             //Find the inequality edge, connects two class nodes for the identity property, with outgoing field names
             //Use incoming edges, can be only one
             for (AbsEdge edge : node.getTargetEdges()) {
-                if (edge.getName()
-                    .equals("!=")) {
+                if (edge.getName().equals("!=")) {
                     classNode = edge.getSource();
                     keyClass = (Class) this.m_types.getType(getType(node));
                     break outloop;
@@ -376,8 +336,7 @@ public class GrooveToConstraint implements Messenger {
                         continue;
                     }
                     if (isNew(targetNode)) {
-                        Name field = Name.getName(edge.getName()
-                            .substring(4)); //remove the "new:" aspect
+                        Name field = Name.getName(edge.getName().substring(4)); //remove the "new:" aspect
                         Value value = getNodeValue(targetNode);
 
                         DefaultValueProperty dp = new DefaultValueProperty(cmClass, field, value);
@@ -418,15 +377,11 @@ public class GrooveToConstraint implements Messenger {
                     // Ignore edges of which the current node is the target, they will be treated by the source node
                     continue;
                 }
-                if (edge.getAspect()
-                    .isForNode(GraphRole.RULE) && edge.source() == edge.target()) {
-                    nodeMap.get(edge.source())
-                        .addName(edge.label()
-                            .toString());
+                if (edge.getAspect().isForNode(GraphRole.RULE) && edge.source() == edge.target()) {
+                    nodeMap.get(edge.source()).addName(edge.label().toString());
                 } else {
                     /*AbsEdge aEdge = */new AbsEdge(nodeMap.get(edge.source()),
-                        nodeMap.get(edge.target()), edge.label()
-                            .toString());
+                        nodeMap.get(edge.target()), edge.label().toString());
                 }
             }
         }
@@ -479,12 +434,10 @@ public class GrooveToConstraint implements Messenger {
         if (nodeType == null) {
             // Might be some intermediate node
             if (this.m_types.getModelType(getType(node)) == ModelType.TypeIntermediate) {
-                String valueEdge = this.m_cfg.getStrings()
-                    .getValueEdge();
+                String valueEdge = this.m_cfg.getStrings().getValueEdge();
                 AbsNode valueNode = null;
                 for (AbsEdge e : node.getEdges()) {
-                    if (e.getName()
-                        .equals(valueEdge)) {
+                    if (e.getName().equals(valueEdge)) {
                         valueNode = e.getTarget();
                     }
                 }
@@ -505,20 +458,16 @@ public class GrooveToConstraint implements Messenger {
         // Data types
         // get the value-related part of the node name
         // Enum type
-        if (nodeType instanceof Enum) {
-            Enum e = (Enum) nodeType;
-            if (this.m_cfg.getConfig()
-                .getTypeModel()
-                .getEnumMode() == EnumModeType.NODE) {
+        if (nodeType instanceof Enum e) {
+            if (this.m_cfg.getConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
                 Id id = this.m_cfg.nameToId(getType(node));
                 EnumValue ev = new EnumValue(e, id.getName());
                 resultValue = ev;
             } else {
                 for (AbsEdge enumEdge : node.getEdges()) {
-                    if (enumEdge.getName()
-                        .startsWith("flag:")) {
-                        EnumValue ev = new EnumValue(e, Name.getName(enumEdge.getName()
-                            .substring(5)));
+                    if (enumEdge.getName().startsWith("flag:")) {
+                        EnumValue ev
+                            = new EnumValue(e, Name.getName(enumEdge.getName().substring(5)));
                         resultValue = ev;
                         break;
                     }
@@ -526,29 +475,25 @@ public class GrooveToConstraint implements Messenger {
             }
         }
         // Custom data type
-        else if (nodeType instanceof CustomDataType) {
-            CustomDataType cdt = (CustomDataType) nodeType;
-            String dataValueName = this.m_cfg.getStrings()
-                .getDataValue();
+        else if (nodeType instanceof CustomDataType cdt) {
+            String dataValueName = this.m_cfg.getStrings().getDataValue();
             AbsNode valueNode = null;
             for (AbsEdge e : node.getEdges()) {
-                if (e.getName()
-                    .equals(dataValueName)) {
+                if (e.getName().equals(dataValueName)) {
                     valueNode = e.getTarget();
                 }
             }
             if (valueNode != null) {
-                String valueString = valueNode.getNames()[0].substring(nodeType.typeString()
-                    .length() + 1);
+                String valueString
+                    = valueNode.getNames()[0].substring(nodeType.typeString().length() + 1);
                 CustomDataValue dv = new CustomDataValue(cdt, valueString);
                 resultValue = dv;
             }
         }
         // regular data types
-        else if (nodeType instanceof DataType) {
-            String valueString = node.getNames()[0].substring(nodeType.typeString()
-                .length() + 1);
-            resultValue = ((DataType) nodeType).valueFromString(valueString);
+        else if (nodeType instanceof DataType dt) {
+            String valueString = node.getNames()[0].substring(nodeType.typeString().length() + 1);
+            resultValue = dt.valueFromString(valueString);
         }
         // Containers & tuples
         // Not supported, used by default value only

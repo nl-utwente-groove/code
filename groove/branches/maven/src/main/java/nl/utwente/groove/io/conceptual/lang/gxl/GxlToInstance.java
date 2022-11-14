@@ -65,11 +65,10 @@ public class GxlToInstance extends InstanceImporter {
         // Load the GXL
         try (FileInputStream in = new FileInputStream(instanceModel)) {
             int timer = Timer.cont("Load GXL");
-            @SuppressWarnings("unchecked") JAXBElement<GxlType> doc =
-                (JAXBElement<GxlType>) GxlUtil.g_unmarshaller.unmarshal(in);
+            @SuppressWarnings("unchecked")
+            JAXBElement<GxlType> doc = (JAXBElement<GxlType>) GxlUtil.g_unmarshaller.unmarshal(in);
             in.close();
-            for (GraphType g : doc.getValue()
-                .getGraph()) {
+            for (GraphType g : doc.getValue().getGraph()) {
                 String type = GxlUtil.getElemType(g);
                 if (!("gxl-1.0".equals(type))) {
                     this.m_instanceGraphs.put(QualName.parse(g.getId()), g);
@@ -100,8 +99,8 @@ public class GxlToInstance extends InstanceImporter {
         }
         if (this.m_instanceGraphs.containsKey(modelName)) {
             // Find the type of the graph
-            QualName type =
-                QualName.parse(GxlUtil.getElemType(this.m_instanceGraphs.get(modelName)));
+            QualName type
+                = QualName.parse(GxlUtil.getElemType(this.m_instanceGraphs.get(modelName)));
             TypeModel mm = this.m_gxlToType.getTypeModel(type);
             if (mm == null) {
                 return null;
@@ -125,15 +124,12 @@ public class GxlToInstance extends InstanceImporter {
         for (Entry<NodeType,NodeWrapper> entry : nodes.entrySet()) {
             NodeWrapper node = entry.getValue();
 
-            if (node.getNode()
-                .getGraph()
-                .isEmpty()) {
+            if (node.getNode().getGraph().isEmpty()) {
                 Object cmObject = visitObject(m, node, graphId);
                 m.addObject(cmObject);
             } else {
                 // Found a subgraph in a Node. Ignore the node, treat subgraph as namespace (this will be handled automatically by GxlToType)
-                for (GraphType subGraph : node.getNode()
-                    .getGraph()) {
+                for (GraphType subGraph : node.getNode().getGraph()) {
                     visitGraph(m, subGraph);
                 }
             }
@@ -197,8 +193,8 @@ public class GxlToInstance extends InstanceImporter {
             if (currentValues.containsKey(refName)) {
                 v = currentValues.get(refName);
             } else {
-                if (f.getType() instanceof Container) {
-                    v = new ContainerValue((Container) f.getType());
+                if (f.getType() instanceof Container ct) {
+                    v = new ContainerValue(ct);
                 } else {
                     v = oTarget;
                 }
@@ -245,15 +241,15 @@ public class GxlToInstance extends InstanceImporter {
         Field fieldTo = cmClass.getField(Name.getName("to"));
         assert (fieldFrom != null && fieldTo != null);
 
-        if (fieldFrom.getType() instanceof Container) {
-            ContainerValue cv = new ContainerValue((Container) fieldFrom.getType());
+        if (fieldFrom.getType() instanceof Container ct) {
+            ContainerValue cv = new ContainerValue(ct);
             o.setFieldValue(fieldFrom, cv);
             cv.addValue(oSource);
         } else {
             o.setFieldValue(fieldFrom, oSource);
         }
-        if (fieldTo.getType() instanceof Container) {
-            ContainerValue cv = new ContainerValue((Container) fieldTo.getType());
+        if (fieldTo.getType() instanceof Container ct) {
+            ContainerValue cv = new ContainerValue(ct);
             o.setFieldValue(fieldTo, cv);
             cv.addValue(oTarget);
         } else {
