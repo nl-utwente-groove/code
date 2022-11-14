@@ -49,7 +49,7 @@ public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.Compos
      */
     public CompositeEvent(Record record, Rule rule, Collection<BasicEvent> eventSet, Reuse reuse) {
         super(reference, rule);
-        assert!eventSet.isEmpty();
+        assert !eventSet.isEmpty();
         this.record = record;
         this.reuse = reuse;
         this.eventArray = new BasicEvent[eventSet.size()];
@@ -85,8 +85,7 @@ public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.Compos
     public String getAnchorImageString() {
         List<String> eventLabels = new ArrayList<>();
         for (BasicEvent event : this.eventArray) {
-            eventLabels.add(event.getRule()
-                .getQualName() + event.getAnchorImageString());
+            eventLabels.add(event.getRule().getQualName() + event.getAnchorImageString());
         }
         return Arrays.toString(eventLabels.toArray());
     }
@@ -126,8 +125,8 @@ public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.Compos
             // the same rule, so the other is also a composite event
             BasicEvent[] myEventArray = this.eventArray;
             BasicEvent[] otherEventArray;
-            if (other instanceof CompositeEvent) {
-                otherEventArray = ((CompositeEvent) other).eventArray;
+            if (other instanceof CompositeEvent e) {
+                otherEventArray = e.eventArray;
             } else {
                 otherEventArray = new BasicEvent[] {(BasicEvent) other};
             }
@@ -215,8 +214,8 @@ public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.Compos
     /** The (non-empty) array of sub-events constituting this event. */
     final BasicEvent[] eventArray;
     /** Cache reference instance for initialisation. */
-    static private final CacheReference<CompositeEventCache> reference =
-        CacheReference.<CompositeEventCache>newInstance(false);
+    static private final CacheReference<CompositeEventCache> reference
+        = CacheReference.<CompositeEventCache>newInstance(false);
 
     class CompositeEventCache
         extends AbstractRuleEvent<Rule,CompositeEventCache>.AbstractEventCache {
@@ -226,8 +225,7 @@ public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.Compos
          */
         SortedSet<BasicEvent> getEventSet() {
             if (this.eventSet == null) {
-                this.eventSet =
-                    new TreeSet<>(Arrays.asList(CompositeEvent.this.eventArray));
+                this.eventSet = new TreeSet<>(Arrays.asList(CompositeEvent.this.eventArray));
             }
             return this.eventSet;
         }

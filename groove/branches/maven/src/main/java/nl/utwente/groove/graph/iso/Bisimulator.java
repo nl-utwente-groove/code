@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package nl.utwente.groove.graph.iso;
@@ -176,7 +176,7 @@ public class Bisimulator extends CertificateStrategy {
 
     @Override
     EdgeCertificate createEdge2Certificate(Edge edge, CertificateStrategy.NodeCertificate source,
-            CertificateStrategy.NodeCertificate target) {
+                                           CertificateStrategy.NodeCertificate target) {
         return new MyEdge2Cert(edge, (MyNodeCert) source, (MyNodeCert) target);
     }
 
@@ -210,8 +210,8 @@ public class Bisimulator extends CertificateStrategy {
     /**
      * Superclass of graph element certificates.
      */
-    public static abstract class Certificate<EL extends Element> implements
-            CertificateStrategy.ElementCertificate<EL> {
+    public static abstract class Certificate<EL extends Element>
+        implements CertificateStrategy.ElementCertificate<EL> {
         /** Constructs a certificate for a given graph element. */
         Certificate(EL element) {
             this.element = element;
@@ -292,8 +292,8 @@ public class Bisimulator extends CertificateStrategy {
      * @author Arend Rensink
      * @version $Revision$
      */
-    static private class MyNodeCert extends Certificate<Node> implements
-            CertificateStrategy.NodeCertificate {
+    static private class MyNodeCert extends Certificate<Node>
+        implements CertificateStrategy.NodeCertificate {
         /** Initial node value to provide a better spread of hash codes. */
         static private final int INIT_NODE_VALUE = 0x126b;
 
@@ -304,8 +304,8 @@ public class Bisimulator extends CertificateStrategy {
          */
         public MyNodeCert(Node node) {
             super(node);
-            if (node instanceof HostElement) {
-                this.type = ((HostElement) node).getType().label();
+            if (node instanceof HostElement e) {
+                this.type = e.getType().label();
                 this.value = this.type.hashCode();
             } else {
                 this.type = null;
@@ -402,8 +402,7 @@ public class Bisimulator extends CertificateStrategy {
             if (this == obj) {
                 return true;
             }
-            return obj instanceof MyValueNodeCert
-                && this.nodeValue.equals(((MyValueNodeCert) obj).nodeValue);
+            return obj instanceof MyValueNodeCert cert && this.nodeValue.equals(cert.nodeValue);
         }
 
         /**
@@ -477,10 +476,8 @@ public class Bisimulator extends CertificateStrategy {
             int targetShift = (this.initValue & 0xf) + 1;
             int sourceHashCode = this.source.value;
             int targetHashCode = this.target.value;
-            int result =
-                ((sourceHashCode << 8) | (sourceHashCode >>> 24))
-                    + ((targetHashCode << targetShift) | (targetHashCode >>> targetShift))
-                    + this.value;
+            int result = ((sourceHashCode << 8) | (sourceHashCode >>> 24))
+                + ((targetHashCode << targetShift) | (targetHashCode >>> targetShift)) + this.value;
             this.source.nextValue += 2 * result;
             this.target.nextValue -= 3 * result;
             return result;

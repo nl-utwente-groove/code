@@ -191,8 +191,8 @@ public class ContainmentChecker implements TypeChecker {
                 return false;
             }
             HostNode otherNode;
-            if (obj instanceof Record) {
-                otherNode = ((Record) obj).node;
+            if (obj instanceof Record r) {
+                otherNode = r.node;
             } else {
                 assert obj instanceof HostNode;
                 otherNode = (HostNode) obj;

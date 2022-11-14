@@ -27,12 +27,12 @@ public class Container extends Type {
     public Container(Kind ctype, Type contentType) {
         this.m_ctype = ctype;
 
-        if (contentType instanceof Class) {
+        if (contentType instanceof Class c) {
             // Containers always proper type
-            contentType = ((Class) contentType).getProperClass();
+            contentType = c.getProperClass();
         }
-        if (contentType instanceof Container) {
-            ((Container) contentType).m_parent = this;
+        if (contentType instanceof Container c) {
+            c.m_parent = this;
         }
 
         this.m_contentType = contentType;
@@ -105,7 +105,8 @@ public class Container extends Type {
     @Override
     public String toString() {
         return typeString() + "<" + this.m_ctype + ">(" + (this.m_contentType.isComplex()
-            ? this.m_contentType.typeString() : this.m_contentType.toString()) + ")";
+            ? this.m_contentType.typeString()
+            : this.m_contentType.toString()) + ")";
     }
 
     /** Returns the kind of this container. */
@@ -145,11 +146,9 @@ public class Container extends Type {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof Container)) {
+        if (!(o instanceof Container c)) {
             return false;
         }
-        Container c = (Container) o;
-        return c.getContainerType() == getContainerType() && c.getType()
-            .equals(getType());
+        return c.getContainerType() == getContainerType() && c.getType().equals(getType());
     }
 }

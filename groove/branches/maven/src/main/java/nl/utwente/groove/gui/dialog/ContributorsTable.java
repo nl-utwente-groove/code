@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2011 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -41,7 +41,7 @@ import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.io.Util;
 
 /**
- * Table containing information about the auxiliary libraries used in Groove. 
+ * Table containing information about the auxiliary libraries used in Groove.
  * @author Arend Rensink
  * @version $Revision $
  */
@@ -119,14 +119,15 @@ public class ContributorsTable extends JTable {
      * Taken from {@link "http://java-swing-tips.blogspot.nl/2009/02/hyperlink-in-jtable-cell.html"}
      * @author TERAI Atsuhiro
      */
-    private static class URLRenderer extends DefaultTableCellRenderer implements MouseListener,
-            MouseMotionListener {
+    private static class URLRenderer extends DefaultTableCellRenderer
+        implements MouseListener, MouseMotionListener {
         private int row = -1;
         private int col = -1;
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
-                boolean isSelected, boolean hasFocus, int row, int column) {
+                                                       boolean isSelected, boolean hasFocus,
+                                                       int row, int column) {
             super.getTableCellRendererComponent(table, value, isSelected, false, row, column);
             StringBuilder text = new StringBuilder(value.toString());
             BLUE_TAG.on(text);
@@ -167,8 +168,7 @@ public class ContributorsTable extends JTable {
             int ccol = table.columnAtPoint(pt);
             int crow = table.rowAtPoint(pt);
             Object value = table.getValueAt(crow, ccol);
-            if (value instanceof URL) {
-                URL url = (URL) value;
+            if (value instanceof URL url) {
                 try {
                     if (Desktop.isDesktopSupported()) {
                         Desktop.getDesktop().browse(url.toURI());
@@ -199,7 +199,7 @@ public class ContributorsTable extends JTable {
             // do nothing
         }
 
-        private static final HTMLConverter.HTMLTag BLUE_TAG =
-            HTMLConverter.createColorTag(Color.BLUE);
+        private static final HTMLConverter.HTMLTag BLUE_TAG
+            = HTMLConverter.createColorTag(Color.BLUE);
     }
 }

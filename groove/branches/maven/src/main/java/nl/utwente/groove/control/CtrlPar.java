@@ -154,7 +154,9 @@ public interface CtrlPar {
 
         @Override
         public String toString() {
-            String result = outOnly() ? OUT_PREFIX + " " : "";
+            String result = outOnly()
+                ? OUT_PREFIX + " "
+                : "";
             result += var().toString();
             return result;
         }
@@ -206,10 +208,9 @@ public interface CtrlPar {
         public boolean equals(Object obj) {
             if (this == obj) {
                 return true;
-            } else if (!(obj instanceof Const)) {
+            } else if (!(obj instanceof Const other)) {
                 return false;
             }
-            Const other = (Const) obj;
             return getValue().equals(other.getValue());
         }
 

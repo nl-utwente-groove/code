@@ -115,16 +115,16 @@ public class Condition implements Fixable {
      *        ground
      * @param properties properties for matching the condition
      */
-    public Condition(@NonNull
-    String name, @NonNull
-    Op operator, RuleGraph pattern, @Nullable
-    RuleGraph root, GrammarProperties properties) {
+    public Condition(@NonNull String name, @NonNull Op operator, RuleGraph pattern,
+                     @Nullable RuleGraph root, GrammarProperties properties) {
         assert name != null;
         assert operator.hasPattern();
         this.op = operator;
         this.name = name;
         this.factory = pattern.getFactory();
-        this.root = root == null ? pattern.newGraph(name + "-root") : root;
+        this.root = root == null
+            ? pattern.newGraph(name + "-root")
+            : root;
         this.pattern = pattern;
         this.grammarProperties = properties;
         this.outputNodes = new HashSet<>();
@@ -267,7 +267,7 @@ public class Condition implements Fixable {
     public void addSubCondition(Condition condition) {
         if (!getOp().hasOperands()) {
             throw Exceptions.unsupportedOp("%s conditions cannot have subconditions",
-                condition.getOp());
+                                           condition.getOp());
         }
         condition.testFixed(true);
         testFixed(false);
@@ -444,8 +444,7 @@ public class Condition implements Fixable {
             this.fixed = true;
             if (hasPattern()) {
                 getPattern().setFixed();
-                if (!getGrammarProperties().getAlgebraFamily()
-                    .supportsSymbolic()) {
+                if (!getGrammarProperties().getAlgebraFamily().supportsSymbolic()) {
                     checkResolution();
                 }
                 if (getRule() != null) {
@@ -475,20 +474,17 @@ public class Condition implements Fixable {
      */
     public void checkResolution() throws FormatException {
         // if the algebra family allows symbolic exploration, there is nothing to be checked
-        if (getGrammarProperties().getAlgebraFamily()
-            .supportsSymbolic()) {
+        if (getGrammarProperties().getAlgebraFamily().supportsSymbolic()) {
             return;
         }
         FormatErrorSet errors = new FormatErrorSet();
         Map<VariableNode,List<Set<VariableNode>>> resolverMap = createResolvers();
         stabilise(resolverMap);
         for (RuleNode node : resolverMap.keySet()) {
-            errors.add(
-                "Variable node '%s' cannot always be resolved (use '%s' algebra for symbolic exploration or specify a '%s' or '%s' parameter)",
-                node,
-                AlgebraFamily.POINT.getName(),
-                AspectKind.PARAM_IN.getPrefix(),
-                AspectKind.PARAM_ASK.getPrefix());
+            errors
+                .add("Variable node '%s' cannot always be resolved (use '%s' algebra for symbolic exploration or specify a '%s' or '%s' parameter)",
+                     node, AlgebraFamily.POINT.getName(), AspectKind.PARAM_IN.getPrefix(),
+                     AspectKind.PARAM_ASK.getPrefix());
         }
         errors.throwException();
     }
@@ -503,13 +499,13 @@ public class Condition implements Fixable {
         // Set of variable nodes already found to have been resolved
         Set<VariableNode> resolved = new HashSet<>();
         for (RuleNode node : getInputNodes()) {
-            if (node instanceof VariableNode) {
-                resolved.add((VariableNode) node);
+            if (node instanceof VariableNode v) {
+                resolved.add(v);
             }
         }
         // Set of variable nodes needing resolution
         for (RuleNode node : getPattern().nodeSet()) {
-            if (node instanceof VariableNode && ((VariableNode) node).getConstant() == null
+            if (node instanceof VariableNode v && v.getConstant() == null
                 && !resolved.contains(node)) {
                 VariableNode varNode = (VariableNode) node;
                 boolean isResolved = false;
@@ -532,34 +528,26 @@ public class Condition implements Fixable {
         // meaning that either this condition has to be conjunctive
         if (isConjunctive()) {
             // Collect the set-based operator nodes in this condition
-            Set<OperatorNode> setOps = this.root.nodeSet()
-                .stream()
-                .filter(n -> n instanceof OperatorNode)
-                .map(n -> (OperatorNode) n)
-                .filter(n -> n.isSetOperator())
-                .collect(Collectors.toSet());
+            Set<OperatorNode> setOps = this.root.nodeSet().stream()
+                .filter(n -> n instanceof OperatorNode).map(n -> (OperatorNode) n)
+                .filter(n -> n.isSetOperator()).collect(Collectors.toSet());
             for (Condition sub : getSubConditions()) {
                 // If the subcondition has a count node, it is a dependent node
                 VariableNode countNode = sub.getCountNode();
-                Stream<VariableNode> subDeps =
-                    countNode == null ? Stream.empty() : Stream.of(countNode);
+                Stream<VariableNode> subDeps = countNode == null
+                    ? Stream.empty()
+                    : Stream.of(countNode);
                 // Collect targets of set operators whose sources are in the subcondition
                 Stream<VariableNode> setOpDeps = setOps.stream()
-                    .filter(n -> sub.getOutputNodes()
-                        .contains(n.getArguments()
-                            .get(0)))
+                    .filter(n -> sub.getOutputNodes().contains(n.getArguments().get(0)))
                     .map(n -> n.getTarget());
                 // combine count node and set operator targets and restrict to non-constants
-                subDeps = Stream.concat(subDeps, setOpDeps)
-                    .filter(v -> v.getConstant() == null);
+                subDeps = Stream.concat(subDeps, setOpDeps).filter(v -> v.getConstant() == null);
                 // The resolver consists of non-constant variable nodes shared by the subcondition
-                Set<VariableNode> resolver = sub.getInputNodes()
-                    .stream()
-                    .filter(n -> n instanceof VariableNode)
-                    .map(v -> (VariableNode) v)
-                    .filter(v -> v.getConstant() == null)
-                    .filter(v -> !resolved.contains(v))
-                    .collect(Collectors.toSet());
+                Set<VariableNode> resolver
+                    = sub.getInputNodes().stream().filter(n -> n instanceof VariableNode)
+                        .map(v -> (VariableNode) v).filter(v -> v.getConstant() == null)
+                        .filter(v -> !resolved.contains(v)).collect(Collectors.toSet());
                 if (resolver.isEmpty()) {
                     subDeps.forEach(v -> resolved.add(v));
                 } else {
@@ -569,8 +557,7 @@ public class Condition implements Fixable {
         }
         // now add resolvers due to operator nodes
         for (RuleNode node : getPattern().nodeSet()) {
-            if (node instanceof OperatorNode) {
-                OperatorNode opNode = (OperatorNode) node;
+            if (node instanceof OperatorNode opNode) {
                 VariableNode target = opNode.getTarget();
                 if (result.containsKey(target) && !resolved.contains(target)) {
                     // collect the argument nodes
@@ -584,8 +571,7 @@ public class Condition implements Fixable {
                     if (resolver.isEmpty()) {
                         resolved.add(target);
                     } else {
-                        result.get(target)
-                            .add(resolver);
+                        result.get(target).add(resolver);
                     }
                 }
             }
@@ -612,8 +598,7 @@ public class Condition implements Fixable {
         while (!stable) {
             stable = true;
             // iterate over all resolver lists
-            Iterator<List<Set<VariableNode>>> iter = resolverMap.values()
-                .iterator();
+            Iterator<List<Set<VariableNode>>> iter = resolverMap.values().iterator();
             while (iter.hasNext()) {
                 // try each resolver in turn
                 for (Set<VariableNode> resolver : iter.next()) {
@@ -739,8 +724,8 @@ public class Condition implements Fixable {
         try {
             result.setFixed();
         } catch (FormatException e) {
-            throw Exceptions
-                .illegalArg("Error while fixing new condition %s: %s", name, e.getMessage());
+            throw Exceptions.illegalArg("Error while fixing new condition %s: %s", name,
+                                        e.getMessage());
         }
         return result;
     }

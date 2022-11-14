@@ -124,10 +124,9 @@ public final class Constant extends Expression {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof Constant)) {
+        if (!(obj instanceof Constant other)) {
             return false;
         }
-        Constant other = (Constant) obj;
         if (!this.signature.equals(other.signature)) {
             return false;
         }

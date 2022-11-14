@@ -47,11 +47,10 @@ public class CallTerm extends Term {
     protected DerivationAttempt computeAttempt(boolean nested) {
         Derivation deriv = new Derivation(getCall(), epsilon());
         DerivationAttempt result;
-        if (nested && getCall().getUnit() instanceof Procedure) {
-            Term inner = ((Procedure) getCall().getUnit()).getTerm();
+        if (nested && getCall().getUnit() instanceof Procedure p) {
+            Term inner = p.getTerm();
             assert inner != null : String.format("Procedure %s has not been declared",
-                getCall().getUnit()
-                    .getQualName());
+                                                 getCall().getUnit().getQualName());
             result = body(inner, deriv).getAttempt(nested);
         } else {
             result = createAttempt();
@@ -93,8 +92,6 @@ public class CallTerm extends Term {
 
     @Override
     protected boolean isAtomic() {
-        return this.call.getUnit()
-            .getKind()
-            .isAction();
+        return this.call.getUnit().getKind().isAction();
     }
 }

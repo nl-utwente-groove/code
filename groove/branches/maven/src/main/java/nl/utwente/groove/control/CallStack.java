@@ -60,8 +60,8 @@ public class CallStack extends Stack<Call> {
     public Recipe getRecipe() {
         if (!this.recipeInit) {
             for (Call call : this) {
-                if (call.getUnit() instanceof Recipe) {
-                    this.recipe = (Recipe) call.getUnit();
+                if (call.getUnit() instanceof Recipe r) {
+                    this.recipe = r;
                     break;
                 }
             }
@@ -103,12 +103,10 @@ public class CallStack extends Stack<Call> {
             if (result.length() > 0) {
                 result.append('/');
             }
-            if (allPars || !call.getArgs()
-                .isEmpty()) {
+            if (allPars || !call.getArgs().isEmpty()) {
                 result.append(call.toString());
             } else {
-                result.append(call.getUnit()
-                    .getQualName());
+                result.append(call.getUnit().getQualName());
             }
         }
         return result.toString();

@@ -37,7 +37,7 @@ import nl.utwente.groove.util.collect.TransformIterator;
  * @author Harmen Kastenberg
  * @version $Revision $
  */
-public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition>implements Cloneable {
+public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition> implements Cloneable {
     private BuchiGraph(String name) {
         super(name);
     }
@@ -69,8 +69,7 @@ public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition>implements 
 
     @Override
     public boolean addEdge(BuchiTransition edge) {
-        return edge.source()
-            .addTransition(edge);
+        return edge.source().addTransition(edge);
     }
 
     @Override
@@ -131,22 +130,19 @@ public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition>implements 
             Node<Proposition> node = newNodeIter.next();
             newNodeIter.remove();
             BuchiLocation location = getLocation(node2location, node);
-            if (result.nodeSet()
-                .contains(location)) {
+            if (result.nodeSet().contains(location)) {
                 continue;
             }
-            if (node.getAttributes()
-                .getBoolean("accepting")) {
+            if (node.getAttributes().getBoolean("accepting")) {
                 location.setAccepting();
             }
             result.addNode(location);
             for (Edge<Proposition> edge : node.getOutgoingEdges()) {
-                assert edge.getSource()
-                    .equals(node);
+                assert edge.getSource().equals(node);
                 BuchiLabel label = new BuchiLabel(edge.getAction(), edge.getGuard());
                 Node<Proposition> target = edge.getNext();
-                BuchiTransition transition =
-                    new BuchiTransition(location, label, getLocation(node2location, target));
+                BuchiTransition transition
+                    = new BuchiTransition(location, label, getLocation(node2location, target));
                 result.addEdge(transition);
                 newNodes.add(target);
             }
@@ -161,7 +157,7 @@ public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition>implements 
     }
 
     private BuchiLocation getLocation(Map<Node<Proposition>,BuchiLocation> node2location,
-        Node<Proposition> node) {
+                                      Node<Proposition> node) {
         BuchiLocation result = node2location.get(node);
         if (result == null) {
             result = new BuchiLocation(node2location.size());
@@ -210,11 +206,8 @@ public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition>implements 
 
         @Override
         public boolean contains(Object o) {
-            if (o instanceof BuchiTransition) {
-                BuchiTransition trans = (BuchiTransition) o;
-                return trans.source()
-                    .outTransitions()
-                    .contains(o);
+            if (o instanceof BuchiTransition trans) {
+                return trans.source().outTransitions().contains(o);
             } else {
                 return false;
             }
@@ -227,8 +220,7 @@ public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition>implements 
                     nodeSet().iterator()) {
                     @Override
                     protected Iterator<BuchiTransition> toOuter(BuchiLocation from) {
-                        return from.outTransitions()
-                            .iterator();
+                        return from.outTransitions().iterator();
                     }
                 });
         }
@@ -237,8 +229,7 @@ public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition>implements 
         public int size() {
             int result = 0;
             for (BuchiLocation state : nodeSet()) {
-                result += state.outTransitions()
-                    .size();
+                result += state.outTransitions().size();
             }
             return result;
         }

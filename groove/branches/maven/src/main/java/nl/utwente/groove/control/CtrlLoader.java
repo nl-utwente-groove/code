@@ -37,12 +37,12 @@ import nl.utwente.groove.control.parse.Namespace;
 import nl.utwente.groove.control.template.Fragment;
 import nl.utwente.groove.control.template.Program;
 import nl.utwente.groove.grammar.Callable;
+import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Rule;
-import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -95,8 +95,7 @@ public class CtrlLoader {
         Program result = new Program();
         for (QualName name : progNames) {
             try {
-                CtrlTree tree = this.controlTreeMap.get(name)
-                    .check();
+                CtrlTree tree = this.controlTreeMap.get(name).check();
                 result.add(tree.toFragment());
             } catch (FormatException e) {
                 for (FormatError error : e.getErrors()) {
@@ -123,8 +122,8 @@ public class CtrlLoader {
     public Collection<Recipe> getRecipes() {
         Collection<Recipe> result = new ArrayList<>();
         for (Callable unit : this.namespace.getCallables()) {
-            if (unit instanceof Recipe && ((Recipe) unit).isFixed()) {
-                result.add((Recipe) unit);
+            if (unit instanceof Recipe r && r.isFixed()) {
+                result.add(r);
             }
         }
         return result;
@@ -142,8 +141,7 @@ public class CtrlLoader {
             TokenRewriteStream rewriter = getRewriter(tree);
             boolean changed = false;
             for (CtrlTree t : tree.getRuleIdTokens(oldCallName)) {
-                rewriter.replace(t.getToken(), t.getChild(0)
-                    .getToken(), newCallName);
+                rewriter.replace(t.getToken(), t.getChild(0).getToken(), newCallName);
                 changed = true;
             }
             if (changed) {
@@ -171,17 +169,16 @@ public class CtrlLoader {
             }
             CtrlTree tree = this.controlTreeMap.get(controlName);
             assert tree != null : String.format("Parse tree of %s not found", controlName);
-            CtrlTree recipeTree = tree.getProcs(Kind.RECIPE)
-                .get(recipeName);
+            CtrlTree recipeTree = tree.getProcs(Kind.RECIPE).get(recipeName);
             assert recipeTree != null : String.format("Recipe declaration of %s not found",
-                recipeName);
+                                                      recipeName);
             TokenRewriteStream rewriter = getRewriter(tree);
             boolean changed = false;
             if (recipeTree.getChildCount() == 3) {
                 // no explicit priority
                 if (newPriority != 0) {
-                    rewriter.insertAfter(recipeTree.getChild(1)
-                        .getToken(), "priority " + newPriority);
+                    rewriter.insertAfter(recipeTree.getChild(1).getToken(),
+                                         "priority " + newPriority);
                     changed = true;
                 }
             } else {
@@ -219,7 +216,9 @@ public class CtrlLoader {
 
     /** Returns the default main program text. */
     private String getDefaultMain() {
-        return this.defaultMain == null ? DEFAULT_MAIN : this.defaultMain;
+        return this.defaultMain == null
+            ? DEFAULT_MAIN
+            : this.defaultMain;
     }
 
     /** Sets the default main program text. */
@@ -239,13 +238,11 @@ public class CtrlLoader {
     public static void main(String[] args) {
         try {
             String grammarName = args[0];
-            Grammar grammar = Groove.loadGrammar(grammarName)
-                .toGrammar();
+            Grammar grammar = Groove.loadGrammar(grammarName).toGrammar();
             for (int i = 1; i < args.length; i++) {
                 String programName = CONTROL.stripExtension(args[1]);
-                System.out.printf("Control automaton for %s:%n%s",
-                    programName,
-                    run(grammar, programName, new File(grammarName)));
+                System.out.printf("Control automaton for %s:%n%s", programName,
+                                  run(grammar, programName, new File(grammarName)));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -253,11 +250,10 @@ public class CtrlLoader {
     }
 
     /** Parses a single control program on the basis of a given grammar. */
-    public static Program run(Grammar grammar, String programName, String program)
-        throws FormatException {
+    public static Program run(Grammar grammar, String programName,
+                              String program) throws FormatException {
         CtrlLoader instance = new CtrlLoader(grammar.getProperties(), grammar.getAllRules());
-        QualName qualName = QualName.parse(programName)
-            .testValid();
+        QualName qualName = QualName.parse(programName).testValid();
         instance.addControl(qualName, program);
         Program result = instance.buildProgram(Collections.singleton(qualName));
         result.setFixed();
@@ -265,11 +261,10 @@ public class CtrlLoader {
     }
 
     /** Parses a single control program on the basis of a given grammar. */
-    public static Program run(Grammar grammar, String programName, File base)
-        throws FormatException, IOException {
+    public static Program run(Grammar grammar, String programName,
+                              File base) throws FormatException, IOException {
         CtrlLoader instance = new CtrlLoader(grammar.getProperties(), grammar.getAllRules());
-        QualName qualName = QualName.parse(programName)
-            .testValid();
+        QualName qualName = QualName.parse(programName).testValid();
         File control = base;
         for (String part : qualName.tokens()) {
             control = new File(control, part);

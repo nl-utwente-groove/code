@@ -38,8 +38,8 @@ public class ContainerValue extends Value {
         String valueString = "[";
 
         for (int i = 0; i < this.m_values.size(); i++) {
-            if (this.m_values.get(i) instanceof Object) {
-                valueString += ((Object) this.m_values.get(i)).toShortString();
+            if (this.m_values.get(i) instanceof Object obj) {
+                valueString += obj.toShortString();
             } else {
                 valueString += this.m_values.get(i);
             }

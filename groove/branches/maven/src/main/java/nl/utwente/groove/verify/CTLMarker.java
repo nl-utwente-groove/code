@@ -513,8 +513,8 @@ public class CTLMarker {
      */
     private Node getRoot() {
         Node result = null;
-        if (this.model instanceof GTS) {
-            result = ((GTS) this.model).startState();
+        if (this.model instanceof GTS gts) {
+            result = gts.startState();
         } else {
             BitSet startNodes = this.marking[this.propNr.get(START_ATOM)];
             if (startNodes.cardinality() == 1) {

@@ -182,9 +182,8 @@ public class ConditionChecker extends ReteNetworkNode
 
     @Override
     public boolean equals(Object node) {
-        return (node != null) && (node instanceof ConditionChecker)
-            && ((this == (ConditionChecker) node)
-                || (this.condition.equals(((ConditionChecker) node).condition)));
+        return (node != null) && (node instanceof ConditionChecker c)
+            && (this == c || this.condition.equals(c.condition));
     }
 
     /**
@@ -483,8 +482,7 @@ public class ConditionChecker extends ReteNetworkNode
 
     @Override
     public boolean equals(ReteNetworkNode node) {
-        return (node instanceof ConditionChecker)
-            && this.getCondition().equals(((ConditionChecker) node).getCondition());
+        return (node instanceof ConditionChecker c) && this.getCondition().equals(c.getCondition());
     }
 
     @Override
@@ -564,9 +562,9 @@ public class ConditionChecker extends ReteNetworkNode
             int i = 0;
             for (; i < this.rootSearchOrder.length - 1; i++) {
                 HostElement ei;
-                if (this.rootSearchOrder[i] instanceof RuleNode) {
-                    ei = m.getNode((RuleNode) this.rootSearchOrder[i]);
-                    anchorMap.putNode((RuleNode) this.rootSearchOrder[i], (HostNode) ei);
+                if (this.rootSearchOrder[i] instanceof RuleNode r) {
+                    ei = m.getNode(r);
+                    anchorMap.putNode(r, (HostNode) ei);
                 } else {
                     ei = m.getEdge((RuleEdge) this.rootSearchOrder[i]);
                     anchorMap.putEdge((RuleEdge) this.rootSearchOrder[i], (HostEdge) ei);
@@ -586,9 +584,8 @@ public class ConditionChecker extends ReteNetworkNode
             }
             if (leaf != null) {
                 HostElement ei;
-                if (this.rootSearchOrder[this.rootSearchOrder.length - 1] instanceof RuleNode) {
-                    ei = m
-                        .getNode((RuleNode) this.rootSearchOrder[this.rootSearchOrder.length - 1]);
+                if (this.rootSearchOrder[this.rootSearchOrder.length - 1] instanceof RuleNode r) {
+                    ei = m.getNode(r);
                     anchorMap.putNode((RuleNode) this.rootSearchOrder[i], (HostNode) ei);
                 } else {
                     ei = m
@@ -612,8 +609,8 @@ public class ConditionChecker extends ReteNetworkNode
             HashMap<HostElement,Object> leaf = this.root;
             for (int i = 0; i < this.rootSearchOrder.length - 1; i++) {
                 HostElement ei;
-                if (this.rootSearchOrder[i] instanceof RuleNode) {
-                    ei = anchorMap.nodeMap().get(this.rootSearchOrder[i]);
+                if (this.rootSearchOrder[i] instanceof RuleNode r) {
+                    ei = anchorMap.nodeMap().get(r);
                 } else {
                     ei = anchorMap.edgeMap().get(this.rootSearchOrder[i]);
                 }
@@ -625,8 +622,8 @@ public class ConditionChecker extends ReteNetworkNode
                 leaf = treeNode;
             }
             HostElement ei
-                = (this.rootSearchOrder[this.rootSearchOrder.length - 1] instanceof RuleNode)
-                    ? anchorMap.nodeMap().get(this.rootSearchOrder[this.rootSearchOrder.length - 1])
+                = (this.rootSearchOrder[this.rootSearchOrder.length - 1] instanceof RuleNode r)
+                    ? anchorMap.nodeMap().get(r)
                     : anchorMap.edgeMap()
                         .get(this.rootSearchOrder[this.rootSearchOrder.length - 1]);
             Object o = leaf.get(ei);

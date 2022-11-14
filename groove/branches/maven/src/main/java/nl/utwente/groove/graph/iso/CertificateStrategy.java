@@ -137,8 +137,8 @@ abstract public class CertificateStrategy {
         // of this node also depends on the operation represented by it
         // therefore, the computeNewValue()-method of class
         // CertificateNode must be overridden
-        if (node instanceof ValueNode) {
-            nodeCert = createValueNodeCertificate((ValueNode) node);
+        if (node instanceof ValueNode v) {
+            nodeCert = createValueNodeCertificate(v);
         } else {
             nodeCert = createNodeCertificate(node);
         }
@@ -155,9 +155,8 @@ abstract public class CertificateStrategy {
     private void putNodeCert(NodeCertificate nodeCert) {
         Node node = nodeCert.getElement();
         int nodeNr = node.getNumber();
-        assert nodeNr < this.defaultNodeCerts.length : String.format("Node nr %d higher than maximum %d",
-            nodeNr,
-            this.defaultNodeCerts.length - 1);
+        assert nodeNr < this.defaultNodeCerts.length : String
+            .format("Node nr %d higher than maximum %d", nodeNr, this.defaultNodeCerts.length - 1);
         this.defaultNodeCerts[nodeNr] = nodeCert;
     }
 
@@ -185,20 +184,18 @@ abstract public class CertificateStrategy {
             EdgeCertificate edge1Cert = createEdge1Certificate(edge, sourceCert);
             this.edgeCerts[this.edgeCerts.length - this.edge1CertCount - 1] = edge1Cert;
             this.edge1CertCount++;
-            assert this.edge1CertCount + this.edge2CertCount <= this.edgeCerts.length : String.format("%s unary and %s binary edges do not equal %s edges",
-                this.edge1CertCount,
-                this.edge2CertCount,
-                this.edgeCerts.length);
+            assert this.edge1CertCount + this.edge2CertCount <= this.edgeCerts.length : String
+                .format("%s unary and %s binary edges do not equal %s edges", this.edge1CertCount,
+                        this.edge2CertCount, this.edgeCerts.length);
         } else {
             NodeCertificate targetCert = getNodeCert(edge.target());
             assert targetCert != null : String.format("No target certifiate found for %s", edge);
             EdgeCertificate edge2Cert = createEdge2Certificate(edge, sourceCert, targetCert);
             this.edgeCerts[this.edge2CertCount] = edge2Cert;
             this.edge2CertCount++;
-            assert this.edge1CertCount + this.edge2CertCount <= this.edgeCerts.length : String.format("%s unary and %s binary edges do not equal %s edges",
-                this.edge1CertCount,
-                this.edge2CertCount,
-                this.edgeCerts.length);
+            assert this.edge1CertCount + this.edge2CertCount <= this.edgeCerts.length : String
+                .format("%s unary and %s binary edges do not equal %s edges", this.edge1CertCount,
+                        this.edge2CertCount, this.edgeCerts.length);
         }
     }
 
@@ -207,11 +204,11 @@ abstract public class CertificateStrategy {
     abstract NodeCertificate createNodeCertificate(Node node);
 
     abstract EdgeCertificate createEdge1Certificate(Edge edge,
-        nl.utwente.groove.graph.iso.CertificateStrategy.NodeCertificate source);
+                                                    nl.utwente.groove.graph.iso.CertificateStrategy.NodeCertificate source);
 
     abstract EdgeCertificate createEdge2Certificate(Edge edge,
-        nl.utwente.groove.graph.iso.CertificateStrategy.NodeCertificate source,
-        nl.utwente.groove.graph.iso.CertificateStrategy.NodeCertificate target);
+                                                    nl.utwente.groove.graph.iso.CertificateStrategy.NodeCertificate source,
+                                                    nl.utwente.groove.graph.iso.CertificateStrategy.NodeCertificate target);
 
     /**
      * Returns a map from graph elements to certificates for the underlying
@@ -389,7 +386,7 @@ abstract public class CertificateStrategy {
     /**
      * Array to record the number of iterations done in computing certificates.
      */
-    static private int[] iterateCountArray = new int[0];
+    static private int[] iterateCountArray = {};
 
     /** Flag to turn on System.out-tracing. */
     static final boolean TRACE = false;

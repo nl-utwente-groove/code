@@ -109,8 +109,7 @@ public class CheckboxTree extends JTree {
     /** Tests if a given x-coordinate is over the checkbox part of a tree path. */
     private boolean isOverCheckBox(TreePath path, int x) {
         boolean result = false;
-        if (path != null && path.getLastPathComponent() instanceof TreeNode) {
-            TreeNode labelNode = (TreeNode) path.getLastPathComponent();
+        if (path != null && path.getLastPathComponent() instanceof TreeNode labelNode) {
             Rectangle pathBounds = getPathBounds(path);
             if (CHECKBOX_ORIENTATION.equals(BorderLayout.WEST)) {
                 int checkboxBorder = pathBounds.x + CHECKBOX_WIDTH;
@@ -135,7 +134,9 @@ public class CheckboxTree extends JTree {
 
     /** Returns the appropriate background colour for an enabledness condition. */
     Color getColor(boolean enabled) {
-        return enabled ? this.lastBackground : null;
+        return enabled
+            ? this.lastBackground
+            : null;
     }
 
     @Override
@@ -219,21 +220,19 @@ public class CheckboxTree extends JTree {
 
         @Override
         public JComponent getTreeCellRendererComponent(JTree tree, Object value, boolean sel,
-            boolean expanded, boolean leaf, int row, boolean hasFocus) {
+                                                       boolean expanded, boolean leaf, int row,
+                                                       boolean hasFocus) {
             this.initialising = true;
             JComponent result;
-            this.jLabel.getTreeCellRendererComponent(tree,
-                value,
-                sel,
-                expanded,
-                leaf,
-                row,
-                hasFocus);
+            this.jLabel.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row,
+                                                     hasFocus);
             Color background = this.tree.getColor(tree.isEnabled());
             // this.jLabel.setBackgroundNonSelectionColor(background);
             this.jLabel.setOpaque(!sel);
             this.jLabel.setBackground(background);
-            this.labelNode = value instanceof TreeNode ? (TreeNode) value : null;
+            this.labelNode = value instanceof TreeNode
+                ? (TreeNode) value
+                : null;
             if (this.labelNode != null && this.labelNode.hasCheckbox()) {
                 this.checkbox.setSelected(this.labelNode.isSelected());
                 setBackground(background);
@@ -304,7 +303,8 @@ public class CheckboxTree extends JTree {
             // Strings get interned...
             if ("text".equals(propertyName)
                 || (("font".equals(propertyName) || "foreground".equals(propertyName))
-                    && oldValue != newValue && getClientProperty(javax.swing.plaf.basic.BasicHTML.propertyKey) != null)) {
+                    && oldValue != newValue
+                    && getClientProperty(javax.swing.plaf.basic.BasicHTML.propertyKey) != null)) {
 
                 super.firePropertyChange(propertyName, oldValue, newValue);
             }
@@ -417,8 +417,7 @@ public class CheckboxTree extends JTree {
         @Override
         public boolean isCellEditable(EventObject event) {
             boolean result = false;
-            if (event instanceof MouseEvent) {
-                MouseEvent mouseEvent = (MouseEvent) event;
+            if (event instanceof MouseEvent mouseEvent) {
                 result = this.tree.isOverCheckBox(mouseEvent.getX(), mouseEvent.getY());
             }
             return result;
@@ -432,15 +431,9 @@ public class CheckboxTree extends JTree {
         /** Passes the request on to the renderer. */
         @Override
         public Component getTreeCellEditorComponent(JTree tree, Object value, boolean selected,
-            boolean expanded, boolean leaf, int row) {
-            Component result =
-                this.editor.getTreeCellRendererComponent(tree,
-                    value,
-                    selected,
-                    expanded,
-                    leaf,
-                    row,
-                    false);
+                                                    boolean expanded, boolean leaf, int row) {
+            Component result = this.editor.getTreeCellRendererComponent(tree, value, selected,
+                                                                        expanded, leaf, row, false);
 
             return result;
         }
