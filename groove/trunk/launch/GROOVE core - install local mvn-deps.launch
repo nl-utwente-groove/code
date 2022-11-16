@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.debug.core.groups.GroupLaunchConfigurationType">
+    <stringAttribute key="bad_container_name" value="\groove-maven\launc"/>
+    <stringAttribute key="org.eclipse.debug.core.launchGroup.0.action" value="NONE"/>
+    <booleanAttribute key="org.eclipse.debug.core.launchGroup.0.adoptIfRunning" value="false"/>
+    <booleanAttribute key="org.eclipse.debug.core.launchGroup.0.enabled" value="true"/>
+    <stringAttribute key="org.eclipse.debug.core.launchGroup.0.mode" value="inherit"/>
+    <stringAttribute key="org.eclipse.debug.core.launchGroup.0.name" value="install gnuprolog"/>
+    <stringAttribute key="org.eclipse.debug.core.launchGroup.1.action" value="NONE"/>
+    <booleanAttribute key="org.eclipse.debug.core.launchGroup.1.adoptIfRunning" value="false"/>
+    <booleanAttribute key="org.eclipse.debug.core.launchGroup.1.enabled" value="true"/>
+    <stringAttribute key="org.eclipse.debug.core.launchGroup.1.mode" value="inherit"/>
+    <stringAttribute key="org.eclipse.debug.core.launchGroup.1.name" value="install ltl2buchi"/>
+    <stringAttribute key="org.eclipse.debug.core.launchGroup.2.action" value="NONE"/>
+    <booleanAttribute key="org.eclipse.debug.core.launchGroup.2.adoptIfRunning" value="false"/>
+    <booleanAttribute key="org.eclipse.debug.core.launchGroup.2.enabled" value="true"/>
+    <stringAttribute key="org.eclipse.debug.core.launchGroup.2.mode" value="inherit"/>
+    <stringAttribute key="org.eclipse.debug.core.launchGroup.2.name" value="install groove-gxl"/>
+    <stringAttribute key="org.eclipse.debug.core.launchGroup.3.action" value="NONE"/>
+    <booleanAttribute key="org.eclipse.debug.core.launchGroup.3.adoptIfRunning" value="false"/>
+    <booleanAttribute key="org.eclipse.debug.core.launchGroup.3.enabled" value="true"/>
+    <stringAttribute key="org.eclipse.debug.core.launchGroup.3.mode" value="inherit"/>
+    <stringAttribute key="org.eclipse.debug.core.launchGroup.3.name" value="install osxadapter"/>
+    <listAttribute key="org.eclipse.debug.ui.favoriteGroups">
+        <listEntry value="org.eclipse.debug.ui.launchGroup.run"/>
+    </listAttribute>
+</launchConfiguration>
