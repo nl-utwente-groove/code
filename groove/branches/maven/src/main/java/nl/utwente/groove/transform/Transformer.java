@@ -96,7 +96,7 @@ public class Transformer {
         if (this.properties == null) {
             this.properties = getGrammarModel().getProperties().clone();
         }
-        this.properties.put(key.getName(), value);
+        this.properties.setProperty(key, value);
         getGrammarModel().setProperties(this.properties);
     }
 

@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -23,6 +24,7 @@ import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.ThreeValued;
 import nl.utwente.groove.util.Version;
+import nl.utwente.groove.util.parse.FormatChecker;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -55,9 +57,25 @@ public class GrammarProperties extends Properties {
     }
 
     /** Constructs a non-fixed clone of a given properties object. */
-    private GrammarProperties(GrammarProperties original) {
+    public GrammarProperties(GrammarProperties original) {
         super(GrammarKey.class);
         putAll(original);
+    }
+
+    /** Returns a map from property keys to checkers driven by a given grammar model. */
+    public CheckerMap getCheckers(final GrammarModel grammar) {
+        var result = new CheckerMap();
+        for (final var key : GrammarKey.values()) {
+            FormatChecker<String> checker = v -> {
+                try {
+                    return key.check(grammar, key.parse(v));
+                } catch (FormatException exc) {
+                    return exc.getErrors();
+                }
+            };
+            result.put(key, checker);
+        }
+        return result;
     }
 
     /**
@@ -148,6 +166,11 @@ public class GrammarProperties extends Properties {
      */
     public Path getLocation() {
         return parsePropertyOrDefault(GrammarKey.LOCATION).getPath();
+    }
+
+    /** Sets the {@link GrammarKey#LOCATION} property to the given value. */
+    public void setLocation(Path path) {
+        storeValue(GrammarKey.LOCATION, path);
     }
 
     /**
@@ -449,7 +472,7 @@ public class GrammarProperties extends Properties {
         FormatErrorSet errors = new FormatErrorSet();
         for (GrammarKey key : GrammarKey.values()) {
             try {
-                var property = getProperty(key.getName());
+                var property = getProperty(key);
                 var result = key.parse(property == null
                     ? ""
                     : property);
@@ -482,7 +505,7 @@ public class GrammarProperties extends Properties {
     }
 
     @Override
-    public GrammarKey getKey(String name) {
+    public Optional<GrammarKey> getKey(String name) {
         return GrammarKey.getKey(name);
     }
 

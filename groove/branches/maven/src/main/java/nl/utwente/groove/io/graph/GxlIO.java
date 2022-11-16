@@ -219,14 +219,10 @@ public class GxlIO extends GraphIO<AttrGraph> {
             gxlGraph.setRole(graph.getRole().toString());
             // add the graph attributes, if any
             GraphProperties properties = GraphInfo.getProperties(graph);
-            for (Map.Entry<Object,Object> entry : properties.entrySet()) {
-                // EZ: Removed this conversion because it causes problems
-                // with rule properties keys.
-                // String attrName = ((String) entry.getKey()).toLowerCase();
-                storeAttribute(gxlGraph, (String) entry.getKey(), (String) entry.getValue());
-            }
+            properties.entryStream()
+                .forEach(e -> storeAttribute(gxlGraph, e.getKey(), e.getValue()));
             // Add version info
-            if (!properties.containsKey(GraphProperties.Key.VERSION.getName())) {
+            if (!properties.containsKey(GraphProperties.Key.VERSION)) {
                 storeAttribute(gxlGraph, GraphProperties.Key.VERSION.getName(),
                                Version.GXL_VERSION);
             }

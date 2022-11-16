@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -45,6 +44,7 @@ import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.io.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.Properties.CheckerMap;
 import nl.utwente.groove.util.Properties.Key;
 import nl.utwente.groove.util.Strings;
@@ -97,14 +97,12 @@ public class PropertiesTable extends JTable {
                 this.properties.put(key.getName(), "");
             }
         }
-        for (Map.Entry<?,?> property : properties.entrySet()) {
-            String keyword = (String) property.getKey();
-            var key = getKey(keyword);
+        properties.entryStream().forEach(e -> {
+            var key = getKey(e.getKey());
             if (key == null || !key.isSystem() || key.isDerived()) {
-                String value = (String) property.getValue();
-                this.properties.put(keyword, value);
+                this.properties.put(e.getKey(), e.getValue());
             }
-        }
+        });
         setPreferredScrollableViewportSize(new Dimension(300,
             Math.max((getModel().getRowCount() + 2) * ROW_HEIGHT, 80)));
         setEnabled(true);

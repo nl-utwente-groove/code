@@ -105,9 +105,7 @@ public class GraphInfo extends DefaultFixable {
      */
     private void setProperties(GraphProperties properties) {
         testFixed(false);
-        GraphProperties props = getProperties();
-        props.clear();
-        props.putAll(properties);
+        this.data.put(PROPERTIES_KEY, new GraphProperties(properties));
     }
 
     /**

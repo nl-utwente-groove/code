@@ -245,20 +245,10 @@ public class Grammar {
      * mapping.
      * @param properties the new properties mapping
      */
-    public void setProperties(java.util.Properties properties) {
+    public void setProperties(GrammarProperties properties) {
         testFixed(false);
         assert this.properties == null : "Grammar properties already set";
-        GrammarProperties grammarProperties = createProperties();
-        grammarProperties.putAll(properties);
-        this.properties = grammarProperties;
-    }
-
-    /**
-     * Callback factory method to create an initially empty
-     * {@link GrammarProperties} object for this graph grammar.
-     */
-    private GrammarProperties createProperties() {
-        return new GrammarProperties();
+        this.properties = new GrammarProperties(properties);
     }
 
     /**
@@ -410,6 +400,7 @@ public class Grammar {
      */
     public Grammar setFixed() throws FormatException {
         this.fixed = true;
+        this.properties.setFixed();
         return this;
     }
 

@@ -43,7 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -833,7 +832,7 @@ public class SystemStore extends UndoableEditSupport {
             propertiesFile = getOldDefaultPropertiesFile();
         }
         if (propertiesFile.exists()) {
-            Properties grammarProperties = new Properties();
+            var grammarProperties = new GrammarProperties();
             try (InputStream s = new FileInputStream(propertiesFile)) {
                 grammarProperties.load(s);
             }
@@ -895,7 +894,7 @@ public class SystemStore extends UndoableEditSupport {
         properties = removeDerivedProperties(properties);
         File propertiesFile = getDefaultPropertiesFile();
         try (Writer propertiesWriter = new FileWriter(propertiesFile)) {
-            properties.store(propertiesWriter, null);
+            properties.store(propertiesWriter);
         }
         // delete the old-style properties file, if any
         File oldPropertiesFile = getOldDefaultPropertiesFile();
@@ -916,7 +915,7 @@ public class SystemStore extends UndoableEditSupport {
             result.remove(GrammarKey.TRANSITION_BRACKETS);
             // convert numeric value of TRANSITION_PARAMETERS
             GrammarKey paramsKey = GrammarKey.TRANSITION_PARAMETERS;
-            String paramsVal = (String) props.get(paramsKey.getName());
+            String paramsVal = props.getProperty(paramsKey.getName());
             if (paramsVal != null && !paramsKey.parser().accepts(paramsVal)) {
                 try {
                     int paramsIntVal = Integer.parseInt(paramsVal);
@@ -937,7 +936,7 @@ public class SystemStore extends UndoableEditSupport {
     /** Returns a clone of a given properties bundle where the derived properties have been added. */
     private GrammarProperties addDerivedProperties(GrammarProperties properties) {
         GrammarProperties result = properties.clone();
-        result.put(GrammarKey.LOCATION.getName(), this.file.toPath().toString());
+        result.setLocation(this.file.toPath());
         return result;
     }
 

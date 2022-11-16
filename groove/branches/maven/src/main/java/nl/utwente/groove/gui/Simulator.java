@@ -111,8 +111,7 @@ public class Simulator implements SimulatorListener {
         this.undoManager = new SimulatorUndoManager(this);
         GraphPreviewDialog.setSimulator(this);
         JFrame frame = getFrame();
-        DialogOracle.instance()
-            .setParent(frame);
+        DialogOracle.instance().setParent(frame);
         this.actions.initialiseRemainingActions();
     }
 
@@ -131,8 +130,7 @@ public class Simulator implements SimulatorListener {
                 @Override
                 public void run() {
                     try {
-                        Simulator.this.actions.getLoadGrammarAction()
-                            .load(location);
+                        Simulator.this.actions.getLoadGrammarAction().load(location);
                     } catch (IOException exc) {
                         new ErrorDialog(getFrame(), exc.getMessage(), exc).setVisible(true);
                     }
@@ -170,8 +168,7 @@ public class Simulator implements SimulatorListener {
     public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
         if (changes.contains(Change.GRAMMAR)) {
             setTitle();
-            FormatErrorSet grammarErrors = getModel().getGrammar()
-                .getErrors();
+            FormatErrorSet grammarErrors = getModel().getGrammar().getErrors();
             setErrors(grammarErrors);
         }
         if (changes.contains(Change.DISPLAY)) {
@@ -184,8 +181,7 @@ public class Simulator implements SimulatorListener {
      * Displays a list of errors, or hides the error panel if the list is empty.
      */
     private void setErrors(FormatErrorSet grammarErrors) {
-        getResultsPanel().getErrorListPanel()
-            .setEntries(grammarErrors);
+        getResultsPanel().getErrorListPanel().setEntries(grammarErrors);
         adjustResultsPanel();
     }
 
@@ -193,8 +189,7 @@ public class Simulator implements SimulatorListener {
      * Displays a list of search results.
      */
     public void setSearchResults(List<SearchResult> searchResults) {
-        getResultsPanel().getSearchResultListPanel()
-            .setEntries(searchResults);
+        getResultsPanel().getSearchResultListPanel().setEntries(searchResults);
         adjustResultsPanel();
     }
 
@@ -203,9 +198,7 @@ public class Simulator implements SimulatorListener {
      * Needed for Command-Q shortcut on MacOS only (see {@link #getFrame}).
      */
     public void tryQuit() {
-        this.getActions()
-            .getQuitAction()
-            .execute();
+        this.getActions().getQuitAction().execute();
     }
 
     /**
@@ -225,9 +218,7 @@ public class Simulator implements SimulatorListener {
             // register doQuit() for the Command-Q shortcut on MacOS
             if (Groove.IS_PLATFORM_MAC) {
                 try {
-                    OSXAdapter.setQuitHandler(this,
-                        this.getClass()
-                            .getDeclaredMethod("tryQuit"));
+                    OSXAdapter.setQuitHandler(this, this.getClass().getDeclaredMethod("tryQuit"));
                 } catch (NoSuchMethodException e1) {
                     // should not happen (thrown when 'tryQuit' does not exist)
                     // ignore
@@ -237,15 +228,13 @@ public class Simulator implements SimulatorListener {
             this.frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
-                    Simulator.this.actions.getQuitAction()
-                        .execute();
+                    Simulator.this.actions.getQuitAction().execute();
                 }
             });
             this.frame.setJMenuBar(createMenuBar());
             this.frame.setContentPane(getContentPanel());
             // make sure tool tips get displayed
-            ToolTipManager.sharedInstance()
-                .registerComponent(getContentPanel());
+            ToolTipManager.sharedInstance().registerComponent(getContentPanel());
         }
         return this.frame;
     }
@@ -315,8 +304,7 @@ public class Simulator implements SimulatorListener {
             result.setDividerLocation(0.8);
             result.setContinuousLayout(true);
             result.setBorder(null);
-            ToolTipManager.sharedInstance()
-                .registerComponent(result);
+            ToolTipManager.sharedInstance().registerComponent(result);
         }
         return result;
     }
@@ -333,10 +321,8 @@ public class Simulator implements SimulatorListener {
     private ListTabbedPane getResultsPanel() {
         if (this.resultsPanel == null) {
             this.resultsPanel = new ListTabbedPane();
-            this.resultsPanel.getErrorListPanel()
-                .addSelectionListener(createListListener());
-            this.resultsPanel.getSearchResultListPanel()
-                .addSelectionListener(createListListener());
+            this.resultsPanel.getErrorListPanel().addSelectionListener(createListListener());
+            this.resultsPanel.getSearchResultListPanel().addSelectionListener(createListListener());
             this.model.addListener(this.resultsPanel.getSearchResultListPanel(), Change.GRAMMAR);
         }
         return this.resultsPanel;
@@ -377,11 +363,11 @@ public class Simulator implements SimulatorListener {
         ResourceKind resource = entry.getResourceKind();
         QualName name = entry.getResourceName();
         if (resource == ResourceKind.PROPERTIES) {
+            GrammarKey key = GrammarKey.getKey(name.toString()).get();
             Display display = getDisplaysPanel().getDisplayFor(resource);
             ListPanel panel = display.getListPanel();
-            getDisplaysPanel().getUpperListsPanel()
-                .setSelectedComponent(panel);
-            ((PropertiesTable) panel.getList()).setSelected(GrammarKey.getKey(name.toString()));
+            getDisplaysPanel().getUpperListsPanel().setSelectedComponent(panel);
+            ((PropertiesTable) panel.getList()).setSelected(key);
         } else if (resource != null) {
             getModel().doSelect(resource, name);
             ResourceDisplay display = (ResourceDisplay) getDisplaysPanel().getDisplayFor(resource);
@@ -399,14 +385,10 @@ public class Simulator implements SimulatorListener {
                         break;
                     }
                 }
-            } else if (entry instanceof FormatError) {
-                FormatError error = (FormatError) entry;
-                if (error.getNumbers()
-                    .size() > 1) {
-                    int line = error.getNumbers()
-                        .get(0);
-                    int column = error.getNumbers()
-                        .get(1);
+            } else if (entry instanceof FormatError error) {
+                if (error.getNumbers().size() > 1) {
+                    int line = error.getNumbers().get(0);
+                    int column = error.getNumbers().get(1);
                     ((TextTab) resourceTab).select(line, column);
                 }
             }
@@ -610,8 +592,7 @@ public class Simulator implements SimulatorListener {
             String showTabOption = Options.getShowTabOption(kind);
             result.add(getOptions().getItem(showTabOption));
         }
-        switch (getDisplaysPanel().getSelectedDisplay()
-            .getKind()) {
+        switch (getDisplaysPanel().getSelectedDisplay().getKind()) {
         case HOST:
         case RULE:
         case STATE:
@@ -901,8 +882,7 @@ public class Simulator implements SimulatorListener {
     public void addExternalAction(Action action) {
         JMenu externalMenu = getExternalActionsMenu();
         // remove the dummy action if it is still there
-        if (externalMenu.getItem(0)
-            .getAction() == this.dummyExternalAction) {
+        if (externalMenu.getItem(0).getAction() == this.dummyExternalAction) {
             externalMenu.remove(0);
         }
         getExternalActionsMenu().add(action);
@@ -940,8 +920,7 @@ public class Simulator implements SimulatorListener {
         // lazily creates the options
         if (this.options == null) {
             this.options = new Options();
-            this.options.getItem(SHOW_STATE_IDS_OPTION)
-                .setSelected(true);
+            this.options.getItem(SHOW_STATE_IDS_OPTION).setSelected(true);
         }
         return this.options;
     }

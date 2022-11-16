@@ -159,18 +159,11 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
             }
         }
         // collect the user properties
-        for (Map.Entry<Object,Object> entry : properties.entrySet()) {
-            String keyword = (String) entry.getKey();
-            String value = (String) entry.getValue();
-            if (!GraphProperties.Key.isKey(keyword) && !value.isEmpty()) {
-                filteredProps.put(keyword, value);
-            }
-        }
-        // display all properties
-        for (Map.Entry<String,String> entry : filteredProps.entrySet()) {
-            result.append(HTMLConverter.HTML_LINEBREAK);
-            result.append(propertyToString(entry));
-        }
+        properties.entryStream().filter(e -> GraphProperties.Key.isKey(e.getKey()))
+            .filter(e -> !e.getValue().isEmpty()).forEach(e -> {
+                result.append(HTMLConverter.HTML_LINEBREAK);
+                result.append(propertyToString(e));
+            });
         HTMLConverter.HTML_TAG.on(result);
         return result.toString();
     }

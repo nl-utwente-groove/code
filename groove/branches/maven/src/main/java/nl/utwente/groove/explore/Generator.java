@@ -84,10 +84,9 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         return new GrooveCmdLineParser(appName, this) {
             @Override
             public String getUsageLine() {
-                return String.format(
-                    "%s%n%nUse JVM option %s=10 for large state spaces, to avoid excessive garbage collection",
-                    super.getUsageLine(),
-                    SOFT_REF_POLICY_NAME);
+                return String
+                    .format("%s%n%nUse JVM option %s=10 for large state spaces, to avoid excessive garbage collection",
+                            super.getUsageLine(), SOFT_REF_POLICY_NAME);
             }
         };
     }
@@ -268,7 +267,11 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
 
     /** Returns the filter mode to be used when saving the LTS. */
     public Filter getFilter() {
-        return this.traces ? Filter.RESULT : this.spanning ? Filter.SPANNING : Filter.NONE;
+        return this.traces
+            ? Filter.RESULT
+            : this.spanning
+                ? Filter.SPANNING
+                : Filter.NONE;
     }
 
     @Option(name = "-spanning",
@@ -370,16 +373,16 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     /**
      * Usage message for the result option.
      */
-    public static final String RESULT_USAGE =
-        "Stop exploration after <num> result states (default is 0 for \"unbounded\")";
+    public static final String RESULT_USAGE
+        = "Stop exploration after <num> result states (default is 0 for \"unbounded\")";
 
     /** Option name for the strategy option. */
     public final static String STRATEGY_NAME = "-s";
     /** Meta-variable name for the strategy option. */
     public final static String STRATEGY_VAR = "strgy";
     /** Usage message for the strategy option. */
-    public final static String STRATEGY_USAGE =
-        "" + "Set the exploration strategy to <strgy>. Legal values are:\n"
+    public final static String STRATEGY_USAGE
+        = "" + "Set the exploration strategy to <strgy>. Legal values are:\n"
             + "  bfs         - Breadth-first Exploration\n"
             + "  dfs         - Depth-first Exploration\n" + "  linear      - Linear\n" //
             + "  random      - Random linear\n" + "  state       - Single-State\n" //
@@ -432,7 +435,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     public static class LTSLabelsHandler extends OneArgumentOptionHandler<LTSLabels> {
         /** The required constructor. */
         public LTSLabelsHandler(CmdLineParser parser, OptionDef option,
-            Setter<? super LTSLabels> setter) {
+                                Setter<? super LTSLabels> setter) {
             super(parser, option, setter);
         }
 
@@ -450,7 +453,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     public static class PropertiesHandler extends MapOptionHandler {
         /** The required constructor. */
         public PropertiesHandler(CmdLineParser parser, OptionDef option,
-            Setter<? super Map<?,?>> setter) {
+                                 Setter<? super Map<?,?>> setter) {
             super(parser, option, setter);
         }
 
@@ -473,13 +476,12 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         @Override
         protected void addToMap(Map m, String key, String value) {
             this.error = null;
-            GrammarKey property = GrammarKey.getKey(key);
-            if (property == null) {
+            var property = GrammarKey.getKey(key);
+            if (property.isEmpty()) {
                 this.error = String.format("Unknown property key '%s'", key);
-            } else if (property.isSystem()) {
+            } else if (property.get().isSystem()) {
                 this.error = String.format("Cannot set system property '%s'", key);
-            } else if (!property.parser()
-                .accepts(value)) {
+            } else if (!property.get().parser().accepts(value)) {
                 this.error = String.format("Incorrect value '%s' for property '%s'", value, key);
             } else {
                 m.put(property, value);

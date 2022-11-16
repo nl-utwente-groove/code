@@ -18,15 +18,15 @@ package nl.utwente.groove.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Writer;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
+import java.util.stream.Stream;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Algebra;
@@ -35,13 +35,10 @@ import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.CheckPolicy.PolicyMap;
-import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.QualName;
-import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.rule.MethodName;
 import nl.utwente.groove.transform.oracle.ValueOracleFactory;
 import nl.utwente.groove.util.parse.FormatChecker;
-import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.ParsableKey;
 import nl.utwente.groove.util.parse.Parser;
@@ -59,11 +56,19 @@ import nl.utwente.groove.util.parse.Parser;
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class Properties extends java.util.Properties implements Fixable {
+public abstract class Properties implements Fixable {
     /** Constructs a properties object with keys of a given type. */
     protected Properties(Class<? extends Key> keyType) {
         this.keyType = keyType;
     }
+
+    /** Returns the internal properties map. */
+    private java.util.Properties getProperties() {
+        return this.properties;
+    }
+
+    /** This internal properties map. */
+    private final java.util.Properties properties = new java.util.Properties();
 
     /** Returns the key type of this properties class. */
     public Class<? extends Key> getKeyType() {
@@ -73,40 +78,16 @@ public abstract class Properties extends java.util.Properties implements Fixable
     private final Class<? extends Key> keyType;
 
     /** Returns the key with a given name, if any; or {@code null} if the name is not a recognisable key */
-    abstract public Key getKey(String name);
-
-    /** Returns a map from property keys to checkers driven by a given grammar model. */
-    public CheckerMap getCheckers(final GrammarModel grammar) {
-        var result = new CheckerMap();
-        for (final var key : getKeyType().getEnumConstants()) {
-            FormatChecker<String> checker;
-            if (key instanceof GrammarKey checkerKey) {
-                checker = new FormatChecker<>() {
-                    @Override
-                    public FormatErrorSet check(String value) {
-                        try {
-                            return checkerKey.check(grammar, checkerKey.parse(value));
-                        } catch (FormatException exc) {
-                            return exc.getErrors();
-                        }
-                    }
-                };
-            } else {
-                checker = FormatChecker.EMPTY_STRING_CHECKER;
-            }
-            result.put(key, checker);
-        }
-        return result;
-    }
+    abstract public Optional<? extends Key> getKey(String name);
 
     @Override
     public synchronized String toString() {
         StringBuffer result = new StringBuffer();
-        if (isEmpty()) {
+        if (getProperties().isEmpty()) {
             result.append("No stored properties");
         } else {
             result.append("Properties:\n");
-            for (Map.Entry<Object,Object> entry : entrySet()) {
+            for (Map.Entry<Object,Object> entry : getProperties().entrySet()) {
                 result.append("  " + entry + "\n");
             }
         }
@@ -115,7 +96,7 @@ public abstract class Properties extends java.util.Properties implements Fixable
 
     /** Retrieves and parses the stored value for a given key.
      * Returns the default entry for the key if the stored value contains an error. */
-    protected Entry parsePropertyOrDefault(Key key) {
+    protected Entry parsePropertyOrDefault(@NonNull Key key) {
         try {
             return parseProperty(key);
         } catch (FormatException exc) {
@@ -125,23 +106,67 @@ public abstract class Properties extends java.util.Properties implements Fixable
 
     /** Retrieves and parses the entry for a given key.
      * Throws a {@link FormatException} if the stored (string) value contains an error. */
-    public Entry parseProperty(Key key) throws FormatException {
-        String result = getProperty(key.getName());
+    public Entry parseProperty(@NonNull Key key) throws FormatException {
+        String result = getProperties().getProperty(key.getName());
         return key.parser().parse(result == null
             ? ""
             : result);
+    }
+
+    /** Convenience method to test the presence of a key value rather than key name.
+     * @see #containsKey(String)
+     */
+    public boolean containsKey(@NonNull Key key) {
+        return containsKey(key.getName());
+    }
+
+    /** Tests whether a given keyword is in the properties map. *
+     * @param keyword the keyword to be removed; may be a {@link Key} name or a user property
+     * @return the value associated with {@code keyword}
+     */
+    public boolean containsKey(@NonNull String keyword) {
+        return getProperties().containsKey(keyword);
+    }
+
+    /** Convenience method to retrieve a property by key value rather than key name. */
+    public @Nullable String getProperty(@NonNull Key key) {
+        return getProperty(key.getName());
+    }
+
+    /** Retrieve a given property value.
+     * @param keyword the keyword to be removed; may be a {@link Key} name or a user property
+     * @return the value associated with {@code keyword}
+     */
+    public @Nullable String getProperty(@NonNull String keyword) {
+        return getProperties().getProperty(keyword);
+    }
+
+    /** Convenience method to remove a property by key value rather than key name.
+     * @see #remove(String)
+     */
+    public @Nullable String remove(@NonNull Key key) {
+        return remove(key.getName());
+    }
+
+    /** Removes a given keyword from the properties map.
+     * @param keyword the keyword to be removed; may be a {@link Key} name or a user property
+     * @return the value previously associated with {@code keyword}
+     */
+    public @Nullable String remove(@NonNull String keyword) {
+        return (String) getProperties().remove(keyword);
     }
 
     /** Stores a property value in the map.
      * The value should be of the type expected by the key.
      * @throws IllegalArgumentException if {@code value} is not a valid value for {@code key}
      */
-    public void storeValue(Key key, Object value) throws IllegalArgumentException {
-        setEntry(key, key.wrap(value));
+    public void storeValue(@NonNull Key key,
+                           @NonNull Object value) throws IllegalArgumentException {
+        storeEntry(key, key.wrap(value));
     }
 
     /** Stores a property entry in the map. */
-    public void setEntry(Key key, Entry entry) {
+    public void storeEntry(@NonNull Key key, @NonNull Entry entry) {
         if (key.isDefault(entry)) {
             remove(key);
         } else {
@@ -149,39 +174,95 @@ public abstract class Properties extends java.util.Properties implements Fixable
         }
     }
 
-    /** Convenience method to retrieve a property by key value rather than key name. */
-    public @Nullable String getProperty(Key key) {
-        return getProperty(key.getName());
-    }
-
-    /** Convenience method to remove a property by key value rather than key name. */
-    public @Nullable Object remove(Key key) {
-        return remove(key.getName());
-    }
-
     /** Convenience method to store a property value by key value rather than key name. */
-    public String setProperty(Key key, String value) {
+    public @Nullable String setProperty(@NonNull Key key, @NonNull String value) {
         return setProperty(key.getName(), value);
     }
 
-    @Override
-    public String setProperty(String keyword, String value) throws IllegalArgumentException {
+    /** Sets a property by the string representation of its key, i.e., the keyword.
+     * If the keyword is not the name of a {@link Key}, the property is stored without
+     * checking. If it is the name of a {@link Key}, the property is parsed according to
+     * that key and an {@link IllegalArgumentException} is thrown if it is not parsable.
+     * @param keyword a non-empty string representing either a system key or a user property
+     * @param value the value to be stored for {@code keyword}
+     * @return the (possibly {@code null}) value previously associated with the keyword
+     * @throws IllegalArgumentException if the value is not appropriate for the keyword
+     */
+    public @Nullable String setProperty(@NonNull String keyword,
+                                        @NonNull String value) throws IllegalArgumentException {
         testFixed(false);
         assert keyword != null;
         String oldValue;
-        Key key = getKey(keyword);
-        if (key == null) {
+        Optional<? extends Key> key = getKey(keyword);
+        if (key.isEmpty()) {
             // this is a non-system key
-            oldValue = (String) super.setProperty(keyword, value);
-        } else if (value == null || key.parser().isDefault(value)) {
-            oldValue = (String) remove(keyword);
-        } else if (!key.parser().accepts(value)) {
+            oldValue = (String) getProperties().setProperty(keyword, value);
+        } else if (key.get().parser().isDefault(value)) {
+            oldValue = (String) getProperties().remove(keyword);
+        } else if (!key.get().parser().accepts(value)) {
             throw Exceptions.illegalArg("Value '%s' is not appropriate for key '%s'", value,
                                         keyword);
         } else {
-            oldValue = (String) super.setProperty(keyword, value);
+            oldValue = (String) getProperties().setProperty(keyword, value);
         }
         return oldValue;
+    }
+
+    /**
+     * Copies a given property map into this one.
+     * @param properties the property map to be copied into this one
+     * @throws IllegalArgumentException if the key type of {@code properties}
+     * does not coincide with this one
+     */
+    public void putAll(Properties properties) throws IllegalArgumentException {
+        if (properties.getKeyType() != getKeyType()) {
+            throw Exceptions.illegalArg("Property map to be cloned has key type %s rather than %s",
+                                        properties.getKeyType(), getKeyType());
+        }
+        getProperties().putAll(properties.getProperties());
+    }
+
+    /** Returns a stream of the entries in this property map,
+     * as {@link String}-typed key/value pairs.
+     */
+    public Stream<Map.Entry<String,String>> entryStream() {
+        return getProperties().entrySet().stream().map(e -> convert(e));
+    }
+
+    /** Loads this property map from a given input stream.
+     * @throws IOException if reading from the stream throws this exception
+     * @throws IllegalArgumentException if one of the values in the loaded stream
+     *  is not appropriate for the keyword
+     */
+    public void load(InputStream stream) throws IOException {
+        var newProps = new java.util.Properties();
+        newProps.load(stream);
+        for (var e : newProps.entrySet()) {
+            setProperty((String) e.getKey(), (String) e.getValue());
+        }
+    }
+
+    /** Stores this property map to a given writer.
+     * @throws IOException if reading from the stream throws this exception
+     */
+    public void store(Writer writer) throws IOException {
+        getProperties().store(writer, null);
+    }
+
+    private Map.Entry<String,String> convert(Map.Entry<Object,Object> inner) {
+        return new Map.Entry<>() {
+            public String getValue() {
+                return (String) inner.getValue();
+            }
+
+            public String setValue(String value) {
+                throw Exceptions.UNREACHABLE;
+            }
+
+            public String getKey() {
+                return (String) inner.getKey();
+            }
+        };
     }
 
     @Override
@@ -202,80 +283,81 @@ public abstract class Properties extends java.util.Properties implements Fixable
      * throws an {@link IllegalStateException} if this is the case.
      * @throws IllegalStateException if the graph has been fixed.
      * @see #setFixed()
-     */
     @Override
     public synchronized void load(InputStream inStream) throws IOException {
         testFixed(false);
-        clear();
-        super.load(inStream);
+        properties.clear();
+        properties.load(inStream);
     }
+     */
 
     /*
      * Before calling the super method, tests if the properties are fixed and
      * throws an {@link IllegalStateException} if this is the case.
      * @throws IllegalStateException if the properties have been fixed.
      * @see #setFixed()
-     */
     @Override
     public synchronized void loadFromXML(InputStream in) throws IOException,
                                                          InvalidPropertiesFormatException {
         testFixed(false);
         clear();
-        super.loadFromXML(in);
+        properties.loadFromXML(in);
     }
+     */
 
     /*
      * Before calling the super method, tests if the properties are fixed and
      * throws an {@link IllegalStateException} if this is the case.
      * @throws IllegalStateException if the properties have been fixed.
      * @see #setFixed()
-     */
     @Override
     public synchronized void clear() {
         testFixed(false);
-        super.clear();
+        properties.clear();
     }
+     */
 
     /*
      * Before calling the super method, tests if the properties are fixed and
      * throws an {@link IllegalStateException} if this is the case.
      * @throws IllegalStateException if the graph has been fixed.
      * @see #setFixed()
-     */
     @Override
     public synchronized Object put(Object key, Object value) {
         testFixed(false);
         if (value == null || (value instanceof String s && s.length() == 0)) {
-            return super.remove(key);
+            return properties.remove(key);
         } else {
-            return super.put(key, value);
+            return properties.put(key, value);
         }
     }
+     */
 
     /*
      * Before calling the super method, tests if the properties are fixed and
      * throws an {@link IllegalStateException} if this is the case.
      * @throws IllegalStateException if the graph has been fixed.
      * @see #setFixed()
-     */
-
     @Override
     public synchronized Object remove(Object key) {
         testFixed(false);
-        return super.remove(key);
+        return properties.remove(key);
     }
+    */
 
-    /* Returns an unmodifiable set. */
+    /* Returns an unmodifiable set.
     @Override
     public Set<Object> keySet() {
-        return Collections.unmodifiableSet(super.keySet());
+        return Collections.unmodifiableSet(properties.keySet());
     }
+    */
 
-    /* Returns an unmodifiable set. */
-    @Override
+    /**
+     * Returns a Set view of the mappings contained in this map. The set is backed by the map, so changes to the map are reflected in the set, and vice-versa. If the map is modified while an iteration over the set is in progress (except through the iterator's own remove operation, or through the setValue operation on a map entry returned by the iterator) the results of the iteration are undefined. The set supports element removal, which removes the corresponding mapping from the map, via the Iterator.remove, Set.remove, removeAll, retainAll and clear operations. It does not support the add or addAll operations.
     public Set<java.util.Map.Entry<Object,Object>> entrySet() {
-        return Collections.unmodifiableSet(super.entrySet());
+        return Collections.unmodifiableSet(properties.entrySet());
     }
+    */
 
     /**
      * Interface for property keys; that is,

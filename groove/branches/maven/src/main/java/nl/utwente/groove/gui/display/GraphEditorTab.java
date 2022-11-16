@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Stream;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -49,8 +50,6 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.TransferHandler;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.undo.UndoableEdit;
 
@@ -219,7 +218,7 @@ final public class GraphEditorTab extends ResourceTab
             // check if the properties have changed
             GraphProperties properties = GraphInfo.getProperties(source);
             if (!properties.equals(GraphInfo.getProperties(getGraph()))) {
-                changeProperties(properties, true);
+                changeProperties(properties.entryStream(), true);
             } else {
                 getJModel().setGraphModified();
                 getJGraph().refresh();
@@ -277,13 +276,15 @@ final public class GraphEditorTab extends ResourceTab
 
     /**
      * Changes the properties of the graph in the JModel.
-     * @param propertiesMap the new properties
+     * @param propertiesStream the new properties
      * @param updatePropertiesPanel if {@code true}, the change did not originate
      * from the properties table, so the table has to be refreshed as well
      */
-    private void changeProperties(Map<?,?> propertiesMap, boolean updatePropertiesPanel) {
+    private void changeProperties(Stream<Map.Entry<String,String>> propertiesStream,
+                                  boolean updatePropertiesPanel) {
         AspectGraph newGraph = getGraph().clone();
-        GraphProperties newProperties = new GraphProperties(propertiesMap);
+        GraphProperties newProperties = new GraphProperties();
+        propertiesStream.forEach(e -> newProperties.setProperty(e.getKey(), e.getValue()));
         GraphInfo.setProperties(newGraph, newProperties);
         newGraph.setFixed();
         getJModel().loadGraph(newGraph);
@@ -486,21 +487,18 @@ final public class GraphEditorTab extends ResourceTab
     private PropertiesTable getPropertiesPanel() {
         PropertiesTable result = this.propertiesPanel;
         if (result == null) {
-            this.propertiesPanel = result = new PropertiesTable(GraphProperties.Key.class, true);
-            result.setName("Properties");
-            result.setBackground(JAttr.EDITOR_BACKGROUND);
-            result.setProperties(GraphInfo.getProperties(getGraph()));
+            final var panel = new PropertiesTable(GraphProperties.Key.class, true);
+            panel.setName("Properties");
+            panel.setBackground(JAttr.EDITOR_BACKGROUND);
+            panel.setProperties(GraphInfo.getProperties(getGraph()));
             // add the listener after initialising the properties, to avoid needless refreshes
-            result.getModel().addTableModelListener(new TableModelListener() {
-                @Override
-                public void tableChanged(TableModelEvent e) {
-                    if (GraphEditorTab.this.listenToPropertiesPanel) {
-                        changeProperties(GraphEditorTab.this.propertiesPanel.getProperties(),
-                                         false);
-                        setDirty(false);
-                    }
+            panel.getModel().addTableModelListener(e -> {
+                if (GraphEditorTab.this.listenToPropertiesPanel) {
+                    changeProperties(panel.getProperties().entrySet().stream(), false);
+                    setDirty(false);
                 }
             });
+            this.propertiesPanel = result = panel;
             this.listenToPropertiesPanel = true;
         }
         return result;

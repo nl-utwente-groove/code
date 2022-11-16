@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -352,11 +353,11 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
     }
 
     /** Returns the grammar key with a given name, if any; or {@code null} if the name is not a recognisable key */
-    static public GrammarKey getKey(String name) {
+    static public Optional<GrammarKey> getKey(String name) {
         try {
-            return valueOf(name);
+            return Optional.of(valueOf(name));
         } catch (IllegalArgumentException exc) {
-            return null;
+            return Optional.empty();
         }
     }
 

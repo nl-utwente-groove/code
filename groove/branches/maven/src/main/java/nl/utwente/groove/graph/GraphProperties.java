@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.graph;
 
-import java.util.Map;
+import java.util.Optional;
 
 import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.rule.MethodName.Language;
@@ -40,19 +40,17 @@ public class GraphProperties extends Properties {
     }
 
     /** Constructs a properties object initialised on a given map. */
-    public GraphProperties(Map<?,?> properties) {
+    public GraphProperties(GraphProperties properties) {
         this();
-        for (Map.Entry<?,?> e : properties.entrySet()) {
-            setProperty((String) e.getKey(), (String) e.getValue());
-        }
+        putAll(properties);
     }
 
     @Override
-    public Key getKey(String name) {
+    public Optional<Key> getKey(String name) {
         try {
-            return Key.valueOf(name);
+            return Optional.of(Key.valueOf(name));
         } catch (IllegalArgumentException exc) {
-            return null;
+            return Optional.empty();
         }
     }
 
