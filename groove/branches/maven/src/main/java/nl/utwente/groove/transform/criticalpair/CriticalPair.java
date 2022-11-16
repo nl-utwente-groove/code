@@ -435,8 +435,8 @@ public class CriticalPair {
         }
         if (ruleNode instanceof DefaultRuleNode) {
             return firstNode instanceof DefaultRuleNode;
-        } else if (ruleNode instanceof VariableNode) {
-            if (firstNode instanceof VariableNode varRuleNode) {
+        } else if (ruleNode instanceof VariableNode varRuleNode) {
+            if (firstNode instanceof VariableNode) {
                 if (varRuleNode.hasConstant()) {
                     Constant cons = varRuleNode.getConstant();
                     //check if the constant already exists in some group
