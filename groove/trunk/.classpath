@@ -34,7 +34,7 @@
 	<classpathentry kind="lib" path="lib/jakarta/jakarta.activation.jar"/>
 	<classpathentry kind="lib" path="lib/jakarta/jaxb-jxc.jar"/>
 	<classpathentry kind="lib" path="lib/jakarta/jaxb-xjc.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/io/jaxb-gxl-2.0.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.8"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
