@@ -2,7 +2,7 @@
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
     <graph role="rule" edgeids="false" edgemode="directed" id="javaFilterFlag">
         <attr name="matchFilter">
-            <string>groove.test.rule.RuleApplicationTest.filterFlag</string>
+            <string>nl.utwente.groove.test.rule.RuleApplicationTest.filterFlag</string>
         </attr>
         <attr name="$version">
             <string>curly</string>
