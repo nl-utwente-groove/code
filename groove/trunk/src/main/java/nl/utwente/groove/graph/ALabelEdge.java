@@ -16,7 +16,8 @@
  */
 package nl.utwente.groove.graph;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.util.line.Line;
 
@@ -25,6 +26,7 @@ import nl.utwente.groove.util.line.Line;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public abstract class ALabelEdge<N extends Node> extends AEdge<N,ALabelEdge<N>> implements Label {
     /**
      * Constructs a new instance, for a given source and target node.
@@ -52,10 +54,10 @@ public abstract class ALabelEdge<N extends Node> extends AEdge<N,ALabelEdge<N>> 
         return result;
     }
 
-    private Line line;
+    private @Nullable Line line;
 
     /** Callback method to compute the line returned by {@link #toLine()}. */
-    abstract protected @NonNull Line computeLine();
+    abstract protected Line computeLine();
 
     /** In general, we do not expect labels to be reconstructable from a string. */
     @Override
@@ -89,7 +91,7 @@ public abstract class ALabelEdge<N extends Node> extends AEdge<N,ALabelEdge<N>> 
     abstract protected int computeLabelHash();
 
     @Override
-    protected boolean isTypeEqual(Object obj) {
+    protected boolean isTypeEqual(@Nullable Object obj) {
         return obj instanceof ALabelEdge;
     }
 

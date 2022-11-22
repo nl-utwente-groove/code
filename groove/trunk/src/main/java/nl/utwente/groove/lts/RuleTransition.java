@@ -18,6 +18,8 @@ package nl.utwente.groove.lts;
 
 import java.util.List;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.control.instance.Step;
 import nl.utwente.groove.grammar.host.HostGraphMorphism;
 import nl.utwente.groove.grammar.host.HostNode;
@@ -30,6 +32,7 @@ import nl.utwente.groove.transform.RuleEvent;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public interface RuleTransition extends RuleTransitionStub, GraphTransition {
     /* Overrides the method to specialise the result type. */
     @Override

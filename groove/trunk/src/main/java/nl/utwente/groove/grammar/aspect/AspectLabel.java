@@ -22,6 +22,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.ALabel;
 import nl.utwente.groove.graph.EdgeRole;
@@ -37,6 +40,7 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public class AspectLabel extends ALabel implements Fixable {
     /**
      * Constructs an initially empty label, for a graph with a particular role.
@@ -198,7 +202,7 @@ public class AspectLabel extends ALabel implements Fixable {
 
     /** Tests if the aspects and text of this object equal those of another. */
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         return this == obj || obj instanceof AspectLabel label && equalsAspects(label)
             && equalsText((AspectLabel) obj);
     }
@@ -222,9 +226,10 @@ public class AspectLabel extends ALabel implements Fixable {
      * Indicates if the {@link #innerText} of this map equals that of another.
      */
     private boolean equalsText(AspectLabel other) {
-        boolean result = this.innerText == null
+        var inner = this.innerText;
+        boolean result = inner == null
             ? other.innerText == null
-            : this.innerText.equals(other.innerText);
+            : inner.equals(other.innerText);
         return result;
     }
 
@@ -270,21 +275,22 @@ public class AspectLabel extends ALabel implements Fixable {
     /** Returns an aspect of this label that makes it suitable for edges only.
      * Returns {@code null} if there is no such aspect.
      */
-    public Aspect getEdgeOnlyAspect() {
+    public @Nullable Aspect getEdgeOnlyAspect() {
         return this.edgeOnly;
     }
 
     /** Returns an aspect of this label that makes it suitable for edges only.
      * Returns {@code null} if there is no such aspect.
      */
-    public Aspect getNodeOnlyAspect() {
+    public @Nullable Aspect getNodeOnlyAspect() {
         return this.nodeOnly;
     }
 
     /** Edge-only aspect value in this label, if any. */
-    private Aspect edgeOnly;
+    private @Nullable Aspect edgeOnly;
+
     /** Node-only aspect value in this label, if any. */
-    private Aspect nodeOnly;
+    private @Nullable Aspect nodeOnly;
 
     /**
      * Sets the label text to a non-{@code null} value.
@@ -306,11 +312,13 @@ public class AspectLabel extends ALabel implements Fixable {
      */
     public String getInnerText() {
         setFixed();
-        return this.innerText;
+        var result = this.innerText;
+        assert result != null;
+        return result;
     }
 
     /** Label text; may be {@code null} if the associated element is a node. */
-    private String innerText;
+    private @Nullable String innerText;
 
     /** The graph role for which this label is intended to be used. */
     private final GraphRole role;

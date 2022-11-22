@@ -12,9 +12,11 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /**
- * 
+ *
  */
 package nl.utwente.groove.lts;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.host.HostNode;
@@ -25,6 +27,7 @@ import nl.utwente.groove.transform.RuleEvent;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public interface RuleTransitionStub extends GraphTransitionStub {
     /** Specialises the return type. */
     @Override

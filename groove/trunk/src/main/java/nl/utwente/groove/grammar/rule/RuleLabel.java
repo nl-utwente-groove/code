@@ -18,19 +18,22 @@ package nl.utwente.groove.grammar.rule;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.automaton.RegAut;
 import nl.utwente.groove.automaton.RegAutCalculator;
 import nl.utwente.groove.automaton.RegExpr;
+import nl.utwente.groove.automaton.RegExpr.Neg;
+import nl.utwente.groove.automaton.RegExpr.Wildcard;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeGuard;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.ALabel;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
-import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.line.Line;
 
 /**
@@ -38,6 +41,7 @@ import nl.utwente.groove.util.line.Line;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 09:32:28 $
  */
+@NonNullByDefault
 public class RuleLabel extends ALabel {
     /**
      * Constructs a rule label on the basis of a regular
@@ -46,10 +50,6 @@ public class RuleLabel extends ALabel {
      *        <tt>null</tt>
      */
     public RuleLabel(RegExpr regExpr) {
-        if (regExpr == null) {
-            throw Exceptions.illegalArg("Can't create rule label from null expression");
-        }
-        //assert !regExpr.isNeg() : "Rule label expressions may not be negated";
         this.regExpr = regExpr;
     }
 
@@ -74,10 +74,11 @@ public class RuleLabel extends ALabel {
     @Override
     public int compareTo(Label obj) {
         int result = getRole().compareTo(obj.getRole());
-        if (result == 0 && obj instanceof RuleLabel) {
-            RuleLabel other = (RuleLabel) obj;
+        if (result == 0 && obj instanceof RuleLabel other) {
             if (isAtom() != other.isAtom()) {
-                result = isAtom() ? -1 : +1;
+                result = isAtom()
+                    ? -1
+                    : +1;
             }
         }
         if (result == 0) {
@@ -86,13 +87,16 @@ public class RuleLabel extends ALabel {
         return result;
     }
 
+    @SuppressWarnings("null")
     @Override
     public EdgeRole getRole() {
         EdgeRole result = super.getRole();
         if (isWildcard()) {
             result = ((RegExpr.Wildcard) getMatchExpr()).getKind();
         } else if (isSharp() || isAtom()) {
-            result = getTypeLabel().getRole();
+            var tl = getTypeLabel();
+            assert tl != null;
+            result = tl.getRole();
         } else if (isEmpty()) {
             result = EdgeRole.BINARY;
         } else if (isNeg() && getNegOperand().isEmpty()) {
@@ -114,7 +118,7 @@ public class RuleLabel extends ALabel {
     }
 
     /** Returns the underlying regular expression. */
-    public @NonNull RegExpr getMatchExpr() {
+    public RegExpr getMatchExpr() {
         return this.regExpr;
     }
 
@@ -126,17 +130,20 @@ public class RuleLabel extends ALabel {
      * used to match node type labels properly; non-{@code null}
      */
     public RegAut getAutomaton(TypeGraph typeGraph) {
-        if (this.automaton == null || this.automaton.getTypeGraph() != typeGraph) {
-            this.automaton = calculator.compute(getMatchExpr(), typeGraph);
+        var result = this.automaton;
+        if (result == null || result.getTypeGraph() != typeGraph) {
+            this.automaton = result = calculator.compute(getMatchExpr(), typeGraph);
         }
-        return this.automaton;
+        return result;
     }
 
+    /** An automaton constructed lazily for the regular expression. */
+    private @Nullable RegAut automaton;
+
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         boolean result = false;
-        if (obj instanceof RuleLabel) {
-            RuleLabel other = (RuleLabel) obj;
+        if (obj instanceof RuleLabel other) {
             result = getMatchExpr().equals(other.getMatchExpr());
         }
         return result;
@@ -151,9 +158,11 @@ public class RuleLabel extends ALabel {
      * If this label wraps a {@link nl.utwente.groove.automaton.RegExpr.Atom}, returns the
      * text of the atom. Returns <code>null</code> otherwise.
      */
-    public String getAtomText() {
+    public @Nullable String getAtomText() {
         RegExpr expr = getMatchExpr();
-        return expr instanceof RegExpr.Atom ? ((RegExpr.Atom) expr).text() : null;
+        return expr instanceof RegExpr.Atom atom
+            ? atom.text()
+            : null;
     }
 
     /**
@@ -163,7 +172,7 @@ public class RuleLabel extends ALabel {
      * to the atom or sharp text. Returns
      * <code>null</code> otherwise.
      */
-    public TypeLabel getTypeLabel() {
+    public @Nullable TypeLabel getTypeLabel() {
         RegExpr expr = getMatchExpr();
         if (expr instanceof RegExpr.Atom) {
             return ((RegExpr.Atom) expr).toTypeLabel();
@@ -193,9 +202,14 @@ public class RuleLabel extends ALabel {
         return getMatchExpr().getSharpLabel();
     }
 
-    /** Tests if this label wraps a {@link nl.utwente.groove.automaton.RegExpr.Wildcard}. */
+    /** Tests if this label wraps a {@link Wildcard}. */
     public boolean isWildcard() {
         return getMatchExpr().isWildcard();
+    }
+
+    /** Tests if this label wraps a {@link Wildcard} with a given property. */
+    public boolean isWildcard(Predicate<Wildcard> prop) {
+        return getMatchExpr().isWildcard() && prop.test((Wildcard) getMatchExpr());
     }
 
     /**
@@ -203,7 +217,7 @@ public class RuleLabel extends ALabel {
      * {@link nl.utwente.groove.automaton.RegExpr.Wildcard}, returns the guard of the wildcard.
      * Returns <code>null</code> in all other cases.
      */
-    public TypeGuard getWildcardGuard() {
+    public @Nullable TypeGuard getWildcardGuard() {
         return getMatchExpr().getWildcardGuard();
     }
 
@@ -217,10 +231,10 @@ public class RuleLabel extends ALabel {
      * {@link nl.utwente.groove.automaton.RegExpr.Choice}, returns the list of operands of the regular
      * expression. Returns <code>null</code> otherwise.
      */
-    public List<RegExpr> getChoiceOperands() {
+    public @Nullable List<RegExpr> getChoiceOperands() {
         RegExpr expr = getMatchExpr();
-        if (expr instanceof RegExpr.Choice) {
-            return ((RegExpr.Choice) expr).getOperands();
+        if (expr instanceof RegExpr.Choice choice) {
+            return choice.getOperands();
         }
         return null;
     }
@@ -235,10 +249,10 @@ public class RuleLabel extends ALabel {
      * returns the list of operands of the regular expression. Returns
      * <code>null</code> in all other cases.
      */
-    public List<RegExpr> getSeqOperands() {
+    public @Nullable List<RegExpr> getSeqOperands() {
         RegExpr expr = getMatchExpr();
-        if (expr instanceof RegExpr.Seq) {
-            return ((RegExpr.Seq) expr).getOperands();
+        if (expr instanceof RegExpr.Seq seq) {
+            return seq.getOperands();
         }
         return null;
     }
@@ -253,10 +267,10 @@ public class RuleLabel extends ALabel {
      * {@link nl.utwente.groove.automaton.RegExpr.Star}, returns the operand of the regular expression.
      * Returns <code>null</code> otherwise.
      */
-    public RegExpr getStarOperand() {
+    public @Nullable RegExpr getStarOperand() {
         RegExpr expr = getMatchExpr();
-        if (expr instanceof RegExpr.Star) {
-            return ((RegExpr.Star) expr).getOperand();
+        if (expr instanceof RegExpr.Star star) {
+            return star.getOperand();
         }
         return null;
     }
@@ -271,10 +285,10 @@ public class RuleLabel extends ALabel {
      * {@link nl.utwente.groove.automaton.RegExpr.Plus}, returns the operand of the regular expression.
      * Returns <code>null</code> otherwise.
      */
-    public RegExpr getPlusOperand() {
+    public @Nullable RegExpr getPlusOperand() {
         RegExpr expr = getMatchExpr();
-        if (expr instanceof RegExpr.Plus) {
-            return ((RegExpr.Plus) expr).getOperand();
+        if (expr instanceof RegExpr.Plus plus) {
+            return plus.getOperand();
         }
         return null;
     }
@@ -289,30 +303,37 @@ public class RuleLabel extends ALabel {
      * returns the operand label. Returns
      * <code>null</code> otherwise.
      */
-    public RuleLabel getInvLabel() {
+    public @Nullable RuleLabel getInvLabel() {
         RuleLabel result = null;
         RegExpr expr = getMatchExpr();
-        if (expr instanceof RegExpr.Inv) {
-            result = ((RegExpr.Inv) expr).getOperand()
-                .toLabel();
+        if (expr instanceof RegExpr.Inv inv) {
+            result = inv.getOperand().toLabel();
         }
         return result;
     }
 
-    /** Tests if this label wraps a {@link nl.utwente.groove.automaton.RegExpr.Neg}. */
+    /** Tests if this label wraps a {@link Neg}. */
     public boolean isNeg() {
         return getNegOperand() != null;
     }
 
+    /** Tests if this label wraps a {@link Neg} satisfying a given property. */
+    public boolean isNeg(Predicate<Neg> prop) {
+        if (getMatchExpr() instanceof RegExpr.Neg neg) {
+            return prop.test(neg);
+        } else {
+            return false;
+        }
+    }
+
     /**
-     * If  this label wraps a {@link nl.utwente.groove.automaton.RegExpr.Neg},
+     * If  this label wraps a {@link Neg},
      * returns the operand of the regular expression. Returns
      * <code>null</code> in all other cases.
      */
-    public RegExpr getNegOperand() {
-        RegExpr expr = getMatchExpr();
-        if (expr instanceof RegExpr.Neg) {
-            return ((RegExpr.Neg) expr).getOperand();
+    public @Nullable RegExpr getNegOperand() {
+        if (getMatchExpr() instanceof RegExpr.Neg neg) {
+            return neg.getOperand();
         }
         return null;
     }
@@ -323,9 +344,7 @@ public class RuleLabel extends ALabel {
     }
 
     /** The underlying regular expression, if any. */
-    private final @NonNull RegExpr regExpr;
-    /** An automaton constructed lazily for the regular expression. */
-    private RegAut automaton;
+    private final RegExpr regExpr;
     /** Calculator used to construct all the automata. */
     static private final RegAutCalculator calculator = new RegAutCalculator();
     /** Number used for labels that are not argument labels. */

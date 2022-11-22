@@ -18,6 +18,8 @@ package nl.utwente.groove.lts;
 
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.control.Binding;
 import nl.utwente.groove.control.Valuator;
 import nl.utwente.groove.control.instance.Assignment;
@@ -62,8 +64,7 @@ public class MatchApplier {
         addTransitionReporter.start();
         RuleTransition transition = null;
         Rule rule = match.getAction();
-        if (!match.getStep()
-            .isModifying()) {
+        if (!match.getStep().isModifying()) {
             if (!rule.isModifying()) {
                 transition = createTransition(source, match, source, false);
             } else if (match.hasTransition()) {
@@ -74,18 +75,15 @@ public class MatchApplier {
                 assert source instanceof GraphNextState;
                 RuleTransition parentTrans = match.getTransition();
                 assert source != parentTrans.source();
-                boolean sourceModifiesCtrl = ((GraphNextState) source).getStep()
-                    .isModifying();
+                boolean sourceModifiesCtrl = ((GraphNextState) source).getStep().isModifying();
                 MatchResult sourceKey = ((GraphNextState) source).getKey();
-                if (!sourceModifiesCtrl && !parentTrans.isSymmetry() && !match.getEvent()
-                    .conflicts(sourceKey.getEvent())) {
+                if (!sourceModifiesCtrl && !parentTrans.isSymmetry()
+                    && !match.getEvent().conflicts(sourceKey.getEvent())) {
                     GraphState sibling = parentTrans.target();
                     RuleTransitionStub siblingOut = sibling.getOutStub(sourceKey);
                     if (siblingOut != null) {
-                        transition = createTransition(source,
-                            match,
-                            siblingOut.getTarget(sibling),
-                            siblingOut.isSymmetry());
+                        transition = createTransition(source, match, siblingOut.getTarget(sibling),
+                                                      siblingOut.isSymmetry());
                         confluentDiamondCount++;
                     }
                 }
@@ -114,22 +112,23 @@ public class MatchApplier {
      * state.
      * @throws InterruptedException if an oracle input was cancelled
      */
-    private GraphNextState createState(GraphState source, MatchResult match)
-        throws InterruptedException {
+    private GraphNextState createState(GraphState source,
+                                       MatchResult match) throws InterruptedException {
+        @NonNull
         HostNode[] addedNodes;
         Object[] frameValues;
         RuleEvent event = match.getEvent();
         Step ctrlStep = match.getStep();
-        boolean hasFrameValues = ctrlStep.onFinish()
-            .hasVars();
+        boolean hasFrameValues = ctrlStep.onFinish().hasVars();
         RuleEffect effectRecord = null;
         if (reuseCreatedNodes(source, match)) {
             RuleTransition parentOut = match.getTransition();
             addedNodes = parentOut.getAddedNodes();
-        } else if (event.getRule()
-            .hasNodeCreators()) {
+        } else if (event.getRule().hasNodeCreators()) {
             // compute the frame values at the same time, if there are any
-            Fragment fragment = hasFrameValues ? Fragment.NODE_ALL : Fragment.NODE_CREATION;
+            Fragment fragment = hasFrameValues
+                ? Fragment.NODE_ALL
+                : Fragment.NODE_CREATION;
             effectRecord = new RuleEffect(source.getGraph(), fragment, this.gts.getOracle());
             event.recordEffect(effectRecord);
             effectRecord.setFixed();
@@ -137,8 +136,7 @@ public class MatchApplier {
         } else {
             addedNodes = EMPTY_NODE_ARRAY;
         }
-        if (hasFrameValues || ctrlStep.onFinish()
-            .getNestingDepth() > 0) {
+        if (hasFrameValues || ctrlStep.onFinish().getNestingDepth() > 0) {
             // only compute the effect if it has not yet been done
             if (effectRecord == null) {
                 effectRecord = new RuleEffect(source.getGraph(), addedNodes, Fragment.NODE_ALL);
@@ -160,16 +158,15 @@ public class MatchApplier {
      * @throws InterruptedException if an oracle input was cancelled
      */
     private RuleTransition createTransition(GraphState source, MatchResult match, GraphState target,
-        boolean symmetry) throws InterruptedException {
+                                            boolean symmetry) throws InterruptedException {
         HostNode[] addedNodes;
         RuleEvent event = match.getEvent();
         if (reuseCreatedNodes(source, match)) {
             RuleTransition parentOut = match.getTransition();
             addedNodes = parentOut.getAddedNodes();
-        } else if (match.getAction()
-            .hasNodeCreators()) {
-            RuleEffect effect =
-                new RuleEffect(source.getGraph(), Fragment.NODE_CREATION, this.gts.getOracle());
+        } else if (match.getAction().hasNodeCreators()) {
+            RuleEffect effect
+                = new RuleEffect(source.getGraph(), Fragment.NODE_CREATION, this.gts.getOracle());
             event.recordEffect(effect);
             effect.setFixed();
             addedNodes = effect.getCreatedNodeArray();
@@ -190,9 +187,8 @@ public class MatchApplier {
         if (!(source instanceof GraphNextState)) {
             return false;
         }
-        HostNode[] addedNodes = match.getTransition()
-            .getAddedNodes();
-        if (addedNodes == null || addedNodes.length == 0) {
+        HostNode[] addedNodes = match.getTransition().getAddedNodes();
+        if (addedNodes.length == 0) {
             return true;
         }
         RuleEvent sourceEvent = ((GraphNextState) source).getEvent();
@@ -208,7 +204,7 @@ public class MatchApplier {
 
     /** Computes the value stack for the target state of a given rule transition. */
     private Object[] computeFrameValues(Step step, GraphState source, RuleEvent event,
-        RuleEffect record) {
+                                        RuleEffect record) {
         Object[] result = source.getActualValues();
         for (Assignment assign : step.getApplyAssignments()) {
             switch (assign.getKind()) {
@@ -229,7 +225,7 @@ public class MatchApplier {
 
     /** Computes the frame values for the target of a rule application. */
     private HostNode[] apply(Assignment assign, Object[] sourceValues, RuleEvent event,
-        RuleEffect record) {
+                             RuleEffect record) {
         Binding[] bindings = assign.getBindings();
         int valueCount = bindings.length;
         HostNode[] result = new HostNode[valueCount];
@@ -299,7 +295,7 @@ public class MatchApplier {
      * Constant empty node array, to be shared among rule applications that
      * create no nodes.
      */
-    private static final HostNode[] EMPTY_NODE_ARRAY = new HostNode[0];
+    private static final HostNode[] EMPTY_NODE_ARRAY = {};
 
     /** Reporter for profiling information. */
     static private final Reporter reporter = Reporter.register(MatchApplier.class);

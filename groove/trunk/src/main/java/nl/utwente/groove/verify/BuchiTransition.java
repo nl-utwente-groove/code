@@ -18,12 +18,15 @@ package nl.utwente.groove.verify;
 
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.graph.AEdge;
 
 /**
  * @author Harmen Kastenberg
  * @version $Revision $
  */
+@NonNullByDefault
 public class BuchiTransition extends AEdge<BuchiLocation,BuchiLabel> {
     /**
      * Constructor for creating a new Buchi transition
@@ -45,10 +48,7 @@ public class BuchiTransition extends AEdge<BuchiLocation,BuchiLabel> {
      * @return <code>true</code> if the set of propositions enable the transition, <code>false</code> otherwise.
      */
     public boolean isEnabled(Set<Proposition> satisfiedProps) {
-        return label().guard()
-            .stream()
-            .allMatch(a -> a.isNegated() == !satisfiedProps.stream()
-                .anyMatch(r -> a.getAtom()
-                    .matches(r)));
+        return label().guard().stream().allMatch(a -> a
+            .isNegated() == !satisfiedProps.stream().anyMatch(r -> a.getAtom().matches(r)));
     }
 }

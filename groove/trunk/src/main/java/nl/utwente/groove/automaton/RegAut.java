@@ -19,6 +19,10 @@ package nl.utwente.groove.automaton;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.rule.RuleLabel;
@@ -42,7 +46,8 @@ import nl.utwente.groove.graph.plain.PlainNode;
  * <li> Atoms
  * </ul>
  */
-public interface RegAut extends GGraph<RegNode,RegEdge> {
+@NonNullByDefault
+public interface RegAut extends GGraph<@NonNull RegNode,@NonNull RegEdge> {
     /** Returns the start node of the automaton. */
     RegNode getStartNode();
 
@@ -91,7 +96,8 @@ public interface RegAut extends GGraph<RegNode,RegEdge> {
      *        matching paths should end; if <code>null</code>, there is no
      *        constraint
      */
-    Set<Result> getMatches(HostGraph graph, HostNode startImage, HostNode endImage);
+    Set<Result> getMatches(HostGraph graph, @Nullable HostNode startImage,
+                           @Nullable HostNode endImage);
 
     /** Construct a new automaton, with a given start node, end node and type graph. */
     RegAut newAutomaton(RegNode start, RegNode end, TypeGraph typeGraph);
@@ -112,11 +118,23 @@ public interface RegAut extends GGraph<RegNode,RegEdge> {
      *        adhered to in the matching; if <code>null</code>, there is no
      *        constraint
      */
-    Set<Result> getMatches(HostGraph graph, HostNode startImage, HostNode endImage,
-        Valuation valuation);
+    Set<Result> getMatches(HostGraph graph, @Nullable HostNode startImage,
+                           @Nullable HostNode endImage, @Nullable Valuation valuation);
 
     /** Type of the automaton's match results. */
     record Result(HostNode source, HostNode target) {
+
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (!(obj instanceof Result r)) {
+                return false;
+            }
+            return this.source.equals(r.source) && this.target.equals(r.target);
+        }
         // no added functionality
+
     }
 }

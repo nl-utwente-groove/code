@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.grammar.host;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.GEdge;
@@ -24,6 +26,7 @@ import nl.utwente.groove.graph.GEdge;
  * Type of the edges of a host graph.
  * @author Arend Rensink
  */
+@NonNullByDefault
 public interface HostEdge extends GEdge<HostNode>, HostElement, AnchorValue {
     /* Specialises the return type. */
     @Override

@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.control.Valuator;
 import nl.utwente.groove.control.instance.Frame;
@@ -73,7 +75,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable {
+public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> implements Cloneable {
     /** Debug flag controlling whether states are compared for control location equality. */
     protected final static boolean CHECK_CONTROL_LOCATION = true;
     /**
@@ -651,12 +653,14 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 result.addEdge(image, label, image);
             }
             if (flags.showTransience() && state.isTransient()) {
-                String label = flags.getTransienceLabel()
+                String label = flags
+                    .getTransienceLabel()
                     .replaceAll("#", "" + state.getActualFrame().getTransience());
                 result.addEdge(image, label, image);
             }
             if (flags.showRecipes() && state.isInternalState()) {
-                String label = flags.getRecipeLabel()
+                String label = flags
+                    .getRecipeLabel()
                     .replaceAll("#", "" + state.getActualFrame().getRecipe().getQualName());
                 result.addEdge(image, label, image);
             }
@@ -892,8 +896,8 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 return myNodeSet.equals(otherGraph.nodeSet())
                     && myEdgeSet.equals(otherGraph.edgeSet());
             } else {
-                return this.checker.areIsomorphic(myGraph, otherGraph, myBoundNodes,
-                                                  otherBoundNodes);
+                return this.checker
+                    .areIsomorphic(myGraph, otherGraph, myBoundNodes, otherBoundNodes);
             }
         }
 
@@ -922,8 +926,8 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 Frame ctrlState = stateKey.getPrimeFrame();
                 if (ctrlState != null) {
                     result += ctrlState.hashCode();
-                    result += Valuator.hashCode(stateKey.getPrimeValues(),
-                                                certifier.getCertificateMap());
+                    result += Valuator
+                        .hashCode(stateKey.getPrimeValues(), certifier.getCertificateMap());
                 }
             }
             if (CHECK_CONTROL_LOCATION) {

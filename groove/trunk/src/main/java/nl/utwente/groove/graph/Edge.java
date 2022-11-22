@@ -16,13 +16,14 @@
  */
 package nl.utwente.groove.graph;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
  * Interface of a graph (hyper-)edge, with two endpoints (i.e., nodes) and label.
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public interface Edge extends Element {
     /**
      * Returns the source node of this edge.
@@ -39,7 +40,7 @@ public interface Edge extends Element {
      * @return the label of this edge
      * @ensure <tt>result != null</tt>
      */
-    public @NonNull Label label();
+    public Label label();
 
     /**
      * Returns the edge role of a given edge.

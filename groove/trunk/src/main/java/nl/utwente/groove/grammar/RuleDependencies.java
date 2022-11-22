@@ -284,8 +284,7 @@ public class RuleDependencies {
         for (Rule rule : this.rules) {
             Set<TypeElement> positives = this.positiveMap.get(rule);
             Set<TypeElement> negatives = this.negativeMap.get(rule);
-            boolean hasMatchFilter = rule.getMatchFilter()
-                .isPresent();
+            boolean hasMatchFilter = rule.getMatchFilter().isPresent();
             for (Rule depRule : this.rules) {
                 // Positive as well as negative dependencies exist if this rule has a match filter
                 if (hasMatchFilter) {
@@ -336,7 +335,7 @@ public class RuleDependencies {
      * method also tests for the production of isolated nodes.
      */
     void collectRuleCharacteristics(Rule rule, Set<TypeElement> consumed,
-        Set<TypeElement> produced) {
+                                    Set<TypeElement> produced) {
         RuleGraph lhs = rule.lhs();
         // test if a node is consumed (and there is no dangling edge check)
         for (RuleNode eraserNode : rule.getEraserNodes()) {
@@ -377,7 +376,8 @@ public class RuleDependencies {
         }
         addSharpEraserTypes(consumed, sharpEraserTypes);
         boolean checkDangling = this.properties.isCheckDangling();
-        lhs.edgeSet(eraserNode)
+        lhs
+            .edgeSet(eraserNode)
             .stream()
             .filter(e -> !checkDangling || e.target() instanceof VariableNode)
             .map(RuleEdge::getMatchingTypes)
@@ -397,16 +397,15 @@ public class RuleDependencies {
             superTypes.addAll(type.getSupertypes());
         }
         Set<TypeEdge> incidentEdgeTypes = new HashSet<>();
-        superTypes.stream()
-            .flatMap(n -> this.typeGraph.inEdgeSet(n)
-                .stream())
+        superTypes
+            .stream()
+            .flatMap(n -> this.typeGraph.inEdgeSet(n).stream())
             .filter(e -> !checkDangling)
             .forEach(e -> incidentEdgeTypes.add(e));
-        superTypes.stream()
-            .flatMap(n -> this.typeGraph.outEdgeSet(n)
-                .stream())
-            .filter(e -> !checkDangling || e.target()
-                .isDataType())
+        superTypes
+            .stream()
+            .flatMap(n -> this.typeGraph.outEdgeSet(n).stream())
+            .filter(e -> !checkDangling || e.target().isDataType())
             .forEach(e -> incidentEdgeTypes.add(e));
         for (TypeNode superType : superTypes) {
             incidentEdgeTypes.addAll(this.typeGraph.inEdgeSet(superType));
@@ -420,7 +419,7 @@ public class RuleDependencies {
      * the node type of the merge target to the produced elements.
      */
     private void addMerger(Set<TypeElement> produced, Set<TypeElement> consumed, RuleGraph lhs,
-        RuleEdge merger) {
+                           RuleEdge merger) {
         addEraserNode(consumed, merger.source(), lhs);
         for (RuleEdge sourceEdge : lhs.edgeSet(merger.source())) {
             Set<TypeElement> types = getMatchingTypes(sourceEdge);
@@ -431,7 +430,7 @@ public class RuleDependencies {
 
     /** Collects the type elements for which a condition tests positively and negatively. */
     void collectConditionCharacteristics(Condition cond, Set<TypeElement> positive,
-        Set<TypeElement> negative) {
+                                         Set<TypeElement> negative) {
         if (cond.hasPattern()) {
             collectPatternCharacteristics(cond, positive, negative);
         }
@@ -452,16 +451,14 @@ public class RuleDependencies {
     }
 
     void collectPatternCharacteristics(Condition cond, Set<TypeElement> positive,
-        Set<TypeElement> negative) {
+                                       Set<TypeElement> negative) {
         RuleGraph pattern = cond.getPattern();
         // collected the isolated fresh nodes
         Set<RuleNode> isolatedNodes = new HashSet<>(pattern.nodeSet());
-        isolatedNodes.removeAll(cond.getRoot()
-            .nodeSet());
+        isolatedNodes.removeAll(cond.getRoot().nodeSet());
         // iterate over the edges that are new in the target
         Set<RuleEdge> freshTargetEdges = new HashSet<>(pattern.edgeSet());
-        freshTargetEdges.removeAll(cond.getRoot()
-            .edgeSet());
+        freshTargetEdges.removeAll(cond.getRoot().edgeSet());
         for (RuleEdge edge : freshTargetEdges) {
             RuleLabel label = edge.label();
             // flag indicating that the edge always tests positively
@@ -473,8 +470,7 @@ public class RuleDependencies {
                 presence = false;
             } else {
                 affectedSet = positive;
-                presence = !label.getMatchExpr()
-                    .isAcceptsEmptyWord();
+                presence = !label.getMatchExpr().isAcceptsEmptyWord();
             }
             affectedSet.addAll(getMatchingTypes(edge));
             if (presence) {
@@ -484,23 +480,24 @@ public class RuleDependencies {
         }
         // if there is a dangling edge check, dangling edge types are negative conditions
         if (this.properties.isCheckDangling() && cond.hasRule()) {
-            RuleGraph rhs = cond.getRule()
-                .rhs();
+            RuleGraph rhs = cond.getRule().rhs();
             for (RuleNode lhsNode : pattern.nodeSet()) {
                 if (!rhs.containsNode(lhsNode)) {
                     Set<TypeEdge> danglingEdges = new HashSet<>();
                     // add all incoming edge types
-                    this.typeGraph.inEdgeSet(lhsNode.getType())
+                    this.typeGraph
+                        .inEdgeSet(lhsNode.getType())
                         .stream()
                         .forEach(e -> danglingEdges.add(e));
                     // add all non-attribute outgoing edge types
-                    this.typeGraph.outEdgeSet(lhsNode.getType())
+                    this.typeGraph
+                        .outEdgeSet(lhsNode.getType())
                         .stream()
-                        .filter(e -> !e.target()
-                            .isDataType())
+                        .filter(e -> !e.target().isDataType())
                         .forEach(e -> danglingEdges.add(e));
                     // remove all edges that are explicitly removed
-                    pattern.edgeSet(lhsNode)
+                    pattern
+                        .edgeSet(lhsNode)
                         .stream()
                         .map(RuleEdge::getType)
                         .filter(Objects::nonNull)
@@ -511,8 +508,7 @@ public class RuleDependencies {
         }
         // does the condition test for an isolated node?
         for (RuleNode isolatedNode : isolatedNodes) {
-            positive.addAll(isolatedNode.getType()
-                .getSubtypes());
+            positive.addAll(isolatedNode.getType().getSubtypes());
         }
     }
 
@@ -577,8 +573,9 @@ public class RuleDependencies {
         if (edgeType == null) {
             RuleLabel label = edge.label();
             if (label.isNeg()) {
-                label = label.getNegOperand()
-                    .toLabel();
+                var inner = label.getNegOperand();
+                assert inner != null;
+                label = inner.toLabel();
             }
             RegAut labelAut = label.getAutomaton(this.typeGraph);
             result.addAll(labelAut.getAlphabet());

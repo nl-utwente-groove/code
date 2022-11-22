@@ -21,6 +21,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.graph.iso.CertificateStrategy;
 import nl.utwente.groove.util.DefaultDispenser;
 import nl.utwente.groove.util.Dispenser;
@@ -34,6 +37,7 @@ import nl.utwente.groove.util.collect.TreeHashSet;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class GraphCache<N extends Node,E extends GEdge<N>> {
     /**
      * Constructs a dynamic graph cache for a given graph.
@@ -123,10 +127,10 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * Returns the label-to-edge mapping
      * @see #computeLabelEdgeMap()
      */
-    public Map<Label,? extends Set<? extends E>> getLabelEdgeMap() {
-        Map<Label,? extends Set<? extends E>> result = this.labelEdgeMap;
+    public Map<Label,? extends @Nullable Set<? extends E>> getLabelEdgeMap() {
+        var result = this.labelEdgeMap;
         if (result == null) {
-            Map<Label,Set<E>> newMaps = computeLabelEdgeMap();
+            var newMaps = computeLabelEdgeMap();
             if (storeData()) {
                 this.labelEdgeMap = newMaps;
             }
@@ -136,14 +140,20 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
     }
 
     /**
+     * An array of label-to-edge mappings, indexed by arity of the edges - 1.
+     * Initially set to <tt>null</tt>.
+     */
+    private @Nullable Map<Label,@Nullable Set<E>> labelEdgeMap;
+
+    /**
      * Returns a mapping from nodes to incident edges in the underlying graph.
      * If there is a cached mapping, that is returned, otherwise it is computed
      * fresh, and, if the cache is dynamic (see {@link #isDynamic()} or the
      * graph is fixed (see {@link GGraph#isFixed()}) then the fresh mapping is
      * cached.
      */
-    public Map<N,? extends Set<? extends E>> getNodeInEdgeMap() {
-        Map<N,Set<E>> result = this.nodeInEdgeMap;
+    public Map<N,? extends @Nullable Set<? extends E>> getNodeInEdgeMap() {
+        var result = this.nodeInEdgeMap;
         if (result == null) {
             result = computeNodeInEdgeMap();
             if (storeData()) {
@@ -154,14 +164,19 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
     }
 
     /**
+     * A node-to-incoming-edge mapping.
+     */
+    private @Nullable Map<N,@Nullable Set<E>> nodeInEdgeMap;
+
+    /**
      * Returns a mapping from nodes to incident edges in the underlying graph.
      * If there is a cached mapping, that is returned, otherwise it is computed
      * fresh, and, if the cache is dynamic (see {@link #isDynamic()} or the
      * graph is fixed (see {@link GGraph#isFixed()}) then the fresh mapping is
      * cached.
      */
-    public Map<N,? extends Set<? extends E>> getNodeOutEdgeMap() {
-        Map<N,Set<E>> result = this.nodeOutEdgeMap;
+    public Map<N,? extends @Nullable Set<? extends E>> getNodeOutEdgeMap() {
+        var result = this.nodeOutEdgeMap;
         if (result == null) {
             result = computeNodeOutEdgeMap();
             if (storeData()) {
@@ -172,14 +187,19 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
     }
 
     /**
+     * A node-to-outgoing-edge mapping.
+     */
+    private @Nullable Map<N,@Nullable Set<E>> nodeOutEdgeMap;
+
+    /**
      * Returns a mapping from nodes to incident edges in the underlying graph.
      * If there is a cached mapping, that is returned, otherwise it is computed
      * fresh, and, if the cache is dynamic (see {@link #isDynamic()} or the
      * graph is fixed (see {@link GGraph#isFixed()}) then the fresh mapping is
      * cached.
      */
-    public Map<N,? extends Set<? extends E>> getNodeEdgeMap() {
-        Map<N,Set<E>> result = this.nodeEdgeMap;
+    public Map<N,? extends @Nullable Set<? extends E>> getNodeEdgeMap() {
+        var result = this.nodeEdgeMap;
         if (result == null) {
             result = computeNodeEdgeMap();
             if (storeData()) {
@@ -190,11 +210,16 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
     }
 
     /**
+     * A node-to-incident-edge mapping.
+     */
+    private @Nullable Map<N,@Nullable Set<E>> nodeEdgeMap;
+
+    /**
      * Computes and returns a mapping from labels to
      * sets of edges.
      */
-    private Map<Label,Set<E>> computeLabelEdgeMap() {
-        Map<Label,Set<E>> result = new HashMap<>();
+    private Map<Label,@Nullable Set<E>> computeLabelEdgeMap() {
+        Map<Label,@Nullable Set<E>> result = new HashMap<>();
         for (E edge : this.graph.edgeSet()) {
             addToLabelEdgeMap(result, edge);
         }
@@ -205,27 +230,27 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * Computes and returns a fresh mapping from nodes to incoming
      * edge sets.
      */
-    private Map<N,Set<E>> computeNodeInEdgeMap() {
-        Map<N,Set<E>> result;
+    private Map<N,@Nullable Set<E>> computeNodeInEdgeMap() {
+        Map<N,@Nullable Set<E>> result;
         if (this.nodeEdgeMap == null) {
             result = new HashMap<>();
             for (N node : this.graph.nodeSet()) {
                 result.put(node, createEdgeSet(null));
             }
             for (E edge : this.graph.edgeSet()) {
-                result.get(edge.target()).add(edge);
+                var es = result.get(edge.target());
+                assert es != null;
+                es.add(edge);
             }
         } else {
             // reuse the precomputed node-edge-map
             result = new HashMap<>(this.nodeEdgeMap);
-            for (Map.Entry<N,Set<E>> resultEntry : result.entrySet()) {
+            for (var resultEntry : result.entrySet()) {
                 N node = resultEntry.getKey();
                 Set<E> inEdges = createEdgeSet(null);
-                for (E edge : resultEntry.getValue()) {
-                    if (edge.target().equals(node)) {
-                        inEdges.add(edge);
-                    }
-                }
+                var es = resultEntry.getValue();
+                assert es != null;
+                es.stream().filter(e -> e.target().equals(node)).forEach(e -> inEdges.add(e));
                 resultEntry.setValue(inEdges);
             }
         }
@@ -236,27 +261,27 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * Computes and returns a fresh mapping from nodes to incoming
      * edge sets.
      */
-    private Map<N,Set<E>> computeNodeOutEdgeMap() {
-        Map<N,Set<E>> result;
+    private Map<N,@Nullable Set<E>> computeNodeOutEdgeMap() {
+        Map<N,@Nullable Set<E>> result;
         if (this.nodeEdgeMap == null) {
             result = new HashMap<>();
             for (N node : this.graph.nodeSet()) {
                 result.put(node, createEdgeSet(null));
             }
             for (E edge : this.graph.edgeSet()) {
-                result.get(edge.source()).add(edge);
+                var es = result.get(edge.source());
+                assert es != null;
+                es.add(edge);
             }
         } else {
             // reuse the precomputed node-edge-map
             result = new HashMap<>(this.nodeEdgeMap);
-            for (Map.Entry<N,Set<E>> resultEntry : result.entrySet()) {
+            for (var resultEntry : result.entrySet()) {
                 N node = resultEntry.getKey();
-                Set<E> inEdges = createEdgeSet(null);
-                for (E edge : resultEntry.getValue()) {
-                    if (edge.source().equals(node)) {
-                        inEdges.add(edge);
-                    }
-                }
+                var inEdges = createEdgeSet(null);
+                var es = resultEntry.getValue();
+                assert es != null;
+                es.stream().filter(e -> e.source().equals(node)).forEach(e -> inEdges.add(e));
                 resultEntry.setValue(inEdges);
             }
         }
@@ -267,8 +292,8 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * Computes and returns a fresh mapping from nodes to incident
      * edge sets.
      */
-    private Map<N,Set<E>> computeNodeEdgeMap() {
-        Map<N,Set<E>> result = new HashMap<>();
+    private Map<N,@Nullable Set<E>> computeNodeEdgeMap() {
+        Map<N,@Nullable Set<E>> result = new HashMap<>();
         for (E edge : this.graph.edgeSet()) {
             addToNodeEdgeMap(result, edge);
         }
@@ -293,7 +318,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * @param currentMap the array to be updated
      * @param edge the edge to be added
      */
-    private void addToLabelEdgeMap(Map<Label,Set<E>> currentMap, E edge) {
+    private void addToLabelEdgeMap(@Nullable Map<Label,@Nullable Set<E>> currentMap, E edge) {
         if (currentMap != null) {
             Set<E> labelEdgeSet = currentMap.get(edge.label());
             if (labelEdgeSet == null) {
@@ -309,7 +334,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * @param currentMap the array to be updated
      * @param edge the edge to be removed
      */
-    private void removeFromLabelEdgeMap(Map<Label,Set<E>> currentMap, E edge) {
+    private void removeFromLabelEdgeMap(@Nullable Map<Label,@Nullable Set<E>> currentMap, E edge) {
         if (currentMap != null) {
             Set<E> labelEdgeSet = currentMap.get(edge.label());
             if (labelEdgeSet != null) {
@@ -323,7 +348,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * @param currentMap the mapping to be updated
      * @param edge the edge to be added
      */
-    private void addToNodeInEdgeMap(Map<N,Set<E>> currentMap, E edge) {
+    private void addToNodeInEdgeMap(@Nullable Map<N,@Nullable Set<E>> currentMap, E edge) {
         if (currentMap != null) {
             addToNodeEdgeMap(currentMap, edge.target(), edge);
         }
@@ -334,7 +359,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * @param currentMap the mapping to be updated
      * @param edge the edge to be added
      */
-    private void addToNodeOutEdgeMap(Map<N,Set<E>> currentMap, E edge) {
+    private void addToNodeOutEdgeMap(@Nullable Map<N,@Nullable Set<E>> currentMap, E edge) {
         if (currentMap != null) {
             addToNodeEdgeMap(currentMap, edge.source(), edge);
         }
@@ -345,7 +370,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * @param currentMap the mapping to be updated
      * @param edge the edge to be added
      */
-    private void addToNodeEdgeMap(Map<N,Set<E>> currentMap, E edge) {
+    private void addToNodeEdgeMap(@Nullable Map<N,@Nullable Set<E>> currentMap, E edge) {
         if (currentMap != null) {
             addToNodeEdgeMap(currentMap, edge.source(), edge);
             addToNodeEdgeMap(currentMap, edge.target(), edge);
@@ -358,7 +383,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * @param node the key for the node
      * @param edge the edge to be added
      */
-    private void addToNodeEdgeMap(Map<N,Set<E>> currentMap, N node, E edge) {
+    private void addToNodeEdgeMap(Map<N,@Nullable Set<E>> currentMap, N node, E edge) {
         Set<E> edgeSet = currentMap.get(node);
         if (edgeSet == null) {
             currentMap.put(node, edgeSet = createSmallEdgeSet());
@@ -372,7 +397,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * @param currentMap the mapping to be updated
      * @param node the node to be added
      */
-    private void addToNodeEdgeMap(Map<N,Set<E>> currentMap, N node) {
+    private void addToNodeEdgeMap(@Nullable Map<N,@Nullable Set<E>> currentMap, N node) {
         if (currentMap != null) {
             Set<E> currentValue = currentMap.put(node, createSmallEdgeSet());
             if (currentValue != null) {
@@ -386,7 +411,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * @param currentMap the mapping to be updated
      * @param edge the edge to be removed
      */
-    private void removeFromNodeInEdgeMap(Map<N,Set<E>> currentMap, E edge) {
+    private void removeFromNodeInEdgeMap(@Nullable Map<N,@Nullable Set<E>> currentMap, E edge) {
         if (currentMap != null) {
             Set<E> edgeSet = currentMap.get(edge.target());
             if (edgeSet != null) {
@@ -400,7 +425,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * @param currentMap the mapping to be updated
      * @param edge the edge to be removed
      */
-    private void removeFromNodeOutEdgeMap(Map<N,Set<E>> currentMap, E edge) {
+    private void removeFromNodeOutEdgeMap(@Nullable Map<N,@Nullable Set<E>> currentMap, E edge) {
         if (currentMap != null) {
             Set<E> edgeSet = currentMap.get(edge.source());
             if (edgeSet != null) {
@@ -414,7 +439,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * @param currentMap the mapping to be updated
      * @param edge the edge to be removed
      */
-    private void removeFromNodeEdgeMap(Map<N,Set<E>> currentMap, E edge) {
+    private void removeFromNodeEdgeMap(@Nullable Map<N,@Nullable Set<E>> currentMap, E edge) {
         if (currentMap != null) {
             removeFromNodeInEdgeMap(currentMap, edge);
             removeFromNodeOutEdgeMap(currentMap, edge);
@@ -426,7 +451,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * @param currentMap the mapping to be updated
      * @param node the node to be removed
      */
-    private void removeFromNodeEdgeMap(Map<N,Set<E>> currentMap, N node) {
+    private void removeFromNodeEdgeMap(@Nullable Map<N,@Nullable Set<E>> currentMap, N node) {
         if (currentMap != null) {
             currentMap.remove(node);
         }
@@ -437,7 +462,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * initial set may be <code>null</code>, indicating that the edge set is
      * to be initially empty.
      */
-    private Set<E> createEdgeSet(Collection<E> set) {
+    private Set<E> createEdgeSet(@Nullable Collection<E> set) {
         Set<E> result = createSmallEdgeSet();
         if (set != null) {
             result.addAll(set);
@@ -467,35 +492,22 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * Switch to indicate that the cache is dynamic.
      */
     private final boolean dynamic;
-    /**
-     * An array of label-to-edge mappings, indexed by arity of the edges - 1.
-     * Initially set to <tt>null</tt>.
-     */
-    private Map<Label,Set<E>> labelEdgeMap;
-    /**
-     * A node-to-incoming-edge mapping.
-     */
-    private Map<N,Set<E>> nodeInEdgeMap;
-    /**
-     * A node-to-outgoing-edge mapping.
-     */
-    private Map<N,Set<E>> nodeOutEdgeMap;
-    /**
-     * A node-to-incident-edge mapping.
-     */
-    private Map<N,Set<E>> nodeEdgeMap;
 
     /** Counter to ensure distinctness of fresh node identities. */
     protected Dispenser getNodeCounter() {
-        if (this.nodeCounter == null) {
-            this.nodeCounter = new DefaultDispenser();
+        var result = this.nodeCounter;
+        if (result == null) {
+            this.nodeCounter = result = new DefaultDispenser();
             // make sure all existing node numbers are accounted for
             for (Node node : getGraph().nodeSet()) {
-                this.nodeCounter.notifyUsed(node.getNumber());
+                result.notifyUsed(node.getNumber());
             }
         }
-        return this.nodeCounter;
+        return result;
     }
+
+    /** Counter for node numbers. */
+    private @Nullable Dispenser nodeCounter;
 
     /**
      * Tests if a certificate strategy of the right strength has been instantiated.
@@ -516,6 +528,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
         CertificateStrategy result;
         if (hasCertifier(strong)) {
             result = this.certificateStrategy;
+            assert result != null;
         } else {
             result = AGraph.getCertificateFactory().newInstance(getGraph(), strong);
             if (this.graph.isFixed()) {
@@ -532,11 +545,9 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
         return this.graph;
     }
 
-    /** Counter for node numbers. */
-    private Dispenser nodeCounter;
     /**
      * The certificate strategy set for the graph. Initially set to
      * <tt>null</tt>.
      */
-    private CertificateStrategy certificateStrategy;
+    private @Nullable CertificateStrategy certificateStrategy;
 }

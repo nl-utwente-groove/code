@@ -25,6 +25,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.control.CtrlPar;
 import nl.utwente.groove.control.CtrlPar.Const;
 import nl.utwente.groove.control.CtrlPar.Var;
@@ -52,6 +55,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-03-05 16:50:10 $
  */
+@NonNullByDefault
 public class RecipeTransition extends ALabelEdge<GraphState>
     implements GraphTransition, ActionLabel {
     /**
@@ -62,11 +66,9 @@ public class RecipeTransition extends ALabelEdge<GraphState>
     public RecipeTransition(RuleTransition initial, GraphState target) {
         super(initial.source(), target);
         this.initial = initial;
-        SwitchStack initialStack = initial.getStep()
-            .getSwitchStack();
+        SwitchStack initialStack = initial.getStep().getSwitchStack();
         int depth = 0;
-        while (initialStack.get(depth)
-            .getKind() != Kind.RECIPE) {
+        while (initialStack.get(depth).getKind() != Kind.RECIPE) {
             depth++;
         }
         this.recipeCallDepth = depth;
@@ -110,13 +112,14 @@ public class RecipeTransition extends ALabelEdge<GraphState>
 
     @Override
     public RecipeEvent getEvent() {
-        if (this.event == null) {
-            this.event = new RecipeEvent(this);
+        var result = this.event;
+        if (result == null) {
+            this.event = result = new RecipeEvent(this);
         }
-        return this.event;
+        return result;
     }
 
-    private RecipeEvent event;
+    private @Nullable RecipeEvent event;
 
     @Override
     public final boolean isInternalStep() {
@@ -130,10 +133,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
 
     @Override
     public boolean isPartial() {
-        return source().getActualFrame()
-            .isTransient()
-            || target().getActualFrame()
-                .isTransient();
+        return source().getActualFrame().isTransient() || target().getActualFrame().isTransient();
     }
 
     /** Returns the initial rule transition of the recipe transition. */
@@ -157,11 +157,11 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         return result;
     }
 
-    private Set<RuleTransition> steps;
+    private @Nullable Set<RuleTransition> steps;
 
     private Set<RuleTransition> computeSteps() {
         // mapping from states to sets of incoming transitions
-        Map<GraphState,Set<RuleTransition>> inMap = new HashMap<>();
+        Map<GraphState,@Nullable Set<RuleTransition>> inMap = new HashMap<>();
         // build the incoming transition map
         Stack<GraphState> pool = new Stack<>();
         pool.add(getInitial().target());
@@ -170,7 +170,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
             for (RuleTransition trans : next.getRuleTransitions()) {
                 GraphState target = trans.target();
                 if (target.isInternalState() || target == target()) {
-                    Set<RuleTransition> inSet = inMap.get(target);
+                    var inSet = inMap.get(target);
                     boolean fresh = inSet == null;
                     if (fresh) {
                         inMap.put(target, inSet = new HashSet<>());
@@ -183,15 +183,14 @@ public class RecipeTransition extends ALabelEdge<GraphState>
                 }
             }
         }
-        assert getInitial().target()
-            .equals(target()) || inMap.containsKey(target());
+        assert getInitial().target().equals(target()) || inMap.containsKey(target());
         // backward reachability to build up the result set
         Set<RuleTransition> result = new HashSet<>();
         result.add(getInitial());
         pool.add(target());
         while (!pool.isEmpty()) {
             GraphState next = pool.pop();
-            Set<RuleTransition> inSet = inMap.remove(next);
+            var inSet = inMap.remove(next);
             if (inSet != null) {
                 for (RuleTransition in : inSet) {
                     result.add(in);
@@ -202,7 +201,9 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         return result;
     }
 
-    /** Returns a shortest rule transition sequence from source to target. */
+    /** Returns a shortest rule transition sequence from source to target.
+     * This is guaranteed to be a non-empty list.
+     */
     public List<RuleTransition> getPath() {
         List<RuleTransition> result = null;
         // all paths of the current length
@@ -212,8 +213,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         while (result == null) {
             List<List<RuleTransition>> newPaths = new ArrayList<>();
             for (List<RuleTransition> path : paths) {
-                GraphState target = path.get(path.size() - 1)
-                    .target();
+                GraphState target = path.get(path.size() - 1).target();
                 // check if any of the paths reaches the target
                 if (target == target()) {
                     result = path;
@@ -235,7 +235,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
     }
 
     @Override
-    public String getOutputString() throws FormatException {
+    public @Nullable String getOutputString() throws FormatException {
         return DefaultRuleTransition.getOutputString(this);
     }
 
@@ -254,14 +254,11 @@ public class RecipeTransition extends ALabelEdge<GraphState>
                 assert arg instanceof Var;
                 CtrlVar var = ((Var) arg).var();
                 if (arg.inOnly()) {
-                    int varIndex = getSwitch().getSource()
-                        .getVars()
-                        .indexOf(var);
+                    int varIndex = getSwitch().getSource().getVars().indexOf(var);
                     node = Valuator.get(source().getPrimeValues(), varIndex);
                 } else {
                     assert arg.outOnly();
-                    Map<CtrlVar,Integer> varIxMap = getSwitch().onFinish()
-                        .getVarIxMap();
+                    Map<CtrlVar,Integer> varIxMap = getSwitch().onFinish().getVarIxMap();
                     int varIndex = varIxMap.get(var);
                     Object[] values = getFrameValues();
                     node = Valuator.get(values, varIndex);
@@ -277,14 +274,11 @@ public class RecipeTransition extends ALabelEdge<GraphState>
      */
     private Object[] getFrameValues() {
         Object[] result = target().getPrimeValues();
-        List<Assignment> pops = target().getActualFrame()
-            .getPops();
-        int popCount = target().getActualFrame()
-            .getNestingDepth() - this.recipeCallDepth;
+        List<Assignment> pops = target().getActualFrame().getPops();
+        int popCount = target().getActualFrame().getNestingDepth() - this.recipeCallDepth;
         assert popCount <= pops.size();
         for (int i = 0; i < popCount; i++) {
-            result = pops.get(i)
-                .apply(result);
+            result = pops.get(i).apply(result);
         }
         return result;
     }
@@ -300,17 +294,18 @@ public class RecipeTransition extends ALabelEdge<GraphState>
      */
     @Override
     public HostGraphMorphism getMorphism() {
-        if (this.morphism == null) {
-            this.morphism = computeMorphism();
+        var result = this.morphism;
+        if (result == null) {
+            this.morphism = result = computeMorphism();
         }
-        return this.morphism;
+        return result;
     }
 
     /**
      * The underlying morphism of this transition. Computed lazily (using the
      * footprint) using {@link #computeMorphism()}.
      */
-    private HostGraphMorphism morphism;
+    private @Nullable HostGraphMorphism morphism;
 
     /**
      * Constructs an underlying morphism for the transition from the stored
@@ -319,8 +314,11 @@ public class RecipeTransition extends ALabelEdge<GraphState>
     protected HostGraphMorphism computeMorphism() {
         HostGraphMorphism result = null;
         for (RuleTransition step : getPath()) {
-            result = result == null ? step.getMorphism() : result.then(step.getMorphism());
+            result = result == null
+                ? step.getMorphism()
+                : result.then(step.getMorphism());
         }
+        assert result != null : String.format("Path %s should not be empty", getPath());
         return result;
     }
 
@@ -341,8 +339,8 @@ public class RecipeTransition extends ALabelEdge<GraphState>
      */
     public RecipeTransition toTransition(GraphState source) {
         if (source != source()) {
-            throw Exceptions
-                .illegalArg("Source state %s should coincide with argument %s", source(), source);
+            throw Exceptions.illegalArg("Source state %s should coincide with argument %s",
+                                        source(), source);
         } else {
             return this;
         }
@@ -365,13 +363,11 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         if (result != 0) {
             return result;
         }
-        return getInitial().label()
-            .compareTo(other.getInitial()
-                .label());
+        return getInitial().label().compareTo(other.getInitial().label());
     }
 
     @Override
-    protected boolean isTypeEqual(Object obj) {
+    protected boolean isTypeEqual(@Nullable Object obj) {
         return obj instanceof RecipeTransition;
     }
 

@@ -19,12 +19,16 @@ package nl.utwente.groove.graph;
 import java.util.Collection;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.util.Fixable;
 
 /**
  * Generically typed specialisation of the {@link Graph} interface.
  * @version $Revision$ $Date: 2008-01-30 09:32:52 $
  */
+@NonNullByDefault
 public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixable {
     /* Specialises the return type. */
     @Override
@@ -77,9 +81,8 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
      */
     default N addNode(int nr) {
         N freshNode = getFactory().createNode(nr);
-        assert!nodeSet().contains(freshNode) : String.format("Fresh node %s already in node set %s",
-            freshNode,
-            nodeSet());
+        assert !nodeSet().contains(freshNode) : String
+            .format("Fresh node %s already in node set %s", freshNode, nodeSet());
         addNode(freshNode);
         return freshNode;
     }
@@ -94,7 +97,7 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
      * @see #addEdge
      * @see #isFixed()
      */
-    boolean addNode(N node);
+    boolean addNode(@NonNull N node);
 
     /**
      * Adds a binary edge to the graph, between given nodes and with a given
@@ -110,7 +113,7 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
      *         labelled <tt>label</tt>
      * @see GGraph#addEdge
      */
-    default E addEdge(N source, String label, N target) {
+    default E addEdge(@NonNull N source, String label, @NonNull N target) {
         return addEdge(source, getFactory().createLabel(label), target);
     }
 
@@ -127,7 +130,7 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
      *         labelled <tt>label</tt>
      * @see GGraph#addEdge
      */
-    default E addEdge(N source, Label label, N target) {
+    default E addEdge(@NonNull N source, Label label, @NonNull N target) {
         assert containsNode(source);
         assert containsNode(target);
         E result = getFactory().createEdge(source, label, target);
@@ -169,8 +172,8 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
      * @return <tt>true</tt> if the graph changed as a result of this call
      * @see #addNode(Node)
      */
-    default boolean addEdgeContext(E edge) {
-        assert!isFixed() : "Trying to add " + edge + " to unmodifiable graph";
+    default boolean addEdgeContext(@NonNull E edge) {
+        assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
         boolean added = !containsEdge(edge);
         if (added) {
             addNode(edge.source());

@@ -54,8 +54,7 @@ public class MultiplicityChecker implements TypeChecker {
 
     private void addCheck(TypeEdge edge, Direction dir) {
         Check check = new Check(edge, dir);
-        for (TypeNode node : dir.origin(edge)
-            .getSubtypes()) {
+        for (TypeNode node : dir.origin(edge).getSubtypes()) {
             List<Check> nodeChecks = this.checks.get(node);
             if (nodeChecks == null) {
                 this.checks.put(node, nodeChecks = new ArrayList<>());
@@ -87,8 +86,12 @@ public class MultiplicityChecker implements TypeChecker {
             for (Check c : nodeChecks) {
                 TypeEdge type = c.type();
                 Direction dir = c.dir();
-                Multiplicity mult =
-                    dir == Direction.INCOMING ? type.getInMult() : type.getOutMult();
+                Multiplicity mult = dir == Direction.INCOMING
+                    ? type.getInMult()
+                    : type.getOutMult();
+                if (mult == null) {
+                    continue;
+                }
                 int count = 0;
                 for (HostEdge edge : dir.edges(source, node)) {
                     if (edge.getType() == type) {
@@ -96,13 +99,9 @@ public class MultiplicityChecker implements TypeChecker {
                     }
                 }
                 if (!mult.inRange(count)) {
-                    result.add(
-                        "Node %s violates %s edge multiplicity %s for edge type %s: actual count = %s",
-                        node,
-                        dir,
-                        mult,
-                        type,
-                        count);
+                    result
+                        .add("Node %s violates %s edge multiplicity %s for edge type %s: actual count = %s",
+                             node, dir, mult, type, count);
                 }
             }
         }

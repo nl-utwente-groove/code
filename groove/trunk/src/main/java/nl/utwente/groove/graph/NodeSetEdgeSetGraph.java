@@ -24,13 +24,15 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 /**
  * Graph implementation based on distinct sets of nodes and edges.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class NodeSetEdgeSetGraph<N extends Node,E extends GEdge<N>> extends AGraph<N,E> implements
-    Cloneable {
+public class NodeSetEdgeSetGraph<N extends @NonNull Node,E extends @NonNull GEdge<N>>
+    extends AGraph<N,E> implements Cloneable {
     /**
      * Creates a new, named empty graph.
      * @param name name of the new graph
@@ -295,7 +297,6 @@ public class NodeSetEdgeSetGraph<N extends Node,E extends GEdge<N>> extends AGra
          * Constructs an empty set.
          */
         public NodeNotifySet() {
-            super();
         }
 
         /**
@@ -331,7 +332,6 @@ public class NodeSetEdgeSetGraph<N extends Node,E extends GEdge<N>> extends AGra
          * Constructs an empty set.
          */
         public EdgeNotifySet() {
-            super();
         }
 
         /**

@@ -18,6 +18,8 @@ package nl.utwente.groove.graph;
 
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.util.Exceptions;
 
 /**
@@ -25,6 +27,7 @@ import nl.utwente.groove.util.Exceptions;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public enum Direction {
     /** Outgoing edges. */
     OUTGOING("outgoing"),
@@ -68,28 +71,18 @@ public enum Direction {
 
     /** Returns the set of edges connected to a given node, according to this direction. */
     public <N extends Node,E extends GEdge<N>,G extends GGraph<N,E>> Set<? extends E> edges(G graph,
-        N node) {
-        switch (this) {
-        case OUTGOING:
-            return graph.outEdgeSet(node);
-        case INCOMING:
-            return graph.inEdgeSet(node);
-        default:
-            assert false;
-            return null;
-        }
+                                                                                            N node) {
+        return switch (this) {
+        case OUTGOING -> graph.outEdgeSet(node);
+        case INCOMING -> graph.inEdgeSet(node);
+        };
     }
 
     /** Returns the inverse direction. */
     public Direction getInverse() {
-        switch (this) {
-        case OUTGOING:
-            return INCOMING;
-        case INCOMING:
-            return OUTGOING;
-        default:
-            assert false;
-            return null;
-        }
+        return switch (this) {
+        case OUTGOING -> INCOMING;
+        case INCOMING -> OUTGOING;
+        };
     }
 }

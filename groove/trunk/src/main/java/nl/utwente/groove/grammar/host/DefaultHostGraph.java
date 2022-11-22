@@ -18,6 +18,8 @@ package nl.utwente.groove.grammar.host;
 
 import static nl.utwente.groove.graph.GraphRole.HOST;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.algebra.Algebra;
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.graph.AElementMap;
@@ -34,7 +36,8 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge> implements HostGraph {
+public class DefaultHostGraph extends NodeSetEdgeSetGraph<@NonNull HostNode,@NonNull HostEdge>
+    implements HostGraph {
     /**
      * Constructs an empty simple host graph.
      * @param name name of the new host graph.
@@ -76,8 +79,8 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge> imp
         for (HostNode sn : graph.nodeSet()) {
             HostNode tn;
             if (sn instanceof ValueNode vn && family != null) {
-                tn = getFactory().createNode(family.getAlgebra(vn.getSort()),
-                                             family.toValue(vn.getTerm()));
+                tn = getFactory()
+                    .createNode(family.getAlgebra(vn.getSort()), family.toValue(vn.getTerm()));
             } else {
                 tn = sn;
             }
@@ -85,7 +88,9 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge> imp
             morphism.putNode(sn, tn);
         }
         for (HostEdge se : graph.edgeSet()) {
-            addEdgeContext(morphism.mapEdge(se));
+            var image = morphism.mapEdge(se);
+            assert image != null;
+            addEdgeContext(image);
         }
     }
 

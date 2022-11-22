@@ -256,7 +256,7 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
         boolean regular = false;
         if (edge instanceof RuleEdge r) {
             RuleLabel label = r.label();
-            regular = label.isEmpty() || label.isNeg() && label.getNegOperand().isEmpty();
+            regular = label.isEmpty() || label.isNeg(n -> n.getOperand().isEmpty());
         }
         if (regular) {
             result = Direct.NONE;

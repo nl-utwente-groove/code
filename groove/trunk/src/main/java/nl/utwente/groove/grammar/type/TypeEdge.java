@@ -20,6 +20,9 @@ import static nl.utwente.groove.graph.EdgeRole.BINARY;
 
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.AnchorKind;
 import nl.utwente.groove.graph.AEdge;
 import nl.utwente.groove.graph.Label;
@@ -30,7 +33,8 @@ import nl.utwente.groove.util.line.Line;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TypeEdge extends AEdge<TypeNode,TypeLabel>implements TypeElement {
+@NonNullByDefault
+public class TypeEdge extends AEdge<TypeNode,TypeLabel> implements TypeElement {
     /**
      * Constructs a new type edge, with explicit multiplicity.
      * Don't call directly; use {@link TypeFactory} methods instead.
@@ -40,8 +44,8 @@ public class TypeEdge extends AEdge<TypeNode,TypeLabel>implements TypeElement {
         super(source, label, target);
         assert graph != null;
         assert source.equals(target) || label.getRole() == BINARY : String
-            .format("Can't create %s label %s between distinct nodes %s and %s", label.getRole()
-                .getDescription(false), label, source, target);
+            .format("Can't create %s label %s between distinct nodes %s and %s",
+                    label.getRole().getDescription(false), label, source, target);
         this.graph = graph;
     }
 
@@ -50,51 +54,63 @@ public class TypeEdge extends AEdge<TypeNode,TypeLabel>implements TypeElement {
         return true;
     }
 
-    /** Indicates if this edge type is abstract. */
-    public final boolean isAbstract() {
-        return this.abstractType;
-    }
-
     /** Indicates if this edge type is composite. */
     public final boolean isComposite() {
         return this.isComposite;
     }
+
+    /** Flag indicating if this edge type is composite. */
+    private boolean isComposite;
 
     /** Sets this edge type to abstract. */
     public final void setAbstract(boolean value) {
         this.abstractType = value;
     }
 
+    /** Indicates if this edge type is abstract. */
+    public final boolean isAbstract() {
+        return this.abstractType;
+    }
+
+    /** Flag indicating if this edge type is abstract. */
+    private boolean abstractType;
+
     /** Sets this edge type to composite. */
     public final void setComposite(boolean value) {
         this.isComposite = value;
+    }
+
+    /** Sets the 'in' multiplicity of this edge type. */
+    public void setInMult(@Nullable Multiplicity inMult) {
+        this.inMult = inMult;
     }
 
     /**
      * Gets the 'in' multiplicity of this edge type. May be <code>null</code>,
      * if no 'in' multiplicity exists.
      */
-    public Multiplicity getInMult() {
+    public @Nullable Multiplicity getInMult() {
         return this.inMult;
+    }
+
+    /** In multiplicity of the edge type, if any. */
+    private @Nullable Multiplicity inMult;
+
+    /** Sets the 'out' multiplicity of this edge type. */
+    public void setOutMult(@Nullable Multiplicity outMult) {
+        this.outMult = outMult;
     }
 
     /**
      * Gets the 'out' multiplicity of this edge type. May be <code>null</code>,
      * if no 'out' multiplicity exists.
      */
-    public Multiplicity getOutMult() {
+    public @Nullable Multiplicity getOutMult() {
         return this.outMult;
     }
 
-    /** Sets the 'in' multiplicity of this edge type. */
-    public void setInMult(Multiplicity inMult) {
-        this.inMult = inMult;
-    }
-
-    /** Sets the 'out' multiplicity of this edge type. */
-    public void setOutMult(Multiplicity outMult) {
-        this.outMult = outMult;
-    }
+    /** Out multiplicity of the edge type, if any. */
+    private @Nullable Multiplicity outMult;
 
     /**
      * Tests if another type edge is either equal to this one or,
@@ -143,6 +159,9 @@ public class TypeEdge extends AEdge<TypeNode,TypeLabel>implements TypeElement {
         return this.graph;
     }
 
+    /** The type graph with which this edge is associated. */
+    private final TypeGraph graph;
+
     @Override
     public Set<TypeEdge> getSubtypes() {
         return getGraph().getSubtypes(this);
@@ -157,19 +176,4 @@ public class TypeEdge extends AEdge<TypeNode,TypeLabel>implements TypeElement {
     public AnchorKind getAnchorKind() {
         return AnchorKind.LABEL;
     }
-
-    /** The type graph with which this edge is associated. */
-    private final TypeGraph graph;
-
-    /** Flag indicating if this edge type is abstract. */
-    private boolean abstractType;
-
-    /** Flag indicating if this edge type is composite. */
-    private boolean isComposite;
-
-    /** In multiplicity of the edge type, if any. */
-    private Multiplicity inMult;
-
-    /** Out multiplicity of the edge type, if any. */
-    private Multiplicity outMult;
 }

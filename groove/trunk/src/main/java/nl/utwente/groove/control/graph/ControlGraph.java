@@ -21,9 +21,11 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.control.Attempt;
-import nl.utwente.groove.control.Position;
 import nl.utwente.groove.control.Attempt.Stage;
+import nl.utwente.groove.control.Position;
 import nl.utwente.groove.control.template.Template;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.graph.GraphRole;
@@ -38,7 +40,7 @@ import nl.utwente.groove.graph.NodeSetEdgeSetGraph;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class ControlGraph extends NodeSetEdgeSetGraph<ControlNode,ControlEdge> {
+public class ControlGraph extends NodeSetEdgeSetGraph<@NonNull ControlNode,@NonNull ControlEdge> {
     /**
      * Constructs a new graph with a given name.
      */
@@ -114,8 +116,9 @@ public class ControlGraph extends NodeSetEdgeSetGraph<ControlNode,ControlEdge> {
      * @param full if {@code true}, the full control structure is generated;
      * otherwise, only the call edges are shown
      */
-    public static <P extends Position<P,A>,A extends Stage<P,A>> ControlGraph newGraph(
-        QualName name, P init, boolean full) {
+    public static <P extends Position<P,A>,A extends Stage<P,A>> ControlGraph newGraph(QualName name,
+                                                                                       P init,
+                                                                                       boolean full) {
         ControlGraph result = new ControlGraph(name);
         Map<P,ControlNode> nodeMap = new HashMap<>();
         Queue<P> fresh = new LinkedList<>();
@@ -156,8 +159,10 @@ public class ControlGraph extends NodeSetEdgeSetGraph<ControlNode,ControlEdge> {
     /**
      * Adds a node to the control graph under construction.
      */
-    private static <P extends Position<P,A>,A extends Stage<P,A>> ControlNode addNode(
-        ControlGraph graph, Map<P,ControlNode> nodeMap, P pos, Queue<P> fresh) {
+    private static <P extends Position<P,A>,A extends Stage<P,A>> ControlNode addNode(ControlGraph graph,
+                                                                                      Map<P,ControlNode> nodeMap,
+                                                                                      P pos,
+                                                                                      Queue<P> fresh) {
         ControlNode result = nodeMap.get(pos);
         if (result == null) {
             nodeMap.put(pos, result = new ControlNode(graph, pos));
@@ -173,7 +178,10 @@ public class ControlGraph extends NodeSetEdgeSetGraph<ControlNode,ControlEdge> {
      * Adds a call edge to the control graph under construction.
      */
     private static <P extends Position<P,A>,A extends Stage<P,A>> void addEdge(ControlGraph result,
-        Map<P,ControlNode> nodeMap, ControlNode node, Stage<P,A> out, Queue<P> fresh) {
+                                                                               Map<P,ControlNode> nodeMap,
+                                                                               ControlNode node,
+                                                                               Stage<P,A> out,
+                                                                               Queue<P> fresh) {
         ControlNode target;
         target = addNode(result, nodeMap, out.onFinish(), fresh);
         node.addCallEdge(target, out.getCallStack());

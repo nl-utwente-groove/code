@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.test.graph;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.graph.ElementFactory;
 import nl.utwente.groove.graph.NodeSetEdgeSetGraph;
 import nl.utwente.groove.graph.plain.PlainEdge;
@@ -29,7 +31,7 @@ import nl.utwente.groove.graph.plain.PlainNode;
  */
 public class NodeSetEdgeSetGraphTest extends GraphTest {
     @Override
-    NodeSetEdgeSetGraph<PlainNode,PlainEdge> createGraph(String name) {
+    NodeSetEdgeSetGraph<@NonNull PlainNode,@NonNull PlainEdge> createGraph(String name) {
         return new NodeSetEdgeSetGraph<>(name) {
             @Override
             public ElementFactory<PlainNode,PlainEdge> getFactory() {

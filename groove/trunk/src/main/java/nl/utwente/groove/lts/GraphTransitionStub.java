@@ -12,9 +12,11 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /**
- * 
+ *
  */
 package nl.utwente.groove.lts;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.grammar.Action;
 
@@ -24,6 +26,7 @@ import nl.utwente.groove.grammar.Action;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public interface GraphTransitionStub {
     /**
      * Returns the action that has generated this transition.

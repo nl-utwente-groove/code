@@ -16,11 +16,14 @@
  */
 package nl.utwente.groove.graph;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Generically typed specialisation of the {@link Edge} interface.
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public interface GEdge<N extends Node> extends Edge {
     /*
      * Specialises the return type.

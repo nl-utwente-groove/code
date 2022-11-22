@@ -74,7 +74,8 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements TypeChecker {
+public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull TypeEdge>
+    implements TypeChecker {
     /** Constructs a fresh type graph.
      * @param name the (non-{@code null}) name of the type graph
      */
@@ -134,9 +135,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
             otherToThis.put(otherTypeNode, image);
         }
         for (TypeEdge otherEdge : other.edgeSet()) {
-            TypeEdge image = addEdge(otherToThis.get(otherEdge.source()),
-                otherEdge.label(),
-                otherToThis.get(otherEdge.target()));
+            TypeEdge image = addEdge(otherToThis.get(otherEdge.source()), otherEdge.label(),
+                                     otherToThis.get(otherEdge.target()));
             image.setInMult(otherEdge.getInMult());
             image.setOutMult(otherEdge.getOutMult());
             image.setAbstract(otherEdge.isAbstract());
@@ -179,8 +179,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
      * @return the created and added node type
      */
     public TypeNode addNode(TypeLabel label) {
-        assert label.getRole() == EdgeRole.NODE_TYPE : String.format("Label %s is not a node type",
-            label);
+        assert label.getRole() == EdgeRole.NODE_TYPE : String
+            .format("Label %s is not a node type", label);
         TypeNode result = this.typeNodeMap.get(label);
         if (result == null) {
             // the following implicitly adds the node to the graph
@@ -223,34 +223,26 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
      */
     public void addInheritance(TypeNode subtype, TypeNode supertype) throws FormatException {
         testFixed(false);
-        if (supertype.label()
-            .isDataType()) {
+        if (supertype.label().isDataType()) {
             throw new FormatException("Data type '%s' cannot be supertype", supertype);
         }
-        if (subtype.label()
-            .isDataType()) {
+        if (subtype.label().isDataType()) {
             throw new FormatException("Data type '%s' cannot be subtype", subtype);
         }
-        if (this.nodeSupertypeMap.get(supertype)
-            .contains(subtype)) {
-            throw new FormatException(
-                String.format("The relation '%s -> %s' introduces a cyclic type dependency",
-                    subtype,
-                    supertype));
+        if (this.nodeSupertypeMap.get(supertype).contains(subtype)) {
+            throw new FormatException(String
+                .format("The relation '%s -> %s' introduces a cyclic type dependency", subtype,
+                        supertype));
         }
-        this.nodeDirectSubtypeMap.get(supertype)
-            .add(subtype);
-        this.nodeDirectSupertypeMap.get(subtype)
-            .add(supertype);
+        this.nodeDirectSubtypeMap.get(supertype).add(subtype);
+        this.nodeDirectSupertypeMap.get(subtype).add(supertype);
         Set<TypeNode> subsubtypes = this.nodeSubtypeMap.get(subtype);
         Set<TypeNode> supersupertypes = this.nodeSupertypeMap.get(supertype);
         for (TypeNode subsubtype : subsubtypes) {
-            this.nodeSupertypeMap.get(subsubtype)
-                .addAll(supersupertypes);
+            this.nodeSupertypeMap.get(subsubtype).addAll(supersupertypes);
         }
         for (TypeNode supersupertype : supersupertypes) {
-            this.nodeSubtypeMap.get(supersupertype)
-                .addAll(subsubtypes);
+            this.nodeSubtypeMap.get(supersupertype).addAll(subsubtypes);
         }
     }
 
@@ -266,10 +258,12 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                 TypeLabel sourceType = source.label();
                 // check for outgoing edge types from data types
                 if (sourceType.isDataType()) {
-                    errors.add("Data type '%s' cannot have %s",
-                        sourceType.text(),
-                        typeLabel.getRole() == FLAG ? "flags" : "outgoing edges",
-                        source);
+                    errors
+                        .add("Data type '%s' cannot have %s", sourceType.text(),
+                             typeLabel.getRole() == FLAG
+                                 ? "flags"
+                                 : "outgoing edges",
+                             source);
                 }
                 edgeLabels.add(typeEdge.label());
             }
@@ -293,11 +287,12 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                     }
                     if (hasCommonSubtype(edge1.source(), edge2.source())
                         && hasCommonSubtype(edge1.target(), edge2.target())) {
-                        errors.add("Possible type confusion of %s-%ss",
-                            edgeLabel.text(),
-                            edgeLabel.getRole() == FLAG ? "flag" : "edge",
-                            edge1,
-                            edge2);
+                        errors
+                            .add("Possible type confusion of %s-%ss", edgeLabel.text(),
+                                 edgeLabel.getRole() == FLAG
+                                     ? "flag"
+                                     : "edge",
+                                 edge1, edge2);
                     }
                 }
             }
@@ -328,8 +323,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                         if (sourceSubnodes.contains(subEdge.source())
                             && targetSubnodes.contains(subEdge.target())) {
                             subtypes.add(subEdge);
-                            this.edgeSupertypeMap.get(subEdge)
-                                .add(edge);
+                            this.edgeSupertypeMap.get(subEdge).add(edge);
                         }
                     }
                 }
@@ -454,8 +448,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
      * @return a morphism from the rule graph to a typed version
      * @throws FormatException if the rule graph contains type errors
      */
-    public RuleGraphMorphism analyzeRule(RuleGraph source, RuleGraphMorphism parentTyping)
-        throws FormatException {
+    public RuleGraphMorphism analyzeRule(RuleGraph source,
+                                         RuleGraphMorphism parentTyping) throws FormatException {
         testFixed(true);
         RuleFactory ruleFactory = parentTyping.getFactory();
         RuleGraphMorphism result = new RuleGraphMorphism(ruleFactory);
@@ -504,8 +498,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
             for (VariableNode arg : opNode.getArguments()) {
                 VariableNode argImage = (VariableNode) result.getNode(arg);
                 if (argImage == null) {
-                    if (opNode.getOperator()
-                        .isSetOperator()) {
+                    if (opNode.getOperator().isSetOperator()) {
                         argImage = cloneVariableNode(ruleFactory, arg);
                     } else {
                         // since we should have already added all variable nodes
@@ -519,10 +512,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
             VariableNode newTarget = (VariableNode) result.getNode(opNode.getTarget());
             imageOk &= newTarget != null;
             if (imageOk) {
-                RuleNode image = ruleFactory.createOperatorNode(opNode.getNumber(),
-                    opNode.getOperator(),
-                    newArgs,
-                    newTarget);
+                RuleNode image = ruleFactory
+                    .createOperatorNode(opNode.getNumber(), opNode.getOperator(), newArgs,
+                                        newTarget);
                 result.putNode(opNode, image);
             }
         }
@@ -536,11 +528,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
         for (RuleEdge edge : source.edgeSet()) {
             // only consider edges for which source and target are typed
             // which may fail to hold due to a previous error
-            if (result.nodeMap()
-                .containsKey(edge.source())
-                && result.nodeMap()
-                    .containsKey(edge.target())
-                && !isNodeType(edge)) {
+            if (result.nodeMap().containsKey(edge.source())
+                && result.nodeMap().containsKey(edge.target()) && !isNodeType(edge)) {
                 RuleLabel edgeLabel = edge.label();
                 if (edgeLabel.isAtom() || edgeLabel.isSharp()) {
                     simpleEdges.add(edge);
@@ -553,21 +542,17 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
         }
         // process the wildcard edges
         for (RuleEdge varEdge : varEdges) {
-            RuleEdge image = ruleFactory.createEdge(result.getNode(varEdge.source()),
-                varEdge.label(),
-                result.getNode(varEdge.target()));
+            RuleEdge image = ruleFactory
+                .createEdge(result.getNode(varEdge.source()), varEdge.label(),
+                            result.getNode(varEdge.target()));
             Set<? extends TypeElement> matchingTypes = image.getMatchingTypes();
             for (TypeGuard guard : image.getTypeGuards()) {
                 matchingTypes.retainAll(result.addVarTypes(guard.getVar(), matchingTypes));
             }
-            if (image.getMatchingTypes()
-                .isEmpty()) {
-                errors.add("%s wildcard %s cannot match anything",
-                    image.label()
-                        .getRole()
-                        .getDescription(true),
-                    image.label(),
-                    varEdge);
+            if (image.getMatchingTypes().isEmpty()) {
+                errors
+                    .add("%s wildcard %s cannot match anything",
+                         image.label().getRole().getDescription(true), image.label(), varEdge);
             }
             result.putEdge(varEdge, image);
         }
@@ -578,8 +563,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
             RuleNode targetImage = result.getNode(edge.target());
             TypeNode sourceType = sourceImage.getType();
             TypeNode targetType = targetImage.getType();
-            TypeEdge typeEdge =
-                getTypeEdge(sourceImage.getType(), edgeLabel.getTypeLabel(), targetType, false);
+            TypeEdge typeEdge
+                = getTypeEdge(sourceImage.getType(), edgeLabel.getTypeLabel(), targetType, false);
             if (typeEdge == null) {
                 // if the source type is the top type, we must be in a
                 // graph editor where a new edge label has been used and
@@ -587,13 +572,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                 // upon saving, and the error is confusing, so dont't
                 // throw it
                 if (!sourceType.isTopType()) {
-                    errors.add("%s-node has unknown %s-%s to %s",
-                        sourceType,
-                        edgeLabel,
-                        edge.getRole()
-                            .getDescription(false),
-                        targetType,
-                        edge);
+                    errors
+                        .add("%s-node has unknown %s-%s to %s", sourceType, edgeLabel,
+                             edge.getRole().getDescription(false), targetType, edge);
                 }
             } else {
                 result.putEdge(edge, ruleFactory.createEdge(sourceImage, edgeLabel, targetImage));
@@ -604,8 +585,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
             RuleLabel edgeLabel = edge.label();
             RuleNode sourceImage = result.getNode(edge.source());
             RuleNode targetImage = result.getNode(edge.target());
-            RuleLabel checkLabel = edgeLabel.isNeg() ? edgeLabel.getNegOperand()
-                .toLabel() : edgeLabel;
+            @SuppressWarnings("null")
+            RuleLabel checkLabel = edgeLabel.isNeg()
+                ? edgeLabel.getNegOperand().toLabel()
+                : edgeLabel;
             RegExpr expr = checkLabel.getMatchExpr();
             Result typeResult = expr.apply(regExprTyper);
             if (typeResult.hasErrors()) {
@@ -614,8 +597,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                 // the graph has not yet been saved. This will be solved
                 // upon saving, and the error is confusing, so dont't
                 // throw it
-                if (!sourceImage.getType()
-                    .isTopType()) {
+                if (!sourceImage.getType().isTopType()) {
                     for (FormatError error : typeResult.getErrors()) {
                         errors.add(new FormatError(error, edge));
                     }
@@ -642,11 +624,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                     }
                 }
                 if (!fit) {
-                    errors.add("No %s-path can exist between %s and %s",
-                        checkLabel,
-                        sourceImage.getType(),
-                        targetImage.getType(),
-                        edge);
+                    errors
+                        .add("No %s-path can exist between %s and %s", checkLabel,
+                             sourceImage.getType(), targetImage.getType(), edge);
                 }
             }
             result.putEdge(edge, ruleFactory.createEdge(sourceImage, edgeLabel, targetImage));
@@ -660,8 +640,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
      * Clones a variable node in a given rule factory.
      * @throws FormatException if the data type of the variable node does not occur in this type graph
      */
-    private VariableNode cloneVariableNode(RuleFactory ruleFactory, VariableNode node)
-        throws FormatException {
+    private VariableNode cloneVariableNode(RuleFactory ruleFactory,
+                                           VariableNode node) throws FormatException {
         VariableNode image = ruleFactory.createVariableNode(node.getNumber(), node.getTerm());
         // check if the type graph actually has the primitive type
         if (!nodeSet().contains(image.getType())) {
@@ -683,7 +663,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
      * @throws FormatException if any errors were detected while constructing node images
      */
     private Map<RuleNode,RuleNode> computeNodeImages(RuleGraph source,
-        RuleGraphMorphism parentTyping, RuleGraphMorphism typing) throws FormatException {
+                                                     RuleGraphMorphism parentTyping,
+                                                     RuleGraphMorphism typing) throws FormatException {
         Map<RuleNode,RuleNode> result = new HashMap<>();
         // mapping from type variables to sets of potential node types
         Map<LabelVar,Set<@NonNull TypeNode>> varTypesMap = new HashMap<>();
@@ -719,10 +700,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                     types = new HashSet<>(nodeSet());
                     types.removeAll(getFactory().getDataTypes());
                 }
-                if (edge.label()
-                    .isWildcard()) {
-                    TypeGuard guard = edge.label()
-                        .getWildcardGuard();
+                if (edge.label().isWildcard()) {
+                    TypeGuard guard = edge.label().getWildcardGuard();
+                    assert guard != null;
                     guards.add(guard);
                     // for node type wildcards, the guard is never null
                     LabelVar var = guard.getVar();
@@ -733,20 +713,22 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                     }
                     guard.filter(varTypes);
                 } else {
-                    TypeLabel typeLabel = edge.label()
-                        .getTypeLabel();
+                    TypeLabel typeLabel = edge.label().getTypeLabel();
                     assert typeLabel != null;
                     TypeNode newType = getNode(typeLabel);
-                    boolean sharp = edge.label()
-                        .isSharp();
+                    boolean sharp = edge.label().isSharp();
                     if (newType == null) {
                         errors.add("Unknown node type %s", typeLabel, node);
                     } else if (type != null) {
                         errors.add("Duplicate node types %s and %s", type.label(), typeLabel, node);
                     } else {
-                        type = parentNode == null ? newType : parentNode.getType();
-                        types.retainAll(
-                            sharp ? Collections.singleton(newType) : newType.getSubtypes());
+                        type = parentNode == null
+                            ? newType
+                            : parentNode.getType();
+                        types
+                            .retainAll(sharp
+                                ? Collections.singleton(newType)
+                                : newType.getSubtypes());
                         if (sharp) {
                             sharpNodes.add(node);
                         }
@@ -792,25 +774,27 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                 if (declaredType == null) {
                     errors.add("Conflicting type variables %s", varString, node);
                 } else {
-                    errors.add("Declared node type '%s' conflicts with type variable%s %s",
-                        declaredType,
-                        e.getValue()
-                            .size() == 1 ? "" : "s",
-                        varString,
-                        node);
+                    errors
+                        .add("Declared node type '%s' conflicts with type variable%s %s",
+                             declaredType, e.getValue().size() == 1
+                                 ? ""
+                                 : "s",
+                             varString, node);
                 }
             } else {
-                TypeNode type = declaredType == null ? getMaximum(types) : declaredType;
+                TypeNode type = declaredType == null
+                    ? getMaximum(types)
+                    : declaredType;
                 if (type == null) {
-                    errors.add("Ambiguous typing: %s does not contain a common supertype",
-                        types,
-                        node);
+                    errors
+                        .add("Ambiguous typing: %s does not contain a common supertype", types,
+                             node);
                 } else {
-                    RuleNode image = parentTyping.getFactory()
+                    RuleNode image = parentTyping
+                        .getFactory()
                         .nodes(type, sharpNodes.contains(node), nodeGuardsMap.get(node))
                         .createNode(node.getNumber());
-                    image.getMatchingTypes()
-                        .retainAll(types);
+                    image.getMatchingTypes().retainAll(types);
                     result.put(node, image);
                 }
             }
@@ -853,9 +837,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
         for (HostNode node : source.nodeSet()) {
             try {
                 HostNode image;
-                if (node instanceof ValueNode) {
-                    ValueNode valueNode = (ValueNode) node;
-                    image = hostFactory.values(valueNode.getAlgebra(), valueNode.getValue())
+                if (node instanceof ValueNode valueNode) {
+                    image = hostFactory
+                        .values(valueNode.getAlgebra(), valueNode.getValue())
                         .createNode(valueNode.getNumber());
                 } else if (isImplicit()) {
                     image = hostFactory.createNode(node.getNumber());
@@ -865,10 +849,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                         errors.add("Untyped node", node);
                         image = node;
                     } else if (nodeTypeEdges.size() > 1) {
-                        errors.add("Multiple node types %s, %s",
-                            nodeTypeEdges.get(0),
-                            nodeTypeEdges.get(1),
-                            node);
+                        errors
+                            .add("Multiple node types %s, %s", nodeTypeEdges.get(0),
+                                 nodeTypeEdges.get(1), node);
                         image = node;
                     } else {
                         HostEdge nodeTypeEdge = nodeTypeEdges.get(0);
@@ -882,8 +865,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                             throw new FormatException("Abstract node type '%s'", type,
                                 nodeTypeEdge);
                         }
-                        image = hostFactory.nodes(type)
-                            .createNode(node.getNumber());
+                        image = hostFactory.nodes(type).createNode(node.getNumber());
                     }
                 }
                 morphism.putNode(node, image);
@@ -906,11 +888,12 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
             }
             TypeNode sourceType = sourceImage.getType();
             TypeNode targetType = targetImage.getType();
-            if (sourceType == null || targetType == null) {
-                // this must be due to an untyped node
-                // which was already reported as an error
-                continue;
-            }
+            // nullness checks should be redundant at this point
+            //            if (sourceType == null || targetType == null) {
+            //                // this must be due to an untyped node
+            //                // which was already reported as an error
+            //                continue;
+            //            }
             TypeEdge typeEdge = getTypeEdge(sourceType, edgeType, targetType, false);
             if (typeEdge == null) {
                 // if the source type is the top type, we must be in a
@@ -919,21 +902,14 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                 // upon saving, and the error is confusing, so dont't
                 // throw it
                 if (!sourceType.isTopType()) {
-                    errors.add("%s-node has unknown %s-%s to %s",
-                        sourceType,
-                        edgeType.text(),
-                        edgeType.getRole()
-                            .getDescription(false),
-                        targetType,
-                        edge.source());
+                    errors
+                        .add("%s-node has unknown %s-%s to %s", sourceType, edgeType.text(),
+                             edgeType.getRole().getDescription(false), targetType, edge.source());
                 }
             } else if (typeEdge.isAbstract()) {
-                errors.add("%s-node has abstract %s-%s",
-                    sourceType,
-                    edgeType.text(),
-                    edgeType.getRole()
-                        .getDescription(false),
-                    edge.source());
+                errors
+                    .add("%s-node has abstract %s-%s", sourceType, edgeType.text(),
+                         edgeType.getRole().getDescription(false), edge.source());
             } else {
                 morphism.putEdge(edge, hostFactory.createEdge(sourceImage, edgeType, targetImage));
             }
@@ -967,7 +943,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
      * precisely; otherwise, supertypes are allowed
      */
     public TypeEdge getTypeEdge(TypeNode sourceType, TypeLabel label, TypeNode targetType,
-        boolean precise) {
+                                boolean precise) {
         TypeEdge result = null;
         if (isFixed()) {
             TypeEdgeMap edgeMap;
@@ -1022,7 +998,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
      * precisely; otherwise, supertypes are allowed
      */
     private TypeEdge findTypeEdge(TypeNode sourceType, TypeLabel label, TypeNode targetType,
-        boolean precise) {
+                                  boolean precise) {
         TypeEdge result = null;
         for (TypeEdge edge : edgeSet(label)) {
             if (!isSubtype(sourceType, edge.source(), precise)) {
@@ -1045,7 +1021,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
 
     /** Tests for either the subtype relation or type equality. */
     private boolean isSubtype(TypeNode subtype, TypeNode supertype, boolean precise) {
-        return precise ? supertype.equals(subtype) : isSubtype(subtype, supertype);
+        return precise
+            ? supertype.equals(subtype)
+            : isSubtype(subtype, supertype);
     }
 
     /**
@@ -1064,8 +1042,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
      * if there is such a node in the type graph. Returns {@code null}
      * if the label is not a known node type.
      */
-    public @Nullable TypeNode getNode(@NonNull
-    Label label) {
+    public @Nullable TypeNode getNode(@NonNull Label label) {
         assert label.getRole() == NODE_TYPE;
         if (isImplicit()) {
             return this.factory.getTopNode();
@@ -1083,8 +1060,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
      */
     private TypeLabel getActualType(Label type) {
         TypeLabel result;
-        if (type instanceof RuleLabel) {
-            RuleLabel ruleLabel = (RuleLabel) type;
+        if (type instanceof RuleLabel ruleLabel) {
             result = ruleLabel.getTypeLabel();
         } else {
             assert type instanceof TypeLabel;
@@ -1246,6 +1222,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
         Set<@NonNull TypeElement> result = new HashSet<>();
         if (label.isInv()) {
             label = label.getInvLabel();
+            assert label != null;
         }
         if (label.isWildcard()) {
             if (isNodeType(label) && !isImplicit()) {
@@ -1258,8 +1235,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                     }
                 }
             }
-            label.getWildcardGuard()
-                .filter(result);
+            var guard = label.getWildcardGuard();
+            assert guard != null;
+            guard.filter(result);
         } else if (label.isSharp()) {
             if (isNodeType(label) && !isImplicit()) {
                 TypeNode node = getNode(label);
@@ -1276,7 +1254,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                     result.addAll(getSubtypes(tn));
                 }
             } else {
-                result.addAll(edgeSet(label.getTypeLabel()));
+                var tl = label.getTypeLabel();
+                assert tl != null;
+                result.addAll(edgeSet(tl));
             }
         }
         return result;
@@ -1310,8 +1290,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                 result = typeNode;
             }
         }
-        if (result != null && !result.getSubtypes()
-            .containsAll(types)) {
+        if (result != null && !result.getSubtypes().containsAll(types)) {
             result = null;
         }
         return result;
@@ -1333,8 +1312,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
                 result = typeNode;
             }
         }
-        if (result != null && !result.getSupertypes()
-            .containsAll(types)) {
+        if (result != null && !result.getSupertypes().containsAll(types)) {
             result = null;
         }
         return result;
@@ -1450,7 +1428,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> implements
     public static class Sub {
         /** Constructs a component type entry. */
         public Sub(String name, Set<TypeNode> nodes, Set<TypeEdge> edges) {
-            super();
             this.name = name;
             this.nodes = nodes;
             this.edges = edges;
