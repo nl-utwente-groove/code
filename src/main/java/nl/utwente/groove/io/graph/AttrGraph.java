@@ -22,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.aspect.AspectEdge;
@@ -52,6 +53,7 @@ import nl.utwente.groove.graph.plain.PlainLabel;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
     /**
      * Creates an empty graph with a given name.
@@ -105,14 +107,14 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
      * @return the existing or freshly created node
      */
     public AttrNode addNode(String id) {
-        assert!hasNode(id);
+        assert !hasNode(id);
         // detect a suffix that represents a number
         boolean digitFound = false;
         int nodeNr = 0;
         int unit = 1;
         int charIx;
-        for (charIx = id.length() - 1; charIx >= 0
-            && Character.isDigit(id.charAt(charIx)); charIx--) {
+        for (charIx = id.length() - 1; charIx >= 0 && Character.isDigit(id.charAt(charIx));
+             charIx--) {
             nodeNr += unit * (id.charAt(charIx) - '0');
             unit *= 10;
             digitFound = true;
@@ -146,7 +148,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
      * @param id the (non-{@code null}, nonempty) node identifier
      * @return the existing node, or {@code null} if no node with this identifier exists
      */
-    public AttrNode getNode(String id) {
+    public @Nullable AttrNode getNode(String id) {
         return this.nodeMap.get(id);
     }
 
@@ -156,19 +158,15 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
      * @param target the non=-{@code null} target node
      * @return the edge in the graph with the given data, or {@code null} if there is none
      */
-    public AttrEdge getEdge(AttrNode source, String text, AttrNode target) {
-        AttrEdge result = null;
-        for (AttrEdge edge : outEdgeSet(source)) {
-            if (edge.label()
-                .text()
-                .equals(text)
-                && edge.target()
-                    .equals(target)) {
-                result = edge;
-                break;
-            }
-        }
-        return result;
+    public @Nullable AttrEdge getEdge(AttrNode source, String text, AttrNode target) {
+        var result = outEdgeSet(source)
+            .stream()
+            .filter(e -> e.label().text().equals(text))
+            .filter(e -> e.target().equals(target))
+            .findFirst();
+        return result.isEmpty()
+            ? null
+            : result.get();
     }
 
     /**
@@ -184,7 +182,9 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
     /** Returns the role of this graph. */
     @Override
     public GraphRole getRole() {
-        return this.role;
+        var result = this.role;
+        assert result != null;
+        return result;
     }
 
     /** Sets the role of this graph. */
@@ -193,7 +193,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
         this.role = role;
     }
 
-    private GraphRole role;
+    private @Nullable GraphRole role;
 
     /**
      * Adds a node tuple in the form of a list of node identifiers.
@@ -244,7 +244,8 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
             map.putNode(node, nodeImage);
         }
         for (AttrEdge edge : edgeSet()) {
-            @Nullable E edgeImage = map.mapEdge(edge);
+            @Nullable
+            E edgeImage = map.mapEdge(edge);
             assert edgeImage != null; // map is constructed to be total on nodes
             target.addEdge(edgeImage);
         }
@@ -287,7 +288,9 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
             }
         }
         for (AspectEdge edge : graph.edgeSet()) {
-            result.addEdgeContext(elementMap.mapEdge(edge));
+            var image = elementMap.mapEdge(edge);
+            assert image != null;
+            result.addEdgeContext(image);
         }
         GraphInfo.transfer(graph, result, elementMap);
         result.setFixed();
@@ -299,14 +302,14 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
     // ------------------------------------------------------------------------
 
     private static class AspectToAttrMap
-        extends AElementMap<AspectNode,AspectEdge,AttrNode,AttrEdge> {
+        extends AElementMap<AspectNode,AspectEdge,@Nullable AttrNode,AttrEdge> {
         /** Constructs a new, empty map. */
         public AspectToAttrMap() {
             super(AttrFactory.instance());
         }
 
         @Override
-        public AttrEdge createImage(AspectEdge key) {
+        public @Nullable AttrEdge createImage(AspectEdge key) {
             AttrNode imageSource = getNode(key.source());
             if (imageSource == null) {
                 return null;

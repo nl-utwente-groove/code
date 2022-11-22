@@ -16,12 +16,16 @@
  */
 package nl.utwente.groove.graph;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * Default implementation of a graph node. Default nodes have numbers, but node
  * equality is determined by object identity and not by node number.
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 abstract public class ANode implements Node, Cloneable {
     /**
      * Constructs a fresh node, with an explicitly given number. Note that node
@@ -66,7 +70,7 @@ abstract public class ANode implements Node, Cloneable {
      *         <tt>this</tt> and <tt>obj</tt> have the same node numbers
      */
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (obj == this) {
             return true;
         }

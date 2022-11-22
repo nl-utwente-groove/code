@@ -81,23 +81,17 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
                     printSingleLineOption(pw, getOptions().get(ix), rb, true);
                 }
                 pw.print(" [");
-                pw.print(getOptions().get(optionCount - 1)
-                    .getNameAndMeta(rb));
+                pw.print(getOptions().get(optionCount - 1).getNameAndMeta(rb));
                 pw.print(" | ");
-                pw.print(getArguments().get(0)
-                    .getNameAndMeta(rb));
+                pw.print(getArguments().get(0).getNameAndMeta(rb));
                 pw.print(']');
                 pw.flush();
             }
         };
         // move -g to the final position
-        @SuppressWarnings("rawtypes") List<OptionHandler> handlers = result.getOptions();
-        OptionHandler<?> genHandler = null;
-        for (OptionHandler<?> handler : handlers) {
-            if (handler instanceof GeneratorHandler) {
-                genHandler = handler;
-            }
-        }
+        var handlers = result.getOptions();
+        var genHandler
+            = handlers.stream().filter(h -> h instanceof GeneratorHandler).findFirst().get();
         handlers.remove(genHandler);
         handlers.add(genHandler);
         return result;
@@ -108,11 +102,13 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
      */
     @Override
     protected Object run() throws Exception {
-        modelCheck(this.genArgs == null ? null : this.genArgs.get());
+        ctlCheck(this.genArgs == null
+            ? null
+            : this.genArgs.get());
         return null;
     }
 
-    private void modelCheck(String[] genArgs) throws Exception {
+    private void ctlCheck(String[] genArgs) throws Exception {
         long genStartTime = System.currentTimeMillis();
         Model model;
         if (genArgs != null) {
@@ -131,19 +127,17 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         int maxWidth = 0;
         Map<Formula,Boolean> outcome = new HashMap<>();
         for (Formula property : this.ctlProps) {
-            maxWidth = Math.max(maxWidth,
-                property.getParseString()
-                    .length());
+            maxWidth = Math.max(maxWidth, property.getParseString().length());
             CTLMarker marker = new CTLMarker(property, model);
             outcome.put(property, marker.hasValue(true));
         }
         emit("%n");
         emit(LOW, "Model checking outcome (for the initial state of the model):%n");
         for (Formula property : this.ctlProps) {
-            emit(LOW,
-                "    %-" + maxWidth + "s : %s%n",
-                property.getParseString(),
-                outcome.get(property) ? "satisfied" : "violated");
+            emit(LOW, "    %-" + maxWidth + "s : %s%n", property.getParseString(),
+                 outcome.get(property)
+                     ? "satisfied"
+                     : "violated");
         }
         long endTime = System.currentTimeMillis();
 
@@ -178,7 +172,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
 
     @Option(name = "-ltl", metaVar = "prop",
         usage = "Check the LTL property <prop> (multiple allowed)",
-        handler = CLTFormulaHandler.class)
+        handler = LTLFormulaHandler.class)
     private List<gov.nasa.ltl.trans.Formula<String>> ltlProps;
     @Option(name = "-ctl", metaVar = "prop",
         usage = "Check the CTL property <prop> (multiple allowed)",
@@ -190,7 +184,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
     private GeneratorArgs genArgs;
 
     @Argument(metaVar = "model",
-        usage = "File name of GXL graph or production system to be checked",
+        usage = "File name of GXL graph (CTL only) or directory of production system to be checked",
         handler = FileOptionHandler.class)
     private File modelGraph;
 
@@ -218,15 +212,14 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
          * Required constructor.
          */
         public CLTFormulaHandler(CmdLineParser parser, OptionDef option,
-            Setter<? super Formula> setter) {
+                                 Setter<? super Formula> setter) {
             super(parser, option, setter);
         }
 
         @Override
         protected Formula parse(String argument) throws CmdLineException {
             try {
-                return Formula.parse(Logic.CTL, argument)
-                    .toCtlFormula();
+                return Formula.parse(Logic.CTL, argument).toCtlFormula();
             } catch (FormatException e) {
                 throw new CmdLineException(this.owner, e);
             }
@@ -240,16 +233,14 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
          * Required constructor.
          */
         public LTLFormulaHandler(CmdLineParser parser, OptionDef option,
-            Setter<? super gov.nasa.ltl.trans.Formula<Proposition>> setter) {
+                                 Setter<? super gov.nasa.ltl.trans.Formula<Proposition>> setter) {
             super(parser, option, setter);
         }
 
         @Override
-        protected gov.nasa.ltl.trans.Formula<Proposition> parse(String argument)
-            throws CmdLineException {
+        protected gov.nasa.ltl.trans.Formula<Proposition> parse(String argument) throws CmdLineException {
             try {
-                return Formula.parse(Logic.LTL, argument)
-                    .toLtlFormula();
+                return Formula.parse(Logic.LTL, argument).toLtlFormula();
             } catch (FormatException e) {
                 throw new CmdLineException(this.owner, e);
             }
@@ -260,7 +251,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
     public static class GeneratorHandler extends OptionHandler<GeneratorArgs> {
         /** Required constructor. */
         public GeneratorHandler(CmdLineParser parser, OptionDef option,
-            Setter<? super GeneratorArgs> setter) {
+                                Setter<? super GeneratorArgs> setter) {
             super(parser, option, setter);
         }
 
@@ -309,7 +300,9 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
      * @throws FormatException if the graph is not compatible with the special labels.
      */
     public static Model newModel(Graph graph, LTSLabels ltsLabels) throws FormatException {
-        return new GraphModel(graph, ltsLabels == null ? LTSLabels.DEFAULT : ltsLabels);
+        return new GraphModel(graph, ltsLabels == null
+            ? LTSLabels.DEFAULT
+            : ltsLabels);
     }
 
     /** Facade for models, with the functionality required for CTL model checking. */
@@ -368,8 +361,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
 
         @Override
         public int nodeCount() {
-            return this.nodeSet()
-                .size();
+            return this.nodeSet().size();
         }
 
         @Override
@@ -385,23 +377,13 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         @Override
         public boolean isSpecial(Node node, Flag flag) {
             GraphState state = (GraphState) node;
-            boolean result;
-            switch (flag) {
-            case FINAL:
-                result = state.isFinal();
-                break;
-            case OPEN:
-                result = !state.isClosed();
-                break;
-            case START:
-                result = state == this.gts.startState();
-                break;
-            case RESULT:
-                result = this.result != null && this.result.containsState(state);
-                break;
-            default:
-                result = false;
-            }
+            boolean result = switch (flag) {
+            case FINAL -> state.isFinal();
+            case OPEN -> !state.isClosed();
+            case START -> state == this.gts.startState();
+            case RESULT -> this.result != null && this.result.containsState(state);
+            default -> false;
+            };
             return result;
         }
 
@@ -429,7 +411,9 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
          */
         public GraphModel(Graph graph, LTSLabels ltsLabels) throws FormatException {
             this.graph = graph;
-            this.ltsLabels = ltsLabels == null ? LTSLabels.DEFAULT : ltsLabels;
+            this.ltsLabels = ltsLabels == null
+                ? LTSLabels.DEFAULT
+                : ltsLabels;
             testFormat();
         }
 
@@ -442,8 +426,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             for (Node node : nodeSet()) {
                 Set<? extends Edge> outEdges = outEdgeSet(node);
                 for (Edge outEdge : outEdges) {
-                    Flag flag = getFlag(outEdge.label()
-                        .text());
+                    Flag flag = getFlag(outEdge.label().text());
                     if (flag == null) {
                         continue;
                     }

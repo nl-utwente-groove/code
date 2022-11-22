@@ -21,7 +21,8 @@ import static nl.utwente.groove.graph.EdgeRole.NODE_TYPE;
 import java.awt.Color;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.AnchorKind;
 import nl.utwente.groove.graph.EdgeRole;
@@ -36,6 +37,7 @@ import nl.utwente.groove.util.line.Line;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public class TypeNode implements Node, TypeElement {
     /**
      * Constructs a new type node, with a given number and label.
@@ -45,7 +47,7 @@ public class TypeNode implements Node, TypeElement {
      * @param type the non-{@code null} type label
      * @param graph the type graph to which this node belongs; non-{@code null}
      */
-    public TypeNode(int nr, @NonNull TypeLabel type, @NonNull TypeGraph graph) {
+    public TypeNode(int nr, TypeLabel type, TypeGraph graph) {
         assert graph != null;
         assert type.getRole() == NODE_TYPE : String
             .format("Can't create type node for non-type label '%s'", type);
@@ -61,7 +63,10 @@ public class TypeNode implements Node, TypeElement {
      * and different types.
      */
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
+        if (obj == null) {
+            return false;
+        }
         // only type nodes from the same type graph may be compared
         assert getGraph() == ((TypeElement) obj).getGraph()
             || (isImported() && ((TypeNode) obj).isImported());
@@ -86,6 +91,9 @@ public class TypeNode implements Node, TypeElement {
     public int getNumber() {
         return this.nr;
     }
+
+    /** The number of this node. */
+    private final int nr;
 
     @Override
     public int compareTo(Label obj) {
@@ -148,10 +156,16 @@ public class TypeNode implements Node, TypeElement {
         return this.imported;
     }
 
+    /** Flag indicating if this node type is imported from another type graph. */
+    private boolean imported;
+
     /** Indicates if this node type stands for a data type. */
     public final boolean isDataType() {
         return this.dataType;
     }
+
+    /** Flag indicating this node is a data type. */
+    private final boolean dataType;
 
     /** Sets this node type to imported. */
     public final void setImported(boolean value) {
@@ -159,29 +173,38 @@ public class TypeNode implements Node, TypeElement {
     }
 
     /** Returns the (possibly {@code null}) label pattern associated with this type node. */
-    public final LabelPattern getLabelPattern() {
+    public final @Nullable LabelPattern getLabelPattern() {
         return this.pattern;
     }
 
     /** Sets the label pattern of this type node. */
-    public final void setLabelPattern(LabelPattern pattern) {
+    public final void setLabelPattern(@Nullable LabelPattern pattern) {
         this.pattern = pattern;
     }
 
+    /** The label pattern of this node, if any. */
+    private @Nullable LabelPattern pattern;
+
     /** Returns the (possibly {@code null}) colour of this type node. */
-    public final Color getColor() {
+    public final @Nullable Color getColor() {
         return this.colour;
     }
 
     /** Sets the colour of this type node. */
-    public final void setColor(Color colour) {
+    public final void setColor(@Nullable Color colour) {
         this.colour = colour;
     }
+
+    /** The display colour of this node, if any. */
+    private @Nullable Color colour;
 
     @Override
     public TypeGraph getGraph() {
         return this.graph;
     }
+
+    /** The type graph with which this node is associated. */
+    private final TypeGraph graph;
 
     @Override
     public Set<TypeNode> getSubtypes() {
@@ -214,20 +237,8 @@ public class TypeNode implements Node, TypeElement {
         return AnchorKind.LABEL;
     }
 
-    /** The type graph with which this node is associated. */
-    private final @NonNull TypeGraph graph;
-    /** Flag indicating this node is a data type. */
-    private final boolean dataType;
     /** Flag indicating if this node type is abstract. */
     private boolean abstracted;
-    /** Flag indicating if this node type is imported from another type graph. */
-    private boolean imported;
-    /** The display colour of this node, if any. */
-    private Color colour;
-    /** The label pattern of this node, if any. */
-    private LabelPattern pattern;
-    /** The number of this node. */
-    private final int nr;
     /** The type of this node. */
-    private final @NonNull TypeLabel type;
+    private final TypeLabel type;
 }

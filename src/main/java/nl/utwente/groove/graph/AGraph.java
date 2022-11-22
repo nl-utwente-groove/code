@@ -20,6 +20,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.graph.iso.CertificateStrategy;
 import nl.utwente.groove.graph.iso.PartitionRefiner;
 import nl.utwente.groove.util.DefaultFixable;
@@ -35,6 +39,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public abstract class AGraph<N extends Node,E extends GEdge<N>>
     extends AbstractCacheHolder<GraphCache<N,E>> implements GGraph<N,E> {
     /**
@@ -73,8 +78,7 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>>
     @Override
     public Set<? extends E> edgeSet(Node node) {
         assert isTypeCorrect(node);
-        Set<? extends E> result = getCache().getNodeEdgeMap()
-            .get(node);
+        Set<? extends E> result = getCache().getNodeEdgeMap().get(node);
         if (result == null) {
             return Collections.emptySet();
         } else {
@@ -88,12 +92,9 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>>
      */
     @Override
     public Set<? extends E> outEdgeSet(Node node) {
-        assert isTypeCorrect(node) : String.format("Type %s of node %s incorrect for this graph",
-            node.getClass()
-                .getName(),
-            node);
-        Set<? extends E> result = getCache().getNodeOutEdgeMap()
-            .get(node);
+        assert isTypeCorrect(node) : String
+            .format("Type %s of node %s incorrect for this graph", node.getClass().getName(), node);
+        Set<? extends E> result = getCache().getNodeOutEdgeMap().get(node);
         if (result == null) {
             return Collections.emptySet();
         } else {
@@ -108,8 +109,7 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>>
     @Override
     public Set<? extends E> inEdgeSet(Node node) {
         assert isTypeCorrect(node);
-        Set<? extends E> result = getCache().getNodeInEdgeMap()
-            .get(node);
+        Set<? extends E> result = getCache().getNodeInEdgeMap().get(node);
         if (result == null) {
             return Collections.emptySet();
         } else {
@@ -120,8 +120,7 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>>
     @Override
     public Set<? extends E> edgeSet(Label label) {
         assert isTypeCorrect(label);
-        Set<? extends E> result = getCache().getLabelEdgeMap()
-            .get(label);
+        Set<? extends E> result = getCache().getLabelEdgeMap().get(label);
         if (result != null) {
             return Collections.unmodifiableSet(result);
         } else {
@@ -136,11 +135,17 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>>
 
     @Override
     public GraphInfo getInfo() {
-        if (this.graphInfo == null) {
-            this.graphInfo = new GraphInfo();
+        var result = this.graphInfo;
+        if (result == null) {
+            this.graphInfo = result = new GraphInfo();
         }
-        return this.graphInfo;
+        return result;
     }
+
+    /**
+     * Map in which various kinds of data can be stored.
+     */
+    private @Nullable GraphInfo graphInfo;
 
     @Override
     public boolean isFixed() {
@@ -265,7 +270,7 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>>
      * @return {@code true} if {@code from} is distinct from
      *         {@code to}, so a merge actually took place
      */
-    public boolean mergeNodes(N from, N to) {
+    public boolean mergeNodes(@NonNull N from, @NonNull N to) {
         assert isTypeCorrect(from);
         assert isTypeCorrect(to);
         if (!from.equals(to)) {
@@ -350,11 +355,6 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>>
 
     private String name = NO_NAME;
 
-    /**
-     * Map in which various kinds of data can be stored.
-     */
-    private GraphInfo graphInfo;
-
     // -------------------- REPORTER DEFINITIONS ------------------------
 
     /**
@@ -395,8 +395,8 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>>
      * The current strategy for computing isomorphism certificates.
      * @see #getCertifier(boolean)
      */
-    static private CertificateStrategy certificateFactory =
-        new PartitionRefiner((GGraph<Node,GEdge<Node>>) null);
+    static private CertificateStrategy certificateFactory
+        = new PartitionRefiner((GGraph<Node,GEdge<Node>>) null);
 
     /**
      * Changes the strategy for computing isomorphism certificates.

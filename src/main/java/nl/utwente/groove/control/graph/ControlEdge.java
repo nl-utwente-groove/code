@@ -16,7 +16,10 @@
  */
 package nl.utwente.groove.control.graph;
 
-import java.awt.Color;
+import java.util.Optional;
+import java.util.function.Predicate;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.control.CallStack;
 import nl.utwente.groove.graph.ALabelEdge;
@@ -29,6 +32,7 @@ import nl.utwente.groove.util.line.Line.Style;
  * @author rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public class ControlEdge extends ALabelEdge<ControlNode> {
     /**
      * Constructs a verdict edge
@@ -39,7 +43,7 @@ public class ControlEdge extends ALabelEdge<ControlNode> {
     public ControlEdge(ControlNode source, ControlNode target, boolean success) {
         super(source, target);
         this.success = success;
-        this.callStack = null;
+        this.callStack = Optional.empty();
     }
 
     /**
@@ -50,12 +54,12 @@ public class ControlEdge extends ALabelEdge<ControlNode> {
     public ControlEdge(ControlNode source, ControlNode target, CallStack callStack) {
         super(source, target);
         this.success = false;
-        this.callStack = callStack;
+        this.callStack = Optional.of(callStack);
     }
 
     /** Indicates if this is a verdict edge. */
     public boolean isVerdict() {
-        return getCallStack() == null;
+        return getCallStack().isEmpty();
     }
 
     /**
@@ -71,50 +75,49 @@ public class ControlEdge extends ALabelEdge<ControlNode> {
     private final boolean success;
 
     /** Returns the call wrapped in this edge, if it is a call edge. */
-    public CallStack getCallStack() {
+    public Optional<CallStack> getCallStack() {
         return this.callStack;
     }
 
+    /** Tests if this edge wraps a call with a given property. */
+    public boolean hasCallStack(Predicate<CallStack> prop) {
+        return this.callStack.filter(prop).isPresent();
+    }
+
     /** Call wrapped in this edge, if this is a call edge. */
-    private final CallStack callStack;
+    private final Optional<CallStack> callStack;
 
     @Override
     protected Line computeLine() {
-        String text;
-        if (isVerdict()) {
-            text = isSuccess() ? "succ" : "fail";
-        } else {
-            text = getCallStack().toString();
-        }
+        String text = getCallStack().map(cs -> cs.toString()).orElse(isSuccess()
+            ? "succ"
+            : "fail");
         Line result = Line.atom(text);
         if (isVerdict() || getRole() == EdgeRole.FLAG) {
             result = result.style(Style.ITALIC);
         }
-        if (!isVerdict()) {
-            Color color = getCallStack().getRule()
-                .getRole()
-                .getColor();
-            if (color != null) {
-                if (source().isStart()) {
-                    color = color.brighter()
-                        .brighter();
-                }
-                result = result.color(color);
-            }
+        var newColor = getCallStack().map(cs -> cs.getRule().getRole().getColor())
+            .filter(c -> c != null).map(c -> source().isStart()
+                ? c.brighter().brighter()
+                : c);
+        if (newColor.isPresent()) {
+            result = result.color(newColor.get());
         }
         return result;
     }
 
     @Override
     public EdgeRole getRole() {
-        return isLoop() && (isVerdict() || getCallStack().getRule()
-            .isProperty()) ? EdgeRole.FLAG : EdgeRole.BINARY;
+        return isLoop() && hasCallStack(cs -> cs.getRule().isProperty())
+            ? EdgeRole.FLAG
+            : EdgeRole.BINARY;
     }
 
     @Override
     protected int computeLabelHash() {
-        return isVerdict() ? Boolean.valueOf(isSuccess())
-            .hashCode() : getCallStack().hashCode();
+        return isVerdict()
+            ? Boolean.valueOf(isSuccess()).hashCode()
+            : getCallStack().hashCode();
     }
 
     @Override
@@ -126,9 +129,6 @@ public class ControlEdge extends ALabelEdge<ControlNode> {
             } else {
                 return false;
             }
-        }
-        if (other.isVerdict()) {
-            return false;
         }
         return getCallStack().equals(other.getCallStack());
     }

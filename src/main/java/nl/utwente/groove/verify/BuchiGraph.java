@@ -23,6 +23,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import gov.nasa.ltl.graph.Edge;
 import gov.nasa.ltl.graph.Graph;
 import gov.nasa.ltl.graph.Node;
@@ -37,6 +40,7 @@ import nl.utwente.groove.util.collect.TransformIterator;
  * @author Harmen Kastenberg
  * @version $Revision $
  */
+@NonNullByDefault
 public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition> implements Cloneable {
     private BuchiGraph(String name) {
         super(name);
@@ -116,7 +120,7 @@ public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition> implements
      * Constructs a {@link BuchiGraph} from a (NASA ltl2buchi) graph.
      */
     private void newBuchiGraph(Graph<Proposition> graph, final BuchiGraph result) {
-        Map<Node<Proposition>,BuchiLocation> node2location = new HashMap<>();
+        Map<Node<Proposition>,@Nullable BuchiLocation> node2location = new HashMap<>();
         Node<Proposition> init = graph.getInit();
         if (init == null) {
             // construct fake initial node
@@ -156,7 +160,7 @@ public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition> implements
         GraphPreviewDialog.showGraph(this);
     }
 
-    private BuchiLocation getLocation(Map<Node<Proposition>,BuchiLocation> node2location,
+    private BuchiLocation getLocation(Map<Node<Proposition>,@Nullable BuchiLocation> node2location,
                                       Node<Proposition> node) {
         BuchiLocation result = node2location.get(node);
         if (result == null) {
@@ -169,21 +173,22 @@ public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition> implements
     /**
      * Returns the initial location.
      */
-    public BuchiLocation getInitial() {
+    public @Nullable BuchiLocation getInitial() {
         return this.initial;
     }
 
     /**
      * Sets the initial location.
      */
-    public void setInitial(BuchiLocation location) {
+    public void setInitial(@Nullable BuchiLocation location) {
         this.initial = location;
     }
 
     /** The set of all locations. */
     private final Set<BuchiLocation> locations = new HashSet<>();
+
     /** The initial location. */
-    private BuchiLocation initial;
+    private @Nullable BuchiLocation initial;
 
     /**
      * Return the prototype graph of this class.
@@ -205,7 +210,7 @@ public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition> implements
         }
 
         @Override
-        public boolean contains(Object o) {
+        public boolean contains(@Nullable Object o) {
             if (o instanceof BuchiTransition trans) {
                 return trans.source().outTransitions().contains(o);
             } else {

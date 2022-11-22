@@ -18,12 +18,15 @@ package nl.utwente.groove.graph;
 
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Provides a model of a graph whose nodes and edges are unstructured, in the
  * sense that they are immutable and edges are completely determined by source
  * and target nodes and edge label.
  * @version $Revision$ $Date: 2008-01-30 09:32:52 $
  */
+@NonNullByDefault
 public interface Graph {
     /**
      * Returns the set of nodes of this graph. The return value is an

@@ -19,6 +19,9 @@ package nl.utwente.groove.automaton;
 import java.util.Iterator;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.automaton.RegExpr.Atom;
 import nl.utwente.groove.automaton.RegExpr.Choice;
 import nl.utwente.groove.automaton.RegExpr.Empty;
@@ -41,6 +44,7 @@ import nl.utwente.groove.util.Dispenser;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class RegAutCalculator implements RegExprCalculator<RegAut> {
     /** Creates an instance based on {@link MatrixAutomaton}. */
     public RegAutCalculator() {
@@ -88,7 +92,7 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
      */
     @Override
     public RegAut computeStar(Star expr, RegAut arg) {
-        RegAut result = computePlus(null, arg);
+        RegAut result = computePlus(new Plus(), arg);
         result.setAcceptsEmptyWord(true);
         return result;
     }
@@ -205,8 +209,9 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
     public RegAut computeAtom(Atom expr) {
         RegAut result = createAutomaton();
         // if this is an unknown label, don't add the edge
-        if (!this.typeGraph.getTypes(expr.toTypeLabel())
-            .isEmpty()) {
+        var tg = this.typeGraph;
+        assert tg != null;
+        if (!tg.getTypes(expr.toTypeLabel()).isEmpty()) {
             result.addEdge(result.getStartNode(), expr.toLabel(), result.getEndNode());
         }
         return result;
@@ -250,7 +255,11 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
      * identities (in the context of this calculator).
      */
     protected RegAut createAutomaton() {
-        return this.prototype.newAutomaton(createNode(), createNode(), this.typeGraph);
+        var prot = this.prototype;
+        assert prot != null;
+        var tg = this.typeGraph;
+        assert tg != null;
+        return prot.newAutomaton(createNode(), createNode(), tg);
     }
 
     /**
@@ -264,9 +273,7 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
         RuleLabel result;
         RuleLabel invLabel = label.getInvLabel();
         if (invLabel == null) {
-            result = label.getMatchExpr()
-                .inv()
-                .toLabel();
+            result = label.getMatchExpr().inv().toLabel();
         } else {
             result = invLabel;
         }
@@ -275,14 +282,15 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
 
     /** Factory method for a fresh automaton node. */
     private RegNode createNode() {
-        return RegFactory.instance()
-            .createNode(this.nodeDispenser.getNext());
+        var nd = this.nodeDispenser;
+        assert nd != null;
+        return RegFactory.instance().createNode(nd.getNext());
     }
 
     /** Prototype automaton to create new automata from. */
-    private final RegAut prototype;
+    private final @Nullable RegAut prototype;
     /** Label store currently used to build automata. */
-    private TypeGraph typeGraph;
+    private @Nullable TypeGraph typeGraph;
     /** the dispenser for automaton node identities. */
-    private Dispenser nodeDispenser = new DefaultDispenser();
+    private @Nullable Dispenser nodeDispenser = new DefaultDispenser();
 }

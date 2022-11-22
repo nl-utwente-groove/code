@@ -129,7 +129,7 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
         RuleLabel ruleLabel = edge.getRuleLabel();
         if (ruleLabel != null) {
             if (ruleLabel.isEmpty() && this.aspect != AspectKind.CREATOR
-                || ruleLabel.isNeg() && ruleLabel.getNegOperand().isEmpty()) {
+                || ruleLabel.isNeg(n -> n.getOperand().isEmpty())) {
                 // remove edge arrow
                 setLook(Look.NO_ARROW, true);
             } else if (!ruleLabel.isAtom()) {

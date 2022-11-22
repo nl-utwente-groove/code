@@ -22,14 +22,18 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * Implementation of {@link Graph} based on a mapping from nodes to
  * sets of outgoing edges.
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 09:32:51 $
  */
-abstract public class EdgeMapGraph<N extends Node,E extends GEdge<N>> extends AGraph<N,E> implements
-    Cloneable {
+@NonNullByDefault
+abstract public class EdgeMapGraph<N extends Node,E extends GEdge<N>> extends AGraph<N,E>
+    implements Cloneable {
     /**
      * Constructs a new, empty Graph with a given graph role.
      * @param name the (non-{@code null}) name of the graph.
@@ -48,7 +52,7 @@ abstract public class EdgeMapGraph<N extends Node,E extends GEdge<N>> extends AG
      */
     protected EdgeMapGraph(EdgeMapGraph<N,E> graph) {
         this(graph.getName(), graph.getRole());
-        for (Map.Entry<N,Set<E>> edgeEntry : graph.edgeMap.entrySet()) {
+        for (var edgeEntry : graph.edgeMap.entrySet()) {
             this.edgeMap.put(edgeEntry.getKey(), new LinkedHashSet<>(edgeEntry.getValue()));
         }
     }
@@ -67,7 +71,7 @@ abstract public class EdgeMapGraph<N extends Node,E extends GEdge<N>> extends AG
     @Override
     public Set<? extends E> edgeSet() {
         Set<E> result = new LinkedHashSet<>();
-        for (Map.Entry<N,Set<E>> edgeEntry : this.edgeMap.entrySet()) {
+        for (var edgeEntry : this.edgeMap.entrySet()) {
             result.addAll(edgeEntry.getValue());
         }
         return Collections.unmodifiableSet(result);
@@ -100,7 +104,8 @@ abstract public class EdgeMapGraph<N extends Node,E extends GEdge<N>> extends AG
     public boolean addEdge(E edge) {
         assert isTypeCorrect(edge);
         assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
-        Set<E> sourceOutEdges = this.edgeMap.get(edge.source());
+        var sourceOutEdges = this.edgeMap.get(edge.source());
+        assert sourceOutEdges != null;
         boolean added = sourceOutEdges.add(edge);
         if (added) {
             fireAddEdge(edge);
@@ -144,7 +149,7 @@ abstract public class EdgeMapGraph<N extends Node,E extends GEdge<N>> extends AG
      * edges.
      * @invariant <tt>edgeMap: DefaultNode -> 2^DefaultEdge</tt>
      */
-    private final Map<N,Set<E>> edgeMap = new LinkedHashMap<>();
+    private final Map<N,@Nullable Set<E>> edgeMap = new LinkedHashMap<>();
 
     /** The role of this default graph. */
     private final GraphRole role;

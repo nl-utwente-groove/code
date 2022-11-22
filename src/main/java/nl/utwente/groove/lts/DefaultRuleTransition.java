@@ -22,6 +22,8 @@ import java.util.IllegalFormatException;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.control.CtrlPar;
 import nl.utwente.groove.control.CtrlPar.Const;
@@ -50,13 +52,14 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-03-05 16:50:10 $
  */
+@NonNullByDefault
 public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     implements RuleTransitionStub, RuleTransition {
     /**
      * Constructs a GraphTransition on the basis of a given match and added node set, between
      * a given source and target state.
      */
-    public DefaultRuleTransition(GraphState source, @NonNull MatchResult match,
+    public DefaultRuleTransition(GraphState source, MatchResult match,
                                  @NonNull HostNode[] addedNodes, GraphState target,
                                  boolean symmetry) {
         super(source, RuleTransitionLabel.createLabel(source, match, addedNodes), target);
@@ -99,7 +102,7 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     }
 
     @Override
-    public String getOutputString() throws FormatException {
+    public @Nullable String getOutputString() throws FormatException {
         return getOutputString(this);
     }
 
@@ -214,17 +217,18 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
      */
     @Override
     public HostGraphMorphism getMorphism() {
-        if (this.morphism == null) {
-            this.morphism = computeMorphism();
+        var result = this.morphism;
+        if (result == null) {
+            this.morphism = result = computeMorphism();
         }
-        return this.morphism;
+        return result;
     }
 
     /**
      * The underlying morphism of this transition. Computed lazily (using the
      * footprint) using {@link #computeMorphism()}.
      */
-    private HostGraphMorphism morphism;
+    private @Nullable HostGraphMorphism morphism;
 
     /**
      * Constructs an underlying morphism for the transition from the stored
@@ -292,7 +296,7 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
      * <tt>{@link #equalsSource(RuleTransition)}</tt>.
      */
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         return obj instanceof RuleTransition rt && equalsSource(rt) && equalsEvent(rt);
     }
 
@@ -347,7 +351,7 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
      * @throws FormatException if the format string of the rule
      * does not correspond to the actual rule parameters.
      */
-    public static String getOutputString(GraphTransition trans) throws FormatException {
+    public static @Nullable String getOutputString(GraphTransition trans) throws FormatException {
         String result = null;
         String formatString = trans.getAction().getFormatString();
         if (formatString != null && !formatString.isEmpty()) {

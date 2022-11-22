@@ -39,13 +39,7 @@ public class EqualitySearchItem extends AbstractSearchItem {
      * @param equals flag that indicates if the node images should be equal or distinct
      */
     public EqualitySearchItem(RuleEdge edge, boolean equals) {
-        assert edge.label()
-            .isEmpty()
-            || edge.label()
-                .isNeg()
-                && edge.label()
-                    .getNegOperand()
-                    .isEmpty();
+        assert edge.label().isEmpty() || edge.label().isNeg(n -> n.getNegOperand().isEmpty());
         if (nodeComparator.compare(edge.source(), edge.target()) < 0) {
             this.node1 = edge.source();
             this.node2 = edge.target();
@@ -61,8 +55,7 @@ public class EqualitySearchItem extends AbstractSearchItem {
     }
 
     @Override
-    public EqualityRecord createRecord(
-        nl.utwente.groove.match.plan.PlanSearchStrategy.Search matcher) {
+    public EqualityRecord createRecord(nl.utwente.groove.match.plan.PlanSearchStrategy.Search matcher) {
         return new EqualityRecord(matcher);
     }
 
@@ -82,10 +75,10 @@ public class EqualitySearchItem extends AbstractSearchItem {
 
     @Override
     public String toString() {
-        return String.format("Test %s and %s for %s",
-            this.node1,
-            this.node2,
-            this.equals ? "equality" : "inequality");
+        return String
+            .format("Test %s and %s for %s", this.node1, this.node2, this.equals
+                ? "equality"
+                : "inequality");
     }
 
     /**

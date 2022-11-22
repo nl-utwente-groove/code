@@ -16,6 +16,9 @@
  */
 package nl.utwente.groove.grammar.host;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.algebra.Algebra;
 import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Sort;
@@ -31,6 +34,7 @@ import nl.utwente.groove.graph.ANode;
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2008-02-12 15:15:32 $
  */
+@NonNullByDefault
 public class ValueNode extends ANode implements HostNode {
     /** Constructor for the unique dummy node. */
     private ValueNode() {
@@ -62,8 +66,15 @@ public class ValueNode extends ANode implements HostNode {
      */
     public Object getValue() {
         assert this != DUMMY_NODE;
-        return this.value;
+        var result = this.value;
+        assert result != null;
+        return result;
     }
+
+    /**
+     * The constant represented by this value node (non-null).
+     */
+    private final @Nullable Object value;
 
     /**
      * Converts the value in this object to the corresponding value in
@@ -117,8 +128,13 @@ public class ValueNode extends ANode implements HostNode {
      */
     public Algebra<?> getAlgebra() {
         assert this != DUMMY_NODE;
-        return this.algebra;
+        var result = this.algebra;
+        assert result != null;
+        return result;
     }
+
+    /** The algebra of this value node. */
+    private final @Nullable Algebra<?> algebra;
 
     /**
      * Returns the sort to which the value node
@@ -126,30 +142,30 @@ public class ValueNode extends ANode implements HostNode {
      */
     public Sort getSort() {
         assert this != DUMMY_NODE;
-        return this.sort;
+        var result = this.sort;
+        assert result != null;
+        return result;
     }
+
+    /** The sort of this value node. */
+    private final @Nullable Sort sort;
 
     @Override
     public TypeNode getType() {
-        return this.type;
+        assert this != DUMMY_NODE;
+        var result = this.type;
+        assert result != null;
+        return result;
     }
+
+    /** The type of this value node. */
+    private final @Nullable TypeNode type;
 
     @Override
     public AnchorKind getAnchorKind() {
         return AnchorKind.NODE;
     }
 
-    /** The sort of this value node. */
-    private final Sort sort;
-    /** The algebra of this value node. */
-    private final Algebra<?> algebra;
-    /**
-     * The constant represented by this value node (non-null).
-     */
-    private final Object value;
-
-    /** The type of this value node. */
-    private final TypeNode type;
     /** Single dummy node, used in e.g., MergeMap */
     public static final ValueNode DUMMY_NODE = new ValueNode();
 }

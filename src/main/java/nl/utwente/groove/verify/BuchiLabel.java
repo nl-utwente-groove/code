@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.verify;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import gov.nasa.ltl.graph.Guard;
 import gov.nasa.ltl.graph.Literal;
 import nl.utwente.groove.graph.TextLabel;
@@ -24,6 +26,7 @@ import nl.utwente.groove.graph.TextLabel;
  * @author Harmen Kastenberg
  * @version $Revision $
  */
+@NonNullByDefault
 public class BuchiLabel extends TextLabel {
     private final String action;
 

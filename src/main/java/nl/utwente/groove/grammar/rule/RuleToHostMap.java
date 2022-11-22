@@ -67,6 +67,7 @@ public class RuleToHostMap extends AElementMap<RuleNode,RuleEdge,HostNode,HostEd
         TypeLabel result;
         if (ruleLabel.isWildcard()) {
             TypeGuard guard = ruleLabel.getWildcardGuard();
+            assert guard != null;
             if (!guard.isNamed()) {
                 throw Exceptions.illegalArg("Label %s cannot be mapped", ruleLabel);
             } else {

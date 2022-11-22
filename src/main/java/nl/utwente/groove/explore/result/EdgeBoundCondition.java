@@ -17,11 +17,9 @@
 package nl.utwente.groove.explore.result;
 
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.lts.GraphState;
@@ -47,17 +45,13 @@ public class EdgeBoundCondition extends ExploreCondition<Map<TypeLabel,Integer>>
     public boolean isSatisfied(GraphState state) {
         boolean result = true;
         HostGraph g = state.getGraph();
-        for (Map.Entry<TypeLabel,Integer> entry : this.condition.entrySet()) {
-            Set<? extends HostEdge> labelSet = g.edgeSet(entry.getKey());
-            if (labelSet != null) {
-                result = labelSet.size() <= entry.getValue();
-            }
-            if (!result) {
-                break;
-            }
-        }
-
-        return this.negated ? !result : result;
+        result = this.condition
+            .entrySet()
+            .stream()
+            .anyMatch(e -> g.edgeSet(e.getKey()).size() <= e.getValue());
+        return this.negated
+            ? !result
+            : result;
     }
 
 }

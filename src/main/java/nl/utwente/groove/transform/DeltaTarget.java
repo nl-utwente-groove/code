@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.transform;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.host.ValueNode;
@@ -23,6 +25,7 @@ import nl.utwente.groove.grammar.host.ValueNode;
 /**
  * Command interface to deal with graph changes.
  */
+@NonNullByDefault
 public interface DeltaTarget {
     /** Callback method invoked to indicate that a node is to be added.
      * If the node is not a {@link ValueNode}, it is required to be fresh.

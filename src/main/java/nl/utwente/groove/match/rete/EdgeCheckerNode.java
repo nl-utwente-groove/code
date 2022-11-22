@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.match.rete;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.grammar.host.HostEdge;
@@ -231,7 +233,8 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
     public boolean isWildcardGuarded() {
         return this.isWildcardEdge()
             && (((RegExpr.Wildcard) this.edge.label().getMatchExpr()).getGuard() != null)
-            && (((RegExpr.Wildcard) this.edge.label().getMatchExpr()).getGuard()
+            && (((RegExpr.Wildcard) this.edge.label().getMatchExpr())
+                .getGuard()
                 .getLabels() != null);
     }
 
@@ -242,7 +245,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
     public boolean isAcceptingLabel(TypeElement e) {
         RuleLabel rl = this.edge.label();
         return isWildcardEdge()
-            ? rl.getWildcardGuard().isSatisfied(e)
+            ? rl.isWildcard(wc -> wc.getGuard().isSatisfied(e))
             : e.equals(this.edge.getType());
     }
 
@@ -324,10 +327,11 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
     }
 
     private void sendDownReceivedEdge(HostEdge gEdge, Action action) {
-
-        LabelVar variable = this.isWildcardEdge()
-            ? this.edge.label().getWildcardGuard().getVar()
-            : null;
+        var guard = this.edge.label().getWildcardGuard();
+        @Nullable
+        LabelVar variable = guard == null
+            ? null
+            : guard.getVar();
 
         ReteSimpleMatch m;
         if (variable != null) {

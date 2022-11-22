@@ -16,6 +16,9 @@
  */
 package nl.utwente.groove.lts;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.host.HostGraphMorphism;
@@ -28,6 +31,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public interface GraphTransition extends GEdge<GraphState> {
     /** Overrides the method to specialise the result type. */
     @Override
@@ -99,7 +103,7 @@ public interface GraphTransition extends GEdge<GraphState> {
      * @throws FormatException if the format string of the rule
      * does not correspond to the actual rule parameters
      */
-    public String getOutputString() throws FormatException;
+    public @Nullable String getOutputString() throws FormatException;
 
     /** Extracts the key ingredients from this graph transition. */
     public GraphTransitionKey getKey();
@@ -160,10 +164,7 @@ public interface GraphTransition extends GEdge<GraphState> {
         PRESENT {
             @Override
             public boolean admits(GraphTransition trans) {
-                return !trans.source()
-                    .isAbsent()
-                    && !trans.target()
-                        .isAbsent();
+                return !trans.source().isAbsent() && !trans.target().isAbsent();
             }
         },;
 
@@ -177,9 +178,13 @@ public interface GraphTransition extends GEdge<GraphState> {
          */
         public static Claz getClass(boolean includeInternal, boolean includeAbsent) {
             if (includeInternal) {
-                return includeAbsent ? ANY : PRESENT;
+                return includeAbsent
+                    ? ANY
+                    : PRESENT;
             } else {
-                return includeAbsent ? COMPLETE : REAL;
+                return includeAbsent
+                    ? COMPLETE
+                    : REAL;
             }
         }
     }

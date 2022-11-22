@@ -16,6 +16,9 @@
  */
 package nl.utwente.groove.grammar.host;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.AnchorKind;
 import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeLabel;
@@ -25,12 +28,13 @@ import nl.utwente.groove.graph.AEdge;
  * Class that implements the edges of a host graph.
  * @author Arend Rensink
  */
-public class DefaultHostEdge extends AEdge<HostNode,TypeLabel>implements HostEdge {
+@NonNullByDefault
+public class DefaultHostEdge extends AEdge<HostNode,TypeLabel> implements HostEdge {
     /** Constructor for a typed edge.
      * @param simple indicates if this is a simple or multi-edge.
      */
     protected DefaultHostEdge(HostNode source, TypeEdge type, HostNode target, int nr,
-        boolean simple) {
+                              boolean simple) {
         super(source, type.label(), target, nr);
         this.type = type;
         this.simple = simple;
@@ -46,12 +50,15 @@ public class DefaultHostEdge extends AEdge<HostNode,TypeLabel>implements HostEdg
     }
 
     @Override
-    protected boolean isTypeEqual(Object obj) {
+    protected boolean isTypeEqual(@Nullable Object obj) {
         return obj instanceof DefaultHostEdge;
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
+        if (obj == null) {
+            return false;
+        }
         if (this == obj) {
             return true;
         }

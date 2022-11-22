@@ -24,7 +24,6 @@ import java.util.Set;
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
-import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.grammar.rule.RuleEdge;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.type.TypeEdge;
@@ -52,14 +51,16 @@ class Edge2SearchItem extends AbstractSearchItem {
         this.type = edge.getType();
         this.source = edge.source();
         TypeNode sourceType = this.source.getType();
-        this.sourceType =
-            this.source.isSharp() || this.type == null || sourceType != this.type.source()
-                ? sourceType : null;
+        this.sourceType
+            = this.source.isSharp() || this.type == null || sourceType != this.type.source()
+                ? sourceType
+                : null;
         this.target = edge.target();
         TypeNode targetType = this.target.getType();
-        this.targetType =
-            this.target.isSharp() || this.type == null || targetType != this.type.target()
-                ? targetType : null;
+        this.targetType
+            = this.target.isSharp() || this.type == null || targetType != this.type.target()
+                ? targetType
+                : null;
         this.selfEdge = this.source == this.target;
         this.boundNodes = new HashSet<>();
         this.boundNodes.add(this.source);
@@ -318,14 +319,14 @@ class Edge2SearchItem extends AbstractSearchItem {
             if (sourceFind == null) {
                 sourceFind = this.search.getNode(this.sourceIx);
             }
-            assert sourceFind != null : String.format("Source node of %s has not been found",
-                Edge2SearchItem.this.edge);
+            assert sourceFind != null : String
+                .format("Source node of %s has not been found", Edge2SearchItem.this.edge);
             HostNode targetFind = this.targetSeed;
             if (targetFind == null) {
                 targetFind = this.search.getNode(this.targetIx);
             }
-            assert targetFind != null : String.format("Target node of %s has not been found",
-                Edge2SearchItem.this.edge);
+            assert targetFind != null : String
+                .format("Target node of %s has not been found", Edge2SearchItem.this.edge);
             return this.host.getFactory().createEdge(sourceFind, getType(), targetFind);
         }
 
@@ -364,16 +365,15 @@ class Edge2SearchItem extends AbstractSearchItem {
          * Creates a record based on a given search.
          */
         Edge2MultipleRecord(Search search, int edgeIx, int sourceIx, int targetIx,
-            boolean sourceFound, boolean targetFound) {
+                            boolean sourceFound, boolean targetFound) {
             super(search);
             this.edgeIx = edgeIx;
             this.sourceIx = sourceIx;
             this.targetIx = targetIx;
             this.sourceFound = sourceFound;
             this.targetFound = targetFound;
-            assert search.getEdge(edgeIx) == null : String.format("Edge %s already in %s",
-                Edge2SearchItem.this.edge,
-                search);
+            assert search.getEdge(edgeIx) == null : String
+                .format("Edge %s already in %s", Edge2SearchItem.this.edge, search);
         }
 
         @Override
@@ -388,14 +388,14 @@ class Edge2SearchItem extends AbstractSearchItem {
             this.sourceFind = this.sourceSeed;
             if (this.sourceFind == null && this.sourceFound) {
                 this.sourceFind = this.search.getNode(this.sourceIx);
-                assert this.sourceFind != null : String.format("Source node of %s not found",
-                    Edge2SearchItem.this.edge);
+                assert this.sourceFind != null : String
+                    .format("Source node of %s not found", Edge2SearchItem.this.edge);
             }
             this.targetFind = this.targetSeed;
             if (this.targetFind == null && this.targetFound) {
                 this.targetFind = this.search.getNode(this.targetIx);
-                assert this.targetFind != null : String.format("Target node of %s not found",
-                    Edge2SearchItem.this.edge);
+                assert this.targetFind != null : String
+                    .format("Target node of %s not found", Edge2SearchItem.this.edge);
             }
             initImages();
         }
@@ -496,8 +496,8 @@ class Edge2SearchItem extends AbstractSearchItem {
             // no doubt because building the necessary additional data
             // structures takes more
             // time than is saved by trying out fewer images
-            Set<? extends HostEdge> labelEdgeSet =
-                this.host.edgeSet(Edge2SearchItem.this.type.label());
+            Set<? extends HostEdge> labelEdgeSet
+                = this.host.edgeSet(Edge2SearchItem.this.type.label());
             if (this.sourceFind != null) {
                 Set<? extends HostEdge> nodeEdgeSet = this.host.edgeSet(this.sourceFind);
                 if (nodeEdgeSet.size() < labelEdgeSet.size()) {
@@ -505,13 +505,15 @@ class Edge2SearchItem extends AbstractSearchItem {
                 }
             } else if (this.targetFind != null) {
                 Set<? extends HostEdge> nodeEdgeSet = this.host.edgeSet(this.targetFind);
-                if (nodeEdgeSet == null) {
-                    assert this.targetFind instanceof ValueNode : String.format("Host graph does not contain edges for node %s",
-                        this.targetFind);
-                    result = Collections.emptySet();
-                } else if (nodeEdgeSet.size() < labelEdgeSet.size()) {
-                    result = nodeEdgeSet;
-                }
+                // nullness check should be redundant
+                //                if (nodeEdgeSet == null) {
+                //                    assert this.targetFind instanceof ValueNode : String.format("Host graph does not contain edges for node %s",
+                //                        this.targetFind);
+                //                    result = Collections.emptySet();
+                //                } else if (nodeEdgeSet.size() < labelEdgeSet.size()) {
+                //                    result = nodeEdgeSet;
+                //                }
+                result = nodeEdgeSet;
             }
             if (result == null) {
                 result = labelEdgeSet;

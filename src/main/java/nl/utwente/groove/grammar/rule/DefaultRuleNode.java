@@ -24,6 +24,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.AnchorKind;
 import nl.utwente.groove.grammar.UnitPar.RulePar;
@@ -37,6 +39,7 @@ import nl.utwente.groove.graph.ANode;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class DefaultRuleNode extends ANode implements RuleNode, AnchorKey {
     /**
      * Constructs a fresh node, with an explicitly given number and node type.
@@ -45,8 +48,8 @@ public class DefaultRuleNode extends ANode implements RuleNode, AnchorKey {
      * @param sharp if {@code true}, the node is sharply typed
      * @param typeGuards collection of named and unnamed type guards for this node
      */
-    protected DefaultRuleNode(int nr, @NonNull TypeNode type, boolean sharp,
-        List<TypeGuard> typeGuards) {
+    protected DefaultRuleNode(int nr, TypeNode type, boolean sharp,
+                              @Nullable List<TypeGuard> typeGuards) {
         super(nr);
         assert type != null : "Can't instantiate untyped rule node";
         this.type = type;
@@ -79,11 +82,15 @@ public class DefaultRuleNode extends ANode implements RuleNode, AnchorKey {
 
     @Override
     public String getId() {
-        return this.id == null ? toString() : this.id;
+        var result = this.id;
+        if (result == null) {
+            result = toString();
+        }
+        return result;
     }
 
     /** The optional special ID of this rule node. */
-    private String id;
+    private @Nullable String id;
 
     @Override
     public void setPar(RulePar par) {
@@ -92,10 +99,13 @@ public class DefaultRuleNode extends ANode implements RuleNode, AnchorKey {
 
     @Override
     public Optional<RulePar> getPar() {
-        return Optional.ofNullable(this.par);
+        var result = this.par;
+        return result == null
+            ? Optional.empty()
+            : Optional.of(result);
     }
 
-    private RulePar par;
+    private @Nullable RulePar par;
 
     /**
      * Returns a string consisting of the letter <tt>'n'</tt>.
@@ -110,10 +120,16 @@ public class DefaultRuleNode extends ANode implements RuleNode, AnchorKey {
         return this.type;
     }
 
+    /** The (possibly {@code null}) type of this rule node. */
+    private final TypeNode type;
+
     @Override
     public List<TypeGuard> getTypeGuards() {
         return this.typeGuards;
     }
+
+    /** The list of type guards associated with this node. */
+    private final List<TypeGuard> typeGuards;
 
     @Override
     public Set<LabelVar> getVars() {
@@ -128,15 +144,24 @@ public class DefaultRuleNode extends ANode implements RuleNode, AnchorKey {
         return result;
     }
 
+    /** The (named) label variables involved in the type guards. */
+    private @Nullable Set<LabelVar> vars;
+
     @Override
     public @NonNull Set<@NonNull TypeNode> getMatchingTypes() {
         return this.matchingTypes;
     }
 
+    /** The set of matching node types. */
+    private final Set<@NonNull TypeNode> matchingTypes;
+
     @Override
     public boolean isSharp() {
         return this.sharp;
     }
+
+    /** Flag indicating if this node is sharply typed. */
+    private final boolean sharp;
 
     @Override
     public AnchorKind getAnchorKind() {
@@ -144,8 +169,11 @@ public class DefaultRuleNode extends ANode implements RuleNode, AnchorKey {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!super.equals(obj)) {
+            return false;
+        }
+        if (obj == null) {
             return false;
         }
         DefaultRuleNode other = (DefaultRuleNode) obj;
@@ -176,15 +204,4 @@ public class DefaultRuleNode extends ANode implements RuleNode, AnchorKey {
         }
         return true;
     }
-
-    /** Flag indicating if this node is sharply typed. */
-    private final boolean sharp;
-    /** The (possibly {@code null}) type of this rule node. */
-    private final @NonNull TypeNode type;
-    /** The list of type guards associated with this node. */
-    private final @NonNull List<TypeGuard> typeGuards;
-    /** The (named) label variables involved in the type guards. */
-    private Set<LabelVar> vars;
-    /** The set of matching node types. */
-    private final @NonNull Set<@NonNull TypeNode> matchingTypes;
 }

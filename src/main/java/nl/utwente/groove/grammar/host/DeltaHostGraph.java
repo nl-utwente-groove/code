@@ -50,7 +50,7 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
+public final class DeltaHostGraph extends AGraph<@NonNull HostNode,@NonNull HostEdge>
     implements HostGraph, Cloneable {
     /**
      * Constructs a graph with an empty basis and a delta determining
@@ -560,8 +560,8 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
                 addKeyToStore(this.nodeInEdgeStore, node);
                 addKeyToStore(this.nodeOutEdgeStore, node);
             } else {
-                assert node instanceof ValueNode : String.format("Node %s already occured in graph",
-                                                                 node);
+                assert node instanceof ValueNode : String
+                    .format("Node %s already occured in graph", node);
             }
             return fresh;
         }
@@ -571,8 +571,8 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
         public boolean removeNode(HostNode node) {
             HostEdgeSet edges = removeKeyFromStore(this.nodeEdgeStore, node);
             assert edges != null : String.format("Node %s did not occur in graph", node);
-            assert edges.isEmpty() : String.format("Node %s still had incident edges %s", node,
-                                                   edges);
+            assert edges.isEmpty() : String
+                .format("Node %s still had incident edges %s", node, edges);
             removeKeyFromStore(this.nodeOutEdgeStore, node);
             removeKeyFromStore(this.nodeInEdgeStore, node);
             return true;

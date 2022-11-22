@@ -24,6 +24,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.grammar.type.TypeGuard;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphRole;
@@ -35,7 +37,7 @@ import nl.utwente.groove.graph.NodeSetEdgeSetGraph;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleEdge> {
+public class RuleGraph extends NodeSetEdgeSetGraph<@NonNull RuleNode,@NonNull RuleEdge> {
     /**
      * Constructs a new, empty rule graph.
      * @param name the name of the new rule graph
@@ -142,8 +144,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleEdge> {
     }
 
     /** Mapping from label variables to rule elements that bind them. */
-    private final Map<LabelVar,Set<RuleElement>> binderMap =
-        new HashMap<>();
+    private final Map<LabelVar,Set<RuleElement>> binderMap = new HashMap<>();
 
     /** Adds a variable to those known in this graph. */
     public boolean addVar(LabelVar var) {

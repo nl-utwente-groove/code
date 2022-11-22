@@ -36,6 +36,8 @@ import static nl.utwente.groove.graph.GraphRole.RULE;
 import java.util.EnumSet;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.syntax.Assignment;
@@ -68,7 +70,8 @@ import nl.utwente.groove.util.parse.StringHandler;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectElement, Fixable {
+public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
+    implements AspectElement, Fixable {
     /**
      * Constructs a new edge.
      * @param source the source node for this edge
@@ -82,8 +85,8 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
             if (label.getNodeOnlyAspect() == null) {
                 this.errors.add("Empty edge label not allowed", this);
             } else {
-                this.errors.add("Aspect %s not allowed in edge label", label.getNodeOnlyAspect(),
-                                this);
+                this.errors
+                    .add("Aspect %s not allowed in edge label", label.getNodeOnlyAspect(), this);
             }
         }
         for (FormatError error : label().getErrors()) {
@@ -143,6 +146,9 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         }
     }
 
+    /** The graph role for this element. */
+    private final GraphRole graphRole;
+
     /**
      * Fixes the aspects, by first setting the declared label aspects,
      * then inferring aspects from the end nodes.
@@ -189,6 +195,9 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         this.errors.add(error.extend(this));
     }
 
+    /** List of syntax errors in this edge. */
+    private final FormatErrorSet errors = new FormatErrorSet();
+
     /**
      * Checks for the presence and consistency of the
      * type and attribute aspects.
@@ -230,7 +239,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         // this is called after the rule label has been computed
         RuleLabel ruleLabel = this.ruleLabel;
         boolean simple = ruleLabel == null || ruleLabel.isAtom() || ruleLabel.isSharp()
-            || ruleLabel.isWildcard() && ruleLabel.getWildcardGuard().isNamed();
+            || ruleLabel.isWildcard(wc -> wc.getWildcardGuard().isNamed());
         if (!simple) {
             assert ruleLabel != null; // implied by !simple
             AspectKind kind = getKind();
@@ -259,6 +268,9 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
     public boolean isFixed() {
         return this.fixed;
     }
+
+    /** Flag indicating if the edge is fixed. */
+    private boolean fixed;
 
     /**
      * Sets the (declared) aspects for this edge from the edge label.
@@ -555,7 +567,9 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         // only consider proper names unequal to source or target level
         if (name != null && name.length() != 0 && !name.equals(source().getLevelName())
             && !name.equals(target().getLevelName())) {
-            result = Line.atom(LEVEL_NAME_SEPARATOR).append(Line.atom(name).style(Style.ITALIC))
+            result = Line
+                .atom(LEVEL_NAME_SEPARATOR)
+                .append(Line.atom(name).style(Style.ITALIC))
                 .color(Values.NESTED_COLOR);
         }
         return result;
@@ -590,6 +604,9 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         return result;
     }
 
+    /** The (possibly {@code null}) rule label modelled by this edge. */
+    private RuleLabel ruleLabel;
+
     /** Returns the (possibly {@code null}) type label of this edge. */
     public TypeLabel getTypeLabel() {
         testFixed(true);
@@ -617,6 +634,9 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         }
         return result;
     }
+
+    /** The (possibly {@code null}) type label modelled by this edge. */
+    private TypeLabel typeLabel;
 
     /**
      * Parses a given string as a regular expression,
@@ -700,10 +720,16 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
             : DEFAULT;
     }
 
+    /** The declared or inferred type of the aspect edge. */
+    private Aspect aspect;
+
     /** Retrieves the optional quantification level name of this edge. */
     public String getLevelName() {
         return this.levelName;
     }
+
+    /** The quantifier level name, if any. */
+    private String levelName;
 
     /** Indicates if this edge is a "nested:at". */
     public boolean isNestedAt() {
@@ -768,10 +794,16 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
             : DEFAULT;
     }
 
+    /** An optional attribute-related aspect. */
+    private Aspect attr;
+
     /** Returns the signature of the attribute aspect, if any. */
     public Sort getSignature() {
         return this.signature;
     }
+
+    /** The signature of the attribute-related aspect, if any. */
+    private Sort signature;
 
     /** Indicates if this is an argument edge. */
     public boolean isArgument() {
@@ -808,6 +840,9 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         return this.argumentNr;
     }
 
+    /** Argument number, if this is an argument edge. */
+    private int argumentNr = -1;
+
     /** Indicates if this is an operator edge. */
     public boolean isOperator() {
         return this.operator != null;
@@ -821,20 +856,36 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         return this.operator;
     }
 
+    /** Algebraic operator, if this is an operator edge. */
+    private Operator operator = null;
+
     /** Indicates if this is a composite type edge. */
     public boolean isComposite() {
         return this.composite;
     }
+
+    /** Flag indicating that this is a composite type edge. */
+    private boolean composite;
 
     /** Returns the incoming multiplicity of this (type) edge, if any. */
     public Multiplicity getInMult() {
         return this.inMult;
     }
 
+    /** The incoming multiplicity of this (type) edge.
+     * {@code null} if there is no incoming multiplicity declared.
+     */
+    private Multiplicity inMult;
+
     /** Returns the outgoing multiplicity of this (type) edge, if any. */
     public Multiplicity getOutMult() {
         return this.outMult;
     }
+
+    /** The outgoing multiplicity of this (type) edge.
+     * {@code null} if there is no outgoing multiplicity declared.
+     */
+    private Multiplicity outMult;
 
     /** Setter for the label mode. */
     private void setLabelMode(Aspect type) throws FormatException {
@@ -870,6 +921,9 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
         return getLabelMode() != null;
     }
 
+    /** The parser mode of the label (either TypeAspect#PATH or TypeAspect#EMPTY). */
+    private Aspect labelMode;
+
     /**
      * Retrieves the label aspect kind of this edge, if any.
      * This is either {@link AspectKind#PATH} or {@link AspectKind#LITERAL}.
@@ -880,40 +934,6 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements AspectE
             : null;
     }
 
-    /** The graph role for this element. */
-    private final GraphRole graphRole;
-    /** The (possibly {@code null}) type label modelled by this edge. */
-    private TypeLabel typeLabel;
-    /** The (possibly {@code null}) rule label modelled by this edge. */
-    private RuleLabel ruleLabel;
-    /** The declared or inferred type of the aspect edge. */
-    private Aspect aspect;
-    /** An optional attribute-related aspect. */
-    private Aspect attr;
-    /** The signature of the attribute-related aspect, if any. */
-    private Sort signature;
-    /** The parser mode of the label (either TypeAspect#PATH or TypeAspect#EMPTY). */
-    private Aspect labelMode;
-    /** The quantifier level name, if any. */
-    private String levelName;
-    /** Argument number, if this is an argument edge. */
-    private int argumentNr = -1;
-    /** Algebraic operator, if this is an operator edge. */
-    private Operator operator = null;
-    /** The incoming multiplicity of this (type) edge.
-     * {@code null} if there is no incoming multiplicity declared.
-     */
-    private Multiplicity inMult;
-    /** The outgoing multiplicity of this (type) edge.
-     * {@code null} if there is no outgoing multiplicity declared.
-     */
-    private Multiplicity outMult;
-    /** Flag indicating that this is a composite type edge. */
-    private boolean composite;
-    /** Flag indicating if the edge is fixed. */
-    private boolean fixed;
-    /** List of syntax errors in this edge. */
-    private final FormatErrorSet errors = new FormatErrorSet();
     /** Separator between level name and edge label. */
     static private final String LEVEL_NAME_SEPARATOR = "@";
     static private final String ASSIGN_TEXT = " = ";

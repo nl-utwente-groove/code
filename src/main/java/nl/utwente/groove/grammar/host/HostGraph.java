@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.grammar.host;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.graph.GGraph;
@@ -29,7 +31,7 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface HostGraph extends GGraph<HostNode,HostEdge>, DeltaTarget {
+public interface HostGraph extends GGraph<@NonNull HostNode,@NonNull HostEdge>, DeltaTarget {
     @Override
     HostGraph newGraph(String name);
 
@@ -44,8 +46,7 @@ public interface HostGraph extends GGraph<HostNode,HostEdge>, DeltaTarget {
 
     /** Returns the type graph for this host graph, if any. */
     default public TypeGraph getTypeGraph() {
-        return getFactory().getTypeFactory()
-            .getGraph();
+        return getFactory().getTypeFactory().getGraph();
     }
 
     /** Indicates if this is a simple or multi-graph. */

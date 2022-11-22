@@ -17,12 +17,15 @@
 package nl.utwente.groove.graph;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Defines an abstract edge class by extending the abstract composite.
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public abstract class AEdge<N extends Node,L extends Label> implements GEdge<N> {
     /**
      * Creates a numbered edge with a given source and target node and label.
@@ -170,13 +173,14 @@ public abstract class AEdge<N extends Node,L extends Label> implements GEdge<N> 
      * @see #isEndEqual(Edge)
      */
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }
         if (!isTypeEqual(obj)) {
             return false;
         }
+        assert obj != null;
         Edge other = (Edge) obj;
         if (!isSimple() && other.getNumber() != getNumber()) {
             return false;
@@ -201,7 +205,7 @@ public abstract class AEdge<N extends Node,L extends Label> implements GEdge<N> 
     /**
      * This implementation tests if <code>obj instanceof Edge</code>.
      */
-    protected boolean isTypeEqual(Object obj) {
+    protected boolean isTypeEqual(@Nullable Object obj) {
         return obj instanceof Edge;
     }
 
