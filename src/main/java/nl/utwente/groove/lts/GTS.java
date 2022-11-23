@@ -37,6 +37,8 @@ import java.util.Queue;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.control.Valuator;
@@ -61,6 +63,7 @@ import nl.utwente.groove.graph.multi.MultiNode;
 import nl.utwente.groove.lts.Status.Flag;
 import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.transform.oracle.ValueOracle;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.collect.NestedIterator;
 import nl.utwente.groove.util.collect.SetView;
 import nl.utwente.groove.util.collect.TransformIterator;
@@ -75,6 +78,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> implements Cloneable {
     /** Debug flag controlling whether states are compared for control location equality. */
     protected final static boolean CHECK_CONTROL_LOCATION = true;
@@ -117,12 +121,13 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
      * Returns the start state of this LTS.
      */
     public GraphState startState() {
-        if (this.startState == null) {
-            this.startState = createStartState();
-            getGrammar().getControl().initialise(this.startState.getGraph().getFactory());
-            addState(this.startState);
+        var result = this.startState;
+        if (result == null) {
+            this.startState = result = createStartState();
+            getGrammar().getControl().initialise(result.getGraph().getFactory());
+            addState(result);
         }
-        return this.startState;
+        return result;
     }
 
     /**
@@ -143,6 +148,12 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
     }
 
     /**
+     * The start state of this LTS.
+     * @invariant <tt>nodeSet().contains(startState)</tt>
+     */
+    protected @Nullable GraphState startState;
+
+    /**
      * Returns the rule system underlying this GTS.
      */
     public Grammar getGrammar() {
@@ -154,11 +165,15 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
      * This is taken from the start state graph.
      */
     public HostFactory getHostFactory() {
-        if (this.hostFactory == null) {
-            this.hostFactory = this.grammar.getStartGraph().getFactory();
+        var result = this.hostFactory;
+        if (result == null) {
+            this.hostFactory = result = this.grammar.getStartGraph().getFactory();
         }
-        return this.hostFactory;
+        return result;
     }
+
+    /** Unique factory for host elements, associated with this GTS. */
+    private @Nullable HostFactory hostFactory;
 
     /** Returns the algebra family of the GTS. */
     public AlgebraFamily getAlgebraFamily() {
@@ -172,11 +187,11 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
      * Returns the isomorphic state if one was found, or <tt>null</tt> if the
      * state was actually added.
      * @param newState the state to be added
-     * @return a state isomorphic to <tt>state</tt>; or <tt>null</tt> if
+     * @return an existing state isomorphic to <tt>state</tt>; or <tt>null</tt> if
      *         there was no existing isomorphic state (in which case, and only
      *         then, <tt>state</tt> was added and the listeners notified).
      */
-    public GraphState addState(GraphState newState) {
+    public @Nullable GraphState addState(GraphState newState) {
         // see if isomorphic graph is already in the LTS
         GraphState result = allStateSet().put(newState);
         if (result == null) {
@@ -206,14 +221,15 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
 
     /** Delegate method for {@link #nodeSet()} with a specialised return type. */
     protected StateSet allStateSet() {
-        if (this.allStateSet == null) {
-            this.allStateSet = createStateSet();
+        var result = this.allStateSet;
+        if (result == null) {
+            this.allStateSet = result = createStateSet();
         }
-        return this.allStateSet;
+        return result;
     }
 
     /** The set of nodes of the GTS. */
-    private StateSet allStateSet;
+    private @Nullable StateSet allStateSet;
 
     /** Callback factory method for a state set. */
     protected StateSet createStateSet() {
@@ -242,20 +258,17 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
      * A state is real if it is not absent, erroneous or inside a recipe.
      * @see GraphState#isRealState()
      */
-    public Set<GraphState> getStates() {
-        if (this.realStateSet == null) {
-            this.realStateSet = new SetView<>(nodeSet()) {
-                @Override
-                public boolean approves(Object obj) {
-                    return obj instanceof GraphState gs && gs.isRealState();
-                }
-            };
+    public Set<? extends GraphState> getStates() {
+        var result = this.realStateSet;
+        if (result == null) {
+            this.realStateSet = result = SetView
+                .instance(nodeSet(), obj -> obj instanceof GraphState gs && gs.isRealState());
         }
-        return this.realStateSet;
+        return result;
     }
 
     /** Set of real states, as a view on {@link #allStateSet}. */
-    private Set<GraphState> realStateSet;
+    private @Nullable Set<? extends GraphState> realStateSet;
 
     /**
      * Returns the number of real states.
@@ -338,7 +351,8 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
         return result;
     }
 
-    private final Map<Flag,List<GraphState>> statesMap = new EnumMap<>(Flag.class);
+    /** Mapping from status flags to sets of states with that flag. */
+    private final Map<Flag,@Nullable List<GraphState>> statesMap = new EnumMap<>(Flag.class);
 
     /**
      * Indicates if there are states with a given flag.
@@ -395,16 +409,11 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
         } else {
             spuriousTransitionCount++;
         }
-        if (trans instanceof RuleTransition rt) {
-            try {
-                String outputString = rt.getOutputString();
-                if (outputString != null) {
-                    System.out.print(outputString);
-                }
-            } catch (FormatException e) {
-                System.err.println(e.getMessage());
-            }
-        }
+        trans
+            .getOutputString()
+            .ifPresent(o -> o
+                .ifPresentOrElse(s -> System.out.print(s),
+                                 e -> System.err.println(e.getMessage())));
     }
 
     @Override
@@ -425,14 +434,15 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
 
     @Override
     public Set<? extends GraphTransition> edgeSet() {
-        if (this.allTransitionSet == null) {
-            this.allTransitionSet = new TransitionSet();
+        var result = this.allTransitionSet;
+        if (result == null) {
+            this.allTransitionSet = result = new TransitionSet();
         }
-        return this.allTransitionSet;
+        return result;
     }
 
     /** The set of transitions of the GTS. */
-    private TransitionSet allTransitionSet;
+    private @Nullable TransitionSet allTransitionSet;
 
     /**
      * Returns a view on the set of real transitions in the GTS.
@@ -440,19 +450,16 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
      * and target states are real.
      * @see GraphTransition#isRealStep()
      */
-    public Set<GraphTransition> getTransitions() {
-        if (this.realTransitionSet == null) {
-            this.realTransitionSet = new SetView<>(edgeSet()) {
-                @Override
-                public boolean approves(Object obj) {
-                    return obj instanceof GraphTransition gt && gt.isRealStep();
-                }
-            };
+    public Set<? extends GraphTransition> getTransitions() {
+        var result = this.realTransitionSet;
+        if (result == null) {
+            this.realTransitionSet = result = SetView
+                .instance(edgeSet(), o -> o instanceof GraphTransition gt && gt.isRealStep());
         }
-        return this.realTransitionSet;
+        return result;
     }
 
-    private Set<GraphTransition> realTransitionSet;
+    private @Nullable Set<? extends GraphTransition> realTransitionSet;
 
     /** Returns the number of real transitions, i.e., those
      * that satisfy {@link GraphTransition#isRealStep()}.
@@ -466,17 +473,21 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
      * Returns the (fixed) derivation record for this GTS.
      */
     public final Record getRecord() {
-        if (this.record == null) {
-            this.record = new Record(this.grammar, getHostFactory());
+        var result = this.record;
+        if (result == null) {
+            this.record = result = new Record(this.grammar, getHostFactory());
         }
-        return this.record;
+        return result;
     }
+
+    /** The system record for this GTS. */
+    private @Nullable Record record;
 
     /**
      * Returns the set of listeners of this GTS.
      * @return an iterator over the graph listeners of this graph
      */
-    public Set<GTSListener> getGraphListeners() {
+    public Set<GTSListener> getGTSListeners() {
         if (isFixed()) {
             return Collections.<GTSListener>emptySet();
         } else {
@@ -488,18 +499,14 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
      * Adds a graph listener to this graph.
      */
     public void addLTSListener(GTSListener listener) {
-        if (this.listeners != null) {
-            this.listeners.add(listener);
-        }
+        this.listeners.add(listener);
     }
 
     /**
      * Removes a graph listener from this graph.
      */
     public void removeLTSListener(GTSListener listener) {
-        if (this.listeners != null) {
-            this.listeners.remove(listener);
-        }
+        this.listeners.remove(listener);
     }
 
     /**
@@ -514,7 +521,7 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
             this.realStateCount++;
         }
         super.fireAddNode(state);
-        for (GTSListener listener : getGraphListeners()) {
+        for (GTSListener listener : getGTSListeners()) {
             listener.addUpdate(this, state);
         }
     }
@@ -528,7 +535,7 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
         this.internals |= edge.isInternalStep();
         this.allTransitionCount++;
         super.fireAddEdge(edge);
-        for (GTSListener listener : getGraphListeners()) {
+        for (GTSListener listener : getGTSListeners()) {
             listener.addUpdate(this, edge);
         }
     }
@@ -549,24 +556,25 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
                 : +1;
         }
         for (Flag recorded : FLAG_ARRAY) {
+            var flaggedStates = this.statesMap.get(recorded);
             boolean had = wasReal && recorded.test(oldStatus);
             int index = recorded.ordinal();
             if (isReal && state.hasFlag(recorded)) {
                 if (!had) {
                     this.stateCounts[index]++;
-                    if (this.statesMap.containsKey(recorded)) {
-                        this.statesMap.get(recorded).add(state);
+                    if (flaggedStates != null) {
+                        flaggedStates.add(state);
                     }
                 }
             } else if (had) {
                 this.stateCounts[index]--;
-                if (this.statesMap.containsKey(recorded)) {
-                    this.statesMap.get(recorded).remove(state);
+                if (flaggedStates != null) {
+                    flaggedStates.remove(state);
                 }
             }
         }
         int change = state.getStatus() ^ oldStatus;
-        for (GTSListener listener : getGraphListeners()) {
+        for (GTSListener listener : getGTSListeners()) {
             listener.statusUpdate(this, state, change);
         }
         if (state.isError()) {
@@ -594,7 +602,7 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
      * @param answer if non-{@code null}, the result that should be saved.
      * Only used if {@code filter} equals {@link Filter#RESULT}
      */
-    public MultiGraph toPlainGraph(LTSLabels flags, Filter filter, ExploreResult answer) {
+    public MultiGraph toPlainGraph(LTSLabels flags, Filter filter, @Nullable ExploreResult answer) {
         MultiGraph result = new MultiGraph(getName(), GraphRole.LTS);
         // Set of nodes and edges to be saved
         Collection<? extends GraphState> states;
@@ -609,6 +617,9 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
             transitions = getSpanningTransitions(states, flags.showRecipes());
             break;
         case RESULT:
+            if (answer == null) {
+                throw Exceptions.illegalArg("Result object should not be null");
+            }
             if (answer.storesTransitions()) {
                 transitions = answer.getTransitions();
                 states = answer.getStates();
@@ -623,7 +634,7 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
             }
             break;
         default:
-            throw new RuntimeException();//groove.util.Exceptions.UNREACHABLE;
+            throw Exceptions.UNREACHABLE;
         }
         Map<GraphState,MultiNode> nodeMap = new HashMap<>();
         for (GraphState state : states) {
@@ -782,10 +793,11 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
 
     /** Returns the match applier associated with this GTS. */
     public final MatchApplier getMatchApplier() {
-        if (this.matchApplier == null) {
-            this.matchApplier = createMatchApplier();
+        var result = this.matchApplier;
+        if (result == null) {
+            this.matchApplier = result = createMatchApplier();
         }
-        return this.matchApplier;
+        return result;
     }
 
     /** Factory method for the match applier. */
@@ -794,7 +806,7 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
     }
 
     /** The match applier associated with this GTS. */
-    private MatchApplier matchApplier;
+    private @Nullable MatchApplier matchApplier;
 
     /** Returns the oracle associated with this GTS. */
     public ValueOracle getOracle() {
@@ -803,26 +815,15 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
 
     private final ValueOracle oracle;
     /**
-     * The start state of this LTS.
-     * @invariant <tt>nodeSet().contains(startState)</tt>
-     */
-    protected GraphState startState;
-
-    /**
      * The rule system generating this LTS.
      * @invariant <tt>ruleSystem != null</tt>
      */
     private final Grammar grammar;
-    /** Unique factory for host elements, associated with this GTS. */
-    private HostFactory hostFactory;
-
-    /** The system record for this GTS. */
-    private Record record;
     /**
      * Set of {@link GTSListener} s to be identified of changes in this graph.
      * Set to <tt>null</tt> when the graph is fixed.
      */
-    private Set<GTSListener> listeners = new HashSet<>();
+    private Set<GTSListener> listeners = new LinkedHashSet<>();
 
     /** Set of all flags of which state sets are recorded. */
     private static final Set<Flag> FLAG_SET = EnumSet.of(Flag.CLOSED, Flag.FINAL, Flag.ERROR);
@@ -859,7 +860,7 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
     /** Specialised set implementation for storing states. */
     public static class StateSet extends TreeHashSet<GraphState> {
         /** Constructs a new, empty state set. */
-        public StateSet(CollapseMode collapse, IsoChecker checker) {
+        public StateSet(CollapseMode collapse, @Nullable IsoChecker checker) {
             super(INITIAL_STATE_SET_SIZE, STATE_SET_RESOLUTION, STATE_SET_ROOT_RESOLUTION);
             this.collapse = collapse;
             if (checker == null) {
@@ -1002,7 +1003,7 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
          * @require <tt>o instanceof GraphTransition</tt>
          */
         @Override
-        public boolean contains(Object o) {
+        public boolean contains(@Nullable Object o) {
             boolean result = false;
             if (o instanceof GraphTransition transition) {
                 GraphState source = transition.source();

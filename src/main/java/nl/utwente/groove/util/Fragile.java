@@ -105,19 +105,19 @@ public class Fragile<T> {
     }
 
     /**
-     * If a value is present, performs the given action with the value,
-     * otherwise performs the given empty-based action.
+     * If a non-erroneous value is present, performs the given action with the value,
+     * otherwise performs the given error action on the error.
      *
      * @param action the action to be performed, if a value is present
-     * @param emptyAction the empty-based action to be performed, if no value is
-     *        present
+     * @param errAction the action to be performed if there is an error
      * @throws NullPointerException if a value is present and the given action
      *         is {@code null}, or no value is present and the given empty-based
      *         action is {@code null}.
      * @since 9
      */
-    public void ifPresentOrElse(Consumer<? super T> action, Runnable emptyAction) {
-        this.value.ifPresentOrElse(action, emptyAction);
+    public void ifPresentOrElse(Consumer<? super T> action,
+                                Consumer<? super FormatException> errAction) {
+        this.value.ifPresentOrElse(action, () -> this.error.ifPresent(errAction));
     }
 
     /**

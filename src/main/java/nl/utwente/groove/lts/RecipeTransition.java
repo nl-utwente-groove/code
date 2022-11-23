@@ -47,7 +47,6 @@ import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.line.Line;
-import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * Models a transition corresponding to the complete execution of
@@ -235,11 +234,6 @@ public class RecipeTransition extends ALabelEdge<GraphState>
     }
 
     @Override
-    public @Nullable String getOutputString() throws FormatException {
-        return DefaultRuleTransition.getOutputString(this);
-    }
-
-    @Override
     public HostNode[] getArguments() {
         List<? extends CtrlPar> args = getSwitch().getArgs();
         HostNode[] result = new HostNode[args.size()];
@@ -250,9 +244,8 @@ public class RecipeTransition extends ALabelEdge<GraphState>
                 node = c.getNode();
             } else if (arg instanceof Wild) {
                 node = null;
-            } else {
-                assert arg instanceof Var;
-                CtrlVar var = ((Var) arg).var();
+            } else if (arg instanceof Var v) {
+                CtrlVar var = v.var();
                 if (arg.inOnly()) {
                     int varIndex = getSwitch().getSource().getVars().indexOf(var);
                     node = Valuator.get(source().getPrimeValues(), varIndex);
@@ -263,6 +256,8 @@ public class RecipeTransition extends ALabelEdge<GraphState>
                     Object[] values = getFrameValues();
                     node = Valuator.get(values, varIndex);
                 }
+            } else {
+                throw Exceptions.UNREACHABLE;
             }
             result[i] = node;
         }
@@ -339,8 +334,8 @@ public class RecipeTransition extends ALabelEdge<GraphState>
      */
     public RecipeTransition toTransition(GraphState source) {
         if (source != source()) {
-            throw Exceptions.illegalArg("Source state %s should coincide with argument %s",
-                                        source(), source);
+            throw Exceptions
+                .illegalArg("Source state %s should coincide with argument %s", source(), source);
         } else {
             return this;
         }

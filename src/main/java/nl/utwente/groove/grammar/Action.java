@@ -19,6 +19,7 @@ package nl.utwente.groove.grammar;
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.io.HTMLConverter;
@@ -59,7 +60,7 @@ public interface Action extends Callable, Comparable<Action> {
      * Whenever a transition with this action is added to a GTS, a
      * corresponding string is sent to the standard output.
      */
-    public String getFormatString();
+    public Optional<String> getFormatString();
 
     /** Returns the grammar properties for this action. */
     public GrammarProperties getGrammarProperties();

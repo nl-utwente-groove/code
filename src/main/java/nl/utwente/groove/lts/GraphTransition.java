@@ -16,14 +16,21 @@
  */
 package nl.utwente.groove.lts;
 
+import java.util.ArrayList;
+import java.util.IllegalFormatException;
+import java.util.List;
+import java.util.Optional;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.host.HostGraphMorphism;
+import nl.utwente.groove.grammar.host.HostNode;
+import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.graph.GEdge;
 import nl.utwente.groove.transform.Event;
+import nl.utwente.groove.util.Fragile;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -96,14 +103,32 @@ public interface GraphTransition extends GEdge<GraphState> {
     public Iterable<RuleTransition> getSteps();
 
     /**
-     * Returns a string to be sent to the standard output
+     * Returns a (wrapped) string to be sent to the standard output
      * on adding a transition with this event to a GTS.
-     * @return a standard output string, or {@code null} if
-     * there is no standard output for the rule of this event.
-     * @throws FormatException if the format string of the rule
-     * does not correspond to the actual rule parameters
+     * The string is obtained from the action format string (see {@link Action#getFormatString()}
+     * @return an optional output string, which may contain an error if the rule parameters do not
+     * match the format expected by the action's format string.
      */
-    public @Nullable String getOutputString() throws FormatException;
+    default public Optional<Fragile<String>> getOutputString() {
+        var result = getAction().getFormatString().map(s -> {
+            List<Object> args = new ArrayList<>();
+            for (HostNode arg : label().getArguments()) {
+                if (arg instanceof ValueNode vn) {
+                    args.add(vn.getValue());
+                } else {
+                    args.add(arg.toString());
+                }
+            }
+            try {
+                return Fragile.of(String.format(s, args.toArray()));
+            } catch (IllegalFormatException e) {
+                return Fragile
+                    .<String>error(new FormatException("Error in rule output string: %s",
+                        e.getMessage()));
+            }
+        });
+        return result;
+    }
 
     /** Extracts the key ingredients from this graph transition. */
     public GraphTransitionKey getKey();

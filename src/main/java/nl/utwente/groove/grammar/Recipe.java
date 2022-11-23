@@ -17,6 +17,7 @@
 package nl.utwente.groove.grammar;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import nl.utwente.groove.control.Procedure;
@@ -30,7 +31,7 @@ import nl.utwente.groove.control.Procedure;
 public class Recipe extends Procedure implements Action {
     /** Constructs a recipe. */
     public Recipe(QualName fullName, int priority, Signature<UnitPar.ProcedurePar> signature,
-        QualName controlName, int startLine, GrammarProperties grammarProperties) {
+                  QualName controlName, int startLine, GrammarProperties grammarProperties) {
         super(fullName, Kind.RECIPE, signature, controlName, startLine, grammarProperties);
         this.priority = priority;
     }
@@ -90,8 +91,8 @@ public class Recipe extends Procedure implements Action {
     }
 
     @Override
-    public String getFormatString() {
-        return "";
+    public Optional<String> getFormatString() {
+        return Optional.empty();
     }
 
     /**

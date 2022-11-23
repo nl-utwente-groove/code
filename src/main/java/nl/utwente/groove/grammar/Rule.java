@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.grammar;
 
+import static nl.utwente.groove.util.LazyFactory.lazyFactory;
+
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,12 +25,17 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.control.Binding;
@@ -42,7 +49,6 @@ import nl.utwente.groove.grammar.rule.DefaultRuleNode;
 import nl.utwente.groove.grammar.rule.LabelVar;
 import nl.utwente.groove.grammar.rule.MatchChecker;
 import nl.utwente.groove.grammar.rule.RuleEdge;
-import nl.utwente.groove.grammar.rule.RuleElement;
 import nl.utwente.groove.grammar.rule.RuleGraph;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
@@ -76,20 +82,16 @@ public class Rule implements Action, Fixable {
      *        of this rule
      */
     public Rule(Condition condition, RuleGraph rhs, RuleGraph coRoot) {
-        assert condition.getTypeGraph()
-            .getFactory() == rhs.getFactory()
-                .getTypeFactory()
+        assert condition.getTypeGraph().getFactory() == rhs.getFactory().getTypeFactory()
             && (coRoot == null || rhs.getFactory() == coRoot.getFactory());
         this.condition = condition;
         this.qualName = QualName.parse(condition.getName());
         this.coRoot = coRoot;
         this.lhs = condition.getPattern();
         this.rhs = rhs;
-        assert coRoot == null || rhs().nodeSet()
-            .containsAll(coRoot.nodeSet()) : String.format(
-                "RHS nodes %s do not contain all co-root values %s",
-                rhs().nodeSet(),
-                coRoot.nodeSet());
+        assert coRoot == null || rhs().nodeSet().containsAll(coRoot.nodeSet()) : String
+            .format("RHS nodes %s do not contain all co-root values %s", rhs().nodeSet(),
+                    coRoot.nodeSet());
     }
 
     /** Returns the condition with which this rule is associated. */
@@ -97,15 +99,54 @@ public class Rule implements Action, Fixable {
         return this.condition;
     }
 
-    /** Returns root graph of the condition with which this rule is associated. */
-    public RuleGraph getRoot() {
-        return getCondition().getRoot();
-    }
+    /** Application condition of this rule. */
+    private final Condition condition;
 
     /** Returns the type graph of this rule. */
     public TypeGraph getTypeGraph() {
         return getCondition().getTypeGraph();
     }
+
+    /** Returns root graph of the condition with which this rule is associated. */
+    public RuleGraph getRoot() {
+        return getCondition().getRoot();
+    }
+
+    /** Returns the mapping from the parent RHS to this rule's RHS. */
+    final RuleGraph getCoRoot() {
+        return this.coRoot;
+    }
+
+    /** Mapping from the context of this rule to the RHS. */
+    private final RuleGraph coRoot;
+
+    /**
+     * Returns the left hand side of this Rule.
+     * @ensure <tt>result == morphism().source()</tt>
+     */
+    public RuleGraph lhs() {
+        return this.lhs;
+    }
+
+    /**
+     * This production rule's left hand side.
+     * @invariant lhs != null
+     */
+    private RuleGraph lhs;
+
+    /**
+     * Returns the right hand side of this Rule.
+     * @ensure <tt>result == morphism().cod()</tt>
+     */
+    public RuleGraph rhs() {
+        return this.rhs;
+    }
+
+    /**
+     * This production rule's right hand side.
+     * @invariant rhs != null
+     */
+    private RuleGraph rhs;
 
     /** Returns the qualified name of this rule (which equals the name of the associated condition). */
     @Override
@@ -129,18 +170,13 @@ public class Rule implements Action, Fixable {
      */
     public void setParent(Rule parent, int[] level) {
         testFixed(false);
-        assert getCoRoot() != null : String.format(
-            "Sub-rule at level %s must have a non-trivial co-root map",
-            Arrays.toString(level));
+        assert getCoRoot() != null : String
+            .format("Sub-rule at level %s must have a non-trivial co-root map",
+                    Arrays.toString(level));
         if (parent != null) {
-            assert parent.rhs()
-                .nodeSet()
-                .containsAll(getCoRoot().nodeSet()) : String.format(
-                    "Rule '%s': Parent nodes %s do not contain all co-roots %s",
-                    getQualName(),
-                    parent.rhs()
-                        .nodeSet(),
-                    getCoRoot().nodeSet());
+            assert parent.rhs().nodeSet().containsAll(getCoRoot().nodeSet()) : String
+                .format("Rule '%s': Parent nodes %s do not contain all co-roots %s", getQualName(),
+                        parent.rhs().nodeSet(), getCoRoot().nodeSet());
         }
         this.parent = parent;
     }
@@ -157,17 +193,20 @@ public class Rule implements Action, Fixable {
     }
 
     /**
+     * The parent rule of this rule; may be <code>null</code>, if this is a
+     * top-level rule.
+     */
+    private Rule parent;
+
+    /**
      * Sets the rule properties from a graph property map.
      */
     public void setProperties(GraphProperties properties) {
         testFixed(false);
         try {
-            this.priority = properties.parseProperty(Key.PRIORITY)
-                .getInteger();
-            this.transitionLabel = properties.parseProperty(Key.TRANSITION_LABEL)
-                .getString();
-            this.formatString = properties.parseProperty(Key.FORMAT)
-                .getString();
+            this.priority = properties.parseProperty(Key.PRIORITY).getInteger();
+            this.transitionLabel = properties.parseProperty(Key.TRANSITION_LABEL).getString();
+            this.formatString = properties.parseProperty(Key.FORMAT).getString();
         } catch (FormatException exc) {
             throw Exceptions.illegalState("Error in graph properties: %s", exc.getMessage());
         }
@@ -175,23 +214,26 @@ public class Rule implements Action, Fixable {
 
     @Override
     public String getTransitionLabel() {
-        String result = this.transitionLabel;
-        if (result.isEmpty()) {
+        var result = this.transitionLabel;
+        if (result == null || result.isEmpty()) {
             result = getQualName().toString();
         }
         return result;
     }
 
     /** The optional transition label. */
-    private String transitionLabel;
+    private @Nullable String transitionLabel;
 
     @Override
-    public String getFormatString() {
-        return this.formatString;
+    public Optional<String> getFormatString() {
+        var result = this.formatString;
+        return result == null || result.isEmpty()
+            ? Optional.empty()
+            : Optional.of(result);
     }
 
     /** The optional format string. */
-    private String formatString;
+    private @Nullable String formatString;
 
     /**
      * Returns the priority of this object. A higher number means higher
@@ -215,12 +257,20 @@ public class Rule implements Action, Fixable {
         return Optional.ofNullable(this.matchFilter);
     }
 
-    private MatchChecker matchFilter;
+    private @Nullable MatchChecker matchFilter;
 
     /** Sets the dangling-edge check for matches of this rule. */
     public void setCheckDangling(boolean checkDangling) {
         this.checkDangling = checkDangling;
     }
+
+    /** Indicates if this rule should check for dangling edges. */
+    public boolean isCheckDangling() {
+        return this.checkDangling;
+    }
+
+    /** Flag indicating whether rule applications should be checked for dangling edges. */
+    private boolean checkDangling;
 
     /** Indicates if this is a top-level rule. */
     public boolean isTop() {
@@ -241,7 +291,8 @@ public class Rule implements Action, Fixable {
         // if this is a top-level rule, the (only) input nodes
         // are the input-only parameter nodes
         if (isTop()) {
-            result = new HashSet<>(getSignature().stream()
+            result = new HashSet<>(getSignature()
+                .stream()
                 .filter(v -> v.isInOnly())
                 .map(v -> v.getNode())
                 .collect(Collectors.toSet()));
@@ -274,18 +325,24 @@ public class Rule implements Action, Fixable {
      * this rule as their parent.
      */
     public Collection<Rule> getSubRules() {
-        if (this.subRules == null) {
-            this.subRules = new TreeSet<>();
-            for (Condition condition : getCondition().getSubConditions()) {
-                for (Condition subCondition : condition.getSubConditions()) {
-                    if (subCondition.hasRule()) {
-                        this.subRules.add(subCondition.getRule());
-                    }
-                }
-            }
-        }
-        return this.subRules;
+        return this.subRules.get();
     }
+
+    /**
+     * The collection of direct sub-rules of this rules. Lazily created by
+     * {@link #getSubRules()}.
+     */
+    private final Supplier<Collection<Rule>> subRules = lazyFactory(() -> {
+        var result = new TreeSet<Rule>();
+        getCondition()
+            .getSubConditions()
+            .stream()
+            .flatMap(c -> c.getSubConditions().stream())
+            .filter(c -> c.hasRule())
+            .map(c -> c.getRule())
+            .forEach(r -> result.add(r));
+        return result;
+    });
 
     /**
      * Sets the parameters of this rule. The rule can have numbered and hidden
@@ -300,11 +357,9 @@ public class Rule implements Action, Fixable {
         this.hiddenPars = hiddenPars;
         for (int i = 0; i < parList.size(); i++) {
             // add the LHS parameters to the root graph
-            RuleNode parNode = parList.getPar(i)
-                .getNode();
+            RuleNode parNode = parList.getPar(i).getNode();
             if (this.lhs.containsNode(parNode)) {
-                this.condition.getRoot()
-                    .addNode(parNode);
+                this.condition.getRoot().addNode(parNode);
             }
         }
     }
@@ -313,21 +368,35 @@ public class Rule implements Action, Fixable {
     @Override
     public Signature<UnitPar.RulePar> getSignature() {
         assert isFixed();
-        if (this.sig == null) {
-            this.sig = new Signature<>();
+        var result = this.sig;
+        if (result == null) {
+            this.sig = result = new Signature<>();
         }
-        return this.sig;
+        return result;
     }
+
+    /** The signature of the rule. */
+    private @Nullable Signature<UnitPar.RulePar> sig;
+
+    /**
+     * Returns the set of hidden (i.e., unnumbered) parameter nodes of this
+     * rule.
+     */
+    Set<RuleNode> getHiddenPars() {
+        return this.hiddenPars;
+    }
+
+    /**
+     * Set of anonymous (unnumbered) parameters.
+     */
+    private Set<RuleNode> hiddenPars;
 
     /**
      * Returns, for a given index in the signature, the corresponding
      * anchor or creator source of the actual value.
      */
     public Binding getParBinding(int i) {
-        if (this.parBinding == null) {
-            this.parBinding = computeParBinding();
-        }
-        return this.parBinding.get(i);
+        return this.parBinding.get().get(i);
     }
 
     /**
@@ -335,9 +404,9 @@ public class Rule implements Action, Fixable {
      * anchor respectively created node indices.
      * @see #getParBinding(int)
      */
-    private List<Binding> computeParBinding() {
+    private @NonNull List<Binding> computeParBinding() {
         List<Binding> result = new ArrayList<>();
-        List<RuleNode> creatorNodes = Arrays.asList(getCreatorNodes());
+        var creatorNodes = Arrays.asList(getCreatorNodes());
         for (RulePar par : getSignature()) {
             Binding binding;
             RuleNode ruleNode = par.getNode();
@@ -360,15 +429,7 @@ public class Rule implements Action, Fixable {
      * anchor position or to the position in the created nodes list.
      * The latter are offset by the length of the anchor.
      */
-    private List<Binding> parBinding;
-
-    /**
-     * Returns the set of hidden (i.e., unnumbered) parameter nodes of this
-     * rule.
-     */
-    Set<RuleNode> getHiddenPars() {
-        return this.hiddenPars;
-    }
+    private final Supplier<List<Binding>> parBinding = lazyFactory(this::computeParBinding);
 
     /**
      * Tests if this condition is ground and has a match to a given host graph.
@@ -400,8 +461,7 @@ public class Rule implements Action, Fixable {
 
     @Override
     public CheckPolicy getPolicy() {
-        CheckPolicy result = getGrammarProperties().getRulePolicy()
-            .get(getQualName());
+        CheckPolicy result = getGrammarProperties().getRulePolicy().get(getQualName());
         if (result == null) {
             result = CheckPolicy.ERROR;
         }
@@ -415,8 +475,7 @@ public class Rule implements Action, Fixable {
     private boolean isPropertyLike() {
         boolean result = !isModifying() && getPriority() == 0 && getHiddenPars().isEmpty();
         if (result) {
-            result = getSignature().stream()
-                .allMatch(v -> !v.isInOnly());
+            result = getSignature().stream().allMatch(v -> !v.isInOnly());
         }
         return result;
     }
@@ -474,10 +533,11 @@ public class Rule implements Action, Fixable {
      * @see Visitor#visit(Object)
      */
     public <R> R traverseMatches(final HostGraph host, RuleToHostMap contextMap,
-        final Visitor<Proof,R> visitor) {
+                                 final Visitor<Proof,R> visitor) {
         assert isFixed();
-        RuleToHostMap seedMap = contextMap == null ? host.getFactory()
-            .createRuleToHostMap() : contextMap;
+        RuleToHostMap seedMap = contextMap == null
+            ? host.getFactory().createRuleToHostMap()
+            : contextMap;
         getMatcher(seedMap).traverse(host, contextMap, new Visitor<TreeMatch,R>() {
             @Override
             protected boolean process(TreeMatch match) {
@@ -489,19 +549,6 @@ public class Rule implements Action, Fixable {
             }
         });
         return visitor.getResult();
-    }
-
-    /**
-     * Lazily creates and returns a matcher for rule events of this rule. The
-     * matcher will try to extend anchor maps to full matches. This is in
-     * contrast with the normal (condition) matcher, which is based on the
-     * images of the root map.
-     */
-    public Matcher getEventMatcher(boolean simple) {
-        if (this.eventMatcher == null) {
-            this.eventMatcher = createMatcher(getAnchor(), simple);
-        }
-        return this.eventMatcher;
     }
 
     /**
@@ -517,8 +564,7 @@ public class Rule implements Action, Fixable {
     private SearchStrategy getMatcher(RuleToHostMap seedMap) {
         assert isTop();
         Matcher result;
-        boolean simple = seedMap.getFactory()
-            .isSimple();
+        boolean simple = seedMap.getFactory().isSimple();
         Signature<UnitPar.RulePar> sig = getSignature();
         if (!sig.isEmpty()) {
             int sigSize = sig.size();
@@ -526,15 +572,11 @@ public class Rule implements Action, Fixable {
             for (int i = 0; i < sigSize; i++) {
                 // set initPars if the seed map contains a value
                 // for this parameter
-                initPars.set(i,
-                    seedMap.nodeMap()
-                        .containsKey(sig.getPar(i)
-                            .getNode()));
+                initPars.set(i, seedMap.nodeMap().containsKey(sig.getPar(i).getNode()));
             }
             result = this.matcherMap.get(initPars);
             if (result == null) {
-                Anchor seed = new Anchor(seedMap.nodeMap()
-                    .keySet());
+                Anchor seed = new Anchor(seedMap.nodeMap().keySet());
                 this.matcherMap.put(initPars, result = createMatcher(seed, simple));
             }
         } else {
@@ -544,37 +586,16 @@ public class Rule implements Action, Fixable {
     }
 
     /**
-     * Returns a (precomputed) match strategy for the target
-     * pattern, based on the rule seed.
-     * @param simple indicates if the host graphs are simple or multi-graphs
-     * @see #createMatcher(Anchor, boolean)
+     * Lazily creates and returns a matcher for rule events of this rule. The
+     * matcher will try to extend anchor maps to full matches. This is in
+     * contrast with the normal (condition) matcher, which is based on the
+     * images of the root map.
      */
-    public Matcher getMatcher(boolean simple) {
-        Matcher result = simple ? this.simpleMatcher : this.multiMatcher;
-        if (result == null) {
-            result = createMatcher(getSeed(), simple);
-            if (simple) {
-                this.simpleMatcher = result;
-            } else {
-                this.multiMatcher = result;
-            }
-        }
-        return result;
+    public Matcher getEventMatcher(boolean simple) {
+        return simple
+            ? this.simpleEventMatcher.get()
+            : this.multiEeventMatcher.get();
     }
-
-    /**
-     * The fixed simple matching strategy for this graph rule. Initially
-     * <code>null</code>; set by {@link #getMatcher(boolean)} upon its first
-     * invocation.
-     */
-    private Matcher simpleMatcher;
-
-    /**
-     * The fixed multi-graph matching strategy for this graph rule. Initially
-     * <code>null</code>; set by {@link #getMatcher(boolean)} upon its first
-     * invocation.
-     */
-    private Matcher multiMatcher;
 
     /**
      * Callback method to create a match strategy. Typically invoked once, at
@@ -587,6 +608,47 @@ public class Rule implements Action, Fixable {
         testFixed(true);
         return getMatcherFactory(simple).createMatcher(getCondition(), seed);
     }
+
+    /** The matcher for events of this rule. */
+    private final Supplier<Matcher> simpleEventMatcher
+        = lazyFactory(() -> createMatcher(getAnchor(), true));
+
+    /** The matcher for events of this rule. */
+    private final Supplier<Matcher> multiEeventMatcher
+        = lazyFactory(() -> createMatcher(getAnchor(), false));
+
+    /**
+     * Mapping from sets of initialised parameters to match strategies.
+     */
+    private final Map<BitSet,Matcher> matcherMap = new HashMap<>();
+
+    /**
+     * Returns a (precomputed) match strategy for the target
+     * pattern, based on the rule seed.
+     * @param simple indicates if the host graphs are simple or multi-graphs
+     * @see #createMatcher(Anchor, boolean)
+     */
+    public Matcher getMatcher(boolean simple) {
+        return simple
+            ? this.simpleSeedMatcher.get()
+            : this.multiSeedMatcher.get();
+    }
+
+    /**
+     * The fixed simple matching strategy for this graph rule. Initially
+     * <code>null</code>; set by {@link #getMatcher(boolean)} upon its first
+     * invocation.
+     */
+    private final Supplier<Matcher> simpleSeedMatcher
+        = lazyFactory(() -> createMatcher(getSeed(), true));
+
+    /**
+     * The fixed multi-graph matching strategy for this graph rule. Initially
+     * <code>null</code>; set by {@link #getMatcher(boolean)} upon its first
+     * invocation.
+     */
+    private final Supplier<Matcher> multiSeedMatcher
+        = lazyFactory(() -> createMatcher(getSeed(), false));
 
     /** Returns a matcher factory, tuned to the properties of this rule. */
     private MatcherFactory getMatcherFactory(boolean simple) {
@@ -604,7 +666,7 @@ public class Rule implements Action, Fixable {
      */
     public boolean isValidPatternMap(HostGraph host, RuleToHostMap matchMap) {
         boolean result = true;
-        if (this.checkDangling) {
+        if (isCheckDangling()) {
             result = satisfiesDangling(host, matchMap);
         }
         return result;
@@ -618,11 +680,13 @@ public class Rule implements Action, Fixable {
         boolean result = true;
         for (RuleNode eraserNode : getEraserNodes()) {
             HostNode erasedNode = match.getNode(eraserNode);
-            Set<HostEdge> danglingEdges = host.edgeSet(erasedNode)
+            Set<HostEdge> danglingEdges = host
+                .edgeSet(erasedNode)
                 .stream()
                 .filter(e -> !(e.target() instanceof ValueNode))
                 .collect(Collectors.toSet());
-            lhs().edgeSet(eraserNode)
+            lhs()
+                .edgeSet(eraserNode)
                 .stream()
                 .filter(e -> !(e.target() instanceof ValueNode))
                 .map(e -> match.getEdge(e))
@@ -633,22 +697,6 @@ public class Rule implements Action, Fixable {
             }
         }
         return result;
-    }
-
-    /**
-     * Returns the left hand side of this Rule.
-     * @ensure <tt>result == morphism().source()</tt>
-     */
-    public RuleGraph lhs() {
-        return this.lhs;
-    }
-
-    /**
-     * Returns the right hand side of this Rule.
-     * @ensure <tt>result == morphism().cod()</tt>
-     */
-    public RuleGraph rhs() {
-        return this.rhs;
     }
 
     /**
@@ -664,26 +712,29 @@ public class Rule implements Action, Fixable {
         return this.colorMap;
     }
 
+    /** Mapping from rule nodes to explicitly declared colours. */
+    private final Map<RuleNode,Color> colorMap = new HashMap<>();
+
     /** Returns the anchor of the rule. */
     public Anchor getAnchor() {
-        if (this.anchor == null) {
-            this.anchor = anchorFactory.newAnchor(this);
-        }
-        return this.anchor;
+        return this.anchor.get();
     }
+
+    /** The rule anchor. */
+    private final Supplier<Anchor> anchor = lazyFactory(() -> anchorFactory.newAnchor(this));
 
     /** Returns the seed of the rule. */
     public Anchor getSeed() {
-        if (this.seed == null) {
-            this.seed = new Anchor(getRoot());
-        }
-        return this.seed;
+        return this.seed.get();
     }
+
+    /** The rule seed. */
+    private final Supplier<Anchor> seed = lazyFactory(() -> new Anchor(getRoot()));
 
     @Override
     public String toString() {
-        StringBuilder res =
-            new StringBuilder(String.format("Rule %s; anchor %s%n", getQualName(), getAnchor()));
+        StringBuilder res
+            = new StringBuilder(String.format("Rule %s; anchor %s%n", getQualName(), getAnchor()));
         res.append(getCondition().toString("    "));
         return res.toString();
     }
@@ -714,8 +765,7 @@ public class Rule implements Action, Fixable {
                     System.out.println(toString());
                 }
                 // check if there is an oracle if one is needed
-                boolean hasAskPars = getSignature().stream()
-                    .anyMatch(v -> v.isAsk());
+                boolean hasAskPars = getSignature().stream().anyMatch(v -> v.isAsk());
                 if (hasAskPars && !getGrammarProperties().hasValueOracle()) {
                     throw new FormatException(
                         "Rule has on-demand parameter but no oracle has been installed");
@@ -723,9 +773,10 @@ public class Rule implements Action, Fixable {
                 // push the colour map to the top rule
                 Rule parent = this.parent;
                 while (parent != null && parent != this) {
-                    parent.getColorMap()
-                        .putAll(getColorMap());
-                    parent = parent == parent.parent ? null : parent.parent;
+                    parent.getColorMap().putAll(getColorMap());
+                    parent = parent == parent.parent
+                        ? null
+                        : parent.parent;
                 }
                 this.fixed = true;
             } finally {
@@ -740,6 +791,12 @@ public class Rule implements Action, Fixable {
         return this.fixing || this.fixed;
     }
 
+    /** Flag indicating whether the rule has been fixed. */
+    private boolean fixed;
+
+    /** Flag indicating whether the rule is currently in the process of fixing. */
+    private boolean fixing;
+
     /**
      * Checks this rule for compatibility with a chosen algebra.
      * Called before starting an exploration.
@@ -752,10 +809,7 @@ public class Rule implements Action, Fixable {
 
     /** Returns an array of nodes isolated in the left hand side. */
     final public RuleNode[] getIsolatedNodes() {
-        if (this.isolatedNodes == null) {
-            this.isolatedNodes = computeIsolatedNodes();
-        }
-        return this.isolatedNodes;
+        return this.isolatedNodes.get();
     }
 
     /** Computes the array of nodes isolated in the left hand side. */
@@ -763,42 +817,18 @@ public class Rule implements Action, Fixable {
         testFixed(true);
         Set<RuleNode> result = new HashSet<>();
         for (RuleNode node : lhs().nodeSet()) {
-            if (lhs().edgeSet(node)
-                .isEmpty()) {
+            if (lhs().edgeSet(node).isEmpty()) {
                 result.add(node);
             }
         }
-        result.removeAll(this.condition.getRoot()
-            .nodeSet());
+        result.removeAll(this.condition.getRoot().nodeSet());
         return result.toArray(new RuleNode[result.size()]);
     }
 
     /**
-     * Indicates if this rule has mergers.
+     * The LHS nodes that do not have any incident edges in the LHS.
      */
-    final public boolean hasMergers() {
-        if (!this.hasMergersSet) {
-            this.hasMergers = computeHasMergers();
-            this.hasMergersSet = true;
-        }
-        return this.hasMergers;
-    }
-
-    /**
-     * Computes if the rule has mergers or not.
-     */
-    private boolean computeHasMergers() {
-        boolean result = !getLhsMergeMap().isEmpty() || !getRhsMergeMap().isEmpty();
-        if (!result) {
-            for (Rule subRule : getSubRules()) {
-                result = subRule.hasMergers();
-                if (result) {
-                    break;
-                }
-            }
-        }
-        return result;
-    }
+    private final Supplier<RuleNode[]> isolatedNodes = lazyFactory(this::computeIsolatedNodes);
 
     /**
      * Indicates if application of this rule actually changes the host graph. If
@@ -806,11 +836,7 @@ public class Rule implements Action, Fixable {
      * condition.
      */
     public boolean isModifying() {
-        if (!this.modifyingSet) {
-            this.modifying = computeIsModifying();
-            this.modifyingSet = true;
-        }
-        return this.modifying;
+        return this.modifying.get();
     }
 
     /**
@@ -831,170 +857,16 @@ public class Rule implements Action, Fixable {
     }
 
     /**
-     * Indicates if the rule creates any nodes.
+     * Indicates if this rule makes changes to a graph at all.
      */
-    public boolean hasNodeCreators() {
-        if (!this.hasNodeCreatorsSet) {
-            this.hasNodeCreators = computeHasNodeCreators();
-            this.hasNodeCreatorsSet = true;
-        }
-        return this.hasNodeCreators;
-    }
-
-    private boolean computeHasNodeCreators() {
-        boolean result = getCreatorNodes().length > 0;
-        if (!result) {
-            for (Rule subRule : getSubRules()) {
-                result = subRule.hasNodeCreators();
-                if (result) {
-                    break;
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Indicates if the rule creates any edges.
-     */
-    public boolean hasEdgeCreators() {
-        if (!this.hasEdgeCreatorsSet) {
-            this.hasEdgeCreators = computeHasEdgeCreators();
-            this.hasEdgeCreatorsSet = true;
-        }
-        return this.hasEdgeCreators;
-    }
-
-    private boolean computeHasEdgeCreators() {
-        boolean result = getCreatorEdges().length > 0;
-        if (!result) {
-            for (Rule subRule : getSubRules()) {
-                result = subRule.hasEdgeCreators();
-                if (result) {
-                    break;
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Indicates if the rule creates any nodes.
-     */
-    public boolean hasNodeErasers() {
-        if (!this.hasNodeErasersSet) {
-            this.hasNodeErasers = computeHasNodeErasers();
-            this.hasNodeErasersSet = true;
-        }
-        return this.hasNodeErasers;
-    }
-
-    private boolean computeHasNodeErasers() {
-        boolean result = getEraserNodes().length > 0;
-        if (!result) {
-            for (Rule subRule : getSubRules()) {
-                result = subRule.hasNodeErasers();
-                if (result) {
-                    break;
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Indicates if the rule creates any edges.
-     */
-    public boolean hasEdgeErasers() {
-        if (!this.hasEdgeErasersSet) {
-            this.hasEdgeErasers = computeHasEdgeErasers();
-            this.hasEdgeErasersSet = true;
-        }
-        return this.hasEdgeErasers;
-    }
-
-    private boolean computeHasEdgeErasers() {
-        boolean result = getEraserEdges().length > 0;
-        if (!result) {
-            for (Rule subRule : getSubRules()) {
-                result = subRule.hasEdgeErasers();
-                if (result) {
-                    break;
-                }
-            }
-        }
-        return result;
-    }
-
-    /** Returns the eraser (i.e., LHS-only) edges. */
-    public final RuleEdge[] getEraserEdges() {
-        if (this.eraserEdges == null) {
-            this.eraserEdges = computeEraserEdges();
-        }
-        return this.eraserEdges;
-    }
-
-    /**
-     * Computes the eraser (i.e., LHS-only) edges.
-     * Note: this does not include the incident edges of the eraser nodes.
-     */
-    private RuleEdge[] computeEraserEdges() {
-        testFixed(true);
-        Set<RuleEdge> result = new HashSet<>(lhs().edgeSet());
-        result.removeAll(rhs().edgeSet());
-        // also remove the incident edges of the lhs-only nodes
-        for (RuleNode eraserNode : getEraserNodes()) {
-            result.removeAll(lhs().edgeSet(eraserNode));
-        }
-        return result.toArray(new RuleEdge[result.size()]);
-    }
-
-    /** Returns the eraser edges that are not themselves anchors. */
-    public final RuleEdge[] getEraserNonAnchorEdges() {
-        if (this.eraserNonAnchorEdges == null) {
-            this.eraserNonAnchorEdges = computeEraserNonAnchorEdges();
-        }
-        return this.eraserNonAnchorEdges;
-    }
-
-    /**
-     * Computes the array of creator edges that are not themselves anchors.
-     */
-    private RuleEdge[] computeEraserNonAnchorEdges() {
-        Set<RuleEdge> eraserNonAnchorEdgeSet = new HashSet<>(Arrays.asList(getEraserEdges()));
-        eraserNonAnchorEdgeSet.removeAll(getAnchor().edgeSet());
-        return eraserNonAnchorEdgeSet.toArray(new RuleEdge[eraserNonAnchorEdgeSet.size()]);
-    }
-
-    /**
-     * Returns the LHS nodes that are not mapped to the RHS.
-     */
-    public final DefaultRuleNode[] getEraserNodes() {
-        if (this.eraserNodes == null) {
-            this.eraserNodes = computeEraserNodes();
-        }
-        return this.eraserNodes;
-    }
-
-    /**
-     * Computes the eraser (i.e., lhs-only) nodes.
-     */
-    private DefaultRuleNode[] computeEraserNodes() {
-        //testFixed(true);
-        Set<RuleNode> result = new HashSet<>(lhs().nodeSet());
-        result.removeAll(rhs().nodeSet());
-        return result.toArray(new DefaultRuleNode[result.size()]);
-    }
+    private final Supplier<Boolean> modifying = lazyFactory(this::computeIsModifying);
 
     /**
      * Returns an array of LHS nodes that are endpoints of eraser edges, creator
      * edges or mergers.
      */
     public final Set<RuleNode> getModifierEnds() {
-        if (this.modifierEnds == null) {
-            this.modifierEnds = computeModifierEnds();
-        }
-        return this.modifierEnds;
+        return this.modifierEnds.get();
     }
 
     /**
@@ -1025,13 +897,16 @@ public class Rule implements Action, Fixable {
     }
 
     /**
+     * The lhs nodes that are end points of eraser or creator edges or mergers,
+     * either in this rule or one of its sub-rules.
+     */
+    private final Supplier<Set<RuleNode>> modifierEnds = lazyFactory(this::computeModifierEnds);
+
+    /**
      * Returns an array of variables that are used in erasers or creators.
      */
     final Set<LabelVar> getModifierVars() {
-        if (this.modifierVars == null) {
-            this.modifierVars = computeModifierVars();
-        }
-        return this.modifierVars;
+        return this.modifierVars.get();
     }
 
     /**
@@ -1041,8 +916,7 @@ public class Rule implements Action, Fixable {
         Set<LabelVar> result = new HashSet<>();
         // add the variables of creators
         for (RuleEdge edge : getCreatorGraph().edgeSet()) {
-            result.addAll(edge.label()
-                .allVarSet());
+            result.addAll(edge.label().allVarSet());
         }
         for (RuleNode node : getCreatorGraph().nodeSet()) {
             for (TypeGuard guard : node.getTypeGuards()) {
@@ -1056,25 +930,125 @@ public class Rule implements Action, Fixable {
             }
         }
         for (RuleEdge eraser : getEraserEdges()) {
-            result.addAll(eraser.label()
-                .allVarSet());
+            result.addAll(eraser.label().allVarSet());
         }
         return result;
     }
 
-    /** Returns the mapping from the parent RHS to this rule's RHS. */
-    final RuleGraph getCoRoot() {
-        return this.coRoot;
+    /**
+     * The lhs variables that occur in eraser or creator edges, either in this rule or
+     * one of its sub-rules.
+     */
+    private final Supplier<Set<LabelVar>> modifierVars = lazyFactory(this::computeModifierVars);
+
+    /**
+     * Indicates if the rule creates any nodes.
+     */
+    public boolean hasNodeCreators() {
+        return this.hasNodeCreators.get();
     }
+
+    private boolean computeHasNodeCreators() {
+        boolean result = getCreatorNodes().length > 0;
+        if (!result) {
+            for (Rule subRule : getSubRules()) {
+                result = subRule.hasNodeCreators();
+                if (result) {
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Indicates if this rule has creator nodes.
+     */
+    private final Supplier<Boolean> hasNodeCreators = lazyFactory(this::computeHasNodeCreators);
+
+    /**
+     * Returns the RHS nodes that are not images of an LHS node.
+     */
+    final public RuleNode[] getCreatorNodes() {
+        return this.creatorNodes.get();
+    }
+
+    /**
+     * Computes the creator (i.e., RHS-only) nodes.
+     */
+    private RuleNode[] computeCreatorNodes() {
+        Set<RuleNode> result = new HashSet<>(rhs().nodeSet());
+        result.removeAll(lhs().nodeSet());
+        Rule parent = getParent();
+        if (parent != null && parent != this) {
+            result.removeAll(parent.rhs().nodeSet());
+        }
+        return result.toArray(new RuleNode[result.size()]);
+    }
+
+    /**
+     * The rhs nodes that are not ruleMorph images
+     * @invariant creatorNodes \subseteq rhs.nodeSet()
+     */
+    private final Supplier<RuleNode[]> creatorNodes = lazyFactory(this::computeCreatorNodes);
+
+    /**
+     * Indicates if the rule creates any edges.
+     */
+    public boolean hasEdgeCreators() {
+        return this.hasEdgeCreators.get();
+    }
+
+    private boolean computeHasEdgeCreators() {
+        boolean result = getCreatorEdges().length > 0;
+        if (!result) {
+            for (Rule subRule : getSubRules()) {
+                result = subRule.hasEdgeCreators();
+                if (result) {
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Indicates if this rule has creator edges.
+     */
+    private final Supplier<Boolean> hasEdgeCreators = lazyFactory(this::computeHasEdgeCreators);
+
+    /**
+     * Returns the RHS edges that are not images of an LHS edge.
+     */
+    final public RuleEdge[] getCreatorEdges() {
+        return this.creatorEdges.get();
+    }
+
+    /**
+     * Computes the creator (i.e., RHS-only) edges.
+     */
+    private RuleEdge[] computeCreatorEdges() {
+        Set<RuleEdge> result = new HashSet<>(rhs().edgeSet());
+        result.removeAll(lhs().edgeSet());
+        Rule parent = getParent();
+        if (parent != null && parent != this) {
+            result.removeAll(parent.rhs().edgeSet());
+        }
+        result.removeAll(getLhsMergers());
+        result.removeAll(getRhsMergers());
+        return result.toArray(new RuleEdge[result.size()]);
+    }
+
+    /**
+     * The rhs edges that are not ruleMorph images
+     */
+    private final Supplier<RuleEdge[]> creatorEdges = lazyFactory(this::computeCreatorEdges);
 
     /**
      * Returns the creator edges between reader nodes.
      */
     final public RuleEdge[] getSimpleCreatorEdges() {
-        if (this.simpleCreatorEdges == null) {
-            this.simpleCreatorEdges = computeSimpleCreatorEdges();
-        }
-        return this.simpleCreatorEdges;
+        return this.simpleCreatorEdges.get();
     }
 
     /**
@@ -1095,13 +1069,17 @@ public class Rule implements Action, Fixable {
     }
 
     /**
+     * The rhs edges that are not ruleMorph images but with all ends morphism
+     * images
+     */
+    private final Supplier<RuleEdge[]> simpleCreatorEdges
+        = lazyFactory(this::computeSimpleCreatorEdges);
+
+    /**
      * Returns the creator edges that have at least one creator end.
      */
     public final Set<RuleEdge> getComplexCreatorEdges() {
-        if (this.complexCreatorEdges == null) {
-            this.complexCreatorEdges = computeComplexCreatorEdges();
-        }
-        return this.complexCreatorEdges;
+        return this.complexCreatorEdges.get();
     }
 
     /**
@@ -1114,95 +1092,48 @@ public class Rule implements Action, Fixable {
     }
 
     /**
-     * Returns the RHS edges that are not images of an LHS edge.
+     * The rhs edges with at least one end not a morphism image
      */
-    final public RuleEdge[] getCreatorEdges() {
-        if (this.creatorEdges == null) {
-            this.creatorEdges = computeCreatorEdges();
-        }
-        return this.creatorEdges;
-    }
-
-    /**
-     * Computes the creator (i.e., RHS-only) edges.
-     */
-    private RuleEdge[] computeCreatorEdges() {
-        Set<RuleEdge> result = new HashSet<>(rhs().edgeSet());
-        result.removeAll(lhs().edgeSet());
-        Rule parent = getParent();
-        if (parent != null && parent != this) {
-            result.removeAll(parent.rhs()
-                .edgeSet());
-        }
-        result.removeAll(getLhsMergers());
-        result.removeAll(getRhsMergers());
-        return result.toArray(new RuleEdge[result.size()]);
-    }
-
-    /**
-     * Returns the RHS nodes that are not images of an LHS node.
-     */
-    final public RuleNode[] getCreatorNodes() {
-        if (this.creatorNodes == null) {
-            this.creatorNodes = computeCreatorNodes();
-        }
-        return this.creatorNodes;
-    }
-
-    /**
-     * Computes the creator (i.e., RHS-only) nodes.
-     */
-    private RuleNode[] computeCreatorNodes() {
-        Set<RuleNode> result = new HashSet<>(rhs().nodeSet());
-        result.removeAll(lhs().nodeSet());
-        Rule parent = getParent();
-        if (parent != null && parent != this) {
-            result.removeAll(parent.rhs()
-                .nodeSet());
-        }
-        return result.toArray(new RuleNode[result.size()]);
-    }
+    private final Supplier<Set<RuleEdge>> complexCreatorEdges
+        = lazyFactory(this::computeComplexCreatorEdges);
 
     /**
      * Returns the variables that occur in creator edges.
      * @see #getCreatorEdges()
      */
     public final LabelVar[] getCreatorVars() {
-        if (this.creatorVars == null) {
-            this.creatorVars = computeCreatorVars();
-        }
-        return this.creatorVars;
+        return this.creatorVars.get();
     }
 
     /**
      * Computes the variables occurring in RHS nodes and edges.
      */
     private LabelVar[] computeCreatorVars() {
-        Set<LabelVar> creatorVarSet = new HashSet<>();
-        for (int i = 0; i < getCreatorEdges().length; i++) {
-            addCreatorVar(creatorVarSet, getCreatorEdges()[i]);
-        }
-        for (int i = 0; i < getCreatorNodes().length; i++) {
-            addCreatorVar(creatorVarSet, getCreatorNodes()[i]);
-        }
-        return creatorVarSet.toArray(new LabelVar[creatorVarSet.size()]);
+        var result = new ArrayList<LabelVar>();
+        Arrays
+            .stream(getCreatorEdges())
+            .flatMap(edge -> edge.getTypeGuards().stream())
+            .map(g -> g.getVar())
+            .forEach(v -> result.add(v));
+        Arrays
+            .stream(getCreatorNodes())
+            .flatMap(node -> node.getTypeGuards().stream())
+            .map(g -> g.getVar())
+            .forEach(v -> result.add(v));
+        return result.toArray(new LabelVar[result.size()]);
     }
 
-    private void addCreatorVar(Set<LabelVar> creatorVarSet, RuleElement creatorEdge) {
-        for (TypeGuard guard : creatorEdge.getTypeGuards()) {
-            creatorVarSet.add(guard.getVar());
-        }
-    }
+    /**
+     * Variables occurring in the rhsOnlyEdges
+     */
+    private final Supplier<LabelVar[]> creatorVars = lazyFactory(this::computeCreatorVars);
 
     /**
      * Returns a sub-graph of the RHS consisting of the creator nodes and the
      * creator edges with their endpoints.
      */
     final RuleGraph getCreatorGraph() {
-        if (this.creatorGraph == null) {
-            this.creatorGraph = computeCreatorGraph();
-        }
-        return this.creatorGraph;
+        return this.creatorGraph.get();
     }
 
     /**
@@ -1219,23 +1150,180 @@ public class Rule implements Action, Fixable {
     }
 
     /**
+     * A sub-graph of the production rule's right hand side, consisting only of
+     * the fresh nodes and edges.
+     */
+    private final Supplier<RuleGraph> creatorGraph = lazyFactory(this::computeCreatorGraph);
+
+    /**
      * Returns the RHS nodes that are not themselves creator nodes but are
      * the ends of creator edges.
      */
     public final Set<RuleNode> getCreatorEnds() {
-        if (this.creatorEnds == null) {
-            this.creatorEnds = new HashSet<>(getCreatorGraph().nodeSet());
-            this.creatorEnds.retainAll(lhs().nodeSet());
-        }
-        return this.creatorEnds;
+        return this.creatorEnds.get();
     }
+
+    /**
+     * A map from the nodes of <tt>rhsOnlyGraph</tt> to <tt>lhs</tt>, which is
+     * the restriction of the inverse of <tt>ruleMorph</tt> to
+     * <tt>rhsOnlyGraph</tt>.
+     */
+    private final Supplier<Set<RuleNode>> creatorEnds = lazyFactory(() -> {
+        var result = new HashSet<>(getCreatorGraph().nodeSet());
+        result.retainAll(lhs().nodeSet());
+        return result;
+    });
+
+    /**
+     * Indicates if the rule creates any nodes.
+     */
+    public boolean hasNodeErasers() {
+        return this.hasNodeErasers.get();
+    }
+
+    private boolean computeHasNodeErasers() {
+        boolean result = getEraserNodes().length > 0;
+        if (!result) {
+            for (Rule subRule : getSubRules()) {
+                result = subRule.hasNodeErasers();
+                if (result) {
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Indicates if this rule has eraser nodes.
+     */
+    private final Supplier<Boolean> hasNodeErasers = lazyFactory(this::computeHasNodeErasers);
+
+    /**
+     * Returns the LHS nodes that are not mapped to the RHS.
+     */
+    public final DefaultRuleNode[] getEraserNodes() {
+        return this.eraserNodes.get();
+    }
+
+    /**
+     * Computes the eraser (i.e., lhs-only) nodes.
+     */
+    private DefaultRuleNode[] computeEraserNodes() {
+        //testFixed(true);
+        Set<RuleNode> result = new LinkedHashSet<>(lhs().nodeSet());
+        result.removeAll(rhs().nodeSet());
+        return result.toArray(new DefaultRuleNode[result.size()]);
+    }
+
+    /**
+     * The lhs nodes that are not ruleMorph keys
+     * @invariant lhsOnlyNodes \subseteq lhs.nodeSet()
+     */
+    private final Supplier<DefaultRuleNode[]> eraserNodes = lazyFactory(this::computeEraserNodes);
+
+    /**
+     * Indicates if the rule creates any edges.
+     */
+    public boolean hasEdgeErasers() {
+        return this.hasEdgeErasers.get();
+    }
+
+    private boolean computeHasEdgeErasers() {
+        boolean result = getEraserEdges().length > 0;
+        if (!result) {
+            for (Rule subRule : getSubRules()) {
+                result = subRule.hasEdgeErasers();
+                if (result) {
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Indicates if this rule has eraser edges.
+     */
+    private final Supplier<Boolean> hasEdgeErasers = lazyFactory(this::computeHasEdgeErasers);
+
+    /** Returns the eraser (i.e., LHS-only) edges. */
+    public final RuleEdge[] getEraserEdges() {
+        return this.eraserEdges.get();
+    }
+
+    /**
+     * Computes the eraser (i.e., LHS-only) edges.
+     * Note: this does not include the incident edges of the eraser nodes.
+     */
+    private RuleEdge[] computeEraserEdges() {
+        testFixed(true);
+        Set<RuleEdge> result = new LinkedHashSet<>(lhs().edgeSet());
+        result.removeAll(rhs().edgeSet());
+        // also remove the incident edges of the lhs-only nodes
+        for (RuleNode eraserNode : getEraserNodes()) {
+            result.removeAll(lhs().edgeSet(eraserNode));
+        }
+        return result.toArray(new RuleEdge[result.size()]);
+    }
+
+    /**
+     * The lhs edges that are not ruleMorph keys
+     * @invariant lhsOnlyEdges \subseteq lhs.edgeSet()
+     */
+    private final Supplier<RuleEdge[]> eraserEdges = lazyFactory(this::computeEraserEdges);
+
+    /** Returns the eraser edges that are not themselves anchors. */
+    public final RuleEdge[] getEraserNonAnchorEdges() {
+        return this.eraserNonAnchorEdges.get();
+    }
+
+    /**
+     * Computes the array of creator edges that are not themselves anchors.
+     */
+    private RuleEdge[] computeEraserNonAnchorEdges() {
+        Set<RuleEdge> result = new LinkedHashSet<>(Arrays.asList(getEraserEdges()));
+        result.removeAll(getAnchor().edgeSet());
+        return result.toArray(new RuleEdge[result.size()]);
+    }
+
+    /**
+     * The lhs edges that are not ruleMorph keys and are not anchors
+     */
+    private final Supplier<RuleEdge[]> eraserNonAnchorEdges
+        = lazyFactory(this::computeEraserNonAnchorEdges);
+
+    /**
+     * Indicates if this rule has mergers.
+     */
+    final public boolean hasMergers() {
+        return this.hasMergers.get();
+    }
+
+    /**
+     * Computes if the rule has mergers or not.
+     */
+    private boolean computeHasMergers() {
+        boolean result = !getLhsMergeMap().isEmpty() || !getRhsMergeMap().isEmpty();
+        if (!result) {
+            for (Rule subRule : getSubRules()) {
+                result = subRule.hasMergers();
+                if (result) {
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Indicates if this rule has node mergers.
+     */
+    private final Supplier<Boolean> hasMergers = lazyFactory(this::computeHasMergers);
 
     /** Returns the set of merger edges in the RHS of which both ends are in the LHS. */
     public final Set<RuleEdge> getLhsMergers() {
-        if (this.lhsMergers == null) {
-            initMergers();
-        }
-        return this.lhsMergers;
+        return getMergers().lhsMergers();
     }
 
     /**
@@ -1243,34 +1331,7 @@ public class Rule implements Action, Fixable {
      * is a creator node.
      */
     public final Set<RuleEdge> getRhsMergers() {
-        if (this.rhsMergers == null) {
-            initMergers();
-        }
-        return this.rhsMergers;
-    }
-
-    /** Returns the set of merger edges in the RHS. */
-    private final void initMergers() {
-        this.lhsMergers = new HashSet<>();
-        this.rhsMergers = new HashSet<>();
-        this.lhsMergeMap = new HashMap<>();
-        this.rhsMergeMap = new HashMap<>();
-        for (RuleEdge rhsEdge : rhs().edgeSet()) {
-            if (rhsEdge.label()
-                .isEmpty() && !this.lhs.containsEdge(rhsEdge)) {
-                RuleNode source = rhsEdge.source();
-                RuleNode target = rhsEdge.target();
-                if (lhs().containsNode(source) && lhs().containsNode(target)) {
-                    this.lhsMergeMap.put(source, target);
-                    this.lhsMergers.add(rhsEdge);
-                } else {
-                    this.rhsMergeMap.put(source, target);
-                    this.rhsMergers.add(rhsEdge);
-                }
-            }
-        }
-        closeMergeMap(this.lhsMergeMap);
-        closeMergeMap(this.rhsMergeMap);
+        return getMergers().rhsMergers();
     }
 
     /**
@@ -1278,10 +1339,7 @@ public class Rule implements Action, Fixable {
      * another to the LHS node it is merged with.
      */
     public final Map<RuleNode,RuleNode> getLhsMergeMap() {
-        if (this.lhsMergeMap == null) {
-            initMergers();
-        }
-        return this.lhsMergeMap;
+        return getMergers().lhsMergeMap();
     }
 
     /**
@@ -1289,23 +1347,62 @@ public class Rule implements Action, Fixable {
      * at least one of which is a creator node.
      */
     public final Map<RuleNode,RuleNode> getRhsMergeMap() {
-        if (this.rhsMergeMap == null) {
-            initMergers();
-        }
-        return this.rhsMergeMap;
+        return getMergers().rhsMergeMap();
     }
 
-    private void closeMergeMap(Map<RuleNode,RuleNode> mergeMap) {
-        // transitively close the map
-        // because we don't expect long chains of mergers,
-        // we can sacrifice efficiency for brevity
-        for (Map.Entry<RuleNode,RuleNode> mergeEntry : mergeMap.entrySet()) {
-            RuleNode oldValue = mergeEntry.getValue();
-            RuleNode newValue = oldValue;
-            while (mergeMap.containsKey(newValue)) {
-                newValue = mergeMap.get(newValue);
+    private Mergers getMergers() {
+        return this.mergers.get();
+    }
+
+    private final Supplier<Mergers> mergers = lazyFactory(() -> new Mergers(this));
+
+    /** Merger information.
+     * @param lhsMergers he set of merger edges in the RHS of which both ends are in the LHS
+     * @param rhsMergers the set of merger edges in the RHS of which at least one end
+     * is a creator node.
+     * @param lhsMergeMap a mapping from merge sources to merge targets outside the LHS.
+     * @param rhsMergeMap a map from merged nodes to their merge targets,
+     * at least one of which is a creator node
+     */
+    static private record Mergers(Set<RuleEdge> lhsMergers, Set<RuleEdge> rhsMergers,
+        Map<RuleNode,RuleNode> lhsMergeMap, Map<RuleNode,RuleNode> rhsMergeMap) {
+        Mergers(Rule rule) {
+            this(new HashSet<>(), new HashSet<>(), new HashMap<>(), new HashMap<>());
+            init(rule);
+        }
+
+        private void init(Rule rule) {
+            var lhs = rule.lhs();
+            var rhs = rule.rhs();
+            for (RuleEdge rhsEdge : rhs.edgeSet()) {
+                if (rhsEdge.label().isEmpty() && !lhs.containsEdge(rhsEdge)) {
+                    RuleNode source = rhsEdge.source();
+                    RuleNode target = rhsEdge.target();
+                    if (lhs.containsNode(source) && lhs.containsNode(target)) {
+                        this.lhsMergeMap.put(source, target);
+                        this.lhsMergers.add(rhsEdge);
+                    } else {
+                        this.rhsMergeMap.put(source, target);
+                        this.rhsMergers.add(rhsEdge);
+                    }
+                }
             }
-            mergeEntry.setValue(newValue);
+            closeMergeMap(this.lhsMergeMap);
+            closeMergeMap(this.rhsMergeMap);
+        }
+
+        private void closeMergeMap(Map<RuleNode,RuleNode> mergeMap) {
+            // transitively close the map
+            // because we don't expect long chains of mergers,
+            // we can sacrifice efficiency for brevity
+            for (Map.Entry<RuleNode,RuleNode> mergeEntry : mergeMap.entrySet()) {
+                RuleNode oldValue = mergeEntry.getValue();
+                RuleNode newValue = oldValue;
+                while (mergeMap.containsKey(newValue)) {
+                    newValue = mergeMap.get(newValue);
+                }
+                mergeEntry.setValue(newValue);
+            }
         }
     }
 
@@ -1328,170 +1425,6 @@ public class Rule implements Action, Fixable {
 
     /** Flag indicating that this rule is part of a recipe. */
     private boolean partial;
-    /** Application condition of this rule. */
-    private final Condition condition;
-    /**
-     * The parent rule of this rule; may be <code>null</code>, if this is a
-     * top-level rule.
-     */
-    private Rule parent;
-    /**
-     * The collection of direct sub-rules of this rules. Lazily created by
-     * {@link #getSubRules()}.
-     */
-    private Collection<Rule> subRules;
-    /**
-     * Indicates if this rule has node mergers.
-     */
-    private boolean hasMergers;
-    /** Flag indicating if the {@link #hasMergers} has been computed. */
-    private boolean hasMergersSet;
-    /**
-     * Indicates if this rule has creator nodes.
-     */
-    private boolean hasNodeCreators;
-    /** Flag indicating if the {@link #hasNodeCreators} has been computed. */
-    private boolean hasNodeCreatorsSet;
-    /**
-     * Indicates if this rule has creator edges.
-     */
-    private boolean hasEdgeCreators;
-    /** Flag indicating if the {@link #hasEdgeCreators} has been computed. */
-    private boolean hasEdgeCreatorsSet;
-    /**
-     * Indicates if this rule has eraser nodes.
-     */
-    private boolean hasNodeErasers;
-    /** Flag indicating if the {@link #hasNodeErasers} has been computed. */
-    private boolean hasNodeErasersSet;
-    /**
-     * Indicates if this rule has eraser edges.
-     */
-    private boolean hasEdgeErasers;
-    /** Flag indicating if the {@link #hasEdgeErasers} has been computed. */
-    private boolean hasEdgeErasersSet;
-    /**
-     * Indicates if this rule makes changes to a graph at all.
-     */
-    private boolean modifying;
-    /**
-     * Indicates if the {@link #modifying} variable has been computed
-     */
-    private boolean modifyingSet;
-    /**
-     * This production rule's left hand side.
-     * @invariant lhs != null
-     */
-    private RuleGraph lhs;
-    /**
-     * This production rule's right hand side.
-     * @invariant rhs != null
-     */
-    private RuleGraph rhs;
-    /** Mapping from the context of this rule to the RHS. */
-    private final RuleGraph coRoot;
-    /** Flag indicating whether rule applications should be checked for dangling edges. */
-    private boolean checkDangling;
-    /** Flag indicating whether the rule has been fixed. */
-    private boolean fixed;
-    /** Flag indicating whether the rule is currently in the process of fixing. */
-    private boolean fixing;
-    /**
-     * A sub-graph of the production rule's right hand side, consisting only of
-     * the fresh nodes and edges.
-     */
-    private RuleGraph creatorGraph;
-    /**
-     * A map from the nodes of <tt>rhsOnlyGraph</tt> to <tt>lhs</tt>, which is
-     * the restriction of the inverse of <tt>ruleMorph</tt> to
-     * <tt>rhsOnlyGraph</tt>.
-     */
-    private Set<RuleNode> creatorEnds;
-    /**
-     * The lhs nodes that are not ruleMorph keys
-     * @invariant lhsOnlyNodes \subseteq lhs.nodeSet()
-     */
-    private DefaultRuleNode[] eraserNodes;
-    /**
-     * The lhs edges that are not ruleMorph keys
-     * @invariant lhsOnlyEdges \subseteq lhs.edgeSet()
-     */
-    private RuleEdge[] eraserEdges;
-    /** The rule anchor. */
-    private Anchor anchor;
-    /** The rule seed. */
-    private Anchor seed;
-    /**
-     * The lhs edges that are not ruleMorph keys and are not anchors
-     */
-    private RuleEdge[] eraserNonAnchorEdges;
-    /**
-     * The lhs nodes that are end points of eraser or creator edges or mergers,
-     * either in this rule or one of its sub-rules.
-     */
-    private Set<RuleNode> modifierEnds;
-    /**
-     * The lhs variables that occur in eraser or creator edges, either in this rule or
-     * one of its sub-rules.
-     */
-    private Set<LabelVar> modifierVars;
-    /**
-     * The LHS nodes that do not have any incident edges in the LHS.
-     */
-    private RuleNode[] isolatedNodes;
-    /**
-     * The rhs nodes that are not ruleMorph images
-     * @invariant creatorNodes \subseteq rhs.nodeSet()
-     */
-    private RuleNode[] creatorNodes;
-
-    /**
-     * The rhs edges that are not ruleMorph images
-     */
-    private RuleEdge[] creatorEdges;
-    /**
-     * The rhs edges that are not ruleMorph images but with all ends morphism
-     * images
-     */
-    private RuleEdge[] simpleCreatorEdges;
-    /**
-     * The rhs edges with at least one end not a morphism image
-     */
-    private Set<RuleEdge> complexCreatorEdges;
-    /**
-     * Variables occurring in the rhsOnlyEdges
-     */
-    private LabelVar[] creatorVars;
-    /** Set of merger edges whose source and target nodes are both in the LHS. */
-    private Set<RuleEdge> lhsMergers;
-    /** Set of merger edges whose source and target nodes are not both in the LHS. */
-    private Set<RuleEdge> rhsMergers;
-    /**
-     * A mapping from merge sources to merge targets within the LHS.
-     */
-    private Map<RuleNode,RuleNode> lhsMergeMap;
-    /**
-     * A mapping from merge sources to merge targets outside the LHS.
-     */
-    private Map<RuleNode,RuleNode> rhsMergeMap;
-
-    /** Mapping from rule nodes to explicitly declared colours. */
-    private final Map<RuleNode,Color> colorMap = new HashMap<>();
-
-    /** The signature of the rule. */
-    private Signature<UnitPar.RulePar> sig;
-    /**
-     * Set of anonymous (unnumbered) parameters.
-     */
-    private Set<RuleNode> hiddenPars;
-
-    /**
-     * Mapping from sets of initialised parameters to match strategies.
-     */
-    private final Map<BitSet,Matcher> matcherMap = new HashMap<>();
-
-    /** The matcher for events of this rule. */
-    private Matcher eventMatcher;
 
     /** Returns the current anchor factory for all rules. */
     public static AnchorFactory getAnchorFactory() {

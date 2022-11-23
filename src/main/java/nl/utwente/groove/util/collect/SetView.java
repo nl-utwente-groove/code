@@ -20,6 +20,7 @@ import java.util.AbstractSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Provides a shared view upon an underlying set, filtering those values that
@@ -121,4 +122,14 @@ public abstract class SetView<T> extends AbstractSet<T> {
      * The underlying set.
      */
     protected final Set<?> set;
+
+    /** Constructs a new set view from a given set and approval predicate. */
+    static public <T> SetView<T> instance(Set<T> set, Predicate<Object> approves) {
+        return new SetView<>(set) {
+            @Override
+            public boolean approves(Object obj) {
+                return approves.test(obj);
+            }
+        };
+    }
 }
