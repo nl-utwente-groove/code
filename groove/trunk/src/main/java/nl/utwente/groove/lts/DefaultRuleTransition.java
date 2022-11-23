@@ -18,7 +18,6 @@ package nl.utwente.groove.lts;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.IllegalFormatException;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNull;
@@ -35,7 +34,6 @@ import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostGraphMorphism;
 import nl.utwente.groove.grammar.host.HostNode;
-import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.graph.AEdge;
 import nl.utwente.groove.graph.AGraph;
 import nl.utwente.groove.graph.EdgeRole;
@@ -45,7 +43,6 @@ import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.transform.RuleEvent;
 import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * Models a transition built upon a rule application
@@ -102,11 +99,6 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     }
 
     @Override
-    public @Nullable String getOutputString() throws FormatException {
-        return getOutputString(this);
-    }
-
-    @Override
     public boolean isSymmetry() {
         return this.symmetry;
     }
@@ -159,8 +151,8 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     @Override
     public GraphTransitionKey getKey(GraphState source) {
         if (source != source()) {
-            throw Exceptions.illegalArg("Source state %s should coincide with argument %s",
-                                        source(), source);
+            throw Exceptions
+                .illegalArg("Source state %s should coincide with argument %s", source(), source);
         } else {
             return getKey();
         }
@@ -174,8 +166,8 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     @Override
     public HostNode[] getAddedNodes(GraphState source) {
         if (source != source()) {
-            throw Exceptions.illegalArg("Source state %s should coincide with argument %s",
-                                        source(), source);
+            throw Exceptions
+                .illegalArg("Source state %s should coincide with argument %s", source(), source);
         } else {
             return getAddedNodes();
         }
@@ -189,8 +181,8 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     @Override
     public RuleTransition toTransition(GraphState source) {
         if (source != source()) {
-            throw Exceptions.illegalArg("Source state %s should coincide with argument %s",
-                                        source(), source);
+            throw Exceptions
+                .illegalArg("Source state %s should coincide with argument %s", source(), source);
         } else {
             return this;
         }
@@ -204,8 +196,8 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     @Override
     public GraphState getTarget(GraphState source) {
         if (source != source()) {
-            throw Exceptions.illegalArg("Source state %s should coincide with argument %s",
-                                        source(), source);
+            throw Exceptions
+                .illegalArg("Source state %s should coincide with argument %s", source(), source);
         } else {
             return target();
         }
@@ -344,33 +336,6 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
 
     /** The total number of anchor images created. */
     static private int anchorImageCount = 0;
-
-    /**
-     * Returns the instantiated output string for a given transition, if any.
-     * @return the instantiated output string, or {@code null} if there is none
-     * @throws FormatException if the format string of the rule
-     * does not correspond to the actual rule parameters.
-     */
-    public static @Nullable String getOutputString(GraphTransition trans) throws FormatException {
-        String result = null;
-        String formatString = trans.getAction().getFormatString();
-        if (formatString != null && !formatString.isEmpty()) {
-            List<Object> args = new ArrayList<>();
-            for (HostNode arg : trans.label().getArguments()) {
-                if (arg instanceof ValueNode vn) {
-                    args.add(vn.getValue());
-                } else {
-                    args.add(arg.toString());
-                }
-            }
-            try {
-                result = String.format(formatString, args.toArray());
-            } catch (IllegalFormatException e) {
-                throw new FormatException("Error in rule output string: %s", e.getMessage());
-            }
-        }
-        return result;
-    }
 
     /** Computes the list of call arguments for a given graph transition. */
     public static List<HostNode> getArguments(GraphTransition trans) {

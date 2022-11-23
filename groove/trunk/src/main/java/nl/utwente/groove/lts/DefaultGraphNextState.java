@@ -31,7 +31,6 @@ import nl.utwente.groove.transform.DeltaApplier;
 import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.transform.RuleEvent;
-import nl.utwente.groove.util.parse.FormatException;
 
 /**
  *
@@ -86,11 +85,6 @@ public class DefaultGraphNextState extends AbstractGraphState
     @Override
     public Iterable<RuleTransition> getSteps() {
         return Collections.<RuleTransition>singletonList(this);
-    }
-
-    @Override
-    public String getOutputString() throws FormatException {
-        return DefaultRuleTransition.getOutputString(this);
     }
 
     @Override
