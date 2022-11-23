@@ -28,7 +28,7 @@ public class ConditionalBFSStrategy extends BFSStrategy {
     @Override
     protected GraphState computeNextState() {
         GraphState result = super.computeNextState();
-        while (result != null && !getExplCond().isSatisfied(result)) {
+        while (result != null && !getExplCond().test(result)) {
             result = super.computeNextState();
         }
         return result;

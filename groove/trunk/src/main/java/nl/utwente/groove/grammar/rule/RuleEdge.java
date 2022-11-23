@@ -49,7 +49,7 @@ public class RuleEdge extends AEdge<RuleNode,RuleLabel> implements RuleElement {
             for (TypeEdge typeEdge : typeGraph.edgeSet()) {
                 if (typeEdge.source().getSubtypes().contains(source.getType())
                     && typeEdge.target().getSubtypes().contains(target.getType())
-                    && guard.isSatisfied(typeEdge)) {
+                    && guard.test(typeEdge)) {
                     this.matchingTypes.add(typeEdge);
                 }
             }

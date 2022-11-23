@@ -20,7 +20,6 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.lts.GraphState;
-import nl.utwente.groove.lts.RuleTransition;
 
 /**
  * Condition satisfied when a rule is applicable.
@@ -38,20 +37,10 @@ public class IsRuleApplicableCondition extends ExploreCondition<Rule> {
     }
 
     @Override
-    public boolean isSatisfied(GraphState state) {
-        boolean result = this.condition.hasMatch(state.getGraph());
-        return this.negated ? !result : result;
-    }
-
-    /**
-     * Checks whether a transition was created from the application of a
-     * given rule.
-     * @param transition the LTS transition.
-     * @return true if the transition was from the given rule.
-     */
-    public boolean isSatisfied(RuleTransition transition) {
-        return transition.getEvent()
-            .getRule()
-            .equals(this.condition);
+    public boolean test(GraphState state) {
+        boolean result = criterion().hasMatch(state.getGraph());
+        return isNegated()
+            ? !result
+            : result;
     }
 }

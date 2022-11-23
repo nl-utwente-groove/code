@@ -115,14 +115,14 @@ public class RuleApplication implements DeltaApplier {
     private boolean testEvent(final RuleEvent event, HostGraph source) {
         final Property<Proof> proofContainsEvent = new Property<>() {
             @Override
-            public boolean isSatisfied(Proof proof) {
+            public boolean test(Proof proof) {
                 return event.createEvent(proof).equals(event);
             }
         };
         final Finder<Proof> eventFinder = Visitor.newFinder(proofContainsEvent);
         final Property<TreeMatch> matchContainsProof = new Property<>() {
             @Override
-            public boolean isSatisfied(TreeMatch value) {
+            public boolean test(TreeMatch value) {
                 return value.traverseProofs(eventFinder) != null;
             }
         };

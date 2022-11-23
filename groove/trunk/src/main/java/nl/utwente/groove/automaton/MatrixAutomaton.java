@@ -349,7 +349,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNu
                         } else if (label.isWildcard()) {
                             TypeGuard guard = label.getWildcardGuard();
                             assert guard != null;
-                            labelOK = guard.isSatisfied(letter);
+                            labelOK = guard.test(letter);
                             if (guard.isNamed()) {
                                 idMap = new HashMap<>(idMap);
                                 TypeElement oldIdValue = idMap.put(guard.getVar(), letter);
@@ -921,7 +921,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNu
                         if (edgeLabel.isWildcard() && type instanceof TypeEdge) {
                             TypeGuard guard = edgeLabel.getWildcardGuard();
                             if (guard != null) {
-                                labelOk = guard.isSatisfied(type);
+                                labelOk = guard.test(type);
                                 if (labelOk && guard.isNamed()) {
                                     LabelVar var = guard.getVar();
                                     // we have a wildcard id; let's look it up

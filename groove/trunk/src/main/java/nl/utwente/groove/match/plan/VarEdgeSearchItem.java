@@ -94,7 +94,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
     }
 
     boolean isGuardSatisfied(TypeElement type) {
-        return this.guard.isSatisfied(type);
+        return this.guard.test(type);
     }
 
     /** The variable bound in the wildcard (not <code>null</code>). */

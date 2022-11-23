@@ -186,7 +186,7 @@ abstract public class Visitor<T,R> {
 
         @Override
         protected boolean process(T object) {
-            if (!hasResult() && (this.property == null || this.property.isSatisfied(object))) {
+            if (!hasResult() && (this.property == null || this.property.test(object))) {
                 setResult(object);
             }
             return !hasResult();
@@ -247,7 +247,7 @@ abstract public class Visitor<T,R> {
         protected boolean process(T object) {
             Collection<T> result = getResult();
             assert result != null; // by assumption this has to be true for collectors
-            if (this.property == null || this.property.isSatisfied(object)) {
+            if (this.property == null || this.property.test(object)) {
                 result.add(object);
             }
             return true;
