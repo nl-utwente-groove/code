@@ -174,7 +174,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
         //condition 2: labels must match <-- commented out because we check this in the root
         //condition 3: if this is an edge checker for a loop then e should also be a loop
         assert isWildcardEdge()
-            ? this.edge.label().getMatchExpr().getWildcardGuard().isSatisfied(e.getType())
+            ? this.edge.label().getMatchExpr().getWildcardGuard().test(e.getType())
             : e.getType().equals(this.edge.getType());
 
         return (this.type == null || this.type.subsumes(e.getType())) && checkSourceType(e.source())
@@ -245,7 +245,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
     public boolean isAcceptingLabel(TypeElement e) {
         RuleLabel rl = this.edge.label();
         return isWildcardEdge()
-            ? rl.isWildcard(wc -> wc.getGuard().isSatisfied(e))
+            ? rl.isWildcard(wc -> wc.getGuard().test(e))
             : e.equals(this.edge.getType());
     }
 

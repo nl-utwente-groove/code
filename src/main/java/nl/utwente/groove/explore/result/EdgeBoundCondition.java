@@ -37,19 +37,19 @@ public class EdgeBoundCondition extends ExploreCondition<Map<TypeLabel,Integer>>
     /**
      * Constructs a condition.
      */
-    public EdgeBoundCondition(Map<TypeLabel,Integer> condition) {
-        super(condition);
+    public EdgeBoundCondition(Map<TypeLabel,Integer> criterion) {
+        super(criterion);
     }
 
     @Override
-    public boolean isSatisfied(GraphState state) {
+    public boolean test(GraphState state) {
         boolean result = true;
         HostGraph g = state.getGraph();
-        result = this.condition
+        result = criterion()
             .entrySet()
             .stream()
             .anyMatch(e -> g.edgeSet(e.getKey()).size() <= e.getValue());
-        return this.negated
+        return isNegated()
             ? !result
             : result;
     }

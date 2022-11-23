@@ -117,7 +117,7 @@ public enum ThreeValued {
         }
 
         @Override
-        public boolean isSatisfied(String value) {
+        public boolean test(String value) {
             return isFalse(value) || isSome(value) || isTrue(value);
         }
 

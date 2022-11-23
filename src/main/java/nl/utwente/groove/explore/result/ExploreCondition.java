@@ -27,22 +27,22 @@ import nl.utwente.groove.util.Property;
  * to explore only states that satisfy the condition.
  * @author Iovka Boneva
  *
- * @param <C> Type of the object defining the condition.
+ * @param <C> Type of the object defining the criterion for the condition.
  */
 @NonNullByDefault
 public abstract class ExploreCondition<C> extends Property<GraphState> {
     /** Constructor to initialise the condition, to be used by subclasses.
      * The condition is not negated.
      */
-    protected ExploreCondition(C condition) {
-        this(condition, false);
+    protected ExploreCondition(C criterion) {
+        this(criterion, false);
     }
 
     /** Constructor to initialise the condition, to be used by subclasses.
      * The condition is optionally negated.
      */
-    protected ExploreCondition(C condition, boolean negated) {
-        this.condition = condition;
+    protected ExploreCondition(C criterion, boolean negated) {
+        this.criterion = criterion;
         this.negated = negated;
     }
 
@@ -54,19 +54,12 @@ public abstract class ExploreCondition<C> extends Property<GraphState> {
     /**
      * Gets the condition.
      */
-    public C getCondition() {
-        return this.condition;
-    }
-
-    /**
-     * The type of the actual condition.
-     */
-    public Class<?> getConditionType() {
-        return this.condition.getClass();
+    public C criterion() {
+        return this.criterion;
     }
 
     /** Indicates whether the condition is negated. */
-    protected final boolean negated;
+    private final boolean negated;
     /** The condition. */
-    protected final C condition;
+    private final C criterion;
 }

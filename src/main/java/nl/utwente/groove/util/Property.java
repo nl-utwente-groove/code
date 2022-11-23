@@ -22,13 +22,14 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Interface to wrap a simple condition on a subject type.
  * @author Arend Rensink
  * @version $Revision $
  */
-abstract public class Property<S> {
+abstract public class Property<S> implements Predicate<S> {
     /** Creates an instance with <code>null</code> comment and description. */
     public Property() {
         this(null, null);
@@ -52,12 +53,6 @@ abstract public class Property<S> {
     }
 
     /**
-     * Indicates if this property is satisfied by a given object of type
-     * <code>S</code>.
-     */
-    abstract public boolean isSatisfied(S value);
-
-    /**
      * Removes from a given set all values that do not satisfy this property.
      * @param collection the set to be filtered; will be modified as a result of this call
      * @return the parameter {@code collection}
@@ -65,7 +60,7 @@ abstract public class Property<S> {
     public <C extends Collection<? extends S>> C filter(C collection) {
         Iterator<? extends S> iter = collection.iterator();
         while (iter.hasNext()) {
-            if (!isSatisfied(iter.next())) {
+            if (!test(iter.next())) {
                 iter.remove();
             }
         }
@@ -137,7 +132,7 @@ abstract public class Property<S> {
         }
 
         @Override
-        public boolean isSatisfied(S state) {
+        public boolean test(S state) {
             return true;
         }
     }
@@ -175,7 +170,7 @@ abstract public class Property<S> {
          * or <code>false</code>.
          */
         @Override
-        public boolean isSatisfied(String value) {
+        public boolean test(String value) {
             return (this.emptyOk && value.equals("")) || value.equals(trueString)
                 || value.equals(falseString);
         }
@@ -188,8 +183,8 @@ abstract public class Property<S> {
         /** Representation of <code>false</code>. */
         static private final String falseString = Boolean.toString(false);
         /** The property description. */
-        static private final String description =
-            String.format("%s or %s", trueString, falseString);
+        static private final String description
+            = String.format("%s or %s", trueString, falseString);
     }
 
     /**
@@ -214,7 +209,7 @@ abstract public class Property<S> {
          * wrapped enum type.
          */
         @Override
-        public boolean isSatisfied(String value) {
+        public boolean test(String value) {
             if (value.length() == 0) {
                 return this.emptyOk;
             }
@@ -270,7 +265,7 @@ abstract public class Property<S> {
         }
 
         @Override
-        public boolean isSatisfied(S value) {
+        public boolean test(S value) {
             return this.values.contains(value);
         }
 

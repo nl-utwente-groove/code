@@ -122,7 +122,7 @@ public class TypeGuard extends Property<TypeElement> {
     }
 
     @Override
-    public boolean isSatisfied(TypeElement type) {
+    public boolean test(TypeElement type) {
         if (getKind() != ((type instanceof TypeNode) ? EdgeRole.NODE_TYPE
             : ((TypeEdge) type).getRole())) {
             return false;
