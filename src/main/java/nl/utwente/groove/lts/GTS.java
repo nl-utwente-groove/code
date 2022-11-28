@@ -33,6 +33,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 
@@ -47,6 +48,7 @@ import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.explore.util.LTSLabels;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.Grammar;
+import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.host.HostEdgeSet;
 import nl.utwente.groove.grammar.host.HostFactory;
 import nl.utwente.groove.grammar.host.HostGraph;
@@ -670,10 +672,11 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
                 result.addEdge(image, label, image);
             }
             if (flags.showRecipes() && state.isInternalState()) {
-                String label = flags
-                    .getRecipeLabel()
-                    .replaceAll("#", "" + state.getActualFrame().getRecipe().getQualName());
-                result.addEdge(image, label, image);
+                Optional<Recipe> recipe = state.getActualFrame().getRecipe();
+                recipe.map(r -> r.getQualName()).ifPresent(n -> {
+                    String label = flags.getRecipeLabel().replaceAll("#", "" + n);
+                    result.addEdge(image, label, image);
+                });
             }
         }
         for (GraphTransition transition : transitions) {
@@ -915,21 +918,17 @@ public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> im
                 HostGraph graph = stateKey.getGraph();
                 result = graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
                 Frame ctrlState = stateKey.getPrimeFrame();
-                if (ctrlState != null) {
-                    result += ctrlState.hashCode();
-                    result += Valuator.hashCode(stateKey.getPrimeValues());
-                }
+                result += ctrlState.hashCode();
+                result += Valuator.hashCode(stateKey.getPrimeValues());
             } else {
                 CertificateStrategy certifier
                     = this.checker.getCertifier(stateKey.getGraph(), true);
                 Object certificate = certifier.getGraphCertificate();
                 result = certificate.hashCode();
                 Frame ctrlState = stateKey.getPrimeFrame();
-                if (ctrlState != null) {
-                    result += ctrlState.hashCode();
-                    result += Valuator
-                        .hashCode(stateKey.getPrimeValues(), certifier.getCertificateMap());
-                }
+                result += ctrlState.hashCode();
+                result
+                    += Valuator.hashCode(stateKey.getPrimeValues(), certifier.getCertificateMap());
             }
             if (CHECK_CONTROL_LOCATION) {
                 result += System.identityHashCode(stateKey.getPrimeFrame());

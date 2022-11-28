@@ -16,9 +16,16 @@
  */
 package nl.utwente.groove.control.instance;
 
+import static nl.utwente.groove.util.LazyFactory.lazyFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.control.Attempt;
 import nl.utwente.groove.control.Call;
@@ -35,6 +42,7 @@ import nl.utwente.groove.grammar.Rule;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
     /**
      * Constructs a step from the given parameters.
@@ -43,9 +51,7 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      * @param onFinish target frame for the step
      */
     public Step(Frame source, SwitchStack newSwitches, Frame onFinish) {
-        assert newSwitches.peek()
-            .getUnit()
-            .getKind() == Callable.Kind.RULE;
+        assert newSwitches.peek().getUnit().getKind() == Callable.Kind.RULE;
         this.stack = new SwitchStack();
         this.stack.addAll(source.getSwitchStack());
         this.stack.addAll(newSwitches);
@@ -85,10 +91,7 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
     /** Returns the number of levels by which the call stack depth changes from source
      * to target frame. */
     public int getCallDepthChange() {
-        return onFinish().getSwitchStack()
-            .size()
-            - getSource().getSwitchStack()
-                .size();
+        return onFinish().getSwitchStack().size() - getSource().getSwitchStack().size();
     }
 
     /** Returns the stack of switches in this step. */
@@ -127,7 +130,7 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      * Returns the outermost recipe of which this step is a part, if any.
      * @see #isInternal()
      */
-    public Recipe getRecipe() {
+    public Optional<Recipe> getRecipe() {
         return getCallStack().getRecipe();
     }
 
@@ -155,20 +158,16 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      * of this step.
      */
     public List<Assignment> getEnterAssignments() {
-        if (this.enters == null) {
-            this.enters = computeEnterAssignments();
-        }
-        return this.enters;
+        return this.enters.get();
     }
 
-    private List<Assignment> enters;
+    private Supplier<List<Assignment>> enters = lazyFactory(this::computeEnterAssignments);
 
     private List<Assignment> computeEnterAssignments() {
         List<Assignment> result = new ArrayList<>();
         // add push actions for every successive call on the
         // stack of entered calls
-        for (int i = getSource().getSwitchStack()
-            .size(); i < getSwitchStack().size() - 1; i++) {
+        for (int i = getSource().getSwitchStack().size(); i < getSwitchStack().size() - 1; i++) {
             result.add(Assignment.enter(getSwitchStack().get(i)));
         }
         return result;
@@ -181,13 +180,11 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      * procedures explicitly exited by this step.
      */
     public List<Assignment> getApplyAssignments() {
-        if (this.applyAssignments == null) {
-            this.applyAssignments = computeApplyAssignments();
-        }
-        return this.applyAssignments;
+        return this.applyAssignments.get();
     }
 
-    private List<Assignment> applyAssignments;
+    private Supplier<List<Assignment>> applyAssignments
+        = lazyFactory(this::computeApplyAssignments);
 
     private List<Assignment> computeApplyAssignments() {
         List<Assignment> result = computeEnterAssignments();
@@ -195,16 +192,14 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
         result.add(Assignment.modify(stack.peek()));
         // add pop actions for the calls that are finished
         for (int i = stack.size() - 2; i >= onFinish().getNestingDepth(); i--) {
-            result.add(Assignment.exit(stack.get(i + 1)
-                .onFinish(), stack.get(i)));
+            result.add(Assignment.exit(stack.get(i + 1).onFinish(), stack.get(i)));
         }
         return result;
     }
 
     @Override
     public int compareTo(Step other) {
-        int result = getSource().getNumber() - other.getSource()
-            .getNumber();
+        int result = getSource().getNumber() - other.getSource().getNumber();
         if (result != 0) {
             return result;
         }
@@ -212,8 +207,7 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
         if (result != 0) {
             return result;
         }
-        result = onFinish().getNumber() - other.onFinish()
-            .getNumber();
+        result = onFinish().getNumber() - other.onFinish().getNumber();
         return result;
     }
 
@@ -223,7 +217,7 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
     }
 
     @Override
-    public boolean equals(Object other) {
+    public boolean equals(@Nullable Object other) {
         return this == other;
     }
 

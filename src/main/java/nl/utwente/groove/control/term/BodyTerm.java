@@ -40,6 +40,7 @@ public class BodyTerm extends Term {
 
     @Override
     protected DerivationAttempt computeAttempt(boolean nested) {
+        checkTrial();
         DerivationAttempt result = createAttempt();
         DerivationAttempt argAttempt = arg0().getAttempt(nested);
         for (Derivation deriv : argAttempt) {

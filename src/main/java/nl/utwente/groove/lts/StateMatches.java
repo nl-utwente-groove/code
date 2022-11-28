@@ -21,12 +21,14 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.control.instance.Frame;
 import nl.utwente.groove.control.instance.Step;
 import nl.utwente.groove.control.instance.StepAttempt;
+import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.Rule;
-import nl.utwente.groove.grammar.Action.Role;
 
 /**
  * Algorithm class to gradually build up the matches for a given state.
@@ -40,8 +42,8 @@ public class StateMatches extends MatchResultSet {
     public StateMatches(StateCache cache) {
         this.cache = cache;
         this.state = cache.getState();
-        this.removePolicies =
-            cache.getState().getGTS().getGrammar().getProperties().hasRemovePolicies();
+        this.removePolicies
+            = cache.getState().getGTS().getGrammar().getProperties().hasRemovePolicies();
     }
 
     private StateCache getCache() {
@@ -84,6 +86,7 @@ public class StateMatches extends MatchResultSet {
     /** Returns the first unexplored match of the state.
      * @return the first unexplored match, or {@code null} if there is no unexplored match
      */
+    @Nullable
     MatchResult getOne() {
         MatchResult result = null;
         // compute matches insofar necessary and feasible
@@ -142,7 +145,9 @@ public class StateMatches extends MatchResultSet {
                 // yes, there is a present outgoing transition
                 // or all outgoing transitions are absent
                 StepAttempt step = frame.getAttempt();
-                frame = somePresent ? step.onSuccess() : step.onFailure();
+                frame = somePresent
+                    ? step.onSuccess()
+                    : step.onFailure();
                 getState().setFrame(frame);
                 this.outstanding = EMPTY_MATCH_SET;
             }
@@ -163,7 +168,9 @@ public class StateMatches extends MatchResultSet {
             for (Step step : attempt) {
                 MatchResultSet matches = getMatchCollector().computeMatches(step);
                 Rule action = step.getRule();
-                if (action.getRole() == (matches.isEmpty() ? Role.INVARIANT : Role.FORBIDDEN)) {
+                if (action.getRole() == (matches.isEmpty()
+                    ? Role.INVARIANT
+                    : Role.FORBIDDEN)) {
                     assert attempt.isConstraint();
                     getCache().addConstraintError(getState().getGraph(), action);
                     violated = action.getPolicy().max(violated);

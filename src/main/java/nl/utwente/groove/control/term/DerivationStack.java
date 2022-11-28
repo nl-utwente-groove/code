@@ -34,17 +34,13 @@ public class DerivationStack extends ArrayDeque<Derivation> {
      */
     public DerivationStack(Derivation bottom) {
         add(bottom);
-        if (bottom.hasNested()) {
-            addAll(bottom.getNested()
-                .getStack());
-        }
+        bottom.getNested().ifPresent(d -> addAll(d.getStack()));
     }
 
     /** Returns the call stack corresponding to this derivation stack. */
     public CallStack getCallStack() {
         if (this.callStack == null) {
-            this.callStack = new CallStack(this.stream()
-                .map(d -> d.getCall()));
+            this.callStack = new CallStack(this.stream().map(d -> d.getCall()));
         }
         return this.callStack;
     }

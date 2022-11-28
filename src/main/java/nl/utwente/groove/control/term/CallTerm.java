@@ -49,8 +49,8 @@ public class CallTerm extends Term {
         DerivationAttempt result;
         if (nested && getCall().getUnit() instanceof Procedure p) {
             Term inner = p.getTerm();
-            assert inner != null : String.format("Procedure %s has not been declared",
-                                                 getCall().getUnit().getQualName());
+            assert inner != null : String
+                .format("Procedure %s has not been declared", getCall().getUnit().getQualName());
             result = body(inner, deriv).getAttempt(nested);
         } else {
             result = createAttempt();
@@ -82,6 +82,7 @@ public class CallTerm extends Term {
         if (!super.equals(obj)) {
             return false;
         }
+        assert obj instanceof CallTerm;
         return this.call.equals(((CallTerm) obj).call);
     }
 

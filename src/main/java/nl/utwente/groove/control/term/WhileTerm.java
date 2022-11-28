@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.control.term;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.util.Exceptions;
 
 /**
@@ -23,6 +25,7 @@ import nl.utwente.groove.util.Exceptions;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public class WhileTerm extends Term {
     /**
      * Constructs a while-do term.
@@ -35,55 +38,35 @@ public class WhileTerm extends Term {
 
     @Override
     protected Type computeType() {
-        switch (arg0().getType()) {
-        case TRIAL:
-            return Type.TRIAL;
-        case FINAL:
-            return arg1().getType() == Type.TRIAL ? Type.TRIAL : Type.DEAD;
-        case DEAD:
-            return Type.FINAL;
-        default:
-            assert false;
-            return null;
-        }
+        return switch (arg0().getType()) {
+        case TRIAL -> Type.TRIAL;
+        case FINAL -> arg1().getType() == Type.TRIAL
+            ? Type.TRIAL
+            : Type.DEAD;
+        case DEAD -> Type.FINAL;
+        };
     }
 
     @Override
     protected DerivationAttempt computeAttempt(boolean nested) {
-        DerivationAttempt result;
+        checkTrial();
+        var result = createAttempt();
         switch (arg0().getType()) {
         case TRIAL:
-            result = createAttempt();
             DerivationAttempt ders0 = arg0().getAttempt(nested);
             for (Derivation deriv : ders0) {
-                result.add(deriv.newInstance(deriv.onFinish()
-                    .seq(arg1())
-                    .seq(this), false));
+                result.add(deriv.newInstance(deriv.onFinish().seq(arg1()).seq(this), false));
             }
-            result.setSuccess(ders0.onSuccess()
-                .seq(arg1())
-                .seq(this));
-            result.setFailure(ders0.onFailure()
-                .ifOnly(arg1().seq(this)));
+            result.setSuccess(ders0.onSuccess().seq(arg1()).seq(this));
+            result.setFailure(ders0.onFailure().ifOnly(arg1().seq(this)));
             break;
         case FINAL:
-            if (arg1().isTrial()) {
-                result = createAttempt();
-                DerivationAttempt ders1 = arg1().getAttempt(nested);
-                for (Derivation deriv : ders1) {
-                    result.add(deriv.newInstance(deriv.onFinish()
-                        .seq(this), false));
-                }
-                result.setSuccess(ders1.onSuccess()
-                    .seq(this));
-                result.setFailure(ders1.onFailure()
-                    .seq(this));
-            } else {
-                result = null;
+            DerivationAttempt ders1 = arg1().getAttempt(nested);
+            for (Derivation deriv : ders1) {
+                result.add(deriv.newInstance(deriv.onFinish().seq(this), false));
             }
-            break;
-        case DEAD:
-            result = null;
+            result.setSuccess(ders1.onSuccess().seq(this));
+            result.setFailure(ders1.onFailure().seq(this));
             break;
         default:
             throw Exceptions.UNREACHABLE;

@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.control.instance;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.control.Attempt;
 
 /**
@@ -23,6 +25,7 @@ import nl.utwente.groove.control.Attempt;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public class StepAttempt extends Attempt<Frame,Step> {
     /**
      * Creates a constraint attempt, initialised with a verdict alternate.

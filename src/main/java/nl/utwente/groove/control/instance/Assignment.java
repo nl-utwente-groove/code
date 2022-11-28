@@ -175,14 +175,14 @@ public class Assignment {
     static Assignment modify(Switch swit) {
         assert swit.getKind() == Callable.Kind.RULE;
         List<Binding> result = new ArrayList<>();
-        List<CtrlVar> sourceVars = swit.getSource().getVars();
+        var sourceVars = swit.getSource().getVarIxMap();
         Map<CtrlVar,Integer> outVars = swit.getCall().getOutVars();
         for (CtrlVar var : swit.onFinish().getVars()) {
             Integer ix = outVars.get(var);
             Binding rhs;
             if (ix == null) {
                 // the value comes from the source
-                int pos = sourceVars.indexOf(var);
+                int pos = sourceVars.get(var);
                 assert pos >= 0;
                 rhs = Binding.var(pos);
             } else {

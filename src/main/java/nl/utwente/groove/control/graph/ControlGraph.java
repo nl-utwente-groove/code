@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Queue;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.control.Attempt;
 import nl.utwente.groove.control.Attempt.Stage;
@@ -40,6 +42,7 @@ import nl.utwente.groove.graph.NodeSetEdgeSetGraph;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public class ControlGraph extends NodeSetEdgeSetGraph<@NonNull ControlNode,@NonNull ControlEdge> {
     /**
      * Constructs a new graph with a given name.
@@ -79,7 +82,7 @@ public class ControlGraph extends NodeSetEdgeSetGraph<@NonNull ControlNode,@NonN
     }
 
     /** Returns the (possibly {@code null}) template from which this graph was constructed. */
-    public Template getTemplate() {
+    public @Nullable Template getTemplate() {
         return this.template;
     }
 
@@ -88,11 +91,13 @@ public class ControlGraph extends NodeSetEdgeSetGraph<@NonNull ControlNode,@NonN
         this.template = template;
     }
 
-    private Template template;
+    private @Nullable Template template;
 
     /** Returns the start node. */
     public ControlNode getStart() {
-        return this.start;
+        var result = this.start;
+        assert result != null : "Start node not initialised";
+        return result;
     }
 
     /** Initialises the start node. */
@@ -102,7 +107,7 @@ public class ControlGraph extends NodeSetEdgeSetGraph<@NonNull ControlNode,@NonN
         this.start = start;
     }
 
-    private ControlNode start;
+    private @Nullable ControlNode start;
 
     /** Constructs a control graph for a given template. */
     public static ControlGraph newGraph(Template template, boolean full) {
@@ -120,12 +125,13 @@ public class ControlGraph extends NodeSetEdgeSetGraph<@NonNull ControlNode,@NonN
                                                                                        P init,
                                                                                        boolean full) {
         ControlGraph result = new ControlGraph(name);
-        Map<P,ControlNode> nodeMap = new HashMap<>();
+        Map<P,@Nullable ControlNode> nodeMap = new HashMap<>();
         Queue<P> fresh = new LinkedList<>();
         addNode(result, nodeMap, init, fresh);
         while (!fresh.isEmpty()) {
             P next = fresh.poll();
             ControlNode node = nodeMap.get(next);
+            assert node != null;
             if (next.isTrial()) {
                 Attempt<P,A> attempt = next.getAttempt();
                 P onSuccess = attempt.onSuccess();
@@ -160,7 +166,7 @@ public class ControlGraph extends NodeSetEdgeSetGraph<@NonNull ControlNode,@NonN
      * Adds a node to the control graph under construction.
      */
     private static <P extends Position<P,A>,A extends Stage<P,A>> ControlNode addNode(ControlGraph graph,
-                                                                                      Map<P,ControlNode> nodeMap,
+                                                                                      Map<P,@Nullable ControlNode> nodeMap,
                                                                                       P pos,
                                                                                       Queue<P> fresh) {
         ControlNode result = nodeMap.get(pos);
@@ -178,7 +184,7 @@ public class ControlGraph extends NodeSetEdgeSetGraph<@NonNull ControlNode,@NonN
      * Adds a call edge to the control graph under construction.
      */
     private static <P extends Position<P,A>,A extends Stage<P,A>> void addEdge(ControlGraph result,
-                                                                               Map<P,ControlNode> nodeMap,
+                                                                               Map<P,@Nullable ControlNode> nodeMap,
                                                                                ControlNode node,
                                                                                Stage<P,A> out,
                                                                                Queue<P> fresh) {

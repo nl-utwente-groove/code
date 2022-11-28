@@ -31,6 +31,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.StringTokenizer;
 
 import javax.swing.ActionMap;
@@ -182,9 +183,10 @@ public class Groove {
         long time = (System.currentTimeMillis() / lossfactor);
         StringBuffer res = new StringBuffer();
         while (modulo > 1) {
-            res.insert(0, time > 0
-                ? "" + time % 10
-                : "");
+            res
+                .insert(0, time > 0
+                    ? "" + time % 10
+                    : "");
             time /= 10;
             fraction /= 10;
             if (fraction == 1) {
@@ -438,6 +440,22 @@ public class Groove {
             result.append(toString(parent));
         }
         return result.toString();
+    }
+
+    /** Mimics the behaviour of {@link Optional#ofNullable(Object)},
+     * but circumvents the spurious {@code null} check of the argument
+     */
+    static public <T> Optional<T> ofNullable(@Nullable T value) {
+        return value == null
+            ? Optional.empty()
+            : Optional.of(value);
+    }
+
+    /** Mimics the behaviour of {@link Optional#orElse(Object)},
+     * but circumvents the spurious {@code null} check of the argument
+     */
+    static public <T> @Nullable T orElse(Optional<T> value, @Nullable T alt) {
+        return value.orElse(alt);
     }
 
     /** Returns a given value if it is {@code null}, or an alternative (non-{@code null}) value otherwise. */

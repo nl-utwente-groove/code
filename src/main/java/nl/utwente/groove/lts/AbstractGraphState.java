@@ -23,6 +23,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.control.instance.Assignment;
 import nl.utwente.groove.control.instance.Frame;
 import nl.utwente.groove.grammar.Action.Role;
@@ -205,7 +207,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     @Override
-    public MatchResult getMatch() {
+    public @Nullable MatchResult getMatch() {
         return getCache().getMatches().getOne();
     }
 
@@ -378,8 +380,8 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         } else if (obj instanceof GraphTransition trans) {
             return getNumber() - trans.source().getNumber();
         } else {
-            throw Exceptions.unsupportedOp("Classes %s and %s cannot be compared", getClass(),
-                                           obj.getClass());
+            throw Exceptions
+                .unsupportedOp("Classes %s and %s cannot be compared", getClass(), obj.getClass());
         }
     }
 

@@ -18,6 +18,9 @@ package nl.utwente.groove.control;
 
 import java.util.ArrayList;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * List of calls to be attempted,
  * to be tried successively in the given order.
@@ -26,6 +29,7 @@ import java.util.ArrayList;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public abstract class Attempt<P extends Position<P,A>,A extends Attempt.Stage<P,A>>
     extends ArrayList<A> {
     /** Constructs an initially empty attempt of default size. */
@@ -44,10 +48,12 @@ public abstract class Attempt<P extends Position<P,A>,A extends Attempt.Stage<P,
 
     /** Next alternative position in case this attempt succeeds. */
     final public P onSuccess() {
-        return this.onSuccess;
+        var result = this.onSuccess;
+        assert result != null;
+        return result;
     }
 
-    private P onSuccess;
+    private @Nullable P onSuccess;
 
     /** Sets the failure alternate. */
     final public void setFailure(P onFailure) {
@@ -56,10 +62,12 @@ public abstract class Attempt<P extends Position<P,A>,A extends Attempt.Stage<P,
 
     /** Next alternative position in case this attempt fails. */
     final public P onFailure() {
-        return this.onFailure;
+        var result = this.onFailure;
+        assert result != null;
+        return result;
     }
 
-    private P onFailure;
+    private @Nullable P onFailure;
 
     /** Indicates that the success and failure alternates are identical. */
     public boolean sameVerdict() {
@@ -70,8 +78,8 @@ public abstract class Attempt<P extends Position<P,A>,A extends Attempt.Stage<P,
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + this.onFailure.hashCode();
-        result = prime * result + this.onSuccess.hashCode();
+        result = prime * result + onFailure().hashCode();
+        result = prime * result + onSuccess().hashCode();
         return result;
     }
 
@@ -81,7 +89,7 @@ public abstract class Attempt<P extends Position<P,A>,A extends Attempt.Stage<P,
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }
@@ -91,10 +99,10 @@ public abstract class Attempt<P extends Position<P,A>,A extends Attempt.Stage<P,
         if (!(obj instanceof Attempt<?,?> other)) {
             return false;
         }
-        if (!this.onFailure.equals(other.onFailure)) {
+        if (!onFailure().equals(other.onFailure)) {
             return false;
         }
-        if (!this.onSuccess.equals(other.onSuccess)) {
+        if (!onSuccess().equals(other.onSuccess)) {
             return false;
         }
         return true;

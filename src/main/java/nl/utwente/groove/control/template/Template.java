@@ -147,8 +147,7 @@ public class Template {
                     continue;
                 }
                 for (SwitchStack swit : loc.getAttempt()) {
-                    Callable unit = swit.getBottomCall()
-                        .getUnit();
+                    Callable unit = swit.getBottomCall().getUnit();
                     if (unit instanceof Action) {
                         result.add((Action) unit);
                     } else {
@@ -175,28 +174,23 @@ public class Template {
         // compute the map of incoming transitions
         for (Location loc : getLocations()) {
             if (loc.isFinal() && hasOwner()) {
-                loc.addVars(getOwner().getOutPars()
-                    .keySet());
+                loc.addVars(getOwner().getOutPars().keySet());
             } else if (loc.isTrial()) {
                 for (SwitchStack s : loc.getAttempt()) {
                     Switch bottom = s.get(0);
                     Call bottomCall = bottom.getCall();
-                    loc.addVars(bottomCall.getInVars()
-                        .keySet());
-                    bottom.onFinish()
-                        .addVars(bottomCall.getOutVars()
-                            .keySet());
+                    loc.addVars(bottomCall.getInVars().keySet());
+                    bottom.onFinish().addVars(bottomCall.getOutVars().keySet());
                 }
             }
             Set<CtrlVar> varSet = loc.getVarSet();
-            if (varSet != null && !varSet.isEmpty()) {
+            if (!varSet.isEmpty()) {
                 propagate(changeMap, loc, varSet);
             }
         }
         // propagate all variables backward to the location where they are initialised
         while (!changeMap.isEmpty()) {
-            Iterator<Map.Entry<Location,Set<CtrlVar>>> iter = changeMap.entrySet()
-                .iterator();
+            Iterator<Map.Entry<Location,Set<CtrlVar>>> iter = changeMap.entrySet().iterator();
             Map.Entry<Location,Set<CtrlVar>> e = iter.next();
             iter.remove();
             Location loc = e.getKey();
@@ -235,7 +229,7 @@ public class Template {
      * location, backward to all predecessors.
      */
     private void propagate(Map<Location,Set<CtrlVar>> changeMap, Location loc,
-        Set<CtrlVar> newVars) {
+                           Set<CtrlVar> newVars) {
         Map<Location,Set<CtrlVar>> predRecord = getBackMap().get(loc);
         if (predRecord == null) {
             return;
@@ -277,9 +271,9 @@ public class Template {
                 result.addBackLink(loc, attempt.onSuccess(), EMPTY_VAR_SET);
                 result.addBackLink(loc, attempt.onFailure(), EMPTY_VAR_SET);
                 for (SwitchStack swit : attempt) {
-                    result.addBackLink(loc, swit.onFinish(), swit.getBottomCall()
-                        .getOutVars()
-                        .keySet());
+                    result
+                        .addBackLink(loc, swit.onFinish(),
+                                     swit.getBottomCall().getOutVars().keySet());
                 }
             }
         }
@@ -290,7 +284,9 @@ public class Template {
      * main program name as this one.
      */
     public Template newInstance() {
-        return hasOwner() ? new Template(getOwner()) : new Template(getQualName());
+        return hasOwner()
+            ? new Template(getOwner())
+            : new Template(getQualName());
     }
 
     /** Computes and inserts the host nodes to be used for constant value arguments. */
@@ -309,7 +305,9 @@ public class Template {
         final int prime = 31;
         int result = 1;
         result = prime * result + this.name.hashCode();
-        result = prime * result + ((this.owner == null) ? 0 : this.owner.hashCode());
+        result = prime * result + ((this.owner == null)
+            ? 0
+            : this.owner.hashCode());
         return result;
     }
 

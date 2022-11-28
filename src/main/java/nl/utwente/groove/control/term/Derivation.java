@@ -16,9 +16,15 @@
  */
 package nl.utwente.groove.control.term;
 
+import java.util.Optional;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.control.Attempt;
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.CallStack;
+import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Pair;
 
 /**
@@ -27,15 +33,16 @@ import nl.utwente.groove.util.Pair;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,Derivation> {
     /**
      * Constructs a derivation out of a call and a target term,
      * with a given caller.
      */
-    public Derivation(Call call, int depth, Term target, Derivation nested) {
+    public Derivation(Call call, int depth, Term target, @Nullable Derivation nested) {
         super(call, target);
         this.depth = depth;
-        this.nested = nested;
+        this.nested = Groove.ofNullable(nested);
     }
 
     /**
@@ -75,27 +82,23 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
 
     private final int depth;
 
-    /** Returns the (possibly {@code null} nested derivation of this derivation. */
-    public Derivation getNested() {
+    /** Returns the optional nested derivation of this derivation. */
+    public Optional<Derivation> getNested() {
         return this.nested;
     }
 
-    /** Indicates if this derivation has a nested derivation. */
-    public boolean hasNested() {
-        return getNested() != null;
-    }
-
-    private final Derivation nested;
+    private final Optional<Derivation> nested;
 
     /** Returns the stack of derivations of which this is the top element. */
     public DerivationStack getStack() {
-        if (this.stack == null) {
-            this.stack = new DerivationStack(this);
+        var result = this.stack;
+        if (result == null) {
+            this.stack = result = new DerivationStack(this);
         }
-        return this.stack;
+        return result;
     }
 
-    private DerivationStack stack;
+    private @Nullable DerivationStack stack;
 
     @Override
     public CallStack getCallStack() {
@@ -107,7 +110,7 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
         int depth = getTransience() + (enterAtom
             ? 1
             : 0);
-        return new Derivation(getCall(), depth, target, getNested());
+        return new Derivation(getCall(), depth, target, Groove.orElse(getNested(), null));
     }
 
     /**
@@ -115,43 +118,28 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
      * the call stack.
      */
     public Derivation newInstance(Derivation nested) {
-        Derivation result;
-        if (hasNested()) {
-            result = new Derivation(getCall(), getTransience(), onFinish(),
-                getNested().newInstance(nested));
-        } else {
-            result = new Derivation(getCall(), getTransience(), onFinish(), nested);
-        }
-        return result;
+        var newNested = getNested().map(n -> n.newInstance(nested)).orElse(nested);
+        return new Derivation(getCall(), getTransience(), onFinish(), newNested);
     }
 
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
-        if (hasNested()) {
-            result.append(getNested().toString());
-            result.append("::");
-        }
+        getNested().ifPresent(d -> result.append(d.toString() + "::"));
         result.append(super.toString());
         return result.toString();
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!super.equals(obj)) {
             return false;
         }
         if (!(obj instanceof Derivation other)) {
             return false;
         }
-        if (hasNested()) {
-            if (!getNested().equals(other.getNested())) {
-                return false;
-            }
-        } else {
-            if (other.hasNested()) {
-                return false;
-            }
+        if (!getNested().equals(other.getNested())) {
+            return false;
         }
         return true;
     }
@@ -167,9 +155,7 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
     private int computeHashCode() {
         int prime = 31;
         int result = super.hashCode();
-        result = prime * result + (hasNested()
-            ? getNested().hashCode()
-            : 0);
+        result = prime * result + getNested().hashCode();
         return result;
     }
 

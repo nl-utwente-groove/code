@@ -18,6 +18,8 @@ package nl.utwente.groove.control.template;
 
 import java.util.stream.Stream;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.control.Attempt;
 
 /**
@@ -25,18 +27,17 @@ import nl.utwente.groove.control.Attempt;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public class SwitchAttempt extends Attempt<Location,SwitchStack> implements Relocatable {
     /** Constructs a switch attempt for a given source location. */
     public SwitchAttempt(Location source, Location onSuccess, Location onFailure, int switchCount,
-        Stream<SwitchStack> switches) {
+                         Stream<SwitchStack> switches) {
         super(switchCount);
         this.source = source;
         setSuccess(onSuccess);
         setFailure(onFailure);
-        assert source.getTemplate() == onSuccess.getTemplate();
-        assert source.getTemplate()
-            .getLocations()
-            .contains(source);
+        assert source.getTemplate().equals(onSuccess.getTemplate());
+        assert source.getTemplate().filter(t -> t.getLocations().contains(source)).isPresent();
         switches.forEach(s -> add(s));
     }
 

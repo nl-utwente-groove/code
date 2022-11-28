@@ -14,19 +14,22 @@
  *
  * $Id$
  */
-package nl.utwente.groove.control.term;
+package nl.utwente.groove.grammar.host;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import nl.utwente.groove.control.Attempt;
+import nl.utwente.groove.graph.AOverlay;
 
 /**
- * List of term derivations in combination with the success and failure alternates.
- * This constitutes a term attempt.
- * @author Arend Rensink
+ * @author Rensink
  * @version $Revision $
  */
 @NonNullByDefault
-public class DerivationAttempt extends Attempt<Term,Derivation> {
-    // empty
+public class HostOverlay extends AOverlay<HostGraph,HostNode,HostEdge> {
+    /**
+     * Constructs a new overlay for a given host graph.
+     */
+    public HostOverlay(HostGraph graph) {
+        super(graph);
+    }
 }

@@ -16,9 +16,15 @@
  */
 package nl.utwente.groove.control.term;
 
+import static nl.utwente.groove.util.LazyFactory.lazyFactory;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.CtrlVar;
@@ -32,6 +38,7 @@ import nl.utwente.groove.util.collect.Pool;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 abstract public class Term implements Position<Term,Derivation> {
     /** Constructor for a prototype term. */
     private Term(Pool<Term> pool) {
@@ -55,11 +62,12 @@ abstract public class Term implements Position<Term,Derivation> {
      */
     protected Term(Op op, Term arg0, Term... otherArgs) {
         this.op = op;
-        this.args = new Term[otherArgs.length + 1];
-        this.args[0] = arg0;
-        System.arraycopy(otherArgs, 0, this.args, 1, otherArgs.length);
+        var args = new Term[otherArgs.length + 1];
+        args[0] = arg0;
+        System.arraycopy(otherArgs, 0, args, 1, otherArgs.length);
         this.pool = arg0.getPool();
-        assert op.getArity() == this.args.length;
+        this.args = args;
+        assert op.getArity() == args.length;
         assert argsSharePool();
     }
 
@@ -84,17 +92,25 @@ abstract public class Term implements Position<Term,Derivation> {
 
     /** Returns the operator of this term. */
     public Op getOp() {
-        return this.op;
+        var result = this.op;
+        if (result == null) {
+            throw Exceptions.illegalState("Prototype term has no operator");
+        }
+        return result;
     }
 
-    private final Op op;
+    private final @Nullable Op op;
 
     /** Returns the arguments of this term. */
     public Term[] getArgs() {
-        return this.args;
+        var result = this.args;
+        if (result == null) {
+            throw Exceptions.illegalState("Prototype term has no arguments");
+        }
+        return result;
     }
 
-    private final Term[] args;
+    private final Term @Nullable [] args;
 
     /** Returns the first argument of this term. */
     protected final Term arg0() {
@@ -123,13 +139,10 @@ abstract public class Term implements Position<Term,Derivation> {
 
     @Override
     synchronized public final Type getType() {
-        if (this.type == null) {
-            this.type = computeType();
-        }
-        return this.type;
+        return this.type.get();
     }
 
-    private Type type = null;
+    private Supplier<Type> type = lazyFactory(this::computeType);
 
     /** Computes the position type of this term. */
     abstract protected Type computeType();
@@ -160,38 +173,44 @@ abstract public class Term implements Position<Term,Derivation> {
      * otherwise only the bottom-level derivation is computed
      */
     synchronized public final DerivationAttempt getAttempt(boolean nested) {
-        DerivationAttempt result = nested ? this.nestedAttempt : this.flatAttempt;
-        if (result == null) {
-            result = computeAttempt(nested);
-            if (nested) {
-                this.nestedAttempt = result;
-            } else {
-                this.flatAttempt = result;
-            }
-        }
-        return result;
+        return nested
+            ? this.nestedAttempt.get()
+            : this.flatAttempt.get();
     }
 
-    private DerivationAttempt flatAttempt;
-    private DerivationAttempt nestedAttempt;
+    private Supplier<DerivationAttempt> flatAttempt = lazyFactory(() -> this.computeAttempt(false));
+    private Supplier<DerivationAttempt> nestedAttempt
+        = lazyFactory(() -> this.computeAttempt(true));
 
     /**
      * Computes the derivation of this term.
      * @param nested if {@code true}, the nested derivation is computed,
      * otherwise only the bottom-level derivation is computed
+     * @throws UnsupportedOperationException if this term is not a trial
      */
-    abstract protected DerivationAttempt computeAttempt(boolean nested);
+    abstract protected DerivationAttempt computeAttempt(boolean nested) throws UnsupportedOperationException;
 
     /** Callback factory method for a list of attempts. */
     protected final DerivationAttempt createAttempt() {
         return new DerivationAttempt();
     }
 
+    /** Callback method check whether {@link #getAttempt()} is called on a trial term. */
+    protected void checkTrial() throws UnsupportedOperationException {
+        if (!isTrial()) {
+            throw noTrial();
+        }
+    }
+
+    /** Callback method to created a uniform exception in case {@link #getAttempt()} is called on a non-trial term. */
+    protected UnsupportedOperationException noTrial() {
+        return Exceptions.unsupportedOp("Non-trial term %s does not have a derivation", this);
+    }
+
     /** Indicates if the failure verdicts transitively lead to a final term. */
     public final boolean willSucceed() {
         if (isTrial()) {
-            return getAttempt().onFailure()
-                .willSucceed();
+            return getAttempt().onFailure().willSucceed();
         } else {
             return isFinal();
         }
@@ -205,16 +224,13 @@ abstract public class Term implements Position<Term,Derivation> {
     /** Returns the transient depth of this symbolic location. */
     @Override
     synchronized public final int getTransience() {
-        if (this.depth == null) {
-            this.depth = computeDepth();
-        }
-        return this.depth;
+        return this.depth.get();
     }
 
     /** Computes the transient depth of this symbolic location. */
     abstract protected int computeDepth();
 
-    private Integer depth;
+    private Supplier<Integer> depth = lazyFactory(this::computeDepth);
 
     /**
      * Indicates if the execution of this term is guaranteed to
@@ -235,21 +251,22 @@ abstract public class Term implements Position<Term,Derivation> {
         final int prime = 31;
         int result = 1;
         result = prime * result + Arrays.hashCode(this.args);
-        result = prime * result + this.op.hashCode();
-        return result == 0 ? 1 : result;
+        result = prime * result + getOp().hashCode();
+        return result == 0
+            ? 1
+            : result;
     }
 
     private int hashCode;
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof Term)) {
+        if (!(obj instanceof Term other)) {
             return false;
         }
-        Term other = (Term) obj;
         if (!Arrays.equals(this.args, other.args)) {
             return false;
         }
@@ -263,7 +280,9 @@ abstract public class Term implements Position<Term,Derivation> {
     public String toString() {
         String name = getClass().getSimpleName();
         name = name.substring(0, name.lastIndexOf("Term"));
-        String args = getOp().arity == 0 ? "" : Arrays.toString(getArgs());
+        String args = getOp().arity == 0
+            ? ""
+            : Arrays.toString(getArgs());
         return name + args;
     }
 
@@ -276,13 +295,10 @@ abstract public class Term implements Position<Term,Derivation> {
         case TRIAL -> {
             DerivationAttempt attempt = getAttempt(false);
             for (Derivation deriv : attempt) {
-                result = result + "\n  --" + deriv.getCall() + "--> " + deriv.onFinish()
-                    .toString();
+                result = result + "\n  --" + deriv.getCall() + "--> " + deriv.onFinish().toString();
             }
-            result = result + "\nSuccess: " + attempt.onSuccess()
-                .toString();
-            result = result + "\nFailure: " + attempt.onFailure()
-                .toString();
+            result = result + "\nSuccess: " + attempt.onSuccess().toString();
+            result = result + "\nFailure: " + attempt.onFailure().toString();
         }
         default -> throw Exceptions.UNREACHABLE;
         }

@@ -22,7 +22,6 @@ import java.util.List;
 import nl.utwente.groove.control.Binding;
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.CtrlPar;
-import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
@@ -46,8 +45,7 @@ public class Switch implements Comparable<Switch>, Relocatable {
         assert onFinish != null;
         this.source = source;
         this.onFinish = onFinish;
-        this.kind = call.getUnit()
-            .getKind();
+        this.kind = call.getUnit().getKind();
         this.call = call;
         this.transience = transience;
     }
@@ -148,15 +146,17 @@ public class Switch implements Comparable<Switch>, Relocatable {
         List<ParBinding> result = new LinkedList<>();
         List<? extends CtrlPar> args = getArgs();
         Signature<UnitPar.RulePar> sig = ((Rule) getUnit()).getSignature();
-        int size = args == null ? 0 : args.size();
-        List<CtrlVar> sourceVars = getSource().getVars();
+        int size = args == null
+            ? 0
+            : args.size();
+        var sourceVars = getSource().getVarIxMap();
         for (int i = 0; i < size; i++) {
             assert args != null; // size is at least one
             CtrlPar arg = args.get(i);
             Binding bind;
             if (arg instanceof CtrlPar.Var v) {
                 if (arg.inOnly()) {
-                    int ix = sourceVars.indexOf(v.var());
+                    int ix = sourceVars.get(v.var());
                     assert ix >= 0;
                     bind = Binding.var(ix);
                 } else if (arg.outOnly()) {
@@ -219,7 +219,9 @@ public class Switch implements Comparable<Switch>, Relocatable {
         result = prime * result + onFinish().hashCode();
         result = prime * result + getKind().hashCode();
         result = prime * result + getTransience();
-        result = prime * result + ((this.call == null) ? 0 : this.call.hashCode());
+        result = prime * result + ((this.call == null)
+            ? 0
+            : this.call.hashCode());
         return result;
     }
 
@@ -228,10 +230,9 @@ public class Switch implements Comparable<Switch>, Relocatable {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof Switch)) {
+        if (!(obj instanceof Switch other)) {
             return false;
         }
-        Switch other = (Switch) obj;
         if (getKind() != other.getKind()) {
             return false;
         }
@@ -252,8 +253,7 @@ public class Switch implements Comparable<Switch>, Relocatable {
 
     @Override
     public int compareTo(Switch o) {
-        int result = onFinish().getNumber() - o.onFinish()
-            .getNumber();
+        int result = onFinish().getNumber() - o.onFinish().getNumber();
         if (result != 0) {
             return result;
         }
@@ -261,8 +261,7 @@ public class Switch implements Comparable<Switch>, Relocatable {
         if (result != 0) {
             return result;
         }
-        result = getKind().ordinal() - o.getKind()
-            .ordinal();
+        result = getKind().ordinal() - o.getKind().ordinal();
         if (result != 0) {
             return result;
         }
@@ -270,8 +269,7 @@ public class Switch implements Comparable<Switch>, Relocatable {
         if (result != 0) {
             return result;
         }
-        result = getSource().getNumber() - o.getSource()
-            .getNumber();
+        result = getSource().getNumber() - o.getSource().getNumber();
         return result;
     }
 

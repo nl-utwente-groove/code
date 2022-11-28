@@ -19,6 +19,9 @@ package nl.utwente.groove.lts;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.control.instance.Frame;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.host.HostGraph;
@@ -53,6 +56,7 @@ import nl.utwente.groove.lts.Status.Flag;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-22 13:02:44 $
  */
+@NonNullByDefault
 public interface GraphState extends Node {
     /** Returns the Graph Transition System of which this is a state. */
     public GTS getGTS();
@@ -106,7 +110,7 @@ public interface GraphState extends Node {
      * Retrieves an outgoing transition with a given match, if it exists. Yields
      * <code>null</code> otherwise.
      */
-    public RuleTransitionStub getOutStub(MatchResult match);
+    public @Nullable RuleTransitionStub getOutStub(MatchResult match);
 
     /**
      * Returns the set of currently generated outgoing
@@ -147,7 +151,7 @@ public interface GraphState extends Node {
      * Returns the first unexplored match found for this state, insofar one can
      * currently be computed.
      */
-    public MatchResult getMatch();
+    public @Nullable MatchResult getMatch();
 
     /**
      * Returns the set of all unexplored matches for this state, insofar they can

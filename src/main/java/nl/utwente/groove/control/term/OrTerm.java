@@ -30,38 +30,39 @@ public class OrTerm extends Term {
 
     @Override
     protected DerivationAttempt computeAttempt(boolean nested) {
-        DerivationAttempt result = null;
-        if (isTrial()) {
+        checkTrial();
+        DerivationAttempt result = createAttempt();
+        // first deal with the operand that does not branch
+        // so as to avoid exponential blowup
+        boolean sameVerdict0 = arg0().isTrial() && arg0().getAttempt(nested).sameVerdict();
+        boolean sameVerdict1 = arg1().isTrial() && arg1().getAttempt(nested).sameVerdict();
+        Term success, failure;
+        if (sameVerdict0 && sameVerdict1) {
             DerivationAttempt ders0 = arg0().getAttempt(nested);
             DerivationAttempt ders1 = arg1().getAttempt(nested);
-            result = createAttempt();
-            // first deal with the operand that does not branch
-            // so as to avoid exponential blowup
-            boolean sameVerdict0 = arg0().isTrial() && ders0.sameVerdict();
-            boolean sameVerdict1 = arg1().isTrial() && ders1.sameVerdict();
-            Term success, failure;
-            if (sameVerdict0 && sameVerdict1) {
-                // optimise: combine the attempts of both args
-                result.addAll(ders0);
-                result.addAll(ders1);
-                success = failure = ders0.onSuccess()
-                    .or(ders1.onSuccess());
-            } else if (sameVerdict1 || !arg0().isTrial()) {
-                // first process arg1
-                result.addAll(ders1);
-                success = arg0().or(ders1.onSuccess());
-                failure = sameVerdict1 ? success : arg0().or(ders1.onFailure());
-            } else {
-                // first process arg0
-                result.addAll(ders0);
-                success = ders0.onSuccess()
-                    .or(arg1());
-                failure = sameVerdict0 ? success : ders0.onFailure()
-                    .or(arg1());
-            }
-            result.setSuccess(success);
-            result.setFailure(failure);
+            // optimise: combine the attempts of both args
+            result.addAll(ders0);
+            result.addAll(ders1);
+            success = failure = ders0.onSuccess().or(ders1.onSuccess());
+        } else if (sameVerdict1 || !arg0().isTrial()) {
+            DerivationAttempt ders1 = arg1().getAttempt(nested);
+            // first process arg1
+            result.addAll(ders1);
+            success = arg0().or(ders1.onSuccess());
+            failure = sameVerdict1
+                ? success
+                : arg0().or(ders1.onFailure());
+        } else {
+            // first process arg0
+            DerivationAttempt ders0 = arg0().getAttempt(nested);
+            result.addAll(ders0);
+            success = ders0.onSuccess().or(arg1());
+            failure = sameVerdict0
+                ? success
+                : ders0.onFailure().or(arg1());
         }
+        result.setSuccess(success);
+        result.setFailure(failure);
         return result;
     }
 

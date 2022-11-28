@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.control.term;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.util.Exceptions;
 
 /**
@@ -23,6 +25,7 @@ import nl.utwente.groove.util.Exceptions;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public class SeqTerm extends Term {
     /**
      * Constructs the sequential composition of two control terms.
@@ -33,28 +36,20 @@ public class SeqTerm extends Term {
 
     @Override
     protected DerivationAttempt computeAttempt(boolean nested) {
+        checkTrial();
         DerivationAttempt result;
         switch (arg0().getType()) {
-        case TRIAL:
+        case TRIAL -> {
             result = createAttempt();
-            DerivationAttempt ders0 = arg0().getAttempt(nested);
+            var ders0 = arg0().getAttempt(nested);
             for (Derivation deriv : ders0) {
-                result.add(deriv.newInstance(deriv.onFinish()
-                    .seq(arg1()), false));
+                result.add(deriv.newInstance(deriv.onFinish().seq(arg1()), false));
             }
-            result.setSuccess(ders0.onSuccess()
-                .seq(arg1()));
-            result.setFailure(ders0.onFailure()
-                .seq(arg1()));
-            break;
-        case FINAL:
-            result = arg1().isTrial() ? arg1().getAttempt(nested) : null;
-            break;
-        case DEAD:
-            result = null;
-            break;
-        default:
-            throw Exceptions.UNREACHABLE;
+            result.setSuccess(ders0.onSuccess().seq(arg1()));
+            result.setFailure(ders0.onFailure().seq(arg1()));
+        }
+        case FINAL -> result = arg1().getAttempt(nested);
+        default -> throw Exceptions.UNREACHABLE;
         }
         return result;
     }
@@ -66,30 +61,18 @@ public class SeqTerm extends Term {
 
     @Override
     protected Type computeType() {
-        switch (arg0().getType()) {
-        case TRIAL:
-        case DEAD:
-            return arg0().getType();
-        case FINAL:
-            return arg1().getType();
-        default:
-            assert false;
-            return null;
-        }
+        return switch (arg0().getType()) {
+        case TRIAL, DEAD -> arg0().getType();
+        case FINAL -> arg1().getType();
+        };
     }
 
     @Override
     protected boolean isAtomic() {
-        switch (arg0().getType()) {
-        case TRIAL:
-            return arg0().isAtomic() && arg1().isFinal();
-        case DEAD:
-            return true;
-        case FINAL:
-            return arg1().isAtomic();
-        default:
-            assert false;
-            return false;
-        }
+        return switch (arg0().getType()) {
+        case TRIAL -> arg0().isAtomic() && arg1().isFinal();
+        case DEAD -> true;
+        case FINAL -> arg1().isAtomic();
+        };
     }
 }

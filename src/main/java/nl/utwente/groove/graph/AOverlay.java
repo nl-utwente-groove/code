@@ -26,12 +26,12 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * A subset of the nodes and edges in a given graph.
  */
 @NonNullByDefault
-public abstract class AOverlay<G extends GGraph<? extends N,? extends GEdge<N>>,N extends Node,E extends GEdge<? extends N>> {
+public abstract class AOverlay<G extends GGraph<N,E>,N extends Node,E extends GEdge<N>> {
     /**
      * Creates a fresh, empty result for a given graph.
      */
-    public AOverlay(G gts) {
-        this.graph = gts;
+    public AOverlay(G graph) {
+        this.graph = graph;
         this.nodes = createResultSet();
         this.lastNode = Optional.empty();
         this.edges = createResultSet();
