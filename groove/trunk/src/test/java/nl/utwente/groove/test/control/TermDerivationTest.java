@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -49,14 +50,14 @@ public class TermDerivationTest {
     @Test
     public void testDelta() {
         setSource(delta());
-        assertSuccFail(null, null);
+        assertSuccFail();
         assertDepth(0);
     }
 
     @Test
     public void testEpsilon() {
         setSource(epsilon());
-        assertSuccFail(null, null);
+        assertSuccFail();
         assertDepth(0);
     }
 
@@ -110,7 +111,7 @@ public class TermDerivationTest {
         Term c = this.c;
         // if true else b
         setSource(epsilon().ifElse(epsilon(), b));
-        assertSuccFail(null, null);
+        assertSuccFail();
         assertDepth(0);
         // if a
         setSource(a.ifOnly(epsilon()));
@@ -228,7 +229,7 @@ public class TermDerivationTest {
         Term c = this.c;
         // atomic true
         setSource(epsilon().atom());
-        assertSuccFail(null, null);
+        assertSuccFail();
         assertDepth(0);
         // atomic a
         setSource(a.atom());
@@ -300,15 +301,22 @@ public class TermDerivationTest {
     /** Predicts the success and failure of the current state.
      * Should be invoked after all regular transitions have been predicted.
      */
-    private void assertSuccFail(Term success, Term failure) {
+    private void assertSuccFail(@NonNull Term success, @NonNull Term failure) {
         Assert.assertEquals(Collections.emptyList(), this.edges);
         DerivationAttempt attempt = source().getAttempt();
-        Assert.assertEquals(success, success == null
-            ? attempt
-            : attempt.onSuccess());
-        Assert.assertEquals(failure, failure == null
-            ? attempt
-            : attempt.onFailure());
+        Assert.assertEquals(success, attempt.onSuccess());
+        Assert.assertEquals(failure, attempt.onFailure());
+    }
+
+    /** Predicts fact that the attempt cannot be computed.
+     */
+    private void assertSuccFail() {
+        try {
+            var attempt = source().getAttempt();
+            Assert.fail(String.format("attempt should be undefind, not %s", attempt));
+        } catch (UnsupportedOperationException exc) {
+            // this is the expected behaviour
+        }
     }
 
     /** Predicts the final nature and transition depth of the current state. */

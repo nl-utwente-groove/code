@@ -16,12 +16,17 @@
  */
 package nl.utwente.groove.control;
 
+import java.util.Optional;
 import java.util.Stack;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Rule;
+import nl.utwente.groove.util.LazyFactory;
 
 /**
  * Stack of calls.
@@ -32,6 +37,7 @@ import nl.utwente.groove.grammar.Rule;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public class CallStack extends Stack<Call> {
     /**
      * Constructs an initially empty stack.
@@ -50,41 +56,31 @@ public class CallStack extends Stack<Call> {
      * @see #getRecipe()
      */
     public boolean inRecipe() {
-        return getRecipe() != null;
+        return getRecipe().isPresent();
     }
 
     /**
      * Returns the outermost recipe of the call stack, if any.
      * @see #inRecipe()
      */
-    public Recipe getRecipe() {
-        if (!this.recipeInit) {
-            for (Call call : this) {
-                if (call.getUnit() instanceof Recipe r) {
-                    this.recipe = r;
-                    break;
-                }
-            }
-            this.recipeInit = true;
-        }
-        return this.recipe;
+    public Optional<Recipe> getRecipe() {
+        return this.recipe.get();
     }
 
     /** The first recipe in the call stack, or {@code null} if there is none. */
-    private Recipe recipe;
-    /** Flag indicating if the value of {@link #recipe} has been initialised. */
-    private boolean recipeInit;
+    private Supplier<Optional<Recipe>> recipe = LazyFactory
+        .instance(() -> stream()
+            .map(c -> c.getUnit())
+            .filter(u -> u instanceof Recipe)
+            .findFirst()
+            .map(u -> (Recipe) u));
 
     /**
      * Returns the top-level action in this call stack.
      * This is either the recipe if there is one, or the top-level rule.
      */
     public Action getAction() {
-        Action result = getRecipe();
-        if (result == null) {
-            result = getRule();
-        }
-        return result;
+        return getRecipe().map(r -> (Action) r).orElse(getRule());
     }
 
     @Override

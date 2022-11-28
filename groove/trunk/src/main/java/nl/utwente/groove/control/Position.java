@@ -18,12 +18,15 @@ package nl.utwente.groove.control;
 
 import java.util.List;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Position in a control structure that is either deadlocked, final, or
  * offers an {@link Attempt}.
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public interface Position<P extends Position<P,A>,A extends Attempt.Stage<P,A>> {
     /** Indicates if this is a start position. */
     public abstract boolean isStart();
@@ -61,14 +64,15 @@ public interface Position<P extends Position<P,A>,A extends Attempt.Stage<P,A>> 
     /**
      * Returns the attempt of this position.
      * Should only be invoked after the position is fixed, and is a trial position.
+     * @throws UnsupportedOperationException if this position is not a trial
      */
-    public abstract Attempt<P,A> getAttempt();
+    public abstract Attempt<P,A> getAttempt() throws UnsupportedOperationException;
 
-    /** Indicates if this location has a non-empty set of control variables. */
+    /** Indicates if this position has a non-empty set of control variables. */
     public boolean hasVars();
 
     /**
-     * Returns the list of control variables in this location,
+     * Returns the list of control variables in this position,
      * ordered alphabetically according to their names.
      */
     public List<CtrlVar> getVars();
@@ -80,6 +84,6 @@ public interface Position<P extends Position<P,A>,A extends Attempt.Stage<P,A>> 
         /** Deadlock position: non-terminating, no attempt or verdicts. */
         DEAD,
         /** Trial position: has an attempt, and corresponding success and failure verdicts. */
-        TRIAL, ;
+        TRIAL,;
     }
 }

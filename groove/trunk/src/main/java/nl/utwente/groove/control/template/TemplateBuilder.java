@@ -72,8 +72,7 @@ public class TemplateBuilder {
      */
     public Template build(Program prog) {
         newBuilder(prog.getMainName(), null, prog.getMain());
-        for (Procedure proc : prog.getProcs()
-            .values()) {
+        for (Procedure proc : prog.getProcs().values()) {
             Builder builder = newBuilder(null, proc, proc.getTerm());
             proc.setTemplate(builder.getResult());
         }
@@ -109,8 +108,7 @@ public class TemplateBuilder {
             Template key = norm.original();
             Template value = norm.result();
             if (value.hasOwner()) {
-                value.getOwner()
-                    .setTemplate(value);
+                value.getOwner().setTemplate(value);
             } else {
                 result = value;
             }
@@ -138,7 +136,7 @@ public class TemplateBuilder {
      * @return the fresh or pre-existing control switch
      */
     private SwitchStack getExternalSwitch(Location loc, Derivation deriv) {
-        Builder builder = this.builderMap.get(loc.getTemplate());
+        Builder builder = this.builderMap.get(loc.getTemplate().get());
         SwitchStack result = builder.getSwitch(loc, deriv);
         assert result != null;
         return result;
@@ -147,7 +145,9 @@ public class TemplateBuilder {
     private class Builder {
         Builder(QualName name, Procedure proc, Term init) {
             assert init.getTransience() == 0 : "Can't build template from transient term";
-            this.result = name == null ? new Template(proc) : new Template(name);
+            this.result = name == null
+                ? new Template(proc)
+                : new Template(name);
             // set the initial location
             TermKey initKey = new TermKey(init, new HashSet<Term>(), new HashSet<CtrlVar>());
             Location start = this.result.getStart();
@@ -192,17 +192,16 @@ public class TemplateBuilder {
          */
         private void buildAttempt(TermKey next) {
             Location loc = getLocMap().get(next);
-            assert loc.getType() == null;
             Term term = next.term();
             Type locType = term.getType();
             // property switches
             Set<SwitchStack> switches = new LinkedHashSet<>();
             // see if we need a property test
             // start states of procedures are exempt
-            boolean isProcStartOrFinal =
-                (loc.isStart() || term.isFinal()) && getResult().hasOwner();
-            if (!isProcStartOrFinal && loc.getTransience() == 0 && next.preds()
-                .isEmpty() && !getProperties().isEmpty()) {
+            boolean isProcStartOrFinal
+                = (loc.isStart() || term.isFinal()) && getResult().hasOwner();
+            if (!isProcStartOrFinal && loc.getTransience() == 0 && next.preds().isEmpty()
+                && !getProperties().isEmpty()) {
                 for (Action prop : getProperties()) {
                     assert prop.isProperty() && prop instanceof Rule;
                     if (((Rule) prop).getPolicy() != CheckPolicy.OFF) {
@@ -211,12 +210,11 @@ public class TemplateBuilder {
                         switches.add(sw);
                     }
                 }
-                if (locType != Type.TRIAL || !term.getAttempt()
-                    .sameVerdict()) {
+                if (locType != Type.TRIAL || !term.getAttempt().sameVerdict()) {
                     // we need an intermediate location to go to after the property test
                     Location aux = getResult().addLocation(0);
-                    SwitchAttempt locAttempt =
-                        new SwitchAttempt(loc, aux, aux, switches.size(), switches.stream());
+                    SwitchAttempt locAttempt
+                        = new SwitchAttempt(loc, aux, aux, switches.size(), switches.stream());
                     loc.setType(Type.TRIAL);
                     loc.setAttempt(locAttempt);
                     loc = aux;
@@ -268,8 +266,7 @@ public class TemplateBuilder {
             } else {
                 // this is due to a non-verdict transition
                 assert predKey == null;
-                vars = incoming.getOutVars()
-                    .keySet();
+                vars = incoming.getOutVars().keySet();
             }
             TermKey key = new TermKey(term, predTerms, vars);
             Location result = locMap.get(key);
@@ -304,21 +301,18 @@ public class TemplateBuilder {
             SwitchStack result = switchMap.get(deriv);
             if (result == null) {
                 // only switches from this template or initial switches can be requested
-                assert source.getTemplate() == getResult();
-                result = new SwitchStack();
+                assert source.getTemplate().get() == getResult();
+                var stack = result = new SwitchStack();
                 Location target = addLocation(deriv.onFinish(), null, deriv.getCall());
-                result.add(new Switch(source, deriv.getCall(), deriv.getTransience(), target));
-                if (deriv.hasNested()) {
-                    Procedure caller = (Procedure) deriv.getCall()
-                        .getUnit();
+                stack.add(new Switch(source, deriv.getCall(), deriv.getTransience(), target));
+                deriv.getNested().ifPresent(nd -> {
+                    Procedure caller = (Procedure) deriv.getCall().getUnit();
                     Template callerTemplate = caller.getTemplate();
-                    SwitchStack nested =
-                        getExternalSwitch(callerTemplate.getStart(), deriv.getNested());
-                    result.addAll(nested);
-                }
-                assert result.getBottom()
-                    .getSource() == source;
-                switchMap.put(deriv, result);
+                    SwitchStack nested = getExternalSwitch(callerTemplate.getStart(), nd);
+                    stack.addAll(nested);
+                });
+                assert stack.getBottom().getSource() == source;
+                switchMap.put(deriv, stack);
             }
             return result;
         }
@@ -328,7 +322,9 @@ public class TemplateBuilder {
          * a verdict or a switch, depending on the parameter.
          */
         private Deque<TermKey> getFresh(boolean verdict) {
-            return verdict ? this.freshVerdict : this.freshSwitch;
+            return verdict
+                ? this.freshVerdict
+                : this.freshSwitch;
         }
 
         /** Unexplored set of symbolic locations reached by a verdict. */
@@ -379,8 +375,7 @@ public class TemplateBuilder {
                 repr = template.getStart();
                 image = result.getStart();
             } else {
-                repr = cell.iterator()
-                    .next();
+                repr = cell.iterator().next();
                 image = result.addLocation(repr.getTransience());
             }
             image.setType(repr.getType());
@@ -457,8 +452,7 @@ public class TemplateBuilder {
         if (loc.isTrial()) {
             SwitchAttempt attempt = loc.getAttempt();
             for (SwitchStack swit : attempt) {
-                targets.add(swit.getBottom()
-                    .onFinish());
+                targets.add(swit.getBottom().onFinish());
             }
             onSuccess = attempt.onSuccess();
             onFailure = attempt.onFailure();
@@ -501,8 +495,9 @@ public class TemplateBuilder {
     private static record LocationKey(Position.Type type, AttemptKey attempt, int transcience,
         List<CtrlVar> ctrlVars) {
         LocationKey(Location loc) {
-            this(loc.getType(), loc.isTrial() ? new AttemptKey(loc.getAttempt()) : null,
-                loc.getTransience(), loc.getVars());
+            this(loc.getType(), loc.isTrial()
+                ? new AttemptKey(loc.getAttempt())
+                : null, loc.getTransience(), loc.getVars());
         }
     }
 
@@ -522,8 +517,7 @@ public class TemplateBuilder {
         private List<Location> getNested(SwitchStack sw) {
             List<Location> result = new ArrayList<>(sw.size() - 1);
             for (int i = 1; i < sw.size(); i++) {
-                result.add(sw.get(i)
-                    .onFinish());
+                result.add(sw.get(i).onFinish());
             }
             return result;
         }
@@ -590,7 +584,9 @@ public class TemplateBuilder {
         private List<Cell> multiples = new LinkedList<>();
 
         Cell getCell(Location loc) {
-            return loc == null ? null : this.locCells[loc.getNumber()];
+            return loc == null
+                ? null
+                : this.locCells[loc.getNumber()];
         }
 
         private final Cell[] locCells;

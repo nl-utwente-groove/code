@@ -173,15 +173,15 @@ public class MatchCollector {
                 switch (anchorImage.getAnchorKind()) {
                 case EDGE:
                     if (!host.containsEdge((HostEdge) anchorImage)) {
-                        assert false : String.format("Edge %s does not occur in graph %s",
-                                                     anchorImage, host);
+                        assert false : String
+                            .format("Edge %s does not occur in graph %s", anchorImage, host);
                     }
                     break;
                 case NODE:
                     if (!(anchorImage instanceof ValueNode)
                         && !host.containsNode((HostNode) anchorImage)) {
-                        assert false : String.format("Node %s does not occur in graph %s",
-                                                     anchorImage, host);
+                        assert false : String
+                            .format("Node %s does not occur in graph %s", anchorImage, host);
                     }
                     break;
                 default:
@@ -207,8 +207,8 @@ public class MatchCollector {
         }
         // there may be new matches only if the rule call was untried in
         // the parent state
-        Set<Call> triedCalls = state.source().getActualFrame().getPastCalls();
-        return triedCalls == null || !triedCalls.contains(call);
+        var triedCalls = state.source().getActualFrame().getPastCalls();
+        return !triedCalls.contains(call);
     }
 
     /**

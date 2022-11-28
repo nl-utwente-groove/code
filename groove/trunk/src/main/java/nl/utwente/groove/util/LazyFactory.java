@@ -44,6 +44,19 @@ public abstract class LazyFactory<T> implements Supplier<T> {
         return result;
     }
 
+    /**
+     * Sets the value by hand, rather than to have it computed.
+     * This is only allowed if the value has not been computed or set before.
+     * @throws IllegalStateException if the value was already set
+     */
+    public void set(T value) throws IllegalStateException {
+        if (this.value != null) {
+            throw Exceptions
+                .illegalState("Value already set at %s, can't set it to %s", this.value, value);
+        }
+        this.value = value;
+    }
+
     /** Lazily creates the wrapped value, upon the first invocation of {@link #get()}. */
     abstract protected T create();
 

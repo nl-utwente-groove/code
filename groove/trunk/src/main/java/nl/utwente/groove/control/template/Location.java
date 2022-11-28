@@ -23,25 +23,36 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.Position;
 import nl.utwente.groove.grammar.CheckPolicy;
+import nl.utwente.groove.util.LazyFactory;
 
 /**
  * Location in a control template.
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public class Location implements Position<Location,SwitchStack>, Comparable<Location>, Relocatable {
     /**
-     * Constructs a numbered location for a given template.
-     * @param nr the location number;
+     * Constructs a numbered location for a given template, or a dead location.
+     * @param template the template for which this is a location, or {@code null} if this is the universal dead location
+     * @param nr the location number
+     * @param depth the location depth
      */
-    public Location(Template template, int nr, int depth) {
+    public Location(@Nullable Template template, int nr, int depth) {
         this.nr = nr;
-        this.template = template;
+        this.template = template == null
+            ? Optional.empty()
+            : Optional.of(template);
         this.depth = depth;
         if (template == null) {
             this.type = Type.DEAD;
@@ -52,10 +63,10 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
      * Indicates whether this is a special location.
      * Special locations do not have an underlying template,
      * but are used to indicate errors or absence of a state.
-     * @return {@code true} if and only if {@link #getTemplate()} returns {@code null}
+     * @return {@code true} if and only if {@link #getTemplate()} is empty
      */
     public boolean isSpecial() {
-        return getTemplate() == null;
+        return getTemplate().isEmpty();
     }
 
     /**
@@ -63,15 +74,15 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
      * This is non-{@code null} except for special locations.
      * @see #isSpecial()
      */
-    public Template getTemplate() {
+    public Optional<Template> getTemplate() {
         return this.template;
     }
 
-    private final Template template;
+    private final Optional<Template> template;
 
     @Override
     public boolean isStart() {
-        return !isSpecial() && getTemplate().getStart() == this;
+        return getTemplate().filter(t -> t.getStart() == this).isPresent();
     }
 
     @Override
@@ -117,10 +128,12 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
 
     @Override
     public Type getType() {
-        return this.type;
+        var result = this.type;
+        assert result != null;
+        return result;
     }
 
-    private Type type;
+    private @Nullable Type type;
 
     @Override
     public boolean isFinal() {
@@ -150,11 +163,13 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
      */
     @Override
     public SwitchAttempt getAttempt() {
-        return this.attempt;
+        var result = this.attempt;
+        assert result != null;
+        return result;
     }
 
     /** The set of outgoing call edges. */
-    private SwitchAttempt attempt;
+    private @Nullable SwitchAttempt attempt;
 
     @Override
     public boolean hasVars() {
@@ -163,22 +178,24 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
 
     @Override
     public List<CtrlVar> getVars() {
-        if (!isDead() && this.vars == null) {
+        var result = this.vars;
+        if (result == null) {
             // this may only happen before the variables have been
             // properly initialised; use the empty list as initial value.
-            this.vars = new ArrayList<>(getVarSet());
-            Collections.sort(this.vars);
+            this.vars = result = new ArrayList<>(getVarSet());
+            Collections.sort(result);
         }
-        return this.vars;
+        return result;
     }
 
     /** Returns the unordered set of control variables. */
     Set<CtrlVar> getVarSet() {
-        if (!isDead() && this.varSet == null) {
+        var result = this.varSet;
+        if (result == null) {
             assert this.vars == null;
-            this.varSet = new HashSet<>();
+            this.varSet = result = new HashSet<>();
         }
-        return this.varSet;
+        return result;
     }
 
     /**
@@ -187,7 +204,8 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
      */
     boolean addVars(Collection<CtrlVar> variables) {
         boolean result = false;
-        if (!isDead() && variables != null && !variables.isEmpty()) {
+        // don't call isDead() as the type may not yet have been set
+        if (this.type != Type.DEAD && !variables.isEmpty()) {
             result = getVarSet().addAll(variables);
             if (result) {
                 this.vars = null;
@@ -197,16 +215,13 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
     }
 
     /** Unordered set of control variables, used during variable initialisation. */
-    private Set<CtrlVar> varSet;
+    private @Nullable Set<CtrlVar> varSet;
     /** The collection of variables of this control location. */
-    private List<CtrlVar> vars;
+    private @Nullable List<CtrlVar> vars;
 
     /** Returns a mapping from variables to their indices for this location. */
     public Map<CtrlVar,Integer> getVarIxMap() {
-        if (this.varIxMap == null) {
-            this.varIxMap = computeVarIxMap();
-        }
-        return this.varIxMap;
+        return this.varIxMap.get();
     }
 
     private Map<CtrlVar,Integer> computeVarIxMap() {
@@ -217,7 +232,7 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
         return result;
     }
 
-    private Map<CtrlVar,Integer> varIxMap;
+    private Supplier<Map<CtrlVar,Integer>> varIxMap = LazyFactory.instance(this::computeVarIxMap);
 
     @Override
     public Location relocate(Relocation map) {
@@ -234,7 +249,11 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
         } else if (isRemoved()) {
             result.append("removed");
         } else {
-            result.append(getTemplate().hasOwner() ? getTemplate().getQualName() : "main");
+            var template = getTemplate().get();
+            result
+                .append(template.hasOwner()
+                    ? template.getQualName()
+                    : "main");
             result.append(".");
             result.append(getNumber());
         }
@@ -257,9 +276,14 @@ public class Location implements Position<Location,SwitchStack>, Comparable<Loca
 
     /** Returns an absence location of given transient depth. */
     public static Location getSpecial(CheckPolicy policy, int transience) {
-        List<Location> locations = policy == CheckPolicy.ERROR ? errorLocations : removeLocations;
+        List<Location> locations = policy == CheckPolicy.ERROR
+            ? errorLocations
+            : removeLocations;
         for (int i = locations.size(); i <= transience; i++) {
-            locations.add(new Location(null, policy == CheckPolicy.ERROR ? ERROR_NR : REMOVE_NR, i));
+            locations
+                .add(new Location(null, policy == CheckPolicy.ERROR
+                    ? ERROR_NR
+                    : REMOVE_NR, i));
         }
         return locations.get(transience);
     }

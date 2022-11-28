@@ -16,7 +16,11 @@
  */
 package nl.utwente.groove.control.template;
 
+import java.util.Optional;
 import java.util.Stack;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.control.Attempt;
 import nl.utwente.groove.control.Call;
@@ -29,6 +33,7 @@ import nl.utwente.groove.grammar.host.HostFactory;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public class SwitchStack extends Stack<Switch>
     implements Attempt.Stage<Location,SwitchStack>, Comparable<SwitchStack>, Relocatable {
     /** Constructs a copy of a given stack. */
@@ -82,13 +87,14 @@ public class SwitchStack extends Stack<Switch>
     /** Returns the call stack corresponding to this switch stack. */
     @Override
     public CallStack getCallStack() {
-        if (this.callStack == null) {
-            this.callStack = new CallStack(stream().map(s -> s.getCall()));
+        var result = this.callStack;
+        if (result == null) {
+            this.callStack = result = new CallStack(stream().map(s -> s.getCall()));
         }
-        return this.callStack;
+        return result;
     }
 
-    private CallStack callStack;
+    private @Nullable CallStack callStack;
 
     /** Indicates if this step is part of a recipe. */
     public boolean inRecipe() {
@@ -96,7 +102,7 @@ public class SwitchStack extends Stack<Switch>
     }
 
     /** Returns the recipe of which this is a step, if any. */
-    public Recipe getRecipe() {
+    public Optional<Recipe> getRecipe() {
         return getCallStack().getRecipe();
     }
 
@@ -118,14 +124,13 @@ public class SwitchStack extends Stack<Switch>
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof SwitchStack)) {
+        if (!(obj instanceof SwitchStack other)) {
             return false;
         }
-        SwitchStack other = (SwitchStack) obj;
         if (size() != other.size()) {
             return false;
         }

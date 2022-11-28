@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -182,8 +183,7 @@ public class RuleTree extends AbstractResourceTree {
                 keys.add(source.getMatch());
             }
             if (source.hasTransition()) {
-                keys.add(source.getTransition()
-                    .getKey());
+                keys.add(source.getTransition().getKey());
             }
             selectMatch((RuleModel) ruleModel, keys);
         }
@@ -235,8 +235,8 @@ public class RuleTree extends AbstractResourceTree {
             for (RecipeEntry recipe : recipes) {
                 QualName recipeName = recipe.getQualName();
                 // recursively add parent directory nodes as required
-                DisplayTreeNode parentNode =
-                    addParentNode(topNode, dirNodeMap, recipeName.parent());
+                DisplayTreeNode parentNode
+                    = addParentNode(topNode, dirNodeMap, recipeName.parent());
                 DisplayTreeNode recipeNode = createActionNode(recipe, expandedPaths, selectedPaths);
                 parentNode.insertSorted(recipeNode);
             }
@@ -245,8 +245,8 @@ public class RuleTree extends AbstractResourceTree {
                 QualName name = ruleEntry.getQualName();
                 // recursively add parent directory nodes as required
                 DisplayTreeNode parentNode = addParentNode(topNode, dirNodeMap, name.parent());
-                DisplayTreeNode ruleNode =
-                    createActionNode(ruleEntry, expandedPaths, selectedPaths);
+                DisplayTreeNode ruleNode
+                    = createActionNode(ruleEntry, expandedPaths, selectedPaths);
                 parentNode.insertSorted(ruleNode);
             }
         }
@@ -277,7 +277,7 @@ public class RuleTree extends AbstractResourceTree {
     }
 
     private DisplayTreeNode createActionNode(ActionEntry action, List<TreePath> expandedPaths,
-        List<TreePath> selectedPaths) {
+                                             List<TreePath> selectedPaths) {
         Collection<QualName> selection = getSimulatorModel().getSelectSet(ResourceKind.RULE);
         QualName name = action.getQualName();
         // create the rule node and register it
@@ -297,8 +297,7 @@ public class RuleTree extends AbstractResourceTree {
      */
     private Map<Integer,Set<ActionEntry>> getPriorityMap(GrammarModel grammar) {
         Map<Integer,Set<ActionEntry>> result = new TreeMap<>(Action.PRIORITY_COMPARATOR);
-        for (Recipe recipe : grammar.getControlModel()
-            .getRecipes()) {
+        for (Recipe recipe : grammar.getControlModel().getRecipes()) {
             int priority = recipe.getPriority();
             Set<ActionEntry> recipes = result.get(priority);
             if (recipes == null) {
@@ -347,8 +346,8 @@ public class RuleTree extends AbstractResourceTree {
      */
     private void setShowAnchorsOptionListener() {
         if (!this.anchorImageOptionListenerSet) {
-            JMenuItem showAnchorsOptionItem = getSimulator().getOptions()
-                .getItem(Options.SHOW_ANCHORS_OPTION);
+            JMenuItem showAnchorsOptionItem
+                = getSimulator().getOptions().getItem(Options.SHOW_ANCHORS_OPTION);
             if (showAnchorsOptionItem != null) {
                 // listen to the option controlling the rule anchor display
                 showAnchorsOptionItem.addItemListener(new ItemListener() {
@@ -366,7 +365,8 @@ public class RuleTree extends AbstractResourceTree {
 
     /** Adds tree nodes for all levels of a structured rule name. */
     private DisplayTreeNode addParentNode(DisplayTreeNode topNode,
-        Map<QualName,FolderTreeNode> dirNodeMap, ModuleName parentName) {
+                                          Map<QualName,FolderTreeNode> dirNodeMap,
+                                          ModuleName parentName) {
         //        QualName parent = ruleName.parent();
         if (parentName.isTop()) {
             // there is no parent rule name; the parent node is the top node
@@ -378,8 +378,8 @@ public class RuleTree extends AbstractResourceTree {
             if (result == null) {
                 // the parent node did not yet exist in the tree
                 // check recursively for the grandparent
-                DisplayTreeNode grandParentNode =
-                    addParentNode(topNode, dirNodeMap, ruleName.parent());
+                DisplayTreeNode grandParentNode
+                    = addParentNode(topNode, dirNodeMap, ruleName.parent());
                 // make the parent node and register it
                 result = new FolderTreeNode(ruleName.last());
                 grandParentNode.insertSorted(result);
@@ -426,8 +426,7 @@ public class RuleTree extends AbstractResourceTree {
         TreePath[] paths = new TreePath[treeNodes.size()];
         TreePath lastPath = null;
         for (int i = 0; i < treeNodes.size(); i++) {
-            lastPath = paths[i] = new TreePath(treeNodes.get(i)
-                .getPath());
+            lastPath = paths[i] = new TreePath(treeNodes.get(i).getPath());
         }
         setSelectionPaths(paths);
         if (matchSelected) {
@@ -492,28 +491,26 @@ public class RuleTree extends AbstractResourceTree {
             DisplayTreeNode parentNode;
             // child index of the new node in the parent node
             int matchCount;
-            if (key instanceof MatchResult) {
-                MatchResult match = (MatchResult) key;
-                Recipe recipe = match.getStep()
-                    .getRecipe();
-                QualName ruleName = key.getAction()
-                    .getQualName();
+            if (key instanceof MatchResult match) {
+                Optional<Recipe> recipe = match.getStep().getRecipe();
+                QualName ruleName = key.getAction().getQualName();
                 // find the correct rule tree node
-                parentNode = recipe == null ? this.ruleNodeMap.get(ruleName)
-                    : this.subruleNodeMap.get(new NamePair(ruleName, recipe.getQualName()));
+                parentNode = recipe
+                    .map(r -> r.getQualName())
+                    .map(n -> new NamePair(ruleName, n))
+                    .map(p -> this.subruleNodeMap.get(p))
+                    .orElse(this.ruleNodeMap.get(ruleName));
                 matchCount = parentNode.getChildCount();
                 newNode = new MatchTreeNode(getSimulatorModel(), state, match, matchCount + 1,
-                    getSimulator().getOptions()
-                        .isSelected(Options.SHOW_ANCHORS_OPTION));
+                    getSimulator().getOptions().isSelected(Options.SHOW_ANCHORS_OPTION));
             } else {
                 RecipeEvent event = (RecipeEvent) key;
-                RecipeTreeNode recipeNode = this.recipeNodeMap.get(event.getAction()
-                    .getQualName());
+                RecipeTreeNode recipeNode = this.recipeNodeMap.get(event.getAction().getQualName());
                 matchCount = recipeNode.getTransitionCount();
                 parentNode = recipeNode;
 
-                newNode =
-                    new RecipeTransitionTreeNode(getSimulatorModel(), state, event, matchCount + 1);
+                newNode = new RecipeTransitionTreeNode(getSimulatorModel(), state, event,
+                    matchCount + 1);
             }
             this.matchNodeMap.put(key, newNode);
             this.ruleDirectory.insertNodeInto(newNode, parentNode, matchCount);
@@ -526,16 +523,14 @@ public class RuleTree extends AbstractResourceTree {
      */
     private Set<NamePair> getTried(GraphState state) {
         // set the tried status of the rules
-        Set<? extends CallStack> pastAttempts =
-            state == null ? Collections.<CallStack>emptySet() : state.getActualFrame()
-                .getPastAttempts();
+        Set<? extends CallStack> pastAttempts = state == null
+            ? Collections.<CallStack>emptySet()
+            : state.getActualFrame().getPastAttempts();
         // convert the transitions to pairs of rule name + recipe name
         Set<NamePair> triedPairs = new HashSet<>();
         for (CallStack t : pastAttempts) {
-            QualName ruleName = t.getRule()
-                .getQualName();
-            QualName recipeName = t.inRecipe() ? t.getRecipe()
-                .getQualName() : null;
+            QualName ruleName = t.getRule().getQualName();
+            QualName recipeName = t.getRecipe().map(r -> r.getQualName()).orElse(null);
             triedPairs.add(new NamePair(ruleName, recipeName));
         }
         return triedPairs;
@@ -543,7 +538,7 @@ public class RuleTree extends AbstractResourceTree {
 
     @Override
     public String convertValueToText(Object value, boolean selected, boolean expanded, boolean leaf,
-        int row, boolean hasFocus) {
+                                     int row, boolean hasFocus) {
         String result;
         if (value instanceof DisplayTreeNode) {
             result = ((DisplayTreeNode) value).getText();
@@ -555,8 +550,7 @@ public class RuleTree extends AbstractResourceTree {
 
     /** Convenience method to retrieve the control display. */
     private final ControlDisplay getControlDisplay() {
-        return (ControlDisplay) getSimulator().getDisplaysPanel()
-            .getDisplay(DisplayKind.CONTROL);
+        return (ControlDisplay) getSimulator().getDisplaysPanel().getDisplay(DisplayKind.CONTROL);
     }
 
     /**
@@ -643,7 +637,6 @@ public class RuleTree extends AbstractResourceTree {
 
     private class RecipeEntry implements ActionEntry {
         public RecipeEntry(Recipe recipe) {
-            super();
             this.recipe = recipe;
         }
 
@@ -716,8 +709,8 @@ public class RuleTree extends AbstractResourceTree {
                 for (TreeNode node : selectedNodes) {
                     if (node instanceof RecipeTreeNode) {
                         Recipe recipe = ((RecipeTreeNode) node).getRecipe();
-                        getSimulatorModel().doSelectSet(ResourceKind.RULE,
-                            Collections.<QualName>emptySet());
+                        getSimulatorModel()
+                            .doSelectSet(ResourceKind.RULE, Collections.<QualName>emptySet());
                         getSimulatorModel().doSelect(ResourceKind.CONTROL, recipe.getControlName());
                         TextTab controlTab = (TextTab) getControlDisplay().getSelectedTab();
                         controlTab.select(recipe.getStartLine(), 0);
@@ -758,8 +751,7 @@ public class RuleTree extends AbstractResourceTree {
                     getSimulatorModel().setDisplay(toDisplay);
                 } else if (evt.getClickCount() == 2 && toDisplay != null) {
                     if (toDisplay.hasResource()) {
-                        getActions().getEditAction(toDisplay.getResource())
-                            .execute();
+                        getActions().getEditAction(toDisplay.getResource()).execute();
                     }
                 }
             }
@@ -784,8 +776,7 @@ public class RuleTree extends AbstractResourceTree {
             if (selectedNode instanceof MatchTreeNode
                 || selectedNode instanceof RecipeTransitionTreeNode) {
                 if (evt.getClickCount() == 2) {
-                    getActions().getApplyMatchAction()
-                        .execute();
+                    getActions().getApplyMatchAction().execute();
                 }
             }
         }
@@ -793,8 +784,9 @@ public class RuleTree extends AbstractResourceTree {
         private void maybeShowPopup(MouseEvent evt) {
             if (evt.isPopupTrigger()) {
                 TreePath selectedPath = getPathForLocation(evt.getX(), evt.getY());
-                TreeNode selectedNode =
-                    selectedPath == null ? null : (TreeNode) selectedPath.getLastPathComponent();
+                TreeNode selectedNode = selectedPath == null
+                    ? null
+                    : (TreeNode) selectedPath.getLastPathComponent();
                 RuleTree.this.requestFocus();
                 createPopupMenu(selectedNode).show(evt.getComponent(), evt.getX(), evt.getY());
             }
@@ -830,12 +822,13 @@ public class RuleTree extends AbstractResourceTree {
                     result.append(" of priority ");
                     result.append(this.priority);
                     result.append(HTMLConverter.HTML_LINEBREAK);
-                    result.append(
-                        "Will be scheduled only when all higher-level priority transformers failed");
+                    result
+                        .append("Will be scheduled only when all higher-level priority transformers failed");
                 }
             } else {
-                result.append("List of graph properties, defined by unmodifying rules<br>"
-                    + "and checked automatically at every non-transient state,");
+                result
+                    .append("List of graph properties, defined by unmodifying rules<br>"
+                        + "and checked automatically at every non-transient state,");
                 if (this.hasMultiple) {
                     switch (this.policy) {
                     case ERROR:
@@ -850,8 +843,7 @@ public class RuleTree extends AbstractResourceTree {
                     }
                 }
             }
-            return HTMLConverter.HTML_TAG.on(result)
-                .toString();
+            return HTMLConverter.HTML_TAG.on(result).toString();
         }
 
         private final CheckPolicy policy;
@@ -886,8 +878,7 @@ public class RuleTree extends AbstractResourceTree {
                     throw Exceptions.UNREACHABLE;
                 }
             }
-            return HTMLConverter.UNDERLINE_TAG.on(result)
-                .toString();
+            return HTMLConverter.UNDERLINE_TAG.on(result).toString();
         }
     }
 

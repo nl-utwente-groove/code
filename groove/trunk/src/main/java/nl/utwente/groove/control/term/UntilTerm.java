@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.control.term;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.util.Exceptions;
 
 /**
@@ -23,6 +25,7 @@ import nl.utwente.groove.util.Exceptions;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public class UntilTerm extends Term {
     /**
      * Constructs an until-do term.
@@ -33,34 +36,22 @@ public class UntilTerm extends Term {
 
     @Override
     protected DerivationAttempt computeAttempt(boolean nested) {
-        DerivationAttempt result;
+        checkTrial();
+        var result = createAttempt();
         switch (arg0().getType()) {
         case TRIAL:
-            result = createAttempt();
             DerivationAttempt ders0 = arg0().getAttempt(nested);
             result.addAll(ders0);
             result.setSuccess(ders0.onSuccess());
-            result.setFailure(ders0.onFailure()
-                .ifElse(epsilon(), arg1().seq(this)));
+            result.setFailure(ders0.onFailure().ifElse(epsilon(), arg1().seq(this)));
             break;
         case DEAD:
-            if (arg1().isTrial()) {
-                result = createAttempt();
-                DerivationAttempt ders1 = arg1().getAttempt(nested);
-                for (Derivation deriv : ders1) {
-                    result.add(deriv.newInstance(deriv.onFinish()
-                        .seq(this), false));
-                }
-                result.setSuccess(ders1.onSuccess()
-                    .seq(this));
-                result.setFailure(ders1.onFailure()
-                    .seq(this));
-            } else {
-                result = null;
+            DerivationAttempt ders1 = arg1().getAttempt(nested);
+            for (Derivation deriv : ders1) {
+                result.add(deriv.newInstance(deriv.onFinish().seq(this), false));
             }
-            break;
-        case FINAL:
-            result = null;
+            result.setSuccess(ders1.onSuccess().seq(this));
+            result.setFailure(ders1.onFailure().seq(this));
             break;
         default:
             throw Exceptions.UNREACHABLE;
@@ -75,21 +66,13 @@ public class UntilTerm extends Term {
 
     @Override
     protected Type computeType() {
-        switch (arg0().getType()) {
-        case TRIAL:
-            return Type.TRIAL;
-        case DEAD:
-            if (arg1().isTrial()) {
-                return Type.TRIAL;
-            } else {
-                return Type.DEAD;
-            }
-        case FINAL:
-            return Type.FINAL;
-        default:
-            assert false;
-            return null;
-        }
+        return switch (arg0().getType()) {
+        case TRIAL -> Type.TRIAL;
+        case DEAD -> arg1().isTrial()
+            ? Type.TRIAL
+            : Type.DEAD;
+        case FINAL -> Type.FINAL;
+        };
     }
 
     @Override

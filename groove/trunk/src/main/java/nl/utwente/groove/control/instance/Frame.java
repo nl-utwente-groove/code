@@ -16,10 +16,17 @@
  */
 package nl.utwente.groove.control.instance;
 
+import static nl.utwente.groove.util.LazyFactory.lazyFactory;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.CallStack;
@@ -33,13 +40,16 @@ import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.util.DefaultFixable;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
+import nl.utwente.groove.util.LazyFactory;
 
 /**
  * Run-time composed control location.
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public class Frame implements Position<Frame,Step>, Fixable {
     /** Constructs a new frame.
      * @param ctrl the control automaton being built
@@ -48,7 +58,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
      * @param pred predecessor in a verdict transition; if {@code null}, this is
      * a prime frame
      */
-    Frame(Automaton ctrl, Location loc, SwitchStack stack, Frame pred) {
+    Frame(Automaton ctrl, Location loc, SwitchStack stack, @Nullable Frame pred) {
         this.aut = ctrl;
         this.nr = ctrl.getFrames().size();
         List<Assignment> pops = new ArrayList<>();
@@ -133,12 +143,12 @@ public class Frame implements Position<Frame,Step>, Fixable {
      * Returns the predecessor frame in the chain between the
      * prime frame and this, or {@code null} if this is a prime frame.
      */
-    private Frame getPred() {
+    private @Nullable Frame getPred() {
         return this.pred;
     }
 
     /** The predecessor frame, or {@code null} if this is a prime frame. */
-    private final Frame pred;
+    private final @Nullable Frame pred;
 
     /**
      * Returns the prime frame of this frame.
@@ -161,36 +171,34 @@ public class Frame implements Position<Frame,Step>, Fixable {
      * between the prime frame and this one (inclusive).
      */
     public Set<CallStack> getPastAttempts() {
-        Set<CallStack> result = this.pastAttempts;
-        if (result == null) {
-            result = new HashSet<>();
-            if (!isPrime()) {
-                result.addAll(getPred().getPastAttempts());
-            }
-            if (isTrial()) {
-                for (Step step : getAttempt()) {
-                    result.add(step.getCallStack());
-                }
-            }
-            this.pastAttempts = result;
-        }
-        return this.pastAttempts;
+        return this.pastAttempts.get();
     }
 
-    private Set<CallStack> pastAttempts;
+    private Supplier<Set<CallStack>> pastAttempts = lazyFactory(() -> {
+        var result = new HashSet<CallStack>();
+        if (!isPrime()) {
+            var pred = getPred();
+            assert pred != null;
+            result.addAll(pred.getPastAttempts());
+        }
+        if (isTrial()) {
+            for (Step step : getAttempt()) {
+                result.add(step.getCallStack());
+            }
+        }
+        return result;
+    });
 
     /** Returns the set of rule calls that have been tried since the prime frame. */
     public Set<Call> getPastCalls() {
-        if (this.pastCalls == null) {
-            Set<Call> result = this.pastCalls = new HashSet<>();
-            for (CallStack attempt : getPastAttempts()) {
-                result.add(attempt.peek());
-            }
-        }
-        return this.pastCalls;
+        return this.pastCalls.get();
     }
 
-    private Set<Call> pastCalls;
+    private Supplier<Set<Call>> pastCalls = lazyFactory(() -> {
+        var result = new HashSet<Call>();
+        getPastAttempts().stream().map(a -> a.peek()).forEach(c -> result.add(c));
+        return result;
+    });
 
     /**
      * Returns the list of frame pop actions corresponding to procedure exits
@@ -212,14 +220,15 @@ public class Frame implements Position<Frame,Step>, Fixable {
 
     @Override
     public Type getType() {
-        if (this.type == null) {
-            this.type = getLocation().getType();
+        var result = this.type;
+        if (result == null) {
+            this.type = result = getLocation().getType();
         }
-        return this.type;
+        return result;
     }
 
     /** The type of this frame. */
-    private Type type;
+    private @Nullable Type type;
 
     @Override
     public boolean isDead() {
@@ -239,13 +248,10 @@ public class Frame implements Position<Frame,Step>, Fixable {
     @Override
     public StepAttempt getAttempt() {
         assert isFixed();
-        if (this.attempt == null) {
-            this.attempt = computeAttempt();
-        }
-        return this.attempt;
+        return this.attempt.get();
     }
 
-    private StepAttempt attempt;
+    private final LazyFactory<StepAttempt> attempt = LazyFactory.instance(this::computeAttempt);
 
     /** Computes the attempt of this frame. */
     private StepAttempt computeAttempt() {
@@ -296,7 +302,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
             for (SwitchStack sw : properCalls) {
                 result.add(inter.createStep(sw));
             }
-            inter.attempt = interAttempt;
+            inter.attempt.set(interAttempt);
         }
         return result;
     }
@@ -334,40 +340,44 @@ public class Frame implements Position<Frame,Step>, Fixable {
             result = this;
             break;
         default:
-            assert false;
+            throw Exceptions.illegalArg("Policy value '%s' is illegal here", policy);
         }
         return result;
     }
 
     /** Returns the error frame from this frame. */
     public Frame onError() {
-        if (this.onError == null) {
+        var result = this.onError;
+        if (result == null) {
             if (isError() || isRemoved()) {
-                this.onError = this;
+                result = this;
             } else {
-                this.onError = newFrame(Location.getSpecial(CheckPolicy.ERROR,
-                                                            getLocation().getTransience()));
+                result = newFrame(Location
+                    .getSpecial(CheckPolicy.ERROR, getLocation().getTransience()));
             }
+            this.onError = result;
         }
-        return this.onError;
+        return result;
     }
 
-    private Frame onError;
+    private @Nullable Frame onError;
 
     /** Returns the absence frame from this frame. */
     public Frame onRemove() {
-        if (this.onRemove == null) {
+        var result = this.onRemove;
+        if (result == null) {
             if (isRemoved()) {
-                this.onRemove = this;
+                result = this;
             } else {
-                this.onRemove = newFrame(Location.getSpecial(CheckPolicy.REMOVE,
-                                                             getLocation().getTransience()));
+                result = newFrame(Location
+                    .getSpecial(CheckPolicy.REMOVE, getLocation().getTransience()));
             }
+            this.onRemove = result;
         }
-        return this.onRemove;
+        return result;
     }
 
-    private Frame onRemove;
+    private @Nullable Frame onRemove;
 
     /**
      * Indicates if this frame is inside a recipe.
@@ -387,7 +397,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
      * if it is not inside a recipe
      * @see #isInternal()
      */
-    public Recipe getRecipe() {
+    public Optional<Recipe> getRecipe() {
         return getSwitchStack().getRecipe();
     }
 
@@ -445,7 +455,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         assert isFixed();
         if (this == obj) {
             return true;
