@@ -37,6 +37,7 @@ import java.util.Set;
 import nl.utwente.groove.explore.util.LTSLabels.Flag;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.graph.Edge;
+import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Exceptions;
@@ -96,31 +97,34 @@ public class CTLMarker {
             // int nodeNr = node.getNumber();
             int nodeNr = this.model.nodeIndex(node);
             this.states[nodeNr] = node;
-            int specialEdgeCount = 0;
+            int outCount = 0;
             for (Edge outEdge : outEdges) {
                 String label = outEdge.label().text();
                 Flag flag = this.model.getFlag(label);
                 if (flag == null) {
-                    Node target = outEdge.target();
-                    // EZ says: change for SF bug #442.
-                    // int targetNr = target.getNumber();
-                    int targetNr = this.model.nodeIndex(target);
-                    if (backward[targetNr] == null) {
-                        backward[targetNr] = new ArrayList<>();
+                    // AR: don't treat flags as edges for model checking (SF bug #503)
+                    if (outEdge.getRole() != EdgeRole.FLAG) {
+                        Node target = outEdge.target();
+                        // EZ says: change for SF bug #442.
+                        // int targetNr = target.getNumber();
+                        int targetNr = this.model.nodeIndex(target);
+                        if (backward[targetNr] == null) {
+                            backward[targetNr] = new ArrayList<>();
+                        }
+                        backward[targetNr].add(nodeNr);
+                        outCount++;
                     }
-                    backward[targetNr].add(nodeNr);
                     markAtom(nodeNr, label);
                 } else {
                     assert outEdge.isLoop() : String
                         .format("Special state marker '%s' occurs as edge label in model",
                                 outEdge.label());
                     markSpecialAtom(nodeNr, flag);
-                    specialEdgeCount++;
                 }
             }
             // subtract the special atoms from the outgoing edge count,
             // if the model is not a GTS
-            this.outCount[nodeNr] = outEdges.size() - specialEdgeCount;
+            this.outCount[nodeNr] = outCount;
             // Test the state markers in case we are in a GTS
             for (Map.Entry<Flag,Integer> flagEntry : flagNrs.entrySet()) {
                 if (this.model.isSpecial(node, flagEntry.getKey())) {
@@ -210,7 +214,10 @@ public class CTLMarker {
             // retrieve the action name being called
             QualName callId = prop.getId();
             if (this.calls.containsKey(callId)) {
-                this.calls.get(callId).stream().filter(c -> c.matches(prop))
+                this.calls
+                    .get(callId)
+                    .stream()
+                    .filter(c -> c.matches(prop))
                     .forEach(c -> this.marking[this.propNr.get(c)].set(nodeNr));
             }
         }
@@ -269,8 +276,8 @@ public class CTLMarker {
         case EQUIV -> computeEquiv(arg1, arg2);
         case FORALL -> markForall(property.getArg1());
         case EXISTS -> markExists(property.getArg1());
-        default -> throw Exceptions.illegalArg("Top level operator '%s' in formula %s not allowed",
-                                               token, property);
+        default -> throw Exceptions
+            .illegalArg("Top level operator '%s' in formula %s not allowed", token, property);
         };
         this.marking[nr] = result;
         return result;
@@ -286,8 +293,8 @@ public class CTLMarker {
         case ALWAYS -> throw Exceptions
             .unsupportedOp("The EG(phi) construction in %s should have been rewritten to a !(AF(!phi)) construction",
                            property);
-        default -> throw Exceptions.illegalArg("Operator '%s' should not occur here",
-                                               property.getOp());
+        default -> throw Exceptions
+            .illegalArg("Operator '%s' should not occur here", property.getOp());
         };
     }
 
@@ -301,8 +308,8 @@ public class CTLMarker {
         case ALWAYS -> throw Exceptions
             .unsupportedOp("The AG(phi) construction in %s should have been rewritten to a !(EF(!phi)) construction",
                            property);
-        default -> throw Exceptions.illegalArg("Operator %s should not occur here",
-                                               property.getOp());
+        default -> throw Exceptions
+            .illegalArg("Operator %s should not occur here", property.getOp());
         };
     }
 

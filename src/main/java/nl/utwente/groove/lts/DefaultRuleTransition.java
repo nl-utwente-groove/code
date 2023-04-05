@@ -36,7 +36,6 @@ import nl.utwente.groove.grammar.host.HostGraphMorphism;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.graph.AEdge;
 import nl.utwente.groove.graph.AGraph;
-import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Morphism;
 import nl.utwente.groove.graph.iso.IsoChecker;
 import nl.utwente.groove.transform.Proof;
@@ -101,15 +100,6 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     @Override
     public boolean isSymmetry() {
         return this.symmetry;
-    }
-
-    @Override
-    public EdgeRole getRole() {
-        if (getAction().isModifying() || getStep().isModifying()) {
-            return EdgeRole.BINARY;
-        } else {
-            return EdgeRole.FLAG;
-        }
     }
 
     @Override

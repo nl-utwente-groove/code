@@ -21,8 +21,10 @@ import java.util.List;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.control.instance.Step;
+import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.host.HostGraphMorphism;
 import nl.utwente.groove.grammar.host.HostNode;
+import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.transform.RuleEvent;
@@ -49,6 +51,15 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
     /** Overrides the method to specialise the result type. */
     @Override
     RuleTransitionLabel label();
+
+    @Override
+    default public EdgeRole getRole() {
+        if (getAction().getRole() == Role.TRANSFORMER || getStep().isModifying()) {
+            return EdgeRole.BINARY;
+        } else {
+            return EdgeRole.FLAG;
+        }
+    }
 
     /** Callback method to construct a rule application from this
      * graph transition.
