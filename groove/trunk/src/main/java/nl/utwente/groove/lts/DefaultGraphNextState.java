@@ -26,7 +26,6 @@ import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.host.DeltaHostGraph;
 import nl.utwente.groove.grammar.host.HostGraphMorphism;
 import nl.utwente.groove.grammar.host.HostNode;
-import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.transform.DeltaApplier;
 import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.transform.RuleApplication;
@@ -129,15 +128,6 @@ public class DefaultGraphNextState extends AbstractGraphState
     @Override
     public RuleTransitionLabel label() {
         return RuleTransitionLabel.createLabel(source(), getKey(), getAddedNodes());
-    }
-
-    @Override
-    public EdgeRole getRole() {
-        if (getAction().isModifying() || getStep().isModifying()) {
-            return EdgeRole.BINARY;
-        } else {
-            return EdgeRole.FLAG;
-        }
     }
 
     /**
