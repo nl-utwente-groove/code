@@ -44,7 +44,6 @@ import javax.swing.event.ListSelectionListener;
 import nl.utwente.groove.explore.strategy.Boundary;
 import nl.utwente.groove.explore.strategy.GraphNodeSizeBoundary;
 import nl.utwente.groove.explore.strategy.RuleSetBoundary;
-import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
@@ -57,7 +56,7 @@ import nl.utwente.groove.gui.layout.SpringUtilities;
 public class BoundedModelCheckingDialog {
 
     JOptionPane createContentPane() {
-        Object[] buttons = new Object[] {getOkButton(), getCancelButton()};
+        Object[] buttons = {getOkButton(), getCancelButton()};
         this.pane = new JOptionPane(createPanel(), JOptionPane.PLAIN_MESSAGE,
             JOptionPane.OK_CANCEL_OPTION, null, buttons);
         return this.pane;
@@ -82,7 +81,8 @@ public class BoundedModelCheckingDialog {
         this.addButton.setEnabled(false);
 
         this.ruleList = new JList<>();
-        this.ruleList.setListData(this.ruleNames.toArray(new String[this.ruleNames.size()]));
+        this.ruleList
+            .setListData(this.ruleNames.stream().map(QualName::toString).toArray(String[]::new));
         this.ruleList.setEnabled(false);
         this.ruleList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         this.ruleList.addListSelectionListener(this.selectionListener);
@@ -181,7 +181,7 @@ public class BoundedModelCheckingDialog {
     public void setGrammar(Grammar grammar) {
         this.grammar = grammar;
         this.ruleNames = new ArrayList<>();
-        for (Action rule : grammar.getActions()) {
+        for (Rule rule : grammar.getAllRules()) {
             this.ruleNames.add(rule.getQualName());
         }
     }
@@ -243,8 +243,7 @@ public class BoundedModelCheckingDialog {
                 if (e.getSource() == getOkButton()) {
                     setBoundary();
                 }
-                BoundedModelCheckingDialog.this.dialog.getContentPane()
-                    .setVisible(false);
+                BoundedModelCheckingDialog.this.dialog.getContentPane().setVisible(false);
                 BoundedModelCheckingDialog.this.dialog.dispose();
             } catch (NumberFormatException e1) {
                 // invalid entries in the dialog, do not do anything
@@ -291,16 +290,21 @@ public class BoundedModelCheckingDialog {
                 for (String name : aDialog.ruleList.getSelectedValuesList()) {
                     aDialog.selectedRuleNames.add(QualName.parse(name));
                 }
-                aDialog.selectedRuleList.setListData(aDialog.selectedRuleNames
-                    .toArray(new String[aDialog.selectedRuleNames.size()]));
+                aDialog.selectedRuleList
+                    .setListData(aDialog.selectedRuleNames
+                        .stream()
+                        .map(QualName::toString)
+                        .toArray(String[]::new));
             } else if (e.getSource() == aDialog.deleteButton) {
                 for (String name : aDialog.selectedRuleList.getSelectedValuesList()) {
                     aDialog.selectedRuleNames.remove(QualName.parse(name));
                 }
-                aDialog.selectedRuleList.setListData(aDialog.selectedRuleNames.stream()
-                    .map(n -> n.toString())
-                    .collect(Collectors.toList())
-                    .toArray(new String[0]));
+                aDialog.selectedRuleList
+                    .setListData(aDialog.selectedRuleNames
+                        .stream()
+                        .map(n -> n.toString())
+                        .collect(Collectors.toList())
+                        .toArray(new String[0]));
             }
         }
 
@@ -308,15 +312,13 @@ public class BoundedModelCheckingDialog {
         public void valueChanged(ListSelectionEvent e) {
             BoundedModelCheckingDialog aDialog = BoundedModelCheckingDialog.this;
             if (e.getSource() == aDialog.ruleList) {
-                if (aDialog.ruleList.getSelectedValuesList()
-                    .size() > 0) {
+                if (aDialog.ruleList.getSelectedValuesList().size() > 0) {
                     aDialog.addButton.setEnabled(true);
                 } else {
                     aDialog.addButton.setEnabled(false);
                 }
             } else if (e.getSource() == aDialog.selectedRuleList) {
-                if (aDialog.selectedRuleList.getSelectedValuesList()
-                    .size() > 0) {
+                if (aDialog.selectedRuleList.getSelectedValuesList().size() > 0) {
                     aDialog.deleteButton.setEnabled(true);
                 } else {
                     aDialog.deleteButton.setEnabled(false);
