@@ -33,7 +33,8 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
      * @see #hasCache()
      */
     public @NonNull C getCache() {
-        @Nullable C result = getCache(true);
+        @Nullable
+        C result = getCache(true);
         assert result != null; // due to create parameter
         return result;
     }
@@ -53,9 +54,9 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
             assert cacheReference.refersTo(null) : "Old cache reference inconsistent for state "
                 + this;
             if (DEBUG && (this instanceof GraphState s) && s.isDone()) {
-                System.out.printf("Recreating cache for done state %s, reference #%s%n",
-                    this,
-                    cacheReference);
+                System.out
+                    .printf("Recreating cache for done state %s, reference #%s%n", this,
+                            cacheReference);
             }
             result = createCache();
             cacheReference = cacheReference.newReference(this, result);
@@ -144,5 +145,5 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
     /** The internally stored reference. */
     private CacheReference<C> reference;
 
-    private final static boolean DEBUG = true;
+    private final static boolean DEBUG = false;
 }
