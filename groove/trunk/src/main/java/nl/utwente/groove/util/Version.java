@@ -61,7 +61,7 @@ public class Version {
     }
 
     /** Build number (timestamp with format yyyyMMddHHmmssSSS). */
-    public static final String BUILD = "20230405";
+    public static final String BUILD = "20230411";
 
     /** Release date of this version (date format dd.MM.yyyy). */
     public static final String DATE;
@@ -82,7 +82,7 @@ public class Version {
      * </ul>
      * A '+' sign at the end of the number indicates a development version.
      */
-    public static final String NUMBER = "6.0.2";
+    public static final String NUMBER = "6.0.3";
 
     /** Minimum Java JRE version required. */
     static public final String NUMBER_JAVAMIN = "17";
