@@ -25,9 +25,10 @@ import nl.utwente.groove.util.Exceptions;
  * @param <BOOL> The representation type of the boolean algebra
  * @param <STRING> The representation type of the string algebra
  */
+@SuppressWarnings("rawtypes")
 public sealed abstract class StringAlgebra<INT,REAL,BOOL,STRING>
-    extends StringSignature<INT,REAL,BOOL,STRING> implements
-    Algebra<STRING>permits AbstractStringAlgebra<INT,REAL>, PointStringAlgebra, TermStringAlgebra {
+    extends StringSignature<INT,REAL,BOOL,STRING>
+    implements Algebra<STRING>permits AbstractStringAlgebra, PointStringAlgebra, TermStringAlgebra {
     @Override
     @SuppressWarnings("unchecked")
     public STRING toValue(Expression term) {
@@ -41,10 +42,9 @@ public sealed abstract class StringAlgebra<INT,REAL,BOOL,STRING>
     @Override
     public final STRING toValueFromJava(Object value) {
         if (!(value instanceof java.lang.String)) {
-            throw Exceptions.illegalArg("Native int type is %s, not %s",
-                java.lang.String.class.getSimpleName(),
-                value.getClass()
-                    .getSimpleName());
+            throw Exceptions
+                .illegalArg("Native int type is %s, not %s", java.lang.String.class.getSimpleName(),
+                            value.getClass().getSimpleName());
         }
         return toValueFromJavaString((java.lang.String) value);
     }
