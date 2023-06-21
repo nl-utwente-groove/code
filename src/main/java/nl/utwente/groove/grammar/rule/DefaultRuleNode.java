@@ -148,12 +148,12 @@ public class DefaultRuleNode extends ANode implements RuleNode, AnchorKey {
     private @Nullable Set<LabelVar> vars;
 
     @Override
-    public @NonNull Set<@NonNull TypeNode> getMatchingTypes() {
+    public @NonNull Set<TypeNode> getMatchingTypes() {
         return this.matchingTypes;
     }
 
     /** The set of matching node types. */
-    private final Set<@NonNull TypeNode> matchingTypes;
+    private final Set<TypeNode> matchingTypes;
 
     @Override
     public boolean isSharp() {

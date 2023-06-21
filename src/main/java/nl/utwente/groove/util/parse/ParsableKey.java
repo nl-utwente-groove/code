@@ -42,7 +42,7 @@ public interface ParsableKey<V> extends Parser<V> {
     }
 
     @Override
-    default V parse(@NonNull String input) throws FormatException {
+    default V parse(String input) throws FormatException {
         return parser().parse(input);
     }
 

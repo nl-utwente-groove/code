@@ -21,7 +21,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -43,7 +42,7 @@ import nl.utwente.groove.graph.NodeSetEdgeSetGraph;
  * @version $Revision $
  */
 @NonNullByDefault
-public class ControlGraph extends NodeSetEdgeSetGraph<@NonNull ControlNode,@NonNull ControlEdge> {
+public class ControlGraph extends NodeSetEdgeSetGraph<ControlNode,ControlEdge> {
     /**
      * Constructs a new graph with a given name.
      */
