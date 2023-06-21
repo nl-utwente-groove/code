@@ -16,7 +16,6 @@
  */
 package nl.utwente.groove.grammar.host;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
@@ -33,7 +32,7 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
  * @version $Revision $
  */
 @NonNullByDefault
-public interface HostGraph extends GGraph<@NonNull HostNode,@NonNull HostEdge>, DeltaTarget {
+public interface HostGraph extends GGraph<HostNode,HostEdge>, DeltaTarget {
     @Override
     HostGraph newGraph(String name);
 

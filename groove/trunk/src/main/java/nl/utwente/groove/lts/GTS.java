@@ -37,7 +37,6 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -81,7 +80,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @version $Revision$
  */
 @NonNullByDefault
-public class GTS extends AGraph<@NonNull GraphState,@NonNull GraphTransition> implements Cloneable {
+public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable {
     /** Debug flag controlling whether states are compared for control location equality. */
     protected final static boolean CHECK_CONTROL_LOCATION = true;
     /**

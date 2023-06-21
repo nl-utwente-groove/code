@@ -19,7 +19,6 @@ package nl.utwente.groove.automaton;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -47,7 +46,7 @@ import nl.utwente.groove.graph.plain.PlainNode;
  * </ul>
  */
 @NonNullByDefault
-public interface RegAut extends GGraph<@NonNull RegNode,@NonNull RegEdge> {
+public interface RegAut extends GGraph<RegNode,RegEdge> {
     /** Returns the start node of the automaton. */
     RegNode getStartNode();
 
