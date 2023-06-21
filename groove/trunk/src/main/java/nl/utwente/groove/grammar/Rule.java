@@ -473,8 +473,7 @@ public class Rule implements Action, Fixable {
      * and has zero priority.
      */
     private boolean isPropertyLike() {
-        boolean result = !isModifying() && getPriority() == 0 && getSignature().isEmpty()
-            && getHiddenPars().isEmpty();
+        boolean result = !isModifying() && getPriority() == 0 && getHiddenPars().isEmpty();
         if (result) {
             result = getSignature().stream().allMatch(v -> !v.isInOnly());
         }
@@ -835,7 +834,6 @@ public class Rule implements Action, Fixable {
      * Indicates if application of this rule actually changes the host graph. If
      * <code>false</code>, this means the rule is essentially a graph
      * condition.
-     * Note that a rule with parameters is not modifying but nevertheless not considered to be a condition.
      */
     public boolean isModifying() {
         return this.modifying.get();
