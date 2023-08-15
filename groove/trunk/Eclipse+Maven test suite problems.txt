@@ -32,7 +32,7 @@ Circumstances:
 
 Apparent cause: when running a test this way, Eclipse does not open other packages to junit than the one in which the test is located
 
-Solution: I haven't found one, except to abandon this way of running a test suite altogether and relying on Eclipse's ability to run all tests. That does work; apparently all test packages are opened to junit in that case.
+Solution: add --add-opens nl.utwente.groove/nl.utwente.groove.test.xxx=ALL-UNNAMED for all test subpackages xxx
 
 
 Test classes marked as erroneous

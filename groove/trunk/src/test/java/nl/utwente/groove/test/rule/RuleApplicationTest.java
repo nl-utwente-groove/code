@@ -29,9 +29,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-import org.junit.Assert;
+import junit.framework.TestCase;
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
@@ -51,7 +52,7 @@ import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatException;
 
 /** Set of tests for rule application. */
-public class RuleApplicationTest {
+public class RuleApplicationTest extends TestCase {
     /** Location of the samples. */
     static public final String INPUT_DIR = "junit/rules";
     static final private boolean SAVE = false;
@@ -140,8 +141,7 @@ public class RuleApplicationTest {
     private void test(String grammarName) {
         try {
             this.grammar = Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
-            this.oracle = this.grammar.getProperties()
-                .getValueOracle();
+            this.oracle = this.grammar.getProperties().getValueOracle();
             for (QualName ruleName : this.grammar.getNames(RULE)) {
                 test(ruleName);
             }
@@ -167,13 +167,9 @@ public class RuleApplicationTest {
         boolean found = false;
         for (QualName startName : this.grammar.getNames(HOST)) {
             String namePrefix = ruleName.last() + "-";
-            if (startName.parent()
-                .equals(ruleName.parent())
-                && startName.last()
-                    .startsWith(namePrefix)
-                && !startName.last()
-                    .substring(namePrefix.length())
-                    .contains("-")) {
+            if (startName.parent().equals(ruleName.parent())
+                && startName.last().startsWith(namePrefix)
+                && !startName.last().substring(namePrefix.length()).contains("-")) {
                 test(ruleName, startName);
                 found = true;
             }
@@ -195,27 +191,19 @@ public class RuleApplicationTest {
         try {
             this.grammar.setLocalActiveNames(HOST, startName);
             List<HostGraph> results = new ArrayList<>();
-            AlgebraFamily family = this.grammar.getProperties()
-                .getAlgebraFamily();
+            AlgebraFamily family = this.grammar.getProperties().getAlgebraFamily();
             for (QualName resultName : this.grammar.getNames(HOST)) {
                 String namePrefix = startName.last() + "-";
-                if (resultName.parent()
-                    .equals(startName.parent())
-                    && resultName.last()
-                        .startsWith(namePrefix)) {
-                    results.add(this.grammar.getHostModel(resultName)
-                        .toResource()
-                        .clone(family));
+                if (resultName.parent().equals(startName.parent())
+                    && resultName.last().startsWith(namePrefix)) {
+                    results.add(this.grammar.getHostModel(resultName).toResource().clone(family));
                 }
             }
-            Rule rule = this.grammar.toGrammar()
-                .getRule(ruleName);
+            Rule rule = this.grammar.toGrammar().getRule(ruleName);
             if (rule == null) {
                 Assert.fail(String.format("Rule '%s' is currently disabled", ruleName));
             }
-            test(this.grammar.getStartGraphModel()
-                .toHost()
-                .clone(family), rule, results);
+            test(this.grammar.getStartGraphModel().toHost().clone(family), rule, results);
         } catch (FormatException e) {
             Assert.fail(e.getMessage());
         }
@@ -225,19 +213,18 @@ public class RuleApplicationTest {
      * Tests if the application of a given rule to a given start graph
      * results in a given set of result graphs.
      */
-    private void test(HostGraph start, Rule rule, List<HostGraph> results)
-        throws IllegalArgumentException {
+    private void test(HostGraph start, Rule rule,
+                      List<HostGraph> results) throws IllegalArgumentException {
         IsoChecker checker = IsoChecker.getInstance(true);
         BitSet found = new BitSet();
         Set<RuleEvent> eventSet = new HashSet<>();
         Optional<MatchChecker> matchFilter = rule.getMatchFilter();
         for (Proof proof : rule.getAllMatches(start, null)) {
             RuleEvent event = proof.newEvent(null);
-            boolean errorExpected = start.getName()
-                .endsWith("E");
+            boolean errorExpected = start.getName().endsWith("E");
             try {
-                boolean ok = !matchFilter.isPresent() || matchFilter.get()
-                    .invoke(start, event.getAnchorMap());
+                boolean ok = !matchFilter.isPresent()
+                    || matchFilter.get().invoke(start, event.getAnchorMap());
                 if (errorExpected) {
                     Assert.fail("Expected exception for " + start.getName() + " did not occur");
                 }
@@ -265,45 +252,35 @@ public class RuleApplicationTest {
             if (target != null) {
                 if (SAVE) {
                     try {
-                        File tmpFile = File.createTempFile("error",
-                            FileType.STATE.getExtension(),
-                            new File(INPUT_DIR));
+                        File tmpFile = File
+                            .createTempFile("error", FileType.STATE.getExtension(),
+                                            new File(INPUT_DIR));
                         Groove.saveGraph(GraphConverter.toAspect(target), tmpFile);
                         System.out.printf("Graph saved in %s", tmpFile);
                     } catch (IOException e) {
                         Assert.fail(e.toString());
                     }
                 }
-                Assert.fail(
-                    String.format("Rule %s, start graph %s: Found: %s; unexpected target graph %s",
-                        rule.getQualName(),
-                        start.getName(),
-                        found,
-                        target));
+                Assert
+                    .fail(String
+                        .format("Rule %s, start graph %s: Found: %s; unexpected target graph %s",
+                                rule.getQualName(), start.getName(), found, target));
             }
         }
         int leftOver = found.nextClearBit(0);
         if (leftOver < results.size()) {
-            Assert.fail(String.format("Rule %s, start graph %s: Expected target missing: %s",
-                rule.getQualName(),
-                start.getName(),
-                results.get(leftOver)
-                    .getName()));
+            Assert
+                .fail(String
+                    .format("Rule %s, start graph %s: Expected target missing: %s",
+                            rule.getQualName(), start.getName(), results.get(leftOver).getName()));
         }
     }
 
     /** Filter method for {@link #testMatchFilter()}. Returns <code>true</code> only if the
      * match image has a {@code flag} flag. */
     public static boolean filterFlag(HostGraph host, RuleToHostMap anchorMap) {
-        HostNode image = anchorMap.nodeMap()
-            .values()
-            .iterator()
-            .next();
-        return !host.outEdgeSet(image)
-            .stream()
-            .anyMatch(e -> e.label()
-                .text()
-                .equals("flag"));
+        HostNode image = anchorMap.nodeMap().values().iterator().next();
+        return !host.outEdgeSet(image).stream().anyMatch(e -> e.label().text().equals("flag"));
     }
 
     /** Filter method that intentionally throws an exception. */
