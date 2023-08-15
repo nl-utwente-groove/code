@@ -219,7 +219,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                     getAspect());
             }
             if (source().getParamKind() == PARAM_ASK || target().getParamKind() == PARAM_ASK) {
-                if (!getKind().isCreator()) {
+                if (!getKind().isCreator() && getKind() != REMARK) {
                     throw new FormatException("User-provided parameters must be unconstrained");
                 }
             }
