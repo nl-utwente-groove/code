@@ -692,8 +692,13 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             if (this.aspect == null) {
                 this.aspect = aspect;
             } else if (!this.aspect.equals(aspect)) {
-                throw new FormatException("Conflicting aspects %s and %s", this.aspect, aspect,
-                    this);
+                var myKind = this.aspect.getKind();
+                var compatible = kind == AspectKind.ADDER
+                    && (myKind == AspectKind.CREATOR || myKind == AspectKind.EMBARGO);
+                if (!compatible) {
+                    throw new FormatException("Conflicting aspects %s and %s", this.aspect, aspect,
+                        this);
+                }
             }
         }
     }
