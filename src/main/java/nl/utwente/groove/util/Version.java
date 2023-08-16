@@ -61,7 +61,7 @@ public class Version {
     }
 
     /** Build number (timestamp with format yyyyMMddHHmmssSSS). */
-    public static final String BUILD = "20230411";
+    public static final String BUILD = "20230816";
 
     /** Release date of this version (date format dd.MM.yyyy). */
     public static final String DATE;
@@ -82,7 +82,7 @@ public class Version {
      * </ul>
      * A '+' sign at the end of the number indicates a development version.
      */
-    public static final String NUMBER = "6.0.3";
+    public static final String NUMBER = "6.1.0";
 
     /** Minimum Java JRE version required. */
     static public final String NUMBER_JAVAMIN = "17";
@@ -105,7 +105,7 @@ public class Version {
      * @return the latest grammar version.
      */
     public static String getCurrentGrammarVersion() {
-        return GRAMMAR_VERSION_3_7;
+        return GRAMMAR_VERSION_3_8;
     }
 
     /**
@@ -269,5 +269,10 @@ public class Version {
      * </ul>
      */
     public static final String GRAMMAR_VERSION_3_7 = "3.7";
-
+    /**
+     * This is the grammar version introduced with Groove version 6.1.0.
+     * It introduces more flexibility in the use of cnew: edges adjacent to cnew:-nodes may now be
+     * characterised as not: and new:, meaning that they are not considered to be part of the RHS resp. NAC
+     */
+    public static final String GRAMMAR_VERSION_3_8 = "3.8";
 }
