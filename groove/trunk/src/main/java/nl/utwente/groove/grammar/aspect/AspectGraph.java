@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.grammar.aspect;
 
+import static nl.utwente.groove.grammar.aspect.AspectKind.LET_NEW;
 import static nl.utwente.groove.graph.GraphRole.HOST;
 import static nl.utwente.groove.graph.GraphRole.RULE;
 import static nl.utwente.groove.graph.GraphRole.TYPE;
@@ -286,7 +287,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
                 AspectNode source = edge.source();
                 assert !source.getKind().isQuantifier();
                 AspectNode level = source.getNestingLevel();
-                AspectEdge normalisedEdge = addAssignment(level, source, edge.getAssign());
+                AspectEdge normalisedEdge
+                    = addAssignment(level, source, edge.getAssign(), edge.getKind() == LET_NEW);
                 if (map != null) {
                     map.putEdge(edge, normalisedEdge);
                 }
@@ -320,9 +322,10 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
      * @param level the nesting level node on which the expression should be computed
      * @param source node on which the expression occurs
      * @param assign the parsed assignment
+     * @param isNew flag indicating if the attribute is new (so no eraser need be added for the old value)
      */
     private AspectEdge addAssignment(@Nullable AspectNode level, @NonNull AspectNode source,
-                                     Assignment assign) throws FormatException {
+                                     Assignment assign, boolean isNew) throws FormatException {
         // add the expression structure
         AspectNode target = addExpression(level, source, assign.getRhs());
         // add a creator edge (for a rule) or normal edge to the assignment target
@@ -337,12 +340,12 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         }
         AspectLabel assignLabel = parser.parse(assignLabelText, getRole());
         AspectEdge result = addEdge(source, assignLabel, target);
-        if (getRole() == RULE && !source.getKind().isCreator()) {
-            // add an eraser edge for the old value
+        if (getRole() == RULE && !source.getKind().isCreator() && !isNew) {
+            // add an eraser edge for the old value, if this is not LET_NEW
             AspectNode oldTarget = findTarget(source, assign.getLhs(), target.getAttrKind());
             if (oldTarget == null) {
                 oldTarget = addNestedNode(level, source);
-                // use the type of the new target for the new target node
+                // use the type of the new target for the old target node
                 oldTarget.setAspects(createLabel(target.getAttrKind()));
             }
             assignLabel = AspectParser

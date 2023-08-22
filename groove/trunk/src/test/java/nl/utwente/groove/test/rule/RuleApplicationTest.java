@@ -81,6 +81,12 @@ public class RuleApplicationTest extends TestCase {
         test("mergers");
     }
 
+    /** Tests the rules in the attributes grammar. */
+    @Test
+    public void testAttributes() {
+        test("attributes");
+    }
+
     /** Tests the rules in the regexpr grammar. */
     @Test
     public void testRegexpr() {

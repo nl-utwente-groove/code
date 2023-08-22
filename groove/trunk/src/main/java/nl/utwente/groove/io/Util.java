@@ -63,8 +63,8 @@ public class Util {
      * @throws IOException if an IO error occurs during copying
      * @since Commons IO 1.1
      */
-    public static void copyDirectory(File srcDir, File destDir, boolean preserveFileDate)
-        throws IOException {
+    public static void copyDirectory(File srcDir, File destDir,
+                                     boolean preserveFileDate) throws IOException {
         if (srcDir == null) {
             throw new NullPointerException("Source must not be null");
         }
@@ -77,16 +77,14 @@ public class Util {
         if (srcDir.isDirectory() == false) {
             throw new IOException("Source '" + srcDir + "' exists but is not a directory");
         }
-        if (srcDir.getCanonicalPath()
-            .equals(destDir.getCanonicalPath())) {
+        if (srcDir.getCanonicalPath().equals(destDir.getCanonicalPath())) {
             throw new IOException(
                 "Source '" + srcDir + "' and destination '" + destDir + "' are the same");
         }
 
         // Cater for destination being directory within the source directory (see IO-141)
         List<String> exclusionList = null;
-        if (destDir.getCanonicalPath()
-            .startsWith(srcDir.getCanonicalPath())) {
+        if (destDir.getCanonicalPath().startsWith(srcDir.getCanonicalPath())) {
             File[] srcFiles = srcDir.listFiles();
             if (srcFiles != null && srcFiles.length > 0) {
                 exclusionList = new ArrayList<>(srcFiles.length);
@@ -110,7 +108,7 @@ public class Util {
      * @since Commons IO 1.1
      */
     private static void doCopyDirectory(File srcDir, File destDir, boolean preserveFileDate,
-        List<String> exclusionList) throws IOException {
+                                        List<String> exclusionList) throws IOException {
         // recurse
         File[] files = srcDir.listFiles();
         if (files == null) { // null if security restricted
@@ -154,21 +152,22 @@ public class Util {
      * @param preserveFileDate  whether to preserve the file date
      * @throws IOException if an error occurs
      */
-    private static void doCopyFile(File srcFile, File destFile, boolean preserveFileDate)
-        throws IOException {
+    private static void doCopyFile(File srcFile, File destFile,
+                                   boolean preserveFileDate) throws IOException {
         if (destFile.exists() && destFile.isDirectory()) {
             throw new IOException("Destination '" + destFile + "' exists but is a directory");
         }
 
         try (FileInputStream fis = new FileInputStream(srcFile);
-            FileOutputStream fos = new FileOutputStream(destFile);
-            FileChannel input = fis.getChannel();
-            FileChannel output = fos.getChannel();) {
+             FileOutputStream fos = new FileOutputStream(destFile);
+             FileChannel input = fis.getChannel(); FileChannel output = fos.getChannel();) {
             long size = input.size();
             long pos = 0;
             long count = 0;
             while (pos < size) {
-                count = (size - pos) > FIFTY_MB ? FIFTY_MB : (size - pos);
+                count = (size - pos) > FIFTY_MB
+                    ? FIFTY_MB
+                    : (size - pos);
                 pos += output.transferFrom(input, pos, count);
             }
         }
@@ -234,10 +233,8 @@ public class Util {
             return null;
         }
 
-        String[] dirParts = currentDir.toString()
-            .split("\\Q" + File.pathSeparator + "\\E");
-        String[] targetParts = target.toString()
-            .split("\\Q" + File.pathSeparator + "\\E");
+        String[] dirParts = currentDir.toString().split("\\Q" + File.pathSeparator + "\\E");
+        String[] targetParts = target.toString().split("\\Q" + File.pathSeparator + "\\E");
 
         int i = 0;
         int max = Math.max(dirParts.length, targetParts.length);
@@ -269,9 +266,8 @@ public class Util {
     /** Reads a CSV file from the resources dir and returns its contents as a String matrix. */
     public final static List<String[]> readCSV(String name, char sep) {
         List<String[]> result = null;
-        try (
-            CSVReader reader = new CSVReader(new InputStreamReader(Groove.getResource(name + ".csv")
-                .openStream()), sep)) {
+        try (CSVReader reader = new CSVReader(
+            new InputStreamReader(Groove.getResource(name + ".csv").openStream()), sep)) {
             result = reader.readAll();
         } catch (IOException e) {
             // no result
@@ -289,14 +285,18 @@ public class Util {
     public final static char VEE = '\u2228';
     /** Unicode hex string for "not" (negation) */
     public final static char NEG = '\u00AC';
+    /** Unicode plusminus symbol. */
+    static public final char PLUSMINUS = '\u00b1';
+    /** Unicode times symbol. */
+    static public final char TIMES = '\u00D7';
 
     /** Lower case letter pi. */
     public static final char LC_PI = '\u03C0';
-    /** HTML tau symbol. */
+    /** Lower case letter tau. */
     static public final char LC_TAU = '\u03C4';
-    /** HTML epsilon symbol. */
+    /** Lower case letter epsilon. */
     static public final char LC_EPSILON = '\u03B5';
-    /** HTML lambda symbol. */
+    /** Lower case letter lambda. */
     static public final char LC_LAMBDA = '\u03BB';
 
     /** HTML opening << quote symbol. */
@@ -309,8 +309,7 @@ public class Util {
     static public final char LANGLE = '<'; // &#9001;
     /** HTML right angular bracket symbol. */
     static public final char RANGLE = '>'; // &#9002;
-    /** HTML times symbol. */
-    static public final char TIMES = '\u00D7';
+
     /** Unicode right-triangle symbol; large/small = ..B6/B8. */
     static public final char RT = '\u25B8';
     /** Unicode left-triangle symbol; large/small = ..C0/C2. */
@@ -337,10 +336,15 @@ public class Util {
     static public final char DLA = '\u2199';
     /** Unicode  circular arrow symbol. */
     static public final char CA = '\u21ba';
+    /** Unicode squiggly right-arrow symbol. */
+    static public final char RA_SQUIGGLE = '\u21dd';
+    /** Unicode right-arrow symbol with stroke. */
+    static public final char RA_STROKE = '\u21f8';
+    /** Unicode right-arrow symbol with double stroke. */
+    static public final char RA_DOUBLE_STROKE = '\u21fb';
+
     /** Unicode thin space symbol. */
     static public final char THIN_SPACE = '\u2009';
-    /** Unicode plusminus symbol. */
-    static public final char PLUSMINUS = '\u00b1';
     /** Unicode end-of-text character. */
     static public final char EOT = '\u0003';
 }

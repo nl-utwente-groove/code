@@ -23,6 +23,7 @@ import static nl.utwente.groove.grammar.aspect.AspectKind.DEFAULT;
 import static nl.utwente.groove.grammar.aspect.AspectKind.EMBARGO;
 import static nl.utwente.groove.grammar.aspect.AspectKind.ERASER;
 import static nl.utwente.groove.grammar.aspect.AspectKind.LET;
+import static nl.utwente.groove.grammar.aspect.AspectKind.LET_NEW;
 import static nl.utwente.groove.grammar.aspect.AspectKind.LITERAL;
 import static nl.utwente.groove.grammar.aspect.AspectKind.NESTED;
 import static nl.utwente.groove.grammar.aspect.AspectKind.PARAM_ASK;
@@ -438,11 +439,18 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             assert !onNode;
             text = "+";
             break;
-        case LET:
+        case LET, LET_NEW:
             assert onNode;
-            String symbol = getGraphRole() == RULE && !source().getKind().isCreator()
-                ? ":="
-                : "=";
+            String symbol;
+            if (getGraphRole() == RULE && !source().getKind().isCreator()) {
+                // do not use #CHANGE_TO_SYMBOL as the prefix already tells the story
+                symbol = POINTS_TO_SYMBOL;
+                rolePrefix = getKind() == LET
+                    ? CHANGE_PREFIX
+                    : NEW_PREFIX;
+            } else {
+                symbol = POINTS_TO_SYMBOL;
+            }
             result = getAssign().toLine(symbol);
             if (getGraphRole() == RULE) {
                 color = ColorType.CREATOR;
@@ -453,24 +461,24 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             break;
         case REMARK:
             color = ColorType.REMARK;
-            rolePrefix = "// ";
+            rolePrefix = REM_PREFIX;
             text = getInnerText();
             break;
         case ADDER:
             color = ColorType.CREATOR;
-            rolePrefix = "!+ ";
+            rolePrefix = ADD_PREFIX;
             break;
         case EMBARGO:
             color = ColorType.EMBARGO;
-            rolePrefix = "! ";
+            rolePrefix = NOT_PREFIX;
             break;
         case ERASER:
             color = ColorType.ERASER;
-            rolePrefix = "- ";
+            rolePrefix = DEL_PREFIX;
             break;
         case CREATOR:
             color = ColorType.CREATOR;
-            rolePrefix = "+ ";
+            rolePrefix = NEW_PREFIX;
             break;
         default:
             // no annotation
@@ -520,7 +528,8 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 case HOST:
                 case RULE:
                     // this is an attribute edge displayed as a node label
-                    String suffix = ASSIGN_TEXT + target().getAttrAspect().getContentString();
+                    String suffix = SPACE + POINTS_TO_SYMBOL + SPACE
+                        + target().getAttrAspect().getContentString();
                     result = result.append(suffix);
                     break;
                 case TYPE:
@@ -537,12 +546,12 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 type = getAttrKind().getSort();
             }
             if (type != null) {
-                result = result.append(TYPE_TEXT);
+                result = result.append(TYPED_AS_SYMBOL + SPACE);
                 result = result.append(Line.atom(type.getName()).style(Style.BOLD));
             }
         }
         if (contextKind != getKind() && rolePrefix != null) {
-            result = Line.atom(rolePrefix).append(result);
+            result = Line.atom(rolePrefix + SPACE).append(result);
         }
         for (Style s : styles) {
             result = result.style(s);
@@ -817,7 +826,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     /** Indicates if this is a let-edge. */
     public boolean isAssign() {
-        return this.hasAspect() && this.getKind() == LET;
+        return this.hasAspect() && (this.getKind() == LET || this.getKind() == LET_NEW);
     }
 
     /** Convenience method to retrieve the attribute aspect content as an assignment. */
@@ -941,6 +950,24 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     /** Separator between level name and edge label. */
     static private final String LEVEL_NAME_SEPARATOR = "@";
-    static private final String ASSIGN_TEXT = " = ";
-    static private final String TYPE_TEXT = ": ";
+    /** Space symbol in label line. */
+    static private final String SPACE = " ";
+    /** Points-to symbol between attribute name and value or expression. */
+    static private final String POINTS_TO_SYMBOL = "" + Util.RA;
+    /** Change-to symbol between attribute name and value or expression. */
+    static private final String CHANGE_TO_SYMBOL = "" + Util.RA_STROKE;
+    /** Typed-as symbol between attribute name and type. */
+    static private final String TYPED_AS_SYMBOL = ":";
+    /** Prefix for newly created flags or attributes. */
+    static private final String NEW_PREFIX = "+";
+    /** Prefix for deleted flags or attributes. */
+    static private final String DEL_PREFIX = "-";
+    /** Prefix for negated flags or attributes. */
+    static private final String NOT_PREFIX = "!";
+    /** Prefix for changed attributes. */
+    static private final String CHANGE_PREFIX = "" + Util.PLUSMINUS;
+    /** Prefix for conditionally added (= negated + created) flags or attributes. */
+    static private final String ADD_PREFIX = NOT_PREFIX + NEW_PREFIX;
+    /** Prefix for remark lines. */
+    static private final String REM_PREFIX = "//";
 }
