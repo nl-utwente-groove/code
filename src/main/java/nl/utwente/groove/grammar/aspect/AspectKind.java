@@ -98,8 +98,10 @@ public enum AspectKind {
     PRODUCT("prod", ContentKind.NONE),
     /** Indicates an attribute value. */
     TEST("test", ContentKind.TEST_EXPR),
-    /** Indicates an attribute operation. */
+    /** Indicates an attribute change. */
     LET("let", ContentKind.LET_EXPR),
+    /** Indicates a new attribute. */
+    LET_NEW("letnew", ContentKind.LET_EXPR),
 
     // rule parameters
     /** Indicates a bidirectional rule parameter. */
@@ -387,6 +389,7 @@ public enum AspectKind {
         }
         if (role == GraphRole.RULE) {
             nodeKinds.add(TEST);
+            nodeKinds.add(LET_NEW);
         }
         for (AspectKind kind : nodeKinds) {
             Help help = computeHelp(kind, role, true, true);
@@ -438,7 +441,8 @@ public enum AspectKind {
                 s = "%s.COLON.label";
                 h = "Abstract edge type";
                 b.add("Declares an abstract %s-edge between node types.");
-                b.add("The edge can only occur between subtypes where it is redeclared concretely.");
+                b
+                    .add("The edge can only occur between subtypes where it is redeclared concretely.");
                 p.add(edgePar);
             } else if (withLabel) {
                 s = "%s.COLON.flag";
@@ -694,6 +698,12 @@ public enum AspectKind {
             b.add("Assigns the value of %2$s to the attribute field %1$s.");
             break;
 
+        case LET_NEW:
+            s = "%s.COLON.name.EQUALS.expr";
+            h = "Assignment";
+            b.add("Assigns the value of %2$s to a new attribute field %1$s.");
+            break;
+
         case LITERAL:
             s = "COLON.free";
             h = "Literal edge label";
@@ -740,7 +750,8 @@ public enum AspectKind {
                 s = "%s.COLON.nr";
                 h = "Bidirectional rule parameter";
                 b.add("Declares bidirectional rule parameter %1$s (ranging from 0).");
-                b.add("When used from a control program this parameter may be instantiated with a concrete value,");
+                b
+                    .add("When used from a control program this parameter may be instantiated with a concrete value,");
                 b.add("or be used as an output parameter, in which case the value");
                 b.add("is determined by the matching.");
                 p.add("the parameter number, ranging from 0");
@@ -989,19 +1000,21 @@ public enum AspectKind {
                 edgeKinds = EnumSet.of(DEFAULT, REMARK, LITERAL, LET);
                 break;
             case RULE:
-                nodeKinds
-                    = EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, BOOL, INT, REAL,
-                                 STRING, PRODUCT, PARAM_BI, PARAM_IN, PARAM_OUT, PARAM_ASK, FORALL,
-                                 FORALL_POS, EXISTS, EXISTS_OPT, ID, COLOR);
-                edgeKinds = EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, CONNECT,
-                                       BOOL, INT, REAL, STRING, ARGUMENT, PATH, LITERAL, FORALL,
-                                       FORALL_POS, EXISTS, EXISTS_OPT, NESTED, LET, TEST);
+                nodeKinds = EnumSet
+                    .of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, BOOL, INT, REAL, STRING,
+                        PRODUCT, PARAM_BI, PARAM_IN, PARAM_OUT, PARAM_ASK, FORALL, FORALL_POS,
+                        EXISTS, EXISTS_OPT, ID, COLOR);
+                edgeKinds = EnumSet
+                    .of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, CONNECT, BOOL, INT, REAL,
+                        STRING, ARGUMENT, PATH, LITERAL, FORALL, FORALL_POS, EXISTS, EXISTS_OPT,
+                        NESTED, LET, LET_NEW, TEST);
                 break;
             case TYPE:
-                nodeKinds = EnumSet.of(DEFAULT, REMARK, INT, BOOL, REAL, STRING, ABSTRACT, IMPORT,
-                                       COLOR, EDGE);
-                edgeKinds = EnumSet.of(REMARK, INT, BOOL, REAL, STRING, ABSTRACT, SUBTYPE, MULT_IN,
-                                       MULT_OUT, COMPOSITE);
+                nodeKinds = EnumSet
+                    .of(DEFAULT, REMARK, INT, BOOL, REAL, STRING, ABSTRACT, IMPORT, COLOR, EDGE);
+                edgeKinds = EnumSet
+                    .of(REMARK, INT, BOOL, REAL, STRING, ABSTRACT, SUBTYPE, MULT_IN, MULT_OUT,
+                        COMPOSITE);
                 break;
             default:
                 assert !role.inGrammar();
