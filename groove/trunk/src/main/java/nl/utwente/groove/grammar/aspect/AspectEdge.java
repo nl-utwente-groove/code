@@ -824,7 +824,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         return this.argumentNr >= 0;
     }
 
-    /** Indicates if this is a let-edge. */
+    /** Indicates if this is a let- or letnew-edge. */
     public boolean isAssign() {
         return this.hasAspect() && (this.getKind() == LET || this.getKind() == LET_NEW);
     }
@@ -954,8 +954,8 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     static private final String SPACE = " ";
     /** Points-to symbol between attribute name and value or expression. */
     static private final String POINTS_TO_SYMBOL = "" + Util.RA;
-    /** Change-to symbol between attribute name and value or expression. */
-    static private final String CHANGE_TO_SYMBOL = "" + Util.RA_STROKE;
+    /** Change-to symbol between attribute name and value or expression (unused right now). */
+    // static private final String CHANGE_TO_SYMBOL = "" + Util.RA_STROKE;
     /** Typed-as symbol between attribute name and type. */
     static private final String TYPED_AS_SYMBOL = ":";
     /** Prefix for newly created flags or attributes. */

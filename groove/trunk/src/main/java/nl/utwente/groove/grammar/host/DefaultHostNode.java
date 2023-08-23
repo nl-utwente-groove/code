@@ -59,14 +59,6 @@ public class DefaultHostNode extends ANode implements HostNode {
         return getType() == ((DefaultHostNode) obj).getType();
     }
 
-    /**
-     * Returns a string consisting of the letter <tt>'n'</tt>.
-     */
-    @Override
-    public String getToStringPrefix() {
-        return "n";
-    }
-
     @Override
     final public TypeNode getType() {
         return this.type;
