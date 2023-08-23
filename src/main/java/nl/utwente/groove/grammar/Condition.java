@@ -266,8 +266,8 @@ public class Condition implements Fixable {
      */
     public void addSubCondition(Condition condition) {
         if (!getOp().hasOperands()) {
-            throw Exceptions.unsupportedOp("%s conditions cannot have subconditions",
-                                           condition.getOp());
+            throw Exceptions
+                .unsupportedOp("%s conditions cannot have subconditions", condition.getOp());
         }
         condition.testFixed(true);
         testFixed(false);
@@ -482,7 +482,7 @@ public class Condition implements Fixable {
         stabilise(resolverMap);
         for (RuleNode node : resolverMap.keySet()) {
             errors
-                .add("Variable node '%s' cannot always be resolved (use '%s' algebra for symbolic exploration or specify a '%s' or '%s' parameter)",
+                .add("Undetermined variable node '%s' (use '%s' algebra family for symbolic exploration or specify a '%s' or '%s' parameter)",
                      node, AlgebraFamily.POINT.getName(), AspectKind.PARAM_IN.getPrefix(),
                      AspectKind.PARAM_ASK.getPrefix());
         }
@@ -528,9 +528,13 @@ public class Condition implements Fixable {
         // meaning that either this condition has to be conjunctive
         if (isConjunctive()) {
             // Collect the set-based operator nodes in this condition
-            Set<OperatorNode> setOps = this.root.nodeSet().stream()
-                .filter(n -> n instanceof OperatorNode).map(n -> (OperatorNode) n)
-                .filter(n -> n.isSetOperator()).collect(Collectors.toSet());
+            Set<OperatorNode> setOps = this.root
+                .nodeSet()
+                .stream()
+                .filter(n -> n instanceof OperatorNode)
+                .map(n -> (OperatorNode) n)
+                .filter(n -> n.isSetOperator())
+                .collect(Collectors.toSet());
             for (Condition sub : getSubConditions()) {
                 // If the subcondition has a count node, it is a dependent node
                 VariableNode countNode = sub.getCountNode();
@@ -538,16 +542,21 @@ public class Condition implements Fixable {
                     ? Stream.empty()
                     : Stream.of(countNode);
                 // Collect targets of set operators whose sources are in the subcondition
-                Stream<VariableNode> setOpDeps = setOps.stream()
+                Stream<VariableNode> setOpDeps = setOps
+                    .stream()
                     .filter(n -> sub.getOutputNodes().contains(n.getArguments().get(0)))
                     .map(n -> n.getTarget());
                 // combine count node and set operator targets and restrict to non-constants
                 subDeps = Stream.concat(subDeps, setOpDeps).filter(v -> v.getConstant() == null);
                 // The resolver consists of non-constant variable nodes shared by the subcondition
-                Set<VariableNode> resolver
-                    = sub.getInputNodes().stream().filter(n -> n instanceof VariableNode)
-                        .map(v -> (VariableNode) v).filter(v -> v.getConstant() == null)
-                        .filter(v -> !resolved.contains(v)).collect(Collectors.toSet());
+                Set<VariableNode> resolver = sub
+                    .getInputNodes()
+                    .stream()
+                    .filter(n -> n instanceof VariableNode)
+                    .map(v -> (VariableNode) v)
+                    .filter(v -> v.getConstant() == null)
+                    .filter(v -> !resolved.contains(v))
+                    .collect(Collectors.toSet());
                 if (resolver.isEmpty()) {
                     subDeps.forEach(v -> resolved.add(v));
                 } else {
@@ -724,8 +733,8 @@ public class Condition implements Fixable {
         try {
             result.setFixed();
         } catch (FormatException e) {
-            throw Exceptions.illegalArg("Error while fixing new condition %s: %s", name,
-                                        e.getMessage());
+            throw Exceptions
+                .illegalArg("Error while fixing new condition %s: %s", name, e.getMessage());
         }
         return result;
     }

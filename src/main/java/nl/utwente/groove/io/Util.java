@@ -336,13 +336,9 @@ public class Util {
     static public final char DLA = '\u2199';
     /** Unicode  circular arrow symbol. */
     static public final char CA = '\u21ba';
-    /** Unicode squiggly right-arrow symbol. */
-    static public final char RA_SQUIGGLE = '\u21dd';
-    /** Unicode right-arrow symbol with stroke. */
-    static public final char RA_STROKE = '\u21f8';
-    /** Unicode right-arrow symbol with double stroke. */
-    static public final char RA_DOUBLE_STROKE = '\u21fb';
 
+    /** Unicode thin space symbol. */
+    static public final char HAIR_SPACE = '\u200A';
     /** Unicode thin space symbol. */
     static public final char THIN_SPACE = '\u2009';
     /** Unicode end-of-text character. */

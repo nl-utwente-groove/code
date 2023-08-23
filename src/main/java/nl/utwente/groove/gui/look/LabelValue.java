@@ -148,7 +148,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 result.add(jVertex.getUserObject().toLines());
             } else {
                 Line idLine = getExternalIdLine(node);
-                // show data constants and variables correctly
+                // show data constants correctly
                 Line dataLine = getDataLine(node, idLine);
                 if (dataLine != null) {
                     result.add(dataLine);
@@ -735,16 +735,24 @@ public class LabelValue implements VisualValue<MultiLabel> {
         Line result = null;
         Aspect attrAspect = node.getAttrAspect();
         if (attrAspect.getKind().hasSort()) {
-            String opInfix;
-            if (!attrAspect.hasContent()) {
-                result = getSortLine(attrAspect.getKind().getSort());
-                opInfix = TYPED_AS;
+            Line sortLine = getSortLine(attrAspect.getKind().getSort());
+            if (attrAspect.hasContent()) {
+                Line contentLine = Line.atom(attrAspect.getContentString());
+                if (idLine == null) {
+                    result = contentLine;
+                } else {
+                    result = idLine
+                        .append(TYPED_AS)
+                        .append(sortLine)
+                        .append(EQUALS_TO)
+                        .append(contentLine);
+                }
             } else {
-                result = Line.atom(attrAspect.getContentString());
-                opInfix = EQUALS_TO;
-            }
-            if (idLine != null) {
-                result = idLine.append(opInfix).append(result);
+                if (idLine == null) {
+                    result = sortLine;
+                } else {
+                    result = idLine.append(TYPED_AS).append(sortLine);
+                }
             }
         }
         return result;
@@ -801,7 +809,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
     /** Points-to operator between field name and value. */
     static private final String POINTS_TO = " " + Util.RA + " ";
     /** Points-to operator between field name and value. */
-    static private final String TYPED_AS = " : ";
+    static private final String TYPED_AS = Util.HAIR_SPACE + ":" + Util.HAIR_SPACE;
     /** Points-to operator between field name and value. */
-    static private final String EQUALS_TO = " = ";
+    static private final String EQUALS_TO = Util.HAIR_SPACE + "=" + Util.THIN_SPACE;
 }
