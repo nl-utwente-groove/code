@@ -36,7 +36,7 @@ public class OperatorNode extends ANode implements RuleNode {
      * operator, arguments and target.
      */
     public OperatorNode(int nr, Operator operator, List<VariableNode> arguments,
-        VariableNode target) {
+                        VariableNode target) {
         super(nr);
         this.operator = operator;
         this.arguments = arguments;
@@ -82,7 +82,7 @@ public class OperatorNode extends ANode implements RuleNode {
 
     @Override
     public String getToStringPrefix() {
-        return "p";
+        return TO_STRING_PREFIX;
     }
 
     @Override
@@ -124,10 +124,9 @@ public class OperatorNode extends ANode implements RuleNode {
         if (obj == this) {
             return true;
         }
-        if (!(obj instanceof OperatorNode)) {
+        if (!(obj instanceof OperatorNode other)) {
             return false;
         }
-        OperatorNode other = (OperatorNode) obj;
         if (getNumber() != other.getNumber()) {
             return false;
         }
@@ -157,6 +156,8 @@ public class OperatorNode extends ANode implements RuleNode {
     static final private char TIMES_CHAR = '\u2a09';
     /** Type label of product nodes. */
     @SuppressWarnings("unused")
-    static private final TypeLabel PROD_LABEL =
-        TypeLabel.createLabel(EdgeRole.NODE_TYPE, "" + TIMES_CHAR);
+    static private final TypeLabel PROD_LABEL
+        = TypeLabel.createLabel(EdgeRole.NODE_TYPE, "" + TIMES_CHAR);
+    /** Prefix for product node IDs. */
+    static public final String TO_STRING_PREFIX = "p";
 }

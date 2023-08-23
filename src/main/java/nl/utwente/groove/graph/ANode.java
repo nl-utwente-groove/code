@@ -96,7 +96,9 @@ abstract public class ANode implements Node, Cloneable {
     }
 
     /** Returns the prefix for the {@link #toString()} methods. */
-    abstract protected String getToStringPrefix();
+    protected String getToStringPrefix() {
+        return TO_STRING_PREFIX;
+    }
 
     /**
      * Compares the node numbers of two nodes.
@@ -146,4 +148,6 @@ abstract public class ANode implements Node, Cloneable {
      * using {@link #computeHashCode()}.
      */
     private int hashCode;
+    /** Prefix of default node IDs. */
+    static public final String TO_STRING_PREFIX = "n";
 }

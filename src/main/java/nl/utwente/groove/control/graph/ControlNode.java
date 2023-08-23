@@ -69,11 +69,14 @@ public class ControlNode extends ANode {
 
     @Override
     protected String getToStringPrefix() {
-        return "c";
+        return TO_STRING_PREFIX;
     }
 
     @Override
     public String toString() {
         return this.pos.toString();
     }
+
+    /** Prefix for control node IDs. */
+    static public final String TO_STRING_PREFIX = "c";
 }

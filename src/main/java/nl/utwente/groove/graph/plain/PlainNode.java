@@ -38,12 +38,4 @@ public class PlainNode extends ANode {
     public PlainNode(int nr) {
         super(nr);
     }
-
-    /**
-     * Returns a string consisting of the letter <tt>'n'</tt>.
-     */
-    @Override
-    public String getToStringPrefix() {
-        return "n";
-    }
 }

@@ -107,14 +107,6 @@ public class DefaultRuleNode extends ANode implements RuleNode, AnchorKey {
 
     private @Nullable RulePar par;
 
-    /**
-     * Returns a string consisting of the letter <tt>'n'</tt>.
-     */
-    @Override
-    public String getToStringPrefix() {
-        return "n";
-    }
-
     @Override
     public TypeNode getType() {
         return this.type;
