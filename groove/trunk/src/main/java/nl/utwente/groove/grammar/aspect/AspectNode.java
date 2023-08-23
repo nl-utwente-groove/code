@@ -235,7 +235,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
      */
     private void checkAspects() throws FormatException {
         try {
-            if (this.graphRole == GraphRole.RULE) {
+            if (getGraphRole() == GraphRole.RULE) {
                 // rule nodes that are not explicitly typed must be readers
                 if (!hasAspect()) {
                     setAspect(READER.getAspect());
@@ -260,6 +260,10 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
                     throw new FormatException("Can't abstract an imported type", getAttrKind(),
                         this);
                 }
+            }
+            if (getGraphRole() == GraphRole.HOST && hasAttrAspect() && hasId()) {
+                throw new FormatException("Node identifier ('%s') not allowed for value node %s",
+                    getId().getContent(), getAttrAspect().getContentString(), this);
             }
         } finally {
             if (!hasAttrAspect()) {

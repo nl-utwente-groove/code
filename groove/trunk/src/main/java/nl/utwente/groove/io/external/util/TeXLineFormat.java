@@ -157,8 +157,7 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
             case EMBARGO:
             case ERASER:
             case REMARK:
-                color = type.name()
-                    .toLowerCase() + "_c";
+                color = type.name().toLowerCase() + "_c";
                 break;
             default:
                 color = null;
@@ -189,6 +188,7 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
         addChar(Util.FORALL, "\\forall", Mode.MATH);
         addChar(Util.LC_PI, "\\pi", Mode.MATH);
         addChar(Util.THIN_SPACE, "\\;", Mode.MATH);
+        addChar(Util.HAIR_SPACE, "\\,", Mode.MATH);
         addChar(Util.DT, "{\\blacktriangledown}", Mode.MATH);
         addChar(Util.UT, "{\\blacktriangle}", Mode.MATH);
         addChar(Util.LT, "{\\blacktriangleleft}", Mode.MATH);
@@ -260,7 +260,9 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
         void append(String text, Mode mode) {
             if (isEmpty()) {
                 this.requiresMath = this.providesMath = this.mathOnly = (mode == Mode.MATH);
-            } else if (this.providesMath ? mode == Mode.TEXT : mode == Mode.MATH) {
+            } else if (this.providesMath
+                ? mode == Mode.TEXT
+                : mode == Mode.MATH) {
                 // the math mode must change
                 this.content.append("$");
                 this.providesMath = !this.providesMath;
