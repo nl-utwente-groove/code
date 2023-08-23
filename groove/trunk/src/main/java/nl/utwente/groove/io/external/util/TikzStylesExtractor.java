@@ -48,7 +48,6 @@ import static nl.utwente.groove.gui.look.Look.SUBTYPE;
 import static nl.utwente.groove.gui.look.Look.TRANS;
 import static nl.utwente.groove.gui.look.Look.TRANSIENT;
 import static nl.utwente.groove.gui.look.Look.TYPE;
-import static nl.utwente.groove.gui.look.VisualKey.ADORNMENT;
 import static nl.utwente.groove.gui.look.VisualKey.BACKGROUND;
 import static nl.utwente.groove.gui.look.VisualKey.COLOR;
 import static nl.utwente.groove.gui.look.VisualKey.DASH;
@@ -62,6 +61,7 @@ import static nl.utwente.groove.gui.look.VisualKey.EMPHASIS;
 import static nl.utwente.groove.gui.look.VisualKey.ERROR;
 import static nl.utwente.groove.gui.look.VisualKey.FONT;
 import static nl.utwente.groove.gui.look.VisualKey.FOREGROUND;
+import static nl.utwente.groove.gui.look.VisualKey.ID_ADORNMENT;
 import static nl.utwente.groove.gui.look.VisualKey.INNER_LINE;
 import static nl.utwente.groove.gui.look.VisualKey.INSET;
 import static nl.utwente.groove.gui.look.VisualKey.LABEL;
@@ -72,6 +72,7 @@ import static nl.utwente.groove.gui.look.VisualKey.NODE_POS;
 import static nl.utwente.groove.gui.look.VisualKey.NODE_SHAPE;
 import static nl.utwente.groove.gui.look.VisualKey.NODE_SIZE;
 import static nl.utwente.groove.gui.look.VisualKey.OPAQUE;
+import static nl.utwente.groove.gui.look.VisualKey.PAR_ADORNMENT;
 import static nl.utwente.groove.gui.look.VisualKey.POINTS;
 import static nl.utwente.groove.gui.look.VisualKey.TEXT_SIZE;
 import static nl.utwente.groove.gui.look.VisualKey.VISIBLE;
@@ -101,72 +102,26 @@ import nl.utwente.groove.util.line.Line.ColorType;
 public final class TikzStylesExtractor {
 
     /** Enumeration of main looks that are defined. */
-    public static final Set<Look> mainLooks = EnumSet.of(BASIC,
-        CREATOR,
-        CONNECT,
-        DATA,
-        EMBARGO,
-        ERASER,
-        NESTING,
-        PRODUCT,
-        REMARK,
-        TYPE,
-        ABSTRACT,
-        SUBTYPE,
-        STATE,
-        TRANS,
-        START,
-        TRANSIENT,
-        CTRL_TRANSIENT_STATE,
-        ADDER);
+    public static final Set<Look> mainLooks = EnumSet
+        .of(BASIC, CREATOR, CONNECT, DATA, EMBARGO, ERASER, NESTING, PRODUCT, REMARK, TYPE,
+            ABSTRACT, SUBTYPE, STATE, TRANS, START, TRANSIENT, CTRL_TRANSIENT_STATE, ADDER);
 
     /** Subset of the main looks that are suitable for nodes. */
-    private static final Set<Look> mainNodeLooks = EnumSet.of(BASIC,
-        CREATOR,
-        DATA,
-        EMBARGO,
-        ERASER,
-        NESTING,
-        PRODUCT,
-        REMARK,
-        TYPE,
-        ABSTRACT,
-        STATE,
-        START,
-        TRANSIENT,
-        CTRL_TRANSIENT_STATE,
-        ADDER);
+    private static final Set<Look> mainNodeLooks = EnumSet
+        .of(BASIC, CREATOR, DATA, EMBARGO, ERASER, NESTING, PRODUCT, REMARK, TYPE, ABSTRACT, STATE,
+            START, TRANSIENT, CTRL_TRANSIENT_STATE, ADDER);
 
     /** Subset of the main looks that are suitable for edges. */
-    private static final Set<Look> mainEdgeLooks = EnumSet.of(BASIC,
-        CREATOR,
-        CONNECT,
-        EMBARGO,
-        ERASER,
-        NESTING,
-        REMARK,
-        TYPE,
-        ABSTRACT,
-        SUBTYPE,
-        TRANS,
-        ADDER);
+    private static final Set<Look> mainEdgeLooks = EnumSet
+        .of(BASIC, CREATOR, CONNECT, EMBARGO, ERASER, NESTING, REMARK, TYPE, ABSTRACT, SUBTYPE,
+            TRANS, ADDER);
 
     /**
      * Extra enumeration for the additional looks that can modify a main look.
      */
-    private static final Set<Look> modifyingLooks = EnumSet.of(NODIFIED,
-        BIDIRECTIONAL,
-        NO_ARROW,
-        COMPOSITE,
-        OPEN,
-        FINAL,
-        Look.ERROR,
-        RESULT,
-        RECIPE,
-        ABSENT,
-        ACTIVE,
-        GRAYED_OUT,
-        CTRL_VERDICT);
+    private static final Set<Look> modifyingLooks = EnumSet
+        .of(NODIFIED, BIDIRECTIONAL, NO_ARROW, COMPOSITE, OPEN, FINAL, Look.ERROR, RESULT, RECIPE,
+            ABSENT, ACTIVE, GRAYED_OUT, CTRL_VERDICT);
 
     /**
      * Set of unused looks. It is required that mainLooks + modifyingLooks +
@@ -178,38 +133,18 @@ public final class TikzStylesExtractor {
     /**
      * Set of visual keys that are used in the extractor.
      */
-    private static final Set<VisualKey> usedKeys = EnumSet.of(BACKGROUND,
-        DASH,
-        EDGE_SOURCE_SHAPE,
-        EDGE_TARGET_SHAPE,
-        FOREGROUND,
-        LINE_WIDTH,
-        NODE_SHAPE);
+    private static final Set<VisualKey> usedKeys = EnumSet
+        .of(BACKGROUND, DASH, EDGE_SOURCE_SHAPE, EDGE_TARGET_SHAPE, FOREGROUND, LINE_WIDTH,
+            NODE_SHAPE);
 
     /**
      * Set of visual keys that are not used in the extractor because they are
      * element dependent and hence cannot form a style.
      */
-    private static final Set<VisualKey> unusedKeys = EnumSet.of(ADORNMENT,
-        COLOR,
-        EDGE_SOURCE_LABEL,
-        EDGE_SOURCE_POS,
-        EDGE_TARGET_LABEL,
-        EDGE_TARGET_POS,
-        EMPHASIS,
-        ERROR,
-        FONT,
-        INNER_LINE,
-        INSET,
-        LABEL,
-        LABEL_POS,
-        LINE_STYLE,
-        NODE_POS,
-        NODE_SIZE,
-        TEXT_SIZE,
-        OPAQUE,
-        POINTS,
-        VISIBLE);
+    private static final Set<VisualKey> unusedKeys = EnumSet
+        .of(COLOR, EDGE_SOURCE_LABEL, EDGE_SOURCE_POS, EDGE_TARGET_LABEL, EDGE_TARGET_POS, EMPHASIS,
+            ERROR, FONT, ID_ADORNMENT, INNER_LINE, INSET, LABEL, LABEL_POS, LINE_STYLE, NODE_POS,
+            NODE_SIZE, TEXT_SIZE, OPAQUE, PAR_ADORNMENT, POINTS, VISIBLE);
 
     /** Main method. */
     public static final void main(String[] args) {
@@ -269,8 +204,8 @@ public final class TikzStylesExtractor {
         for (ColorType cType : ColorType.values()) {
             Color color = cType.getColor();
             if (color != null) {
-                append("\\definecolor{" + cType.name()
-                    .toLowerCase() + "_c}{RGB}" + Style.getColorStringDefinition(color) + NEW_LINE);
+                append("\\definecolor{" + cType.name().toLowerCase() + "_c}{RGB}"
+                    + Style.getColorStringDefinition(color) + NEW_LINE);
             }
         }
     }
@@ -297,8 +232,7 @@ public final class TikzStylesExtractor {
         for (Look modifyingLook : modifyingLooks) {
             styles.clear();
             append(BEGIN_TIKZ_STYLE);
-            append(modifyingLook.name()
-                .toLowerCase());
+            append(modifyingLook.name().toLowerCase());
             append(MID_TIKZ_STYLE);
             computeModifyingStyle(modifyingLook, styles);
             append(styles.toString());
@@ -373,8 +307,8 @@ public final class TikzStylesExtractor {
     private static final String END_TIKZ_STYLE = NEW_LINE;
     private static final String ROUNDED_CORNERS_KEY = "rounded corners";
 
-    private static final String HEADER =
-        "% Package that defines the styles used in Tikz figures exported in GROOVE." + NEW_LINE
+    private static final String HEADER
+        = "% Package that defines the styles used in Tikz figures exported in GROOVE." + NEW_LINE
             + "% This file was automatically generated by the TikzStylesExtraction utility."
             + NEW_LINE + NEW_LINE + "\\ProvidesPackage{groove2tikz}" + NEW_LINE
             + "\\RequirePackage{tikz}" + NEW_LINE + "\\usepackage[T1]{fontenc}" + NEW_LINE
@@ -392,12 +326,12 @@ public final class TikzStylesExtractor {
     private static final String MAIN_STYLE_COMMENT = NEW_LINE
         + "% Main styles. (Should be used first in a node and edge definition.)" + NEW_LINE;
 
-    private static final String MOD_STYLE_COMMENT =
-        NEW_LINE + "% Modifying styles. (To be used in conjunction - AFTER - a main style.)"
+    private static final String MOD_STYLE_COMMENT
+        = NEW_LINE + "% Modifying styles. (To be used in conjunction - AFTER - a main style.)"
             + NEW_LINE + NEW_LINE;
 
-    private static final String FOOTER =
-        NEW_LINE + "% Ugly hack to allow nodes with multiple lines." + NEW_LINE
+    private static final String FOOTER
+        = NEW_LINE + "% Ugly hack to allow nodes with multiple lines." + NEW_LINE
             + "\\newcommand{\\ml}[1]{" + NEW_LINE
             + "\\begin{tabular}{@{}c@{}}#1\\vspace{-2pt}\\end{tabular}" + NEW_LINE + "}" + NEW_LINE;
 
@@ -432,16 +366,14 @@ public final class TikzStylesExtractor {
             sb.append(NEW_LINE);
             if (!this.nodes.isEmpty()) {
                 sb.append(BEGIN_TIKZ_STYLE);
-                sb.append(this.look.name()
-                    .toLowerCase() + NODE_SUFFIX);
+                sb.append(this.look.name().toLowerCase() + NODE_SUFFIX);
                 sb.append(MID_TIKZ_STYLE);
                 sb.append(this.nodes.toString());
                 sb.append(END_TIKZ_STYLE);
             }
             if (!this.edges.isEmpty()) {
                 sb.append(BEGIN_TIKZ_STYLE);
-                sb.append(this.look.name()
-                    .toLowerCase() + EDGE_SUFFIX);
+                sb.append(this.look.name().toLowerCase() + EDGE_SUFFIX);
                 sb.append(MID_TIKZ_STYLE);
                 sb.append(this.edges.toString());
                 sb.append(END_TIKZ_STYLE);
@@ -567,8 +499,8 @@ public final class TikzStylesExtractor {
             case NONE -> "";
             case SIMPLE -> "to";
             case SUBTYPE -> "open triangle 60";
-            default -> throw Exceptions.illegalArg(
-                "Default fall-through in edge end shape! Did you add a new edge end shape?");
+            default -> throw Exceptions
+                .illegalArg("Default fall-through in edge end shape! Did you add a new edge end shape?");
             };
         }
 
@@ -602,8 +534,8 @@ public final class TikzStylesExtractor {
                 styles.add(new StyleDuo(ROUNDED_CORNERS_KEY, JAttr.NORMAL_ARC_SIZE / 5 + "pt"));
                 break;
             default:
-                throw Exceptions.illegalArg(
-                    "Default fall-thought in node shape! Did you add a new node shape?");
+                throw Exceptions
+                    .illegalArg("Default fall-thought in node shape! Did you add a new node shape?");
             }
         }
 

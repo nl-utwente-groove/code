@@ -145,13 +145,11 @@ public class JVertexView extends VertexView {
         double cy = bounds.getCenterY();
         // in manhattan line style, we shift the target point so it is
         // in horizontal or vertical reach of the node
-        VisualMap edgeVisuals = ((JEdgeView) edge).getCell()
-            .getVisuals();
-        if (edgeVisuals.getLineStyle() == LineStyle.MANHATTAN && edgeVisuals.getPoints()
-            .size() > 2) {
+        VisualMap edgeVisuals = ((JEdgeView) edge).getCell().getVisuals();
+        if (edgeVisuals.getLineStyle() == LineStyle.MANHATTAN
+            && edgeVisuals.getPoints().size() > 2) {
             if ((qx < left || qx > right) && (qy < top || qy > bottom)) {
-                if (this == edge.getSource()
-                    .getParentView()) {
+                if (this == edge.getSource().getParentView()) {
                     // move qy into horizontal reach
                     double dy = qy - cy;
                     double room = bounds.getHeight() * (1 - 2 / DROP_FRACTION) * 0.5;
@@ -174,39 +172,71 @@ public class JVertexView extends VertexView {
             double yDrop = bounds.getHeight() / DROP_FRACTION;
             double minX = left + xDrop;
             double maxX = right - xDrop;
-            double px = (qx > minX && qx < maxX) ? qx : cx;
+            double px = (qx > minX && qx < maxX)
+                ? qx
+                : cx;
             double minY = top + yDrop;
             double maxY = bottom - yDrop;
-            double py = (qy > minY && qy < maxY) ? qy : cy;
+            double py = (qy > minY && qy < maxY)
+                ? qy
+                : cy;
             p = new Point2D.Double(px, py);
         }
         NodeShape shape = getCellVisuals().getNodeShape();
         result = shape.getPerimeterPoint(bounds, p, q);
-        // correct for the adornment, if any
-        Rectangle2D adornBounds = getAdornBounds();
+        // correct for the parameter adornment, if any
+        Rectangle2D parAdornBounds = getParAdornBounds();
         // possibly adjust if the target point lies northwest of the adornment
-        boolean adorn =
-            adornBounds != null && adornBounds.getMaxX() > qx && adornBounds.getMaxY() > qy;
-        if (adorn) {
-            assert adornBounds != null;
+        boolean parAdorn = parAdornBounds != null && parAdornBounds.getMaxX() > qx
+            && parAdornBounds.getMaxY() > qy;
+        if (parAdorn) {
+            assert parAdornBounds != null;
             double rx = result.getX();
             double ry = result.getY();
             double dx = qx - result.getX();
             double dy = qy - result.getY();
-            if (adornBounds.intersectsLine(rx, ry, qx, qy)) {
+            if (parAdornBounds.intersectsLine(rx, ry, qx, qy)) {
                 if (dy == 0) {
                     // target lies straight to the west
-                    result.setLocation(adornBounds.getMinX(), result.getY());
+                    result.setLocation(parAdornBounds.getMinX(), result.getY());
                 } else {
                     // first try out the intersection with the upper edge
-                    double shiftY = ry - adornBounds.getMinY();
+                    double shiftY = ry - parAdornBounds.getMinY();
                     double shiftX = shiftY * dx / dy;
-                    if (result.getX() - shiftX < adornBounds.getMinX()) {
+                    if (result.getX() - shiftX < parAdornBounds.getMinX()) {
                         // too far left; we need the left edge
-                        shiftX = rx - adornBounds.getMinX();
+                        shiftX = rx - parAdornBounds.getMinX();
                         shiftY = shiftX * dy / dx;
                     }
                     result.setLocation(rx - shiftX, ry - shiftY);
+                }
+            }
+        }
+        // correct for the identifier adornment, if any
+        Rectangle2D idAdornBounds = getIdAdornBounds();
+        // possibly adjust if the target point lies northeast of the adornment
+        boolean idAdorn
+            = idAdornBounds != null && idAdornBounds.getMinX() < qx && idAdornBounds.getMaxY() > qy;
+        if (idAdorn) {
+            assert idAdornBounds != null;
+            double rx = result.getX();
+            double ry = result.getY();
+            double dx = result.getX() - qx;
+            double dy = qy - result.getY();
+            if (idAdornBounds.intersectsLine(rx, ry, qx, qy)) {
+                if (dy == 0) {
+                    // target lies straight to the east
+                    result.setLocation(idAdornBounds.getMaxX(), result.getY());
+                } else {
+                    // first try out the intersection with the upper edge
+                    double shiftY = ry - idAdornBounds.getMinY();
+                    double shiftX = shiftY * dx / dy;
+                    if (result.getX() + shiftX > idAdornBounds.getMaxX()) {
+                        // too far right; we need the right edge
+                        shiftX = idAdornBounds.getMaxX() - rx;
+                        shiftY = shiftX * dy / dx;
+                    }
+                    result.setLocation(rx + shiftX, ry - shiftY);
                 }
             }
         }
@@ -214,15 +244,27 @@ public class JVertexView extends VertexView {
     }
 
     /** Returns the cell bounds including the parameter adornment, if any. */
-    private Rectangle2D getAdornBounds() {
+    private Rectangle2D getParAdornBounds() {
         Rectangle2D result = null;
-        String adornment = getCellVisuals().getAdornment();
-        if (adornment != null) {
+        if (getCellVisuals().getParAdornment() != null) {
             result = getBounds();
-            MyRenderer renderer =
-                ((MyRenderer) getRendererComponent(this.jGraph, false, false, false));
-            result = new Rectangle2D.Double(result.getX(), result.getY(), renderer.adornWidth,
-                renderer.adornHeight);
+            MyRenderer renderer
+                = ((MyRenderer) getRendererComponent(this.jGraph, false, false, false));
+            result = new Rectangle2D.Double(result.getX() - 1, result.getY() - 1,
+                renderer.parAdornWidth + 2, renderer.parAdornHeight + 2);
+        }
+        return result;
+    }
+
+    /** Returns the cell bounds including the identifier adornment, if any. */
+    private Rectangle2D getIdAdornBounds() {
+        Rectangle2D result = null;
+        if (getCellVisuals().getIdAdornment() != null) {
+            result = getBounds();
+            MyRenderer renderer
+                = ((MyRenderer) getRendererComponent(this.jGraph, false, false, false));
+            result = new Rectangle2D.Double(result.getMaxX() - renderer.idAdornWidth - 1,
+                result.getY() - 1, renderer.idAdornWidth + 2, renderer.idAdornHeight + 2);
         }
         return result;
     }
@@ -242,11 +284,9 @@ public class JVertexView extends VertexView {
         double scale = this.jGraph.getScale();
         newG.scale(scale, scale);
         // paint the border to erase it (we're in XOR mode)
-        this.jGraph.getUI()
-            .paintCell(newG, this, getBounds(), true);
+        this.jGraph.getUI().paintCell(newG, this, getBounds(), true);
         this.armed = true;
-        this.jGraph.getUI()
-            .paintCell(newG, this, getBounds(), true);
+        this.jGraph.getUI().paintCell(newG, this, getBounds(), true);
         this.armed = false;
         newG.dispose();
     }
@@ -285,7 +325,6 @@ public class JVertexView extends VertexView {
     static private final Insets DEFAULT_INSETS = new Insets(2, 4, 2, 4);
     /** Insets for empty vertices. */
     static private final Insets EMPTY_INSETS = new Insets(0, 0, 0, 0);
-
     /** The renderer for all instances of <tt>JVertexView</tt>. */
     static private final MyRenderer renderer = new MyRenderer();
 
@@ -304,19 +343,27 @@ public class JVertexView extends VertexView {
 
         @Override
         public MyRenderer getRendererComponent(org.jgraph.JGraph graph, CellView view, boolean sel,
-            boolean focus, boolean preview) {
-            assert view instanceof JVertexView : String.format("This renderer is only meant for %s",
-                JVertexView.class);
+                                               boolean focus, boolean preview) {
+            assert view instanceof JVertexView : String
+                .format("This renderer is only meant for %s", JVertexView.class);
             this.view = (JVertexView) view;
             this.cell = this.view.getCell();
             VisualMap visuals = this.visuals = this.view.getCellVisuals();
-            this.adornment = this.visuals.getAdornment();
-            if (this.adornment == null) {
-                this.adornHeight = 0;
-                this.adornWidth = 0;
+            this.parAdornment = this.visuals.getParAdornment();
+            if (this.parAdornment == null) {
+                this.parAdornHeight = 0;
+                this.parAdornWidth = 0;
             } else {
-                this.adornHeight = 12;
-                this.adornWidth = getAdornWidth(this.adornment);
+                this.parAdornHeight = 12;
+                this.parAdornWidth = getAdornWidth(this.parAdornment);
+            }
+            this.idAdornment = this.visuals.getIdAdornment();
+            if (this.idAdornment == null) {
+                this.idAdornHeight = 0;
+                this.idAdornWidth = 0;
+            } else {
+                this.idAdornHeight = 12;
+                this.idAdornWidth = getAdornWidth(this.idAdornment);
             }
             this.selectionColor = graph.getHighlightColor();
             this.dash = visuals.getDash();
@@ -340,26 +387,33 @@ public class JVertexView extends VertexView {
             }
             setOpaque(visuals.isOpaque());
             Color foreground = visuals.getForeground();
-            setForeground((foreground != null) ? foreground : graph.getForeground());
+            setForeground((foreground != null)
+                ? foreground
+                : graph.getForeground());
             Color background = visuals.getBackground();
-            background = (background != null) ? background : graph.getBackground();
+            background = (background != null)
+                ? background
+                : graph.getBackground();
             if (emph) {
                 float darken = .95f;
                 background = new Color(Math.max((int) (background.getRed() * darken), 0),
                     Math.max((int) (background.getGreen() * darken), 0),
                     Math.max((int) (background.getBlue() * darken), 0), background.getAlpha());
             }
-            if (background == null ? getBackground() != null
+            if (background == null
+                ? getBackground() != null
                 : !background.equals(getBackground())) {
                 setBackground(background);
             }
-            Font font = Options.getLabelFont()
-                .deriveFont(visuals.getFont());
-            setFont((font != null) ? font : graph.getFont());
+            Font font = Options.getLabelFont().deriveFont(visuals.getFont());
+            setFont((font != null)
+                ? font
+                : graph.getFont());
             setText(this.view.getText());
+            // set alignment so any extra space goes to the top
+            // setVerticalAlignment(SwingConstants.BOTTOM);
             this.error = visuals.isError();
-            this.nodeEdge = this.cell.getLooks()
-                .contains(Look.NODIFIED);
+            this.nodeEdge = this.cell.getLooks().contains(Look.NODIFIED);
             // do this last: it calls getTextSize, which depends on nodeEdge among others
             setBorder(createEmptyBorder());
             return this;
@@ -381,8 +435,9 @@ public class JVertexView extends VertexView {
                 }
                 paintText(g2);
                 paintBorder(g2, shape);
-                paintErrorOverlay(g2);
                 paintParameter(g2);
+                paintIdentifier(g2);
+                paintErrorOverlay(g2);
             }
         }
 
@@ -398,15 +453,31 @@ public class JVertexView extends VertexView {
         }
 
         private void paintParameter(Graphics2D g2) {
-            if (this.adornment != null) {
+            if (this.parAdornment != null) {
                 g2.setColor(getForeground());
                 int offset = 2;
                 // make sure anonymous parameters are adorned correctly
-                int width = Math.max(this.adornWidth, 6) + offset;
-                g2.fillRect(0, 0, width, this.adornHeight);
+                int width = Math.max(this.parAdornWidth, 6) + offset;
+                g2.fillRect(0, 0, width, this.parAdornHeight);
                 g2.setFont(ADORNMENT_FONT);
                 g2.setColor(Color.white);
-                g2.drawString(this.adornment, 1, this.adornHeight - offset);
+                g2.drawString(this.parAdornment, 1, this.parAdornHeight - offset);
+            }
+        }
+
+        private void paintIdentifier(Graphics2D g2) {
+            if (this.idAdornment != null) {
+                int offset = 2;
+                // make sure empty strings are adorned correctly
+                int width = this.idAdornWidth + offset;
+                int height = this.idAdornHeight;
+                int totalWidth = getSize().width;
+                int x = totalWidth - width;
+                g2.setColor(getBackground());
+                g2.fillRect(x, 0, width, height);
+                g2.setColor(getForeground());
+                g2.setFont(ADORNMENT_FONT);
+                g2.drawString(this.idAdornment, x, height - 2);
             }
         }
 
@@ -457,11 +528,11 @@ public class JVertexView extends VertexView {
          */
         private Border createEmptyBorder() {
             Insets i = computeInsets();
-            return i == null ? null
-                : BorderFactory.createEmptyBorder(i.top + EXTRA_BORDER_SPACE,
-                    i.left + EXTRA_BORDER_SPACE,
-                    i.bottom + EXTRA_BORDER_SPACE,
-                    i.right + EXTRA_BORDER_SPACE);
+            return i == null
+                ? null
+                : BorderFactory
+                    .createEmptyBorder(i.top + EXTRA_BORDER_SPACE, i.left + EXTRA_BORDER_SPACE,
+                                       i.bottom + EXTRA_BORDER_SPACE, i.right + EXTRA_BORDER_SPACE);
         }
 
         /**
@@ -561,8 +632,7 @@ public class JVertexView extends VertexView {
                     array[i] = '0';
                 }
             }
-            return String.valueOf(array)
-                .intern();
+            return String.valueOf(array).intern();
         }
 
         /**
@@ -577,7 +647,7 @@ public class JVertexView extends VertexView {
                 result = (Insets) DEFAULT_INSETS.clone();
             }
             // correct for the adornment space
-            result.left += Math.max(0, this.adornWidth - 6);
+            result.left += Math.max(0, this.parAdornWidth - 6);
             // correct for the predefined inset
             int inset = this.visuals.getInset();
             result.left += inset;
@@ -603,6 +673,17 @@ public class JVertexView extends VertexView {
                 result.right += textWidth / 3;
                 result.top += textHeight / 3;
                 result.bottom += textHeight / 3;
+                break;
+            case RECTANGLE, ROUNDED:
+                if (this.idAdornHeight > 0) {
+                    result.top += 2;
+                }
+                result.right += Math
+                    .max(0, this.idAdornWidth - result.right - this.lineWidth - textWidth / 2 - 2);
+                break;
+            case OVAL:
+                result.left += JAttr.STRONG_ARC_SIZE / 6;
+                result.right += JAttr.STRONG_ARC_SIZE / 6;
                 break;
             default:
                 // no adjustments
@@ -823,9 +904,12 @@ public class JVertexView extends VertexView {
         private float line2width;
         /** Flag indicating that the vertex has an error. */
         private boolean error;
-        private String adornment;
-        private int adornHeight;
-        private int adornWidth;
+        private String parAdornment;
+        private int parAdornHeight;
+        private int parAdornWidth;
+        private String idAdornment;
+        private int idAdornHeight;
+        private int idAdornWidth;
         /** Mapping from (HTML) text to the preferred size for that text. */
         private final Map<String,Dimension> sizeMap = new HashMap<>();
         private final Map<String,Integer> adornWidthMap = new HashMap<>();

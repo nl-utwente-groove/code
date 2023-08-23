@@ -74,8 +74,8 @@ public class JAttr {
     /**
      * The standard size used for nodes.
      */
-    public static final Dimension DEFAULT_NODE_SIZE =
-        new Dimension(DEFAULT_NODE_BOUNDS.width, DEFAULT_NODE_BOUNDS.height);
+    public static final Dimension DEFAULT_NODE_SIZE
+        = new Dimension(DEFAULT_NODE_BOUNDS.width, DEFAULT_NODE_BOUNDS.height);
 
     /** Space left outside the borders of nodes to enable larger
      * error or emphasis overlays to be painted correctly.
@@ -87,8 +87,6 @@ public class JAttr {
     /** Node radius for nodified edges. */
     static final public Dimension NODE_EDGE_DIMENSION = new Dimension(6, 6);
 
-    /** The height of the adornment text box. */
-    public static final int ADORNMENT_HEIGHT = 12;
     /** The font used for adornment text. */
     public static final Font ADORNMENT_FONT = Options.getLabelFont();
     /** Foreground (= border) colour of the rubber band selector. */

@@ -22,11 +22,11 @@ import nl.utwente.groove.gui.jgraph.AspectJEdge;
 import nl.utwente.groove.gui.jgraph.AspectJVertex;
 
 /**
- * Strategy for computing the node adornment for a given JVertex
+ * Strategy for computing the parameter adornment for a given JVertex
  * @author Arend Rensink
  * @version $Revision $
  */
-public class AdornmentValue extends AspectValue<String> {
+public class ParAdornmentValue extends AspectValue<String> {
     @Override
     protected String getForJVertex(AspectJVertex jVertex) {
         StringBuilder result = null;
@@ -48,7 +48,9 @@ public class AdornmentValue extends AspectValue<String> {
                 // no special decoration
             }
         }
-        return result == null ? null : result.toString();
+        return result == null
+            ? null
+            : result.toString();
     }
 
     @Override

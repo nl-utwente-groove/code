@@ -178,20 +178,37 @@ public class VisualMap extends DefaultFixable {
     }
 
     /**
-     * Returns the node adornment text stored in this attribute map.
+     * Returns the identifier adornment text stored in this attribute map.
      * @return the stored adornment text (possibly {@code null})
-     * @see VisualKey#ADORNMENT
+     * @see VisualKey#ID_ADORNMENT
      */
-    public String getAdornment() {
-        return (String) get(VisualKey.ADORNMENT);
+    public String getIdAdornment() {
+        return (String) get(VisualKey.ID_ADORNMENT);
     }
 
     /**
-     * Sets a new adornment value.
-     * @see VisualKey#ADORNMENT
+     * Sets a new identifier adornment value.
+     * @see VisualKey#ID_ADORNMENT
      */
-    public void setAdornment(String newValue) {
-        put(VisualKey.ADORNMENT, newValue);
+    public void setIdAdornment(String newValue) {
+        put(VisualKey.ID_ADORNMENT, newValue);
+    }
+
+    /**
+     * Returns the parameter adornment text stored in this attribute map.
+     * @return the stored adornment text (possibly {@code null})
+     * @see VisualKey#PAR_ADORNMENT
+     */
+    public String getParAdornment() {
+        return (String) get(VisualKey.PAR_ADORNMENT);
+    }
+
+    /**
+     * Sets a new parameter adornment value.
+     * @see VisualKey#PAR_ADORNMENT
+     */
+    public void setParAdornment(String newValue) {
+        put(VisualKey.PAR_ADORNMENT, newValue);
     }
 
     /**

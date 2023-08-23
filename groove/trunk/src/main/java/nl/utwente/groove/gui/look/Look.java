@@ -183,7 +183,7 @@ public enum Look {
     DATA(false, BASIC) {
         @Override
         void init() {
-            add(VisualKey.NODE_SHAPE, NodeShape.ELLIPSE);
+            add(VisualKey.NODE_SHAPE, NodeShape.OVAL);
         }
     },
     /** Closed state look. */
