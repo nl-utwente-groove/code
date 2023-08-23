@@ -85,9 +85,9 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     protected String getToStringPrefix() {
         if (hasAttrAspect()) {
             if (getAttrKind().hasSort()) {
-                return OperatorNode.TO_STRING_PREFIX;
-            } else {
                 return VariableNode.TO_STRING_PREFIX;
+            } else {
+                return OperatorNode.TO_STRING_PREFIX;
             }
         } else {
             return super.getToStringPrefix();

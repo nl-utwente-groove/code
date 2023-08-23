@@ -119,10 +119,6 @@ public class LabelValue implements VisualValue<MultiLabel> {
      */
     private <G extends Graph> MultiLabel getBasicVertexLabel(JGraph<G> jGraph, JVertex<G> jVertex) {
         MultiLabel result = new MultiLabel();
-        // show the node identity if required
-        if (jGraph.isShowNodeIdentities()) {
-            result.add(getIdLine(jVertex.getNode().toString()));
-        }
         // only add edges that have an unfiltered label
         addEdgeLabels(jGraph, jVertex, result);
         return result;
@@ -133,11 +129,13 @@ public class LabelValue implements VisualValue<MultiLabel> {
      * <ul>
      * <li> The internal node ID, if set to be shown
      * <li> The (optional) external node ID combined with (optional) node type
-     * <li> Non-filtered flags
-     * <li> Non-filtered regular self-edges
-     * <li> Non-filtered attributes stored as self-edges
-     * <li> Non-filtered pure attribute edges not stored as self-edges, if data nodes are not shown
+     * <li> Additional node type self-edges (which may exist in an untyped setting)
+     * <li> Flag self-edges
+     * <li> Regular self-edges
+     * <li> Attributes stored as self-edges
+     * <li> Pure attribute edges not stored as self-edges, if data nodes are not shown
      * </ul>
+     * Node: self-edges displayed as node labels may be filtered
      * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
      */
     private MultiLabel getHostNodeLabel(AspectJGraph jGraph, AspectJVertex jVertex) {
@@ -145,39 +143,41 @@ public class LabelValue implements VisualValue<MultiLabel> {
         node.testFixed(true);
         MultiLabel result = new MultiLabel();
         if (!jVertex.getLooks().contains(Look.NODIFIED)) {
-            // show the node identity
-            if (jGraph.isShowNodeIdentities() && !node.hasId()) {
-                result.add(getNodeIdLine(node));
-            }
             // the following used to include hasError() as a disjunct
             if (jGraph.isShowAspects()) {
                 result.add(jVertex.getUserObject().toLines());
             } else {
-                Line id = getIdLine(node);
+                Line idLine = getExternalIdLine(node);
                 // show data constants and variables correctly
-                Line data = getDataLine(jGraph, node);
-                if (data != null) {
-                    result.add(insertId(id, data));
-                    id = null;
+                Line dataLine = getDataLine(node, idLine);
+                if (dataLine != null) {
+                    result.add(dataLine);
+                    idLine = null;
                 }
                 // show the visible self-edges
                 for (AspectEdge edge : jVertex.getEdges()) {
                     if (!isFiltered(jGraph, jVertex, edge)) {
                         Line line = edge.toLine(true, jVertex.getAspect());
                         if (edge.getRole() == NODE_TYPE) {
-                            line = insertId(id, line);
-                            id = null;
+                            line = insertId(idLine, line);
+                            idLine = null;
                         }
-                        if (id != null) {
+                        if (idLine != null) {
                             // we're not going to have any node types:
                             // add the node id on a separate line
-                            result.add(id);
+                            result.add(idLine);
+                            idLine = null;
                         }
                         if (showLoopSuffix(jVertex, edge)) {
                             line = line.append(LOOP_SUFFIX);
                         }
                         result.add(line);
                     }
+                }
+                if (idLine != null) {
+                    // there weren't any node types (or other node label lines):
+                    // add the node id on a separate line
+                    result.add(idLine);
                 }
             }
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
@@ -190,26 +190,26 @@ public class LabelValue implements VisualValue<MultiLabel> {
     }
 
     /**
-     * Constructs a node ID line for an aspect node.
+     * Constructs an external node ID line for an aspect node, if the node has an ID aspect.
      */
-    private Line getIdLine(AspectNode node) {
+    private Line getExternalIdLine(AspectNode node) {
         return node.hasId()
-            ? getIdLine(node.getId().getContentString())
+            ? formatExternalId(node.getId().getContentString())
             : null;
     }
 
-    /** Inserts an identifier in front of a given line. */
+    /**
+     * Constructs an external node ID line from a given string.
+     */
+    private Line formatExternalId(String id) {
+        return Line.atom(id).style(ITALIC).style(UNDERLINE);
+    }
+
+    /** Inserts an external node identifier in front of a given line, if the node identifier is not {@code null}. */
     private Line insertId(Line id, Line line) {
         return id == null
             ? line
-            : id.append(" : ").append(line);
-    }
-
-    /**
-     * Constructs a node ID line from agiven string.
-     */
-    private Line getIdLine(String id) {
-        return Line.atom(id).style(ITALIC).style(UNDERLINE);
+            : id.append(TYPED_AS).append(line);
     }
 
     /** Recomputes the set of node lines for this aspect node.
@@ -237,9 +237,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 result.add(IMPORT_LINE);
             }
             // show data constants and variables correctly
-            Line data = getDataLine(jGraph, node);
-            if (data != null) {
-                result.add(data);
+            Line dataLine = getDataLine(node, null);
+            if (dataLine != null) {
+                result.add(dataLine);
             }
             // show the visible self-edges
             for (AspectEdge edge : jVertex.getEdges()) {
@@ -274,9 +274,6 @@ public class LabelValue implements VisualValue<MultiLabel> {
         node.testFixed(true);
         MultiLabel result = new MultiLabel();
         // show the node identity
-        if (jGraph.isShowNodeIdentities() && !node.hasId()) {
-            result.add(getNodeIdLine(node));
-        }
         // the following used to include hasError() as a disjunct
         if (jGraph.isShowAspects()) {
             result.add(jVertex.getUserObject().toLines());
@@ -286,7 +283,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                     // check for assignment edges
                     if (!edge.isLoop()) {
                         line = line
-                            .append(" = " + edge.target().getAttrAspect().getContentString());
+                            .append(POINTS_TO + edge.target().getAttrAspect().getContentString());
                     }
                     result.add(line);
                 }
@@ -295,29 +292,28 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 result.add(Line.atom(node.getColor().toString()));
             }
         } else {
-            Line id = getIdLine(node);
+            Line idLine = getExternalIdLine(node);
             // show the quantifier aspect correctly
             if (node.getKind().isQuantifier()) {
-                result.add(getQuantifierLines(node, id));
-                id = null;
+                result.add(getQuantifierLines(node, idLine));
+                idLine = null;
             }
             // show data constants and variables correctly
-            Line data = getDataLine(jGraph, node);
+            Line data = getDataLine(node, idLine);
             if (data != null) {
-                data = insertId(id, data);
-                id = null;
                 result.add(data);
+                idLine = null;
             }
             // show the visible self-edges
             for (AspectEdge edge : jVertex.getEdges()) {
                 if (!isFiltered(jGraph, jVertex, edge)) {
                     Line line = edge.toLine(true, jVertex.getAspect());
                     if (edge.getRole() == NODE_TYPE) {
-                        line = insertId(id, line);
-                        id = null;
+                        line = insertId(idLine, line);
+                        idLine = null;
                     }
-                    if (id != null) {
-                        result.add(id);
+                    if (idLine != null) {
+                        result.add(idLine);
                     }
                     if (showLoopSuffix(jVertex, edge)) {
                         line = line.append(LOOP_SUFFIX);
@@ -325,10 +321,10 @@ public class LabelValue implements VisualValue<MultiLabel> {
                     result.add(line);
                 }
             }
-            if (id != null) {
+            if (idLine != null) {
                 // we're not going to have any node types:
                 // add the node id on a separate line
-                result.add(id);
+                result.add(idLine);
             }
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
                 if (!isFiltered(jGraph, jVertex, edge)) {
@@ -373,7 +369,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
     private MultiLabel getQuantifierLines(AspectNode node, Line id) {
         Line line = Line.empty();
         if (id != null) {
-            line = line.append(id).append(" : ");
+            line = line.append(id).append(TYPED_AS);
         }
         switch (node.getKind()) {
         case FORALL:
@@ -404,14 +400,14 @@ public class LabelValue implements VisualValue<MultiLabel> {
         if (jGraph.isShowStateIdentities()) {
             GraphState state = jVertex.getNode();
             StringBuilder id = new StringBuilder(state.toString());
-            idLine = getIdLine(id.toString());
+            idLine = formatExternalId(id.toString());
         }
         if (jGraph.isShowStateStatus()) {
             Line statusLine = getStatus(jGraph, jVertex.getNode());
             if (idLine == null) {
                 idLine = statusLine;
             } else {
-                idLine = idLine.append(" : ").append(statusLine);
+                idLine = idLine.append(TYPED_AS).append(statusLine);
             }
         }
         if (idLine != null) {
@@ -558,7 +554,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
     private Line getStackLine(Location loc, Object[] values) {
         Line result = Line.empty();
         if (loc != null) {
-            result = getIdLine(loc.toString());
+            result = formatExternalId(loc.toString());
             if (loc.hasVars()) {
                 List<CtrlVar> vars = loc.getVars();
                 StringBuilder content = new StringBuilder();
@@ -589,7 +585,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
      */
     private MultiLabel getCtrlJVertexLabel(CtrlJGraph jGraph, CtrlJVertex jVertex) {
         MultiLabel result = new MultiLabel();
-        result.add(getIdLine(jVertex.getNode().toString()));
+        result.add(formatExternalId(jVertex.getNode().toString()));
         Position<?,?> state = jVertex.getNode().getPosition();
         // add start/final/depth qualifiers
         Line qualifiers = Line.empty();
@@ -615,7 +611,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         for (CtrlVar var : state.getVars()) {
             Line line = Line
                 .atom(var.name())
-                .append(" : ")
+                .append(TYPED_AS)
                 .append(Line.atom(var.type().toString()).style(Style.BOLD));
             result.add(line);
         }
@@ -731,40 +727,24 @@ public class LabelValue implements VisualValue<MultiLabel> {
         return result;
     }
 
-    /**
-     * Returns the (possibly empty) list of lines
-     * describing the node identity, if this is to be shown
-     * according to the current setting.
+    /** Returns lines describing any data content of an {@link AspectNode}
+     * @param node the node for which the data line is to be constructed
+     * @param idLine potentially {@code null} identifier to be inserted in front of the node content
      */
-    private MultiLabel getNodeIdLine(AspectNode node) {
-        MultiLabel result = new MultiLabel();
-        String id;
-        if (node.getKind().isMeta()) {
-            id = null;
-        } else if (node.hasAttrAspect() && node.getAttrKind().hasSort()
-            && node.getAttrAspect().hasContent()) {
-            id = node.getAttrAspect().getContent().toString();
-        } else {
-            id = node.toString();
-        }
-        if (id != null) {
-            result.add(Line.atom(id).style(Style.ITALIC));
-        }
-        return result;
-    }
-
-    /** Returns lines describing any data content of the JVertex.
-     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
-     */
-    private Line getDataLine(AspectJGraph jGraph, AspectNode node) {
+    private Line getDataLine(AspectNode node, Line idLine) {
         Line result = null;
         Aspect attrAspect = node.getAttrAspect();
         if (attrAspect.getKind().hasSort()) {
+            String opInfix;
             if (!attrAspect.hasContent()) {
                 result = getSortLine(attrAspect.getKind().getSort());
-            } else if (!jGraph.isShowNodeIdentities()) {
-                // show constants only if they are not already shown as node identities
+                opInfix = TYPED_AS;
+            } else {
                 result = Line.atom(attrAspect.getContentString());
+                opInfix = EQUALS_TO;
+            }
+            if (idLine != null) {
+                result = idLine.append(opInfix).append(result);
             }
         }
         return result;
@@ -818,4 +798,10 @@ public class LabelValue implements VisualValue<MultiLabel> {
     static private final Line FINAL_LINE = Line.atom("final");
     /** Suffix indicating a self-loop on a node label. */
     static private final String LOOP_SUFFIX = " " + Util.CA;
+    /** Points-to operator between field name and value. */
+    static private final String POINTS_TO = " " + Util.RA + " ";
+    /** Points-to operator between field name and value. */
+    static private final String TYPED_AS = " : ";
+    /** Points-to operator between field name and value. */
+    static private final String EQUALS_TO = " = ";
 }

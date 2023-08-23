@@ -19,12 +19,13 @@ package nl.utwente.groove.gui.jgraph;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.gui.look.AdornmentValue;
 import nl.utwente.groove.gui.look.ColorValue;
 import nl.utwente.groove.gui.look.EdgeEndLabelValue;
 import nl.utwente.groove.gui.look.EdgeEndShapeValue;
 import nl.utwente.groove.gui.look.ErrorValue;
+import nl.utwente.groove.gui.look.IdAdornmentValue;
 import nl.utwente.groove.gui.look.LabelValue;
+import nl.utwente.groove.gui.look.ParAdornmentValue;
 import nl.utwente.groove.gui.look.VisibleValue;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualValue;
@@ -72,8 +73,6 @@ abstract public class JGraphFactory<G extends Graph> {
     /** Creates a visual value refresher for a given key. */
     public VisualValue<?> newVisualValue(VisualKey key) {
         switch (key) {
-        case ADORNMENT:
-            return new AdornmentValue();
         case COLOR:
             return new ColorValue();
         case EDGE_SOURCE_LABEL:
@@ -86,12 +85,16 @@ abstract public class JGraphFactory<G extends Graph> {
             return new EdgeEndShapeValue(false);
         case ERROR:
             return new ErrorValue();
+        case ID_ADORNMENT:
+            return new IdAdornmentValue();
         case LABEL:
             return new LabelValue();
         case NODE_SIZE:
             // this cannot be computed; instead it is refreshed
             // in the vertex view, when the UI is around
             return null;
+        case PAR_ADORNMENT:
+            return new ParAdornmentValue();
         case TEXT_SIZE:
             // this cannot be computed; instead it is refreshed
             // in the vertex view, when the UI is around

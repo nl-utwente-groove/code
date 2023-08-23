@@ -43,12 +43,6 @@ import nl.utwente.groove.util.line.LineStyle;
  */
 public enum VisualKey {
     /**
-     * Node adornment text (parameter-style). Defaults to {@code null},
-     * meaning no adornment. The empty string results in an adornment without
-     * inscription.
-     */
-    ADORNMENT(String.class, null, REFRESHABLE),
-    /**
      * Background colour for nodes. Defaults to {@link Values#DEFAULT_BACKGROUND}.
      * A {@code null} value means a whitewashed version of the foreground is used.
      */
@@ -77,6 +71,11 @@ public enum VisualKey {
     FONT(Integer.class, Font.PLAIN, DERIVED),
     /** Foreground colour. Defaults to {@link Values#DEFAULT_FOREGROUND}. */
     FOREGROUND(Color.class, Values.DEFAULT_FOREGROUND, DERIVED),
+    /**
+     * Node adornment text for internal node identity. Defaults to {@code null},
+     * meaning no adornment. Content strings cannot be empty
+     */
+    ID_ADORNMENT(String.class, null, REFRESHABLE),
     /**
      * Line colour for an <i>inner</i> line drawn inside the normal outline
      * Defaults to {@code null}, meaning there is no
@@ -107,6 +106,12 @@ public enum VisualKey {
     NODE_SIZE(Dimension2D.class, new Dimension(19, 19), REFRESHABLE),
     /** Node opacity. Defaults to {@code false}. */
     OPAQUE(Boolean.class, false, DERIVED),
+    /**
+     * Node adornment text (parameter-style). Defaults to {@code null},
+     * meaning no adornment. The empty string results in an adornment without
+     * inscription.
+     */
+    PAR_ADORNMENT(String.class, null, REFRESHABLE),
     /** Intermediate edge points. */
     POINTS(List.class, Arrays.asList(new Point2D.Double(), new Point2D.Double()), CONTROLLED),
     /** Computed text bounds. */
