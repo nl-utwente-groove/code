@@ -35,8 +35,7 @@ import nl.utwente.groove.util.parse.OpKind;
 @NonNullByDefault
 public final class FieldExpr extends Expression {
     /** Constructs a new field expression. */
-    public FieldExpr(boolean prefixed, @Nullable
-    String target, String field, Sort type) {
+    public FieldExpr(boolean prefixed, @Nullable String target, String field, Sort type) {
         super(prefixed);
         assert field != null && type != null;
         this.target = target;
@@ -64,8 +63,7 @@ public final class FieldExpr extends Expression {
 
     @Override
     public Expression relabel(TypeLabel oldLabel, TypeLabel newLabel) {
-        if (oldLabel.getRole() == BINARY && oldLabel.text()
-            .equals(getField())) {
+        if (oldLabel.getRole() == BINARY && oldLabel.text().equals(getField())) {
             return new FieldExpr(isPrefixed(), getTarget(), newLabel.text(), getSort());
         } else {
             return this;
@@ -76,8 +74,10 @@ public final class FieldExpr extends Expression {
     protected Line toLine(OpKind context) {
         Line result;
         if (getTarget() != null) {
-            result = Line.atom(getTarget())
+            result = Line
+                .atom(getTarget())
                 .style(Style.ITALIC)
+                .style(Style.UNDERLINE)
                 .append("." + getField());
         } else {
             result = Line.atom(getField());
@@ -101,8 +101,7 @@ public final class FieldExpr extends Expression {
     }
 
     @Override
-    public boolean equals(@Nullable
-    Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }
@@ -128,7 +127,9 @@ public final class FieldExpr extends Expression {
         final int prime = 31;
         int result = this.field.hashCode();
         String target = this.target;
-        result = prime * result + (target == null ? 0 : target.hashCode());
+        result = prime * result + (target == null
+            ? 0
+            : target.hashCode());
         result = prime * result + this.type.hashCode();
         return result;
     }
