@@ -904,7 +904,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                 if (!sourceType.isTopType()) {
                     errors
                         .add("%s-node has unknown %s-%s to %s", sourceType, edgeType.text(),
-                             edgeType.getRole().getDescription(false), targetType, edge.source());
+                             edgeType.getRole().getDescription(false), targetType, edge.source(),
+                             edge);
                 }
             } else if (typeEdge.isAbstract()) {
                 errors
