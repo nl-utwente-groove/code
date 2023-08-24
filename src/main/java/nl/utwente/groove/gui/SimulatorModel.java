@@ -1256,7 +1256,7 @@ public class SimulatorModel implements Cloneable {
 
     { // initialise the listener map to empty listener lists
         for (Change change : Change.values()) {
-            this.listeners.put(change, new ArrayList<SimulatorListener>());
+            this.listeners.put(change, new ArrayList<>());
         }
     }
 

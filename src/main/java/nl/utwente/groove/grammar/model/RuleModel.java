@@ -750,7 +750,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             // Mapping from levels to match count nodes
             this.matchCountMap = new HashMap<>();
             // build the index tree
-            indexTree.put(this.topLevelIndex, new ArrayList<Index>());
+            indexTree.put(this.topLevelIndex, new ArrayList<>());
             for (AspectNode node : this.source.nodeSet()) {
                 AspectKind nodeKind = node.getKind();
                 if (nodeKind.isQuantifier()) {
@@ -833,7 +833,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         private Index createIndex(Condition.Op operator, boolean positive, AspectNode levelNode,
                                   Map<Index,List<Index>> levelTree) {
             Index result = new Index(operator, positive, levelNode, getQualName());
-            levelTree.put(result, new ArrayList<Index>());
+            levelTree.put(result, new ArrayList<>());
             return result;
         }
 
@@ -1282,7 +1282,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             if (!result && this.parent != null) {
                 result = this.parent.testParentBinding(var);
                 if (result) {
-                    this.modelVars.put(var, new HashSet<AspectEdge>());
+                    this.modelVars.put(var, new HashSet<>());
                 }
             }
             return result;

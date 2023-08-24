@@ -70,8 +70,8 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
      */
     public BasicEvent(Rule rule, RuleToHostMap anchorMap, Reuse reuse) {
         super(reference, rule);
-        assert anchorMap != null : String.format("Can't produce event for %s with null anchor map",
-                                                 rule.getQualName());
+        assert anchorMap != null : String
+            .format("Can't produce event for %s with null anchor map", rule.getQualName());
         rule.testFixed(true);
         this.anchorImage = computeAnchorImage(anchorMap);
         this.hostFactory = anchorMap.getFactory();
@@ -249,8 +249,8 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
         for (int i = 0; i < result.length; i++) {
             AnchorKey key = anchor.get(i);
             result[i] = anchorMap.get(key);
-            assert result[i] != null : String.format("No image for %s in anchor map %s", key,
-                                                     anchorMap);
+            assert result[i] != null : String
+                .format("No image for %s in anchor map %s", key, anchorMap);
         }
         return result;
     }
@@ -372,15 +372,15 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
             HostNode sourceImage = anchorMap.getNode(source);
             if (sourceImage == null) {
                 sourceImage = createdNodeMap.get(source);
-                assert sourceImage != null : String.format("Event '%s': No image for %s", this,
-                                                           source);
+                assert sourceImage != null : String
+                    .format("Event '%s': No image for %s", this, source);
             }
             RuleNode target = edge.target();
             HostNode targetImage = anchorMap.getNode(target);
             if (targetImage == null) {
                 targetImage = createdNodeMap.get(target);
-                assert sourceImage != null : String.format("Event '%s': No image for %s", this,
-                                                           target);
+                assert sourceImage != null : String
+                    .format("Event '%s': No image for %s", this, target);
             }
             record.addCreateEdge(sourceImage, anchorMap.mapLabel(edge.label()), targetImage);
         }
@@ -579,7 +579,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
         int creatorNodeCount = getRule().getCreatorNodes().length;
         List<List<HostNode>> result = new ArrayList<>();
         for (int i = 0; i < creatorNodeCount; i++) {
-            result.add(new ArrayList<HostNode>());
+            result.add(new ArrayList<>());
         }
         return result;
     }
@@ -772,7 +772,8 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
         private MergeMap computeMergeMap() {
             RuleToHostMap anchorMap = getAnchorMap();
             MergeMap mergeMap = createMergeMap();
-            for (Map.Entry<RuleNode,RuleNode> ruleMergeEntry : getRule().getLhsMergeMap()
+            for (Map.Entry<RuleNode,RuleNode> ruleMergeEntry : getRule()
+                .getLhsMergeMap()
                 .entrySet()) {
                 HostNode mergeKey = anchorMap.getNode(ruleMergeEntry.getKey());
                 HostNode mergeImage = anchorMap.getNode(ruleMergeEntry.getValue());

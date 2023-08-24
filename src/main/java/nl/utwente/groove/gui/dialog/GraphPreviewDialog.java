@@ -207,7 +207,7 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
 
     static {
         for (GraphRole role : GraphRole.values()) {
-            recentPreviews.put(role, new HashSet<String>());
+            recentPreviews.put(role, new HashSet<>());
         }
     }
 

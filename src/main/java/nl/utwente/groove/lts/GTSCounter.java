@@ -78,7 +78,7 @@ public class GTSCounter implements GTSListener {
             this.absentCount++;
         }
         if (!state.isDone()) {
-            this.inTransMap.put(state, new ArrayList<RuleTransition>());
+            this.inTransMap.put(state, new ArrayList<>());
         } else if (state.isInternalState()) {
             this.recipeStageCount++;
         }

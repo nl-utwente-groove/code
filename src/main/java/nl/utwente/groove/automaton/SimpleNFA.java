@@ -137,7 +137,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNull Reg
         if (result) {
             // when the graph is fixed, we can initialise the auxiliary structures.
             for (Direction dir : Direction.values()) {
-                this.dfas.put(dir, new HashMap<List<TypeLabel>,DFA>());
+                this.dfas.put(dir, new HashMap<>());
             }
             this.labelVars = computeLabelVars();
         }
@@ -180,7 +180,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNull Reg
             Map<Direction,Map<TypeLabel,Set<RegNode>>> succMaps = new EnumMap<>(Direction.class);
             // initialise the maps
             for (Direction edgeDir : Direction.values()) {
-                succMaps.put(edgeDir, new HashMap<TypeLabel,Set<RegNode>>());
+                succMaps.put(edgeDir, new HashMap<>());
             }
             // collect the transitions of all nodes contained in the state
             for (RegNode rn : current.getNodes()) {

@@ -94,7 +94,7 @@ abstract public class EdgeMapGraph<N extends Node,E extends GEdge<N>> extends AG
         assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
         boolean added = !containsNode(node);
         if (added) {
-            this.edgeMap.put(node, new LinkedHashSet<E>());
+            this.edgeMap.put(node, new LinkedHashSet<>());
             fireAddNode(node);
         }
         return added;

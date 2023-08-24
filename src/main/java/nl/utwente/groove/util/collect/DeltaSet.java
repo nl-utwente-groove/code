@@ -33,7 +33,7 @@ public class DeltaSet<T> extends AbstractSet<T> {
      * Constructs a delta set on top of an empty {@link HashSet}.
      */
     public DeltaSet() {
-        this(new HashSet<T>());
+        this(new HashSet<>());
     }
 
     /**

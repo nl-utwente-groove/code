@@ -229,9 +229,10 @@ public class CriticalPair {
         //check if all the rules are compatible
         for (Rule rule : rules) {
             if (!canComputePairs(rule)) {
-                throw Exceptions.illegalArg("Cannot compute critical pairs for rule '%s', "
-                    + "because the algorithm can not compute Critical pairs for this type of rule",
-                                            rule.getQualName());
+                throw Exceptions
+                    .illegalArg("Cannot compute critical pairs for rule '%s', "
+                        + "because the algorithm can not compute Critical pairs for this type of rule",
+                                rule.getQualName());
             }
         }
 
@@ -479,8 +480,8 @@ public class CriticalPair {
                 return false;
             }
         } else if (ruleNode instanceof OperatorNode) {
-            throw Exceptions.illegalArg("Rule node %s of type OperatorNodes may not be in matches",
-                                        ruleNode);
+            throw Exceptions
+                .illegalArg("Rule node %s of type OperatorNodes may not be in matches", ruleNode);
         } else {
             throw Exceptions.unsupportedOp("Unknown type for RuleNode %s", ruleNode);
         }
@@ -493,7 +494,7 @@ public class CriticalPair {
                                        MatchNumber matchnum) {
         Map<Long,Set<RuleNode>> nodeMatch = pair.getNodeMatch(matchnum);
         if (!nodeMatch.containsKey(targetGroup)) {
-            nodeMatch.put(targetGroup, new LinkedHashSet<RuleNode>());
+            nodeMatch.put(targetGroup, new LinkedHashSet<>());
         }
         Set<RuleNode> nodeSet = nodeMatch.get(targetGroup);
         //Add ruleNode to the Set

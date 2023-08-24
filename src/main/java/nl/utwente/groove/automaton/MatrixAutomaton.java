@@ -290,7 +290,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNu
         remainingNodes.add(getStartNode());
         // keep maps from automaton nodes to all vars and bound vars
         Map<RegNode,Set<LabelVar>> allVarMap = new HashMap<>();
-        allVarMap.put(getStartNode(), new HashSet<LabelVar>());
+        allVarMap.put(getStartNode(), new HashSet<>());
         while (!remainingNodes.isEmpty()) {
             RegNode source = remainingNodes.iterator().next();
             remainingNodes.remove(source);
@@ -326,7 +326,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNu
         } else {
             // keep the set of current matches (initially the start node)
             Map<RegNode,HashMap<LabelVar,TypeElement>> matchSet
-                = Collections.singletonMap(getStartNode(), new HashMap<LabelVar,TypeElement>());
+                = Collections.singletonMap(getStartNode(), new HashMap<>());
             boolean accepts = false;
             // go through the word
             for (int index = 0; !accepts && !matchSet.isEmpty() && index < word.size(); index++) {

@@ -519,7 +519,7 @@ public class Condition implements Fixable {
                 if (isResolved) {
                     resolved.add(varNode);
                 } else {
-                    result.put(varNode, new ArrayList<Set<VariableNode>>());
+                    result.put(varNode, new ArrayList<>());
                 }
             }
         }
