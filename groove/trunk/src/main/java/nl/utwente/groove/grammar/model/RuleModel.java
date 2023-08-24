@@ -484,7 +484,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         transferErrors(errors, levelTree.getModelMap()).throwException();
         // only fix if the rule is not null and there were no errors in the subconditions
         if (result != null) {
-            result.setFixed();
+            try {
+                result.setFixed();
+            } catch (FormatException exc) {
+                transferErrors(exc.getErrors(), levelTree.getModelMap()).throwException();
+            }
         }
         return result;
     }
