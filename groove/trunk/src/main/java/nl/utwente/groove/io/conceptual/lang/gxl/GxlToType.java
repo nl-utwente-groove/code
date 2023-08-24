@@ -147,7 +147,7 @@ public class GxlToType extends TypeImporter {
             for (GraphElementType elem : graph.getNodeOrEdgeOrRel()) {
                 if (elem instanceof NodeType nt) {
                     if ("GraphClass".equals(GxlUtil.getElemType(nt))) {
-                        graphElements.put(nt, new HashSet<NodeWrapper>());
+                        graphElements.put(nt, new HashSet<>());
 
                         // Grab all the contained elements
                         for (EdgeWrapper ew : nodes.get(nt).getEdges()) {
@@ -231,8 +231,8 @@ public class GxlToType extends TypeImporter {
 
             String graphName
                 = (String) GxlUtil.getAttribute(graphClassNode, "name", AttrTypeEnum.STRING);
-            graphNamespaces.put(graphClassNode.getId(),
-                                Id.getId(parentId, Name.getName(graphName)));
+            graphNamespaces
+                .put(graphClassNode.getId(), Id.getId(parentId, Name.getName(graphName)));
         } else {
             String graphName
                 = (String) GxlUtil.getAttribute(graphClassNode, "name", AttrTypeEnum.STRING);
@@ -381,8 +381,8 @@ public class GxlToType extends TypeImporter {
             return (Field) val;
         }
 
-        String name = (String) GxlUtil.getAttribute(nodeWrapper.getNode(), "name",
-                                                    GxlUtil.AttrTypeEnum.STRING);
+        String name = (String) GxlUtil
+            .getAttribute(nodeWrapper.getNode(), "name", GxlUtil.AttrTypeEnum.STRING);
         Type t = null;
         for (EdgeWrapper ew : nodeWrapper.getEdges()) {
             if (ew.getType().equals("hasDomain")) {
@@ -437,8 +437,8 @@ public class GxlToType extends TypeImporter {
             return val;
         }
 
-        String name = (String) GxlUtil.getAttribute(nodeWrapper.getNode(), "name",
-                                                    GxlUtil.AttrTypeEnum.STRING);
+        String name = (String) GxlUtil
+            .getAttribute(nodeWrapper.getNode(), "name", GxlUtil.AttrTypeEnum.STRING);
 
         Class sourceClass = null;
         Class targetClass = null;
@@ -475,8 +475,8 @@ public class GxlToType extends TypeImporter {
         assert (sourceClass != null && targetClass != null);
 
         List<Class> superClasses = new ArrayList<>();
-        Boolean isAbstract = (Boolean) GxlUtil.getAttribute(nodeWrapper.getNode(), "isabstract",
-                                                            AttrTypeEnum.BOOL);
+        Boolean isAbstract = (Boolean) GxlUtil
+            .getAttribute(nodeWrapper.getNode(), "isabstract", AttrTypeEnum.BOOL);
         boolean hasAttributes = false;
         for (EdgeWrapper ew : nodeWrapper.getEdges()) {
             if (ew.getType().equals("isA")) {
@@ -494,8 +494,8 @@ public class GxlToType extends TypeImporter {
             // Must be aggregate or composite
             isAggregate = true;
             // read the attribute, either "from" or "to"
-            String eVal = (String) GxlUtil.getAttribute(nodeWrapper.getNode(), "aggregate",
-                                                        GxlUtil.AttrTypeEnum.ENUM);
+            String eVal = (String) GxlUtil
+                .getAttribute(nodeWrapper.getNode(), "aggregate", GxlUtil.AttrTypeEnum.ENUM);
             if (eVal != null) {
                 if (eVal.equals("to")) {
                     reverseAggregate = true;
@@ -556,9 +556,11 @@ public class GxlToType extends TypeImporter {
                 }
             }
             if (isAggregate) {
-                tm.addProperty(new ContainmentProperty(edgeClass, Name.getName(reverseAggregate
-                    ? "from"
-                    : "to")));
+                tm
+                    .addProperty(new ContainmentProperty(edgeClass, Name
+                        .getName(reverseAggregate
+                            ? "from"
+                            : "to")));
             }
 
             this.m_nodeValues.put(node, edgeClass);
@@ -679,8 +681,8 @@ public class GxlToType extends TypeImporter {
                 NodeWrapper valueNode = ew.getTarget();
                 assert ("EnumVal".equals(valueNode.getType()));
 
-                String value = (String) GxlUtil.getAttribute(valueNode.getNode(), "value",
-                                                             GxlUtil.AttrTypeEnum.STRING);
+                String value = (String) GxlUtil
+                    .getAttribute(valueNode.getNode(), "value", GxlUtil.AttrTypeEnum.STRING);
                 values.add(Name.getName(value));
             }
         }

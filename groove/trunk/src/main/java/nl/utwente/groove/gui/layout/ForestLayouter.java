@@ -180,8 +180,8 @@ public class ForestLayouter extends AbstractLayouter {
                 }
                 LayoutNode layoutable = ForestLayouter.this.layoutMap.get(root);
                 if (layoutable == null) {
-                    throw Exceptions.illegalArg("Suggested root %s is not a known graph cell",
-                                                root);
+                    throw Exceptions
+                        .illegalArg("Suggested root %s is not a known graph cell", root);
                 }
                 remaining.add(layoutable);
             }
@@ -374,7 +374,7 @@ public class ForestLayouter extends AbstractLayouter {
     private static class Forest extends Pair<Collection<LayoutNode>,BranchMap> {
         /** Constructs an empty forest. */
         public Forest() {
-            super(new LinkedHashSet<LayoutNode>(), new BranchMap());
+            super(new LinkedHashSet<>(), new BranchMap());
         }
 
         public Forest(Collection<LayoutNode> one, BranchMap two) {

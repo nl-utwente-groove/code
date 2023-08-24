@@ -149,7 +149,7 @@ public class TemplateBuilder {
                 ? new Template(proc)
                 : new Template(name);
             // set the initial location
-            TermKey initKey = new TermKey(init, new HashSet<Term>(), new HashSet<CtrlVar>());
+            TermKey initKey = new TermKey(init, new HashSet<>(), new HashSet<>());
             Location start = this.result.getStart();
             Map<TermKey,Location> locMap = this.locMap = new HashMap<>();
             locMap.put(initKey, start);
@@ -340,7 +340,7 @@ public class TemplateBuilder {
             if (this.switchMaps.size() <= loc.getNumber()) {
                 synchronized (this.switchMaps) {
                     for (int i = this.switchMaps.size(); i <= loc.getNumber(); i++) {
-                        this.switchMaps.add(new HashMap<Derivation,SwitchStack>());
+                        this.switchMaps.add(new HashMap<>());
                     }
                 }
             }
@@ -597,7 +597,7 @@ public class TemplateBuilder {
      * of a given location.
      * @param <L> type of the targets
      */
-    private static record Record<L> (L success, L failure, List<L> targets) {
+    private static record Record<L>(L success, L failure, List<L> targets) {
         // empty by design
     }
 }

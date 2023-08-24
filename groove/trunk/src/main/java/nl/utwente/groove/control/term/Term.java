@@ -481,7 +481,7 @@ abstract public class Term implements Position<Term,Derivation> {
 
     /** Creates a prototype term. */
     public static Term prototype() {
-        return new Term(new Pool<Term>()) {
+        return new Term(new Pool<>()) {
             @Override
             protected DerivationAttempt computeAttempt(boolean nested) {
                 throw new UnsupportedOperationException();

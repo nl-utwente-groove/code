@@ -161,7 +161,7 @@ public class Grammar {
         if (this.roleActionMap == null) {
             this.roleActionMap = new EnumMap<>(Role.class);
             for (Role r : Role.values()) {
-                this.roleActionMap.put(r, new ArrayList<Action>());
+                this.roleActionMap.put(r, new ArrayList<>());
             }
             for (Action action : getActions()) {
                 this.roleActionMap.get(action.getRole()).add(action);

@@ -155,7 +155,7 @@ public class TypeFactory extends ElementFactory<TypeNode,TypeEdge> {
 
     {
         for (EdgeRole kind : EdgeRole.values()) {
-            this.labelMaps.put(kind, new HashMap<String,TypeLabel>());
+            this.labelMaps.put(kind, new HashMap<>());
         }
     }
 
