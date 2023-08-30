@@ -111,7 +111,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
                 return result;
             }
         };
-        this.graphModCount.addObserver(new PropertyChangeListener() {
+        addGraphChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 loadViewErrors();
@@ -170,7 +170,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
             root.saveToUserObject();
         }
         this.properties = GraphInfo.getProperties(graph);
-        this.graphModCount.increase();
+        setGraphModified();
         setLoading(false);
     }
 
@@ -244,16 +244,21 @@ final public class AspectJModel extends JModel<AspectGraph> {
         GraphInfo.setLayoutMap(graph, layoutMap);
         GraphInfo.setProperties(graph, getProperties());
         graph.setFixed();
-        setGraph(graph);
         this.nodeJCellMap.clear();
         this.nodeJCellMap.putAll(nodeJVertexMap);
         this.edgeJCellMap.clear();
         this.edgeJCellMap.putAll(edgeJCellMap);
-        this.graphModCount.increase();
+        setGraph(graph);
         if (GUI_DEBUG) {
             System.out.printf("Graph resynchronised with model %s%n", getName());
             Groove.printStackTrace(System.out, false);
         }
+    }
+
+    @Override
+    void setGraph(AspectGraph graph) {
+        super.setGraph(graph);
+        setGraphModified();
     }
 
     /**
@@ -575,8 +580,8 @@ final public class AspectJModel extends JModel<AspectGraph> {
         ROLE_NAMES.put(AspectKind.ERASER, "Eraser");
         ROLE_NAMES.put(AspectKind.REMARK, "Remark");
 
-        ROLE_DESCRIPTIONS.put(AspectKind.EMBARGO,
-                              "Must be absent from a graph for this rule to apply");
+        ROLE_DESCRIPTIONS
+            .put(AspectKind.EMBARGO, "Must be absent from a graph for this rule to apply");
         ROLE_DESCRIPTIONS.put(AspectKind.READER, "Must be matched for this rule to apply");
         ROLE_DESCRIPTIONS.put(AspectKind.CREATOR, "Will be created by applying this rule");
         ROLE_DESCRIPTIONS
