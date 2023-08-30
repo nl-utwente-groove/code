@@ -257,11 +257,11 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
         for (String text : getUserObject()) {
             AspectLabel label = parser.parse(text, role);
             AspectEdge edge = new AspectEdge(getSourceNode(), label, getTargetNode());
-            edge.setFixed();
+            //edge.setFixed();
             addEdge(edge);
             if (bidirectional) {
                 edge = new AspectEdge(getTargetNode(), label, getSourceNode());
-                edge.setFixed();
+                //edge.setFixed();
                 addEdge(edge);
             }
         }

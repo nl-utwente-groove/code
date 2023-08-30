@@ -87,14 +87,17 @@ public class GraphManager {
         case HOST:
         case RULE:
         case TYPE:
-            result = this.simulatorModel.getStore()
+            result = this.simulatorModel
+                .getStore()
                 .getGraphs(ResourceKind.toResource(role))
                 .get(QualName.parse(name));
             break;
         default:
             result = null;
         }
-        return result == null ? null : result.clone();
+        return result == null
+            ? null
+            : result.clone();
     }
 
     /**
@@ -120,9 +123,8 @@ public class GraphManager {
             case HOST:
             case RULE:
             case TYPE:
-                this.simulatorModel.doAddGraph(ResourceKind.toResource(graph.getRole()),
-                    graph,
-                    false);
+                this.simulatorModel
+                    .doAddGraph(ResourceKind.toResource(graph.getRole()), graph, false);
                 return true;
             default:
                 return false;
@@ -148,11 +150,10 @@ public class GraphManager {
         AspectNode newNode = new AspectNode(graph.nodeCount(), graph.getRole());
 
         for (String sublabel : labels) {
-            AspectLabel alabel = AspectParser.getInstance()
-                .parse(sublabel, graph.getRole());
+            AspectLabel alabel = AspectParser.getInstance().parse(sublabel, graph.getRole());
             // add self edge
             if (alabel.isEdgeOnly()) {
-                AspectEdge newEdge = new AspectEdge(newNode, alabel, newNode);
+                AspectEdge newEdge = graph.getFactory().createEdge(newNode, alabel, newNode);
                 graph.addEdgeContext(newEdge);
             } else {
                 newNode.setAspects(alabel);
@@ -200,7 +201,7 @@ public class GraphManager {
      * @return The created edge. If multiple edges are created, only the first created edge is returned.
      */
     public AspectEdge createEdge(AspectGraph graph, AspectNode nodeSource, AspectNode nodeTarget,
-        String label) {
+                                 String label) {
         if (graph == null) {
             return null;
         }
@@ -209,10 +210,9 @@ public class GraphManager {
 
         String[] labels = label.split("\n");
         for (String sublabel : labels) {
-            AspectLabel alabel = AspectParser.getInstance()
-                .parse(sublabel, graph.getRole());
+            AspectLabel alabel = AspectParser.getInstance().parse(sublabel, graph.getRole());
             if (alabel.isEdgeOnly()) {
-                AspectEdge newEdge = new AspectEdge(nodeSource, alabel, nodeTarget);
+                AspectEdge newEdge = graph.getFactory().createEdge(nodeSource, alabel, nodeTarget);
                 graph.addEdgeContext(newEdge);
                 if (resultEdge == null) {
                     resultEdge = newEdge;

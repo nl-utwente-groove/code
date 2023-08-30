@@ -74,10 +74,11 @@ import nl.utwente.groove.util.parse.StringHandler;
 public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     implements AspectElement, Fixable {
     /**
-     * Constructs a new edge.
+     * Constructs a new, numbered edge.
      * @param source the source node for this edge
      * @param label the label for this edge
      * @param target the target node for this edge
+     * @param number the edge number
      */
     public AspectEdge(AspectNode source, AspectLabel label, AspectNode target, int number) {
         super(source, label, target, number);
@@ -97,7 +98,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     }
 
     /**
-     * Constructs a new edge.
+     * Constructs a new edge, with edge number {@code 0}.
      * @param source the source node for this edge
      * @param label the label for this edge
      * @param target the target node for this edge
@@ -118,8 +119,14 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     @Override
     public boolean setFixed() {
+        if (DEBUG) {
+            System.out.printf("setFixed called on %s%n", this);
+        }
         boolean result = !isFixed();
         if (result) {
+            if (DEBUG) {
+                System.out.printf("Fixing %s%n", this);
+            }
             this.fixed = true;
             if (!hasErrors()) {
                 setAspectsFixed();
@@ -970,4 +977,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     static private final String ADD_PREFIX = NOT_PREFIX + NEW_PREFIX;
     /** Prefix for remark lines. */
     static private final String REM_PREFIX = "//";
+
+    /** Debug flag. */
+    static private final boolean DEBUG = false;
 }

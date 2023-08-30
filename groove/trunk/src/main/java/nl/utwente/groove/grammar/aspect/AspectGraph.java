@@ -756,8 +756,14 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
 
     @Override
     public boolean setFixed() {
+        if (DEBUG) {
+            System.out.printf("setFixed called on %s %s%n", getRole(), getName());
+        }
         boolean result = !isFixed();
         if (result) {
+            if (DEBUG) {
+                System.out.printf("Fixing %s %s%n", getRole(), getName());
+            }
             // first fix the edges, then the nodes
             FormatErrorSet errors = new FormatErrorSet();
             for (AspectEdge edge : edgeSet()) {
@@ -1030,6 +1036,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
 
     /** The singleton aspect parser instance. */
     private static final AspectParser parser = AspectParser.getInstance();
+
+    /** Debug flag. */
+    static private final boolean DEBUG = false;
 
     /** Factory for AspectGraph elements. */
     public static class AspectFactory extends ElementFactory<AspectNode,AspectEdge> {
