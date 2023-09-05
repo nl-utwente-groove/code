@@ -101,8 +101,9 @@ public class GraphConverter {
                 text.append(MULTIPLICITY.toString(MULT_OUT, edge.getOutMult()));
             }
             text.append(edge.text());
-            AspectEdge edgeImage = target.addEdge(result.getNode(edge.source()), text.toString(),
-                                                  result.getNode(edge.target()));
+            AspectEdge edgeImage = target
+                .addEdge(result.getNode(edge.source()), text.toString(),
+                         result.getNode(edge.target()));
             result.putEdge(edge, edgeImage);
         }
         GraphInfo.transfer(type, target, result);
@@ -170,7 +171,7 @@ public class GraphConverter {
          * Creates a new, empty map.
          */
         public HostToAspectMap(AspectGraph aspectGraph) {
-            super(new AspectGraph.AspectFactory(HOST));
+            super(aspectGraph.getFactory());
             this.aspectGraph = aspectGraph;
         }
 
@@ -192,7 +193,7 @@ public class GraphConverter {
          * Creates a new, empty map.
          */
         public TypeToAspectMap(AspectGraph aspectGraph) {
-            super(new AspectGraph.AspectFactory(TYPE));
+            super(aspectGraph.getFactory());
             this.aspectGraph = aspectGraph;
         }
 

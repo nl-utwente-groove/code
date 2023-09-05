@@ -22,7 +22,6 @@ import org.junit.Assert;
 
 import junit.framework.TestCase;
 import nl.utwente.groove.sts.Gate;
-import nl.utwente.groove.sts.InteractionVariable;
 import nl.utwente.groove.sts.Location;
 import nl.utwente.groove.sts.SwitchRelation;
 
@@ -53,18 +52,12 @@ public class LocationTest extends TestCase {
      */
     public void testAddGetSwitchRelations() {
         Location l2 = new Location("l2");
-        SwitchRelation sr =
-            new SwitchRelation(new Gate("lbl", new HashSet<InteractionVariable>()), "", "");
+        SwitchRelation sr = new SwitchRelation(new Gate("lbl", new HashSet<>()), "", "");
         this.l.addSwitchRelation(sr, l2);
         Assert.assertNotNull(this.l.getSwitchRelations());
-        Assert.assertTrue(this.l.getSwitchRelations()
-            .size() == 1);
-        Assert.assertEquals(this.l.getSwitchRelations()
-            .iterator()
-            .next(), sr);
-        Assert.assertEquals(this.l.getRelationTargets(sr)
-            .iterator()
-            .next(), l2);
+        Assert.assertTrue(this.l.getSwitchRelations().size() == 1);
+        Assert.assertEquals(this.l.getSwitchRelations().iterator().next(), sr);
+        Assert.assertEquals(this.l.getRelationTargets(sr).iterator().next(), l2);
     }
 
     /**

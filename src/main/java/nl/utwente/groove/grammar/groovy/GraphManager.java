@@ -147,7 +147,7 @@ public class GraphManager {
         }
 
         String[] labels = label.split("\n");
-        AspectNode newNode = new AspectNode(graph.nodeCount(), graph.getRole());
+        AspectNode newNode = new AspectNode(graph.nodeCount(), graph);
 
         for (String sublabel : labels) {
             AspectLabel alabel = AspectParser.getInstance().parse(sublabel, graph.getRole());

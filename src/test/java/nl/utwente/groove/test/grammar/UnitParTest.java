@@ -86,13 +86,11 @@ public class UnitParTest {
         this.p2 = new ProcedurePar(new CtrlVar(null, "p2", CtrlType.BOOL), Direction.ASK);
         this.p3 = new ProcedurePar(new CtrlVar(null, "p3", CtrlType.NODE), Direction.OUT);
         this.typeGraph = new TypeGraph(QualName.name("test"));
-        this.boolNode = this.typeGraph.getFactory()
-            .getDataType(Sort.BOOL);
-        this.intNode = this.typeGraph.getFactory()
-            .getDataType(Sort.INT);
+        this.boolNode = this.typeGraph.getFactory().getDataType(Sort.BOOL);
+        this.intNode = this.typeGraph.getFactory().getDataType(Sort.INT);
         try {
             this.r1 = new RulePar(AspectKind.PARAM_IN,
-                new VariableNode(0, Expression.parse("1"), this.intNode), false);
+                new VariableNode(0, Expression.parse("1").toExpression(), this.intNode), false);
             this.r2 = new RulePar(AspectKind.PARAM_BI,
                 new VariableNode(1, new Variable("r2", Sort.INT), this.intNode), false);
             this.r3 = new RulePar(AspectKind.PARAM_OUT,
@@ -123,7 +121,7 @@ public class UnitParTest {
             assertFalse(this.r1.equals(this.r2));
             assertTrue(this.r3.equals(this.r3));
             RulePar myR1 = new RulePar(AspectKind.PARAM_IN,
-                new VariableNode(0, Expression.parse("1"), this.intNode), false);
+                new VariableNode(0, Expression.parse("1").toExpression(), this.intNode), false);
             assertEquals(myR1, this.r1);
         } catch (FormatException exc) {
             fail(exc.getMessage());

@@ -26,6 +26,9 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
  * @version $Revision$
  */
 public interface AspectElement extends Element, Fixable {
+    /** Returns the aspect graph to which this element belongs. */
+    public AspectGraph getGraph();
+
     /**
      * Returns the main aspect of this element, if any.
      * At all times, the return value is guaranteed to be valid for the kind of graph.

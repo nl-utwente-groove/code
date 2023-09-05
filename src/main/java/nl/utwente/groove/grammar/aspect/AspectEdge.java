@@ -33,6 +33,7 @@ import static nl.utwente.groove.grammar.aspect.AspectKind.REMARK;
 import static nl.utwente.groove.grammar.aspect.AspectKind.SUBTYPE;
 import static nl.utwente.groove.grammar.aspect.AspectKind.TEST;
 import static nl.utwente.groove.graph.GraphRole.RULE;
+import static nl.utwente.groove.graph.GraphRole.TYPE;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -42,7 +43,9 @@ import org.eclipse.jdt.annotation.NonNull;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.syntax.Assignment;
+import nl.utwente.groove.algebra.syntax.ExprTree;
 import nl.utwente.groove.algebra.syntax.Expression;
+import nl.utwente.groove.algebra.syntax.Expression.Kind;
 import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.grammar.aspect.AspectKind.NestedValue;
 import nl.utwente.groove.grammar.rule.RuleLabel;
@@ -50,6 +53,7 @@ import nl.utwente.groove.grammar.type.Multiplicity;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.AEdge;
 import nl.utwente.groove.graph.EdgeRole;
+import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.plain.PlainLabel;
@@ -57,6 +61,7 @@ import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.io.Util;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
+import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.line.Line.ColorType;
 import nl.utwente.groove.util.line.Line.Style;
@@ -94,7 +99,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         for (FormatError error : label().getErrors()) {
             this.errors.add(error.extend(this));
         }
-        this.graphRole = label.getGraphRole();
+        this.graph = source.getGraph();
     }
 
     /**
@@ -112,9 +117,19 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         return false;
     }
 
+    @Override
+    public AspectGraph getGraph() {
+        return this.graph;
+    }
+
+    /** Checks if the graph role of this aspect edge equals a given role. */
+    public boolean hasGraphRole(GraphRole role) {
+        return getGraphRole() == role;
+    }
+
     /** Returns the graph role set for this aspect edge. */
     public GraphRole getGraphRole() {
-        return this.graphRole;
+        return getGraph().getRole();
     }
 
     @Override
@@ -142,10 +157,10 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         if (this.isPredicate() || isAssign()) {
             // We just want the edge role to be non-binary...
             return EdgeRole.FLAG;
-        } else if (getGraphRole() == GraphRole.TYPE && getAttrKind().hasSort()) {
+        } else if (hasGraphRole(TYPE) && getAttrKind().hasSort()) {
             return EdgeRole.FLAG;
         } else {
-            Label label = getGraphRole() == RULE
+            Label label = hasGraphRole(RULE)
                 ? getRuleLabel()
                 : getTypeLabel();
             return label == null
@@ -154,8 +169,8 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         }
     }
 
-    /** The graph role for this element. */
-    private final GraphRole graphRole;
+    /** The graph that this element belongs to. */
+    private final AspectGraph graph;
 
     /**
      * Fixes the aspects, by first setting the declared label aspects,
@@ -167,7 +182,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             setAspects(label());
             inferAspects();
             checkAspects();
-            if (this.graphRole == RULE) {
+            if (hasGraphRole(RULE)) {
                 this.ruleLabel = createRuleLabel();
                 this.typeLabel = null;
             } else {
@@ -176,7 +191,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             }
             target().inferInAspect(this);
             source().inferOutAspect(this);
-            if (this.graphRole == RULE && !getKind().isMeta()) {
+            if (hasGraphRole(RULE) && !getKind().isMeta()) {
                 checkRegExprs();
             }
         } catch (FormatException exc) {
@@ -211,7 +226,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
      * type and attribute aspects.
      */
     private void checkAspects() throws FormatException {
-        if (this.graphRole == RULE) {
+        if (hasGraphRole(RULE)) {
             if (getKind() == ABSTRACT || getKind() == SUBTYPE) {
                 throw new FormatException("Edge aspect %s not allowed in rules", getAspect(), this);
             } else if (!hasAspect()) {
@@ -344,7 +359,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
      * declared or inferred one
      */
     private void declareAspect(Aspect value) throws FormatException {
-        assert value.isForEdge(this.graphRole);
+        assert value.isForEdge(getGraphRole());
         AspectKind kind = value.getKind();
         if (kind == PATH || kind == LITERAL) {
             setLabelMode(value);
@@ -415,7 +430,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
      */
     public Label getMatchLabel() {
         Label result = null;
-        if (this.graphRole == RULE) {
+        if (hasGraphRole(RULE)) {
             result = getRuleLabel();
         } else {
             result = getTypeLabel();
@@ -428,7 +443,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
      * @param onNode if {@code true}, the line will be part of the node label,
      * otherwise it is labelling a binary edge
      * @param contextKind aspect kind of the element on which the line should be displayed.
-     * If different from this aspect kind, the prefix will be displaued
+     * If different from this aspect kind, the prefix will be displayed
      */
     public Line toLine(boolean onNode, AspectKind contextKind) {
         Line result = null;
@@ -449,7 +464,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         case LET, LET_NEW:
             assert onNode;
             String symbol;
-            if (getGraphRole() == RULE && !source().getKind().isCreator()) {
+            if (hasGraphRole(RULE) && !source().getKind().isCreator()) {
                 // do not use #CHANGE_TO_SYMBOL as the prefix already tells the story
                 symbol = POINTS_TO_SYMBOL;
                 rolePrefix = getKind() == LET
@@ -458,8 +473,8 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             } else {
                 symbol = POINTS_TO_SYMBOL;
             }
-            result = getAssign().toLine(symbol);
-            if (getGraphRole() == RULE) {
+            result = getAssignLine(symbol);
+            if (hasGraphRole(RULE)) {
                 color = ColorType.CREATOR;
             }
             break;
@@ -496,13 +511,13 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 text = "" + Util.LC_PI + getArgument();
                 break;
             case TEST:
-                result = getPredicate().toLine();
+                result = getPredicateLine();
                 break;
             case INT:
             case REAL:
             case STRING:
             case BOOL:
-                if (getGraphRole() == GraphRole.TYPE) {
+                if (hasGraphRole(TYPE)) {
                     text = getAttrAspect().getContentString();
                 } else {
                     text = getOperator().getName();
@@ -514,7 +529,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         }
         if (result == null) {
             if (text == null) {
-                Label label = getGraphRole() == RULE
+                Label label = hasGraphRole(RULE)
                     ? getRuleLabel()
                     : getTypeLabel();
                 if (label == null) {
@@ -535,7 +550,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 case HOST:
                 case RULE:
                     // this is an attribute edge displayed as a node label
-                    String suffix = SPACE + POINTS_TO_SYMBOL + SPACE
+                    String suffix = Util.THIN_SPACE + POINTS_TO_SYMBOL + Util.THIN_SPACE
                         + target().getAttrAspect().getContentString();
                     result = result.append(suffix);
                     break;
@@ -553,7 +568,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 type = getAttrKind().getSort();
             }
             if (type != null) {
-                result = result.append(TYPED_AS_SYMBOL + SPACE);
+                result = result.append(Util.HAIR_SPACE + TYPED_AS_SYMBOL + Util.HAIR_SPACE);
                 result = result.append(Line.atom(type.getName()).style(Style.BOLD));
             }
         }
@@ -603,7 +618,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
      * if the edge does not give rise to a rule label.
      */
     private RuleLabel createRuleLabel() throws FormatException {
-        assert getGraphRole() == RULE;
+        assert hasGraphRole(RULE);
         RuleLabel result;
         if (getKind().isMeta() || isAssign() || isPredicate()) {
             result = null;
@@ -637,7 +652,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     private TypeLabel createTypeLabel() throws FormatException {
         TypeLabel result;
         if (getKind() == REMARK || isAssign() || isPredicate()
-            || getGraphRole() == GraphRole.TYPE && getAttrKind().hasSort()) {
+            || hasGraphRole(TYPE) && getAttrKind().hasSort()) {
             result = null;
         } else if (!getKind().isRole() && getLabelKind() != PATH) {
             if (getLabelKind() == LITERAL) {
@@ -785,7 +800,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         } else if (kind.hasSort()) {
             this.attr = type;
             this.signature = kind.getSort();
-            if (getGraphRole() == RULE) {
+            if (hasGraphRole(RULE)) {
                 this.operator = (Operator) type.getContent();
             }
         }
@@ -838,9 +853,33 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     /** Convenience method to retrieve the attribute aspect content as an assignment. */
     public Assignment getAssign() {
-        assert isAssign();
-        return (Assignment) getAspect().getContent();
+        return this.assign.get();
     }
+
+    private Assignment createAssign() {
+        assert isAssign();
+        assert isFixed();
+        try {
+            return ((ExprTree) getAspect().getContent()).toAssignment();
+        } catch (FormatException exc) {
+            this.errors.addAll(exc.getErrors());
+            return null;
+        }
+    }
+
+    /** Returns a line describing the assignment.
+     * This is either the (correctly typed) assignment or the original aspect.
+     * @see Assignment#toLine(String)
+     */
+    private Line getAssignLine(String assignSymbol) {
+        assert isAssign();
+        assert isFixed();
+        return getAssign() == null
+            ? Line.atom(getAspect().toString())
+            : getAssign().toLine(assignSymbol);
+    }
+
+    private final LazyFactory<Assignment> assign = LazyFactory.instance(this::createAssign);
 
     /** Indicates if this is an attribute predicate edge. */
     public boolean isPredicate() {
@@ -849,9 +888,60 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     /** Convenience method to retrieve the attribute aspect content as a predicate. */
     public Expression getPredicate() {
-        assert isPredicate();
-        return (Expression) getAttrAspect().getContent();
+        return this.predicate.get();
     }
+
+    /** Returns a line describing the predicate.
+     * This is either the (correctly typed) assignment or the original aspect.
+     * @see Expression#toLine()
+     */
+    private Line getPredicateLine() {
+        assert isPredicate();
+        assert isFixed();
+        return getPredicate() == null
+            ? Line.atom(getAttrAspect().toString())
+            : getPredicate().toLine();
+    }
+
+    private Expression createPredicate() {
+        assert isPredicate();
+        assert isFixed();
+        Expression result = null;
+        ExprTree tree = (ExprTree) getAttrAspect().getContent();
+        try {
+            result = tree.toExpression();
+            if (result.getKind() == Kind.FIELD) {
+                throw new FormatException(
+                    "Field expression '%s' not allowed as predicate expression",
+                    tree.getParseString(), this);
+            }
+            if (result.getSort() != Sort.BOOL) {
+                throw new FormatException(
+                    "Non-boolean expression '%s' not allowed as predicate expression",
+                    tree.getParseString(), this);
+            }
+            /*            if (result.getKind() == Kind.FIELD) {
+                this.errors
+                    .add(new FormatError(
+                        "Field expression '%s' not allowed as predicate expression",
+                        tree.getParseString(), this));
+            }
+            if (result.getSort() != Sort.BOOL) {
+                this.errors
+                    .add(new FormatError(
+                        "Non-boolean expression '%s' not allowed as predicate expression",
+                        tree.getParseString(), this));
+            }
+            */ return result;
+        } catch (FormatException exc) {
+            this.errors.addAll(exc.getErrors());
+            GraphInfo.addErrors(getGraph(), exc.getErrors());
+            result = null;
+        }
+        return result;
+    }
+
+    private LazyFactory<Expression> predicate = LazyFactory.instance(this::createPredicate);
 
     /**
      * Returns the argument number, if this is an argument edge.

@@ -205,7 +205,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
         AspectGraph graph = new AspectGraph(getName(), role);
         for (AspectJCell jCell : getRoots()) {
             if (jCell instanceof AspectJVertex jVertex) {
-                jVertex.loadFromUserObject(role);
+                jVertex.loadFromUserObject(graph);
                 graph.addNode(jVertex.getNode());
                 nodeJVertexMap.put(jVertex.getNode(), jVertex);
                 for (AspectEdge edge : jVertex.getEdges()) {
@@ -216,7 +216,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
         }
         for (AspectJCell jCell : getRoots()) {
             if (jCell instanceof AspectJEdge jEdge) {
-                jEdge.loadFromUserObject(role);
+                jEdge.loadFromUserObject(graph);
                 for (AspectEdge edge : jEdge.getEdges()) {
                     edgeJCellMap.put(edge, jEdge);
                     graph.addEdgeContext(edge);
@@ -494,7 +494,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
      * the graph role taken from the editor.
      */
     AspectNode createAspectNode() {
-        return new AspectNode(createNewNodeNr(), getGraph().getRole());
+        return new AspectNode(createNewNodeNr(), getGraph());
     }
 
     /** Initialises the set {@link #usedNrs} with the currently used node numbers. */

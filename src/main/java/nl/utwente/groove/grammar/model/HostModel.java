@@ -29,9 +29,9 @@ import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.aspect.Aspect;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
+import nl.utwente.groove.grammar.aspect.AspectGraph.AspectGraphMorphism;
 import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.aspect.AspectNode;
-import nl.utwente.groove.grammar.aspect.AspectGraph.AspectGraphMorphism;
 import nl.utwente.groove.grammar.host.DefaultHostGraph;
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostFactory;
@@ -110,12 +110,14 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     private AlgebraFamily getFamily() {
         // if there is a grammar involved, the real algebra family
         // will be set only later
-        return getGrammar() == null ? AlgebraFamily.DEFAULT : AlgebraFamily.TERM;
+        return getGrammar() == null
+            ? AlgebraFamily.DEFAULT
+            : AlgebraFamily.TERM;
     }
 
     private AspectGraph getNormalSource() {
         if (this.normalSource == null) {
-            this.normalMap = new AspectGraphMorphism(getSource().getRole());
+            this.normalMap = new AspectGraphMorphism(getSource());
             this.normalSource = getSource().normalise(this.normalMap);
         }
         return this.normalSource;
@@ -250,14 +252,14 @@ public class HostModel extends GraphBasedModel<HostGraph> {
      * element map.
      */
     private void processModelNode(DefaultHostGraph result, HostModelMap elementMap,
-        AspectNode modelNode) {
+                                  AspectNode modelNode) {
         // include the node in the model if it is not virtual
         if (!modelNode.getKind().isMeta()) {
             HostNode nodeImage = null;
             AspectKind attrType = modelNode.getAttrKind();
             if (attrType.hasSort()) {
-                Algebra<?> nodeAlgebra =
-                    this.algebraFamily.getAlgebra(Sort.getKind(attrType.getName()));
+                Algebra<?> nodeAlgebra
+                    = this.algebraFamily.getAlgebra(Sort.getKind(attrType.getName()));
                 Aspect dataType = modelNode.getAttrAspect();
                 Expression term = (Expression) dataType.getContent();
                 nodeImage = result.getFactory().createNode(nodeAlgebra, nodeAlgebra.toValue(term));
@@ -274,20 +276,20 @@ public class HostModel extends GraphBasedModel<HostGraph> {
      * map and subtypes.
      * @throws FormatException if the presence of the edge signifies an error
      */
-    private void processModelEdge(HostGraph result, HostModelMap elementMap, AspectEdge modelEdge)
-        throws FormatException {
+    private void processModelEdge(HostGraph result, HostModelMap elementMap,
+                                  AspectEdge modelEdge) throws FormatException {
         if (modelEdge.getKind().isMeta()) {
             return;
         }
         HostNode hostSource = elementMap.getNode(modelEdge.source());
-        assert hostSource != null : String.format("Source of '%s' is not in element map %s",
-            modelEdge.source(), elementMap);
+        assert hostSource != null : String
+            .format("Source of '%s' is not in element map %s", modelEdge.source(), elementMap);
         HostNode hostNode = elementMap.getNode(modelEdge.target());
-        assert hostNode != null : String.format("Target of '%s' is not in element map %s",
-            modelEdge.target(), elementMap);
+        assert hostNode != null : String
+            .format("Target of '%s' is not in element map %s", modelEdge.target(), elementMap);
         TypeLabel hostLabel = modelEdge.getTypeLabel();
-        assert hostLabel != null && !hostLabel.isDataType() : String.format(
-            "Inappropriate label %s", hostLabel);
+        assert hostLabel != null && !hostLabel.isDataType() : String
+            .format("Inappropriate label %s", hostLabel);
         HostEdge hostEdge = result.addEdge(hostSource, hostLabel, hostNode);
         elementMap.putEdge(modelEdge, hostEdge);
     }

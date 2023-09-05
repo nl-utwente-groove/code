@@ -20,7 +20,6 @@ import java.util.Iterator;
 
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectKind;
-import nl.utwente.groove.graph.GraphRole;
 
 /**
  * Instantiation of a {@link JCell} with an {@link AspectJObject}
@@ -50,7 +49,7 @@ public interface AspectJCell extends JCell<AspectGraph> {
     /**
      * Resets the cell's nodes and edges from the user object.
      */
-    void loadFromUserObject(GraphRole role);
+    void loadFromUserObject(AspectGraph graph);
 
     /** Separator between level name and edge label. */
     static final char LEVEL_NAME_SEPARATOR = '@';

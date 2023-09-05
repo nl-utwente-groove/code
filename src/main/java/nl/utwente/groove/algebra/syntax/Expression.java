@@ -172,18 +172,16 @@ public sealed abstract class Expression permits Constant, Parameter, Variable, F
      * Returns the expression tree for a given test:-content string.
      * @param term the string to be parsed as a test-expression
      */
-    public static Expression parseTest(String term) throws FormatException {
-        return ExprTreeParser.parseExpr(term, true)
-            .toExpression();
+    public static ExprTree parseTest(String term) throws FormatException {
+        return ExprTreeParser.parseExpr(term, true);
     }
 
     /**
      * Returns the expression tree for a given string.
      * @param term the string to be parsed as an expression
      */
-    public static Expression parse(String term) throws FormatException {
-        return ExprTreeParser.parseExpr(term, false)
-            .toExpression();
+    public static ExprTree parse(String term) throws FormatException {
+        return ExprTreeParser.parseExpr(term, false);
     }
 
     /** Call with &lt;expression> */
@@ -193,9 +191,7 @@ public sealed abstract class Expression permits Constant, Parameter, Variable, F
             System.out.printf("Original expression: %s%n", args[0]);
             System.out.printf("Flattened term tree: %s%n", tree.toString());
             System.out.printf("Corresponding term:  %s%n", tree.toExpression());
-            System.out.printf("Display string:      %s%n",
-                tree.toExpression()
-                    .toDisplayString());
+            System.out.printf("Display string:      %s%n", tree.toExpression().toDisplayString());
         } catch (FormatException e) {
             e.printStackTrace();
         }

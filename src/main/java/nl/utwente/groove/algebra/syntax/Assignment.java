@@ -18,6 +18,7 @@ package nl.utwente.groove.algebra.syntax;
 
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.EdgeRole;
+import nl.utwente.groove.io.Util;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -70,11 +71,13 @@ public class Assignment {
      */
     public Line toLine(String assignSymbol) {
         StringBuilder result = new StringBuilder(getLhs());
-        result.append(' ');
-        result.append(assignSymbol == null ? "=" : assignSymbol);
-        result.append(' ');
-        return Line.atom(result.toString())
-            .append(getRhs().toLine());
+        result.append(Util.THIN_SPACE);
+        result
+            .append(assignSymbol == null
+                ? "="
+                : assignSymbol);
+        result.append(Util.THIN_SPACE);
+        return Line.atom(result.toString()).append(getRhs().toLine());
     }
 
     @Override
@@ -115,8 +118,9 @@ public class Assignment {
         Assignment result = this;
         if (oldLabel.getRole() == EdgeRole.BINARY) {
             Expression newRhs = getRhs().relabel(oldLabel, newLabel);
-            String newLhs = oldLabel.text()
-                .equals(getLhs()) ? newLabel.text() : getLhs();
+            String newLhs = oldLabel.text().equals(getLhs())
+                ? newLabel.text()
+                : getLhs();
             if (newRhs != getRhs() || newLhs != getLhs()) {
                 result = new Assignment(newLhs, newRhs);
             }
@@ -130,11 +134,10 @@ public class Assignment {
     /**
      * Attempts to parse a given string as an assignment.
      * @param text the string that is to be parsed as assignment
-     * @return the resulting assignment
+     * @return the expression tree of the resulting assignment
      * @throws FormatException if the input string contains syntax errors
      */
-    public static Assignment parse(String text) throws FormatException {
-        return ExprTreeParser.parseAssign(text)
-            .toAssignment();
+    public static ExprTree parse(String text) throws FormatException {
+        return ExprTreeParser.parseAssign(text);
     }
 }

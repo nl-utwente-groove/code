@@ -294,12 +294,12 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
     }
 
     @Override
-    public void loadFromUserObject(GraphRole role) {
-        AspectNode node = new AspectNode(getNode().getNumber(), role);
+    public void loadFromUserObject(AspectGraph graph) {
+        AspectNode node = new AspectNode(getNode().getNumber(), graph);
         AspectParser parser = AspectParser.getInstance();
         List<AspectLabel> edgeLabels = new ArrayList<>();
         for (String text : getUserObject()) {
-            AspectLabel label = parser.parse(text, role);
+            AspectLabel label = parser.parse(text, graph.getRole());
             if (label.isNodeOnly()) {
                 node.setAspects(label);
             } else {
@@ -326,7 +326,8 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
         // turn the collected remark text into a single edge
         if (remarkText.length() > 0) {
             remarkText.insert(0, REMARK.getPrefix());
-            AspectEdge edge = new AspectEdge(node, parser.parse(remarkText.toString(), role), node);
+            AspectEdge edge
+                = new AspectEdge(node, parser.parse(remarkText.toString(), graph.getRole()), node);
             edge.setFixed();
             newEdges.add(edge);
         }
