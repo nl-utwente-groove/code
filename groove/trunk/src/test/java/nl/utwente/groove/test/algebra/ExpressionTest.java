@@ -101,8 +101,9 @@ public class ExpressionTest {
                 if (i > 0) {
                     call = call + ",";
                 }
-                Sort type = i < op.getArity() ? op.getParamTypes()
-                    .get(i) : Sort.STRING;
+                Sort type = i < op.getArity()
+                    ? op.getParamTypes().get(i)
+                    : Sort.STRING;
                 String arg = switch (type) {
                 case BOOL -> this.boolOperands[i];
                 case INT -> this.intOperands[i];
@@ -114,8 +115,7 @@ public class ExpressionTest {
             }
             String symbol = op.getSymbol();
             if (symbol != null) {
-                switch (op.getKind()
-                    .getPlace()) {
+                switch (op.getKind().getPlace()) {
                 case INFIX -> assertEquals(result, parse(args.get(0) + symbol + args.get(1)));
                 case POSTFIX -> assertEquals(result, parse(args.get(0) + symbol));
                 case PREFIX -> assertEquals(result, parse(symbol + args.get(0)));
@@ -161,12 +161,13 @@ public class ExpressionTest {
     private Expression parse(String expr, boolean test) {
         Expression result = null;
         try {
-            result = (test ? ExprTreeParser.TEST_PARSER : ExprTreeParser.EXPR_PARSER).parse(expr)
-                .toExpression();
+            result = (test
+                ? ExprTreeParser.TEST_PARSER
+                : ExprTreeParser.EXPR_PARSER).parse(expr).toExpression();
         } catch (FormatException e) {
-            fail(String.format("Expression %s should have been parsable but fails with %s",
-                expr,
-                e.getMessage()));
+            fail(String
+                .format("Expression %s should have been parsable but fails with %s", expr,
+                        e.getMessage()));
         }
         if (result != null) {
             String display = result.toDisplayString();
@@ -181,10 +182,10 @@ public class ExpressionTest {
 
     private void parseFail(String expr) {
         try {
-            Expression result = Expression.parse(expr);
-            fail(String.format("Expression %s should not have been parsable but yields %s",
-                expr,
-                result.toDisplayString()));
+            Expression result = Expression.parse(expr).toExpression();
+            fail(String
+                .format("Expression %s should not have been parsable but yields %s", expr,
+                        result.toDisplayString()));
         } catch (FormatException e) {
             // this is the desired outcome
         }

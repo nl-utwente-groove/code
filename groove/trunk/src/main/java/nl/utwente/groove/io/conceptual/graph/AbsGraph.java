@@ -85,7 +85,7 @@ public class AbsGraph {
         AspectGraph ag = new AspectGraph(this.name.toString(), this.role);
 
         for (AbsNode n : this.m_nodes) {
-            n.buildAspect(this.role);
+            n.buildAspect(ag);
             AspectNode an = n.getAspect();
             ag.addNode(an);
             for (AspectEdge ae : n.getAspectEdges()) {
@@ -94,7 +94,7 @@ public class AbsGraph {
         }
 
         for (AbsEdge e : this.m_edges) {
-            e.buildAspect(this.role);
+            e.buildAspect(ag);
             for (AspectEdge ae : e.getAspect()) {
                 ag.addEdge(ae);
             }

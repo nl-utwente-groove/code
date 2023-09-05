@@ -36,8 +36,8 @@ import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.Signature.OpValue;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.syntax.Assignment;
+import nl.utwente.groove.algebra.syntax.ExprTree;
 import nl.utwente.groove.algebra.syntax.Expression;
-import nl.utwente.groove.algebra.syntax.Expression.Kind;
 import nl.utwente.groove.annotation.Help;
 import nl.utwente.groove.grammar.type.LabelPattern;
 import nl.utwente.groove.grammar.type.Multiplicity;
@@ -1306,22 +1306,8 @@ public enum AspectKind {
             }
 
             @Override
-            Expression parseContent(String text, GraphRole role) throws FormatException {
-                Expression result = Expression.parseTest(text);
-                if (result.getKind() == Kind.FIELD) {
-                    throw new FormatException(
-                        "Field expression '%s' not allowed as predicate expression", text);
-                }
-                if (result.getSort() != Sort.BOOL) {
-                    throw new FormatException(
-                        "Non-boolean expression '%s' not allowed as predicate expression", text);
-                }
-                return result;
-            }
-
-            @Override
-            String toString(Object content) {
-                return ((Expression) content).toParseString();
+            ExprTree parseContent(String text, GraphRole role) throws FormatException {
+                return Expression.parseTest(text);
             }
 
             @Override
@@ -1340,7 +1326,7 @@ public enum AspectKind {
             }
 
             @Override
-            Assignment parseContent(String text, GraphRole role) throws FormatException {
+            ExprTree parseContent(String text, GraphRole role) throws FormatException {
                 return Assignment.parse(text);
             }
 
@@ -1433,8 +1419,8 @@ public enum AspectKind {
                 }
                 result = text;
             } else if (role == GraphRole.HOST) {
-                // in a host graph, this is a term
-                Expression expr = Expression.parse(text);
+                // in a host graph, this is a literal
+                Expression expr = Expression.parse(text).toExpression();
                 if (expr.getSort() != this.sort) {
                     throw new FormatException(
                         "Expression '%s' has type '%s' instead of expected type '%s'", text,
@@ -1478,6 +1464,8 @@ public enum AspectKind {
                     ? "%s,%s,%s"
                     : "%s,%s,%s,%s";
                 return String.format(colorString, red, green, blue, alpha);
+            } else if (content instanceof ExprTree t) {
+                return t.getParseString();
             } else if (content instanceof Expression e) {
                 return e.toDisplayString();
             } else {

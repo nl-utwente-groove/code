@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nl.utwente.groove.grammar.aspect.AspectEdge;
+import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectLabel;
 import nl.utwente.groove.grammar.aspect.AspectParser;
-import nl.utwente.groove.graph.GraphRole;
 
 /**
  * Edge class for wrapper around AspectGraph. Unidirectional and attaches itself to both source and target nodes.
@@ -53,21 +53,20 @@ public class AbsEdge {
         return this.m_name;
     }
 
-    public void buildAspect(GraphRole role) {
+    public void buildAspect(AspectGraph graph) {
         if (this.m_aspectEdges.size() != 0) {
             return;
         }
 
-        this.m_source.buildAspect(role);
-        this.m_target.buildAspect(role);
+        this.m_source.buildAspect(graph);
+        this.m_target.buildAspect(graph);
 
         String[] labels = this.m_name.split("\n");
         for (String sublabel : labels) {
-            AspectLabel alabel = AspectParser.getInstance()
-                .parse(sublabel, role);
+            AspectLabel alabel = AspectParser.getInstance().parse(sublabel, graph.getRole());
             if (alabel.isEdgeOnly()) {
-                AspectEdge newEdge =
-                    new AspectEdge(this.m_source.getAspect(), alabel, this.m_target.getAspect());
+                AspectEdge newEdge
+                    = new AspectEdge(this.m_source.getAspect(), alabel, this.m_target.getAspect());
                 this.m_aspectEdges.add(newEdge);
             } else {
                 // error

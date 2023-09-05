@@ -40,7 +40,6 @@ import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.grammar.rule.OperatorNode;
 import nl.utwente.groove.grammar.rule.VariableNode;
 import nl.utwente.groove.grammar.type.LabelPattern;
-import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.ANode;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.GraphRole;
@@ -57,15 +56,20 @@ import nl.utwente.groove.util.parse.FormatException;
  */
 public class AspectNode extends ANode implements AspectElement, Fixable {
     /** Constructs an aspect node with a given number. */
-    public AspectNode(int nr, GraphRole graphRole) {
+    public AspectNode(int nr, AspectGraph graph) {
         super(nr);
-        assert graphRole.inGrammar();
-        this.graphRole = graphRole;
+        assert graph.getRole().inGrammar();
+        this.graph = graph;
+    }
+
+    @Override
+    public AspectGraph getGraph() {
+        return this.graph;
     }
 
     /** Returns the graph role set for this aspect node. */
     public GraphRole getGraphRole() {
-        return this.graphRole;
+        return getGraph().getRole();
     }
 
     /**
@@ -161,32 +165,9 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
      * Clones an {@link AspectNode}, and also renumbers it.
      */
     public AspectNode clone(int newNr) {
-        AspectNode result = new AspectNode(newNr, getGraphRole());
+        AspectNode result = new AspectNode(newNr, getGraph());
         for (AspectLabel label : this.nodeLabels) {
             result.setAspects(label);
-        }
-        return result;
-    }
-
-    /**
-     * Returns an aspect node obtained from this one by changing all
-     * occurrences of a certain label into another.
-     * @param oldLabel the label to be changed
-     * @param newLabel the new value for {@code oldLabel}
-     * @return a clone of this object with changed labels, or this object
-     *         if {@code oldLabel} did not occur
-     */
-    public AspectNode relabel(TypeLabel oldLabel, TypeLabel newLabel) {
-        AspectNode result = new AspectNode(getNumber(), getGraphRole());
-        boolean isNew = false;
-        for (AspectLabel oldNodeLabel : this.nodeLabels) {
-            AspectLabel newNodeLabel = oldNodeLabel.relabel(oldLabel, newLabel);
-            newNodeLabel.setFixed();
-            isNew |= newNodeLabel != oldNodeLabel;
-            result.setAspects(newNodeLabel);
-        }
-        if (!isNew) {
-            result = this;
         }
         return result;
     }
@@ -212,7 +193,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
      */
     public void setAspects(AspectLabel label) {
         assert label.isFixed();
-        assert this.graphRole == label.getGraphRole();
+        assert getGraphRole() == label.getGraphRole();
         testFixed(false);
         this.nodeLabels.add(label);
         if (label.hasErrors()) {
@@ -764,7 +745,8 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         }
     }
 
-    private final GraphRole graphRole;
+    /** The aspect graph to which this element belongs. */
+    private final AspectGraph graph;
     /** The list of aspect labels defining node aspects. */
     private final List<AspectLabel> nodeLabels = new ArrayList<>();
     /** Indicates that the entire node is fixed. */

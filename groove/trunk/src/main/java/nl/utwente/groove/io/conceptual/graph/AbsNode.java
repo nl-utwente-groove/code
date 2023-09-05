@@ -5,10 +5,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import nl.utwente.groove.grammar.aspect.AspectEdge;
+import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectLabel;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.aspect.AspectParser;
-import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.util.Exceptions;
 
 /**
@@ -123,7 +123,7 @@ public class AbsNode {
         return this.m_id;
     }
 
-    public void buildAspect(GraphRole role) {
+    public void buildAspect(AspectGraph graph) {
         if (this.m_parent == null) {
             throw Exceptions.illegalArg("Node not part of graph");
         }
@@ -133,11 +133,10 @@ public class AbsNode {
         }
 
         String[] labels = this.m_names;
-        this.m_aspectNode = new AspectNode(this.m_id, role);
+        this.m_aspectNode = new AspectNode(this.m_id, graph);
 
         for (String sublabel : labels) {
-            AspectLabel alabel = AspectParser.getInstance()
-                .parse(sublabel, role);
+            AspectLabel alabel = AspectParser.getInstance().parse(sublabel, graph.getRole());
             // add self edge
             if (alabel.isEdgeOnly()) {
                 AspectEdge newEdge = new AspectEdge(this.m_aspectNode, alabel, this.m_aspectNode);

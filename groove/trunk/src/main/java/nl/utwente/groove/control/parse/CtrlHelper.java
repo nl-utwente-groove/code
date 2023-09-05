@@ -278,9 +278,10 @@ public class CtrlHelper {
             Signature<UnitPar.ProcedurePar> parList = getPars(qualName, unitTree.getChild(1));
             QualName controlName = this.namespace.getControlName();
             Kind kind = toProcKind(unitTree);
-            this.namespace.addProcedure(Procedure
-                .newInstance(qualName, kind, priority, parList, controlName, unitTree.getLine(),
-                             this.namespace.getGrammarProperties()));
+            this.namespace
+                .addProcedure(Procedure
+                    .newInstance(qualName, kind, priority, parList, controlName, unitTree.getLine(),
+                                 this.namespace.getGrammarProperties()));
             result = true;
         }
         return result;
@@ -305,16 +306,21 @@ public class CtrlHelper {
             for (int i = 0; i < parListTree.getChildCount(); i++) {
                 CtrlTree parTree = parListTree.getChild(i);
                 boolean out = parTree.getChildCount() == 3;
-                CtrlTree typeTree = parTree.getChild(out
-                    ? 1
-                    : 0);
+                CtrlTree typeTree = parTree
+                    .getChild(out
+                        ? 1
+                        : 0);
                 CtrlType type = typeTree.getCtrlType();
-                String name = parTree.getChild(out
-                    ? 2
-                    : 1).getText();
-                result.add(UnitPar.par(procName, name, type, out
-                    ? Direction.OUT
-                    : Direction.IN));
+                String name = parTree
+                    .getChild(out
+                        ? 2
+                        : 1)
+                    .getText();
+                result
+                    .add(UnitPar
+                        .par(procName, name, type, out
+                            ? Direction.OUT
+                            : Direction.IN));
             }
         }
         return new Signature<>(result);
@@ -467,7 +473,7 @@ public class CtrlHelper {
     void checkConstArg(CtrlTree argTree) {
         assert argTree.getType() == CtrlChecker.ARG && argTree.getChildCount() == 1;
         try {
-            Expression constant = Expression.parse(argTree.getChild(0).getText());
+            Expression constant = Expression.parse(argTree.getChild(0).getText()).toExpression();
             AlgebraFamily family = this.namespace.getGrammarProperties().getAlgebraFamily();
             CtrlPar result = new CtrlPar.Const(family.getAlgebra(constant.getSort()),
                 family.toValue(constant));
@@ -475,8 +481,8 @@ public class CtrlHelper {
         } catch (FormatException e) {
             // this cannot occur, as the constant string has just been approved
             // by the control parser
-            assert false : String.format("%s is not a parsable constant",
-                                         argTree.getChild(0).getText());
+            assert false : String
+                .format("%s is not a parsable constant", argTree.getChild(0).getText());
         }
     }
 
