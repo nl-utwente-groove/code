@@ -53,7 +53,6 @@ import nl.utwente.groove.grammar.type.Multiplicity;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.AEdge;
 import nl.utwente.groove.graph.EdgeRole;
-import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.plain.PlainLabel;
@@ -61,7 +60,6 @@ import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.io.Util;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
-import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.line.Line.ColorType;
 import nl.utwente.groove.util.line.Line.Style;
@@ -145,6 +143,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             this.fixed = true;
             if (!hasErrors()) {
                 setAspectsFixed();
+                setExprFixed();
             }
             setDefaultAttrAspect();
             setDefaultLabelMode();
@@ -193,6 +192,20 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             source().inferOutAspect(this);
             if (hasGraphRole(RULE) && !getKind().isMeta()) {
                 checkRegExprs();
+            }
+        } catch (FormatException exc) {
+            for (FormatError error : exc.getErrors()) {
+                this.errors.add(error.extend(this));
+            }
+        }
+    }
+
+    private void setExprFixed() {
+        try {
+            if (isAssign()) {
+                this.assign = createAssign();
+            } else if (isPredicate()) {
+                this.predicate = createPredicate();
             }
         } catch (FormatException exc) {
             for (FormatError error : exc.getErrors()) {
@@ -853,18 +866,13 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     /** Convenience method to retrieve the attribute aspect content as an assignment. */
     public Assignment getAssign() {
-        return this.assign.get();
+        return this.assign;
     }
 
-    private Assignment createAssign() {
+    private Assignment createAssign() throws FormatException {
         assert isAssign();
         assert isFixed();
-        try {
-            return ((ExprTree) getAspect().getContent()).toAssignment();
-        } catch (FormatException exc) {
-            this.errors.addAll(exc.getErrors());
-            return null;
-        }
+        return ((ExprTree) getAspect().getContent()).toAssignment();
     }
 
     /** Returns a line describing the assignment.
@@ -879,7 +887,11 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             : getAssign().toLine(assignSymbol);
     }
 
-    private final LazyFactory<Assignment> assign = LazyFactory.instance(this::createAssign);
+    /**
+     * This edge's assignment, if the edge stands for an assignment.
+     * Computed when fixing the edge.
+     */
+    private Assignment assign;
 
     /** Indicates if this is an attribute predicate edge. */
     public boolean isPredicate() {
@@ -888,7 +900,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     /** Convenience method to retrieve the attribute aspect content as a predicate. */
     public Expression getPredicate() {
-        return this.predicate.get();
+        return this.predicate;
     }
 
     /** Returns a line describing the predicate.
@@ -903,45 +915,25 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             : getPredicate().toLine();
     }
 
-    private Expression createPredicate() {
+    private Expression createPredicate() throws FormatException {
         assert isPredicate();
         assert isFixed();
         Expression result = null;
         ExprTree tree = (ExprTree) getAttrAspect().getContent();
-        try {
-            result = tree.toExpression();
-            if (result.getKind() == Kind.FIELD) {
-                throw new FormatException(
-                    "Field expression '%s' not allowed as predicate expression",
-                    tree.getParseString(), this);
-            }
-            if (result.getSort() != Sort.BOOL) {
-                throw new FormatException(
-                    "Non-boolean expression '%s' not allowed as predicate expression",
-                    tree.getParseString(), this);
-            }
-            /*            if (result.getKind() == Kind.FIELD) {
-                this.errors
-                    .add(new FormatError(
-                        "Field expression '%s' not allowed as predicate expression",
-                        tree.getParseString(), this));
-            }
-            if (result.getSort() != Sort.BOOL) {
-                this.errors
-                    .add(new FormatError(
-                        "Non-boolean expression '%s' not allowed as predicate expression",
-                        tree.getParseString(), this));
-            }
-            */ return result;
-        } catch (FormatException exc) {
-            this.errors.addAll(exc.getErrors());
-            GraphInfo.addErrors(getGraph(), exc.getErrors());
-            result = null;
+        result = tree.toExpression();
+        if (result.getKind() == Kind.FIELD) {
+            throw new FormatException("Field expression '%s' not allowed as predicate expression",
+                tree.getParseString(), this);
+        }
+        if (result.getSort() != Sort.BOOL) {
+            throw new FormatException(
+                "Non-boolean expression '%s' not allowed as predicate expression",
+                tree.getParseString(), this);
         }
         return result;
     }
 
-    private LazyFactory<Expression> predicate = LazyFactory.instance(this::createPredicate);
+    private Expression predicate;
 
     /**
      * Returns the argument number, if this is an argument edge.
