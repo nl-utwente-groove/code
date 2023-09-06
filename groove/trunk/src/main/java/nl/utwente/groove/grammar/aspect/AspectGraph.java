@@ -39,6 +39,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Operator;
+import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.syntax.Assignment;
 import nl.utwente.groove.algebra.syntax.CallExpr;
 import nl.utwente.groove.algebra.syntax.Expression;
@@ -211,6 +212,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         // add assignments for the let-edges
         List<FormatError> errors = new ArrayList<>();
         for (AspectEdge edge : letEdges) {
+            if (edge.hasErrors()) {
+                continue;
+            }
             try {
                 AspectNode source = edge.source();
                 assert !source.getKind().isQuantifier();
@@ -226,6 +230,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         }
         // add conditions for the pred-edges
         for (AspectEdge edge : predEdges) {
+            if (edge.hasErrors()) {
+                continue;
+            }
             try {
                 AspectNode source = edge.source();
                 boolean nac = edge.getKind().inNAC() && !source.getKind().inNAC();
@@ -694,11 +701,26 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         }
         boolean result = !isFixed();
         if (result) {
-            if (DEBUG) {
-                System.out.printf("Fixing %s %s%n", getRole(), getName());
-            }
-            // first fix the edges, then the nodes
+            setFixing();
             FormatErrorSet errors = new FormatErrorSet();
+            // collect node identifiers and check for duplicates
+            HashMap<String,AspectNode> nodeIdMap = new HashMap<>();
+            HashMap<String,Sort> nodeIdTypeMap = new HashMap<>();
+            for (AspectNode node : nodeSet()) {
+                Aspect id = node.getId();
+                if (id != null) {
+                    String name = id.getContentString();
+                    AspectNode oldNode = nodeIdMap.put(name, node);
+                    if (oldNode != null) {
+                        errors.add("Duplicate node identifier %s", name, node, oldNode);
+                    } else if (node.hasAttrAspect() && node.getAttrAspect().getKind().hasSort()) {
+                        nodeIdTypeMap.put(name, node.getAttrAspect().getKind().getSort());
+                    }
+                }
+            }
+            this.nodeIdMap = nodeIdMap;
+            this.nodeIdTypeMap = nodeIdTypeMap;
+            // first fix the edges, then the nodes
             for (AspectEdge edge : edgeSet()) {
                 edge.setFixed();
                 errors.addAll(edge.getErrors());
@@ -706,18 +728,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             for (AspectNode node : nodeSet()) {
                 node.setFixed();
                 errors.addAll(node.getErrors());
-            }
-            // check for duplicate node identifiers
-            this.nodeIdMap = new HashMap<>();
-            for (AspectNode node : nodeSet()) {
-                Aspect id = node.getId();
-                if (id != null) {
-                    String name = id.getContentString();
-                    AspectNode oldNode = this.nodeIdMap.put(name, node);
-                    if (oldNode != null) {
-                        errors.add("Duplicate node identifier %s", name, node, oldNode);
-                    }
-                }
             }
             if (!GraphInfo.hasErrors(this)) {
                 addErrors(errors);
@@ -746,6 +756,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
      * (empty) map to keep track.
      */
     private AspectGraph clone(AspectGraphMorphism map) {
+        assert isFixed();
         AspectGraph result = newGraph(getName());
         for (AspectNode node : nodeSet()) {
             AspectNode clone = node.clone();
@@ -757,9 +768,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             assert image != null;
             result.addEdgeContext(image);
         }
-        if (this.nodeIdMap != null) {
+        if (getNodeIdMap() != null) {
             Map<String,AspectNode> newNodeIdMap = new HashMap<>();
-            for (Map.Entry<String,AspectNode> e : this.nodeIdMap.entrySet()) {
+            for (Map.Entry<String,AspectNode> e : getNodeIdMap().entrySet()) {
                 newNodeIdMap.put(e.getKey(), map.getNode(e.getValue()));
             }
             result.nodeIdMap = newNodeIdMap;
@@ -807,8 +818,39 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     private final GraphRole role;
     /** Flag indicating whether the graph is normal. */
     private boolean normal;
+
+    /** Checks if the graph is in the phase of getting fixed. */
+    private boolean isFixing() {
+        return this.fixing;
+    }
+
+    /** Sets the graph to the phase of getting fixed. */
+    private void setFixing() {
+        if (DEBUG) {
+            System.out.printf("Fixing %s %s%n", getRole(), getName());
+        }
+        this.fixing = true;
+    }
+
+    private boolean fixing;
+
+    /** Returns the mapping from declared node identities to nodes. */
+    Map<String,AspectNode> getNodeIdMap() {
+        assert isFixing();
+        return this.nodeIdMap;
+    }
+
     /** Mapping from node identifiers to nodes. */
     private Map<String,AspectNode> nodeIdMap;
+
+    /** Returns the mapping from declared node identities to the primitive node sorts. */
+    Map<String,Sort> getNodeIdMTypeap() {
+        assert isFixing();
+        return this.nodeIdTypeMap;
+    }
+
+    /** Mapping from node identifiers to sorts. */
+    private Map<String,Sort> nodeIdTypeMap;
 
     /**
      * Creates an aspect graph from a given (plain) graph.
