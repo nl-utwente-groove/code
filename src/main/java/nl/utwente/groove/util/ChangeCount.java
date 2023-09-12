@@ -23,9 +23,14 @@ package nl.utwente.groove.util;
  * @version $Revision $
  */
 public class ChangeCount extends Observable {
+    /** Increases the change count without notifying registered observers. */
+    public void increaseSilent() {
+        this.value++;
+    }
+
     /** Increases the change count and notifies all registered observers. */
     public void increase() {
-        this.value++;
+        increaseSilent();
         notifyObservers();
     }
 

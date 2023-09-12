@@ -21,6 +21,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.util.line.Line;
+import nl.utwente.groove.util.line.Line.Style;
 import nl.utwente.groove.util.parse.OpKind;
 
 /**
@@ -49,7 +50,7 @@ public final class Variable extends Expression {
 
     @Override
     protected Line toLine(OpKind context) {
-        return Line.atom(getName());
+        return Line.atom(getName()).style(Style.ITALIC).style(Style.UNDERLINE);
     }
 
     @Override
@@ -78,15 +79,13 @@ public final class Variable extends Expression {
     }
 
     @Override
-    public boolean equals(@Nullable
-    Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof Variable)) {
+        if (!(obj instanceof Variable other)) {
             return false;
         }
-        Variable other = (Variable) obj;
         if (!getName().equals(other.getName())) {
             return false;
         }

@@ -130,25 +130,53 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         return getGraph().getRole();
     }
 
-    @Override
-    public boolean setFixed() {
+    /** Parses the syntactic information in this {@link AspectEdge},
+     * including pushing the information to the source and target nodes.
+     * @return {@code true} if the status of the edge was changed by this call.
+     */
+    public boolean setParsed() {
         if (DEBUG) {
-            System.out.printf("setFixed called on %s%n", this);
+            System.out.printf("setParsed called on %s%n", this);
         }
-        boolean result = !isFixed();
+        boolean result = !isParsed();
         if (result) {
             if (DEBUG) {
-                System.out.printf("Fixing %s%n", this);
+                System.out.printf("Parsing %s%n", this);
             }
-            this.fixed = true;
+            this.status = Status.PARSED;
             if (!hasErrors()) {
                 setAspectsFixed();
-                setExprFixed();
             }
             setDefaultAttrAspect();
             setDefaultLabelMode();
         }
         return result;
+    }
+
+    /** Sets the typing of this AspectEdge.
+     * Calls {@link #setParsed()} first, if the edge was not yet parsed.
+     */
+    public boolean setTyped() {
+        if (DEBUG) {
+            System.out.printf("setTyped called on %s%n", this);
+        }
+        boolean result = !isTyped();
+        if (result) {
+            if (DEBUG) {
+                System.out.printf("Typing %s%n", this);
+            }
+            setParsed();
+            this.status = Status.TYPED;
+            if (!hasErrors()) {
+                setExprFixed();
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public boolean setFixed() {
+        return setTyped();
     }
 
     @Override
@@ -221,7 +249,6 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     @Override
     public FormatErrorSet getErrors() {
-        setFixed();
         return this.errors;
     }
 
@@ -300,13 +327,27 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         }
     }
 
-    @Override
-    public boolean isFixed() {
-        return this.fixed;
+    /** Returns {@code true} if this AspectEdge has been parsed.
+     * @see #setParsed()
+     */
+    public boolean isParsed() {
+        return this.status == Status.PARSED || this.status == Status.TYPED;
     }
 
-    /** Flag indicating if the edge is fixed. */
-    private boolean fixed;
+    /** Returns {@code true} if this AspectEdge has been typed.
+     * @see #setTyped()
+     */
+    public boolean isTyped() {
+        return this.status == Status.TYPED;
+    }
+
+    @Override
+    public boolean isFixed() {
+        return this.status == Status.TYPED;
+    }
+
+    /** The construction status of this AspectEdge. */
+    private Status status = Status.NEW;
 
     /**
      * Sets the (declared) aspects for this edge from the edge label.
@@ -385,7 +426,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     /** Tests if this edge has the same aspect type as another aspect element. */
     public boolean isCompatible(AspectElement other) {
-        assert isFixed() && other.isFixed();
+        assert isParsed() && other.isFixed();
         if (getKind() == REMARK || other.getKind() == REMARK) {
             return true;
         }
@@ -621,7 +662,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     /** Returns the (possibly {@code null}) rule label of this edge. */
     public RuleLabel getRuleLabel() {
-        testFixed(true);
+        assert isParsed();
         return this.ruleLabel;
     }
 
@@ -653,7 +694,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     /** Returns the (possibly {@code null}) type label of this edge. */
     public TypeLabel getTypeLabel() {
-        testFixed(true);
+        assert isParsed();
         return this.typeLabel;
     }
 
@@ -797,7 +838,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     /** Indicates that this is a creator element with a merge label ("="). */
     public boolean isMerger() {
-        testFixed(true);
+        assert isParsed();
         return getKind().inRHS() && !getKind().inLHS() && getRuleLabel().isEmpty();
     }
 
@@ -866,13 +907,18 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     /** Convenience method to retrieve the attribute aspect content as an assignment. */
     public Assignment getAssign() {
-        return this.assign;
+        var result = this.assign;
+        if (result == null && isParsed() && getGraph().isNodeComplete()) {
+            setTyped();
+            result = this.assign;
+        }
+        return result;
     }
 
     private Assignment createAssign() throws FormatException {
         assert isAssign();
-        assert isFixed();
-        return ((ExprTree) getAspect().getContent()).toAssignment();
+        assert isParsed();
+        return ((ExprTree) getAspect().getContent()).toAssignment(getGraph().getTyping());
     }
 
     /** Returns a line describing the assignment.
@@ -881,7 +927,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
      */
     private Line getAssignLine(String assignSymbol) {
         assert isAssign();
-        assert isFixed();
+        assert isParsed();
         return getAssign() == null
             ? Line.atom(getAspect().toString())
             : getAssign().toLine(assignSymbol);
@@ -900,7 +946,12 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     /** Convenience method to retrieve the attribute aspect content as a predicate. */
     public Expression getPredicate() {
-        return this.predicate;
+        var result = this.predicate;
+        if (result == null && isParsed() && getGraph().isNodeComplete()) {
+            setTyped();
+            result = this.predicate;
+        }
+        return result;
     }
 
     /** Returns a line describing the predicate.
@@ -909,7 +960,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
      */
     private Line getPredicateLine() {
         assert isPredicate();
-        assert isFixed();
+        assert isParsed();
         return getPredicate() == null
             ? Line.atom(getAttrAspect().toString())
             : getPredicate().toLine();
@@ -917,10 +968,10 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     private Expression createPredicate() throws FormatException {
         assert isPredicate();
-        assert isFixed();
+        assert isParsed();
         Expression result = null;
         ExprTree tree = (ExprTree) getAttrAspect().getContent();
-        result = tree.toExpression();
+        result = tree.toExpression(getGraph().getTyping());
         if (result.getKind() == Kind.FIELD) {
             throw new FormatException("Field expression '%s' not allowed as predicate expression",
                 tree.getParseString(), this);
@@ -1062,4 +1113,16 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     /** Debug flag. */
     static private final boolean DEBUG = false;
+
+    /** Construction status of an AspectEdge. */
+    static private enum Status {
+        /** Freshly constructed. */
+        NEW,
+        /** Aspects fixed. */
+        PARSED,
+        /** Expressions typed.
+         * At this stage, the edge is fixed.
+         */
+        TYPED,;
+    }
 }

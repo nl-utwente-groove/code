@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.NonNull;
@@ -57,9 +58,9 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         assert sort != null;
         this.sort = sort;
         if (hasConstant() && sort != getConstant().getSort()) {
-            getErrors().add("Invalid sorted expression '%s:%s'",
-                sort.getName(),
-                getConstant().getSymbol());
+            getErrors()
+                .add("Invalid sorted expression '%s:%s'", sort.getName(),
+                     getConstant().getSymbol());
         }
     }
 
@@ -79,14 +80,22 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
      * Converts this parse tree into an {@link Assignment}.
      */
     public Assignment toAssignment() throws FormatException {
+        return toAssignment(Typing.emptyTyping());
+    }
+
+    /**
+     * Converts this parse tree into an {@link Assignment}.
+     * @param typing mapping from known variables to types. Only variables in this map are
+     * allowed to occur in the term.
+     */
+    public Assignment toAssignment(@NonNull Typing typing) throws FormatException {
         assert isFixed();
         getErrors().throwException();
         if (getOp() != ASSIGN) {
             throw new FormatException("'%s' is not an assignment", getParseString());
         }
-        String lhs = getArg(0).getId()
-            .toString();
-        Expression rhs = getArg(1).toExpression();
+        String lhs = getArg(0).getId().toString();
+        Expression rhs = getArg(1).toExpression(typing);
         Assignment result = new Assignment(lhs, rhs);
         result.setParseString(getParseString());
         return result;
@@ -97,46 +106,41 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
      * All free variables in the tree must be type-derivable.
      */
     public Expression toExpression() throws FormatException {
-        assert isFixed();
         return toExpression(Typing.emptyTyping());
     }
 
     /**
      * Returns the unique expression object corresponding to this tree.
-     * @param varMap mapping from known variables to types. Only variables in this map are
+     * @param typing mapping from known variables to types. Only variables in this map are
      * allowed to occur in the term.
      */
-    public Expression toExpression(@NonNull
-    Typing varMap) throws FormatException {
+    public Expression toExpression(@NonNull Typing typing) throws FormatException {
         assert isFixed();
         getErrors().throwException();
-        Map<Sort,? extends Expression> choice = toExpressions(varMap);
+        Map<Sort,? extends Expression> choice = toExpressions(typing);
         if (choice.size() > 1) {
             throw new FormatException("Can't derive type of '%s': add type prefix",
                 getParseString());
         }
-        Expression result = choice.values()
-            .iterator()
-            .next();
+        Expression result = choice.values().iterator().next();
         result.setParseString(getParseString());
         return result;
     }
 
     /**
      * Returns the multi-expression derived from this tree.
-     * @param varMap mapping from known variables to types. Only variables in this map are
+     * @param typing mapping from known variables to types. Only variables in this map are
      * allowed to occur in the term.
      */
-    private MultiExpression toExpressions(@NonNull
-    Typing varMap) throws FormatException {
+    private MultiExpression toExpressions(@NonNull Typing typing) throws FormatException {
         MultiExpression result;
         if (hasConstant()) {
             Constant constant = toConstant();
             result = new MultiExpression(constant.getSort(), constant);
         } else if (getOp().getKind() == OpKind.ATOM) {
-            result = toAtomExprs(varMap);
+            result = toAtomExprs(typing);
         } else {
-            result = toCallExprs(varMap);
+            result = toCallExprs(typing);
         }
         return result;
     }
@@ -158,19 +162,21 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
     /**
      * Converts this tree to a multi-sorted {@link Variable} or a {@link FieldExpr}.
      * Chained field expressions are currently unsupported.
-     * @param varMap variable typing
+     * @param typing variable typing
      */
-    private MultiExpression toAtomExprs(@NonNull
-    Typing varMap) throws FormatException {
+    private MultiExpression toAtomExprs(@NonNull Typing typing) throws FormatException {
         assert getOp().getKind() == OpKind.ATOM;
         MultiExpression result = new MultiExpression();
         if (hasSort()) {
             Sort sort = getSort();
             assert sort != null;
-            result.put(sort, toAtomExpr(varMap, sort));
+            result.put(sort, toAtomExpr(typing, sort));
+        } else if (isVar(typing)) {
+            Sort sort = getVarSort(typing);
+            result.put(sort, toAtomExpr(typing, sort));
         } else {
             for (Sort sort : Sort.values()) {
-                result.put(sort, toAtomExpr(varMap, sort));
+                result.put(sort, toAtomExpr(typing, sort));
             }
         }
         return result;
@@ -179,12 +185,11 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
     /**
      * Converts this tree to a {@link Variable} or a {@link FieldExpr}.
      * Chained field expressions are currently unsupported.
-     * @param varMap variable typing
+     * @param typing variable typing
      * @param sort expected type of the expression
      */
-    private Expression toAtomExpr(@NonNull
-    Typing varMap, @NonNull
-    Sort sort) throws FormatException {
+    private Expression toAtomExpr(@NonNull Typing typing,
+                                  @NonNull Sort sort) throws FormatException {
         Expression result;
         assert hasId();
         QualName id = getId();
@@ -194,13 +199,13 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
             result = new FieldExpr(hasSort(), id.get(0), id.get(1), sort);
         } else {
             String name = id.get(0);
-            Optional<Sort> varSort = varMap.getSort(name);
+            Optional<Sort> varSort = typing.getSort(name);
             if (!varSort.isPresent()) {
                 // this is a self-field
                 result = new FieldExpr(hasSort(), null, name, sort);
             } else if (varSort.get() != sort) {
-                throw new FormatException("Variable %s is of type %s, not %s", name, varSort.get()
-                    .getName(), sort.getName());
+                throw new FormatException("Variable %s is of type %s, not %s", name,
+                    varSort.get().getName(), sort.getName());
             } else {
                 result = toVarExpr(name, sort);
             }
@@ -208,14 +213,26 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         return result;
     }
 
+    /** Checks if this expression is a declared variable. */
+    private boolean isVar(Typing typing) {
+        return getOp().getKind() == OpKind.ATOM && getId().size() == 1
+            && typing.getSort(getId().get(0)).isPresent();
+    }
+
+    /** Returns the declared type of this expression, if it is a declared variable.
+     * @throws NoSuchElementException if this expression is not a declared variable
+     */
+    private Sort getVarSort(Typing typing) {
+        assert isVar(typing);
+        return typing.getSort(getId().get(0)).get();
+    }
+
     /**
      * Converts this tree to a {@link Variable} or a {@link Parameter}.
      * @param name variable name
      * @param sort expected type of the expression
      */
-    private Expression toVarExpr(@NonNull
-    String name, @NonNull
-    Sort sort) throws FormatException {
+    private Expression toVarExpr(@NonNull String name, @NonNull Sort sort) throws FormatException {
         Expression result;
         if (name.charAt(0) == '$') {
             int number;
@@ -237,13 +254,12 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
      * Returns the set of derivable expressions in case the top level is
      * a non-atomic operator.
      */
-    private MultiExpression toCallExprs(@NonNull
-    Typing varMap) throws FormatException {
+    private MultiExpression toCallExprs(@NonNull Typing typing) throws FormatException {
         MultiExpression result = new MultiExpression();
         List<MultiExpression> resultArgs = new ArrayList<>();
         // all children are arguments
         for (ExprTree arg : getArgs()) {
-            resultArgs.add(arg.toExpressions(varMap));
+            resultArgs.add(arg.toExpressions(typing));
         }
         for (Operator op : getOp().getOperators()) {
             if (hasSort() && getSort() != op.getSort()) {
@@ -284,8 +300,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         List<Sort> parTypes = op.getParamTypes();
         List<Expression> selectedArgs = new ArrayList<>();
         for (int i = 0; i < args.size(); i++) {
-            Expression arg = args.get(i)
-                .get(parTypes.get(i));
+            Expression arg = args.get(i).get(parTypes.get(i));
             if (arg == null) {
                 throw new FormatException("Parameter %s of '%s' should have type %s", i,
                     getParseString(), parTypes.get(i));
@@ -297,9 +312,9 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         OpValue opValue = op.getOpValue();
         if ((opValue == IntSignature.Op.NEG || opValue == RealSignature.Op.NEG)
             && selectedArgs.get(0) instanceof Constant) {
-            return op.getResultType()
-                .createConstant(op.getSymbol() + selectedArgs.get(0)
-                    .toDisplayString());
+            return op
+                .getResultType()
+                .createConstant(op.getSymbol() + selectedArgs.get(0).toDisplayString());
         } else {
             return new CallExpr(hasSort(), op, selectedArgs);
         }
@@ -314,7 +329,9 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + ((this.sort == null) ? 0 : this.sort.hashCode());
+        result = prime * result + ((this.sort == null)
+            ? 0
+            : this.sort.hashCode());
         return result;
     }
 
@@ -373,7 +390,6 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
          * Constructs the unique atomic operator, with empty symbol.
          */
         private ExprOp() {
-            super();
         }
 
         /**
