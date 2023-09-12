@@ -493,7 +493,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         return result;
     }
 
-    private AspectGraph getNormalSource() {
+    /** Returns the normalised aspect graph underlying this rule model. */
+    public AspectGraph getNormalSource() {
         if (this.normalSource == null) {
             this.normalSource = getSource().normalise(null);
             if (NORMALISE_DEBUG) {
