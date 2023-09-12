@@ -19,6 +19,7 @@ package nl.utwente.groove.algebra.syntax;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -66,6 +67,11 @@ public class Typing {
         return this.sortMap.isEmpty();
     }
 
+    /** Returns the entries in the underlying type map. */
+    public Set<Map.Entry<String,Sort>> entrySet() {
+        return this.sortMap.entrySet();
+    }
+
     /**
      * Returns the sort associated with a given (non-<code>null</code>) variable name.
      * @param varName the variable name of which the sort is requested
@@ -82,15 +88,13 @@ public class Typing {
     }
 
     @Override
-    public boolean equals(@Nullable
-    Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof Typing)) {
+        if (!(obj instanceof Typing other)) {
             return false;
         }
-        Typing other = (Typing) obj;
         if (!this.sortMap.equals(other.sortMap)) {
             return false;
         }

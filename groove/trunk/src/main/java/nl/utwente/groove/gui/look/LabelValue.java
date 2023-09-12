@@ -314,6 +314,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                     }
                     if (idLine != null) {
                         result.add(idLine);
+                        idLine = null;
                     }
                     if (showLoopSuffix(jVertex, edge)) {
                         line = line.append(LOOP_SUFFIX);

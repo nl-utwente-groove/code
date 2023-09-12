@@ -156,16 +156,16 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         return this.allFixed;
     }
 
-    @Override
-    public AspectNode clone() {
-        return clone(getNumber());
+    /** Creates a clone of this node, for a given aspect graph. */
+    public AspectNode clone(AspectGraph graph) {
+        return clone(graph, getNumber());
     }
 
     /**
      * Clones an {@link AspectNode}, and also renumbers it.
      */
-    public AspectNode clone(int newNr) {
-        AspectNode result = new AspectNode(newNr, getGraph());
+    public AspectNode clone(AspectGraph graph, int newNr) {
+        AspectNode result = new AspectNode(newNr, graph);
         for (AspectLabel label : this.nodeLabels) {
             result.setAspects(label);
         }

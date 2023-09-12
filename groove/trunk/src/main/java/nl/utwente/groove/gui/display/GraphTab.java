@@ -56,9 +56,8 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     @Override
     protected PropertyChangeListener createErrorListener() {
         return arg -> {
-            if (arg != null) {
-                JCell<?> errorCell = getJModel().getErrorMap()
-                    .get(arg.getNewValue());
+            if (arg != null && getJModel() != null) {
+                JCell<?> errorCell = getJModel().getErrorMap().get(arg.getNewValue());
                 if (errorCell != null) {
                     getJGraph().setSelectionCell(errorCell);
                 }
@@ -116,8 +115,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
                 JComponent propertiesPanel = getPropertiesPanel();
                 JScrollPane scrollPanel = new JScrollPane(propertiesPanel);
                 scrollPanel.setName(propertiesPanel.getName());
-                scrollPanel.getViewport()
-                    .setBackground(propertiesPanel.getBackground());
+                scrollPanel.getViewport().setBackground(propertiesPanel.getBackground());
                 result.add(scrollPanel);
                 result.addChangeListener(createInfoListener(true));
             }
@@ -165,7 +163,9 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
         if (result == null && levelTree != null) {
             this.lowerInfoPanel = result = new TitledPanel("Nesting levels", levelTree, null, true);
         }
-        return levelTree != null && levelTree.isEnabled() ? result : null;
+        return levelTree != null && levelTree.isEnabled()
+            ? result
+            : null;
     }
 
     /** Level tree panel of this tab, if any. */
@@ -194,8 +194,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     private TypeTree labelTree;
 
     @Override
-    public boolean setResource(@Nullable
-    QualName name) {
+    public boolean setResource(@Nullable QualName name) {
         AspectJModel jModel = this.jModelMap.get(name);
         if (jModel == null && name != null) {
             AspectGraph graph = getSimulatorModel().getStore()
@@ -221,7 +220,9 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
             jModel.addUndoableEditListener(this);
             getPropertiesPanel().setProperties(jModel.getProperties());
         }
-        String nameString = name == null ? null : name.toString();
+        String nameString = name == null
+            ? null
+            : name.toString();
         setName(nameString);
         getTabLabel().setTitle(nameString);
         updateErrors();

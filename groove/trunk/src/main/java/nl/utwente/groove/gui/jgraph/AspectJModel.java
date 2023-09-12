@@ -165,13 +165,16 @@ final public class AspectJModel extends JModel<AspectGraph> {
     @Override
     public void loadGraph(AspectGraph graph) {
         setLoading(true);
+        setGraphDirty();
+        // signal that graph is modified twice, to ensure
+        // that all resources get synced properly
         super.loadGraph(graph);
         for (AspectJCell root : getRoots()) {
             root.saveToUserObject();
         }
         this.properties = GraphInfo.getProperties(graph);
-        setGraphModified();
         setLoading(false);
+        setGraphModified();
     }
 
     /**
@@ -226,6 +229,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
         for (AspectJVertex jVertex : nodeJVertexMap.values()) {
             jVertex.setNodeFixed();
         }
+        graph.setNodeComplete();
         // collect the layout information
         LayoutMap layoutMap = new LayoutMap();
         for (AspectJCell jCell : getRoots()) {
@@ -432,6 +436,14 @@ final public class AspectJModel extends JModel<AspectGraph> {
     }
 
     /**
+     * Notifies the model (but not the listeners) that the underlying graph has changed.
+     * @see AspectJModel#setGraphModified()
+     */
+    public void setGraphDirty() {
+        this.graphModCount.increaseSilent();
+    }
+
+    /**
      * Notifies the model and all listeners that the underlying graph has
      * been modified.
      */
@@ -481,7 +493,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
 
     /** Indicates if the model is currently executing {@link #loadGraph(AspectGraph)}. */
     @Override
-    final protected boolean isLoading() {
+    final public boolean isLoading() {
         return this.loading;
     }
 

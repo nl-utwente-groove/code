@@ -172,7 +172,7 @@ public class ExpressionTest {
         if (result != null) {
             String display = result.toDisplayString();
             try {
-                assertEquals(result, Expression.parse(display));
+                assertEquals(result, Expression.parse(display).toExpression());
             } catch (FormatException e) {
                 // the display string didn't have enough typing information; proceed
             }

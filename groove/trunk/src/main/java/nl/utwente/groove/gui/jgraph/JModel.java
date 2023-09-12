@@ -112,7 +112,9 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      * graph as set in the graph properties.
      */
     public String getName() {
-        return getGraph() == null ? null : getGraph().getName();
+        return getGraph() == null
+            ? null
+            : getGraph().getName();
     }
 
     /**
@@ -162,7 +164,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      * @return {@code true} if the jModel was changed
      */
     protected boolean addElements(Collection<? extends Node> nodeSet,
-        Collection<? extends Edge> edgeSet, boolean replace) {
+                                  Collection<? extends Edge> edgeSet, boolean replace) {
         boolean result = replace;
         setLoading(true);
         prepareInsert();
@@ -200,8 +202,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
         this.graph = graph;
         this.layoutMap = GraphInfo.getLayoutMap(graph);
         if (this.layoutMap == null) {
-            this.layoutMap = graph.getInfo()
-                .getLayoutMap();
+            this.layoutMap = graph.getInfo().getLayoutMap();
         }
         this.nodeJCellMap.clear();
         this.edgeJCellMap.clear();
@@ -284,8 +285,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
         Map<Node,Color> result = new HashMap<>();
         for (JCell<G> jCell : getRoots()) {
             if (jCell instanceof JVertex) {
-                Color foreground = jCell.getVisuals()
-                    .getForeground();
+                Color foreground = jCell.getVisuals().getForeground();
                 if (foreground != null) {
                     result.put(((JVertex<G>) jCell).getNode(), foreground);
                 }
@@ -301,7 +301,8 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
             // so no synchronisation is necessary
             for (Object jCell : edit.getChanged()) {
                 if (jCell instanceof JCell) {
-                    @SuppressWarnings("unchecked") JCell<G> graphJCell = (JCell<G>) jCell;
+                    @SuppressWarnings("unchecked")
+                    JCell<G> graphJCell = (JCell<G>) jCell;
                     synchroniseLayout(graphJCell);
                 }
             }
@@ -476,8 +477,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      * @return a fresh JEedge wrapping <tt>edge</tt>, initialised on this model
      */
     protected JEdge<G> createJEdge(Edge edge) {
-        JEdge<G> result = getJGraph().getFactory()
-            .newJEdge(edge);
+        JEdge<G> result = getJGraph().getFactory().newJEdge(edge);
         result.setJModel(this);
         result.initialise();
         if (edge != null) {
@@ -490,8 +490,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      * Factory method for JVertices initialised on this JModel.
      */
     final protected JVertex<G> createJVertex(Node node) {
-        JVertex<G> result = getJGraph().getFactory()
-            .newJVertex(node);
+        JVertex<G> result = getJGraph().getFactory().newJVertex(node);
         result.setJModel(this);
         result.setNode(node);
         result.initialise();
@@ -525,7 +524,9 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
         for (int i = 0; i < vertexCount; i++) {
             addedCells[edgeCount + i] = this.addedJVertices.get(i);
         }
-        Object[] removedCells = replace ? getRoots().toArray() : null;
+        Object[] removedCells = replace
+            ? getRoots().toArray()
+            : null;
         createEdit(addedCells, removedCells, null, this.connections, getParentMap(), null)
             .execute();
         List<JEdge<G>> edges = new ArrayList<>();
@@ -554,8 +555,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
         Rectangle2D bounds = new Rectangle();
         for (Object cell : getJGraph().getSelectionCells()) {
             if (cell instanceof JVertex) {
-                bounds.add(((JVertex<G>) cell).getVisuals()
-                    .getNodePos());
+                bounds.add(((JVertex<G>) cell).getVisuals().getNodePos());
             }
         }
         return 25 + randomGenerator
@@ -582,7 +582,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
     }
 
     /** Indicates if the JModel is currently in the process of loading a graph. */
-    protected boolean isLoading() {
+    public boolean isLoading() {
         return this.loading;
     }
 

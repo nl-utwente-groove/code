@@ -39,12 +39,13 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Operator;
-import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.syntax.Assignment;
 import nl.utwente.groove.algebra.syntax.CallExpr;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.FieldExpr;
 import nl.utwente.groove.algebra.syntax.Parameter;
+import nl.utwente.groove.algebra.syntax.Typing;
+import nl.utwente.groove.algebra.syntax.Variable;
 import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.type.TypeLabel;
@@ -196,6 +197,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
      */
     private void doNormalise(AspectGraphMorphism map) {
         assert !isFixed();
+        setNodeComplete();
         // identify and remove let- and test-edges
         Set<AspectEdge> letEdges = new HashSet<>();
         Set<AspectEdge> predEdges = new HashSet<>();
@@ -300,23 +302,15 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
      */
     private AspectNode addExpression(@Nullable AspectNode level, @NonNull AspectNode source,
                                      Expression expr) throws FormatException {
-        switch (expr.getKind()) {
-        case CONST:
-            return addConstant(expr);
-        case FIELD:
-            return addField(level, source, (FieldExpr) expr);
-        case CALL:
-            if (getRole() == HOST) {
-                return addConstant(expr);
-            } else {
-                return addCall(level, source, (CallExpr) expr);
-            }
-        case PAR:
-            return addPar(source, (Parameter) expr);
-        default:
-            assert false;
-            return null;
-        }
+        return switch (expr.getKind()) {
+        case CONST -> addConstant(expr);
+        case FIELD -> addField(level, source, (FieldExpr) expr);
+        case CALL -> getRole() == HOST
+            ? addConstant(expr)
+            : addCall(level, source, (CallExpr) expr);
+        case PAR -> addPar(source, (Parameter) expr);
+        case VAR -> addVar(source, (Variable) expr);
+        };
     }
 
     /**
@@ -452,6 +446,27 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         result.setAspects(parLabel);
         AspectLabel typeLabel = createLabel(AspectKind.toAspectKind(par.getSort()));
         result.setAspects(typeLabel);
+        return result;
+    }
+
+    /**
+     * Adds the structure for a variable expression.
+     * @param var the variable expression
+     * @return the node representing the value of the expression
+     */
+    private AspectNode addVar(@NonNull AspectNode source,
+                              @NonNull Variable var) throws FormatException {
+        if (getRole() != RULE) {
+            throw new FormatException("Field expression '%s' only allowed in rules",
+                var.toDisplayString(), source);
+        }
+        // look up the field owner
+        AspectNode result;
+        String name = var.getName();
+        result = this.nodeIdMap.get(name);
+        if (result == null) {
+            throw new FormatException("Unknown node identifier '%s'", name, source);
+        }
         return result;
     }
 
@@ -680,7 +695,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
 
     @Override
     public boolean addEdge(AspectEdge edge) {
-        edge.setFixed();
+        edge.setParsed();
         this.normal &= !edge.isAssign() && !edge.isPredicate();
         return super.addEdge(edge);
     }
@@ -695,31 +710,19 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     }
 
     @Override
+    public boolean isFixed() {
+        return this.status == Status.FIXED;
+    }
+
+    @Override
     public boolean setFixed() {
         if (DEBUG) {
             System.out.printf("setFixed called on %s %s%n", getRole(), getName());
         }
         boolean result = !isFixed();
         if (result) {
-            setFixing();
+            setNodeComplete();
             FormatErrorSet errors = new FormatErrorSet();
-            // collect node identifiers and check for duplicates
-            HashMap<String,AspectNode> nodeIdMap = new HashMap<>();
-            HashMap<String,Sort> nodeIdTypeMap = new HashMap<>();
-            for (AspectNode node : nodeSet()) {
-                Aspect id = node.getId();
-                if (id != null) {
-                    String name = id.getContentString();
-                    AspectNode oldNode = nodeIdMap.put(name, node);
-                    if (oldNode != null) {
-                        errors.add("Duplicate node identifier %s", name, node, oldNode);
-                    } else if (node.hasAttrAspect() && node.getAttrAspect().getKind().hasSort()) {
-                        nodeIdTypeMap.put(name, node.getAttrAspect().getKind().getSort());
-                    }
-                }
-            }
-            this.nodeIdMap = nodeIdMap;
-            this.nodeIdTypeMap = nodeIdTypeMap;
             // first fix the edges, then the nodes
             for (AspectEdge edge : edgeSet()) {
                 edge.setFixed();
@@ -732,9 +735,39 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             if (!GraphInfo.hasErrors(this)) {
                 addErrors(errors);
             }
+            this.status = Status.FIXED;
             super.setFixed();
         }
         return result;
+    }
+
+    /**
+     * Callback method to indicate that no more identified nodes will be added.
+     * This allows the node identities and typing to be computed.
+     */
+    public void setNodeComplete() {
+        if (!isNodeComplete()) {
+            FormatErrorSet errors = new FormatErrorSet();
+            // collect node identifiers and check for duplicates
+            HashMap<String,AspectNode> nodeIdMap = new HashMap<>();
+            Typing typing = new Typing();
+            for (AspectNode node : nodeSet()) {
+                Aspect id = node.getId();
+                if (id != null) {
+                    String name = id.getContentString();
+                    AspectNode oldNode = nodeIdMap.put(name, node);
+                    if (oldNode != null) {
+                        errors.add("Duplicate node identifier %s", name, node, oldNode);
+                    } else if (node.hasAttrAspect() && node.getAttrAspect().getKind().hasSort()) {
+                        typing.add(name, node.getAttrAspect().getKind().getSort());
+                    }
+                }
+            }
+            this.nodeIdMap = nodeIdMap;
+            this.typing = typing;
+            addErrors(errors);
+            this.status = Status.NODE_COMPLETE;
+        }
     }
 
     @Override
@@ -759,7 +792,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         assert isFixed();
         AspectGraph result = newGraph(getName());
         for (AspectNode node : nodeSet()) {
-            AspectNode clone = node.clone();
+            AspectNode clone = node.clone(result);
             map.putNode(node, clone);
             result.addNode(clone);
         }
@@ -770,10 +803,14 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         }
         if (getNodeIdMap() != null) {
             Map<String,AspectNode> newNodeIdMap = new HashMap<>();
-            for (Map.Entry<String,AspectNode> e : getNodeIdMap().entrySet()) {
-                newNodeIdMap.put(e.getKey(), map.getNode(e.getValue()));
-            }
+            getNodeIdMap()
+                .entrySet()
+                .stream()
+                .forEach(e -> newNodeIdMap.put(e.getKey(), map.getNode(e.getValue())));
             result.nodeIdMap = newNodeIdMap;
+            var newTyping = new Typing();
+            getTyping().entrySet().stream().forEach(e -> newTyping.add(e.getKey(), e.getValue()));
+            result.typing = newTyping;
         }
         GraphInfo.transfer(this, result, null);
         return result;
@@ -819,24 +856,18 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     /** Flag indicating whether the graph is normal. */
     private boolean normal;
 
-    /** Checks if the graph is in the phase of getting fixed. */
-    private boolean isFixing() {
-        return this.fixing;
+    /** Checks if the graph is in the phase where all identified nodes have been added.
+     * If so, the typing information is complete.
+     */
+    public boolean isNodeComplete() {
+        return this.status != Status.NEW;
     }
 
-    /** Sets the graph to the phase of getting fixed. */
-    private void setFixing() {
-        if (DEBUG) {
-            System.out.printf("Fixing %s %s%n", getRole(), getName());
-        }
-        this.fixing = true;
-    }
-
-    private boolean fixing;
+    private Status status = Status.NEW;
 
     /** Returns the mapping from declared node identities to nodes. */
     Map<String,AspectNode> getNodeIdMap() {
-        assert isFixing();
+        assert isNodeComplete();
         return this.nodeIdMap;
     }
 
@@ -844,13 +875,13 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     private Map<String,AspectNode> nodeIdMap;
 
     /** Returns the mapping from declared node identities to the primitive node sorts. */
-    Map<String,Sort> getNodeIdMTypeap() {
-        assert isFixing();
-        return this.nodeIdTypeMap;
+    Typing getTyping() {
+        assert isNodeComplete();
+        return this.typing;
     }
 
     /** Mapping from node identifiers to sorts. */
-    private Map<String,Sort> nodeIdTypeMap;
+    private Typing typing;
 
     /**
      * Creates an aspect graph from a given (plain) graph.
@@ -978,11 +1009,11 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
                     if (sharedNodes.containsKey(id)) {
                         nodeMap.put(node, sharedNodes.get(id));
                     } else {
-                        fresh = node.clone(nodeNr++);
+                        fresh = node.clone(result, nodeNr++);
                         sharedNodes.put(id, fresh);
                     }
                 } else {
-                    fresh = node.clone(nodeNr++);
+                    fresh = node.clone(result, nodeNr++);
                 }
                 if (fresh != null) {
                     newLayoutMap.copyNodeWithOffset(fresh, node, oldLayoutMap, offsetX, offsetY);
@@ -1125,5 +1156,15 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         public GraphToAspectMap(AspectGraph graph) {
             super(graph.getFactory());
         }
+    }
+
+    /** Construction status of an {@link AspectGraph}. */
+    static private enum Status {
+        /** In the process of being built up; nodes and edges are being added. */
+        NEW,
+        /** No identified nodes will be added any more. */
+        NODE_COMPLETE,
+        /** Completely fixed. */
+        FIXED,;
     }
 }

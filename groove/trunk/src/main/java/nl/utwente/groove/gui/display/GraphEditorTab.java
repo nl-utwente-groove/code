@@ -526,16 +526,20 @@ final public class GraphEditorTab extends ResourceTab
         initSyntax();
         final JTabbedPane tabbedPane = new JTabbedPane();
         final int nodeTabIndex = tabbedPane.getTabCount();
-        tabbedPane.addTab("Nodes", null, createSyntaxList(this.nodeKeys),
-                          "Label prefixes that are allowed on nodes");
+        tabbedPane
+            .addTab("Nodes", null, createSyntaxList(this.nodeKeys),
+                    "Label prefixes that are allowed on nodes");
         final int edgeTabIndex = tabbedPane.getTabCount();
-        tabbedPane.addTab("Edges", null, createSyntaxList(this.edgeKeys),
-                          "Label prefixes that are allowed on edges");
+        tabbedPane
+            .addTab("Edges", null, createSyntaxList(this.edgeKeys),
+                    "Label prefixes that are allowed on edges");
         if (this.role == GraphRole.RULE) {
-            tabbedPane.addTab("RegExpr", null, createSyntaxList(RegExpr.getDocMap().keySet()),
-                              "Syntax for regular expressions over labels");
-            tabbedPane.addTab("Expr", null, createSyntaxList(Algebras.getDocMap().keySet()),
-                              "Available attribute operators");
+            tabbedPane
+                .addTab("RegExpr", null, createSyntaxList(RegExpr.getDocMap().keySet()),
+                        "Syntax for regular expressions over labels");
+            tabbedPane
+                .addTab("Expr", null, createSyntaxList(Algebras.getDocMap().keySet()),
+                        "Available attribute operators");
         }
         JPanel result = new TitledPanel("Label syntax help", tabbedPane, null, false);
         // add a listener that switches the syntax help between nodes and edges
@@ -607,7 +611,8 @@ final public class GraphEditorTab extends ResourceTab
         this.edgeKeys = new TreeSet<>(AspectKind.getEdgeDocMap(this.role).keySet());
         // the edge role description for binary edges in rule graphs is inappropriate
         Help extra = null;
-        for (Map.Entry<EdgeRole,Pair<String,String>> entry : EdgeRole.getRoleToDocMap()
+        for (Map.Entry<EdgeRole,Pair<String,String>> entry : EdgeRole
+            .getRoleToDocMap()
             .entrySet()) {
             String item = entry.getValue().one();
             switch (entry.getKey()) {
