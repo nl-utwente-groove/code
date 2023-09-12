@@ -173,8 +173,7 @@ public class Options implements Cloneable {
      * @return the value of the checkbox item with the given name
      */
     public boolean isSelected(String name) {
-        return this.itemMap.get(name)
-            .isSelected();
+        return this.itemMap.get(name).isSelected();
     }
 
     /**
@@ -183,8 +182,7 @@ public class Options implements Cloneable {
      * @param selected the new selection value of the menu item
      */
     public void setSelected(String name, boolean selected) {
-        this.itemMap.get(name)
-            .setSelected(selected);
+        this.itemMap.get(name).setSelected(selected);
     }
 
     /**
@@ -199,7 +197,9 @@ public class Options implements Cloneable {
         if (item instanceof BehaviourOption) {
             return ((BehaviourOption) item).getValue();
         } else {
-            return item.isSelected() ? 1 : 0;
+            return item.isSelected()
+                ? 1
+                : 0;
         }
     }
 
@@ -223,9 +223,7 @@ public class Options implements Cloneable {
     public String toString() {
         Map<String,Boolean> result = new HashMap<>();
         for (Map.Entry<String,JMenuItem> entry : this.itemMap.entrySet()) {
-            result.put(entry.getKey(),
-                entry.getValue()
-                    .isSelected());
+            result.put(entry.getKey(), entry.getValue().isSelected());
         }
         return result.toString();
     }
@@ -255,8 +253,10 @@ public class Options implements Cloneable {
     static public void setLAF(final AbstractButton button) {
         button.setHideActionText(true);
         button.setFocusable(false);
-        button.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEtchedBorder(),
-            BorderFactory.createEmptyBorder(3, 2, 3, 2)));
+        button
+            .setBorder(BorderFactory
+                .createCompoundBorder(BorderFactory.createEtchedBorder(),
+                                      BorderFactory.createEmptyBorder(3, 2, 3, 2)));
         button.setBorderPainted(button.isEnabled());
         button.addChangeListener(new ChangeListener() {
             @Override
@@ -293,8 +293,7 @@ public class Options implements Cloneable {
         result.setFloatable(false);
         result.setAlignmentX(Component.LEFT_ALIGNMENT);
         // make sure tool tips get displayed
-        ToolTipManager.sharedInstance()
-            .registerComponent(result);
+        ToolTipManager.sharedInstance().registerComponent(result);
         return result;
     }
 
@@ -335,9 +334,7 @@ public class Options implements Cloneable {
      * a given type.
      */
     public static String getNewResourceName(ResourceKind resource) {
-        return resource.getDefaultName()
-            .map(n -> n.toString())
-            .orElse("new" + resource.getName());
+        return resource.getDefaultName().map(n -> n.toString()).orElse("new" + resource.getName());
     }
 
     // Menus
@@ -444,22 +441,22 @@ public class Options implements Cloneable {
     /** Action name for checking CTL on full state space */
     public static final String CHECK_CTL_FULL_ACTION_NAME = "Check CTL property (full state space)";
     /** Action name for checking CTL on current state space */
-    public static final String CHECK_CTL_AS_IS_ACTION_NAME =
-        "Check CTL property (current state space)";
+    public static final String CHECK_CTL_AS_IS_ACTION_NAME
+        = "Check CTL property (current state space)";
     /** Action name for checking LTL. */
     public static final String CHECK_LTL_ACTION_NAME = "Check LTL property (full state space)";
     /** Action name for checking LTL on bounded state space */
-    public static final String CHECK_LTL_BOUNDED_ACTION_NAME =
-        "Check LTL property (bounded state space)";
+    public static final String CHECK_LTL_BOUNDED_ACTION_NAME
+        = "Check LTL property (bounded state space)";
     /** Action name for checking LTL on bounded state space */
-    public static final String CHECK_LTL_POCKET_ACTION_NAME =
-        "Check LTL property (bounded pocket strategy)";
+    public static final String CHECK_LTL_POCKET_ACTION_NAME
+        = "Check LTL property (bounded pocket strategy)";
     /** Action name for checking LTL on bounded state space */
-    public static final String CHECK_LTL_OPTIMIZED_ACTION_NAME =
-        "Check LTL property (optimised bounded state space)";
+    public static final String CHECK_LTL_OPTIMIZED_ACTION_NAME
+        = "Check LTL property (optimised bounded state space)";
     /** Action name for checking LTL on bounded state space */
-    public static final String CHECK_LTL_OPTMIZED_POCKET_ACTION_NAME =
-        "Check LTL property (optimised bounded pocket strategy)";
+    public static final String CHECK_LTL_OPTMIZED_POCKET_ACTION_NAME
+        = "Check LTL property (optimised bounded pocket strategy)";
     /** Close action name */
     public static final String CLOSE_ACTION_NAME = "Close";
     /** Close all editors action name */
@@ -489,8 +486,8 @@ public class Options implements Cloneable {
     /** Exploration dialog action name */
     public static final String EXPLORATION_DIALOG_ACTION_NAME = "Customize Exploration ...";
     /** Exploration statistics dialog action name */
-    public static final String EXPLORATION_STATS_DIALOG_ACTION_NAME =
-        "Last Exploration Statistics ...";
+    public static final String EXPLORATION_STATS_DIALOG_ACTION_NAME
+        = "Last Exploration Statistics ...";
     /** Layout dialog action name */
     public static final String LAYOUT_DIALOG_ACTION_NAME = "Customize Layout ...";
     /** Explore single state action name */
@@ -550,7 +547,9 @@ public class Options implements Cloneable {
     /** Paste action name */
     public static final String PASTE_ACTION_NAME = "Paste";
     /** Preview control action name */
-    public static final String PREVIEW_CONTROL_ACTION_NAME = "Preview Control ...";
+    public static final String PREVIEW_CONTROL_ACTION_NAME = "Inspect Control ...";
+    /** Preview rule action name */
+    public static final String PREVIEW_RULE_ACTION_NAME = "Inspect Rule ...";
     /** Quit action name */
     public static final String QUIT_ACTION_NAME = "Quit";
     /** Name of the "First Prolog Result" action. */
@@ -609,7 +608,10 @@ public class Options implements Cloneable {
 
     /** Returns the save-as action name for a given item text. */
     private static final String getSaveActionName(String item, boolean saveAs) {
-        return String.format(saveAs ? SAVE_AS_NAME_TEMPLATE : SAVE_NAME_TEMPLATE, item);
+        return String
+            .format(saveAs
+                ? SAVE_AS_NAME_TEMPLATE
+                : SAVE_NAME_TEMPLATE, item);
     }
 
     /** Returns the save or save-as action name for a given resource kind. */
@@ -678,13 +680,13 @@ public class Options implements Cloneable {
     public static final String SELECT_MODE_NAME = "Selection mode";
 
     /** Add point keystroke. */
-    public static final KeyStroke ADD_POINT_KEY =
-        KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.ALT_DOWN_MASK);
+    public static final KeyStroke ADD_POINT_KEY
+        = KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.ALT_DOWN_MASK);
     /**
      * Apply keystroke
      */
-    static public final KeyStroke APPLY_KEY =
-        KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
+    static public final KeyStroke APPLY_KEY
+        = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
     /** Back keystroke */
     public static final KeyStroke BACK_KEY = KeyStroke.getKeyStroke("alt LEFT");
     /** Cancel keystroke */
@@ -704,8 +706,8 @@ public class Options implements Cloneable {
     /**
      * Keystroke for the 'default exploration' action.
      */
-    public static final KeyStroke DEFAULT_EXPLORATION_KEY =
-        KeyStroke.getKeyStroke("control shift X");
+    public static final KeyStroke DEFAULT_EXPLORATION_KEY
+        = KeyStroke.getKeyStroke("control shift X");
     /**
      * Delete keystroke
      */
@@ -726,11 +728,11 @@ public class Options implements Cloneable {
     /** Back keystroke */
     public static final KeyStroke FORWARD_KEY = KeyStroke.getKeyStroke("alt RIGHT");
     /** Find and go to final state keystroke */
-    public static final KeyStroke GOTO_FINAL_STATE_KEY =
-        KeyStroke.getKeyStroke("control shift END");
+    public static final KeyStroke GOTO_FINAL_STATE_KEY
+        = KeyStroke.getKeyStroke("control shift END");
     /** Goto start state keystroke */
-    public static final KeyStroke GOTO_START_STATE_KEY =
-        KeyStroke.getKeyStroke("control shift HOME");
+    public static final KeyStroke GOTO_START_STATE_KEY
+        = KeyStroke.getKeyStroke("control shift HOME");
     /**
      * Insert keystroke
      */
@@ -774,8 +776,8 @@ public class Options implements Cloneable {
      */
     public static final KeyStroke RENAME_KEY = KeyStroke.getKeyStroke("F2");
     /** Remove point keystroke. */
-    public static final KeyStroke REMOVE_POINT_KEY =
-        KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_DOWN_MASK);
+    public static final KeyStroke REMOVE_POINT_KEY
+        = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_DOWN_MASK);
     /** Save keystroke */
     public static final KeyStroke SAVE_KEY = KeyStroke.getKeyStroke("control S");
     /** Save keystroke */
@@ -899,14 +901,14 @@ public class Options implements Cloneable {
 
     /** Returns the user preferences for a given key, as a list of Strings. */
     public static String[] getUserPrefs(String key) {
-        String[] result = new String[0];
+        String[] result = {};
         String storedValue = userPrefs.get(key, "");
         try {
             result = StringHandler.splitExpr(storedValue, ",");
         } catch (FormatException e) {
-            assert false : String.format("Format error in user preference string %s: %s",
-                storedValue,
-                e.getMessage());
+            assert false : String
+                .format("Format error in user preference string %s: %s", storedValue,
+                        e.getMessage());
         }
         for (int i = 0; i < result.length; i++) {
             try {
@@ -915,9 +917,9 @@ public class Options implements Cloneable {
                     .format("User preference string %s is not correctly quoted", result[i]);
                 result[i] = newValue;
             } catch (FormatException e) {
-                assert false : String.format("Format error in user preference string %s: %s",
-                    result[i],
-                    e.getMessage());
+                assert false : String
+                    .format("Format error in user preference string %s: %s", result[i],
+                            e.getMessage());
             }
         }
         return result;
@@ -982,8 +984,7 @@ public class Options implements Cloneable {
     public static Font getDefaultFont() {
         if (DEFAULT_FONT == null) {
             initLookAndFeel();
-            DEFAULT_FONT = MetalLookAndFeel.getCurrentTheme()
-                .getUserTextFont();
+            DEFAULT_FONT = MetalLookAndFeel.getCurrentTheme().getUserTextFont();
         }
         return DEFAULT_FONT;
     }
@@ -997,8 +998,7 @@ public class Options implements Cloneable {
             initLookAndFeel();
             LABEL_FONT = GraphConstants.DEFAULTFONT;
             if (LABEL_FONT == null) {
-                LABEL_FONT = UIManager.getDefaults()
-                    .getFont("SansSerif");
+                LABEL_FONT = UIManager.getDefaults().getFont("SansSerif");
             }
             // previously used: MetalLookAndFeel.getCurrentTheme().getUserTextFont();
         }
@@ -1014,8 +1014,7 @@ public class Options implements Cloneable {
             initLookAndFeel();
             Font result = getLabelFont();
             if (!result.canDisplay(Util.DT)) {
-                result = UIManager.getDefaults()
-                    .getFont("SansSerif");
+                result = UIManager.getDefaults().getFont("SansSerif");
             }
             if (result == null || !result.canDisplay(Util.DT)) {
                 result = loadFont("stixgeneralregular.ttf").deriveFont(getLabelFont().getSize2D());
@@ -1031,8 +1030,7 @@ public class Options implements Cloneable {
     /** Loads in a TrueType font of a given name. */
     private static Font loadFont(String name) {
         Font result = null;
-        try (InputStream stream = Groove.getResource(name)
-            .openStream()) {
+        try (InputStream stream = Groove.getResource(name).openStream()) {
             result = Font.createFont(Font.TRUETYPE_FONT, stream);
             result = result.deriveFont(getLabelFont().getSize2D());
         } catch (FileNotFoundException e) {

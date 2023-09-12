@@ -140,15 +140,15 @@ public class ActionStore implements SimulatorListener {
     public CancelEditAction getCancelEditAction(ResourceKind resource) {
         CancelEditAction result = this.cancelEditActionMap.get(resource);
         if (result == null) {
-            this.cancelEditActionMap.put(resource, result =
-                new CancelEditAction(this.simulator, resource));
+            this.cancelEditActionMap
+                .put(resource, result = new CancelEditAction(this.simulator, resource));
             result.refresh();
         }
         return result;
     }
 
-    private final Map<ResourceKind,CancelEditAction> cancelEditActionMap =
-        new EnumMap<>(ResourceKind.class);
+    private final Map<ResourceKind,CancelEditAction> cancelEditActionMap
+        = new EnumMap<>(ResourceKind.class);
 
     /**
      * Returns the CTL formula providing action permanently associated with this
@@ -157,7 +157,9 @@ public class ActionStore implements SimulatorListener {
      * space.
      */
     public Action getCheckCTLAction(boolean full) {
-        CheckCTLAction result = full ? this.checkCTLFreshAction : this.checkCTLAsIsAction;
+        CheckCTLAction result = full
+            ? this.checkCTLFreshAction
+            : this.checkCTLAsIsAction;
         if (result == null) {
             result = new CheckCTLAction(this.simulator, full);
             if (full) {
@@ -188,8 +190,7 @@ public class ActionStore implements SimulatorListener {
         return result;
     }
 
-    private final Map<ResourceKind,CopyAction> copyActionMap =
-        new EnumMap<>(ResourceKind.class);
+    private final Map<ResourceKind,CopyAction> copyActionMap = new EnumMap<>(ResourceKind.class);
 
     /** Returns the delete action appropriate for a given resource kind. */
     public SimulatorAction getDeleteAction(ResourceKind resource) {
@@ -201,8 +202,8 @@ public class ActionStore implements SimulatorListener {
         return result;
     }
 
-    private final Map<ResourceKind,SimulatorAction> deleteActionMap =
-        new EnumMap<>(ResourceKind.class);
+    private final Map<ResourceKind,SimulatorAction> deleteActionMap
+        = new EnumMap<>(ResourceKind.class);
 
     /** Returns the edit action appropriate for a given resource kind. */
     public EditAction getEditAction(ResourceKind resource) {
@@ -214,8 +215,7 @@ public class ActionStore implements SimulatorListener {
         return result;
     }
 
-    private final Map<ResourceKind,EditAction> editActionMap =
-        new EnumMap<>(ResourceKind.class);
+    private final Map<ResourceKind,EditAction> editActionMap = new EnumMap<>(ResourceKind.class);
 
     /** Returns the state edit action. */
     public EditStateAction getEditStateAction() {
@@ -270,8 +270,8 @@ public class ActionStore implements SimulatorListener {
         return result;
     }
 
-    private final Map<ResourceKind,EnableAction> enableActionMap =
-        new EnumMap<>(ResourceKind.class);
+    private final Map<ResourceKind,EnableAction> enableActionMap
+        = new EnumMap<>(ResourceKind.class);
 
     /**
      * Returns the 'default exploration' action that is associated with the
@@ -299,8 +299,8 @@ public class ActionStore implements SimulatorListener {
         // lazily create the action
         CheckLTLAction result = this.checkLTLMap.get(strategy);
         if (result == null) {
-            this.checkLTLMap.put(strategy, result =
-                new CheckLTLAction(this.simulator, strategy, name));
+            this.checkLTLMap
+                .put(strategy, result = new CheckLTLAction(this.simulator, strategy, name));
         }
 
         return result;
@@ -309,8 +309,7 @@ public class ActionStore implements SimulatorListener {
     /**
      * The 'default exploration' action (variable).
      */
-    private Map<StrategyValue,CheckLTLAction> checkLTLMap =
-        new EnumMap<>(StrategyValue.class);
+    private Map<StrategyValue,CheckLTLAction> checkLTLMap = new EnumMap<>(StrategyValue.class);
 
     /**
      * Returns the exploration dialog action permanently associated with this
@@ -358,14 +357,13 @@ public class ActionStore implements SimulatorListener {
         return this.exportActionMap.get(kind);
     }
 
-    private final Map<DisplayKind,ExportAction> exportActionMap =
-        new EnumMap<>(DisplayKind.class);
+    private final Map<DisplayKind,ExportAction> exportActionMap = new EnumMap<>(DisplayKind.class);
 
     /** Returns the export action appropriate for a given simulator tab kind. */
     public ExportAction getExportStateAction() {
         if (this.exportStateAction == null) {
-            StateDisplay display =
-                (StateDisplay) this.simulator.getDisplaysPanel().getDisplay(DisplayKind.STATE);
+            StateDisplay display
+                = (StateDisplay) this.simulator.getDisplaysPanel().getDisplay(DisplayKind.STATE);
             this.exportStateAction = display.getJGraph().getExportAction();
         }
         return this.exportStateAction;
@@ -475,8 +473,8 @@ public class ActionStore implements SimulatorListener {
         return result;
     }
 
-    private final Map<ResourceKind,SimulatorAction> newActionMap =
-        new EnumMap<>(ResourceKind.class);
+    private final Map<ResourceKind,SimulatorAction> newActionMap
+        = new EnumMap<>(ResourceKind.class);
 
     /**
      * Returns the rule system creation action permanently associated with this
@@ -509,6 +507,20 @@ public class ActionStore implements SimulatorListener {
 
     /** Singular instance of the CtrlPreviewAction. */
     private SimulatorAction previewControlAction;
+
+    /**
+     * Lazily creates and returns the singleton instance of the
+     * {@link PreviewRuleAction}.
+     */
+    public SimulatorAction getPreviewRuleAction() {
+        if (this.previewRuleAction == null) {
+            this.previewRuleAction = new PreviewRuleAction(this.simulator);
+        }
+        return this.previewRuleAction;
+    }
+
+    /** Singular instance of the CtrlPreviewAction. */
+    private SimulatorAction previewRuleAction;
 
     /** Returns the quit action permanently associated with this simulator. */
     public SimulatorAction getQuitAction() {
@@ -609,8 +621,8 @@ public class ActionStore implements SimulatorListener {
         return result;
     }
 
-    private final Map<ResourceKind,RenameAction> renameActionMap =
-        new EnumMap<>(ResourceKind.class);
+    private final Map<ResourceKind,RenameAction> renameActionMap
+        = new EnumMap<>(ResourceKind.class);
 
     /**
      * Returns the renumbering action permanently associated with this
@@ -649,8 +661,8 @@ public class ActionStore implements SimulatorListener {
     public SaveAction getSaveAction(ResourceKind resource) {
         SaveAction result = this.saveActionMap.get(resource);
         if (result == null) {
-            this.saveActionMap.put(resource, result =
-                new SaveAction(this.simulator, resource, false));
+            this.saveActionMap
+                .put(resource, result = new SaveAction(this.simulator, resource, false));
         }
         return result;
     }
@@ -658,15 +670,14 @@ public class ActionStore implements SimulatorListener {
     /**
      * Mapping from graph roles to corresponding save actions.
      */
-    private Map<ResourceKind,SaveAction> saveActionMap = new EnumMap<>(
-        ResourceKind.class);
+    private Map<ResourceKind,SaveAction> saveActionMap = new EnumMap<>(ResourceKind.class);
 
     /** Returns the save action for a given resource kind. */
     public SaveAction getSaveAsAction(ResourceKind resource) {
         SaveAction result = this.saveAsActionMap.get(resource);
         if (result == null) {
-            this.saveAsActionMap.put(resource, result =
-                new SaveAction(this.simulator, resource, true));
+            this.saveAsActionMap
+                .put(resource, result = new SaveAction(this.simulator, resource, true));
             result.refresh();
         }
         return result;
@@ -675,8 +686,7 @@ public class ActionStore implements SimulatorListener {
     /**
      * Mapping from graph roles to corresponding save actions.
      */
-    private Map<ResourceKind,SaveAction> saveAsActionMap = new EnumMap<>(
-        ResourceKind.class);
+    private Map<ResourceKind,SaveAction> saveAsActionMap = new EnumMap<>(ResourceKind.class);
 
     /** Returns the state save action. */
     public SaveStateAction getSaveStateAction() {
@@ -747,7 +757,9 @@ public class ActionStore implements SimulatorListener {
      * Returns the priority up- or down-shifting action permanently associated with the simulator.
      */
     public ShiftPriorityAction getShiftPriorityAction(boolean up) {
-        ShiftPriorityAction result = up ? this.raisePriorityAction : this.lowerPriorityAction;
+        ShiftPriorityAction result = up
+            ? this.raisePriorityAction
+            : this.lowerPriorityAction;
         if (result == null) {
             result = new ShiftPriorityAction(this.simulator, up);
             if (up) {
@@ -781,8 +793,8 @@ public class ActionStore implements SimulatorListener {
         return result;
     }
 
-    private final Map<ResourceKind,EnableUniqueAction> enableUniqueActionMap =
-        new EnumMap<>(ResourceKind.class);
+    private final Map<ResourceKind,EnableUniqueAction> enableUniqueActionMap
+        = new EnumMap<>(ResourceKind.class);
 
     /**
      * Lazily creates and returns an instance of

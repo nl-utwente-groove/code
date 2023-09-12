@@ -61,6 +61,8 @@ final public class RuleDisplay extends ResourceDisplay {
         result.add(getActions().getShiftPriorityAction(false));
         result.addSeparator(new Dimension(separation, 0));
         result.add(getCollapseAllButton());
+        result.addSeparator(new Dimension(separation, 0));
+        result.add(getActions().getPreviewRuleAction());
         return result;
     }
 
@@ -114,8 +116,8 @@ final public class RuleDisplay extends ResourceDisplay {
      */
     private JButton getCollapseAllButton() {
         if (this.collapseAllButton == null) {
-            this.collapseAllButton =
-                Options.createButton(new CollapseAllAction(getSimulator(), getList()));
+            this.collapseAllButton
+                = Options.createButton(new CollapseAllAction(getSimulator(), getList()));
         }
         return this.collapseAllButton;
     }
