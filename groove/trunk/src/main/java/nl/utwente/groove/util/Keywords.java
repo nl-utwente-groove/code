@@ -17,7 +17,6 @@
 package nl.utwente.groove.util;
 
 import nl.utwente.groove.algebra.Sort;
-import nl.utwente.groove.algebra.syntax.Parameter;
 import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.aspect.AspectKind.ContentKind;
 
@@ -50,7 +49,6 @@ public class Keywords {
     /**
      * The parameter prefix.
      * @see AspectKind#PARAM_BI
-     * @see Parameter
      */
     public static final String PAR = "par";
     /**
