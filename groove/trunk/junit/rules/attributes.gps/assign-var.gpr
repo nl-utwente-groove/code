@@ -6,7 +6,7 @@
         </attr>
         <node id="n0">
             <attr name="layout">
-                <string>176 190 38 18</string>
+                <string>179 190 32 18</string>
             </attr>
         </node>
         <node id="n1">
