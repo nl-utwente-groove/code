@@ -43,7 +43,6 @@ import nl.utwente.groove.algebra.syntax.Assignment;
 import nl.utwente.groove.algebra.syntax.CallExpr;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.FieldExpr;
-import nl.utwente.groove.algebra.syntax.Parameter;
 import nl.utwente.groove.algebra.syntax.Typing;
 import nl.utwente.groove.algebra.syntax.Variable;
 import nl.utwente.groove.automaton.RegExpr;
@@ -308,7 +307,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         case CALL -> getRole() == HOST
             ? addConstant(expr)
             : addCall(level, source, (CallExpr) expr);
-        case PAR -> addPar(source, (Parameter) expr);
         case VAR -> addVar(source, (Variable) expr);
         };
     }
@@ -436,26 +434,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     }
 
     /**
-     * Adds the structure for a par expression
-     * @param source node on which the expression occurs
-     * @param par the par expression
-     * @return the node representing the value of the expression
-     */
-    private AspectNode addPar(AspectNode source, Parameter par) throws FormatException {
-        int nr = par.getNumber();
-        if (getRole() != RULE) {
-            throw new FormatException("Parameter expression '%s' only allowed in rules",
-                par.toDisplayString(), source);
-        }
-        AspectNode result = addNode();
-        AspectLabel parLabel = parser.parse(AspectKind.PARAM_IN.getPrefix() + nr, getRole());
-        result.setAspects(parLabel);
-        AspectLabel typeLabel = createLabel(AspectKind.toAspectKind(par.getSort()));
-        result.setAspects(typeLabel);
-        return result;
-    }
-
-    /**
      * Adds the structure for a variable expression.
      * @param var the variable expression
      * @return the node representing the value of the expression
@@ -516,7 +494,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
                     subLevel, expr);
             }
             break;
-        case PAR:
         case CONST:
             break;
         case FIELD:

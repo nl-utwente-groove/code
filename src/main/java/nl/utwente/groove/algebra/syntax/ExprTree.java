@@ -228,26 +228,12 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
     }
 
     /**
-     * Converts this tree to a {@link Variable} or a {@link Parameter}.
+     * Converts this tree to a {@link Variable}.
      * @param name variable name
      * @param sort expected type of the expression
      */
-    private Expression toVarExpr(@NonNull String name, @NonNull Sort sort) throws FormatException {
-        Expression result;
-        if (name.charAt(0) == '$') {
-            int number;
-            try {
-                number = Integer.parseInt(name.substring(1));
-            } catch (NumberFormatException exc) {
-                throw new FormatException(
-                    "Parameter '%s' should equal '$number' for a non-negative number",
-                    getParseString());
-            }
-            result = new Parameter(hasSort(), number, sort);
-        } else {
-            result = new Variable(hasSort(), name, sort);
-        }
-        return result;
+    private Expression toVarExpr(@NonNull String name, @NonNull Sort sort) {
+        return new Variable(hasSort(), name, sort);
     }
 
     /**

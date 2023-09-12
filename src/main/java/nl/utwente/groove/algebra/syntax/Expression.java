@@ -35,7 +35,7 @@ import nl.utwente.groove.util.parse.OpKind;
  * @version $Revision $
  */
 @NonNullByDefault
-public sealed abstract class Expression permits Constant, Parameter, Variable, FieldExpr, CallExpr {
+public sealed abstract class Expression permits Constant, Variable, FieldExpr, CallExpr {
     /**
      * Constructor for subclasses.
      * @param prefixed indicates if the expression was explicitly typed
@@ -202,7 +202,6 @@ public sealed abstract class Expression permits Constant, Parameter, Variable, F
     static {
         kindMap.put(Constant.class, Kind.CONST);
         kindMap.put(Variable.class, Kind.VAR);
-        kindMap.put(Parameter.class, Kind.PAR);
         kindMap.put(FieldExpr.class, Kind.FIELD);
         kindMap.put(CallExpr.class, Kind.CALL);
     }
@@ -211,8 +210,6 @@ public sealed abstract class Expression permits Constant, Parameter, Variable, F
     public static enum Kind {
         /** Constant expression. */
         CONST,
-        /** Parameter expression. */
-        PAR,
         /** Variable expression. */
         VAR,
         /** Field expression. */
