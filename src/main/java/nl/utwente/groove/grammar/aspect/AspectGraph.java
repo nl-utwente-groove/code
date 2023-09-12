@@ -338,7 +338,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     private AspectNode addField(@Nullable AspectNode level, @NonNull AspectNode source,
                                 FieldExpr expr) throws FormatException {
         if (getRole() != RULE) {
-            throw new FormatException("Field expression '%s' only allowed in rules",
+            throw new FormatException("Assignment expression '%s' only allowed in rules",
                 expr.toDisplayString(), source);
         }
         // look up the field owner
@@ -349,8 +349,14 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         } else {
             owner = this.nodeIdMap.get(ownerName);
             if (owner == null) {
-                throw new FormatException("Unknown node identifier '%s'", ownerName, source);
+                throw new FormatException(
+                    "Unknown node identifier '%s' in assignment expression '%s'", ownerName,
+                    expr.toDisplayString(), source);
             }
+        }
+        if (owner.getKind().isCreator()) {
+            throw new FormatException("Unassigned creator node field in assignment expression '%s'",
+                expr.toDisplayString(), owner);
         }
         if (owner.getKind().isQuantifier()
             && !expr.getField().equals(AspectKind.NestedValue.COUNT.toString())) {
