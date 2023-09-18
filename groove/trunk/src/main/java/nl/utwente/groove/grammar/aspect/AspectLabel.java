@@ -115,7 +115,7 @@ public class AspectLabel extends ALabel implements Fixable {
      */
     @Override
     public String toParsableString() {
-        setFixed();
+        //setFixed();
         StringBuffer result = new StringBuffer();
         for (Aspect value : this.aspects) {
             result.append(value.toString());

@@ -303,10 +303,10 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     private AspectNode addExpression(@Nullable AspectNode level, @NonNull AspectNode source,
                                      Expression expr) throws FormatException {
         return switch (expr.getKind()) {
-        case CONST -> addConstant(expr);
+        case CONST -> addConstant(source, expr);
         case FIELD -> addField(level, source, (FieldExpr) expr);
         case CALL -> getRole() == HOST
-            ? addConstant(expr)
+            ? addConstant(source, expr)
             : addCall(level, source, (CallExpr) expr);
         case VAR -> addVar(source, (Variable) expr);
         };
@@ -314,14 +314,16 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
 
     /**
      * Adds the structure corresponding to a constant.
+     * @param source the node on which the constant was specified
      * @param constant the constant for which we add a node
      * @return the node representing the constant
      */
-    private AspectNode addConstant(Expression constant) throws FormatException {
+    private AspectNode addConstant(@NonNull AspectNode source,
+                                   Expression constant) throws FormatException {
         AspectNode result = addNode();
-        if (!constant.isTerm()) {
+        if (!(constant instanceof Constant)) {
             throw new FormatException("Expression '%s' not allowed as constant value",
-                constant.toParseString());
+                constant.toParseString(), source);
         }
         result.setAspects(parser.parse(constant.toString(), getRole()));
         return result;
