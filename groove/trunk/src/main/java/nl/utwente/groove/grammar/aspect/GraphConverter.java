@@ -21,13 +21,13 @@ import static nl.utwente.groove.grammar.aspect.AspectKind.COMPOSITE;
 import static nl.utwente.groove.grammar.aspect.AspectKind.MULT_IN;
 import static nl.utwente.groove.grammar.aspect.AspectKind.MULT_OUT;
 import static nl.utwente.groove.grammar.aspect.AspectKind.SUBTYPE;
-import static nl.utwente.groove.grammar.aspect.AspectKind.ContentKind.MULTIPLICITY;
 import static nl.utwente.groove.graph.GraphRole.HOST;
 import static nl.utwente.groove.graph.GraphRole.TYPE;
 
 import java.util.Map;
 import java.util.Set;
 
+import nl.utwente.groove.grammar.aspect.AspectContent.MultiplicityContent;
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
@@ -95,10 +95,10 @@ public class GraphConverter {
                 text.append(COMPOSITE.getPrefix());
             }
             if (edge.getInMult() != null) {
-                text.append(MULTIPLICITY.toString(MULT_IN, edge.getInMult()));
+                text.append(new MultiplicityContent(edge.getInMult()).toParsableString(MULT_IN));
             }
             if (edge.getOutMult() != null) {
-                text.append(MULTIPLICITY.toString(MULT_OUT, edge.getOutMult()));
+                text.append(new MultiplicityContent(edge.getInMult()).toParsableString(MULT_OUT));
             }
             text.append(edge.text());
             AspectEdge edgeImage = target

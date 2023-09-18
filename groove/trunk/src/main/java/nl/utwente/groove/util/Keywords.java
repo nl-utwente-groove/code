@@ -17,8 +17,8 @@
 package nl.utwente.groove.util;
 
 import nl.utwente.groove.algebra.Sort;
+import nl.utwente.groove.grammar.aspect.AspectContent.ContentKind;
 import nl.utwente.groove.grammar.aspect.AspectKind;
-import nl.utwente.groove.grammar.aspect.AspectKind.ContentKind;
 
 /**
  * Keywords used in GROOVE

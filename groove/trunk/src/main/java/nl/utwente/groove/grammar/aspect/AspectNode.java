@@ -29,6 +29,7 @@ import static nl.utwente.groove.grammar.aspect.AspectKind.PARAM_ASK;
 import static nl.utwente.groove.grammar.aspect.AspectKind.PRODUCT;
 import static nl.utwente.groove.grammar.aspect.AspectKind.READER;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -37,6 +38,13 @@ import java.util.Set;
 
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.Sort;
+import nl.utwente.groove.algebra.syntax.Expression;
+import nl.utwente.groove.grammar.aspect.AspectContent.ColorContent;
+import nl.utwente.groove.grammar.aspect.AspectContent.ConstContent;
+import nl.utwente.groove.grammar.aspect.AspectContent.ExprContent;
+import nl.utwente.groove.grammar.aspect.AspectContent.IdContent;
+import nl.utwente.groove.grammar.aspect.AspectContent.LabelPatternContent;
+import nl.utwente.groove.grammar.aspect.AspectContent.NullContent;
 import nl.utwente.groove.grammar.rule.OperatorNode;
 import nl.utwente.groove.grammar.rule.VariableNode;
 import nl.utwente.groove.grammar.type.LabelPattern;
@@ -44,7 +52,9 @@ import nl.utwente.groove.graph.ANode;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.plain.PlainLabel;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
+import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -109,14 +119,14 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     }
 
     @Override
-    public boolean setFixed() {
-        boolean result = !isFixed();
+    public boolean setParsed() {
+        boolean result = !isParsed();
         if (result) {
-            this.allFixed = true;
+            this.status = Status.PARSED;
             try {
                 checkAspects();
                 if (getAttrKind() == PRODUCT) {
-                    testSignature();
+                    checkSignature();
                 }
             } catch (FormatException exc) {
                 addErrors(exc.getErrors());
@@ -128,7 +138,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     /**
      * Checks for the correctness of product node signatures.
      */
-    private void testSignature() throws FormatException {
+    private void checkSignature() throws FormatException {
         if (this.argNodes == null) {
             throw new FormatException("Product node has no arguments", this);
         }
@@ -152,17 +162,53 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     }
 
     @Override
-    public boolean isFixed() {
-        return this.allFixed;
+    public boolean setTyped() {
+        boolean result = !isTyped();
+        if (result) {
+            setParsed();
+            this.status = Status.TYPED;
+            if (!hasErrors()) {
+                typeExpression();
+            }
+        }
+        return result;
     }
 
-    /** Creates a clone of this node, for a given aspect graph. */
+    @Override
+    public Status getStatus() {
+        return this.status;
+    }
+
+    /** Indicates that the entire node is fixed. */
+    private Status status = Status.NEW;
+
+    /** Types the expression on this node, if any. */
+    private void typeExpression() {
+        try {
+            if (hasValue()) {
+                this.value = createValue();
+            }
+        } catch (FormatException exc) {
+            for (FormatError error : exc.getErrors()) {
+                this.errors.add(error.extend(this));
+            }
+        }
+    }
+
+    /**
+     * Creates a clone of this node, for a given aspect graph.
+     * The clone is not yet parsed.
+     * @param graph the graph to which the new node belongs
+     */
     public AspectNode clone(AspectGraph graph) {
         return clone(graph, getNumber());
     }
 
     /**
      * Clones an {@link AspectNode}, and also renumbers it.
+     * The clone is not yet parsed.
+     * @param graph the graph to which the new node belongs
+     * @param newNr the number for the new aspect node.
      */
     public AspectNode clone(AspectGraph graph, int newNr) {
         AspectNode result = new AspectNode(newNr, graph);
@@ -221,7 +267,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
                 if (!hasAspect()) {
                     setAspect(READER.getAspect());
                 }
-                if (getParamKind() == PARAM_ASK && !getAttrKind().hasSort()) {
+                if (getParKind() == PARAM_ASK && !getAttrKind().hasSort()) {
                     throw new FormatException("User-provided parameter must be a data value");
                 }
                 if (hasAttrAspect() && getKind() != READER && getKind() != EMBARGO) {
@@ -244,7 +290,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
             }
             if (getGraphRole() == GraphRole.HOST && hasAttrAspect() && hasId()) {
                 throw new FormatException("Node identifier ('%s') not allowed for value node %s",
-                    getId().getContent(), getAttrAspect().getContentString(), this);
+                    getId(), getAttrAspect().getContentString(), this);
             }
         } finally {
             if (!hasAttrAspect()) {
@@ -269,11 +315,11 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
             }
             setAttrAspect(value);
         } else if (kind.isParam()) {
-            if (hasParam()) {
-                throw new FormatException("Conflicting parameter aspects %s and %s", this.param,
+            if (hasPar()) {
+                throw new FormatException("Conflicting parameter aspects %s and %s", this.parAspect,
                     value, this);
             } else {
-                setParam(value);
+                setPar(value);
             }
         } else if (kind == ID) {
             setId(value);
@@ -286,12 +332,12 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         } else if (hasAspect()) {
             throw new FormatException("Conflicting node aspects %s and %s", getAspect(), value,
                 this);
-        } else if (kind.isRole() && value.getContent() != null) {
+        } else if (kind.isRole() && value.hasContent()) {
             throw new FormatException("Node aspect %s should not have quantifier name", value,
                 this);
         } else {
             setAspect(value);
-            if (kind.isQuantifier() && value.getContent() != null) {
+            if (kind.isQuantifier() && value.hasContent()) {
                 setId(value.getContentString());
             }
         }
@@ -313,7 +359,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         if (!one.getKind().equals(two.getKind())) {
             return false;
         }
-        return one.getContent() == null || two.getContent() == null;
+        return one.getContent() instanceof NullContent || two.getContent() instanceof NullContent;
     }
 
     /**
@@ -525,6 +571,49 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
             : DEFAULT;
     }
 
+    /** Indicates if this stands for a data value or expression. */
+    public boolean hasValue() {
+        assert isParsed();
+        var attr = getAttrAspect();
+        return attr != null && (attr.getContent() instanceof ConstContent
+            || attr.getContent() instanceof ExprContent);
+    }
+
+    private Expression createValue() throws FormatException {
+        AspectContent content = getAttrAspect().getContent();
+        if (content instanceof ConstContent c) {
+            return c.get();
+        } else if (content instanceof ExprContent e) {
+            return e.get().toExpression(getGraph().getTyping());
+        } else {
+            throw Exceptions.UNREACHABLE;
+        }
+    }
+
+    /** Returns the expression contained in the attribute aspect, if any. */
+    public Expression getValue() {
+        var result = this.value;
+        if (result == null && isParsed() && getGraph().isNodeComplete()) {
+            setTyped();
+            result = this.value;
+        }
+        return result;
+    }
+
+    /** The attribute-related aspect. */
+    private Aspect attr;
+
+    private Expression value;
+
+    /** Returns the line describing the value of this node, if any. */
+    public Line getValueLine() {
+        assert hasValue();
+        assert isParsed();
+        return getValue() == null
+            ? ((ExprContent) getAspect().getContent()).get().toLine()
+            : getValue().toLine();
+    }
+
     /**
      * If this is a product node, returns the list of
      * argument nodes reached by outgoing argument edges.
@@ -536,22 +625,32 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         return this.argNodes;
     }
 
-    /** Changes the (aspect) type of this node. */
-    private void setParam(Aspect type) {
-        assert type.getKind() == DEFAULT || type.getKind().isParam() : String
-            .format("Aspect %s is not a parameter", type);
-        this.param = type;
+    /** Changes the parameter aspect of this node. */
+    private void setPar(Aspect parAspect) {
+        assert parAspect.getKind() == DEFAULT || parAspect.getKind().isParam() : String
+            .format("Aspect %s is not a parameter", parAspect);
+        this.parAspect = parAspect;
     }
 
     /** Returns the parameter aspect of this node, if any. */
-    public Aspect getParam() {
-        return this.param;
+    public Aspect getParAspect() {
+        return this.parAspect;
     }
 
     /** Indicates if this represents a rule parameter. */
-    public boolean hasParam() {
-        return this.param != null;
+    public boolean hasPar() {
+        return this.parAspect != null;
     }
+
+    /** Returns the parameter kind of this node, if any. */
+    public AspectKind getParKind() {
+        return hasPar()
+            ? getParAspect().getKind()
+            : DEFAULT;
+    }
+
+    /** The parameter aspect of this node, if any. */
+    private Aspect parAspect;
 
     /** Sets the identifier aspect from a string representation. */
     private void setId(String id) throws FormatException {
@@ -560,43 +659,67 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     }
 
     /** Sets the identifier aspect of this node. */
-    private void setId(Aspect id) throws FormatException {
-        assert id.getKind() == ID : String.format("Aspect %s is not an identifier", id);
-        if (this.id != null) {
-            throw new FormatException("Duplicate node identifiers %s and %s", this.id.getContent(),
-                id.getContent(), this);
+    private void setId(Aspect idAspect) throws FormatException {
+        assert idAspect.getKind() == ID : String.format("Aspect %s is not an identifier", idAspect);
+        if (this.idAspect != null) {
+            throw new FormatException("Duplicate node identifiers %s and %s",
+                this.idAspect.getContent(), idAspect.getContent(), this);
         }
-        this.id = id;
+        this.idAspect = idAspect;
+        this.id = ((IdContent) idAspect.getContent()).get();
     }
 
     /** Returns the identifier aspect of this node, if any. */
-    public Aspect getId() {
+    public Aspect getIdAspect() {
+        return this.idAspect;
+    }
+
+    /** Returns the identifier of this node, if any. */
+    public String getId() {
         return this.id;
     }
 
     /** Indicates if this node has an identifier. */
     public boolean hasId() {
-        return this.id != null;
+        return this.idAspect != null;
     }
+
+    /** The identifier aspect of this node, if any. */
+    private Aspect idAspect;
+
+    /** The actual identifier of this node, if any. */
+    private String id;
 
     /** Sets the colour aspect of this node. */
     private void setColor(Aspect color) throws FormatException {
         assert color.getKind() == COLOR : String.format("Aspect %s is not a color", color);
-        if (this.color != null) {
+        if (this.colorAspect != null) {
             throw new FormatException("Duplicate colour specification");
         }
-        this.color = color;
+        this.colorAspect = color;
+        this.color = ((ColorContent) color.getContent()).get();
     }
 
     /** Returns the colour aspect of this node, if any. */
-    public Aspect getColor() {
+    public Aspect getColorAspect() {
+        return this.colorAspect;
+    }
+
+    /** Returns the colour of this node, if the colour aspect has been set. */
+    public Color getColor() {
         return this.color;
     }
 
     /** Indicates if this node has an colour. */
     public boolean hasColor() {
-        return this.color != null;
+        return this.colorAspect != null;
     }
+
+    /** The colour aspect of this node, if any. */
+    private Aspect colorAspect;
+
+    /** The actual colour of this node, if any. */
+    private Color color;
 
     /** Sets the colour aspect of this node. */
     private void setImport(Aspect imported) throws FormatException {
@@ -607,15 +730,18 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         this.imported = imported;
     }
 
-    /** Returns the colour aspect of this node, if any. */
+    /** Returns the import aspect of this node, if any. */
     public Aspect getImport() {
         return this.imported;
     }
 
-    /** Indicates if this node has an colour. */
+    /** Indicates if this node has an import aspect. */
     public boolean hasImport() {
         return this.imported != null;
     }
+
+    /** The import aspect of this node, if any. */
+    private Aspect imported;
 
     /** Indicates if this is a nodified edge. */
     public boolean isEdge() {
@@ -639,23 +765,12 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     /** Returns the edge label pattern of this node, if any. */
     public LabelPattern getEdgePattern() {
         return isEdge()
-            ? (LabelPattern) getEdge().getContent()
+            ? ((LabelPatternContent) getEdge().getContent()).get()
             : null;
     }
 
-    /** Returns the parameter kind of this node, if any. */
-    public AspectKind getParamKind() {
-        return hasParam()
-            ? getParam().getKind()
-            : DEFAULT;
-    }
-
-    /** Returns the parameter number, or {@code -1} if there is none. */
-    public int getParamNr() {
-        return hasParam() && getParam().hasContent()
-            ? (Integer) getParam().getContent()
-            : -1;
-    }
+    /** The edge declaration of this node, if any. */
+    private Aspect edge;
 
     /** Changes the (aspect) type of this node. */
     void setAspect(Aspect type) throws FormatException {
@@ -689,6 +804,9 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
             ? getAspect().getKind()
             : DEFAULT;
     }
+
+    /** The type of the aspect node. */
+    private Aspect aspect;
 
     /**
      * Retrieves the nesting level of this aspect node.
@@ -728,6 +846,22 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         return this.nestingParentEdge;
     }
 
+    /** Returns the optional level name, if this is a quantifier node. */
+    public String getLevelName() {
+        if (getKind().isQuantifier() && getAspect().hasContent()) {
+            return ((IdContent) getAspect().getContent()).get();
+        } else {
+            return null;
+        }
+    }
+
+    /** The aspect node representing the nesting level of this node. */
+    private AspectEdge nestingLevelEdge;
+
+    /** The aspect node representing the parent of this node in the nesting
+     * hierarchy. */
+    private AspectEdge nestingParentEdge;
+
     /**
      * Retrieves the node encapsulating the match count for this node.
      * Only non-{@code null} if this node is a universal quantifier node.
@@ -736,42 +870,13 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         return this.matchCount;
     }
 
-    /** Returns the optional level name, if this is a quantifier node. */
-    public String getLevelName() {
-        if (getKind().isQuantifier()) {
-            return (String) getAspect().getContent();
-        } else {
-            return null;
-        }
-    }
+    /** The aspect node representing the match count of a universal quantifier. */
+    private AspectNode matchCount;
 
     /** The aspect graph to which this element belongs. */
     private final AspectGraph graph;
     /** The list of aspect labels defining node aspects. */
     private final List<AspectLabel> nodeLabels = new ArrayList<>();
-    /** Indicates that the entire node is fixed. */
-    private boolean allFixed;
-    /** The type of the aspect node. */
-    private Aspect aspect;
-    /** The attribute-related aspect. */
-    private Aspect attr;
-    /** The parameter aspect of this node, if any. */
-    private Aspect param;
-    /** The identifier aspect of this node, if any. */
-    private Aspect id;
-    /** The colour aspect of this node, if any. */
-    private Aspect color;
-    /** The edge declaration of this node, if any. */
-    private Aspect edge;
-    /** The import aspect of this node, if any. */
-    private Aspect imported;
-    /** The aspect node representing the nesting level of this node. */
-    private AspectEdge nestingLevelEdge;
-    /** The aspect node representing the parent of this node in the nesting
-     * hierarchy. */
-    private AspectEdge nestingParentEdge;
-    /** The aspect node representing the match count of a universal quantifier. */
-    private AspectNode matchCount;
     /** A list of argument types, if this represents a product node. */
     private List<AspectNode> argNodes;
     /** The operator of an outgoing operator edge. */

@@ -194,7 +194,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
      */
     private Line getExternalIdLine(AspectNode node) {
         return node.hasId()
-            ? formatExternalId(node.getId().getContentString())
+            ? formatExternalId(node.getId())
             : null;
     }
 
@@ -289,7 +289,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 }
             }
             if (node.hasColor()) {
-                result.add(Line.atom(node.getColor().toString()));
+                result.add(Line.atom(node.getColorAspect().toString()));
             }
         } else {
             Line idLine = getExternalIdLine(node);
@@ -337,7 +337,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 text.append(AspectKind.COLOR.getName());
                 Line colorLine = Line
                     .atom(text.toString())
-                    .color(Colors.findColor(node.getColor().getContentString()));
+                    .color(Colors.findColor(node.getColorAspect().getContentString()));
                 result.add(colorLine);
             }
         }
@@ -738,7 +738,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
         if (attrAspect.getKind().hasSort()) {
             Line sortLine = getSortLine(attrAspect.getKind().getSort());
             if (attrAspect.hasContent()) {
-                Line contentLine = Line.atom(attrAspect.getContentString());
+                Line contentLine = node.getValueLine();
+                //Line.atom(attrAspect.getContentString());
                 if (idLine == null) {
                     result = contentLine;
                 } else {

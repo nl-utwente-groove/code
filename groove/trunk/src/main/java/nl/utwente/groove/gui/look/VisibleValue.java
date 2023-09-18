@@ -116,7 +116,7 @@ public class VisibleValue implements VisualValue<Boolean> {
             return false;
         }
         // identified nodes, parameter nodes, quantifiers and error nodes are always visible
-        if (node.hasId() || node.hasParam() || aspect.isQuantifier() || jVertex.hasErrors()) {
+        if (node.hasId() || node.hasPar() || aspect.isQuantifier() || jVertex.hasErrors()) {
             return true;
         }
         // anything declared invisible by the super method is not visible

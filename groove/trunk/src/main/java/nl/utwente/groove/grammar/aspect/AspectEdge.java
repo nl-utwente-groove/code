@@ -47,7 +47,11 @@ import nl.utwente.groove.algebra.syntax.ExprTree;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Expression.Kind;
 import nl.utwente.groove.automaton.RegExpr;
-import nl.utwente.groove.grammar.aspect.AspectKind.NestedValue;
+import nl.utwente.groove.grammar.aspect.AspectContent.ExprContent;
+import nl.utwente.groove.grammar.aspect.AspectContent.IntegerContent;
+import nl.utwente.groove.grammar.aspect.AspectContent.MultiplicityContent;
+import nl.utwente.groove.grammar.aspect.AspectContent.NestedValue;
+import nl.utwente.groove.grammar.aspect.AspectContent.OpContent;
 import nl.utwente.groove.grammar.rule.RuleLabel;
 import nl.utwente.groove.grammar.type.Multiplicity;
 import nl.utwente.groove.grammar.type.TypeLabel;
@@ -120,6 +124,9 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         return this.graph;
     }
 
+    /** The graph that this element belongs to. */
+    private final AspectGraph graph;
+
     /** Checks if the graph role of this aspect edge equals a given role. */
     public boolean hasGraphRole(GraphRole role) {
         return getGraphRole() == role;
@@ -130,10 +137,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         return getGraph().getRole();
     }
 
-    /** Parses the syntactic information in this {@link AspectEdge},
-     * including pushing the information to the source and target nodes.
-     * @return {@code true} if the status of the edge was changed by this call.
-     */
+    @Override
     public boolean setParsed() {
         if (DEBUG) {
             System.out.printf("setParsed called on %s%n", this);
@@ -145,7 +149,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             }
             this.status = Status.PARSED;
             if (!hasErrors()) {
-                setAspectsFixed();
+                parseAspects();
             }
             setDefaultAttrAspect();
             setDefaultLabelMode();
@@ -153,9 +157,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         return result;
     }
 
-    /** Sets the typing of this AspectEdge.
-     * Calls {@link #setParsed()} first, if the edge was not yet parsed.
-     */
+    @Override
     public boolean setTyped() {
         if (DEBUG) {
             System.out.printf("setTyped called on %s%n", this);
@@ -168,16 +170,19 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             setParsed();
             this.status = Status.TYPED;
             if (!hasErrors()) {
-                setExprFixed();
+                typeExpression();
             }
         }
         return result;
     }
 
     @Override
-    public boolean setFixed() {
-        return setTyped();
+    public Status getStatus() {
+        return this.status;
     }
+
+    /** The construction status of this AspectEdge. */
+    private Status status = Status.NEW;
 
     @Override
     public EdgeRole getRole() {
@@ -196,15 +201,12 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         }
     }
 
-    /** The graph that this element belongs to. */
-    private final AspectGraph graph;
-
     /**
-     * Fixes the aspects, by first setting the declared label aspects,
+     * Parses the aspects, by first setting the declared label aspects,
      * then inferring aspects from the end nodes.
      * Should only be called if the edge has no errors otherwise.
      */
-    private void setAspectsFixed() {
+    private void parseAspects() {
         try {
             setAspects(label());
             inferAspects();
@@ -228,7 +230,8 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         }
     }
 
-    private void setExprFixed() {
+    /** Types the expression that may occur on this edge. */
+    private void typeExpression() {
         try {
             if (isAssign()) {
                 this.assign = createAssign();
@@ -281,7 +284,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 throw new FormatException("Conflicting aspects %s and %s", getAttrAspect(),
                     getAspect());
             }
-            if (source().getParamKind() == PARAM_ASK || target().getParamKind() == PARAM_ASK) {
+            if (source().getParKind() == PARAM_ASK || target().getParKind() == PARAM_ASK) {
                 if (!getKind().isCreator() && getKind() != REMARK) {
                     throw new FormatException("User-provided parameters must be unconstrained");
                 }
@@ -326,28 +329,6 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             }
         }
     }
-
-    /** Returns {@code true} if this AspectEdge has been parsed.
-     * @see #setParsed()
-     */
-    public boolean isParsed() {
-        return this.status == Status.PARSED || this.status == Status.TYPED;
-    }
-
-    /** Returns {@code true} if this AspectEdge has been typed.
-     * @see #setTyped()
-     */
-    public boolean isTyped() {
-        return this.status == Status.TYPED;
-    }
-
-    @Override
-    public boolean isFixed() {
-        return this.status == Status.TYPED;
-    }
-
-    /** The construction status of this AspectEdge. */
-    private Status status = Status.NEW;
 
     /**
      * Sets the (declared) aspects for this edge from the edge label.
@@ -742,6 +723,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     /** Setter for the aspect type. */
     private void setAspect(Aspect aspect) throws FormatException {
         AspectKind kind = aspect.getKind();
+        AspectContent content = aspect.getContent();
         assert !kind.isAttrKind() && kind != AspectKind.PATH && kind != AspectKind.LITERAL;
         // process the content, if any
         if (kind.isQuantifier()) {
@@ -755,22 +737,22 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 throw new FormatException("Duplicate quantifier levels %s and %s", this.levelName,
                     aspect.getContent(), this);
             } else {
-                this.levelName = (String) aspect.getContent();
+                this.levelName = (String) content.get();
             }
         } else if (kind.isRole() && aspect.hasContent()) {
             if (this.levelName != null) {
                 throw new FormatException("Duplicate quantifier levels %s and %s", this.levelName,
                     aspect.getContent(), this);
             } else {
-                this.levelName = (String) aspect.getContent();
+                this.levelName = (String) content.get();
             }
         }
         // actually set the type, if the passed-in value was not a quantifier
         // (which we use only for its level name)
         if (kind == AspectKind.MULT_IN) {
-            this.inMult = (Multiplicity) aspect.getContent();
+            this.inMult = ((MultiplicityContent) content).get();
         } else if (kind == AspectKind.MULT_OUT) {
-            this.outMult = (Multiplicity) aspect.getContent();
+            this.outMult = ((MultiplicityContent) content).get();
         } else if (kind == AspectKind.COMPOSITE) {
             this.composite = true;
         } else if (!kind.isQuantifier()) {
@@ -823,17 +805,20 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     /** Indicates if this edge is a "nested:at". */
     public boolean isNestedAt() {
-        return hasAspect() && getKind() == NESTED && getAspect().getContent() == NestedValue.AT;
+        return hasAspect() && getKind() == NESTED
+            && getAspect().getContent().get() == NestedValue.AT;
     }
 
     /** Indicates if this edge is a "nested:in". */
     public boolean isNestedIn() {
-        return hasAspect() && getKind() == NESTED && getAspect().getContent() == NestedValue.IN;
+        return hasAspect() && getKind() == NESTED
+            && getAspect().getContent().get() == NestedValue.IN;
     }
 
     /** Indicates if this edge is a "nested:count". */
     public boolean isNestedCount() {
-        return hasAspect() && getKind() == NESTED && getAspect().getContent() == NestedValue.COUNT;
+        return hasAspect() && getKind() == NESTED
+            && getAspect().getContent().get() == NestedValue.COUNT;
     }
 
     /** Indicates that this is a creator element with a merge label ("="). */
@@ -845,17 +830,18 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     /** Setter for the aspect type. */
     private void setAttrAspect(Aspect type) {
         AspectKind kind = type.getKind();
+        AspectContent content = type.getContent();
         assert kind == AspectKind.DEFAULT || kind.isAttrKind();
         assert this.attr == null;
         this.attr = type;
         if (type.getKind() == ARGUMENT) {
             this.attr = type;
-            this.argumentNr = (Integer) this.attr.getContent();
+            this.argumentNr = ((IntegerContent) content).get();
         } else if (kind.hasSort()) {
             this.attr = type;
             this.signature = kind.getSort();
             if (hasGraphRole(RULE)) {
-                this.operator = (Operator) type.getContent();
+                this.operator = ((OpContent) content).get();
             }
         }
     }
@@ -918,7 +904,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     private Assignment createAssign() throws FormatException {
         assert isAssign();
         assert isParsed();
-        return ((ExprTree) getAspect().getContent()).toAssignment(getGraph().getTyping());
+        return ((ExprContent) getAspect().getContent()).get().toAssignment(getGraph().getTyping());
     }
 
     /** Returns a line describing the assignment.
@@ -962,7 +948,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         assert isPredicate();
         assert isParsed();
         return getPredicate() == null
-            ? Line.atom(getAttrAspect().toString())
+            ? ((ExprContent) getAspect().getContent()).get().toLine()
             : getPredicate().toLine();
     }
 
@@ -970,7 +956,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         assert isPredicate();
         assert isParsed();
         Expression result = null;
-        ExprTree tree = (ExprTree) getAttrAspect().getContent();
+        ExprTree tree = ((ExprContent) getAttrAspect().getContent()).get();
         result = tree.toExpression(getGraph().getTyping());
         if (result.getKind() == Kind.FIELD) {
             throw new FormatException("Field expression '%s' not allowed as predicate expression",
@@ -1113,16 +1099,4 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     /** Debug flag. */
     static private final boolean DEBUG = false;
-
-    /** Construction status of an AspectEdge. */
-    static private enum Status {
-        /** Freshly constructed. */
-        NEW,
-        /** Aspects fixed. */
-        PARSED,
-        /** Expressions typed.
-         * At this stage, the edge is fixed.
-         */
-        TYPED,;
-    }
 }

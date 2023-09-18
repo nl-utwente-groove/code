@@ -21,7 +21,6 @@ import static nl.utwente.groove.grammar.aspect.AspectKind.DEFAULT;
 import static nl.utwente.groove.grammar.aspect.AspectKind.SUBTYPE;
 import static nl.utwente.groove.graph.EdgeRole.NODE_TYPE;
 
-import java.awt.Color;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -92,7 +91,9 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
     @Override
     public Set<TypeLabel> getLabels() {
         TypeGraph typeGraph = getResource();
-        return typeGraph == null ? Collections.<TypeLabel>emptySet() : typeGraph.getLabels();
+        return typeGraph == null
+            ? Collections.<TypeLabel>emptySet()
+            : typeGraph.getLabels();
     }
 
     @Override
@@ -129,13 +130,11 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         errors.throwException();
         // check if there are untyped, non-virtual nodes
         Set<AspectNode> untypedNodes = new HashSet<>(getSource().nodeSet());
-        untypedNodes.removeAll(this.modelMap.nodeMap()
-            .keySet());
+        untypedNodes.removeAll(this.modelMap.nodeMap().keySet());
         Iterator<AspectNode> untypedNodeIter = untypedNodes.iterator();
         while (untypedNodeIter.hasNext()) {
             AspectNode modelNode = untypedNodeIter.next();
-            if (modelNode.getKind()
-                .isMeta()) {
+            if (modelNode.getKind().isMeta()) {
                 untypedNodeIter.remove();
             } else {
                 // add a node anyhow, to ensure all edge ends have images
@@ -151,8 +150,8 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         for (AspectEdge modelEdge : getSource().edgeSet()) {
             // do not process the node type edges again
             TypeLabel typeLabel = modelEdge.getTypeLabel();
-            if (!modelEdge.getKind()
-                .isMeta() && (typeLabel == null || typeLabel.getRole() != NODE_TYPE)) {
+            if (!modelEdge.getKind().isMeta()
+                && (typeLabel == null || typeLabel.getRole() != NODE_TYPE)) {
                 try {
                     processModelEdge(result, this.modelMap, modelEdge);
                 } catch (FormatException exc) {
@@ -179,18 +178,15 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
      * @param modelNode the node in the aspect graph that stands for a node type
      * @param typeLabel the node type label
      */
-    private void addNodeType(AspectNode modelNode, TypeLabel typeLabel, TypeFactory factory)
-        throws FormatException {
+    private void addNodeType(AspectNode modelNode, TypeLabel typeLabel,
+                             TypeFactory factory) throws FormatException {
         TypeNode oldTypeNode = this.modelMap.getNode(modelNode);
         if (oldTypeNode != null) {
             throw new FormatException("Duplicate types '%s' and '%s'", typeLabel.text(),
-                oldTypeNode.label()
-                    .text(),
-                modelNode);
+                oldTypeNode.label().text(), modelNode);
         }
         TypeNode typeNode;
-        Sort signature = modelNode.getAttrKind()
-            .getSort();
+        Sort signature = modelNode.getAttrKind().getSort();
         if (signature == null) {
             typeNode = factory.createNode(typeLabel);
         } else {
@@ -211,8 +207,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             typeNode.setImported(true);
         }
         if (modelNode.hasColor()) {
-            typeNode.setColor((Color) modelNode.getColor()
-                .getContent());
+            typeNode.setColor(modelNode.getColor());
         }
         if (modelNode.isEdge()) {
             if (signature != null) {
@@ -228,27 +223,25 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
      * Processes the information in a model edge by updating the model, element
      * map and subtypes.
      */
-    private void processModelEdge(TypeGraph model, TypeModelMap elementMap, AspectEdge modelEdge)
-        throws FormatException {
+    private void processModelEdge(TypeGraph model, TypeModelMap elementMap,
+                                  AspectEdge modelEdge) throws FormatException {
         TypeNode typeSource = elementMap.getNode(modelEdge.source());
-        assert typeSource != null : String.format("Source of model edge '%s' not in element map %s",
-            modelEdge.source(),
-            elementMap);
+        assert typeSource != null : String
+            .format("Source of model edge '%s' not in element map %s", modelEdge.source(),
+                    elementMap);
         if (typeSource.isImported()) {
             throw new FormatException("Can't change imported type '%s'", typeSource.label(),
                 modelEdge);
         }
         TypeNode typeTarget = elementMap.getNode(modelEdge.target());
-        assert typeTarget != null : String.format("Target of model edge '%s' not in element map %s",
-            modelEdge.source(),
-            elementMap);
+        assert typeTarget != null : String
+            .format("Target of model edge '%s' not in element map %s", modelEdge.source(),
+                    elementMap);
         TypeEdge typeEdge = null;
-        if (modelEdge.getAttrKind()
-            .hasSort()) {
-            TypeNode typeNode = model.getFactory()
-                .getDataType(modelEdge.getSignature());
-            typeEdge = model.addEdge(typeSource, modelEdge.getAttrAspect()
-                .getContentString(), typeNode);
+        if (modelEdge.getAttrKind().hasSort()) {
+            TypeNode typeNode = model.getFactory().getDataType(modelEdge.getSignature());
+            typeEdge
+                = model.addEdge(typeSource, modelEdge.getAttrAspect().getContentString(), typeNode);
         } else if (modelEdge.getKind() == SUBTYPE) {
             model.addInheritance(typeSource, typeTarget);
         } else {

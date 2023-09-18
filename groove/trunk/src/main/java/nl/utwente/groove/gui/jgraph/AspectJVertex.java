@@ -9,7 +9,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectKind;
@@ -136,14 +135,11 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
         } else if (getNode().hasAttrAspect()) {
             AspectKind attrKind = getNode().getAttrKind();
             if (attrKind.hasSort()) {
-                // this is a constant or variable node
-                Object content = getNode().getAttrAspect().getContent();
-                if (content == null) {
-                    return VariableNode.TO_STRING_PREFIX + getNode().getNumber();
-                } else if (content instanceof Expression e) {
-                    return e.toDisplayString();
+                // this is an expression or variable node
+                if (getNode().hasValue()) {
+                    return null;
                 } else {
-                    return content.toString();
+                    return VariableNode.TO_STRING_PREFIX + getNode().getNumber();
                 }
             } else {
                 assert attrKind == AspectKind.PRODUCT;
@@ -172,8 +168,8 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
             HTMLConverter.EMBARGO_TAG.on(result);
         } else {
             if (getNode().getAttrKind().hasSort()) {
-                if (getNode().getAttrAspect().hasContent()) {
-                    result.append("Constant node");
+                if (getNode().hasValue()) {
+                    result.append("Expression node");
                 } else {
                     result.append("Variable node");
                 }

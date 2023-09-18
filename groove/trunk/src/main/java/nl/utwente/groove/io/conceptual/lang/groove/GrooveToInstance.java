@@ -159,8 +159,8 @@ public class GrooveToInstance extends InstanceImporter {
 
     private String getNodeName(AspectNode node) {
         if (this.m_cfg.getConfig().getInstanceModel().getObjects().isUseIdentifier()
-            && node.getId() != null) {
-            return node.getId().getContentString();
+            && node.hasId()) {
+            return node.getId();
         } else {
             return "node" + this.m_nodeCounter++;
         }
@@ -170,8 +170,13 @@ public class GrooveToInstance extends InstanceImporter {
     // index value: Returns value of index attr
     // Integer.MIN_VALUE on error
     private int getNodeIndex(HostNode node) {
-        OrderType orderType = this.m_cfg.getConfig().getTypeModel().getFields().getContainers()
-            .getOrdering().getType();
+        OrderType orderType = this.m_cfg
+            .getConfig()
+            .getTypeModel()
+            .getFields()
+            .getContainers()
+            .getOrdering()
+            .getType();
         if (orderType == OrderType.INDEX) {
             String indexName = this.m_cfg.getStrings().getIndexEdge();
             HostNode indexNode = getEdgeNode(node, indexName);

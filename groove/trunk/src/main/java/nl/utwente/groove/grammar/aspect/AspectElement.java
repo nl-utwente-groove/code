@@ -82,4 +82,55 @@ public interface AspectElement extends Element, Fixable {
      * Returns the (non-{@code null}) list of format errors in this element.
      */
     FormatErrorSet getErrors();
+
+    /**
+     * Parses the syntactic information in this {@link AspectElement}.
+     * @return {@code true} if the status of the element was changed by this call.
+     */
+    boolean setParsed();
+
+    /** Returns {@code true} if the construction status of this {@link AspectElement}
+     * is at least {@link Status#PARSED}
+     */
+    default boolean isParsed() {
+        return getStatus() != Status.NEW;
+    }
+
+    /** Sets the typing of this {@link AspectElement}.
+     * Calls {@link #setParsed()} first, if the element was not yet parsed.
+     * @return {@code true} if the status of the element was changed by this call.
+     */
+    boolean setTyped();
+
+    /** Returns {@code true} if the construction status of this {@link AspectElement}
+     * is {@link Status#TYPED}.
+     */
+    default boolean isTyped() {
+        return getStatus() == Status.TYPED;
+    }
+
+    @Override
+    default boolean setFixed() {
+        return setTyped();
+    }
+
+    @Override
+    default boolean isFixed() {
+        return isTyped();
+    }
+
+    /** Returns the construction status of this {@link AspectElement}. */
+    Status getStatus();
+
+    /** Construction status of an {@link AspectElement}. */
+    static enum Status {
+        /** Freshly constructed. */
+        NEW,
+        /** Aspects fixed. */
+        PARSED,
+        /** Expressions typed.
+         * At this stage, the edge is fixed.
+         */
+        TYPED,;
+    }
 }

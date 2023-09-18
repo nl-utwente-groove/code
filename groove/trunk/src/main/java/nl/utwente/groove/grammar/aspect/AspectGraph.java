@@ -47,6 +47,7 @@ import nl.utwente.groove.algebra.syntax.Typing;
 import nl.utwente.groove.algebra.syntax.Variable;
 import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.grammar.aspect.AspectContent.NestedValue;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.AElementMap;
 import nl.utwente.groove.graph.Edge;
@@ -357,7 +358,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
                 expr.toDisplayString(), owner);
         }
         if (owner.getKind().isQuantifier()
-            && !expr.getField().equals(AspectKind.NestedValue.COUNT.toString())) {
+            && !expr.getField().equals(NestedValue.COUNT.toString())) {
             throw new FormatException("Quantifier node does not have '%s'-edge", expr.getField(),
                 owner, source);
         }
@@ -465,7 +466,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             result.setAspect(source.getAspect());
         }
         if (level != null) {
-            addEdge(result, AspectKind.NestedValue.AT.toString(), level);
+            addEdge(result, NestedValue.AT.toString(), level);
         }
         return result;
     }
@@ -661,7 +662,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
                 graphChanged |= labelChanged;
                 Aspect newColour = labelChanged
                     ? colour
-                    : edge.source().getColor();
+                    : edge.source().getColorAspect();
                 if (newColour != null) {
                     result.addEdge(sourceImage, newColour.toString(), targetImage);
                 }
@@ -735,14 +736,13 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             HashMap<String,AspectNode> nodeIdMap = new HashMap<>();
             Typing typing = new Typing();
             for (AspectNode node : nodeSet()) {
-                Aspect id = node.getId();
-                if (id != null) {
-                    String name = id.getContentString();
-                    AspectNode oldNode = nodeIdMap.put(name, node);
+                if (node.hasId()) {
+                    String id = node.getId();
+                    AspectNode oldNode = nodeIdMap.put(id, node);
                     if (oldNode != null) {
-                        errors.add("Duplicate node identifier %s", name, node, oldNode);
+                        errors.add("Duplicate node identifier %s", id, node, oldNode);
                     } else if (node.hasAttrAspect() && node.getAttrAspect().getKind().hasSort()) {
-                        typing.add(name, node.getAttrAspect().getKind().getSort());
+                        typing.add(id, node.getAttrAspect().getKind().getSort());
                     }
                 }
             }
@@ -987,8 +987,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             // Copy the nodes
             for (AspectNode node : graph.nodeSet()) {
                 AspectNode fresh = null;
-                if (node.getId() != null) {
-                    String id = node.getId().getContentString();
+                if (node.hasId()) {
+                    String id = node.getId();
                     if (sharedNodes.containsKey(id)) {
                         nodeMap.put(node, sharedNodes.get(id));
                     } else {

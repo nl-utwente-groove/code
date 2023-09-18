@@ -148,7 +148,7 @@ public enum Sort {
 
     /** Constructs a sort with a given name. */
     private Sort(String name, Class<? extends Signature> sigClass,
-        Set<? extends OpValue> opValues) {
+                 Set<? extends OpValue> opValues) {
         assert name != null;
         this.name = name;
         this.sigClass = sigClass;
@@ -184,7 +184,11 @@ public enum Sort {
 
     private final Set<? extends OpValue> opValues;
 
-    /** Returns the operator corresponding to a given operator name of this sort. */
+    /** Returns the operator corresponding to a given operator name of this sort.
+     * @param name the name of the expected operator
+     * @return the operator of this sort called {@code name},
+     * or {@code null} if such an operator does not exist
+     */
     public Operator getOperator(String name) {
         if (this.operatorMap == null) {
             this.operatorMap = computeOperatorMap();

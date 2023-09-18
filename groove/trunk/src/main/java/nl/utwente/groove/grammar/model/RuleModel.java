@@ -48,7 +48,6 @@ import javax.swing.SwingUtilities;
 
 import org.eclipse.jdt.annotation.NonNull;
 
-import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Variable;
@@ -63,7 +62,9 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.Signature;
 import nl.utwente.groove.grammar.UnitPar;
-import nl.utwente.groove.grammar.aspect.Aspect;
+import nl.utwente.groove.grammar.aspect.AspectContent;
+import nl.utwente.groove.grammar.aspect.AspectContent.IntegerContent;
+import nl.utwente.groove.grammar.aspect.AspectContent.NullContent;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectElement;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
@@ -204,7 +205,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             if (!node.hasAspect()) {
                 continue;
             }
-            if (node.getParam() != null) {
+            if (node.hasPar()) {
                 return new FormatError("parameter not allowed", node);
                 /* who would we ever want graph conditions with parameters?
                 // don't use #getRole() here as it causes infinite recursion
@@ -819,11 +820,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 boolean positive = kind == EXISTS || kind == FORALL_POS;
                 this.metaIndexMap
                     .put(metaNode, result = createIndex(operator, positive, metaNode, indexTree));
-                Aspect id = metaNode.getId();
-                if (id != null) {
-                    String name = id.getContentString();
-                    Index oldIndex = this.nameIndexMap.put(name, result);
-                    assert oldIndex == null : String.format("Duplicate quantifier name %s", name);
+                if (metaNode.hasId()) {
+                    String id = metaNode.getId();
+                    Index oldIndex = this.nameIndexMap.put(id, result);
+                    assert oldIndex == null : String.format("Duplicate quantifier name %s", id);
                 }
             }
             return result;
@@ -1389,7 +1389,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             AspectKind nodeKind = modelNode.getKind();
             this.isRule |= nodeKind.inLHS() != nodeKind.inRHS();
             RuleNode ruleNode = getNodeImage(modelNode);
-            boolean isAskNode = modelNode.getParamKind() == PARAM_ASK;
+            boolean isAskNode = modelNode.getParKind() == PARAM_ASK;
             if (nodeKind.inLHS() && !isAskNode) {
                 this.lhs.addNode(ruleNode);
                 if (nodeKind.inRHS()) {
@@ -1410,7 +1410,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 }
             }
             if (modelNode.hasColor()) {
-                this.colorMap.put(ruleNode, (Color) modelNode.getColor().getContent());
+                this.colorMap.put(ruleNode, modelNode.getColor());
             }
         }
 
@@ -1847,20 +1847,17 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          */
         private RuleNode computeNodeImage(AspectNode node) throws FormatException {
             RuleNode result;
-            if (node.hasParam() && !this.index.isTopLevel()) {
+            if (node.hasPar() && !this.index.isTopLevel()) {
                 throw new FormatException("Parameter '%d' only allowed on top existential level",
                     node.getNumber(), node);
             }
             AspectKind nodeAttrKind = node.getAttrKind();
             int nr = node.getNumber();
             if (nodeAttrKind.hasSort()) {
-                Aspect nodeAttr = node.getAttrAspect();
                 Expression term;
-                String id = node.hasId()
-                    ? node.getId().getContentString()
-                    : null;
-                if (nodeAttr.hasContent()) {
-                    term = (Constant) nodeAttr.getContent();
+                String id = node.getId();
+                if (node.hasValue()) {
+                    term = node.getValue();
                 } else {
                     String varName = id == null
                         ? VariableNode.TO_STRING_PREFIX + nr
@@ -2535,9 +2532,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             // collect parameter nodes
             for (AspectNode node : getSource().nodeSet()) {
                 // check if the node is a parameter
-                if (node.hasParam()) {
-                    Integer nr = (Integer) node.getParam().getContent();
-                    if (nr != null) {
+                if (node.hasPar()) {
+                    AspectContent parContent = node.getParAspect().getContent();
+                    if (parContent instanceof IntegerContent i) {
+                        Integer nr = i.get();
                         parCount = Math.max(parCount, nr + 1);
                         try {
                             processNode(parMap, node, nr);
@@ -2545,9 +2543,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                             errors.addAll(exc.getErrors());
                         }
                     } else {
+                        assert parContent instanceof NullContent;
                         // this is an unnumbered parameter,
                         // which serves as an explicit anchor node
-                        if (node.getParamKind() != PARAM_BI) {
+                        if (node.getParKind() != PARAM_BI) {
                             throw new FormatException("Anchor node cannot be input or output",
                                 node);
                         }
@@ -2581,16 +2580,16 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         private void processNode(Map<Integer,UnitPar.RulePar> parMap, AspectNode node,
                                  Integer nr) throws FormatException {
             AspectKind nodeKind = node.getKind();
-            AspectKind paramKind = node.getParamKind();
+            AspectKind parKind = node.getParKind();
             RuleNode nodeImage = getMap().getNode(node);
             assert nodeImage != null;
-            if (paramKind == PARAM_IN && nodeKind.isCreator()) {
+            if (parKind == PARAM_IN && nodeKind.isCreator()) {
                 throw new FormatException("Input parameter %d cannot be creator node", nr, node);
             }
             if (nodeKind.inNAC()) {
                 throw new FormatException("Parameter '%d' may not occur in NAC", nr, node);
             }
-            UnitPar.RulePar par = new UnitPar.RulePar(paramKind, nodeImage, nodeKind.isCreator());
+            UnitPar.RulePar par = new UnitPar.RulePar(parKind, nodeImage, nodeKind.isCreator());
             UnitPar.RulePar oldPar = parMap.put(nr, par);
             if (oldPar != null) {
                 throw new FormatException("Parameter '%d' defined more than once", nr, node,
