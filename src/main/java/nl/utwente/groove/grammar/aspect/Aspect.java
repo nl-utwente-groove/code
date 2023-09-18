@@ -19,9 +19,12 @@ package nl.utwente.groove.grammar.aspect;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.utwente.groove.algebra.Constant;
-import nl.utwente.groove.algebra.syntax.Expression;
-import nl.utwente.groove.grammar.aspect.AspectKind.ContentKind;
+import org.eclipse.jdt.annotation.NonNull;
+
+import nl.utwente.groove.grammar.aspect.AspectContent.ConstContent;
+import nl.utwente.groove.grammar.aspect.AspectContent.ContentKind;
+import nl.utwente.groove.grammar.aspect.AspectContent.ExprContent;
+import nl.utwente.groove.grammar.aspect.AspectContent.NullContent;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.util.Exceptions;
@@ -36,17 +39,16 @@ import nl.utwente.groove.util.parse.FormatException;
  */
 public class Aspect {
     /** Creates a prototype (i.e., empty) aspect for a given aspect kind. */
-    Aspect(AspectKind kind, ContentKind contentKind) {
+    Aspect(AspectKind kind) {
         this.aspectKind = kind;
-        this.contentKind = contentKind;
         this.prototype = true;
-        this.content = null;
+        this.content = new NullContent(kind.getContentKind());
     }
 
     /** Creates a new aspect, wrapping either a number or a text. */
-    Aspect(AspectKind kind, ContentKind contentKind, Object content) {
+    Aspect(AspectKind kind, AspectContent content) {
+        assert kind.getContentKind() == content.kind();
         this.aspectKind = kind;
-        this.contentKind = contentKind;
         this.content = content;
         this.prototype = false;
     }
@@ -55,12 +57,8 @@ public class Aspect {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((this.aspectKind == null)
-            ? 0
-            : this.aspectKind.hashCode());
-        result = prime * result + ((this.content == null)
-            ? 0
-            : this.content.hashCode());
+        result = prime * result + this.aspectKind.hashCode();
+        result = prime * result + this.content.hashCode();
         return result;
     }
 
@@ -79,11 +77,7 @@ public class Aspect {
         if (this.aspectKind != other.aspectKind) {
             return false;
         }
-        if (this.content == null) {
-            if (other.content != null) {
-                return false;
-            }
-        } else if (!this.content.equals(other.content)) {
+        if (!this.content.equals(other.content)) {
             return false;
         }
         return true;
@@ -91,11 +85,11 @@ public class Aspect {
 
     @Override
     public String toString() {
-        return this.contentKind.toString(getKind(), getContent());
+        return getContent().toParsableString(getKind());
     }
 
     /**
-     * Creates a new aspect, of the same kind of this one, but
+     * Creates a new aspect, of the same kind of this one (which must be a prototype),
      * wrapping content derived from given (non-{@code null} text.
      * @param role intended graph role of the new aspect
      * @throws UnsupportedOperationException if this aspect is itself already
@@ -107,7 +101,7 @@ public class Aspect {
         if (!this.prototype) {
             throw Exceptions.unsupportedOp("New aspects can only be created from prototypes");
         }
-        return new Aspect(getKind(), this.contentKind, this.contentKind.parseContent(text, role));
+        return new Aspect(getKind(), getContentKind().parseContent(text, role));
     }
 
     /**
@@ -120,11 +114,9 @@ public class Aspect {
      */
     public Aspect relabel(TypeLabel oldLabel, TypeLabel newLabel) {
         Aspect result = this;
-        if (hasContent()) {
-            Object newContent = this.contentKind.relabel(getContent(), oldLabel, newLabel);
-            if (newContent != getContent()) {
-                result = new Aspect(getKind(), this.contentKind, newContent);
-            }
+        AspectContent newContent = getContent().relabel(oldLabel, newLabel);
+        if (newContent != getContent()) {
+            result = new Aspect(getKind(), newContent);
         }
         return result;
     }
@@ -135,33 +127,37 @@ public class Aspect {
     }
 
     /**
-     * Indicates if this aspect wraps a text.
+     * Indicates if this aspect has non-empty content.
      */
     public boolean hasContent() {
-        return this.content != null;
+        return !(this.content instanceof NullContent);
     }
 
     /**
-     * Returns the text wrapped by this aspect, or {@code null} if it does
-     * not wrap a text.
+     * Returns the content wrapped by this aspect.
      */
-    public Object getContent() {
+    public @NonNull AspectContent getContent() {
         return this.content;
     }
 
+    /** Convenience method to return the content kind of this aspect. */
+    public ContentKind getContentKind() {
+        return getKind().getContentKind();
+    }
+
     /**
-     * Returns a string description of the aspect content,
-     * or the empty string if the aspect has no content
+     * Returns a string description of the aspect content that can be parsed back to the content,
+     * or the empty string if the aspect has no content.
      */
     public String getContentString() {
-        return this.contentKind.toString(getContent());
+        return getContent().toParsableString();
     }
 
     /** Indicates that this aspect kind is allowed to appear on edges of a particular graph kind. */
     public boolean isForEdge(GraphRole role) {
         boolean result = AspectKind.allowedEdgeKinds.get(role).contains(getKind());
         if (result && getKind().hasSort()) {
-            result = !(getContent() instanceof Constant);
+            result = !(getContent() instanceof ConstContent || getContent() instanceof ExprContent);
         }
         return result;
     }
@@ -172,8 +168,8 @@ public class Aspect {
         if (result && getKind().hasSort()) {
             result = switch (role) {
             case TYPE -> !hasContent();
-            case RULE -> !hasContent() || (getContent() instanceof Expression);
-            case HOST -> (getContent() instanceof Expression e) && e.isTerm();
+            case RULE -> !hasContent() || (getContent() instanceof ExprContent);
+            case HOST -> (getContent() instanceof ConstContent c) && c.get().isTerm();
             default -> throw Exceptions.UNREACHABLE;
             };
         }
@@ -184,10 +180,8 @@ public class Aspect {
     private final boolean prototype;
     /** Aspect kind of this aspect. */
     private final AspectKind aspectKind;
-    /** Content kind of this aspect. */
-    private final ContentKind contentKind;
     /** Content wrapped in this aspect; {@code null} if this is a prototype. */
-    private final Object content;
+    private final AspectContent content;
 
     /** Returns the prototypical aspect for a given aspect name. */
     public static Aspect getAspect(String name) {

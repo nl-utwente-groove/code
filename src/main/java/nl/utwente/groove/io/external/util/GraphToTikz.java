@@ -33,6 +33,7 @@ import java.util.Set;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.util.Bezier;
 
+import nl.utwente.groove.grammar.UnitPar;
 import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
@@ -292,7 +293,7 @@ public final class GraphToTikz<G extends Graph> {
 
     private static boolean hasParameter(JVertex<?> node) {
         return node instanceof AspectJVertex v
-            ? v.getNode().hasParam()
+            ? v.getNode().hasPar()
             : false;
     }
 
@@ -413,7 +414,7 @@ public final class GraphToTikz<G extends Graph> {
 
     private void appendParameterNode(AspectJVertex node) {
         String nodeId = node.getNode().toString();
-        String nr = node.getNode().getParamNr() + "";
+        String nr = UnitPar.toRuleAdornment(node.getNode().getParAspect());
         // New node line.
         append(BEGIN_NODE + encloseBrack(PAR_NODE_STYLE));
         // Node name.
@@ -809,8 +810,9 @@ public final class GraphToTikz<G extends Graph> {
      * @param layout information regarding layout of the edge.
      */
     private void appendSplineLayout(JEdge<G> edge, JEdgeLayout layout) {
-        System.err.println("Sorry, the SPLINE line style is not yet "
-            + "supported, using BEZIER style...");
+        System.err
+            .println("Sorry, the SPLINE line style is not yet "
+                + "supported, using BEZIER style...");
         appendBezierLayout(edge, layout);
     }
 

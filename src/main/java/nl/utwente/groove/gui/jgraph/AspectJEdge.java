@@ -222,7 +222,7 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
         if (!getTargetNode().getAttrKind().hasSort()) {
             return false;
         }
-        if (getTargetNode().hasParam()) {
+        if (getTargetNode().hasPar()) {
             return false;
         }
         if (graph != null && graph.getGraphRole() != GraphRole.TYPE

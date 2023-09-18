@@ -16,10 +16,8 @@
  */
 package nl.utwente.groove.grammar.aspect;
 
-import static nl.utwente.groove.grammar.aspect.AspectParser.ASSIGN;
 import static nl.utwente.groove.grammar.aspect.AspectParser.SEPARATOR;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -29,23 +27,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.eclipse.jdt.annotation.NonNull;
-
-import nl.utwente.groove.algebra.Constant;
-import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.Signature.OpValue;
 import nl.utwente.groove.algebra.Sort;
-import nl.utwente.groove.algebra.syntax.Assignment;
-import nl.utwente.groove.algebra.syntax.ExprTree;
-import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.annotation.Help;
-import nl.utwente.groove.grammar.type.LabelPattern;
-import nl.utwente.groove.grammar.type.Multiplicity;
-import nl.utwente.groove.grammar.type.TypeLabel;
-import nl.utwente.groove.graph.EdgeRole;
+import nl.utwente.groove.grammar.aspect.AspectContent.ContentKind;
+import nl.utwente.groove.grammar.aspect.AspectContent.NestedValue;
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.util.Colors;
-import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Keywords;
 import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.parse.FormatException;
@@ -191,7 +178,7 @@ public enum AspectKind {
     /** Returns a (prototypical) aspect of this kind. */
     public Aspect getAspect() {
         if (this.aspect == null) {
-            this.aspect = new Aspect(this, this.contentKind);
+            this.aspect = new Aspect(this);
         }
         return this.aspect;
     }
@@ -211,8 +198,8 @@ public enum AspectKind {
     public Pair<Aspect,String> parseAspect(String input, GraphRole role) throws FormatException {
         assert input.startsWith(getName()) && input.indexOf(SEPARATOR) >= 0;
         // give the text to the content kind to parse
-        Pair<Object,String> result = getContentKind().parse(input, getName().length(), role);
-        return new Pair<>(new Aspect(this, getContentKind(), result.one()), result.two());
+        var result = getContentKind().parse(input, getName().length(), role);
+        return new Pair<>(new Aspect(this, result.one()), result.two());
     }
 
     /**
@@ -276,7 +263,7 @@ public enum AspectKind {
      * @see #hasSort()
      */
     public Sort getSort() {
-        return this.contentKind.sort;
+        return this.contentKind.getSort();
     }
 
     /**
@@ -342,14 +329,6 @@ public enum AspectKind {
      */
     public static AspectKind getKind(String name) {
         return kindMap.get(name);
-    }
-
-    /**
-     * Returns the aspect kind corresponding to a certain non-{@code null}
-     * name, or {@code null} if there is no such aspect kind.
-     */
-    public static NestedValue getNestedValue(String name) {
-        return nestedValueMap.get(name);
     }
 
     /**
@@ -927,15 +906,13 @@ public enum AspectKind {
         = new EnumMap<>(GraphRole.class);
     /** Static mapping from all aspect names to aspects. */
     private static final Map<String,AspectKind> kindMap = new HashMap<>();
-    /** Static mapping from nested value texts to values. */
-    private static final Map<String,NestedValue> nestedValueMap = new HashMap<>();
     /** Mapping from kind value names to symbols. */
     private static final Map<String,String> tokenMap = new HashMap<>();
     /** Mapping from signature names to aspect kinds. */
     private static final Map<Sort,AspectKind> sigKindMap = new EnumMap<>(Sort.class);
 
     static {
-        // initialise the aspect kind map
+        // initialise the aspect kind and token maps
         for (AspectKind kind : AspectKind.values()) {
             AspectKind oldKind = kindMap.put(kind.toString(), kind);
             assert oldKind == null;
@@ -945,13 +922,9 @@ public enum AspectKind {
                 sigKindMap.put(sigKind, kind);
             }
         }
-        // initialise the nested value map
         for (NestedValue value : NestedValue.values()) {
-            NestedValue oldValue = nestedValueMap.put(value.toString(), value);
-            assert oldValue == null;
             tokenMap.put(value.name(), value.toString());
         }
-        nestedValueMap.put(NestedValue.AT_SYMBOL, NestedValue.AT);
         tokenMap.put("COLON", "" + AspectParser.SEPARATOR);
         tokenMap.put("EQUALS", "" + AspectParser.ASSIGN);
         tokenMap.put("DOT", ".");
@@ -1024,533 +997,5 @@ public enum AspectKind {
             allowedNodeKinds.put(role, nodeKinds);
             allowedEdgeKinds.put(role, edgeKinds);
         }
-    }
-
-    /** Type of content that can be wrapped inside an aspect. */
-    static public enum ContentKind {
-        /** No content. The label text is not checked. */
-        NONE {
-            @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
-                if (text.charAt(pos) != SEPARATOR) {
-                    throw new FormatException("Suffix '%s' not allowed",
-                        text.substring(pos, text.indexOf(SEPARATOR)));
-                }
-                return new Pair<>(null, text.substring(pos + 1));
-            }
-
-            @Override
-            Object parseContent(String text, GraphRole role) {
-                // there is no content, so this method should never be called
-                throw new UnsupportedOperationException();
-            }
-        },
-        /** Empty content: no text may precede or follow the separator. */
-        EMPTY {
-            @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
-                if (text.charAt(pos) != SEPARATOR) {
-                    throw new FormatException("Suffix '%s' not allowed",
-                        text.substring(pos, text.indexOf(SEPARATOR)));
-                }
-                if (pos < text.length() - 1) {
-                    throw new FormatException("Label text '%s' not allowed",
-                        text.substring(pos + 1));
-                }
-                return new Pair<>(null, text.substring(pos + 1));
-            }
-
-            @Override
-            Object parseContent(String text, GraphRole role) {
-                // there is no content, so this method should never be called
-                throw new UnsupportedOperationException();
-            }
-        },
-        /** Quantifier level name. */
-        LEVEL {
-            @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
-                String content = null;
-                int end = text.indexOf(SEPARATOR);
-                assert end >= 0;
-                if (end > pos) {
-                    content = parseContent(text.substring(pos + 1, end), role);
-                }
-                return new Pair<>(content, text.substring(end + 1));
-            }
-
-            @Override
-            String parseContent(String text, GraphRole role) throws FormatException {
-                for (int i = 0; i < text.length(); i++) {
-                    char c = text.charAt(i);
-                    if (i == 0
-                        ? !isValidFirstChar(c)
-                        : !isValidNextChar(c)) {
-                        throw new FormatException("Invalid quantification level");
-                    }
-                }
-                return text;
-            }
-
-        },
-        /**
-         * String constant, used in a typed value aspect.
-         */
-        STRING_LITERAL(Sort.STRING),
-        /**
-         * Boolean constant, used in a typed value aspect.
-         */
-        BOOL_LITERAL(Sort.BOOL),
-        /**
-         * Integer number constant, used in a typed value aspect.
-         */
-        INT_LITERAL(Sort.INT),
-        /**
-         * Real number constant, used in a typed value aspect.
-         */
-        REAL_LITERAL(Sort.REAL),
-        /**
-         * Multiplicity: either a single number,
-         * or of the form {@code n..m} where {@code n<m} or {@code m=*}.
-         */
-        MULTIPLICITY {
-            @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
-                int end = text.indexOf(SEPARATOR, pos);
-                assert end >= 0;
-                if (end == pos) {
-                    throw new FormatException("Malformed multiplicity");
-                }
-                Multiplicity content = parseContent(text.substring(pos + 1, end), role);
-                return new Pair<>(content, text.substring(end + 1));
-            }
-
-            @Override
-            Multiplicity parseContent(String text, GraphRole role) throws FormatException {
-                return Multiplicity.parse(text);
-            }
-
-            @Override
-            String toString(Object content) {
-                return ((Multiplicity) content).toString();
-            }
-        },
-        /**
-         * Parameter number, starting with a dollar sign.
-         * The content is a non-negative value of type {@link Integer}.
-         */
-        PARAM {
-            @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
-                assert text.indexOf(SEPARATOR) >= 0;
-                // either the prefix is of the form par=$N: or par:M
-                // in the first case, the parameter number is N-1
-                String nrText;
-                int subtract;
-                FormatException nrFormatExc = new FormatException("Invalid parameter number");
-                switch (text.charAt(pos)) {
-                case SEPARATOR:
-                    nrText = text.substring(pos + 1);
-                    subtract = 0;
-                    break;
-                case ASSIGN:
-                    if (text.charAt(pos + 1) != PARAM_START_CHAR) {
-                        throw new FormatException("Parameter number should start with '%s'",
-                            "" + PARAM_START_CHAR);
-                    }
-                    if (text.charAt(text.length() - 1) != SEPARATOR) {
-                        throw new FormatException("Parameter line should end with '%s'",
-                            "" + SEPARATOR);
-                    }
-                    nrText = text.substring(pos + 2, text.length() - 1);
-                    if (nrText.length() == 0) {
-                        throw nrFormatExc;
-                    }
-                    // the new numbering scheme starts with 0 rather than 1;
-                    // the old parameter syntax is normalised to this scheme.
-                    subtract = 1;
-                    break;
-                default:
-                    throw new FormatException("Can't parse parameter");
-                }
-                Integer content = null;
-                if (nrText.length() > 0) {
-                    content = parseContent(nrText, role) - subtract;
-                    if (content < 0) {
-                        if (content + subtract == 0) {
-                            // special case: par=$0: was an alternative to
-                            // par: to specify a hidden parameter
-                            content = null;
-                        } else {
-                            throw nrFormatExc;
-                        }
-                    }
-                }
-                return new Pair<>(content, "");
-            }
-
-            @Override
-            Integer parseContent(String text, GraphRole role) throws FormatException {
-                try {
-                    return Integer.parseInt(text);
-                } catch (NumberFormatException exc) {
-                    throw new FormatException("Invalid parameter number %s", text);
-                }
-            }
-        },
-        /**
-         * Argument number.
-         * The content is a non-negative value of type {@link Integer}.
-         */
-        NUMBER {
-            @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
-                assert text.indexOf(SEPARATOR) >= 0;
-                if (text.charAt(pos) != SEPARATOR) {
-                    throw new FormatException("Can't parse argument");
-                }
-                String nrText = text.substring(pos + 1);
-                return new Pair<>(parseContent(nrText, role), "");
-            }
-
-            @Override
-            Integer parseContent(String text, GraphRole role) throws FormatException {
-                int result;
-                FormatException formatExc = new FormatException("Invalid argument number %s", text);
-                try {
-                    result = Integer.parseInt(text);
-                } catch (NumberFormatException exc) {
-                    throw formatExc;
-                }
-                if (result < 0) {
-                    throw formatExc;
-                }
-                return result;
-            }
-        },
-        /** Content must be a {@link NestedValue}. */
-        NESTED {
-            @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
-                if (text.charAt(pos) != SEPARATOR) {
-                    throw new FormatException("Can't parse quantifier nesting", text);
-                }
-                return new Pair<>(parseContent(text.substring(pos + 1), role), "");
-            }
-
-            @Override
-            NestedValue parseContent(String text, GraphRole role) throws FormatException {
-                NestedValue content = getNestedValue(text);
-                if (content == null) {
-                    throw new FormatException("Can't parse quantifier nesting");
-                }
-                return content;
-            }
-        },
-        /** Colour name or RGB value. */
-        COLOR {
-            @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
-                if (text.charAt(pos) != SEPARATOR) {
-                    throw new FormatException("Can't parse colour value");
-                }
-                return new Pair<>(parseContent(text.substring(pos + 1), role), "");
-            }
-
-            @Override
-            Color parseContent(String text, GraphRole role) throws FormatException {
-                Color result = Colors.findColor(text);
-                if (result == null) {
-                    throw new FormatException("Can't parse '%s' as colour", text);
-                }
-                return result;
-            }
-        },
-        /** Node identifier. */
-        NAME {
-            @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
-                if (text.charAt(pos) != SEPARATOR) {
-                    throw new FormatException("Can't parse node name");
-                }
-                return new Pair<>(parseContent(text.substring(pos + 1), role), "");
-            }
-
-            @Override
-            String parseContent(String text, GraphRole role) throws FormatException {
-                for (int i = 0; i < text.length(); i++) {
-                    char c = text.charAt(i);
-                    if (i == 0
-                        ? !isValidFirstChar(c)
-                        : !isValidNextChar(c)) {
-                        throw new FormatException("Invalid node id '%s'", text);
-                    }
-                }
-                if (text.length() == 0) {
-                    throw new FormatException("Node id cannot be empty", text);
-                }
-                if (text.charAt(0) == '$' || text.equals(Keywords.SELF)) {
-                    throw new FormatException("Reserved node id '%s'", text);
-                }
-                return text;
-            }
-        },
-        /** Predicate (attribute) value. */
-        TEST_EXPR {
-            @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
-                if (text.charAt(pos) != SEPARATOR) {
-                    throw new FormatException("Can't parse attribute predicate");
-                }
-                return new Pair<>(parseContent(text.substring(pos + 1), role), "");
-            }
-
-            @Override
-            ExprTree parseContent(String text, GraphRole role) throws FormatException {
-                return Expression.parseTest(text);
-            }
-
-            @Override
-            Object relabel(Object content, TypeLabel oldLabel, TypeLabel newLabel) {
-                return ((Expression) content).relabel(oldLabel, newLabel);
-            }
-        },
-        /** Let expression content. */
-        LET_EXPR {
-            @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
-                if (text.charAt(pos) != SEPARATOR) {
-                    throw new FormatException("Can't parse let expression");
-                }
-                return new Pair<>(parseContent(text.substring(pos + 1), role), "");
-            }
-
-            @Override
-            ExprTree parseContent(String text, GraphRole role) throws FormatException {
-                return Assignment.parse(text);
-            }
-
-            @Override
-            Object relabel(Object content, TypeLabel oldLabel, TypeLabel newLabel) {
-                return ((Assignment) content).relabel(oldLabel, newLabel);
-            }
-        },
-
-        /** Edge declaration content. */
-        EDGE {
-            @Override
-            Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
-                if (text.charAt(pos) != SEPARATOR) {
-                    throw new FormatException("Can't parse edge pattern declaration");
-                }
-                return new Pair<>(parseContent(text.substring(pos + 1), role), "");
-            }
-
-            @Override
-            LabelPattern parseContent(String text, GraphRole role) throws FormatException {
-                return LabelPattern.parse(text);
-            }
-
-            @Override
-            Object relabel(Object content, TypeLabel oldLabel, TypeLabel newLabel) {
-                return ((LabelPattern) content).relabel(oldLabel, newLabel);
-            }
-        };
-
-        /** Default, empty constructor. */
-        private ContentKind() {
-            this.sort = null;
-        }
-
-        /** Constructor for literals of a given signature. */
-        private ContentKind(Sort signature) {
-            this.sort = signature;
-        }
-
-        /**
-         * Tries to parse a given string, from a given position, as content
-         * of this kind.
-         * @param role graph role for which the content is parsed
-         * @return a pair consisting of the resulting content value (which
-         * may be {@code null} if there is, correctly, no content) and
-         * the remainder of the input string
-         * @throws FormatException if the input string cannot be parsed
-         */
-        Pair<Object,String> parse(String text, int pos, GraphRole role) throws FormatException {
-            // this implementation tries to find a literal of the
-            // correct signature, or no content if the signature is not set
-            assert text.indexOf(SEPARATOR, pos) >= 0;
-            if (text.charAt(pos) != SEPARATOR) {
-                throw new FormatException("Prefix %s should be followed by '%s' in %s",
-                    text.substring(0, pos), "" + SEPARATOR, text);
-            }
-            if (this.sort == null || pos == text.length() - 1) {
-                return new Pair<>(null, text.substring(pos + 1));
-            } else {
-                // the rest of the label should be a constant or operator
-                // of the signature
-                String value = text.substring(pos + 1);
-                assert value != null;
-                return new Pair<>(parseContent(value, role), "");
-            }
-        }
-
-        /**
-         * Tries to parse a given string as content of the correct kind.
-         * @param role graph role for which the content is parsed
-         * @return the resulting content value
-         */
-        Object parseContent(@NonNull String text, GraphRole role) throws FormatException {
-            Object result;
-            // This implementation tries to parse the text as a constant of the
-            // given signature.
-            if (this.sort == null) {
-                throw Exceptions.unsupportedOp("No content allowed");
-            }
-            if (role == GraphRole.TYPE) {
-                // in a type graph, this is the declaration of an attribute
-                assert text.length() > 0;
-                boolean isIdent = Character.isJavaIdentifierStart(text.charAt(0));
-                for (int i = 1; isIdent && i < text.length(); i++) {
-                    isIdent = Character.isJavaIdentifierPart(text.charAt(i));
-                }
-                if (!isIdent) {
-                    throw new FormatException("Attribute field '%s' must be identifier", text);
-                }
-                result = text;
-            } else if (role == GraphRole.HOST) {
-                // in a host graph, this is a literal
-                Expression expr = Expression.parse(text).toExpression();
-                if (expr.getSort() != this.sort) {
-                    throw new FormatException(
-                        "Expression '%s' has type '%s' instead of expected type '%s'", text,
-                        expr.getSort(), this.sort);
-                }
-                result = expr;
-            } else {
-                try {
-                    result = this.sort.createConstant(text);
-                } catch (FormatException e) {
-                    // try for operator
-                    result = this.sort.getOperator(text);
-                }
-                if (result == null) {
-                    throw new FormatException("Signature '%s' has no constant or operator %s",
-                        this.sort, text);
-                }
-            }
-            return result;
-        }
-
-        /**
-         * Builds a string description of a given content object, in a form that
-         * can be parsed back to the content by {@link #parseContent(String, GraphRole)}.
-         * @return a string description of a content object, or the empty
-         * string if the object is {@code null}
-         */
-        String toString(Object content) {
-            if (content == null) {
-                return "";
-            } else if (content instanceof Constant c) {
-                return c.getSymbol();
-            } else if (content instanceof Operator o) {
-                return o.getName();
-            } else if (content instanceof Color color) {
-                int red = color.getRed();
-                int green = color.getGreen();
-                int blue = color.getBlue();
-                int alpha = color.getAlpha();
-                String colorString = alpha == 255
-                    ? "%s,%s,%s"
-                    : "%s,%s,%s,%s";
-                return String.format(colorString, red, green, blue, alpha);
-            } else if (content instanceof ExprTree t) {
-                return t.getParseString();
-            } else if (content instanceof Expression e) {
-                return e.toDisplayString();
-            } else {
-                return "" + content;
-            }
-        }
-
-        /**
-         * Builds a string description of a given aspect kind and content
-         * of this {@link ContentKind}.
-         */
-        public String toString(AspectKind aspect, Object content) {
-            if (content == null) {
-                return aspect.getPrefix();
-            } else if (this == LEVEL || this == MULTIPLICITY) {
-                return aspect.getName() + ASSIGN + toString(content) + SEPARATOR;
-            } else {
-                return aspect.getPrefix() + toString(content);
-            }
-        }
-
-        /**
-         * Relabels a given a content object by changing all
-         * occurrences of a certain label into another.
-         * @param oldLabel the label to be changed
-         * @param newLabel the new value for {@code oldLabel}
-         * @return a clone of the original content with changed labels, or
-         * the original content if {@code oldLabel} did not occur
-         */
-        Object relabel(Object content, TypeLabel oldLabel, TypeLabel newLabel) {
-            Object result = content;
-            if (this.sort != null && content instanceof String) {
-                // this is a field name
-                if (oldLabel.getRole() == EdgeRole.BINARY && oldLabel.text().equals(content)) {
-                    result = newLabel.text();
-                }
-            }
-            return result;
-        }
-
-        /**
-         * Indicates if a given character is allowed as the first part of a name.
-         * Delegates to {@link Character#isJavaIdentifierStart(char)}.
-         */
-        static private boolean isValidFirstChar(char c) {
-            return Character.isJavaIdentifierStart(c);
-        }
-
-        /**
-         * Indicates if a given character is allowed in a name names.
-         * Delegates to {@link Character#isJavaIdentifierPart(char)}.
-         */
-        static private boolean isValidNextChar(char c) {
-            return Character.isJavaIdentifierPart(c);
-        }
-
-        private final Sort sort;
-
-        /** Start character of parameter strings. */
-        static public final char PARAM_START_CHAR = '$';
-        /** Reserved name "self". */
-        static public final String SELF_NAME = "self";
-    }
-
-    /** Correct values of the {@link #NESTED} aspect kind. */
-    public static enum NestedValue {
-        /** Embedding of one nesting level in another. */
-        IN("in"),
-        /** Assignment of a nesting level to a rule node. */
-        AT("@"),
-        /** Count of the number of matches of a universal quantifier. */
-        COUNT("count");
-
-        private NestedValue(String text) {
-            this.text = text;
-        }
-
-        @Override
-        public String toString() {
-            return this.text;
-        }
-
-        private final String text;
-
-        /** Alternative symbol for {@link #AT}. */
-        public static final String AT_SYMBOL = "at";
     }
 }

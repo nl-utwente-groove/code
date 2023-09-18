@@ -33,6 +33,7 @@ import nl.utwente.groove.algebra.RealSignature;
 import nl.utwente.groove.algebra.Signature.OpValue;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.util.parse.AExprTree;
 import nl.utwente.groove.util.parse.DefaultOp;
 import nl.utwente.groove.util.parse.FormatException;
@@ -309,6 +310,35 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
     @Override
     public ExprTree createTree(ExprOp op) {
         return new ExprTree(op);
+    }
+
+    /**
+     * Returns an expression tree obtained from this one by changing all
+     * occurrences of a certain label into another.
+     * In particular, this concerns field names.
+     * @param oldLabel the label to be changed
+     * @param newLabel the new value for {@code oldLabel}
+     * @return a clone of this object with changed labels, or this object
+     *         if {@code oldLabel} did not occur
+     */
+    public ExprTree relabel(TypeLabel oldLabel, TypeLabel newLabel) {
+        ExprTree result = this;
+        if (getOp().getKind() == OpKind.ATOM) {
+            QualName id = getId();
+            var tokens = id.tokens();
+            boolean changed = false;
+            for (int i = 1; i < id.size(); i++) {
+                if (tokens.get(i).equals(oldLabel.text())) {
+                    tokens.set(i, newLabel.text());
+                    changed = true;
+                }
+            }
+            if (changed) {
+                result = new ExprTree(ExprOp.atom());
+                result.setId(new QualName(tokens));
+            }
+        }
+        return result;
     }
 
     @Override

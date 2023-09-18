@@ -23,10 +23,11 @@ import java.util.Set;
 
 import nl.utwente.groove.algebra.Algebra;
 import nl.utwente.groove.algebra.AlgebraFamily;
+import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Sort;
-import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.aspect.Aspect;
+import nl.utwente.groove.grammar.aspect.AspectContent.ConstContent;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectGraph.AspectGraphMorphism;
@@ -261,7 +262,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                 Algebra<?> nodeAlgebra
                     = this.algebraFamily.getAlgebra(Sort.getKind(attrType.getName()));
                 Aspect dataType = modelNode.getAttrAspect();
-                Expression term = (Expression) dataType.getContent();
+                Constant term = ((ConstContent) dataType.getContent()).get();
                 nodeImage = result.getFactory().createNode(nodeAlgebra, nodeAlgebra.toValue(term));
                 result.addNode(nodeImage);
             } else {

@@ -226,10 +226,10 @@ final public class AspectJModel extends JModel<AspectGraph> {
                 }
             }
         }
+        graph.setNodeComplete();
         for (AspectJVertex jVertex : nodeJVertexMap.values()) {
             jVertex.setNodeFixed();
         }
-        graph.setNodeComplete();
         // collect the layout information
         LayoutMap layoutMap = new LayoutMap();
         for (AspectJCell jCell : getRoots()) {

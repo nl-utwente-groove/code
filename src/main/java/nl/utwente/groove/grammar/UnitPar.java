@@ -29,6 +29,8 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.control.CtrlPar;
 import nl.utwente.groove.control.CtrlType;
 import nl.utwente.groove.control.CtrlVar;
+import nl.utwente.groove.grammar.aspect.Aspect;
+import nl.utwente.groove.grammar.aspect.AspectContent.ContentKind;
 import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.rule.VariableNode;
@@ -135,15 +137,13 @@ public abstract class UnitPar {
     }
 
     @Override
-    public boolean equals(@Nullable
-    Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof UnitPar)) {
+        if (!(obj instanceof UnitPar other)) {
             return false;
         }
-        UnitPar other = (UnitPar) obj;
         if (!getDirection().equals(other.getDirection())) {
             return false;
         }
@@ -173,23 +173,22 @@ public abstract class UnitPar {
      * and mandatory name (an identifier). */
     static public ProcedurePar parse(String input) throws FormatException {
         String text = input.trim();
-        Direction dir = Arrays.stream(Direction.values())
-            .filter(d -> !d.getPrefix()
-                .isEmpty())
+        Direction dir = Arrays
+            .stream(Direction.values())
+            .filter(d -> !d.getPrefix().isEmpty())
             .filter(d -> text.startsWith(d.getPrefix() + " "))
             .findAny()
             .orElse(Direction.IN);
-        String typeText = text.substring(dir.getPrefix()
-            .length())
-            .trim();
-        CtrlType type = Arrays.stream(CtrlType.values())
-            .filter(t -> typeText.startsWith(t.getName() + " "))
-            .findAny()
-            .orElseThrow(() -> new FormatException(
-                "Error in parameter declaration '%s': Could not determine parameter type", input));
-        String name = typeText.substring(type.getName()
-            .length())
-            .trim();
+        String typeText = text.substring(dir.getPrefix().length()).trim();
+        CtrlType type
+            = Arrays
+                .stream(CtrlType.values())
+                .filter(t -> typeText.startsWith(t.getName() + " "))
+                .findAny()
+                .orElseThrow(() -> new FormatException(
+                    "Error in parameter declaration '%s': Could not determine parameter type",
+                    input));
+        String name = typeText.substring(type.getName().length()).trim();
         if (!IdValidator.JAVA_ID.isValid(name)) {
             throw new FormatException(
                 "Error in parameter declaration '%s': name '%s' is not a valid identifier", input,
@@ -202,8 +201,8 @@ public abstract class UnitPar {
      * Convenience method to construct a parameter with a given scope, name, type and direction.
      * @param scope defining scope of the variable; possibly {@code null}
      */
-    public static ProcedurePar par(@Nullable
-    QualName scope, String name, CtrlType type, Direction dir) {
+    public static ProcedurePar par(@Nullable QualName scope, String name, CtrlType type,
+                                   Direction dir) {
         return new ProcedurePar(new CtrlVar(scope, name, type), dir);
     }
 
@@ -233,14 +232,17 @@ public abstract class UnitPar {
 
         @Override
         public int hashCode() {
-            int result = isInOnly() ? 0 : isOutOnly() ? 1 : 2;
+            int result = isInOnly()
+                ? 0
+                : isOutOnly()
+                    ? 1
+                    : 2;
             result = result * 31 + getVar().hashCode();
             return result;
         }
 
         @Override
-        public boolean equals(@Nullable
-        Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (this == obj) {
                 return true;
             }
@@ -264,7 +266,9 @@ public abstract class UnitPar {
          * @param node the associated rule node
          */
         public RulePar(AspectKind kind, RuleNode node, boolean creator) {
-            super(getType(node), node.getId(), creator ? Direction.OUT : toDirection(kind));
+            super(getType(node), node.getId(), creator
+                ? Direction.OUT
+                : toDirection(kind));
             assert kind.isParam();
             assert !creator || toDirection(kind) != Direction.IN;
             this.node = node;
@@ -293,13 +297,14 @@ public abstract class UnitPar {
         public int hashCode() {
             int result = super.hashCode();
             result = result * 31 + getNode().hashCode();
-            result = result * 31 + (isCreator() ? 0xFF : 0);
+            result = result * 31 + (isCreator()
+                ? 0xFF
+                : 0);
             return result;
         }
 
         @Override
-        public boolean equals(@Nullable
-        Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (obj == this) {
                 return true;
             }
@@ -316,7 +321,11 @@ public abstract class UnitPar {
 
         @Override
         public String toString() {
-            String result = isOutOnly() ? "!" : isInOnly() ? "?" : "";
+            String result = isOutOnly()
+                ? "!"
+                : isInOnly()
+                    ? "?"
+                    : "";
             result += getNode().getId();
             return result;
         }
@@ -363,7 +372,9 @@ public abstract class UnitPar {
         /** Inserts the prefix of this direction in front of a given parameter. */
         public String prefix(String par) {
             String prefix = getPrefix();
-            return prefix.isEmpty() ? par : prefix + " " + par;
+            return prefix.isEmpty()
+                ? par
+                : prefix + " " + par;
         }
 
         /** Converts this direction to a parameter aspect kind. */
@@ -381,22 +392,33 @@ public abstract class UnitPar {
                 throw Exceptions.UNREACHABLE;
             }
         }
+
+        /** Returns the symbol for this parameter direction used in graphical rule displays. */
+        public String getSymbol() {
+            return switch (this) {
+            case ASK -> "*";
+            case BI -> "";
+            case IN -> "?";
+            case OUT -> "!";
+            };
+        }
     }
 
     /** Converts a parameter aspect kind to a parameter direction. */
     static public Direction toDirection(AspectKind paramKind) {
-        switch (paramKind) {
-        case PARAM_IN:
-            return Direction.IN;
-        case PARAM_OUT:
-            return Direction.OUT;
-        case PARAM_BI:
-            return Direction.BI;
-        case PARAM_ASK:
-            return Direction.ASK;
-        default:
-            throw Exceptions.UNREACHABLE;
-        }
+        return switch (paramKind) {
+        case PARAM_IN -> Direction.IN;
+        case PARAM_OUT -> Direction.OUT;
+        case PARAM_BI -> Direction.BI;
+        case PARAM_ASK -> Direction.ASK;
+        default -> throw Exceptions.UNREACHABLE;
+        };
+    }
+
+    /** Returns the rule adornment associated with a given parameter aspect. */
+    static public String toRuleAdornment(Aspect parAspect) {
+        assert parAspect.getContentKind() == ContentKind.PARAM;
+        return toDirection(parAspect.getKind()).getSymbol() + parAspect.getContentString();
     }
 
     /** Prefix used to indicate output parameters. */
