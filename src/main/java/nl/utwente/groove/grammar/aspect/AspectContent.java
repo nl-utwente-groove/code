@@ -506,8 +506,8 @@ public sealed interface AspectContent
                 }
                 result = new IdContent(this, text);
             } else if (role == GraphRole.HOST) {
-                // in a host graph, this is a literal
-                result = new ConstContent(this, getSort().createConstant(text));
+                // in a host graph, this is a constant
+                result = new ConstContent(this, getSort().createConstant(text));//new ExprContent(this, Expression.parse(text));
             } else {
                 assert role == GraphRole.RULE;
                 // in a rule graph, this is an expression or operator
