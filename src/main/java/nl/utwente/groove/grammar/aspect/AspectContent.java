@@ -507,7 +507,7 @@ public sealed interface AspectContent
                 result = new IdContent(this, text);
             } else if (role == GraphRole.HOST) {
                 // in a host graph, this is a constant
-                result = new ConstContent(this, getSort().createConstant(text));//new ExprContent(this, Expression.parse(text));
+                result = new ConstContent(this, getSort().createConstant(text));
             } else {
                 assert role == GraphRole.RULE;
                 // in a rule graph, this is an expression or operator
@@ -517,7 +517,10 @@ public sealed interface AspectContent
                     result = new OpContent(this, op);
                 } else {
                     // then it must be an expression
-                    result = new ExprContent(this, Expression.parse(text));
+                    ExprTree exprTree = Expression.parse(text);
+                    // check if the expression has the appropriate type
+                    exprTree.toExpression(getSort());
+                    result = new ExprContent(this, exprTree);
                 }
             }
             return result;
