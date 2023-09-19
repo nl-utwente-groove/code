@@ -103,7 +103,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
     }
 
     /**
-     * Returns the term object corresponding to this tree.
+     * Returns the expression object corresponding to this tree.
      * All free variables in the tree must be type-derivable.
      */
     public Expression toExpression() throws FormatException {
@@ -111,19 +111,50 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
     }
 
     /**
-     * Returns the unique expression object corresponding to this tree.
-     * @param typing mapping from known variables to types. Only variables in this map are
-     * allowed to occur in the term.
+     * Returns the expression object corresponding to this tree, provided
+     * it can be typed as a given sort.
+     * All free variables in the tree must be type-derivable.
+     * @param sort the required sort
+     */
+    public Expression toExpression(Sort sort) throws FormatException {
+        return toExpression(sort, Typing.emptyTyping());
+    }
+
+    /**
+     * Returns the unique expression object corresponding to this tree,
+     * based on a given set of typed variables
+     * @param typing mapping from known variables to types. Variables not occurring in this
+     * map are assumed to be self-fields
      */
     public Expression toExpression(@NonNull Typing typing) throws FormatException {
         assert isFixed();
         getErrors().throwException();
         Map<Sort,? extends Expression> choice = toExpressions(typing);
         if (choice.size() > 1) {
-            throw new FormatException("Can't derive type of '%s': add type prefix",
-                getParseString());
+            throw new FormatException(
+                "Expression '%s' does not have a unique type; add type prefix", getParseString());
         }
         Expression result = choice.values().iterator().next();
+        result.setParseString(getParseString());
+        return result;
+    }
+
+    /**
+     * Returns the unique expression object corresponding to this tree, provided it can be
+     * typed as a given sort.
+     * @param sort the required sort
+     * @param typing mapping from known variables to types. Variables not occurring in this
+     * map are assumed to be self-fields
+     */
+    public Expression toExpression(Sort sort, @NonNull Typing typing) throws FormatException {
+        assert isFixed();
+        getErrors().throwException();
+        Map<Sort,? extends Expression> choice = toExpressions(typing);
+        Expression result = choice.get(sort);
+        if (result == null) {
+            throw new FormatException("Expression '%s' is not of required type %s",
+                getParseString(), sort);
+        }
         result.setParseString(getParseString());
         return result;
     }
