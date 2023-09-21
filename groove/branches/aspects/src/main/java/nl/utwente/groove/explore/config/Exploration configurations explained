@@ -1,0 +1,11 @@
+Explanation of the choices in the exploration configuration
+===========================================================
+
+A configuration consists of a mapping from exploration parameters (Parameter) to corresponding exploration settings (Setting).
+
+Each setting consists of a key-value-pair, where the setting and corresponding key types (subtypes of Setting and Setting.Key, respectively) depends on the exploration parameter of which it is a setting. This is not a one-to-one correspondence: there are exploration settings that share a setting type. The settings therefore do not "know" which parameters they are a setting of.
+
+The value part of a setting is called its content. The content is never null, but may be the singleton value of the special Null type, and hence meaningless. The content types for different keys in a given setting type are not necessarily uniform, hence the Java type of the content reverts to Object. There is no way to get a compile-time check for inserting and retrieving content values across different setting key types.
+
+The key part of a setting is sometimes called its kind or value. The latter occurs especially if there is no meaningful content in any of the keys (i.e., all content is of type Null); in that case, the key value indeed (essentially) constitutes the entire setting.
+

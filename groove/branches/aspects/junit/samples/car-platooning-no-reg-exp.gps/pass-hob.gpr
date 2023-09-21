@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph edgemode="directed" edgeids="false" role="rule" id="pass-hob">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n1">
+            <attr name="layout">
+                <string>230 248 17 17</string>
+            </attr>
+        </node>
+        <node id="n0">
+            <attr name="layout">
+                <string>132 177 17 17</string>
+            </attr>
+        </node>
+        <edge to="n0" from="n1">
+            <attr name="label">
+                <string>del:acl</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 238 256 209 193 140 185 12</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>new:hob</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 140 185 119 236 154 239 140 185 12</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>del:pass</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 140 185 159 130 124 129 140 185 12</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n0">
+            <attr name="label">
+                <string>del:flws</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>
