@@ -291,6 +291,15 @@ public enum AspectKind {
     }
 
     /**
+     * Tests if this aspect kind has a given sort.
+     * @param sort the sort to test for
+     * @see #getSort()
+     */
+    public boolean hasSort(Sort sort) {
+        return getSort() == sort;
+    }
+
+    /**
      * Returns the (possibly {@code null}) data sort of this aspect kind.
      * @see #hasSort()
      */

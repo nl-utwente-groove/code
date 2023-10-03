@@ -59,6 +59,9 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
         return this.aspects;
     }
 
+    /** The role of the underlying rule node. */
+    private Aspect.Map aspects = new Aspect.Map();
+
     @SuppressWarnings("unchecked")
     @Override
     public Set<AspectEdge> getEdges() {
@@ -362,9 +365,6 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
     public AspectJObject getUserObject() {
         return (AspectJObject) super.getUserObject();
     }
-
-    /** The role of the underlying rule node. */
-    private Aspect.Map aspects;
 
     /**
      * Returns a fresh, uninitialised instance.

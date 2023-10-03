@@ -64,6 +64,11 @@ public sealed interface AspectContent
     /** Retrieves the contained object. */
     Object get();
 
+    /** Checks if the content equals a given object. */
+    default boolean has(Object content) {
+        return Objects.equals(get(), content);
+    }
+
     /** Returns the kind of this content object. */
     ContentKind kind();
 
@@ -822,6 +827,11 @@ public sealed interface AspectContent
         public Void get() {
             // Should never be called on this content object
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean has(Object content) {
+            return false;
         }
 
         @Override

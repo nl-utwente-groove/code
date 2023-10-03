@@ -221,6 +221,10 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         }
         removeEdgeSet(letEdges);
         removeEdgeSet(testEdges);
+        this.normal = true;
+        // parse the nodes and edges, to set the derived aspect information
+        nodeSet().forEach(AspectNode::setParsed);
+        edgeSet().forEach(AspectEdge::setParsed);
         // add assignments for the let-edges
         List<FormatError> errors = new ArrayList<>();
         for (AspectEdge edge : letEdges) {
@@ -404,10 +408,10 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         boolean allEdgesOK = getRole() != RULE || owner.has(Category.META);
         Optional<AspectNode> result = outEdgeSet(owner)
             .stream()
-            .filter(e -> allEdgesOK || e.has(Category.ROLE) && e.getKind(Category.ROLE).inLHS())
+            .filter(e -> allEdgesOK || e.has(Category.ROLE, AspectKind::inLHS))
             .filter(e -> e.getInnerText().equals(fieldName))
             .map(AspectEdge::target)
-            .filter(n -> n.has(Category.SORT) && n.getKind(Category.SORT).getSort() == sort)
+            .filter(n -> n.has(Category.SORT, k -> k.hasSort(sort)))
             .findAny();
         return result.orElse(null);
     }
@@ -807,7 +811,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             result.addEdgeContext(image);
         }
         Map<String,AspectNode> newNodeIdMap = new HashMap<>();
-        newNodeIdMap.putAll(getNodeIdMap());
+        getNodeIdMap()
+            .entrySet()
+            .forEach(e -> newNodeIdMap.put(e.getKey(), map.getNode(e.getValue())));
         result.nodeIdMap = newNodeIdMap;
         GraphInfo.transfer(this, result, null);
         return result;

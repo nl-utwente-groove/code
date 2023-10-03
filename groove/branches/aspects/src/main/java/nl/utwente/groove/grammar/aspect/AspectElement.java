@@ -71,12 +71,23 @@ public interface AspectElement extends Element, Fixable {
             : aspect;
     }
 
+    /** Tests if there is an aspect of a given kind whose content satisfies a given category.
+     * @param kind the aspect kind for which we are looking for an aspect
+     * @param pred the predicate to be tested for the content of that aspect kind
+     * @return {@code true} if an aspect of {@code kind} exists whose content satisfies {@code pred}
+     */
+    default public boolean hasContent(AspectKind kind, Predicate<AspectContent> pred) {
+        return has(kind) && pred.test(getContent(kind.getCategory()));
+    }
+
     /**
-     * Returns the aspect content set for a given category, if any.
+     * Returns the aspect content set for a given aspect kind, if any.
      * Convenience method for {@code getContent(kind.getCategory())}.
      */
     default public AspectContent getContent(AspectKind kind) {
-        return getContent(kind.getCategory());
+        return has(kind)
+            ? getContent(kind.getCategory())
+            : null;
     }
 
     /** Tests if this element has an aspect of a given category.

@@ -313,6 +313,12 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 if (has(CREATOR)) {
                     errors.add("Conflicting aspects '%s' and '%s'", TEST, CREATOR);
                 }
+            } else if (isAssign()) {
+                if (!has(Category.ROLE, AspectKind::inRHS)) {
+                    errors
+                        .add("Conflicting aspects '%s' and '%s'", getKind(Category.ATTR),
+                             getKind(Category.ROLE));
+                }
             } else if (has(Category.ATTR) && !has(READER) && !has(EMBARGO)) {
                 errors
                     .add("Conflicting aspects '%s' and '%s'", getKind(Category.ATTR),
@@ -370,6 +376,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     /** Tests whether a given edge role is compatible with the role of an adjacent node. */
     private boolean isCompatible(AspectKind edgeRole, AspectKind nodeRole) {
         return edgeRole == nodeRole || switch (edgeRole) {
+        case ADDER -> nodeRole == READER;
         case EMBARGO -> nodeRole == READER || nodeRole == ERASER || nodeRole == ADDER;
         case ERASER -> nodeRole == READER;
         case CREATOR -> nodeRole == READER || nodeRole == ADDER;
@@ -487,7 +494,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             roleAspect = REMARK;
             rolePrefix = REM_PREFIX;
             text = getInnerText();
-        } else {
+        } else if (has(Category.ATTR)) {
             switch (getKind(Category.ATTR)) {
             case ARGUMENT:
                 text = "" + Util.LC_PI + getArgument();
@@ -515,9 +522,8 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             default:
                 throw Exceptions.UNREACHABLE;
             }
-            if (has(Category.SORT)) {
-                text = get(Category.SORT).getContentString();
-            }
+        } else if (has(Category.SORT)) {
+            text = get(Category.SORT).getContentString();
         }
         if (result == null) {
             if (text == null) {
@@ -565,29 +571,31 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 result = result.append(Line.atom(type.getName()).style(Style.BOLD));
             }
         }
-        switch (getKind(Category.ROLE)) {
-        case ADDER:
-            color = ColorType.CREATOR;
-            roleAspect = ADDER;
-            rolePrefix = ADD_PREFIX;
-            break;
-        case EMBARGO:
-            color = ColorType.EMBARGO;
-            roleAspect = EMBARGO;
-            rolePrefix = NOT_PREFIX;
-            break;
-        case ERASER:
-            color = ColorType.ERASER;
-            roleAspect = ERASER;
-            rolePrefix = DEL_PREFIX;
-            break;
-        case CREATOR:
-            color = ColorType.CREATOR;
-            roleAspect = CREATOR;
-            rolePrefix = NEW_PREFIX;
-            break;
-        default:
-            // no annotation
+        if (has(Category.ROLE)) {
+            switch (getKind(Category.ROLE)) {
+            case ADDER:
+                color = ColorType.CREATOR;
+                roleAspect = ADDER;
+                rolePrefix = ADD_PREFIX;
+                break;
+            case EMBARGO:
+                color = ColorType.EMBARGO;
+                roleAspect = EMBARGO;
+                rolePrefix = NOT_PREFIX;
+                break;
+            case ERASER:
+                color = ColorType.ERASER;
+                roleAspect = ERASER;
+                rolePrefix = DEL_PREFIX;
+                break;
+            case CREATOR:
+                color = ColorType.CREATOR;
+                roleAspect = CREATOR;
+                rolePrefix = NEW_PREFIX;
+                break;
+            default:
+                // no annotation
+            }
         }
         if (!context.has(roleAspect) && rolePrefix != null) {
             result = Line.atom(rolePrefix + SPACE).append(result);
@@ -631,7 +639,6 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
      * if the edge does not give rise to a rule label.
      */
     private RuleLabel createRuleLabel() {
-        assert hasGraphRole(RULE);
         assert isParsed();
         RuleLabel result = null;
         try {
@@ -719,20 +726,17 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     /** Indicates if this edge is a "nested:at". */
     public boolean isNestedAt() {
-        var nested = getContent(NESTED);
-        return nested != null && nested.get() == NestedValue.AT;
+        return hasContent(NESTED, c -> c.has(NestedValue.AT));
     }
 
     /** Indicates if this edge is a "nested:in". */
     public boolean isNestedIn() {
-        var nested = getContent(NESTED);
-        return nested != null && nested.get() == NestedValue.IN;
+        return hasContent(NESTED, c -> c.has(NestedValue.IN));
     }
 
     /** Indicates if this edge is a "nested:count". */
     public boolean isNestedCount() {
-        var nested = getContent(NESTED);
-        return nested != null && nested.get() == NestedValue.COUNT;
+        return hasContent(NESTED, c -> c.has(NestedValue.COUNT));
     }
 
     /** Indicates if this is an argument edge. */
