@@ -1,18 +1,19 @@
 package nl.utwente.groove.gui.jgraph;
 
 import static nl.utwente.groove.grammar.aspect.AspectKind.ARGUMENT;
-import static nl.utwente.groove.grammar.aspect.AspectKind.DEFAULT;
 import static nl.utwente.groove.gui.look.VisualKey.COLOR;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.Set;
 
-import nl.utwente.groove.algebra.Constant;
+import nl.utwente.groove.grammar.aspect.Aspect;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectKind;
+import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.aspect.AspectLabel;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.aspect.AspectParser;
@@ -42,8 +43,8 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
     }
 
     @Override
-    public AspectKind getAspect() {
-        return this.aspect;
+    public Aspect.Map getAspects() {
+        return this.aspects;
     }
 
     @Override
@@ -82,7 +83,7 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
     @Override
     public void initialise() {
         super.initialise();
-        this.aspect = DEFAULT;
+        this.aspects = new Aspect.Map();
     }
 
     @Override
@@ -104,8 +105,8 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
     public void addEdge(Edge e) {
         AspectEdge edge = (AspectEdge) e;
         AspectEdge oldEdge = getEdge();
-        if (oldEdge == null || this.aspect == AspectKind.REMARK) {
-            this.aspect = edge.getKind();
+        if (oldEdge == null || getAspects().has(AspectKind.REMARK)) {
+            this.aspects = edge.getAspects();
         }
         FormatError error = null;
         if (edge.getRole() != EdgeRole.BINARY) {
@@ -129,7 +130,7 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
         // maybe update the look
         RuleLabel ruleLabel = edge.getRuleLabel();
         if (ruleLabel != null) {
-            if (ruleLabel.isEmpty() && this.aspect != AspectKind.CREATOR
+            if (ruleLabel.isEmpty() && !getAspects().has(AspectKind.CREATOR)
                 || ruleLabel.isNeg(n -> n.getOperand().isEmpty())) {
                 // remove edge arrow
                 setLook(Look.NO_ARROW, true);
@@ -137,13 +138,14 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
                 setLook(Look.REGULAR, true);
             }
         }
-        if (edge.isComposite()) {
+        if (edge.has(AspectKind.COMPOSITE)) {
             setLook(Look.COMPOSITE, true);
         }
         getErrors().addErrors(edge.getErrors(), true);
         setStale(VisualKey.ERROR);
     }
 
+    @SuppressWarnings("null")
     @Override
     StringBuilder getEdgeDescription() {
         getEdge().testFixed(true);
@@ -157,35 +159,37 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
             }
             HTMLConverter.EMBARGO_TAG.on(result);
         } else {
-            AspectKind attrKind = getEdge().getAttrKind();
-            if (attrKind == ARGUMENT) {
+            if (getEdge().has(ARGUMENT)) {
                 result.append(new StringBuilder("Argument edge"));
-            } else if (attrKind.hasSort()) {
+            } else if (getEdge().has(Category.SORT)) {
                 result.append(new StringBuilder("Operation edge"));
             } else {
                 result.append(super.getEdgeDescription());
             }
-            if (AspectJModel.ROLE_DESCRIPTIONS.containsKey(this.aspect)) {
-                result.append("<br>" + AspectJModel.ROLE_DESCRIPTIONS.get(this.aspect));
+            var roleAspect = this.aspects.get(Category.ROLE);
+            if (roleAspect != null) {
+                result.append("<br>" + AspectJModel.ROLE_DESCRIPTIONS.get(roleAspect.getKind()));
             }
         }
         return result;
     }
 
+    @SuppressWarnings("null")
     @Override
     StringBuilder getEdgeKindDescription() {
         StringBuilder result = super.getEdgeKindDescription();
-        if (AspectJModel.ROLE_NAMES.containsKey(this.aspect)) {
+        var roleAspect = this.aspects.get(Category.ROLE);
+        if (roleAspect != null) {
             HTMLConverter.toUppercase(result, false);
             result.insert(0, " ");
-            result.insert(0, AspectJModel.ROLE_NAMES.get(this.aspect));
+            result.insert(0, AspectJModel.ROLE_NAMES.get(roleAspect.getKind()));
         }
         return result;
     }
 
     @Override
     public Collection<? extends Label> getKeys() {
-        if (this.aspect.isMeta()) {
+        if (this.aspects.containsKey(Category.META)) {
             return Collections.emptySet();
         } else {
             return super.getKeys();
@@ -217,28 +221,27 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
         if (graph != null && graph.isShowValueNodes()) {
             return false;
         }
-        if (getSourceNode().hasDataAspect()) {
+        if (getSourceNode().has(Category.SORT)) {
             return false;
         }
-        if (!getTargetNode().hasDataAspect()) {
+        if (!getTargetNode().has(Category.SORT)) {
             return false;
         }
-        if (getTargetNode().hasPar()) {
+        if (getTargetNode().has(Category.PARAM)) {
             return false;
         }
-        if (graph != null && graph.getGraphRole() != GraphRole.TYPE
-            && !(getTargetNode().getValue() instanceof Constant)) {
+        if (graph != null && !graph.hasGraphRole(GraphRole.TYPE) && !getTargetNode().hasValue()) {
             return false;
         }
         return true;
     }
 
     @Override
-    protected Look getStructuralLook() {
+    protected Set<Look> getStructuralLooks() {
         if (isNodeEdgeIn()) {
-            return Look.NODIFIED;
+            return EnumSet.of(Look.NODIFIED);
         } else {
-            return Look.getLookFor(getAspect());
+            return Look.getLooksFor(getAspects());
         }
     }
 
@@ -291,7 +294,7 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
         return (AspectJObject) super.getUserObject();
     }
 
-    private AspectKind aspect;
+    private Aspect.Map aspects;
 
     @Override
     protected Comparator<Edge> edgeComparator() {
@@ -301,19 +304,15 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
     private final static Comparator<Edge> COMPARATOR = new Comparator<>() {
         @Override
         public int compare(Edge o1, Edge o2) {
-            int result = getKind(o1).compareTo(getKind(o2));
+            int result = getAspects(o1).compareTo(getAspects(o2));
             if (result != 0) {
                 return result;
             }
             return EdgeComparator.instance().compare(o1, o2);
         }
 
-        private AspectKind getKind(Edge e) {
-            AspectKind result = ((AspectEdge) e).getKind();
-            if (result == null) {
-                result = DEFAULT;
-            }
-            return result;
+        private Aspect.Map getAspects(Edge e) {
+            return ((AspectEdge) e).getAspects();
         }
     };
 

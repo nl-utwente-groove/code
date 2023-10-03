@@ -34,7 +34,6 @@ import javax.swing.tree.TreePath;
 import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
 
-import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectElement;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.model.RuleModel;
@@ -169,7 +168,7 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
                     if (jCell != null) {
                         levelCells.add(jCell);
                     }
-                    for (AspectEdge edge : this.rule.getSource()
+                    for (AspectElement edge : this.rule.getSource()
                         .edgeSet(ruleLevelNode)) {
                         jCell = jModel.getJCell(edge);
                         if (jCell != null) {

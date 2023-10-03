@@ -17,11 +17,15 @@
 package nl.utwente.groove.grammar.aspect;
 
 import java.util.Collection;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import nl.utwente.groove.graph.Element;
+import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
+import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * Extension of the {@link Element} interface with support for {@link Aspect}s.
@@ -32,21 +36,47 @@ public interface AspectElement extends Element, Fixable {
     /** Returns the aspect graph to which this element belongs. */
     public AspectGraph getGraph();
 
+    /** Returns the graph role set for this aspect element.
+     * Convenience method for {@code getGraph().getRole()}.
+     * */
+    default GraphRole getGraphRole() {
+        return getGraph().getRole();
+    }
+
+    /** Checks if the graph role of this aspect element equals a given role.
+     * Convenience method for {@code getGraphRole() == role}.
+     */
+    default boolean hasGraphRole(GraphRole role) {
+        return getGraphRole() == role;
+    }
+
     /** Returns the aspect map in this element. */
     public Aspect.Map getAspects();
 
     /** Tests if this element has an aspect of a given kind.
-     * Convenience method for {@code has(kind.getCategory())}.
+     * Convenience method for {@code get(kind.getCategory())}.
      */
     default public boolean has(AspectKind kind) {
-        return has(kind.getCategory());
+        var aspect = get(kind.getCategory());
+        return aspect != null && aspect.getKind() == kind;
     }
 
     /** Returns the aspect of a given kind, if any.
      * Convenience method for {@code get(kind.getCategory())}.
      */
     default public Aspect get(AspectKind kind) {
-        return get(kind.getCategory());
+        var aspect = get(kind.getCategory());
+        return aspect == null || aspect.getKind() != kind
+            ? null
+            : aspect;
+    }
+
+    /**
+     * Returns the aspect content set for a given category, if any.
+     * Convenience method for {@code getContent(kind.getCategory())}.
+     */
+    default public AspectContent getContent(AspectKind kind) {
+        return getContent(kind.getCategory());
     }
 
     /** Tests if this element has an aspect of a given category.
@@ -56,11 +86,34 @@ public interface AspectElement extends Element, Fixable {
         return getAspects().containsKey(cat);
     }
 
+    /** Tests if there is an aspect of a given category whose kind satisfies a given predicate.
+     * @param cat the aspect category for which we are looking for an aspect
+     * @param pred the predicate to be tested for the aspect kind
+     * @return {@code true} if an aspect of {@code cat} exists whose kind satisfies {@code pred}
+     */
+    default public boolean has(AspectKind.Category cat, Predicate<AspectKind> pred) {
+        var aspect = get(cat);
+        return aspect != null && pred.test(aspect.getKind());
+    }
+
     /** Returns the aspect of a given category, if any.
      * Convenience method for {@link Aspect.Map#get(Object)} called on the result of {@link #getAspects()}
      */
     default public Aspect get(AspectKind.Category cat) {
         return getAspects().get(cat);
+    }
+
+    /** Applies a given function to the aspect of a given category, if there is any.
+     * @param <T> the return type of the function
+     * @param cat the aspect category for which we are looking for an aspect
+     * @param func the function to be applied to the aspect
+     * @return {@code func} applied to {@code get(cat)}, or {@code null} if {@code cat} has not been set
+     */
+    default public <T> T get(AspectKind.Category cat, Function<Aspect,T> func) {
+        var aspect = get(cat);
+        return aspect == null
+            ? null
+            : func.apply(aspect);
     }
 
     /**
@@ -70,10 +123,7 @@ public interface AspectElement extends Element, Fixable {
      * @return the aspect kind set for {@code cat}; or {@code null} if {@code cat} has not been set
      */
     default public AspectKind getKind(AspectKind.Category cat) {
-        Aspect aspect = getAspects().get(cat);
-        return aspect == null
-            ? null
-            : aspect.getKind();
+        return get(cat, a -> a.getKind());
     }
 
     /**
@@ -83,14 +133,11 @@ public interface AspectElement extends Element, Fixable {
      * @return the aspect content set for {@code cat}; or {@code null} if {@code cat} has not been set
      */
     default public AspectContent getContent(AspectKind.Category cat) {
-        Aspect aspect = getAspects().get(cat);
-        return aspect == null
-            ? null
-            : aspect.getContent();
+        return get(cat, a -> a.getContent());
     }
 
     /** Sets an aspect in this element. */
-    public Aspect set(Aspect aspect);
+    public void set(Aspect aspect);
 
     /**
      * Returns the main aspect of this element, if any.
@@ -143,11 +190,16 @@ public interface AspectElement extends Element, Fixable {
         return !getErrors().isEmpty();
     }
 
-    /** Adds a set of errors to the errors stored in this aspect element. */
+    /** Adds a set of format errors to the errors stored in this aspect element,
+     * extending the context information with this element. */
     default void addErrors(Collection<FormatError> errors) {
-        for (FormatError error : errors) {
-            getErrors().add(error.extend(this));
-        }
+        errors.stream().forEach(this::addError);
+    }
+
+    /** Adds a single format error to the errors stored in this aspect element,
+     * extending the context information with this element. */
+    default void addError(FormatError error) {
+        getErrors().add(error.extend(this));
     }
 
     /**
@@ -156,53 +208,117 @@ public interface AspectElement extends Element, Fixable {
     FormatErrorSet getErrors();
 
     /**
-     * Parses the syntactic information in this {@link AspectElement}.
+     * Parses the aspect information in this {@link AspectElement}.
+     * For edges, the source and target nodes may be assumed to have been parsed already.
      * @return {@code true} if the status of the element was changed by this call.
      */
-    boolean setParsed();
+    default boolean setParsed() {
+        boolean result = !hasAtLeast(Status.PARSING);
+        if (result) {
+            setStatus(Status.PARSING);
+            try {
+                parseAspects();
+            } catch (FormatException exc) {
+                addErrors(exc.getErrors());
+            }
+            setStatus(Status.PARSED);
+        }
+        return result;
+    }
 
     /** Returns {@code true} if the construction status of this {@link AspectElement}
      * is at least {@link Status#PARSED}
      */
     default boolean isParsed() {
-        return getStatus() != Status.NEW;
+        return hasAtLeast(Status.PARSED);
     }
 
-    /** Sets the typing of this {@link AspectElement}.
+    /**
+     * Parses the aspects of this element, and infers derived information.
+     * Callback method from {@link #setParsed()}.
+     * @throws FormatException if the aspect categories give rise to conflicts
+     */
+    void parseAspects() throws FormatException;
+
+    /** Checks the aspects of this {@link AspectElement} through {@link #checkAspects()},
+     * and changes the status accordingly.
      * Calls {@link #setParsed()} first, if the element was not yet parsed.
      * @return {@code true} if the status of the element was changed by this call.
      */
-    boolean setTyped();
+    default boolean setChecked() {
+        boolean result = !hasAtLeast(Status.CHECKING);
+        if (result) {
+            setParsed();
+            setStatus(Status.CHECKING);
+            if (!hasErrors()) {
+                try {
+                    checkAspects();
+                } catch (FormatException exc) {
+                    addErrors(exc.getErrors());
+                }
+            }
+            setStatus(Status.CHECKED);
+        }
+        return result;
+    }
 
     /** Returns {@code true} if the construction status of this {@link AspectElement}
-     * is {@link Status#TYPED}.
+     * is {@link Status#CHECKED}.
      */
-    default boolean isTyped() {
-        return getStatus() == Status.TYPED;
+    default boolean isChecked() {
+        return hasAtLeast(Status.CHECKED);
     }
+
+    /**
+     * Checks combinations of aspects for consistency.
+     * Callback method from {@link #setChecked()}.
+     * @throws FormatException if the aspect categories give rise to conflicts
+     */
+    void checkAspects() throws FormatException;
 
     @Override
     default boolean setFixed() {
-        return setTyped();
+        return setChecked();
     }
 
     @Override
     default boolean isFixed() {
-        return isTyped();
+        return isChecked();
     }
+
+    /** Sets the construction status of this {@link AspectElement}. */
+    void setStatus(Status status);
 
     /** Returns the construction status of this {@link AspectElement}. */
     Status getStatus();
+
+    /** Tests whether the construction status equals a given value.
+     * Convenience method for {@code getStatus() == status}.
+     */
+    default boolean has(Status status) {
+        return getStatus() == status;
+    }
+
+    /** Tests whether the construction status is at least a given value.
+     * Convenience method for {@code getStatus().compareTo(status) <= 0}.
+     */
+    default boolean hasAtLeast(Status status) {
+        return getStatus().compareTo(status) >= 0;
+    }
 
     /** Construction status of an {@link AspectElement}. */
     static enum Status {
         /** Freshly constructed. */
         NEW,
-        /** Aspects fixed. */
+        /** Parsing aspects. */
+        PARSING,
+        /** Aspects parsed. */
         PARSED,
-        /** Expressions typed.
-         * At this stage, the edge is fixed.
+        /** Checking aspects. */
+        CHECKING,
+        /** Aspects checked.
+         * At this stage, the element is fixed.
          */
-        TYPED,;
+        CHECKED,;
     }
 }

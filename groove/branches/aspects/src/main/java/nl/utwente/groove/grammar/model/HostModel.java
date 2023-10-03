@@ -30,6 +30,7 @@ import nl.utwente.groove.grammar.aspect.AspectContent.ConstContent;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectGraph.AspectGraphMorphism;
+import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.host.DefaultHostGraph;
 import nl.utwente.groove.grammar.host.HostEdge;
@@ -172,13 +173,13 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         // copy the nodes from model to resource
         // first the non-value nodes because their numbers are fixed
         for (AspectNode modelNode : normalSource.nodeSet()) {
-            if (!modelNode.hasDataAspect()) {
+            if (!modelNode.has(Category.SORT)) {
                 processModelNode(result, elementMap, modelNode);
             }
         }
         // then the value nodes because their numbers are generated
         for (AspectNode modelNode : normalSource.nodeSet()) {
-            if (modelNode.hasDataAspect()) {
+            if (modelNode.has(Category.SORT)) {
                 processModelNode(result, elementMap, modelNode);
             }
         }
@@ -253,9 +254,9 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     private void processModelNode(DefaultHostGraph result, HostModelMap elementMap,
                                   AspectNode modelNode) {
         // include the node in the model if it is not virtual
-        if (!modelNode.getKind().isMeta()) {
+        if (!modelNode.has(Category.META)) {
             HostNode nodeImage = null;
-            Aspect data = modelNode.getDataAspect();
+            Aspect data = modelNode.get(Category.SORT);
             if (data != null) {
                 Algebra<?> nodeAlgebra
                     = this.algebraFamily.getAlgebra(data.getContentKind().getSort());
@@ -276,7 +277,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
      */
     private void processModelEdge(HostGraph result, HostModelMap elementMap,
                                   AspectEdge modelEdge) throws FormatException {
-        if (modelEdge.getKind().isMeta()) {
+        if (!modelEdge.has(Category.LABEL)) {
             return;
         }
         HostNode hostSource = elementMap.getNode(modelEdge.source());

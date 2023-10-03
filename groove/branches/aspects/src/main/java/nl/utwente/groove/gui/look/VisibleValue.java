@@ -22,9 +22,9 @@ import java.util.Iterator;
 
 import org.eclipse.jdt.annotation.NonNull;
 
-import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectKind;
+import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
@@ -105,9 +105,8 @@ public class VisibleValue implements VisualValue<Boolean> {
 
     private boolean getAspectVertexValue(AspectJGraph jGraph, AspectJVertex jVertex) {
         AspectNode node = jVertex.getNode();
-        AspectKind aspect = jVertex.getAspect();
         // remark nodes are always visible
-        if (aspect == REMARK) {
+        if (node.has(REMARK)) {
             return true;
         }
         // anything explicitly filtered by the level tree is not visible
@@ -116,7 +115,8 @@ public class VisibleValue implements VisualValue<Boolean> {
             return false;
         }
         // identified nodes, parameter nodes, quantifiers and error nodes are always visible
-        if (node.hasId() || node.hasPar() || node.isQuantifier() || jVertex.hasErrors()) {
+        if (node.hasId() || node.has(Category.PARAM) || node.has(Category.META)
+            || jVertex.hasErrors()) {
             return true;
         }
         // anything declared invisible by the super method is not visible
@@ -124,7 +124,7 @@ public class VisibleValue implements VisualValue<Boolean> {
             return false;
         }
         // explicit product nodes should be visible
-        if (node.isProduct()) {
+        if (node.has(AspectKind.PRODUCT)) {
             return true;
         }
         // in addition, value nodes or data type nodes may be filtered
@@ -137,7 +137,7 @@ public class VisibleValue implements VisualValue<Boolean> {
         }
         // we are now sure that the underlying node has a data type;
         // non-constant nodes should be shown
-        if (!(node.getValue() instanceof Constant)) {
+        if (node.hasExpression()) {
             return true;
         }
         // any regular expression edge on the node makes it visible

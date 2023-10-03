@@ -67,6 +67,11 @@ public sealed interface AspectContent
     /** Returns the kind of this content object. */
     ContentKind kind();
 
+    /** Indicates if this is {@link NullContent}. */
+    default boolean isNull() {
+        return false;
+    }
+
     /**
      * Returns a string description of this content that
      * can be parsed back by {@link ContentKind#parseContent(String, GraphRole)}
@@ -822,6 +827,11 @@ public sealed interface AspectContent
         @Override
         public ContentKind kind() {
             return this.kind;
+        }
+
+        @Override
+        public boolean isNull() {
+            return true;
         }
 
         @Override

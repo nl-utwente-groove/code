@@ -17,6 +17,7 @@
 package nl.utwente.groove.gui.look;
 
 import nl.utwente.groove.grammar.UnitPar;
+import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.gui.jgraph.AspectJEdge;
 import nl.utwente.groove.gui.jgraph.AspectJVertex;
@@ -29,12 +30,8 @@ import nl.utwente.groove.gui.jgraph.AspectJVertex;
 public class ParAdornmentValue extends AspectValue<String> {
     @Override
     protected String getForJVertex(AspectJVertex jVertex) {
-        String result = null;
         AspectNode node = jVertex.getNode();
-        if (node.hasPar()) {
-            result = UnitPar.toRuleAdornment(node.getParAspect());
-        }
-        return result;
+        return node.get(Category.PARAM, UnitPar::toRuleAdornment);
     }
 
     @Override

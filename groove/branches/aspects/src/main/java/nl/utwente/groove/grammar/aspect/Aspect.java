@@ -27,6 +27,7 @@ import nl.utwente.groove.grammar.aspect.AspectContent.ConstContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.ContentKind;
 import nl.utwente.groove.grammar.aspect.AspectContent.ExprContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.NullContent;
+import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.util.Exceptions;
@@ -132,6 +133,13 @@ public class Aspect {
     /** Aspect kind of this aspect. */
     private final AspectKind aspectKind;
 
+    /** Tests if this aspect has a given kind.
+     * Convenience method for {@code getKind() == kind}
+     */
+    public boolean has(AspectKind kind) {
+        return getKind() == kind;
+    }
+
     /**
      * Returns the category of this aspect.
      * Convenience methods for {@link AspectKind#getCategory()}.
@@ -140,8 +148,15 @@ public class Aspect {
         return getKind().getCategory();
     }
 
+    /** Tests if this aspect kind is of a given category.
+     * Convenience method for {@code getCetegory() == cat}
+     */
+    public boolean has(AspectKind.Category cat) {
+        return getCategory() == cat;
+    }
+
     /**
-     * Indicates if this aspect has non-empty content.
+     * Indicates if this aspect has non-null content.
      */
     public boolean hasContent() {
         return !(this.content instanceof NullContent);
@@ -217,16 +232,17 @@ public class Aspect {
     }
 
     /** Mapping from aspect kinds to aspects. */
-    static public class Map extends EnumMap<AspectKind.Category,@Nullable Aspect> {
+    static public class Map extends EnumMap<AspectKind.Category,Aspect> implements Comparable<Map> {
         /** Constructs an empty map. */
         public Map() {
             super(AspectKind.Category.class);
         }
 
-        /** Adds a given aspect to this map, as determined by its kind.
-         * @throws FormatException if an aspect of the same kind is already in the map,
-         * and both have content.
+        /** Adds a given aspect to this map, as determined by its category.
+         * @throws FormatException if an aspect of the same category is already in the map,
+         * either of a different kind or of the same kind and both have content.
          */
+        @SuppressWarnings("null")
         public void add(Aspect aspect) throws FormatException {
             Aspect old = get(aspect.getCategory());
             boolean add;
@@ -245,6 +261,42 @@ public class Aspect {
             if (add) {
                 put(aspect.getCategory(), aspect);
             }
+        }
+
+        /** Checks whether this map has any entry for a given aspect kind. */
+        @SuppressWarnings("null")
+        public boolean has(@Nullable AspectKind kind) {
+            if (kind == null) {
+                return false;
+            }
+            var aspect = get(kind.getCategory());
+            if (aspect == null) {
+                return false;
+            }
+            if (aspect.getKind() != kind) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int compareTo(Map o) {
+            for (Category cat : Category.values()) {
+                int result = 0;
+                if (containsKey(cat)) {
+                    if (o.containsKey(cat)) {
+                        result = get(cat).getKind().ordinal() - o.get(cat).getKind().ordinal();
+                    } else {
+                        result = 1;
+                    }
+                } else if (o.containsKey(cat)) {
+                    result = -1;
+                }
+                if (result != 0) {
+                    return result;
+                }
+            }
+            return 0;
         }
     }
 }

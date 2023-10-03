@@ -1,18 +1,21 @@
 package nl.utwente.groove.gui.jgraph;
 
+import static nl.utwente.groove.grammar.aspect.AspectKind.PRODUCT;
 import static nl.utwente.groove.grammar.aspect.AspectKind.REMARK;
 import static nl.utwente.groove.gui.look.VisualKey.COLOR;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import nl.utwente.groove.grammar.aspect.Aspect;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
+import nl.utwente.groove.grammar.aspect.AspectElement;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
-import nl.utwente.groove.grammar.aspect.AspectKind;
+import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.aspect.AspectLabel;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.aspect.AspectParser;
@@ -52,8 +55,8 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
     }
 
     @Override
-    public AspectKind getAspect() {
-        return this.aspect;
+    public Aspect.Map getAspects() {
+        return this.aspects;
     }
 
     @SuppressWarnings("unchecked")
@@ -78,12 +81,11 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
     public void initialise() {
         super.initialise();
         AspectNode node = getNode();
-        this.aspect = node.getKind();
-        Aspect data = node.getDataAspect();
+        var data = node.getKind(Category.SORT);
         if (data != null) {
-            setLook(Look.getLookFor(data.getKind()), true);
-        } else if (node.isProduct()) {
-            setLook(Look.getLookFor(AspectKind.PRODUCT), true);
+            setLook(Look.getLookFor(data), true);
+        } else if (node.has(PRODUCT)) {
+            setLook(Look.getLookFor(PRODUCT), true);
         }
         getErrors().addErrors(node.getErrors(), true);
         refreshVisual(COLOR);
@@ -92,14 +94,14 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
     @Override
     public void addEdge(Edge edge) {
         super.addEdge(edge);
-        getErrors().addErrors(((AspectEdge) edge).getErrors(), true);
+        getErrors().addErrors(((AspectElement) edge).getErrors(), true);
     }
 
     @Override
     public boolean isCompatible(Edge edge) {
         if (super.isCompatible(edge)) {
             return true;
-        } else if (((AspectEdge) edge).getKind() == REMARK) {
+        } else if (((AspectEdge) edge).has(REMARK)) {
             return edge.source() == getNode() && edge.target() == getNode();
         }
         return false;
@@ -135,16 +137,16 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
 
     @Override
     public String getNodeIdString() {
-        if (this.aspect.isMeta()) {
+        if (getAspects().containsKey(Category.META)) {
             return null;
-        } else if (getNode().hasDataAspect()) {
+        } else if (getNode().has(Category.SORT)) {
             // this is an expression or variable node
             if (getNode().hasValue()) {
                 return null;
             } else {
                 return VariableNode.TO_STRING_PREFIX + getNode().getNumber();
             }
-        } else if (getNode().isProduct()) {
+        } else if (getNode().has(PRODUCT)) {
             // delegate the identity string to a corresponding product node
             return OperatorNode.TO_STRING_PREFIX + getNode().getNumber();
         } else {
@@ -156,6 +158,7 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
      * This implementation prefixes the node description with an indication
      * of the role, if the model is a rule.
      */
+    @SuppressWarnings("null")
     @Override
     StringBuilder getNodeDescription() {
         StringBuilder result = new StringBuilder();
@@ -168,22 +171,23 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
             }
             HTMLConverter.EMBARGO_TAG.on(result);
         } else {
-            if (getNode().hasDataAspect()) {
+            if (getNode().has(Category.SORT)) {
                 if (getNode().hasValue()) {
                     result.append("Expression node");
                 } else {
                     result.append("Variable node");
                 }
-            } else if (getNode().isProduct()) {
+            } else if (getNode().has(PRODUCT)) {
                 result.append("Product node");
             } else {
                 result.append(super.getNodeDescription());
             }
-            if (AspectJModel.ROLE_NAMES.containsKey(this.aspect)) {
+            var roleAspect = getAspects().get(Category.ROLE);
+            if (roleAspect != null) {
                 HTMLConverter.toUppercase(result, false);
                 result.insert(0, " ");
-                result.insert(0, AspectJModel.ROLE_NAMES.get(this.aspect));
-                result.append("<br>" + AspectJModel.ROLE_DESCRIPTIONS.get(this.aspect));
+                result.insert(0, AspectJModel.ROLE_NAMES.get(roleAspect.getKind()));
+                result.append("<br>" + AspectJModel.ROLE_DESCRIPTIONS.get(roleAspect.getKind()));
             }
         }
         return result;
@@ -193,7 +197,7 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
     public Collection<? extends Label> getKeys() {
         getNode().testFixed(true);
         Collection<TypeElement> result = new ArrayList<>();
-        if (!this.aspect.isMeta()) {
+        if (!getAspects().containsKey(Category.META)) {
             for (Edge edge : getEdges()) {
                 TypeEdge key = getKey(edge);
                 if (key != null) {
@@ -237,14 +241,14 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
     }
 
     @Override
-    protected Look getStructuralLook() {
+    protected Set<Look> getStructuralLooks() {
         if (isNodeEdge()) {
-            return Look.NODIFIED;
-        } else if (getNode().getGraphRole() == GraphRole.TYPE
-            && getAspect() == AspectKind.DEFAULT) {
-            return Look.TYPE;
+            return EnumSet.of(Look.NODIFIED);
+        } else if (getNode().hasGraphRole(GraphRole.TYPE)
+            && !getAspects().containsKey(Category.SORT)) {
+            return EnumSet.of(Look.TYPE);
         } else {
-            return Look.getLookFor(getAspect());
+            return Look.getLooksFor(getAspects());
         }
     }
 
@@ -298,7 +302,7 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
         for (String text : getUserObject()) {
             AspectLabel label = parser.parse(text, graph.getRole());
             if (label.isNodeOnly()) {
-                node.setAspects(label);
+                node.addLabel(label);
             } else {
                 // don't process the edge labels yet, as the node is not
                 // yet completely determined
@@ -313,7 +317,7 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
         int remarkCount = 0;
         for (AspectLabel label : edgeLabels) {
             int nr = 0;
-            if (label.containsAspect(REMARK)) {
+            if (label.has(REMARK)) {
                 nr = remarkCount;
                 remarkCount++;
             }
@@ -360,7 +364,7 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
     }
 
     /** The role of the underlying rule node. */
-    private AspectKind aspect;
+    private Aspect.Map aspects;
 
     /**
      * Returns a fresh, uninitialised instance.

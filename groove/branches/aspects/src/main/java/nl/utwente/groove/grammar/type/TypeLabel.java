@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package nl.utwente.groove.grammar.type;
@@ -70,7 +70,7 @@ public final class TypeLabel extends ALabel {
     }
 
     /**
-     * Returns the text of the label string, prefixed by the node type 
+     * Returns the text of the label string, prefixed by the node type
      * or flag aspect if the label is a node type or flag.
      */
     @Override
@@ -91,7 +91,7 @@ public final class TypeLabel extends ALabel {
 
     /** Indicates if this label stands for a data type. */
     public boolean isDataType() {
-        return getRole() == NODE_TYPE && sigLabelMap.values().contains(this);
+        return hasRole(NODE_TYPE) && sigLabelMap.values().contains(this);
     }
 
     /** The label text. */
@@ -146,7 +146,7 @@ public final class TypeLabel extends ALabel {
 
     /**
      * Returns the unique representative of a {@link TypeLabel} for a given
-     * string and label kind, while optionally testing if this label is legal. 
+     * string and label kind, while optionally testing if this label is legal.
      * The string is used as-is, and is guaranteed to
      * equal the text of the resulting label.
      * @param kind kind of label to be created
@@ -158,8 +158,8 @@ public final class TypeLabel extends ALabel {
      * @throws FormatException if {@code text} does not satisfy the constraints
      * for labels of kind {@code kind}
      */
-    public static TypeLabel createLabel(EdgeRole kind, String text, boolean test)
-        throws FormatException {
+    public static TypeLabel createLabel(EdgeRole kind, String text,
+                                        boolean test) throws FormatException {
         if (test && kind != BINARY && !StringHandler.isIdentifier(text)) {
             throw new FormatException("%s label '%s' is not a valid identifier",
                 kind.getDescription(true), text);
@@ -195,8 +195,7 @@ public final class TypeLabel extends ALabel {
             result = HTMLConverter.ITALIC_TAG.on(result);
             break;
         default:
-            if (label instanceof RuleLabel) {
-                RuleLabel ruleLabel = (RuleLabel) label;
+            if (label instanceof RuleLabel ruleLabel) {
                 if (!ruleLabel.isAtom() && !ruleLabel.isSharp()) {
                     result = HTMLConverter.ITALIC_TAG.on(result);
                 }
@@ -205,8 +204,7 @@ public final class TypeLabel extends ALabel {
         return result;
     }
 
-    static private final Map<Sort,TypeLabel> sigLabelMap =
-        new EnumMap<>(Sort.class);
+    static private final Map<Sort,TypeLabel> sigLabelMap = new EnumMap<>(Sort.class);
     static {
         for (Sort sigKind : Sort.values()) {
             sigLabelMap.put(sigKind, new TypeLabel(sigKind.getName(), EdgeRole.NODE_TYPE));
@@ -216,9 +214,9 @@ public final class TypeLabel extends ALabel {
     /** Type label for nodes in an untyped setting. */
     static public final TypeLabel NODE = new TypeLabel("\u03A9", EdgeRole.NODE_TYPE);
 
-    /** 
+    /**
      * Unique type factory used for creating labels statically.
-     * For exception-free class initialisation, this needs to come after {@link #NODE}. 
+     * For exception-free class initialisation, this needs to come after {@link #NODE}.
      */
     private static TypeFactory typeFactory = TypeFactory.newInstance();
 }

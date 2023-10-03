@@ -33,9 +33,9 @@ import nl.utwente.groove.gui.layout.JEdgeLayout;
 import nl.utwente.groove.gui.layout.JVertexLayout;
 import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.VisualKey;
+import nl.utwente.groove.gui.look.VisualKey.Nature;
 import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.gui.look.VisualValue;
-import nl.utwente.groove.gui.look.VisualKey.Nature;
 
 /**
  * Abstract JCell implementation, providing some of the basic functionality.
@@ -56,7 +56,9 @@ public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JMo
     @Override
     public JG getJGraph() {
         // if this is called early, maybe there is no JModel yet
-        return getJModel() == null ? null : (JG) getJModel().getJGraph();
+        return getJModel() == null
+            ? null
+            : (JG) getJModel().getJGraph();
     }
 
     /** Sets a new JModel for this cell. */
@@ -79,8 +81,7 @@ public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JMo
      * a given graph node.
      */
     final protected JVertexLayout getLayout(Node node) {
-        return getJModel().getLayoutMap()
-            .getLayout(node);
+        return getJModel().getLayoutMap().getLayout(node);
     }
 
     /**
@@ -88,8 +89,7 @@ public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JMo
      * a given graph edge.
      */
     final protected JEdgeLayout getLayout(Edge edge) {
-        return getJModel().getLayoutMap()
-            .getLayout(edge);
+        return getJModel().getLayoutMap().getLayout(edge);
     }
 
     /** Sets or resets all auxiliary data structures to their initial values. */
@@ -112,7 +112,8 @@ public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JMo
     public void addEdge(Edge edge) {
         // the edge should be compatible, but don't assert this
         // as subclasses may choose to add incompatible edges while flagging an error
-        @SuppressWarnings("unchecked") Set<Edge> edges = (Set<Edge>) getEdges();
+        @SuppressWarnings("unchecked")
+        Set<Edge> edges = (Set<Edge>) getEdges();
         // there may be an edge already present which is equal (according to equals)
         // but not the same as the new one; the new edge should override the old
         // To achieve this, we first remove the edge
@@ -136,11 +137,13 @@ public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JMo
     /** Set of graph edges wrapped by this JCell. */
     private Set<Edge> edges;
 
-    /** Sets or resets a look value. */
+    /** Sets or resets a transient look value. */
     @Override
     public boolean setLook(Look look, boolean set) {
         assert !look.isStructural();
-        boolean change = set ? getLooks().add(look) : getLooks().remove(look);
+        boolean change = set
+            ? getLooks().add(look)
+            : getLooks().remove(look);
         if (change) {
             this.looksChanged = true;
         }
@@ -151,9 +154,8 @@ public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JMo
     final public Set<Look> getLooks() {
         if (this.looks == null) {
             this.looks = EnumSet.noneOf(Look.class);
-            Look structuralLook = getStructuralLook();
-            assert structuralLook.isStructural();
-            this.looks.add(structuralLook);
+            Set<Look> structuralLook = getStructuralLooks();
+            this.looks.addAll(structuralLook);
             this.looksChanged = true;
         }
         return this.looks;
@@ -165,9 +167,9 @@ public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JMo
     /** Flag indicating that {@link #looks} has changed. */
     private boolean looksChanged;
 
-    /** Creator method for the (fixed) structural look of this JCell. */
-    protected Look getStructuralLook() {
-        return Look.BASIC;
+    /** Creator method for the (fixed) structural looks of this JCell. */
+    protected Set<Look> getStructuralLooks() {
+        return EnumSet.of(Look.BASIC);
     }
 
     @Override
@@ -219,7 +221,9 @@ public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JMo
     protected final VisualValue<?> getRefresher(VisualKey key) {
         // if this is called early, maybe there is no JGraph yet
         JGraph<G> jGraph = getJGraph();
-        return jGraph == null ? null : jGraph.getVisualValue(key);
+        return jGraph == null
+            ? null
+            : jGraph.getVisualValue(key);
     }
 
     @Override

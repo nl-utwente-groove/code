@@ -18,10 +18,13 @@ package nl.utwente.groove.gui.look;
 
 import java.awt.Font;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
+import nl.utwente.groove.grammar.aspect.Aspect;
 import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.gui.look.VisualKey.Nature;
 import nl.utwente.groove.util.Colors;
@@ -381,7 +384,23 @@ public enum Look {
         return result;
     }
 
-    /** Returns the look for a given aspect. */
+    /** Returns the (structural) looks for a given set of aspects. */
+    public static Set<Look> getLooksFor(Aspect.Map aspects) {
+        var result = EnumSet.noneOf(Look.class);
+        aspects
+            .values()
+            .stream()
+            .map(Aspect::getKind)
+            .map(aspectLookMap::get)
+            .filter(Objects::nonNull)
+            .forEach(result::add);
+        if (result.isEmpty()) {
+            result.add(BASIC);
+        }
+        return result;
+    }
+
+    /** Returns the (structural) look for a given aspect. */
     public static Look getLookFor(AspectKind aspect) {
         Look result = aspectLookMap.get(aspect);
         if (result == null) {

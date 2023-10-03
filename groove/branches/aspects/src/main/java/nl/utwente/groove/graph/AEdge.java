@@ -223,6 +223,11 @@ public abstract class AEdge<N extends Node,L extends Label> implements GEdge<N> 
         return label().getRole();
     }
 
+    @Override
+    public boolean hasRole(EdgeRole role) {
+        return getRole() == role;
+    }
+
     /** The pre-computed hash code. */
     private int hashCode;
 

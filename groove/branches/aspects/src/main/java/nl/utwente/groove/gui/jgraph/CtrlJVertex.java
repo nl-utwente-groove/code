@@ -1,5 +1,8 @@
 package nl.utwente.groove.gui.jgraph;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 import nl.utwente.groove.control.graph.ControlGraph;
 import nl.utwente.groove.control.graph.ControlNode;
 import nl.utwente.groove.gui.look.Look;
@@ -39,24 +42,22 @@ public class CtrlJVertex extends AJVertex<ControlGraph,CtrlJGraph,JModel<Control
 
     /** Indicates if this jVertex represents the start state of the control automaton. */
     public boolean isFinal() {
-        return getNode().getPosition()
-            .isFinal();
+        return getNode().getPosition().isFinal();
     }
 
     /** Indicates if this jVertex corresponds to a transient control state. */
     public boolean isTransient() {
-        return getNode().getPosition()
-            .getTransience() > 0;
+        return getNode().getPosition().getTransience() > 0;
     }
 
     @Override
-    protected Look getStructuralLook() {
+    protected Set<Look> getStructuralLooks() {
         if (isStart()) {
-            return Look.START;
+            return EnumSet.of(Look.START);
         } else if (isTransient()) {
-            return Look.CTRL_TRANSIENT_STATE;
+            return EnumSet.of(Look.CTRL_TRANSIENT_STATE);
         } else {
-            return Look.STATE;
+            return EnumSet.of(Look.STATE);
         }
     }
 

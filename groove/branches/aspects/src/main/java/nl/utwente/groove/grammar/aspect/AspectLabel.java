@@ -145,26 +145,27 @@ public class AspectLabel extends ALabel implements Fixable {
 
     /**
      * Adds an aspect value to the label.
-     * Consistency with existing values is not tested.
-     * @param value the value to be added
+     * Adds an error if the value is not consistent with the graph role.
+     * Consistency with existing aspects is not tested.
+     * @param aspect the value to be added
      */
-    public void addAspect(Aspect value) {
+    public void addAspect(Aspect aspect) {
         testFixed(false);
-        this.aspects.add(value);
-        boolean notForNode = !value.isForNode(this.role);
-        boolean notForEdge = !value.isForEdge(this.role);
+        this.aspects.add(aspect);
+        boolean notForNode = !aspect.isForNode(getGraphRole());
+        boolean notForEdge = !aspect.isForEdge(getGraphRole());
         if (notForNode) {
             if (notForEdge) {
-                addError("Aspect %s not allowed in %s", value, roleDescription.get(this.role),
+                addError("Aspect '%s' not allowed in %s", aspect, roleDescription.get(this.role),
                          this.role);
             } else {
-                this.edgeOnly = value;
+                this.edgeOnly = aspect;
             }
         } else if (notForEdge) {
-            this.nodeOnly = value;
+            this.nodeOnly = aspect;
         }
         if (this.nodeOnly != null && this.edgeOnly != null) {
-            addError("Conflicting aspects %s and %s", this.nodeOnly, this.edgeOnly);
+            addError("Conflicting aspects '%s' and '%s'", this.nodeOnly, this.edgeOnly);
         }
     }
 
@@ -242,7 +243,7 @@ public class AspectLabel extends ALabel implements Fixable {
     private final List<Aspect> aspects = new ArrayList<>();
 
     /** Tests if this label contains an aspect of a given kind. */
-    public boolean containsAspect(AspectKind kind) {
+    public boolean has(AspectKind kind) {
         boolean result = false;
         for (Aspect aspect : getAspects()) {
             if (aspect.getKind() == kind) {

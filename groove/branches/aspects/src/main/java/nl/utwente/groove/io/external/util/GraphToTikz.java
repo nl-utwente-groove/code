@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.io.external.util;
 
+import static nl.utwente.groove.grammar.aspect.AspectKind.PRODUCT;
+
 import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -31,6 +33,7 @@ import org.jgraph.graph.GraphConstants;
 import org.jgraph.util.Bezier;
 
 import nl.utwente.groove.grammar.UnitPar;
+import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphInfo;
@@ -289,7 +292,7 @@ public final class GraphToTikz<G extends Graph> {
 
     private static boolean hasParameter(JVertex<?> node) {
         return node instanceof AspectJVertex v
-            ? v.getNode().hasPar()
+            ? v.getNode().has(Category.PARAM)
             : false;
     }
 
@@ -298,7 +301,7 @@ public final class GraphToTikz<G extends Graph> {
     }
 
     private static boolean isProductNode(JVertex<?> node) {
-        return (node instanceof AspectJVertex v) && v.getNode().isProduct();
+        return (node instanceof AspectJVertex v) && v.getNode().has(PRODUCT);
     }
 
     // ------------------------------------------------------------------------
@@ -404,7 +407,7 @@ public final class GraphToTikz<G extends Graph> {
 
     private void appendParameterNode(AspectJVertex node) {
         String nodeId = node.getNode().toString();
-        String nr = UnitPar.toRuleAdornment(node.getNode().getParAspect());
+        String nr = UnitPar.toRuleAdornment(node.getNode().get(Category.PARAM));
         // New node line.
         append(BEGIN_NODE + encloseBrack(PAR_NODE_STYLE));
         // Node name.

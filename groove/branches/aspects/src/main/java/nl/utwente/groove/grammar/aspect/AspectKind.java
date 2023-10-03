@@ -35,6 +35,7 @@ import nl.utwente.groove.grammar.aspect.AspectContent.ContentKind;
 import nl.utwente.groove.grammar.aspect.AspectContent.NestedValue;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.util.Keywords;
+import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -48,13 +49,6 @@ public enum AspectKind {
     /** Used for comments/documentation. */
     REMARK(Category.REMARK, "rem", ContentKind.NONE),
 
-    /** Default aspect, if none is specified. */
-    DEFAULT(Category.ROLE, "none", ContentKind.NONE) {
-        @Override
-        public String getPrefix() {
-            return "";
-        }
-    },
     // rule roles
     /** Indicates an unmodified element. */
     READER(Category.ROLE, "use", ContentKind.LEVEL),
@@ -116,6 +110,13 @@ public enum AspectKind {
     COMPOSITE(Category.ASSOC, "part", ContentKind.NONE),
 
     // label-related aspects
+    /** Default label mode, if none is specified. */
+    ATOM(Category.LABEL, "none", ContentKind.NONE) {
+        @Override
+        public String getPrefix() {
+            return "";
+        }
+    },
     /** Indicates that the remainder of the label is a regular expression. */
     PATH(Category.LABEL, "path", ContentKind.NONE),
     /** Indicates that the remainder of the label is to be taken as literal text. */
@@ -746,7 +747,7 @@ public enum AspectKind {
             b.add("<li> COUNT points to the cardinality of a quantifier.");
             break;
 
-        case DEFAULT:
+        case ATOM:
             break;
 
         case PARAM_BI:
@@ -987,8 +988,8 @@ public enum AspectKind {
             Set<AspectKind> nodeKinds, edgeKinds;
             switch (role) {
             case HOST:
-                nodeKinds = EnumSet.of(DEFAULT, REMARK, INT, BOOL, REAL, STRING, COLOR, ID);
-                edgeKinds = EnumSet.of(DEFAULT, REMARK, LITERAL, LET);
+                nodeKinds = EnumSet.of(REMARK, INT, BOOL, REAL, STRING, COLOR, ID);
+                edgeKinds = EnumSet.of(REMARK, ATOM, LITERAL, LET);
                 break;
             case RULE:
                 nodeKinds = EnumSet
@@ -997,14 +998,14 @@ public enum AspectKind {
                         EXISTS, EXISTS_OPT, ID, COLOR);
                 edgeKinds = EnumSet
                     .of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, CONNECT, BOOL, INT, REAL,
-                        STRING, ARGUMENT, PATH, LITERAL, FORALL, FORALL_POS, EXISTS, EXISTS_OPT,
-                        NESTED, LET, LET_NEW, TEST);
+                        STRING, ARGUMENT, ATOM, PATH, LITERAL, FORALL, FORALL_POS, EXISTS,
+                        EXISTS_OPT, NESTED, LET, LET_NEW, TEST);
                 break;
             case TYPE:
-                nodeKinds = EnumSet
-                    .of(DEFAULT, REMARK, INT, BOOL, REAL, STRING, ABSTRACT, IMPORT, COLOR, EDGE);
+                nodeKinds
+                    = EnumSet.of(REMARK, INT, BOOL, REAL, STRING, ABSTRACT, IMPORT, COLOR, EDGE);
                 edgeKinds = EnumSet
-                    .of(REMARK, INT, BOOL, REAL, STRING, ABSTRACT, SUBTYPE, MULT_IN, MULT_OUT,
+                    .of(REMARK, ATOM, INT, BOOL, REAL, STRING, ABSTRACT, SUBTYPE, MULT_IN, MULT_OUT,
                         COMPOSITE);
                 break;
             default:
@@ -1063,11 +1064,11 @@ public enum AspectKind {
         /** Nodified edge declaration. */
         EDGE(COLOR),
         /** Incoming multiplicity declaration. */
-        MULT_IN,
+        MULT_IN(TYPE),
         /** Outgoing multiplicity declaration. */
-        MULT_OUT(SORT, MULT_IN),
+        MULT_OUT(SORT, TYPE, MULT_IN),
         /** Relational nature of an edge. */
-        ASSOC(MULT_IN, MULT_OUT),;
+        ASSOC(TYPE, MULT_IN, MULT_OUT),;
 
         /** Declares a category and its compatibility with other ("smaller") categories. */
         private Category(Category... ok) {
@@ -1075,8 +1076,14 @@ public enum AspectKind {
             for (Category conflict : ok) {
                 assert conflict.ordinal() < ordinal();
             }
-            Arrays.stream(ok).forEach(c -> this.ok.add(c));
+            this.okArray = ok;
         }
+
+        /** The OK values as an array.
+         * This is workaround for the fact that we can't create an EnumSet of Category
+         * during class initialisation
+         */
+        private final Category[] okArray;
 
         /** Tests if this category is compatible with another when used on nodes.
          * @param other the other category
@@ -1096,13 +1103,13 @@ public enum AspectKind {
          * @param other the other category
          * @param forRole the graph role for which this is to be tested
          */
-        public boolean clashForEdge(Category other, GraphRole forRole) {
+        public boolean okForEdge(Category other, GraphRole forRole) {
             if (this == other) {
                 return true;
             } else if (this.ordinal() < other.ordinal()) {
                 return ok(other) && conflictsForEdge(other, forRole);
             } else {
-                return other.clashForEdge(this, forRole);
+                return other.okForEdge(this, forRole);
             }
         }
 
@@ -1124,7 +1131,7 @@ public enum AspectKind {
             return false;
         }
 
-        /** Tests if this category is generally compatible another,
+        /** Tests if this category is generally compatible with another,
          * strictly smaller category.
          * @param other the other category
          */
@@ -1132,10 +1139,22 @@ public enum AspectKind {
             assert other.ordinal() < ordinal();
             // this implementation does not specialise for roles or nodes/edges;
             // that is left to special values
-            return this.ok.contains(other);
+            return ok().contains(other);
+        }
+
+        /** Returns the compatible categories as a set. */
+        private Set<Category> ok() {
+            return this.ok.get();
+        }
+
+        /** Creator method for the set of compatible categories. */
+        private Set<Category> createOk() {
+            var result = EnumSet.noneOf(Category.class);
+            Arrays.stream(this.okArray).forEach(result::add);
+            return result;
         }
 
         /** The categories with which this one conflicts. */
-        private final EnumSet<Category> ok = EnumSet.noneOf(Category.class);
+        private LazyFactory<Set<Category>> ok = LazyFactory.instance(this::createOk);
     }
 }

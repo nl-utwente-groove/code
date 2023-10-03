@@ -258,8 +258,8 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
 
     /** Convenience method to invoke an edit of a set of visual attributes. */
     void edit(JCell<AspectGraph> jCell, VisualMap newVisuals) {
-        getModel().edit(Collections.singletonMap(jCell, newVisuals.getAttributes()), null, null,
-                        null);
+        getModel()
+            .edit(Collections.singletonMap(jCell, newVisuals.getAttributes()), null, null, null);
     }
 
     /**

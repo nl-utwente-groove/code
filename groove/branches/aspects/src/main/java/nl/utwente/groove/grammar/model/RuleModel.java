@@ -17,12 +17,16 @@
 
 package nl.utwente.groove.grammar.model;
 
+import static nl.utwente.groove.grammar.aspect.AspectKind.ARGUMENT;
 import static nl.utwente.groove.grammar.aspect.AspectKind.CONNECT;
 import static nl.utwente.groove.grammar.aspect.AspectKind.EXISTS;
 import static nl.utwente.groove.grammar.aspect.AspectKind.FORALL_POS;
 import static nl.utwente.groove.grammar.aspect.AspectKind.PARAM_ASK;
 import static nl.utwente.groove.grammar.aspect.AspectKind.PARAM_BI;
 import static nl.utwente.groove.grammar.aspect.AspectKind.PARAM_IN;
+import static nl.utwente.groove.grammar.aspect.AspectKind.PRODUCT;
+import static nl.utwente.groove.grammar.aspect.AspectKind.Category.ROLE;
+import static nl.utwente.groove.grammar.aspect.AspectKind.Category.SORT;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -48,7 +52,6 @@ import javax.swing.SwingUtilities;
 import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.algebra.Operator;
-import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Variable;
 import nl.utwente.groove.automaton.RegExpr;
@@ -69,6 +72,7 @@ import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectElement;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectKind;
+import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.rule.DefaultRuleNode;
 import nl.utwente.groove.grammar.rule.LabelVar;
@@ -202,7 +206,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             return new FormatError("positive priority not allowed");
         }
         for (AspectNode node : getSource().nodeSet()) {
-            if (node.hasPar()) {
+            if (node.has(Category.PARAM)) {
                 return new FormatError("parameter not allowed", node);
                 /* who would we ever want graph conditions with parameters?
                 // don't use #getRole() here as it causes infinite recursion
@@ -219,31 +223,22 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             if (node.hasColor()) {
                 return new FormatError("colour change not allowed", node);
             }
-            switch (node.getKind()) {
-            case ERASER:
+            if (node.has(Category.ROLE, k -> k.isEraser())) {
                 return new FormatError("eraser not allowed", node);
-            case CREATOR:
-            case ADDER:
+            }
+            if (node.has(Category.ROLE, k -> k.isCreator())) {
                 return new FormatError("creator not allowed", node);
-            default:
-                // no constraint
             }
         }
         for (AspectEdge edge : getSource().edgeSet()) {
-            if (!edge.hasAspect()) {
-                continue;
-            }
             if (edge.isAssign()) {
                 return new FormatError("assignment not allowed", edge.source());
             }
-            switch (edge.getKind()) {
-            case ERASER:
-                return new FormatError("erased not allowed", edge);
-            case CREATOR:
-            case ADDER:
+            if (edge.has(Category.ROLE, k -> k.isEraser())) {
+                return new FormatError("eraser not allowed", edge);
+            }
+            if (edge.has(Category.ROLE, k -> k.isCreator())) {
                 return new FormatError("creator not allowed", edge);
-            default:
-                // no constraint
             }
         }
         return null;
@@ -540,7 +535,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          */
         public Index(Condition.Op operator, boolean positive, AspectNode levelNode,
                      QualName namePrefix) {
-            assert levelNode == null || levelNode.getKind().isQuantifier();
+            assert levelNode == null || levelNode.has(Category.META);
             this.namePrefix = namePrefix;
             this.operator = operator;
             this.positive = positive;
@@ -755,21 +750,20 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             // build the index tree
             indexTree.put(this.topLevelIndex, new ArrayList<>());
             for (AspectNode node : this.source.nodeSet()) {
-                AspectKind nodeKind = node.getKind();
-                if (nodeKind.isQuantifier()) {
+                if (node.has(Category.META)) {
                     // look for the parent level
                     Index parentIndex;
                     // by the correctness of the aspect graph we know that
                     // there is at most one outgoing edge, which is a parent
                     // edge and points to the parent level node
-                    AspectNode parentNode = node.getNestingParent();
+                    AspectNode parentNode = node.getParentNode();
                     if (parentNode == null) {
                         parentIndex = this.topLevelIndex;
                     } else {
-                        AspectKind parentKind = parentNode.getKind();
+                        AspectKind parentKind = parentNode.getKind(Category.META);
                         parentIndex = getIndex(parentKind, parentNode, indexTree);
                     }
-                    Index myIndex = getIndex(nodeKind, node, indexTree);
+                    Index myIndex = getIndex(node.getKind(Category.META), node, indexTree);
                     indexTree.get(parentIndex).add(myIndex);
                     if (node.getMatchCount() != null) {
                         this.matchCountMap.put(myIndex, node.getMatchCount());
@@ -810,7 +804,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                                Map<Index,List<Index>> indexTree) {
             Index result = this.metaIndexMap.get(metaNode);
             if (result == null) {
-                AspectKind kind = metaNode.getKind();
+                AspectKind kind = metaNode.getKind(Category.META);
                 Condition.Op operator = kind.isExists()
                     ? Op.EXISTS
                     : Op.FORALL;
@@ -888,14 +882,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             }
             // add nodes to nesting data structures
             for (AspectNode node : this.source.nodeSet()) {
-                if (!node.getKind().isMeta()) {
+                if (!node.has(Category.META)) {
                     getLevel(result, node).addNode(node);
                 }
             }
             // add edges to nesting data structures
             for (AspectEdge edge : this.source.edgeSet()) {
                 try {
-                    if (edge.getKind() == CONNECT || !edge.getKind().isMeta()) {
+                    if (edge.has(CONNECT) || !edge.has(Category.META)) {
                         getLevel(result, edge).addEdge(edge);
                     }
                 } catch (FormatException exc) {
@@ -936,7 +930,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             Level1 result = getNodeLevelMap().get(node);
             if (result == null) {
                 // find the corresponding quantifier node
-                AspectNode nestingNode = node.getNestingLevel();
+                AspectNode nestingNode = node.getLevelNode();
                 Index index = nestingNode == null
                     ? this.topLevelIndex
                     : this.metaIndexMap.get(nestingNode);
@@ -961,8 +955,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             Level1 targetLevel = getLevel(level1Map, edge.target());
             Level1 result = max(sourceLevel, targetLevel);
             // if one of the end nodes is a NAC, it must be the max of the two
-            if (edge.source().getKind().inNAC() && !sourceLevel.equals(result)
-                || edge.target().getKind().inNAC() && !targetLevel.equals(result)) {
+            if (edge.source().has(Category.ROLE, AspectKind::inNAC) && !sourceLevel.equals(result)
+                || edge.target().has(Category.ROLE, AspectKind::inNAC)
+                    && !targetLevel.equals(result)) {
                 result = null;
             }
             if (result == null) {
@@ -1226,15 +1221,15 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          * @param elem the element about which the question is asked
          */
         private boolean isForNextLevel(AspectElement elem) {
-            assert elem.getKind() == CONNECT || !elem.getKind().isMeta();
+            assert elem.has(CONNECT) || !elem.has(Category.META);
             boolean result = false;
             if (!this.index.getOperator().hasPattern()) {
                 result = true;
             } else if (elem instanceof AspectNode n) {
                 // we need to push non-attribute nodes down in injective mode
                 // to be able to compare images of nodes at different levels
-                result = isInjective() && elem.getKind().inLHS() && !n.hasDataAspect()
-                    && !n.isProduct();
+                result = isInjective() && n.has(ROLE, AspectKind::inLHS) && !n.has(SORT)
+                    && !n.has(PRODUCT);
             } else {
                 // we need to push down edges that bind wildcards
                 // to ensure the bound value is known at sublevels
@@ -1338,7 +1333,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             }
             for (AspectNode modelNode : origin.modelNodes) {
                 try {
-                    if (!modelNode.isProduct()) {
+                    if (modelNode.has(ROLE) && !modelNode.has(PRODUCT)) {
                         processNode(modelNode);
                     }
                 } catch (FormatException exc) {
@@ -1349,12 +1344,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             errors.throwException();
             for (AspectEdge modelEdge : origin.modelEdges) {
                 try {
-                    if (modelEdge.getKind() == CONNECT) {
+                    if (modelEdge.has(CONNECT)) {
                         addConnect(modelEdge);
-                    } else if (modelEdge.getAttrKind() == AspectKind.DEFAULT) {
-                        processEdge(modelEdge);
-                    } else if (modelEdge.getAttrKind() != AspectKind.ARGUMENT) {
+                    } else if (modelEdge.has(SORT)) {
                         addOperator(modelEdge);
+                    } else if (modelEdge.has(ROLE) && !modelEdge.has(ARGUMENT)) {
+                        processEdge(modelEdge);
                     }
                 } catch (FormatException exc) {
                     errors.addAll(exc.getErrors());
@@ -1384,10 +1379,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          * Adds a node to the LHS, RHS or NAC node set, whichever is appropriate.
          */
         private void processNode(AspectNode modelNode) throws FormatException {
-            AspectKind nodeKind = modelNode.getKind();
+            AspectKind nodeKind = modelNode.getKind(ROLE);
             this.isRule |= nodeKind.inLHS() != nodeKind.inRHS();
             RuleNode ruleNode = getNodeImage(modelNode);
-            boolean isAskNode = modelNode.getParKind() == PARAM_ASK;
+            boolean isAskNode = modelNode.has(PARAM_ASK);
             if (nodeKind.inLHS() && !isAskNode) {
                 this.lhs.addNode(ruleNode);
                 if (nodeKind.inRHS()) {
@@ -1416,7 +1411,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          * Adds an edge to the LHS, RHS or NAC edge set, whichever is appropriate.
          */
         private void processEdge(AspectEdge modelEdge) throws FormatException {
-            AspectKind edgeKind = modelEdge.getKind();
+            AspectKind edgeKind = modelEdge.getKind(ROLE);
             this.isRule |= edgeKind.inLHS() != edgeKind.inRHS();
             RuleEdge ruleEdge = getEdgeImage(modelEdge);
             if (ruleEdge == null) {
@@ -1459,8 +1454,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                     this.rhs.addEdgeContext(ruleEdge);
                     if (isRhsAsNac()) {
                         this.nacEdgeSet.add(ruleEdge);
-                    } else if (isCheckCreatorEdges() && modelEdge.source().getKind().inLHS()
-                        && modelEdge.target().getKind().inLHS()) {
+                    } else if (isCheckCreatorEdges()
+                        && modelEdge.source().has(ROLE, AspectKind::inLHS)
+                        && modelEdge.target().has(ROLE, AspectKind::inLHS)) {
                         this.nacEdgeSet.add(ruleEdge);
                     }
                 }
@@ -1477,7 +1473,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
         private void addOperator(AspectEdge operatorEdge) throws FormatException {
             AspectNode productNode = operatorEdge.source();
-            boolean embargo = productNode.getKind().inNAC();
+            boolean embargo = productNode.has(ROLE, AspectKind::inNAC);
             List<VariableNode> arguments = new ArrayList<>();
             for (AspectNode argModelNode : productNode.getArgNodes()) {
                 VariableNode argument = (VariableNode) getNodeImage(argModelNode);
@@ -1524,7 +1520,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             Level2 level = setOperator
                 ? this.parent
                 : this;
-            if (operatorEdge.getKind().inNAC()) {
+            if (operatorEdge.has(ROLE, AspectKind::inNAC)) {
                 level.nacNodeSet.add(opNode);
             } else {
                 level.lhs.addNode(opNode);
@@ -1845,22 +1841,22 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          */
         private RuleNode computeNodeImage(AspectNode node) throws FormatException {
             RuleNode result;
-            if (node.hasPar() && !this.index.isTopLevel()) {
+            if (node.has(Category.PARAM) && !this.index.isTopLevel()) {
                 throw new FormatException("Parameter '%d' only allowed on top existential level",
                     node.getNumber(), node);
             }
             int nr = node.getNumber();
-            Sort sort = node.getSort();
-            if (sort != null) {
+            AspectKind sortKind = node.getKind(SORT);
+            if (sortKind != null) {
                 Expression term;
                 String id = node.getId();
-                if (node.hasValue()) {
-                    term = node.getValue();
+                if (node.hasExpression()) {
+                    term = node.getExpression();
                 } else {
                     String varName = id == null
                         ? VariableNode.TO_STRING_PREFIX + nr
                         : id;
-                    term = new Variable(varName, sort);
+                    term = new Variable(varName, sortKind.getSort());
                 }
                 VariableNode image = this.factory.createVariableNode(nr, term);
                 if (id != null) {
@@ -2530,8 +2526,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             // collect parameter nodes
             for (AspectNode node : getSource().nodeSet()) {
                 // check if the node is a parameter
-                if (node.hasPar()) {
-                    AspectContent parContent = node.getParAspect().getContent();
+                if (node.has(Category.PARAM)) {
+                    AspectContent parContent = node.getContent(Category.PARAM);
                     if (parContent instanceof IntegerContent i) {
                         Integer nr = i.get();
                         parCount = Math.max(parCount, nr + 1);
@@ -2544,11 +2540,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                         assert parContent instanceof NullContent;
                         // this is an unnumbered parameter,
                         // which serves as an explicit anchor node
-                        if (node.getParKind() != PARAM_BI) {
+                        if (!node.has(PARAM_BI)) {
                             throw new FormatException("Anchor node cannot be input or output",
                                 node);
                         }
-                        if (!node.getKind().inLHS()) {
+                        if (!node.has(ROLE, AspectKind::inLHS)) {
                             throw new FormatException("Anchor node must be in LHS", node);
                         }
                         RuleNode nodeImage = RuleModel.this.modelMap.getNode(node);
@@ -2577,8 +2573,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
         private void processNode(Map<Integer,UnitPar.RulePar> parMap, AspectNode node,
                                  Integer nr) throws FormatException {
-            AspectKind nodeKind = node.getKind();
-            AspectKind parKind = node.getParKind();
+            AspectKind nodeKind = node.getKind(ROLE);
+            AspectKind parKind = node.getKind(Category.PARAM);
             RuleNode nodeImage = getMap().getNode(node);
             assert nodeImage != null;
             if (parKind == PARAM_IN && nodeKind.isCreator()) {
