@@ -124,7 +124,7 @@ public class VisibleValue implements VisualValue<Boolean> {
             return false;
         }
         // explicit product nodes should be visible
-        if (node.has(AspectKind.PRODUCT)) {
+        if (!node.has(Category.SORT) || node.has(AspectKind.PRODUCT)) {
             return true;
         }
         // in addition, value nodes or data type nodes may be filtered

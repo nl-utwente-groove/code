@@ -58,9 +58,7 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
 
     @Override
     public Aspect.Map getAspects() {
-        return getNode() == null
-            ? this.aspects
-            : getNode().getAspects();
+        return this.aspects;
     }
 
     /** The role of the underlying rule node. */
@@ -88,6 +86,7 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
     public void initialise() {
         super.initialise();
         AspectNode node = getNode();
+        getAspects().putAll(node.getAspects());
         var data = node.getKind(Category.SORT);
         if (data != null) {
             setLook(Look.getLookFor(data), true);

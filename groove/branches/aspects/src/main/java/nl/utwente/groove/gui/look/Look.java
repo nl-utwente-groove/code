@@ -401,16 +401,17 @@ public enum Look {
     }
 
     /** Returns the (structural) look for a given aspect. */
-    public static Look getLookFor(AspectKind aspect) {
-        Look result = aspectLookMap.get(aspect);
+    public static Look getLookFor(AspectKind kind) {
+        Look result = aspectLookMap.get(kind);
         if (result == null) {
             result = BASIC;
         }
         return result;
     }
 
+    /** Mapping from sets of looks to corresponding visual maps. */
     private final static Map<Set<Look>,VisualMap> looksMap = new HashMap<>();
-
+    /** Mapping from aspect kinds to looks. */
     private final static Map<AspectKind,Look> aspectLookMap = new EnumMap<>(AspectKind.class);
 
     static {
