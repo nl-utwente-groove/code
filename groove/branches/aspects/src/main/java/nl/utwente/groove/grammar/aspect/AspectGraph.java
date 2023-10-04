@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * $Id$
+ 	 * $Id$
  */
 package nl.utwente.groove.grammar.aspect;
 
@@ -260,8 +260,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
                     : source.getLevelNode();
                 AspectNode outcome = addExpression(level, source, predicate);
                 // specify whether the outcome should be true or false
-                Constant value = Constant.instance(!nac);
-                outcome.addLabel(parser.parse(value.toString(), getRole()));
+                outcome.set(Aspect.newAspect(Constant.instance(!nac), getRole()));
             } catch (FormatException e) {
                 errors.addAll(e.getErrors());
             }
@@ -294,20 +293,21 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         AspectEdge result = addEdge(source, assignLabel, target);
         if (getRole() == RULE && !source.getKind(Category.ROLE).isCreator() && !isNew) {
             Aspect sortAspect = target.get(Category.SORT);
+            Sort sort = sortAspect.getKind().getSort();
             assert sortAspect != null;
             // add an eraser edge for the old value, if this is not LET_NEW
-            AspectNode oldTarget
-                = findTarget(source, assign.getLhs(), sortAspect.getKind().getSort());
+            AspectNode oldTarget = findTarget(source, assign.getLhs(), sort);
             if (oldTarget == null) {
                 oldTarget = addNestedNode(level, source);
                 // use the type of the new target for the old target node
-                oldTarget.set(sortAspect);
+                oldTarget.set(Aspect.getAspect(sort));
             }
             assignLabel = AspectParser
                 .getInstance()
                 .parse(AspectKind.ERASER.getPrefix() + assign.getLhs(), getRole());
-            addEdge(source, assignLabel, oldTarget);
+            addEdge(source, assignLabel, oldTarget).setParsed();
         }
+        result.setParsed();
         return result;
     }
 
@@ -339,11 +339,12 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     private AspectNode addConstant(@NonNull AspectNode source,
                                    Expression constant) throws FormatException {
         AspectNode result = addNode();
-        if (!(constant instanceof Constant)) {
+        if (!(constant instanceof Constant c)) {
             throw new FormatException("Expression '%s' not allowed as constant value",
-                constant.toParseString(), source);
+                constant.toDisplayString(), source);
         }
-        result.addLabel(parser.parse(constant.toString(), getRole()));
+        result.set(Aspect.newAspect(c, getRole()));
+        result.setParsed();
         return result;
     }
 
@@ -386,7 +387,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         AspectNode result = findTarget(owner, expr.getField(), exprSort);
         if (result == null) {
             result = addNestedNode(level, source);
-            result.addLabel(createLabel(AspectKind.toAspectKind(exprSort)));
+            result.set(Aspect.getAspect(exprSort));
         }
         /* Clause below should not be possible, we found result based on exprSort
         else {
@@ -398,7 +399,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         }
         */
         AspectLabel idLabel = parser.parse(expr.getField(), getRole());
-        addEdge(owner, idLabel, result);
+        addEdge(owner, idLabel, result).setParsed();
         return result;
     }
 
@@ -442,16 +443,16 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             }
         }
         AspectNode product = addNestedNode(level, source);
-        product.addLabel(createLabel(AspectKind.PRODUCT));
+        product.set(AspectKind.PRODUCT.getAspect());
         // add the operator edge
         AspectLabel operatorLabel = parser.parse(operator.getFullName(), getRole());
-        addEdge(product, operatorLabel, result);
+        addEdge(product, operatorLabel, result).setParsed();
         // add the arguments
         List<Expression> args = call.getArgs();
         for (int i = 0; i < args.size(); i++) {
             AspectNode argResult = addExpression(level, source, args.get(i));
             AspectLabel argLabel = parser.parse(AspectKind.ARGUMENT.getPrefix() + i, getRole());
-            addEdge(product, argLabel, argResult);
+            addEdge(product, argLabel, argResult).setParsed();
         }
         return result;
     }
@@ -487,7 +488,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             result.set(EMBARGO.getAspect());
         }
         if (level != null) {
-            addEdge(result, NestedValue.AT.toString(), level);
+            addEdge(result, NestedValue.AT.toString(), level).setParsed();
         }
         return result;
     }
@@ -768,7 +769,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
                 node.setFixed();
                 errors.addAll(node.getErrors());
             }
-            if (!GraphInfo.hasErrors(this)) {
+            if (!errors.isEmpty()) {
                 addErrors(errors);
             }
             this.status = Status.FIXED;

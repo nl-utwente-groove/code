@@ -308,17 +308,10 @@ public enum AspectKind {
     }
 
     /**
-     * Indicates if this aspect is among the set of meta-aspects.
+     * Indicates if this aspect is an assignment.
      */
-    public boolean isMeta() {
-        return has(Category.META);
-    }
-
-    /**
-     * Indicates if this aspect is among the set of parameter aspects.
-     */
-    public boolean isParam() {
-        return has(Category.PARAM);
+    public boolean isAssign() {
+        return this == LET || this == LET_NEW;
     }
 
     /**
@@ -342,14 +335,6 @@ public enum AspectKind {
      */
     public boolean isQuantifier() {
         return isExists() || isForall();
-    }
-
-    /**
-     * Indicates if this aspect is attribute related.
-     * @see #attributers
-     */
-    public boolean isAttrKind() {
-        return attributers.contains(this);
     }
 
     /** Indicates that this aspect kind is always the last on a label. */
@@ -1065,19 +1050,19 @@ public enum AspectKind {
         /** Label mode. */
         LABEL(ROLE, META),
         /** Colour declaration. */
-        COLOR,
+        COLOR(ROLE, ID, PARAM),
         /** Node type-related aspects. */
-        TYPE,
+        TYPE(LABEL),
         /** Import aspect. */
         IMPORT,
         /** Nodified edge declaration. */
         EDGE(COLOR),
         /** Incoming multiplicity declaration. */
-        MULT_IN(LABEL),
+        MULT_IN(LABEL, TYPE),
         /** Outgoing multiplicity declaration. */
-        MULT_OUT(SORT, LABEL, MULT_IN),
+        MULT_OUT(SORT, LABEL, TYPE, MULT_IN),
         /** Relational nature of an edge. */
-        ASSOC(LABEL, MULT_IN, MULT_OUT),;
+        ASSOC(LABEL, TYPE, MULT_IN, MULT_OUT),;
 
         /** Declares a category and its compatibility with other ("smaller") categories. */
         private Category(Category... ok) {

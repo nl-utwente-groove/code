@@ -231,6 +231,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         source().setParsed();
         target().setParsed();
         if (source().has(REMARK) || target().has(REMARK)) {
+            getAspects().remove(Category.LABEL);
             set(REMARK.getAspect());
         } else if (source().has(Category.META) || target().has(Category.META)) {
             if (!has(NESTED) && !has(REMARK) && !has(TEST)) {
@@ -765,8 +766,10 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     private @Nullable ExprTree assignTree;
 
     /** Convenience method to retrieve the attribute aspect content as an assignment. */
-    public @Nullable Assignment getAssign() {
-        return this.assign.get();
+    public Assignment getAssign() throws FormatException {
+        var result = this.assign.get();
+        getErrors().throwException();
+        return result;
     }
 
     /** Factory method for the assignment expression. */
@@ -791,10 +794,11 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         assert isParsed();
         var assignTree = getAssignTree();
         assert assignTree != null;
-        var assign = getAssign();
-        return assign == null
-            ? assignTree.toLine()
-            : assign.toLine(assignSymbol);
+        try {
+            return getAssign().toLine(assignSymbol);
+        } catch (FormatException exc) {
+            return assignTree.toLine();
+        }
     }
 
     /** Indicates if this is an attribute test edge. */
@@ -808,7 +812,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     }
 
     /** Returns the expression tree of this test edge, if any. */
-    private ExprTree getTestTree() {
+    private @Nullable ExprTree getTestTree() {
         return this.testTree;
     }
 
@@ -841,8 +845,10 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     private LazyFactory<Expression> test = LazyFactory.instance(this::createTest);
 
     /** Convenience method to retrieve the attribute aspect content as a predicate. */
-    public Expression getTest() {
-        return this.test.get();
+    public Expression getTest() throws FormatException {
+        var result = this.test.get();
+        getErrors().throwException();
+        return result;
     }
 
     /** Returns a line describing the test on this edge.
@@ -850,12 +856,13 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
      */
     private Line getTestLine() {
         assert isParsed();
-        var testTree = getTestTree();
-        assert testTree != null;
-        var test = getTest();
-        return test == null
-            ? testTree.toLine()
-            : test.toLine();
+        try {
+            return getTest().toLine();
+        } catch (FormatException exc) {
+            var testTree = getTestTree();
+            assert testTree != null;
+            return testTree.toLine();
+        }
     }
 
     /** Sets the argument number to a (non-negative) value. */

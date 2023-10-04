@@ -921,9 +921,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
         /**
          * Returns the quantification level of a given aspect rule node.
-         * @param node the node for which the quantification level is
-         *        determined; must fail to satisfy
-         *        {@link AspectKind#isMeta()}
+         * @param node the node for which the quantification level is to be
+         *        determined
          * @return the level for {@code node}; non-null
          */
         private Level1 getLevel(Map<Index,Level1> level1Map, AspectNode node) {
@@ -945,9 +944,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
         /**
          * Returns the quantification level of a given aspect rule edge.
-         * @param edge the edge for which the quantification level is
-         *        determined; must fail to satisfy
-         *        {@link AspectKind#isMeta()}
+         * @param edge the edge for which the quantification level is to be
+         *        determined
          */
         private Level1 getLevel(Map<Index,Level1> level1Map,
                                 AspectEdge edge) throws FormatException {

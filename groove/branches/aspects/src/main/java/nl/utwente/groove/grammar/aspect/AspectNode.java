@@ -409,9 +409,6 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
      * @throws FormatException if the ID has already been set.
      */
     private void setId(String id) throws FormatException {
-        if (hasId()) {
-            throw new FormatException("Duplicate node identifiers '%s' and '%s'", getId(), id);
-        }
         this.id = id;
         getGraph().notifyNodeId(this);
     }

@@ -18,15 +18,18 @@ package nl.utwente.groove.grammar.aspect;
 
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.Optional;
+import java.util.function.BiPredicate;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Sort;
+import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.grammar.aspect.AspectContent.ConstContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.ContentKind;
 import nl.utwente.groove.grammar.aspect.AspectContent.ExprContent;
+import nl.utwente.groove.grammar.aspect.AspectContent.MultiplicityContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.NullContent;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.type.TypeLabel;
@@ -223,6 +226,25 @@ public class Aspect {
         return aspectNameMap.get(sort.getName());
     }
 
+    /** Creates a new, sorted aspect containing a given expression.
+     * This is only valid for host graphs and rule graphs.
+     */
+    public static Aspect newAspect(Constant value, GraphRole role) {
+        assert role == GraphRole.HOST || role == GraphRole.RULE;
+        AspectKind kind = AspectKind.toAspectKind(value.getSort());
+        try {
+            var content = switch (role) {
+            case HOST -> new ConstContent(kind.getContentKind(), value);
+            case RULE -> new ExprContent(kind.getContentKind(),
+                Expression.parse(value.toParseString()));
+            default -> throw Exceptions.UNREACHABLE;
+            };
+            return new Aspect(kind, content);
+        } catch (FormatException exc) {
+            throw Exceptions.UNREACHABLE;
+        }
+    }
+
     /** Mapping from aspect names to canonical aspects (with that name). */
     private final static java.util.Map<String,Aspect> aspectNameMap = new HashMap<>();
 
@@ -267,23 +289,133 @@ public class Aspect {
                 add = aspect.hasContent();
             }
             if (add) {
-                var cat = aspect.getCategory();
-                var conflict = conflict(cat);
-                if (conflict != null) {
-                    throw new FormatException("Conflicting aspects '%s' and '%s'", get(conflict),
-                        aspect);
-                }
-                put(cat, aspect);
+                checkConflict(aspect);
+                checkOther(aspect);
+                put(aspect);
             }
         }
 
-        /** Returns a category already in this map that is in conflict with a given category;
-         * or {@code null} if there is no conflicting category.
-         */
-        private @Nullable Category conflict(Category cat) {
-            var result
-                = keySet().stream().filter(c -> !c.ok(cat, this.forNode, this.role)).findAny();
-            return ((Optional<@Nullable Category>) result).orElse(null);
+        /** Checks a new aspect for conflicts with existing aspect categories. */
+        private void checkConflict(Aspect newAspect) throws FormatException {
+            var result = keySet()
+                .stream()
+                .filter(c -> !c.ok(newAspect.getCategory(), this.forNode, this.role))
+                .findAny();
+            if (result.isPresent()) {
+                throw new FormatException("Conflicting aspects '%s' and '%s'", get(result.get()),
+                    newAspect);
+            }
+        }
+
+        /** Performs extra compatibility checks before inserting a new aspect into the map. */
+        private void checkOther(Aspect newAspect) throws FormatException {
+            // insert the aspect in the map for symmetry, to be removed again later
+            Aspect oldAspect = put(newAspect);
+            try {
+                switch (this.role) {
+                case HOST: // no extra checks
+                    break;
+                case RULE:
+                    if (containsKey(Category.ROLE) || containsKey(Category.META)) {
+                        if (this.forNode) {
+                            checkRoleSort();
+                            checkRoleAttr();
+                            checkRoleParam();
+                            checkRoleColor();
+                            checkNestingId();
+                        } else {
+                            checkRoleNesting();
+                            checkRoleSort();
+                            checkRoleAttr();
+                            checkRoleLabel();
+                            checkNestingLabel();
+                        }
+                    }
+                    break;
+                case TYPE:
+                    checkMultAssoc();
+                    break;
+                default:
+                    throw Exceptions.UNREACHABLE;
+                }
+            } finally {
+                if (oldAspect == null) {
+                    remove(newAspect.getCategory());
+                } else {
+                    put(oldAspect);
+                }
+            }
+        }
+
+        /** Checks for aspect-based conflicts between {@link Category#ROLE} and {@link Category#SORT}. */
+        private void checkRoleSort() throws FormatException {
+            check(Category.ROLE, Category.SORT,
+                  (role, sort) -> role.getKind().isCreator() || role.getKind().isEraser());
+        }
+
+        /** Checks for aspect-based conflicts between {@link Category#ROLE} and {@link Category#ATTR}. */
+        private void checkRoleAttr() throws FormatException {
+            check(Category.ROLE, Category.ATTR, //
+                  (role, attr) -> attr.getKind().isEraser() || //
+                      attr.getKind().isAssign()
+                          ? role.getKind().inNAC()
+                          : role.getKind().isCreator());
+        }
+
+        /** Checks for aspect-based conflicts between {@link Category#ROLE} and {@link Category#PARAM}. */
+        private void checkRoleParam() throws FormatException {
+            check(Category.ROLE, Category.PARAM, //
+                  (role, param) -> role.getKind().inNAC()
+                      || role.getKind().isCreator() && param.getKind() == AspectKind.PARAM_IN);
+        }
+
+        /** Checks for aspect-based conflicts between {@link Category#ROLE} and {@link Category#COLOR}. */
+        private void checkRoleColor() throws FormatException {
+            check(Category.ROLE, Category.COLOR,
+                  (role, color) -> role.getKind().inNAC() || role.getKind().isEraser());
+        }
+
+        /** Checks for aspect-based conflicts between {@link Category#ROLE} and {@link Category#META}. */
+        private void checkRoleNesting() throws FormatException {
+            check(Category.ROLE, Category.META,
+                  (role, nesting) -> !nesting.getKind().isQuantifier());
+        }
+
+        /** Checks for aspect-based conflicts between {@link Category#ROLE} and {@link Category#LABEL}. */
+        private void checkRoleLabel() throws FormatException {
+            check(Category.ROLE, Category.LABEL, //
+                  (role, label) -> label.has(AspectKind.PATH)
+                      && (role.getKind().isCreator() || role.getKind().isEraser()));
+        }
+
+        /** Checks for aspect-based conflicts between {@link Category#META} and {@link Category#ID}. */
+        private void checkNestingId() throws FormatException {
+            check(Category.META, Category.ID, (nesting, id) -> nesting.hasContent());
+        }
+
+        /** Checks for aspect-based conflicts between {@link Category#META} and {@link Category#LABEL}. */
+        private void checkNestingLabel() throws FormatException {
+            check(Category.META, Category.LABEL,
+                  (nesting, label) -> !nesting.getKind().isQuantifier());
+        }
+
+        /** Checks for aspect-based conflicts between {@link Category#MULT_IN} and {@link Category#ASSOC}. */
+        private void checkMultAssoc() throws FormatException {
+            check(Category.MULT_IN, Category.ASSOC, //
+                  (multIn, assoc) -> ((MultiplicityContent) multIn.getContent()).get().upper() > 1);
+        }
+
+        @SuppressWarnings("null")
+        private void check(Category one, Category two,
+                           BiPredicate<Aspect,Aspect> test) throws FormatException {
+            var aspectOne = get(one);
+            var aspectTwo = get(two);
+            if (aspectOne != null && aspectTwo != null) {
+                if (test.test(aspectOne, aspectTwo)) {
+                    throw new FormatException("Conflicting aspects '%s' and '%s'", aspectOne,
+                        aspectTwo);
+                }
+            }
         }
 
         /** Checks whether this map has any entry for a given aspect kind. */
@@ -320,6 +452,13 @@ public class Aspect {
                 }
             }
             return 0;
+        }
+
+        /** Inserts an aspect into the map without any checks,
+         * and returns the previous aspect of that category (if any).
+         */
+        private @Nullable Aspect put(Aspect newAspect) {
+            return put(newAspect.getCategory(), newAspect);
         }
     }
 }
