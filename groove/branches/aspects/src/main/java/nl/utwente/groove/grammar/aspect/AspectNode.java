@@ -71,6 +71,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         super(nr);
         assert graph.getRole().inGrammar();
         this.graph = graph;
+        this.aspects = new Aspect.Map(true, graph.getRole());
     }
 
     @Override
@@ -205,7 +206,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     }
 
     /** The initially empty aspect map. */
-    private final Aspect.Map aspects = new Aspect.Map();
+    private final Aspect.Map aspects;
 
     @Override
     public void parseAspects() throws FormatException {

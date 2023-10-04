@@ -1066,18 +1066,18 @@ public enum AspectKind {
         LABEL(ROLE, META),
         /** Colour declaration. */
         COLOR,
-        /** Type-related aspects. */
+        /** Node type-related aspects. */
         TYPE,
         /** Import aspect. */
         IMPORT,
         /** Nodified edge declaration. */
         EDGE(COLOR),
         /** Incoming multiplicity declaration. */
-        MULT_IN(TYPE),
+        MULT_IN(LABEL),
         /** Outgoing multiplicity declaration. */
-        MULT_OUT(SORT, TYPE, MULT_IN),
+        MULT_OUT(SORT, LABEL, MULT_IN),
         /** Relational nature of an edge. */
-        ASSOC(TYPE, MULT_IN, MULT_OUT),;
+        ASSOC(LABEL, MULT_IN, MULT_OUT),;
 
         /** Declares a category and its compatibility with other ("smaller") categories. */
         private Category(Category... ok) {
@@ -1094,31 +1094,20 @@ public enum AspectKind {
          */
         private final Category[] okArray;
 
-        /** Tests if this category is compatible with another when used on nodes.
+        /** Tests if this category is compatible with another.
          * @param other the other category
+         * @param forNode switch determining whether this is to be tested for nodes or edges
          * @param forRole the graph role for which this is to be tested
          */
-        public boolean okForNode(Category other, GraphRole forRole) {
+        public boolean ok(Category other, boolean forNode, GraphRole forRole) {
             if (this == other) {
                 return true;
-            } else if (this.ordinal() < other.ordinal()) {
-                return ok(other) || conflictsForNode(other, forRole);
+            } else if (other.ordinal() < ordinal()) {
+                return ok(other) && (forNode
+                    ? !conflictsForNode(other, forRole)
+                    : !conflictsForEdge(other, forRole));
             } else {
-                return other.okForNode(this, forRole);
-            }
-        }
-
-        /** Tests if this category is compatible with another when used on edges.
-         * @param other the other category
-         * @param forRole the graph role for which this is to be tested
-         */
-        public boolean okForEdge(Category other, GraphRole forRole) {
-            if (this == other) {
-                return true;
-            } else if (this.ordinal() < other.ordinal()) {
-                return ok(other) && conflictsForEdge(other, forRole);
-            } else {
-                return other.okForEdge(this, forRole);
+                return other.ok(this, forNode, forRole);
             }
         }
 

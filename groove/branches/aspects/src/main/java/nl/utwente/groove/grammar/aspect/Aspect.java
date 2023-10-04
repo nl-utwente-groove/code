@@ -18,6 +18,7 @@ package nl.utwente.groove.grammar.aspect;
 
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -233,10 +234,17 @@ public class Aspect {
 
     /** Mapping from aspect kinds to aspects. */
     static public class Map extends EnumMap<AspectKind.Category,Aspect> implements Comparable<Map> {
-        /** Constructs an empty map. */
-        public Map() {
+        /** Constructs an empty map for a node or edge. */
+        public Map(boolean forNode, GraphRole role) {
             super(AspectKind.Category.class);
+            this.forNode = forNode;
+            this.role = role;
         }
+
+        /** Flag determining whether this is a node or edge map. */
+        private final boolean forNode;
+        /** Graph role of the aspect element. */
+        private final GraphRole role;
 
         /** Adds a given aspect to this map, as determined by its category.
          * @throws FormatException if an aspect of the same category is already in the map,
@@ -259,8 +267,23 @@ public class Aspect {
                 add = aspect.hasContent();
             }
             if (add) {
-                put(aspect.getCategory(), aspect);
+                var cat = aspect.getCategory();
+                var conflict = conflict(cat);
+                if (conflict != null) {
+                    throw new FormatException("Conflicting aspects '%s' and '%s'", get(conflict),
+                        aspect);
+                }
+                put(cat, aspect);
             }
+        }
+
+        /** Returns a category already in this map that is in conflict with a given category;
+         * or {@code null} if there is no conflicting category.
+         */
+        private @Nullable Category conflict(Category cat) {
+            var result
+                = keySet().stream().filter(c -> !c.ok(cat, this.forNode, this.role)).findAny();
+            return ((Optional<@Nullable Category>) result).orElse(null);
         }
 
         /** Checks whether this map has any entry for a given aspect kind. */

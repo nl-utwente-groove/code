@@ -30,7 +30,6 @@ import static nl.utwente.groove.grammar.aspect.AspectKind.LET_NEW;
 import static nl.utwente.groove.grammar.aspect.AspectKind.LITERAL;
 import static nl.utwente.groove.grammar.aspect.AspectKind.NESTED;
 import static nl.utwente.groove.grammar.aspect.AspectKind.PARAM_ASK;
-import static nl.utwente.groove.grammar.aspect.AspectKind.PATH;
 import static nl.utwente.groove.grammar.aspect.AspectKind.READER;
 import static nl.utwente.groove.grammar.aspect.AspectKind.REMARK;
 import static nl.utwente.groove.grammar.aspect.AspectKind.SUBTYPE;
@@ -95,6 +94,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         super(source, label, target, number);
         assert label.isFixed();
         this.graph = source.getGraph();
+        this.aspects = new Aspect.Map(false, this.graph.getRole());
         if (!label.hasErrors() && label.isNodeOnly()) {
             if (label.getNodeOnlyAspect() == null) {
                 addError(new FormatError("Empty edge label not allowed"));
@@ -169,7 +169,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     }
 
     /** The initially empty aspect map. */
-    private final Aspect.Map aspects = new Aspect.Map();
+    private final Aspect.Map aspects;
 
     @Override
     public void set(Aspect aspect) {
@@ -236,7 +236,8 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             if (!has(NESTED) && !has(REMARK) && !has(TEST)) {
                 set(NESTED.newAspect(getInnerText(), getGraphRole()));
             }
-        } else if (hasGraphRole(RULE) && !has(REMARK) && !has(NESTED) && !has(Category.ROLE)) {
+        } else if (hasGraphRole(RULE) && !has(REMARK) && !has(Category.META, k -> !k.isQuantifier())
+            && !has(Category.ROLE)) {
             // infer a role from the source or target node
             AspectKind sourceRole = null;
             AspectKind targetRole = null;
@@ -266,10 +267,11 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             }
             set(inferredRole.getAspect());
         }
-        // check whether the edge has a label
+        // check whether the edge should have a label aspect
         boolean hasLabel = switch (getGraphRole()) {
-        case HOST -> !has(REMARK);
-        case RULE -> has(Category.ROLE);
+        case HOST -> !has(REMARK) && !has(Category.ATTR);
+        case RULE -> has(Category.ROLE) && !has(Category.ATTR) && !has(Category.SORT)
+            && !has(Category.META, k -> !k.isQuantifier());
         case TYPE -> !has(REMARK) && !has(SUBTYPE) && !has(Category.SORT);
         default -> throw Exceptions.UNREACHABLE;
         };
@@ -306,7 +308,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                              target());
                 }
             }
-            if (has(PATH)) {
+            if (has(Category.LABEL)) {
                 checkRegExprs(errors);
             }
             if (has(TEST)) {

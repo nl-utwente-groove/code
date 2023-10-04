@@ -37,15 +37,20 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
     implements AspectJCell {
     /**
      * Creates an uninitialised instance.
+     * @param graphRole graph role for which this JEdge is intended
      */
-    private AspectJEdge() {
+    private AspectJEdge(GraphRole graphRole) {
         setUserObject(null);
+        this.aspects = new Aspect.Map(false, graphRole);
+
     }
 
     @Override
     public Aspect.Map getAspects() {
         return this.aspects;
     }
+
+    private final Aspect.Map aspects;
 
     @Override
     public AspectNode getSourceNode() {
@@ -83,7 +88,6 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
     @Override
     public void initialise() {
         super.initialise();
-        this.aspects = new Aspect.Map();
     }
 
     @Override
@@ -106,7 +110,7 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
         AspectEdge edge = (AspectEdge) e;
         AspectEdge oldEdge = getEdge();
         if (oldEdge == null || getAspects().has(AspectKind.REMARK)) {
-            this.aspects = edge.getAspects();
+            this.aspects.putAll(edge.getAspects());
         }
         FormatError error = null;
         if (edge.getRole() != EdgeRole.BINARY) {
@@ -294,8 +298,6 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
         return (AspectJObject) super.getUserObject();
     }
 
-    private Aspect.Map aspects;
-
     @Override
     protected Comparator<Edge> edgeComparator() {
         return COMPARATOR;
@@ -319,8 +321,9 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
     /**
      * Returns a fresh, uninitialised instance.
      * Call {@link #setJModel} to initialise.
+     * @param graphRole the graph role for which the new edge will serve
      */
-    public static AspectJEdge newInstance() {
-        return new AspectJEdge();
+    public static AspectJEdge newInstance(GraphRole graphRole) {
+        return new AspectJEdge(graphRole);
     }
 }

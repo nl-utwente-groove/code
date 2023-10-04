@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.grammar.model;
 
+import static nl.utwente.groove.grammar.aspect.AspectKind.REMARK;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -134,7 +136,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     HostGraph compute() throws FormatException {
         this.algebraFamily = getFamily();
         GraphInfo.throwException(getSource());
-        Pair<DefaultHostGraph,HostModelMap> modelPlusMap = computeModel(getSource());
+        Pair<DefaultHostGraph,HostModelMap> modelPlusMap = computeModel();
         HostGraph result = modelPlusMap.one();
         GraphInfo.throwException(result);
         HostModelMap hostModelMap = modelPlusMap.two();
@@ -161,7 +163,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
      * Computes a fresh model from a given aspect graph, together with a mapping
      * from the aspect graph's node to the (fresh) graph nodes.
      */
-    private Pair<DefaultHostGraph,HostModelMap> computeModel(AspectGraph source) {
+    private Pair<DefaultHostGraph,HostModelMap> computeModel() {
         AspectGraph normalSource = getNormalSource();
         if (debug) {
             GraphPreviewDialog.showGraph(normalSource);
@@ -254,7 +256,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     private void processModelNode(DefaultHostGraph result, HostModelMap elementMap,
                                   AspectNode modelNode) {
         // include the node in the model if it is not virtual
-        if (!modelNode.has(Category.META)) {
+        if (!modelNode.has(Category.META) && !modelNode.has(REMARK)) {
             HostNode nodeImage = null;
             Aspect data = modelNode.get(Category.SORT);
             if (data != null) {

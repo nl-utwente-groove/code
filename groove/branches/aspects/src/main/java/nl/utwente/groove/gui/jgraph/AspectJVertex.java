@@ -44,9 +44,11 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
      * Creates a fresh, uninitialised JVertex.
      * Call {@link #setJModel} and {@link #setNode(Node)}
      * to initialise.
+     * @param graphRole graph role for which this JEdge is intended
      */
-    private AspectJVertex() {
+    private AspectJVertex(GraphRole graphRole) {
         setUserObject(null);
+        this.aspects = new Aspect.Map(true, graphRole);
     }
 
     @Override
@@ -60,7 +62,7 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
     }
 
     /** The role of the underlying rule node. */
-    private Aspect.Map aspects = new Aspect.Map();
+    private final Aspect.Map aspects;
 
     @SuppressWarnings("unchecked")
     @Override
@@ -369,8 +371,9 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
     /**
      * Returns a fresh, uninitialised instance.
      * Call {@link #setJModel} and {@link #setNode(Node)} to initialise.
+     * @param graphRole the graph role for which the new edge will serve
      */
-    public static AspectJVertex newInstance() {
-        return new AspectJVertex();
+    public static AspectJVertex newInstance(GraphRole graphRole) {
+        return new AspectJVertex(graphRole);
     }
 }
