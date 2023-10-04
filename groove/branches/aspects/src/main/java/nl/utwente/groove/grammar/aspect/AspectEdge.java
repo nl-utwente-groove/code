@@ -200,7 +200,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             case MULT_OUT:
                 setOutMult(((MultiplicityContent) content).get());
                 break;
-            case META:
+            case NESTING:
                 if (aspect.getKind().isQuantifier()) {
                     // backward compatibility to take care of edges such as
                     // exists=q:del:a rather than del=q:a or
@@ -233,11 +233,11 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         if (source().has(REMARK) || target().has(REMARK)) {
             getAspects().remove(Category.LABEL);
             set(REMARK.getAspect());
-        } else if (source().has(Category.META) || target().has(Category.META)) {
+        } else if (source().has(Category.NESTING) || target().has(Category.NESTING)) {
             if (!has(NESTED) && !has(REMARK) && !has(TEST)) {
                 set(NESTED.newAspect(getInnerText(), getGraphRole()));
             }
-        } else if (hasGraphRole(RULE) && !has(REMARK) && !has(Category.META, k -> !k.isQuantifier())
+        } else if (hasGraphRole(RULE) && !has(REMARK) && !has(Category.NESTING, k -> !k.isQuantifier())
             && !has(Category.ROLE)) {
             // infer a role from the source or target node
             AspectKind sourceRole = null;
@@ -272,7 +272,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         boolean hasLabel = switch (getGraphRole()) {
         case HOST -> !has(REMARK) && !has(Category.ATTR);
         case RULE -> has(Category.ROLE) && !has(Category.ATTR) && !has(Category.SORT)
-            && !has(Category.META, k -> !k.isQuantifier());
+            && !has(Category.NESTING, k -> !k.isQuantifier());
         case TYPE -> !has(REMARK) && !has(SUBTYPE) && !has(Category.SORT);
         default -> throw Exceptions.UNREACHABLE;
         };
@@ -354,7 +354,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                     throw new FormatException("Target node of %s-edge should be attribute",
                         label());
                 }
-            } else if ((isNestedAt() || isNestedIn()) && !target.has(Category.META)) {
+            } else if ((isNestedAt() || isNestedIn()) && !target.has(Category.NESTING)) {
                 throw new FormatException("Target node of %s-edge should be quantifier", label());
             } else if (isNestedCount()) {
                 if (!target.has(INT)) {

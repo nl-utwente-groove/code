@@ -114,7 +114,7 @@ public class VisibleValue implements VisualValue<Boolean> {
             return false;
         }
         // identified nodes, parameter nodes, quantifiers and error nodes are always visible
-        if (node.hasId() || node.has(Category.PARAM) || node.has(Category.META)
+        if (node.hasId() || node.has(Category.PARAM) || node.has(Category.NESTING)
             || jVertex.hasErrors()) {
             return true;
         }

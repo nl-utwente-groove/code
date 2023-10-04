@@ -535,7 +535,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          */
         public Index(Condition.Op operator, boolean positive, AspectNode levelNode,
                      QualName namePrefix) {
-            assert levelNode == null || levelNode.has(Category.META);
+            assert levelNode == null || levelNode.has(Category.NESTING);
             this.namePrefix = namePrefix;
             this.operator = operator;
             this.positive = positive;
@@ -743,14 +743,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             Map<Index,List<Index>> indexTree = new HashMap<>();
             this.topLevelIndex = createIndex(Op.EXISTS, false, null, indexTree);
             // initialise the data structures
-            this.metaIndexMap = new HashMap<>();
+            this.nestingIndexMap = new HashMap<>();
             this.nameIndexMap = new HashMap<>();
             // Mapping from levels to match count nodes
             this.matchCountMap = new HashMap<>();
             // build the index tree
             indexTree.put(this.topLevelIndex, new ArrayList<>());
             for (AspectNode node : this.source.nodeSet()) {
-                if (node.has(Category.META)) {
+                if (node.has(Category.NESTING)) {
                     // look for the parent level
                     Index parentIndex;
                     // by the correctness of the aspect graph we know that
@@ -760,10 +760,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                     if (parentNode == null) {
                         parentIndex = this.topLevelIndex;
                     } else {
-                        AspectKind parentKind = parentNode.getKind(Category.META);
+                        AspectKind parentKind = parentNode.getKind(Category.NESTING);
                         parentIndex = getIndex(parentKind, parentNode, indexTree);
                     }
-                    Index myIndex = getIndex(node.getKind(Category.META), node, indexTree);
+                    Index myIndex = getIndex(node.getKind(Category.NESTING), node, indexTree);
                     indexTree.get(parentIndex).add(myIndex);
                     if (node.getMatchCount() != null) {
                         this.matchCountMap.put(myIndex, node.getMatchCount());
@@ -795,24 +795,25 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         }
 
         /**
-         * Lazily creates and returns a level index for a given level meta-node.
-         * @param metaNode the level node for which a level is to be created;
+         * Lazily creates and returns a level index for a given level nesting node.
+         * @param nestingNode the level node for which a level is to be created;
          *        should satisfy
          *        {@link AspectKind#isQuantifier()}
          */
-        private Index getIndex(AspectKind quantifier, AspectNode metaNode,
+        private Index getIndex(AspectKind quantifier, AspectNode nestingNode,
                                Map<Index,List<Index>> indexTree) {
-            Index result = this.metaIndexMap.get(metaNode);
+            Index result = this.nestingIndexMap.get(nestingNode);
             if (result == null) {
-                AspectKind kind = metaNode.getKind(Category.META);
+                AspectKind kind = nestingNode.getKind(Category.NESTING);
                 Condition.Op operator = kind.isExists()
                     ? Op.EXISTS
                     : Op.FORALL;
                 boolean positive = kind == EXISTS || kind == FORALL_POS;
-                this.metaIndexMap
-                    .put(metaNode, result = createIndex(operator, positive, metaNode, indexTree));
-                if (metaNode.hasId()) {
-                    String id = metaNode.getId();
+                this.nestingIndexMap
+                    .put(nestingNode,
+                         result = createIndex(operator, positive, nestingNode, indexTree));
+                if (nestingNode.hasId()) {
+                    String id = nestingNode.getId();
                     Index oldIndex = this.nameIndexMap.put(id, result);
                     assert oldIndex == null : String.format("Duplicate quantifier name %s", id);
                 }
@@ -820,9 +821,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             return result;
         }
 
-        /** Creates a level index for a given meta-node and creates
+        /** Creates a level index for a given nesting node and creates
          * an entry in the level tree.
-         * @param levelNode the quantifier meta-node
+         * @param levelNode the quantifier nesting node
          * @param levelTree the tree of level indices
          * @return the fresh level index
          */
@@ -882,14 +883,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             }
             // add nodes to nesting data structures
             for (AspectNode node : this.source.nodeSet()) {
-                if (!node.has(Category.META)) {
+                if (!node.has(Category.NESTING)) {
                     getLevel(result, node).addNode(node);
                 }
             }
             // add edges to nesting data structures
             for (AspectEdge edge : this.source.edgeSet()) {
                 try {
-                    if (edge.has(CONNECT) || !edge.has(Category.META)) {
+                    if (edge.has(CONNECT) || !edge.has(Category.NESTING)) {
                         getLevel(result, edge).addEdge(edge);
                     }
                 } catch (FormatException exc) {
@@ -932,7 +933,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 AspectNode nestingNode = node.getLevelNode();
                 Index index = nestingNode == null
                     ? this.topLevelIndex
-                    : this.metaIndexMap.get(nestingNode);
+                    : this.nestingIndexMap.get(nestingNode);
                 assert index != null : String.format("No valid nesting level found for %s", node);
                 result = level1Map.get(index);
                 assert result != null : String
@@ -1074,8 +1075,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         private SortedMap<Index,Level1> level1Map;
         /** Mapping from level indices to stage 4 levels. */
         private SortedMap<Index,Level4> level4Map;
-        /** mapping from nesting meta-nodes nodes to nesting levels. */
-        private Map<AspectNode,Index> metaIndexMap;
+        /** mapping from nesting nodes to nesting levels. */
+        private Map<AspectNode,Index> nestingIndexMap;
         /** mapping from nesting level names to nesting levels. */
         private Map<String,Index> nameIndexMap;
         /** Mapping from model nodes to the corresponding nesting level. */
@@ -1219,7 +1220,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          * @param elem the element about which the question is asked
          */
         private boolean isForNextLevel(AspectElement elem) {
-            assert elem.has(CONNECT) || !elem.has(Category.META);
+            assert elem.has(CONNECT) || !elem.has(Category.NESTING);
             boolean result = false;
             if (!this.index.getOperator().hasPattern()) {
                 result = true;

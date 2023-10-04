@@ -233,7 +233,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             }
             try {
                 AspectNode source = edge.source();
-                assert !source.has(Category.META);
+                assert !source.has(Category.NESTING);
                 AspectNode level = source.getLevelNode();
                 AspectEdge normalisedEdge
                     = addAssignment(level, source, edge.getAssign(), edge.has(LET_NEW));
@@ -251,11 +251,11 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             }
             try {
                 AspectNode source = edge.source();
-                boolean sourceIsMeta = source.has(Category.META);
+                boolean sourceIsNesting = source.has(Category.NESTING);
                 boolean nac = edge.has(Category.ROLE, AspectKind::inNAC)
-                    && (sourceIsMeta || !source.has(Category.ROLE, AspectKind::inNAC));
+                    && (sourceIsNesting || !source.has(Category.ROLE, AspectKind::inNAC));
                 Expression predicate = edge.getTest();
-                AspectNode level = sourceIsMeta
+                AspectNode level = sourceIsNesting
                     ? source.getParentNode()
                     : source.getLevelNode();
                 AspectNode outcome = addExpression(level, source, predicate);
@@ -378,7 +378,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             throw new FormatException("Unassigned creator node field in assignment expression '%s'",
                 expr.toDisplayString(), owner);
         }
-        if (owner.has(Category.META) && !expr.getField().equals(NestedValue.COUNT.toString())) {
+        if (owner.has(Category.NESTING) && !expr.getField().equals(NestedValue.COUNT.toString())) {
             throw new FormatException("Quantifier node does not have '%s'-edge", expr.getField(),
                 owner, source);
         }
@@ -406,7 +406,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     /** Looks for an outgoing edge suitable for a given field expression. */
     private @Nullable AspectNode findTarget(@NonNull AspectNode owner, String fieldName,
                                             Sort sort) {
-        boolean allEdgesOK = getRole() != RULE || owner.has(Category.META);
+        boolean allEdgesOK = getRole() != RULE || owner.has(Category.NESTING);
         Optional<AspectNode> result = outEdgeSet(owner)
             .stream()
             .filter(e -> allEdgesOK || e.has(Category.ROLE, AspectKind::inLHS))

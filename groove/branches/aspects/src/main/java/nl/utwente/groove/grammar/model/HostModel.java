@@ -256,7 +256,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     private void processModelNode(DefaultHostGraph result, HostModelMap elementMap,
                                   AspectNode modelNode) {
         // include the node in the model if it is not virtual
-        if (!modelNode.has(Category.META) && !modelNode.has(REMARK)) {
+        if (!modelNode.has(Category.NESTING) && !modelNode.has(REMARK)) {
             HostNode nodeImage = null;
             Aspect data = modelNode.get(Category.SORT);
             if (data != null) {

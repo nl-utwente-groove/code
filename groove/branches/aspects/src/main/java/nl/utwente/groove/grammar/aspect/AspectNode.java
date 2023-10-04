@@ -176,7 +176,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
             case ID:
                 setId(aspect.getContentString());
                 break;
-            case META:
+            case NESTING:
                 if (aspect.hasContent()) {
                     setId(aspect.getContentString());
                 }
@@ -211,7 +211,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     @Override
     public void parseAspects() throws FormatException {
         // READER role should be made explicit
-        if (hasGraphRole(GraphRole.RULE) && !has(Category.META) && !has(AspectKind.REMARK)
+        if (hasGraphRole(GraphRole.RULE) && !has(Category.NESTING) && !has(AspectKind.REMARK)
             && !has(Category.ROLE)) {
             set(READER.getAspect());
         }
@@ -554,7 +554,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
      * @throws FormatException if the level edge is incompatible with other aspects
      */
     private void setLevelEdge(AspectEdge edge) throws FormatException {
-        if (has(Category.META)) {
+        if (has(Category.NESTING)) {
             throw new FormatException("Source node of %s-edge should be rule element", edge.label(),
                 edge);
         }
@@ -601,7 +601,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
      * @throws FormatException if the parent edge is incompatible with other aspects
      */
     private void setParentEdge(AspectEdge edge) throws FormatException {
-        if (!has(Category.META)) {
+        if (!has(Category.NESTING)) {
             throw new FormatException("Source node of %s-edge should be quantifier", edge.label());
         }
         if (this.parentEdge != null) {

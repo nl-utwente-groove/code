@@ -316,7 +316,7 @@ public class Aspect {
                 case HOST: // no extra checks
                     break;
                 case RULE:
-                    if (containsKey(Category.ROLE) || containsKey(Category.META)) {
+                    if (containsKey(Category.ROLE) || containsKey(Category.NESTING)) {
                         if (this.forNode) {
                             checkRoleSort();
                             checkRoleAttr();
@@ -375,9 +375,9 @@ public class Aspect {
                   (role, color) -> role.getKind().inNAC() || role.getKind().isEraser());
         }
 
-        /** Checks for aspect-based conflicts between {@link Category#ROLE} and {@link Category#META}. */
+        /** Checks for aspect-based conflicts between {@link Category#ROLE} and {@link Category#NESTING}. */
         private void checkRoleNesting() throws FormatException {
-            check(Category.ROLE, Category.META,
+            check(Category.ROLE, Category.NESTING,
                   (role, nesting) -> !nesting.getKind().isQuantifier());
         }
 
@@ -388,14 +388,14 @@ public class Aspect {
                       && (role.getKind().isCreator() || role.getKind().isEraser()));
         }
 
-        /** Checks for aspect-based conflicts between {@link Category#META} and {@link Category#ID}. */
+        /** Checks for aspect-based conflicts between {@link Category#NESTING} and {@link Category#ID}. */
         private void checkNestingId() throws FormatException {
-            check(Category.META, Category.ID, (nesting, id) -> nesting.hasContent());
+            check(Category.NESTING, Category.ID, (nesting, id) -> nesting.hasContent());
         }
 
-        /** Checks for aspect-based conflicts between {@link Category#META} and {@link Category#LABEL}. */
+        /** Checks for aspect-based conflicts between {@link Category#NESTING} and {@link Category#LABEL}. */
         private void checkNestingLabel() throws FormatException {
-            check(Category.META, Category.LABEL,
+            check(Category.NESTING, Category.LABEL,
                   (nesting, label) -> !nesting.getKind().isQuantifier());
         }
 

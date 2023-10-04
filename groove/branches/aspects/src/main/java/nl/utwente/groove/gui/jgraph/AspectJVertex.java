@@ -143,7 +143,7 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
 
     @Override
     public String getNodeIdString() {
-        if (getAspects().containsKey(Category.META)) {
+        if (getAspects().containsKey(Category.NESTING)) {
             return null;
         } else if (getNode().has(Category.SORT)) {
             // this is an expression or variable node
@@ -203,7 +203,7 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
     public Collection<? extends Label> getKeys() {
         getNode().testFixed(true);
         Collection<TypeElement> result = new ArrayList<>();
-        if (!getAspects().containsKey(Category.META)) {
+        if (!getAspects().containsKey(Category.NESTING)) {
             for (Edge edge : getEdges()) {
                 TypeEdge key = getKey(edge);
                 if (key != null) {

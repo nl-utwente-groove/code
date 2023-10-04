@@ -301,7 +301,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         } else {
             Line idLine = getExternalIdLine(node);
             // show the quantifier aspect correctly
-            if (node.has(Category.META)) {
+            if (node.has(Category.NESTING)) {
                 result.add(getQuantifierLines(node, idLine));
                 idLine = null;
             }
@@ -379,9 +379,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
         if (id != null) {
             line = line.append(id).append(TYPED_AS);
         }
-        AspectKind metaKind = node.getKind(Category.META);
-        if (metaKind != null) {
-            line = line.append(switch (metaKind) {
+        AspectKind nestingKind = node.getKind(Category.NESTING);
+        if (nestingKind != null) {
+            line = line.append(switch (nestingKind) {
             case FORALL -> FORALL_LINE;
             case FORALL_POS -> FORALL_POS_LINE;
             case EXISTS -> EXISTS_LINE;

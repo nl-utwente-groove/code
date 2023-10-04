@@ -137,7 +137,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         Iterator<AspectNode> untypedNodeIter = untypedNodes.iterator();
         while (untypedNodeIter.hasNext()) {
             AspectNode modelNode = untypedNodeIter.next();
-            if (modelNode.has(Category.META) || modelNode.has(REMARK)) {
+            if (modelNode.has(Category.NESTING) || modelNode.has(REMARK)) {
                 untypedNodeIter.remove();
             } else {
                 // add a node anyhow, to ensure all edge ends have images
@@ -153,7 +153,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         for (AspectEdge modelEdge : getSource().edgeSet()) {
             // do not process the node type edges again
             TypeLabel typeLabel = modelEdge.getTypeLabel();
-            if (!modelEdge.has(Category.META) && !modelEdge.has(REMARK)
+            if (!modelEdge.has(Category.NESTING) && !modelEdge.has(REMARK)
                 && (typeLabel == null || !typeLabel.hasRole(NODE_TYPE))) {
                 try {
                     processModelEdge(result, this.modelMap, modelEdge);

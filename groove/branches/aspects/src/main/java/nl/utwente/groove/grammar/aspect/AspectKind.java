@@ -124,17 +124,17 @@ public enum AspectKind {
 
     // quantifier-related aspects
     /** Universal quantifier. */
-    FORALL(Category.META, "forall", ContentKind.LEVEL),
+    FORALL(Category.NESTING, "forall", ContentKind.LEVEL),
     /** Non-vacuous universal quantifier. */
-    FORALL_POS(Category.META, "forallx", ContentKind.LEVEL),
+    FORALL_POS(Category.NESTING, "forallx", ContentKind.LEVEL),
     /** Existential quantifier. */
-    EXISTS(Category.META, "exists", ContentKind.LEVEL),
+    EXISTS(Category.NESTING, "exists", ContentKind.LEVEL),
     /** Optional existential quantifier. */
-    EXISTS_OPT(Category.META, "existsx", ContentKind.LEVEL),
+    EXISTS_OPT(Category.NESTING, "existsx", ContentKind.LEVEL),
     /** Nesting edge. */
-    NESTED(Category.META, "nested", ContentKind.NESTED),
+    NESTED(Category.NESTING, "nested", ContentKind.NESTED),
     /** Connects two embargo sub-graphs. */
-    CONNECT(Category.META, "or", ContentKind.EMPTY),
+    CONNECT(Category.NESTING, "or", ContentKind.EMPTY),
 
     /** Node identity. */
     ID(Category.ID, "id", ContentKind.NAME),
@@ -1025,11 +1025,11 @@ public enum AspectKind {
         REMARK,
         /** Role within the rule graph. */
         ROLE,
-        /** Meta-attributes, determining the structure of the rule tree. */
-        META(ROLE) {
+        /** Nesting attributes, determining the structure of the rule tree. */
+        NESTING(ROLE) {
             @Override
             boolean conflictsForNode(Category other, GraphRole forRole) {
-                // META and ROLE don't go together for nodes, just for edges
+                // NESTING and ROLE don't go together for nodes, just for edges
                 return other == ROLE;
             }
         },
@@ -1038,7 +1038,7 @@ public enum AspectKind {
         /** Other attribute-related aspects. */
         ATTR(ROLE),
         /** Identifier declaration. */
-        ID(ROLE, META, SORT) {
+        ID(ROLE, NESTING, SORT) {
             @Override
             boolean conflictsForNode(Category other, GraphRole forRole) {
                 // ID and SORT don't go together in host graphs
@@ -1048,7 +1048,7 @@ public enum AspectKind {
         /** Parameter aspect. */
         PARAM(ROLE, SORT, ID),
         /** Label mode. */
-        LABEL(ROLE, META),
+        LABEL(ROLE, NESTING),
         /** Colour declaration. */
         COLOR(ROLE, ID, PARAM),
         /** Node type-related aspects. */

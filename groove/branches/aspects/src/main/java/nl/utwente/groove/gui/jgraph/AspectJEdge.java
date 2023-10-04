@@ -193,7 +193,7 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
 
     @Override
     public Collection<? extends Label> getKeys() {
-        if (this.aspects.containsKey(Category.META)) {
+        if (this.aspects.containsKey(Category.NESTING)) {
             return Collections.emptySet();
         } else {
             return super.getKeys();
