@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="rule" id="addOneToNumber">
-        <attr name="transitionLabel">
-            <string></string>
-        </attr>
-        <attr name="enabled">
-            <string>true</string>
-        </attr>
-        <attr name="priority">
-            <string>0</string>
-        </attr>
+    <graph role="rule" edgeids="false" edgemode="directed" id="addOneToNumber">
         <attr name="printFormat">
             <string></string>
         </attr>
@@ -19,77 +10,61 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n4">
-            <attr name="layout">
-                <string>168 304 7 18</string>
-            </attr>
-        </node>
-        <node id="n3">
-            <attr name="layout">
-                <string>271 301 19 19</string>
-            </attr>
-        </node>
-        <node id="n2">
-            <attr name="layout">
-                <string>318 218 17 18</string>
-            </attr>
-        </node>
-        <node id="n1">
-            <attr name="layout">
-                <string>227 222 17 18</string>
-            </attr>
-        </node>
-        <node id="n0">
-            <attr name="layout">
-                <string>231 108 19 19</string>
-            </attr>
-        </node>
-        <edge to="n4" from="n4">
+        <attr name="priority">
+            <string>0</string>
+        </attr>
+        <attr name="enabled">
+            <string>true</string>
+        </attr>
+        <attr name="transitionLabel">
+            <string></string>
+        </attr>
+        <node id="n4"/>
+        <node id="n3"/>
+        <node id="n2"/>
+        <node id="n1"/>
+        <node id="n0"/>
+        <edge from="n4" to="n4">
             <attr name="label">
                 <string>int:1</string>
             </attr>
         </edge>
-        <edge to="n3" from="n3">
+        <edge from="n3" to="n3">
             <attr name="label">
                 <string>prod:</string>
             </attr>
         </edge>
-        <edge to="n2" from="n3">
+        <edge from="n3" to="n2">
             <attr name="label">
                 <string>int:add</string>
             </attr>
         </edge>
-        <edge to="n1" from="n3">
-            <attr name="label">
-                <string>arg:1</string>
-            </attr>
-        </edge>
-        <edge to="n4" from="n3">
+        <edge from="n3" to="n4">
             <attr name="label">
                 <string>arg:0</string>
             </attr>
         </edge>
-        <edge to="n2" from="n2">
+        <edge from="n3" to="n1">
+            <attr name="label">
+                <string>arg:1</string>
+            </attr>
+        </edge>
+        <edge from="n2" to="n2">
             <attr name="label">
                 <string>int:</string>
             </attr>
         </edge>
-        <edge to="n1" from="n1">
+        <edge from="n1" to="n1">
             <attr name="label">
                 <string>int:</string>
             </attr>
         </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string></string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n0">
+        <edge from="n0" to="n2">
             <attr name="label">
                 <string>new:number</string>
             </attr>
         </edge>
-        <edge to="n1" from="n0">
+        <edge from="n0" to="n1">
             <attr name="label">
                 <string>del:number</string>
             </attr>

@@ -58,7 +58,9 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
 
     @Override
     public Aspect.Map getAspects() {
-        return this.aspects;
+        return getNode() == null
+            ? this.aspects
+            : getNode().getAspects();
     }
 
     /** The role of the underlying rule node. */
@@ -314,6 +316,7 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
                 edgeLabels.add(label);
             }
         }
+        node.setParsed();
         // collect remark edges
         StringBuilder remarkText = new StringBuilder();
         // collect edges to be added explicitly
@@ -340,6 +343,7 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
         setNode(node);
         initialise();
         for (AspectEdge edge : newEdges) {
+            edge.setParsed();
             addEdge(edge);
         }
         setStale(VisualKey.refreshables());
