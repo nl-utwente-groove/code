@@ -816,7 +816,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             .entrySet()
             .forEach(e -> newNodeIdMap.put(e.getKey(), map.getNode(e.getValue())));
         result.nodeIdMap = newNodeIdMap;
-        GraphInfo.transfer(this, result, null);
+        GraphInfo.transfer(this, result, map);
         return result;
     }
 

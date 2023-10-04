@@ -151,6 +151,9 @@ public class GraphInfo extends DefaultFixable {
                     .addAll(sourceErrors
                         .transfer(elementMap.nodeMap())
                         .transfer(elementMap.edgeMap()));
+            } else {
+                targetInfo.setErrors(sourceInfo.getErrors());
+                targetInfo.setLayoutMap(sourceInfo.getLayoutMap());
             }
             // copy rather than clone the graph properties
             GraphProperties properties = sourceInfo.getProperties();

@@ -23,7 +23,6 @@ import java.util.Iterator;
 import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.grammar.aspect.AspectEdge;
-import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.graph.Graph;
@@ -123,8 +122,8 @@ public class VisibleValue implements VisualValue<Boolean> {
         if (!getBasicVertexValue(jGraph, jVertex)) {
             return false;
         }
-        // explicit product nodes should be visible
-        if (!node.has(Category.SORT) || node.has(AspectKind.PRODUCT)) {
+        // All non-sorted nodes should be visible
+        if (!node.has(Category.SORT)) {
             return true;
         }
         // in addition, value nodes or data type nodes may be filtered
