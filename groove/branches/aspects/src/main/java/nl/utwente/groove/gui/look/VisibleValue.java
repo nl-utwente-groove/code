@@ -22,6 +22,7 @@ import java.util.Iterator;
 
 import org.eclipse.jdt.annotation.NonNull;
 
+import nl.utwente.groove.grammar.aspect.AspectContent.ExprContent;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.aspect.AspectNode;
@@ -123,7 +124,8 @@ public class VisibleValue implements VisualValue<Boolean> {
             return false;
         }
         // All non-sorted nodes should be visible
-        if (!node.has(Category.SORT)) {
+        var sortAspect = node.get(Category.SORT);
+        if (sortAspect == null) {
             return true;
         }
         // in addition, value nodes or data type nodes may be filtered
@@ -135,8 +137,12 @@ public class VisibleValue implements VisualValue<Boolean> {
             return false;
         }
         // we are now sure that the underlying node has a data type;
-        // non-constant nodes should be shown
-        if (node.hasExpression()) {
+        // variable nodes should be shown
+        if (!sortAspect.hasContent()) {
+            return true;
+        }
+        // non-constant expressions should be shown
+        if ((sortAspect.getContent() instanceof ExprContent e) && !(e.get().hasConstant())) {
             return true;
         }
         // any regular expression edge on the node makes it visible
