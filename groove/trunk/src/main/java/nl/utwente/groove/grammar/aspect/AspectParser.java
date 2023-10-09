@@ -1,21 +1,22 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package nl.utwente.groove.grammar.aspect;
 
+import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.util.Pair;
@@ -66,11 +67,10 @@ public class AspectParser {
             }
             String prefix = prefixBuilder.toString();
             // only continue parsing for aspects if the candidate aspect
-            // prefix starts with a nonempty identifier that is not an 
+            // prefix starts with a nonempty identifier that is not an
             // edge role prefix
-            stopParsing =
-                pos == 0 && nextSeparator != 0 || pos != 0
-                    && EdgeRole.getRole(prefix) != null && pos == nextSeparator;
+            stopParsing = pos == 0 && nextSeparator != 0
+                || pos != 0 && EdgeRole.getRole(prefix) != null && pos == nextSeparator;
             if (!stopParsing) {
                 try {
                     AspectKind kind = AspectKind.getKind(prefix);
@@ -79,8 +79,7 @@ public class AspectParser {
                             "Can't parse prefix '%s' (precede with ':' to use literal text)",
                             rest.substring(0, nextSeparator));
                     }
-                    Pair<Aspect,String> parseResult =
-                        kind.parseAspect(rest, result.getGraphRole());
+                    Pair<Aspect,String> parseResult = kind.parseAspect(rest, result.getGraphRole());
                     Aspect aspect = parseResult.one();
                     result.addAspect(aspect);
                     rest = parseResult.two();
@@ -91,14 +90,13 @@ public class AspectParser {
                 }
             }
         }
-        // special case: we will treat labels of the form type:prim 
+        // special case: we will treat labels of the form type:prim
         // (with prim a primitive type) as prim:
         String typePrefix = EdgeRole.NODE_TYPE.getPrefix();
         if (rest.startsWith(typePrefix)) {
-            Aspect primType =
-                Aspect.getAspect(rest.substring(typePrefix.length()));
-            if (primType != null && primType.getKind().hasSort()) {
-                result.addAspect(primType);
+            String sort = rest.substring(typePrefix.length());
+            if (Sort.getKind(sort) != null) {
+                result.addAspect(Aspect.getAspect(sort));
                 rest = "";
             }
         }

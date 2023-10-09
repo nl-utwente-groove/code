@@ -226,7 +226,6 @@ final public class AspectJModel extends JModel<AspectGraph> {
                 }
             }
         }
-        graph.setNodeComplete();
         for (AspectJVertex jVertex : nodeJVertexMap.values()) {
             jVertex.setNodeFixed();
         }

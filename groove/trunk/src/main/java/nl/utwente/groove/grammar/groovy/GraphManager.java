@@ -22,6 +22,7 @@ import java.util.HashMap;
 
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
+import nl.utwente.groove.grammar.aspect.AspectElement;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectLabel;
 import nl.utwente.groove.grammar.aspect.AspectNode;
@@ -156,7 +157,7 @@ public class GraphManager {
                 AspectEdge newEdge = graph.getFactory().createEdge(newNode, alabel, newNode);
                 graph.addEdgeContext(newEdge);
             } else {
-                newNode.setAspects(alabel);
+                newNode.addLabel(alabel);
             }
 
         }
@@ -200,13 +201,13 @@ public class GraphManager {
      * @param label Label of edge. Separate multiple labels with a single newline, this will create multiple edges.
      * @return The created edge. If multiple edges are created, only the first created edge is returned.
      */
-    public AspectEdge createEdge(AspectGraph graph, AspectNode nodeSource, AspectNode nodeTarget,
-                                 String label) {
+    public AspectElement createEdge(AspectGraph graph, AspectNode nodeSource, AspectNode nodeTarget,
+                                    String label) {
         if (graph == null) {
             return null;
         }
 
-        AspectEdge resultEdge = null;
+        AspectElement resultEdge = null;
 
         String[] labels = label.split("\n");
         for (String sublabel : labels) {

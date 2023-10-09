@@ -51,4 +51,11 @@ public interface Label extends Comparable<Label>, java.io.Serializable {
      * Returns the edge role of this label.
      */
     public EdgeRole getRole();
+
+    /** Tests if this label has a given role.
+     * Convenience method for {@code getRole() == role}.
+     */
+    default public boolean hasRole(EdgeRole role) {
+        return getRole() == role;
+    }
 }

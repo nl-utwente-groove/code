@@ -17,7 +17,10 @@
 package nl.utwente.groove.grammar.model;
 
 import static nl.utwente.groove.grammar.aspect.AspectKind.ABSTRACT;
-import static nl.utwente.groove.grammar.aspect.AspectKind.DEFAULT;
+import static nl.utwente.groove.grammar.aspect.AspectKind.COMPOSITE;
+import static nl.utwente.groove.grammar.aspect.AspectKind.EDGE;
+import static nl.utwente.groove.grammar.aspect.AspectKind.IMPORT;
+import static nl.utwente.groove.grammar.aspect.AspectKind.REMARK;
 import static nl.utwente.groove.grammar.aspect.AspectKind.SUBTYPE;
 import static nl.utwente.groove.graph.EdgeRole.NODE_TYPE;
 
@@ -26,10 +29,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
-import nl.utwente.groove.grammar.aspect.AspectKind;
+import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeFactory;
@@ -105,9 +107,10 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         this.modelMap = new TypeModelMap(factory);
         // collect primitive type nodes
         for (AspectNode modelNode : getSource().nodeSet()) {
-            AspectKind attrKind = modelNode.getAttrKind();
-            if (attrKind != DEFAULT) {
-                TypeLabel typeLabel = TypeLabel.createLabel(NODE_TYPE, attrKind.getName());
+            var sortKind = modelNode.getKind(Category.SORT);
+            if (sortKind != null) {
+                TypeLabel typeLabel
+                    = TypeLabel.createLabel(NODE_TYPE, sortKind.getSort().getName());
                 try {
                     addNodeType(modelNode, typeLabel, factory);
                 } catch (FormatException e) {
@@ -118,7 +121,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         // collect node type edges and build the model type map
         for (AspectEdge modelEdge : getSource().edgeSet()) {
             TypeLabel typeLabel = modelEdge.getTypeLabel();
-            if (typeLabel != null && typeLabel.getRole() == NODE_TYPE) {
+            if (typeLabel != null && typeLabel.hasRole(NODE_TYPE)) {
                 AspectNode modelNode = modelEdge.source();
                 try {
                     addNodeType(modelNode, typeLabel, factory);
@@ -134,7 +137,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         Iterator<AspectNode> untypedNodeIter = untypedNodes.iterator();
         while (untypedNodeIter.hasNext()) {
             AspectNode modelNode = untypedNodeIter.next();
-            if (modelNode.getKind().isMeta()) {
+            if (modelNode.has(Category.NESTING) || modelNode.has(REMARK)) {
                 untypedNodeIter.remove();
             } else {
                 // add a node anyhow, to ensure all edge ends have images
@@ -150,8 +153,8 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         for (AspectEdge modelEdge : getSource().edgeSet()) {
             // do not process the node type edges again
             TypeLabel typeLabel = modelEdge.getTypeLabel();
-            if (!modelEdge.getKind().isMeta()
-                && (typeLabel == null || typeLabel.getRole() != NODE_TYPE)) {
+            if (!modelEdge.has(Category.NESTING) && !modelEdge.has(REMARK)
+                && (typeLabel == null || !typeLabel.hasRole(NODE_TYPE))) {
                 try {
                     processModelEdge(result, this.modelMap, modelEdge);
                 } catch (FormatException exc) {
@@ -186,21 +189,21 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
                 oldTypeNode.label().text(), modelNode);
         }
         TypeNode typeNode;
-        Sort signature = modelNode.getAttrKind().getSort();
-        if (signature == null) {
+        var sortKind = modelNode.getKind(Category.SORT);
+        if (sortKind == null) {
             typeNode = factory.createNode(typeLabel);
         } else {
-            typeNode = factory.getDataType(signature);
+            typeNode = factory.getDataType(sortKind.getSort());
         }
-        if (modelNode.getKind() == ABSTRACT) {
-            if (signature != null) {
+        if (modelNode.has(ABSTRACT)) {
+            if (sortKind != null) {
                 throw new FormatException("Data type '%s' cannot be abstract", typeLabel.text(),
                     modelNode);
             }
             typeNode.setAbstract(true);
         }
-        if (modelNode.hasImport()) {
-            if (signature != null) {
+        if (modelNode.has(IMPORT)) {
+            if (sortKind != null) {
                 throw new FormatException("Data type '%s' cannot be imported", typeLabel.text(),
                     modelNode);
             }
@@ -209,8 +212,8 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         if (modelNode.hasColor()) {
             typeNode.setColor(modelNode.getColor());
         }
-        if (modelNode.isEdge()) {
-            if (signature != null) {
+        if (modelNode.has(EDGE)) {
+            if (sortKind != null) {
                 throw new FormatException("Data type '%s' cannot be a nodified edge",
                     typeLabel.text(), modelNode);
             }
@@ -238,20 +241,19 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             .format("Target of model edge '%s' not in element map %s", modelEdge.source(),
                     elementMap);
         TypeEdge typeEdge = null;
-        if (modelEdge.getAttrKind().hasSort()) {
-            TypeNode typeNode = model.getFactory().getDataType(modelEdge.getSignature());
-            typeEdge
-                = model.addEdge(typeSource, modelEdge.getAttrAspect().getContentString(), typeNode);
-        } else if (modelEdge.getKind() == SUBTYPE) {
+        var sortAspect = modelEdge.get(Category.SORT);
+        if (sortAspect != null) {
+            TypeNode typeNode = model.getFactory().getDataType(sortAspect.getKind().getSort());
+            typeEdge = model.addEdge(typeSource, sortAspect.getContentString(), typeNode);
+        } else if (modelEdge.has(SUBTYPE)) {
             model.addInheritance(typeSource, typeTarget);
         } else {
             TypeLabel typeLabel = modelEdge.getTypeLabel();
             typeEdge = model.addEdge(typeSource, typeLabel, typeTarget);
-            typeEdge.setComposite(modelEdge.isComposite());
+            typeEdge.setComposite(modelEdge.has(COMPOSITE));
             typeEdge.setInMult(modelEdge.getInMult());
             typeEdge.setOutMult(modelEdge.getOutMult());
-            typeEdge.setAbstract(modelEdge.getKind() == ABSTRACT);
-            typeEdge.setComposite(modelEdge.isComposite());
+            typeEdge.setAbstract(modelEdge.has(ABSTRACT));
         }
         if (typeEdge != null) {
             elementMap.putEdge(modelEdge, typeEdge);

@@ -85,13 +85,21 @@ public class GrooveToConstraint implements Messenger {
             String lastName = model.getLastName();
             if (constraints.isCheckUniqueness()
                 && lastName.startsWith(ConstraintToGroove.UNIQUE_PRF)) {
-                if (!this.m_cfg.getConfig().getTypeModel().getFields().getContainers()
+                if (!this.m_cfg
+                    .getConfig()
+                    .getTypeModel()
+                    .getFields()
+                    .getContainers()
                     .isUseTypeName()) {
                     parseUniqueRule(model);
                 }
             } else if (constraints.isCheckOrdering()
                 && lastName.startsWith(ConstraintToGroove.ORDERED_PRF)) {
-                if (!this.m_cfg.getConfig().getTypeModel().getFields().getContainers()
+                if (!this.m_cfg
+                    .getConfig()
+                    .getTypeModel()
+                    .getFields()
+                    .getContainers()
                     .isUseTypeName()) {
                     parseOrderedRule(model);
                 }
@@ -372,14 +380,13 @@ public class GrooveToConstraint implements Messenger {
         }
 
         for (AspectNode node : sourceGraph.nodeSet()) {
-            for (AspectEdge edge : sourceGraph.edgeSet(node)) {
-                if (edge.source() != node) {
-                    // Ignore edges of which the current node is the target, they will be treated by the source node
-                    continue;
-                }
+            for (AspectEdge edge : sourceGraph.outEdgeSet(node)) {
+                /* The following is probably a misunderstanding for the isForNode property
                 if (edge.getAspect().isForNode(GraphRole.RULE) && edge.source() == edge.target()) {
                     nodeMap.get(edge.source()).addName(edge.label().toString());
-                } else {
+                } else
+                */
+                {
                     /*AbsEdge aEdge = */new AbsEdge(nodeMap.get(edge.source()),
                         nodeMap.get(edge.target()), edge.label().toString());
                 }

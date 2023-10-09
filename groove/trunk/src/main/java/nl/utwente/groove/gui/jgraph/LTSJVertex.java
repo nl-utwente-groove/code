@@ -1,6 +1,8 @@
 package nl.utwente.groove.gui.jgraph;
 
+import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import nl.utwente.groove.control.instance.Frame;
 import nl.utwente.groove.graph.Edge;
@@ -17,7 +19,7 @@ import nl.utwente.groove.lts.StartGraphState;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge>implements LTSJCell {
+public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> implements LTSJCell {
     /**
      * Creates a new, uninitialised instance.
      * Call {@link #setJModel(JModel)} and {@link #setNode(Node)} to initialise.
@@ -81,8 +83,7 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge>implem
         LTSJGraph jGraph = getJGraph();
         assert jGraph != null; // guaranteed by now
         if (this.outCount < 0) {
-            this.outCount = getNode().getTransitions(jGraph.getTransitionClass())
-                .size();
+            this.outCount = getNode().getTransitions(jGraph.getTransitionClass()).size();
         }
         return this.outCount;
     }
@@ -168,8 +169,7 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge>implem
      */
     public boolean isStart() {
         GTS gts = getNode().getGTS();
-        return gts.startState()
-            .equals(getNode());
+        return gts.startState().equals(getNode());
     }
 
     /**
@@ -210,12 +210,11 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge>implem
     }
 
     @Override
-    protected Look getStructuralLook() {
-        if (isStart()) {
-            return Look.START;
-        } else {
-            return Look.STATE;
-        }
+    protected Set<Look> getStructuralLooks() {
+        return EnumSet
+            .of(isStart()
+                ? Look.START
+                : Look.STATE);
     }
 
     /**

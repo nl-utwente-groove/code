@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.grammar.model;
 
+import static nl.utwente.groove.grammar.aspect.AspectKind.REMARK;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -24,14 +26,13 @@ import java.util.Set;
 import nl.utwente.groove.algebra.Algebra;
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.Constant;
-import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.aspect.Aspect;
 import nl.utwente.groove.grammar.aspect.AspectContent.ConstContent;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectGraph.AspectGraphMorphism;
-import nl.utwente.groove.grammar.aspect.AspectKind;
+import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.host.DefaultHostGraph;
 import nl.utwente.groove.grammar.host.HostEdge;
@@ -135,7 +136,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     HostGraph compute() throws FormatException {
         this.algebraFamily = getFamily();
         GraphInfo.throwException(getSource());
-        Pair<DefaultHostGraph,HostModelMap> modelPlusMap = computeModel(getSource());
+        Pair<DefaultHostGraph,HostModelMap> modelPlusMap = computeModel();
         HostGraph result = modelPlusMap.one();
         GraphInfo.throwException(result);
         HostModelMap hostModelMap = modelPlusMap.two();
@@ -162,7 +163,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
      * Computes a fresh model from a given aspect graph, together with a mapping
      * from the aspect graph's node to the (fresh) graph nodes.
      */
-    private Pair<DefaultHostGraph,HostModelMap> computeModel(AspectGraph source) {
+    private Pair<DefaultHostGraph,HostModelMap> computeModel() {
         AspectGraph normalSource = getNormalSource();
         if (debug) {
             GraphPreviewDialog.showGraph(normalSource);
@@ -174,13 +175,13 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         // copy the nodes from model to resource
         // first the non-value nodes because their numbers are fixed
         for (AspectNode modelNode : normalSource.nodeSet()) {
-            if (!modelNode.getAttrKind().hasSort()) {
+            if (!modelNode.has(Category.SORT)) {
                 processModelNode(result, elementMap, modelNode);
             }
         }
         // then the value nodes because their numbers are generated
         for (AspectNode modelNode : normalSource.nodeSet()) {
-            if (modelNode.getAttrKind().hasSort()) {
+            if (modelNode.has(Category.SORT)) {
                 processModelNode(result, elementMap, modelNode);
             }
         }
@@ -255,14 +256,13 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     private void processModelNode(DefaultHostGraph result, HostModelMap elementMap,
                                   AspectNode modelNode) {
         // include the node in the model if it is not virtual
-        if (!modelNode.getKind().isMeta()) {
+        if (!modelNode.has(Category.NESTING) && !modelNode.has(REMARK)) {
             HostNode nodeImage = null;
-            AspectKind attrType = modelNode.getAttrKind();
-            if (attrType.hasSort()) {
+            Aspect data = modelNode.get(Category.SORT);
+            if (data != null) {
                 Algebra<?> nodeAlgebra
-                    = this.algebraFamily.getAlgebra(Sort.getKind(attrType.getName()));
-                Aspect dataType = modelNode.getAttrAspect();
-                Constant term = ((ConstContent) dataType.getContent()).get();
+                    = this.algebraFamily.getAlgebra(data.getContentKind().getSort());
+                Constant term = ((ConstContent) data.getContent()).get();
                 nodeImage = result.getFactory().createNode(nodeAlgebra, nodeAlgebra.toValue(term));
                 result.addNode(nodeImage);
             } else {
@@ -279,7 +279,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
      */
     private void processModelEdge(HostGraph result, HostModelMap elementMap,
                                   AspectEdge modelEdge) throws FormatException {
-        if (modelEdge.getKind().isMeta()) {
+        if (!modelEdge.has(Category.LABEL)) {
             return;
         }
         HostNode hostSource = elementMap.getNode(modelEdge.source());

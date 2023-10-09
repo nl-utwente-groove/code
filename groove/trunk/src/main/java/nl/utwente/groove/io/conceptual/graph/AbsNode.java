@@ -142,7 +142,7 @@ public class AbsNode {
                 AspectEdge newEdge = new AspectEdge(this.m_aspectNode, alabel, this.m_aspectNode);
                 this.m_aspectEdges.add(newEdge);
             } else {
-                this.m_aspectNode.setAspects(alabel);
+                this.m_aspectNode.addLabel(alabel);
             }
         }
     }

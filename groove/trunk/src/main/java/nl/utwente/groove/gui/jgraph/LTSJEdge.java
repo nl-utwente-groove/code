@@ -1,5 +1,8 @@
 package nl.utwente.groove.gui.jgraph;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.VisualKey;
@@ -16,13 +19,12 @@ import nl.utwente.groove.util.Groove;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex>implements LTSJCell {
+public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> implements LTSJCell {
     /**
      * Constructs an uninitialised instance.
      * Call {@link #setJModel(JModel)} to initialise.
      */
     private LTSJEdge() {
-        super();
     }
 
     @Override
@@ -48,7 +50,7 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex>implemen
             LTSJVertex targetVertex = getTargetVertex();
             assert targetVertex != null; // because port != null
             GraphState target = targetVertex.getNode();
-            if (target instanceof GraphNextState && getEdges().contains((GraphNextState) target)) {
+            if (target instanceof GraphNextState trans && getEdges().contains(trans)) {
                 targetVertex.setParentEdge(this);
             }
         }
@@ -63,10 +65,7 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex>implemen
         if (isInternal() != trans.isInternalStep()) {
             return false;
         }
-        if (isAbsent() != (trans.source()
-            .isAbsent()
-            || trans.target()
-                .isAbsent())) {
+        if (isAbsent() != (trans.source().isAbsent() || trans.target().isAbsent())) {
             return false;
         }
         return true;
@@ -105,13 +104,9 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex>implemen
             JGraph<?> jGraph = getJGraph();
             assert jGraph != null; // guaranteed by now
             if (jGraph.isShowAnchors()) {
-                description = trans.getEvent()
-                    .toString();
+                description = trans.getEvent().toString();
             } else {
-                description = trans.getEvent()
-                    .getRule()
-                    .getQualName()
-                    .toString();
+                description = trans.getEvent().getRule().getQualName().toString();
             }
             displayedLabels[labelIndex] = HTMLConverter.STRONG_TAG.on(description, true);
             labelIndex++;
@@ -131,10 +126,7 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex>implemen
 
     /** Indicates that the node or target of this edge is absent. */
     final boolean isAbsent() {
-        return getEdge().source()
-            .isAbsent()
-            || getEdge().target()
-                .isAbsent();
+        return getEdge().source().isAbsent() || getEdge().target().isAbsent();
     }
 
     /** Indicates that this edge is part of a recipe. */
@@ -173,8 +165,8 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex>implemen
     }
 
     @Override
-    protected Look getStructuralLook() {
-        return Look.TRANS;
+    protected Set<Look> getStructuralLooks() {
+        return EnumSet.of(Look.TRANS);
     }
 
     private boolean visibleFlag;

@@ -36,4 +36,9 @@ public interface GEdge<N extends Node> extends Edge {
      */
     @Override
     public N target();
+
+    @Override
+    default boolean hasRole(EdgeRole role) {
+        return getRole() == role;
+    }
 }

@@ -1,5 +1,8 @@
 package nl.utwente.groove.gui.jgraph;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 import nl.utwente.groove.control.graph.ControlEdge;
 import nl.utwente.groove.control.graph.ControlGraph;
 import nl.utwente.groove.control.instance.Step;
@@ -49,11 +52,11 @@ public class CtrlJEdge extends AJEdge<ControlGraph,CtrlJGraph,JModel<ControlGrap
     }
 
     @Override
-    protected Look getStructuralLook() {
+    protected Set<Look> getStructuralLooks() {
         if (getEdge().isVerdict()) {
-            return Look.CTRL_VERDICT;
+            return EnumSet.of(Look.CTRL_VERDICT);
         } else {
-            return Look.TRANS;
+            return EnumSet.of(Look.TRANS);
         }
     }
 

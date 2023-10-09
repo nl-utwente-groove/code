@@ -64,8 +64,18 @@ public sealed interface AspectContent
     /** Retrieves the contained object. */
     Object get();
 
+    /** Checks if the content equals a given object. */
+    default boolean has(Object content) {
+        return Objects.equals(get(), content);
+    }
+
     /** Returns the kind of this content object. */
     ContentKind kind();
+
+    /** Indicates if this is {@link NullContent}. */
+    default boolean isNull() {
+        return false;
+    }
 
     /**
      * Returns a string description of this content that
@@ -820,8 +830,18 @@ public sealed interface AspectContent
         }
 
         @Override
+        public boolean has(Object content) {
+            return false;
+        }
+
+        @Override
         public ContentKind kind() {
             return this.kind;
+        }
+
+        @Override
+        public boolean isNull() {
+            return true;
         }
 
         @Override

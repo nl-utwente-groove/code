@@ -165,10 +165,18 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
         return this.levelTree;
     }
 
+    /** The JTree of rule levels, if any. */
+    private RuleLevelTree levelTree;
+
     /** Indicates that the JModel has an editor enabled. */
     public boolean hasActiveEditor() {
         return this.editing && getMode() != PREVIEW_MODE;
     }
+
+    /**
+     * The (possibly {@code null}) editor with which this j-graph is associated.
+     */
+    private final boolean editing;
 
     /**
      * Indicates if the graph being displayed is a graph state.
@@ -177,6 +185,9 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
         return this.forState;
     }
 
+    /** The kind of graphs being displayed. */
+    private final boolean forState;
+
     /**
      * Returns the role of the graph being displayed.
      */
@@ -184,6 +195,9 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
     public GraphRole getGraphRole() {
         return this.graphRole;
     }
+
+    /** The role for which this {@link JGraph} will display graphs. */
+    private final GraphRole graphRole;
 
     @Override
     public JMenu createPopupMenu(Point atPoint) {
@@ -258,8 +272,8 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
 
     /** Convenience method to invoke an edit of a set of visual attributes. */
     void edit(JCell<AspectGraph> jCell, VisualMap newVisuals) {
-        getModel().edit(Collections.singletonMap(jCell, newVisuals.getAttributes()), null, null,
-                        null);
+        getModel()
+            .edit(Collections.singletonMap(jCell, newVisuals.getAttributes()), null, null, null);
     }
 
     /**
@@ -377,17 +391,6 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
      * label
      */
     private final boolean startEditingNewEdge = true;
-    /**
-     * The (possibly {@code null}) editor with which this j-graph is associated.
-     */
-    private final boolean editing;
-
-    /** The kind of graphs being displayed. */
-    private final boolean forState;
-    /** The role for which this {@link JGraph} will display graphs. */
-    private final GraphRole graphRole;
-    /** The JTree of rule levels, if any. */
-    private RuleLevelTree levelTree;
     /** Map from line style names to corresponding actions. */
     private final Map<LineStyle,JCellEditAction> setLineStyleActionMap
         = new EnumMap<>(LineStyle.class);
@@ -885,13 +888,13 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
         @Override
         public AspectJVertex newJVertex(Node node) {
             assert node instanceof AspectNode;
-            return AspectJVertex.newInstance();
+            return AspectJVertex.newInstance(getJGraph().getGraphRole());
         }
 
         @Override
         public AspectJEdge newJEdge(Edge edge) {
             assert edge == null || edge instanceof AspectEdge;
-            return AspectJEdge.newInstance();
+            return AspectJEdge.newInstance(getJGraph().getGraphRole());
         }
 
         @Override
