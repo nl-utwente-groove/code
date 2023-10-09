@@ -48,6 +48,9 @@ public interface Edge extends Element {
      */
     public EdgeRole getRole();
 
+    /** Checks if the edge role equals a given role. */
+    public boolean hasRole(EdgeRole role);
+
     /** Convenience method to tests if the source and target nodes of this edge coincide. */
     public default boolean isLoop() {
         return source() == target();

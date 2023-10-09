@@ -348,10 +348,18 @@ public class StateDisplay extends Display implements SimulatorListener {
         AspectJModel jModel = getJGraph().getModel();
         HostToAspectMap aspectMap = getAspectMap(getSimulatorModel().getState());
         Set<AspectJCell> emphElems = new HashSet<>();
-        match.getNodeValues().stream().map(n -> jModel.getJCellForNode(aspectMap.getNode(n)))
-            .filter(c -> c != null).forEach(c -> emphElems.add(c));
-        match.getEdgeValues().stream().map(e -> jModel.getJCellForEdge(aspectMap.getEdge(e)))
-            .filter(c -> c != null).forEach(c -> emphElems.add(c));
+        match
+            .getNodeValues()
+            .stream()
+            .map(n -> jModel.getJCellForNode(aspectMap.getNode(n)))
+            .filter(c -> c != null)
+            .forEach(c -> emphElems.add(c));
+        match
+            .getEdgeValues()
+            .stream()
+            .map(e -> jModel.getJCellForEdge(aspectMap.getEdge(e)))
+            .filter(c -> c != null)
+            .forEach(c -> emphElems.add(c));
         getJGraph().setSelectionCells(emphElems.toArray());
         this.matchSelected = true;
     }
@@ -375,36 +383,42 @@ public class StateDisplay extends Display implements SimulatorListener {
             MatchResult match = getSimulatorModel().getMatch();
             boolean brackets = false;
             if (state.isInternalState()) {
-                result.append(brackets
-                    ? ", "
-                    : " (");
+                result
+                    .append(brackets
+                        ? ", "
+                        : " (");
                 brackets = true;
                 result.append("transient state");
             }
             if (state.isInternalState()) {
-                result.append(brackets
-                    ? ", "
-                    : " (");
+                result
+                    .append(brackets
+                        ? ", "
+                        : " (");
                 brackets = true;
                 result.append("removed from state space");
             }
             if (state.isError()) {
-                result.append(brackets
-                    ? ", "
-                    : " (");
+                result
+                    .append(brackets
+                        ? ", "
+                        : " (");
                 brackets = true;
                 result.append("has errors");
             }
             if (match != null) {
-                result.append(brackets
-                    ? "; "
-                    : " (");
+                result
+                    .append(brackets
+                        ? "; "
+                        : " (");
                 brackets = true;
                 if (getJGraph().isShowAnchors()) {
                     result.append(String.format("with match '%s'", match.getEvent()));
                 } else {
-                    result.append(String.format("with match of <i>%s</i>",
-                                                match.getEvent().getRule().getQualName()));
+                    result
+                        .append(String
+                            .format("with match of <i>%s</i>",
+                                    match.getEvent().getRule().getQualName()));
                 }
             }
             if (brackets) {
@@ -660,7 +674,9 @@ public class StateDisplay extends Display implements SimulatorListener {
         // extract new colours from target
         RuleApplication application = trans.createRuleApplication();
         Map<RuleNode,HostNodeSet> comatch = application.getComatch();
-        for (Map.Entry<RuleNode,Color> colorEntry : application.getRule().getColorMap()
+        for (Map.Entry<RuleNode,Color> colorEntry : application
+            .getRule()
+            .getColorMap()
             .entrySet()) {
             HostNodeSet matches = comatch.get(colorEntry.getKey());
             // possibly this node has no matches, for instance if it is universally
@@ -688,7 +704,7 @@ public class StateDisplay extends Display implements SimulatorListener {
         AspectJModel startModel = createAspectJModel(startGraph);
         for (AspectNode node : startGraph.nodeSet()) {
             AspectJVertex stateVertex = result.getJCellForNode(node);
-            // meta nodes are not in the state;
+            // nesting nodes are not in the state;
             // data nodes may have been merged
             if (stateVertex == null) {
                 continue;
@@ -701,7 +717,7 @@ public class StateDisplay extends Display implements SimulatorListener {
         }
         for (AspectEdge edge : startGraph.edgeSet()) {
             AspectJCell stateEdge = result.getJCellForEdge(edge);
-            // meta edges and merged data edges are not in the state
+            // nesting edges and merged data edges are not in the state
             if (stateEdge == null) {
                 continue;
             }

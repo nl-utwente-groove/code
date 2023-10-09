@@ -19,6 +19,7 @@ package nl.utwente.groove.grammar.aspect;
 import static nl.utwente.groove.grammar.aspect.AspectParser.SEPARATOR;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -34,6 +35,7 @@ import nl.utwente.groove.grammar.aspect.AspectContent.ContentKind;
 import nl.utwente.groove.grammar.aspect.AspectContent.NestedValue;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.util.Keywords;
+import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -45,117 +47,128 @@ import nl.utwente.groove.util.parse.FormatException;
  */
 public enum AspectKind {
     /** Used for comments/documentation. */
-    REMARK("rem", ContentKind.NONE),
+    REMARK(Category.REMARK, "rem", ContentKind.NONE),
 
-    /** Default aspect, if none is specified. */
-    DEFAULT("none", ContentKind.NONE) {
+    // rule roles
+    /** Indicates an unmodified element. */
+    READER(Category.ROLE, "use", ContentKind.LEVEL),
+    /** Indicates an element to be deleted. */
+    ERASER(Category.ROLE, "del", ContentKind.LEVEL),
+    /** Indicates an element to be created. */
+    CREATOR(Category.ROLE, "new", ContentKind.LEVEL),
+    /** Indicates an element to be created if not yet present. */
+    ADDER(Category.ROLE, "cnew", ContentKind.LEVEL),
+    /** Indicates a forbidden element. */
+    EMBARGO(Category.ROLE, "not", ContentKind.LEVEL),
+
+    // data types
+    /** Indicates a boolean value or operator. */
+    BOOL(Category.SORT, Keywords.BOOL, ContentKind.BOOL_LITERAL),
+    /** Indicates an integer value or operator. */
+    INT(Category.SORT, Keywords.INT, ContentKind.INT_LITERAL),
+    /** Indicates a floating-point value or operator. */
+    REAL(Category.SORT, Keywords.REAL, ContentKind.REAL_LITERAL),
+    /** Indicates a string value or operator. */
+    STRING(Category.SORT, Keywords.STRING, ContentKind.STRING_LITERAL),
+
+    // auxiliary attribute-related aspects
+    /** Indicates an argument edge. */
+    ARGUMENT(Category.ATTR, "arg", ContentKind.NUMBER),
+    /** Indicates a product node. */
+    PRODUCT(Category.ATTR, "prod", ContentKind.NONE),
+    /** Indicates an attribute value. */
+    TEST(Category.ATTR, "test", ContentKind.TEST_EXPR),
+    /** Indicates an attribute change. */
+    LET(Category.ATTR, "let", ContentKind.LET_EXPR),
+    /** Indicates a new attribute. */
+    LET_NEW(Category.ATTR, "letnew", ContentKind.LET_EXPR),
+
+    // rule parameters
+    /** Indicates a bidirectional rule parameter. */
+    PARAM_BI(Category.PARAM, Keywords.PAR, ContentKind.PARAM),
+    /** Indicates an input rule parameter. */
+    PARAM_IN(Category.PARAM, Keywords.PAR_IN, ContentKind.PARAM),
+    /** Indicates an output rule parameter. */
+    PARAM_OUT(Category.PARAM, Keywords.PAR_OUT, ContentKind.PARAM),
+    /** Indicates an interactive rule parameter. */
+    PARAM_ASK(Category.PARAM, Keywords.PAR_ASK, ContentKind.PARAM),
+
+    // type-related aspects
+    /** Indicates a nodified edge type. */
+    EDGE(Category.EDGE, "edge", ContentKind.EDGE),
+    /** Indicates an abstract type. */
+    ABSTRACT(Category.TYPE, "abs", ContentKind.NONE),
+    /** Indicates a subtype relation. */
+    SUBTYPE(Category.TYPE, "sub", ContentKind.EMPTY),
+    /** Indicates an imported type. */
+    IMPORT(Category.IMPORT, "import", ContentKind.EMPTY),
+    /** Indicates an incoming multiplicity. */
+    MULT_IN(Category.MULT_IN, "in", ContentKind.MULTIPLICITY),
+    /** Indicates an outgoing multiplicity. */
+    MULT_OUT(Category.MULT_OUT, "out", ContentKind.MULTIPLICITY),
+    /** Indicates an outgoing multiplicity. */
+    COMPOSITE(Category.ASSOC, "part", ContentKind.NONE),
+
+    // label-related aspects
+    /** Default label mode, if none is specified. */
+    ATOM(Category.LABEL, "none", ContentKind.NONE) {
         @Override
         public String getPrefix() {
             return "";
         }
     },
-    // rule roles
-    /** Indicates an unmodified element. */
-    READER("use", ContentKind.LEVEL),
-    /** Indicates an element to be deleted. */
-    ERASER("del", ContentKind.LEVEL),
-    /** Indicates an element to be created. */
-    CREATOR("new", ContentKind.LEVEL),
-    /** Indicates an element to be created if not yet present. */
-    ADDER("cnew", ContentKind.LEVEL),
-    /** Indicates a forbidden element. */
-    EMBARGO("not", ContentKind.LEVEL),
-    /** Connects two embargo sub-graphs. */
-    CONNECT("or", ContentKind.EMPTY),
-
-    // data types
-    /** Indicates a boolean value or operator. */
-    BOOL(Keywords.BOOL, ContentKind.BOOL_LITERAL),
-    /** Indicates an integer value or operator. */
-    INT(Keywords.INT, ContentKind.INT_LITERAL),
-    /** Indicates a floating-point value or operator. */
-    REAL(Keywords.REAL, ContentKind.REAL_LITERAL),
-    /** Indicates a string value or operator. */
-    STRING(Keywords.STRING, ContentKind.STRING_LITERAL),
-
-    // auxiliary attribute-related aspects
-    /** Indicates an argument edge. */
-    ARGUMENT("arg", ContentKind.NUMBER),
-    /** Indicates a product node. */
-    PRODUCT("prod", ContentKind.NONE),
-    /** Indicates an attribute value. */
-    TEST("test", ContentKind.TEST_EXPR),
-    /** Indicates an attribute change. */
-    LET("let", ContentKind.LET_EXPR),
-    /** Indicates a new attribute. */
-    LET_NEW("letnew", ContentKind.LET_EXPR),
-
-    // rule parameters
-    /** Indicates a bidirectional rule parameter. */
-    PARAM_BI(Keywords.PAR, ContentKind.PARAM),
-    /** Indicates an input rule parameter. */
-    PARAM_IN(Keywords.PAR_IN, ContentKind.PARAM),
-    /** Indicates an output rule parameter. */
-    PARAM_OUT(Keywords.PAR_OUT, ContentKind.PARAM),
-    /** Indicates an interactive rule parameter. */
-    PARAM_ASK(Keywords.PAR_ASK, ContentKind.PARAM),
-
-    // type-related aspects
-    /** Indicates a nodified edge type. */
-    EDGE("edge", ContentKind.EDGE),
-    /** Indicates an abstract type. */
-    ABSTRACT("abs", ContentKind.NONE),
-    /** Indicates an imported type. */
-    IMPORT("import", ContentKind.EMPTY),
-    /** Indicates a subtype relation. */
-    SUBTYPE("sub", ContentKind.EMPTY),
-    /** Indicates an incoming multiplicity. */
-    MULT_IN("in", ContentKind.MULTIPLICITY),
-    /** Indicates an outgoing multiplicity. */
-    MULT_OUT("out", ContentKind.MULTIPLICITY),
-    /** Indicates an outgoing multiplicity. */
-    COMPOSITE("part", ContentKind.NONE),
-
-    // label-related aspects
     /** Indicates that the remainder of the label is a regular expression. */
-    PATH("path", ContentKind.NONE),
+    PATH(Category.LABEL, "path", ContentKind.NONE),
     /** Indicates that the remainder of the label is to be taken as literal text. */
-    LITERAL("", ContentKind.NONE),
+    LITERAL(Category.LABEL, "", ContentKind.NONE),
 
     // quantifier-related aspects
     /** Universal quantifier. */
-    FORALL("forall", ContentKind.LEVEL),
+    FORALL(Category.NESTING, "forall", ContentKind.LEVEL),
     /** Non-vacuous universal quantifier. */
-    FORALL_POS("forallx", ContentKind.LEVEL),
+    FORALL_POS(Category.NESTING, "forallx", ContentKind.LEVEL),
     /** Existential quantifier. */
-    EXISTS("exists", ContentKind.LEVEL),
+    EXISTS(Category.NESTING, "exists", ContentKind.LEVEL),
     /** Optional existential quantifier. */
-    EXISTS_OPT("existsx", ContentKind.LEVEL),
+    EXISTS_OPT(Category.NESTING, "existsx", ContentKind.LEVEL),
     /** Nesting edge. */
-    NESTED("nested", ContentKind.NESTED),
+    NESTED(Category.NESTING, "nested", ContentKind.NESTED),
+    /** Connects two embargo sub-graphs. */
+    CONNECT(Category.NESTING, "or", ContentKind.EMPTY),
+
     /** Node identity. */
-    ID("id", ContentKind.NAME),
+    ID(Category.ID, "id", ContentKind.NAME),
     /** Node type colour. */
-    COLOR("color", ContentKind.COLOR);
+    COLOR(Category.COLOR, "color", ContentKind.COLOR);
 
     /** Creates a new aspect kind.
      * @param name the aspect kind name; will be appended with {@link #SEPARATOR} to form
      * the prefix
      * @param contentKind the kind of content for this aspect
      */
-    private AspectKind(String name, ContentKind contentKind) {
+    private AspectKind(Category cat, String name, ContentKind contentKind) {
+        this.cat = cat;
         this.name = name;
         this.contentKind = contentKind;
     }
 
-    @Override
-    public String toString() {
-        return getName();
+    /** Returns the category to which this aspect belongs. */
+    public Category getCategory() {
+        return this.cat;
     }
+
+    private final Category cat;
 
     /** Returns the name of this aspect kind. */
     public String getName() {
         return this.name;
+    }
+
+    private final String name;
+
+    @Override
+    public String toString() {
+        return getName();
     }
 
     /**
@@ -175,12 +188,26 @@ public enum AspectKind {
         return this.contentKind;
     }
 
+    private final ContentKind contentKind;
+
     /** Returns a (prototypical) aspect of this kind. */
     public Aspect getAspect() {
         if (this.aspect == null) {
             this.aspect = new Aspect(this);
         }
         return this.aspect;
+    }
+
+    private Aspect aspect;
+
+    /** Returns a new aspect of this aspect kind, with content derived by
+     * parsing a given content text and graph role.
+     * @throws FormatException if the text does not represent content of the
+     * correct kind
+     * @see ContentKind#parseContent(String, GraphRole)
+     */
+    public Aspect newAspect(String text, GraphRole role) throws FormatException {
+        return new Aspect(this, getContentKind().parseContent(text, role));
     }
 
     /**
@@ -250,12 +277,26 @@ public enum AspectKind {
         return inRHS() && !inLHS();
     }
 
+    /** Checks if this aspect kind is of a given category. */
+    public boolean has(Category cat) {
+        return getCategory() == cat;
+    }
+
     /**
      * Indicates if this aspect is among the set of typed data aspects.
      * @see #getSort()
      */
     public boolean hasSort() {
         return getSort() != null;
+    }
+
+    /**
+     * Tests if this aspect kind has a given sort.
+     * @param sort the sort to test for
+     * @see #getSort()
+     */
+    public boolean hasSort(Sort sort) {
+        return getSort() == sort;
     }
 
     /**
@@ -267,19 +308,10 @@ public enum AspectKind {
     }
 
     /**
-     * Indicates if this aspect is among the set of meta-aspects.
-     * @see #meta
+     * Indicates if this aspect is an assignment.
      */
-    public boolean isMeta() {
-        return meta.contains(this);
-    }
-
-    /**
-     * Indicates if this aspect is among the set of parameter aspects.
-     * @see #params
-     */
-    public boolean isParam() {
-        return params.contains(this);
+    public boolean isAssign() {
+        return this == LET || this == LET_NEW;
     }
 
     /**
@@ -305,23 +337,11 @@ public enum AspectKind {
         return isExists() || isForall();
     }
 
-    /**
-     * Indicates if this aspect is attribute related.
-     * @see #attributers
-     */
-    public boolean isAttrKind() {
-        return attributers.contains(this);
-    }
-
     /** Indicates that this aspect kind is always the last on a label. */
     public boolean isLast() {
         return this.contentKind != ContentKind.LEVEL && this.contentKind != ContentKind.MULTIPLICITY
             && this != COMPOSITE;
     }
-
-    private final ContentKind contentKind;
-    private final String name;
-    private Aspect aspect;
 
     /**
      * Returns the aspect kind corresponding to a certain non-{@code null}
@@ -721,7 +741,7 @@ public enum AspectKind {
             b.add("<li> COUNT points to the cardinality of a quantifier.");
             break;
 
-        case DEFAULT:
+        case ATOM:
             break;
 
         case PARAM_BI:
@@ -935,27 +955,20 @@ public enum AspectKind {
     }
 
     /** Set of role aspects. */
-    public static final Set<AspectKind> roles
-        = EnumSet.of(ERASER, ADDER, CREATOR, READER, EMBARGO, CONNECT);
+    public static final Set<AspectKind> roles = EnumSet.of(ERASER, ADDER, CREATOR, READER, EMBARGO);
     /** Set of role aspects appearing (only) in NACs. */
     public static final Set<AspectKind> nac = EnumSet.of(EMBARGO, ADDER, CONNECT);
     /** Set of role aspects appearing in LHSs. */
     public static final Set<AspectKind> lhs = EnumSet.of(READER, ERASER);
     /** Set of role aspects appearing in RHSs. */
     public static final Set<AspectKind> rhs = EnumSet.of(READER, CREATOR, ADDER);
-    /** Set of meta-aspects, i.e., which do not reflect real graph structure. */
-    public static final Set<AspectKind> meta
-        = EnumSet.of(FORALL, FORALL_POS, EXISTS, EXISTS_OPT, NESTED, REMARK, CONNECT);
-    /** Set of parameter aspects. */
-    public static final Set<AspectKind> params
-        = EnumSet.of(PARAM_BI, PARAM_IN, PARAM_OUT, PARAM_ASK);
-    /** Set of existential quantifier aspects, i.e., which do not reflect real graph structure. */
+    /** Set of existential quantifier aspects. */
     public static final Set<AspectKind> existsQuantifiers = EnumSet.of(EXISTS, EXISTS_OPT);
-    /** Set of universal quantifier aspects, i.e., which do not reflect real graph structure. */
+    /** Set of universal quantifier aspects. */
     public static final Set<AspectKind> forallQuantifiers = EnumSet.of(FORALL, FORALL_POS);
     /** Set of attribute-related aspects. */
     public static final Set<AspectKind> attributers
-        = EnumSet.of(PRODUCT, ARGUMENT, STRING, INT, BOOL, REAL, TEST);
+        = EnumSet.of(ARGUMENT, STRING, INT, BOOL, REAL, TEST);
 
     /** Mapping from graph roles to the node aspects allowed therein. */
     public static final Map<GraphRole,Set<AspectKind>> allowedNodeKinds
@@ -969,8 +982,8 @@ public enum AspectKind {
             Set<AspectKind> nodeKinds, edgeKinds;
             switch (role) {
             case HOST:
-                nodeKinds = EnumSet.of(DEFAULT, REMARK, INT, BOOL, REAL, STRING, COLOR, ID);
-                edgeKinds = EnumSet.of(DEFAULT, REMARK, LITERAL, LET);
+                nodeKinds = EnumSet.of(REMARK, INT, BOOL, REAL, STRING, COLOR, ID);
+                edgeKinds = EnumSet.of(REMARK, ATOM, LITERAL, LET);
                 break;
             case RULE:
                 nodeKinds = EnumSet
@@ -979,14 +992,14 @@ public enum AspectKind {
                         EXISTS, EXISTS_OPT, ID, COLOR);
                 edgeKinds = EnumSet
                     .of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, CONNECT, BOOL, INT, REAL,
-                        STRING, ARGUMENT, PATH, LITERAL, FORALL, FORALL_POS, EXISTS, EXISTS_OPT,
-                        NESTED, LET, LET_NEW, TEST);
+                        STRING, ARGUMENT, ATOM, PATH, LITERAL, FORALL, FORALL_POS, EXISTS,
+                        EXISTS_OPT, NESTED, LET, LET_NEW, TEST);
                 break;
             case TYPE:
-                nodeKinds = EnumSet
-                    .of(DEFAULT, REMARK, INT, BOOL, REAL, STRING, ABSTRACT, IMPORT, COLOR, EDGE);
+                nodeKinds
+                    = EnumSet.of(REMARK, INT, BOOL, REAL, STRING, ABSTRACT, IMPORT, COLOR, EDGE);
                 edgeKinds = EnumSet
-                    .of(REMARK, INT, BOOL, REAL, STRING, ABSTRACT, SUBTYPE, MULT_IN, MULT_OUT,
+                    .of(REMARK, ATOM, INT, BOOL, REAL, STRING, ABSTRACT, SUBTYPE, MULT_IN, MULT_OUT,
                         COMPOSITE);
                 break;
             default:
@@ -997,5 +1010,134 @@ public enum AspectKind {
             allowedNodeKinds.put(role, nodeKinds);
             allowedEdgeKinds.put(role, edgeKinds);
         }
+    }
+
+    /**
+     * Categories of aspects.
+     * Each aspect element can have at most one aspect of any given category.
+     * Some categories have a default value.
+     * Some categories are mutually exclusive.
+     * @author Rensink
+     * @version $Revision $
+     */
+    static public enum Category {
+        /** Remark aspect. */
+        REMARK,
+        /** Role within the rule graph. */
+        ROLE,
+        /** Nesting attributes, determining the structure of the rule tree. */
+        NESTING(ROLE) {
+            @Override
+            boolean conflictsForNode(Category other, GraphRole forRole) {
+                // NESTING and ROLE don't go together for nodes, just for edges
+                return other == ROLE;
+            }
+        },
+        /** The four primitive sorts. */
+        SORT(ROLE),
+        /** Other attribute-related aspects. */
+        ATTR(ROLE),
+        /** Identifier declaration. */
+        ID(ROLE, NESTING, SORT) {
+            @Override
+            boolean conflictsForNode(Category other, GraphRole forRole) {
+                // ID and SORT don't go together in host graphs
+                return other == SORT && forRole == GraphRole.HOST;
+            }
+        },
+        /** Parameter aspect. */
+        PARAM(ROLE, SORT, ID),
+        /** Label mode. */
+        LABEL(ROLE, NESTING),
+        /** Colour declaration. */
+        COLOR(ROLE, ID, PARAM),
+        /** Node type-related aspects. */
+        TYPE(LABEL),
+        /** Import aspect. */
+        IMPORT,
+        /** Nodified edge declaration. */
+        EDGE(COLOR),
+        /** Incoming multiplicity declaration. */
+        MULT_IN(LABEL, TYPE),
+        /** Outgoing multiplicity declaration. */
+        MULT_OUT(SORT, LABEL, TYPE, MULT_IN),
+        /** Relational nature of an edge. */
+        ASSOC(LABEL, TYPE, MULT_IN, MULT_OUT),;
+
+        /** Declares a category and its compatibility with other ("smaller") categories. */
+        private Category(Category... ok) {
+            // only "smaller" categories should be declared as compatible.
+            for (Category conflict : ok) {
+                assert conflict.ordinal() < ordinal();
+            }
+            this.okArray = ok;
+        }
+
+        /** The OK values as an array.
+         * This is workaround for the fact that we can't create an EnumSet of Category
+         * during class initialisation
+         */
+        private final Category[] okArray;
+
+        /** Tests if this category is compatible with another.
+         * @param other the other category
+         * @param forNode switch determining whether this is to be tested for nodes or edges
+         * @param forRole the graph role for which this is to be tested
+         */
+        public boolean ok(Category other, boolean forNode, GraphRole forRole) {
+            if (this == other) {
+                return true;
+            } else if (other.ordinal() < ordinal()) {
+                return ok(other) && (forNode
+                    ? !conflictsForNode(other, forRole)
+                    : !conflictsForEdge(other, forRole));
+            } else {
+                return other.ok(this, forNode, forRole);
+            }
+        }
+
+        /** Tests if this category conflicts with another when used on nodes,
+         * in spite of the the general compatibility.
+         * @param other the other category
+         * @param forRole the graph role for which this is to be tested
+         */
+        boolean conflictsForNode(Category other, GraphRole forRole) {
+            return false;
+        }
+
+        /** Tests if this category conflicts with another when used on edges,
+         * in spite of the the general compatibility.
+         * @param other the other category
+         * @param forRole the graph role for which this is to be tested
+         */
+        boolean conflictsForEdge(Category other, GraphRole forRole) {
+            return false;
+        }
+
+        /** Tests if this category is generally compatible with another,
+         * strictly smaller category.
+         * @param other the other category
+         */
+        private boolean ok(Category other) {
+            assert other.ordinal() < ordinal();
+            // this implementation does not specialise for roles or nodes/edges;
+            // that is left to special values
+            return ok().contains(other);
+        }
+
+        /** Returns the compatible categories as a set. */
+        private Set<Category> ok() {
+            return this.ok.get();
+        }
+
+        /** Creator method for the set of compatible categories. */
+        private Set<Category> createOk() {
+            var result = EnumSet.noneOf(Category.class);
+            Arrays.stream(this.okArray).forEach(result::add);
+            return result;
+        }
+
+        /** The categories with which this one conflicts. */
+        private LazyFactory<Set<Category>> ok = LazyFactory.instance(this::createOk);
     }
 }

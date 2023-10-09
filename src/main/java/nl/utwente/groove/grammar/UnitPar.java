@@ -32,6 +32,7 @@ import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.grammar.aspect.Aspect;
 import nl.utwente.groove.grammar.aspect.AspectContent.ContentKind;
 import nl.utwente.groove.grammar.aspect.AspectKind;
+import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.rule.VariableNode;
 import nl.utwente.groove.util.Exceptions;
@@ -269,7 +270,7 @@ public abstract class UnitPar {
             super(getType(node), node.getId(), creator
                 ? Direction.OUT
                 : toDirection(kind));
-            assert kind.isParam();
+            assert kind.has(Category.PARAM);
             assert !creator || toDirection(kind) != Direction.IN;
             this.node = node;
             this.creator = creator;

@@ -18,8 +18,8 @@ package nl.utwente.groove.gui.jgraph;
 
 import java.util.Iterator;
 
+import nl.utwente.groove.grammar.aspect.Aspect;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
-import nl.utwente.groove.grammar.aspect.AspectKind;
 
 /**
  * Instantiation of a {@link JCell} with an {@link AspectJObject}
@@ -32,7 +32,7 @@ public interface AspectJCell extends JCell<AspectGraph> {
     public Iterator<? extends AspectJCell> getContext();
 
     /** Returns the aspect kind of the element wrapped in this cell. */
-    AspectKind getAspect();
+    Aspect.Map getAspects();
 
     /** Returns the user object of this cell, with the given type. */
     AspectJObject getUserObject();

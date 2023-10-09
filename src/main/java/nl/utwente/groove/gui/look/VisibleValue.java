@@ -22,9 +22,9 @@ import java.util.Iterator;
 
 import org.eclipse.jdt.annotation.NonNull;
 
-import nl.utwente.groove.grammar.aspect.Aspect;
+import nl.utwente.groove.grammar.aspect.AspectContent.ExprContent;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
-import nl.utwente.groove.grammar.aspect.AspectKind;
+import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
@@ -105,9 +105,8 @@ public class VisibleValue implements VisualValue<Boolean> {
 
     private boolean getAspectVertexValue(AspectJGraph jGraph, AspectJVertex jVertex) {
         AspectNode node = jVertex.getNode();
-        AspectKind aspect = jVertex.getAspect();
         // remark nodes are always visible
-        if (aspect == REMARK) {
+        if (node.has(REMARK)) {
             return true;
         }
         // anything explicitly filtered by the level tree is not visible
@@ -116,16 +115,17 @@ public class VisibleValue implements VisualValue<Boolean> {
             return false;
         }
         // identified nodes, parameter nodes, quantifiers and error nodes are always visible
-        if (node.hasId() || node.hasPar() || aspect.isQuantifier() || jVertex.hasErrors()) {
+        if (node.hasId() || node.has(Category.PARAM) || node.has(Category.NESTING)
+            || jVertex.hasErrors()) {
             return true;
         }
         // anything declared invisible by the super method is not visible
         if (!getBasicVertexValue(jGraph, jVertex)) {
             return false;
         }
-        Aspect attr = node.getAttrAspect();
-        // explicit product nodes should be visible
-        if (attr == null || !attr.getKind().hasSort()) {
+        // All non-sorted nodes should be visible
+        var sortAspect = node.get(Category.SORT);
+        if (sortAspect == null) {
             return true;
         }
         // in addition, value nodes or data type nodes may be filtered
@@ -138,7 +138,11 @@ public class VisibleValue implements VisualValue<Boolean> {
         }
         // we are now sure that the underlying node has a data type;
         // variable nodes should be shown
-        if (!attr.hasContent()) {
+        if (!sortAspect.hasContent()) {
+            return true;
+        }
+        // non-constant expressions should be shown
+        if ((sortAspect.getContent() instanceof ExprContent e) && !(e.get().hasConstant())) {
             return true;
         }
         // any regular expression edge on the node makes it visible

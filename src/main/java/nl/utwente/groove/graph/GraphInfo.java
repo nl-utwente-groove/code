@@ -108,16 +108,6 @@ public class GraphInfo extends DefaultFixable {
         this.data.put(PROPERTIES_KEY, new GraphProperties(properties));
     }
 
-    /**
-     * Copies another graph info object into this one, overwriting all existing
-     * keys but preserving those that are not overwritten.
-     */
-    private void load(GraphInfo other) {
-        setErrors(other.getErrors());
-        setProperties(other.getProperties());
-        setLayoutMap(other.getLayoutMap());
-    }
-
     @Override
     public boolean setFixed() {
         boolean result = super.setFixed();
@@ -151,14 +141,19 @@ public class GraphInfo extends DefaultFixable {
             // copy all the info
             GraphInfo sourceInfo = source.getInfo();
             GraphInfo targetInfo = target.getInfo();
-            targetInfo.load(sourceInfo);
             if (elementMap != null) {
                 // modify the layout map using the element map
                 LayoutMap sourceLayoutMap = sourceInfo.getLayoutMap();
                 targetInfo.setLayoutMap(sourceLayoutMap.afterInverse(elementMap));
                 FormatErrorSet sourceErrors = sourceInfo.getErrors();
-                targetInfo.setErrors(sourceErrors.transfer(elementMap.nodeMap())
-                    .transfer(elementMap.edgeMap()));
+                targetInfo
+                    .getErrors()
+                    .addAll(sourceErrors
+                        .transfer(elementMap.nodeMap())
+                        .transfer(elementMap.edgeMap()));
+            } else {
+                targetInfo.setErrors(sourceInfo.getErrors());
+                targetInfo.setLayoutMap(sourceInfo.getLayoutMap());
             }
             // copy rather than clone the graph properties
             GraphProperties properties = sourceInfo.getProperties();

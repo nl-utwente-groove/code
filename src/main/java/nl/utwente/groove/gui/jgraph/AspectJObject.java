@@ -16,11 +16,12 @@
  */
 package nl.utwente.groove.gui.jgraph;
 
+import static nl.utwente.groove.grammar.aspect.AspectKind.REMARK;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
 import nl.utwente.groove.grammar.aspect.AspectEdge;
-import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.aspect.AspectLabel;
 import nl.utwente.groove.gui.look.MultiLabel;
 import nl.utwente.groove.gui.look.MultiLabel.Direct;
@@ -102,10 +103,10 @@ public class AspectJObject extends ArrayList<String> {
      * @param edge the edge from which to load the user object
      */
     private void addEdge(AspectEdge edge) {
-        if (edge.getKind() == AspectKind.REMARK) {
+        if (edge.has(REMARK)) {
             // Add remark prefixes to every line of the comment
             for (String line : edge.label().getInnerText().split("\n")) {
-                add(AspectKind.REMARK.getPrefix() + line);
+                add(REMARK.getPrefix() + line);
             }
         } else {
             add(edge.label().toString());

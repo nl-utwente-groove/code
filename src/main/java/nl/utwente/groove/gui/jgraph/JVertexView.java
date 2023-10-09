@@ -678,8 +678,6 @@ public class JVertexView extends VertexView {
                 if (this.idAdornHeight > 0) {
                     result.top += 2;
                 }
-                result.right += Math
-                    .max(0, this.idAdornWidth - result.right - this.lineWidth - textWidth / 2 - 2);
                 break;
             case OVAL:
                 result.left += JAttr.STRONG_ARC_SIZE / 6;
@@ -688,6 +686,8 @@ public class JVertexView extends VertexView {
             default:
                 // no adjustments
             }
+            result.right += Math
+                .max(0, this.idAdornWidth - result.right - this.lineWidth - textWidth / 2 - 2);
             return result;
         }
 
