@@ -512,6 +512,7 @@ public class Condition implements Fixable {
                 for (RuleEdge inEdge : getPattern().inEdgeSet(node)) {
                     RuleLabel inLabel = inEdge.label();
                     if (!inLabel.isEmpty() && !inLabel.isNeg()) {
+                        // this is a field value of some real node
                         isResolved = true;
                         break;
                     }
