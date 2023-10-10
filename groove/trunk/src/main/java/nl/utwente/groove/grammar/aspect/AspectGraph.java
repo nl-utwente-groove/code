@@ -30,7 +30,8 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -210,8 +211,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     private void doNormalise(AspectGraphMorphism map) {
         assert !isFixed();
         // identify and remove let- and test-edges
-        Set<AspectEdge> letEdges = new HashSet<>();
-        Set<AspectEdge> testEdges = new HashSet<>();
+        Set<AspectEdge> letEdges = new LinkedHashSet<>();
+        Set<AspectEdge> testEdges = new LinkedHashSet<>();
+        Map<AspectNode,Set<? extends AspectEdge>> exprNodes = new LinkedHashMap<>();
         for (AspectEdge edge : edgeSet()) {
             if (edge.isTest()) {
                 testEdges.add(edge);
@@ -219,8 +221,15 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
                 letEdges.add(edge);
             }
         }
+        for (var node : nodeSet()) {
+            if (node.hasExpression()) {
+                exprNodes.put(node, inEdgeSet(node));
+            }
+        }
         removeEdgeSet(letEdges);
         removeEdgeSet(testEdges);
+        exprNodes.values().forEach(es -> removeEdgeSet(es));
+        removeNodeSet(exprNodes.keySet());
         this.normal = true;
         // parse the nodes and edges, to set the derived aspect information
         nodeSet().forEach(AspectNode::setParsed);
@@ -263,6 +272,19 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
                 outcome.set(Aspect.newAspect(Constant.instance(!nac), getRole()));
             } catch (FormatException e) {
                 errors.addAll(e.getErrors());
+            }
+        }
+        // add expressions for the expression nodes
+        for (var ne : exprNodes.entrySet()) {
+            try {
+                AspectNode oldNode = ne.getKey();
+                AspectNode newNode = addNode(oldNode.getNumber());
+                AspectNode level = oldNode.getLevelNode();
+                addNesting(newNode, level);
+                AspectNode outcome = addExpression(level, newNode, oldNode.getExpression());
+                ne.getValue().forEach(e -> addEdge(e.source(), e.label(), outcome).setParsed());
+            } catch (FormatException exc) {
+                errors.addAll(exc.getErrors());
             }
         }
         addErrors(errors);
@@ -487,10 +509,18 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         if (source.has(EMBARGO)) {
             result.set(EMBARGO.getAspect());
         }
-        if (level != null) {
-            addEdge(result, NestedValue.AT.toString(), level).setParsed();
-        }
+        addNesting(result, level);
         return result;
+    }
+
+    /** Adds nesting to a given node.
+     * @param level the nesting level to be added
+     * @param node node to which the nesting should be added
+     */
+    private void addNesting(@NonNull AspectNode node, @Nullable AspectNode level) {
+        if (level != null) {
+            addEdge(node, NestedValue.AT.toString(), level).setParsed();
+        }
     }
 
     /** Returns the nesting level on which an expression can be evaluated, in terms
