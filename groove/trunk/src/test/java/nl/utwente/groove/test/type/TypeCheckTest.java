@@ -20,9 +20,9 @@ import java.io.IOException;
 import java.util.EnumSet;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-import org.junit.Assert;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.NamedResourceModel;
@@ -37,28 +37,16 @@ public class TypeCheckTest {
     private static final String ERR_PREFIX = "ERR-";
     private static final String OK_PREFIX = "OK-";
 
-    /** Tests type specialisation. */
+    /** Tests attribute typing. */
     @Test
-    public void testTypeSpecialisation() {
-        test("type-specialisation");
+    public void testAttributes() {
+        test("attributes");
     }
 
-    /** Tests abstract node and edge types and edge shadowing. */
+    /** Tests containment typing. */
     @Test
-    public void testShadow() {
-        test("shadow");
-    }
-
-    /** Tests regular expression typing. */
-    @Test
-    public void testRegExpr() {
-        test("regexpr");
-    }
-
-    /** Tests wildcard expression typing. */
-    @Test
-    public void testWildcards() {
-        test("wildcards");
+    public void testContainment() {
+        test("containment");
     }
 
     /** Tests expression typing. */
@@ -67,10 +55,10 @@ public class TypeCheckTest {
         test("expressions");
     }
 
-    /** Tests for regression. */
+    /** Tests multiplicity typing. */
     @Test
-    public void testRegression() {
-        test("regression");
+    public void testMult() {
+        test("mult");
     }
 
     /** Tests node identity constraints. */
@@ -85,18 +73,46 @@ public class TypeCheckTest {
         test("quantification");
     }
 
+    /** Tests regular expression typing. */
+    @Test
+    public void testRegExpr() {
+        test("regexpr");
+    }
+
+    /** Tests for regression. */
+    @Test
+    public void testRegression() {
+        test("regression");
+    }
+
+    /** Tests abstract node and edge types and edge shadowing. */
+    @Test
+    public void testShadow() {
+        test("shadow");
+    }
+
+    /** Tests type specialisation. */
+    @Test
+    public void testTypeSpecialisation() {
+        test("type-specialisation");
+    }
+
+    /** Tests wildcard expression typing. */
+    @Test
+    public void testWildcards() {
+        test("wildcards");
+    }
+
     /** Tests all rules in a named grammar (to be loaded from {@link #INPUT_DIR}). */
     private void test(String grammarName) {
         try {
             GrammarModel grammarView = Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
-            for (ResourceKind kind : EnumSet.of(ResourceKind.RULE,
-                ResourceKind.HOST,
-                ResourceKind.TYPE)) {
+            for (ResourceKind kind : EnumSet
+                .of(ResourceKind.RULE, ResourceKind.HOST, ResourceKind.TYPE)) {
                 for (Map.Entry<QualName,? extends NamedResourceModel<?>> entry : grammarView
                     .getResourceMap(kind)
                     .entrySet()) {
-                    String name = entry.getKey()
-                        .last();
+                    String name = entry.getKey().last();
                     NamedResourceModel<?> model = entry.getValue();
                     if (name.startsWith(OK_PREFIX)) {
                         testCorrect(model);
@@ -112,8 +128,7 @@ public class TypeCheckTest {
 
     /** Tests that a given rule has no errors. */
     private void testCorrect(NamedResourceModel<?> model) {
-        String kindName = model.getKind()
-            .getName();
+        String kindName = model.getKind().getName();
         QualName modelName = model.getQualName();
         try {
             model.toResource();
@@ -126,8 +141,7 @@ public class TypeCheckTest {
 
     /** Tests that a given rule has errors. */
     private void testErroneous(NamedResourceModel<?> model) {
-        String kindName = model.getKind()
-            .getName();
+        String kindName = model.getKind().getName();
         QualName modelName = model.getQualName();
         try {
             model.toResource();

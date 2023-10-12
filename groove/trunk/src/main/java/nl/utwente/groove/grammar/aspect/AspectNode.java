@@ -20,8 +20,7 @@ import static nl.utwente.groove.grammar.aspect.AspectKind.ADDER;
 import static nl.utwente.groove.grammar.aspect.AspectKind.COLOR;
 import static nl.utwente.groove.grammar.aspect.AspectKind.CREATOR;
 import static nl.utwente.groove.grammar.aspect.AspectKind.EMBARGO;
-import static nl.utwente.groove.grammar.aspect.AspectKind.FORALL;
-import static nl.utwente.groove.grammar.aspect.AspectKind.FORALL_POS;
+import static nl.utwente.groove.grammar.aspect.AspectKind.NESTED;
 import static nl.utwente.groove.grammar.aspect.AspectKind.PARAM_ASK;
 import static nl.utwente.groove.grammar.aspect.AspectKind.PARAM_IN;
 import static nl.utwente.groove.grammar.aspect.AspectKind.PRODUCT;
@@ -34,7 +33,6 @@ import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -48,7 +46,6 @@ import nl.utwente.groove.grammar.aspect.AspectContent.ConstContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.ExprContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.LabelPatternContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.NestedValue;
-import nl.utwente.groove.grammar.aspect.AspectContent.NestedValueContent;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.rule.OperatorNode;
 import nl.utwente.groove.grammar.rule.VariableNode;
@@ -56,7 +53,6 @@ import nl.utwente.groove.grammar.type.LabelPattern;
 import nl.utwente.groove.graph.ANode;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.plain.PlainLabel;
-import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.line.Line;
@@ -513,42 +509,44 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     /** The edge label pattern of this node, if any. */
     private LabelPattern edgePattern;
 
-    /** Returns an outgoing nesting edge with a given nested value, if any. */
-    private AspectEdge getNestedEdge(NestedValue value) {
-        return this.nestedEdgeMap.get().get(value);
-    }
-
-    /** Creates a mapping from nested values to outgoing edges with that value. */
-    private Map<NestedValue,AspectEdge> createNestedEdgeMap() {
-        var result = new EnumMap<NestedValue,AspectEdge>(NestedValue.class);
-        getGraph().outEdgeSet(this).stream().filter(e -> e.has(AspectKind.NESTED)).forEach(e -> {
-            var value = ((NestedValueContent) e.getContent(AspectKind.NESTED)).get();
-            result.put(value, e);
-        });
-        return result;
-    }
-
-    /** Mapping from nested values to outgoing edges with that value. */
-    private LazyFactory<Map<NestedValue,AspectEdge>> nestedEdgeMap
-        = LazyFactory.instance(this::createNestedEdgeMap);
+    /** Mapping from nested values to targets of outgoing edges with that value. */
+    private Map<NestedValue,AspectEdge> nestedMap = new EnumMap<>(NestedValue.class);
 
     /** Sets an outgoing edge with {@link AspectKind#NESTED} aspect. */
     void setNestingEdge(AspectEdge edge) throws FormatException {
         assert this == edge.source();
-        var nestedContent = (NestedValueContent) edge.getContent(AspectKind.NESTED);
-        assert nestedContent != null;
-        switch (nestedContent.get()) {
-        case AT -> setLevelEdge(edge);
-        case COUNT -> setMatchCount(edge);
-        case IN -> setParentEdge(edge);
-        default -> throw Exceptions.UNREACHABLE;
+        var value = (NestedValue) edge.getContent(NESTED).get();
+        // check for circularity in the nesting hierarchy
+        if (value == NestedValue.IN) {
+            var ancestors = new HashSet<AspectEdge>();
+            var traverse = edge;
+            while (traverse != null && traverse.target() != this) {
+                ancestors.add(traverse);
+                traverse = traverse.target().getNestedEdge(value);
+            }
+            if (traverse != null) {
+                ancestors.add(traverse);
+                throw new FormatException("Circularity in the nesting hierarchy", ancestors);
+            }
         }
+        var old = this.nestedMap.put(value, edge);
+        if (old != null) {
+            throw new FormatException("Duplicate '%s'-edges", value, edge, old, this);
+        }
+    }
+
+    /** Resets an outgoing edge with {@link AspectKind#NESTED} aspect.
+     */
+    void resetNestingEdge(AspectEdge edge) {
+        assert this == edge.source();
+        assert edge.has(NESTED);
+        var value = (NestedValue) edge.getContent(NESTED).get();
+        this.nestedMap.remove(value);
     }
 
     /** Sets the nesting level edge of this node.
      * @param edge outgoing parent edge of type {@link NestedValue#AT}
      * @throws FormatException if the level edge is incompatible with other aspects
-     */
     private void setLevelEdge(AspectEdge edge) throws FormatException {
         if (has(Category.NESTING)) {
             throw new FormatException("Source node of %s-edge should be rule element", edge.label(),
@@ -559,17 +557,28 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         }
         this.levelEdge = edge;
     }
-
-    /**
-     * Retrieves the edge to the nesting level of this aspect node.
-     * Only non-{@code null} if this node is a rule node.
      */
-    public @Nullable AspectEdge getLevelEdge() {
-        return this.levelEdge;
+
+    /** Returns an outgoing nesting edge with a given nested value, if any. */
+    private @Nullable AspectEdge getNestedEdge(NestedValue value) {
+        return this.nestedMap.get(value);
     }
 
-    /** The edge pointing to the nesting level of this node, if any. */
-    private @Nullable AspectEdge levelEdge;
+    /** Returns the target node of a given nested value edge, if any. */
+    private @Nullable AspectNode getNested(NestedValue value) {
+        var edge = getNestedEdge(value);
+        return edge == null
+            ? null
+            : edge.target();
+    }
+
+    /**
+     * Retrieves the nesting level of this aspect node.
+     * Only non-{@code null} if this node is a rule node.
+     */
+    public @Nullable AspectNode getLevelNode() {
+        return getNested(NestedValue.AT);
+    }
 
     /**
      * Returns the identifier of the nesting level, if any.
@@ -581,21 +590,9 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
             : levelNode.getId();
     }
 
-    /**
-     * Retrieves the nesting level of this aspect node.
-     * Only non-{@code null} if this node is a rule node.
-     */
-    public @Nullable AspectNode getLevelNode() {
-        AspectEdge edge = getLevelEdge();
-        return edge == null
-            ? null
-            : edge.target();
-    }
-
     /** Sets the nesting level parent of this node.
      * @param edge outgoing parent edge of type {@link NestedValue#IN}
      * @throws FormatException if the parent edge is incompatible with other aspects
-     */
     private void setParentEdge(AspectEdge edge) throws FormatException {
         if (!has(Category.NESTING)) {
             throw new FormatException("Source node of %s-edge should be quantifier", edge.label());
@@ -616,34 +613,19 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         }
         this.parentEdge = edge;
     }
-
-    /**
-     * Retrieves edge to the parent of this node in the nesting hierarchy.
-     * Only non-{@code null} if this node is a quantifier node.
      */
-    public @Nullable AspectEdge getParentEdge() {
-        return this.parentEdge;
-    }
-
-    /** The node pointing to the parent of this node in the nesting
-     * hierarchy, if any. */
-    private @Nullable AspectEdge parentEdge;
 
     /**
      * Retrieves the parent of this node in the nesting hierarchy.
      * Only non-{@code null} if this node is a quantifier node.
      */
     public @Nullable AspectNode getParentNode() {
-        AspectEdge edge = getParentEdge();
-        return edge == null
-            ? null
-            : edge.target();
+        return getNested(NestedValue.IN);
     }
 
     /** Adds a match count edge to this (quantifier) node.
      * @param edge  outgoing count edge of type {@link NestedValue#COUNT}
      * @throws FormatException if the count edge is incompatible with other aspects
-     */
     private void setMatchCount(AspectEdge edge) throws FormatException {
         if (!has(FORALL) && !has(FORALL_POS)) {
             throw new FormatException("Source node of %s-edge should be universal quantifier",
@@ -651,6 +633,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         }
         this.matchCountList.add(edge.target());
     }
+     */
 
     /**
      * Retrieves a nodes encapsulating the match count for this node.
@@ -658,20 +641,6 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
      * if there are none such
      */
     public AspectNode getMatchCount() {
-        var matchCountList = getMatchCountList();
-        return matchCountList.isEmpty()
-            ? null
-            : matchCountList.get(0);
+        return getNested(NestedValue.COUNT);
     }
-
-    /**
-     * Retrieves the nodes encapsulating the match count for this node.
-     * Only non-empty if this node is a universal quantifier node.
-     */
-    public List<AspectNode> getMatchCountList() {
-        return this.matchCountList;
-    }
-
-    /** The aspect nodes representing the match count of a universal quantifier. */
-    private List<AspectNode> matchCountList = new ArrayList<>();
 }

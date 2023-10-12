@@ -18,6 +18,7 @@ package nl.utwente.groove.util.parse;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -92,6 +93,10 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
             this.numbers.add(i);
         } else if (par instanceof Object[] a) {
             for (Object subpar : a) {
+                addContext(subpar);
+            }
+        } else if (par instanceof Collection<?> c) {
+            for (Object subpar : c) {
                 addContext(subpar);
             }
         } else if (par instanceof Rule r) {

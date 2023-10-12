@@ -61,7 +61,7 @@ public class ContainmentChecker implements TypeChecker {
 
     private final TypeGraph typeGraph;
 
-    /** The set of node types for which we want to check a multiplicity. */
+    /** The set of node types for which we want to check containment. */
     private final List<TypeEdge> checks;
 
     @Override
@@ -72,10 +72,10 @@ public class ContainmentChecker implements TypeChecker {
     @Override
     public FormatErrorSet check(HostGraph host) {
         FormatErrorSet result = new FormatErrorSet();
-        Map<Record,List<Record>> connect = buildConnect(host);
+        Connect connect = buildConnect(host);
         while (!connect.isEmpty()) {
-            for (HostNode start : detectCycle(connect)) {
-                result.add("Containment cycle starting at %s", start);
+            for (var cycle : detectCycle(connect)) {
+                result.add("Containment cycle in graph", cycle);
             }
         }
         return result;
@@ -84,18 +84,18 @@ public class ContainmentChecker implements TypeChecker {
     /**
      * Builds the connection map for a given host graph.
      */
-    private Map<Record,List<Record>> buildConnect(HostGraph host) {
+    private Connect buildConnect(HostGraph host) {
         this.recordMap.clear();
-        Map<Record,List<Record>> connect = new LinkedHashMap<>();
+        Connect connect = new Connect();
         for (TypeEdge check : this.checks) {
             Set<? extends HostEdge> edges = host.edgeSet(check.label());
             for (HostEdge edge : edges) {
                 Record source = getRecord(edge.source());
-                List<Record> targets = connect.get(source);
+                List<Link> targets = connect.get(source);
                 if (targets == null) {
                     connect.put(source, targets = new ArrayList<>());
                 }
-                targets.add(getRecord(edge.target()));
+                targets.add(new Link(edge, getRecord(edge.target())));
             }
         }
         return connect;
@@ -115,61 +115,82 @@ public class ContainmentChecker implements TypeChecker {
      * Detects the set of SCCs reachable from the first element of the
      * connection map, and returns one representative from each SCC.
      */
-    private List<HostNode> detectCycle(Map<Record,List<Record>> connect) {
+    private List<List<HostEdge>> detectCycle(Connect connect) {
         if (!connect.isEmpty()) {
             this.result.clear();
             this.stack.clear();
             this.pool.clear();
             this.index = 0;
-            strongConnect(connect, connect.keySet().iterator().next());
-            connect.keySet().removeAll(this.pool);
+            Link start = new Link(connect.keySet().iterator().next());
+            findSCCsFrom(connect, start);
+            this.pool.forEach(connect::remove);
         }
         return this.result;
     }
 
-    private void strongConnect(Map<Record,List<Record>> connect, Record record) {
-        record.index = this.index;
-        record.lowlink = this.index;
+    /** Finds the SCCs reachable from the target of a given link, using DFS. */
+    private void findSCCsFrom(Connect connect, Link link) {
+        Record target = link.target();
+        target.index = this.index;
+        target.lowlink = this.index;
+        // make sure indices are unique
         this.index++;
-        this.stack.push(record);
-        this.pool.add(record);
+        this.stack.push(link);
+        this.pool.add(target);
 
-        List<Record> neighbours = connect.get(record);
-
-        if (neighbours != null) {
-            for (Record neighbour : neighbours) {
+        List<Link> outs = connect.get(target);
+        if (outs != null) {
+            for (Link out : outs) {
+                Record neighbour = out.target();
                 if (neighbour.index < 0) {
-                    strongConnect(connect, neighbour);
-                    record.lowlink = Math.min(record.lowlink, neighbour.lowlink);
+                    findSCCsFrom(connect, out);
+                    if (neighbour.lowlink < target.lowlink) {
+                        target.lowlink = neighbour.lowlink;
+                        target.lowlinkSource = neighbour.lowlinkSource;
+                    }
                 } else if (this.pool.contains(neighbour)) {
-                    record.lowlink = Math.min(record.lowlink, neighbour.index);
+                    if (neighbour.index < target.lowlink) {
+                        target.lowlink = neighbour.index;
+                        target.lowlinkSource = out.edge();
+                    }
                 }
             }
         }
 
-        if (record.lowlink == record.index) {
-            Record neighbor = null;
-            int size = 0;
-            while (record != neighbor) {
-                neighbor = this.stack.pop();
-                size++;
-                this.pool.remove(neighbor);
-                connect.remove(neighbor);
+        if (target.lowlink == target.index) {
+            Link next = this.stack.pop();
+            Record neighbour = next.target();
+            var cycle = new ArrayList<HostEdge>();
+            boolean first = true;
+            while (neighbour != target) {
+                if (first) {
+                    cycle.add(neighbour.lowlinkSource);
+                    first = false;
+                }
+                cycle.add(next.edge());
+                // keep the pool in sync with the stack
+                this.pool.remove(neighbour);
+                connect.remove(neighbour);
+                next = this.stack.pop();
+                neighbour = next.target();
             }
-            if (size > 1) {
-                this.result.add(record.node);
+            // keep the pool in sync with the stack
+            this.pool.remove(neighbour);
+            connect.remove(neighbour);
+            if (cycle.size() > 1) {
+                this.result.add(cycle);
             }
         }
     }
 
     /** Current index in the search. */
     private int index;
-    /** Search stack of records. */
-    private final Stack<Record> stack = new Stack<>();
+    /** Search stack of links. */
+    private final Stack<Link> stack = new Stack<>();
     /** Set representation of {@link #stack} for efficiency of membership test. */
     private final Set<Record> pool = new HashSet<>();
-    /** Collected list of roots. */
-    private final List<HostNode> result = new ArrayList<>();
+    /** Collected list of cycles. */
+    private final List<List<HostEdge>> result = new ArrayList<>();
 
     /** Record for a node during the search. */
     static private class Record {
@@ -205,8 +226,25 @@ public class ContainmentChecker implements TypeChecker {
             return "Record[" + this.node + "," + this.index + "," + this.lowlink + "]";
         }
 
+        /** Node on which this record is based. */
         private final HostNode node;
+        /** Lowest index of the reachable records. */
         int lowlink = -1;
+        /** Edge whose target gave rise to index {@link #lowlink}.
+         * This is the last edge in the cycle. */
+        HostEdge lowlinkSource;
+        /** Index of this record. */
         int index = -1;
+    }
+
+    static private record Link(HostEdge edge, Record target) {
+        Link(Record record) {
+            this(null, record);
+        }
+    }
+
+    /** Connection structure. */
+    static private class Connect extends LinkedHashMap<Record,List<Link>> {
+        // empty
     }
 }

@@ -21,6 +21,7 @@ import static nl.utwente.groove.grammar.aspect.AspectKind.COLOR;
 import static nl.utwente.groove.grammar.aspect.AspectKind.CREATOR;
 import static nl.utwente.groove.grammar.aspect.AspectKind.EMBARGO;
 import static nl.utwente.groove.grammar.aspect.AspectKind.LET_NEW;
+import static nl.utwente.groove.grammar.aspect.AspectKind.NESTED;
 import static nl.utwente.groove.graph.GraphRole.HOST;
 import static nl.utwente.groove.graph.GraphRole.RULE;
 import static nl.utwente.groove.graph.GraphRole.TYPE;
@@ -301,6 +302,12 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
                 .forEach(image::set);
             map.putNode(node, image);
             var inEdges = new LinkedList<>(inEdgeSet(node));
+            // remove the incoming edges from the graph as well as from their source nodes
+            inEdges
+                .stream()
+                .filter(e -> e.has(NESTED))
+                .forEach(e -> e.source().resetNestingEdge(e));
+            removeEdgeSet(inEdges);
             for (var inEdge : inEdges) {
                 var inEdgeImage = addEdge(inEdge.source(), inEdge.label(), image);
                 inEdgeImage.setParsed();
@@ -310,7 +317,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
                     map.putEdge(inEdge, inEdgeImage);
                 }
             }
-            removeEdgeSet(inEdges);
             var outEdges = new LinkedList<>(outEdgeSet(node));
             for (var outEdge : outEdges) {
                 var outEdgeImage = addEdge(image, outEdge.label(), outEdge.target());

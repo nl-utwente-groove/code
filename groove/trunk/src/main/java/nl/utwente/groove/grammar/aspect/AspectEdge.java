@@ -361,6 +361,10 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 if (!target.has(INT)) {
                     throw new FormatException("Target node of %s-edge should be int-node", label());
                 }
+                if (!source().has(Category.NESTING, AspectKind::isForall)) {
+                    throw new FormatException("Source node of %s-edge should be universal quantifier",
+                                              label());
+                }
             } else if (isOperator()) {
                 Sort operSort = getOperator().getResultType();
                 AspectKind targetSort = target.getKind(Category.SORT);
