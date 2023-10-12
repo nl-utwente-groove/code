@@ -14,28 +14,20 @@
  *
  * $Id$
  */
-package nl.utwente.groove.grammar.type;
+package nl.utwente.groove.util;
 
-import nl.utwente.groove.grammar.host.HostGraph;
-import nl.utwente.groove.util.Checker;
+import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
- * Checker for type constraints in host graphs that cannot be statically prevented.
+ * Interface for graph checkers
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface TypeChecker extends Checker<HostGraph> {
-    /** Returns the type graph specifying the constraints being checked. */
-    TypeGraph getTypeGraph();
-
-    /** Indicates whether this checker actually performs any test. */
-    boolean isTrivial();
-
-    /**
-     * Checks a given host graph for violations, and returns the errors
-     * found.
+public interface Checker<G extends Graph> {
+    /** Checks a given graph.
+     * @param graph the graph to be checked
+     * @return the set of errors found in {@code graph} by this checker
      */
-    @Override
-    FormatErrorSet check(HostGraph graph);
+    FormatErrorSet check(G graph);
 }
