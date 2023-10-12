@@ -19,9 +19,9 @@ package nl.utwente.groove.test.type;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-import org.junit.Assert;
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
@@ -34,27 +34,28 @@ public class DynamicConstraintTest {
     /** Location of the samples. */
     static public final String INPUT_DIR = "junit/types";
 
-    /** Tests type multiplicities. */
+    /** Tests type containment. */
     @Test
     public void testContainment() {
-        testError("containment", "start-cycle");
-        test("containment", "start-no-cycle", 16, 20, 8);
+        testError("containment", "ERR-start-cycle");
+        test("containment", "OK-start-no-cycle", 16, 20, 8);
     }
 
     /** Tests type multiplicities. */
     @Test
     public void testMultiplicities() {
-        testError("mult", "start-violates-in");
-        testError("mult", "start-violates-out");
-        test("mult", "start-correct-in", 3, 3, 2);
-        test("mult", "start-correct-out", 3, 3, 2);
+        testError("mult", "ERR-start-violates-in");
+        testError("mult", "ERR-start-violates-out");
+        test("mult", "OK-start-correct-in", 3, 3, 2);
+        test("mult", "OK-start-correct-out", 3, 3, 2);
     }
 
     private void testError(String grammarName, String startGraphName) {
         try {
             loadGTS(grammarName, startGraphName);
-            Assert.fail("Loading " + grammarName + " with start graph " + startGraphName
-                + " should fail but didn't");
+            Assert
+                .fail("Loading " + grammarName + " with start graph " + startGraphName
+                    + " should fail but didn't");
         } catch (Exception exc) {
             // expected behaviour
         }
@@ -69,7 +70,7 @@ public class DynamicConstraintTest {
      * @param errorCount expected number of error states
      */
     private void test(String grammarName, String startGraphName, int nodeCount, int edgeCount,
-        int errorCount) {
+                      int errorCount) {
         try {
             GTS lts = loadGTS(grammarName, startGraphName);
 
