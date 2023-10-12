@@ -184,9 +184,11 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                     setArgument(((IntegerContent) content).get());
                 } else if (aspect.has(TEST)) {
                     setPredicateTree(((ExprContent) content).get());
+                    getGraph().setNonNormal();
                 } else {
                     assert aspect.has(LET) || aspect.has(LET_NEW);
                     setAssignTree(((ExprContent) content).get());
+                    getGraph().setNonNormal();
                 }
                 break;
             case SORT:
@@ -237,8 +239,8 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             if (!has(NESTED) && !has(REMARK) && !has(TEST)) {
                 set(NESTED.newAspect(getInnerText(), getGraphRole()));
             }
-        } else if (hasGraphRole(RULE) && !has(REMARK) && !has(Category.NESTING, k -> !k.isQuantifier())
-            && !has(Category.ROLE)) {
+        } else if (hasGraphRole(RULE) && !has(REMARK)
+            && !has(Category.NESTING, k -> !k.isQuantifier()) && !has(Category.ROLE)) {
             // infer a role from the source or target node
             AspectKind sourceRole = null;
             AspectKind targetRole = null;
@@ -268,6 +270,9 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             }
             set(inferredRole.getAspect());
         }
+        if (hasGraphRole(RULE) && (has(ARGUMENT) || has(Category.SORT))) {
+            source().set(AspectKind.PRODUCT.getAspect());
+        }
         // check whether the edge should have a label aspect
         boolean hasLabel = switch (getGraphRole()) {
         case HOST -> !has(REMARK) && !has(Category.ATTR);
@@ -284,10 +289,6 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         AspectNode source = source();
         if (has(NESTED)) {
             source.setNestingEdge(this);
-        } else if (has(ARGUMENT)) {
-            source.addArgument(this);
-        } else if (isOperator()) {
-            source.setOperator(this);
         } else if (has(ABSTRACT) && hasRole(EdgeRole.NODE_TYPE)) {
             source.set(ABSTRACT.getAspect());
         }
@@ -552,7 +553,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 case RULE:
                     // this is an attribute edge displayed as a node label
                     result = result.append(Util.THIN_SPACE + POINTS_TO_SYMBOL + Util.THIN_SPACE);
-                    var targetValue = target().getValue();
+                    var targetValue = target().getExpression();
                     assert targetValue != null;
                     result = result.append(targetValue.toLine());
                     break;
@@ -645,7 +646,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         assert isParsed();
         RuleLabel result = null;
         try {
-            if (has(Category.ROLE)) {
+            if (has(Category.ROLE) && has(Category.LABEL)) {
                 result = has(LITERAL)
                     ? new RuleLabel(getInnerText())
                     : new RuleLabel(parse(getInnerText()));

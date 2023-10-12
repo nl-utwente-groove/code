@@ -225,16 +225,16 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
         if (graph != null && graph.isShowValueNodes()) {
             return false;
         }
-        if (getSourceNode().has(Category.SORT)) {
+        if (getSourceNode().hasSort()) {
             return false;
         }
-        if (!getTargetNode().has(Category.SORT)) {
+        if (!getTargetNode().hasSort()) {
             return false;
         }
         if (getTargetNode().has(Category.PARAM)) {
             return false;
         }
-        if (graph != null && !graph.hasGraphRole(GraphRole.TYPE) && !getTargetNode().hasValue()) {
+        if (graph != null && !(getTargetNode().hasValue() || getTargetNode().hasExpression())) {
             return false;
         }
         return true;
