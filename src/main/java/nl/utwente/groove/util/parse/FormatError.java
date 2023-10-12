@@ -258,7 +258,10 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
         return new FormatError(this, par);
     }
 
-    /** Returns a new format error in which the context information is transferred. */
+    /** Returns a new format error in which the context information is transferred.
+     * @param map mapping from the context of this error to the context
+     * of the result error; or {@code null} if there is no mapping
+     */
     public FormatError transfer(Map<?,?> map) {
         FormatError result = new FormatError(toString());
         transferTo(map, result);

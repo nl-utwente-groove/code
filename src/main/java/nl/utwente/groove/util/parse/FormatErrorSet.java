@@ -63,7 +63,10 @@ public class FormatErrorSet extends LinkedHashSet<FormatError> {
         }
     }
 
-    /** Returns a new format error set in which the context information is transferred. */
+    /** Returns a new format error set in which the context information is transferred.
+     * @param map mapping from the context of this error to the context
+     * of the result error; or {@code null} if there is no mapping
+     */
     public FormatErrorSet transfer(Map<?,?> map) {
         FormatErrorSet result = new FormatErrorSet();
         for (FormatError error : this) {

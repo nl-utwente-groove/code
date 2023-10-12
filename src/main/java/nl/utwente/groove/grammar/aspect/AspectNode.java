@@ -29,14 +29,17 @@ import static nl.utwente.groove.grammar.aspect.AspectKind.READER;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Constant;
-import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.syntax.ExprTree;
 import nl.utwente.groove.algebra.syntax.Expression;
@@ -188,6 +191,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
                 }
                 break;
             case SORT:
+                setSort(aspect.getKind().getSort());
                 AspectContent content = aspect.getContent();
                 if (content instanceof ConstContent c) {
                     assert hasGraphRole(GraphRole.HOST);
@@ -241,26 +245,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
                 if (hasId()) {
                     errors.add("Node identifier ('%s') not allowed for product node", getId());
                 }
-                var argNodes = this.argNodes;
-                var operator = this.operator;
-                if (argNodes == null) {
-                    errors.add("Product node has no arguments");
-                } else if (operator == null) {
-                    errors.add("Product node has no operators");
-                } else {
-                    int arity = argNodes.size();
-                    if (arity != operator.getArity()) {
-                        errors
-                            .add("Product node arity %d is incorrect for operator %s", arity,
-                                 operator);
-                    }
-                    for (int i = 0; i < arity; i++) {
-                        AspectNode argNode = this.argNodes.get(i);
-                        if (argNode == null) {
-                            errors.add("Missing product argument %d", i);
-                        }
-                    }
-                }
+                checkSignature(errors);
             }
             if (has(COLOR) && (has(EMBARGO) || has(AspectKind.ERASER))) {
                 errors
@@ -323,33 +308,42 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     /** List of syntax errors in this node. */
     private final FormatErrorSet errors = new FormatErrorSet();
 
-    /** Adds an argument to this node, based on an outgoing argument edge.
-     * This is only correct if this is a {@link AspectKind#PRODUCT} node,
-     * and no argument with this index has yet been added.
-     * @param argEdge the argument to be added
-     * @throws FormatException if the argument is not compatible with other aspects
+    /**
+     * Analyzes the outgoing edge of this (product) node to
+     * compute the arguments and operators.
      */
-    void addArgument(AspectEdge argEdge) throws FormatException {
-        set(PRODUCT.getAspect());
-        var argNodes = this.argNodes;
-        if (argNodes == null) {
-            argNodes = this.argNodes = new ArrayList<>();
+    private void checkSignature(FormatErrorSet errors) {
+        assert has(Status.CHECKING);
+        var outEdges = getGraph().outEdgeSet(this);
+        var argEdges = new HashSet<AspectEdge>();
+        outEdges.stream().filter(AspectEdge::isArgument).forEach(argEdges::add);
+        if (argEdges.isEmpty()) {
+            errors.add("Product node has no arguments");
         }
-        int index = argEdge.getArgument();
-        // extend the list if necessary
-        while (argNodes.size() <= index) {
-            argNodes.add(null);
+        var opEdges = new HashSet<AspectEdge>();
+        outEdges.stream().filter(AspectEdge::isOperator).forEach(opEdges::add);
+        if (opEdges.isEmpty()) {
+            errors.add("Product node has no operators");
         }
-        if (argNodes.get(index) != null) {
-            throw new FormatException("Duplicate %s-edge", argEdge.label());
+        var argEdgeList = new AspectEdge[argEdges.size()];
+        for (var argEdge : argEdges) {
+            int index = argEdge.getArgument();
+            if (argEdgeList[index] != null) {
+                errors.add("Duplicate %s-edge", argEdge.label(), argEdge, argEdgeList[index]);
+            }
+            argEdgeList[index] = argEdge;
         }
-        argNodes.set(index, argEdge.target());
-        // infer target type if an operator edge is already present
-        var operator = getOperator();
-        if (operator != null) {
-            List<Sort> paramTypes = operator.getParamTypes();
-            if (index < paramTypes.size()) {
-                argEdge.target().set(Aspect.getAspect(paramTypes.get(index)));
+        var argNodes = this.argNodes
+            = Arrays.stream(argEdgeList).map(AspectEdge::target).collect(Collectors.toList());
+        var signature = argNodes.stream().map(AspectNode::getSort).collect(Collectors.toList());
+        for (var opEdge : opEdges) {
+            var operator = opEdge.getOperator();
+            assert operator != null;
+            var opSignature = operator.getParamTypes();
+            if (!opSignature.equals(signature)) {
+                errors
+                    .add("Product node signature %s does not equal '%s' signature %s", signature,
+                         operator, opSignature, opEdge);
             }
         }
     }
@@ -369,48 +363,28 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     /** A list of argument types, if this represents a product node. */
     private List<AspectNode> argNodes;
 
-    /** Sets an operator on this node, based on an outgoing operator edge.
-     * This is only correct if this is a {@link AspectKind#PRODUCT} node.
-     * @param opEdge the operator to be added
-     * @throws FormatException if the operator is not compatible with other aspects
-     */
-    void setOperator(AspectEdge opEdge) throws FormatException {
-        var operator = this.operator;
-        var argNodes = this.argNodes;
-        if (operator == null) {
-            this.operator = opEdge.getOperator();
-        } else if (!operator.getParamTypes().equals(opEdge.getOperator().getParamTypes())) {
-            throw new FormatException("Conflicting operator signatures for %s and %s", operator,
-                opEdge.getOperator(), this);
-        } else if (!hasErrors() && argNodes != null) {
-            // only go here if there are no (signature) errors
-            // infer operand types of present argument edges
-            for (int i = 0; i < argNodes.size(); i++) {
-                AspectNode argNode = argNodes.get(i);
-                if (argNode != null) {
-                    Sort paramType = operator.getParamTypes().get(i);
-                    argNode.set(Aspect.getAspect(paramType));
-                }
-            }
-        }
+    /** Sets the sort of this node. */
+    private void setSort(Sort sort) {
+        this.sort = sort;
     }
 
-    /** Returns the first operator registered for this (product) node.
-     * This is stored to check compatibility of source types for the operators.
-     */
-    private @Nullable Operator getOperator() {
-        return this.operator;
+    /** Returns the sort of this node, if any. */
+    public @Nullable Sort getSort() {
+        return this.sort;
     }
 
-    /** The first operator registered for this (product) node. */
-    private @Nullable Operator operator;
+    /** Returns the sort of this node, if any. */
+    public boolean hasSort() {
+        return getSort() != null;
+    }
+
+    private @Nullable Sort sort;
 
     /** Sets the ID of this node.
      * @throws FormatException if the ID has already been set.
      */
     private void setId(String id) throws FormatException {
         this.id = id;
-        getGraph().notifyNodeId(this);
     }
 
     /** Returns the ID of this node, if any. */
@@ -470,9 +444,12 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         return value.toLine();
     }
 
-    /** Sets an expression on this node. */
+    /** Sets an expression on this node.
+     * Also notifies the containing aspect graph that it is no longer normal
+     */
     private void setExprTree(ExprTree exprTree) {
         this.exprTree = exprTree;
+        getGraph().setNonNormal();
     }
 
     /** Returns the expression on this node, if any. */
@@ -535,6 +512,25 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
 
     /** The edge label pattern of this node, if any. */
     private LabelPattern edgePattern;
+
+    /** Returns an outgoing nesting edge with a given nested value, if any. */
+    private AspectEdge getNestedEdge(NestedValue value) {
+        return this.nestedEdgeMap.get().get(value);
+    }
+
+    /** Creates a mapping from nested values to outgoing edges with that value. */
+    private Map<NestedValue,AspectEdge> createNestedEdgeMap() {
+        var result = new EnumMap<NestedValue,AspectEdge>(NestedValue.class);
+        getGraph().outEdgeSet(this).stream().filter(e -> e.has(AspectKind.NESTED)).forEach(e -> {
+            var value = ((NestedValueContent) e.getContent(AspectKind.NESTED)).get();
+            result.put(value, e);
+        });
+        return result;
+    }
+
+    /** Mapping from nested values to outgoing edges with that value. */
+    private LazyFactory<Map<NestedValue,AspectEdge>> nestedEdgeMap
+        = LazyFactory.instance(this::createNestedEdgeMap);
 
     /** Sets an outgoing edge with {@link AspectKind#NESTED} aspect. */
     void setNestingEdge(AspectEdge edge) throws FormatException {

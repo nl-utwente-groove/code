@@ -2523,7 +2523,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             Map<Integer,UnitPar.RulePar> parMap = new HashMap<>();
             int parCount = 0;
             // collect parameter nodes
-            for (AspectNode node : getSource().nodeSet()) {
+            for (AspectNode node : getNormalSource().nodeSet()) {
                 // check if the node is a parameter
                 if (node.has(Category.PARAM)) {
                     AspectContent parContent = node.getContent(Category.PARAM);

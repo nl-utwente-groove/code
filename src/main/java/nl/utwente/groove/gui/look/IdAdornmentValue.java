@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.gui.look;
 
+import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.gui.jgraph.AspectJEdge;
 import nl.utwente.groove.gui.jgraph.AspectJVertex;
@@ -34,7 +35,8 @@ public class IdAdornmentValue extends AspectValue<String> {
         if (jGraph.isShowNodeIdentities()) {
             var role = jGraph.getGraphRole();
             var node = jVertex.getNode();
-            if (role == GraphRole.RULE || role == GraphRole.HOST && !node.hasValue()) {
+            if (role == GraphRole.RULE && (!node.hasId() || !node.has(Category.SORT))
+                || role == GraphRole.HOST && !node.hasValue()) {
                 result = node.toString();
             }
         }

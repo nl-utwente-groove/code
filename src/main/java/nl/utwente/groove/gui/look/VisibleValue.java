@@ -24,6 +24,7 @@ import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.grammar.aspect.AspectContent.ExprContent;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
+import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.graph.Graph;
@@ -142,14 +143,18 @@ public class VisibleValue implements VisualValue<Boolean> {
             return true;
         }
         // non-constant expressions should be shown
-        if ((sortAspect.getContent() instanceof ExprContent e) && !(e.get().hasConstant())) {
+        if ((sortAspect.getContent() instanceof ExprContent e) && !e.get().hasConstant()) {
             return true;
         }
         // any regular expression edge on the node makes it visible
         Iterator<?> edgeIter = jVertex.getPort().edges();
         while (edgeIter.hasNext()) {
             AspectEdge edge = ((AspectJEdge) edgeIter.next()).getEdge();
-            if (edge.getRuleLabel() != null && !edge.getRuleLabel().isAtom()) {
+            if (edge.has(AspectKind.NESTED)) {
+                return true;
+            }
+            var ruleLabel = edge.getRuleLabel();
+            if (ruleLabel != null && !ruleLabel.isAtom()) {
                 return true;
             }
         }
