@@ -68,17 +68,16 @@ public class ContainmentChecker extends CycleChecker<HostGraph,HostEdge> impleme
      */
     @Override
     protected Connect buildConnect(HostGraph host) {
-        clear();
         Connect connect = new Connect();
         for (TypeEdge check : this.checks) {
             Set<? extends HostEdge> edges = host.edgeSet(check.label());
             for (HostEdge edge : edges) {
-                var source = getRecord(edge.source());
+                var source = edge.source();
                 var targets = connect.get(source);
                 if (targets == null) {
                     connect.put(source, targets = new ArrayList<>());
                 }
-                targets.add(newLink(edge, edge.target()));
+                targets.add(newLink(source, edge.target(), edge));
             }
         }
         return connect;
