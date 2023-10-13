@@ -277,13 +277,15 @@ final public class AspectJModel extends JModel<AspectGraph> {
         }
         this.errorMap.clear();
         for (FormatError error : getResourceModel().getErrors()) {
+            var errorObjects = new HashSet<AspectJCell>();
+            this.errorMap.put(error, errorObjects);
             for (Element errorObject : error.getElements()) {
                 AspectJCell errorCell = getJCell(errorObject);
                 if (errorCell == null && errorObject instanceof Edge e) {
                     errorCell = getJCell(e.source());
                 }
                 if (errorCell != null) {
-                    this.errorMap.put(error, errorCell);
+                    errorObjects.add(errorCell);
                     errorCell.getErrors().addError(error, true);
                 }
             }
@@ -305,7 +307,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
      * computed during the last call to {@link #loadGraph(AspectGraph)}
      * or {@link #syncGraph()}.
      */
-    public Map<FormatError,AspectJCell> getErrorMap() {
+    public Map<FormatError,Set<AspectJCell>> getErrorMap() {
         return this.errorMap;
     }
 
@@ -568,7 +570,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
     /** Properties map of the graph being displayed or edited. */
     private GraphProperties properties;
     /** Mapping from errors to affected cells. */
-    private Map<FormatError,AspectJCell> errorMap = new HashMap<>();
+    private Map<FormatError,Set<AspectJCell>> errorMap = new HashMap<>();
     /** The set of used node numbers. */
     private Set<Integer> usedNrs;
     /** Flag indicating that we are loading a new aspect graph,

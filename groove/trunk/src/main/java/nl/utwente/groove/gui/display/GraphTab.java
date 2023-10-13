@@ -28,7 +28,6 @@ import nl.utwente.groove.gui.dialog.GraphPreviewDialog;
 import nl.utwente.groove.gui.dialog.PropertiesTable;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
-import nl.utwente.groove.gui.jgraph.JCell;
 import nl.utwente.groove.gui.jgraph.JModel;
 import nl.utwente.groove.gui.tree.RuleLevelTree;
 import nl.utwente.groove.gui.tree.TypeTree;
@@ -57,9 +56,9 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     protected PropertyChangeListener createErrorListener() {
         return arg -> {
             if (arg != null && getJModel() != null) {
-                JCell<?> errorCell = getJModel().getErrorMap().get(arg.getNewValue());
-                if (errorCell != null) {
-                    getJGraph().setSelectionCell(errorCell);
+                var errorCells = getJModel().getErrorMap().get(arg.getNewValue());
+                if (errorCells != null) {
+                    getJGraph().setSelectionCells(errorCells.toArray());
                 }
             }
         };
@@ -197,9 +196,8 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     public boolean setResource(@Nullable QualName name) {
         AspectJModel jModel = this.jModelMap.get(name);
         if (jModel == null && name != null) {
-            AspectGraph graph = getSimulatorModel().getStore()
-                .getGraphs(getResourceKind())
-                .get(name);
+            AspectGraph graph
+                = getSimulatorModel().getStore().getGraphs(getResourceKind()).get(name);
             if (graph != null) {
                 if (DEBUG) {
                     GraphPreviewDialog.showGraph(graph.normalise(null));
