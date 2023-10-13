@@ -41,7 +41,7 @@ public abstract class CycleChecker<G extends Graph,I> implements Checker<G> {
         this.connect = buildConnect(graph);
         while (!this.connect.isEmpty()) {
             for (var cycle : findCycles()) {
-                result.add("Containment cycle in graph", cycle);
+                result.add(errorMessage(cycle), cycle);
             }
         }
         return result;
@@ -55,10 +55,15 @@ public abstract class CycleChecker<G extends Graph,I> implements Checker<G> {
     /** The connection structure within which we are trying to detect cycles. */
     private Connect connect;
 
-    /** Constructs a new link object with given source, target and info object. */
+    /** Callback method from {@link #buildConnect(Graph)}.
+     * Constructs a new link object with given source, target and info object.
+     */
     protected Link<I> newLink(Node source, Node target, I info) {
         return new Link<>(source, target, info);
     }
+
+    /** Constructs an error message based on a given cycle. */
+    abstract protected String errorMessage(List<I> cycle);
 
     /**
      * Detects the set of SCCs reachable from the first element of the

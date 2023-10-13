@@ -127,16 +127,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
 
     private QualName qualName;
 
-    /** Adds a given list of errors to the errors already stored in this graph. */
-    private void addErrors(Collection<FormatError> errors) {
-        GraphInfo.addErrors(this, errors);
-    }
-
-    /** Adds a given error to the errors already stored in this graph. */
-    private void addError(FormatError error) {
-        GraphInfo.addError(this, error);
-    }
-
     /**
      * Collects search results matching the given label into the given list.
      */
@@ -194,7 +184,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     public AspectGraph normalise(AspectGraphMorphism map) {
         assert isFixed();
         AspectGraph result;
-        if (this.normal) {
+        if (this.normal || hasErrors()) {
             result = this;
         } else {
             result = clone();
@@ -439,7 +429,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         String ownerName = expr.getTarget();
         if (ownerName == null || ownerName.equals(Keywords.SELF)) {
             if (source.has(Category.SORT)) {
-                throw new FormatException("Self-expression '%s' not allowed on value nodes",
+                throw new FormatException("Field expression '%s' not allowed on value nodes",
                     expr.toDisplayString(), source);
             }
             owner = source;
@@ -829,6 +819,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             }
             // create the node id map to check for duplicate IDs
             getNodeIdMap();
+            addErrors(DependencyChecker.instance().check(this));
             setStatus(Status.FIXED);
             super.setFixed();
         }
@@ -961,7 +952,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         = LazyFactory.instance(this::createNodeIdMap);
 
     /** Returns the node with a given ID, if any. */
-    private AspectNode getNodeForId(String id) {
+    AspectNode getNodeForId(String id) {
         return getNodeIdMap().get(id);
     }
 

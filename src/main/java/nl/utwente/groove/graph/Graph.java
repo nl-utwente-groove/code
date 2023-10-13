@@ -16,9 +16,12 @@
  */
 package nl.utwente.groove.graph;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+
+import nl.utwente.groove.util.parse.FormatError;
 
 /**
  * Provides a model of a graph whose nodes and edges are unstructured, in the
@@ -164,6 +167,21 @@ public interface Graph {
      * @see #hasInfo()
      */
     GraphInfo getInfo();
+
+    /** Adds a given list of errors to the errors already stored in this graph. */
+    default public void addErrors(Collection<FormatError> errors) {
+        GraphInfo.addErrors(this, errors);
+    }
+
+    /** Adds a given error to the errors already stored in this graph. */
+    default public void addError(FormatError error) {
+        GraphInfo.addError(this, error);
+    }
+
+    /** Checks if this graph has an error. */
+    default public boolean hasErrors() {
+        return GraphInfo.hasErrors(this);
+    }
 
     /**
      * Makes a copy of this Graph with cloned (not aliased) node and edge sets

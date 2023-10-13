@@ -82,4 +82,9 @@ public class ContainmentChecker extends CycleChecker<HostGraph,HostEdge> impleme
         }
         return connect;
     }
+
+    @Override
+    protected String errorMessage(List<HostEdge> cycle) {
+        return "Containment cycle in graph";
+    }
 }
