@@ -445,7 +445,9 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
      */
     private void setExprTree(ExprTree exprTree) {
         this.exprTree = exprTree;
-        getGraph().setNonNormal();
+        if (!exprTree.hasConstant()) {
+            getGraph().setNonNormal();
+        }
     }
 
     /** Returns the expression on this node, if any. */
