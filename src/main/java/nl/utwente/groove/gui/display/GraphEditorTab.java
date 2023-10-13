@@ -84,7 +84,6 @@ import nl.utwente.groove.gui.jgraph.AspectJEdge;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.gui.jgraph.JAttr;
-import nl.utwente.groove.gui.jgraph.JCell;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.jgraph.JGraphMode;
 import nl.utwente.groove.gui.tree.TypeTree;
@@ -145,9 +144,9 @@ final public class GraphEditorTab extends ResourceTab
     protected PropertyChangeListener createErrorListener() {
         return arg -> {
             if (arg != null) {
-                JCell<?> errorCell = getJModel().getErrorMap().get(arg.getNewValue());
-                if (errorCell != null) {
-                    getJGraph().setSelectionCell(errorCell);
+                var errorCells = getJModel().getErrorMap().get(arg.getNewValue());
+                if (errorCells != null) {
+                    getJGraph().setSelectionCells(errorCells.toArray());
                 }
             }
         };

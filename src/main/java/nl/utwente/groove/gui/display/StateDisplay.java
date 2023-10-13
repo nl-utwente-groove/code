@@ -279,9 +279,9 @@ public class StateDisplay extends Display implements SimulatorListener {
     private PropertyChangeListener createErrorListener() {
         return arg -> {
             if (arg != null) {
-                AspectJCell errorCell = getJGraph().getModel().getErrorMap().get(arg.getNewValue());
-                if (errorCell != null) {
-                    getJGraph().setSelectionCell(errorCell);
+                var errorCells = getJGraph().getModel().getErrorMap().get(arg.getNewValue());
+                if (errorCells != null) {
+                    getJGraph().setSelectionCells(errorCells.toArray());
                 }
             }
         };
