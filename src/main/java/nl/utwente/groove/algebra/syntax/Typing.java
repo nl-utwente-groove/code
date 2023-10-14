@@ -82,6 +82,11 @@ public class Typing {
         return Optional.ofNullable(sort);
     }
 
+    /** Returns the variable names typed by this typing. */
+    public Set<String> keySet() {
+        return this.sortMap.keySet();
+    }
+
     @Override
     public int hashCode() {
         return this.sortMap.hashCode();
