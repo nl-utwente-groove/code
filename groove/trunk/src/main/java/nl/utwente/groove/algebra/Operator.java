@@ -12,6 +12,7 @@ import java.util.Map;
 
 import nl.utwente.groove.algebra.Signature.OpValue;
 import nl.utwente.groove.algebra.syntax.CallExpr;
+import nl.utwente.groove.algebra.syntax.ExprTreeParser;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.annotation.InfixSymbol;
 import nl.utwente.groove.annotation.PrefixSymbol;
@@ -57,10 +58,17 @@ public class Operator {
         this.returnType = toSort(method.getGenericReturnType());
         InfixSymbol infix = method.getAnnotation(InfixSymbol.class);
         PrefixSymbol prefix = method.getAnnotation(PrefixSymbol.class);
-        this.symbol = infix == null ? (prefix == null ? null : prefix.symbol()) : infix.symbol();
-        this.kind = infix == null ? (prefix == null ? OpKind.ATOM : prefix.kind()) : infix.kind();
-        this.description = method.getAnnotation(ToolTipHeader.class)
-            .value();
+        this.symbol = infix == null
+            ? (prefix == null
+                ? null
+                : prefix.symbol())
+            : infix.symbol();
+        this.kind = infix == null
+            ? (prefix == null
+                ? OpKind.ATOM
+                : prefix.kind())
+            : infix.kind();
+        this.description = method.getAnnotation(ToolTipHeader.class).value();
     }
 
     /** Converts a reflected type into a GROOVE sort. */
@@ -157,6 +165,11 @@ public class Operator {
 
     private final OpKind kind;
 
+    /** Tests if this is an equality operator (i.e., a direct comparison). */
+    public boolean isEquality() {
+        return getSymbol().equals(ExprTreeParser.EQUALS_SYMBOL);
+    }
+
     /**
      * Returns the description in the {@link ToolTipHeader} annotation of the method.
      */
@@ -212,12 +225,11 @@ public class Operator {
     private static Method getOperatorMethod(Class<?> sigClass, java.lang.String name) {
         Method result = null;
         java.lang.String className = sigClass.getSimpleName();
-        java.lang.String sigName = className.substring(0, className.indexOf("Signature"))
-            .toLowerCase();
+        java.lang.String sigName
+            = className.substring(0, className.indexOf("Signature")).toLowerCase();
         Method[] methods = sigClass.getDeclaredMethods();
         for (Method method : methods) {
-            if (method.getName()
-                .equals(name)) {
+            if (method.getName().equals(name)) {
                 if (result != null) {
                     throw Exceptions
                         .illegalArg("Operator overloading for '%s:%s' not allowed", sigName, name);
@@ -242,8 +254,7 @@ public class Operator {
     /** Computes the name of an (all-caps) enum-value and converts it to camel case. */
     private static String getOperatorName(OpValue enumValue) {
         StringBuilder result = new StringBuilder();
-        result.append(enumValue.name()
-            .toLowerCase());
+        result.append(enumValue.name().toLowerCase());
         // delete underscores and set next char as uppercase
         int i = 0;
         while (i < result.length()) {
@@ -261,8 +272,7 @@ public class Operator {
     /** Creates the operator for a given signature and operator value. */
     static Operator newInstance(Sort sigKind, OpValue opValue) {
         String opName = getOperatorName(opValue);
-        Method opMethod = getOperatorMethod(opValue.getClass()
-            .getEnclosingClass(), opName);
+        Method opMethod = getOperatorMethod(opValue.getClass().getEnclosingClass(), opName);
         return new Operator(sigKind, opValue, opMethod);
     }
 
