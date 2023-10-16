@@ -195,6 +195,15 @@ abstract public class Term implements Position<Term,Derivation> {
         return new DerivationAttempt();
     }
 
+    /** Returns the prioritised choice of subterms.
+     * This is a mapping from priorities to subterms, such that this (top-level) term is of the form
+     * {@code or(prio_n).or(prio_{n-1}).prio_0} (where prio_0...prio_n are the values in the result map).
+     * This means that if this is not a choice term, the result map will have only 1 entry.
+     * The map is used to correctly build choices between prioritised rules.
+     * TODO this is an unfinished attempt to resolve SF feature request #195
+    abstract protected Map<Integer,Term> getPriorityChoice();
+     */
+
     /** Callback method check whether {@link #getAttempt()} is called on a trial term. */
     protected void checkTrial() throws UnsupportedOperationException {
         if (!isTrial()) {
