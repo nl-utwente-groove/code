@@ -46,6 +46,7 @@ import nl.utwente.groove.grammar.aspect.AspectContent.ConstContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.ExprContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.LabelPatternContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.NestedValue;
+import nl.utwente.groove.grammar.aspect.AspectContent.NullContent;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.rule.OperatorNode;
 import nl.utwente.groove.grammar.rule.VariableNode;
@@ -195,6 +196,8 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
                 } else if (content instanceof ExprContent e) {
                     assert hasGraphRole(GraphRole.RULE);
                     setExprTree(e.get());
+                } else {
+                    assert content instanceof NullContent;
                 }
                 break;
             default:
