@@ -34,6 +34,7 @@ import static nl.utwente.groove.grammar.aspect.AspectKind.READER;
 import static nl.utwente.groove.grammar.aspect.AspectKind.REMARK;
 import static nl.utwente.groove.grammar.aspect.AspectKind.SUBTYPE;
 import static nl.utwente.groove.grammar.aspect.AspectKind.TEST;
+import static nl.utwente.groove.graph.GraphRole.HOST;
 import static nl.utwente.groove.graph.GraphRole.RULE;
 import static nl.utwente.groove.graph.GraphRole.TYPE;
 
@@ -362,8 +363,8 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                     throw new FormatException("Target node of %s-edge should be int-node", label());
                 }
                 if (!source().has(Category.NESTING, AspectKind::isForall)) {
-                    throw new FormatException("Source node of %s-edge should be universal quantifier",
-                                              label());
+                    throw new FormatException(
+                        "Source node of %s-edge should be universal quantifier", label());
                 }
             } else if (isOperator()) {
                 Sort operSort = getOperator().getResultType();
@@ -439,7 +440,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     /** Tests if this edge has the same aspects as another aspect edge. */
     public boolean isCompatible(AspectEdge other) {
-        assert isParsed() && other.isFixed();
+        assert isParsed() && other.isParsed();
         return getAspects().equals(other.getAspects());
     }
 
@@ -557,7 +558,9 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 case RULE:
                     // this is an attribute edge displayed as a node label
                     result = result.append(Util.THIN_SPACE + POINTS_TO_SYMBOL + Util.THIN_SPACE);
-                    var targetValue = target().getExpression();
+                    var targetValue = hasGraphRole(HOST)
+                        ? target().getValue()
+                        : target().getExpression();
                     assert targetValue != null;
                     result = result.append(targetValue.toLine());
                     break;
