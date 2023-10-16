@@ -44,9 +44,11 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.syntax.Assignment;
+import nl.utwente.groove.algebra.syntax.CallExpr;
 import nl.utwente.groove.algebra.syntax.ExprTree;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Expression.Kind;
+import nl.utwente.groove.algebra.syntax.FieldExpr;
 import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.grammar.aspect.AspectContent.ExprContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.IdContent;
@@ -513,17 +515,13 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 break;
             case LET, LET_NEW:
                 assert onNode;
-                String symbol;
                 if (hasGraphRole(RULE) && !source().has(Category.ROLE, AspectKind::isCreator)) {
                     // do not use #CHANGE_TO_SYMBOL as the prefix already tells the story
-                    symbol = POINTS_TO_SYMBOL;
                     rolePrefix = has(LET)
                         ? CHANGE_PREFIX
                         : NEW_PREFIX;
-                } else {
-                    symbol = POINTS_TO_SYMBOL;
                 }
-                result = getAssignLine(symbol);
+                result = getAssignLine(POINTS_TO_SYMBOL);
                 if (hasGraphRole(RULE)) {
                     color = ColorType.CREATOR;
                 }
@@ -865,7 +863,13 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     private Line getTestLine() {
         assert isParsed();
         try {
-            return getTest().toLine();
+            // make a test for a self-field look like an edge, like for let:
+            if (getTest() instanceof CallExpr c && c.getOperator().isEquality()
+                && c.getArgs().get(0) instanceof FieldExpr f && f.isSelf()) {
+                return new Assignment(f.getField(), c.getArgs().get(1)).toLine(POINTS_TO_SYMBOL);
+            } else {
+                return getTest().toLine();
+            }
         } catch (FormatException exc) {
             var testTree = getTestTree();
             assert testTree != null;

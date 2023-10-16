@@ -67,7 +67,8 @@ public class Assignment {
 
     /**
      * Returns the display line used by the GUI.
-     * @param assignSymbol the assignment symbol to be used
+     * @param assignSymbol the assignment symbol to be used; if {@code null},
+     * the equality symbol is used.
      */
     public Line toLine(String assignSymbol) {
         StringBuilder result = new StringBuilder(getLhs());

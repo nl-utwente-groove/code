@@ -23,6 +23,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.grammar.type.TypeLabel;
+import nl.utwente.groove.util.Keywords;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.line.Line.Style;
 import nl.utwente.groove.util.parse.OpKind;
@@ -54,6 +55,12 @@ public final class FieldExpr extends Expression {
      */
     public @Nullable String getTarget() {
         return this.target;
+    }
+
+    /** Checks if this is a self-field expression. */
+    public boolean isSelf() {
+        String target = getTarget();
+        return target == null || target.equals(Keywords.SELF);
     }
 
     /** Returns the name of this field expression. */

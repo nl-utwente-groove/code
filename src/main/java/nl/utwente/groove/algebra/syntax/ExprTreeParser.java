@@ -306,5 +306,5 @@ public class ExprTreeParser
     /**
      * Symbol for the equality operator.
      */
-    private static final String EQUALS_SYMBOL = "==";
+    public static final String EQUALS_SYMBOL = "==";
 }
