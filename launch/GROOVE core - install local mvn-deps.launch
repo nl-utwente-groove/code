@@ -21,7 +21,4 @@
     <booleanAttribute key="org.eclipse.debug.core.launchGroup.3.enabled" value="true"/>
     <stringAttribute key="org.eclipse.debug.core.launchGroup.3.mode" value="inherit"/>
     <stringAttribute key="org.eclipse.debug.core.launchGroup.3.name" value="install osxadapter"/>
-    <listAttribute key="org.eclipse.debug.ui.favoriteGroups">
-        <listEntry value="org.eclipse.debug.ui.launchGroup.run"/>
-    </listAttribute>
 </launchConfiguration>
