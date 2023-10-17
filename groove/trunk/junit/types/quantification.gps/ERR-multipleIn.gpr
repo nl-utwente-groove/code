@@ -4,6 +4,9 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
+        <attr name="enabled">
+            <string>false</string>
+        </attr>
         <node id="n0">
             <attr name="layout">
                 <string>193 155 11 18</string>
@@ -29,12 +32,12 @@
                 <string>exists:</string>
             </attr>
         </edge>
-        <edge from="n1" to="n0">
+        <edge from="n1" to="n2">
             <attr name="label">
                 <string>in</string>
             </attr>
         </edge>
-        <edge from="n1" to="n2">
+        <edge from="n1" to="n0">
             <attr name="label">
                 <string>in</string>
             </attr>

@@ -4,6 +4,9 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
+        <attr name="enabled">
+            <string>false</string>
+        </attr>
         <node id="n0">
             <attr name="layout">
                 <string>144 191 33 33</string>
@@ -59,9 +62,9 @@
                 <string>forall:</string>
             </attr>
         </edge>
-        <edge from="n1" to="n1">
+        <edge from="n1" to="n8">
             <attr name="label">
-                <string>type:A</string>
+                <string>y</string>
             </attr>
         </edge>
         <edge from="n1" to="n0">
@@ -74,9 +77,9 @@
                 <string>x</string>
             </attr>
         </edge>
-        <edge from="n1" to="n8">
+        <edge from="n1" to="n1">
             <attr name="label">
-                <string>y</string>
+                <string>type:A</string>
             </attr>
         </edge>
         <edge from="n2" to="n2">
@@ -94,14 +97,14 @@
                 <string>prod:</string>
             </attr>
         </edge>
+        <edge from="n3" to="n5">
+            <attr name="label">
+                <string>int:bigmax</string>
+            </attr>
+        </edge>
         <edge from="n3" to="n2">
             <attr name="label">
                 <string>arg:0</string>
-            </attr>
-        </edge>
-        <edge from="n3" to="n0">
-            <attr name="label">
-                <string>at</string>
             </attr>
         </edge>
         <edge from="n3" to="n4">
@@ -109,9 +112,9 @@
                 <string>int:bigmin</string>
             </attr>
         </edge>
-        <edge from="n3" to="n5">
+        <edge from="n3" to="n0">
             <attr name="label">
-                <string>int:bigmax</string>
+                <string>at</string>
             </attr>
         </edge>
         <edge from="n4" to="n4">
@@ -154,11 +157,6 @@
                 <string>real:bigmin</string>
             </attr>
         </edge>
-        <edge from="n9" to="n0">
-            <attr name="label">
-                <string>at</string>
-            </attr>
-        </edge>
         <edge from="n9" to="n8">
             <attr name="label">
                 <string>arg:0</string>
@@ -167,6 +165,11 @@
         <edge from="n9" to="n7">
             <attr name="label">
                 <string>real:bigmax</string>
+            </attr>
+        </edge>
+        <edge from="n9" to="n0">
+            <attr name="label">
+                <string>at</string>
             </attr>
         </edge>
     </graph>

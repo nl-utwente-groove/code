@@ -28,7 +28,6 @@ import static nl.utwente.groove.grammar.aspect.AspectKind.READER;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
@@ -324,7 +323,14 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         if (opEdges.isEmpty()) {
             errors.add("Product node has no operators");
         }
-        var argEdgeList = new AspectEdge[argEdges.size()];
+        // compute the highest parameter index
+        int maxParIndex = -1;
+        for (var argEdge : argEdges) {
+            int index = argEdge.getArgument();
+            maxParIndex = Math.max(maxParIndex, index);
+        }
+        var argEdgeList = new AspectEdge[maxParIndex + 1];
+        // fill the index list
         for (var argEdge : argEdges) {
             int index = argEdge.getArgument();
             if (argEdgeList[index] != null) {
@@ -332,18 +338,29 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
             }
             argEdgeList[index] = argEdge;
         }
-        var argNodes = this.argNodes
-            = Arrays.stream(argEdgeList).map(AspectEdge::target).collect(Collectors.toList());
-        var signature = argNodes.stream().map(AspectNode::getSort).collect(Collectors.toList());
-        for (var opEdge : opEdges) {
-            var operator = opEdge.getOperator();
-            assert operator != null;
-            var opSignature = operator.getParamTypes();
-            if (!opSignature.equals(signature)) {
-                errors
-                    .add("Product node signature %s does not equal '%s' signature %s", signature,
-                         operator, opSignature, opEdge);
+        // check for missing arguments and fill the argNodes map
+        var argNodes = new ArrayList<AspectNode>();
+        for (var i = 0; i <= maxParIndex; i++) {
+            var argEdge = argEdgeList[i];
+            if (argEdge == null) {
+                errors.add("Missing product node argument %s", i);
+            } else {
+                argNodes.add(argEdge.target());
             }
+        }
+        if (errors.isEmpty()) {
+            var signature = argNodes.stream().map(AspectNode::getSort).collect(Collectors.toList());
+            for (var opEdge : opEdges) {
+                var operator = opEdge.getOperator();
+                assert operator != null;
+                var opSignature = operator.getParamTypes();
+                if (!opSignature.equals(signature)) {
+                    errors
+                        .add("Product node signature %s does not equal '%s' signature %s",
+                             signature, operator, opSignature, opEdge);
+                }
+            }
+            this.argNodes = argNodes;
         }
     }
 
@@ -478,7 +495,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         var exprTree = getExprTree();
         if (exprTree != null) {
             try {
-                result = exprTree.toExpression(getGraph().getTyping());
+                result = exprTree.toExpression(getSort(), getGraph().getTyping());
             } catch (FormatException exc) {
                 addErrors(exc.getErrors());
             }

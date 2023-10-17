@@ -4,6 +4,9 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
+        <attr name="enabled">
+            <string>false</string>
+        </attr>
         <node id="n0">
             <attr name="layout">
                 <string>131 82 10 15</string>
@@ -59,14 +62,14 @@
                 <string>id:a</string>
             </attr>
         </edge>
-        <edge from="n3" to="n3">
-            <attr name="label">
-                <string>type:A</string>
-            </attr>
-        </edge>
         <edge from="n3" to="n2">
             <attr name="label">
                 <string>next</string>
+            </attr>
+        </edge>
+        <edge from="n3" to="n3">
+            <attr name="label">
+                <string>type:A</string>
             </attr>
         </edge>
         <edge from="n3" to="n1">
@@ -76,12 +79,12 @@
         </edge>
         <edge from="n4" to="n4">
             <attr name="label">
-                <string>type:B</string>
+                <string>let:x = int:sum(a.x)</string>
             </attr>
         </edge>
         <edge from="n4" to="n4">
             <attr name="label">
-                <string>let:x = int:sum(a.x)</string>
+                <string>type:B</string>
             </attr>
         </edge>
     </graph>
