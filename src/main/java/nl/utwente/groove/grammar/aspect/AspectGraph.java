@@ -454,18 +454,10 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         if (result == null) {
             result = addNestedNode(level, source);
             result.set(Aspect.getAspect(exprSort));
+            // add edge to newly created field
+            AspectLabel idLabel = parser.parse(expr.getField(), getRole());
+            addEdge(owner, idLabel, result).setParsed();
         }
-        /* Clause below should not be possible, we found result based on exprSort
-        else {
-            AspectKind sortKind = result.getKind(Category.SORT);
-            if (sortKind == null || sortKind.getSort() != exprSort) {
-                throw new FormatException("Declared type %s differs from actual field type %s",
-                    exprSort, sortKind.getSort(), source);
-            }
-        }
-        */
-        AspectLabel idLabel = parser.parse(expr.getField(), getRole());
-        addEdge(owner, idLabel, result).setParsed();
         return result;
     }
 
@@ -496,34 +488,48 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
      */
     private AspectNode addCall(@Nullable AspectNode level, @NonNull AspectNode source,
                                CallExpr call) throws FormatException {
-        Operator operator = call.getOperator();
         if (getRole() != RULE) {
             throw new FormatException("Call expression '%s' only allowed in rules",
                 call.toParseString(), source);
         }
-        AspectNode result = addNestedNode(level, source);
-        result.addLabel(createLabel(AspectKind.toAspectKind(call.getSort())));
+        var levelErrors = new FormatErrorSet();
+        AspectNode argLevel;
+        Operator operator = call.getOperator();
         if (operator.isSetOperator()) {
             Expression arg = call.getArgs().get(0);
-            level = getLevel(arg);
-            if (level == null || source.getLevelNode() != level.getParentNode()) {
-                throw new FormatException(
-                    "Set operator argument '%s' should be one level deeper than source node '%s'",
-                    arg, source);
+            argLevel = getLevel(arg);
+            if (argLevel == null || source.getLevelNode() != argLevel.getParentNode()) {
+                levelErrors
+                    .add("Set operator argument '%s' should be one level deeper than source node '%s'",
+                         arg, source);
+            }
+        } else {
+            argLevel = level;
+        }
+        var argErrors = new FormatErrorSet();
+        var argResults = new ArrayList<AspectNode>();
+        for (var arg : call.getArgs()) {
+            try {
+                argResults.add(addExpression(argLevel, source, arg));
+            } catch (FormatException exc) {
+                argErrors.addAll(exc.getErrors());
             }
         }
-        AspectNode product = addNestedNode(level, source);
+        argErrors.throwException();
+        levelErrors.throwException();
+        AspectNode product = addNestedNode(argLevel, source);
         product.set(AspectKind.PRODUCT.getAspect());
-        // add the operator edge
-        AspectLabel operatorLabel = parser.parse(operator.getFullName(), getRole());
-        addEdge(product, operatorLabel, result).setParsed();
-        // add the arguments
-        List<Expression> args = call.getArgs();
-        for (int i = 0; i < args.size(); i++) {
-            AspectNode argResult = addExpression(level, source, args.get(i));
+        for (int i = 0; i < argResults.size(); i++) {
+            var argResult = argResults.get(i);
             AspectLabel argLabel = parser.parse(AspectKind.ARGUMENT.getPrefix() + i, getRole());
             addEdge(product, argLabel, argResult).setParsed();
         }
+        // add the operator edge
+        AspectNode result = addNestedNode(level, source);
+        result.set(AspectKind.toAspectKind(call.getSort()).getAspect());
+        AspectLabel operatorLabel = parser.parse(operator.getFullName(), getRole());
+        addEdge(product, operatorLabel, result).setParsed();
+        // add the arguments
         return result;
     }
 
@@ -615,11 +621,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             child = child.getParentNode();
         }
         return result;
-    }
-
-    /** Callback method to create an aspect label out of an aspect kind. */
-    private AspectLabel createLabel(AspectKind kind) {
-        return parser.parse(kind.getPrefix(), getRole());
     }
 
     /**

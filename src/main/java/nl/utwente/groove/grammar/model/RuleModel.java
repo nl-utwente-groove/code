@@ -2540,8 +2540,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                         // this is an unnumbered parameter,
                         // which serves as an explicit anchor node
                         if (!node.has(PARAM_BI)) {
-                            throw new FormatException("Anchor node cannot be input or output",
-                                node);
+                            throw new FormatException("Anchor node must be '%s'",
+                                PARAM_BI.getName(), node);
                         }
                         if (!node.has(ROLE, AspectKind::inLHS)) {
                             throw new FormatException("Anchor node must be in LHS", node);
@@ -2583,12 +2583,16 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 throw new FormatException("Parameter '%d' may not occur in NAC", nr, node);
             }
             UnitPar.RulePar par = new UnitPar.RulePar(parKind, nodeImage, nodeKind.isCreator());
+            this.parOriginMap.put(par, node);
             UnitPar.RulePar oldPar = parMap.put(nr, par);
             if (oldPar != null) {
                 throw new FormatException("Parameter '%d' defined more than once", nr, node,
-                    oldPar.getNode());
+                    this.parOriginMap.get(oldPar));
             }
         }
+
+        /** Mapping from parameter nodes to their aspect graph origin to enable better error highlighting. */
+        private final Map<UnitPar.RulePar,AspectNode> parOriginMap = new HashMap<>();
 
         /** Lazily creates and returns the rule's hidden parameters. */
         public Set<RuleNode> getHiddenPars() {
