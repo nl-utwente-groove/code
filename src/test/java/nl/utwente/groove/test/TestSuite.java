@@ -4,7 +4,7 @@ import org.junit.platform.suite.api.SelectPackages;
 import org.junit.platform.suite.api.Suite;
 
 /* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2011 University of Twente
+ * Copyright 2003--2023 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
