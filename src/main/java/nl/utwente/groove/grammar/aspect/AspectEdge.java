@@ -30,6 +30,7 @@ import static nl.utwente.groove.grammar.aspect.AspectKind.LET_NEW;
 import static nl.utwente.groove.grammar.aspect.AspectKind.LITERAL;
 import static nl.utwente.groove.grammar.aspect.AspectKind.NESTED;
 import static nl.utwente.groove.grammar.aspect.AspectKind.PARAM_ASK;
+import static nl.utwente.groove.grammar.aspect.AspectKind.PATH;
 import static nl.utwente.groove.grammar.aspect.AspectKind.READER;
 import static nl.utwente.groove.grammar.aspect.AspectKind.REMARK;
 import static nl.utwente.groove.grammar.aspect.AspectKind.SUBTYPE;
@@ -55,7 +56,6 @@ import nl.utwente.groove.grammar.aspect.AspectContent.IdContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.IntegerContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.MultiplicityContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.NestedValue;
-import nl.utwente.groove.grammar.aspect.AspectContent.OpContent;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.rule.RuleLabel;
 import nl.utwente.groove.grammar.type.Multiplicity;
@@ -196,7 +196,13 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 break;
             case SORT:
                 if (hasGraphRole(RULE)) {
-                    setOperator(((OpContent) content).get());
+                    if (isLoop()) {
+                        // this is an attribute field on a self-edge
+                        setField((String) content.get());
+                        getGraph().setNonNormal();
+                    } else {
+                        setOperator((Operator) content.get());
+                    }
                 }
                 break;
             case MULT_IN:
@@ -273,7 +279,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             }
             set(inferredRole.getAspect());
         }
-        if (hasGraphRole(RULE) && (has(ARGUMENT) || has(Category.SORT))) {
+        if (hasGraphRole(RULE) && (isArgument() || isOperator())) {
             source().set(AspectKind.PRODUCT.getAspect());
         }
         // check whether the edge should have a label aspect
@@ -286,7 +292,16 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         };
         // set the label category if not yet done
         if (hasLabel && !has(Category.LABEL)) {
-            set(ATOM.getAspect());
+            AspectKind labelKind;
+            if (hasGraphRole(RULE)) {
+                var regExpr = parse(getInnerText());
+                labelKind = regExpr.isSingular()
+                    ? ATOM
+                    : PATH;
+            } else {
+                labelKind = ATOM;
+            }
+            set(labelKind.getAspect());
         }
         // infer source node aspects
         AspectNode source = source();
@@ -316,20 +331,15 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             if (has(Category.LABEL)) {
                 checkRegExprs(errors);
             }
-            if (has(TEST)) {
-                if (has(CREATOR)) {
-                    errors.add("Conflicting aspects '%s' and '%s'", TEST, CREATOR);
-                }
-            } else if (isAssign()) {
-                if (!has(Category.ROLE, AspectKind::inRHS)) {
-                    errors
-                        .add("Conflicting aspects '%s' and '%s'", getKind(Category.ATTR),
-                             getKind(Category.ROLE));
-                }
-            } else if (has(Category.ATTR) && !has(READER) && !has(EMBARGO)) {
+            if (isOperator() && !has(READER) && !has(EMBARGO)) {
                 errors
-                    .add("Conflicting aspects '%s' and '%s'", getKind(Category.ATTR),
-                         getKind(Category.ROLE));
+                    .add("Conflicting aspects '%s' and '%s' on operator edge",
+                         getKind(Category.SORT), getKind(Category.ROLE));
+            }
+            if (isTest() && has(ERASER) && !source().has(ERASER)) {
+                var test = getTestTree();
+                assert test != null;
+                errors.add("Test '%s' cannot be eraser", test.getParseString());
             }
             if (source().has(PARAM_ASK) || target().has(PARAM_ASK)) {
                 if (!has(CREATOR) && !has(REMARK)) {
@@ -342,13 +352,13 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 AspectKind sourceRole = source().getKind(Category.ROLE);
                 if (!isCompatible(role, sourceRole)) {
                     errors
-                        .add("Edge role '%s' not compatible with source node '%s'", role,
+                        .add("Role of %s-edge not compatible with source role '%s'", label(),
                              sourceRole);
                 }
                 AspectKind targetRole = target().getKind(Category.ROLE);
                 if (!isCompatible(role, targetRole)) {
                     errors
-                        .add("Edge role '%s' not compatible with target node '%s'", role,
+                        .add("Role of %s-edge not compatible with target role '%s'", label(),
                              targetRole);
                 }
             }
@@ -369,15 +379,16 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                         "Source node of %s-edge should be universal quantifier", label());
                 }
             } else if (isOperator()) {
+                @SuppressWarnings("null")
                 Sort operSort = getOperator().getResultType();
-                AspectKind targetSort = target.getKind(Category.SORT);
+                var targetSort = target.getSort();
                 if (targetSort == null) {
                     throw new FormatException("Target node of %s-edge should be %s-attribute",
                         label(), operSort);
-                } else if (targetSort.getSort() != operSort) {
+                } else if (targetSort != operSort) {
                     throw new FormatException(
                         "Inferred type %s of %s-target conflicts with declared type %s", operSort,
-                        label(), targetSort.getSort());
+                        label(), targetSort);
                 }
             }
         }
@@ -416,15 +427,14 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     private void checkRegExprs(FormatErrorSet errors) {
         // this is called after the rule label has been computed
         RuleLabel ruleLabel = getRuleLabel();
-        boolean simple = ruleLabel == null || ruleLabel.isAtom() || ruleLabel.isSharp()
-            || ruleLabel.isWildcard(wc -> wc.getWildcardGuard().isNamed());
-        if (!simple) {
+        if (ruleLabel != null && (!ruleLabel.isSingular()
+            || ruleLabel.isWildcard(wc -> !wc.getWildcardGuard().isNamed()))) {
             assert ruleLabel != null; // implied by !simple
             String message = null;
             RegExpr matchExpr = ruleLabel.getMatchExpr();
             if (matchExpr.containsOperator(RegExpr.NEG_OPERATOR)) {
                 message = "Negation only allowed as top-level operator";
-            } else if (has(CREATOR)) {
+            } else if (has(Category.ROLE, AspectKind::isCreator)) {
                 if (ruleLabel.isWildcard()) {
                     message = "Unnamed wildcard '%s' not allowed on creator";
                 } else if (!ruleLabel.isEmpty()) {
@@ -499,14 +509,18 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             assert !onNode;
             text = CONNECT_LABEL;
         } else if (has(NESTED)) {
-            text = get(NESTED).getContentString();
+            @SuppressWarnings("null")
+            var content = text = get(NESTED).getContentString();
+            text = content;
         } else if (has(REMARK)) {
             color = ColorType.REMARK;
             roleAspect = REMARK;
             rolePrefix = REM_PREFIX;
             text = getInnerText();
         } else if (has(Category.ATTR)) {
-            switch (getKind(Category.ATTR)) {
+            AspectKind attrKind = getKind(Category.ATTR);
+            assert attrKind != null;
+            switch (attrKind) {
             case ARGUMENT:
                 text = "" + Util.LC_PI + getArgument();
                 break;
@@ -530,7 +544,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 throw Exceptions.UNREACHABLE;
             }
         } else if (has(Category.SORT)) {
-            text = get(Category.SORT).getContentString();
+            text = get(Category.SORT, Aspect::getContentString);
         }
         if (result == null) {
             if (text == null) {
@@ -549,8 +563,10 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             }
         }
         if (onNode) {
-            Sort type = null;
+            Sort type;
             if (!isLoop()) {
+                type = target().getSort();
+                assert type != null;
                 switch (getGraphRole()) {
                 case HOST:
                 case RULE:
@@ -559,29 +575,36 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                     var targetValue = hasGraphRole(HOST)
                         ? target().getValue()
                         : target().getExpression();
-                    assert targetValue != null;
-                    result = result.append(targetValue.toLine());
+                    var targetLine = targetValue == null
+                        ? Line.atom(type.getName()).style(Style.BOLD)
+                        : targetValue.toLine();
+                    result = result.append(targetLine);
+                    // reset type to null to prevent further suffixing below
+                    type = null;
                     break;
                 case TYPE:
                     // this is a primitive type field declaration modelled through an
                     // edge to the target type
-                    type = target().getKind(Category.SORT).getSort();
+                    type = target().getSort();
                     break;
                 default:
                     throw Exceptions.UNREACHABLE;
                 }
-            } else if (has(Category.SORT)) {
-                // this is a primitive type field declaration
-                // modelled through a self-edge
-                type = getKind(Category.SORT).getSort();
+            } else {
+                type = getSort();
             }
             if (type != null) {
-                result = result.append(Util.HAIR_SPACE + TYPED_AS_SYMBOL + Util.HAIR_SPACE);
+                var separator = hasGraphRole(RULE)
+                    ? POINTS_TO_SYMBOL
+                    : TYPED_AS_SYMBOL;
+                result = result.append(Util.HAIR_SPACE + separator + Util.HAIR_SPACE);
                 result = result.append(Line.atom(type.getName()).style(Style.BOLD));
             }
         }
         if (has(Category.ROLE)) {
-            switch (getKind(Category.ROLE)) {
+            var roleKind = getKind(Category.ROLE);
+            assert roleKind != null;
+            switch (roleKind) {
             case ADDER:
                 color = ColorType.CREATOR;
                 roleAspect = ADDER;
@@ -679,9 +702,10 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         assert isParsed();
         assert hasGraphRole(GraphRole.HOST) || hasGraphRole(TYPE);
         TypeLabel result = null;
-        if (has(Category.LABEL)) {
+        var labelKind = getKind(Category.LABEL);
+        if (labelKind != null) {
             try {
-                result = switch (getKind(Category.LABEL)) {
+                result = switch (labelKind) {
                 case LITERAL -> TypeLabel.createBinaryLabel(getInnerText());
                 case ATOM -> TypeLabel.createLabelWithCheck(getInnerText());
                 default -> throw Exceptions.UNREACHABLE;
@@ -746,11 +770,6 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     /** Indicates if this edge is a "nested:count". */
     public boolean isNestedCount() {
         return hasContent(NESTED, c -> c.has(NestedValue.COUNT));
-    }
-
-    /** Indicates if this is an argument edge. */
-    public boolean isArgument() {
-        return this.argumentNr >= 0;
     }
 
     /** Indicates if this is a let- or letnew-edge. */
@@ -877,6 +896,11 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         }
     }
 
+    /** Indicates if this is an argument edge. */
+    public boolean isArgument() {
+        return this.argumentNr >= 0;
+    }
+
     /** Sets the argument number to a (non-negative) value. */
     private void setArgument(int argumentNr) {
         assert argumentNr >= 0;
@@ -897,7 +921,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     private int argumentNr = -1;
 
     /** Sets the operator of this edge. */
-    private void setOperator(Operator operator) {
+    private void setOperator(@NonNull Operator operator) {
         this.operator = operator;
     }
 
@@ -910,12 +934,33 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
      * Returns an algebraic operator, if this is an operator edge.
      * @return a non-{@code null} object if and only if this is an operator edge
      */
-    public Operator getOperator() {
+    public @Nullable Operator getOperator() {
         return this.operator;
     }
 
     /** Algebraic operator, if this is an operator edge. */
     private Operator operator;
+
+    /** Sets the field identifier of this edge. */
+    private void setField(@NonNull String field) {
+        this.field = field;
+    }
+
+    /** Indicates if this is a field self-edge. */
+    public boolean isField() {
+        return this.field != null;
+    }
+
+    /**
+     * Returns the field identifier, if this is a field edge.
+     * @return a non-{@code null} object if and only if this is a field edge
+     */
+    public @Nullable String getField() {
+        return this.field;
+    }
+
+    /** Algebraic operator, if this is an operator edge. */
+    private String field;
 
     /** Sets the incoming multiplicity for this edge. */
     private void setInMult(Multiplicity inMult) {

@@ -21,6 +21,7 @@ import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -244,14 +245,14 @@ public class AspectLabel extends ALabel implements Fixable {
 
     /** Tests if this label contains an aspect of a given kind. */
     public boolean has(AspectKind kind) {
-        boolean result = false;
-        for (Aspect aspect : getAspects()) {
-            if (aspect.getKind() == kind) {
-                result = true;
-                break;
-            }
-        }
-        return result;
+        return hasAspect(a -> a.getKind() == kind);
+    }
+
+    /** Tests if this label contains and aspect with a certain property.
+     * @param test the predicate testing for the property.
+     */
+    public boolean hasAspect(Predicate<Aspect> test) {
+        return getAspects().stream().anyMatch(test);
     }
 
     /**

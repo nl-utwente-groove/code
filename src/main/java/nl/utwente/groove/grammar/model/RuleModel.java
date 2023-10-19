@@ -17,7 +17,6 @@
 
 package nl.utwente.groove.grammar.model;
 
-import static nl.utwente.groove.grammar.aspect.AspectKind.ARGUMENT;
 import static nl.utwente.groove.grammar.aspect.AspectKind.CONNECT;
 import static nl.utwente.groove.grammar.aspect.AspectKind.EXISTS;
 import static nl.utwente.groove.grammar.aspect.AspectKind.FORALL_POS;
@@ -804,11 +803,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                                Map<Index,List<Index>> indexTree) {
             Index result = this.nestingIndexMap.get(nestingNode);
             if (result == null) {
-                AspectKind kind = nestingNode.getKind(Category.NESTING);
-                Condition.Op operator = kind.isExists()
+                AspectKind nestingKind = nestingNode.getKind(Category.NESTING);
+                assert nestingKind != null;
+                Condition.Op operator = nestingKind.isExists()
                     ? Op.EXISTS
                     : Op.FORALL;
-                boolean positive = kind == EXISTS || kind == FORALL_POS;
+                boolean positive = nestingKind == EXISTS || nestingKind == FORALL_POS;
                 this.nestingIndexMap
                     .put(nestingNode,
                          result = createIndex(operator, positive, nestingNode, indexTree));
@@ -1346,8 +1346,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                     if (modelEdge.has(CONNECT)) {
                         addConnect(modelEdge);
                     } else if (modelEdge.has(SORT)) {
+                        assert modelEdge.isOperator();
                         addOperator(modelEdge);
-                    } else if (modelEdge.has(ROLE) && !modelEdge.has(ARGUMENT)) {
+                    } else if (modelEdge.has(ROLE) && !modelEdge.isArgument()) {
                         processEdge(modelEdge);
                     }
                 } catch (FormatException exc) {
@@ -1378,22 +1379,23 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          * Adds a node to the LHS, RHS or NAC node set, whichever is appropriate.
          */
         private void processNode(AspectNode modelNode) throws FormatException {
-            AspectKind nodeKind = modelNode.getKind(ROLE);
-            this.isRule |= nodeKind.inLHS() != nodeKind.inRHS();
+            AspectKind roleKind = modelNode.getKind(ROLE);
+            assert roleKind != null;
+            this.isRule |= roleKind.inLHS() != roleKind.inRHS();
             RuleNode ruleNode = getNodeImage(modelNode);
             boolean isAskNode = modelNode.has(PARAM_ASK);
-            if (nodeKind.inLHS() && !isAskNode) {
+            if (roleKind.inLHS() && !isAskNode) {
                 this.lhs.addNode(ruleNode);
-                if (nodeKind.inRHS()) {
+                if (roleKind.inRHS()) {
                     this.rhs.addNode(ruleNode);
                     this.mid.addNode(ruleNode);
                 }
             } else {
-                if (nodeKind.inNAC()) {
+                if (roleKind.inNAC()) {
                     // embargo node
                     this.nacNodeSet.add(ruleNode);
                 }
-                if (nodeKind.inRHS()) {
+                if (roleKind.inRHS()) {
                     // creator node
                     this.rhs.addNode(ruleNode);
                     if (isRhsAsNac() && !isAskNode) {
@@ -1410,19 +1412,20 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          * Adds an edge to the LHS, RHS or NAC edge set, whichever is appropriate.
          */
         private void processEdge(AspectEdge modelEdge) throws FormatException {
-            AspectKind edgeKind = modelEdge.getKind(ROLE);
-            this.isRule |= edgeKind.inLHS() != edgeKind.inRHS();
+            AspectKind roleKind = modelEdge.getKind(ROLE);
+            assert roleKind != null;
+            this.isRule |= roleKind.inLHS() != roleKind.inRHS();
             RuleEdge ruleEdge = getEdgeImage(modelEdge);
             if (ruleEdge == null) {
                 // this was an argument or operation edge;
                 // it has been processed by adding the info to the operator node
                 return;
             }
-            if (edgeKind.inLHS()) {
+            if (roleKind.inLHS()) {
                 // flag indicating that the rule edge is fresh in the LHS
                 boolean freshInLhs = this.lhs.addEdgeContext(ruleEdge);
                 if (freshInLhs) {
-                    if (edgeKind.inRHS()) {
+                    if (roleKind.inRHS()) {
                         this.rhs.addEdgeContext(ruleEdge);
                         this.mid.addEdgeContext(ruleEdge);
                     } else if (getType().isNodeType(ruleEdge)
@@ -1431,7 +1434,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                             ruleEdge.label().text(), modelEdge.source());
                     }
                 } else {
-                    if (!edgeKind.inRHS()) {
+                    if (!roleKind.inRHS()) {
                         // remove the edge from the RHS, if it was there
                         // (which is the case if it also exists as reader edge)
                         this.rhs.removeEdge(ruleEdge);
@@ -1439,11 +1442,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                     }
                 }
             } else {
-                if (edgeKind.inNAC()) {
+                if (roleKind.inNAC()) {
                     // embargo edge
                     this.nacEdgeSet.add(ruleEdge);
                 }
-                if (edgeKind.inRHS()) {
+                if (roleKind.inRHS()) {
                     // creator edge
                     if (getType().isNodeType(ruleEdge)
                         && this.lhs.containsNode(ruleEdge.source())) {
@@ -1487,6 +1490,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             AspectNode targetModelNode = operatorEdge.target();
             VariableNode target = (VariableNode) getNodeImage(targetModelNode);
             Operator operator = operatorEdge.getOperator();
+            assert operator != null;
             boolean setOperator = operator.isSetOperator();
             if (!(setOperator || this.lhs.nodeSet().contains(target)
                 || embargo && this.nacNodeSet.contains(target))) {
@@ -2573,7 +2577,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         private void processNode(Map<Integer,UnitPar.RulePar> parMap, AspectNode node,
                                  Integer nr) throws FormatException {
             AspectKind nodeKind = node.getKind(ROLE);
+            assert nodeKind != null;
             AspectKind parKind = node.getKind(Category.PARAM);
+            assert parKind != null;
             RuleNode nodeImage = getMap().getNode(node);
             assert nodeImage != null;
             if (parKind == PARAM_IN && nodeKind.isCreator()) {

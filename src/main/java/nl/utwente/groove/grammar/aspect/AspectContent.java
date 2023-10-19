@@ -42,6 +42,7 @@ import nl.utwente.groove.grammar.aspect.AspectContent.MultiplicityContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.NestedValueContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.NullContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.OpContent;
+import nl.utwente.groove.grammar.aspect.AspectParser.Status;
 import nl.utwente.groove.grammar.type.LabelPattern;
 import nl.utwente.groove.grammar.type.Multiplicity;
 import nl.utwente.groove.grammar.type.TypeLabel;
@@ -52,6 +53,7 @@ import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Keywords;
 import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.parse.FormatException;
+import nl.utwente.groove.util.parse.IdValidator;
 
 /**
  * Content of an {@link Aspect}
@@ -79,7 +81,7 @@ public sealed interface AspectContent
 
     /**
      * Returns a string description of this content that
-     * can be parsed back by {@link ContentKind#parseContent(String, GraphRole)}
+     * can be parsed back by {@link ContentKind#parseContent(String, GraphRole, Status)}
      */
     default String toParsableString() {
         return get().toString();
@@ -116,17 +118,18 @@ public sealed interface AspectContent
         /** No content. The label text is not checked. */
         NONE {
             @Override
-            Pair<NullContent,String> parse(String text, int pos,
-                                           GraphRole role) throws FormatException {
+            Pair<NullContent,String> parse(String text, int pos, GraphRole role,
+                                           Status status) throws FormatException {
                 if (text.charAt(pos) != SEPARATOR) {
                     throw new FormatException("Suffix '%s' not allowed",
                         text.substring(pos, text.indexOf(SEPARATOR)));
                 }
-                return new Pair<>(parseContent("", role), text.substring(pos + 1));
+                return new Pair<>(parseContent("", role, status), text.substring(pos + 1));
             }
 
             @Override
-            NullContent parseContent(String text, GraphRole role) throws FormatException {
+            NullContent parseContent(String text, GraphRole role,
+                                     Status status) throws FormatException {
                 if (!text.isEmpty()) {
                     throw new FormatException("Malformed null content '%s'", text);
                 }
@@ -136,8 +139,8 @@ public sealed interface AspectContent
         /** Empty content: no text may precede or follow the separator. */
         EMPTY {
             @Override
-            Pair<NullContent,String> parse(String text, int pos,
-                                           GraphRole role) throws FormatException {
+            Pair<NullContent,String> parse(String text, int pos, GraphRole role,
+                                           Status status) throws FormatException {
                 if (text.charAt(pos) != SEPARATOR) {
                     throw new FormatException("Suffix '%s' not allowed",
                         text.substring(pos, text.indexOf(SEPARATOR)));
@@ -146,11 +149,12 @@ public sealed interface AspectContent
                     throw new FormatException("Label text '%s' not allowed",
                         text.substring(pos + 1));
                 }
-                return new Pair<>(parseContent("", role), text.substring(pos + 1));
+                return new Pair<>(parseContent("", role, status), text.substring(pos + 1));
             }
 
             @Override
-            NullContent parseContent(String text, GraphRole role) throws FormatException {
+            NullContent parseContent(String text, GraphRole role,
+                                     Status status) throws FormatException {
                 if (!text.isEmpty()) {
                     throw new FormatException("Malformed null content '%s'", text);
                 }
@@ -160,13 +164,13 @@ public sealed interface AspectContent
         /** Quantifier level name. */
         LEVEL {
             @Override
-            Pair<AspectContent,String> parse(String text, int pos,
-                                             GraphRole role) throws FormatException {
+            Pair<AspectContent,String> parse(String text, int pos, GraphRole role,
+                                             Status status) throws FormatException {
                 AspectContent content;
                 int end = text.indexOf(SEPARATOR);
                 assert end >= 0;
                 content = switch (text.charAt(pos)) {
-                case ASSIGN -> content = parseContent(text.substring(pos + 1, end), role);
+                case ASSIGN -> content = parseContent(text.substring(pos + 1, end), role, status);
                 case SEPARATOR -> content = new NullContent(this);
                 default -> throw new FormatException("Can't parse label");
                 };
@@ -174,17 +178,13 @@ public sealed interface AspectContent
             }
 
             @Override
-            IdContent parseContent(String text, GraphRole role) throws FormatException {
+            IdContent parseContent(String text, GraphRole role,
+                                   Status status) throws FormatException {
                 if (text.isEmpty()) {
                     throw new FormatException("Empty quantifier level");
                 }
-                for (int i = 0; i < text.length(); i++) {
-                    char c = text.charAt(i);
-                    if (i == 0
-                        ? !isValidFirstChar(c)
-                        : !isValidNextChar(c)) {
-                        throw new FormatException("Invalid quantifier level '%s'", text);
-                    }
+                if (!idValidator.isValid(text)) {
+                    throw new FormatException("Invalid quantifier level '%s'", text);
                 }
                 return new IdContent(this, text);
             }
@@ -212,19 +212,20 @@ public sealed interface AspectContent
          */
         MULTIPLICITY {
             @Override
-            Pair<MultiplicityContent,String> parse(String text, int pos,
-                                                   GraphRole role) throws FormatException {
+            Pair<MultiplicityContent,String> parse(String text, int pos, GraphRole role,
+                                                   Status status) throws FormatException {
                 if (text.charAt(pos) != ASSIGN) {
                     throw new FormatException("Malformed multiplicity", text);
                 }
                 int end = text.indexOf(SEPARATOR, pos);
                 assert end >= 0;
-                var content = parseContent(text.substring(pos + 1, end), role);
+                var content = parseContent(text.substring(pos + 1, end), role, status);
                 return new Pair<>(content, text.substring(end + 1));
             }
 
             @Override
-            MultiplicityContent parseContent(String text, GraphRole role) throws FormatException {
+            MultiplicityContent parseContent(String text, GraphRole role,
+                                             Status status) throws FormatException {
                 return new MultiplicityContent(Multiplicity.parse(text));
             }
         },
@@ -240,8 +241,8 @@ public sealed interface AspectContent
          */
         PARAM {
             @Override
-            Pair<AspectContent,String> parse(String text, int pos,
-                                             GraphRole role) throws FormatException {
+            Pair<AspectContent,String> parse(String text, int pos, GraphRole role,
+                                             Status status) throws FormatException {
                 assert text.indexOf(SEPARATOR) >= 0;
                 // either the prefix is of the form par=$N: or par:M
                 // in the first case, the parameter number is N-1
@@ -269,12 +270,13 @@ public sealed interface AspectContent
                 default:
                     throw new FormatException("Can't parse parameter");
                 }
-                return new Pair<>(parseContent(nrText, role), "");
+                return new Pair<>(parseContent(nrText, role, status), "");
             }
 
             /** If the text starts with a PARAM_START_CHAR, subtract 1 from the number. */
             @Override
-            AspectContent parseContent(String text, GraphRole role) throws FormatException {
+            AspectContent parseContent(String text, GraphRole role,
+                                       Status status) throws FormatException {
                 AspectContent result;
                 var exc = new FormatException("Invalid parameter number %s", text);
                 if (text.isEmpty()) {
@@ -309,18 +311,19 @@ public sealed interface AspectContent
          */
         NUMBER {
             @Override
-            Pair<IntegerContent,String> parse(String text, int pos,
-                                              GraphRole role) throws FormatException {
+            Pair<IntegerContent,String> parse(String text, int pos, GraphRole role,
+                                              Status status) throws FormatException {
                 assert text.indexOf(SEPARATOR) >= 0;
                 if (text.charAt(pos) != SEPARATOR) {
                     throw new FormatException("Can't parse argument");
                 }
                 String nrText = text.substring(pos + 1);
-                return new Pair<>(parseContent(nrText, role), "");
+                return new Pair<>(parseContent(nrText, role, status), "");
             }
 
             @Override
-            IntegerContent parseContent(String text, GraphRole role) throws FormatException {
+            IntegerContent parseContent(String text, GraphRole role,
+                                        Status status) throws FormatException {
                 int result;
                 FormatException formatExc = new FormatException("Invalid argument number %s", text);
                 try {
@@ -337,16 +340,17 @@ public sealed interface AspectContent
         /** Content must be a {@link NestedValue}. */
         NESTED {
             @Override
-            Pair<NestedValueContent,String> parse(String text, int pos,
-                                                  GraphRole role) throws FormatException {
+            Pair<NestedValueContent,String> parse(String text, int pos, GraphRole role,
+                                                  Status status) throws FormatException {
                 if (text.charAt(pos) != SEPARATOR) {
                     throw new FormatException("Can't parse quantifier nesting", text);
                 }
-                return new Pair<>(parseContent(text.substring(pos + 1), role), "");
+                return new Pair<>(parseContent(text.substring(pos + 1), role, status), "");
             }
 
             @Override
-            NestedValueContent parseContent(String text, GraphRole role) throws FormatException {
+            NestedValueContent parseContent(String text, GraphRole role,
+                                            Status status) throws FormatException {
                 NestedValue content = NestedValue.get(text);
                 if (content == null) {
                     throw new FormatException("Can't parse quantifier nesting");
@@ -357,16 +361,17 @@ public sealed interface AspectContent
         /** Colour name or RGB value. */
         COLOR {
             @Override
-            Pair<ColorContent,String> parse(String text, int pos,
-                                            GraphRole role) throws FormatException {
+            Pair<ColorContent,String> parse(String text, int pos, GraphRole role,
+                                            Status status) throws FormatException {
                 if (text.charAt(pos) != SEPARATOR) {
                     throw new FormatException("Can't parse colour value");
                 }
-                return new Pair<>(parseContent(text.substring(pos + 1), role), "");
+                return new Pair<>(parseContent(text.substring(pos + 1), role, status), "");
             }
 
             @Override
-            ColorContent parseContent(String text, GraphRole role) throws FormatException {
+            ColorContent parseContent(String text, GraphRole role,
+                                      Status status) throws FormatException {
                 Color result = Colors.findColor(text);
                 if (result == null) {
                     throw new FormatException("Can't parse '%s' as colour", text);
@@ -377,16 +382,17 @@ public sealed interface AspectContent
         /** Node identifier. */
         NAME {
             @Override
-            Pair<IdContent,String> parse(String text, int pos,
-                                         GraphRole role) throws FormatException {
+            Pair<IdContent,String> parse(String text, int pos, GraphRole role,
+                                         Status status) throws FormatException {
                 if (text.charAt(pos) != SEPARATOR) {
                     throw new FormatException("Can't parse node name");
                 }
-                return new Pair<>(parseContent(text.substring(pos + 1), role), "");
+                return new Pair<>(parseContent(text.substring(pos + 1), role, status), "");
             }
 
             @Override
-            IdContent parseContent(String text, GraphRole role) throws FormatException {
+            IdContent parseContent(String text, GraphRole role,
+                                   Status status) throws FormatException {
                 for (int i = 0; i < text.length(); i++) {
                     char c = text.charAt(i);
                     if (i == 0
@@ -407,32 +413,34 @@ public sealed interface AspectContent
         /** Predicate (attribute) value. */
         TEST_EXPR {
             @Override
-            Pair<ExprContent,String> parse(String text, int pos,
-                                           GraphRole role) throws FormatException {
+            Pair<ExprContent,String> parse(String text, int pos, GraphRole role,
+                                           Status status) throws FormatException {
                 if (text.charAt(pos) != SEPARATOR) {
                     throw new FormatException("Can't parse attribute predicate");
                 }
-                return new Pair<>(parseContent(text.substring(pos + 1), role), "");
+                return new Pair<>(parseContent(text.substring(pos + 1), role, status), "");
             }
 
             @Override
-            ExprContent parseContent(String text, GraphRole role) throws FormatException {
+            ExprContent parseContent(String text, GraphRole role,
+                                     Status status) throws FormatException {
                 return new ExprContent(this, Expression.parseTest(text));
             }
         },
         /** Let expression content. */
         LET_EXPR {
             @Override
-            Pair<ExprContent,String> parse(String text, int pos,
-                                           GraphRole role) throws FormatException {
+            Pair<ExprContent,String> parse(String text, int pos, GraphRole role,
+                                           Status status) throws FormatException {
                 if (text.charAt(pos) != SEPARATOR) {
                     throw new FormatException("Can't parse let expression");
                 }
-                return new Pair<>(parseContent(text.substring(pos + 1), role), "");
+                return new Pair<>(parseContent(text.substring(pos + 1), role, status), "");
             }
 
             @Override
-            ExprContent parseContent(String text, GraphRole role) throws FormatException {
+            ExprContent parseContent(String text, GraphRole role,
+                                     Status status) throws FormatException {
                 return new ExprContent(this, Assignment.parse(text));
             }
         },
@@ -440,16 +448,17 @@ public sealed interface AspectContent
         /** Edge declaration content. */
         EDGE {
             @Override
-            Pair<LabelPatternContent,String> parse(String text, int pos,
-                                                   GraphRole role) throws FormatException {
+            Pair<LabelPatternContent,String> parse(String text, int pos, GraphRole role,
+                                                   Status status) throws FormatException {
                 if (text.charAt(pos) != SEPARATOR) {
                     throw new FormatException("Can't parse edge pattern declaration");
                 }
-                return new Pair<>(parseContent(text.substring(pos + 1), role), "");
+                return new Pair<>(parseContent(text.substring(pos + 1), role, status), "");
             }
 
             @Override
-            LabelPatternContent parseContent(String text, GraphRole role) throws FormatException {
+            LabelPatternContent parseContent(String text, GraphRole role,
+                                             Status status) throws FormatException {
                 return new LabelPatternContent(this, LabelPattern.parse(text));
             }
         };
@@ -467,14 +476,17 @@ public sealed interface AspectContent
         /**
          * Tries to parse a given string, from a given position, as content
          * of this kind.
+         * @param text the text to be parsed
+         * @param pos the position within {@code text} at which parsing should start
          * @param role graph role for which the content is parsed
+         * @param status the parser status
          * @return a pair consisting of the resulting content value (which
          * may be {@code null} if there is, correctly, no content) and
          * the remainder of the input string
          * @throws FormatException if the input string cannot be parsed
          */
-        Pair<? extends AspectContent,String> parse(String text, int pos,
-                                                   GraphRole role) throws FormatException {
+        Pair<? extends AspectContent,String> parse(String text, int pos, GraphRole role,
+                                                   Status status) throws FormatException {
             // this implementation tries to find a literal of the
             // correct signature, or no content if the signature is not set
             assert text.indexOf(SEPARATOR, pos) >= 0;
@@ -490,29 +502,29 @@ public sealed interface AspectContent
                 // of the signature
                 String value = text.substring(pos + 1);
                 assert value != null;
-                return new Pair<>(parseContent(value, role), "");
+                return new Pair<>(parseContent(value, role, status), "");
             }
         }
 
         /**
          * Tries to parse a given string as content of the correct kind.
+         * @param text the text to be parsed
          * @param role graph role for which the content is parsed
+         * @param status the parser status
          * @return the resulting content value
          */
-        AspectContent parseContent(@NonNull String text, GraphRole role) throws FormatException {
+        AspectContent parseContent(@NonNull String text, GraphRole role,
+                                   Status status) throws FormatException {
             AspectContent result;
-            if (this.sort == null) {
+            if (!hasSort()) {
                 throw Exceptions.unsupportedOp("No content allowed");
             }
-            if (role == GraphRole.TYPE) {
-                // in a type graph, this is the declaration of an attribute
+            if (role == GraphRole.TYPE || status == Status.ROLE) {
+                // in a type graph, this is the declaration of an attribute;
+                // within a rule role, it is an attribute field name
                 assert text.length() > 0;
-                boolean isIdent = Character.isJavaIdentifierStart(text.charAt(0));
-                for (int i = 1; isIdent && i < text.length(); i++) {
-                    isIdent = Character.isJavaIdentifierPart(text.charAt(i));
-                }
-                if (!isIdent) {
-                    throw new FormatException("Attribute field '%s' must be identifier", text);
+                if (!idValidator.isValid(text)) {
+                    throw new FormatException("Illegal field name '%s'", text);
                 }
                 result = new IdContent(this, text);
             } else if (role == GraphRole.HOST) {
@@ -520,8 +532,7 @@ public sealed interface AspectContent
                 result = new ConstContent(this, getSort().createConstant(text));
             } else {
                 assert role == GraphRole.RULE;
-                // in a rule graph, this is an expression or operator
-                // first try for operator
+                // we know we are not inside a role
                 var op = getSort().getOperator(text);
                 if (op != null) {
                     result = new OpContent(this, op);
@@ -596,6 +607,8 @@ public sealed interface AspectContent
         static public final char PARAM_START_CHAR = '$';
         /** Reserved name "self". */
         static public final String SELF_NAME = "self";
+        /** Validator for identifiers. */
+        static private final IdValidator idValidator = IdValidator.GROOVE_ID;
     }
 
     /** Correct values of the {@link ContentKind#NESTED} content kind. */
@@ -702,7 +715,7 @@ public sealed interface AspectContent
         }
     }
 
-    /** Attribute aspect content consisting of an (algebraic) constant. */
+    /** Attribute aspect content consisting of an (algebraic) operator. */
     static public final class OpContent extends AAspectContent<Operator> implements AspectContent {
         OpContent(ContentKind kind, Operator op) {
             super(kind, op);

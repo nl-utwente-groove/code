@@ -423,9 +423,10 @@ public final class Strings {
                     toUpper
                         = ix < result.length() - 1 && Character.isUpperCase(result.charAt(ix + 1));
                 }
-                result.setCharAt(ix, toUpper
-                    ? Character.toUpperCase(c)
-                    : Character.toLowerCase(c));
+                result
+                    .setCharAt(ix, toUpper
+                        ? Character.toUpperCase(c)
+                        : Character.toLowerCase(c));
             }
             wasLower = isLower;
             ix++;
@@ -463,7 +464,7 @@ public final class Strings {
     }
 
     /**
-     * Converts the initial character of a given input string to uppercase.
+     * Converts the initial character of a given input string to upper case.
      * @param input the input string
      */
     public static String toUpper(String input) {
@@ -478,6 +479,20 @@ public final class Strings {
             }
             return result.toString();
         }
+    }
+
+    /**
+     * Converts a given input string entirely to upper case.
+     * @param input the input string
+     */
+    public static String toAllUpper(String input) {
+        StringBuilder result = new StringBuilder(input);
+        for (int i = 0; i < result.length(); i++) {
+            char c = result.charAt(i);
+            c = Character.toUpperCase(c);
+            result.setCharAt(i, c);
+        }
+        return result.toString();
     }
 
     /**

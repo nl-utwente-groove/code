@@ -291,8 +291,10 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
         try {
             result = parse(OpKind.NONE);
             if (!has(EOT)) {
-                result.getErrors().add("Unparsed suffix: %s",
-                                       this.input.substring(next().start(), this.input.length()));
+                result
+                    .getErrors()
+                    .add("Unparsed suffix: %s",
+                         this.input.substring(next().start(), this.input.length()));
             }
         } catch (FormatException exc) {
             result = createErrorTree(exc);
@@ -975,7 +977,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
     }
 
     /** A placement-indexed family of operators with the same symbol. */
-    static record OpFamily<O extends Op> (O op, String symbol) {
+    static record OpFamily<O extends Op>(O op, String symbol) {
         /** Returns an operator family, initialised with a given operator. */
         OpFamily(O op) {
             this(op, op.getSymbol());
@@ -1107,7 +1109,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
         CONST(true),
         /**
          * Atomic name, formed like a Java identifier, with hyphens allowed in the middle.
-         * @see StringHandler#isIdentifier(String)
+         * @see IdValidator#GROOVE_ID
          */
         NAME(true),
         /** Qualifier separator. */

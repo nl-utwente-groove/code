@@ -202,6 +202,11 @@ public interface Graph {
     /** Returns the (non-{@code null}) name of this graph. */
     String getName();
 
+    /** Checks whether this graph has a given role. */
+    default boolean hasRole(GraphRole role) {
+        return getRole() == role;
+    }
+
     /** Returns the (non-{@code null}) role of this graph. */
     GraphRole getRole();
 

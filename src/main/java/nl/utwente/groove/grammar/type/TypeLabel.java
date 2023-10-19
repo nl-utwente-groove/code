@@ -31,7 +31,7 @@ import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.line.Line.Style;
 import nl.utwente.groove.util.parse.FormatException;
-import nl.utwente.groove.util.parse.StringHandler;
+import nl.utwente.groove.util.parse.IdValidator;
 
 /**
  * Labels encapsulating node or edge types.
@@ -126,8 +126,8 @@ public final class TypeLabel extends ALabel {
      */
     public static TypeLabel createLabelWithCheck(String prefixedText) throws FormatException {
         TypeLabel result = createLabel(prefixedText);
-        if (result.getRole() != BINARY && !StringHandler.isIdentifier(result.text())) {
-            throw new FormatException("%s label '%s' is not a valid identifier",
+        if (result.getRole() != BINARY && !IdValidator.GROOVE_ID.isValid(result.text())) {
+            throw new FormatException("%s label '%s' is not a valid edge label",
                 result.getRole().getDescription(true), result.text());
         }
         return result;
@@ -160,8 +160,8 @@ public final class TypeLabel extends ALabel {
      */
     public static TypeLabel createLabel(EdgeRole kind, String text,
                                         boolean test) throws FormatException {
-        if (test && kind != BINARY && !StringHandler.isIdentifier(text)) {
-            throw new FormatException("%s label '%s' is not a valid identifier",
+        if (test && kind != BINARY && !IdValidator.GROOVE_ID.isValid(text)) {
+            throw new FormatException("%s label '%s' is not a valid edge label",
                 kind.getDescription(true), text);
         }
         return createLabel(kind, text);

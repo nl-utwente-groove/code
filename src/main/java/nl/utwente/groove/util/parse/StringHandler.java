@@ -727,8 +727,9 @@ public class StringHandler {
 
     static private void testSplit(String expr, String oper, OpPosition position) {
         try {
-            System.out.printf("Splitting: \'%s\' according to %s operator \'%s\'%n", expr,
-                              position.text(), oper);
+            System.out
+                .printf("Splitting: \'%s\' according to %s operator \'%s\'%n", expr,
+                        position.text(), oper);
             String[] result = splitExpr(expr, oper, position);
             System.out.print("Result: ");
             if (result == null) {
@@ -759,32 +760,6 @@ public class StringHandler {
         } catch (FormatException e) {
             System.out.printf("Error: \"%s\"%n", e);
         }
-    }
-
-    /** Validator that allows hyphens within names. */
-    public static final IdValidator ID_VALIDATOR = new IdValidator() {
-        @Override
-        public boolean isIdentifierPart(char c) {
-            return Character.isJavaIdentifierPart(c) || c == HYPHEN;
-        }
-
-        @Override
-        public boolean isIdentifierEnd(char c) {
-            return Character.isJavaIdentifierPart(c);
-        }
-
-        @Override
-        public boolean isIdentifierStart(char c) {
-            return Character.isJavaIdentifierStart(c);
-        }
-    };
-
-    /**
-     * Tests whether a given string is a valid identifier.
-     * Invokes {@link IdValidator#isValid(String)} on {@link #ID_VALIDATOR}.
-     */
-    static public boolean isIdentifier(String text) {
-        return ID_VALIDATOR.isValid(text);
     }
 
     /** The underscore character. This is allowed as part of an identifier, as long
@@ -876,19 +851,6 @@ public class StringHandler {
         = {ROUND_BRACKETS, ANGLE_BRACKETS, CURLY_BRACKETS, SQUARE_BRACKETS};
     /** The default character to use as a placeholder in the parse result. */
     static public final char PLACEHOLDER = '\uFFFF';
-
-    /**
-     * The characters allowed in a wildcard identifier, apart from letters and
-     * digits.
-     * @see StringHandler#isIdentifier(String)
-     */
-    static public final String IDENTIFIER_CHARS = "_$";
-    /**
-     * The characters allowed at the start of a wildcard identifier, apart from
-     * letters.
-     * @see StringHandler#isIdentifier(String)
-     */
-    static public final String IDENTIFIER_START_CHARS = "_";
 
     /** Prototype parser, used to evaluate the static methods on. */
     static private final StringHandler prototype = new StringHandler();

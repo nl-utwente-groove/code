@@ -279,17 +279,16 @@ public class LabelValue implements VisualValue<MultiLabel> {
         AspectNode node = jVertex.getNode();
         node.testFixed(true);
         MultiLabel result = new MultiLabel();
-        // show the node identity
         // the following used to include hasError() as a disjunct
-        if (jGraph.isShowAspects()) {
+        if (jGraph.isShowAspects() || jVertex.hasErrors()) {
             result.add(jVertex.getUserObject().toLines());
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
                 if (!isFiltered(jGraph, jVertex, edge)) {
                     Line line = edge.label().toLine();
                     // check for assignment edges
-                    Aspect data = edge.target().get(Category.SORT);
-                    if (data != null) {
-                        line = line.append(POINTS_TO + data.getContentString());
+                    var sortContent = edge.target().get(Category.SORT, Aspect::getContentString);
+                    if (sortContent != null) {
+                        line = line.append(POINTS_TO + sortContent);
                     }
                     result.add(line);
                 }

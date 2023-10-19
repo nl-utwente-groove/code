@@ -31,6 +31,7 @@ import nl.utwente.groove.gui.jgraph.JCell;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.tree.LabelTree;
 import nl.utwente.groove.gui.tree.LabelTree.EntryNode;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -53,8 +54,7 @@ public class SelectColorAction extends SimulatorAction
      * given JGraphPanel.
      */
     private void addAsListener(ResourceDisplay display) {
-        assert display.getResourceKind()
-            .isGraphBased();
+        assert display.getResourceKind().isGraphBased();
         JGraph<?> jGraph = ((GraphTab) display.getMainTab()).getJGraph();
         jGraph.addGraphSelectionListener(this);
         if (this.label == null) {
@@ -92,8 +92,7 @@ public class SelectColorAction extends SimulatorAction
             for (TreePath path : selection) {
                 Object treeNode = path.getLastPathComponent();
                 if (treeNode instanceof EntryNode) {
-                    Label selectedLabel = ((EntryNode) treeNode).getEntry()
-                        .getLabel();
+                    Label selectedLabel = ((EntryNode) treeNode).getEntry().getLabel();
                     if (selectedLabel instanceof TypeLabel
                         && selectedLabel.getRole() == EdgeRole.NODE_TYPE) {
                         this.label = (TypeLabel) selectedLabel;
@@ -107,51 +106,44 @@ public class SelectColorAction extends SimulatorAction
 
     @Override
     public void execute() {
-        TypeNode typeNode = getGrammarModel().getTypeGraph()
-            .getNode(this.label);
+        TypeNode typeNode = getGrammarModel().getTypeGraph().getNode(this.label);
         assert typeNode != null; // ensured by the label
         Color initColour = typeNode.getColor();
         if (initColour != null) {
             this.chooser.setColor(initColour);
         }
-        JDialog dialog = JColorChooser.createDialog(getFrame(),
-            "Choose colour for type",
-            false,
-            this.chooser,
-            new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    setColour(SelectColorAction.this.chooser.getColor());
-                }
-            },
-            null);
+        JDialog dialog = JColorChooser
+            .createDialog(getFrame(), "Choose colour for type", false, this.chooser,
+                          new ActionListener() {
+                              @Override
+                              public void actionPerformed(ActionEvent e) {
+                                  setColour(SelectColorAction.this.chooser.getColor());
+                              }
+                          }, null);
         dialog.setVisible(true);
     }
 
     private void setColour(Color newColour) {
         Aspect colourAspect = null;
         if (!newColour.equals(Color.black)) {
-            String colourString = String.format("%s,%s,%s",
-                newColour.getRed(),
-                newColour.getGreen(),
-                newColour.getBlue());
+            String colourString = String
+                .format("%s,%s,%s", newColour.getRed(), newColour.getGreen(), newColour.getBlue());
             try {
-                colourAspect = AspectKind.COLOR.getAspect()
-                    .newInstance(colourString, GraphRole.TYPE);
+                colourAspect
+                    = AspectKind.COLOR.getAspect().newInstance(colourString, GraphRole.TYPE);
             } catch (FormatException e) {
                 // this can't happen, as the colour string is constructed correctly
-                assert false;
+                throw Exceptions.UNREACHABLE;
             }
         }
-        for (AspectGraph typeGraph : getGrammarStore().getGraphs(ResourceKind.TYPE)
-            .values()) {
+        for (AspectGraph typeGraph : getGrammarStore().getGraphs(ResourceKind.TYPE).values()) {
             AspectGraph newTypeGraph = typeGraph.colour(this.label, colourAspect);
             if (newTypeGraph != typeGraph) {
                 try {
                     getSimulatorModel().doAddGraph(ResourceKind.TYPE, newTypeGraph, false);
                 } catch (IOException exc) {
-                    showErrorDialog(exc,
-                        String.format("Error while saving type graph '%s'", typeGraph.getName()));
+                    showErrorDialog(exc, String
+                        .format("Error while saving type graph '%s'", typeGraph.getName()));
                 }
             }
         }

@@ -23,7 +23,7 @@ import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
-import nl.utwente.groove.util.parse.StringHandler;
+import nl.utwente.groove.util.parse.IdValidator;
 
 /**
  * Objects of this class can construct instance graphs and a type graph
@@ -41,11 +41,10 @@ public class AntlrGrapher {
      * static array {@code String[] tokenNames}, or the value of one of
      * the {@code textTypes} is not a valid index in this array
      */
-    public AntlrGrapher(Class<? extends Parser> parser, int... textTypes)
-        throws IllegalArgumentException {
+    public AntlrGrapher(Class<? extends Parser> parser,
+                        int... textTypes) throws IllegalArgumentException {
         try {
-            this.tokens = (String[]) parser.getField(TOKEN_NAMES)
-                .get(null);
+            this.tokens = (String[]) parser.getField(TOKEN_NAMES).get(null);
         } catch (SecurityException e) {
             throw new IllegalArgumentException(e);
         } catch (IllegalAccessException e) {
@@ -66,8 +65,7 @@ public class AntlrGrapher {
 
     /** Returns the type graph for this parser. */
     public TypeGraph getType() {
-        TypeGraph result = new TypeGraph(ResourceKind.TYPE.getDefaultName()
-            .get());
+        TypeGraph result = new TypeGraph(ResourceKind.TYPE.getDefaultName().get());
         TypeNode topNode = result.addNode(TOP_TYPE);
         result.addEdge(topNode, CHILD_LABEL, topNode);
         result.addEdge(topNode, NEXT_LABEL, topNode);
@@ -77,7 +75,7 @@ public class AntlrGrapher {
         TypeNode stringNode = result.addNode(STRING_TYPE);
         for (int i = 0; i < this.tokens.length; i++) {
             String token = this.tokens[i];
-            if (StringHandler.isIdentifier(token)) {
+            if (IdValidator.GROOVE_ID.isValid(token)) {
                 TypeLabel typeLabel = TypeLabel.createLabel(EdgeRole.NODE_TYPE, token);
                 TypeNode tokenNode = result.addNode(typeLabel);
                 try {
@@ -101,8 +99,7 @@ public class AntlrGrapher {
         Set<CommonTree> pool = new HashSet<>();
         pool.add(tree);
         while (!pool.isEmpty()) {
-            CommonTree next = pool.iterator()
-                .next();
+            CommonTree next = pool.iterator().next();
             assert next != null;
             pool.remove(next);
             HostNode nextNode = treeNodeMap.get(next);
@@ -132,9 +129,9 @@ public class AntlrGrapher {
     private HostNode createNode(DefaultHostGraph graph, CommonTree tree) {
         HostNode result = graph.addNode();
         int tokenType = tree.getType();
-        graph.addEdge(result,
-            TypeLabel.createLabel(EdgeRole.NODE_TYPE, this.tokens[tokenType]),
-            result);
+        graph
+            .addEdge(result, TypeLabel.createLabel(EdgeRole.NODE_TYPE, this.tokens[tokenType]),
+                     result);
         if (this.textTypes.get(tokenType) && tree.getText() != null) {
             HostNode nameNode = graph.addNode(JavaStringAlgebra.instance, tree.getText());
             graph.addEdge(result, TEXT_LABEL, nameNode);
@@ -166,7 +163,7 @@ public class AntlrGrapher {
     /** Type of the (abstract) top node. */
     public final static TypeLabel TOP_TYPE = TypeLabel.createLabel(EdgeRole.NODE_TYPE, "TOP$");
     /** String type label. */
-    private final static TypeLabel STRING_TYPE =
-        TypeLabel.createLabel(EdgeRole.NODE_TYPE, "string");
+    private final static TypeLabel STRING_TYPE
+        = TypeLabel.createLabel(EdgeRole.NODE_TYPE, "string");
     /** Subtype edge label. */
 }

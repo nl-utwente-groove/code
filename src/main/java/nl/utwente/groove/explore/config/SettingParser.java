@@ -20,8 +20,8 @@ import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.FormatException;
+import nl.utwente.groove.util.parse.IdValidator;
 import nl.utwente.groove.util.parse.Parser;
-import nl.utwente.groove.util.parse.StringHandler;
 
 /**
  * Parser for settings of a given exploration key.
@@ -111,7 +111,7 @@ public class SettingParser extends Parser.AParser<Setting> {
         SplitPair result;
         int pos = input.indexOf(CONTENT_SEPARATOR);
         if (pos < 0) {
-            if (StringHandler.isIdentifier(input)) {
+            if (IdValidator.GROOVE_ID.isValid(input)) {
                 result = new SplitPair(input, "");
             } else {
                 result = new SplitPair("", input);

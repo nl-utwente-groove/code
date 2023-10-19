@@ -149,7 +149,12 @@ public class RuleLabel extends ALabel {
         return result;
     }
 
-    /** Tests this label wraps a {@link nl.utwente.groove.automaton.RegExpr.Atom}. */
+    /** Indicates if this label can only be matched by paths of length one. */
+    public boolean isSingular() {
+        return getMatchExpr().isSingular();
+    }
+
+    /** Tests if this label wraps a {@link nl.utwente.groove.automaton.RegExpr.Atom}. */
     public boolean isAtom() {
         return getAtomText() != null;
     }
@@ -205,6 +210,11 @@ public class RuleLabel extends ALabel {
     /** Tests if this label wraps a {@link Wildcard}. */
     public boolean isWildcard() {
         return getMatchExpr().isWildcard();
+    }
+
+    /** Tests if this label wraps a named {@link Wildcard}. */
+    public boolean isNamedWildcard() {
+        return isWildcard(wc -> wc.getWildcardGuard().isNamed());
     }
 
     /** Tests if this label wraps a {@link Wildcard} with a given property. */

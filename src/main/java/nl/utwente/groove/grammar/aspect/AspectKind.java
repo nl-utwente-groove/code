@@ -20,10 +20,10 @@ import static nl.utwente.groove.grammar.aspect.AspectParser.SEPARATOR;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -33,7 +33,9 @@ import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.annotation.Help;
 import nl.utwente.groove.grammar.aspect.AspectContent.ContentKind;
 import nl.utwente.groove.grammar.aspect.AspectContent.NestedValue;
+import nl.utwente.groove.grammar.aspect.AspectParser.Status;
 import nl.utwente.groove.graph.GraphRole;
+import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Keywords;
 import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.Pair;
@@ -204,10 +206,10 @@ public enum AspectKind {
      * parsing a given content text and graph role.
      * @throws FormatException if the text does not represent content of the
      * correct kind
-     * @see ContentKind#parseContent(String, GraphRole)
+     * @see ContentKind#parseContent(String, GraphRole, Status)
      */
     public Aspect newAspect(String text, GraphRole role) throws FormatException {
-        return new Aspect(this, getContentKind().parseContent(text, role));
+        return new Aspect(this, getContentKind().parseContent(text, role, Status.INIT));
     }
 
     /**
@@ -222,10 +224,11 @@ public enum AspectKind {
      * @throws FormatException if the string does not have content of the
      * correct kind
      */
-    public Pair<Aspect,String> parseAspect(String input, GraphRole role) throws FormatException {
+    Pair<Aspect,String> parseAspect(String input, GraphRole role,
+                                    AspectParser.Status status) throws FormatException {
         assert input.startsWith(getName()) && input.indexOf(SEPARATOR) >= 0;
         // give the text to the content kind to parse
-        var result = getContentKind().parse(input, getName().length(), role);
+        var result = getContentKind().parse(input, getName().length(), role, status);
         return new Pair<>(new Aspect(this, result.one()), result.two());
     }
 
@@ -337,6 +340,15 @@ public enum AspectKind {
         return isExists() || isForall();
     }
 
+    /** Returns the new parser status after parsing this aspect kind. */
+    Status newStatus(Status current) {
+        return switch (getCategory()) {
+        case ROLE -> Status.ROLE;
+        case MULT_IN, MULT_OUT, ASSOC -> current;
+        default -> Status.DONE;
+        };
+    }
+
     /** Indicates that this aspect kind is always the last on a label. */
     public boolean isLast() {
         return this.contentKind != ContentKind.LEVEL && this.contentKind != ContentKind.MULTIPLICITY
@@ -391,13 +403,13 @@ public enum AspectKind {
             nodeKinds.add(LET_NEW);
         }
         for (AspectKind kind : nodeKinds) {
-            Help help = computeHelp(kind, role, true, true);
-            if (help != null) {
-                result.put(help.getItem(), help.getTip());
-            }
-            help = computeHelp(kind, role, true, false);
-            if (help != null) {
-                result.put(help.getItem(), help.getTip());
+            for (var helpKind : HelpType.values()) {
+                if (helpKind.forNode()) {
+                    Help help = computeHelp(kind, role, helpKind);
+                    if (help != null) {
+                        result.put(help.getItem(), help.getTip());
+                    }
+                }
             }
         }
         return result;
@@ -407,7 +419,10 @@ public enum AspectKind {
         Map<String,String> result = new TreeMap<>();
         Set<AspectKind> edgeKinds = EnumSet.copyOf(allowedEdgeKinds.get(role));
         edgeKinds.remove(LET);
+        edgeKinds.remove(LET_NEW);
         edgeKinds.remove(TEST);
+        edgeKinds.removeAll(existsQuantifiers);
+        edgeKinds.removeAll(forallQuantifiers);
         if (role == GraphRole.TYPE) {
             for (AspectKind kind : edgeKinds) {
                 if (kind.hasSort()) {
@@ -416,68 +431,102 @@ public enum AspectKind {
             }
         }
         for (AspectKind kind : edgeKinds) {
-            Help help = computeHelp(kind, role, false, true);
-            if (help != null) {
-                result.put(help.getItem(), help.getTip());
+            for (var helpKind : HelpType.values()) {
+                if (!helpKind.forNode()) {
+                    Help help = computeHelp(kind, role, helpKind);
+                    if (help != null) {
+                        result.put(help.getItem(), help.getTip());
+                    }
+                }
             }
         }
         return result;
     }
 
-    private static Help computeHelp(AspectKind kind, GraphRole role, boolean forNode,
-                                    boolean withLabel) {
+    @SuppressWarnings("incomplete-switch")
+    private static Help computeHelp(AspectKind kind, GraphRole role, HelpType type) {
         String h = null;
         String s = null;
-        List<String> b = new ArrayList<>();
-        List<String> p = new ArrayList<>();
-        String qBody = "The optional %1$s denotes an associated quantifier level.";
-        String qPar = "optional associated quantifier level";
-        String flagPar = "text of the flag; must consist of letters, digits, '$', '-' or '_'";
-        String edgePar = "text of the edge; must consist of letters, digits, '$', '-' or '_'";
+        var b = new HelpList();
+        var p = new HelpList();
+        String qBody = "%1$s denotes the associated quantifier level.";
+        String optQBody = "The optional " + qBody;
+        String qPar = "associated quantifier level";
+        String optQPar = "optional " + qPar;
+        String sortPar
+            = "one of the primitive sorts " + toHelpString(Arrays.asList(Sort.values()), "", "");
+        String flagPar = "flag label text; identifier with optional hyphens";
+        String edgePar = "edge label text; identifier with optional hyphens";
+        String parPar = "the parameter number, ranging from 0";
+        String exprPar = "arithmetic expression; for syntax help see the appropriate tab";
         switch (kind) {
         case ABSTRACT:
-            if (!forNode) {
+            switch (type) {
+            case E:
                 s = "%s.COLON.label";
                 h = "Abstract edge type";
-                b.add("Declares an abstract %s-edge between node types.");
                 b
-                    .add("The edge can only occur between subtypes where it is redeclared concretely.");
+                    .and("Declares an abstract %s-edge between node types.")
+                    .and("The edge can only occur between subtypes where it is redeclared concretely.");
                 p.add(edgePar);
-            } else if (withLabel) {
-                s = "%s.COLON.flag";
-                h = "Abstract flag";
-                b.add("Declares an abstract %s for a node type.");
-                b.add("The flag can only occur on subtypes where it is redeclared concretely.");
-                p.add(flagPar);
-            } else {
+                break;
+            case N0:
                 s = "%s.COLON";
                 h = "Abstract node type";
-                b.add("Declares a node type to be abstract.");
-                b.add("Only nodes of concrete subtypes can actually exist.");
+                b
+                    .and("Declares a node type to be abstract.")
+                    .and("Only nodes of concrete subtypes can actually exist.");
+                break;
+            case N1:
+                s = "%s.COLON.flag";
+                h = "Abstract flag type";
+                b
+                    .and("Declares an abstract %s for a node type.")
+                    .and("The flag can only occur on subtypes where it is redeclared concretely.");
+                p.add(flagPar);
             }
             break;
 
         case ADDER:
-            if (!forNode) {
+            switch (type) {
+            case E:
                 s = "%s[EQUALS.q]COLON.label";
                 h = "Conditional edge creator";
-                b.add("Tests for the absence of a %2$s-edge; creates it when applied.");
-                b.add(qBody);
-                p.add(qPar);
-                p.add(edgePar);
-            } else if (withLabel) {
-                s = "%s[EQUALS.q]COLON.flag";
-                h = "Conditional flag creator";
-                b.add("Tests for the absence of %2$s; creates it when applied.");
-                b.add(qBody);
-                p.add(qPar);
-                p.add(flagPar);
-            } else {
+                b
+                    .and("Tests for the absence of a %2$s-edge; creates it when applied.")//
+                    .and(optQBody);
+                p
+                    .and(optQPar)//
+                    .and(edgePar);
+                break;
+            case N0:
                 s = "%s.COLON";
                 h = "Conditional node creator";
                 b.add("Tests for the absence of a node; creates it when applied.");
+                break;
+            case N1:
+                s = "%s[EQUALS.q]COLON.FLAG.COLON.flag";
+                h = "Conditional flag creator";
+                b
+                    .and("Tests for the absence of %2$s; creates it upon application.")//
+                    .and(optQBody);
+                p
+                    .and(optQPar)//
+                    .and(flagPar);
+                break;
+            case N3:
+                s = "%s[EQUALS.q]COLON.LET.name.EQUALS.expr";
+                h = "Conditional attribute field creator";
+                b
+                    .and("Tests for the absence of an attribute field %2$s")
+                    .and("with current value %3$s;")
+                    .and("creates the field upon application.")
+                    .and(optQBody);
+                p.and(optQPar).and("created field name").and(exprPar);
+                break;
             }
             break;
+
         case ARGUMENT:
             s = "%s.COLON.nr";
             h = "Argument edge";
@@ -486,13 +535,23 @@ public enum AspectKind {
             break;
 
         case BOOL:
-            if (!forNode) {
-                s = "%s.COLON.op";
-                h = "Boolean operator";
-                b.add("Applies operation %s from the BOOL signature");
-                b.add("to the arguments of the source PRODUCT node.");
-                p.add("boolean operator: one of " + ops(kind));
-            } else if (withLabel) {
+            switch (type) {
+            case E:
+                s = "sort.COLON.op";
+                h = "Primitive operator";
+                b
+                    .and("Applies operation %2$s from the signature %1$s")
+                    .and("to the arguments of the source PRODUCT node.");
+                p.and("sort of the operator").and("boolean operator: one of " + ops(kind));
+                break;
+            case N0:
+                if (role == GraphRole.RULE) {
+                    s = "%s.COLON";
+                    h = "Boolean variable";
+                    b.add("Declares a boolean-valued variable node.");
+                }
+                break;
+            case N1:
                 if (role == GraphRole.TYPE) {
                     s = "%s.COLON.field";
                     h = "Boolean field";
@@ -502,14 +561,6 @@ public enum AspectKind {
                     h = "Boolean constant";
                     b.add("Represents a constant boolean value (TRUE or FALSE).");
                 }
-                //            } else if (role == GraphRole.TYPE) {
-                //                s = "%s.COLON";
-                //                h = "Boolean type node";
-                //                b.add("Represents the type of booleans.");
-            } else if (role == GraphRole.RULE) {
-                s = "%s.COLON";
-                h = "Boolean variable";
-                b.add("Declares a boolean-valued variable node.");
             }
             break;
 
@@ -535,24 +586,37 @@ public enum AspectKind {
             break;
 
         case CREATOR:
-            if (!forNode) {
+            switch (type) {
+            case E:
                 s = "%s[EQUALS.q]COLON.label";
                 h = "Edge creator";
                 b.add("Creates a %2$s-edge when applied.");
-                b.add(qBody);
-                p.add(qPar);
+                b.add(optQBody);
+                p.add(optQPar);
                 p.add("label of the created edge");
-            } else if (withLabel) {
-                s = "%s[EQUALS.q]COLON.flag";
-                h = "Flag creator";
-                b.add("Creates a %2$s when applied.");
-                b.add(qBody);
-                p.add(qPar);
-                p.add("created flag; should be preceded by FLAG COLON");
-            } else {
+                break;
+            case N0:
                 s = "%s.COLON";
                 h = "Node creator";
                 b.add("Creates a node when applied.");
+                break;
+            case N1:
+                s = "%s[EQUALS.q]COLON.FLAG.COLON.flag";
+                h = "Flag creator";
+                b.add("Creates a %2$s upon application.");
+                b.add(optQBody);
+                p.add(optQPar);
+                p.add("created flag");
+                break;
+            case N3:
+                s = "%s[EQUALS.q]COLON.LET.name.EQUALS.expr";
+                h = "Attribute field creator";
+                b
+                    .and("Upon application, creates an attribute field %2$s")
+                    .and("with value %3$s.")
+                    .and(optQBody);
+                p.and(optQPar).and("created field name").and(exprPar);
+                break;
             }
             break;
 
@@ -568,55 +632,95 @@ public enum AspectKind {
             break;
 
         case EMBARGO:
-            if (!forNode) {
+            switch (type) {
+            case E:
                 s = "%s[EQUALS.q]COLON.label";
                 h = "Edge embargo";
                 b.add("Tests for the absence of a %2$s-edge.");
-                b.add(qBody);
-                p.add(qPar);
+                b.add(optQBody);
+                p.add(optQPar);
                 p.add("label of the forbidden edge");
-            } else if (withLabel) {
-                s = "%s[EQUALS.q]COLON.flag";
-                h = "Flag embargo";
-                b.add("Tests for the absence of a %2$s.");
-                b.add(qBody);
-                p.add(qPar);
-                p.add("forbidden flag; should be preceded by FLAG COLON");
-            } else {
+                break;
+            case N0:
                 s = "%s.COLON";
                 h = "Node embargo";
                 b.add("Tests for the absence of a node.");
+                break;
+            case N1:
+                s = "%s[EQUALS.q]COLON.FLAG.flag";
+                h = "Flag embargo";
+                b.add("Tests for the absence of a %2$s.");
+                b.add(optQBody);
+                p.add(optQPar);
+                p.add("forbidden flag");
+                break;
+            case N2:
+                s = "%s[EQUALS.q]COLON.sort.COLON.name";
+                h = "Attribute field embargo";
+                b
+                    .and("Tests for the absence of an attribute field %3$s")
+                    .and("of type %2$s and arbitrary value.")
+                    .and(optQBody);
+                p.and(optQPar).and(sortPar).and("erased field name");
+                break;
             }
             break;
 
         case ERASER:
-            if (!forNode) {
+            switch (type) {
+            case E:
                 s = "%s[EQUALS.q]COLON.label";
                 h = "Edge eraser";
                 b.add("Tests for the presence of a %2$s-edge; deletes it when applied.");
-                b.add(qBody);
-                p.add(qPar);
+                b.add(optQBody);
+                p.add(optQPar);
                 p.add("label of the erased edge");
-            } else if (withLabel) {
-                s = "%s[EQUALS.q]COLON.flag";
-                h = "Flag eraser";
-                b.add("Tests for the presence of a %2$s; deletes it when applied.");
-                b.add(qBody);
-                p.add(qPar);
-                p.add("erased flag; should be preceded by FLAG COLON");
-            } else {
+                break;
+            case N0:
                 s = "%s.COLON";
                 h = "Node eraser";
                 b.add("Tests for the presence of a node; deletes it when applied.");
+                break;
+            case N1:
+                s = "%s[EQUALS.q]COLON.FLAG.COLON.flag";
+                h = "Flag eraser";
+                b.add("Tests for the presence of a %2$s; deletes it when applied.");
+                b.add(optQBody);
+                p.add(optQPar);
+                p.add("erased flag");
+                break;
+            case N2:
+                s = "%s[EQUALS.q]COLON.sort.COLON.name";
+                h = "Attribute field eraser";
+                b
+                    .and("Tests for the presence of an attribute field %3$s")
+                    .and("of type %2$s and arbitrary value;")
+                    .and("deletes the field upon application.")
+                    .and(optQBody);
+                p.and(optQPar).and(sortPar).and("erased field name");
+                break;
+            case N3:
+                s = "%s[EQUALS.q]COLON.LET.name.EQUALS.expr";
+                h = "Attribute field test and eraser";
+                b
+                    .and("Tests for the presence of an attribute field %2$s")
+                    .and("with current value %3$s;")
+                    .and("deletes the field upon application.")
+                    .and(optQBody);
+                p.and(optQPar).and("erased field name").and(exprPar);
+                break;
             }
             break;
 
         case EXISTS:
             s = "%s[EQUALS.q]COLON";
-            h = "Existential quantification";
-            b.add("Tests for the mandatory existence of a graph pattern.");
-            b.add("Pattern nodes must have outgoing AT-edges to the quantifier.");
-            b.add("Pattern edges may be declared through the optional quantifier level %1$s.");
+            h = "Existential quantier node";
+            b
+                .and("Tests for the mandatory existence of a graph pattern.")
+                .and("Pattern nodes must have outgoing AT-edges to the quantifier node.")
+                .and("Pattern edges may be declared through the optional quantifier level %1$s")
+                .and("in the role specification")
+                .and(toHelpString(roles, "(one of ", ")"));
             p.add("declared name for this quantifier level");
             break;
 
@@ -624,7 +728,7 @@ public enum AspectKind {
             s = "%s[EQUALS.q]COLON";
             h = "Optional existential quantification";
             b.add("Tests for the optional existence of a graph pattern.");
-            b.add("Pattern nodes must have outgoing AT-edges to the quantifier.");
+            b.add("Pattern nodes must have outgoing AT-edges to the quantifier node.");
             b.add("Pattern edges may be declared through the optional quantifier level %1$s.");
             p.add("declared name for this quantifier level");
             break;
@@ -634,7 +738,7 @@ public enum AspectKind {
             h = "Universal quantification";
             b.add("Matches all occurrences of a graph pattern.");
             b.add("The actual number of occurrences is given by an optional outgoing COUNT-edge.");
-            b.add("Pattern nodes must have outgoing AT-edges to the quantifier.");
+            b.add("Pattern nodes must have outgoing AT-edges to the quantifier node.");
             b.add("Pattern edges may be declared through the optional quantifier level %1$s.");
             p.add("declared name for this quantifier level");
             break;
@@ -664,13 +768,20 @@ public enum AspectKind {
             break;
 
         case INT:
-            if (!forNode) {
+            switch (type) {
+            case E:
                 s = "%s.COLON.op";
                 h = "Integer operator";
                 b.add("Applies operation %1$s from the INT signature");
                 b.add("to the arguments of the source PRODUCT node.");
                 p.add("integer operator: one of " + ops(kind));
-            } else if (withLabel) {
+                break;
+            case N0:
+                s = "INT.COLON";
+                h = "Integer variable";
+                b.add("Declares an integer-valued variable node.");
+                break;
+            case N1:
                 if (role == GraphRole.TYPE) {
                     s = "%s.COLON.field";
                     h = "Integer field";
@@ -680,14 +791,6 @@ public enum AspectKind {
                     h = "Integer constant";
                     b.add("Represents the constant integer value %1$s.");
                 }
-                //            } else if (role == GraphRole.TYPE) {
-                //                s = "%s.COLON";
-                //                h = "Integer type node";
-                //                b.add("Represents the type of integers.");
-            } else if (role == GraphRole.RULE) {
-                s = "INT.COLON";
-                h = "Integer variable";
-                b.add("Declares an integer-valued variable node.");
             }
             break;
 
@@ -745,7 +848,8 @@ public enum AspectKind {
             break;
 
         case PARAM_BI:
-            if (withLabel) {
+            switch (type) {
+            case E:
                 s = "%s.COLON.nr";
                 h = "Bidirectional rule parameter";
                 b.add("Declares bidirectional rule parameter %1$s (ranging from 0).");
@@ -753,8 +857,9 @@ public enum AspectKind {
                     .add("When used from a control program this parameter may be instantiated with a concrete value,");
                 b.add("or be used as an output parameter, in which case the value");
                 b.add("is determined by the matching.");
-                p.add("the parameter number, ranging from 0");
-            } else {
+                p.add(parPar);
+                break;
+            case N0:
                 s = "PARAM_BI.COLON";
                 h = "Anchor node";
                 b.add("Declares an explicit anchor node.");
@@ -772,13 +877,16 @@ public enum AspectKind {
         case PARAM_OUT:
             s = "%s.COLON.nr";
             h = "Rule output parameter";
-            b.add("Declares rule output parameter %s (ranging from 0).");
+            b.add("Declares rule output parameter %s.");
+            p.and("parameter number, ranging from 0");
             break;
 
         case PARAM_ASK:
             s = "%s.COLON.nr";
             h = "Interactive rule parameter";
-            b.add("Declares interactive rule parameter %s (ranging from 0).");
+            b
+                .and("Declares interactive rule parameter %s (ranging from 0).")
+                .and("The value is provided through a <i>value oracle</i>, set in the system properties.");
             break;
 
         case PATH:
@@ -795,26 +903,48 @@ public enum AspectKind {
             break;
 
         case READER:
-            if (!forNode) {
+            switch (type) {
+            case E:
                 s = "%s.EQUALS.q.COLON.regexpr";
                 h = "Quantified reader edge";
-            } else if (withLabel) {
-                s = "%s.EQUALS.q.COLON.flag";
+                b.and("Tests for the presence of %2$s on quantification level %1$s.").and(qBody);
+                p.and(qPar).and("tested regular expression");
+                break;
+            case N1:
+                s = "%s.EQUALS.q.COLON.FLAG.COLON.flag";
                 h = "Quantified reader flag";
+                b
+                    .and("Tests for the presence of a %2$s-flag on quantification level %1$s.")
+                    .and(qBody);
+                p.and(qPar).and("tested flag");
+                break;
+            case N2:
+                s = "%s.EQUALS.q.COLON.sort.COLON.name";
+                h = "Attribute field test";
+                b
+                    .and("Tests for the presence of an attribute field %3$s")
+                    .and("of type %2$s and arbitrary value.")
+                    .and(qBody);
+                p.and(qPar).and(sortPar).and("tested field name");
+                break;
             }
-            b.add("Tests for the presence of %2$s on quantification level %1$s.");
-            p.add(qPar);
-            p.add("item tested for");
             break;
 
         case REAL:
-            if (!forNode) {
+            switch (type) {
+            case E:
                 s = "%s.COLON.op";
                 h = "Real-valued operator";
                 b.add("Applies operation %1$s from the REAL signature");
                 b.add("to the arguments of the source PRODUCT node.");
                 p.add("real operator: one of " + ops(kind));
-            } else if (withLabel) {
+                break;
+            case N0:
+                s = "%s.COLON";
+                h = "Real variable";
+                b.add("Declares a real-valued variable node.");
+                break;
+            case N1:
                 if (role == GraphRole.TYPE) {
                     s = "%s.COLON.field";
                     h = "Real number field";
@@ -824,35 +954,36 @@ public enum AspectKind {
                     h = "Real constant";
                     b.add("Represents the constant real value %1$s.%2$s.");
                 }
-                //            } else if (role == GraphRole.TYPE) {
-                //                s = "%s.COLON";
-                //                h = "Real type node";
-                //                b.add("Represents the type of reals.");
-            } else if (role == GraphRole.RULE) {
-                s = "%s.COLON";
-                h = "Real variable";
-                b.add("Declares a real-valued variable node.");
             }
             break;
 
         case REMARK:
-            if (forNode) {
+            switch (type) {
+            case N0:
                 s = "%s.COLON";
                 b.add("Declares a remark node, to be used for documentation");
-            } else {
+                break;
+            case E:
                 s = "%s.COLON.text";
                 b.add("Declares a remark edge with (free-formatted) text %1$s");
             }
             break;
 
         case STRING:
-            if (!forNode) {
+            switch (type) {
+            case E:
                 s = "%s.COLON.op";
                 h = "String operator";
                 b.add("Applies operation %1$s from the STRING signature");
                 b.add("to the arguments of the source PRODUCT node.");
                 p.add("string operator: one of " + ops(kind));
-            } else if (withLabel) {
+                break;
+            case N0:
+                s = "%s.COLON";
+                h = "String variable";
+                b.add("Declares a string-valued variable node.");
+                break;
+            case N1:
                 if (role == GraphRole.TYPE) {
                     s = "%s.COLON.field";
                     h = "String field";
@@ -862,14 +993,6 @@ public enum AspectKind {
                     h = "String constant";
                     b.add("Represents the constant string value %1$s.");
                 }
-                //            } else if (role == GraphRole.TYPE) {
-                //                s = "%s.COLON";
-                //                h = "String type node";
-                //                b.add("Represents the type of strings.");
-            } else if (role == GraphRole.RULE) {
-                s = "%s.COLON";
-                h = "String variable";
-                b.add("Declares a string-valued variable node.");
             }
             break;
 
@@ -880,14 +1003,16 @@ public enum AspectKind {
             break;
 
         case TEST:
-            if (withLabel) {
-                s = "%s.COLON.constraint";
-                h = "Predicate expression";
-                b.add("Tests if the boolean expression %s holds in the graph.");
-            } else {
+            switch (type) {
+            case N0:
                 s = "%s.COLON.name.EQUALS.expr";
                 h = "Attribute value test";
                 b.add("Tests if the attribute field %1$s equals the value of %2$s.");
+                break;
+            case N1:
+                s = "%s.COLON.constraint";
+                h = "Predicate expression";
+                b.add("Tests if the boolean expression %s holds in the graph.");
             }
             break;
 
@@ -903,6 +1028,49 @@ public enum AspectKind {
             result.setPars(p);
         }
         return result;
+    }
+
+    /** List class with auxiliary functionality for concatenating. */
+    static private class HelpList extends ArrayList<String> {
+        /** Adds a message and returns this list, so calls can be concatenated. */
+        public HelpList and(String message) {
+            add(message);
+            return this;
+        }
+    }
+
+    /** Auxiliary enumeration to collect help for variations of an aspect. */
+    static private enum HelpType {
+        /** Edge help. */
+        E(false),
+        /** Node help (no content). */
+        N0(true),
+        /** Node help (content v1). */
+        N1(true),
+        /** Node help (content v2). */
+        N2(true),
+        /** Node help (content v3). */
+        N3(true);
+
+        private HelpType(boolean forNode) {
+            this.forNode = forNode;
+        }
+
+        /** Indicates if this is help for a node aspect;
+         * if not, it is for an edge aspect.
+         */
+        public boolean forNode() {
+            return this.forNode;
+        }
+
+        private final boolean forNode;
+    }
+
+    /** Turns a set of values into upper case and concatenates them. */
+    static private <E extends Enum<E>> String toHelpString(Collection<E> values, String start,
+                                                           String end) {
+        var caps = values.stream().map(E::name);
+        return Groove.toString(caps.toArray(), start, end, ", ", " or ");
     }
 
     /** Returns a list of operations from a given signature. */
@@ -952,6 +1120,8 @@ public enum AspectKind {
         tokenMap.put("QUOTE", "\"");
         tokenMap.put("TRUE", "true");
         tokenMap.put("FALSE", "false");
+        tokenMap.put("FLAG", "flag");
+        tokenMap.put("PRODUCT", "prod");
     }
 
     /** Set of role aspects. */
@@ -966,9 +1136,6 @@ public enum AspectKind {
     public static final Set<AspectKind> existsQuantifiers = EnumSet.of(EXISTS, EXISTS_OPT);
     /** Set of universal quantifier aspects. */
     public static final Set<AspectKind> forallQuantifiers = EnumSet.of(FORALL, FORALL_POS);
-    /** Set of attribute-related aspects. */
-    public static final Set<AspectKind> attributers
-        = EnumSet.of(ARGUMENT, STRING, INT, BOOL, REAL, TEST);
 
     /** Mapping from graph roles to the node aspects allowed therein. */
     public static final Map<GraphRole,Set<AspectKind>> allowedNodeKinds

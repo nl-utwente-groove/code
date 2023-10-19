@@ -1,6 +1,7 @@
 package nl.utwente.groove.gui.jgraph;
 
 import static nl.utwente.groove.grammar.aspect.AspectKind.ARGUMENT;
+import static nl.utwente.groove.grammar.aspect.AspectKind.PATH;
 import static nl.utwente.groove.gui.look.VisualKey.COLOR;
 
 import java.util.Collection;
@@ -231,13 +232,27 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
         if (!getTargetNode().hasSort()) {
             return false;
         }
+        if (getTargetNode().hasId()) {
+            return false;
+        }
         if (getTargetNode().has(Category.PARAM)) {
             return false;
         }
-        if (graph != null && !(getTargetNode().hasValue() || getTargetNode().hasExpression())) {
+        // regular expression edges cannot be source labels
+        if (getEdges().stream().anyMatch(e -> e.has(PATH))) {
             return false;
         }
-        return true;
+        if (getEdge().isNestedCount()) {
+            return false;
+        }
+        if (getTargetNode().hasValue() || getTargetNode().hasExpression()) {
+            return true;
+        }
+        // if the target has no further constraints (in the form of incoming edges), it's OK
+        if (getTarget().getEdges().size() == 1) {
+            return true;
+        }
+        return false;
     }
 
     @Override

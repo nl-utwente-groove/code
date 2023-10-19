@@ -190,7 +190,7 @@ public abstract class UnitPar {
                     "Error in parameter declaration '%s': Could not determine parameter type",
                     input));
         String name = typeText.substring(type.getName().length()).trim();
-        if (!IdValidator.JAVA_ID.isValid(name)) {
+        if (!IdValidator.JAVA_ID_NON_BOOL.isValid(name)) {
             throw new FormatException(
                 "Error in parameter declaration '%s': name '%s' is not a valid identifier", input,
                 name);

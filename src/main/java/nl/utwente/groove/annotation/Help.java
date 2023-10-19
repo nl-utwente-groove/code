@@ -153,10 +153,9 @@ public class Help {
         }
         if (!this.parDocs.isEmpty()) {
             if (this.parNames.size() != this.parDocs.size()) {
-                throw Exceptions.illegalState(
-                    "Parameter count error: %s documentation lines for %s parameters",
-                    this.parDocs.size(),
-                    this.parNames.size());
+                throw Exceptions
+                    .illegalState("Parameter count error: %s documentation lines for %s parameters",
+                                  this.parDocs.size(), this.parNames.size());
             }
             StringBuilder paramText = new StringBuilder();
             for (int p = 0; p < this.parNames.size(); p++) {
@@ -168,8 +167,9 @@ public class Help {
             result.append(HTML_LINEBREAK);
             result.append(TABLE_TAG.on(paramText));
         }
-        return result.length() == 0 ? null : HTML_TAG.on(result)
-            .toString();
+        return result.length() == 0
+            ? null
+            : HTML_TAG.on(result).toString();
     }
 
     private boolean isFormatSyntax() {
@@ -216,12 +216,13 @@ public class Help {
     }
 
     private static Help createHelp(Object source, Syntax syntax, ToolTipHeader header,
-        ToolTipBody body, ToolTipPars pars, Map<String,String> tokenMap) {
+                                   ToolTipBody body, ToolTipPars pars,
+                                   Map<String,String> tokenMap) {
         Help result = null;
         if (syntax != null) {
             result = new Help(tokenMap);
-            String syntaxText =
-                String.format(syntax.value(), getReflectionName(source), getContextName(source));
+            String syntaxText
+                = String.format(syntax.value(), getReflectionName(source), getContextName(source));
             result.setSyntax(syntaxText);
             if (header != null) {
                 result.setHeader(header.value());
@@ -253,11 +254,9 @@ public class Help {
     private static String getContextName(Object object) {
         String result = null;
         if (object instanceof Field) {
-            result = ((Field) object).getDeclaringClass()
-                .getSimpleName();
+            result = ((Field) object).getDeclaringClass().getSimpleName();
         } else if (object instanceof Method) {
-            result = ((Method) object).getDeclaringClass()
-                .getSimpleName();
+            result = ((Method) object).getDeclaringClass().getSimpleName();
         }
         return result;
     }
@@ -360,7 +359,7 @@ public class Help {
      * Transforms a string by replacing all occurrences of tokens, and
      * recognises all other identifiers as arguments.
      * Tokens are certain identifiers (formed according to the Java rules)
-     * characterised by the a mapping to replacement text, passed in as a
+     * characterised by a mapping to replacement text, passed in as a
      * parameter.
      * @param text the string to be transformed
      * @param tokenMap mapping from tokens to replacement text
@@ -368,7 +367,7 @@ public class Help {
      * list of recognised arguments in the order of their occurrence in {@code text}
      */
     static private Pair<String,List<String>> processTokensAndArgs(String text,
-        Map<String,String> tokenMap) {
+                                                                  Map<String,String> tokenMap) {
         return processTokensAndArgs(text, tokenMap, true);
     }
 
@@ -377,7 +376,8 @@ public class Help {
      * {@link #processTokens(String, Map)} and {@link #processTokensAndArgs(String, Map)}.
      */
     static private Pair<String,List<String>> processTokensAndArgs(String text,
-        Map<String,String> tokenMap, boolean getArgs) {
+                                                                  Map<String,String> tokenMap,
+                                                                  boolean getArgs) {
         StringBuilder result = new StringBuilder(text);
         List<String> args = new ArrayList<>();
         for (int i = 0; i < result.length(); i++) {
@@ -408,7 +408,7 @@ public class Help {
     }
 
     private static HTMLTag DIV_TAG = HTMLConverter.createDivTag("width: 250px;");
-    static private final HTMLTag TABLE_TAG =
-        HTMLConverter.createHtmlTag(HTMLConverter.TABLE_TAG_NAME, "cellpadding", "0");
+    static private final HTMLTag TABLE_TAG
+        = HTMLConverter.createHtmlTag(HTMLConverter.TABLE_TAG_NAME, "cellpadding", "0");
     static private final HTMLTag SOURCE_TAG = HTMLConverter.createHtmlTag("font", "color", "green");
 }
