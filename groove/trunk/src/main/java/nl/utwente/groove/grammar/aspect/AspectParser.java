@@ -56,8 +56,8 @@ public class AspectParser {
     private void parse(String text, AspectLabel result) {
         int nextSeparator;
         String rest = text;
-        boolean stopParsing = false;
-        while (!stopParsing && (nextSeparator = rest.indexOf(SEPARATOR)) >= 0) {
+        var status = Status.INIT;
+        while (status != Status.DONE && (nextSeparator = rest.indexOf(SEPARATOR)) >= 0) {
             // find the prefixing sequence of letters
             StringBuilder prefixBuilder = new StringBuilder();
             int pos;
@@ -69,25 +69,27 @@ public class AspectParser {
             // only continue parsing for aspects if the candidate aspect
             // prefix starts with a nonempty identifier that is not an
             // edge role prefix
-            stopParsing = pos == 0 && nextSeparator != 0
-                || pos != 0 && EdgeRole.getRole(prefix) != null && pos == nextSeparator;
-            if (!stopParsing) {
-                try {
-                    AspectKind kind = AspectKind.getKind(prefix);
-                    if (kind == null) {
-                        throw new FormatException(
-                            "Can't parse prefix '%s' (precede with ':' to use literal text)",
-                            rest.substring(0, nextSeparator));
-                    }
-                    Pair<Aspect,String> parseResult = kind.parseAspect(rest, result.getGraphRole());
-                    Aspect aspect = parseResult.one();
-                    result.addAspect(aspect);
-                    rest = parseResult.two();
-                    stopParsing = aspect.getKind().isLast();
-                } catch (FormatException exc) {
-                    result.addError("%s in '%s'", exc.getMessage(), text);
-                    stopParsing = true;
+            if (pos == 0 && nextSeparator != 0
+                || pos != 0 && EdgeRole.getRole(prefix) != null && pos == nextSeparator) {
+                status = Status.DONE;
+                continue;
+            }
+            try {
+                AspectKind kind = AspectKind.getKind(prefix);
+                if (kind == null) {
+                    throw new FormatException(
+                        "Can't parse prefix '%s' (precede with ':' to use literal text)",
+                        rest.substring(0, nextSeparator));
                 }
+                Pair<Aspect,String> parseResult
+                    = kind.parseAspect(rest, result.getGraphRole(), status);
+                Aspect aspect = parseResult.one();
+                result.addAspect(aspect);
+                rest = parseResult.two();
+                status = kind.newStatus(status);
+            } catch (FormatException exc) {
+                result.addError("%s in '%s'", exc.getMessage(), text);
+                status = Status.DONE;
             }
         }
         // special case: we will treat labels of the form type:prim
@@ -115,4 +117,14 @@ public class AspectParser {
     }
 
     static private final AspectParser instance = new AspectParser();
+
+    /** Status of the parsing process. */
+    static enum Status {
+        /** Initial state. */
+        INIT,
+        /** After entering a role aspect. */
+        ROLE,
+        /** After parsing a final aspect kind. */
+        DONE,
+    }
 }

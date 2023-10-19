@@ -45,6 +45,7 @@ import nl.utwente.groove.grammar.aspect.AspectContent.ConstContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.ExprContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.LabelPatternContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.NestedValue;
+import nl.utwente.groove.grammar.aspect.AspectContent.NestedValueContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.NullContent;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.rule.OperatorNode;
@@ -295,6 +296,11 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     public AspectNode clone(AspectGraph graph, int newNr) {
         AspectNode result = new AspectNode(newNr, graph);
         getNodeLabels().forEach(result::addLabel);
+        getAspects()
+            .values()
+            .stream()
+            .filter(a -> !result.has(a.getCategory()))
+            .forEach(result::set);
         return result;
     }
 
@@ -385,13 +391,9 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     }
 
     /** Returns the sort of this node, if any. */
+    @Override
     public @Nullable Sort getSort() {
         return this.sort;
-    }
-
-    /** Returns the sort of this node, if any. */
-    public boolean hasSort() {
-        return getSort() != null;
     }
 
     private @Nullable Sort sort;
@@ -537,7 +539,9 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     /** Sets an outgoing edge with {@link AspectKind#NESTED} aspect. */
     void setNestingEdge(AspectEdge edge) throws FormatException {
         assert this == edge.source();
-        var value = (NestedValue) edge.getContent(NESTED).get();
+        var content = (NestedValueContent) edge.getContent(NESTED);
+        assert content != null;
+        var value = content.get();
         // check for circularity in the nesting hierarchy
         if (value == NestedValue.IN) {
             var ancestors = new HashSet<AspectEdge>();
@@ -561,9 +565,9 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
      */
     void resetNestingEdge(AspectEdge edge) {
         assert this == edge.source();
-        assert edge.has(NESTED);
-        var value = (NestedValue) edge.getContent(NESTED).get();
-        this.nestedMap.remove(value);
+        var content = (NestedValueContent) edge.getContent(NESTED);
+        assert content != null;
+        this.nestedMap.remove(content.get());
     }
 
     /** Sets the nesting level edge of this node.

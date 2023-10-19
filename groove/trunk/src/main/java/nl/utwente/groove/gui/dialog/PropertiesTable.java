@@ -52,8 +52,8 @@ import nl.utwente.groove.util.collect.ListComparator;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
+import nl.utwente.groove.util.parse.IdValidator;
 import nl.utwente.groove.util.parse.Parser;
-import nl.utwente.groove.util.parse.StringHandler;
 
 /**
  * Dialog for editing a properties map.
@@ -358,7 +358,7 @@ public class PropertiesTable extends JTable {
          */
         private boolean isEditedValueCorrect(String value) {
             if (this.editingValueForKey == null) {
-                return StringHandler.isIdentifier(value)
+                return IdValidator.GROOVE_ID.isValid(value)
                     && !PropertiesTable.this.defaultKeys.containsKey(value);
             } else {
                 var key = getKey(this.editingValueForKey);
@@ -373,9 +373,9 @@ public class PropertiesTable extends JTable {
          * edit.
          */
         private boolean showContinueDialog(String value) {
-            int response
-                = JOptionPane.showConfirmDialog(PropertiesTable.this, getContinueQuestion(value),
-                                                null, JOptionPane.YES_NO_OPTION);
+            int response = JOptionPane
+                .showConfirmDialog(PropertiesTable.this, getContinueQuestion(value), null,
+                                   JOptionPane.YES_NO_OPTION);
             return response == JOptionPane.YES_OPTION;
         }
 
@@ -387,8 +387,9 @@ public class PropertiesTable extends JTable {
                 if (PropertiesTable.this.properties.containsKey(value)) {
                     result.append(String.format("Property key '%s' already exists", value));
                 } else {
-                    result.append(String.format("Property key '%s' is not a valid identifier.",
-                                                value));
+                    result
+                        .append(String
+                            .format("Property key '%s' is not a valid identifier.", value));
                 }
             } else {
                 // editing a value
@@ -396,8 +397,9 @@ public class PropertiesTable extends JTable {
                 String message;
                 try {
                     key.parser().parse(value);
-                    message = String.format("Key '%s' expects %s", this.editingValueForKey,
-                                            Strings.toLower(key.parser().getDescription()));
+                    message = String
+                        .format("Key '%s' expects %s", this.editingValueForKey,
+                                Strings.toLower(key.parser().getDescription()));
                 } catch (FormatException exc) {
                     message = exc.getMessage();
                 }

@@ -407,7 +407,9 @@ public final class GraphToTikz<G extends Graph> {
 
     private void appendParameterNode(AspectJVertex node) {
         String nodeId = node.getNode().toString();
-        String nr = UnitPar.toRuleAdornment(node.getNode().get(Category.PARAM));
+        var param = node.getNode().get(Category.PARAM);
+        assert param != null;
+        String nr = UnitPar.toRuleAdornment(param);
         // New node line.
         append(BEGIN_NODE + encloseBrack(PAR_NODE_STYLE));
         // Node name.

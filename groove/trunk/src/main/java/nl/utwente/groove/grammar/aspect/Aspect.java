@@ -16,6 +16,9 @@
  */
 package nl.utwente.groove.grammar.aspect;
 
+import static nl.utwente.groove.grammar.aspect.AspectKind.EMBARGO;
+import static nl.utwente.groove.grammar.aspect.AspectKind.TEST;
+
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.function.BiPredicate;
@@ -279,7 +282,8 @@ public class Aspect {
             if (old == null) {
                 add = true;
             } else if (old.getKind() != aspect.getKind()) {
-                throw new FormatException("Conflicting aspects '%s' and '%s'", old, aspect);
+                throw new FormatException("Conflicting aspects '%s' and '%s'", old.getKind(),
+                    aspect.getKind());
             } else if (old.hasContent()) {
                 if (aspect.hasContent()) {
                     throw new FormatException("Duplicate aspects '%s' and '%s'", old, aspect);
@@ -302,8 +306,8 @@ public class Aspect {
                 .filter(c -> !c.ok(newAspect.getCategory(), this.forNode, this.role))
                 .findAny();
             if (result.isPresent()) {
-                throw new FormatException("Conflicting aspects '%s' and '%s'", get(result.get()),
-                    newAspect);
+                throw new FormatException("Conflicting aspects '%s' and '%s'",
+                    get(result.get()).getKind(), newAspect.getKind());
             }
         }
 
@@ -317,17 +321,14 @@ public class Aspect {
                     break;
                 case RULE:
                     if (containsKey(Category.ROLE) || containsKey(Category.NESTING)) {
+                        checkRoleSort(this.forNode);
+                        checkRoleAttr();
                         if (this.forNode) {
-                            checkRoleSort();
-                            checkRoleAttr();
                             checkRoleParam();
                             checkRoleColor();
                             checkNestingId();
                         } else {
                             checkRoleNesting();
-                            checkRoleSort();
-                            checkRoleAttr();
-                            checkRoleLabel();
                             checkNestingLabel();
                         }
                     }
@@ -347,22 +348,27 @@ public class Aspect {
             }
         }
 
-        /** Checks for aspect-based conflicts between {@link Category#ROLE} and {@link Category#SORT}. */
-        private void checkRoleSort() throws FormatException {
-            check(Category.ROLE, Category.SORT,
-                  (role, sort) -> role.getKind().isCreator() || role.getKind().isEraser());
+        /** Checks for aspect-based conflicts between {@link Category#ROLE} and {@link Category#SORT}.
+         * @throws FormatException if there is a conflict of this kind
+         */
+        private void checkRoleSort(boolean forNode) throws FormatException {
+            check(Category.ROLE, Category.SORT, (role, sort) -> role.getKind().isCreator()
+                || forNode && role.getKind().isEraser());
         }
 
-        /** Checks for aspect-based conflicts between {@link Category#ROLE} and {@link Category#ATTR}. */
+        /** Checks for aspect-based conflicts between {@link Category#ROLE} and {@link Category#ATTR}.
+         * @throws FormatException if there is a conflict of this kind
+         */
         private void checkRoleAttr() throws FormatException {
             check(Category.ROLE, Category.ATTR, //
-                  (role, attr) -> attr.getKind().isEraser() || //
-                      attr.getKind().isAssign()
-                          ? role.getKind().inNAC()
-                          : role.getKind().isCreator());
+                  (role, attr) -> attr.getKind().isAssign()
+                      ? role.has(EMBARGO)
+                      : role.getKind().isCreator() || !attr.has(TEST) && role.getKind().isEraser());
         }
 
-        /** Checks for aspect-based conflicts between {@link Category#ROLE} and {@link Category#PARAM}. */
+        /** Checks for aspect-based conflicts between {@link Category#ROLE} and {@link Category#PARAM}.
+         * @throws FormatException if there is a conflict of this kind
+         */
         private void checkRoleParam() throws FormatException {
             check(Category.ROLE, Category.PARAM, //
                   (role, param) -> role.getKind().inNAC()
@@ -375,36 +381,44 @@ public class Aspect {
                   (role, color) -> role.getKind().inNAC() || role.getKind().isEraser());
         }
 
-        /** Checks for aspect-based conflicts between {@link Category#ROLE} and {@link Category#NESTING}. */
+        /** Checks for aspect-based conflicts between {@link Category#ROLE} and {@link Category#NESTING}.
+         * @throws FormatException if there is a conflict of this kind
+         */
         private void checkRoleNesting() throws FormatException {
             check(Category.ROLE, Category.NESTING,
                   (role, nesting) -> !nesting.getKind().isQuantifier());
         }
 
-        /** Checks for aspect-based conflicts between {@link Category#ROLE} and {@link Category#LABEL}. */
-        private void checkRoleLabel() throws FormatException {
-            check(Category.ROLE, Category.LABEL, //
-                  (role, label) -> label.has(AspectKind.PATH)
-                      && (role.getKind().isCreator() || role.getKind().isEraser()));
-        }
-
-        /** Checks for aspect-based conflicts between {@link Category#NESTING} and {@link Category#ID}. */
+        /** Checks for aspect-based conflicts between {@link Category#NESTING} and {@link Category#ID}.
+         * @throws FormatException if there is a conflict of this kind
+         */
         private void checkNestingId() throws FormatException {
             check(Category.NESTING, Category.ID, (nesting, id) -> nesting.hasContent());
         }
 
-        /** Checks for aspect-based conflicts between {@link Category#NESTING} and {@link Category#LABEL}. */
+        /** Checks for aspect-based conflicts between {@link Category#NESTING} and {@link Category#LABEL}.
+         * @throws FormatException if there is a conflict of this kind
+         */
         private void checkNestingLabel() throws FormatException {
             check(Category.NESTING, Category.LABEL,
                   (nesting, label) -> !nesting.getKind().isQuantifier());
         }
 
-        /** Checks for aspect-based conflicts between {@link Category#MULT_IN} and {@link Category#ASSOC}. */
+        /** Checks for aspect-based conflicts between {@link Category#MULT_IN} and {@link Category#ASSOC}.
+         * @throws FormatException if there is a conflict of this kind
+         */
         private void checkMultAssoc() throws FormatException {
             check(Category.MULT_IN, Category.ASSOC, //
                   (multIn, assoc) -> ((MultiplicityContent) multIn.getContent()).get().upper() > 1);
         }
 
+        /** Checks for a conflict between aspects of two categories, as encoded in a test.
+         * @param one The first category to be tested
+         * @param two The second category to be tested
+         * @param test the test; if aspects of both categories {@code one} and {@code two}
+         * are present and pass the test, there is a conflict
+         * @throws FormatException if the test passes
+         */
         @SuppressWarnings("null")
         private void check(Category one, Category two,
                            BiPredicate<Aspect,Aspect> test) throws FormatException {
@@ -412,8 +426,8 @@ public class Aspect {
             var aspectTwo = get(two);
             if (aspectOne != null && aspectTwo != null) {
                 if (test.test(aspectOne, aspectTwo)) {
-                    throw new FormatException("Conflicting aspects '%s' and '%s'", aspectOne,
-                        aspectTwo);
+                    throw new FormatException("Conflicting aspects '%s' and '%s'",
+                        aspectOne.getKind(), aspectTwo.getKind());
                 }
             }
         }

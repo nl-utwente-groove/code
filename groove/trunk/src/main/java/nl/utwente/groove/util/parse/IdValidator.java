@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.util.parse;
 
+import nl.utwente.groove.algebra.Sort;
+
 /**
  * Functionality to test whether a given string is a valid identifier.
  * At least all Java identifiers are considered valid.
@@ -60,14 +62,21 @@ public abstract class IdValidator implements Fallible {
                     result.append(nextChar);
                     containsAlpha = false;
                     first = true;
-                } else if (first ? isIdentifierStart(nextChar)
-                    : last ? isIdentifierEnd(nextChar) : isIdentifierPart(nextChar)) {
+                } else if (first
+                    ? isIdentifierStart(nextChar)
+                    : last
+                        ? isIdentifierEnd(nextChar)
+                        : isIdentifierPart(nextChar)) {
                     result.append(nextChar);
                     first = false;
                 } else {
-                    this.errors.add("Illegal %s character '%s'",
-                        first ? "first" : last ? "final" : "internal",
-                        nextChar);
+                    this.errors
+                        .add("Illegal %s character '%s'", first
+                            ? "first"
+                            : last
+                                ? "final"
+                                : "internal",
+                             nextChar);
                     if (first && isIdentifierPart(nextChar)) {
                         // we can repair this by prepending an underscore
                         result.append("_");
@@ -105,7 +114,7 @@ public abstract class IdValidator implements Fallible {
      * @return {@code name} if it is valid
      * @throws FormatException if {@code name} is not valid
      */
-    public final String testValid(String name) throws FormatException {
+    public String testValid(String name) throws FormatException {
         FormatErrorSet oldErrors = this.errors;
         repair(name);
         FormatErrorSet newErrors = this.errors;
@@ -126,11 +135,12 @@ public abstract class IdValidator implements Fallible {
      * @return <tt>true</tt> if the text does not contain any invalid characters
      */
     public final boolean isValid(String name) {
-        FormatErrorSet oldErrors = this.errors;
-        repair(name);
-        FormatErrorSet newErrors = this.errors;
-        this.errors = oldErrors;
-        return newErrors.isEmpty();
+        try {
+            testValid(name);
+            return true;
+        } catch (FormatException exc) {
+            return false;
+        }
     }
 
     /** Tests if a given character is suitable as first character for an identifier. */
@@ -220,5 +230,26 @@ public abstract class IdValidator implements Fallible {
     /** Validator for standard Java identifiers. */
     public static final IdValidator JAVA_ID = new IdValidator() {
         // empty
+    };
+
+    /** Validator for GROOVE identifiers (edge labels, wildcards and the like). */
+    public static final IdValidator GROOVE_ID = new IdValidator() {
+        @Override
+        public boolean isIdentifierPart(char c) {
+            return super.isIdentifierPart(c) || c == '-';
+        }
+    };
+
+    /** Validator for standard Java identifiers that are not Boolean constants. */
+    public static final IdValidator JAVA_ID_NON_BOOL = new IdValidator() {
+        @Override
+        public String testValid(String name) throws FormatException {
+            var result = super.testValid(name);
+            if (Sort.BOOL.denotesConstant(name)) {
+                throw new FormatException("Boolean constant '%s' not allowed as identifier", name);
+            }
+            return result;
+        }
+
     };
 }

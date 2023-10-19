@@ -258,11 +258,11 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         // include the node in the model if it is not virtual
         if (!modelNode.has(Category.NESTING) && !modelNode.has(REMARK)) {
             HostNode nodeImage = null;
-            Aspect data = modelNode.get(Category.SORT);
-            if (data != null) {
+            Aspect sortAspect = modelNode.get(Category.SORT);
+            if (sortAspect != null) {
                 Algebra<?> nodeAlgebra
-                    = this.algebraFamily.getAlgebra(data.getContentKind().getSort());
-                Constant term = ((ConstContent) data.getContent()).get();
+                    = this.algebraFamily.getAlgebra(sortAspect.getContentKind().getSort());
+                Constant term = ((ConstContent) sortAspect.getContent()).get();
                 nodeImage = result.getFactory().createNode(nodeAlgebra, nodeAlgebra.toValue(term));
                 result.addNode(nodeImage);
             } else {

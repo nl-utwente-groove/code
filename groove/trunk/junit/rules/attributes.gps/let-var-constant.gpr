@@ -6,12 +6,12 @@
         </attr>
         <node id="n0">
             <attr name="layout">
-                <string>179 190 32 18</string>
+                <string>180 190 30 18</string>
             </attr>
         </node>
         <node id="n1">
             <attr name="layout">
-                <string>189 60 51 18</string>
+                <string>177 60 75 18</string>
             </attr>
         </node>
         <edge from="n0" to="n0">

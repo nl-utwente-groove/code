@@ -20,6 +20,11 @@ import java.util.Collection;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
+import nl.utwente.groove.algebra.Sort;
+import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.util.Fixable;
@@ -32,6 +37,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public interface AspectElement extends Element, Fixable {
     /** Returns the aspect graph to which this element belongs. */
     public AspectGraph getGraph();
@@ -64,7 +70,7 @@ public interface AspectElement extends Element, Fixable {
     /** Returns the aspect of a given kind, if any.
      * Convenience method for {@code get(kind.getCategory())}.
      */
-    default public Aspect get(AspectKind kind) {
+    default public @Nullable Aspect get(AspectKind kind) {
         var aspect = get(kind.getCategory());
         return aspect == null || aspect.getKind() != kind
             ? null
@@ -77,14 +83,15 @@ public interface AspectElement extends Element, Fixable {
      * @return {@code true} if an aspect of {@code kind} exists whose content satisfies {@code pred}
      */
     default public boolean hasContent(AspectKind kind, Predicate<AspectContent> pred) {
-        return has(kind) && pred.test(getContent(kind.getCategory()));
+        var content = getContent(kind);
+        return content != null && pred.test(content);
     }
 
     /**
      * Returns the aspect content set for a given aspect kind, if any.
      * Convenience method for {@code getContent(kind.getCategory())}.
      */
-    default public AspectContent getContent(AspectKind kind) {
+    default public @Nullable AspectContent getContent(AspectKind kind) {
         return has(kind)
             ? getContent(kind.getCategory())
             : null;
@@ -110,7 +117,7 @@ public interface AspectElement extends Element, Fixable {
     /** Returns the aspect of a given category, if any.
      * Convenience method for {@link Aspect.Map#get(Object)} called on the result of {@link #getAspects()}
      */
-    default public Aspect get(AspectKind.Category cat) {
+    default public @Nullable Aspect get(AspectKind.Category cat) {
         return getAspects().get(cat);
     }
 
@@ -120,7 +127,7 @@ public interface AspectElement extends Element, Fixable {
      * @param func the function to be applied to the aspect
      * @return {@code func} applied to {@code get(cat)}, or {@code null} if {@code cat} has not been set
      */
-    default public <T> T get(AspectKind.Category cat, Function<Aspect,T> func) {
+    default public <T> @Nullable T get(AspectKind.Category cat, Function<Aspect,T> func) {
         var aspect = get(cat);
         return aspect == null
             ? null
@@ -133,7 +140,7 @@ public interface AspectElement extends Element, Fixable {
      * taking potential {@code null}-ness into account.
      * @return the aspect kind set for {@code cat}; or {@code null} if {@code cat} has not been set
      */
-    default public AspectKind getKind(AspectKind.Category cat) {
+    default public @Nullable AspectKind getKind(AspectKind.Category cat) {
         return get(cat, a -> a.getKind());
     }
 
@@ -143,53 +150,22 @@ public interface AspectElement extends Element, Fixable {
      * taking potential {@code null}-ness into account.
      * @return the aspect content set for {@code cat}; or {@code null} if {@code cat} has not been set
      */
-    default public AspectContent getContent(AspectKind.Category cat) {
-        return get(cat, a -> a.getContent());
+    default public @Nullable AspectContent getContent(AspectKind.Category cat) {
+        return get(cat, Aspect::getContent);
     }
 
     /** Sets an aspect in this element. */
     public void set(Aspect aspect);
 
-    /**
-     * Returns the main aspect of this element, if any.
-     * At all times, the return value is guaranteed to be valid for the kind of graph.
-     * When the graph is fixed, the return value is guaranteed to be non-{@code null}.
-    Aspect getAspect();
-     */
+    /** Checks if this element has a sort aspect. */
+    default boolean hasSort() {
+        return has(Category.SORT);
+    }
 
-    /**
-     * Tests if the element has a non-{@code null} main aspect.
-     * @see #getAspect()
-    boolean hasAspect();
-     */
-
-    /**
-     * Returns the main aspect kind of this element, if any.
-     * At all times, the return value is guaranteed to be valid for the kind of graph.
-     * The return value is guaranteed to be non-{@code null}.
-     * Convenience method for {@code getType().getKind()}.
-     * @see #getAspect()
-    AspectKind getKind();
-     */
-
-    /**
-     * Indicates if this element has an attribute-related aspect.
-     * @see #getAttrAspect()
-    boolean hasAttrAspect();
-     */
-
-    /**
-     * Returns the attribute-related aspect of this element, if any.
-    Aspect getAttrAspect();
-     */
-
-    /**
-     * Returns the kind of attribute-related aspect for this element, or {@link AspectKind#DEFAULT}.
-     * The return value is guaranteed to be valid for the kind of graph,
-     * and if not {@link AspectKind#DEFAULT}, to satisfy {@link AspectKind#isAttrKind()}
-     * @see #getAttrAspect()
-    AspectKind getAttrKind();
-     */
+    /** Returns the sort of this element, if any. */
+    default public @Nullable Sort getSort() {
+        return get(Category.SORT, a -> a.getKind().getSort());
+    }
 
     /**
      * Indicates if this element has format errors.
@@ -227,10 +203,12 @@ public interface AspectElement extends Element, Fixable {
         boolean result = !hasAtLeast(Status.PARSING);
         if (result) {
             setStatus(Status.PARSING);
-            try {
-                parseAspects();
-            } catch (FormatException exc) {
-                addErrors(exc.getErrors());
+            if (!hasErrors()) {
+                try {
+                    parseAspects();
+                } catch (FormatException exc) {
+                    addErrors(exc.getErrors());
+                }
             }
             setStatus(Status.PARSED);
         }

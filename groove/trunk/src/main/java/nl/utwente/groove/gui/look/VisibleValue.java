@@ -19,12 +19,10 @@ package nl.utwente.groove.gui.look;
 import static nl.utwente.groove.grammar.aspect.AspectKind.REMARK;
 
 import java.util.Iterator;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 
-import nl.utwente.groove.grammar.aspect.AspectContent.ExprContent;
-import nl.utwente.groove.grammar.aspect.AspectEdge;
-import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.graph.Graph;
@@ -138,27 +136,10 @@ public class VisibleValue implements VisualValue<Boolean> {
             return false;
         }
         // we are now sure that the underlying node has a data type;
-        // variable nodes should be shown
-        if (!sortAspect.hasContent()) {
-            return true;
-        }
-        // non-constant expressions should be shown
-        if ((sortAspect.getContent() instanceof ExprContent e) && !e.get().hasConstant()) {
-            return true;
-        }
-        // any regular expression edge on the node makes it visible
-        Iterator<?> edgeIter = jVertex.getPort().edges();
-        while (edgeIter.hasNext()) {
-            AspectEdge edge = ((AspectJEdge) edgeIter.next()).getEdge();
-            if (edge.has(AspectKind.NESTED)) {
-                return true;
-            }
-            var ruleLabel = edge.getRuleLabel();
-            if (ruleLabel != null && !ruleLabel.isAtom()) {
-                return true;
-            }
-        }
-        return false;
+        @SuppressWarnings({"cast", "unchecked"})
+        var edges = (Set<AspectJEdge>) jVertex.getPort().getEdges();
+        // any non-source-label of an incoming edge makes the node visible
+        return edges.stream().anyMatch(e -> !e.isSourceLabel());
     }
 
     private boolean getAspectEdgeValue(AspectJGraph jGraph, AspectJEdge jEdge) {
