@@ -184,7 +184,7 @@ public sealed interface AspectContent
                     throw new FormatException("Empty quantifier level");
                 }
                 if (!idValidator.isValid(text)) {
-                    throw new FormatException("Invalid quantifier level '%s'", text);
+                    throw new FormatException("Invalid quantifier level name '%s'", text);
                 }
                 return new IdContent(this, text);
             }
@@ -521,7 +521,7 @@ public sealed interface AspectContent
             }
             if (role == GraphRole.TYPE || status == Status.ROLE) {
                 // in a type graph, this is the declaration of an attribute;
-                // within a rule role, it is an attribute field name
+                // within a rule role, it is an attribute field name or operator name
                 assert text.length() > 0;
                 if (!idValidator.isValid(text)) {
                     throw new FormatException("Illegal field name '%s'", text);
@@ -533,9 +533,9 @@ public sealed interface AspectContent
             } else {
                 assert role == GraphRole.RULE;
                 // we know we are not inside a role
-                var op = getSort().getOperator(text);
-                if (op != null) {
-                    result = new OpContent(this, op);
+                // this is either an operator name or an expression
+                if (getSort().hasOperator(text)) {
+                    result = new IdContent(this, text);
                 } else {
                     // then it must be an expression
                     ExprTree exprTree = Expression.parse(text);

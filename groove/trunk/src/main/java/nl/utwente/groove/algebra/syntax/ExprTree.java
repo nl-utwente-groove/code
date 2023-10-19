@@ -354,19 +354,35 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
      */
     public ExprTree relabel(TypeLabel oldLabel, TypeLabel newLabel) {
         ExprTree result = this;
-        if (getOp().getKind() == OpKind.ATOM) {
+        if (getOp().getKind() == OpKind.ATOM && hasId()) {
             QualName id = getId();
             var tokens = id.tokens();
             boolean changed = false;
-            for (int i = 1; i < id.size(); i++) {
-                if (tokens.get(i).equals(oldLabel.text())) {
-                    tokens.set(i, newLabel.text());
-                    changed = true;
-                }
+            int i = tokens.size() - 1;
+            if (tokens.get(i).equals(oldLabel.text())) {
+                tokens = new ArrayList<>(tokens);
+                tokens.set(i, newLabel.text());
+                changed = true;
             }
             if (changed) {
                 result = new ExprTree(ExprOp.atom());
                 result.setId(new QualName(tokens));
+                getErrors().forEach(result::addError);
+                result.setFixed();
+            }
+        } else {
+            boolean changed = false;
+            var newArgs = new ArrayList<ExprTree>();
+            for (var arg : getArgs()) {
+                var newArg = arg.relabel(oldLabel, newLabel);
+                changed |= arg != newArg;
+                newArgs.add(newArg);
+            }
+            if (changed) {
+                result = new ExprTree(getOp());
+                newArgs.forEach(result::addArg);
+                getErrors().forEach(result::addError);
+                result.setFixed();
             }
         }
         return result;

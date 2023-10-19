@@ -379,12 +379,16 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         if (roleKind == READER) {
             Sort sort = target.getSort();
             assert sort != null;
-            // add an eraser edge for the old value, if this is not LET_NEW
-            AspectNode oldTarget = findTarget(source, assign.getLhs(), sort);
-            if (oldTarget == null) {
+            // add an eraser edge for the old value
+            AspectNode oldTarget;
+            var oldEdge = findEdge(source, assign.getLhs(), sort);
+            if (oldEdge == null) {
                 oldTarget = addNestedNode(level, false);
                 // use the type of the new target for the old target node
                 oldTarget.set(Aspect.getAspect(sort));
+            } else {
+                oldTarget = oldEdge.target();
+                removeEdge(oldEdge);
             }
             assignLabel = parser.parse(ERASER.getPrefix() + assign.getLhs(), getRole());
             addEdge(source, assignLabel, oldTarget).setParsed();
@@ -482,17 +486,28 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
      * @param fieldName expected label of the edge
      * @param sort expected target source of the edge
      */
-    private @Nullable AspectNode findTarget(@NonNull AspectNode owner, String fieldName,
-                                            Sort sort) {
+    private @Nullable AspectEdge findEdge(@NonNull AspectNode owner, String fieldName, Sort sort) {
         boolean allEdgesOK = getRole() != RULE || owner.has(Category.NESTING);
-        Optional<AspectNode> result = outEdgeSet(owner)
+        Optional<? extends AspectEdge> result = outEdgeSet(owner)
             .stream()
             .filter(e -> allEdgesOK || e.has(Category.ROLE, AspectKind::inLHS))
             .filter(e -> e.getInnerText().equals(fieldName))
-            .map(AspectEdge::target)
-            .filter(n -> n.has(Category.SORT, k -> k.hasSort(sort)))
+            .filter(e -> e.target().has(Category.SORT, k -> k.hasSort(sort)))
             .findAny();
         return result.orElse(null);
+    }
+
+    /** Looks for an outgoing edge matching a given field expression.
+     * @param owner the node that should have the outgoing edge
+     * @param fieldName expected label of the edge
+     * @param sort expected target source of the edge
+     */
+    private @Nullable AspectNode findTarget(@NonNull AspectNode owner, String fieldName,
+                                            Sort sort) {
+        var result = findEdge(owner, fieldName, sort);
+        return result == null
+            ? null
+            : result.target();
     }
 
     /**
