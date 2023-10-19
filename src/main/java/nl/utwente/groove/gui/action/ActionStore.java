@@ -878,6 +878,6 @@ public class ActionStore implements SimulatorListener {
      * the refreshables list in time.
      */
     public void initialiseRemainingActions() {
-        // none
+        getFindReplaceAction();
     }
 }

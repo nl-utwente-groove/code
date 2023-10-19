@@ -280,7 +280,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         node.testFixed(true);
         MultiLabel result = new MultiLabel();
         // the following used to include hasError() as a disjunct
-        if (jGraph.isShowAspects() || jVertex.hasErrors()) {
+        if (jGraph.isShowAspects() || jVertex.getNode().hasErrors()) {
             result.add(jVertex.getUserObject().toLines());
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
                 if (!isFiltered(jGraph, jVertex, edge)) {

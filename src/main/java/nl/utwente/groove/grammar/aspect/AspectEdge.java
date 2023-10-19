@@ -62,7 +62,6 @@ import nl.utwente.groove.grammar.type.Multiplicity;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.AEdge;
 import nl.utwente.groove.graph.EdgeRole;
-import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.plain.PlainLabel;
 import nl.utwente.groove.gui.look.Values;
@@ -148,7 +147,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     @Override
     public EdgeRole getRole() {
-        if (this.isTest() || isAssign()) {
+        if (isTest() || isAssign() || isField()) {
             // We just want the edge role to be non-binary...
             return EdgeRole.FLAG;
         } else if (hasGraphRole(TYPE) && has(Category.SORT)) {
@@ -196,12 +195,16 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 break;
             case SORT:
                 if (hasGraphRole(RULE)) {
+                    String id = (String) content.get();
                     if (isLoop()) {
                         // this is an attribute field on a self-edge
-                        setField((String) content.get());
+                        setField(id);
                         getGraph().setNonNormal();
                     } else {
-                        setOperator((Operator) content.get());
+                        @SuppressWarnings("null")
+                        var op = getSort().getOperator(id);
+                        assert op != null;
+                        setOperator(op);
                     }
                 }
                 break;
@@ -700,7 +703,6 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
      */
     private TypeLabel createTypeLabel() {
         assert isParsed();
-        assert hasGraphRole(GraphRole.HOST) || hasGraphRole(TYPE);
         TypeLabel result = null;
         var labelKind = getKind(Category.LABEL);
         if (labelKind != null) {

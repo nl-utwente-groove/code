@@ -576,7 +576,7 @@ abstract sealed public class RegExpr { // implements VarSetSupport {
     static private final IdValidator ATOM = new IdValidator() {
         @Override
         public boolean isIdentifierStart(char c) {
-            return isAtomChar(c);
+            return isAtomChar(c) && c != INV_OPERATOR;
         }
 
         @Override
@@ -586,7 +586,7 @@ abstract sealed public class RegExpr { // implements VarSetSupport {
 
         @Override
         public boolean isIdentifierEnd(char c) {
-            return isAtomChar(c);
+            return isAtomChar(c) && c != INV_OPERATOR;
         }
     };
 

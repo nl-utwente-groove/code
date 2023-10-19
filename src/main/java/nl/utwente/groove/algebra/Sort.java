@@ -26,8 +26,11 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.algebra.Signature.OpValue;
 import nl.utwente.groove.util.Keywords;
+import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.StringHandler;
 
@@ -189,11 +192,15 @@ public enum Sort {
      * @return the operator of this sort called {@code name},
      * or {@code null} if such an operator does not exist
      */
-    public Operator getOperator(String name) {
-        if (this.operatorMap == null) {
-            this.operatorMap = computeOperatorMap();
-        }
-        return this.operatorMap.get(name);
+    public @Nullable Operator getOperator(String name) {
+        return this.operatorMap.get().get(name);
+    }
+
+    /** Checks if this sort has an operator with a given name.
+     * @param name the name of the expected operator
+     */
+    public boolean hasOperator(String name) {
+        return this.operatorMap.get().containsKey(name);
     }
 
     /** Creates content for {@link #operatorMap}. */
@@ -206,7 +213,8 @@ public enum Sort {
         return result;
     }
 
-    private Map<String,Operator> operatorMap;
+    private LazyFactory<? extends Map<String,Operator>> operatorMap
+        = LazyFactory.instance(this::computeOperatorMap);
 
     /**
      * Creates a constant of this sort
