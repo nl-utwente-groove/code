@@ -349,17 +349,18 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
      * In particular, this concerns field names.
      * @param oldLabel the label to be changed
      * @param newLabel the new value for {@code oldLabel}
+     * @param typing TODO
      * @return a clone of this object with changed labels, or this object
      *         if {@code oldLabel} did not occur
      */
-    public ExprTree relabel(TypeLabel oldLabel, TypeLabel newLabel) {
+    public ExprTree relabel(TypeLabel oldLabel, TypeLabel newLabel, Typing typing) {
         ExprTree result = this;
         if (getOp().getKind() == OpKind.ATOM && hasId()) {
             QualName id = getId();
             var tokens = id.tokens();
             boolean changed = false;
             int i = tokens.size() - 1;
-            if (tokens.get(i).equals(oldLabel.text())) {
+            if (!typing.contains(tokens.get(i)) && tokens.get(i).equals(oldLabel.text())) {
                 tokens = new ArrayList<>(tokens);
                 tokens.set(i, newLabel.text());
                 changed = true;
@@ -374,7 +375,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
             boolean changed = false;
             var newArgs = new ArrayList<ExprTree>();
             for (var arg : getArgs()) {
-                var newArg = arg.relabel(oldLabel, newLabel);
+                var newArg = arg.relabel(oldLabel, newLabel, typing);
                 changed |= arg != newArg;
                 newArgs.add(newArg);
             }

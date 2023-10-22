@@ -32,6 +32,7 @@ import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.syntax.Assignment;
 import nl.utwente.groove.algebra.syntax.ExprTree;
 import nl.utwente.groove.algebra.syntax.Expression;
+import nl.utwente.groove.algebra.syntax.Typing;
 import nl.utwente.groove.grammar.aspect.AspectContent.ColorContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.ConstContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.ExprContent;
@@ -106,10 +107,11 @@ public sealed interface AspectContent
      * occurrences of a certain label into another.
      * @param oldLabel the label to be changed
      * @param newLabel the new value for {@code oldLabel}
+     * @param typing TODO
      * @return a clone of this content with changed labels, or
      * the original content if {@code oldLabel} did not occur
      */
-    default AspectContent relabel(TypeLabel oldLabel, TypeLabel newLabel) {
+    default AspectContent relabel(TypeLabel oldLabel, TypeLabel newLabel, Typing typing) {
         return this;
     }
 
@@ -735,8 +737,8 @@ public sealed interface AspectContent
         }
 
         @Override
-        public ExprContent relabel(TypeLabel oldLabel, TypeLabel newLabel) {
-            ExprTree result = get().relabel(oldLabel, newLabel);
+        public ExprContent relabel(TypeLabel oldLabel, TypeLabel newLabel, Typing typing) {
+            ExprTree result = get().relabel(oldLabel, newLabel, typing);
             if (result == get()) {
                 return this;
             } else {
@@ -757,9 +759,9 @@ public sealed interface AspectContent
         }
 
         @Override
-        public AspectContent relabel(TypeLabel oldLabel, TypeLabel newLabel) {
+        public AspectContent relabel(TypeLabel oldLabel, TypeLabel newLabel, Typing typing) {
             IdContent result = this;
-            if (kind().sort != null) {
+            if (kind().hasSort() && !typing.contains(get())) {
                 // this is a field name
                 if (oldLabel.getRole() == EdgeRole.BINARY && oldLabel.text().equals(get())) {
                     result = new IdContent(kind(), newLabel.text());
@@ -814,7 +816,7 @@ public sealed interface AspectContent
         }
 
         @Override
-        public AspectContent relabel(TypeLabel oldLabel, TypeLabel newLabel) {
+        public AspectContent relabel(TypeLabel oldLabel, TypeLabel newLabel, Typing typing) {
             LabelPattern newPattern = get().relabel(oldLabel, newLabel);
             return newPattern == get()
                 ? this

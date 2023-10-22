@@ -75,8 +75,9 @@ public enum AlgebraFamily implements DocumentedEnum {
      *         signature
      * @throws IllegalStateException if there are signatures without algebras
      */
-    private AlgebraFamily(String name, String explanation, Algebra<?>... algebras)
-        throws IllegalArgumentException, IllegalStateException {
+    private AlgebraFamily(String name, String explanation,
+                          Algebra<?>... algebras) throws IllegalArgumentException,
+                                                  IllegalStateException {
         this.name = name;
         this.explanation = explanation;
         for (Algebra<?> algebra : algebras) {
@@ -94,9 +95,9 @@ public enum AlgebraFamily implements DocumentedEnum {
         Sort sigKind = algebra.getSort();
         Algebra<?> oldAlgebra = this.algebraMap.put(sigKind, algebra);
         if (oldAlgebra != null) {
-            throw Exceptions.illegalArg("Signature '%s' already implemented by '%s'",
-                sigKind,
-                oldAlgebra.getName());
+            throw Exceptions
+                .illegalArg("Signature '%s' already implemented by '%s'", sigKind,
+                            oldAlgebra.getName());
         }
     }
 
@@ -108,8 +109,8 @@ public enum AlgebraFamily implements DocumentedEnum {
     private void checkCompleteness() throws IllegalStateException {
         for (Sort sigKind : Sort.values()) {
             if (!this.algebraMap.containsKey(sigKind)) {
-                throw Exceptions.illegalState("Implementation of signature '%s' is missing",
-                    sigKind);
+                throw Exceptions
+                    .illegalState("Implementation of signature '%s' is missing", sigKind);
             }
         }
     }
@@ -196,9 +197,7 @@ public enum AlgebraFamily implements DocumentedEnum {
         Map<String,Operation> result = new HashMap<>();
         // first find out what methods were declared in the signature
         Set<String> methodNames = new HashSet<>();
-        Method[] signatureMethods = algebra.getSort()
-            .getSignatureClass()
-            .getDeclaredMethods();
+        Method[] signatureMethods = algebra.getSort().getSignatureClass().getDeclaredMethods();
         for (Method method : signatureMethods) {
             if (Modifier.isAbstract(method.getModifiers())
                 && Modifier.isPublic(method.getModifiers())) {
@@ -262,9 +261,8 @@ public enum AlgebraFamily implements DocumentedEnum {
         Operation(AlgebraFamily register, Algebra<?> algebra, Method method) {
             this.algebra = algebra;
             this.method = method;
-            Sort returnType = algebra.getSort()
-                .getOperator(method.getName())
-                .getResultType();
+            @SuppressWarnings("null")
+            Sort returnType = algebra.getSort().getOperator(method.getName()).getResultType();
             this.returnType = register.getAlgebra(returnType);
         }
 

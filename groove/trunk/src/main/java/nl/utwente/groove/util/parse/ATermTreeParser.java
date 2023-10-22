@@ -405,9 +405,11 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
         X result = createTree(op);
         if (op.getKind() == OpKind.CALL) {
             if (consume(LPAR) == null) {
-                throw expectedToken(LPAR, next());
-            }
-            if (consume(RPAR) == null) {
+                // this is not a call after all, must be a simple name
+                rollBack();
+                result = parseName();
+                // throw expectedToken(LPAR, next());
+            } else if (consume(RPAR) == null) {
                 result.addArg(parse(OpKind.NONE));
                 while (consume(TokenClaz.COMMA) != null) {
                     result.addArg(parse(OpKind.NONE));

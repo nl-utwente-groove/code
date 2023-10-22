@@ -161,7 +161,8 @@ public class Help {
             for (int p = 0; p < this.parNames.size(); p++) {
                 paramText.append("<tr><th align=\"right\">");
                 paramText.append(bf(this.parNames.get(p)));
-                paramText.append("<td width=\"5\"><td> - ");
+                paramText
+                    .append("<td width=\"10\" align=\"center\"> - <td style=\"vertical-align:top\">");
                 paramText.append(format(this.parDocs.get(p)));
             }
             result.append(HTML_LINEBREAK);
@@ -408,7 +409,7 @@ public class Help {
     }
 
     private static HTMLTag DIV_TAG = HTMLConverter.createDivTag("width: 250px;");
-    static private final HTMLTag TABLE_TAG
-        = HTMLConverter.createHtmlTag(HTMLConverter.TABLE_TAG_NAME, "cellpadding", "0");
+    static private final HTMLTag TABLE_TAG = HTMLConverter
+        .createHtmlTag(HTMLConverter.TABLE_TAG_NAME, "cellpadding", "0", "valign", "top");
     static private final HTMLTag SOURCE_TAG = HTMLConverter.createHtmlTag("font", "color", "green");
 }
