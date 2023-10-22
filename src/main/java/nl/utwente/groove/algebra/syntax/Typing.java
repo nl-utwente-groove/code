@@ -67,6 +67,11 @@ public class Typing {
         return this.sortMap.isEmpty();
     }
 
+    /** Indicates whether this typing contains a given variable name. */
+    public boolean contains(String varName) {
+        return this.sortMap.containsKey(varName);
+    }
+
     /** Returns the entries in the underlying type map. */
     public Set<Map.Entry<String,Sort>> entrySet() {
         return this.sortMap.entrySet();

@@ -138,6 +138,14 @@ public class HTMLConverter {
     }
 
     /**
+     * Returns an HTML tag embedded with two argument strings.
+     */
+    static public HTMLTag createHtmlTag(String tag, String attr1, String arg1, String attr2,
+                                        String arg2) {
+        return new HTMLTag(tag, new String[] {attr1, attr2}, new String[] {arg1, arg2});
+    }
+
+    /**
      * Returns a span tag with a style argument.
      */
     static public HTMLTag createSpanTag(String arguments) {
@@ -304,6 +312,16 @@ public class HTMLConverter {
         /** Constructs a tag with a given name and attribute name/value. */
         public HTMLTag(String tag, String attrName, String attrValue) {
             this.tagBegin = String.format("<%s %s=\"%s\">", tag, attrName, toHtml(attrValue));
+            this.tagEnd = String.format("</%s>", tag);
+        }
+
+        /** Constructs a tag with a given name and attribute name/value. */
+        public HTMLTag(String tag, String[] attrName, String[] attrValue) {
+            String attrs = "";
+            for (int i = 0; i < attrName.length; i++) {
+                attrs = attrs + String.format(" %s=\"%s\"", attrName[i], toHtml(attrValue[i]));
+            }
+            this.tagBegin = String.format("<%s %s>", tag, attrs);
             this.tagEnd = String.format("</%s>", tag);
         }
 

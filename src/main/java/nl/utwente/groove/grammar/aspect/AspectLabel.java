@@ -26,6 +26,7 @@ import java.util.function.Predicate;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.algebra.syntax.Typing;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.ALabel;
 import nl.utwente.groove.graph.EdgeRole;
@@ -184,12 +185,12 @@ public class AspectLabel extends ALabel implements Fixable {
      * @return a clone of this object with changed labels, or this object
      *         if {@code oldLabel} did not occur
      */
-    public AspectLabel relabel(TypeLabel oldLabel, TypeLabel newLabel) {
+    public AspectLabel relabel(TypeLabel oldLabel, TypeLabel newLabel, Typing typing) {
         AspectLabel result = this;
         boolean isNew = false;
         List<Aspect> newAspects = new ArrayList<>();
         for (Aspect aspect : getAspects()) {
-            Aspect newAspect = aspect.relabel(oldLabel, newLabel);
+            Aspect newAspect = aspect.relabel(oldLabel, newLabel, typing);
             isNew |= newAspect != aspect;
             newAspects.add(newAspect);
         }

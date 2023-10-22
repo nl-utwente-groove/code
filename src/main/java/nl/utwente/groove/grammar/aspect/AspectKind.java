@@ -453,6 +453,8 @@ public enum AspectKind {
         String optQBody = "The optional " + qBody;
         String qPar = "associated quantifier level";
         String optQPar = "optional " + qPar;
+        String optQDecl
+            = "(optional) declared name for this quantifier level.<br>(alternatively given through an ID-declation)";
         String sortPar
             = "one of the primitive sorts " + toHelpString(Arrays.asList(Sort.values()), "", "");
         String flagPar = "flag label text; identifier with optional hyphens";
@@ -493,7 +495,7 @@ public enum AspectKind {
                 s = "%s[EQUALS.q]COLON.label";
                 h = "Conditional edge creator";
                 b
-                    .and("Tests for the absence of a %2$s-edge; creates it when applied.")//
+                    .and("Tests for the absence of a %2$s-edge; creates it upon application.")//
                     .and(optQBody);
                 p
                     .and(optQPar)//
@@ -502,7 +504,7 @@ public enum AspectKind {
             case N0:
                 s = "%s.COLON";
                 h = "Conditional node creator";
-                b.add("Tests for the absence of a node; creates it when applied.");
+                b.add("Tests for the absence of a node; creates it upon application.");
                 break;
             case N1:
                 s = "%s[EQUALS.q]COLON.FLAG.COLON.flag";
@@ -515,7 +517,7 @@ public enum AspectKind {
                     .and(flagPar);
                 break;
             case N3:
-                s = "%s[EQUALS.q]COLON.LET.name.EQUALS.expr";
+                s = "%s[EQUALS.q]COLON.LET.COLON.field.EQUALS.expr";
                 h = "Conditional attribute field creator";
                 b
                     .and("Tests for the absence of an attribute field %2$s")
@@ -541,33 +543,43 @@ public enum AspectKind {
                 h = "Primitive operator";
                 b
                     .and("Applies operation %2$s from the signature %1$s")
-                    .and("to the arguments of the source PRODUCT node.");
-                p.and("sort of the operator").and("boolean operator: one of " + ops(kind));
+                    .and("to the arguments of the source node (which must be a product node).");
+                p.and("sort of the operator; " + sortPar).and("operator of sort %1$s");
                 break;
             case N0:
-                if (role == GraphRole.RULE) {
-                    s = "%s.COLON";
-                    h = "Boolean variable";
-                    b.add("Declares a boolean-valued variable node.");
+                if (role == GraphRole.TYPE) {
+                    s = "sort.COLON.field";
+                    h = "Attribute field";
+                    b.add("Declares %2$s to be attribute field of sort %1$s");
+                    p.and(sortPar).and("attribute field name");
+                } else if (role == GraphRole.HOST) {
+                    s = "sort.COLON.constant";
+                    h = "Constant value node";
+                    b.add("Represents value %2$s of sort %1$s");
+                    p.and(sortPar).and("literal of sort %1$s");
+                } else {
+                    s = "sort.COLON.[expr]";
+                    h = "Variable or value node";
+                    b.add("Declares a %1$s-sorted node, optionally with value determined by %2$s");
+                    p
+                        .and(sortPar)
+                        .and("Optional expression of sort %2$s, determining the value of the node.<br> "
+                            + "(For expression syntax see the appropriate tab)");
                 }
                 break;
-            case N1:
-                if (role == GraphRole.TYPE) {
-                    s = "%s.COLON.field";
-                    h = "Boolean field";
-                    b.add("Declares %s to be a boolean-valued field.");
-                } else {
-                    s = "%s.COLON.(TRUE|FALSE)";
-                    h = "Boolean constant";
-                    b.add("Represents a constant boolean value (TRUE or FALSE).");
-                }
             }
             break;
 
         case COLOR:
             s = "%s.COLON.(rgb|name)";
             h = "Node type colour";
-            b.add("Sets the colour of the nodes and outgoing edges of a type.");
+            switch (role) {
+            case HOST -> b
+                .add("Sets the colour of the nodes and outgoing edges upon rule application.");
+            case RULE -> b.add("Sets the initial colour of the nodes and outgoing edges.");
+            case TYPE -> b
+                .add("Declares the color of all nodes and outgoing edges of a node type.");
+            }
             p.add("comma-seperated list of three colour dimensions, with range 0..255");
             p.add("color name");
             break;
@@ -575,14 +587,19 @@ public enum AspectKind {
         case COMPOSITE:
             s = "%s.COLON.label";
             h = "Composite edge property";
-            b.add("Declares an edge to be composite.");
-            b.add(Help.it("Currently unsupported."));
+            b
+                .and("Declares an edge type to be composite.")
+                .and("Composite edge types implicitly have incoming edge multiplicity 0..1")
+                .and("and their instances may not form a cycle in a graph.");
+            p.and("label of the composite edge type");
             break;
 
         case CONNECT:
             s = "%s.COLON";
             h = "Embargo choice";
-            b.add("Declares a choice between two negative application patterns.");
+            b
+                .and("Declares a choice between two negative application patterns.")
+                .and("Source and target node must be part of two distinct NACs");
             break;
 
         case CREATOR:
@@ -590,7 +607,7 @@ public enum AspectKind {
             case E:
                 s = "%s[EQUALS.q]COLON.label";
                 h = "Edge creator";
-                b.add("Creates a %2$s-edge when applied.");
+                b.add("Creates a %2$s-edge upon application.");
                 b.add(optQBody);
                 p.add(optQPar);
                 p.add("label of the created edge");
@@ -598,7 +615,7 @@ public enum AspectKind {
             case N0:
                 s = "%s.COLON";
                 h = "Node creator";
-                b.add("Creates a node when applied.");
+                b.add("Creates a node upon application.");
                 break;
             case N1:
                 s = "%s[EQUALS.q]COLON.FLAG.COLON.flag";
@@ -609,7 +626,7 @@ public enum AspectKind {
                 p.add("created flag");
                 break;
             case N3:
-                s = "%s[EQUALS.q]COLON.LET.name.EQUALS.expr";
+                s = "%s[EQUALS.q]COLON.LET.field.EQUALS.expr";
                 h = "Attribute field creator";
                 b
                     .and("Upon application, creates an attribute field %2$s")
@@ -621,13 +638,14 @@ public enum AspectKind {
             break;
 
         case EDGE:
-            s = "%s.COLON.QUOTE.format.QUOTE.[COMMA.field]+";
+            s = "%s.COLON.QUOTE.format.QUOTE.[COMMA.field+]";
             h = "Nodifier edge pattern";
-            b.add("Declares the node type to be a nodified edge,");
-            b.add("meaning that it will not be displayed as a node.");
-            b.add("Instead, the incoming edges will be labelled by expanding %s");
-            b.add("with string representations of the concrete values of the %s list");
-            p.add("Label format, with parameter syntax as in <tt>String.format</tt>");
+            b
+                .and("Declares the node type to be a nodified edge,")
+                .and("meaning that it will not be displayed as a node.")
+                .and("Instead, the incoming edges will be labelled by expanding %s")
+                .and("with string representations of the concrete values of the %s list");
+            p.add("Label format string, with parameter syntax as in <tt>String.format</tt>");
             p.add("Comma-separated list of attribute field names");
             break;
 
@@ -655,7 +673,7 @@ public enum AspectKind {
                 p.add("forbidden flag");
                 break;
             case N2:
-                s = "%s[EQUALS.q]COLON.sort.COLON.name";
+                s = "%s[EQUALS.q]COLON.sort.COLON.field";
                 h = "Attribute field embargo";
                 b
                     .and("Tests for the absence of an attribute field %3$s")
@@ -671,7 +689,7 @@ public enum AspectKind {
             case E:
                 s = "%s[EQUALS.q]COLON.label";
                 h = "Edge eraser";
-                b.add("Tests for the presence of a %2$s-edge; deletes it when applied.");
+                b.add("Tests for the presence of a %2$s-edge; deletes it upon application.");
                 b.add(optQBody);
                 p.add(optQPar);
                 p.add("label of the erased edge");
@@ -679,12 +697,12 @@ public enum AspectKind {
             case N0:
                 s = "%s.COLON";
                 h = "Node eraser";
-                b.add("Tests for the presence of a node; deletes it when applied.");
+                b.add("Tests for the presence of a node; deletes it upon application.");
                 break;
             case N1:
                 s = "%s[EQUALS.q]COLON.FLAG.COLON.flag";
                 h = "Flag eraser";
-                b.add("Tests for the presence of a %2$s; deletes it when applied.");
+                b.add("Tests for the presence of a %2$s-flag; deletes it upon application.");
                 b.add(optQBody);
                 p.add(optQPar);
                 p.add("erased flag");
@@ -700,7 +718,7 @@ public enum AspectKind {
                 p.and(optQPar).and(sortPar).and("erased field name");
                 break;
             case N3:
-                s = "%s[EQUALS.q]COLON.LET.name.EQUALS.expr";
+                s = "%s[EQUALS.q]COLON.LET.COLON.name.EQUALS.expr";
                 h = "Attribute field test and eraser";
                 b
                     .and("Tests for the presence of an attribute field %2$s")
@@ -714,50 +732,68 @@ public enum AspectKind {
 
         case EXISTS:
             s = "%s[EQUALS.q]COLON";
-            h = "Existential quantier node";
+            h = "Existential quantier";
             b
-                .and("Tests for the mandatory existence of a graph pattern.")
-                .and("Pattern nodes must have outgoing AT-edges to the quantifier node.")
-                .and("Pattern edges may be declared through the optional quantifier level %1$s")
-                .and("in the role specification")
-                .and(toHelpString(roles, "(one of ", ")"));
-            p.add("declared name for this quantifier level");
+                .and("Tests for the mandatory existence of a graph pattern, and transforms it.")
+                .and("Pattern nodes must have outgoing AT-edges to the quantifier node;")
+                .and("pattern edges may be declared by adding the quantifier level name '=%1$s'")
+                .and("to their role aspect")
+                .and(toHelpString(roles, "(one of ", ")."));
+            p.add(optQDecl);
             break;
 
         case EXISTS_OPT:
             s = "%s[EQUALS.q]COLON";
-            h = "Optional existential quantification";
-            b.add("Tests for the optional existence of a graph pattern.");
-            b.add("Pattern nodes must have outgoing AT-edges to the quantifier node.");
-            b.add("Pattern edges may be declared through the optional quantifier level %1$s.");
-            p.add("declared name for this quantifier level");
+            h = "Optional existential quantifier";
+            b
+                .and("Tests for the optional existence of a graph pattern, and transforms it if found.")
+                .and("Pattern nodes must have outgoing AT-edges to the quantifier node;")
+                .and("pattern edges may be declared by adding the quantifier level name '=%1$s'")
+                .and("to their role aspect")
+                .and(toHelpString(roles, "(one of ", ")."));
+            p.add(optQDecl);
             break;
 
         case FORALL:
             s = "%s[EQUALS.q]COLON";
-            h = "Universal quantification";
-            b.add("Matches all occurrences of a graph pattern.");
-            b.add("The actual number of occurrences is given by an optional outgoing COUNT-edge.");
-            b.add("Pattern nodes must have outgoing AT-edges to the quantifier node.");
-            b.add("Pattern edges may be declared through the optional quantifier level %1$s.");
-            p.add("declared name for this quantifier level");
+            h = "Universal quantifier";
+            b
+                .and("Matches and transforms all occurrences of a graph pattern.")
+                .and("The actual number of occurrences is given by an optional outgoing COUNT-edge.")
+                .and("Pattern nodes must have outgoing AT-edges to the quantifier node;")
+                .and("pattern edges may be declared by adding the quantifier level name '=%1$s'")
+                .and("to their role aspect")
+                .and(toHelpString(roles, "(one of ", ")."));
+            p.add(optQDecl);
             break;
 
         case FORALL_POS:
             s = "%s[EQUALS.q]COLON";
-            h = "Non-vacuous universal quantification";
-            b.add("Matches all occurrences of a graph pattern, provided there is at least one.");
-            b.add("The actual number of occurrences is given by an optional outgoing COUNT-edge.");
-            b.add("Pattern nodes must have outgoing AT-edges to the quantifier.");
-            b.add("Pattern edges may be declared through the optional quantifier level %1$s.");
-            p.add("declared name for this quantifier level");
+            h = "Non-vacuous universal quantifier";
+            b
+                .and("Matches and transforms all occurrences of a graph pattern, provided there is at least one.")
+                .and("The actual number of occurrences is given by an optional outgoing COUNT-edge.")
+                .and("Pattern nodes must have outgoing AT-edges to the quantifier node;")
+                .and("pattern edges may be declared by adding the quantifier level name '=%1$s'")
+                .and("to their role aspect")
+                .and(toHelpString(roles, "(one of ", ")."));
+            p.add(optQDecl);
             break;
 
         case ID:
             s = "%s.COLON.name";
             h = "Node identifier";
-            b.add("Assigns an internal node identifier %s.");
-            p.add("the declared name for this node");
+            b.and("Assigns the (graph-local) name %s to this node.");
+            if (role == GraphRole.RULE) {
+                b
+                    .and("Graph node identifiers are used in expressions to qualify field names;")
+                    .and("variable node identifiers are used directly in expressions;")
+                    .and("quantifier node identifiers are used to associate edges with the quantifier level.");
+            } else {
+                b
+                    .add("When enabling multiple start graphs, nodes with the same identifier will be merged.");
+            }
+            p.add("the declared name for this node; must be unique within the graph");
             break;
 
         case IMPORT:
@@ -768,68 +804,80 @@ public enum AspectKind {
             break;
 
         case INT:
-            switch (type) {
-            case E:
-                s = "%s.COLON.op";
-                h = "Integer operator";
-                b.add("Applies operation %1$s from the INT signature");
-                b.add("to the arguments of the source PRODUCT node.");
-                p.add("integer operator: one of " + ops(kind));
-                break;
-            case N0:
-                s = "INT.COLON";
-                h = "Integer variable";
-                b.add("Declares an integer-valued variable node.");
-                break;
-            case N1:
-                if (role == GraphRole.TYPE) {
-                    s = "%s.COLON.field";
-                    h = "Integer field";
-                    b.add("Declares %s to be an integer-valued field.");
-                } else {
-                    s = "%s.COLON.nr";
-                    h = "Integer constant";
-                    b.add("Represents the constant integer value %1$s.");
-                }
+            // covered by the general help of BOOL
+            break;
+        /*
+        switch (type) {
+        case E:
+        s = "%s.COLON.op";
+        h = "Integer operator";
+        b.add("Applies operation %1$s from the INT signature");
+        b.add("to the arguments of the source PRODUCT node.");
+        p.add("integer operator: one of " + ops(kind));
+        break;
+        case N0:
+        s = "INT.COLON";
+        h = "Integer variable";
+        b.add("Declares an integer-valued variable node.");
+        break;
+        case N1:
+        if (role == GraphRole.TYPE) {
+            s = "%s.COLON.field";
+            h = "Integer field";
+            b.add("Declares %s to be an integer-valued field.");
+        } else {
+            s = "%s.COLON.nr";
+            h = "Integer constant";
+            b.add("Represents the constant integer value %1$s.");
+        }
+        }
+        break;
+        */
+        case LET:
+            if (role == GraphRole.RULE) {
+                s = "%s.COLON.field.EQUALS.expr";
+                h = "Assignment";
+                b.add("Assigns the value of %2$s to the (existing) attribute field %1$s.");
+                p.and("field name").and(exprPar);
+            } else if (role == GraphRole.HOST) {
+                s = "%s.COLON.field.EQUALS.constant";
+                h = "Initialisation";
+                b.and("Sets the attribute field %1$s to the initial value %2$s");
+                p.and("field name").and("literal value");
             }
             break;
 
-        case LET:
-            s = "%s.COLON.name.EQUALS.expr";
-            h = "Assignment";
-            b.add("Assigns the value of %2$s to the attribute field %1$s.");
-            break;
-
         case LET_NEW:
+            // omit
+            /*
             s = "%s.COLON.name.EQUALS.expr";
             h = "Assignment";
             b.add("Assigns the value of %2$s to a new attribute field %1$s.");
+            */
             break;
 
         case LITERAL:
             s = "COLON.free";
             h = "Literal edge label";
-            b.add("Specifies a %s-labelled edge, where %1$s may be an arbitrary string");
+            b.add("Specifies a %1$s-labelled edge, where %1$s may be an arbitrary string");
             p.add("a string of arbitrary characters");
             break;
 
         case MULT_IN:
-            s = "%s.EQUALS[lo.DOT.DOT]hi COLON label";
+            s = "%s.EQUALS[lo.DOT.DOT]hi.COLON.label";
             h = "Incoming edge multiplicity.";
             b.add("Constrains the number of incoming %3$s-edges for every node");
             b.add("to at least %1$s (if specified) and at most %2$s");
-            b.add(Help.it("(This is currently unsupported."));
             p.add("optional lower bound");
             p.add("mandatory upper bound ('*' for unbounded)");
             p.add("label of the incoming edge");
             break;
 
         case MULT_OUT:
-            s = "%s.EQUALS[lo.DOT.DOT]hi COLON label";
+            s = "%s.EQUALS[lo.DOT.DOT]hi.COLON.label";
             h = "Outgoing edge multiplicity.";
             b.add("Constrains the number of outgoing %3$s-edges for every node");
             b.add("to at least %1$s (if specified) and at most %2$s");
-            b.add(Help.it("(This is currently unsupported."));
             p.add("optional lower bound");
             p.add("mandatory upper bound ('*' for unbounded)");
             p.add("label of the outgoing edge");
@@ -849,36 +897,41 @@ public enum AspectKind {
 
         case PARAM_BI:
             switch (type) {
-            case E:
-                s = "%s.COLON.nr";
-                h = "Bidirectional rule parameter";
-                b.add("Declares bidirectional rule parameter %1$s (ranging from 0).");
-                b
-                    .add("When used from a control program this parameter may be instantiated with a concrete value,");
-                b.add("or be used as an output parameter, in which case the value");
-                b.add("is determined by the matching.");
-                p.add(parPar);
-                break;
             case N0:
-                s = "PARAM_BI.COLON";
+                s = "%s.COLON";
                 h = "Anchor node";
                 b.add("Declares an explicit anchor node.");
                 b.add("This causes the node to be considered relevant in distinguishing matches");
                 b.add("even if it is not involved in any deletion, creation or merging.");
+                break;
+            case N1:
+                s = "%s.COLON.nr";
+                h = "Bidirectional rule parameter";
+                b
+                    .and("Declares bidirectional rule parameter %1$s (ranging from 0).")
+                    .and("In a control program this parameter may be instantiated with a concrete value,")
+                    .and("or be used as an output parameter, in which case the value")
+                    .and("is determined by the matching.");
+                p.and(parPar);
+                break;
             }
             break;
 
         case PARAM_IN:
             s = "%s.COLON.nr";
             h = "Rule input parameter";
-            b.add("Declares rule input parameter %s (ranging from 0).");
+            b
+                .and("Declares rule input parameter %s.")
+                .and("The value must be provided through a control program,")
+                .add("or by setting the 'algebra family' in the system properties to POINT");
+            p.and(parPar);
             break;
 
         case PARAM_OUT:
             s = "%s.COLON.nr";
             h = "Rule output parameter";
-            b.add("Declares rule output parameter %s.");
-            p.and("parameter number, ranging from 0");
+            b.and("Declares rule output parameter %s.");
+            p.and(parPar);
             break;
 
         case PARAM_ASK:
@@ -887,6 +940,7 @@ public enum AspectKind {
             b
                 .and("Declares interactive rule parameter %s (ranging from 0).")
                 .and("The value is provided through a <i>value oracle</i>, set in the system properties.");
+            p.and(parPar);
             break;
 
         case PATH:
@@ -907,56 +961,57 @@ public enum AspectKind {
             case E:
                 s = "%s.EQUALS.q.COLON.regexpr";
                 h = "Quantified reader edge";
-                b.and("Tests for the presence of %2$s on quantification level %1$s.").and(qBody);
+                b.and("Tests for the presence of %2$s on quantification level %1$s.");
                 p.and(qPar).and("tested regular expression");
                 break;
             case N1:
                 s = "%s.EQUALS.q.COLON.FLAG.COLON.flag";
                 h = "Quantified reader flag";
-                b
-                    .and("Tests for the presence of a %2$s-flag on quantification level %1$s.")
-                    .and(qBody);
+                b.and("Tests for the presence of a %2$s-flag on quantification level %1$s.");
                 p.and(qPar).and("tested flag");
                 break;
             case N2:
-                s = "%s.EQUALS.q.COLON.sort.COLON.name";
+                s = "%s.EQUALS.q.COLON.sort.COLON.field";
                 h = "Attribute field test";
                 b
                     .and("Tests for the presence of an attribute field %3$s")
-                    .and("of type %2$s and arbitrary value.")
-                    .and(qBody);
+                    .and("on quantification level %1$s")
+                    .and("of type %2$s and arbitrary value.");
                 p.and(qPar).and(sortPar).and("tested field name");
                 break;
             }
             break;
 
         case REAL:
-            switch (type) {
-            case E:
-                s = "%s.COLON.op";
-                h = "Real-valued operator";
-                b.add("Applies operation %1$s from the REAL signature");
-                b.add("to the arguments of the source PRODUCT node.");
-                p.add("real operator: one of " + ops(kind));
-                break;
-            case N0:
-                s = "%s.COLON";
-                h = "Real variable";
-                b.add("Declares a real-valued variable node.");
-                break;
-            case N1:
-                if (role == GraphRole.TYPE) {
-                    s = "%s.COLON.field";
-                    h = "Real number field";
-                    b.add("Declares %s to be a real number-valued field.");
-                } else {
-                    s = "%s.COLON.nr.DOT.nr";
-                    h = "Real constant";
-                    b.add("Represents the constant real value %1$s.%2$s.");
-                }
-            }
+            // covered by the general help of BOOL
             break;
-
+        /*
+        switch (type) {
+        case E:
+        s = "%s.COLON.op";
+        h = "Real-valued operator";
+        b.add("Applies operation %1$s from the REAL signature");
+        b.add("to the arguments of the source PRODUCT node.");
+        p.add("real operator: one of " + ops(kind));
+        break;
+        case N0:
+        s = "%s.COLON";
+        h = "Real variable";
+        b.add("Declares a real-valued variable node.");
+        break;
+        case N1:
+        if (role == GraphRole.TYPE) {
+            s = "%s.COLON.field";
+            h = "Real number field";
+            b.add("Declares %s to be a real number-valued field.");
+        } else {
+            s = "%s.COLON.nr.DOT.nr";
+            h = "Real constant";
+            b.add("Represents the constant real value %1$s.%2$s.");
+        }
+        }
+        break;
+        */
         case REMARK:
             switch (type) {
             case N0:
@@ -970,32 +1025,35 @@ public enum AspectKind {
             break;
 
         case STRING:
-            switch (type) {
-            case E:
-                s = "%s.COLON.op";
-                h = "String operator";
-                b.add("Applies operation %1$s from the STRING signature");
-                b.add("to the arguments of the source PRODUCT node.");
-                p.add("string operator: one of " + ops(kind));
-                break;
-            case N0:
-                s = "%s.COLON";
-                h = "String variable";
-                b.add("Declares a string-valued variable node.");
-                break;
-            case N1:
-                if (role == GraphRole.TYPE) {
-                    s = "%s.COLON.field";
-                    h = "String field";
-                    b.add("Declares %s to be a string-valued field.");
-                } else {
-                    s = "%s.COLON.QUOTE.text.QUOTE";
-                    h = "String constant";
-                    b.add("Represents the constant string value %1$s.");
-                }
-            }
+            // covered by the general help of BOOL
             break;
-
+        /*
+        switch (type) {
+        case E:
+        s = "%s.COLON.op";
+        h = "String operator";
+        b.add("Applies operation %1$s from the STRING signature");
+        b.add("to the arguments of the source PRODUCT node.");
+        p.add("string operator: one of " + ops(kind));
+        break;
+        case N0:
+        s = "%s.COLON";
+        h = "String variable";
+        b.add("Declares a string-valued variable node.");
+        break;
+        case N1:
+        if (role == GraphRole.TYPE) {
+            s = "%s.COLON.field";
+            h = "String field";
+            b.add("Declares %s to be a string-valued field.");
+        } else {
+            s = "%s.COLON.QUOTE.text.QUOTE";
+            h = "String constant";
+            b.add("Represents the constant string value %1$s.");
+        }
+        }
+        break;
+        */
         case SUBTYPE:
             s = "%s.COLON";
             h = "Subtype declaration";
