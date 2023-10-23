@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import nl.utwente.groove.algebra.Signature.OpValue;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.annotation.Help;
 import nl.utwente.groove.grammar.aspect.AspectContent.ContentKind;
@@ -449,18 +448,20 @@ public enum AspectKind {
         String s = null;
         var b = new HelpList();
         var p = new HelpList();
-        String qBody = "%1$s denotes the associated quantifier level.";
-        String optQBody = "The optional " + qBody;
-        String qPar = "associated quantifier level";
-        String optQPar = "optional " + qPar;
-        String optQDecl
+        final var qBody = "%1$s denotes the associated quantifier level.";
+        final var optQBody = "The optional " + qBody;
+        final var qPar = "associated quantifier level";
+        final var optQPar = "optional " + qPar;
+        final var optQDecl
             = "(optional) declared name for this quantifier level.<br>(alternatively given through an ID-declation)";
-        String sortPar
+        final var sortPar
             = "one of the primitive sorts " + toHelpString(Arrays.asList(Sort.values()), "", "");
-        String flagPar = "flag label text; identifier with optional hyphens";
-        String edgePar = "edge label text; identifier with optional hyphens";
-        String parPar = "the parameter number, ranging from 0";
-        String exprPar = "arithmetic expression; for syntax help see the appropriate tab";
+        final var flagPar = "flag label text; identifier with optional hyphens";
+        final var edgePar = "edge label text; identifier with optional hyphens";
+        final var parPar
+            = "the parameter number, ranging from 0.<br>Parameter numbers must be unique and contiguous";
+        final var exprPar = "arithmetic expression; for syntax see the appropriate tab";
+        final var regexprPar = "regular expression; for syntax see the appropriate tab";
         switch (kind) {
         case ABSTRACT:
             switch (type) {
@@ -532,8 +533,19 @@ public enum AspectKind {
         case ARGUMENT:
             s = "%s.COLON.nr";
             h = "Argument edge";
-            b.add("Projects a product node onto argument %s.");
-            p.add("argument number, ranging from 0 to the product node arity - 1");
+            b.add("Projects its source product node (PRODUCT) onto argument %s.");
+            p
+                .add("argument number, ranging from 0 to the product node arity - 1.<br>"
+                    + "Argument numbers from one PRODUCT-node must be unique and contiguous");
+            break;
+
+        case ATOM:
+            s = "regexpr";
+            h = "Regular expression path";
+            b
+                .and("Tests for a path satisfying %1$s.")
+                .and("To specify a regular label containing non-standard characters, prefix with 'COLON'.");
+            p.add(regexprPar);
             break;
 
         case BOOL:
@@ -556,14 +568,14 @@ public enum AspectKind {
                     s = "sort.COLON.constant";
                     h = "Constant value node";
                     b.add("Represents value %2$s of sort %1$s");
-                    p.and(sortPar).and("literal of sort %1$s");
+                    p.and(sortPar).and("literal value of sort %1$s");
                 } else {
                     s = "sort.COLON.[expr]";
                     h = "Variable or value node";
-                    b.add("Declares a %1$s-sorted node, optionally with value determined by %2$s");
+                    b.add("Declares a %1$s node, optionally with value determined by %2$s");
                     p
                         .and(sortPar)
-                        .and("Optional expression of sort %2$s, determining the value of the node.<br> "
+                        .and("Optional expression of sort %1$s, determining the value of the node.<br> "
                             + "(For expression syntax see the appropriate tab)");
                 }
                 break;
@@ -652,12 +664,12 @@ public enum AspectKind {
         case EMBARGO:
             switch (type) {
             case E:
-                s = "%s[EQUALS.q]COLON.label";
+                s = "%s[EQUALS.q]COLON.regexpr";
                 h = "Edge embargo";
-                b.add("Tests for the absence of a %2$s-edge.");
+                b.add("Tests for the absence of a path satisfying %2$s.");
                 b.add(optQBody);
                 p.add(optQPar);
-                p.add("label of the forbidden edge");
+                p.add(regexprPar);
                 break;
             case N0:
                 s = "%s.COLON";
@@ -786,12 +798,13 @@ public enum AspectKind {
             b.and("Assigns the (graph-local) name %s to this node.");
             if (role == GraphRole.RULE) {
                 b
-                    .and("Graph node identifiers are used in expressions to qualify field names;")
-                    .and("variable node identifiers are used directly in expressions;")
-                    .and("quantifier node identifiers are used to associate edges with the quantifier level.");
+                    .and("A node identifier serves the following purpose, depending on the kind of node:")
+                    .and("<ul><li>For regular graph nodes, to qualify field names within expressions;")
+                    .and("<li>For variable nodes, to refer to the variable in expressions;")
+                    .and("<li>For quantifier nodes, to associate edges with the quantifier level.</ul>");
             } else {
                 b
-                    .add("When enabling multiple start graphs, nodes with the same identifier will be merged.");
+                    .add("When multiple start graphs are enabled, nodes with the same identifier will be merged.");
             }
             p.add("the declared name for this node; must be unique within the graph");
             break;
@@ -837,13 +850,15 @@ public enum AspectKind {
             if (role == GraphRole.RULE) {
                 s = "%s.COLON.field.EQUALS.expr";
                 h = "Assignment";
-                b.add("Assigns the value of %2$s to the (existing) attribute field %1$s.");
+                b
+                    .and("Assigns the value of %2$s to the (existing) attribute field %1$s.")
+                    .and("The previous value of %1$s is lost");
                 p.and("field name").and(exprPar);
             } else if (role == GraphRole.HOST) {
                 s = "%s.COLON.field.EQUALS.constant";
                 h = "Initialisation";
                 b.and("Sets the attribute field %1$s to the initial value %2$s");
-                p.and("field name").and("literal value");
+                p.and("field name").and("literal value of a primitive sort<br>(" + sortPar + ")");
             }
             break;
 
@@ -859,7 +874,9 @@ public enum AspectKind {
         case LITERAL:
             s = "COLON.free";
             h = "Literal edge label";
-            b.add("Specifies a %1$s-labelled edge, where %1$s may be an arbitrary string");
+            b
+                .and("Specifies a %1$s-labelled edge, where %1$s may be an arbitrary string")
+                .and("Only for use in untyped rule systems");
             p.add("a string of arbitrary characters");
             break;
 
@@ -892,9 +909,6 @@ public enum AspectKind {
             b.add("<li> COUNT points to the cardinality of a quantifier.");
             break;
 
-        case ATOM:
-            break;
-
         case PARAM_BI:
             switch (type) {
             case N0:
@@ -908,7 +922,7 @@ public enum AspectKind {
                 s = "%s.COLON.nr";
                 h = "Bidirectional rule parameter";
                 b
-                    .and("Declares bidirectional rule parameter %1$s (ranging from 0).")
+                    .and("Declares bidirectional rule parameter %1$s.")
                     .and("In a control program this parameter may be instantiated with a concrete value,")
                     .and("or be used as an output parameter, in which case the value")
                     .and("is determined by the matching.");
@@ -938,8 +952,8 @@ public enum AspectKind {
             s = "%s.COLON.nr";
             h = "Interactive rule parameter";
             b
-                .and("Declares interactive rule parameter %s (ranging from 0).")
-                .and("The value is provided through a <i>value oracle</i>, set in the system properties.");
+                .and("Declares interactive rule parameter %s.")
+                .and("The value is provided (upon rule application) through a <br><i>value oracle</i>, set in the system properties.");
             p.and(parPar);
             break;
 
@@ -947,7 +961,7 @@ public enum AspectKind {
             s = "%s.COLON.regexpr";
             h = "Regular path expression";
             b.add("Tests for a path satisfying the regular expression %1$s.");
-            p.add("regular expression; for the syntax, consult the appropriate tab.");
+            p.add(regexprPar);
             break;
 
         case PRODUCT:
@@ -961,8 +975,8 @@ public enum AspectKind {
             case E:
                 s = "%s.EQUALS.q.COLON.regexpr";
                 h = "Quantified reader edge";
-                b.and("Tests for the presence of %2$s on quantification level %1$s.");
-                p.and(qPar).and("tested regular expression");
+                b.and("Tests for a path satisfying %2$s, on quantification level %1$s.");
+                p.and(qPar).and(regexprPar);
                 break;
             case N1:
                 s = "%s.EQUALS.q.COLON.FLAG.COLON.flag";
@@ -1018,9 +1032,13 @@ public enum AspectKind {
                 s = "%s.COLON";
                 b.add("Declares a remark node, to be used for documentation");
                 break;
+            case N1:
+                s = "%s.COLON.text";
+                b.add("Places a remark on an arbitrary node, to be used for documentation");
+                break;
             case E:
                 s = "%s.COLON.text";
-                b.add("Declares a remark edge with (free-formatted) text %1$s");
+                b.add("Declares a remark edge with (free-formatted) label %1$s");
             }
             break;
 
@@ -1071,6 +1089,7 @@ public enum AspectKind {
                 s = "%s.COLON.constraint";
                 h = "Predicate expression";
                 b.add("Tests if the boolean expression %s holds in the graph.");
+                p.add("expression of sort BOOL; see the appropriate type for syntax");
             }
             break;
 
@@ -1131,19 +1150,6 @@ public enum AspectKind {
         return Groove.toString(caps.toArray(), start, end, ", ", " or ");
     }
 
-    /** Returns a list of operations from a given signature. */
-    static private String ops(AspectKind kind) {
-        StringBuilder result = new StringBuilder();
-        assert kind.hasSort();
-        for (OpValue op : Sort.getKind(kind.getName()).getOpValues()) {
-            if (result.length() > 0) {
-                result.append(", ");
-            }
-            result.append(Help.it(op.getOperator().getName()));
-        }
-        return result.toString();
-    }
-
     /** For every relevant graph role the node syntax help entries. */
     private static final Map<GraphRole,Map<String,String>> nodeDocMapMap
         = new EnumMap<>(GraphRole.class);
@@ -1180,6 +1186,7 @@ public enum AspectKind {
         tokenMap.put("FALSE", "false");
         tokenMap.put("FLAG", "flag");
         tokenMap.put("PRODUCT", "prod");
+        tokenMap.put("POINT", "point");
     }
 
     /** Set of role aspects. */
