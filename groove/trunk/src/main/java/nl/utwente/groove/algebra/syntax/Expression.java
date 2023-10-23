@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.algebra.syntax;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,7 +25,10 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Sort;
+import nl.utwente.groove.annotation.Help;
 import nl.utwente.groove.grammar.type.TypeLabel;
+import nl.utwente.groove.graph.EdgeRole;
+import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.OpKind;
@@ -204,6 +208,45 @@ public sealed abstract class Expression permits Constant, Variable, FieldExpr, C
         kindMap.put(Variable.class, Kind.VAR);
         kindMap.put(FieldExpr.class, Kind.FIELD);
         kindMap.put(CallExpr.class, Kind.CALL);
+    }
+
+    /**
+     * Returns a syntax helper mapping from syntax items
+     * to (possibly {@code null}) tool tips.
+     */
+    public static Map<String,String> getDocMap() {
+        return docMap.get();
+    }
+
+    /** Computes the documentation map for the edge roles. */
+    private static Map<String,String> computeDocMap() {
+        var result = new HashMap<String,String>();
+        for (Field field : EdgeRole.class.getFields()) {
+            if (field.isEnumConstant()) {
+                Help help = Help.createHelp(field, EdgeRole.nameToSymbolMap);
+                result.put(help.getItem(), help.getTip());
+            }
+        }
+        return result;
+    }
+
+    /** Syntax helper map, from syntax items to associated tool tips. */
+    private static final LazyFactory<Map<String,String>> docMap
+        = LazyFactory.instance(Expression::computeDocMap);
+
+    /**
+     * Mapping from keywords in syntax descriptions to corresponding text.
+     */
+    private static final Map<String,String> tokenMap;
+
+    static {
+        tokenMap = new HashMap<>();
+        tokenMap.put("LPAR", "(");
+        tokenMap.put("RPAR", ")");
+        tokenMap.put("COMMA", ",");
+        tokenMap.put("COLON", ":");
+        tokenMap.put("TRUE", "true");
+        tokenMap.put("FALSE", "false");
     }
 
     /** Expression kinds. */

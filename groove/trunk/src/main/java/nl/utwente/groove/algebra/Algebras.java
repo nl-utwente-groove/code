@@ -24,6 +24,7 @@ import java.util.TreeMap;
 
 import nl.utwente.groove.annotation.Help;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.LazyFactory;
 
 /**
  * Helper class for algebra manipulation.
@@ -42,13 +43,11 @@ public class Algebras {
      */
     private static void checkSignatureConsistency() {
         for (Sort sigKind : Sort.values()) {
-            for (TypeVariable<?> type : sigKind.getSignatureClass()
-                .getTypeParameters()) {
-                String typeName = type.getName()
-                    .toLowerCase();
+            for (TypeVariable<?> type : sigKind.getSignatureClass().getTypeParameters()) {
+                String typeName = type.getName().toLowerCase();
                 if (Sort.getKind(typeName) == null) {
-                    throw Exceptions.illegalArg("Type '%s' not declared by any signature",
-                        typeName);
+                    throw Exceptions
+                        .illegalArg("Type '%s' not declared by any signature", typeName);
                 }
             }
         }
@@ -63,18 +62,14 @@ public class Algebras {
      * to (possibly {@code null}) tool tips.
      */
     public static Map<String,String> getDocMap() {
-        if (docMap == null) {
-            docMap = computeDocMap();
-        }
-        return docMap;
+        return docMap.get();
     }
 
     private static Map<String,String> computeDocMap() {
         Map<String,String> result = new TreeMap<>();
         for (Sort sigKind : Sort.values()) {
             Map<String,String> sigMap = new HashMap<>(tokenMap);
-            for (Method method : sigKind.getSignatureClass()
-                .getMethods()) {
+            for (Method method : sigKind.getSignatureClass().getMethods()) {
                 sigMap.put("Q" + method.getName(), sigKind + ":" + method.getName());
                 Help help = Help.createHelp(method, sigMap);
                 if (help != null) {
@@ -86,7 +81,9 @@ public class Algebras {
     }
 
     /** Syntax helper map, from syntax items to associated tool tips. */
-    private static Map<String,String> docMap;
+    private static final LazyFactory<Map<String,String>> docMap
+        = LazyFactory.instance(Algebras::computeDocMap);
+
     /**
      * Mapping from keywords in syntax descriptions to corresponding text.
      */

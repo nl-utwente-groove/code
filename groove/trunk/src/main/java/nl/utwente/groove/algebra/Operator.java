@@ -288,6 +288,7 @@ public class Operator {
         return ops;
     }
 
+    /** List of all operators of all sorts. */
     private static final List<Operator> ops = new ArrayList<>();
 
     /** Returns the operators for a given (prefix or infix) operator symbol or name. */

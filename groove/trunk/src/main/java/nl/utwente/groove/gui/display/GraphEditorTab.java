@@ -64,7 +64,7 @@ import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphUndoManager;
 
 import nl.utwente.groove.algebra.Algebras;
-import nl.utwente.groove.annotation.Help;
+import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
@@ -87,7 +87,6 @@ import nl.utwente.groove.gui.jgraph.JAttr;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.jgraph.JGraphMode;
 import nl.utwente.groove.gui.tree.TypeTree;
-import nl.utwente.groove.util.Pair;
 
 /**
  * Dialog wrapping a graph editor, such that no file operations are possible.
@@ -537,7 +536,10 @@ final public class GraphEditorTab extends ResourceTab
                 .addTab("RegExpr", null, createSyntaxList(RegExpr.getDocMap().keySet()),
                         "Syntax for regular expressions over labels");
             tabbedPane
-                .addTab("Expr", null, createSyntaxList(Algebras.getDocMap().keySet()),
+                .addTab("Expr", null, createSyntaxList(Expression.getDocMap().keySet()),
+                        "Syntax for attribute expressions");
+            tabbedPane
+                .addTab("Ops", null, createSyntaxList(Algebras.getDocMap().keySet()),
                         "Available attribute operators");
         }
         JPanel result = new TitledPanel("Label syntax help", tabbedPane, null, false);
@@ -609,22 +611,12 @@ final public class GraphEditorTab extends ResourceTab
         this.nodeKeys = new TreeSet<>(AspectKind.getNodeDocMap(this.role).keySet());
         this.edgeKeys = new TreeSet<>(AspectKind.getEdgeDocMap(this.role).keySet());
         // the edge role description for binary edges in rule graphs is inappropriate
-        Help extra = null;
-        for (Map.Entry<EdgeRole,Pair<String,String>> entry : EdgeRole
-            .getRoleToDocMap()
-            .entrySet()) {
+        for (var entry : EdgeRole.getRoleToDocMap().entrySet()) {
             String item = entry.getValue().one();
             switch (entry.getKey()) {
             case BINARY:
-                if (this.role == GraphRole.RULE) {
-                    extra = EdgeRole.createHelp();
-                    extra.setSyntax("regexpr");
-                    extra.setHeader("Regular expression path");
-                    extra
-                        .setBody("An unadorned edge label in a rule by default denotes a regular expression.",
-                                 "This means that labels with non-standard characters need to be quoted, or preceded with 'COLON'.");
-                    this.edgeKeys.add(extra.getItem());
-                } else {
+                // for rules, this is already covered by the ATOM aspect type
+                if (this.role != GraphRole.RULE) {
                     this.edgeKeys.add(item);
                 }
                 break;
@@ -642,9 +634,7 @@ final public class GraphEditorTab extends ResourceTab
         this.docMap.putAll(EdgeRole.getDocMap());
         this.docMap.putAll(RegExpr.getDocMap());
         this.docMap.putAll(Algebras.getDocMap());
-        if (extra != null) {
-            this.docMap.put(extra.getItem(), extra.getTip());
-        }
+        this.docMap.putAll(Expression.getDocMap());
     }
 
     /**
