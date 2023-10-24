@@ -37,8 +37,9 @@ import nl.utwente.groove.annotation.ToolTipPars;
  */
 @SuppressWarnings("rawtypes")
 public sealed abstract class StringSignature<INT,REAL,BOOL,STRING>
-    implements Signature permits StringAlgebra {
+    implements GSignature<STRING,INT,REAL,BOOL,STRING> permits StringAlgebra {
     /** String concatenation. */
+    @Override
     @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
     @ToolTipHeader("String concatenation")
     @ToolTipBody("Returns a string consisting of %s followed by %s")
@@ -47,42 +48,49 @@ public sealed abstract class StringSignature<INT,REAL,BOOL,STRING>
     public abstract STRING concat(STRING arg0, STRING arg1);
 
     /** Test if a string represents a boolean value. */
+    @Override
     @ToolTipHeader("Test whether a string represents a boolean")
     @Syntax("Q%s.LPAR.s.RPAR")
     @ToolTipBody("Yields TRUE if string %s equals either (precisely) \"true\" or \"false\"")
     public abstract BOOL isBool(STRING arg0);
 
     /** Test if a string represents an integer number. */
+    @Override
     @ToolTipHeader("Test whether a string represents an integer")
     @Syntax("Q%s.LPAR.s.RPAR")
     @ToolTipBody("Yields TRUE if string %s represents an integer number")
     public abstract BOOL isInt(STRING arg0);
 
     /** Test if a string represents a real number. */
+    @Override
     @ToolTipHeader("Test whether a string represents a real number")
     @Syntax("Q%s.LPAR.s.RPAR")
     @ToolTipBody("Yields TRUE if string %s represents a real number")
     public abstract BOOL isReal(STRING arg0);
 
     /** Converts a string into a boolean. */
+    @Override
     @ToolTipHeader("String-to-boolean conversion")
     @Syntax("Q%s.LPAR.s.RPAR")
     @ToolTipBody("Yields TRUE if %s equals (precisely) \"true\"")
     public abstract BOOL toBool(STRING arg0);
 
     /** Converts a string into an integer. */
+    @Override
     @ToolTipHeader("String-to-integer conversion")
     @Syntax("Q%s.LPAR.s.RPAR")
     @ToolTipBody("Yields the integer value represented by %s, or 0 if %1$s does not represent an integer")
     public abstract INT toInt(STRING arg0);
 
     /** Converts a string into a real number. */
+    @Override
     @ToolTipHeader("String-to-real conversion")
     @Syntax("Q%s.LPAR.s.RPAR")
     @ToolTipBody("Yields the real number represented by %s, or 0.0 if %1$s does not represent a real")
     public abstract REAL toReal(STRING arg0);
 
     /** Lesser-than comparison. */
+    @Override
     @ToolTipHeader("String lesser-than test")
     @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
     @ToolTipBody("Yields TRUE if string %s is a proper prefix of string %s")
@@ -90,6 +98,7 @@ public sealed abstract class StringSignature<INT,REAL,BOOL,STRING>
     public abstract BOOL lt(STRING arg0, STRING arg1);
 
     /** Lesser-or-equal comparison. */
+    @Override
     @ToolTipHeader("String lesser-or-equal test")
     @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
     @ToolTipBody("Yields TRUE if string %s is a prefix of (or equal to) string %s")
@@ -97,12 +106,14 @@ public sealed abstract class StringSignature<INT,REAL,BOOL,STRING>
     public abstract BOOL le(STRING arg0, STRING arg1);
 
     /** If-then-else construct for strings. */
+    @Override
     @Syntax("Q%s.LPAR.b.COMMA.s1.COMMA.s2.RPAR")
     @ToolTipHeader("If-then-else for strings")
     @ToolTipBody("If %s is true, returns %s, otherwise %s")
     public abstract STRING ite(BOOL arg0, STRING arg1, STRING arg2);
 
     /** Greater-than comparison. */
+    @Override
     @ToolTipHeader("String greater-than test")
     @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
     @ToolTipBody("Yields TRUE if string %2$s is a proper prefix of string %1$s")
@@ -110,6 +121,7 @@ public sealed abstract class StringSignature<INT,REAL,BOOL,STRING>
     public abstract BOOL gt(STRING arg0, STRING arg1);
 
     /** Greater-or-equal comparison. */
+    @Override
     @ToolTipHeader("String greater-or-equals test")
     @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
     @ToolTipBody("Yields TRUE if string %2$s is a prefix of (or equal to) string %1$s")
@@ -117,6 +129,7 @@ public sealed abstract class StringSignature<INT,REAL,BOOL,STRING>
     public abstract BOOL ge(STRING arg0, STRING arg1);
 
     /** Equality test. */
+    @Override
     @ToolTipHeader("String equality test")
     @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
     @ToolTipBody("Yields TRUE if string %s equals string %s")
@@ -124,6 +137,7 @@ public sealed abstract class StringSignature<INT,REAL,BOOL,STRING>
     public abstract BOOL eq(STRING arg0, STRING arg1);
 
     /** Inequality test. */
+    @Override
     @ToolTipHeader("String equality test")
     @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
     @ToolTipBody("Yields TRUE if string %s does not equal string %s")
@@ -131,12 +145,14 @@ public sealed abstract class StringSignature<INT,REAL,BOOL,STRING>
     public abstract BOOL neq(STRING arg0, STRING arg1);
 
     /** Size function. */
+    @Override
     @ToolTipHeader("Length function")
     @Syntax("Q%s.LPAR.s.RPAR")
     @ToolTipBody("Yields the number of characters in string %s")
     public abstract INT length(STRING arg);
 
     /** Substring function. */
+    @Override
     @ToolTipHeader("Substring function")
     @Syntax("Q%s.LPAR.s.COMMA.i1.COMMA.i2.RPAR")
     @ToolTipBody("Returns the substring of %s from position %s up to (but not including) position %s, counting from 0;"
@@ -144,6 +160,7 @@ public sealed abstract class StringSignature<INT,REAL,BOOL,STRING>
     public abstract STRING substring(STRING arg0, INT arg1, INT arg2);
 
     /** Suffix function. */
+    @Override
     @ToolTipHeader("Suffix function")
     @Syntax("Q%s.LPAR.s.COMMA.i1.RPAR")
     @ToolTipBody("Returns the suffix of %s from position %s (up to the end), counting from 0;"
@@ -151,6 +168,7 @@ public sealed abstract class StringSignature<INT,REAL,BOOL,STRING>
     public abstract STRING suffix(STRING arg0, INT arg1);
 
     /** Substring matching function. */
+    @Override
     @ToolTipHeader("Substring matching function")
     @Syntax("Q%s.LPAR.s.COMMA.i1.COMMA.i2.RPAR")
     @ToolTipBody("Returns the index of the first occurrence of %2$s in %1$s, or -1 if there is no such occurrence")

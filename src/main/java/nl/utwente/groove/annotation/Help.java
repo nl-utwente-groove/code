@@ -51,6 +51,14 @@ public class Help {
         this.tokenMap = null;
     }
 
+    /** Returns the (possibly {@code null}) mapping from token names to token text. */
+    public Map<String,String> getTokenMap() {
+        return this.tokenMap;
+    }
+
+    /** Possibly {@code null} mapping from token names to token text. */
+    private final Map<String,String> tokenMap;
+
     /** Sets the syntax line of the actual documentation. */
     public void setSyntax(String syntax) {
         setSyntax(syntax, isFormatSyntax());
@@ -74,12 +82,29 @@ public class Help {
         }
     }
 
+    /** Returns the syntax line of this help item. */
+    public String getSyntax() {
+        return this.syntax;
+    }
+
+    /** Syntax line, to be used as item. */
+    private String syntax;
+
     /** Sets a header for the tool tip.
      * @param header the tool tip header: should be HTML-formatted
      */
     public void setHeader(String header) {
         this.header = header;
     }
+
+    /** Returns the current tool tip header.
+     */
+    public String getHeader() {
+        return this.header;
+    }
+
+    /** Header of the tool tip. */
+    private String header;
 
     /** Adds a line to the tool tip main body. */
     public void addBody(String text) {
@@ -104,6 +129,13 @@ public class Help {
         }
     }
 
+    /** Returns the body of this help item. */
+    public StringBuilder getBody() {
+        return this.body;
+    }
+
+    private final StringBuilder body = new StringBuilder();
+
     /**
      * Sets the parameter names.
      * This is only allowed if the syntax description is not parsed for
@@ -114,6 +146,9 @@ public class Help {
             this.parNames.add(it(name));
         }
     }
+
+    /** List of parameter names. */
+    private final List<String> parNames = new ArrayList<>();
 
     /** Sets the documentation line for the parameters. */
     public void setPars(String[] parDocs) {
@@ -132,6 +167,9 @@ public class Help {
         }
         this.parDocs.add(parDoc);
     }
+
+    /** List of parameter documentation lines. */
+    private final List<String> parDocs = new ArrayList<>();
 
     /** Returns the text of the help item. */
     public String getItem() {
@@ -261,18 +299,6 @@ public class Help {
         }
         return result;
     }
-
-    /** Possibly {@code null} mapping from token names to token text. */
-    private final Map<String,String> tokenMap;
-    private final StringBuilder body = new StringBuilder();
-    /** Syntax line, to be used as item. */
-    private String syntax;
-    /** Header of the tool tip. */
-    private String header;
-    /** List of parameter names. */
-    private final List<String> parNames = new ArrayList<>();
-    /** List of parameter documentation lines. */
-    private final List<String> parDocs = new ArrayList<>();
 
     /**
      * Turns text into boldface by putting
