@@ -64,7 +64,6 @@ import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphUndoManager;
 
 import nl.utwente.groove.algebra.Algebras;
-import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
@@ -536,10 +535,10 @@ final public class GraphEditorTab extends ResourceTab
                 .addTab("RegExpr", null, createSyntaxList(RegExpr.getDocMap().keySet()),
                         "Syntax for regular expressions over labels");
             tabbedPane
-                .addTab("Expr", null, createSyntaxList(Expression.getDocMap().keySet()),
+                .addTab("Expr", null, createSyntaxList(Algebras.getExprDocMap().keySet()),
                         "Syntax for attribute expressions");
             tabbedPane
-                .addTab("Ops", null, createSyntaxList(Algebras.getDocMap().keySet()),
+                .addTab("Ops", null, createSyntaxList(Algebras.getOpDocMap().keySet()),
                         "Available attribute operators");
         }
         JPanel result = new TitledPanel("Label syntax help", tabbedPane, null, false);
@@ -633,8 +632,8 @@ final public class GraphEditorTab extends ResourceTab
         this.docMap.putAll(AspectKind.getEdgeDocMap(this.role));
         this.docMap.putAll(EdgeRole.getDocMap());
         this.docMap.putAll(RegExpr.getDocMap());
-        this.docMap.putAll(Algebras.getDocMap());
-        this.docMap.putAll(Expression.getDocMap());
+        this.docMap.putAll(Algebras.getOpDocMap());
+        this.docMap.putAll(Algebras.getExprDocMap());
     }
 
     /**
