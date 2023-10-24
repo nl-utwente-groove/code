@@ -29,6 +29,10 @@ import java.util.TreeMap;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Signature.OpValue;
+import nl.utwente.groove.annotation.Syntax;
+import nl.utwente.groove.annotation.ToolTipBody;
+import nl.utwente.groove.annotation.ToolTipHeader;
+import nl.utwente.groove.annotation.ToolTipPars;
 import nl.utwente.groove.util.Keywords;
 import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.parse.FormatException;
@@ -41,6 +45,9 @@ import nl.utwente.groove.util.parse.StringHandler;
  */
 public enum Sort {
     /** Boolean sort. */
+    @Syntax("TRUE.BAR.FALSE")
+    @ToolTipHeader("Boolean literal")
+    @ToolTipBody({"Representation of a BOOL constant.", "Only lowercase is valid."})
     BOOL(Keywords.BOOL, BoolSignature.class, EnumSet.allOf(BoolSignature.Op.class)) {
         @Override
         public Constant getDefaultValue() {
@@ -67,6 +74,10 @@ public enum Sort {
         }
     },
     /** Integer sort. */
+    @Syntax("nr")
+    @ToolTipHeader("Integer literal")
+    @ToolTipBody("Representation of an INT constant.")
+    @ToolTipPars("non-empty sequence of digits")
     INT(Keywords.INT, IntSignature.class, EnumSet.allOf(IntSignature.Op.class)) {
         @Override
         public Constant getDefaultValue() {
@@ -96,6 +107,11 @@ public enum Sort {
         }
     },
     /** Real number sort. */
+    @Syntax("[nr1].DOT.[nr2]")
+    @ToolTipHeader("Real literal")
+    @ToolTipBody({"Representation of a REAL constant.", "Either %1$s or %2$s must be provided."})
+    @ToolTipPars({"optional whole-number part of the REAL: a non-empty sequence of digits",
+            "optional fractional part of the REAL: a non-empty sequence of digits"})
     REAL(Keywords.REAL, RealSignature.class, EnumSet.allOf(RealSignature.Op.class)) {
         @Override
         public Constant getDefaultValue() {
@@ -125,6 +141,10 @@ public enum Sort {
         }
     },
     /** String sort. */
+    @Syntax("QUOTE.text.QUOTE")
+    @ToolTipHeader("String literal")
+    @ToolTipBody("Representation of a STRING constant.")
+    @ToolTipPars("text of the literal. Follows the java rules for escaping special characters")
     STRING(Keywords.STRING, StringSignature.class, EnumSet.allOf(StringSignature.Op.class)) {
         @Override
         public Constant getDefaultValue() {

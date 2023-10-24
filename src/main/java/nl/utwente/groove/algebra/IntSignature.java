@@ -16,19 +16,7 @@
  */
 package nl.utwente.groove.algebra;
 
-import static nl.utwente.groove.util.parse.OpKind.ADD;
-import static nl.utwente.groove.util.parse.OpKind.COMPARE;
-import static nl.utwente.groove.util.parse.OpKind.EQUAL;
-import static nl.utwente.groove.util.parse.OpKind.MULT;
-import static nl.utwente.groove.util.parse.OpKind.UNARY;
-
 import java.util.List;
-
-import nl.utwente.groove.annotation.InfixSymbol;
-import nl.utwente.groove.annotation.PrefixSymbol;
-import nl.utwente.groove.annotation.Syntax;
-import nl.utwente.groove.annotation.ToolTipBody;
-import nl.utwente.groove.annotation.ToolTipHeader;
 
 /**
  * The signature for integer algebras.
@@ -42,150 +30,71 @@ import nl.utwente.groove.annotation.ToolTipHeader;
  */
 @SuppressWarnings("rawtypes")
 public sealed abstract class IntSignature<INT,REAL,BOOL,STRING>
-    implements Signature permits IntAlgebra {
-    /** Absolute value of an integer. */
-    @Syntax("Q%s.LPAR.i.RPAR")
-    @ToolTipHeader("Absolute integer value")
-    @ToolTipBody("Returns the absolute value of %s")
+    implements GSignature<INT,INT,REAL,BOOL,STRING> permits IntAlgebra {
+    @Override
     public abstract INT abs(INT arg);
 
-    /** Addition of two integers. */
-    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipHeader("Integer addition")
-    @ToolTipBody("Returns the sum of %s and %s")
-    @InfixSymbol(symbol = "+", kind = ADD)
+    @Override
     public abstract INT add(INT arg0, INT arg1);
 
-    /** Maximum of a nonempty set of integers. */
-    @Syntax("Q%s.LPAR.i1.RPAR")
-    @ToolTipHeader("Collective integer maximum")
-    @ToolTipBody("Returns the maximum of all quantified values")
+    @Override
     public abstract INT bigmax(List<INT> arg);
 
-    /** Minimum of a nonempty set of integers. */
-    @Syntax("Q%s.LPAR.i1.RPAR")
-    @ToolTipHeader("Collective integer minimum")
-    @ToolTipBody("Returns the minimum of all quantified values")
+    @Override
     public abstract INT bigmin(List<INT> arg);
 
-    /** Division of two integers. */
-    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipHeader("Integer division")
-    @ToolTipBody("Returns the integer quotient of %s and %s")
-    @InfixSymbol(symbol = "/", kind = MULT)
+    @Override
     public abstract INT div(INT arg0, INT arg1);
 
-    /** Equality test. */
-    @ToolTipHeader("Integer equality test")
-    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipBody("Yields TRUE if integer %s equals integer %s")
-    @InfixSymbol(symbol = "==", kind = EQUAL)
+    @Override
     public abstract BOOL eq(INT arg0, INT arg1);
 
-    /** Greater-or-equal comparison. */
-    @ToolTipHeader("Integer greater-or-equal test")
-    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipBody("Yields TRUE if integer %s is larger than or equal to integer %s")
-    @InfixSymbol(symbol = ">=", kind = COMPARE)
+    @Override
     public abstract BOOL ge(INT arg0, INT arg1);
 
-    /** Greater-than comparison. */
-    @ToolTipHeader("Integer greater-than test")
-    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipBody("Yields TRUE if integer %s is properly larger than integer %s")
-    @InfixSymbol(symbol = ">", kind = COMPARE)
+    @Override
     public abstract BOOL gt(INT arg0, INT arg1);
 
-    /** If-then-else construct for integers. */
-    @Syntax("Q%s.LPAR.b.COMMA.i1.COMMA.i2.RPAR")
-    @ToolTipHeader("If-then-else for integers")
-    @ToolTipBody("If %s is true, returns %s, otherwise %s")
+    @Override
     public abstract INT ite(BOOL arg0, INT arg1, INT arg2);
 
-    /** Lesser-or-equal comparison. */
-    @ToolTipHeader("Integer lesser-or-equal test")
-    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipBody("Yields TRUE if integer %s is smaller than or equal to integer %s")
-    @InfixSymbol(symbol = "<=", kind = COMPARE)
+    @Override
     public abstract BOOL le(INT arg0, INT arg1);
 
-    /** Lesser-than comparison. */
-    @ToolTipHeader("Integer lesser-than test")
-    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipBody("Yields TRUE if integer %s is properly smaller than integer %s")
-    @InfixSymbol(symbol = "<", kind = COMPARE)
+    @Override
     public abstract BOOL lt(INT arg0, INT arg1);
 
-    /** Maximum of two integers. */
-    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipHeader("Integer maximum")
-    @ToolTipBody("Returns the maximum of %s and %s")
+    @Override
     public abstract INT max(INT arg0, INT arg1);
 
-    /** Minimum of two integers. */
-    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipHeader("Integer minimum")
-    @ToolTipBody("Returns the minimum of %s and %s")
+    @Override
     public abstract INT min(INT arg0, INT arg1);
 
-    /** Modulo of two integers. */
-    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipHeader("Modulo")
-    @ToolTipBody("Returns the remainder after dividing %s by %s")
-    @InfixSymbol(symbol = "%", kind = MULT)
+    @Override
     public abstract INT mod(INT arg0, INT arg1);
 
-    /** Multiplication of two integers. */
-    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipHeader("Integer multiplication")
-    @ToolTipBody("Returns the product of %s and %s")
-    @InfixSymbol(symbol = "*", kind = MULT)
+    @Override
     public abstract INT mul(INT arg0, INT arg1);
 
-    /** Inequality test. */
-    @ToolTipHeader("Integer inequality test")
-    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipBody("Yields TRUE if integer %s does not equal integer %s")
-    @InfixSymbol(symbol = "!=", kind = EQUAL)
+    @Override
     public abstract BOOL neq(INT arg0, INT arg1);
 
-    /** Inversion. */
-    @ToolTipHeader("Integer inversion")
-    @Syntax("Q%s.LPAR.i1.RPAR")
-    @ToolTipBody("Yields the inverse of %s")
-    @PrefixSymbol(symbol = "-", kind = UNARY)
+    @Override
     public abstract INT neg(INT arg);
 
-    /** Product of a set of values. */
-    @Syntax("Q%s.LPAR.i1.RPAR")
-    @ToolTipHeader("Integer product")
-    @ToolTipBody("Returns the product of all quantified values")
+    @Override
     public abstract INT prod(List<INT> arg);
 
-    /** Subtraction of two integers. */
-    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipHeader("Integer subtraction")
-    @ToolTipBody("Returns the difference between %s and %s")
-    @InfixSymbol(symbol = "-", kind = ADD)
+    @Override
     public abstract INT sub(INT arg0, INT arg1);
 
-    /** Summation over a set of values. */
-    @Syntax("Q%s.LPAR.i1.RPAR")
-    @ToolTipHeader("Integer summation")
-    @ToolTipBody("Returns the sum of all quantified values")
+    @Override
     public abstract INT sum(List<INT> arg);
 
-    /** String representation. */
-    @ToolTipHeader("Integer-to-string conversion")
-    @Syntax("Q%s.LPAR.i1.RPAR")
-    @ToolTipBody("Yields a string representation of %s")
+    @Override
     public abstract STRING toString(INT arg);
 
-    /** Real number conversion. */
-    @ToolTipHeader("Integer-to-real conversion")
-    @Syntax("Q%s.LPAR.i1.RPAR")
-    @ToolTipBody("Converts %s to a real number")
-    @PrefixSymbol(symbol = "(real)", kind = UNARY)
+    @Override
     public abstract REAL toReal(INT arg);
 
     @Override

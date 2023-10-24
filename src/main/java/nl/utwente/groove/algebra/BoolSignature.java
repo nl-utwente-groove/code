@@ -16,18 +16,7 @@
  */
 package nl.utwente.groove.algebra;
 
-import static nl.utwente.groove.util.parse.OpKind.AND;
-import static nl.utwente.groove.util.parse.OpKind.EQUAL;
-import static nl.utwente.groove.util.parse.OpKind.NOT;
-import static nl.utwente.groove.util.parse.OpKind.OR;
-
 import java.util.List;
-
-import nl.utwente.groove.annotation.InfixSymbol;
-import nl.utwente.groove.annotation.PrefixSymbol;
-import nl.utwente.groove.annotation.Syntax;
-import nl.utwente.groove.annotation.ToolTipBody;
-import nl.utwente.groove.annotation.ToolTipHeader;
 
 /**
  * Signature for boolean algebras.
@@ -36,53 +25,28 @@ import nl.utwente.groove.annotation.ToolTipHeader;
  * @version $Revision$
  */
 @SuppressWarnings("rawtypes")
-public sealed abstract class BoolSignature<Bool> implements Signature permits BoolAlgebra {
-    /** Negation. */
-    @ToolTipHeader("Inversion")
-    @Syntax("Q%s.LPAR.b1.RPAR")
-    @ToolTipBody("Yields TRUE if boolean %s is FALSE")
-    @PrefixSymbol(symbol = "!", kind = NOT)
-    public abstract Bool not(Bool arg);
+public sealed abstract class BoolSignature<BOOL> implements GSignature<BOOL,Void,Void,BOOL,Void>
+    permits BoolAlgebra {
+    @Override
+    public abstract BOOL not(BOOL arg);
 
-    /** Conjunction. */
-    @ToolTipHeader("Conjunction")
-    @Syntax("Q%s.LPAR.b1.COMMA.b2.RPAR")
-    @ToolTipBody("Yields TRUE if booleans %s and %s are both TRUE")
-    @InfixSymbol(symbol = "&", kind = AND)
-    public abstract Bool and(Bool arg0, Bool arg1);
+    @Override
+    public abstract BOOL and(BOOL arg0, BOOL arg1);
 
-    /** Conjunction of a set of booleans. */
-    @Syntax("Q%s.LPAR.i1.RPAR")
-    @ToolTipHeader("Collective boolean conjunction")
-    @ToolTipBody("Returns the conjunction of all quantified values")
-    public abstract Bool bigand(List<Bool> arg);
+    @Override
+    public abstract BOOL bigand(List<BOOL> arg);
 
-    /** Disjunction of a set of booleans. */
-    @Syntax("Q%s.LPAR.i1.RPAR")
-    @ToolTipHeader("Collective boolean disjunction")
-    @ToolTipBody("Returns the disjunction of all quantified values")
-    public abstract Bool bigor(List<Bool> arg);
+    @Override
+    public abstract BOOL bigor(List<BOOL> arg);
 
-    /** Disjunction. */
-    @ToolTipHeader("Disjunction")
-    @Syntax("Q%s.LPAR.b1.COMMA.b2.RPAR")
-    @ToolTipBody("Yields TRUE if at least one of booleans %s and %s is TRUE")
-    @InfixSymbol(symbol = "|", kind = OR)
-    public abstract Bool or(Bool arg0, Bool arg1);
+    @Override
+    public abstract BOOL or(BOOL arg0, BOOL arg1);
 
-    /** Equality test. */
-    @ToolTipHeader("Boolean equality test")
-    @Syntax("Q%s.LPAR.b1.COMMA.b2.RPAR")
-    @ToolTipBody("Yields TRUE if boolean %s equals boolean %s")
-    @InfixSymbol(symbol = "==", kind = EQUAL)
-    public abstract Bool eq(Bool arg0, Bool arg1);
+    @Override
+    public abstract BOOL eq(BOOL arg0, BOOL arg1);
 
-    /** Inequality test. */
-    @ToolTipHeader("Boolean inequality test")
-    @Syntax("Q%s.LPAR.b1.COMMA.b2.RPAR")
-    @ToolTipBody("Yields TRUE if boolean %s is not equal to boolean %s")
-    @InfixSymbol(symbol = "!=", kind = EQUAL)
-    public abstract Bool neq(Bool arg0, Bool arg1);
+    @Override
+    public abstract BOOL neq(BOOL arg0, BOOL arg1);
 
     @Override
     public Sort getSort() {

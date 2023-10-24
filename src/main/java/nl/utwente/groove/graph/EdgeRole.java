@@ -20,10 +20,10 @@ import java.lang.reflect.Field;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import nl.utwente.groove.annotation.Help;
+import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.annotation.Syntax;
 import nl.utwente.groove.annotation.ToolTipBody;
 import nl.utwente.groove.annotation.ToolTipHeader;
@@ -92,8 +92,8 @@ public enum EdgeRole {
         return result;
     }
 
-    /** Returns the documentation item for this edge role. */
-    public Pair<String,String> getDoc() {
+    /** Returns the help item for this edge role. */
+    public Help getDoc() {
         return getRoleToDocMap().get(this);
     }
 
@@ -143,38 +143,37 @@ public enum EdgeRole {
     }
 
     /** Returns the documentation map for all edge roles. */
-    public static Map<EdgeRole,Pair<String,String>> getRoleToDocMap() {
+    public static Map<EdgeRole,Help> getRoleToDocMap() {
         return roleToDocMap.get();
     }
 
     /** Computes the documentation map for the edge roles. */
-    private static Map<EdgeRole,Pair<String,String>> computeRoleToDocMap() {
-        Map<EdgeRole,Pair<String,String>> result = new EnumMap<>(EdgeRole.class);
+    private static Map<EdgeRole,Help> computeRoleToDocMap() {
+        Map<EdgeRole,Help> result = new EnumMap<>(EdgeRole.class);
         for (Field field : EdgeRole.class.getFields()) {
             if (field.isEnumConstant()) {
                 EdgeRole role = symbolToRoleMap.get(nameToSymbolMap.get(field.getName()));
-                Help help = Help.createHelp(field, nameToSymbolMap);
-                result.put(role, Pair.newPair(help.getItem(), help.getTip()));
+                result.put(role, Help.createHelp(field, nameToSymbolMap));
             }
         }
         return result;
     }
 
-    private static final LazyFactory<Map<EdgeRole,Pair<String,String>>> roleToDocMap
+    private static final LazyFactory<Map<EdgeRole,Help>> roleToDocMap
         = LazyFactory.instance(EdgeRole::computeRoleToDocMap);
 
     /** Returns the documentation map for all edge roles. */
-    public static Map<String,String> getDocMap() {
+    public static HelpMap getDocMap() {
         if (docMap == null) {
-            docMap = new LinkedHashMap<>();
-            for (Pair<String,String> doc : getRoleToDocMap().values()) {
-                docMap.put(doc.one(), doc.two());
+            docMap = new HelpMap();
+            for (Help doc : getRoleToDocMap().values()) {
+                docMap.add(doc);
             }
         }
         return docMap;
     }
 
-    private static Map<String,String> docMap;
+    private static HelpMap docMap;
     /** Injective mapping from edge roles to indices. */
     private static final Map<EdgeRole,Integer> indexMap = new EnumMap<>(EdgeRole.class);
     /** Injective mapping from role symbols to edge roles. */

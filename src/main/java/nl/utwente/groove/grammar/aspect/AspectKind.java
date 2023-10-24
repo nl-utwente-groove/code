@@ -26,10 +26,10 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.annotation.Help;
+import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.grammar.aspect.AspectContent.ContentKind;
 import nl.utwente.groove.grammar.aspect.AspectContent.NestedValue;
 import nl.utwente.groove.grammar.aspect.AspectParser.Status;
@@ -366,8 +366,8 @@ public enum AspectKind {
      * Returns the documentation map for node aspects occurring for a given graph role.
      * @return A mapping from syntax lines to associated tool tips.
      */
-    public static Map<String,String> getNodeDocMap(GraphRole role) {
-        Map<String,String> result = nodeDocMapMap.get(role);
+    public static HelpMap getNodeDocMap(GraphRole role) {
+        var result = nodeDocMapMap.get(role);
         if (result == null) {
             nodeDocMapMap.put(role, result = computeNodeDocMap(role));
         }
@@ -378,8 +378,8 @@ public enum AspectKind {
      * Returns the documentation map for edge aspects occurring for a given graph role.
      * @return A mapping from syntax lines to associated tool tips.
      */
-    public static Map<String,String> getEdgeDocMap(GraphRole role) {
-        Map<String,String> result = edgeDocMapMap.get(role);
+    public static HelpMap getEdgeDocMap(GraphRole role) {
+        var result = edgeDocMapMap.get(role);
         if (result == null) {
             edgeDocMapMap.put(role, result = computeEdgeDocMap(role));
         }
@@ -391,8 +391,8 @@ public enum AspectKind {
         return sigKindMap.get(signature);
     }
 
-    private static Map<String,String> computeNodeDocMap(GraphRole role) {
-        Map<String,String> result = new TreeMap<>();
+    private static HelpMap computeNodeDocMap(GraphRole role) {
+        var result = new HelpMap();
         Set<AspectKind> nodeKinds = EnumSet.copyOf(allowedNodeKinds.get(role));
         if (role == GraphRole.HOST || role == GraphRole.RULE) {
             nodeKinds.add(LET);
@@ -414,8 +414,8 @@ public enum AspectKind {
         return result;
     }
 
-    private static Map<String,String> computeEdgeDocMap(GraphRole role) {
-        Map<String,String> result = new TreeMap<>();
+    private static HelpMap computeEdgeDocMap(GraphRole role) {
+        var result = new HelpMap();
         Set<AspectKind> edgeKinds = EnumSet.copyOf(allowedEdgeKinds.get(role));
         edgeKinds.remove(LET);
         edgeKinds.remove(LET_NEW);
@@ -432,10 +432,7 @@ public enum AspectKind {
         for (AspectKind kind : edgeKinds) {
             for (var helpKind : HelpType.values()) {
                 if (!helpKind.forNode()) {
-                    Help help = computeHelp(kind, role, helpKind);
-                    if (help != null) {
-                        result.put(help.getItem(), help.getTip());
-                    }
+                    result.add(computeHelp(kind, role, helpKind));
                 }
             }
         }
@@ -819,33 +816,7 @@ public enum AspectKind {
         case INT:
             // covered by the general help of BOOL
             break;
-        /*
-        switch (type) {
-        case E:
-        s = "%s.COLON.op";
-        h = "Integer operator";
-        b.add("Applies operation %1$s from the INT signature");
-        b.add("to the arguments of the source PRODUCT node.");
-        p.add("integer operator: one of " + ops(kind));
-        break;
-        case N0:
-        s = "INT.COLON";
-        h = "Integer variable";
-        b.add("Declares an integer-valued variable node.");
-        break;
-        case N1:
-        if (role == GraphRole.TYPE) {
-            s = "%s.COLON.field";
-            h = "Integer field";
-            b.add("Declares %s to be an integer-valued field.");
-        } else {
-            s = "%s.COLON.nr";
-            h = "Integer constant";
-            b.add("Represents the constant integer value %1$s.");
-        }
-        }
-        break;
-        */
+
         case LET:
             if (role == GraphRole.RULE) {
                 s = "%s.COLON.field.EQUALS.expr";
@@ -999,33 +970,7 @@ public enum AspectKind {
         case REAL:
             // covered by the general help of BOOL
             break;
-        /*
-        switch (type) {
-        case E:
-        s = "%s.COLON.op";
-        h = "Real-valued operator";
-        b.add("Applies operation %1$s from the REAL signature");
-        b.add("to the arguments of the source PRODUCT node.");
-        p.add("real operator: one of " + ops(kind));
-        break;
-        case N0:
-        s = "%s.COLON";
-        h = "Real variable";
-        b.add("Declares a real-valued variable node.");
-        break;
-        case N1:
-        if (role == GraphRole.TYPE) {
-            s = "%s.COLON.field";
-            h = "Real number field";
-            b.add("Declares %s to be a real number-valued field.");
-        } else {
-            s = "%s.COLON.nr.DOT.nr";
-            h = "Real constant";
-            b.add("Represents the constant real value %1$s.%2$s.");
-        }
-        }
-        break;
-        */
+
         case REMARK:
             switch (type) {
             case N0:
@@ -1045,33 +990,7 @@ public enum AspectKind {
         case STRING:
             // covered by the general help of BOOL
             break;
-        /*
-        switch (type) {
-        case E:
-        s = "%s.COLON.op";
-        h = "String operator";
-        b.add("Applies operation %1$s from the STRING signature");
-        b.add("to the arguments of the source PRODUCT node.");
-        p.add("string operator: one of " + ops(kind));
-        break;
-        case N0:
-        s = "%s.COLON";
-        h = "String variable";
-        b.add("Declares a string-valued variable node.");
-        break;
-        case N1:
-        if (role == GraphRole.TYPE) {
-            s = "%s.COLON.field";
-            h = "String field";
-            b.add("Declares %s to be a string-valued field.");
-        } else {
-            s = "%s.COLON.QUOTE.text.QUOTE";
-            h = "String constant";
-            b.add("Represents the constant string value %1$s.");
-        }
-        }
-        break;
-        */
+
         case SUBTYPE:
             s = "%s.COLON";
             h = "Subtype declaration";
@@ -1151,11 +1070,9 @@ public enum AspectKind {
     }
 
     /** For every relevant graph role the node syntax help entries. */
-    private static final Map<GraphRole,Map<String,String>> nodeDocMapMap
-        = new EnumMap<>(GraphRole.class);
+    private static final Map<GraphRole,HelpMap> nodeDocMapMap = new EnumMap<>(GraphRole.class);
     /** For every relevant graph role the edge syntax help entries. */
-    private static final Map<GraphRole,Map<String,String>> edgeDocMapMap
-        = new EnumMap<>(GraphRole.class);
+    private static final Map<GraphRole,HelpMap> edgeDocMapMap = new EnumMap<>(GraphRole.class);
     /** Static mapping from all aspect names to aspects. */
     private static final Map<String,AspectKind> kindMap = new HashMap<>();
     /** Mapping from kind value names to symbols. */

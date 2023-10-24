@@ -35,11 +35,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.eclipse.jdt.annotation.NonNull;
 
-import nl.utwente.groove.annotation.Help;
+import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.annotation.Syntax;
 import nl.utwente.groove.annotation.ToolTipBody;
 import nl.utwente.groove.annotation.ToolTipHeader;
@@ -907,26 +906,23 @@ abstract sealed public class RegExpr { // implements VarSetSupport {
      * Returns a syntax helper mapping from syntax items
      * to (possibly {@code null}) tool tips.
      */
-    public static Map<String,String> getDocMap() {
+    public static HelpMap getDocMap() {
         if (docMap == null) {
             docMap = computeDocMap();
         }
         return docMap;
     }
 
-    private static Map<String,String> computeDocMap() {
-        Map<String,String> result = new TreeMap<>();
+    private static HelpMap computeDocMap() {
+        var result = new HelpMap();
         for (Class<?> subClass : RegExpr.class.getClasses()) {
-            Help help = Help.createHelp(subClass, tokenMap);
-            if (help != null) {
-                result.put(help.getItem(), help.getTip());
-            }
+            result.add(subClass, tokenMap);
         }
         return result;
     }
 
     /** Syntax helper map, from syntax items to associated tool tips. */
-    private static Map<String,String> docMap;
+    private static HelpMap docMap;
 
     /**
      * Abstract superclass for all regular expressions that are not constants.
