@@ -254,10 +254,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
                 AspectNode source = edge.source();
                 assert !source.has(Category.NESTING);
                 AspectNode level = source.getLevelNode();
-                AspectEdge normalisedEdge = addAssignment(level, source, edge
-                    .getAssign(), edge.has(AspectKind.LET_NEW)
-                        ? CREATOR
-                        : edge.getKind(Category.ROLE));
+                AspectEdge normalisedEdge
+                    = addAssignment(level, source, edge.getAssign(), edge.getKind(Category.ROLE));
                 edgeInverseMap.put(normalisedEdge, edge);
                 map.putEdge(edge, normalisedEdge);
             } catch (FormatException e) {

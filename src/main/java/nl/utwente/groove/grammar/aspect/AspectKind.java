@@ -81,8 +81,6 @@ public enum AspectKind {
     TEST(Category.ATTR, "test", ContentKind.TEST_EXPR),
     /** Indicates an attribute change. */
     LET(Category.ATTR, "let", ContentKind.LET_EXPR),
-    /** Indicates a new attribute. */
-    LET_NEW(Category.ATTR, "letnew", ContentKind.LET_EXPR),
 
     // rule parameters
     /** Indicates a bidirectional rule parameter. */
@@ -313,7 +311,7 @@ public enum AspectKind {
      * Indicates if this aspect is an assignment.
      */
     public boolean isAssign() {
-        return this == LET || this == LET_NEW;
+        return this == LET;
     }
 
     /**
@@ -399,7 +397,6 @@ public enum AspectKind {
         }
         if (role == GraphRole.RULE) {
             nodeKinds.add(TEST);
-            nodeKinds.add(LET_NEW);
         }
         for (AspectKind kind : nodeKinds) {
             for (var helpKind : HelpType.values()) {
@@ -418,7 +415,6 @@ public enum AspectKind {
         var result = new HelpMap();
         Set<AspectKind> edgeKinds = EnumSet.copyOf(allowedEdgeKinds.get(role));
         edgeKinds.remove(LET);
-        edgeKinds.remove(LET_NEW);
         edgeKinds.remove(TEST);
         edgeKinds.removeAll(existsQuantifiers);
         edgeKinds.removeAll(forallQuantifiers);
@@ -833,15 +829,6 @@ public enum AspectKind {
             }
             break;
 
-        case LET_NEW:
-            // omit
-            /*
-            s = "%s.COLON.name.EQUALS.expr";
-            h = "Assignment";
-            b.add("Assigns the value of %2$s to a new attribute field %1$s.");
-            */
-            break;
-
         case LITERAL:
             s = "COLON.free";
             h = "Literal edge label";
@@ -1142,7 +1129,7 @@ public enum AspectKind {
                 edgeKinds = EnumSet
                     .of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, CONNECT, BOOL, INT, REAL,
                         STRING, ARGUMENT, ATOM, PATH, LITERAL, FORALL, FORALL_POS, EXISTS,
-                        EXISTS_OPT, NESTED, LET, LET_NEW, TEST);
+                        EXISTS_OPT, NESTED, LET, TEST);
                 break;
             case TYPE:
                 nodeKinds
