@@ -16,7 +16,7 @@
         </node>
         <node id="n10">
             <attr name="layout">
-                <string>341 145 144 90</string>
+                <string>319 145 188 90</string>
             </attr>
         </node>
         <edge from="n0" to="n0">
@@ -46,22 +46,22 @@
         </edge>
         <edge from="n10" to="n10">
             <attr name="label">
-                <string>letnew:intMax=int:bigmax(a.x)</string>
+                <string>new:let:intMax=int:bigmax(a.x)</string>
             </attr>
         </edge>
         <edge from="n10" to="n10">
             <attr name="label">
-                <string>letnew:intMin=int:bigmin(a.x)</string>
+                <string>new:let:intMin=int:bigmin(a.x)</string>
             </attr>
         </edge>
         <edge from="n10" to="n10">
             <attr name="label">
-                <string>letnew:realMax=real:bigmax(a.y)</string>
+                <string>new:let:realMax=real:bigmax(a.y)</string>
             </attr>
         </edge>
         <edge from="n10" to="n10">
             <attr name="label">
-                <string>letnew:realMin=real:bigmin(a.y)</string>
+                <string>new:let:realMin=real:bigmin(a.y)</string>
             </attr>
         </edge>
     </graph>

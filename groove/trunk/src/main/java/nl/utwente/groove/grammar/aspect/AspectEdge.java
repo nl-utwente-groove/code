@@ -26,7 +26,6 @@ import static nl.utwente.groove.grammar.aspect.AspectKind.EMBARGO;
 import static nl.utwente.groove.grammar.aspect.AspectKind.ERASER;
 import static nl.utwente.groove.grammar.aspect.AspectKind.INT;
 import static nl.utwente.groove.grammar.aspect.AspectKind.LET;
-import static nl.utwente.groove.grammar.aspect.AspectKind.LET_NEW;
 import static nl.utwente.groove.grammar.aspect.AspectKind.LITERAL;
 import static nl.utwente.groove.grammar.aspect.AspectKind.NESTED;
 import static nl.utwente.groove.grammar.aspect.AspectKind.PARAM_ASK;
@@ -188,7 +187,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                     setPredicateTree(((ExprContent) content).get());
                     getGraph().setNonNormal();
                 } else {
-                    assert aspect.has(LET) || aspect.has(LET_NEW);
+                    assert aspect.has(LET);
                     setAssignTree(((ExprContent) content).get());
                     getGraph().setNonNormal();
                 }
@@ -530,7 +529,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             case TEST:
                 result = getTestLine();
                 break;
-            case LET, LET_NEW:
+            case LET:
                 assert onNode;
                 if (hasGraphRole(RULE) && !source().has(Category.ROLE, AspectKind::isCreator)) {
                     // do not use #CHANGE_TO_SYMBOL as the prefix already tells the story
@@ -774,9 +773,9 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         return hasContent(NESTED, c -> c.has(NestedValue.COUNT));
     }
 
-    /** Indicates if this is a let- or letnew-edge. */
+    /** Indicates if this is a let-edge. */
     public boolean isAssign() {
-        return has(LET) || has(LET_NEW);
+        return has(LET);
     }
 
     /** Sets the expression tree of an assignment edge. */
