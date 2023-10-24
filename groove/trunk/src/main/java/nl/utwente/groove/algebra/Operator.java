@@ -14,8 +14,7 @@ import nl.utwente.groove.algebra.Signature.OpValue;
 import nl.utwente.groove.algebra.syntax.CallExpr;
 import nl.utwente.groove.algebra.syntax.ExprTreeParser;
 import nl.utwente.groove.algebra.syntax.Expression;
-import nl.utwente.groove.annotation.InfixSymbol;
-import nl.utwente.groove.annotation.PrefixSymbol;
+import nl.utwente.groove.annotation.OpSymbol;
 import nl.utwente.groove.annotation.ToolTipHeader;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
@@ -56,19 +55,22 @@ public class Operator {
             this.parameterTypes.add(toSort(type));
         }
         this.returnType = toSort(method.getGenericReturnType());
-        InfixSymbol infix = method.getAnnotation(InfixSymbol.class);
-        PrefixSymbol prefix = method.getAnnotation(PrefixSymbol.class);
-        this.symbol = infix == null
-            ? (prefix == null
-                ? null
-                : prefix.symbol())
-            : infix.symbol();
-        this.kind = infix == null
-            ? (prefix == null
-                ? OpKind.ATOM
-                : prefix.kind())
-            : infix.kind();
-        this.description = method.getAnnotation(ToolTipHeader.class).value();
+        // look up the corresponding method declaration in GSignature, to find the annotations
+        Method superMethod;
+        try {
+            superMethod = GSignature.class.getMethod(this.name, method.getParameterTypes());
+        } catch (NoSuchMethodException exc) {
+            throw Exceptions
+                .illegalState("Method %s does not override annotated operation", this.name);
+        }
+        OpSymbol op = superMethod.getAnnotation(OpSymbol.class);
+        this.symbol = op == null
+            ? null
+            : op.symbol();
+        this.kind = op == null
+            ? OpKind.ATOM
+            : op.kind();
+        this.description = superMethod.getAnnotation(ToolTipHeader.class).value();
     }
 
     /** Converts a reflected type into a GROOVE sort. */

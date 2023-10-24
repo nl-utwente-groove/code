@@ -24,16 +24,18 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import nl.utwente.groove.annotation.Help;
-import nl.utwente.groove.annotation.InfixSymbol;
-import nl.utwente.groove.annotation.PrefixSymbol;
+import nl.utwente.groove.annotation.HelpMap;
+import nl.utwente.groove.annotation.OpSymbol;
+import nl.utwente.groove.annotation.ToolTipBody;
+import nl.utwente.groove.annotation.ToolTipHeader;
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.Strings;
+import nl.utwente.groove.util.parse.OpKind.Placement;
 
 /**
  * Helper class for algebra manipulation.
@@ -69,12 +71,12 @@ public class Algebras {
     /**
      * Returns a syntax helper mapping for all operators.
      */
-    public static Map<String,String> getOpDocMap() {
+    public static HelpMap getOpDocMap() {
         return opDocMap.get();
     }
 
-    private static Map<String,String> computeOpDocMap() {
-        Map<String,String> result = new TreeMap<>();
+    private static HelpMap computeOpDocMap() {
+        var result = new HelpMap();
         Map<String,String> sigMap = new HashMap<>(tokenMap);
         for (Method method : GSignature.class.getMethods()) {
             sigMap.put("Q" + method.getName(), method.getName());
@@ -90,22 +92,21 @@ public class Algebras {
                     : ".";
                 help
                     .addBody(Groove
-                        .toString(forSorts.toArray(), "<p/><p/>Available for %1$s value" + plural,
+                        .toString(forSorts.toArray(),
+                                  "<p style=\"margin-top:5;\"/>Available for %1$s value" + plural,
                                   ending, ",", " and "));
                 // add a message about prefix or infix notation
                 @SuppressWarnings("cast")
-                var infix = method.getAnnotation((Class<InfixSymbol>) InfixSymbol.class);
-                if (infix != null) {
+                var op = method.getAnnotation((Class<OpSymbol>) OpSymbol.class);
+                if (op != null) {
+                    var body = switch (op.kind().getPlace()) {
+                    case INFIX -> "Alternative (infix) notation: %%2$s %s %%3$s.";
+                    case PREFIX -> "Alternative (prefix) notation: %s %%2$s.";
+                    default -> throw Exceptions.UNREACHABLE;
+                    };
                     help
-                        .addBody("<p/><p/>Alternative (infix) notation: %2$s "
-                            + HTMLConverter.toHtml(infix.symbol()) + " %3$s.");
-                }
-                @SuppressWarnings("cast")
-                var prefix = method.getAnnotation((Class<PrefixSymbol>) PrefixSymbol.class);
-                if (prefix != null) {
-                    help
-                        .addBody("<p/><p/>Alternative (prefix) notation: " + prefix.symbol()
-                            + "%2$s.");
+                        .addBody("<p style=\"margin-top:5;\"/>"
+                            + String.format(body, convert(op.symbol(), true)));
                 }
                 // parameter documentation
                 help.addPar("the sort to which the operator belongs");
@@ -116,10 +117,148 @@ public class Algebras {
                     }
                     help.addPar(sortName + "-typed expression");
                 }
-                result.put(help.getItem(), help.getTip());
+                result.add(help);
             }
         }
         return result;
+    }
+
+    /** Syntax helper map for operators, from syntax items to associated tool tips. */
+    private static final LazyFactory<HelpMap> opDocMap
+        = LazyFactory.instance(Algebras::computeOpDocMap);
+
+    /**
+     * Returns a syntax helper mapping for all operators.
+     */
+    public static HelpMap getExprDocMap() {
+        return exprDocMap.get();
+    }
+
+    private static HelpMap computeExprDocMap() {
+        var result = new HelpMap();
+        Map<String,String> sigMap = new HashMap<>(tokenMap);
+        Map<OpSymbol,List<Method>> opMap = new HashMap<>();
+        // collect operators
+        for (Method method : GSignature.class.getMethods()) {
+            sigMap.put("Q" + method.getName(), method.getName());
+            @SuppressWarnings("cast")
+            var op = method.getAnnotation((Class<OpSymbol>) OpSymbol.class);
+            if (op != null) {
+                var opMethods = opMap.get(op);
+                if (opMethods == null) {
+                    opMap.put(op, opMethods = new ArrayList<>());
+                }
+                opMethods.add(method);
+            }
+        }
+        // create help for operators
+        for (var opEntry : opMap.entrySet()) {
+            // create a help item for this infix symbol
+            var op = opEntry.getKey();
+            var methods = opEntry.getValue();
+            Help help = new Help(sigMap);
+            help.setSyntax(createSyntax(op));
+            help.setHeader(createHeader(methods));
+            help.setBody(createBody(methods));
+            help
+                .addPar("expression of sort "
+                    + Groove.toString(getSorts(methods).toArray(), "", "", ",", " or "));
+            if (op.kind().getPlace() == Placement.INFIX) {
+                help.addPar("expression of the same sort as %1$s");
+            }
+            result.add(help);
+        }
+        // other expressions
+        for (var sort : Sort.values()) {
+            result.add(getLiteralHelp(sort));
+        }
+        result.add(getParenthesisHelp());
+        result.add(getOperatorHelp());
+        return result;
+    }
+
+    /** Syntax helper map for expressions, from syntax items to associated tool tips. */
+    private static final LazyFactory<HelpMap> exprDocMap
+        = LazyFactory.instance(Algebras::computeExprDocMap);
+
+    static private Help getLiteralHelp(Sort sort) {
+        try {
+            return Help.createHelp(sort.getClass().getField(sort.name()), tokenMap);
+        } catch (NoSuchFieldException exc) {
+            throw Exceptions.UNREACHABLE;
+        }
+    }
+
+    static private Help getParenthesisHelp() {
+        var result = new Help(tokenMap);
+        result.setSyntax("LPAR. expr .RPAR");
+        result.setHeader("Parenthesised expression");
+        result.addBody("Parenthesis can be used to circumvent operator priority.");
+        return result;
+    }
+
+    static private Help getOperatorHelp() {
+        var result = new Help(tokenMap);
+        result.setSyntax("[sort.COLON].name.LPAR.pars.RPAR");
+        result.setHeader("operator invocation");
+        result.addBody("Call of an algebraic operator; for further information see the Ops tab");
+        result.addPar("Optional sort to which the operator belongs");
+        result.addPar("Name of the operator");
+        result.addPar("List of operand expressions");
+        return result;
+    }
+
+    /** Constructs a collective help header for a set of methods. */
+    static private String createHeader(List<Method> methods) {
+        var headers = new ArrayList<String>();
+        methods
+            .stream()
+            .map(m -> m.getAnnotation(ToolTipHeader.class))
+            .map(ToolTipHeader::value)
+            .map(Strings::toLower)
+            .forEach(headers::add);
+        var header = Groove.toString(headers.toArray(), "", "", ", ", " or ");
+        return Strings.toUpper(header);
+    }
+
+    /** Constructs a help syntax line for a given operator. */
+    static private String createSyntax(OpSymbol op) {
+        return switch (op.kind().getPlace()) {
+        case INFIX -> "expr1 " + convert(op.symbol(), false) + " expr2";
+        case PREFIX -> convert(op.symbol(), false) + " expr";
+        default -> throw Exceptions.UNREACHABLE;
+        };
+    }
+
+    /** Constructs a collective help body for a set of methods. */
+    static private String createBody(List<Method> methods) {
+        String result = "";
+        for (var m : methods) {
+            if (methods.size() > 1) {
+                var sorts = getSorts(m);
+                result += Groove.toString(sorts.toArray(), "<li> For ", ": ", ", ", " or ");
+            }
+            for (var line : m.getAnnotation(ToolTipBody.class).value()) {
+                result += line;
+            }
+        }
+        return result.replaceAll("\\%2\\$s", "\\%1\\$s").replaceAll("\\%3\\$s", "\\%2\\$s");
+    }
+
+    /** Formats a string so that it is usable in a HTML context
+     * as well as (optionally) as {@link String#format} parameter. */
+    static private String convert(String text, boolean format) {
+        if (format) {
+            text = text.replace("%", "%%");
+        }
+        // convert keywords in the token map
+        for (var e : tokenMap.entrySet()) {
+            if (Character.isLowerCase(e.getValue().charAt(0))) {
+                text = text.replaceAll(e.getValue(), e.getKey());
+            }
+        }
+        text = HTMLConverter.toHtml(text);
+        return text;
     }
 
     /** Returns the list of sort names that declare a given operator method. */
@@ -139,92 +278,12 @@ public class Algebras {
         return result;
     }
 
-    /** Syntax helper map for operators, from syntax items to associated tool tips. */
-    private static final LazyFactory<Map<String,String>> opDocMap
-        = LazyFactory.instance(Algebras::computeOpDocMap);
-
-    /**
-     * Returns a syntax helper mapping for all operators.
-     */
-    public static Map<String,String> getExprDocMap() {
-        return exprDocMap.get();
-    }
-
-    private static Map<String,String> computeExprDocMap() {
-        Map<String,String> result = new TreeMap<>();
-        Map<String,String> sigMap = new HashMap<>(tokenMap);
-        Map<String,List<Method>> infixMap = new HashMap<>();
-        Map<String,List<Method>> prefixMap = new HashMap<>();
-        // collect all prefix and infix operators
-        for (Method method : GSignature.class.getMethods()) {
-            sigMap.put("Q" + method.getName(), method.getName());
-            @SuppressWarnings("cast")
-            var infix = method.getAnnotation((Class<InfixSymbol>) InfixSymbol.class);
-            if (infix != null) {
-                var infixes = infixMap.get(infix.symbol());
-                if (infixes == null) {
-                    infixMap.put(infix.symbol(), infixes = new ArrayList<>());
-                }
-                infixes.add(method);
-            }
-            @SuppressWarnings("cast")
-            var prefix = method.getAnnotation((Class<PrefixSymbol>) PrefixSymbol.class);
-            if (prefix != null) {
-                var prefixes = prefixMap.get(prefix.symbol());
-                if (prefixes == null) {
-                    prefixMap.put(prefix.symbol(), prefixes = new ArrayList<>());
-                }
-                prefixes.add(method);
-            }
-        }
-        for (var infixEntry : infixMap.entrySet()) {
-            // create a help item for this infix symbol
-            var methods = infixEntry.getValue();
-            var helps = new ArrayList<Help>();
-            methods.stream().map(m -> Help.createHelp(m, sigMap)).forEach(helps::add);
-            var tokenMap = new HashMap<String,String>();
-            helps.stream().map(Help::getTokenMap).forEach(tokenMap::putAll);
-            Help infixHelp = new Help(tokenMap);
-            // add the syntax line
-            var syntax = "expr1" + HTMLConverter.toHtml(infixEntry.getKey()) + "expr2";
-            infixHelp.setSyntax(syntax);
-            // add the header
-            var headers = new ArrayList<String>();
-            helps.stream().map(Help::getHeader).map(Strings::toLower).forEach(headers::add);
-            var header = Groove.toString(headers.toArray(), "", "", ", ", " or ");
-            header = Strings.toUpper(header);
-            infixHelp.setHeader(header);
-            // add the body
-            var bodyBuilder = new StringBuilder();
-            var allSorts = getSorts(methods.get(0));
-            if (methods.size() == 1) {
-                bodyBuilder.append(helps.get(0).getBody());
-            } else {
-                for (int i = 0; i < helps.size(); i++) {
-                    var sorts = getSorts(methods.get(i));
-                    bodyBuilder
-                        .append(Groove.toString(sorts.toArray(), "<li> For ", ": ", ", ", " or "));
-                    bodyBuilder.append(helps.get(i).getBody());
-                    allSorts.addAll(sorts);
-                }
-            }
-            String body = bodyBuilder
-                .toString()
-                .replaceAll("\\%2\\$s", "\\%1\\$s")
-                .replaceAll("\\%3\\$s", "\\%2\\$s");
-            infixHelp.setBody(body);
-            infixHelp
-                .addPar("expression of sort "
-                    + Groove.toString(allSorts.toArray(), "", "", ",", " or "));
-            infixHelp.addPar("expression of the same sort as %1$s");
-            result.put(infixHelp.getItem(), infixHelp.getTip());
-        }
+    /** Returns the list of sort names that declare one of a list of operator methods. */
+    static private Set<String> getSorts(List<Method> methods) {
+        var result = new LinkedHashSet<String>();
+        methods.stream().map(Algebras::getSorts).forEach(result::addAll);
         return result;
     }
-
-    /** Syntax helper map for expressions, from syntax items to associated tool tips. */
-    private static final LazyFactory<Map<String,String>> exprDocMap
-        = LazyFactory.instance(Algebras::computeExprDocMap);
 
     /**
      * Mapping from keywords in syntax descriptions to corresponding text.
@@ -234,9 +293,12 @@ public class Algebras {
     static {
         tokenMap = new HashMap<>();
         tokenMap.put("LPAR", "(");
+        tokenMap.put("BAR", " | ");
         tokenMap.put("RPAR", ")");
         tokenMap.put("COMMA", ",");
         tokenMap.put("COLON", ":");
+        tokenMap.put("QUOTE", "\"");
+        tokenMap.put("DOT", ".");
         tokenMap.put("TRUE", "true");
         tokenMap.put("FALSE", "false");
         for (var sort : Sort.values()) {

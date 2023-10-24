@@ -26,6 +26,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.annotation.Help;
+import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.util.LazyFactory;
@@ -214,24 +215,23 @@ public sealed abstract class Expression permits Constant, Variable, FieldExpr, C
      * Returns a syntax helper mapping from syntax items
      * to (possibly {@code null}) tool tips.
      */
-    public static Map<String,String> getDocMap() {
+    public static HelpMap getDocMap() {
         return docMap.get();
     }
 
     /** Computes the documentation map for the edge roles. */
-    private static Map<String,String> computeDocMap() {
-        var result = new HashMap<String,String>();
+    private static HelpMap computeDocMap() {
+        var result = new HelpMap();
         for (Field field : EdgeRole.class.getFields()) {
             if (field.isEnumConstant()) {
-                Help help = Help.createHelp(field, EdgeRole.nameToSymbolMap);
-                result.put(help.getItem(), help.getTip());
+                result.add(Help.createHelp(field, EdgeRole.nameToSymbolMap));
             }
         }
         return result;
     }
 
     /** Syntax helper map, from syntax items to associated tool tips. */
-    private static final LazyFactory<Map<String,String>> docMap
+    private static final LazyFactory<HelpMap> docMap
         = LazyFactory.instance(Expression::computeDocMap);
 
     /**

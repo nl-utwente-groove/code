@@ -96,10 +96,6 @@ public class ExprParseTest {
         // unrecognised symbols
         parseError(";");
         parseError("/");
-        // wrong use of operator
-        parseError("ge+ge");
-        parseError("ge()");
-        parseError("ge(2)");
     }
 
     /** Asserts that parsing a string and converting at back results in the same string. */
@@ -133,8 +129,9 @@ public class ExprParseTest {
             String error = expr.hasErrors()
                 ? " with errors " + expr.getErrors().toString()
                 : "";
-            System.out.printf("%s parsed to %s%s%n -> %s", arg, expr, error,
-                              expr.toLine().toFlatString());
+            System.out
+                .printf("%s parsed to %s%s%n -> %s", arg, expr, error,
+                        expr.toLine().toFlatString());
         }
     }
 

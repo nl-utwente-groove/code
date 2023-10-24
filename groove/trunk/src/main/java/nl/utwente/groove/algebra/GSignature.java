@@ -17,22 +17,24 @@
 package nl.utwente.groove.algebra;
 
 import static nl.utwente.groove.util.parse.OpKind.ADD;
+import static nl.utwente.groove.util.parse.OpKind.AND;
 import static nl.utwente.groove.util.parse.OpKind.COMPARE;
 import static nl.utwente.groove.util.parse.OpKind.EQUAL;
 import static nl.utwente.groove.util.parse.OpKind.MULT;
+import static nl.utwente.groove.util.parse.OpKind.NOT;
+import static nl.utwente.groove.util.parse.OpKind.OR;
 import static nl.utwente.groove.util.parse.OpKind.UNARY;
 
 import java.util.List;
 
-import nl.utwente.groove.annotation.InfixSymbol;
-import nl.utwente.groove.annotation.PrefixSymbol;
+import nl.utwente.groove.annotation.OpSymbol;
 import nl.utwente.groove.annotation.Syntax;
 import nl.utwente.groove.annotation.ToolTipBody;
 import nl.utwente.groove.annotation.ToolTipHeader;
 import nl.utwente.groove.util.Exceptions;
 
 /**
- * Generic signature extension containing default implementations for all operations.
+ * Generic signature extension (only) containing methods for all algebraic operations.
  * This serves for a uniform representation, in particular for documentation purposes.
  * @param <MAIN> The main sort to which the signature is specialised
  * @param <INT> The representation type of the int algebra
@@ -56,7 +58,7 @@ public interface GSignature<MAIN,INT,REAL,BOOL,STRING> extends Signature {
     @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
     @ToolTipHeader("Addition")
     @ToolTipBody("Yields the sum of %2$s and %3$s.")
-    @InfixSymbol(symbol = "+", kind = ADD)
+    @OpSymbol(symbol = "+", kind = ADD)
     public default MAIN add(MAIN arg0, MAIN arg1) {
         throw Exceptions
             .unsupportedOp("Operation %s not implemented for sort %s", "add", getSort());
@@ -84,7 +86,7 @@ public interface GSignature<MAIN,INT,REAL,BOOL,STRING> extends Signature {
     @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
     @ToolTipHeader("Subtraction")
     @ToolTipBody("Yields the difference between %2$s and %3$s.")
-    @InfixSymbol(symbol = "-", kind = ADD)
+    @OpSymbol(symbol = "-", kind = ADD)
     public default MAIN sub(MAIN arg0, MAIN arg1) {
         throw Exceptions
             .unsupportedOp("Operation %s not implemented for sort %s", "sub", getSort());
@@ -94,7 +96,7 @@ public interface GSignature<MAIN,INT,REAL,BOOL,STRING> extends Signature {
     @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
     @ToolTipHeader("Multiplication")
     @ToolTipBody("Yields the product of %2$s and %3$s.")
-    @InfixSymbol(symbol = "*", kind = MULT)
+    @OpSymbol(symbol = "*", kind = MULT)
     public default MAIN mul(MAIN arg0, MAIN arg1) {
         throw Exceptions
             .unsupportedOp("Operation %s not implemented for sort %s", "mul", getSort());
@@ -104,10 +106,20 @@ public interface GSignature<MAIN,INT,REAL,BOOL,STRING> extends Signature {
     @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
     @ToolTipHeader("Division")
     @ToolTipBody("Yields the quotient of %2$s and %3$s.")
-    @InfixSymbol(symbol = "/", kind = MULT)
+    @OpSymbol(symbol = "/", kind = MULT)
     public default MAIN div(MAIN arg0, MAIN arg1) {
         throw Exceptions
             .unsupportedOp("Operation %s not implemented for sort %s", "div", getSort());
+    }
+
+    /** Modulo of two integers. */
+    @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
+    @ToolTipHeader("Modulo")
+    @ToolTipBody("Returns the remainder after dividing %2$s by %3$s.")
+    @OpSymbol(symbol = "%", kind = MULT)
+    public default MAIN mod(MAIN arg0, MAIN arg1) {
+        throw Exceptions
+            .unsupportedOp("Operation %s not implemented for sort %s", "mod", getSort());
     }
 
     /** Minimum of two real numbers. */
@@ -117,6 +129,16 @@ public interface GSignature<MAIN,INT,REAL,BOOL,STRING> extends Signature {
     public default MAIN min(MAIN arg0, MAIN arg1) {
         throw Exceptions
             .unsupportedOp("Operation %s not implemented for sort %s", "min", getSort());
+    }
+
+    /** Inversion. */
+    @ToolTipHeader("Inversion")
+    @Syntax("[sort:]Q%s.LPAR.expr.RPAR")
+    @ToolTipBody("Yields the inverse of %2$s.")
+    @OpSymbol(symbol = "-", kind = UNARY)
+    public default MAIN neg(MAIN arg) {
+        throw Exceptions
+            .unsupportedOp("Operation %s not implemented for sort %s", "neg", getSort());
     }
 
     /** Maximum of two real numbers. */
@@ -146,11 +168,58 @@ public interface GSignature<MAIN,INT,REAL,BOOL,STRING> extends Signature {
             .unsupportedOp("Operation %s not implemented for sort %s", "sum", getSort());
     }
 
+    /** Negation. */
+    @ToolTipHeader("Inversion")
+    @Syntax("[sort:]Q%s.LPAR.expr.RPAR")
+    @ToolTipBody("Yields TRUE if %2$s is FALSE, and FALSE otherwise.")
+    @OpSymbol(symbol = "!", kind = NOT)
+    public default MAIN not(MAIN arg) {
+        throw Exceptions
+            .unsupportedOp("Operation %s not implemented for sort %s", "not", getSort());
+    }
+
+    /** Conjunction. */
+    @ToolTipHeader("Conjunction")
+    @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
+    @ToolTipBody("Yields TRUE if %2$s and %3$s are both TRUE, and FALSE otherwise.")
+    @OpSymbol(symbol = "&", kind = AND)
+    public default MAIN and(MAIN arg0, MAIN arg1) {
+        throw Exceptions
+            .unsupportedOp("Operation %s not implemented for sort %s", "and", getSort());
+    }
+
+    /** Disjunction. */
+    @ToolTipHeader("Disjunction")
+    @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
+    @ToolTipBody("Yields TRUE if at least one of %2$s and %3$s is TRUE, and FALSE otherwise.")
+    @OpSymbol(symbol = "|", kind = OR)
+    public default MAIN or(MAIN arg0, MAIN arg1) {
+        throw Exceptions.unsupportedOp("Operation %s not implemented for sort %s", "or", getSort());
+    }
+
+    /** Conjunction of a set of booleans. */
+    @Syntax("[sort:]Q%s.LPAR.expr.RPAR")
+    @ToolTipHeader("Collective conjunction")
+    @ToolTipBody("Returns the conjunction of all quantified values of %2$s.")
+    public default MAIN bigand(List<MAIN> arg) {
+        throw Exceptions
+            .unsupportedOp("Operation %s not implemented for sort %s", "bigand", getSort());
+    }
+
+    /** Disjunction of a set of booleans. */
+    @Syntax("[sort:]Q%s.LPAR.expr.RPAR")
+    @ToolTipHeader("Collective disjunction")
+    @ToolTipBody("Returns the disjunction of all quantified values of %2$s.")
+    public default MAIN bigor(List<MAIN> arg) {
+        throw Exceptions
+            .unsupportedOp("Operation %s not implemented for sort %s", "bigor", getSort());
+    }
+
     /** Lesser-than comparison. */
     @ToolTipHeader("Lesser-than test")
     @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
     @ToolTipBody("Yields TRUE if %2$s is properly smaller than %3$s.")
-    @InfixSymbol(symbol = "<", kind = COMPARE)
+    @OpSymbol(symbol = "<", kind = COMPARE)
     public default BOOL lt(MAIN arg0, MAIN arg1) {
         throw Exceptions.unsupportedOp("Operation %s not implemented for sort %s", "lt", getSort());
     }
@@ -159,9 +228,46 @@ public interface GSignature<MAIN,INT,REAL,BOOL,STRING> extends Signature {
     @ToolTipHeader("Lesser-or-equal test")
     @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
     @ToolTipBody("Yields TRUE if %2$s is smaller than or equal to %3$s.")
-    @InfixSymbol(symbol = "<=", kind = COMPARE)
+    @OpSymbol(symbol = "<=", kind = COMPARE)
     public default BOOL le(MAIN arg0, MAIN arg1) {
         throw Exceptions.unsupportedOp("Operation %s not implemented for sort %s", "le", getSort());
+    }
+
+    /** Greater-than comparison. */
+    @ToolTipHeader("Greater-than test")
+    @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
+    @ToolTipBody("Yields TRUE if %2$s is properly larger than %3$s, FALSE otherwise.")
+    @OpSymbol(symbol = ">", kind = COMPARE)
+    public default BOOL gt(MAIN arg0, MAIN arg1) {
+        throw Exceptions.unsupportedOp("Operation %s not implemented for sort %s", "gt", getSort());
+    }
+
+    /** Greater-or-equal comparison. */
+    @ToolTipHeader("Greater-or-equal test")
+    @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
+    @ToolTipBody("Yields TRUE if %2$s is larger than or equal to %3$s, FALSE otherwise.")
+    @OpSymbol(symbol = ">=", kind = COMPARE)
+    public default BOOL ge(MAIN arg0, MAIN arg1) {
+        throw Exceptions.unsupportedOp("Operation %s not implemented for sort %s", "ge", getSort());
+    }
+
+    /** Equality test. */
+    @ToolTipHeader("Equality test")
+    @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
+    @ToolTipBody("Yields TRUE if %2$s equals %3$s, FALSE otherwise.")
+    @OpSymbol(symbol = "==", kind = EQUAL)
+    public default BOOL eq(MAIN arg0, MAIN arg1) {
+        throw Exceptions.unsupportedOp("Operation %s not implemented for sort %s", "eq", getSort());
+    }
+
+    /** Inequality test. */
+    @ToolTipHeader("Inequality test")
+    @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
+    @ToolTipBody("Yields TRUE if %2$s does not equal %3$s, FALSE otherwise.")
+    @OpSymbol(symbol = "!=", kind = EQUAL)
+    public default BOOL neq(MAIN arg0, MAIN arg1) {
+        throw Exceptions
+            .unsupportedOp("Operation %s not implemented for sort %s", "neq", getSort());
     }
 
     /** If-then-else construct for reals. */
@@ -173,82 +279,6 @@ public interface GSignature<MAIN,INT,REAL,BOOL,STRING> extends Signature {
             .unsupportedOp("Operation %s not implemented for sort %s", "ite", getSort());
     }
 
-    /** Greater-than comparison. */
-    @ToolTipHeader("Greater-than test")
-    @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
-    @ToolTipBody("Yields TRUE if %2$s is properly larger than %3$s, FALSE otherwise.")
-    @InfixSymbol(symbol = ">", kind = COMPARE)
-    public default BOOL gt(MAIN arg0, MAIN arg1) {
-        throw Exceptions.unsupportedOp("Operation %s not implemented for sort %s", "gt", getSort());
-    }
-
-    /** Greater-or-equal comparison. */
-    @ToolTipHeader("Greater-or-equal test")
-    @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
-    @ToolTipBody("Yields TRUE if %2$s is larger than or equal to %3$s, FALSE otherwise.")
-    @InfixSymbol(symbol = ">=", kind = COMPARE)
-    public default BOOL ge(MAIN arg0, MAIN arg1) {
-        throw Exceptions.unsupportedOp("Operation %s not implemented for sort %s", "ge", getSort());
-    }
-
-    /** Equality test. */
-    @ToolTipHeader("Equality test")
-    @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
-    @ToolTipBody("Yields TRUE if %2$s equals %3$s, FALSE otherwise.")
-    @InfixSymbol(symbol = "==", kind = EQUAL)
-    public default BOOL eq(MAIN arg0, MAIN arg1) {
-        throw Exceptions.unsupportedOp("Operation %s not implemented for sort %s", "eq", getSort());
-    }
-
-    /** Inequality test. */
-    @ToolTipHeader("Inequality test")
-    @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
-    @ToolTipBody("Yields TRUE if %2$s does not equal %3$s, FALSE otherwise.")
-    @InfixSymbol(symbol = "!=", kind = EQUAL)
-    public default BOOL neq(MAIN arg0, MAIN arg1) {
-        throw Exceptions
-            .unsupportedOp("Operation %s not implemented for sort %s", "neq", getSort());
-    }
-
-    /** Inversion. */
-    @ToolTipHeader("Inversion")
-    @Syntax("[sort:]Q%s.LPAR.expr.RPAR")
-    @ToolTipBody("Yields the inverse of %2%s.")
-    @PrefixSymbol(symbol = "-", kind = UNARY)
-    public default MAIN neg(MAIN arg) {
-        throw Exceptions
-            .unsupportedOp("Operation %s not implemented for sort %s", "neg", getSort());
-    }
-
-    /** String representation. */
-    @ToolTipHeader("Conversion to STRING")
-    @Syntax("[sort:]Q%s.LPAR.expr.RPAR")
-    @ToolTipBody("Yields a string representation of %2$s.")
-    public default STRING toString(MAIN arg) {
-        throw Exceptions
-            .unsupportedOp("Operation %s not implemented for sort %s", "toString", getSort());
-    }
-
-    /** Integer cast. */
-    @ToolTipHeader("Conversion to INT")
-    @Syntax("[sort:]Q%s.LPAR.expr.RPAR")
-    @ToolTipBody("Casts %2$s to its whole part if it is a REAL, or interprets it as an INT constant if it is a STRING.")
-    @PrefixSymbol(symbol = "(int)", kind = UNARY)
-    public default INT toInt(MAIN arg) {
-        throw Exceptions
-            .unsupportedOp("Operation %s not implemented for sort %s", "toInt", getSort());
-    }
-
-    /** String concatenation. */
-    @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
-    @ToolTipHeader("String concatenation")
-    @ToolTipBody("Yields a string consisting of %2$s followed by %3$s.")
-    @InfixSymbol(symbol = "+", kind = ADD)
-    public default MAIN concat(MAIN arg0, MAIN arg1) {
-        throw Exceptions
-            .unsupportedOp("Operation %s not implemented for sort %s", "concat", getSort());
-    }
-
     /** Test if a string represents a boolean value. */
     @ToolTipHeader("Boolean representation test")
     @Syntax("[sort:]Q%s.LPAR.expr.RPAR")
@@ -256,24 +286,6 @@ public interface GSignature<MAIN,INT,REAL,BOOL,STRING> extends Signature {
     public default BOOL isBool(MAIN arg0) {
         throw Exceptions
             .unsupportedOp("Operation %s not implemented for sort %s", "isBool", getSort());
-    }
-
-    /** Test if a string represents an integer number. */
-    @ToolTipHeader("Integer representation test")
-    @Syntax("[sort:]Q%s.LPAR.expr.RPAR")
-    @ToolTipBody("Yields TRUE if %2$s represents an integer number, FALSE otherwise.")
-    public default BOOL isInt(MAIN arg0) {
-        throw Exceptions
-            .unsupportedOp("Operation %s not implemented for sort %s", "isInt", getSort());
-    }
-
-    /** Test if a string represents a real number. */
-    @ToolTipHeader("Real number representation test")
-    @Syntax("[sort:]Q%s.LPAR.expr.RPAR")
-    @ToolTipBody("Yields TRUE if %2$s represents a real number, FALSE otherwise.")
-    public default BOOL isReal(MAIN arg0) {
-        throw Exceptions
-            .unsupportedOp("Operation %s not implemented for sort %s", "isReal", getSort());
     }
 
     /** Converts a string into a boolean. */
@@ -285,13 +297,52 @@ public interface GSignature<MAIN,INT,REAL,BOOL,STRING> extends Signature {
             .unsupportedOp("Operation %s not implemented for sort %s", "toBool", getSort());
     }
 
+    /** Test if a string represents an integer number. */
+    @ToolTipHeader("Integer representation test")
+    @Syntax("[sort:]Q%s.LPAR.expr.RPAR")
+    @ToolTipBody("Yields TRUE if %2$s represents an integer number, FALSE otherwise.")
+    public default BOOL isInt(MAIN arg0) {
+        throw Exceptions
+            .unsupportedOp("Operation %s not implemented for sort %s", "isInt", getSort());
+    }
+
+    /** Integer cast. */
+    @ToolTipHeader("Conversion to INT")
+    @Syntax("[sort:]Q%s.LPAR.expr.RPAR")
+    @ToolTipBody("Casts %2$s to its whole part if it is a REAL, or interprets it as an INT constant if it is a STRING.")
+    @OpSymbol(symbol = "(int)", kind = UNARY)
+    public default INT toInt(MAIN arg) {
+        throw Exceptions
+            .unsupportedOp("Operation %s not implemented for sort %s", "toInt", getSort());
+    }
+
+    /** Test if a string represents a real number. */
+    @ToolTipHeader("Real number representation test")
+    @Syntax("[sort:]Q%s.LPAR.expr.RPAR")
+    @ToolTipBody("Yields TRUE if %2$s represents a real number, FALSE otherwise.")
+    public default BOOL isReal(MAIN arg0) {
+        throw Exceptions
+            .unsupportedOp("Operation %s not implemented for sort %s", "isReal", getSort());
+    }
+
     /** Converts a string into a real number. */
     @ToolTipHeader("Real number conversion")
     @Syntax("[sort:]Q%s.LPAR.expr.RPAR")
     @ToolTipBody("Yields the real number represented by %2$s, or 0.0 if %2$s does not represent a real number.")
+    @OpSymbol(symbol = "(real)", kind = UNARY)
     public default REAL toReal(MAIN arg0) {
         throw Exceptions
             .unsupportedOp("Operation %s not implemented for sort %s", "toReal", getSort());
+    }
+
+    /** String representation. */
+    @ToolTipHeader("Conversion to STRING")
+    @Syntax("[sort:]Q%s.LPAR.expr.RPAR")
+    @ToolTipBody("Yields a string representation of %2$s.")
+    @OpSymbol(symbol = "(string)", kind = UNARY)
+    public default STRING toString(MAIN arg) {
+        throw Exceptions
+            .unsupportedOp("Operation %s not implemented for sort %s", "toString", getSort());
     }
 
     /** Size function. */
@@ -301,6 +352,16 @@ public interface GSignature<MAIN,INT,REAL,BOOL,STRING> extends Signature {
     public default INT length(MAIN arg) {
         throw Exceptions
             .unsupportedOp("Operation %s not implemented for sort %s", "length", getSort());
+    }
+
+    /** String concatenation. */
+    @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
+    @ToolTipHeader("String concatenation")
+    @ToolTipBody("Yields a string consisting of %2$s followed by %3$s.")
+    @OpSymbol(symbol = "+", kind = ADD)
+    public default MAIN concat(MAIN arg0, MAIN arg1) {
+        throw Exceptions
+            .unsupportedOp("Operation %s not implemented for sort %s", "concat", getSort());
     }
 
     /** Substring function. */
@@ -331,5 +392,4 @@ public interface GSignature<MAIN,INT,REAL,BOOL,STRING> extends Signature {
         throw Exceptions
             .unsupportedOp("Operation %s not implemented for sort %s", "lookup", getSort());
     }
-
 }

@@ -26,7 +26,6 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -64,6 +63,7 @@ import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphUndoManager;
 
 import nl.utwente.groove.algebra.Algebras;
+import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
@@ -611,7 +611,7 @@ final public class GraphEditorTab extends ResourceTab
         this.edgeKeys = new TreeSet<>(AspectKind.getEdgeDocMap(this.role).keySet());
         // the edge role description for binary edges in rule graphs is inappropriate
         for (var entry : EdgeRole.getRoleToDocMap().entrySet()) {
-            String item = entry.getValue().one();
+            String item = entry.getValue().getItem();
             switch (entry.getKey()) {
             case BINARY:
                 // for rules, this is already covered by the ATOM aspect type
@@ -627,7 +627,7 @@ final public class GraphEditorTab extends ResourceTab
                 assert false;
             }
         }
-        this.docMap = new HashMap<>();
+        this.docMap = new HelpMap();
         this.docMap.putAll(AspectKind.getNodeDocMap(this.role));
         this.docMap.putAll(AspectKind.getEdgeDocMap(this.role));
         this.docMap.putAll(EdgeRole.getDocMap());
@@ -714,7 +714,7 @@ final public class GraphEditorTab extends ResourceTab
     }
 
     /** Mapping from syntax documentation items to corresponding tool tips. */
-    private Map<String,String> docMap;
+    private HelpMap docMap;
     private Set<String> nodeKeys;
     private Set<String> edgeKeys;
 
