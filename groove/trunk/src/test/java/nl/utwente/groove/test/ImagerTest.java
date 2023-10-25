@@ -20,13 +20,13 @@ import java.io.File;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.junit.Assert;
-import nl.utwente.groove.io.FileType;
-import nl.utwente.groove.io.Imager;
-
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import nl.utwente.groove.io.FileType;
+import nl.utwente.groove.io.Imager;
 
 /**
  * Test for the Imager command-line facility
@@ -68,6 +68,11 @@ public class ImagerTest {
     }
 
     @Test
+    public void testSvg() {
+        test(FileType.SVG);
+    }
+
+    @Test
     public void testTikz() {
         test(FileType.TIKZ);
     }
@@ -75,8 +80,9 @@ public class ImagerTest {
     private void test(FileType type) {
         new File(OUTPUT_DIR).mkdir();
         try {
-            Imager.execute(new String[] {"-f", type.getExtension().substring(1), "-v", "0",
-                TEST_DIR, OUTPUT_DIR});
+            Imager
+                .execute(new String[] {"-f", type.getExtension().substring(1), "-v", "0", TEST_DIR,
+                        OUTPUT_DIR});
         } catch (Exception exc) {
             exc.printStackTrace();
             Assert.fail(exc.getMessage());
