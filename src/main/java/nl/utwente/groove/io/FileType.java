@@ -102,6 +102,8 @@ public enum FileType {
     JPG("JPEG image files", ".jpg"),
     /** PDF file format, export graphs */
     PDF("Adobe PDF documents", ".pdf"),
+    /** SVG file format, export graphs */
+    SVG("Scalable Vector Graphics", ".svg"),
     /** PNG (Portable Network Graphics) files. */
     PNG("PNG image files", ".png"),
     /** LaTeX TikZ files. */
@@ -220,9 +222,7 @@ public enum FileType {
      * @param path the path to be stripped
      */
     public Path stripExtension(Path path) {
-        return path.getParent()
-            .resolve(path.getFileName()
-                .toString());
+        return path.getParent().resolve(path.getFileName().toString());
     }
 
     /**
@@ -473,8 +473,7 @@ public enum FileType {
      * (not necessarily of this filter).
      */
     public static boolean hasAnyExtension(File file) {
-        return file.getName()
-            .indexOf(SEPARATOR) >= 0;
+        return file.getName().indexOf(SEPARATOR) >= 0;
     }
 
     /**
