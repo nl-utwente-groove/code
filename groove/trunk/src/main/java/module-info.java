@@ -89,7 +89,6 @@ module nl.utwente.groove {
     requires antlr.complete;
     requires antlrworks;
     requires transitive args4j;
-    requires epsgraphics;
     requires transitive gnuprologjava;
     requires itextpdf;
     requires transitive jakarta.xml.bind;
@@ -108,6 +107,9 @@ module nl.utwente.groove {
     requires transitive org.eclipse.jdt.annotation;
     requires osxadapter;
     requires rsyntaxtextarea;
+    requires transitive xmlgraphics.commons;
+    requires transitive batik.all;
+    requires transitive jdk.xml.dom;
 
     opens nl.utwente.groove.explore to args4j;
     opens nl.utwente.groove.gui to args4j;

@@ -26,8 +26,10 @@ import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.PortException;
+import nl.utwente.groove.io.external.util.GraphToEPS;
+import nl.utwente.groove.io.external.util.GraphToPDF;
+import nl.utwente.groove.io.external.util.GraphToSVG;
 import nl.utwente.groove.io.external.util.GraphToVector;
-import nl.utwente.groove.util.Groove;
 
 /**
  * Class that implements saving graphs as vectorised EPS (Embedded PostScript) or PDF images.
@@ -39,25 +41,22 @@ public class VectorExporter extends AbstractExporter {
     /** Private constructor for the singleton instance. */
     private VectorExporter() {
         super(Kind.JGRAPH);
-        addFormat(FileType.PDF, Groove.GROOVE_BASE + ".io.external.util.GraphToPDF");
-        addFormat(FileType.EPS, Groove.GROOVE_BASE + ".io.external.util.GraphToEPS");
+        addFormat(FileType.EPS, GraphToEPS.class);
+        addFormat(FileType.PDF, GraphToPDF.class);
+        addFormat(FileType.SVG, GraphToSVG.class);
     }
 
-    private void addFormat(FileType fileType, String vectorClassName) {
+    private void addFormat(FileType fileType, Class<? extends GraphToVector> formatClass) {
         register(fileType);
-        this.formats.put(fileType, getGraphToVector(vectorClassName));
+        this.formats.put(fileType, getGraphToVector(formatClass));
     }
 
-    private GraphToVector getGraphToVector(String vectorClassName) {
+    private GraphToVector getGraphToVector(Class<? extends GraphToVector> formatClass) {
         GraphToVector result = null;
         try {
-            @SuppressWarnings("unchecked") Class<GraphToVector> cls =
-                (Class<GraphToVector>) Class.forName(vectorClassName);
-            result = cls.getConstructor()
-                .newInstance();
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-            | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
-            | SecurityException e) {
+            result = formatClass.getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+            | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             // Just return
         }
         return result;
@@ -66,8 +65,7 @@ public class VectorExporter extends AbstractExporter {
     @Override
     public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
         JGraph<?> jGraph = exportable.getJGraph();
-        this.formats.get(fileType)
-            .renderGraph(jGraph, file);
+        this.formats.get(fileType).renderGraph(jGraph, file);
     }
 
     private final Map<FileType,GraphToVector> formats = new EnumMap<>(FileType.class);

@@ -57,8 +57,8 @@ public class GraphToPDF extends GraphToVector {
             boolean onlyShapes = true;
             //The embedded fonts most likely do not contain all necessary glyphs, so using outlines instead
             // onlyShapes makes PDF considerably bigger, but no alternative at the moment
-            PdfGraphics2D pdf2d =
-                new PdfGraphics2D(cb, (float) bounds.getWidth(), (float) bounds.getHeight(),
+            PdfGraphics2D pdf2d
+                = new PdfGraphics2D(cb, (float) bounds.getWidth(), (float) bounds.getHeight(),
                     new DefaultFontMapper(), onlyShapes, false, (float) 100.0);
 
             // Render
