@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.util;
 
+import static nl.utwente.groove.io.HTMLConverter.TABLE_TAG_NAME;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
@@ -37,6 +39,9 @@ import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.CheckPolicy.PolicyMap;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.rule.MethodName;
+import nl.utwente.groove.gui.look.Values;
+import nl.utwente.groove.io.HTMLConverter;
+import nl.utwente.groove.io.HTMLConverter.HTMLTag;
 import nl.utwente.groove.transform.oracle.ValueOracleFactory;
 import nl.utwente.groove.util.parse.FormatChecker;
 import nl.utwente.groove.util.parse.FormatException;
@@ -78,7 +83,10 @@ public abstract class Properties implements Fixable {
 
     private final Class<? extends Key> keyType;
 
-    /** Returns the key with a given name, if any; or {@code null} if the name is not a recognisable key */
+    /** Returns the key with a given name, if any;
+     * or {@code null} if the name is not a recognisable key.
+     * @param name the name of the key, as regurned by {@code key.getName()}.
+     * <i>Note:</i> this is different from the enum value string returned by {@code key.name()}!*/
     abstract public Optional<? extends Key> getKey(String name);
 
     /** Indicates if there is a notable property value in this table. */
@@ -91,12 +99,50 @@ public abstract class Properties implements Fixable {
         this.notable = notable;
     }
 
+    /**
+     * Recomputes (and sets) whether there are any notable values in this properties map.
+     */
+    private void refreshNotable() {
+        var notable = getProperties()
+            .entrySet()
+            .stream()
+            .anyMatch(e -> isNotable((String) e.getKey(), (String) e.getValue()));
+        setNotable(notable);
+    }
+
     private boolean notable;
 
     /** Helper method to determine if a given key-value-pair is notable. */
     public boolean isNotable(String keyword, @Nullable String value) {
-        return value != null
-            && getKey(keyword).map(k -> ((Key) k).isNotableValue(value)).orElse(false);
+        return value != null && getKey(keyword).map(k -> k.isNotableValue(value)).orElse(false);
+    }
+
+    /** Returns HTML-formatted text (without the final HTML tag) listing
+     * the notable properties in this object. If there are no notable properties,
+     * the return value is the empty string.
+     */
+    public String getNotableProperties() {
+        StringBuilder result = new StringBuilder();
+        for (var entry : getProperties().entrySet()) {
+            var keyword = (String) entry.getKey();
+            var value = (String) entry.getValue();
+            if (isNotable(keyword, value)) {
+                var rule = new StringBuilder();
+                rule.append("<th style=\"padding:0\" align=\"right\">");
+                rule.append(getKey(keyword).get().getKeyPhrase());
+                rule
+                    .append("<td width=\"10\" align=\"center\"> = <td style=\"vertical-align:top\" align=\"left\">");
+                rule.append(value);
+                TABLE_RULE_TAG.on(rule);
+                result.append(rule);
+            }
+        }
+        if (result.isEmpty()) {
+            return "";
+        } else {
+            TABLE_TAG.on(result);
+            return result.toString();
+        }
     }
 
     @Override
@@ -176,11 +222,7 @@ public abstract class Properties implements Fixable {
     public @Nullable String remove(String keyword) {
         var result = (String) getProperties().remove(keyword);
         if (isNotable(keyword, result)) {
-            var notable = getProperties()
-                .entrySet()
-                .stream()
-                .anyMatch(e -> isNotable((String) e.getKey(), (String) e.getValue()));
-            setNotable(notable);
+            refreshNotable();
         }
         return result;
     }
@@ -225,15 +267,20 @@ public abstract class Properties implements Fixable {
         if (key.isEmpty()) {
             // this is a non-system key
             oldValue = (String) getProperties().setProperty(keyword, value);
-        } else if (key.get().parser().isDefault(value)) {
+        } else if (key.get().parser().parsesToDefault(value)) {
             oldValue = (String) getProperties().remove(keyword);
+            if (oldValue != null) {
+                refreshNotable();
+            }
         } else if (!key.get().parser().accepts(value)) {
             throw Exceptions
                 .illegalArg("Value '%s' is not appropriate for key '%s'", value, keyword);
         } else {
             oldValue = (String) getProperties().setProperty(keyword, value);
+            if (key.get().isNotable()) {
+                setNotable(true);
+            }
         }
-        setNotable(isNotable(keyword, value));
         return oldValue;
     }
 
@@ -309,86 +356,20 @@ public abstract class Properties implements Fixable {
     /** Object to delegate the fixable functionality. */
     private final DefaultFixable fixable = new DefaultFixable();
 
-    /*
-     * Before calling the super method, tests if the properties are fixed and
-     * throws an {@link IllegalStateException} if this is the case.
-     * @throws IllegalStateException if the graph has been fixed.
-     * @see #setFixed()
-    @Override
-    public synchronized void load(InputStream inStream) throws IOException {
-        testFixed(false);
-        properties.clear();
-        properties.load(inStream);
-    }
-     */
-
-    /*
-     * Before calling the super method, tests if the properties are fixed and
-     * throws an {@link IllegalStateException} if this is the case.
-     * @throws IllegalStateException if the properties have been fixed.
-     * @see #setFixed()
-    @Override
-    public synchronized void loadFromXML(InputStream in) throws IOException,
-                                                         InvalidPropertiesFormatException {
-        testFixed(false);
-        clear();
-        properties.loadFromXML(in);
-    }
-     */
-
-    /*
-     * Before calling the super method, tests if the properties are fixed and
-     * throws an {@link IllegalStateException} if this is the case.
-     * @throws IllegalStateException if the properties have been fixed.
-     * @see #setFixed()
-    @Override
-    public synchronized void clear() {
-        testFixed(false);
-        properties.clear();
-    }
-     */
-
-    /*
-     * Before calling the super method, tests if the properties are fixed and
-     * throws an {@link IllegalStateException} if this is the case.
-     * @throws IllegalStateException if the graph has been fixed.
-     * @see #setFixed()
-    @Override
-    public synchronized Object put(Object key, Object value) {
-        testFixed(false);
-        if (value == null || (value instanceof String s && s.length() == 0)) {
-            return properties.remove(key);
-        } else {
-            return properties.put(key, value);
-        }
-    }
-     */
-
-    /*
-     * Before calling the super method, tests if the properties are fixed and
-     * throws an {@link IllegalStateException} if this is the case.
-     * @throws IllegalStateException if the graph has been fixed.
-     * @see #setFixed()
-    @Override
-    public synchronized Object remove(Object key) {
-        testFixed(false);
-        return properties.remove(key);
-    }
-    */
-
-    /* Returns an unmodifiable set.
-    @Override
-    public Set<Object> keySet() {
-        return Collections.unmodifiableSet(properties.keySet());
-    }
-    */
-
-    /**
-     * Returns a Set view of the mappings contained in this map. The set is backed by the map, so changes to the map are reflected in the set, and vice-versa. If the map is modified while an iteration over the set is in progress (except through the iterator's own remove operation, or through the setValue operation on a map entry returned by the iterator) the results of the iteration are undefined. The set supports element removal, which removes the corresponding mapping from the map, via the Iterator.remove, Set.remove, removeAll, retainAll and clear operations. It does not support the add or addAll operations.
-    public Set<java.util.Map.Entry<Object,Object>> entrySet() {
-        return Collections.unmodifiableSet(properties.entrySet());
-    }
-    */
+    /** HTML-formatted colour specification for the {@link Values#INFO_NORMAL_FOREGROUND} colour. */
+    static public final String HTML_INFO_COLOR
+        = HTMLConverter.toHtmlColor(Values.INFO_NORMAL_FOREGROUND);
+    /** HTMLfont tag for the {@link Values#INFO_NORMAL_FOREGROUND} colour. */
+    static public final HTMLTag INFO_COLOR_TAG
+        = HTMLConverter.createColorTag(Values.INFO_NORMAL_FOREGROUND);
+    /** HTMLfont tag for the {@link Values#INFO_NORMAL_FOREGROUND} colour. */
+    static public final HTMLTag INFO_FONT_TAG
+        = HTMLConverter.createHtmlTag("font", "color", HTML_INFO_COLOR);
+    static private final HTMLTag TABLE_RULE_TAG
+        = HTMLConverter.createHtmlTag("tr", "style", "padding:0; color:" + HTML_INFO_COLOR);
+    static private final HTMLTag TABLE_TAG = HTMLConverter
+        .createHtmlTag(TABLE_TAG_NAME, "cellpadding", "0", "valign", "top", "style",
+                       "border-spacing:2; margin-left:20");
 
     /**
      * Interface for property keys; that is,
@@ -427,7 +408,7 @@ public abstract class Properties implements Fixable {
         /** Indicates if a given (String) value is a notable value for this key. */
         default public boolean isNotableValue(String value) {
             try {
-                return isNotable() && parse(value).equals(getDefaultValue());
+                return isNotable() && !parse(value).equals(getDefaultValue());
             } catch (FormatException exc) {
                 return false;
             }

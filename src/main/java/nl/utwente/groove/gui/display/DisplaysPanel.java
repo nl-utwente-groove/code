@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.gui.display;
 
+import static nl.utwente.groove.io.HTMLConverter.HTML_TAG;
+
 import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -31,22 +33,27 @@ import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.gui.LongToolTipAdapter;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorListener;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.SimulatorModel.Change;
 import nl.utwente.groove.gui.display.Display.ListPanel;
+import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Properties;
 
 /**
  * The main panel of the simulator.
@@ -149,6 +156,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             });
         }
         this.simulator.getModel().addListener(this, Change.DISPLAY, Change.GRAMMAR);
+        getUpperListsPanel().addMouseListener(new LongToolTipAdapter(getUpperListsPanel()));
         activateListeners();
     }
 
@@ -223,6 +231,26 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             for (ResourceKind optionalTab : Options.getOptionalTabs()) {
                 showOrHideTab(optionalTab);
             }
+            // set the properties tab component depending on whether there a notable properties
+            var properties = source.getGrammar().getProperties();
+            JTabbedPane propertiesTabPane = getListsPanel(DisplayKind.PROPERTIES);
+            var propertiesDisplay = getDisplay(DisplayKind.PROPERTIES);
+            var propertiesIndex
+                = propertiesTabPane.indexOfComponent(propertiesDisplay.getListPanel());
+            boolean notable = properties.isNotable();
+            propertiesTabPane.setIconAt(propertiesIndex, null);
+            propertiesTabPane
+                .setTabComponentAt(propertiesIndex, notable
+                    ? PropertiesDisplay.NOTABLE_TAB_COMPONENT
+                    : PropertiesDisplay.NORMAL_TAB_COMPONENT);
+            var toolTipText = DisplayKind.PROPERTIES.getTip();
+            if (notable) {
+                toolTipText += HTMLConverter.HTML_PAR_5PT;
+                toolTipText += Properties.INFO_FONT_TAG
+                    .on("Notable non-default properties (select tab for more info):");
+                toolTipText += properties.getNotableProperties();
+            }
+            propertiesTabPane.setToolTipTextAt(propertiesIndex, HTML_TAG.on(toolTipText));
         }
         if (changes.contains(Change.DISPLAY)) {
             DisplayKind newDisplayKind = source.getDisplay();
@@ -265,8 +293,8 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                 }
             }
             // change the info panel
-            ((CardLayout) getInfoPanel().getLayout()).show(getInfoPanel(),
-                                                           newDisplayKind.toString());
+            ((CardLayout) getInfoPanel().getLayout())
+                .show(getInfoPanel(), newDisplayKind.toString());
         } else if (getSelectedComponent() != null) {
             // switch tabs if the selection on the currently displayed tab
             // was set to null
@@ -341,7 +369,9 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                     break;
                 }
             }
-            listsPanel.insertTab(null, myKind.getTabIcon(), listPanel, myKind.getTip(), index);
+            listsPanel.insertTab(null, null, listPanel, myKind.getTip(), index);
+            JLabel tabComponent = new JLabel(null, myKind.getTabIcon(), SwingConstants.LEFT);
+            listsPanel.setTabComponentAt(index, tabComponent);
         }
         if (myKind.showDisplay()) {
             // add the info panel
@@ -453,9 +483,10 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         if (label != null) {
             label.setFont(label.getFont().deriveFont(Font.BOLD));
             label.setEnabled(enabled);
-            label.setTitle(enabled
-                ? getDisplayAt(index).getKind().getTitle()
-                : null);
+            label
+                .setTitle(enabled
+                    ? getDisplayAt(index).getKind().getTitle()
+                    : null);
         }
     }
 

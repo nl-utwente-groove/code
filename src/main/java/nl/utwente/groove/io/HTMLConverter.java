@@ -23,6 +23,7 @@ import java.util.Map;
 
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.look.Values;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Performs conversions to and from HTML code.
@@ -131,18 +132,22 @@ public class HTMLConverter {
     }
 
     /**
-     * Returns an HTML tag embedded with an argument string.
+     * Returns an HTML tag embedded with an arbitrary number of argument strings.
      */
-    static public HTMLTag createHtmlTag(String tag, String attribute, String arguments) {
-        return new HTMLTag(tag, attribute, arguments);
-    }
-
-    /**
-     * Returns an HTML tag embedded with two argument strings.
-     */
-    static public HTMLTag createHtmlTag(String tag, String attr1, String arg1, String attr2,
-                                        String arg2) {
-        return new HTMLTag(tag, new String[] {attr1, attr2}, new String[] {arg1, arg2});
+    static public HTMLTag createHtmlTag(String tag, String... parameters) {
+        if (parameters.length % 2 != 0) {
+            throw Exceptions
+                .illegalArg("Must have an even number of parameters rather than %s",
+                            (Object[]) parameters);
+        }
+        int parCount = parameters.length / 2;
+        String[] attrs = new String[parCount];
+        String[] args = new String[parCount];
+        for (int i = 0; i < parCount; i++) {
+            attrs[i] = parameters[2 * i];
+            args[i] = parameters[2 * i + 1];
+        }
+        return new HTMLTag(tag, attrs, args);
     }
 
     /**
@@ -165,32 +170,37 @@ public class HTMLConverter {
     static public HTMLTag createColorTag(Color color) {
         HTMLTag result = colorTagMap.get(color);
         if (result == null) {
-            StringBuffer arg = new StringBuffer();
-            int red = color.getRed();
-            int blue = color.getBlue();
-            int green = color.getGreen();
-            int alpha = color.getAlpha();
-            arg.append("color: rgb(");
-            arg.append(red);
-            arg.append(",");
-            arg.append(green);
-            arg.append(",");
-            arg.append(blue);
-            arg.append(");");
-            if (alpha != MAX_ALPHA) {
-                // the following is taken from the internet; it is to make
-                // sure that all html interpretations set the opacity correctly.
-                double alphaFraction = ((double) alpha) / MAX_ALPHA;
-                arg.append("float:left;filter:alpha(opacity=");
-                arg.append((int) (100 * alphaFraction));
-                arg.append(");opacity:");
-                arg.append(alphaFraction);
-                arg.append(";");
-            }
-            result = HTMLConverter.createSpanTag(arg.toString());
+            result = HTMLConverter.createSpanTag("color: " + toHtmlColor(color));
             colorTagMap.put(color, result);
         }
         return result;
+    }
+
+    /** Turns a Java color object into a HTML color specification. */
+    static public String toHtmlColor(Color color) {
+        var result = new StringBuilder();
+        int red = color.getRed();
+        int blue = color.getBlue();
+        int green = color.getGreen();
+        int alpha = color.getAlpha();
+        result.append("rgb(");
+        result.append(red);
+        result.append(",");
+        result.append(green);
+        result.append(",");
+        result.append(blue);
+        result.append(");");
+        if (alpha != MAX_ALPHA) {
+            // the following is taken from the internet; it is to make
+            // sure that all html interpretations set the opacity correctly.
+            double alphaFraction = ((double) alpha) / MAX_ALPHA;
+            result.append("float:left;filter:alpha(opacity=");
+            result.append((int) (100 * alphaFraction));
+            result.append(");opacity:");
+            result.append(alphaFraction);
+            result.append(";");
+        }
+        return result.toString();
     }
 
     /** Converts the first letter of a given string to upper- or lowercase. */
@@ -280,6 +290,8 @@ public class HTMLConverter {
     static public final HTMLTag SUPER_TAG = new HTMLTag("sup");
     /** Font underline tag. */
     static public final HTMLTag UNDERLINE_TAG = new HTMLTag("u");
+    /** Paragraph start with 5 pt space atop. */
+    static public final String HTML_PAR_5PT = "<p style=\"margin-top:5;\"/>";
     /** The <code>html</code> tag to insert a line break. */
     static public final String HTML_LINEBREAK = createHtmlTag("br").tagBegin;
     /** The <code>html</code> tag to insert a horizontal line. */

@@ -243,7 +243,9 @@ public class ResourceDisplay extends Display implements SimulatorListener {
 
     /** Gets the currently selected tab index of the upper or lower info panel. */
     int getInfoTabIndex(boolean upper) {
-        return upper ? this.upperInfoTabIndex : this.lowerInfoTabIndex;
+        return upper
+            ? this.upperInfoTabIndex
+            : this.lowerInfoTabIndex;
     }
 
     /** Changes the currently selected tab index of the upper or lower info panel. */
@@ -362,16 +364,13 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     protected ResourceTab createEditorTab(QualName name) {
         ResourceKind kind = getResourceKind();
         if (kind.isGraphBased()) {
-            AspectGraph graph = getSimulatorModel().getStore()
-                .getGraphs(getResourceKind())
-                .get(name);
+            AspectGraph graph
+                = getSimulatorModel().getStore().getGraphs(getResourceKind()).get(name);
             GraphEditorTab result = new GraphEditorTab(this, graph.getRole());
             result.setGraph(graph);
             return result;
         } else {
-            String program = getSimulatorModel().getStore()
-                .getTexts(getResourceKind())
-                .get(name);
+            String program = getSimulatorModel().getStore().getTexts(getResourceKind()).get(name);
             return new TextTab(this, name, program);
         }
     }
@@ -561,7 +560,9 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     protected void selectionChanged() {
         if (suspendListening()) {
             Component selection = getTabPane().getSelectedComponent();
-            QualName name = selection == null ? null : QualName.parse(selection.getName());
+            QualName name = selection == null
+                ? null
+                : QualName.parse(selection.getName());
             getSimulatorModel().doSelect(getResourceKind(), name);
             buildInfoPanel();
             activateListening();
@@ -658,14 +659,12 @@ public class ResourceDisplay extends Display implements SimulatorListener {
             HTMLConverter.ITALIC_TAG.on(result);
             Action.Role actionRole = ((RuleModel) model).getRole();
             if (actionRole.hasColor()) {
-                HTMLConverter.createColorTag(actionRole.getColor())
-                    .on(result);
+                HTMLConverter.createColorTag(actionRole.getColor()).on(result);
             }
         }
         result.append(suffix);
         if (isEdited(name)) {
-            getEditors().get(name)
-                .decorateText(result);
+            getEditors().get(name).decorateText(result);
         }
         if (enabled) {
             if (getKind() != DisplayKind.RULE) {
@@ -690,13 +689,17 @@ public class ResourceDisplay extends Display implements SimulatorListener {
 
     /** Returns the tool tip text for a resource, depending on its enabling. */
     private String getToolTip(QualName name, boolean enabled) {
-        String result = enabled ? this.enabledText : this.disabledText;
+        String result = enabled
+            ? this.enabledText
+            : this.disabledText;
         if (result == null) {
-            this.enabledText = String.format("Enabled %s; doubleclick to edit",
-                getResourceKind().getDescription());
-            this.disabledText = String.format("Disabled %s; doubleclick to edit",
-                getResourceKind().getDescription());
-            result = enabled ? this.enabledText : this.disabledText;
+            this.enabledText = String
+                .format("Enabled %s; doubleclick to edit", getResourceKind().getDescription());
+            this.disabledText = String
+                .format("Disabled %s; doubleclick to edit", getResourceKind().getDescription());
+            result = enabled
+                ? this.enabledText
+                : this.disabledText;
         }
         return result;
     }
@@ -710,8 +713,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     final public boolean hasError(QualName name) {
         boolean result;
         if (this.editorMap.containsKey(name)) {
-            result = this.editorMap.get(name)
-                .hasErrors();
+            result = this.editorMap.get(name).hasErrors();
         } else {
             ResourceModel<?> model = getResource(name);
             result = model != null && model.hasErrors();
@@ -721,8 +723,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
 
     /** Retrieves the resource model for a given name from the grammar. */
     public final NamedResourceModel<?> getResource(QualName name) {
-        return getSimulatorModel().getGrammar()
-            .getResource(getResourceKind(), name);
+        return getSimulatorModel().getGrammar().getResource(getResourceKind(), name);
     }
 
     private JTabbedPane tabPane;

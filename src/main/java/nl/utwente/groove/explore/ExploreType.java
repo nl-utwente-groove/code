@@ -22,6 +22,7 @@ import nl.utwente.groove.explore.result.CycleAcceptor;
 import nl.utwente.groove.explore.strategy.LTLStrategy;
 import nl.utwente.groove.explore.strategy.Strategy;
 import nl.utwente.groove.grammar.Grammar;
+import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -264,7 +265,7 @@ public class ExploreType {
 
     /** Message describing the syntax of a parsable exploration strategy. */
     static public final String SYNTAX_MESSAGE
-        = "Exploration syntax: \"<strategy> <acceptor> [<resultcount>]\"";
+        = HTMLConverter.toHtml("Exploration syntax: \"<strategy> <acceptor> [<resultcount>]\"");
     /** Default exploration (DFS, final states, infinite). */
     static public final ExploreType DEFAULT = new ExploreType();
 }

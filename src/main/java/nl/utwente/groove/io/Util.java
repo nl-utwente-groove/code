@@ -337,6 +337,9 @@ public class Util {
     /** Unicode  circular arrow symbol. */
     static public final char CA = '\u21ba';
 
+    /** Unicode info symbol. */
+    static public final char INFO_SYMBOL = '\u24D8';
+
     /** Unicode thin space symbol. */
     static public final char HAIR_SPACE = '\u200A';
     /** Unicode thin space symbol. */

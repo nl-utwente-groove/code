@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.util.parse;
 
+import static nl.utwente.groove.io.HTMLConverter.ITALIC_TAG;
+
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -150,6 +152,19 @@ public interface Parser<T> {
         }
     }
 
+    /** Tests if a given string represents the default value.
+     * This is tested by parsing the string and calling {@link #isDefault(Object)}.
+     * If the string is not parsable, this method returns {@code false}.
+     * @param text the string value to be checked
+     */
+    default public boolean parsesToDefault(String text) {
+        try {
+            return isDefault(parse(text));
+        } catch (FormatException exc) {
+            return false;
+        }
+    }
+
     /**
      * Returns the (non-{@code null}) default value of this parser, i it has one.
      * The default value is what the empty string is parsed to.
@@ -178,9 +193,11 @@ public interface Parser<T> {
          * Whether the parser has a default value will depend on whether the empty string parses
          * without format exceptions
          * @param description HTML-formatted description of a parsable string, starting with uppercase.
+         * May be {@code null}, in which case the description will be obtained through {@link #createDescription()}
+         * immediately after construction.
          * @param valueType the value type of this parser
          */
-        protected AParser(String description, Class<? extends T> valueType) {
+        protected AParser(@Nullable String description, Class<? extends T> valueType) {
             this.description = description;
             this.valueType = valueType;
         }
@@ -188,21 +205,35 @@ public interface Parser<T> {
         /**
          * Constructs a parser with a given description of its parsable strings.
          * @param description HTML-formatted description of a parsable string, starting with uppercase.
+         * May be {@code null}, in which case the description will be obtained through {@link #createDescription()}
+         * immediately after construction.
          * @param defaultValue the explicit default value of this parser
          */
         @SuppressWarnings("unchecked")
-        protected AParser(String description, T defaultValue) {
+        protected AParser(@Nullable String description, T defaultValue) {
             this.description = description;
             this.valueType = (Class<? extends T>) defaultValue.getClass();
             this.defaultValue = Optional.of(defaultValue);
         }
 
-        @Override
-        final public String getDescription() {
-            return this.description;
+        /**
+         * Callback method to generate the parser description
+         * in case it has not been initialised in the constructor.
+         */
+        protected String createDescription() {
+            throw Exceptions.unsupportedOp("Description should have been set in the constructor");
         }
 
-        private final String description;
+        @Override
+        final public String getDescription() {
+            var result = this.description;
+            if (result == null) {
+                this.description = result = createDescription();
+            }
+            return result;
+        }
+
+        private @Nullable String description;
 
         @Override
         final public Class<? extends T> getValueType() {
@@ -224,8 +255,9 @@ public interface Parser<T> {
                 assert result != null;
                 this.defaultValue = result;
             }
-            return result.orElseThrow(() -> Exceptions
-                .unsupportedOp("This parser does not have a default value"));
+            return result
+                .orElseThrow(() -> Exceptions
+                    .unsupportedOp("This parser does not have a default value"));
         }
 
         private @Nullable Optional<T> defaultValue;
@@ -381,7 +413,7 @@ public interface Parser<T> {
     class SplitParser<T> extends AParser<List<T>> {
         /** Constructs a parser. */
         public SplitParser(Parser<T> inner) {
-            super("Space-separated list of " + Strings.toLower(inner.getDescription()) + "values",
+            super("Space-separated list of " + Strings.toLower(inner.getDescription()) + " values",
                   Collections.<T>emptyList());
             this.inner = inner;
         }
@@ -488,7 +520,7 @@ public interface Parser<T> {
          * A {@code null} element in the texts means that the corresponding enum value is considered invalid.
          */
         public EnumParser(Class<T> enumType, String... texts) {
-            super(createDescription(enumType.getEnumConstants(), null, texts), enumType);
+            super(null, enumType);
             this.toStringMap = new EnumMap<>(enumType);
             this.toValueMap = new HashMap<>();
             T[] values = enumType.getEnumConstants();
@@ -547,8 +579,8 @@ public interface Parser<T> {
         public <V extends @NonNull T> String unparse(V value) {
             var result = this.toStringMap.get(value);
             if (result == null) {
-                throw Exceptions.illegalArg("'%s' is not valid in this use of %s", value,
-                                            getValueType());
+                throw Exceptions
+                    .illegalArg("'%s' is not valid in this use of %s", value, getValueType());
             }
             return result;
         }
@@ -561,21 +593,22 @@ public interface Parser<T> {
         private final Map<T,@Nullable String> toStringMap;
         private final Map<String,@Nullable T> toValueMap;
 
-        private static <T> String createDescription(T[] values, @Nullable T defaultValue,
-                                                    @Nullable String[] texts) {
+        @Override
+        protected String createDescription() {
             StringBuffer result = new StringBuffer("One of ");
-            for (int i = 0; i < values.length; i++) {
-                var text = texts[i];
-                if (text == null) {
-                    continue;
-                }
-                result = result.append(HTMLConverter.ITALIC_TAG.on(text));
-                if (values[i].equals(defaultValue)) {
+            int i = 0;
+            for (var entry : this.toStringMap.entrySet()) {
+                var value = entry.getKey();
+                var text = entry.getValue();
+                assert text != null;
+                result = result.append(ITALIC_TAG.on(text));
+                if (isDefault(value)) {
                     result.append(" (default)");
                 }
-                if (i < values.length - 2) {
+                i++;
+                if (i < this.toStringMap.size() - 1) {
                     result.append(", ");
-                } else if (i < values.length - 1) {
+                } else if (i < this.toStringMap.size()) {
                     result.append(" or ");
                 }
             }

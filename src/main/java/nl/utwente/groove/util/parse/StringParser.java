@@ -23,7 +23,7 @@ package nl.utwente.groove.util.parse;
  */
 public class StringParser extends Parser.AParser<String> {
     private StringParser(boolean trim) {
-        super("Any string value", "");
+        super("Any string", "");
         this.trim = trim;
     }
 

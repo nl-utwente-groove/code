@@ -40,17 +40,19 @@ import nl.utwente.groove.util.parse.Parser;
 public class OracleParser extends Parser.AParser<ValueOracleFactory> {
     /** Private constructor for the singleton instance. */
     private OracleParser() {
-        super(createDescription(), NoValueOracle.instance());
+        super(null, NoValueOracle.instance());
     }
 
     /** Creates a description of the values of this parser. */
-    static public String createDescription() {
+    @Override
+    protected String createDescription() {
         StringBuilder result = new StringBuilder("One of");
         boolean first = true;
         for (ValueOracleKind kind : ValueOracleKind.values()) {
-            result.append(first
-                ? ": "
-                : ", ");
+            result
+                .append(first
+                    ? ": "
+                    : ", ");
             result.append(HTMLConverter.ITALIC_TAG.on(kind.getName()));
             if (first) {
                 result.append(" (default)");
@@ -68,8 +70,11 @@ public class OracleParser extends Parser.AParser<ValueOracleFactory> {
         } else {
             FormatException exc
                 = new FormatException("%s is not a valid oracle specification", input);
-            ValueOracleKind kind = Arrays.stream(ValueOracleKind.values())
-                .filter(k -> input.startsWith(k.getName())).findAny().orElseThrow(() -> exc);
+            ValueOracleKind kind = Arrays
+                .stream(ValueOracleKind.values())
+                .filter(k -> input.startsWith(k.getName()))
+                .findAny()
+                .orElseThrow(() -> exc);
             String par;
             if (input.equals(kind.getName())) {
                 par = null;

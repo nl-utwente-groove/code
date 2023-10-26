@@ -29,7 +29,7 @@ public enum DisplayKind {
     LTS(null, Icons.LTS_FRAME_ICON, "Simulation", "Simulation panel"),
     /** Properties display. */
     PROPERTIES(ResourceKind.PROPERTIES, Icons.PROPERTIES_FRAME_ICON, "Properties",
-        "System properties");
+        "Grammar properties");
 
     private DisplayKind(ResourceKind resource, ImageIcon tabIcon, String title, String tip) {
         this.resource = resource;
@@ -112,8 +112,8 @@ public enum DisplayKind {
         return resourceMap.get(resource);
     }
 
-    private static final Map<ResourceKind,DisplayKind> resourceMap =
-        new EnumMap<>(ResourceKind.class);
+    private static final Map<ResourceKind,DisplayKind> resourceMap
+        = new EnumMap<>(ResourceKind.class);
 
     static {
         for (DisplayKind kind : DisplayKind.values()) {

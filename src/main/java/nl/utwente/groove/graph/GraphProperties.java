@@ -16,12 +16,16 @@
  */
 package nl.utwente.groove.graph;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.rule.MethodName.Language;
 import nl.utwente.groove.grammar.rule.MethodNameParser;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.Parser;
@@ -47,11 +51,7 @@ public class GraphProperties extends Properties {
 
     @Override
     public Optional<Key> getKey(String name) {
-        try {
-            return Optional.of(Key.valueOf(name));
-        } catch (IllegalArgumentException exc) {
-            return Optional.empty();
-        }
+        return Optional.ofNullable(nameKeyMap.get().get(name));
     }
 
     @Override
@@ -219,5 +219,15 @@ public class GraphProperties extends Properties {
                 return false;
             }
         }
+    }
+
+    /** Mapping from key names (as in {@link Key#getName()}) to keys. */
+    static private final LazyFactory<Map<String,Key>> nameKeyMap
+        = LazyFactory.instance(GraphProperties::createNameKeyMap);
+
+    static private Map<String,Key> createNameKeyMap() {
+        var result = new HashMap<String,Key>();
+        Arrays.stream(Key.values()).forEach(k -> result.put(k.getName(), k));
+        return result;
     }
 }

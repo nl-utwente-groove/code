@@ -148,7 +148,7 @@ public class PropertiesTable extends JTable {
             String stringKey = entry.getKey();
             String value = entry.getValue();
             var key = this.defaultKeys.get(stringKey);
-            if (key == null || !key.parser().isDefault(value)) {
+            if (key == null || !key.parser().parsesToDefault(value)) {
                 result.put(stringKey, value);
             }
         }
@@ -268,11 +268,7 @@ public class PropertiesTable extends JTable {
     /** Checks if the table has a notable value for a given property key. */
     boolean hasNotableValue(Key key) {
         String value = this.properties.get(key.getName());
-        try {
-            return key.isNotable() && value != null && !key.isDefault(key.parse(value));
-        } catch (FormatException exc) {
-            return false;
-        }
+        return key.isNotable() && value != null && !key.parsesToDefault(value);
     }
 
     /** A list of default property keys; possibly <code>null</code>. */
