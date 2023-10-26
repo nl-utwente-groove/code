@@ -218,8 +218,9 @@ public class GxlIO extends GraphIO<AttrGraph> {
             gxlGraph.setId(graph.getName());
             gxlGraph.setRole(graph.getRole().toString());
             // add the graph attributes, if any
-            GraphProperties properties = GraphInfo.getProperties(graph);
-            properties.entryStream()
+            GraphProperties properties = graph.getProperties();
+            properties
+                .entryStream()
                 .forEach(e -> storeAttribute(gxlGraph, e.getKey(), e.getValue()));
             // Add version info
             if (!properties.containsKey(GraphProperties.Key.VERSION)) {
@@ -354,9 +355,10 @@ public class GxlIO extends GraphIO<AttrGraph> {
             AttrGraph graph = gxlToGraph(gxlGraph);
             String version = GraphInfo.getVersion(graph);
             if (!Version.isKnownGxlVersion(version)) {
-                GraphInfo.addErrors(graph, new FormatErrorSet(
-                    "GXL file format version '%s' is higher than supported version '%s'", version,
-                    Version.GXL_VERSION));
+                GraphInfo
+                    .addErrors(graph, new FormatErrorSet(
+                        "GXL file format version '%s' is higher than supported version '%s'",
+                        version, Version.GXL_VERSION));
             }
             return graph;
         } finally {
@@ -476,9 +478,10 @@ public class GxlIO extends GraphIO<AttrGraph> {
         }
         GraphInfo.setProperties(graph, properties);
         String roleName = gxlGraph.getRole();
-        graph.setRole(roleName == null
-            ? GraphRole.HOST
-            : GraphRole.roles.get(roleName));
+        graph
+            .setRole(roleName == null
+                ? GraphRole.HOST
+                : GraphRole.roles.get(roleName));
         GraphInfo.setLayoutMap(graph, layoutMap);
         return graph;
     }
@@ -527,9 +530,9 @@ public class GxlIO extends GraphIO<AttrGraph> {
             if (sourceLayout != null && targetLayout != null) {
                 LayoutIO.correctPoints(points, sourceLayout, targetLayout);
             }
-            Point2D labelPosition
-                = LayoutIO.calculateLabelPosition(LayoutIO.toPoint(parts, 0), points,
-                                                  LayoutIO.VERSION2, edge.isLoop());
+            Point2D labelPosition = LayoutIO
+                .calculateLabelPosition(LayoutIO.toPoint(parts, 0), points, LayoutIO.VERSION2,
+                                        edge.isLoop());
             JEdgeLayout result
                 = new JEdgeLayout(points, labelPosition, LineStyle.getStyle(lineStyle));
             layoutMap.putEdge(edge, result);

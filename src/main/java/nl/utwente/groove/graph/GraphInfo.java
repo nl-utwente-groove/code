@@ -173,19 +173,19 @@ public class GraphInfo extends DefaultFixable {
     }
 
     /**
-     * Retrieves the (unmodifiable) collection of format errors of a graph.
+     * Retrieves the collection of format errors of a graph.
      * @param graph the queried graph; non-{@code null}
-     * @return a list of errors, or {@code null} if the graph does not have an info object
+     * @return a list of errors, which is empty if the graph does not have an info object
      * @see #getErrors()
      */
-    public static Collection<FormatError> getErrors(Graph graph) {
+    public static FormatErrorSet getErrors(Graph graph) {
         FormatErrorSet result;
         if (graph.hasInfo()) {
             result = graph.getInfo().getErrors();
         } else {
             result = new FormatErrorSet();
         }
-        return Collections.unmodifiableCollection(result);
+        return result;
     }
 
     /**
@@ -261,8 +261,7 @@ public class GraphInfo extends DefaultFixable {
     public static GraphProperties getProperties(Graph graph) {
         GraphProperties result = null;
         if (graph.hasInfo()) {
-            result = graph.getInfo().getProperties().clone();
-            result.setFixed();
+            result = graph.getInfo().getProperties();
         } else {
             result = EMPTY_PROPERTIES;
         }

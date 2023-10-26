@@ -580,7 +580,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         }
         if (state.isError()) {
             FormatErrorSet errors = new FormatErrorSet();
-            for (FormatError error : GraphInfo.getErrors(state.getGraph())) {
+            for (FormatError error : state.getGraph().getErrors()) {
                 errors.add("Error in state %s: %s", state, error);
             }
             GraphInfo.addErrors(this, errors);

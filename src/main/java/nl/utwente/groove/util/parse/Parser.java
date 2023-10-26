@@ -566,9 +566,35 @@ public interface Parser<T> {
             this(enumType, defaultValue, toCamel(enumType.getEnumConstants()));
         }
 
+        /**
+         * Constructs an instance with a default value.
+         * @param enumType the enum type supported by this property
+         * @param defaultValue the value of {@code T} represented
+         * by the empty string
+         * @param legacy if true, numeric values are also parsed
+         * (to the enum constant with that number as its ordinal)
+         */
+        public EnumParser(Class<T> enumType, @NonNull T defaultValue, boolean legacy) {
+            this(enumType, defaultValue);
+            this.legacy = legacy;
+        }
+
         @Override
         public T parse(String input) throws FormatException {
             var result = this.toValueMap.get(input);
+            if (result == null && this.legacy) {
+                try {
+                    int value = Integer.parseInt(input);
+                    result = Groove
+                        .orElse(this.toStringMap
+                            .keySet()
+                            .stream()
+                            .filter(v -> v.ordinal() == value)
+                            .findAny(), null);
+                } catch (NumberFormatException exc) {
+                    // do nothing
+                }
+            }
             if (result == null) {
                 throw new FormatException("Unknown value '%s'", input);
             }
@@ -614,6 +640,8 @@ public interface Parser<T> {
             }
             return result.toString();
         }
+
+        private boolean legacy;
 
         private static final <T extends Enum<T>> String[] toCamel(T[] vals) {
             String[] result = new String[vals.length];

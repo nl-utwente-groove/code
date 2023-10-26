@@ -1149,7 +1149,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
                 result.addEdgeContext(fresh);
             }
             // Copy the errors
-            for (FormatError oldError : GraphInfo.getErrors(graph)) {
+            for (FormatError oldError : graph.getErrors()) {
                 newErrors.add("Error in start graph '%s': %s", name, oldError);
             }
             // Move the offsets
