@@ -39,6 +39,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -85,6 +86,7 @@ import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.gui.jgraph.JAttr;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.jgraph.JGraphMode;
+import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.tree.TypeTree;
 
 /**
@@ -246,6 +248,12 @@ final public class GraphEditorTab extends ResourceTab
         this.dirtCount = Math.abs(this.dirtCount) + 1;
         this.dirtMinor &= minor;
         updateDirty();
+    }
+
+    @Override
+    protected void updateDirty() {
+        boolean notableProperties = GraphInfo.getProperties(getGraph()).isNotable();
+
     }
 
     /**
@@ -432,7 +440,7 @@ final public class GraphEditorTab extends ResourceTab
     private JGraphPanel<AspectGraph> editArea;
 
     @Override
-    protected JComponent getUpperInfoPanel() {
+    protected JTabbedPane getUpperInfoPanel() {
         JTabbedPane result = this.upperInfoPanel;
         if (result == null) {
             this.upperInfoPanel = result = new JTabbedPane();
@@ -443,6 +451,11 @@ final public class GraphEditorTab extends ResourceTab
                 scrollPanel.setName(propertiesPanel.getName());
                 scrollPanel.getViewport().setBackground(propertiesPanel.getBackground());
                 result.add(scrollPanel);
+                int index = result.indexOfComponent(scrollPanel);
+                JLabel label = new JLabel(scrollPanel.getName());
+                label.setForeground(Values.INFO_FOCUS_BACKGROUND);
+                result.setTitleAt(index, null);
+                result.setTabComponentAt(index, label);
                 result.addChangeListener(createInfoListener(true));
             }
         }

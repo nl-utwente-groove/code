@@ -352,6 +352,14 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         return new Entry(this, value);
     }
 
+    @Override
+    public boolean isNotable() {
+        return switch (this) {
+        case ACTION_POLICY, ALGEBRA, CREATOR_EDGE, DANGLING, DEAD_POLICY, INJECTIVE, ISOMORPHISM, ORACLE, RHS_AS_NAC, STORE_OUT_PARS, TRANSITION_PARAMETERS, TYPE_POLICY -> true;
+        default -> false;
+        };
+    }
+
     /** Returns the grammar key with a given name, if any; or {@code null} if the name is not a recognisable key */
     static public Optional<GrammarKey> getKey(String name) {
         try {
@@ -385,11 +393,12 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             var result = new FormatErrorSet();
             unknowns.removeAll(grammar.getResourceMap(getKind()).keySet());
             if (!unknowns.isEmpty()) {
-                result.add("Unknown %s name%s %s", Strings.toLower(getKind().getName()),
-                           unknowns.size() == 1
-                               ? ""
-                               : "s",
-                           Groove.toString(unknowns.toArray(), "'", "'", "', '", "' and '"));
+                result
+                    .add("Unknown %s name%s %s", Strings.toLower(getKind().getName()),
+                         unknowns.size() == 1
+                             ? ""
+                             : "s",
+                         Groove.toString(unknowns.toArray(), "'", "'", "', '", "' and '"));
             }
             return result;
         }
@@ -430,30 +439,28 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         public FormatErrorSet check(GrammarModel grammar, Entry value) {
             FormatErrorSet result = new FormatErrorSet();
             List<QualName> unknowns = new ArrayList<>();
-            CheckPolicy.PolicyMap map = value.getPolicyMap();
-            if (map == null) {
-                result.add("Invalid entry");
-            } else {
-                for (Map.Entry<QualName,CheckPolicy> entry : map.entrySet()) {
-                    QualName name = entry.getKey();
-                    RuleModel rule = grammar.getRuleModel(name);
-                    if (rule == null) {
-                        unknowns.add(name);
-                    } else {
-                        CheckPolicy policy = entry.getValue();
-                        policy.isFor(rule.getRole())
-                            .ifPresent(e -> result.add("Policy '%s' is unsuitable for %s '%s': %s",
-                                                       policy.getName(), rule.getRole(),
-                                                       rule.getQualName(), e));
-                    }
+            var map = value.getPolicyMap();
+            for (Map.Entry<QualName,CheckPolicy> entry : map.entrySet()) {
+                QualName name = entry.getKey();
+                RuleModel rule = grammar.getRuleModel(name);
+                if (rule == null) {
+                    unknowns.add(name);
+                } else {
+                    CheckPolicy policy = entry.getValue();
+                    policy
+                        .isFor(rule.getRole())
+                        .ifPresent(e -> result
+                            .add("Policy '%s' is unsuitable for %s '%s': %s", policy.getName(),
+                                 rule.getRole(), rule.getQualName(), e));
                 }
-                if (!unknowns.isEmpty()) {
-                    result.add("Unknown %s name%s %s", Strings.toLower(getKind().getName()),
-                               unknowns.size() == 1
-                                   ? ""
-                                   : "s",
-                               Groove.toString(unknowns.toArray(), "'", "'", "', '", "' and '"));
-                }
+            }
+            if (!unknowns.isEmpty()) {
+                result
+                    .add("Unknown %s name%s %s", Strings.toLower(getKind().getName()),
+                         unknowns.size() == 1
+                             ? ""
+                             : "s",
+                         Groove.toString(unknowns.toArray(), "'", "'", "', '", "' and '"));
             }
             return result;
         }

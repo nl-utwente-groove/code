@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -29,6 +30,7 @@ import nl.utwente.groove.gui.dialog.PropertiesTable;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.gui.jgraph.JModel;
+import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.tree.RuleLevelTree;
 import nl.utwente.groove.gui.tree.TypeTree;
 
@@ -116,6 +118,11 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
                 scrollPanel.setName(propertiesPanel.getName());
                 scrollPanel.getViewport().setBackground(propertiesPanel.getBackground());
                 result.add(scrollPanel);
+                int index = result.indexOfComponent(scrollPanel);
+                JLabel label = new JLabel(scrollPanel.getName());
+                label.setForeground(Values.INFO_FOCUS_BACKGROUND);
+                result.setTitleAt(index, null);
+                result.setTabComponentAt(index, label);
                 result.addChangeListener(createInfoListener(true));
             }
         }

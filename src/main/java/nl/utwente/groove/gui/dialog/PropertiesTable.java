@@ -92,8 +92,8 @@ public class PropertiesTable extends JTable {
         this.checkerMap = new CheckerMap();
         this.errorMap.clear();
         for (var key : this.defaultKeys.values()) {
-            if (!key.isSystem()) {
-                this.keyIndexMap.put(key, this.properties.size());
+            if (!key.isSystem() || key.isDerived()) {
+                this.keyIndexMap.put(key, this.keyIndexMap.size());
                 this.properties.put(key.getName(), "");
             }
         }
@@ -158,7 +158,7 @@ public class PropertiesTable extends JTable {
     /** The actual user properties map. */
     private final SortedMap<String,String> properties;
 
-    /** The number of non-system keys. */
+    /** The row number of non-system keys. */
     private final Map<Key,Integer> keyIndexMap;
 
     private CheckerMap checkerMap;
@@ -234,7 +234,7 @@ public class PropertiesTable extends JTable {
         if (this.cellEditor == null) {
             this.cellEditor = createCellEditor();
         }
-        this.cellEditor.setEditingKey();
+        this.cellEditor.setEditingValueForKey(null);
         return this.cellEditor;
     }
 
@@ -265,6 +265,16 @@ public class PropertiesTable extends JTable {
         return this.defaultKeys.get(name);
     }
 
+    /** Checks if the table has a notable value for a given property key. */
+    boolean hasNotableValue(Key key) {
+        String value = this.properties.get(key.getName());
+        try {
+            return key.isNotable() && value != null && !key.isDefault(key.parse(value));
+        } catch (FormatException exc) {
+            return false;
+        }
+    }
+
     /** A list of default property keys; possibly <code>null</code>. */
     private final Map<String,Key> defaultKeys;
 
@@ -280,9 +290,11 @@ public class PropertiesTable extends JTable {
     public FormatErrorSet getSelectedErrors() {
         FormatErrorSet result = null;
         int row = getSelectedRow();
-        var key = getKey((String) getValueAt(row, PROPERTY_COLUMN));
-        if (key != null) {
-            result = this.errorMap.get(key);
+        if (row >= 0) {
+            var key = getKey((String) getValueAt(row, PROPERTY_COLUMN));
+            if (key != null) {
+                result = this.errorMap.get(key);
+            }
         }
         return result == null
             ? new FormatErrorSet()
@@ -409,14 +421,9 @@ public class PropertiesTable extends JTable {
             return HTMLConverter.HTML_TAG.on(result).toString();
         }
 
-        /** Sets the editor to editing a property key. */
-        void setEditingKey() {
-            this.editingValueForKey = null;
-        }
-
         /** Sets the editor to edit the value for a given key. */
-        void setEditingValueForKey(String key) {
-            this.editingValueForKey = key;
+        void setEditingValueForKey(String keyword) {
+            this.editingValueForKey = keyword;
         }
 
         /**
@@ -445,6 +452,7 @@ public class PropertiesTable extends JTable {
             String tip = null;
             String text = (String) value;
             boolean error = false;
+            boolean isNotable = false;
             if (row < table.getRowCount()) {
                 String keyword = (String) table.getValueAt(row, PROPERTY_COLUMN);
                 var key = getKey(keyword);
@@ -463,6 +471,8 @@ public class PropertiesTable extends JTable {
                             tip += HTMLConverter.HTML_LINEBREAK;
                             tip += this.errorTag.on(err.toString());
                         }
+                    } else {
+                        isNotable = hasNotableValue(key);
                     }
                 }
             }
@@ -473,7 +483,9 @@ public class PropertiesTable extends JTable {
 
             Values.ColorSet colors = error
                 ? Values.ERROR_COLORS
-                : Values.NORMAL_COLORS;
+                : isNotable
+                    ? Values.INFO_COLORS
+                    : Values.NORMAL_COLORS;
             Color foreground = colors.getForeground(isSelected, hasFocus);
             setForeground(foreground);
             Color background = colors.getBackground(isSelected, hasFocus);
@@ -571,7 +583,7 @@ public class PropertiesTable extends JTable {
             } else {
                 // key changed
                 String oldValue = aliasProperties().remove(getPropertyKey(rowIndex));
-                if (value.length() > 0) {
+                if (!value.isEmpty()) {
                     aliasProperties().put(value, oldValue);
                 }
                 fireTableCellUpdated(rowIndex, columnIndex);

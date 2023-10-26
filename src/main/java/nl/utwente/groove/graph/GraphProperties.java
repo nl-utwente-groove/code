@@ -130,9 +130,10 @@ public class GraphProperties extends Properties {
             this.name = name;
             this.system = name.startsWith(SYSTEM_KEY_PREFIX);
             if (keyPhrase == null) {
-                String properName = name.substring(this.system
-                    ? SYSTEM_KEY_PREFIX.length()
-                    : 0);
+                String properName = name
+                    .substring(this.system
+                        ? SYSTEM_KEY_PREFIX.length()
+                        : 0);
                 this.keyPhrase = Strings.unCamel(properName, false);
             } else {
                 this.keyPhrase = keyPhrase;
@@ -199,6 +200,14 @@ public class GraphProperties extends Properties {
         @Override
         public Entry wrap(Object value) throws IllegalArgumentException {
             return new Entry(this, value);
+        }
+
+        @Override
+        public boolean isNotable() {
+            return switch (this) {
+            case FILTER, FORMAT, INJECTIVE, TRANSITION_LABEL -> true;
+            default -> false;
+            };
         }
 
         /** Indicates if a given string corresponds to a property key. */
