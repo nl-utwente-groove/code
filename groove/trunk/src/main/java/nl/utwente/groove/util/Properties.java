@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Algebra;
@@ -56,6 +56,7 @@ import nl.utwente.groove.util.parse.Parser;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 public abstract class Properties implements Fixable {
     /** Constructs a properties object with keys of a given type. */
     protected Properties(Class<? extends Key> keyType) {
@@ -80,6 +81,24 @@ public abstract class Properties implements Fixable {
     /** Returns the key with a given name, if any; or {@code null} if the name is not a recognisable key */
     abstract public Optional<? extends Key> getKey(String name);
 
+    /** Indicates if there is a notable property value in this table. */
+    public boolean isNotable() {
+        return this.notable;
+    }
+
+    /** Changes the notability property. */
+    private void setNotable(boolean notable) {
+        this.notable = notable;
+    }
+
+    private boolean notable;
+
+    /** Helper method to determine if a given key-value-pair is notable. */
+    public boolean isNotable(String keyword, @Nullable String value) {
+        return value != null
+            && getKey(keyword).map(k -> ((Key) k).isNotableValue(value)).orElse(false);
+    }
+
     @Override
     public synchronized String toString() {
         StringBuffer result = new StringBuffer();
@@ -96,7 +115,7 @@ public abstract class Properties implements Fixable {
 
     /** Retrieves and parses the stored value for a given key.
      * Returns the default entry for the key if the stored value contains an error. */
-    protected Entry parsePropertyOrDefault(@NonNull Key key) {
+    protected Entry parsePropertyOrDefault(Key key) {
         try {
             return parseProperty(key);
         } catch (FormatException exc) {
@@ -106,17 +125,19 @@ public abstract class Properties implements Fixable {
 
     /** Retrieves and parses the entry for a given key.
      * Throws a {@link FormatException} if the stored (string) value contains an error. */
-    public Entry parseProperty(@NonNull Key key) throws FormatException {
+    public Entry parseProperty(Key key) throws FormatException {
         String result = getProperties().getProperty(key.getName());
-        return key.parser().parse(result == null
-            ? ""
-            : result);
+        return key
+            .parser()
+            .parse(result == null
+                ? ""
+                : result);
     }
 
     /** Convenience method to test the presence of a key value rather than key name.
      * @see #containsKey(String)
      */
-    public boolean containsKey(@NonNull Key key) {
+    public boolean containsKey(Key key) {
         return containsKey(key.getName());
     }
 
@@ -124,12 +145,12 @@ public abstract class Properties implements Fixable {
      * @param keyword the keyword to be removed; may be a {@link Key} name or a user property
      * @return the value associated with {@code keyword}
      */
-    public boolean containsKey(@NonNull String keyword) {
+    public boolean containsKey(String keyword) {
         return getProperties().containsKey(keyword);
     }
 
     /** Convenience method to retrieve a property by key value rather than key name. */
-    public @Nullable String getProperty(@NonNull Key key) {
+    public @Nullable String getProperty(Key key) {
         return getProperty(key.getName());
     }
 
@@ -137,14 +158,14 @@ public abstract class Properties implements Fixable {
      * @param keyword the keyword to be removed; may be a {@link Key} name or a user property
      * @return the value associated with {@code keyword}
      */
-    public @Nullable String getProperty(@NonNull String keyword) {
+    public @Nullable String getProperty(String keyword) {
         return getProperties().getProperty(keyword);
     }
 
     /** Convenience method to remove a property by key value rather than key name.
      * @see #remove(String)
      */
-    public @Nullable String remove(@NonNull Key key) {
+    public @Nullable String remove(Key key) {
         return remove(key.getName());
     }
 
@@ -152,21 +173,28 @@ public abstract class Properties implements Fixable {
      * @param keyword the keyword to be removed; may be a {@link Key} name or a user property
      * @return the value previously associated with {@code keyword}
      */
-    public @Nullable String remove(@NonNull String keyword) {
-        return (String) getProperties().remove(keyword);
+    public @Nullable String remove(String keyword) {
+        var result = (String) getProperties().remove(keyword);
+        if (isNotable(keyword, result)) {
+            var notable = getProperties()
+                .entrySet()
+                .stream()
+                .anyMatch(e -> isNotable((String) e.getKey(), (String) e.getValue()));
+            setNotable(notable);
+        }
+        return result;
     }
 
     /** Stores a property value in the map.
      * The value should be of the type expected by the key.
      * @throws IllegalArgumentException if {@code value} is not a valid value for {@code key}
      */
-    public void storeValue(@NonNull Key key,
-                           @NonNull Object value) throws IllegalArgumentException {
+    public void storeValue(Key key, Object value) throws IllegalArgumentException {
         storeEntry(key, key.wrap(value));
     }
 
     /** Stores a property entry in the map. */
-    public void storeEntry(@NonNull Key key, @NonNull Entry entry) {
+    public void storeEntry(Key key, Entry entry) {
         if (key.isDefault(entry)) {
             remove(key);
         } else {
@@ -175,7 +203,7 @@ public abstract class Properties implements Fixable {
     }
 
     /** Convenience method to store a property value by key value rather than key name. */
-    public @Nullable String setProperty(@NonNull Key key, @NonNull String value) {
+    public @Nullable String setProperty(Key key, String value) {
         return setProperty(key.getName(), value);
     }
 
@@ -188,8 +216,8 @@ public abstract class Properties implements Fixable {
      * @return the (possibly {@code null}) value previously associated with the keyword
      * @throws IllegalArgumentException if the value is not appropriate for the keyword
      */
-    public @Nullable String setProperty(@NonNull String keyword,
-                                        @NonNull String value) throws IllegalArgumentException {
+    public @Nullable String setProperty(String keyword,
+                                        String value) throws IllegalArgumentException {
         testFixed(false);
         assert keyword != null;
         String oldValue;
@@ -200,11 +228,12 @@ public abstract class Properties implements Fixable {
         } else if (key.get().parser().isDefault(value)) {
             oldValue = (String) getProperties().remove(keyword);
         } else if (!key.get().parser().accepts(value)) {
-            throw Exceptions.illegalArg("Value '%s' is not appropriate for key '%s'", value,
-                                        keyword);
+            throw Exceptions
+                .illegalArg("Value '%s' is not appropriate for key '%s'", value, keyword);
         } else {
             oldValue = (String) getProperties().setProperty(keyword, value);
         }
+        setNotable(isNotable(keyword, value));
         return oldValue;
     }
 
@@ -216,10 +245,12 @@ public abstract class Properties implements Fixable {
      */
     public void putAll(Properties properties) throws IllegalArgumentException {
         if (properties.getKeyType() != getKeyType()) {
-            throw Exceptions.illegalArg("Property map to be cloned has key type %s rather than %s",
-                                        properties.getKeyType(), getKeyType());
+            throw Exceptions
+                .illegalArg("Property map to be cloned has key type %s rather than %s",
+                            properties.getKeyType(), getKeyType());
         }
         getProperties().putAll(properties.getProperties());
+        setNotable(properties.isNotable());
     }
 
     /** Returns a stream of the entries in this property map,
@@ -390,6 +421,18 @@ public abstract class Properties implements Fixable {
             return parser().getDefaultValue();
         }
 
+        /** Indicates if a non-default value should be actively signalled. */
+        public boolean isNotable();
+
+        /** Indicates if a given (String) value is a notable value for this key. */
+        default public boolean isNotableValue(String value) {
+            try {
+                return isNotable() && parse(value).equals(getDefaultValue());
+            } catch (FormatException exc) {
+                return false;
+            }
+        }
+
         /** Wraps a given value into an entry for this key.
          * First checks whether the value is of the right type for this key.
          * @throws IllegalArgumentException of {@code value} is not of the right type for this key.
@@ -412,8 +455,8 @@ public abstract class Properties implements Fixable {
          */
         default Object unwrap(Entry entry) throws IllegalArgumentException {
             if (entry.key() != this) {
-                throw Exceptions.illegalArg("Entry '%s' does not correspond to key '%s'", entry,
-                                            this);
+                throw Exceptions
+                    .illegalArg("Entry '%s' does not correspond to key '%s'", entry, this);
             }
             return entry.value();
         }
@@ -512,14 +555,22 @@ public abstract class Properties implements Fixable {
             assert key != null : "Key should not be null";
             assert value != null : String.format("Value for '%s' should not be null", key);
             if (!key.getKeyType().type().isInstance(value)) {
-                throw Exceptions.illegalArg("Key type '%s' does not admit value '%s' of type %s",
-                                            key, value, value.getClass());
+                throw Exceptions
+                    .illegalArg("Key type '%s' does not admit value '%s' of type %s", key, value,
+                                value.getClass());
             }
         }
 
         /** Unparses this entry to a {@link String} value that the key's parser can understand. */
         public String unparse() {
             return key().parser().unparse(this);
+        }
+
+        /** Indicates if this entry represents a notable value.
+         * This is the case if the key itself is notable and the value is not the key's default value.
+         */
+        public boolean isNotable() {
+            return key().isNotable() && !value().equals(key().getDefaultValue());
         }
 
         /**
@@ -673,8 +724,9 @@ public abstract class Properties implements Fixable {
          */
         private void check(ValueType keyType) {
             if (this.key().getKeyType() != keyType) {
-                throw Exceptions.unsupportedOp("Can't extract %s value from %s entry",
-                                               keyType.type(), this.key());
+                throw Exceptions
+                    .unsupportedOp("Can't extract %s value from %s entry", keyType.type(),
+                                   this.key());
             }
         }
     }
@@ -700,9 +752,10 @@ public abstract class Properties implements Fixable {
 
     /** Map from property keys to format checkers for those keys. */
     public static class CheckerMap extends HashMap<Key,FormatChecker<String>> {
+        @SuppressWarnings("null")
         @Override
-        public FormatChecker<String> get(Object key) {
-            FormatChecker<String> result = super.get(key);
+        public FormatChecker<String> get(@Nullable Object key) {
+            var result = super.get(key);
             if (result == null) {
                 result = FormatChecker.EMPTY_STRING_CHECKER;
             }

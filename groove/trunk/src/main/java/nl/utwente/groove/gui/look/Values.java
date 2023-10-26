@@ -35,15 +35,15 @@ import nl.utwente.groove.util.DefaultFixable;
  */
 public class Values {
     /** Dash pattern of absent graphs and transitions. */
-    public static final float[] ABSENT_DASH = new float[] {3.0f, 3.0f};
+    public static final float[] ABSENT_DASH = {3.0f, 3.0f};
     /** Dash pattern of abstract type nodes and edges. */
-    public static final float[] ABSTRACT_DASH = new float[] {6.0f, 2.0f};
+    public static final float[] ABSTRACT_DASH = {6.0f, 2.0f};
     /** Dash pattern of connect edges. */
-    public static final float[] CONNECT_DASH = new float[] {2f, 4f};
+    public static final float[] CONNECT_DASH = {2f, 4f};
     /** Dash pattern for verdict edges. */
-    public static final float[] VERDICT_DASH = new float[] {4.0f, 3.0f};
+    public static final float[] VERDICT_DASH = {4.0f, 3.0f};
     /** No dash pattern. */
-    public static final float[] NO_DASH = new float[] {10.f, 0.f};
+    public static final float[] NO_DASH = {10.f, 0.f};
     /** Foreground colour of creator nodes and edges. */
     public static final Color CREATOR_FOREGROUND = Color.green.darker();
     /** Background colour of creator nodes and edges. */
@@ -57,19 +57,19 @@ public class Values {
      */
     public static final Color DEFAULT_BACKGROUND = Colors.findColor("243 243 243");
     /** Dash pattern of embargo nodes and edges. */
-    public static final float[] EMBARGO_DASH = new float[] {2f, 2f};
+    public static final float[] EMBARGO_DASH = {2f, 2f};
     /** Foreground colour of embargo nodes and edges. */
     public static final Color EMBARGO_FOREGROUND = Color.RED;
     /** Background colour of embargo nodes and edges. */
     public static final Color EMBARGO_BACKGROUND = null;
     /** Dash pattern of eraser nodes and edges. */
-    public static final float[] ERASER_DASH = new float[] {4f, 4f};
+    public static final float[] ERASER_DASH = {4f, 4f};
     /** Foreground colour of eraser nodes and edges. */
     public static final Color ERASER_FOREGROUND = Color.BLUE;
     /** Background colour of eraser nodes and edges. */
     public static final Color ERASER_BACKGROUND = Colors.findColor("200 240 255");
     /** Dash pattern of nesting nodes and edges. */
-    public static final float[] NESTED_DASH = new float[] {2.0f, 3.0f};
+    public static final float[] NESTED_DASH = {2.0f, 3.0f};
     /** Colour used for nesting nodes and states. */
     static public final Color NESTED_COLOR = Colors.findColor("165 42 42");
     /** Foreground colour of remark nodes and edges. */
@@ -144,6 +144,28 @@ public class Values {
         ERROR_COLORS.putColors(FOCUSED, ERROR_FOCUS_FOREGROUND, ERROR_FOCUS_BACKGROUND);
         ERROR_COLORS.putColors(SELECTED, ERROR_SELECT_FOREGROUND, ERROR_SELECT_BACKGROUND);
         ERROR_COLORS.putColors(NONE, ERROR_NORMAL_FOREGROUND, ERROR_NORMAL_BACKGROUND);
+    }
+
+    /** Colour used for indicating information in graphs. */
+    static public final Color INFO_COLOR = new Color(0, 102, 255, 40);
+    /** Background colour used for focused info items in lists. */
+    static public final Color INFO_FOCUS_BACKGROUND = Color.BLUE;
+    /** Text colour used for focused info items in lists. */
+    static public final Color INFO_FOCUS_FOREGROUND = Color.WHITE;
+    /** Background colour used for selected, non-focused info items in lists. */
+    static public final Color INFO_SELECT_BACKGROUND = INFO_COLOR;
+    /** Text colour used for selected, non-focused info items in lists. */
+    static public final Color INFO_SELECT_FOREGROUND = Color.BLUE;
+    /** Background colour used for non-selected, non-focused info items in lists. */
+    static public final Color INFO_NORMAL_BACKGROUND = new Color(180, 210, 255, 40);
+    /** Text colour used for non-selected, non-focused info items in lists. */
+    static public final Color INFO_NORMAL_FOREGROUND = Color.BLUE;
+    /** Text display colours to be used in info mode. */
+    static public final Values.ColorSet INFO_COLORS = new Values.ColorSet();
+    static {
+        INFO_COLORS.putColors(FOCUSED, INFO_FOCUS_FOREGROUND, INFO_FOCUS_BACKGROUND);
+        INFO_COLORS.putColors(SELECTED, INFO_SELECT_FOREGROUND, INFO_SELECT_BACKGROUND);
+        INFO_COLORS.putColors(NONE, INFO_NORMAL_FOREGROUND, INFO_NORMAL_BACKGROUND);
     }
 
     /** Text display colours to be used for transient states. */
