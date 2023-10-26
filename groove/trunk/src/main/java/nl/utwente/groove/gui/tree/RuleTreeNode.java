@@ -159,7 +159,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
             result.append(HTML_LINEBREAK);
             result.append("Scheduled in this state, but has no matches");
         }
-        GraphProperties properties = GraphInfo.getProperties(source);
+        GraphProperties properties = source.getProperties();
         if (properties.isNotable()) {
             result.append(HTML_PAR_5PT);
             result
@@ -230,7 +230,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
                 ? INGREDIENT_SUFFIX
                 : RULE_SUFFIX;
         var result = getDisplay().getLabelText(getQualName(), suffix, showEnabled);
-        if (GraphInfo.getProperties(getRuleGraph()).isNotable()) {
+        if (getRuleGraph().getProperties().isNotable()) {
             result += "  " + INFO_SYMBOL;
         }
         return result;

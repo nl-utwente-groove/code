@@ -22,6 +22,7 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.util.parse.FormatError;
+import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
  * Provides a model of a graph whose nodes and edges are unstructured, in the
@@ -181,6 +182,16 @@ public interface Graph {
     /** Checks if this graph has an error. */
     default public boolean hasErrors() {
         return GraphInfo.hasErrors(this);
+    }
+
+    /** Returns the set of errors associated with this graph. */
+    default public FormatErrorSet getErrors() {
+        return GraphInfo.getErrors(this);
+    }
+
+    /** Returns the set of properties associated with this graph. */
+    default public GraphProperties getProperties() {
+        return GraphInfo.getProperties(this);
     }
 
     /**

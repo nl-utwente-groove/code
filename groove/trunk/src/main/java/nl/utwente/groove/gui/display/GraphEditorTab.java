@@ -215,8 +215,8 @@ final public class GraphEditorTab extends ResourceTab
         } else if (isDirty() || source == getGraph()) {
             // to keep the edit history, don't change the underlying graph
             // check if the properties have changed
-            GraphProperties properties = GraphInfo.getProperties(source);
-            if (!properties.equals(GraphInfo.getProperties(getGraph()))) {
+            GraphProperties properties = source.getProperties();
+            if (!properties.equals(getGraph().getProperties())) {
                 changeProperties(properties.entryStream(), true);
             } else {
                 getJModel().setGraphModified();
@@ -260,7 +260,7 @@ final public class GraphEditorTab extends ResourceTab
      * Adapt the properties header according to the notability of the properties
      */
     private void updatePropertiesNotable() {
-        boolean notableProperties = GraphInfo.getProperties(getGraph()).isNotable();
+        boolean notableProperties = getGraph().getProperties().isNotable();
         this.propertiesHeader
             .setForeground(notableProperties
                 ? Values.INFO_NORMAL_FOREGROUND
@@ -320,7 +320,7 @@ final public class GraphEditorTab extends ResourceTab
             // get the table first as creating it sets listenToPropertiesPanel to true
             PropertiesTable panel = getPropertiesPanel();
             this.listenToPropertiesPanel = false;
-            panel.setProperties(GraphInfo.getProperties(newGraph));
+            panel.setProperties(newGraph.getProperties());
             this.listenToPropertiesPanel = true;
         }
     }
@@ -511,7 +511,7 @@ final public class GraphEditorTab extends ResourceTab
             final var panel = new PropertiesTable(GraphProperties.Key.class, true);
             panel.setName("Properties");
             panel.setBackground(JAttr.EDITOR_BACKGROUND);
-            panel.setProperties(GraphInfo.getProperties(getGraph()));
+            panel.setProperties(getGraph().getProperties());
             // add the listener after initialising the properties, to avoid needless refreshes
             panel.getModel().addTableModelListener(e -> {
                 if (GraphEditorTab.this.listenToPropertiesPanel) {

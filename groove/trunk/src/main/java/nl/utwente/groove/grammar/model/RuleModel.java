@@ -458,7 +458,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             result = conditionTree.firstEntry().getValue().getRule();
         }
         if (result != null) {
-            GraphProperties properties = GraphInfo.getProperties(getSource());
+            GraphProperties properties = getSource().getProperties();
             result.setProperties(properties);
             result.setCheckDangling(getGrammarProperties().isCheckDangling());
             Parameters parameters = new Parameters();

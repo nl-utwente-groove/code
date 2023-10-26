@@ -22,7 +22,6 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
-import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphProperties;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
@@ -181,7 +180,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     private void updatePropertiesNotable() {
         var graph = getGraph();
         if (graph != null) {
-            boolean notableProperties = GraphInfo.getProperties(getGraph()).isNotable();
+            boolean notableProperties = graph.getProperties().isNotable();
             this.propertiesHeader
                 .setForeground(notableProperties
                     ? Values.INFO_NORMAL_FOREGROUND

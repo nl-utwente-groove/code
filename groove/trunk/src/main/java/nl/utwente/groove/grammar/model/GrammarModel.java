@@ -74,11 +74,8 @@ public class GrammarModel implements PropertyChangeListener {
     public GrammarModel(SystemStore store) {
         this.store = store;
         this.changeCount = new ChangeCount();
-        String grammarVersion = store.getProperties()
-            .getGrammarVersion();
-        boolean noActiveStartGraphs = store.getProperties()
-            .getActiveNames(HOST)
-            .isEmpty();
+        String grammarVersion = store.getProperties().getGrammarVersion();
+        boolean noActiveStartGraphs = store.getProperties().getActiveNames(HOST).isEmpty();
         if (Version.compareGrammarVersions(grammarVersion, Version.GRAMMAR_VERSION_3_2) < 0
             && noActiveStartGraphs) {
             setLocalActiveNames(HOST, QualName.name(Groove.DEFAULT_START_GRAPH_NAME));
@@ -98,9 +95,10 @@ public class GrammarModel implements PropertyChangeListener {
      * The ID is composed from grammar name and start graph name(s);
      */
     public String getId() {
-        return Grammar.buildId(getName(),
-            getStartGraphModel() == null ? null : getStartGraphModel().getQualName()
-                .toString());
+        return Grammar
+            .buildId(getName(), getStartGraphModel() == null
+                ? null
+                : getStartGraphModel().getQualName().toString());
     }
 
     /** Returns the backing system store. */
@@ -141,11 +139,9 @@ public class GrammarModel implements PropertyChangeListener {
         if (kind == ResourceKind.PROPERTIES) {
             return null;
         } else if (kind.isTextBased()) {
-            return getStore().getTexts(kind)
-                .keySet();
+            return getStore().getTexts(kind).keySet();
         } else {
-            return getStore().getGraphs(kind)
-                .keySet();
+            return getStore().getGraphs(kind).keySet();
         }
     }
 
@@ -156,8 +152,7 @@ public class GrammarModel implements PropertyChangeListener {
 
     /** Returns the collection of resource models of a given kind. */
     public Collection<NamedResourceModel<?>> getResourceSet(ResourceKind kind) {
-        return this.resourceMap.get(kind)
-            .values();
+        return this.resourceMap.get(kind).values();
     }
 
     /** Returns a named graph-based resource model of a given kind. */
@@ -230,8 +225,7 @@ public class GrammarModel implements PropertyChangeListener {
     public void setLocalActiveNames(ResourceKind kind, Collection<QualName> names) {
         assert names != null;// && !names.isEmpty();
         this.localActiveNamesMap.put(kind, new TreeSet<>(names));
-        this.resourceChangeCounts.get(kind)
-            .increase();
+        this.resourceChangeCounts.get(kind).increase();
         invalidate();
     }
 
@@ -325,9 +319,7 @@ public class GrammarModel implements PropertyChangeListener {
         if (this.startGraphModel == null) {
             TreeMap<QualName,AspectGraph> graphMap = new TreeMap<>();
             for (QualName name : getActiveNames(HOST)) {
-                graphMap.put(name,
-                    getStore().getGraphs(HOST)
-                        .get(name));
+                graphMap.put(name, getStore().getGraphs(HOST).get(name));
             }
             AspectGraph startGraph = AspectGraph.mergeGraphs(graphMap.values());
             if (startGraph != null) {
@@ -351,8 +343,7 @@ public class GrammarModel implements PropertyChangeListener {
         }
         this.startGraphModel = new HostModel(this, startGraph);
         this.isExternalStartGraphModel = true;
-        this.resourceChangeCounts.get(HOST)
-            .increase();
+        this.resourceChangeCounts.get(HOST).increase();
         invalidate();
     }
 
@@ -380,8 +371,7 @@ public class GrammarModel implements PropertyChangeListener {
      * Returns a fresh change tracker for a given resource kind.
      */
     public Tracker createChangeTracker(ResourceKind kind) {
-        return this.resourceChangeCounts.get(kind)
-            .createTracker();
+        return this.resourceChangeCounts.get(kind).createTracker();
     }
 
     /**
@@ -423,17 +413,15 @@ public class GrammarModel implements PropertyChangeListener {
         getPrologEnvironment();
         for (NamedResourceModel<?> prologModel : getResourceSet(PROLOG)) {
             for (FormatError error : prologModel.getErrors()) {
-                this.errors.add("Error in prolog program '%s': %s",
-                    prologModel.getQualName(),
-                    error,
-                    prologModel);
+                this.errors
+                    .add("Error in prolog program '%s': %s", prologModel.getQualName(), error,
+                         prologModel);
             }
         }
         // check if all resource names are valid identifiers
         for (ResourceKind kind : ResourceKind.all(false)) {
             for (NamedResourceModel<?> model : getResourceSet(kind)) {
-                this.errors.addAll(model.getQualName()
-                    .getErrors());
+                this.errors.addAll(model.getQualName().getErrors());
             }
         }
     }
@@ -462,10 +450,9 @@ public class GrammarModel implements PropertyChangeListener {
                 }
             } catch (FormatException exc) {
                 for (FormatError error : exc.getErrors()) {
-                    errors.add("Error in rule '%s': %s",
-                        ruleModel.getQualName(),
-                        error,
-                        ruleModel.getSource());
+                    errors
+                        .add("Error in rule '%s': %s", ruleModel.getQualName(), error,
+                             ruleModel.getSource());
                 }
             }
         }
@@ -498,7 +485,7 @@ public class GrammarModel implements PropertyChangeListener {
             try {
                 HostGraph startGraph = getStartGraphModel().toResource();
                 result.setStartGraph(startGraph);
-                startGraphErrors = GraphInfo.getErrors(startGraph);
+                startGraphErrors = startGraph.getErrors();
             } catch (FormatException exc) {
                 startGraphErrors = exc.getErrors();
             }
@@ -569,8 +556,7 @@ public class GrammarModel implements PropertyChangeListener {
     private void syncResource(ResourceKind kind) {
         // register a change in this resource, regardless of what actually happens.
         // This might possibly be refined
-        this.resourceChangeCounts.get(kind)
-            .increase();
+        this.resourceChangeCounts.get(kind).increase();
         switch (kind) {
         case PROLOG:
             this.prologEnvironment = null;
@@ -589,8 +575,7 @@ public class GrammarModel implements PropertyChangeListener {
             sourceMap = getStore().getTexts(kind);
         }
         // restrict the resources to those whose names are in the store
-        modelMap.keySet()
-            .retainAll(sourceMap.keySet());
+        modelMap.keySet().retainAll(sourceMap.keySet());
         // collect the new active names
         SortedSet<QualName> newActiveNames = new TreeSet<>();
         if (kind != RULE && kind != ResourceKind.CONFIG) {
@@ -623,15 +608,13 @@ public class GrammarModel implements PropertyChangeListener {
     private NamedResourceModel<?> createModel(ResourceKind kind, QualName name) {
         NamedResourceModel<?> result = null;
         if (kind.isGraphBased()) {
-            AspectGraph graph = getStore().getGraphs(kind)
-                .get(name);
+            AspectGraph graph = getStore().getGraphs(kind).get(name);
             if (graph != null) {
                 result = createGraphModel(graph);
             }
         } else {
             assert kind.isTextBased();
-            String text = getStore().getTexts(kind)
-                .get(name);
+            String text = getStore().getTexts(kind).get(name);
             if (text != null) {
                 switch (kind) {
                 case CONTROL:
@@ -684,28 +667,28 @@ public class GrammarModel implements PropertyChangeListener {
     }
 
     /** Mapping from resource kinds and names to resource models. */
-    private final Map<ResourceKind,SortedMap<QualName,NamedResourceModel<?>>> resourceMap =
-        new EnumMap<>(ResourceKind.class);
+    private final Map<ResourceKind,SortedMap<QualName,NamedResourceModel<?>>> resourceMap
+        = new EnumMap<>(ResourceKind.class);
     /**
      * Mapping from resource kinds to sets of names of active resources of that kind.
      * For {@link ResourceKind#RULE} this is determined by inspecting the active rules;
      * for all other resources, it is stored in the grammar properties.
      * @see #localActiveNamesMap
      */
-    private final Map<ResourceKind,SortedSet<QualName>> storedActiveNamesMap =
-        new EnumMap<>(ResourceKind.class);
+    private final Map<ResourceKind,SortedSet<QualName>> storedActiveNamesMap
+        = new EnumMap<>(ResourceKind.class);
     /**
      * Mapping from resource kinds to sets of names of active resources of that kind.
      * Where non-{@code null}, the values in this map override the {@link #storedActiveNamesMap}.
      */
-    private final Map<ResourceKind,SortedSet<QualName>> localActiveNamesMap =
-        new EnumMap<>(ResourceKind.class);
+    private final Map<ResourceKind,SortedSet<QualName>> localActiveNamesMap
+        = new EnumMap<>(ResourceKind.class);
     /** The store backing this model. */
     private final SystemStore store;
     /** Counter of the number of invalidations of the grammar. */
     private final ChangeCount changeCount;
-    private final Map<ResourceKind,ChangeCount> resourceChangeCounts =
-        new EnumMap<>(ResourceKind.class);
+    private final Map<ResourceKind,ChangeCount> resourceChangeCounts
+        = new EnumMap<>(ResourceKind.class);
     /** Local properties; if {@code null}, the stored properties are used. */
     private GrammarProperties localProperties;
     /** Flag to indicate if the start graph is external. */
@@ -777,8 +760,8 @@ public class GrammarModel implements PropertyChangeListener {
      *         given location
      * @throws IOException if a store can be created but not loaded
      */
-    static public GrammarModel newInstance(String location)
-        throws IllegalArgumentException, IOException {
+    static public GrammarModel newInstance(String location) throws IllegalArgumentException,
+                                                            IOException {
         try {
             return newInstance(new URL(location));
         } catch (IllegalArgumentException exc) {
@@ -812,7 +795,7 @@ public class GrammarModel implements PropertyChangeListener {
          * the set was changed as a result of this operation.
          */
         public static boolean apply(Set<String> set, Manipulation manipulation,
-            Set<String> selected) {
+                                    Set<String> selected) {
             switch (manipulation) {
             case ADD:
                 return set.addAll(selected);

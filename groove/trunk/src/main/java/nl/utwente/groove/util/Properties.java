@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Algebra;
@@ -61,7 +60,8 @@ import nl.utwente.groove.util.parse.Parser;
  * @author Arend Rensink
  * @version $Revision $
  */
-@NonNullByDefault
+// I'd like to include the following tag but Maven throws up
+// @NonNullByDefault
 public abstract class Properties implements Fixable {
     /** Constructs a properties object with keys of a given type. */
     protected Properties(Class<? extends Key> keyType) {
@@ -733,7 +733,6 @@ public abstract class Properties implements Fixable {
 
     /** Map from property keys to format checkers for those keys. */
     public static class CheckerMap extends HashMap<Key,FormatChecker<String>> {
-        @SuppressWarnings("null")
         @Override
         public FormatChecker<String> get(@Nullable Object key) {
             var result = super.get(key);

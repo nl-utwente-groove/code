@@ -172,7 +172,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
         for (AspectJCell root : getRoots()) {
             root.saveToUserObject();
         }
-        this.properties = GraphInfo.getProperties(graph);
+        this.properties = graph.getProperties();
         setLoading(false);
         setGraphModified();
     }

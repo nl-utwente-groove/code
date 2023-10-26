@@ -55,7 +55,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import nl.utwente.groove.grammar.model.GrammarModel;
-import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorListener;
@@ -130,8 +129,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
         getJGraph().addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName()
-                    .equals("background") && evt.getNewValue() != null) {
+                if (evt.getPropertyName().equals("background") && evt.getNewValue() != null) {
                     result.setEnabledBackground((Color) evt.getNewValue());
                 }
             }
@@ -313,7 +311,9 @@ public class LTSDisplay extends Display implements SimulatorListener {
         GraphState current = stateIter.next();
         while (current != null) {
             jCells.add(getJModel().getJCellForNode(current));
-            GraphState next = stateIter.hasNext() ? stateIter.next() : null;
+            GraphState next = stateIter.hasNext()
+                ? stateIter.next()
+                : null;
             if (next != null && showTransitions) {
                 for (GraphTransition trans : current
                     .getTransitions(getJGraph().getTransitionClass())) {
@@ -331,8 +331,8 @@ public class LTSDisplay extends Display implements SimulatorListener {
     /** Creates a panel consisting of the error panel and the status bar. */
     private JSplitPane getMainPanel() {
         if (this.mainPanel == null) {
-            this.mainPanel =
-                new JSplitPane(JSplitPane.VERTICAL_SPLIT, getGraphPanel(), getErrorPanel());
+            this.mainPanel
+                = new JSplitPane(JSplitPane.VERTICAL_SPLIT, getGraphPanel(), getErrorPanel());
             this.mainPanel.setDividerSize(1);
             this.mainPanel.setContinuousLayout(true);
             this.mainPanel.setResizeWeight(0.9);
@@ -385,11 +385,13 @@ public class LTSDisplay extends Display implements SimulatorListener {
      */
     final private void updateErrors() {
         Collection<FormatError> errors;
-        GTS gts = getJModel() == null ? null : getJModel().getGraph();
+        GTS gts = getJModel() == null
+            ? null
+            : getJModel().getGraph();
         if (gts == null) {
             errors = Collections.emptyList();
         } else {
-            errors = GraphInfo.getErrors(gts);
+            errors = gts.getErrors();
         }
         getErrorPanel().setEntries(errors);
         if (getErrorPanel().isVisible()) {
@@ -441,10 +443,8 @@ public class LTSDisplay extends Display implements SimulatorListener {
                     @Override
                     public void run() {
                         GrammarModel grammar = getSimulatorModel().getGrammar();
-                        if (grammar != null && grammar.getErrors()
-                            .isEmpty()) {
-                            getActions().getStartSimulationAction()
-                                .execute();
+                        if (grammar != null && grammar.getErrors().isEmpty()) {
+                            getActions().getStartSimulationAction().execute();
                         }
                     }
                 });
@@ -472,8 +472,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
             }
             if (gts != oldModel.getGTS()) {
                 if (oldModel.getGTS() != null) {
-                    oldModel.getGTS()
-                        .removeLTSListener(this.ltsListener);
+                    oldModel.getGTS().removeLTSListener(this.ltsListener);
                 }
                 if (gts != null) {
                     gts.addLTSListener(this.ltsListener);
@@ -520,11 +519,15 @@ public class LTSDisplay extends Display implements SimulatorListener {
      * filtered or incompletely displayed.
      */
     public void refreshBackground() {
-        Color background =
-            getJGraph().isComplete() ? JAttr.STATE_BACKGROUND : JAttr.FILTER_BACKGROUND;
+        Color background = getJGraph().isComplete()
+            ? JAttr.STATE_BACKGROUND
+            : JAttr.FILTER_BACKGROUND;
         getGraphPanel().setEnabledBackground(background);
-        ((NumberEditor) getBoundSpinner().getEditor()).getTextField()
-            .setBackground(isEnabled() ? background : null);
+        ((NumberEditor) getBoundSpinner().getEditor())
+            .getTextField()
+            .setBackground(isEnabled()
+                ? background
+                : null);
     }
 
     /** Returns an LTS display for a given simulator. */
@@ -615,8 +618,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
                     text.append(" (");
                     brackets = true;
                 }
-                int c = getSimulatorModel().getExploreResult()
-                    .size();
+                int c = getSimulatorModel().getExploreResult().size();
                 text.append(c + " result");
             }
             if (gts.hasErrorStates()) {
@@ -635,8 +637,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
             text.append(gts.getTransitionCount());
             text.append(" transitions");
         }
-        getGraphPanel().getStatusLabel()
-            .setText(text.toString());
+        getGraphPanel().getStatusLabel().setText(text.toString());
     }
 
     /**
@@ -652,10 +653,8 @@ public class LTSDisplay extends Display implements SimulatorListener {
         @Override
         public void mouseClicked(MouseEvent evt) {
             if (getJGraph().getMode() == SELECT_MODE && evt.getButton() == MouseEvent.BUTTON1) {
-                if (!isEnabled() && getActions().getStartSimulationAction()
-                    .isEnabled()) {
-                    getActions().getStartSimulationAction()
-                        .execute();
+                if (!isEnabled() && getActions().getStartSimulationAction().isEnabled()) {
+                    getActions().getStartSimulationAction().execute();
                 } else {
                     // scale from screen to model
                     java.awt.Point loc = evt.getPoint();
@@ -668,8 +667,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
                         GraphState node = ((LTSJVertex) cell).getNode();
                         getSimulatorModel().setState(node);
                         if (evt.getClickCount() == 2) {
-                            getActions().getExploreAction()
-                                .doExploreState();
+                            getActions().getExploreAction().doExploreState();
                         }
                     }
                 }
@@ -693,13 +691,10 @@ public class LTSDisplay extends Display implements SimulatorListener {
         @Override
         public void setEnabled(boolean enabled) {
             super.setEnabled(enabled);
-            getJGraph().getModeAction(SELECT_MODE)
-                .setEnabled(enabled);
-            getJGraph().getModeAction(PAN_MODE)
-                .setEnabled(enabled);
+            getJGraph().getModeAction(SELECT_MODE).setEnabled(enabled);
+            getJGraph().getModeAction(PAN_MODE).setEnabled(enabled);
             if (enabled) {
-                getJGraph().getModeButton(SELECT_MODE)
-                    .doClick();
+                getJGraph().getModeButton(SELECT_MODE).doClick();
             }
             LTSDisplay.this.setEnabled(enabled);
         }

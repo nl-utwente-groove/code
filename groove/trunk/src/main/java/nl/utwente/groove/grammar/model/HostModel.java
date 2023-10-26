@@ -168,7 +168,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         if (debug) {
             GraphPreviewDialog.showGraph(normalSource);
         }
-        FormatErrorSet errors = new FormatErrorSet(GraphInfo.getErrors(normalSource));
+        FormatErrorSet errors = new FormatErrorSet(normalSource.getErrors());
         DefaultHostGraph result = new DefaultHostGraph(normalSource.getName());
         // we need to record the model-to-resource element map for layout transfer
         HostModelMap elementMap = new HostModelMap(result.getFactory());

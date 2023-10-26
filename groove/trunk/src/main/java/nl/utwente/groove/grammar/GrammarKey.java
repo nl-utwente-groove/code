@@ -322,7 +322,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
                 convert("off", null, "error", null));
             case EXPLORATION -> ExploreType.parser();
             case TRANSITION_PARAMETERS -> new Parser.EnumParser<>(ThreeValued.class,
-                ThreeValued.SOME);
+                ThreeValued.SOME, true);
             case LOCATION -> Parser.path;
             case ORACLE -> OracleParser.instance();
             default -> StringParser.identity();

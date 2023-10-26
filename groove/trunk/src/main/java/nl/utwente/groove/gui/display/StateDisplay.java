@@ -25,7 +25,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -55,7 +54,6 @@ import nl.utwente.groove.grammar.host.HostNodeSet;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.HostModel;
 import nl.utwente.groove.grammar.rule.RuleNode;
-import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorListener;
@@ -84,7 +82,6 @@ import nl.utwente.groove.lts.StartGraphState;
 import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.util.line.LineStyle;
-import nl.utwente.groove.util.parse.FormatError;
 
 /**
  * Window that displays and controls the current lts graph. Auxiliary class for
@@ -440,8 +437,7 @@ public class StateDisplay extends Display implements SimulatorListener {
         }
         Color background;
         if (state != null && state.isError()) {
-            Collection<FormatError> errors = GraphInfo.getErrors(state.getGraph());
-            getErrorPanel().setEntries(errors);
+            getErrorPanel().setEntries(state.getGraph().getErrors());
             getDisplayPanel().setBottomComponent(getErrorPanel());
             getDisplayPanel().resetToPreferredSizes();
             background = JAttr.ERROR_BACKGROUND;
