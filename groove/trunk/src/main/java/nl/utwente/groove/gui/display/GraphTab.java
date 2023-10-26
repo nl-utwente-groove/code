@@ -22,6 +22,7 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphProperties;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
@@ -47,6 +48,14 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
         start();
     }
 
+    /** Returns the graph being displayed. */
+    public @Nullable AspectGraph getGraph() {
+        var jModel = getJModel();
+        return jModel == null
+            ? null
+            : jModel.getGraph();
+    }
+
     @Override
     protected void start() {
         super.start();
@@ -57,8 +66,9 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     @Override
     protected PropertyChangeListener createErrorListener() {
         return arg -> {
-            if (arg != null && getJModel() != null) {
-                var errorCells = getJModel().getErrorMap().get(arg.getNewValue());
+            var jModel = getJModel();
+            if (arg != null && jModel != null) {
+                var errorCells = jModel.getErrorMap().get(arg.getNewValue());
                 if (errorCells != null) {
                     getJGraph().setSelectionCells(errorCells.toArray());
                 }
@@ -119,10 +129,10 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
                 scrollPanel.getViewport().setBackground(propertiesPanel.getBackground());
                 result.add(scrollPanel);
                 int index = result.indexOfComponent(scrollPanel);
-                JLabel label = new JLabel(scrollPanel.getName());
-                label.setForeground(Values.INFO_FOCUS_BACKGROUND);
+                this.propertiesHeader.setText(scrollPanel.getName());
                 result.setTitleAt(index, null);
-                result.setTabComponentAt(index, label);
+                result.setTabComponentAt(index, this.propertiesHeader);
+                updatePropertiesNotable();
                 result.addChangeListener(createInfoListener(true));
             }
         }
@@ -161,6 +171,23 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
 
     /** Properties panel of this tab. */
     private PropertiesTable propertiesPanel;
+
+    /** Tab component of the properties tab in the upper info panel. */
+    private final JLabel propertiesHeader = new JLabel();
+
+    /**
+     * Adapt the properties header according to the notability of the properties
+     */
+    private void updatePropertiesNotable() {
+        var graph = getGraph();
+        if (graph != null) {
+            boolean notableProperties = GraphInfo.getProperties(getGraph()).isNotable();
+            this.propertiesHeader
+                .setForeground(notableProperties
+                    ? Values.INFO_NORMAL_FOREGROUND
+                    : Values.NORMAL_FOREGROUND);
+        }
+    }
 
     @Override
     protected JComponent getLowerInfoPanel() {
@@ -231,6 +258,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
         setName(nameString);
         getTabLabel().setTitle(nameString);
         updateErrors();
+        updatePropertiesNotable();
         return jModel != null;
     }
 
@@ -266,13 +294,14 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     public void undoableEditHappened(UndoableEditEvent e) {
         if (e.getEdit() instanceof GraphModelEdit) {
             try {
-                getJModel().syncGraph();
-                AspectGraph graph = getJModel().getGraph();
+                var jModel = getJModel();
+                assert jModel != null;
+                jModel.syncGraph();
                 // we need to clone the graph to properly freeze the next layout change
-                AspectGraph graphClone = graph.clone();
+                AspectGraph graphClone = jModel.getGraph().clone();
                 graphClone.setFixed();
                 getSimulatorModel().doAddGraph(getResourceKind(), graphClone, true);
-                getPropertiesPanel().setProperties(getJModel().getProperties());
+                getPropertiesPanel().setProperties(jModel.getProperties());
             } catch (IOException e1) {
                 // do nothing
             }
@@ -294,7 +323,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     private AspectJGraph jGraph;
 
     /** Returns the underlying JGraph of this tab. */
-    public final AspectJModel getJModel() {
+    public final @Nullable AspectJModel getJModel() {
         return getJGraph().getModel();
     }
 

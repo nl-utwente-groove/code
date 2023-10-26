@@ -16,6 +16,12 @@
  */
 package nl.utwente.groove.gui.tree;
 
+import static nl.utwente.groove.io.HTMLConverter.HTML_LINEBREAK;
+import static nl.utwente.groove.io.HTMLConverter.HTML_PAR_5PT;
+import static nl.utwente.groove.io.HTMLConverter.HTML_TAG;
+import static nl.utwente.groove.io.HTMLConverter.STRONG_TAG;
+import static nl.utwente.groove.util.Properties.INFO_COLOR_TAG;
+
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -35,6 +41,8 @@ import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.io.HTMLConverter;
+import nl.utwente.groove.io.HTMLConverter.HTMLTag;
+import nl.utwente.groove.io.Util;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatException;
@@ -73,10 +81,17 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     }
 
     /**
-     * Convenience method to retrieve the user object as a rule name.
+     * Returns the rule associated with this node.
      */
     public RuleModel getRule() {
         return (RuleModel) getResource();
+    }
+
+    /**
+     * Returns the graph underlying the rule associated with this node.
+     */
+    public AspectGraph getRuleGraph() {
+        return ((RuleModel) getResource()).getSource();
     }
 
     /** Indicates if this rule node is part of a recipe. */
@@ -97,50 +112,61 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     @Override
     public String getTip() {
         StringBuilder result = new StringBuilder();
-        result.append(getRule().getRole() == Role.TRANSFORMER
-            ? "Rule"
-            : getRule().getRole().text(true));
+        result
+            .append(getRule().getRole() == Role.TRANSFORMER
+                ? "Rule"
+                : getRule().getRole().text(true));
         result.append(" ");
         result.append(HTMLConverter.ITALIC_TAG.on(getQualName()));
-        AspectGraph source = getRule().getSource();
+        AspectGraph source = getRuleGraph();
         String remark = GraphInfo.getRemark(source);
         if (!remark.isEmpty()) {
             result.append(": ");
             result.append(HTMLConverter.toHtml(remark));
         }
         if (isRecipeChild()) {
-            result.append(HTMLConverter.HTML_LINEBREAK);
+            result.append(HTML_LINEBREAK);
             result.append("Invoked as part of the recipe ");
             result
                 .append(HTMLConverter.ITALIC_TAG.on(((RecipeTreeNode) getParent()).getQualName()));
         }
         if (getRule().getRole().isConstraint()) {
-            result.append(HTMLConverter.HTML_LINEBREAK);
+            result.append(HTML_LINEBREAK);
             result.append(getRule().getPolicy().getExplanation());
         }
         if (!GraphInfo.isEnabled(source)) {
-            result.append(HTMLConverter.HTML_LINEBREAK);
+            result.append(HTML_LINEBREAK);
             result.append("Explicitly disabled in the rule properties");
         } else if (getRule().getPolicy() == CheckPolicy.OFF) {
-            result.append(HTMLConverter.HTML_LINEBREAK);
+            result.append(HTML_LINEBREAK);
             result.append("Turned off by the rule policy in the grammar properties");
         } else if (!isRecipeChild() && getRule().hasRecipes()) {
             Set<QualName> recipes = getRule().getRecipes();
-            result.append(HTMLConverter.HTML_LINEBREAK);
+            result.append(HTML_LINEBREAK);
             result.append("Not enabled stand-alone because it is invoked from ");
-            result.append(recipes.size() == 1
-                ? "recipe "
-                : "recipes ");
-            result.append(Groove.toString(getRule().getRecipes().toArray(), "<i>", "</i>",
-                                          "</i>, <i>", "</i> and <i>"));
+            result
+                .append(recipes.size() == 1
+                    ? "recipe "
+                    : "recipes ");
+            result
+                .append(Groove
+                    .toString(getRule().getRecipes().toArray(), "<i>", "</i>", "</i>, <i>",
+                              "</i> and <i>"));
         } else if (!isTried()) {
-            result.append(HTMLConverter.HTML_LINEBREAK);
+            result.append(HTML_LINEBREAK);
             result.append("Not scheduled in this state, due to rule priorities or control");
         } else if (getChildCount() == 0) {
-            result.append(HTMLConverter.HTML_LINEBREAK);
+            result.append(HTML_LINEBREAK);
             result.append("Scheduled in this state, but has no matches");
         }
         GraphProperties properties = GraphInfo.getProperties(source);
+        if (properties.isNotable()) {
+            result.append(HTML_PAR_5PT);
+            result
+                .append(INFO_COLOR_TAG
+                    .on("Notable non-detault rule properties (consult Properties tab for more info):"));
+            result.append(properties.getNotableProperties());
+        }
         Map<String,String> filteredProps = new LinkedHashMap<>();
         // collect the non-system, non-remark properties
         for (Key key : Key.values()) {
@@ -159,12 +185,15 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
             }
         }
         // collect the user properties
-        properties.entryStream().filter(e -> GraphProperties.Key.isKey(e.getKey()))
-            .filter(e -> !e.getValue().isEmpty()).forEach(e -> {
-                result.append(HTMLConverter.HTML_LINEBREAK);
+        properties
+            .entryStream()
+            .filter(e -> GraphProperties.Key.isKey(e.getKey()))
+            .filter(e -> !e.getValue().isEmpty())
+            .forEach(e -> {
+                result.append(HTML_LINEBREAK);
                 result.append(propertyToString(e));
             });
-        HTMLConverter.HTML_TAG.on(result);
+        HTML_TAG.on(result);
         return result.toString();
     }
 
@@ -200,7 +229,11 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
             : isRecipeChild()
                 ? INGREDIENT_SUFFIX
                 : RULE_SUFFIX;
-        return getDisplay().getLabelText(getQualName(), suffix, showEnabled);
+        var result = getDisplay().getLabelText(getQualName(), suffix, showEnabled);
+        if (GraphInfo.getProperties(getRuleGraph()).isNotable()) {
+            result += "  " + INFO_SYMBOL;
+        }
+        return result;
     }
 
     /** Indicates if the rule wrapped by this node has been tried on the current state. */
@@ -236,7 +269,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         Map<Role,Icon> normalIconMap = roleNormalIconMap = new EnumMap<>(Role.class);
         Map<Role,Icon> injectiveIconMap = roleInjectiveIconMap = new EnumMap<>(Role.class);
         for (Role role : Role.values()) {
-            suffixMap.put(role, " : " + HTMLConverter.STRONG_TAG.on(role.toString()));
+            suffixMap.put(role, " : " + STRONG_TAG.on(role.toString()));
             Icon normalIcon;
             Icon injectiveIcon;
             switch (role) {
@@ -266,4 +299,8 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         }
     }
 
+    static private final HTMLTag INFO_FONT_TAG
+        = new HTMLTag("span", "style", "font-family: 'Display'; font-size:15");
+    static private final String INFO_SYMBOL
+        = INFO_COLOR_TAG.on(STRONG_TAG.on(INFO_FONT_TAG.on(Util.INFO_SYMBOL)));
 }

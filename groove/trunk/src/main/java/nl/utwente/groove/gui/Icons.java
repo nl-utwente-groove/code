@@ -352,6 +352,9 @@ public final class Icons {
     public static final ImageIcon GROOVY_LIST_ICON = createIcon("groovy-file.gif");
     /** Icon for Properties Panel. */
     public static final ImageIcon PROPERTIES_FRAME_ICON = createIcon("properties-frame.gif");
+    /** Icon for Properties Panel. */
+    public static final ImageIcon PROPERTIES_NOTABLE_FRAME_ICON
+        = createIcon("properties-notable-frame.gif");
     /** Redo action icon. */
     public static final ImageIcon REDO_ICON = createIcon("redo.gif");
     /** Small icon for injective production rules, as shown in the rule tree. */
@@ -387,8 +390,8 @@ public final class Icons {
     /** Internal state icon. */
     public static final ImageIcon STATE_INTERNAL_ICON = createIcon("state-internal.gif");
     /** Absent internal state icon. */
-    public static final ImageIcon STATE_INTERNAL_ABSENT_ICON =
-        createIcon("state-internal-absent.gif");
+    public static final ImageIcon STATE_INTERNAL_ABSENT_ICON
+        = createIcon("state-internal-absent.gif");
     /** State display mode icon. */
     public static final ImageIcon STATE_MODE_ICON = createIcon("state-mode.gif");
     /** Open state icon. */

@@ -17,7 +17,9 @@
 package nl.utwente.groove.grammar;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,6 +34,7 @@ import nl.utwente.groove.grammar.model.RuleModel;
 import nl.utwente.groove.transform.oracle.ValueOracleKind;
 import nl.utwente.groove.util.DocumentedEnum;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.Properties.Entry;
 import nl.utwente.groove.util.Properties.KeyParser;
@@ -362,12 +365,19 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
 
     /** Returns the grammar key with a given name, if any; or {@code null} if the name is not a recognisable key */
     static public Optional<GrammarKey> getKey(String name) {
-        try {
-            return Optional.of(valueOf(name));
-        } catch (IllegalArgumentException exc) {
-            return Optional.empty();
-        }
+        return Optional.ofNullable(nameKeyMap.get().get(name));
     }
+
+    /** Creator methods for the {@link #nameKeyMap}*/
+    static private Map<String,GrammarKey> createNameKeyMap() {
+        var result = new HashMap<String,GrammarKey>();
+        Arrays.stream(GrammarKey.values()).forEach(k -> result.put(k.getName(), k));
+        return result;
+    }
+
+    /** Mapping from key names (as in {@link GrammarKey#getName()}) to keys. */
+    static private final LazyFactory<Map<String,GrammarKey>> nameKeyMap
+        = LazyFactory.instance(GrammarKey::createNameKeyMap);
 
     /** Name of deprecated key for attribute support. */
     static public final String ATTRIBUTE_SUPPORT = "attributeSupport";

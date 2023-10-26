@@ -108,14 +108,16 @@ public enum CheckPolicy {
 
     private static class PolicyMapParser extends Parser.AParser<PolicyMap> {
         private PolicyMapParser() {
-            super(createDescription(), new PolicyMap());
+            super(null, new PolicyMap());
         }
 
         /** Creates a description of PolicyMap values. */
-        static public String createDescription() {
+        @Override
+        protected String createDescription() {
             StringBuilder result = new StringBuilder();
-            result.append("A space-separated list of <i>name:value</i> pairs,<br>"
-                + "with <i>value</i> ");
+            result
+                .append("A space-separated list of <i>name:value</i> pairs,<br>"
+                    + "with <i>value</i> ");
             result.append(Strings.toLower(singleParser.getDescription()));
             return result.toString();
         }

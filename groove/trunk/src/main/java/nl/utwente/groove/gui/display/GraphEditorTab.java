@@ -48,7 +48,6 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
 import javax.swing.TransferHandler;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.undo.UndoableEdit;
@@ -77,6 +76,7 @@ import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphProperties;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.gui.Icons;
+import nl.utwente.groove.gui.LongToolTipAdapter;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.action.SnapToGridAction;
 import nl.utwente.groove.gui.dialog.PropertiesTable;
@@ -252,8 +252,19 @@ final public class GraphEditorTab extends ResourceTab
 
     @Override
     protected void updateDirty() {
-        boolean notableProperties = GraphInfo.getProperties(getGraph()).isNotable();
+        updatePropertiesNotable();
+        super.updateDirty();
+    }
 
+    /**
+     * Adapt the properties header according to the notability of the properties
+     */
+    private void updatePropertiesNotable() {
+        boolean notableProperties = GraphInfo.getProperties(getGraph()).isNotable();
+        this.propertiesHeader
+            .setForeground(notableProperties
+                ? Values.INFO_NORMAL_FOREGROUND
+                : Values.NORMAL_FOREGROUND);
     }
 
     /**
@@ -452,10 +463,10 @@ final public class GraphEditorTab extends ResourceTab
                 scrollPanel.getViewport().setBackground(propertiesPanel.getBackground());
                 result.add(scrollPanel);
                 int index = result.indexOfComponent(scrollPanel);
-                JLabel label = new JLabel(scrollPanel.getName());
-                label.setForeground(Values.INFO_FOCUS_BACKGROUND);
+                this.propertiesHeader.setText(scrollPanel.getName());
                 result.setTitleAt(index, null);
-                result.setTabComponentAt(index, label);
+                result.setTabComponentAt(index, this.propertiesHeader);
+                updatePropertiesNotable();
                 result.addChangeListener(createInfoListener(true));
             }
         }
@@ -519,6 +530,9 @@ final public class GraphEditorTab extends ResourceTab
     /** Flag indicating if table changes should be propagated to the graph properties. */
     private boolean listenToPropertiesPanel;
 
+    /** Tab component of the properties tab in the upper info panel. */
+    private final JLabel propertiesHeader = new JLabel();
+
     @Override
     protected JComponent getLowerInfoPanel() {
         JComponent result = this.syntaxHelp;
@@ -580,24 +594,7 @@ final public class GraphEditorTab extends ResourceTab
         list.setCellRenderer(new SyntaxCellRenderer());
         list.setBackground(JAttr.EDITOR_BACKGROUND);
         list.setListData(data.toArray(new String[data.size()]));
-        list.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if (e.getSource() == list) {
-                    this.manager.setDismissDelay(Integer.MAX_VALUE);
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (e.getSource() == list) {
-                    this.manager.setDismissDelay(this.standardDelay);
-                }
-            }
-
-            private final ToolTipManager manager = ToolTipManager.sharedInstance();
-            private final int standardDelay = this.manager.getDismissDelay();
-        });
+        list.addMouseListener(new LongToolTipAdapter(list));
         list.setSelectionModel(new DefaultListSelectionModel() {
             @Override
             public void setSelectionInterval(int index0, int index1) {

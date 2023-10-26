@@ -21,17 +21,24 @@ import java.awt.event.MouseEvent;
 import java.util.Set;
 
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
+
+import com.itextpdf.text.Font;
 
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.model.GrammarModel;
+import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorListener;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.SimulatorModel.Change;
 import nl.utwente.groove.gui.dialog.PropertiesTable;
+import nl.utwente.groove.gui.look.Values;
+import nl.utwente.groove.io.Util;
 
 /**
  * Display class for system properties.
@@ -99,9 +106,20 @@ public class PropertiesDisplay extends Display implements SimulatorListener {
         @Override
         public void mouseClicked(MouseEvent e) {
             if (e.getClickCount() == 2) {
-                getActions().getEditSystemPropertiesAction()
-                    .execute();
+                getActions().getEditSystemPropertiesAction().execute();
             }
         }
+    }
+
+    /** The tab component to be used for non-notable properties. */
+    static public final JLabel NORMAL_TAB_COMPONENT
+        = new JLabel(null, DisplayKind.PROPERTIES.getTabIcon(), SwingConstants.LEFT);
+    /** The tab component to be used for a notable property set. */
+    static public final JLabel NOTABLE_TAB_COMPONENT = new JLabel("" + Util.INFO_SYMBOL,
+        Icons.PROPERTIES_NOTABLE_FRAME_ICON, SwingConstants.LEFT);
+
+    {
+        NOTABLE_TAB_COMPONENT.setFont(new java.awt.Font("Dialog", Font.BOLD, 16));
+        NOTABLE_TAB_COMPONENT.setForeground(Values.INFO_NORMAL_FOREGROUND);
     }
 }
