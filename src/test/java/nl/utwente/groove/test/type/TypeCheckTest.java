@@ -91,6 +91,12 @@ public class TypeCheckTest {
         test("shadow");
     }
 
+    /** Tests sort derivation for ambiguous expressions. */
+    @Test
+    public void testSorts() {
+        test("sorts");
+    }
+
     /** Tests type specialisation. */
     @Test
     public void testTypeSpecialisation() {

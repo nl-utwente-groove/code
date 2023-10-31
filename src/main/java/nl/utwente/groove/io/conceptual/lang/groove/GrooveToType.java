@@ -181,7 +181,7 @@ public class GrooveToType extends TypeImporter {
             TypeNode n = it.next();
             Id id = getNodeId(n);
 
-            if (n.isDataType()) {
+            if (n.isSort()) {
                 // Simple data types
                 this.m_types.addModelType(getLabel(n), ModelType.TypeDatatype);
                 it.remove();
@@ -241,7 +241,7 @@ public class GrooveToType extends TypeImporter {
                 }
                 break;
             case TypeDatatype:
-                if (n.isDataType()) {
+                if (n.isSort()) {
                     // Actually just copies g_primitiveIds
                     // TODO: prefill this?
                     setNodeType(n, g_primitiveIds.get(id));

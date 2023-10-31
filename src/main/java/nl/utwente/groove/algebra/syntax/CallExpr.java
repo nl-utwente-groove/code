@@ -71,8 +71,8 @@ public final class CallExpr extends Expression {
     }
 
     @Override
-    protected Typing computeTyping() {
-        Typing result = new Typing();
+    protected SortMap computeTyping() {
+        SortMap result = new SortMap();
         getArgs().stream()
             .forEach(a -> result.add(a.getTyping()));
         return result;

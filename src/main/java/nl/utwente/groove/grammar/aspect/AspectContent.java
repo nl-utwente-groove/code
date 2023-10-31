@@ -32,7 +32,7 @@ import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.syntax.Assignment;
 import nl.utwente.groove.algebra.syntax.ExprTree;
 import nl.utwente.groove.algebra.syntax.Expression;
-import nl.utwente.groove.algebra.syntax.Typing;
+import nl.utwente.groove.algebra.syntax.SortMap;
 import nl.utwente.groove.grammar.aspect.AspectContent.ColorContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.ConstContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.ExprContent;
@@ -111,7 +111,7 @@ public sealed interface AspectContent
      * @return a clone of this content with changed labels, or
      * the original content if {@code oldLabel} did not occur
      */
-    default AspectContent relabel(TypeLabel oldLabel, TypeLabel newLabel, Typing typing) {
+    default AspectContent relabel(TypeLabel oldLabel, TypeLabel newLabel, SortMap typing) {
         return this;
     }
 
@@ -737,7 +737,7 @@ public sealed interface AspectContent
         }
 
         @Override
-        public ExprContent relabel(TypeLabel oldLabel, TypeLabel newLabel, Typing typing) {
+        public ExprContent relabel(TypeLabel oldLabel, TypeLabel newLabel, SortMap typing) {
             ExprTree result = get().relabel(oldLabel, newLabel, typing);
             if (result == get()) {
                 return this;
@@ -759,7 +759,7 @@ public sealed interface AspectContent
         }
 
         @Override
-        public AspectContent relabel(TypeLabel oldLabel, TypeLabel newLabel, Typing typing) {
+        public AspectContent relabel(TypeLabel oldLabel, TypeLabel newLabel, SortMap typing) {
             IdContent result = this;
             if (kind().hasSort() && !typing.contains(get())) {
                 // this is a field name
@@ -816,7 +816,7 @@ public sealed interface AspectContent
         }
 
         @Override
-        public AspectContent relabel(TypeLabel oldLabel, TypeLabel newLabel, Typing typing) {
+        public AspectContent relabel(TypeLabel oldLabel, TypeLabel newLabel, SortMap typing) {
             LabelPattern newPattern = get().relabel(oldLabel, newLabel);
             return newPattern == get()
                 ? this

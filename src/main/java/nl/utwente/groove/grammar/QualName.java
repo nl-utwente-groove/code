@@ -21,6 +21,7 @@
 package nl.utwente.groove.grammar;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 import nl.utwente.groove.util.line.Line;
@@ -49,6 +50,15 @@ public class QualName extends ModuleName implements Comparable<QualName>, Fallib
      */
     public QualName(List<String> tokens) {
         this.tokens.addAll(tokens);
+    }
+
+    /**
+     * Creates a new qualified name, on the basis of a given non-empty list of tokens.
+     * The name is not tested for validity.
+     * @param tokens the list of tokens for the qualified name
+     */
+    public QualName(String... tokens) {
+        Arrays.stream(tokens).forEach(this.tokens::add);
     }
 
     /** Constructor for internal consumption, to construct qualified names more efficiently. */
@@ -281,8 +291,8 @@ public class QualName extends ModuleName implements Comparable<QualName>, Fallib
     public static final Parser<QualName> parser() {
         var result = PARSER;
         if (result == null) {
-            result = Parser.newParser("Qualified name", QualName.class, QualName::parse,
-                                      n -> n.toString());
+            result = Parser
+                .newParser("Qualified name", QualName.class, QualName::parse, n -> n.toString());
             PARSER = result;
         }
         return result;

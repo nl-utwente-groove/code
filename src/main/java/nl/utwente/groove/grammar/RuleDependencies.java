@@ -405,7 +405,7 @@ public class RuleDependencies {
         superTypes
             .stream()
             .flatMap(n -> this.typeGraph.outEdgeSet(n).stream())
-            .filter(e -> !checkDangling || e.target().isDataType())
+            .filter(e -> !checkDangling || e.target().isSort())
             .forEach(e -> incidentEdgeTypes.add(e));
         for (TypeNode superType : superTypes) {
             incidentEdgeTypes.addAll(this.typeGraph.inEdgeSet(superType));
@@ -493,7 +493,7 @@ public class RuleDependencies {
                     this.typeGraph
                         .outEdgeSet(lhsNode.getType())
                         .stream()
-                        .filter(e -> !e.target().isDataType())
+                        .filter(e -> !e.target().isSort())
                         .forEach(e -> danglingEdges.add(e));
                     // remove all edges that are explicitly removed
                     pattern

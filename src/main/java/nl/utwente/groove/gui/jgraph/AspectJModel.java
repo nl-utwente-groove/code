@@ -206,6 +206,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
         Map<AspectNode,AspectJVertex> nodeJVertexMap = new HashMap<>();
         Map<AspectEdge,AspectJCell> edgeJCellMap = new HashMap<>();
         AspectGraph graph = new AspectGraph(getName(), role);
+        graph.setTypeSortMap(getGrammar().getTypeModel().getTypeSortMap());
         for (AspectJCell jCell : getRoots()) {
             if (jCell instanceof AspectJVertex jVertex) {
                 jVertex.loadFromUserObject(graph);

@@ -32,6 +32,7 @@ import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -49,9 +50,12 @@ import nl.utwente.groove.grammar.aspect.AspectContent.NestedValueContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.NullContent;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.rule.OperatorNode;
+import nl.utwente.groove.grammar.rule.RuleLabel;
 import nl.utwente.groove.grammar.rule.VariableNode;
 import nl.utwente.groove.grammar.type.LabelPattern;
+import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.ANode;
+import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.plain.PlainLabel;
 import nl.utwente.groove.util.Fixable;
@@ -497,7 +501,9 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         var exprTree = getExprTree();
         if (exprTree != null) {
             try {
-                result = exprTree.toExpression(getSort(), getGraph().getTyping());
+                Sort sort = getSort();
+                assert sort != null;
+                result = exprTree.toExpression(sort, getGraph().getSortMap());
             } catch (FormatException exc) {
                 addErrors(exc.getErrors());
             }
@@ -668,5 +674,25 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
      */
     public AspectNode getMatchCount() {
         return getNested(NestedValue.COUNT);
+    }
+
+    /** Returns the type label of this aspect node,
+     * if it is uniquely determined; or {@code null} otherwise.
+     */
+    public @Nullable TypeLabel getType() {
+        TypeLabel result = null;
+        var ruleLabels = new HashSet<RuleLabel>();
+        getGraph()
+            .outEdgeSet(this)
+            .stream()
+            .map(AspectEdge::getRuleLabel)
+            .filter(Objects::nonNull)
+            .filter(l -> l.hasRole(EdgeRole.NODE_TYPE))
+            .forEach(ruleLabels::add);
+        if (ruleLabels.size() == 1) {
+            var ruleLabel = ruleLabels.iterator().next();
+            result = ruleLabel.getTypeLabel();
+        }
+        return result;
     }
 }

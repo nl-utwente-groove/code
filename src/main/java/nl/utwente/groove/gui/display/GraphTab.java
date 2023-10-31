@@ -25,7 +25,6 @@ import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.graph.GraphProperties;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
-import nl.utwente.groove.gui.dialog.GraphPreviewDialog;
 import nl.utwente.groove.gui.dialog.PropertiesTable;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
@@ -232,11 +231,15 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
             AspectGraph graph
                 = getSimulatorModel().getStore().getGraphs(getResourceKind()).get(name);
             if (graph != null) {
-                if (DEBUG) {
-                    GraphPreviewDialog.showGraph(graph.normalise(null));
-                }
                 this.jModelMap.put(name, jModel = getJGraph().newModel());
-                loadGraphIntoJModel(jModel, graph);
+                AspectGraph graphClone = graph.clone();
+                graphClone
+                    .setTypeSortMap(getSimulatorModel()
+                        .getGrammar()
+                        .getTypeModel()
+                        .getTypeSortMap());
+                graphClone.setFixed();
+                jModel.loadGraph(graphClone);
             }
         }
         if (jModel == null) {
@@ -259,13 +262,6 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
         updateErrors();
         updatePropertiesNotable();
         return jModel != null;
-    }
-
-    /** Clones the graph with the given name, if any, and loads the clone into the model. */
-    private void loadGraphIntoJModel(AspectJModel jModel, AspectGraph graph) {
-        AspectGraph graphClone = graph.clone();
-        graphClone.setFixed();
-        jModel.loadGraph(graphClone);
     }
 
     @Override
@@ -328,6 +324,4 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
 
     /** Mapping from resource names to aspect models. */
     private final Map<QualName,AspectJModel> jModelMap = new HashMap<>();
-
-    private final static boolean DEBUG = false;
 }

@@ -318,7 +318,7 @@ public class STS {
     private void initializeLocationVariables(HostGraph graph) {
         for (HostEdge edge : graph.edgeSet()) {
             HostNode node = edge.target();
-            if (node.getType().isDataType() && !isFinal(graph, edge.source())) {
+            if (node.getType().isSort() && !isFinal(graph, edge.source())) {
                 ValueNode valueNode = (ValueNode) node;
                 addLocationVariable(edge,
                                     this.ruleInspector.getSymbol((Constant) valueNode.getTerm()));
@@ -511,13 +511,13 @@ public class STS {
         // eraser edges to these variables
         Map<Pair<RuleNode,RuleLabel>,RuleEdge> possibleUpdates = new HashMap<>();
         for (RuleEdge e : rule.getEraserEdges()) {
-            if (e.target().getType().isDataType() && !isFinal(rule.lhs(), e.source())) {
+            if (e.target().getType().isSort() && !isFinal(rule.lhs(), e.source())) {
                 possibleUpdates.put(new Pair<>(e.source(), e.label()), e);
             }
         }
 
         for (RuleEdge creatorEdge : rule.getCreatorEdges()) {
-            if (creatorEdge.target().getType().isDataType()
+            if (creatorEdge.target().getType().isSort()
                 && !isFinal(rule.lhs(), creatorEdge.source())) {
                 // A creator edge has been detected to a data node,
                 // this indicates an update for a location variable.

@@ -1073,7 +1073,7 @@ public enum AspectKind {
             AspectKind oldKind = kindMap.put(kind.toString(), kind);
             assert oldKind == null;
             tokenMap.put(kind.name(), kind.getName());
-            Sort sigKind = Sort.getKind(kind.getName());
+            Sort sigKind = Sort.getSort(kind.getName());
             if (sigKind != null) {
                 sigKindMap.put(sigKind, kind);
             }

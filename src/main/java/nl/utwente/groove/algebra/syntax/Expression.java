@@ -127,8 +127,8 @@ public sealed abstract class Expression permits Constant, Variable, FieldExpr, C
      * Returns a mapping from all variables occurring in this expression
      * to the corresponding types.
      */
-    public Typing getTyping() {
-        Typing result = this.typing;
+    public SortMap getTyping() {
+        SortMap result = this.typing;
         if (result == null) {
             this.typing = result = computeTyping();
         }
@@ -136,10 +136,10 @@ public sealed abstract class Expression permits Constant, Variable, FieldExpr, C
     }
 
     /** The mapping from variables occurring in this expression to their types. */
-    private @Nullable Typing typing;
+    private @Nullable SortMap typing;
 
     /** Factory method to create the variable map for this expression. */
-    abstract protected Typing computeTyping();
+    abstract protected SortMap computeTyping();
 
     /**
      * Returns an expression obtained from this one by changing all

@@ -56,7 +56,7 @@ public class Algebras {
         for (Sort sigKind : Sort.values()) {
             for (TypeVariable<?> type : sigKind.getSignatureClass().getTypeParameters()) {
                 String typeName = type.getName().toLowerCase();
-                if (Sort.getKind(typeName) == null) {
+                if (Sort.getSort(typeName) == null) {
                     throw Exceptions
                         .illegalArg("Type '%s' not declared by any signature", typeName);
                 }

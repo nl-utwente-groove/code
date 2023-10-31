@@ -97,7 +97,7 @@ public class AspectParser {
         String typePrefix = EdgeRole.NODE_TYPE.getPrefix();
         if (rest.startsWith(typePrefix)) {
             String sort = rest.substring(typePrefix.length());
-            if (Sort.getKind(sort) != null) {
+            if (Sort.getSort(sort) != null) {
                 result.addAspect(Aspect.getAspect(sort));
                 rest = "";
             }

@@ -36,6 +36,7 @@ import java.util.TreeMap;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.algebra.syntax.SortMap;
 import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.automaton.RegExprTyper;
 import nl.utwente.groove.automaton.RegExprTyper.Result;
@@ -223,10 +224,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
      */
     public void addInheritance(TypeNode subtype, TypeNode supertype) throws FormatException {
         testFixed(false);
-        if (supertype.label().isDataType()) {
+        if (supertype.label().isSort()) {
             throw new FormatException("Data type '%s' cannot be supertype", supertype);
         }
-        if (subtype.label().isDataType()) {
+        if (subtype.label().isSort()) {
             throw new FormatException("Data type '%s' cannot be subtype", subtype);
         }
         if (this.nodeSupertypeMap.get(supertype).contains(subtype)) {
@@ -257,7 +258,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                 TypeLabel typeLabel = typeEdge.label();
                 TypeLabel sourceType = source.label();
                 // check for outgoing edge types from data types
-                if (sourceType.isDataType()) {
+                if (sourceType.isSort()) {
                     errors
                         .add("Data type '%s' cannot have %s", sourceType.text(),
                              typeLabel.getRole() == FLAG
@@ -1284,7 +1285,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
     public TypeNode getMaximum(Collection<TypeNode> types) {
         TypeNode result = null;
         for (TypeNode typeNode : types) {
-            if (typeNode.isDataType()) {
+            if (typeNode.isSort()) {
                 continue;
             }
             if (result == null || isSubtype(result, typeNode)) {
@@ -1306,7 +1307,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
     public TypeNode getMinimum(Collection<TypeNode> types) {
         TypeNode result = null;
         for (TypeNode typeNode : types) {
-            if (typeNode.isDataType()) {
+            if (typeNode.isSort()) {
                 continue;
             }
             if (result == null || isSubtype(typeNode, result)) {
@@ -1323,7 +1324,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
     public TypeNode getLub(Collection<TypeNode> types) {
         Set<TypeNode> ubs = new HashSet<>(nodeSet());
         for (TypeNode typeNode : types) {
-            if (typeNode.isDataType()) {
+            if (typeNode.isSort()) {
                 continue;
             }
             ubs.retainAll(getSupertypes(typeNode));
@@ -1400,6 +1401,39 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
     }
 
     private List<TypeChecker> checkers;
+
+    /** Returns a map from node type labels to the sort map of those node types.
+     * The sort map is a mapping from attribute field names (of the node type or any of
+     * its supertypes) to their sorts, insofar those are uniquely determined.
+     */
+    public Map<TypeLabel,SortMap> getTypeSortMap() {
+        var result = new HashMap<TypeLabel,SortMap>();
+        for (var node : nodeSet()) {
+            if (!node.isSort()) {
+                var sortMap = new SortMap();
+                result.put(node.label(), sortMap);
+                var fieldEdges = new HashSet<TypeEdge>();
+                node
+                    .getSupertypes()
+                    .stream()
+                    .flatMap(sn -> outEdgeSet(sn).stream())
+                    .filter(e -> e.target().isSort())
+                    .forEach(fieldEdges::add);
+                var multiSorted = new HashSet<String>();
+                for (var e : fieldEdges) {
+                    var name = e.text();
+                    if (sortMap.contains(name)) {
+                        multiSorted.add(name);
+                        sortMap.remove(name);
+                    }
+                    if (!multiSorted.contains(name)) {
+                        sortMap.add(name, e.target().label().getSort());
+                    }
+                }
+            }
+        }
+        return result;
+    }
 
     /** Class holding a mapping from type nodes to sets of type nodes. */
     private static class NodeTypeMap extends HashMap<TypeNode,Set<TypeNode>> {

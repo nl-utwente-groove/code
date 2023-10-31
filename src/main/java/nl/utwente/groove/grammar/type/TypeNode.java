@@ -54,7 +54,6 @@ public class TypeNode implements Node, TypeElement {
         this.nr = nr;
         this.type = type;
         this.graph = graph;
-        this.dataType = type.isDataType();
     }
 
     /**
@@ -160,12 +159,9 @@ public class TypeNode implements Node, TypeElement {
     private boolean imported;
 
     /** Indicates if this node type stands for a data type. */
-    public final boolean isDataType() {
-        return this.dataType;
+    public final boolean isSort() {
+        return this.type.isSort();
     }
-
-    /** Flag indicating this node is a data type. */
-    private final boolean dataType;
 
     /** Sets this node type to imported. */
     public final void setImported(boolean value) {

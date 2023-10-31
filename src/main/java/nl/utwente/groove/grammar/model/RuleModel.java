@@ -488,7 +488,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     /** Returns the normalised aspect graph underlying this rule model. */
     public AspectGraph getNormalSource() {
         if (this.normalSource == null) {
-            this.normalSource = getSource().normalise(null);
+            var typeModel = getGrammar().getTypeModel();
+            var typeSortMap = !typeModel.isImplicit()
+                ? typeModel.getTypeGraph().getTypeSortMap()
+                : null;
+            this.normalSource = getSource().normalise(typeSortMap);
             if (NORMALISE_DEBUG) {
                 // defer in order to avoid circularities in the derivation of the type graph
                 SwingUtilities.invokeLater(new Runnable() {
@@ -2115,7 +2119,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                         errors
                             .add("Merged %s-node must be supertype of %s",
                                  sourceType.label().text(), targetType.label().text(), source);
-                    } else if (source.getType().isDataType()) {
+                    } else if (source.getType().isSort()) {
                         errors
                             .add("Primitive %s-node can't be merged", sourceType.label().text(),
                                  source);
