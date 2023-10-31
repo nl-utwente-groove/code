@@ -49,6 +49,7 @@ import nl.utwente.groove.algebra.syntax.ExprTree;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Expression.Kind;
 import nl.utwente.groove.algebra.syntax.FieldExpr;
+import nl.utwente.groove.algebra.syntax.SortMap;
 import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.grammar.aspect.AspectContent.ExprContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.IdContent;
@@ -510,6 +511,9 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         if (has(CONNECT)) {
             assert !onNode;
             text = CONNECT_LABEL;
+        } else if (has(SUBTYPE)) {
+            assert !onNode;
+            text = "";
         } else if (has(NESTED)) {
             @SuppressWarnings("null")
             var content = text = get(NESTED).getContentString();
@@ -804,7 +808,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         try {
             var assignTree = getAssignTree();
             assert assignTree != null;
-            result = assignTree.toAssignment(getGraph().getTyping());
+            result = assignTree.toAssignment(getSortMap());
         } catch (FormatException exc) {
             addErrors(exc.getErrors());
         }
@@ -851,7 +855,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         try {
             var tree = getTestTree();
             assert tree != null;
-            result = tree.toExpression(getGraph().getTyping());
+            result = tree.toExpression(getSortMap());
             if (result.getKind() == Kind.FIELD) {
                 throw new FormatException(
                     "Field expression '%s' not allowed as predicate expression",
@@ -895,6 +899,14 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             assert testTree != null;
             return testTree.toLine();
         }
+    }
+
+    /** Constructs and returns a sort map consisting of the
+     * containing {@link AspectGraph}'s sort map, complemented with
+     * self-fields for the source node type, if derivable.
+     */
+    private SortMap getSortMap() {
+        return getGraph().getSortMap(source().getType());
     }
 
     /** Indicates if this is an argument edge. */

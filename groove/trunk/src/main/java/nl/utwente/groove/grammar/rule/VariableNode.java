@@ -48,7 +48,7 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
     public VariableNode(int nr, Expression term, TypeNode type) {
         super(nr);
         this.term = term;
-        assert type != null && type.isDataType();
+        assert type != null && type.isSort();
         this.type = type;
     }
 

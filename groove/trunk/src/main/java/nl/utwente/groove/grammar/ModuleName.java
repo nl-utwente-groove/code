@@ -80,9 +80,9 @@ public class ModuleName {
     }
 
     /** Nests this module name inside a new outer token, and returns the result. */
-    public QualName nest(@NonNull String child) {
+    public QualName nest(@NonNull String parent) {
         QualName result = new QualName();
-        result.tokens.add(child);
+        result.tokens.add(parent);
         result.tokens.addAll(tokens());
         return result;
     }

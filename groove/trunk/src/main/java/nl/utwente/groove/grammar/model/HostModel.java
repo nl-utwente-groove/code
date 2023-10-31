@@ -31,7 +31,6 @@ import nl.utwente.groove.grammar.aspect.Aspect;
 import nl.utwente.groove.grammar.aspect.AspectContent.ConstContent;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
-import nl.utwente.groove.grammar.aspect.AspectGraph.AspectGraphMorphism;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.host.DefaultHostGraph;
@@ -119,8 +118,11 @@ public class HostModel extends GraphBasedModel<HostGraph> {
 
     private AspectGraph getNormalSource() {
         if (this.normalSource == null) {
-            this.normalMap = new AspectGraphMorphism(getSource());
-            this.normalSource = getSource().normalise(this.normalMap);
+            var typeModel = getGrammar().getTypeModel();
+            var typeSortMap = !typeModel.isImplicit()
+                ? typeModel.getTypeGraph().getTypeSortMap()
+                : null;
+            this.normalSource = getSource().normalise(typeSortMap);
         }
         return this.normalSource;
     }
@@ -136,23 +138,17 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     HostGraph compute() throws FormatException {
         this.algebraFamily = getFamily();
         GraphInfo.throwException(getSource());
-        Pair<DefaultHostGraph,HostModelMap> modelPlusMap = computeModel();
-        HostGraph result = modelPlusMap.one();
+        var modelPlusMap = computeModel();
+        var result = modelPlusMap.one();
         GraphInfo.throwException(result);
-        HostModelMap hostModelMap = modelPlusMap.two();
-        TypeModelMap typeMap = new TypeModelMap(result.getTypeGraph().getFactory());
-        for (Map.Entry<AspectNode,HostNode> nodeEntry : hostModelMap.nodeMap().entrySet()) {
-            typeMap.putNode(nodeEntry.getKey(), nodeEntry.getValue().getType());
+        var hostModelMap = modelPlusMap.two();
+        // create the type map
+        var typeMap = new TypeModelMap(result.getTypeGraph().getFactory());
+        for (var ne : hostModelMap.nodeMap().entrySet()) {
+            typeMap.putNode(ne.getKey(), ne.getValue().getType());
         }
-        for (AspectEdge sourceEdge : getSource().edgeSet()) {
-            AspectEdge normalEdge = this.normalMap.getEdge(sourceEdge);
-            if (normalEdge == null) {
-                normalEdge = sourceEdge;
-            }
-            HostEdge hostEdge = hostModelMap.getEdge(normalEdge);
-            if (hostEdge != null) {
-                typeMap.putEdge(sourceEdge, hostEdge.getType());
-            }
+        for (var ee : hostModelMap.edgeMap().entrySet()) {
+            typeMap.putEdge(ee.getKey(), ee.getValue().getType());
         }
         this.typeMap = typeMap;
         this.hostModelMap = hostModelMap;
@@ -213,15 +209,10 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                         newElementMap.putNode(nodeEntry.getKey(), typedNode);
                     }
                 }
-                // factor the edges through the normalisation mapping
-                for (AspectEdge sourceEdge : getSource().edgeSet()) {
-                    AspectEdge normalEdge = this.normalMap.getEdge(sourceEdge);
-                    if (normalEdge == null) {
-                        normalEdge = sourceEdge;
-                    }
-                    HostEdge hostEdge = elementMap.getEdge(normalEdge);
-                    if (hostEdge != null) {
-                        newElementMap.putEdge(normalEdge, typing.getEdge(hostEdge));
+                for (var edgeEntry : elementMap.edgeMap().entrySet()) {
+                    var typedEdge = typing.getEdge(edgeEntry.getValue());
+                    if (typedEdge != null) {
+                        newElementMap.putEdge(edgeEntry.getKey(), typedEdge);
                     }
                 }
                 elementMap = newElementMap;
@@ -289,7 +280,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         assert hostNode != null : String
             .format("Target of '%s' is not in element map %s", modelEdge.target(), elementMap);
         TypeLabel hostLabel = modelEdge.getTypeLabel();
-        assert hostLabel != null && !hostLabel.isDataType() : String
+        assert hostLabel != null && !hostLabel.isSort() : String
             .format("Inappropriate label %s", hostLabel);
         HostEdge hostEdge = result.addEdge(hostSource, hostLabel, hostNode);
         elementMap.putEdge(modelEdge, hostEdge);
@@ -301,8 +292,6 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     private TypeModelMap typeMap;
     /** The normalised source model. */
     private AspectGraph normalSource;
-    /** Mapping from the source to the normal source. */
-    private AspectGraphMorphism normalMap;
     /** Set of labels occurring in this graph. */
     private Set<TypeLabel> labelSet;
     /** The attribute element factory for this model. */

@@ -344,7 +344,7 @@ public class FindReplaceDialog {
             }
         });
         for (TypeLabel label : sortLabels(typeGraph.getLabels())) {
-            if (!label.isDataType() && label != TypeLabel.NODE) {
+            if (!label.isSort() && label != TypeLabel.NODE) {
                 result.addItem(label);
             }
         }

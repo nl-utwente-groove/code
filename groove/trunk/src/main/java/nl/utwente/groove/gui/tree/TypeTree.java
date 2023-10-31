@@ -282,7 +282,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
             ? getTypeGraph().getDirectSubtypeMap()
             : getTypeGraph().getDirectSupertypeMap();
         for (TypeNode node : new TreeSet<TypeNode>(typeNodes)) {
-            if (node.isDataType()) {
+            if (node.isSort()) {
                 continue;
             }
             TypeEntry entry = getFilter().getEntry(node);

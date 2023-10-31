@@ -74,8 +74,8 @@ public final class Variable extends Expression {
     }
 
     @Override
-    public Typing computeTyping() {
-        return Typing.singletonTyping(getName(), getSort());
+    public SortMap computeTyping() {
+        return SortMap.newInstance(getName(), getSort());
     }
 
     @Override

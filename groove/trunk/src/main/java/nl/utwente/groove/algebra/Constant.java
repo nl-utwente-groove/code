@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import nl.utwente.groove.algebra.syntax.Expression;
-import nl.utwente.groove.algebra.syntax.Typing;
+import nl.utwente.groove.algebra.syntax.SortMap;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.OpKind;
@@ -91,8 +91,8 @@ public final class Constant extends Expression {
     }
 
     @Override
-    protected Typing computeTyping() {
-        return Typing.emptyTyping();
+    protected SortMap computeTyping() {
+        return SortMap.newInstance();
     }
 
     @Override

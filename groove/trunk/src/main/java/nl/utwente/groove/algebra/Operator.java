@@ -79,7 +79,7 @@ public class Operator {
             throw Exceptions.illegalArg("Type '%s' should be generic", type);
         }
         String typeName = ((TypeVariable<?>) type).getName();
-        Sort result = Sort.getKind(typeName.toLowerCase());
+        Sort result = Sort.getSort(typeName.toLowerCase());
         if (result == null) {
             throw Exceptions.illegalArg("Type '%s' is not an existing sort", typeName);
         }

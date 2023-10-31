@@ -255,29 +255,29 @@ public enum Sort {
     /** Returns the sort for a given sort name.
      * @return the sort for {@code name}, or {@code null} if {@code name} is not a sort name
      */
-    public static Sort getKind(String sigName) {
-        return sigNameMap.get(sigName);
+    public static Sort getSort(String sortName) {
+        return sortNameMap.get(sortName);
     }
 
     /** Returns the sort for a given signature class. */
-    public static Sort getKind(Class<?> sigClass) {
-        return sigClassMap.get(sigClass);
+    public static Sort getSort(Class<?> sortClass) {
+        return sortClassMap.get(sortClass);
     }
 
     /** Returns the set of all known signature names. */
     public static Set<String> getNames() {
-        return Collections.unmodifiableSet(sigNameMap.keySet());
+        return Collections.unmodifiableSet(sortNameMap.keySet());
     }
 
     /** Inverse mapping from signature names to sorts. */
-    private static Map<String,Sort> sigNameMap = new HashMap<>();
+    private static Map<String,Sort> sortNameMap = new HashMap<>();
     /** Inverse mapping from signature classes to sorts. */
-    private static Map<Class<? extends Signature>,Sort> sigClassMap = new HashMap<>();
+    private static Map<Class<? extends Signature>,Sort> sortClassMap = new HashMap<>();
 
     static {
         for (Sort kind : Sort.values()) {
-            sigNameMap.put(kind.getName(), kind);
-            sigClassMap.put(kind.getSignatureClass(), kind);
+            sortNameMap.put(kind.getName(), kind);
+            sortClassMap.put(kind.getSignatureClass(), kind);
         }
     }
 }

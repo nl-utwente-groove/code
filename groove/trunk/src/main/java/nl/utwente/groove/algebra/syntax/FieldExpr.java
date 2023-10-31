@@ -103,8 +103,8 @@ public final class FieldExpr extends Expression {
     }
 
     @Override
-    protected Typing computeTyping() {
-        return Typing.emptyTyping();
+    protected SortMap computeTyping() {
+        return SortMap.newInstance();
     }
 
     @Override

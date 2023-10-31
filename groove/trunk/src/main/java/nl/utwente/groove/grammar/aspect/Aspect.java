@@ -29,7 +29,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.syntax.Expression;
-import nl.utwente.groove.algebra.syntax.Typing;
+import nl.utwente.groove.algebra.syntax.SortMap;
 import nl.utwente.groove.grammar.aspect.AspectContent.ConstContent;
 import nl.utwente.groove.grammar.aspect.AspectContent.ContentKind;
 import nl.utwente.groove.grammar.aspect.AspectContent.ExprContent;
@@ -125,7 +125,7 @@ public class Aspect {
      * @return a clone of this object with changed labels, or this object
      *         if {@code oldLabel} did not occur
      */
-    public Aspect relabel(TypeLabel oldLabel, TypeLabel newLabel, Typing typing) {
+    public Aspect relabel(TypeLabel oldLabel, TypeLabel newLabel, SortMap typing) {
         Aspect result = this;
         AspectContent newContent = getContent().relabel(oldLabel, newLabel, typing);
         if (newContent != getContent()) {

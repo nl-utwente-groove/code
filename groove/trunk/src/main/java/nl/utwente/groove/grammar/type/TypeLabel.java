@@ -49,6 +49,9 @@ public final class TypeLabel extends ALabel {
     TypeLabel(String text, EdgeRole kind) {
         this.role = kind;
         this.text = text;
+        this.sort = kind == NODE_TYPE
+            ? Sort.getSort(text)
+            : null;
     }
 
     @Override
@@ -89,10 +92,17 @@ public final class TypeLabel extends ALabel {
         return this.role;
     }
 
-    /** Indicates if this label stands for a data type. */
-    public boolean isDataType() {
-        return hasRole(NODE_TYPE) && sigLabelMap.values().contains(this);
+    /** Indicates if this label stands for a data sort. */
+    public boolean isSort() {
+        return this.sort != null;
     }
+
+    /** Returns the data sort wrapped in this label, if any. */
+    public Sort getSort() {
+        return this.sort;
+    }
+
+    private final Sort sort;
 
     /** The label text. */
     private final String text;
@@ -206,8 +216,8 @@ public final class TypeLabel extends ALabel {
 
     static private final Map<Sort,TypeLabel> sigLabelMap = new EnumMap<>(Sort.class);
     static {
-        for (Sort sigKind : Sort.values()) {
-            sigLabelMap.put(sigKind, new TypeLabel(sigKind.getName(), EdgeRole.NODE_TYPE));
+        for (Sort sort : Sort.values()) {
+            sigLabelMap.put(sort, new TypeLabel(sort.getName(), EdgeRole.NODE_TYPE));
         }
     }
 
