@@ -131,6 +131,10 @@ public class VisibleValue implements VisualValue<Boolean> {
         if (jGraph.isShowValueNodes()) {
             return true;
         }
+        // nodes with expressions should be shown
+        if (node.hasExpression()) {
+            return true;
+        }
         // data type nodes in type graphs should never be shown
         if (node.getGraphRole() == GraphRole.TYPE) {
             return false;
