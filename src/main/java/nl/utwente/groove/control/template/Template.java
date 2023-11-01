@@ -28,6 +28,9 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.Function;
@@ -55,7 +58,7 @@ public class Template {
     /**
      * Constructs a automaton for a given procedure and name.
      */
-    private Template(QualName name, Procedure proc) {
+    private Template(QualName name, @Nullable Procedure proc) {
         this.name = name;
         this.maxNodeNr = -1;
         this.owner = proc;
@@ -73,7 +76,7 @@ public class Template {
     /**
      * Constructs a automaton for a given procedure.
      */
-    protected Template(Procedure proc) {
+    protected Template(@NonNull Procedure proc) {
         this(proc.getQualName(), proc);
     }
 
@@ -96,7 +99,7 @@ public class Template {
      * Returns the procedure of which this automaton
      * constitutes the body, if any.
      */
-    public Procedure getOwner() {
+    public @Nullable Procedure getOwner() {
         return this.owner;
     }
 
@@ -173,8 +176,9 @@ public class Template {
         Map<Location,Set<CtrlVar>> changeMap = new LinkedHashMap<>();
         // compute the map of incoming transitions
         for (Location loc : getLocations()) {
-            if (loc.isFinal() && hasOwner()) {
-                loc.addVars(getOwner().getOutPars().keySet());
+            var owner = getOwner();
+            if (loc.isFinal() && owner != null) {
+                loc.addVars(owner.getOutPars().keySet());
             } else if (loc.isTrial()) {
                 for (SwitchStack s : loc.getAttempt()) {
                     Switch bottom = s.get(0);
@@ -284,9 +288,10 @@ public class Template {
      * main program name as this one.
      */
     public Template newInstance() {
-        return hasOwner()
-            ? new Template(getOwner())
-            : new Template(getQualName());
+        var owner = getOwner();
+        return owner == null
+            ? new Template(getQualName())
+            : new Template(owner);
     }
 
     /** Computes and inserts the host nodes to be used for constant value arguments. */
