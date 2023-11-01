@@ -30,6 +30,9 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.CallStack;
 import nl.utwente.groove.control.CtrlVar;
@@ -107,10 +110,11 @@ public class TemplateBuilder {
         for (Quotient norm : normQ) {
             Template key = norm.original();
             Template value = norm.result();
-            if (value.hasOwner()) {
-                value.getOwner().setTemplate(value);
-            } else {
+            var owner = value.getOwner();
+            if (owner == null) {
                 result = value;
+            } else {
+                owner.setTemplate(value);
             }
             map.addTemplate(key, value);
             map.putAll(norm.locMap());
@@ -126,6 +130,7 @@ public class TemplateBuilder {
         return result;
     }
 
+    /** Map from previously built templates to the builder who built them. */
     private final Map<Template,Builder> builderMap = new HashMap<>();
 
     /**
@@ -143,7 +148,7 @@ public class TemplateBuilder {
     }
 
     private class Builder {
-        Builder(QualName name, Procedure proc, Term init) {
+        Builder(@Nullable QualName name, Procedure proc, Term init) {
             assert init.getTransience() == 0 : "Can't build template from transient term";
             this.result = name == null
                 ? new Template(proc)
@@ -158,11 +163,15 @@ public class TemplateBuilder {
             this.freshVerdict = new LinkedList<>();
         }
 
+        /** Returns the result template.
+         * This is initially empty and only filled after a call to {@link #build()}
+         */
+        @NonNull
         Template getResult() {
             return this.result;
         }
 
-        private final Template result;
+        private final @NonNull Template result;
 
         /**
          * Builds the next attempt, plus all reachable verdict attempts.
@@ -185,6 +194,7 @@ public class TemplateBuilder {
             while (!fresh.isEmpty()) {
                 buildNext();
             }
+            getResult().initVars();
         }
 
         /**
@@ -405,6 +415,7 @@ public class TemplateBuilder {
         Partition result = new Partition(template);
         Map<LocationKey,Cell> cellMap = new LinkedHashMap<>();
         for (Location loc : template.getLocations()) {
+            // extend the locRecords list with slots up to the new location
             for (int i = locRecords.size(); i <= loc.getNumber(); i++) {
                 locRecords.add(null);
             }
