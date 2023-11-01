@@ -1,14 +1,14 @@
 Antlr;compiling control programs and expressions;http://www.antlr.org;3.5.2
+Apache Batik;exporting images to SVG, EPS, …;https://xmlgraphics.apache.org/batik/;1.17
+Apache FOP;exporting displayed graphs to PDF format;https://xmlgraphics.apache.org/fop/;2.9
 Args4J;command-line option parsing;http://args4j.kohsuke.org/;2.0.26
 JAXB;access to an XML document from a Java program;https://javaee.github.io/jaxb-v2/;3.0.2
-Java Annotations;runtime analysis of Java annotations;https://wiki.eclipse.org/JDT_Core/Null_Analysis/External_Annotations;2.2.700
 EMF;converting to and from Eclipse ecore format;http://eclipse.org;2.7.0
-EPSGraphics;exporting displayed graphs to EPS format;http://www.abeel.be/epsgraphics/;1.2
 Gnu Prolog;interpreting Prolog queries;http://www.gnu.org/software/gnuprologjava/;0.2.6
 Groovy;easy and flexible access to the GROOVE API;http://groovy.codehaus.org/;2.0.5
-iText;exporting displayed graphs to PDF format;http://itextpdf.com/;5.3.2
 Jakarta activation;dynamic data manipulation;https://projects.eclipse.org/projects/ee4j.jaf;3.0.1
 Jakarta bind;mapping between XML documents and Java objects;https://jakarta.ee/specifications/xml-binding/;1.2.2
+Java Annotations;runtime analysis of Java annotations;https://wiki.eclipse.org/JDT_Core/Null_Analysis;2.2.700
 JGoodies Looks;platform-dependent look&feel;http://www.jgoodies.com/freeware/libraries/looks/;2.4.1
 JGraph;displaying graphs and rules;http://www.jgraph.com;5.13.0.0
 ltl2buchi;translating LTL formulae to Büchi automata;https://github.com/esb-lwb/lwb;2010.12

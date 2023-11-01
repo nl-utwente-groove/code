@@ -130,11 +130,6 @@
 			<version>4.0.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.itextpdf</groupId>
-			<artifactId>itextpdf</artifactId>
-			<version>5.3.4</version>
-		</dependency>
-		<dependency>
 			<groupId>com.fifesoft</groupId>
 			<artifactId>rsyntaxtextarea</artifactId>
 			<version>1.5.2</version>
@@ -217,6 +212,25 @@
 				<exclusion>
 				    <groupId>xml-apis</groupId>
 					<artifactId>xml-apis</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+    		<groupId>org.apache.xmlgraphics</groupId>
+		    <artifactId>fop-core</artifactId>
+    		<version>2.9</version>
+    		<exclusions>
+				<exclusion>
+				    <groupId>xml-apis</groupId>
+					<artifactId>xml-apis</artifactId>
+				</exclusion>
+				<exclusion>
+				    <groupId>org.apache.xmlgraphics</groupId>
+					<artifactId>batik-svggen</artifactId>
+				</exclusion>
+				<exclusion>
+				    <groupId>org.apache.xmlgraphics</groupId>
+					<artifactId>batik-dom</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>

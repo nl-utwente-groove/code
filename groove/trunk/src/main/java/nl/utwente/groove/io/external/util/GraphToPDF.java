@@ -16,22 +16,18 @@
  */
 package nl.utwente.groove.io.external.util;
 
+import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import com.itextpdf.awt.DefaultFontMapper;
-import com.itextpdf.awt.PdfGraphics2D;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.PdfContentByte;
-import com.itextpdf.text.pdf.PdfWriter;
+import org.apache.fop.svg.PDFDocumentGraphics2D;
+import org.apache.xmlgraphics.java2d.GraphicContext;
 
+import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.io.external.PortException;
-import nl.utwente.groove.util.Version;
 
 /** Class offering the functionality to save a JGraph to PDF format. */
 public class GraphToPDF extends GraphToVector {
@@ -42,32 +38,15 @@ public class GraphToPDF extends GraphToVector {
         if (bounds == null) {
             return;
         }
-        Rectangle bound = new Rectangle((float) bounds.getWidth(), (float) bounds.getHeight());
 
         try (FileOutputStream fos = new FileOutputStream(file)) {
-            Document document = new Document(bound);
-            // Open file, create PDF document
-            PdfWriter writer = PdfWriter.getInstance(document, fos);
-            // Set some metadata
-            document.addCreator(Version.getAbout());
-
-            // Open document, get graphics
-            document.open();
-            PdfContentByte cb = writer.getDirectContent();
-            boolean onlyShapes = true;
-            //The embedded fonts most likely do not contain all necessary glyphs, so using outlines instead
-            // onlyShapes makes PDF considerably bigger, but no alternative at the moment
-            PdfGraphics2D pdf2d
-                = new PdfGraphics2D(cb, (float) bounds.getWidth(), (float) bounds.getHeight(),
-                    new DefaultFontMapper(), onlyShapes, false, (float) 100.0);
-
-            // Render
-            toGraphics(graph, pdf2d);
-
-            // Cleanup
-            pdf2d.dispose();
-            document.close();
-        } catch (DocumentException | IOException e) {
+            PDFDocumentGraphics2D graphics2D = new PDFDocumentGraphics2D(true, fos,
+                (int) bounds.getWidth(), (int) bounds.getHeight());
+            graphics2D.setGraphicContext(new GraphicContext());
+            graphics2D.setFont(Options.getLabelFont());
+            toGraphics(graph, (Graphics2D) graphics2D.create());
+            graphics2D.finish();
+        } catch (IOException e) {
             throw new PortException(e);
         }
     }
