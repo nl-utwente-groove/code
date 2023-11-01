@@ -5,6 +5,7 @@ import java.util.prefs.Preferences;
 
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
+import nl.utwente.groove.gui.UserSettings;
 
 /**
  * Action for quitting the simulator.
@@ -21,7 +22,7 @@ public class QuitAction extends SimulatorAction {
         boolean quit = getDisplaysPanel().saveAllEditors(true);
         if (quit) {
             // Saves the current user settings.
-            nl.utwente.groove.gui.UserSettings.syncSettings(getSimulator());
+            UserSettings.syncSettings(getSimulator());
             getDisplaysPanel().dispose();
             getFrame().dispose();
             // try to persist the user preferences

@@ -66,7 +66,7 @@ public class LoadGrammarAction extends SimulatorAction {
         result = load(store);
         // now we know loading succeeded, we can set the current
         // names & files
-        getGrammarFileChooser().setSelectedFile(grammarFile);
+        getGrammarFileChooser(true).setSelectedFile(grammarFile);
         getRuleFileChooser().setCurrentDirectory(grammarFile);
         // make sure the selected file from an old grammar is
         // unselected
@@ -141,10 +141,10 @@ public class LoadGrammarAction extends SimulatorAction {
         }
         final GrammarModel grammar = store.toGrammarModel();
         getSimulatorModel().setGrammar(grammar);
-        grammar.getProperties()
-            .setCurrentVersionProperties();
+        grammar.getProperties().setCurrentVersionProperties();
         if (saveAfterLoading && newGrammarFile != null) {
-            getActions().getSaveGrammarAction()
+            getActions()
+                .getSaveGrammarAction()
                 .save(newGrammarFile, !newGrammarFile.equals(store.getLocation()));
         }
         return true;
@@ -189,8 +189,9 @@ public class LoadGrammarAction extends SimulatorAction {
         outer: for (ResourceKind kind : ResourceKind.all(false)) {
             Set<QualName> newNames = new HashSet<>();
             // collect all resource names of this kind
-            Set<QualName> oldNames =
-                (kind.isGraphBased() ? store.getGraphs(kind) : store.getTexts(kind)).keySet();
+            Set<QualName> oldNames = (kind.isGraphBased()
+                ? store.getGraphs(kind)
+                : store.getTexts(kind)).keySet();
             // loop over all collected names,
             // construct a renaming of illegal qualified names into safe names
             Map<QualName,QualName> renameMap = new HashMap<>();
@@ -207,8 +208,7 @@ public class LoadGrammarAction extends SimulatorAction {
                     QualName newName = name.toValidName();
                     // make sure the modified name is fresh
                     while (oldNames.contains(newName) || newNames.contains(newName)) {
-                        newName = newName.parent()
-                            .extend(newName.last() + "_");
+                        newName = newName.parent().extend(newName.last() + "_");
                     }
                     newNames.add(newName);
                     renameMap.put(name, newName);
@@ -227,7 +227,7 @@ public class LoadGrammarAction extends SimulatorAction {
     }
 
     private void replaceGraphs(SystemStore store, ResourceKind kind,
-        Map<QualName,QualName> renameMap) throws IOException {
+                               Map<QualName,QualName> renameMap) throws IOException {
         Map<QualName,AspectGraph> oldGraphMap = store.getGraphs(kind);
         List<AspectGraph> newGraphs = new ArrayList<>();
         for (Map.Entry<QualName,QualName> e : renameMap.entrySet()) {
@@ -252,7 +252,7 @@ public class LoadGrammarAction extends SimulatorAction {
     }
 
     private void replaceTexts(SystemStore store, ResourceKind kind,
-        Map<QualName,QualName> renameMap) throws IOException {
+                              Map<QualName,QualName> renameMap) throws IOException {
         Map<QualName,String> oldTextMap = store.getTexts(kind);
         Map<QualName,String> newTextMap = new HashMap<>();
         for (Map.Entry<QualName,QualName> e : renameMap.entrySet()) {
@@ -267,15 +267,13 @@ public class LoadGrammarAction extends SimulatorAction {
 
     private boolean askReplaceNames() {
         String[] options = {"Continue", "Abort"};
-        return JOptionPane.showOptionDialog(getFrame(),
-            "Warning: the grammar contains resources with "
-                + "invalid (since grammar version 3.1) names.\n"
-                + "These will be renamed automatically.",
-            "Warning: invalid identifiers",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.WARNING_MESSAGE,
-            null,
-            options,
-            "Continue") == JOptionPane.OK_OPTION;
+        return JOptionPane
+            .showOptionDialog(getFrame(),
+                              "Warning: the grammar contains resources with "
+                                  + "invalid (since grammar version 3.1) names.\n"
+                                  + "These will be renamed automatically.",
+                              "Warning: invalid identifiers", JOptionPane.YES_NO_OPTION,
+                              JOptionPane.WARNING_MESSAGE, null, options,
+                              "Continue") == JOptionPane.OK_OPTION;
     }
 }

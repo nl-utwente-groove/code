@@ -17,6 +17,7 @@
 package nl.utwente.groove.io;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -31,6 +32,10 @@ import javax.swing.filechooser.FileView;
 import javax.swing.plaf.FileChooserUI;
 import javax.swing.plaf.basic.BasicFileChooserUI;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
+import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.util.Groove;
 
 /**
@@ -40,22 +45,40 @@ import nl.utwente.groove.util.Groove;
  * @version $Revision$
  */
 public class GrooveFileChooser extends JFileChooser {
-
-    /** File chooser with initial directory {@link Groove#WORKING_DIR}. */
-    // This class is now protected, what you probably want are the static
-    // methods in the end of this class.
-    protected GrooveFileChooser() {
-        this(Groove.CURRENT_WORKING_DIR);
-    }
-
-    /**
-     * File chooser with given initial directory.
-     */
-    private GrooveFileChooser(String currentDirectoryPath) {
-        super(currentDirectoryPath);
+    /** File chooser for Groove tools.
+     * The initial directory is calculated using {@link #getStartDirectory} */
+    private GrooveFileChooser(Set<FileType> fileTypes) {
+        super(getStartDirectory(fileTypes));
+        this.fileTypes = fileTypes;
         setFileView(createFileView());
         setAcceptAllFileFilterUsed(false);
         ToolTipManager.sharedInstance().registerComponent(this);
+        var prefFilter = getPref(FILTER);
+        ExtensionFilter selectedFilter = null;
+        for (FileType fileType : fileTypes) {
+            ExtensionFilter filter = fileType.getFilter();
+            addChoosableFileFilter(filter);
+            if (selectedFilter == null || fileType.toString().equals(prefFilter)) {
+                selectedFilter = filter;
+            }
+        }
+        if (fileTypes.isEmpty()) {
+            setFileSelectionMode(DIRECTORIES_ONLY);
+            setApproveButtonText("Select");
+        }
+        setFileFilter(selectedFilter);
+    }
+
+    /** Returns the file types associated with this chooser. */
+    public Set<FileType> getFileTypes() {
+        return this.fileTypes;
+    }
+
+    private final Set<FileType> fileTypes;
+
+    @Override
+    public String toString() {
+        return toString(this.fileTypes);
     }
 
     @Override
@@ -156,12 +179,6 @@ public class GrooveFileChooser extends JFileChooser {
         }
     }
 
-    @Override
-    public void cancelSelection() {
-        // TODO Auto-generated method stub
-        super.cancelSelection();
-    }
-
     /** Changes the confirmation behaviour on overwriting an existing file. */
     public void setAskOverwrite(boolean askOverwrite) {
         this.askOverwrite = askOverwrite;
@@ -186,6 +203,53 @@ public class GrooveFileChooser extends JFileChooser {
         return new GrooveFileView();
     }
 
+    /** Returns the {@code index}th element of the user preferences for this file chooser.
+     */
+    private @Nullable String getPref(int index) {
+        return getPref(this.fileTypes, index);
+    }
+
+    /** Returns the new preference values to be persisted upon quitting. */
+    public String[] newPrefs() {
+        return new String[] {getCurrentDirectory().getAbsolutePath(), getFileType().toString()};
+    }
+
+    /** Constructs a String representation for a file chooser. */
+    static private String toString(Set<FileType> fileTypes) {
+        return "GrooveFileChooser [fileTypes=" + fileTypes + "]";
+    }
+
+    /** Returns the starting directory for a new file chooser.
+     * This is retrieved from the persistent user properties, or if not present,
+     * initialised to {@link Groove#CURRENT_WORKING_DIR}.
+     */
+    static private @NonNull String getStartDirectory(Set<FileType> fileTypes) {
+        var result = getPref(fileTypes, WORKING_DIR);
+        return result == null
+            ? Groove.CURRENT_WORKING_DIR
+            : result;
+    }
+
+    /** Returns the {@code index}th element of the user preferences for a given
+     * set of file types.
+     */
+    static private @Nullable String getPref(Set<FileType> fileTypes, int index) {
+        var prefs = Options.getUserPrefs(toString(fileTypes));
+        return prefs.length > index
+            ? prefs[index]
+            : null;
+    }
+
+    /** Index of the working directory property in the user properties. */
+    static private final int WORKING_DIR = 0;
+    /** Index of the file filter  property in the user properties. */
+    static private final int FILTER = 1;
+
+    /** Returns all the file choosers created in the course of this invocation. */
+    static public Collection<GrooveFileChooser> getChoosers() {
+        return listMap.values();
+    }
+
     // Maps from filters to choosers.
     private static final Map<Set<FileType>,GrooveFileChooser> listMap = new HashMap<>();
 
@@ -205,26 +269,9 @@ public class GrooveFileChooser extends JFileChooser {
     public static GrooveFileChooser getInstance(Set<FileType> fileTypes) {
         GrooveFileChooser result = listMap.get(fileTypes);
         if (result == null) {
-            result = new GrooveFileChooser();
-            ExtensionFilter first = null;
-            for (FileType fileType : fileTypes) {
-                ExtensionFilter filter = fileType.getFilter();
-                result.addChoosableFileFilter(filter);
-                if (first == null) {
-                    first = filter;
-                }
-            }
-            if (fileTypes.isEmpty()) {
-                result.setFileSelectionMode(DIRECTORIES_ONLY);
-                result.setApproveButtonText("Select");
-            }
-            result.setFileFilter(first);
+            result = new GrooveFileChooser(fileTypes);
             listMap.put(fileTypes, result);
         }
-        result
-            .setCurrentDirectory(result
-                .getFileSystemView()
-                .createFileObject(Groove.CURRENT_WORKING_DIR));
         return result;
     }
 }
