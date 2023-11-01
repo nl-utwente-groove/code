@@ -36,6 +36,7 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.Keywords;
 import nl.utwente.groove.util.parse.AExprTree;
 import nl.utwente.groove.util.parse.DefaultOp;
 import nl.utwente.groove.util.parse.FormatException;
@@ -99,7 +100,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
             throw new FormatException("'%s' is not an assignment", getParseString());
         }
         var lhs = getArg(0).getId();
-        var sort = sortMap.getSort(lhs.nest(""));
+        var sort = sortMap.getSort(lhs.nest(Keywords.SELF));
         Expression rhs = sort.isEmpty()
             ? getArg(1).toExpression(sortMap)
             : getArg(1).toExpression(sort.get(), sortMap);
@@ -262,7 +263,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         if (getOp().getKind() == OpKind.ATOM) {
             result = sortMap.contains(getId());
             if (!result && getId().size() == 1) {
-                result = sortMap.contains(getId().nest(""));
+                result = sortMap.contains(getId().nest(Keywords.SELF));
             }
         }
         return result;
@@ -274,7 +275,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
     private @Nullable Sort getSort(SortMap sortMap) {
         var result = sortMap.getSort(getId());
         if (!result.isPresent() && getId().size() == 1) {
-            result = sortMap.getSort(getId().nest(""));
+            result = sortMap.getSort(getId().nest(Keywords.SELF));
         }
         return Groove.orElse(result, null);
     }

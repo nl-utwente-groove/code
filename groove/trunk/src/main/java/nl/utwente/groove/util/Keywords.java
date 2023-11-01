@@ -21,7 +21,7 @@ import nl.utwente.groove.grammar.aspect.AspectContent.ContentKind;
 import nl.utwente.groove.grammar.aspect.AspectKind;
 
 /**
- * Keywords used in GROOVE
+ * Reserved wordt used in GROOVE
  * @author Arend Rensink
  * @version $Revision $
  */
