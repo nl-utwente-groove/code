@@ -21,6 +21,7 @@ import static nl.utwente.groove.io.FileType.PROPERTY;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -39,8 +40,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 
 import org.eclipse.jdt.annotation.NonNull;
-
-import com.itextpdf.text.Font;
 
 import nl.utwente.groove.explore.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreKey;
@@ -194,7 +193,7 @@ public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
                 setEnabled(false);
             } else {
                 setForeground(Color.BLACK);
-                setFont(getFont().deriveFont(Font.NORMAL));
+                setFont(getFont().deriveFont(Font.PLAIN));
                 setText(commandLine);
                 setEnabled(true);
             }

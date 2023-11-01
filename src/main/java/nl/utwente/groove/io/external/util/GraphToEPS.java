@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.apache.xmlgraphics.java2d.GraphicContext;
 import org.apache.xmlgraphics.java2d.ps.EPSDocumentGraphics2D;
 
 import nl.utwente.groove.gui.jgraph.JGraph;
@@ -38,7 +39,7 @@ public class GraphToEPS extends GraphToVector {
 
         try (FileOutputStream fos = new FileOutputStream(file);) {
             var epsg2d = new EPSDocumentGraphics2D(false);
-            epsg2d.setGraphicContext(new org.apache.xmlgraphics.java2d.GraphicContext());
+            epsg2d.setGraphicContext(new GraphicContext());
             epsg2d.setupDocument(fos, (int) bounds.getWidth(), (int) bounds.getHeight());
             toGraphics(graph, epsg2d);
             epsg2d.finish();

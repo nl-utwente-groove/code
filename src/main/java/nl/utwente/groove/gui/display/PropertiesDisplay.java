@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.gui.display;
 
+import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Set;
@@ -24,8 +25,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
-
-import com.itextpdf.text.Font;
 
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
@@ -119,7 +118,7 @@ public class PropertiesDisplay extends Display implements SimulatorListener {
         Icons.PROPERTIES_NOTABLE_FRAME_ICON, SwingConstants.LEFT);
 
     {
-        NOTABLE_TAB_COMPONENT.setFont(new java.awt.Font("Dialog", Font.BOLD, 16));
+        NOTABLE_TAB_COMPONENT.setFont(new Font("Dialog", Font.BOLD, 16));
         NOTABLE_TAB_COMPONENT.setForeground(Values.INFO_NORMAL_FOREGROUND);
     }
 }

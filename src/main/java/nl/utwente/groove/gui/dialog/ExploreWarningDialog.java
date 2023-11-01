@@ -18,6 +18,7 @@ package nl.utwente.groove.gui.dialog;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Frame;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -32,8 +33,6 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
-
-import com.itextpdf.text.Font;
 
 /**
  * Dialog to warn of a large state space during exploration,
