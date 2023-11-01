@@ -25,6 +25,7 @@ import javax.swing.SwingUtilities;
 
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.display.LTSDisplay;
+import nl.utwente.groove.io.GrooveFileChooser;
 import nl.utwente.groove.io.store.SystemStore;
 
 /**
@@ -100,9 +101,7 @@ public class UserSettings {
                     @Override
                     public void run() {
                         try {
-                            simulator.getActions()
-                                .getLoadGrammarAction()
-                                .load(store);
+                            simulator.getActions().getLoadGrammarAction().load(store);
                         } catch (IOException e) {
                             // don't load if we're going to be difficult
                         }
@@ -136,10 +135,9 @@ public class UserSettings {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    simulator.getModel()
-                        .setDisplay(kind);
-                    ((LTSDisplay) simulator.getDisplaysPanel()
-                        .getDisplay(DisplayKind.LTS)).setStateBound(stateBound);
+                    simulator.getModel().setDisplay(kind);
+                    ((LTSDisplay) simulator.getDisplaysPanel().getDisplay(DisplayKind.LTS))
+                        .setStateBound(stateBound);
                 }
             });
         }
@@ -150,6 +148,7 @@ public class UserSettings {
         syncFrameSettings(simulator);
         syncLocationSettings(simulator);
         syncDisplaySettings(simulator);
+        syncFileChoosers();
     }
 
     /** Synchronises saved settings with the current ones. */
@@ -162,14 +161,11 @@ public class UserSettings {
         userPrefs.put(SIM_MAX_KEY, simMax);
         userPrefs.put(SIM_WIDTH_KEY, simWidth);
         userPrefs.put(SIM_HEIGHT_KEY, simHeight);
-        int grammarPos = simulator.getGrammarPanel()
-            .getDividerLocation();
+        int grammarPos = simulator.getGrammarPanel().getDividerLocation();
         userPrefs.put(GRAMMAR_DIV_POS_KEY, "" + grammarPos);
-        int displaysInfoPos = simulator.getDisplaysInfoPanel()
-            .getDividerLocation();
+        int displaysInfoPos = simulator.getDisplaysInfoPanel().getDividerLocation();
         userPrefs.put(DISPLAYS_INFO_DIV_POS_KEY, "" + displaysInfoPos);
-        int listsPos = simulator.getListsPanel()
-            .getDividerLocation();
+        int listsPos = simulator.getListsPanel().getDividerLocation();
         userPrefs.put(LISTS_DIV_POS_KEY, "" + listsPos);
     }
 
@@ -187,13 +183,18 @@ public class UserSettings {
 
     /** Persists the selected display. */
     private static void syncDisplaySettings(Simulator simulator) {
-        Object display = simulator.getModel()
-            .getDisplay()
-            .name();
+        Object display = simulator.getModel().getDisplay().name();
         userPrefs.put(DISPLAY_KEY, display.toString());
-        Integer stateBound = ((LTSDisplay) simulator.getDisplaysPanel()
-            .getDisplay(DisplayKind.LTS)).getStateBound();
+        Integer stateBound = ((LTSDisplay) simulator.getDisplaysPanel().getDisplay(DisplayKind.LTS))
+            .getStateBound();
         userPrefs.put(STATE_BOUND_KEY, stateBound.toString());
+    }
+
+    /** Persists file choosers. */
+    static private void syncFileChoosers() {
+        GrooveFileChooser
+            .getChoosers()
+            .forEach(c -> Options.storeUserPrefs(c.toString(), c.newPrefs()));
     }
 
     /** The persistently stored user preferences. */
