@@ -241,9 +241,10 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
      */
     final protected QualName askNewName(String name, boolean mustBeFresh) {
         ResourceKind kind = getResourceKind();
-        String title = String.format("Select %s%s name", mustBeFresh
-            ? "new "
-            : "", kind.getDescription());
+        String title = String
+            .format("Select %s%s name", mustBeFresh
+                ? "new "
+                : "", kind.getDescription());
         Set<QualName> existingNames = getSimulatorModel().getGrammar().getNames(kind);
         FreshNameDialog<QualName> nameDialog
             = new FreshNameDialog<>(existingNames, name, mustBeFresh) {
@@ -345,10 +346,10 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
      * should be replaced by a newly loaded one.
      */
     final protected boolean confirmOverwrite(ResourceKind resource, String name) {
-        int response = JOptionPane.showConfirmDialog(getFrame(),
-                                                     String.format("Replace existing %s '%s'?",
-                                                                   resource.getDescription(), name),
-                                                     null, JOptionPane.OK_CANCEL_OPTION);
+        int response = JOptionPane
+            .showConfirmDialog(getFrame(), String
+                .format("Replace existing %s '%s'?", resource.getDescription(), name), null,
+                               JOptionPane.OK_CANCEL_OPTION);
         return response == JOptionPane.OK_OPTION;
     }
 
@@ -358,8 +359,9 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
      */
     final protected boolean confirmOverwriteGrammar(File grammarFile) {
         if (grammarFile.exists()) {
-            int response = JOptionPane.showConfirmDialog(getFrame(), "Overwrite existing grammar?",
-                                                         null, JOptionPane.OK_CANCEL_OPTION);
+            int response = JOptionPane
+                .showConfirmDialog(getFrame(), "Overwrite existing grammar?", null,
+                                   JOptionPane.OK_CANCEL_OPTION);
             return response == JOptionPane.OK_OPTION;
         } else {
             return true;
@@ -444,9 +446,9 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
             try {
                 result = new QualName(pathFragments).testValid();
             } catch (FormatException e) {
-                throw new IOException(
-                    String.format("Malformed %s name: %s", getResourceKind().getDescription(),
-                                  e.getMessage()));
+                throw new IOException(String
+                    .format("Malformed %s name: %s", getResourceKind().getDescription(),
+                            e.getMessage()));
             }
         }
         return result;

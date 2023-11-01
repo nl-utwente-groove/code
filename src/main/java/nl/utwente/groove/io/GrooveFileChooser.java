@@ -56,9 +56,17 @@ public class GrooveFileChooser extends JFileChooser {
         setFileView(createFileView());
         setAcceptAllFileFilterUsed(false);
         ToolTipManager.sharedInstance().registerComponent(this);
-        // EZ says: attempt to fix SF bug #418.
-        //setFileSelectionMode(FILES_ONLY);
-        setFileSelectionMode(FILES_AND_DIRECTORIES);
+    }
+
+    @Override
+    public boolean isDirectorySelectionEnabled() {
+        // normally, this is derived from the file selection mode
+        // however, that is left at FILES_ONLY because otherwise
+        // directory selection overwrites the selection in the dialog
+        // We need to overwrite this to ensure that the Open button
+        // in the dialog actually approves a selected directory,
+        // See also SF bug #418
+        return true;
     }
 
     /**
@@ -148,6 +156,12 @@ public class GrooveFileChooser extends JFileChooser {
         }
     }
 
+    @Override
+    public void cancelSelection() {
+        // TODO Auto-generated method stub
+        super.cancelSelection();
+    }
+
     /** Changes the confirmation behaviour on overwriting an existing file. */
     public void setAskOverwrite(boolean askOverwrite) {
         this.askOverwrite = askOverwrite;
@@ -207,8 +221,10 @@ public class GrooveFileChooser extends JFileChooser {
             result.setFileFilter(first);
             listMap.put(fileTypes, result);
         }
-        result.setCurrentDirectory(result.getFileSystemView()
-            .createFileObject(Groove.CURRENT_WORKING_DIR));
+        result
+            .setCurrentDirectory(result
+                .getFileSystemView()
+                .createFileObject(Groove.CURRENT_WORKING_DIR));
         return result;
     }
 }
