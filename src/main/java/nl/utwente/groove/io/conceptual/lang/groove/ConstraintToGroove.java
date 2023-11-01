@@ -5,6 +5,8 @@ import java.util.Set;
 
 import nl.utwente.groove.grammar.ModuleName;
 import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.grammar.aspect.AspectContent.NestedValue;
+import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.io.conceptual.Acceptor;
 import nl.utwente.groove.io.conceptual.Field;
@@ -136,14 +138,16 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
 
         simpleName = QualName.tokenValidator.repair(simpleName);
         int index = 0;
-        while (this.m_grooveResource.hasGraph(index == 0
-            ? ns.extend(simpleName)
-            : ns.extend(simpleName + index), role)) {
+        while (this.m_grooveResource
+            .hasGraph(index == 0
+                ? ns.extend(simpleName)
+                : ns.extend(simpleName + index), role)) {
             index++;
         }
-        return this.m_grooveResource.getGraph(index == 0
-            ? ns.extend(simpleName)
-            : ns.extend(simpleName + index), role);
+        return this.m_grooveResource
+            .getGraph(index == 0
+                ? ns.extend(simpleName)
+                : ns.extend(simpleName + index), role);
     }
 
     @Override
@@ -370,14 +374,14 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
             new AbsEdge(class1Node, field1CountNode, fieldName);
             new AbsEdge(class2Node, field2CountNode, fieldName);
 
-            AbsNode field1CountForall = new AbsNode("forall:");
-            AbsNode field2CountForall = new AbsNode("forall:");
-            new AbsEdge(field1CountNode, field1CountForall, "@");
-            new AbsEdge(field2CountNode, field2CountForall, "@");
+            AbsNode field1CountForall = new AbsNode(AspectKind.FORALL.getPrefix());
+            AbsNode field2CountForall = new AbsNode(AspectKind.FORALL.getPrefix());
+            new AbsEdge(field1CountNode, field1CountForall, AT);
+            new AbsEdge(field2CountNode, field2CountForall, AT);
 
             AbsNode fieldCount = new AbsNode("int:");
-            new AbsEdge(field1CountForall, fieldCount, "count");
-            new AbsEdge(field2CountForall, fieldCount, "count");
+            new AbsEdge(field1CountForall, fieldCount, COUNT);
+            new AbsEdge(field2CountForall, fieldCount, COUNT);
 
             // Check if intermediate is used
             boolean useIntermediate = this.m_cfg.useIntermediate(field);
@@ -396,10 +400,10 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
                 new AbsEdge(class1Node, fieldValueNode, fieldName);
                 new AbsEdge(class2Node, fieldValueNode, "use=qq" + curQuant + ":" + fieldName);
 
-                AbsNode forallNode = new AbsNode("forall:");
-                new AbsEdge(fieldValueNode, forallNode, "@");
+                AbsNode forallNode = new AbsNode(AspectKind.FORALL.getPrefix());
+                new AbsEdge(fieldValueNode, forallNode, AT);
                 AbsNode existsNode = new AbsNode("exists=qq" + curQuant + ":");
-                new AbsEdge(existsNode, forallNode, "in");
+                new AbsEdge(existsNode, forallNode, IN);
             } else {
                 // Create field nodes with equal value
                 AbsNode field1InterNode = getElement(field);
@@ -418,8 +422,13 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
                 // * unordered not unique
                 // * unordered unique
                 if (isOrdered) {
-                    boolean indexValue = (this.m_cfg.getConfig().getTypeModel().getFields()
-                        .getContainers().getOrdering().getType() == OrderType.INDEX);
+                    boolean indexValue = (this.m_cfg
+                        .getConfig()
+                        .getTypeModel()
+                        .getFields()
+                        .getContainers()
+                        .getOrdering()
+                        .getType() == OrderType.INDEX);
                     if (indexValue) {
                         //check if all index values are equal for all equal values
                         // Create index node
@@ -430,13 +439,13 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
 
                         // Create quantifier system
                         AbsNode forallNode = new AbsNode("forall:");
-                        new AbsEdge(fieldValueNode, forallNode, "@");
-                        new AbsEdge(field1InterNode, forallNode, "@");
-                        new AbsEdge(indexNode, forallNode, "@");
+                        new AbsEdge(fieldValueNode, forallNode, AT);
+                        new AbsEdge(field1InterNode, forallNode, AT);
+                        new AbsEdge(indexNode, forallNode, AT);
 
                         AbsNode existsNode = new AbsNode("exists=qq" + curQuant + ":");
-                        new AbsEdge(field2InterNode, existsNode, "@");
-                        new AbsEdge(existsNode, forallNode, "in");
+                        new AbsEdge(field2InterNode, existsNode, AT);
+                        new AbsEdge(existsNode, forallNode, IN);
                     } else {
                         //check if the value if the intermediate at the next edge is the same of that of the other intermediate's next
                         // Create next intermediates
@@ -454,29 +463,29 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
 
                         // Create quantifier system
                         AbsNode forallNode = new AbsNode("forall:");
-                        new AbsEdge(fieldValueNode, forallNode, "@");
-                        new AbsEdge(field1InterNode, forallNode, "@");
+                        new AbsEdge(fieldValueNode, forallNode, AT);
+                        new AbsEdge(field1InterNode, forallNode, AT);
                         AbsNode existsNode = new AbsNode("exists:");
-                        new AbsEdge(field2InterNode, existsNode, "@");
-                        new AbsEdge(existsNode, forallNode, "in");
+                        new AbsEdge(field2InterNode, existsNode, AT);
+                        new AbsEdge(existsNode, forallNode, IN);
                         // Quantifier system for next value
                         AbsNode forall2Node = new AbsNode("forall:");
-                        new AbsEdge(fieldValue2Node, forall2Node, "@");
-                        new AbsEdge(field1Inter2Node, forall2Node, "@");
+                        new AbsEdge(fieldValue2Node, forall2Node, AT);
+                        new AbsEdge(field1Inter2Node, forall2Node, AT);
                         AbsNode exists2Node = new AbsNode("exists:");
-                        new AbsEdge(field2Inter2Node, exists2Node, "@");
-                        new AbsEdge(exists2Node, forall2Node, "in");
+                        new AbsEdge(field2Inter2Node, exists2Node, AT);
+                        new AbsEdge(exists2Node, forall2Node, IN);
                         // Connect both quantifer systems
-                        new AbsEdge(forall2Node, existsNode, "in");
+                        new AbsEdge(forall2Node, existsNode, IN);
                     }
                 } else {
                     if (isUnique) {
                         //unordered-unique: Simply check if for all intermediate values, the 2nd instance has such an intermediate as well
                         AbsNode forallNode = new AbsNode("forall:");
-                        new AbsEdge(fieldValueNode, forallNode, "@");
-                        new AbsEdge(field1InterNode, forallNode, "@");
+                        new AbsEdge(fieldValueNode, forallNode, AT);
+                        new AbsEdge(field1InterNode, forallNode, AT);
                         AbsNode existsNode = new AbsNode("exists:");
-                        new AbsEdge(field2InterNode, existsNode, "@");
+                        new AbsEdge(field2InterNode, existsNode, AT);
                         new AbsEdge(existsNode, forallNode, "in");
                     } else {
                         //unordered-not unique: bijection test
@@ -487,21 +496,21 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
 
                         // Create quantifier system
                         AbsNode countNode = new AbsNode("int:");
-                        AbsNode forallInter1Node = new AbsNode("forall:");
-                        AbsNode forallInter2Node = new AbsNode("forall:");
-                        new AbsEdge(forallInter1Node, countNode, "count");
-                        new AbsEdge(forallInter2Node, countNode, "count");
-                        new AbsEdge(field1InterNode, forallInter1Node, "@");
-                        new AbsEdge(field2InterNode, forallInter2Node, "@");
+                        AbsNode forallInter1Node = new AbsNode(AspectKind.FORALL.getPrefix());
+                        AbsNode forallInter2Node = new AbsNode(AspectKind.FORALL.getPrefix());
+                        new AbsEdge(forallInter1Node, countNode, COUNT);
+                        new AbsEdge(forallInter2Node, countNode, COUNT);
+                        new AbsEdge(field1InterNode, forallInter1Node, AT);
+                        new AbsEdge(field2InterNode, forallInter2Node, AT);
                         AbsNode existsCountNode = new AbsNode("exists:");
-                        new AbsEdge(forallInter1Node, existsCountNode, "in");
-                        new AbsEdge(forallInter2Node, existsCountNode, "in");
-                        new AbsEdge(countNode, existsCountNode, "@");
+                        new AbsEdge(forallInter1Node, existsCountNode, IN);
+                        new AbsEdge(forallInter2Node, existsCountNode, IN);
+                        new AbsEdge(countNode, existsCountNode, AT);
 
                         AbsNode forallValuesNode = new AbsNode("forall:");
-                        new AbsEdge(field1Inter2Node, forallValuesNode, "@");
-                        new AbsEdge(fieldValueNode, forallValuesNode, "@");
-                        new AbsEdge(existsCountNode, forallValuesNode, "in");
+                        new AbsEdge(field1Inter2Node, forallValuesNode, AT);
+                        new AbsEdge(fieldValueNode, forallValuesNode, AT);
+                        new AbsEdge(existsCountNode, forallValuesNode, IN);
                     }
                 }
             }
@@ -766,15 +775,25 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
                 new AbsEdge(classNode, val2Node, field.getName().toString());
                 new AbsEdge(val1Node, val2Node, "!=");
 
-                if (this.m_cfg.getConfig().getTypeModel().getFields().getContainers().getOrdering()
+                if (this.m_cfg
+                    .getConfig()
+                    .getTypeModel()
+                    .getFields()
+                    .getContainers()
+                    .getOrdering()
                     .getType() == OrderType.INDEX) {
                     // Check if two nodes exist with same index value
                     String indexName = this.m_cfg.getStrings().getIndexEdge();
                     AbsNode indexNode = new AbsNode("int:");
                     new AbsEdge(val1Node, indexNode, indexName);
                     new AbsEdge(val2Node, indexNode, indexName);
-                } else if (this.m_cfg.getConfig().getTypeModel().getFields().getContainers()
-                    .getOrdering().getType() == OrderType.EDGE) {
+                } else if (this.m_cfg
+                    .getConfig()
+                    .getTypeModel()
+                    .getFields()
+                    .getContainers()
+                    .getOrdering()
+                    .getType() == OrderType.EDGE) {
                     // Check if two nodes exist that are head
                     String nextName = this.m_cfg.getStrings().getNextEdge();
                     AbsNode val3Node = getElement(field);
@@ -891,4 +910,11 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
 
     /** Graph name prefix for enums not modelled by flags. */
     public static final String ENUM_NO_FLAG_PRF = "EnumNoflag_";
+
+    /** Quantifier count edge label. */
+    static private final String COUNT = NestedValue.COUNT.toString();
+    /** At-quantifier edge label. */
+    static private final String AT = NestedValue.AT.toString();
+    /** In-quantifier edge label. */
+    static private final String IN = NestedValue.IN.toString();
 }

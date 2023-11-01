@@ -37,6 +37,8 @@ import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.syntax.SortMap;
 import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.grammar.aspect.AspectContent.NestedValue;
+import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.AElementMap;
 import nl.utwente.groove.graph.Edge;
@@ -559,34 +561,23 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         return this.sortMap.get();
     }
 
-    /** Returns the mapping from variables and field to primitive node sorts,
-     * extended with self-fields for a given node type label.
-     * The self-fields have the empty string as their first token.
-     * Once this method has been called, no new node IDs may be added.
-     */
-    SortMap getSortMap(@Nullable TypeLabel self) {
-        var result = getSortMap();
-        var typeSortMap = getTypeSortMap();
-        if (self != null && typeSortMap != null) {
-            result = new SortMap().add(result);
-            for (var se : typeSortMap.get(self).entrySet()) {
-                var fieldName = new QualName("", se.getKey());
-                result.add(fieldName, se.getValue());
-                fieldName = new QualName(Keywords.SELF, se.getKey());
-                result.add(fieldName, se.getValue());
-            }
-        }
-        return result;
-    }
-
     @SuppressWarnings("cast")
     private SortMap createSortMap() {
         SortMap result = new SortMap();
+        // add variable sorts
         getNodeIdMap()
             .entrySet()
             .stream()
             .filter(e -> e.getValue().hasSort())
             .forEach(e -> result.add(e.getKey(), (@NonNull Sort) e.getValue().getSort()));
+        // add quantifier count sorts
+        getNodeIdMap()
+            .entrySet()
+            .stream()
+            .filter(e -> e.getValue().has(Category.NESTING))
+            .map(Map.Entry::getKey)
+            .map(id -> new QualName(id, NestedValue.COUNT.toString()))
+            .forEach(id -> result.add(id, Sort.INT));
         var typeSortMap = getTypeSortMap();
         if (hasRole(GraphRole.RULE) && typeSortMap != null) {
             // add field sorts
@@ -608,6 +599,26 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
 
     /** Mapping from node identifiers to sorts. */
     private LazyFactory<SortMap> sortMap = LazyFactory.instance(this::createSortMap);
+
+    /** Returns the mapping from variables and field to primitive node sorts,
+     * extended with self-fields for a given node type label.
+     * The self-fields have the empty string as their first token.
+     * Once this method has been called, no new node IDs may be added.
+     */
+    SortMap getSortMap(@Nullable TypeLabel self) {
+        var result = getSortMap();
+        var typeSortMap = getTypeSortMap();
+        if (self != null && typeSortMap != null) {
+            result = new SortMap().add(result);
+            for (var se : typeSortMap.get(self).entrySet()) {
+                var fieldName = new QualName("", se.getKey());
+                result.add(fieldName, se.getValue());
+                fieldName = new QualName(Keywords.SELF, se.getKey());
+                result.add(fieldName, se.getValue());
+            }
+        }
+        return result;
+    }
 
     /**
      * Creates an aspect graph from a given (plain) graph.
