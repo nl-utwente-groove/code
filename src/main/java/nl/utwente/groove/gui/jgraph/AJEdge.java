@@ -349,7 +349,7 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
             result.append(" (unlabelled)");
         } else {
             result.append(", labelled ");
-            result.append(Groove.toString(displayedLabels, "", "", ", ", " and "));
+            result.append(Groove.toString(displayedLabels, ", ", " and "));
         }
         return result.toString();
     }

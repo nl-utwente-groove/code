@@ -334,8 +334,8 @@ public class Groove {
      * @param finalSeparator the symbol separating the last two elements in the
      *        resulting text representation
      */
-    static public String toString(Object[] array, String start, String end, String separator,
-                                  String finalSeparator) {
+    static public <T> String toString(T[] array, String start, String end, String separator,
+                                      String finalSeparator) {
         StringBuffer result = new StringBuffer(start);
         for (int i = 0; i < array.length; i++) {
             result.append(array[i]);
@@ -347,6 +347,21 @@ public class Groove {
         }
         result.append(end);
         return result.toString();
+    }
+
+    /**
+     * Returns a string representation of a given array. The representation is
+     * parameterised two separator symbols, one for the standard
+     * separation, and one separating the penultimate and ultimate elements.
+     * There are no enclosing brackets.
+     * @param array the array to be converted
+     * @param separator the symbol separating the elements in the resulting text
+     *        representation, except for the last two
+     * @param finalSeparator the symbol separating the last two elements in the
+     *        resulting text representation
+     */
+    static public <T> String toString(T[] array, String separator, String finalSeparator) {
+        return toString(array, "", "", separator, finalSeparator);
     }
 
     /**
