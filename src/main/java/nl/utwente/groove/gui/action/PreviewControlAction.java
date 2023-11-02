@@ -11,7 +11,6 @@ import javax.swing.AbstractAction;
 import javax.swing.JDialog;
 import javax.swing.JPopupMenu;
 
-import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.control.template.Program;
 import nl.utwente.groove.control.template.Template;
 import nl.utwente.groove.grammar.QualName;
@@ -31,7 +30,7 @@ public class PreviewControlAction extends SimulatorAction {
     /** Constructs a new action, for a given control panel. */
     public PreviewControlAction(Simulator simulator) {
         super(simulator, Options.PREVIEW_CONTROL_ACTION_NAME, Icons.CONTROL_MODE_ICON, null,
-            ResourceKind.CONTROL);
+              ResourceKind.CONTROL);
     }
 
     @Override
@@ -43,18 +42,16 @@ public class PreviewControlAction extends SimulatorAction {
                 if (program.hasMain()) {
                     templates.add(program.getTemplate());
                 }
-                program.getProcs()
+                program
+                    .getProcs()
                     .values()
                     .stream()
-                    .filter(p -> p.getControlName()
-                        .equals(getSelectedName()))
+                    .filter(p -> p.getControlName().equals(getSelectedName()))
                     .forEach(p -> templates.add(p.getTemplate()));
                 if (templates.size() == 1) {
-                    getDialog(templates.iterator()
-                        .next()).setVisible(true);
+                    getDialog(templates.iterator().next()).setVisible(true);
                 } else {
-                    Point pos = MouseInfo.getPointerInfo()
-                        .getLocation();
+                    Point pos = MouseInfo.getPointerInfo().getLocation();
                     createMenu(templates).show(getSimulator().getFrame(), pos.x, pos.y);
                 }
             }
@@ -67,10 +64,9 @@ public class PreviewControlAction extends SimulatorAction {
         JPopupMenu result = new JPopupMenu();
         for (Template t : templates) {
             String text;
-            if (t.hasOwner()) {
-                Procedure proc = t.getOwner();
-                text = proc.getKind()
-                    .getName(true) + " " + proc.getQualName();
+            var owner = t.getOwner();
+            if (owner != null) {
+                text = owner.getKind().getName(true) + " " + owner.getQualName();
             } else {
                 text = "Main program";
             }
@@ -112,11 +108,10 @@ public class PreviewControlAction extends SimulatorAction {
         Program result = null;
         GrammarModel grammarModel = getGrammarModel();
         if (grammarModel != null) {
-            ControlModel controlModel =
-                (ControlModel) getSimulatorModel().getTextResource(getResourceKind());
+            ControlModel controlModel
+                = (ControlModel) getSimulatorModel().getTextResource(getResourceKind());
             if (controlModel == null) {
-                result = grammarModel.getControlModel()
-                    .getProgram();
+                result = grammarModel.getControlModel().getProgram();
             } else {
                 result = controlModel.toResource();
             }
