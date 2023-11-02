@@ -670,11 +670,11 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
         // mapping from type variables to sets of potential node types
         Map<LabelVar,Set<@NonNull TypeNode>> varTypesMap = new HashMap<>();
         FormatErrorSet errors = new FormatErrorSet();
-        // auxiliary map to sets of allowed node types
-        Map<RuleNode,Set<TypeNode>> nodeTypesMap = new HashMap<>();
         // mapping from rule nodes to sets of label variables that occur on them
         Map<RuleNode,Set<LabelVar>> nodeVarsMap = new HashMap<>();
         Map<RuleNode,List<TypeGuard>> nodeGuardsMap = new HashMap<>();
+        // auxiliary map to sets of allowed node types
+        Map<RuleNode,Set<TypeNode>> allowedTypesMap = new HashMap<>();
         // mapping from nodes to declared node type
         Map<RuleNode,TypeNode> declaredTypeMap = new HashMap<>();
         // collection of nodes declared to be sharp in the source graph
@@ -684,12 +684,12 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                 continue;
             }
             // variable to detect duplicate type edges
-            TypeNode type = null;
+            TypeNode declaredType = null;
             // collection of possible types for this node
-            Set<TypeNode> types = null;
+            Set<TypeNode> allowedTypes = null;
             RuleNode parentNode = parentTyping.getNode(node);
             if (parentNode != null) {
-                types = new HashSet<>(parentNode.getMatchingTypes());
+                allowedTypes = new HashSet<>(parentNode.getMatchingTypes());
             }
             Set<LabelVar> vars = new HashSet<>();
             List<TypeGuard> guards = new ArrayList<>();
@@ -697,20 +697,20 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                 if (edge.getRole() != NODE_TYPE) {
                     continue;
                 }
-                if (types == null) {
-                    types = new HashSet<>(nodeSet());
-                    types.removeAll(getFactory().getDataTypes());
+                if (allowedTypes == null) {
+                    allowedTypes = new HashSet<>(nodeSet());
+                    allowedTypes.removeAll(getFactory().getDataTypes());
                 }
                 if (edge.label().isWildcard()) {
                     TypeGuard guard = edge.label().getWildcardGuard();
+                    // for node type wildcards, the guard is never null
                     assert guard != null;
                     guards.add(guard);
-                    // for node type wildcards, the guard is never null
                     LabelVar var = guard.getVar();
                     vars.add(var);
                     Set<@NonNull TypeNode> varTypes = varTypesMap.get(var);
                     if (varTypes == null) {
-                        varTypesMap.put(var, varTypes = new HashSet<>(types));
+                        varTypesMap.put(var, varTypes = new HashSet<>(allowedTypes));
                     }
                     guard.filter(varTypes);
                 } else {
@@ -720,13 +720,13 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                     boolean sharp = edge.label().isSharp();
                     if (newType == null) {
                         errors.add("Unknown node type %s", typeLabel, node);
-                    } else if (type != null) {
-                        errors.add("Duplicate node types %s and %s", type.label(), typeLabel, node);
+                    } else if (declaredType != null) {
+                        errors
+                            .add("Duplicate node types %s and %s", declaredType.label(), typeLabel,
+                                 node);
                     } else {
-                        type = parentNode == null
-                            ? newType
-                            : parentNode.getType();
-                        types
+                        declaredType = newType;
+                        allowedTypes
                             .retainAll(sharp
                                 ? Collections.singleton(newType)
                                 : newType.getSubtypes());
@@ -736,13 +736,13 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                     }
                 }
             }
-            if (types == null) {
+            if (allowedTypes == null) {
                 errors.add("Untyped node", node);
+            } else if (allowedTypes.isEmpty()) {
+                errors.add("Inconsistent types on node", node);
             } else {
-                nodeTypesMap.put(node, types);
-            }
-            if (type != null) {
-                declaredTypeMap.put(node, type);
+                declaredTypeMap.put(node, declaredType);
+                allowedTypesMap.put(node, allowedTypes);
             }
             if (!vars.isEmpty()) {
                 nodeVarsMap.put(node, vars);
@@ -754,9 +754,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
         boolean changed = true;
         while (changed) {
             changed = false;
-            for (Map.Entry<RuleNode,Set<LabelVar>> e : nodeVarsMap.entrySet()) {
+            for (var e : nodeVarsMap.entrySet()) {
                 RuleNode node = e.getKey();
-                Set<TypeNode> nodeTypes = nodeTypesMap.get(node);
+                Set<TypeNode> nodeTypes = allowedTypesMap.get(node);
                 for (LabelVar var : e.getValue()) {
                     Set<TypeNode> varTypes = varTypesMap.get(var);
                     changed |= varTypes.retainAll(nodeTypes);
@@ -765,37 +765,35 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
             }
         }
         // now construct the result map by taking the maximum from the type nodes
-        for (Map.Entry<RuleNode,Set<TypeNode>> e : nodeTypesMap.entrySet()) {
+        for (var e : allowedTypesMap.entrySet()) {
             RuleNode node = e.getKey();
-            TypeNode declaredType = declaredTypeMap.get(node);
-            Set<TypeNode> types = e.getValue();
-            if (types.isEmpty()) {
+            var declaredType = declaredTypeMap.get(node);
+            var allowedTypes = e.getValue();
+            if (allowedTypes.isEmpty()) {
+                // this must have become empty because of type variable constraints
                 Set<LabelVar> vars = nodeVarsMap.get(node);
-                String varString = Groove.toString(vars.toArray(), "", "", ", ", " and ");
+                String varString = Groove.toString(vars.toArray(), ", ", " and ");
                 if (declaredType == null) {
-                    errors.add("Conflicting type variables %s", varString, node);
+                    errors.add("Inconsistent type variable constraints for %s", node);
                 } else {
                     errors
-                        .add("Declared node type '%s' conflicts with type variable%s %s",
-                             declaredType, e.getValue().size() == 1
-                                 ? ""
-                                 : "s",
-                             varString, node);
+                        .add("Declared node type '%s' conflicts with type variable constraints for %s",
+                             declaredType, varString, node);
                 }
             } else {
                 TypeNode type = declaredType == null
-                    ? getMaximum(types)
+                    ? getMaximum(allowedTypes)
                     : declaredType;
                 if (type == null) {
                     errors
-                        .add("Ambiguous typing: %s does not contain a common supertype", types,
-                             node);
+                        .add("Ambiguous typing: %s do not include a common supertype",
+                             Groove.toString(allowedTypes.toArray(), ", ", " and "), node);
                 } else {
                     RuleNode image = parentTyping
                         .getFactory()
                         .nodes(type, sharpNodes.contains(node), nodeGuardsMap.get(node))
                         .createNode(node.getNumber());
-                    image.getMatchingTypes().retainAll(types);
+                    image.getMatchingTypes().retainAll(allowedTypes);
                     result.put(node, image);
                 }
             }

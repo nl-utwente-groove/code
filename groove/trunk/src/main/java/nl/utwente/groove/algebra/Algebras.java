@@ -162,7 +162,7 @@ public class Algebras {
             help.setBody(createBody(methods));
             help
                 .addPar("expression of sort "
-                    + Groove.toString(getSorts(methods).toArray(), "", "", ",", " or "));
+                    + Groove.toString(getSorts(methods).toArray(), ",", " or "));
             if (op.kind().getPlace() == Placement.INFIX) {
                 help.addPar("expression of the same sort as %1$s");
             }
@@ -217,7 +217,7 @@ public class Algebras {
             .map(ToolTipHeader::value)
             .map(Strings::toLower)
             .forEach(headers::add);
-        var header = Groove.toString(headers.toArray(), "", "", ", ", " or ");
+        var header = Groove.toString(headers.toArray(), ", ", " or ");
         return Strings.toUpper(header);
     }
 

@@ -175,68 +175,71 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     @Override
     public void set(Aspect aspect) {
-        assert aspect.isForEdge(getGraphRole());
-        try {
-            getAspects().add(aspect);
-            AspectContent content = aspect.getContent();
-            var cat = aspect.getCategory();
-            switch (cat) {
-            case ATTR:
-                if (aspect.has(ARGUMENT)) {
-                    setArgument(((IntegerContent) content).get());
-                } else if (aspect.has(TEST)) {
-                    setPredicateTree(((ExprContent) content).get());
-                    getGraph().setNonNormal();
-                } else {
-                    assert aspect.has(LET);
-                    setAssignTree(((ExprContent) content).get());
-                    getGraph().setNonNormal();
-                }
-                break;
-            case SORT:
-                if (hasGraphRole(RULE)) {
-                    String id = (String) content.get();
-                    if (isLoop()) {
-                        // this is an attribute field on a self-edge
-                        setField(id);
+        if (!aspect.isForEdge(getGraphRole())) {
+            addError(new FormatError("Aspect '%s' not allowed on edge", aspect));
+        } else {
+            try {
+                getAspects().add(aspect);
+                AspectContent content = aspect.getContent();
+                var cat = aspect.getCategory();
+                switch (cat) {
+                case ATTR:
+                    if (aspect.has(ARGUMENT)) {
+                        setArgument(((IntegerContent) content).get());
+                    } else if (aspect.has(TEST)) {
+                        setPredicateTree(((ExprContent) content).get());
                         getGraph().setNonNormal();
                     } else {
-                        @SuppressWarnings("null")
-                        var op = getSort().getOperator(id);
-                        assert op != null;
-                        setOperator(op);
+                        assert aspect.has(LET);
+                        setAssignTree(((ExprContent) content).get());
+                        getGraph().setNonNormal();
                     }
-                }
-                break;
-            case MULT_IN:
-                setInMult(((MultiplicityContent) content).get());
-                break;
-            case MULT_OUT:
-                setOutMult(((MultiplicityContent) content).get());
-                break;
-            case NESTING:
-                if (aspect.getKind().isQuantifier()) {
-                    // backward compatibility to take care of edges such as
-                    // exists=q:del:a rather than del=q:a or
-                    // exists=q:a rather than use=q:a
-                    if (content.isNull()) {
-                        throw new FormatException("Unnamed quantifier %s not allowed on edge",
-                            aspect);
-                    } else {
+                    break;
+                case SORT:
+                    if (hasGraphRole(RULE)) {
+                        String id = (String) content.get();
+                        if (isLoop()) {
+                            // this is an attribute field on a self-edge
+                            setField(id);
+                            getGraph().setNonNormal();
+                        } else {
+                            @SuppressWarnings("null")
+                            var op = getSort().getOperator(id);
+                            assert op != null;
+                            setOperator(op);
+                        }
+                    }
+                    break;
+                case MULT_IN:
+                    setInMult(((MultiplicityContent) content).get());
+                    break;
+                case MULT_OUT:
+                    setOutMult(((MultiplicityContent) content).get());
+                    break;
+                case NESTING:
+                    if (aspect.getKind().isQuantifier()) {
+                        // backward compatibility to take care of edges such as
+                        // exists=q:del:a rather than del=q:a or
+                        // exists=q:a rather than use=q:a
+                        if (content.isNull()) {
+                            throw new FormatException("Unnamed quantifier %s not allowed on edge",
+                                aspect);
+                        } else {
+                            setLevelName(((IdContent) content).get());
+                        }
+                    }
+                    break;
+                case ROLE:
+                    if (!content.isNull()) {
                         setLevelName(((IdContent) content).get());
                     }
+                    break;
+                default:
+                    // do nothing else
                 }
-                break;
-            case ROLE:
-                if (!content.isNull()) {
-                    setLevelName(((IdContent) content).get());
-                }
-                break;
-            default:
-                // do nothing else
+            } catch (FormatException exc) {
+                addErrors(exc.getErrors());
             }
-        } catch (FormatException exc) {
-            addErrors(exc.getErrors());
         }
     }
 
