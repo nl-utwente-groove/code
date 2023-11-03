@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.grammar.model;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.grammar.QualName;
 
 /**
@@ -23,6 +25,7 @@ import nl.utwente.groove.grammar.QualName;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 abstract public class NamedResourceModel<R> extends ResourceModel<R> {
     /**
      * Creates a named resource model of a given kind.

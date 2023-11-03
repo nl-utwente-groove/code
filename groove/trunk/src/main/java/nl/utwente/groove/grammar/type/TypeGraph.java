@@ -563,7 +563,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
         for (RuleEdge edge : simpleEdges) {
             RuleLabel edgeLabel = edge.label();
             RuleNode sourceImage = result.getNode(edge.source());
+            assert sourceImage != null;
             RuleNode targetImage = result.getNode(edge.target());
+            assert targetImage != null;
             TypeNode sourceType = sourceImage.getType();
             TypeNode targetType = targetImage.getType();
             TypeEdge typeEdge
@@ -587,7 +589,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
         for (RuleEdge edge : regExprEdges) {
             RuleLabel edgeLabel = edge.label();
             RuleNode sourceImage = result.getNode(edge.source());
+            assert sourceImage != null;
             RuleNode targetImage = result.getNode(edge.target());
+            assert targetImage != null;
             @SuppressWarnings("null")
             RuleLabel checkLabel = edgeLabel.isNeg()
                 ? edgeLabel.getNegOperand().toLabel()

@@ -283,7 +283,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
                 edgeLabel = newEdgeLabel;
             }
             PlainNode sourceImage = elementMap.getNode(edge.source());
+            assert sourceImage != null;
             PlainNode targetImage = elementMap.getNode(edge.target());
+            assert targetImage != null;
             PlainEdge edgeImage = result.addEdge(sourceImage, edgeLabel.toString(), targetImage);
             elementMap.putEdge(edge, edgeImage);
         }
@@ -329,7 +331,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         for (AspectEdge edge : edgeSet()) {
             AspectLabel edgeLabel = edge.label();
             PlainNode sourceImage = elementMap.getNode(edge.source());
+            assert sourceImage != null;
             PlainNode targetImage = elementMap.getNode(edge.target());
+            assert targetImage != null;
             PlainEdge edgeImage = result.addEdge(sourceImage, edgeLabel.toString(), targetImage);
             elementMap.putEdge(edge, edgeImage);
             if (edge.getRole() == EdgeRole.NODE_TYPE) {
@@ -645,6 +649,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             AspectLabel label = parser.parse(edge.label().text(), role);
             if (label.isNodeOnly()) {
                 AspectNode sourceImage = elementMap.getNode(edge.source());
+                assert sourceImage != null;
                 sourceImage.addLabel(label);
             } else {
                 edgeDataMap.put(edge, label);
@@ -654,9 +659,11 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         for (Map.Entry<Edge,AspectLabel> entry : edgeDataMap.entrySet()) {
             Edge edge = entry.getKey();
             AspectLabel label = entry.getValue();
-            AspectEdge edgeImage = result
-                .addEdge(elementMap.getNode(edge.source()), label,
-                         elementMap.getNode(edge.target()));
+            AspectNode sourceImage = elementMap.getNode(edge.source());
+            assert sourceImage != null;
+            AspectNode targetImage = elementMap.getNode(edge.target());
+            assert targetImage != null;
+            AspectEdge edgeImage = result.addEdge(sourceImage, label, targetImage);
             elementMap.putEdge(edge, edgeImage);
             if (!edge.source().equals(edge.target()) && edgeImage.getRole() != EdgeRole.BINARY) {
                 errors

@@ -680,6 +680,7 @@ public class Rule implements Action, Fixable {
         boolean result = true;
         for (RuleNode eraserNode : getEraserNodes()) {
             HostNode erasedNode = match.getNode(eraserNode);
+            assert erasedNode != null;
             Set<HostEdge> danglingEdges = host
                 .edgeSet(erasedNode)
                 .stream()

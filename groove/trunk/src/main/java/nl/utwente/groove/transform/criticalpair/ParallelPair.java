@@ -208,14 +208,13 @@ class ParallelPair {
      */
     CriticalPair getCriticalPair() {
         if (!this.criticalPairComputed) {
-            DefaultHostGraph host =
-                new DefaultHostGraph("target", HostFactory.newInstance(this.rule1.getTypeGraph()
-                    .getFactory(), true));
+            DefaultHostGraph host = new DefaultHostGraph("target",
+                HostFactory.newInstance(this.rule1.getTypeGraph().getFactory(), true));
             RuleToHostMap match1 = createRuleToHostMap(this.nodeMatch1, host, this.rule1.lhs());
             RuleToHostMap match2 = createRuleToHostMap(this.nodeMatch2, host, this.rule2.lhs());
 
-            CriticalPair potentialPair =
-                new CriticalPair(host, this.rule1, this.rule2, match1, match2);
+            CriticalPair potentialPair
+                = new CriticalPair(host, this.rule1, this.rule2, match1, match2);
             if (potentialPair.isParallelDependent()) {
                 //the pair is a critical pair
                 this.critPair = potentialPair;
@@ -238,7 +237,7 @@ class ParallelPair {
      * In this process the graph host is constructed as well
      */
     private RuleToHostMap createRuleToHostMap(Map<Long,Set<RuleNode>> nodeMatch,
-        DefaultHostGraph host, RuleGraph ruleGraph) {
+                                              DefaultHostGraph host, RuleGraph ruleGraph) {
         if (this.hostNodes == null) {
             this.hostNodes = new LinkedHashMap<>();
         }
@@ -256,26 +255,24 @@ class ParallelPair {
                 target = this.hostNodes.get(entry.getKey());
             } else {
                 //else create a hostnode depending on its type
-                RuleNode firstNode = ruleNodes.iterator()
-                    .next();
+                RuleNode firstNode = ruleNodes.iterator().next();
                 if (firstNode instanceof DefaultRuleNode) {
                     //use the typefactory to ensure that the typenode is correct
-                    NodeFactory<HostNode> typeFactory = host.getFactory()
-                        .nodes(firstNode.getType());
+                    NodeFactory<HostNode> typeFactory
+                        = host.getFactory().nodes(firstNode.getType());
                     target = typeFactory.createNode();
-                } else if (firstNode instanceof VariableNode) {
-                    VariableNode varNode = (VariableNode) firstNode;
+                } else if (firstNode instanceof VariableNode varNode) {
                     Algebra<?> alg = AlgebraFamily.TERM.getAlgebra(varNode.getSort());
                     //The set can contain multiple constants, the values of these constants
                     //in the algebra of the rule is the same
                     Constant constant = getFirstConstant(getCombination(entry.getKey()));
                     if (constant == null) {
-                        target = host.getFactory()
+                        target = host
+                            .getFactory()
                             .createNode(alg,
-                                new Variable("x" + variableCounter++, varNode.getSort()));
+                                        new Variable("x" + variableCounter++, varNode.getSort()));
                     } else {
-                        target = host.getFactory()
-                            .createNode(alg, constant);
+                        target = host.getFactory().createNode(alg, constant);
                     }
                 } else {
                     throw Exceptions.unsupportedOp("Unknown type for RuleNode %s", firstNode);
@@ -294,42 +291,35 @@ class ParallelPair {
 
         //now we add all targets of operations to the match (these are not included in the nodeMatch)
         for (RuleNode rn : ruleGraph.nodeSet()) {
-            if (rn instanceof OperatorNode) {
-                OperatorNode opNode = (OperatorNode) rn;
-                Sort sig = opNode.getOperator()
-                    .getResultType();
+            if (rn instanceof OperatorNode opNode) {
+                Sort sig = opNode.getOperator().getResultType();
                 Algebra<?> alg = AlgebraFamily.TERM.getAlgebra(sig);
-                Expression[] args = new Expression[opNode.getArguments()
-                    .size()];
-                for (int i = 0; i < opNode.getArguments()
-                    .size(); i++) {
-                    VariableNode varNode = opNode.getArguments()
-                        .get(i);
+                Expression[] args = new Expression[opNode.getArguments().size()];
+                for (int i = 0; i < opNode.getArguments().size(); i++) {
+                    VariableNode varNode = opNode.getArguments().get(i);
                     Expression term;
                     if (varNode.hasConstant()) {
                         term = varNode.getConstant();
                     } else {
                         ValueNode valNode = (ValueNode) result.getNode(varNode);
+                        assert valNode != null;
                         term = valNode.getTerm();
                     }
                     args[i] = term;
                 }
 
-                HostNode target = host.getFactory()
-                    .createNode(alg, new CallExpr(opNode.getOperator(), args));
+                HostNode target
+                    = host.getFactory().createNode(alg, new CallExpr(opNode.getOperator(), args));
                 host.addNode(target);
                 result.putNode(opNode.getTarget(), target);
-            } else if (rn instanceof VariableNode && !result.nodeMap()
-                .containsKey(rn)) {
-                VariableNode varNode = (VariableNode) rn;
+            } else if (rn instanceof VariableNode varNode && !result.nodeMap().containsKey(rn)) {
                 //add unconnected constants to the match
                 if (varNode.hasConstant()) {
                     Sort sig = varNode.getSort();
                     Algebra<?> alg = AlgebraFamily.TERM.getAlgebra(sig);
                     //Create this node in the host graph
                     //(if a node with this constant already exists, it will be reused)
-                    HostNode constant = host.getFactory()
-                        .createNode(alg, varNode.getConstant());
+                    HostNode constant = host.getFactory().createNode(alg, varNode.getConstant());
                     host.addNode(constant);
                     result.putNode(rn, constant);
                 }
@@ -349,8 +339,8 @@ class ParallelPair {
                 //this is because source or target is a ProductNode,
                 //or a constant which is only connected to a ProductNode
             } else {
-                HostEdge newEdge = host.getFactory()
-                    .createEdge(hostSource, re.getType(), hostTarget);
+                HostEdge newEdge
+                    = host.getFactory().createEdge(hostSource, re.getType(), hostTarget);
                 host.addEdge(newEdge);
                 result.putEdge(re, newEdge);
             }
@@ -398,8 +388,7 @@ class ParallelPair {
         Map<RuleNode,String> nodeName1 = new LinkedHashMap<>();
         Map<RuleNode,String> nodeName2 = new LinkedHashMap<>();
         int counter = 1;
-        for (RuleNode rn : this.rule1.lhs()
-            .nodeSet()) {
+        for (RuleNode rn : this.rule1.lhs().nodeSet()) {
             if (rn instanceof OperatorNode) {
                 nodeName1.put(rn, "o-" + counter++);
             } else if (rn instanceof VariableNode) {
@@ -408,8 +397,7 @@ class ParallelPair {
                 nodeName1.put(rn, "d-" + counter++);
             }
         }
-        for (RuleNode rn : this.rule2.lhs()
-            .nodeSet()) {
+        for (RuleNode rn : this.rule2.lhs().nodeSet()) {
             if (rn instanceof OperatorNode) {
                 nodeName2.put(rn, "o-" + counter++);
             } else if (rn instanceof VariableNode) {
@@ -419,8 +407,7 @@ class ParallelPair {
             }
         }
         result += "nodes in rule1: {";
-        Iterator<String> it = nodeName1.values()
-            .iterator();
+        Iterator<String> it = nodeName1.values().iterator();
         while (it.hasNext()) {
             String name = it.next();
             result += " " + name;
@@ -429,8 +416,7 @@ class ParallelPair {
             }
         }
         result += " }\nnodes in rule2: {";
-        it = nodeName2.values()
-            .iterator();
+        it = nodeName2.values().iterator();
         while (it.hasNext()) {
             String name = it.next();
             result += " " + name;

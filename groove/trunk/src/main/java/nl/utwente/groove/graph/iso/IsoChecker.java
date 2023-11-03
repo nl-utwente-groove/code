@@ -548,7 +548,7 @@ public class IsoChecker {
                 Node imageSource = image.source();
                 Node imageTarget = image.target();
                 if (item.sourcePreMatched) {
-                    if (!result.getNode(keySource).equals(imageSource)) {
+                    if (!imageSource.equals(result.getNode(keySource))) {
                         // the source node had a different image; take next edge
                         // image
                         continue;
@@ -563,7 +563,7 @@ public class IsoChecker {
                 }
                 if (item.targetPreMatched) {
                     // check if the old and new images coincide
-                    if (!result.getNode(keyTarget).equals(imageTarget)) {
+                    if (!imageTarget.equals(result.getNode(keyTarget))) {
                         // the target node had a different image; take next edge
                         // image
                         // but first roll back the choice of source node image
@@ -794,13 +794,13 @@ public class IsoChecker {
             Node keySource = key.source();
             Node keyTarget = key.target();
             Edge value = edgeEntry.getValue();
-            if (!map.getNode(keySource).equals(value.source())) {
+            if (!value.source().equals(map.getNode(keySource))) {
                 System.out
                     .printf("Edge %s mapped to %s, but source mapped to %s%n", key, value,
                             map.getNode(keySource));
                 return false;
             }
-            if (!map.getNode(keyTarget).equals(value.target())) {
+            if (!value.target().equals(map.getNode(keyTarget))) {
                 System.out
                     .printf("Edge %s mapped to %s, but target mapped to %s%n", key, value,
                             map.getNode(keyTarget));

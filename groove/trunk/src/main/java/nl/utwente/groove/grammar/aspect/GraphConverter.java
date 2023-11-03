@@ -82,8 +82,11 @@ public class GraphConverter {
         // add subtype relations
         for (TypeNode node : type.nodeSet()) {
             AspectNode nodeImage = result.getNode(node);
+            assert nodeImage != null;
             for (TypeNode nodeSuper : superMap.get(node)) {
-                target.addEdge(nodeImage, SUBTYPE.getPrefix(), result.getNode(nodeSuper));
+                var nodeSuperImage = result.getNode(nodeSuper);
+                assert nodeSuperImage != null;
+                target.addEdge(nodeImage, SUBTYPE.getPrefix(), nodeSuperImage);
             }
         }
         // add type edges
@@ -105,9 +108,11 @@ public class GraphConverter {
                 text.append(new MultiplicityContent(edge.getInMult()).toParsableString(MULT_OUT));
             }
             text.append(edge.label().toParsableString());
-            AspectEdge edgeImage = target
-                .addEdge(result.getNode(edge.source()), text.toString(),
-                         result.getNode(edge.target()));
+            var sourceImage = result.getNode(edge.source());
+            assert sourceImage != null;
+            var targetImage = result.getNode(edge.target());
+            assert targetImage != null;
+            AspectEdge edgeImage = target.addEdge(sourceImage, text.toString(), targetImage);
             result.putEdge(edge, edgeImage);
         }
         GraphInfo.transfer(type, target, result);
@@ -137,6 +142,7 @@ public class GraphConverter {
         for (HostEdge edge : host.edgeSet()) {
             String edgeText = edge.label().text();
             AspectNode imageSource = result.getNode(edge.source());
+            assert imageSource != null;
             AspectNode imageTarget;
             String text;
             if (edge.target() instanceof ValueNode vn) {
@@ -145,6 +151,7 @@ public class GraphConverter {
                 text = AspectKind.LET.getPrefix() + edgeText + "=" + constant;
             } else if (edge.getRole() == EdgeRole.BINARY) {
                 imageTarget = result.getNode(edge.target());
+                assert imageTarget != null;
                 // precede with literal aspect prefix if this is necessary
                 // to parse the label
                 AspectLabel tryLabel = AspectParser.getInstance().parse(edgeText, HOST);

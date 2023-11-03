@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 /**
@@ -34,7 +35,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
     /**
      * Constructs an empty map.
      */
-    public AElementMap(ElementFactory<TN,TE> factory) {
+    public AElementMap(@NonNull ElementFactory<TN,TE> factory) {
         this.nodeMap = createNodeMap();
         this.edgeMap = createEdgeMap();
         this.factory = factory;
@@ -70,7 +71,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
      * Returns the image for a given node key.
      */
     @Override
-    public TN getNode(Node key) {
+    public @Nullable TN getNode(Node key) {
         return nodeMap().get(key);
     }
 
@@ -78,7 +79,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
      * Returns the image for a given edge key.
      */
     @Override
-    public TE getEdge(Edge key) {
+    public @Nullable TE getEdge(Edge key) {
         return edgeMap().get(key);
     }
 
@@ -87,7 +88,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
      * @return the old image for <code>key</code>, or <code>null</code> if
      *         there was none
      */
-    public TN putNode(SN key, TN value) {
+    public @Nullable TN putNode(SN key, TN value) {
         return this.nodeMap.put(key, value);
     }
 
@@ -96,7 +97,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
      * @return the old image for <code>key</code>, or <code>null</code> if
      *         there was none
      */
-    public TE putEdge(SE key, TE value) {
+    public @Nullable TE putEdge(SE key, TE value) {
         return this.edgeMap.put(key, value);
     }
 
@@ -209,7 +210,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
     }
 
     /** Returns a factory for target graph elements. */
-    public ElementFactory<TN,TE> getFactory() {
+    public @NonNull ElementFactory<TN,TE> getFactory() {
         return this.factory;
     }
 
@@ -251,5 +252,5 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
     private final Map<SN,TN> nodeMap;
     /** Mapping from edge keys to <tt>ET</tt>s. */
     private final Map<SE,TE> edgeMap;
-    private final ElementFactory<TN,TE> factory;
+    private final @NonNull ElementFactory<TN,TE> factory;
 }
