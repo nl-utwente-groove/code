@@ -36,6 +36,7 @@ public class ControlModel extends TextBasedModel<Program> {
      */
     public ControlModel(GrammarModel grammar, QualName name, String program) {
         super(grammar, ResourceKind.CONTROL, name, program);
+        setDependencies(ResourceKind.RULE, ResourceKind.TYPE);
     }
 
     @Override
@@ -44,16 +45,14 @@ public class ControlModel extends TextBasedModel<Program> {
         if (isEnabled()) {
             CompositeControlModel model = getGrammar().getControlModel();
             if (model.hasErrors()) {
-                model.getPartErrors(getQualName())
-                    .throwException();
+                model.getPartErrors(getQualName()).throwException();
                 // there were errors in the composite model but not in this particular part
                 throw new FormatException("The composite control model cannot be built");
             } else {
                 result = model.getProgram();
             }
         } else {
-            getLoader().addControl(getQualName(), getProgram())
-                .check();
+            getLoader().addControl(getQualName(), getProgram()).check();
             result = getLoader().buildProgram(Collections.singleton(getQualName()));
         }
         return result;
@@ -62,7 +61,7 @@ public class ControlModel extends TextBasedModel<Program> {
     /** Returns the control loader used in this control model. */
     public CtrlLoader getLoader() {
         if (this.loader == null) {
-            this.loader = new CtrlLoader(getGrammar().getProperties(), getRules());
+            this.loader = new CtrlLoader(getGrammar().getProperties(), getGrammar().getRules());
         }
         return this.loader;
     }

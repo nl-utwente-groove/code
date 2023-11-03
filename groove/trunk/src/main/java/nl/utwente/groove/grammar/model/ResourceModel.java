@@ -16,22 +16,19 @@
  */
 package nl.utwente.groove.grammar.model;
 
-import static nl.utwente.groove.grammar.model.ResourceKind.RULE;
-
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
-import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.util.ChangeCount;
-import nl.utwente.groove.util.Status;
 import nl.utwente.groove.util.ChangeCount.Tracker;
+import nl.utwente.groove.util.Status;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -52,12 +49,9 @@ abstract public class ResourceModel<R> {
     public ResourceModel(GrammarModel grammar, ResourceKind kind) {
         this.grammar = grammar;
         this.kind = kind;
-        this.grammarTracker = grammar == null ? null : grammar.createChangeTracker();
         this.resourceTrackers = new EnumMap<>(ResourceKind.class);
-        for (ResourceKind rk : ResourceKind.values()) {
-            this.resourceTrackers.put(rk,
-                grammar == null ? ChangeCount.DUMMY_TRACKER : grammar.createChangeTracker(rk));
-        }
+        this.dependencies = EnumSet.of(kind);
+        Arrays.stream(ResourceKind.values()).forEach(this::addTracker);
     }
 
     /** Returns the grammar model to which this resource belongs. */
@@ -65,22 +59,26 @@ abstract public class ResourceModel<R> {
         return this.grammar;
     }
 
+    /** The grammar model to which this resource belongs. */
+    private final GrammarModel grammar;
+
     /** Returns the kind of this resource model. */
     public final ResourceKind getKind() {
         return this.kind;
     }
 
-    /**
-     * Tests if this resource model is stale w.r.t. the grammar
-     * in any of a set of resource kind.
+    /** The kind of this resource. */
+    private final ResourceKind kind;
+
+    /** Registers dependencies of this model on (other) resource kinds.
+     * This affects when the resource will be recomputed, viz. when
+     * any of the registered dependencies is reported as stale by the corresponding
+     * tracker of the grammar model.
+     * The "own" resource kind is a dependency by default.
+     * @see GrammarModel#createChangeTracker
      */
-    public final boolean isStale(ResourceKind... kinds) {
-        boolean result = false;
-        for (ResourceKind kind : kinds) {
-            result |= this.resourceTrackers.get(kind)
-                .isStale();
-        }
-        return result;
+    protected void setDependencies(ResourceKind... kinds) {
+        Arrays.stream(kinds).forEach(this.dependencies::add);
     }
 
     /**
@@ -89,6 +87,9 @@ abstract public class ResourceModel<R> {
      * from which this model is derived.
      */
     abstract public Object getSource();
+
+    /** Returns the name of this model. */
+    abstract public String getName();
 
     /**
      * Constructs the resource from the model. This can only be successful if there are no
@@ -102,6 +103,116 @@ abstract public class ResourceModel<R> {
         assert this.resource != null; // guaranteed by the absence of errors
         return this.resource;
     }
+
+    /**
+     * Returns the constructed resource.
+     * @return The constructed resource, or {@code null} if there were
+     * errors.
+     * @see #toResource()
+     */
+    final @Nullable R getResource() {
+        synchronise();
+        return this.resource;
+    }
+
+    /** The constructed resource, if {@link #status} equals {@link Status#DONE}. */
+    private @Nullable R resource;
+
+    /**
+     * Synchronises the resource with the model source.
+     * After invocation of this method, the status is either
+     * {@link Status#DONE} (in which case the resource is built) or {@link Status#ERROR}.
+     * @see #getStatus()
+     */
+    final void synchronise() {
+        if (isShouldRebuild()) {// || this.resource == null && this.errors.isEmpty()) {
+            if (DEBUG) {
+                System.out.println("Building " + getKind() + " " + getName());
+            }
+            notifyWillRebuild();
+            this.status = Status.START;
+            this.errors.clear();
+            try {
+                this.resource = compute();
+                this.status = Status.DONE;
+            } catch (FormatException e) {
+                this.resource = null;
+                this.errors.addAll(e.getErrors());
+                this.status = Status.ERROR;
+            }
+        }
+    }
+
+    /**
+     * Callback method that (re)computes the resource.
+     * Called on initialisation and whenever the grammar model has changed.
+     */
+    abstract R compute() throws FormatException;
+
+    /**
+     * Tests if this resource model is stale w.r.t. the grammar
+     * in any of a set of resource kind.
+     */
+    public final boolean isStale(ResourceKind... kinds) {
+        boolean result = false;
+        for (ResourceKind kind : kinds) {
+            if (getTracker(kind).isStale()) {
+                if (DEBUG) {
+                    System.out
+                        .println("" + getKind() + " " + getName() + " notices that " + kind
+                            + " is stale");
+                }
+                result = true;
+            }
+        }
+        return result;
+    }
+
+    /** Adds a tracker for a given resource kind. */
+    private void addTracker(ResourceKind kind) {
+        this.resourceTrackers
+            .put(kind, getGrammar() == null
+                ? ChangeCount.DUMMY_TRACKER
+                : getGrammar().createChangeTracker(kind));
+    }
+
+    /** Returns the tracker of a given kind.
+     * @throws IllegalArgumentException if the kind is not a registered dependency
+     */
+    private @NonNull Tracker getTracker(ResourceKind kind) {
+        return this.resourceTrackers.get(kind);
+    }
+
+    /** Resource modification trackers. */
+    private final Map<ResourceKind,Tracker> resourceTrackers;
+
+    /**
+     * Tests if the grammar has been modified to the degree
+     * where the resource should be rebuilt.
+     * This implementation tests the registered dependencies.
+     */
+    boolean isShouldRebuild() {
+        return isStale(this.dependencies.toArray(new ResourceKind[0]));
+    }
+
+    private final Set<ResourceKind> dependencies;
+
+    /**
+     * Callback method invoked to signal that the resource is about
+     * to be rebuilt, due to grammar modifications. This allows subclasses
+     * to reset their internal structures.
+     */
+    void notifyWillRebuild() {
+        // empty
+    }
+
+    /** Returns the status of the resource construction. */
+    final Status getStatus() {
+        return this.status;
+    }
+
+    /** Status of the construction of the resource. */
+    private Status status = Status.START;
 
     /**
      * Retrieves the list of syntax errors in this model. Conversion to a resource
@@ -127,102 +238,8 @@ abstract public class ResourceModel<R> {
         return new FormatErrorSet();
     }
 
-    /**
-     * Synchronises the resource with the model source.
-     * After invocation of this method, the status is either
-     * {@link Status#DONE} (in which case the resource is built) or {@link Status#ERROR}.
-     * @see #getStatus()
-     */
-    final void synchronise() {
-        if (isShouldRebuild()) {// || this.resource == null && this.errors.isEmpty()) {
-            notifyWillRebuild();
-            this.status = Status.START;
-            this.errors.clear();
-            try {
-                this.resource = compute();
-                this.status = Status.DONE;
-            } catch (FormatException e) {
-                this.resource = null;
-                this.errors.addAll(e.getErrors());
-                this.status = Status.ERROR;
-            }
-        }
-    }
-
-    /**
-     * Tests if the grammar has been modified to the degree
-     * where the resource should be rebuilt.
-     * The method returns {@code true} on its first invocation.
-     */
-    boolean isShouldRebuild() {
-        boolean result = false;
-        if (getGrammar() != null) {
-            result = this.grammarTracker.isStale();
-        }
-        return result;
-    }
-
-    /**
-     * Callback method invoked to signal that the resource is about
-     * to be rebuilt, due to grammar modifications. This allows subclasses
-     * to reset their internal structures.
-     */
-    void notifyWillRebuild() {
-        // empty
-    }
-
-    /** Returns the status of the resource construction. */
-    final Status getStatus() {
-        return this.status;
-    }
-
-    /**
-     * Returns the constructed resource.
-     * @return The constructed resource, or {@code null} if there were
-     * errors.
-     * @see #toResource()
-     */
-    final @Nullable R getResource() {
-        synchronise();
-        return this.resource;
-    }
-
-    /**
-     * Callback method that (re)computes the resource.
-     * Called on initialisation and whenever the grammar model has changed.
-     */
-    abstract R compute() throws FormatException;
-
-    /** Returns the set of error-free, enabled rules. */
-    Collection<Rule> getRules() {
-        Collection<NamedResourceModel<?>> ruleModels = getGrammar().getResourceSet(RULE);
-        Collection<Rule> result = new ArrayList<>(ruleModels.size());
-        // set rules
-        for (ResourceModel<?> model : ruleModels) {
-            RuleModel ruleModel = (RuleModel) model;
-            try {
-                if (GraphInfo.isEnabled(ruleModel.getSource())) {
-                    result.add(ruleModel.toResource());
-                }
-            } catch (FormatException exc) {
-                // do not add this rule
-            }
-        }
-        return result;
-    }
-
-    /** The grammar model to which this resource belongs. */
-    private final GrammarModel grammar;
-    /** The kind of this resource. */
-    private final ResourceKind kind;
-    /** Status of the construction of the resource. */
-    private Status status = Status.START;
-    /** The constructed resource, if {@link #status} equals {@link Status#DONE}. */
-    private @Nullable R resource;
     /** The errors found during resource construction. */
     private final FormatErrorSet errors = new FormatErrorSet();
-    /** Grammar modification tracker. */
-    private final Tracker grammarTracker;
-    /** Resource modification trackers. */
-    private final Map<ResourceKind,Tracker> resourceTrackers;
+
+    private static final boolean DEBUG = false;
 }

@@ -41,6 +41,11 @@ abstract public class NamedResourceModel<R> extends ResourceModel<R> {
         return this.name;
     }
 
+    @Override
+    public String getName() {
+        return getQualName().toString();
+    }
+
     /**
      * Returns the (non-<code>null</code>) last part of the name of the underlying model.
      * This equals the full name if that is not hierarchical.
@@ -59,7 +64,7 @@ abstract public class NamedResourceModel<R> extends ResourceModel<R> {
      * the name is active in the grammar.
      */
     public boolean isEnabled() {
-        return getGrammar() == null || getGrammar().getActiveNames(getKind())
-            .contains(getQualName());
+        return getGrammar() == null
+            || getGrammar().getActiveNames(getKind()).contains(getQualName());
     }
 }

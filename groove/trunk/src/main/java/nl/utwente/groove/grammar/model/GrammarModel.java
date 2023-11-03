@@ -28,6 +28,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,6 +47,7 @@ import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Recipe;
+import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.type.TypeGraph;
@@ -272,6 +274,24 @@ public class GrammarModel implements PropertyChangeListener {
         return (RuleModel) getResourceMap(RULE).get(name);
     }
 
+    /** Helper method to retrieve the set of error-free, enabled rules. */
+    Collection<Rule> getRules() {
+        var ruleModels = getResourceSet(RULE);
+        var result = new ArrayList<Rule>(ruleModels.size());
+        // set rules
+        for (ResourceModel<?> model : ruleModels) {
+            RuleModel ruleModel = (RuleModel) model;
+            try {
+                if (GraphInfo.isEnabled(ruleModel.getSource())) {
+                    result.add(ruleModel.toResource());
+                }
+            } catch (FormatException exc) {
+                // do not add this rule
+            }
+        }
+        return result;
+    }
+
     /**
      * Returns the type graph model for a given graph name.
      * @return the type graph model for type <code>name</code>, or
@@ -404,6 +424,9 @@ public class GrammarModel implements PropertyChangeListener {
 
     /** Initialises the {@link #grammar} and {@link #errors} fields. */
     private void initGrammar() {
+        if (DEBUG) {
+            System.out.println("Building grammar");
+        }
         this.errors = new FormatErrorSet();
         try {
             this.grammar = computeGrammar();
@@ -770,6 +793,8 @@ public class GrammarModel implements PropertyChangeListener {
             return newInstance(new File(location), false);
         }
     }
+
+    static private final boolean DEBUG = false;
 
     // ========================================================================
     // ENUM: MANIPULATION

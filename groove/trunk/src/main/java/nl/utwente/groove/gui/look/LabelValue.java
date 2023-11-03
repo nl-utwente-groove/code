@@ -50,6 +50,7 @@ import nl.utwente.groove.grammar.type.LabelPattern;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Graph;
+import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.jgraph.AspectJEdge;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
@@ -354,10 +355,12 @@ public class LabelValue implements VisualValue<MultiLabel> {
      * suffixed by {@link #LOOP_SUFFIX}.
      */
     private boolean showLoopSuffix(AspectJVertex jVertex, AspectEdge edge) {
-        if (jVertex.hasErrors() || edge.hasErrors()) {
+        if (edge.hasErrors()) {
             return false;
         }
-        if (jVertex.getJModel().getTypeGraph().isImplicit()) {
+        var jGraph = jVertex.getJGraph();
+        if (jVertex.getJModel().getTypeGraph().isImplicit() && jGraph != null
+            && jGraph.getGraphRole() != GraphRole.TYPE) {
             return false;
         }
         if (edge.getRole() != EdgeRole.BINARY) {

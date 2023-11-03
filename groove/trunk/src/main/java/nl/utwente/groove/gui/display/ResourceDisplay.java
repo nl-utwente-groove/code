@@ -150,14 +150,21 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         ResourceKind kind = getResourceKind();
         if (kind.isEnableable()) {
             result.add(getEnableButton());
-            if (getResourceKind() == ResourceKind.HOST || getResourceKind() == ResourceKind.TYPE
-                || getResourceKind() == ResourceKind.PROLOG
-                || getResourceKind() == ResourceKind.CONTROL) {
+            if (kind == ResourceKind.HOST || kind == ResourceKind.TYPE
+                || kind == ResourceKind.PROLOG || kind == ResourceKind.CONTROL) {
                 result.add(getEnableUniqueAction());
             }
         }
         if (kind == ResourceKind.GROOVY) {
             result.add(getActions().getExecGroovyAction());
+        }
+        if (kind == ResourceKind.TYPE) {
+            if (separation >= 0) {
+                result.addSeparator(new Dimension(separation, 0));
+            } else {
+                result.addSeparator();
+            }
+            result.add(getActions().getPreviewTypeAction());
         }
         return result;
     }

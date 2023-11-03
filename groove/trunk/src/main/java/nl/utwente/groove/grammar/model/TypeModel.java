@@ -63,15 +63,6 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
     }
 
     @Override
-    boolean isShouldRebuild() {
-        boolean result = super.isShouldRebuild();
-        if (result) {
-            result = isStale(ResourceKind.TYPE);
-        }
-        return result;
-    }
-
-    @Override
     public TypeModelMap getMap() {
         synchronise();
         if (hasErrors()) {
