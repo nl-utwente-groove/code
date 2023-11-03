@@ -17,6 +17,9 @@
 package nl.utwente.groove.grammar.model;
 
 import static nl.utwente.groove.grammar.model.ResourceKind.CONTROL;
+import static nl.utwente.groove.grammar.model.ResourceKind.PROPERTIES;
+import static nl.utwente.groove.grammar.model.ResourceKind.RULE;
+import static nl.utwente.groove.grammar.model.ResourceKind.TYPE;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -46,11 +49,17 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
     /** Constructs an instance for a given grammar model. */
     CompositeControlModel(GrammarModel grammar) {
         super(grammar, CONTROL);
+        setDependencies(RULE, TYPE, PROPERTIES);
     }
 
     @Override
     public Object getSource() {
         return null;
+    }
+
+    @Override
+    public String getName() {
+        return "Composite control program";
     }
 
     @Override
@@ -64,8 +73,9 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
                 addPartError(controlName, new FormatError("Control program cannot be found"));
             } else {
                 try {
-                    treeMap.put(controlModel,
-                        getLoader().addControl(controlName, controlModel.getProgram()));
+                    treeMap
+                        .put(controlModel,
+                             getLoader().addControl(controlName, controlModel.getProgram()));
                 } catch (FormatException exc) {
                     for (FormatError error : exc.getErrors()) {
                         addPartError(controlName, error);
@@ -102,7 +112,7 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
     /** Returns the control loader used in this composite control model. */
     public CtrlLoader getLoader() {
         if (this.loader == null) {
-            this.loader = new CtrlLoader(getGrammar().getProperties(), getRules());
+            this.loader = new CtrlLoader(getGrammar().getProperties(), getGrammar().getRules());
         }
         return this.loader;
     }
@@ -155,7 +165,9 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
 
     /** Adds a control program-related error. */
     private void addPartError(FormatError error) {
-        QualName key = error.getResourceKind() == CONTROL ? error.getResourceName() : null;
+        QualName key = error.getResourceKind() == CONTROL
+            ? error.getResourceName()
+            : null;
         getPartErrors(key).add(error);
     }
 
@@ -172,10 +184,9 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
                 if (entry.getKey() == null) {
                     result.add("Error in implicit control: %s", error);
                 } else {
-                    result.add("Error in control program '%s': %s",
-                        entry.getKey(),
-                        error,
-                        FormatError.control(entry.getKey()));
+                    result
+                        .add("Error in control program '%s': %s", entry.getKey(), error,
+                             FormatError.control(entry.getKey()));
                 }
             }
         }

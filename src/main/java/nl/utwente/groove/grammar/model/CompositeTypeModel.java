@@ -31,11 +31,17 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
      */
     CompositeTypeModel(GrammarModel grammar) {
         super(grammar, TYPE);
+        setDependencies(PROPERTIES);
     }
 
     @Override
     public Object getSource() {
         return null;
+    }
+
+    @Override
+    public String getName() {
+        return "Composite type graph";
     }
 
     /**
@@ -61,7 +67,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
      */
     public boolean isImplicit() {
         try {
-            if (computeTypeModelMap().isEmpty()) {
+            if (getGrammar().getActiveNames(TYPE).isEmpty()) {
                 return true;
             } else {
                 // if toResource does not throw a format exception,
@@ -72,6 +78,11 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
         } catch (FormatException exc) {
             return true;
         }
+    }
+
+    /** Indicates if this model is composed of more than one underlying type model. */
+    public boolean isMultiple() {
+        return getGrammar().getActiveNames(TYPE).size() > 1;
     }
 
     /** Returns the derived mapping from type labels to sort maps for this type model.
@@ -88,12 +99,10 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
     @Override
     boolean isShouldRebuild() {
         boolean result = super.isShouldRebuild();
-        if (result) {
-            result = isStale(TYPE, PROPERTIES);
-            if (getGrammar().getActiveNames(TYPE).isEmpty()) {
-                // it's an implicit type graph; look also at the host graphs and rules
-                result |= isStale(HOST, RULE);
-            }
+        if (getGrammar().getActiveNames(TYPE).isEmpty()) {
+            // this is an implicit type graph; look also at the host graphs and rules
+            // these are not dependencies by default, to avoid cyclic dependencies between TYPE and RULE
+            result |= isStale(HOST, RULE);
         }
         return result;
     }
@@ -105,6 +114,8 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
         // first test if there is something to be done
         if (typeModelMap.isEmpty()) {
             result = getImplicitTypeGraph();
+        } else if (typeModelMap.size() == 1) {
+            result = typeModelMap.values().iterator().next().toResource();
         } else {
             result = new TypeGraph(QualName.name(NAME));
             FormatErrorSet errors = createErrors();
@@ -140,6 +151,17 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
             }
             errors.throwException();
             result.setFixed();
+            try {
+                result.test();
+            } catch (FormatException exc) {
+                errors = new FormatErrorSet();
+                for (var error : exc.getErrors()) {
+                    errors
+                        .add(new FormatError(error.toString() + " in the combined type graph"),
+                             error, this);
+                }
+                errors.throwException();
+            }
         }
         return result;
     }

@@ -26,6 +26,8 @@ import static nl.utwente.groove.grammar.aspect.AspectKind.PARAM_IN;
 import static nl.utwente.groove.grammar.aspect.AspectKind.PRODUCT;
 import static nl.utwente.groove.grammar.aspect.AspectKind.Category.ROLE;
 import static nl.utwente.groove.grammar.aspect.AspectKind.Category.SORT;
+import static nl.utwente.groove.grammar.model.ResourceKind.GROOVY;
+import static nl.utwente.groove.grammar.model.ResourceKind.PROPERTIES;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -129,21 +131,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
      */
     public RuleModel(GrammarModel grammar, AspectGraph graph) {
         super(grammar, graph);
+        setDependencies(PROPERTIES, GROOVY);
         assert grammar != null;
         graph.testFixed(true);
-    }
-
-    @Override
-    boolean isShouldRebuild() {
-        boolean result = super.isShouldRebuild();
-        // check for the properties to update the match constraints
-        result |= isStale(ResourceKind.PROPERTIES);
-        // check for the type graph to get the correct instance
-        result |= this.oldTypeGraph != getType();
-        // check for Groovy scripts to get the correct match filter
-        result |= isStale(ResourceKind.GROOVY);
-        this.oldTypeGraph = getType();
-        return result;
     }
 
     @Override
@@ -287,6 +277,15 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             this.typeMap.putEdge(edgeEntry.getKey(), edgeEntry.getValue().getType());
         }
         Rule result = computeRule(this.levelTree);
+        return result;
+    }
+
+    @Override
+    boolean isShouldRebuild() {
+        boolean result = super.isShouldRebuild();
+        if (!result && !getGrammar().getTypeModel().isImplicit()) {
+            result |= isStale(ResourceKind.TYPE);
+        }
         return result;
     }
 
@@ -506,8 +505,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         return this.normalSource;
     }
 
-    private TypeGraph oldTypeGraph;
-    /** The factory for rule elements according to the given type graph. */
     private RuleFactory ruleFactory;
     /**
      * Mapping from the elements of the aspect graph representation to the

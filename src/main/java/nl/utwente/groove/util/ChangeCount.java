@@ -47,6 +47,11 @@ public class ChangeCount extends Observable {
         return this.value;
     }
 
+    @Override
+    public String toString() {
+        return "ChangeCount = " + getValue();
+    }
+
     private int value;
 
     /** Dummy tracker that never gets stale. */
@@ -76,6 +81,11 @@ public class ChangeCount extends Observable {
             boolean result = this.last < current;
             this.last = current;
             return result;
+        }
+
+        @Override
+        public String toString() {
+            return "Tracker = " + this.last + " for " + this.count;
         }
 
         private final ChangeCount count;

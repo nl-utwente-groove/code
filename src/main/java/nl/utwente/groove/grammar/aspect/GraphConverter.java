@@ -69,9 +69,13 @@ public class GraphConverter {
         for (TypeNode node : type.nodeSet()) {
             AspectNode nodeImage = target.addNode(node.getNumber());
             result.putNode(node, nodeImage);
-            target.addEdge(nodeImage, node.label().toParsableString(), nodeImage);
+            if (node.isSort()) {
+                nodeImage.set(AspectKind.toAspectKind(node.label().getSort()).getAspect());
+            } else {
+                target.addEdge(nodeImage, node.label().toParsableString(), nodeImage);
+            }
             if (node.isAbstract()) {
-                target.addEdge(nodeImage, ABSTRACT.getPrefix(), nodeImage);
+                nodeImage.set(ABSTRACT.getAspect());
             }
         }
         Map<TypeNode,Set<TypeNode>> superMap = type.getDirectSupertypeMap();
@@ -100,7 +104,7 @@ public class GraphConverter {
             if (edge.getOutMult() != null) {
                 text.append(new MultiplicityContent(edge.getInMult()).toParsableString(MULT_OUT));
             }
-            text.append(edge.text());
+            text.append(edge.label().toParsableString());
             AspectEdge edgeImage = target
                 .addEdge(result.getNode(edge.source()), text.toString(),
                          result.getNode(edge.target()));

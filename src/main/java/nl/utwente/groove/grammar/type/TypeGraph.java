@@ -247,7 +247,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
         }
     }
 
-    /** Checks if the graph satisfies the properties of a type graph. */
+    /** Checks if the graph satisfies the properties of a type graph.
+     * This should be called after the type graph has been fixed.
+     */
     public void test() throws FormatException {
         FormatErrorSet errors = new FormatErrorSet();
         // Set of edge labels occurring in the type graph
@@ -289,8 +291,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                     if (hasCommonSubtype(edge1.source(), edge2.source())
                         && hasCommonSubtype(edge1.target(), edge2.target())) {
                         errors
-                            .add("Possible type confusion of %s-%ss", edgeLabel.text(),
-                                 edgeLabel.getRole() == FLAG
+                            .add("Potential type confusion of %s-%ss: both source and target types have a common subtype",
+                                 edgeLabel.text(), edgeLabel.getRole() == FLAG
                                      ? "flag"
                                      : "edge",
                                  edge1, edge2);

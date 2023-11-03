@@ -65,6 +65,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     public HostModel(GrammarModel grammar, AspectGraph source) {
         super(grammar, source);
         source.testFixed(true);
+        setDependencies(ResourceKind.TYPE, ResourceKind.PROPERTIES);
     }
 
     /**

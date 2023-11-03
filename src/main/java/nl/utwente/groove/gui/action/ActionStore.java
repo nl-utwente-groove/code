@@ -522,6 +522,20 @@ public class ActionStore implements SimulatorListener {
     /** Singular instance of the CtrlPreviewAction. */
     private SimulatorAction previewRuleAction;
 
+    /**
+     * Lazily creates and returns the singleton instance of the
+     * {@link PreviewTypeAction}.
+     */
+    public SimulatorAction getPreviewTypeAction() {
+        if (this.previewTypeAction == null) {
+            this.previewTypeAction = new PreviewTypeAction(this.simulator);
+        }
+        return this.previewTypeAction;
+    }
+
+    /** Singular instance of the CtrlPreviewAction. */
+    private SimulatorAction previewTypeAction;
+
     /** Returns the quit action permanently associated with this simulator. */
     public SimulatorAction getQuitAction() {
         // lazily create the action

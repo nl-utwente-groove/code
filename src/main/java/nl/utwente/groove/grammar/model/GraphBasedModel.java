@@ -61,6 +61,11 @@ abstract public class GraphBasedModel<R> extends NamedResourceModel<R> {
         return this.source;
     }
 
+    @Override
+    public String getName() {
+        return getSource().getName();
+    }
+
     /**
      * Returns a mapping from the nodes in the model source to the corresponding
      * nodes in the resource that is constructed from it.
@@ -99,12 +104,10 @@ abstract public class GraphBasedModel<R> extends NamedResourceModel<R> {
     /** Convenience method to return the inverse of a given model map. */
     private final Map<Element,Element> getInverseMap(ElementMap map) {
         Map<Element,Element> result = new HashMap<>();
-        for (Map.Entry<? extends Node,? extends Node> nodeEntry : map.nodeMap()
-            .entrySet()) {
+        for (Map.Entry<? extends Node,? extends Node> nodeEntry : map.nodeMap().entrySet()) {
             result.put(nodeEntry.getValue(), nodeEntry.getKey());
         }
-        for (Map.Entry<? extends Edge,? extends Edge> edgeEntry : map.edgeMap()
-            .entrySet()) {
+        for (Map.Entry<? extends Edge,? extends Edge> edgeEntry : map.edgeMap().entrySet()) {
             result.put(edgeEntry.getValue(), edgeEntry.getKey());
         }
         return result;

@@ -550,6 +550,8 @@ public class Options implements Cloneable {
     public static final String PREVIEW_CONTROL_ACTION_NAME = "Inspect Control ...";
     /** Preview rule action name */
     public static final String PREVIEW_RULE_ACTION_NAME = "Inspect Rule ...";
+    /** Preview rule action name */
+    public static final String PREVIEW_TYPE_ACTION_NAME = "Inspect Composite Type ...";
     /** Quit action name */
     public static final String QUIT_ACTION_NAME = "Quit";
     /** Name of the "First Prolog Result" action. */
