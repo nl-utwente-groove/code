@@ -23,6 +23,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.algebra.Algebra;
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.Constant;
@@ -306,7 +308,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     private static boolean debug;
 
     /** Mapping from aspect graph to type graph. */
-    public static class HostModelMap extends ModelMap<HostNode,HostEdge> {
+    public static class HostModelMap extends ModelMap<@NonNull HostNode,@NonNull HostEdge> {
         /**
          * Creates a new, empty map.
          */

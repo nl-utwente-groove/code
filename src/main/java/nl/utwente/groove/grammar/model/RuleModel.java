@@ -274,7 +274,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             this.typeMap.putNode(nodeEntry.getKey(), nodeEntry.getValue().getType());
         }
         for (Map.Entry<AspectEdge,RuleEdge> edgeEntry : this.modelMap.edgeMap().entrySet()) {
-            this.typeMap.putEdge(edgeEntry.getKey(), edgeEntry.getValue().getType());
+            var edgeType = edgeEntry.getValue().getType();
+            assert edgeType != null;
+            this.typeMap.putEdge(edgeEntry.getKey(), edgeType);
         }
         Rule result = computeRule(this.levelTree);
         return result;
@@ -299,7 +301,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
     /** Returns the set of labels occurring in this rule. */
     @Override
-    public @NonNull Set<TypeLabel> getLabels() {
+    public @NonNull Set<@NonNull TypeLabel> getLabels() {
         Set<TypeLabel> result = this.labelSet;
         if (result == null) {
             Set<TypeLabel> labelSet = new HashSet<>();
@@ -2618,7 +2620,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     }
 
     /** Mapping from aspect graph elements to rule graph elements. */
-    public static class RuleModelMap extends ModelMap<RuleNode,RuleEdge> {
+    public static class RuleModelMap extends ModelMap<@NonNull RuleNode,@NonNull RuleEdge> {
         /**
          * Creates a new, empty map to a rule graph with a given type factory.
          */

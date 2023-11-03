@@ -20,6 +20,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectNode;
@@ -41,6 +44,7 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
  * @author Arend Rensink
  * @version $Revision $
  */
+@NonNullByDefault
 abstract public class GraphBasedModel<R> extends NamedResourceModel<R> {
     /**
      * Creates a graph-based resource model from a given source.
@@ -88,7 +92,7 @@ abstract public class GraphBasedModel<R> extends NamedResourceModel<R> {
      * @return a mapping from the elements of {@link #getSource()} to types in the
      * associated type graph, or {@code null} if {@link #hasErrors()} holds
      */
-    abstract public TypeModelMap getTypeMap();
+    abstract public @Nullable TypeModelMap getTypeMap();
 
     /**
      * Transfers a collection of errors according to the

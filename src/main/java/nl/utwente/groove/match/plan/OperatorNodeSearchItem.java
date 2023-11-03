@@ -51,8 +51,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
      */
     public OperatorNodeSearchItem(OperatorNode node, AlgebraFamily family) {
         this.node = node;
-        this.setOperator = node.getOperator()
-            .isSetOperator();
+        this.setOperator = node.getOperator().isSetOperator();
         this.operation = family.getOperation(node.getOperator());
         assert this.operation != null;
         this.arguments = node.getArguments();
@@ -71,7 +70,8 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
 
     @Override
     public OperatorNodeRecord createRecord(nl.utwente.groove.match.plan.PlanSearchStrategy.Search matcher) {
-        return this.setOperator ? new SetOperatorNodeRecord(matcher)
+        return this.setOperator
+            ? new SetOperatorNodeRecord(matcher)
             : new OperatorNodeRecord(matcher);
     }
 
@@ -94,10 +94,8 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
 
     @Override
     public String toString() {
-        return String.format("Compute %s%s-->%s",
-            this.operation.toString(),
-            this.arguments,
-            this.target);
+        return String
+            .format("Compute %s%s-->%s", this.operation.toString(), this.arguments, this.target);
     }
 
     /**
@@ -113,15 +111,12 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
         }
         OperatorNode hisNode = ((OperatorNodeSearchItem) item).getNode();
         List<VariableNode> hisArguments = hisNode.getArguments();
-        result = this.operation.getName()
-            .compareTo(hisNode.getOperator()
-                .getName());
+        result = this.operation.getName().compareTo(hisNode.getOperator().getName());
         if (result != 0) {
             return result;
         }
         for (int i = 0; i < this.arguments.size(); i++) {
-            result = this.arguments.get(i)
-                .compareTo(hisArguments.get(i));
+            result = this.arguments.get(i).compareTo(hisArguments.get(i));
             if (result != 0) {
                 return result;
             }
@@ -188,8 +183,8 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
         this.targetIx = strategy.getNodeIx(this.target);
         if (this.setOperator) {
             this.source = this.arguments.get(0);
-            ConditionSearchItem item = (ConditionSearchItem) strategy.getPlan()
-                .getBinder(this.source);
+            ConditionSearchItem item
+                = (ConditionSearchItem) strategy.getPlan().getBinder(this.source);
             this.sourceConditionIx = strategy.getCondIx(item.getCondition());
         } else {
             this.argumentIxs = new int[this.arguments.size()];
@@ -227,9 +222,9 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
 
         @Override
         public String toString() {
-            return String.format("%s = %s",
-                OperatorNodeSearchItem.this.toString(),
-                this.search.getNode(OperatorNodeSearchItem.this.targetIx));
+            return String
+                .format("%s = %s", OperatorNodeSearchItem.this.toString(),
+                        this.search.getNode(OperatorNodeSearchItem.this.targetIx));
         }
 
         @Override
@@ -252,8 +247,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
                 if (targetFind == null) {
                     targetFind = this.search.getNode(OperatorNodeSearchItem.this.targetIx);
                 }
-                result = ((ValueNode) targetFind).getValue()
-                    .equals(outcome);
+                result = ((ValueNode) targetFind).getValue().equals(outcome);
             } else {
                 ValueNode targetImage = this.factory
                     .createNode(OperatorNodeSearchItem.this.operation.getResultAlgebra(), outcome);
@@ -288,10 +282,9 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
                 List<Object> arguments = calculateArguments();
                 Object result = OperatorNodeSearchItem.this.operation.apply(arguments);
                 if (PRINT) {
-                    System.out.printf("Applying %s to %s yields %s%n",
-                        OperatorNodeSearchItem.this.operation,
-                        arguments,
-                        result);
+                    System.out
+                        .printf("Applying %s to %s yields %s%n",
+                                OperatorNodeSearchItem.this.operation, arguments, result);
                 }
                 return result;
             } catch (ClassCastException | NullPointerException | IllegalArgumentException exc) {
@@ -306,7 +299,8 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
          * Calculates the arguments for the operator.
          */
         List<Object> calculateArguments() throws ClassCastException, NullPointerException {
-            List<Object> arguments = IntStream.of(OperatorNodeSearchItem.this.argumentIxs)
+            List<Object> arguments = IntStream
+                .of(OperatorNodeSearchItem.this.argumentIxs)
                 .mapToObj(this.search::getNode)
                 .map(n -> ((ValueNode) n).getValue())
                 .collect(Collectors.toList());
@@ -336,9 +330,11 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
 
         @Override
         List<Object> calculateArguments() throws ClassCastException, NullPointerException {
-            TreeMatch match =
-                this.search.getSubMatch(OperatorNodeSearchItem.this.sourceConditionIx);
-            List<Object> setArguments = match.getSubMatches()
+            TreeMatch match
+                = this.search.getSubMatch(OperatorNodeSearchItem.this.sourceConditionIx);
+            @SuppressWarnings("null")
+            List<Object> setArguments = match
+                .getSubMatches()
                 .stream()
                 .map(TreeMatch::getPatternMap)
                 .map(m -> m.getNode(OperatorNodeSearchItem.this.source))

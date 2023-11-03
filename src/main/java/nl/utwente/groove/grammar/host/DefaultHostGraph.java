@@ -109,7 +109,9 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<@NonNull HostNode,@Non
         }
         for (Edge edge : graph.edgeSet()) {
             HostNode sourceImage = map.getNode(edge.source());
+            assert sourceImage != null;
             HostNode targetImage = map.getNode(edge.target());
+            assert targetImage != null;
             HostEdge edgeImage = addEdge(sourceImage, edge.label().text(), targetImage);
             map.putEdge(edge, edgeImage);
         }

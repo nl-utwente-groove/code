@@ -698,7 +698,9 @@ public class ReteNetwork {
                                            RuleGraphMorphism nodeMapping) {
         RuleGraph result = source.newGraph(source.getName());
         for (RuleNode n : source.nodeSet()) {
-            result.addNode(nodeMapping.getNode(n));
+            var resultNode = nodeMapping.getNode(n);
+            assert resultNode != null;
+            result.addNode(resultNode);
         }
         for (RuleEdge e : source.edgeSet()) {
             result.addEdgeContext(translate(rfact, nodeMapping, e));
