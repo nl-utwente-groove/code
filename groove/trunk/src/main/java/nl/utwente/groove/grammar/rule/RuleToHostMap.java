@@ -28,7 +28,7 @@ import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.type.TypeElement;
 import nl.utwente.groove.grammar.type.TypeGuard;
 import nl.utwente.groove.grammar.type.TypeLabel;
-import nl.utwente.groove.graph.AElementMap;
+import nl.utwente.groove.graph.AGraphMap;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.util.Exceptions;
 
@@ -37,7 +37,7 @@ import nl.utwente.groove.util.Exceptions;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class RuleToHostMap extends AElementMap<RuleNode,RuleEdge,HostNode,HostEdge>
+public class RuleToHostMap extends AGraphMap<RuleNode,RuleEdge,HostNode,HostEdge>
     implements VarMap {
     /**
      * Creates an empty map with an empty valuation.
@@ -105,7 +105,7 @@ public class RuleToHostMap extends AElementMap<RuleNode,RuleEdge,HostNode,HostEd
      * Also copies the other's valuation, if any.
      */
     @Override
-    public void putAll(AElementMap<RuleNode,RuleEdge,HostNode,HostEdge> other) {
+    public void putAll(AGraphMap<RuleNode,RuleEdge,HostNode,HostEdge> other) {
         super.putAll(other);
         if (other instanceof RuleToHostMap) {
             putAllVar(((RuleToHostMap) other).getValuation());

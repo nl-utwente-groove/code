@@ -34,7 +34,7 @@ import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.VertexView;
 
 import nl.utwente.groove.graph.Edge;
-import nl.utwente.groove.graph.ElementMap;
+import nl.utwente.groove.graph.GraphMap;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.gui.look.VisualMap;
 
@@ -204,7 +204,7 @@ public class LayoutMap implements Cloneable {
      * Composes the inverse of a given element map in front of this layout map.
      * The result is not fixed.
      */
-    public LayoutMap afterInverse(ElementMap other) {
+    public LayoutMap afterInverse(GraphMap other) {
         LayoutMap result = newInstance();
         for (Map.Entry<Node,JVertexLayout> layoutEntry : nodeMap().entrySet()) {
             Node trafoValue = other.getNode(layoutEntry.getKey());

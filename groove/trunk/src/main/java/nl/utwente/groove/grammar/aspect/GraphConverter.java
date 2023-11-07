@@ -36,7 +36,7 @@ import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.grammar.type.TypeNode;
-import nl.utwente.groove.graph.AElementMap;
+import nl.utwente.groove.graph.AGraphMap;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphInfo;
@@ -177,7 +177,7 @@ public class GraphConverter {
      * aspect graph. For convenience, the aspect graph is bundled in with the map.
      */
     static public class HostToAspectMap
-        extends AElementMap<HostNode,HostEdge,AspectNode,AspectEdge> {
+        extends AGraphMap<HostNode,HostEdge,AspectNode,AspectEdge> {
         /**
          * Creates a new, empty map.
          */
@@ -199,7 +199,7 @@ public class GraphConverter {
      * aspect graph. For convenience, the aspect graph is bundled in with the map.
      */
     static public class TypeToAspectMap
-        extends AElementMap<TypeNode,TypeEdge,AspectNode,AspectEdge> {
+        extends AGraphMap<TypeNode,TypeEdge,AspectNode,AspectEdge> {
         /**
          * Creates a new, empty map.
          */

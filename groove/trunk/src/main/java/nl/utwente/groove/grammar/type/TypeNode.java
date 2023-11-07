@@ -141,8 +141,8 @@ public class TypeNode implements Node, TypeElement {
     }
 
     /** Sets this node type to abstract. */
-    public final void setAbstract(boolean value) {
-        this.abstracted = value;
+    public final void setAbstract() {
+        this.abstracted = true;
     }
 
     /** Returns true if this node if of top type. */
@@ -164,8 +164,9 @@ public class TypeNode implements Node, TypeElement {
     }
 
     /** Sets this node type to imported. */
-    public final void setImported(boolean value) {
-        this.imported = value;
+    public final void setImported() {
+        this.imported = true;
+        getGraph().setImported(this);
     }
 
     /** Returns the (possibly {@code null}) label pattern associated with this type node. */

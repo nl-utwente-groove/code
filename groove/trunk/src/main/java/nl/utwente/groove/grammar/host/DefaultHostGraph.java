@@ -22,7 +22,7 @@ import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.algebra.Algebra;
 import nl.utwente.groove.algebra.AlgebraFamily;
-import nl.utwente.groove.graph.AElementMap;
+import nl.utwente.groove.graph.AGraphMap;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphInfo;
@@ -100,7 +100,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<@NonNull HostNode,@Non
      */
     public DefaultHostGraph(Graph graph) {
         this(graph.getName(), true);
-        AElementMap<Node,Edge,HostNode,HostEdge> map = new AElementMap<>(getFactory()) {
+        AGraphMap<Node,Edge,HostNode,HostEdge> map = new AGraphMap<>(getFactory()) {
             // empty
         };
         for (Node node : graph.nodeSet()) {

@@ -19,12 +19,12 @@ package nl.utwente.groove.graph;
 import java.util.Map;
 
 /**
- * Default implementation of a generic node-edge-map. The implementation is
- * based on two internally stored hash maps.
+ * Default implementation of a generic graph-to-graph-map. The implementation is
+ * based on two internally stored maps, respectively for nodes and edges .
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface ElementMap {
+public interface GraphMap {
     /**
      * Tests if the entire map is empty.
      * @return <code>true</code> if the entire map (both the node and the edge

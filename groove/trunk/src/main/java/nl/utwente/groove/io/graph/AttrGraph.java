@@ -28,7 +28,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectNode;
-import nl.utwente.groove.graph.AElementMap;
+import nl.utwente.groove.graph.AGraphMap;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.ElementFactory;
 import nl.utwente.groove.graph.GEdge;
@@ -302,7 +302,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
     // ------------------------------------------------------------------------
 
     private static class AspectToAttrMap
-        extends AElementMap<AspectNode,AspectEdge,@Nullable AttrNode,AttrEdge> {
+        extends AGraphMap<AspectNode,AspectEdge,@Nullable AttrNode,AttrEdge> {
         /** Constructs a new, empty map. */
         public AspectToAttrMap() {
             super(AttrFactory.instance());
@@ -323,7 +323,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
     }
 
     private static class AttrToGraphMap<N extends Node,E extends Edge>
-        extends AElementMap<AttrNode,AttrEdge,N,E> {
+        extends AGraphMap<AttrNode,AttrEdge,N,E> {
         /** Constructs a new, empty map. */
         public AttrToGraphMap(ElementFactory<N,E> factory) {
             super(factory);

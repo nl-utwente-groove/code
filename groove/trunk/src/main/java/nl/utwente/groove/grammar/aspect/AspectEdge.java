@@ -38,6 +38,8 @@ import static nl.utwente.groove.graph.GraphRole.HOST;
 import static nl.utwente.groove.graph.GraphRole.RULE;
 import static nl.utwente.groove.graph.GraphRole.TYPE;
 
+import java.util.Objects;
+
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -1007,6 +1009,22 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
      * {@code null} if there is no outgoing multiplicity declared.
      */
     private Multiplicity outMult;
+
+    @Override
+    protected int computeHashCode() {
+        return super.computeHashCode() + Objects.hashCode(getGraph());
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        boolean result = super.equals(obj);
+        if (!result) {
+            return false;
+        }
+        var other = (AspectEdge) obj;
+        assert other != null;
+        return getGraph() == other.getGraph();
+    }
 
     /** Separator between level name and edge label. */
     static private final String LEVEL_NAME_SEPARATOR = "@";

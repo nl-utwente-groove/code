@@ -40,7 +40,7 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectContent.NestedValue;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.type.TypeLabel;
-import nl.utwente.groove.graph.AElementMap;
+import nl.utwente.groove.graph.AGraphMap;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.ElementFactory;
@@ -889,7 +889,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     }
 
     private static class AspectToPlainMap
-        extends AElementMap<AspectNode,AspectEdge,PlainNode,PlainEdge> {
+        extends AGraphMap<AspectNode,AspectEdge,PlainNode,PlainEdge> {
         /** Constructs a new, empty map. */
         public AspectToPlainMap() {
             super(PlainFactory.instance());
@@ -914,7 +914,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
      * @author Arend Rensink
      * @version $Revision $
      */
-    private static class GraphToAspectMap extends AElementMap<Node,Edge,AspectNode,AspectEdge> {
+    private static class GraphToAspectMap extends AGraphMap<Node,Edge,AspectNode,AspectEdge> {
         /** Creates a fresh, empty map. */
         public GraphToAspectMap(AspectGraph graph) {
             super(graph.getFactory());

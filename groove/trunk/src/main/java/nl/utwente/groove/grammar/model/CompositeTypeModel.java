@@ -127,9 +127,10 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
                 try {
                     TypeGraph graph = model.toResource();
                     Map<TypeNode,TypeNode> map = result.add(graph);
-                    for (TypeNode node : graph.getImports()) {
-                        importNodes.put(node, map.get(node));
-                        importModels.put(node, model);
+                    for (TypeNode node : result.getImports()) {
+                        if (!importModels.containsKey(node)) {
+                            importModels.put(node, model);
+                        }
                     }
                 } catch (FormatException e) {
                     errors.addAll(e.getErrors());
@@ -137,15 +138,26 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
                     errors.add(e.getMessage());
                 }
             }
-            // test that there are no imported types left
-            for (Map.Entry<TypeNode,TypeNode> importEntry : importNodes.entrySet()) {
-                if (importEntry.getValue().isImported()) {
-                    TypeNode origNode = importEntry.getKey();
-                    TypeModel origModel = importModels.get(origNode);
+            //            // test that there are no imported types left
+            //            for (Map.Entry<TypeNode,TypeNode> importEntry : importNodes.entrySet()) {
+            //                if (importEntry.getValue().isImported()) {
+            //                    TypeNode origNode = importEntry.getKey();
+            //                    TypeModel origModel = importModels.get(origNode);
+            //                    errors
+            //                        .add("Error in type graph '%s': Unresolved type import '%s'",
+            //                             origModel.getQualName(), origNode.label(),
+            //                             getInverse(origModel.getMap().nodeMap(), origNode),
+            //                             origModel.getSource());
+            //                }
+            //            }
+            errors.throwException();
+            var imports = result.getImports();
+            if (!imports.isEmpty()) {
+                for (var imported : imports) {
+                    TypeModel origModel = importModels.get(imported);
                     errors
-                        .add("Error in type graph '%s': Unresolved type import '%s'",
-                             origModel.getQualName(), origNode.label(),
-                             getInverse(origModel.getMap().nodeMap(), origNode),
+                        .add("Unresolved type import %s", imported,
+                             getInverse(origModel.getMap().nodeMap(), imported),
                              origModel.getSource());
                 }
             }

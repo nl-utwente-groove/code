@@ -69,7 +69,7 @@ public interface JCell<G extends Graph> extends GraphCell, Serializable {
      * @return the key for {@code edge}; if {@code null}, the edge
      * has no corresponding key
      */
-    public Label getKey(Edge edge);
+    public @Nullable Label getKey(Edge edge);
 
     /** Indicates if this cell is currently grayed-out. */
     boolean isGrayedOut();

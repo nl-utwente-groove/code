@@ -275,8 +275,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         }
         for (Map.Entry<AspectEdge,RuleEdge> edgeEntry : this.modelMap.edgeMap().entrySet()) {
             var edgeType = edgeEntry.getValue().getType();
-            assert edgeType != null;
-            this.typeMap.putEdge(edgeEntry.getKey(), edgeType);
+            if (edgeType != null) {
+                this.typeMap.putEdge(edgeEntry.getKey(), edgeType);
+            }
         }
         Rule result = computeRule(this.levelTree);
         return result;

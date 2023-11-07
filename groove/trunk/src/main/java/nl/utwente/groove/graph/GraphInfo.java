@@ -136,7 +136,7 @@ public class GraphInfo extends DefaultFixable {
      * @param target the graph to transfer the information to
      * @param elementMap map from the source elements to the target elements
      */
-    public static void transfer(Graph source, Graph target, ElementMap elementMap) {
+    public static void transfer(Graph source, Graph target, GraphMap elementMap) {
         if (source.hasInfo()) {
             // copy all the info
             GraphInfo sourceInfo = source.getInfo();
