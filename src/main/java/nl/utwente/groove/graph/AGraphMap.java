@@ -30,12 +30,12 @@ import org.eclipse.jdt.annotation.Nullable;
  * @author Arend Rensink
  * @version $Revision$
  */
-abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Node,TE extends Edge>
-    implements ElementMap, Cloneable {
+abstract public class AGraphMap<SN extends Node,SE extends Edge,TN extends Node,TE extends Edge>
+    implements GraphMap, Cloneable {
     /**
      * Constructs an empty map.
      */
-    public AElementMap(@NonNull ElementFactory<TN,TE> factory) {
+    public AGraphMap(@NonNull ElementFactory<TN,TE> factory) {
         this.nodeMap = createNodeMap();
         this.edgeMap = createEdgeMap();
         this.factory = factory;
@@ -105,7 +105,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
      * Copies the information from a given element map to this one.
      * @param other the element map to be copied
      */
-    public void putAll(AElementMap<SN,SE,TN,TE> other) {
+    public void putAll(AGraphMap<SN,SE,TN,TE> other) {
         this.nodeMap.putAll(other.nodeMap());
         this.edgeMap.putAll(other.edgeMap());
     }
@@ -138,7 +138,7 @@ abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Nod
      */
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof AElementMap<?,?,?,?> m) && nodeMap().equals(m.nodeMap())
+        return (obj instanceof AGraphMap<?,?,?,?> m) && nodeMap().equals(m.nodeMap())
             && edgeMap().equals(m.edgeMap());
     }
 

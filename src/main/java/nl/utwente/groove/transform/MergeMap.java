@@ -24,7 +24,7 @@ import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.host.HostNodeSet;
 import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.grammar.type.TypeNode;
-import nl.utwente.groove.graph.AElementMap;
+import nl.utwente.groove.graph.AGraphMap;
 import nl.utwente.groove.graph.Morphism;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.util.Exceptions;
@@ -58,7 +58,7 @@ public class MergeMap extends Morphism<HostNode,HostEdge> {
     }
 
     @Override
-    public void putAll(AElementMap<HostNode,HostEdge,HostNode,HostEdge> other) {
+    public void putAll(AGraphMap<HostNode,HostEdge,HostNode,HostEdge> other) {
         assert other instanceof MergeMap;
         // first copy the edges
         for (Map.Entry<HostEdge,? extends HostEdge> edgeEntry : other.edgeMap()

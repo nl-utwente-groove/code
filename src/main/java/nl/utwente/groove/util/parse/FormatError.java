@@ -17,9 +17,9 @@
 package nl.utwente.groove.util.parse;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +27,7 @@ import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Rule;
+import nl.utwente.groove.grammar.aspect.AspectElement;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.ControlModel;
 import nl.utwente.groove.grammar.model.PrologModel;
@@ -74,8 +75,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
      */
     private void addContext(Object par) {
         if (par instanceof FormatError e) {
-            this.subError = e;
-            e.transferTo(null, this);
+            addContext(e.getArguments());
         } else if (par instanceof GraphState s) {
             this.state = s;
         } else if (par instanceof AspectGraph g) {
@@ -131,6 +131,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
         if (this.resourceName == null) {
             this.resourceName = prior.getResourceName();
         }
+        this.backMap.putAll(prior.backMap);
     }
 
     /** Compares the error graph, error object and message. */
@@ -138,7 +139,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     public boolean equals(Object obj) {
         boolean result;
         if (obj instanceof FormatError err) {
-            result = Arrays.equals(getArguments(), err.getArguments());
+            result = getArguments().equals(err.getArguments());
             result &= toString().equals(err.toString());
         } else {
             result = false;
@@ -150,7 +151,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     @Override
     public int hashCode() {
         int result = toString().hashCode();
-        result += Arrays.hashCode(getArguments());
+        result += getArguments().hashCode();
         return result;
     }
 
@@ -198,14 +199,6 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     /** The prolog view in which the error occurs. */
     private PrologModel prolog;
 
-    /** Returns the sub-error on which this one builds. May be {@code null}. */
-    public final FormatError getSubError() {
-        return this.subError;
-    }
-
-    /** Possible suberror. */
-    private FormatError subError;
-
     /** Returns the graph in which the error occurs. May be {@code null}. */
     public final AspectGraph getGraph() {
         return this.graph;
@@ -230,6 +223,28 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
 
     /** List of erroneous elements. */
     private final List<Element> elements = new ArrayList<>();
+
+    /** Collection of the original {@link AspectElement}s that originated
+     * this error.
+     */
+    public Collection<AspectElement> getAspectElements() {
+        var result = new ArrayList<AspectElement>();
+        for (var e : getElements()) {
+            var image = this.backMap.get(e);
+            while (image != null) {
+                if (image instanceof AspectElement ae) {
+                    result.add(ae);
+                }
+                image = this.backMap.get(image);
+            }
+        }
+        return result;
+    }
+
+    /** Mapping from the graph {@link Element}s in this error to the
+     * {@link AspectElement}s from which they originated.
+     */
+    private final Map<Element,Element> backMap = new HashMap<>();
 
     /** Returns a list of numbers associated with the error; typically,
      * line and column numbers. May be empty. */
@@ -258,9 +273,19 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     /** The name of the resource on which the error occurs. May be {@code null}. */
     private QualName resourceName;
 
-    /** Returns a new format error that extends this one with context information. */
-    public FormatError extend(Object... par) {
-        return new FormatError(this, par);
+    /** Adds a wrapper map for the graph {@link Element}s in this error.
+     * The wrapper map goes inward, i.e., from {@link AspectElement}s that originated the
+     * error to elements in this error object. It is <i>used</i> in the inverse
+     * direction, to map elements in this error back to {@link AspectElement}s
+     */
+    public FormatError wrap(Map<?,?> wrapper) {
+        var result = this;
+        if (!wrapper.isEmpty()) {
+            result = new FormatError(toString());
+            result.copyFrom(this, wrapper, false);
+            result.extendBackMap(wrapper);
+        }
+        return result;
     }
 
     /** Returns a new format error in which the context information is transferred.
@@ -268,44 +293,80 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
      * of the result error; or {@code null} if there is no mapping
      */
     public FormatError transfer(Map<?,?> map) {
-        FormatError result = new FormatError(toString());
-        transferTo(map, result);
+        var result = this;
+        if (!map.isEmpty()) {
+            result = new FormatError(toString());
+            result.copyFrom(this, map, true);
+            result.extendBackMap(map);
+        }
         return result;
     }
 
     /**
      * Transfers the context information of this error object to
      * another, modulo a mapping.
-     * @param map mapping from the context of this error to the context
-     * of the result error; or {@code null} if there is no mapping
-     * @param result the target of the transfer
+     * @param prior the target of the transfer
+     * @param map mapping from the context of the prior error to the context
+     * of this error; or {@code null} if there is no mapping
+     * @param transfer flag indicating if the elements of the prior error
+     * should also be transferred modulo {@code map}
      */
-    private void transferTo(Map<?,?> map, FormatError result) {
-        for (Object arg : getArguments()) {
-            if (map != null && map.containsKey(arg)) {
+    private void copyFrom(FormatError prior, Map<?,?> map, boolean transfer) {
+        for (var e : map.entrySet()) {
+            if (!(e.getKey() instanceof Element ke)) {
+                continue;
+            }
+            if (!(e.getValue() instanceof Element kv)) {
+                continue;
+            }
+            this.backMap.put(ke, kv);
+        }
+        for (Object arg : prior.getArguments()) {
+            if (transfer && map.containsKey(arg)) {
                 arg = map.get(arg);
             }
-            result.addContext(arg);
+            addContext(arg);
         }
-        result.resourceKind = getResourceKind();
-        result.resourceName = getResourceName();
+        this.resourceKind = prior.getResourceKind();
+        this.resourceName = prior.getResourceName();
     }
 
-    /** Returns the relevant contextual arguments of this error. */
-    private Object[] getArguments() {
-        List<Object> newArguments = new ArrayList<>();
-        newArguments.addAll(this.elements);
+    /** Extends the backwards map of this error with a given wrapper. */
+    private void extendBackMap(Map<?,?> wrapper) {
+        for (var e : wrapper.entrySet()) {
+            if (!(e.getKey() instanceof Element ke)) {
+                continue;
+            }
+            if (!(e.getValue() instanceof Element kv)) {
+                continue;
+            }
+            this.backMap.put(ke, kv);
+        }
+    }
+
+    /** Returns a new format error that extends this one with context information. */
+    public FormatError extend(Object... par) {
+        return new FormatError(this, par);
+    }
+
+    /** Returns the contextual arguments of this error. */
+    private List<Object> getArguments() {
+        List<Object> result = new ArrayList<>();
+        result.addAll(this.elements);
         if (this.control != null) {
-            newArguments.add(this.control);
+            result.add(this.control);
         }
         if (this.prolog != null) {
-            newArguments.add(this.prolog);
+            result.add(this.prolog);
         }
-        newArguments.addAll(this.numbers);
-        if (this.subError != null) {
-            newArguments.addAll(Arrays.asList(this.subError.getArguments()));
+        result.addAll(this.numbers);
+        if (this.graph != null) {
+            result.add(this.graph);
         }
-        return newArguments.toArray();
+        if (this.state != null) {
+            result.add(this.state);
+        }
+        return result;
     }
 
     private static int compare(Element o1, Element o2) {

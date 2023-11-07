@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.utwente.groove.grammar.type.TypeElement;
-import nl.utwente.groove.graph.AElementMap;
+import nl.utwente.groove.graph.AGraphMap;
 import nl.utwente.groove.graph.Morphism;
 
 /**
@@ -58,7 +58,7 @@ public class RuleGraphMorphism extends Morphism<RuleNode,RuleEdge> {
     }
 
     @Override
-    public void putAll(AElementMap<RuleNode,RuleEdge,RuleNode,RuleEdge> other) {
+    public void putAll(AGraphMap<RuleNode,RuleEdge,RuleNode,RuleEdge> other) {
         assert other instanceof RuleGraphMorphism;
         super.putAll(other);
         copyVarTyping((RuleGraphMorphism) other);

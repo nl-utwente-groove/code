@@ -25,8 +25,6 @@ import static nl.utwente.groove.grammar.aspect.AspectKind.SUBTYPE;
 import static nl.utwente.groove.graph.EdgeRole.NODE_TYPE;
 
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -135,38 +133,41 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         private final AspectGraph source;
 
         TypeGraph convert() throws FormatException {
+            // return the result if it had already been computed
             if (this.result != null) {
                 return this.result;
             }
+            // throw the errors in the previous computation, if any
             var errors = this.errors;
             errors.throwException();
             // this is the first attempt to construct the graph
             var source = this.source;
             errors.addAll(source.getErrors());
+            // we don't try anything if the source already has errors
             errors.throwException();
             var result = new TypeGraph(source.getQualName());
             TypeFactory factory = result.getFactory();
             var modelMap = new TypeModelMap(factory);
             // collect primitive type nodes
-            for (AspectNode modelNode : source.nodeSet()) {
-                var sortKind = modelNode.getKind(Category.SORT);
+            for (AspectNode node : source.nodeSet()) {
+                var sortKind = node.getKind(Category.SORT);
                 if (sortKind != null) {
                     TypeLabel typeLabel
                         = TypeLabel.createLabel(NODE_TYPE, sortKind.getSort().getName());
                     try {
-                        addNodeType(modelNode, typeLabel, modelMap);
+                        addNodeType(node, typeLabel, modelMap);
                     } catch (FormatException e) {
                         errors.addAll(e.getErrors());
                     }
                 }
             }
             // collect node type edges and build the model type map
-            for (AspectEdge modelEdge : source.edgeSet()) {
-                TypeLabel typeLabel = modelEdge.getTypeLabel();
+            for (AspectEdge edge : source.edgeSet()) {
+                TypeLabel typeLabel = edge.getTypeLabel();
                 if (typeLabel != null && typeLabel.hasRole(NODE_TYPE)) {
-                    AspectNode modelNode = modelEdge.source();
+                    AspectNode node = edge.source();
                     try {
-                        addNodeType(modelNode, typeLabel, modelMap);
+                        addNodeType(node, typeLabel, modelMap);
                     } catch (FormatException e) {
                         errors.addAll(e.getErrors());
                     }
@@ -174,31 +175,22 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             }
             errors.throwException();
             // check if there are untyped, non-virtual nodes
-            Set<AspectNode> untypedNodes = new HashSet<>(source.nodeSet());
-            untypedNodes.removeAll(modelMap.nodeMap().keySet());
-            Iterator<AspectNode> untypedNodeIter = untypedNodes.iterator();
-            while (untypedNodeIter.hasNext()) {
-                AspectNode modelNode = untypedNodeIter.next();
-                if (modelNode.has(Category.NESTING) || modelNode.has(REMARK)) {
-                    untypedNodeIter.remove();
-                } else {
+            for (var node : source.nodeSet()) {
+                if (!modelMap.nodeMap().containsKey(node) && !node.has(REMARK)) {
                     // add a node anyhow, to ensure all edge ends have images
                     TypeNode typeNode = factory.getTopNode();
                     result.addNode(typeNode);
-                    modelMap.putNode(modelNode, typeNode);
+                    modelMap.putNode(node, typeNode);
+                    errors.add("Node '%s' has no type label", node);
                 }
             }
-            for (AspectNode untypedNode : untypedNodes) {
-                errors.add("Node '%s' has no type label", untypedNode);
-            }
-            // copy the edges from model to model
-            for (AspectEdge modelEdge : source.edgeSet()) {
+            // copy the edges from source graph to model
+            for (AspectEdge edge : source.edgeSet()) {
                 // do not process the node type edges again
-                TypeLabel typeLabel = modelEdge.getTypeLabel();
-                if (!modelEdge.has(Category.NESTING) && !modelEdge.has(REMARK)
-                    && (typeLabel == null || !typeLabel.hasRole(NODE_TYPE))) {
+                TypeLabel typeLabel = edge.getTypeLabel();
+                if (!edge.has(REMARK) && (typeLabel == null || !typeLabel.hasRole(NODE_TYPE))) {
                     try {
-                        processModelEdge(result, modelEdge, modelMap);
+                        processModelEdge(result, edge, modelMap);
                     } catch (FormatException exc) {
                         errors.addAll(exc.getErrors());
                     }
@@ -237,27 +229,15 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
                 typeNode = factory.getDataType(sortKind.getSort());
             }
             if (modelNode.has(ABSTRACT)) {
-                if (sortKind != null) {
-                    throw new FormatException("Data type '%s' cannot be abstract", typeLabel.text(),
-                        modelNode, typeNode);
-                }
-                typeNode.setAbstract(true);
+                typeNode.setAbstract();
             }
             if (modelNode.has(IMPORT)) {
-                if (sortKind != null) {
-                    throw new FormatException("Data type '%s' cannot be imported", typeLabel.text(),
-                        modelNode, typeNode);
-                }
-                typeNode.setImported(true);
+                typeNode.setImported();
             }
             if (modelNode.hasColor()) {
                 typeNode.setColor(modelNode.getColor());
             }
             if (modelNode.has(EDGE)) {
-                if (sortKind != null) {
-                    throw new FormatException("Data type '%s' cannot be a nodified edge",
-                        typeLabel.text(), modelNode, typeNode);
-                }
                 typeNode.setLabelPattern(modelNode.getEdgePattern());
             }
             modelMap.putNode(modelNode, typeNode);

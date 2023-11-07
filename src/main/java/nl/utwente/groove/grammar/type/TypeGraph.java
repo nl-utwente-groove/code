@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -115,25 +116,23 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
         Set<TypeNode> newNodes = new HashSet<>();
         Set<TypeEdge> newEdges = new HashSet<>();
         Map<TypeNode,TypeNode> otherToThis = new HashMap<>();
-        for (Node otherNode : other.nodeSet()) {
-            TypeNode otherTypeNode = (TypeNode) otherNode;
-            TypeNode image = addNode(otherTypeNode.label());
-            image.setAbstract(otherTypeNode.isAbstract());
-            if (otherTypeNode.getColor() != null) {
-                image.setColor(otherTypeNode.getColor());
+        for (var source : other.nodeSet()) {
+            TypeNode oldImage = getNode(source.label());
+            TypeNode image = addNode(source.label());
+            if (source.isAbstract()) {
+                image.setAbstract();
             }
-            image.setLabelPattern(otherTypeNode.getLabelPattern());
-            boolean imported = image.isImported() && otherTypeNode.isImported();
-            image.setImported(imported);
+            if (source.getColor() != null) {
+                image.setColor(source.getColor());
+            }
+            image.setLabelPattern(source.getLabelPattern());
+            boolean imported = source.isImported() && (oldImage == null || oldImage.isImported());
             if (imported) {
-                this.imports.add(image);
+                image.setImported();
             } else {
-                this.imports.remove(image);
-            }
-            if (!otherTypeNode.isImported()) {
                 newNodes.add(image);
             }
-            otherToThis.put(otherTypeNode, image);
+            otherToThis.put(source, image);
         }
         for (TypeEdge otherEdge : other.edgeSet()) {
             TypeEdge image = addEdge(otherToThis.get(otherEdge.source()), otherEdge.label(),
@@ -159,13 +158,13 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
         if (result) {
             TypeNode oldType = this.typeNodeMap.put(node.label(), node);
             assert oldType == null : String.format("Duplicate type node for %s", oldType.label());
-            if (node.isImported()) {
-                this.imports.add(node);
-            }
             this.nodeDirectSubtypeMap.add(node);
             this.nodeDirectSupertypeMap.add(node);
             this.nodeSubtypeMap.add(node);
             this.nodeSupertypeMap.add(node);
+        }
+        if (node.isImported()) {
+            setImported(node);
         }
         return result;
     }
@@ -378,13 +377,23 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
     /** Type factory associated with this type graph. */
     private final TypeFactory factory;
 
-    /** Returns the set of imported node types. */
+    /** Changes the status of a node type to imported.
+     * The node type is assumed to be in the graph already.
+     */
+    public void setImported(TypeNode node) {
+        this.imports.add(node);
+    }
+
+    /** Returns the set of imported node types.
+     */
     public Set<TypeNode> getImports() {
         return this.imports;
     }
 
-    /** Set of imported nodes. */
-    private final Set<TypeNode> imports = new HashSet<>();
+    /** Mapping from node types to the number of non-imported nodes with that type.
+     * If the number is zero, the node type is imported.
+     */
+    private final Set<TypeNode> imports = new TreeSet<>();
 
     /**
      * Indicates if this is a degenerate type graph,
