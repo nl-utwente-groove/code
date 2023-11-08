@@ -129,11 +129,6 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<@NonNull HostNode,@Non
     }
 
     @Override
-    public HostGraph clone(AlgebraFamily family) {
-        return new DefaultHostGraph(this, family);
-    }
-
-    @Override
     public DefaultHostGraph clone() {
         return new DefaultHostGraph(this, null);
     }

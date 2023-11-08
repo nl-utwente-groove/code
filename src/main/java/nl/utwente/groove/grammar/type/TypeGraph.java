@@ -740,7 +740,11 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                             .add("Duplicate node types %s and %s", declaredType.label(), typeLabel,
                                  node);
                     } else {
-                        declaredType = newType;
+                        // we shouldn't retype the node, or the connection between
+                        // the parent level and this one will be lost
+                        declaredType = parentNode == null
+                            ? newType
+                            : parentNode.getType();
                         allowedTypes
                             .retainAll(sharp
                                 ? Collections.singleton(newType)

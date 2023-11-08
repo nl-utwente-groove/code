@@ -274,10 +274,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             this.typeMap.putNode(nodeEntry.getKey(), nodeEntry.getValue().getType());
         }
         for (Map.Entry<AspectEdge,RuleEdge> edgeEntry : this.modelMap.edgeMap().entrySet()) {
-            var edgeType = edgeEntry.getValue().getType();
-            if (edgeType != null) {
-                this.typeMap.putEdge(edgeEntry.getKey(), edgeType);
-            }
+            var edgeType = (@NonNull TypeEdge) edgeEntry.getValue().getType();
+            this.typeMap.putEdge(edgeEntry.getKey(), edgeType);
         }
         Rule result = computeRule(this.levelTree);
         return result;
@@ -286,7 +284,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     @Override
     boolean isShouldRebuild() {
         boolean result = super.isShouldRebuild();
-        if (!result && !getGrammar().getTypeModel().isImplicit()) {
+        if (getGrammar().getTypeModel().isImplicit()) {
+            // the implicit type graph gets rebuilt when the start graph changes
+            // so we must also rebuild, otherwise the type graphs will diverge
+            result |= isStale(ResourceKind.HOST);
+        } else {
             result |= isStale(ResourceKind.TYPE);
         }
         return result;
