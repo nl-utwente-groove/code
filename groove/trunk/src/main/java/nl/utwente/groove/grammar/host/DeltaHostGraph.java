@@ -28,7 +28,6 @@ import java.util.Stack;
 
 import org.eclipse.jdt.annotation.NonNull;
 
-import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.AGraph;
 import nl.utwente.groove.graph.Edge;
@@ -102,11 +101,6 @@ public final class DeltaHostGraph extends AGraph<@NonNull HostNode,@NonNull Host
     @Override
     public DefaultHostGraph clone() {
         return new DefaultHostGraph(this, null);
-    }
-
-    @Override
-    public HostGraph clone(AlgebraFamily family) {
-        return new DefaultHostGraph(this, family);
     }
 
     /**

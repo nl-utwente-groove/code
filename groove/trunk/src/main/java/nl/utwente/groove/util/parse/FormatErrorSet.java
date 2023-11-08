@@ -40,7 +40,7 @@ public class FormatErrorSet extends LinkedHashSet<FormatError> {
     public FormatErrorSet(Collection<? extends FormatError> c) {
         super(c);
         if (c instanceof FormatErrorSet fes) {
-            this.wrapper.putAll(fes.wrapper);
+            getWrapper().putAll(fes.getWrapper());
         }
     }
 
@@ -51,17 +51,17 @@ public class FormatErrorSet extends LinkedHashSet<FormatError> {
 
     /** Adds a format error based on a given error message and set of arguments. */
     public boolean add(String message, Object... args) {
-        return add(new FormatError(message, args).wrap(this.wrapper));
+        return add(new FormatError(message, args).wrap(getWrapper()));
     }
 
     /** Adds a format error based on an existing error and set of additional arguments. */
     public boolean add(FormatError error, Object... args) {
-        return add(new FormatError(error, args).wrap(this.wrapper));
+        return add(new FormatError(error, args).wrap(getWrapper()));
     }
 
     @Override
     public boolean add(FormatError e) {
-        return super.add(e.wrap(this.wrapper));
+        return super.add(e.wrap(getWrapper()));
     }
 
     /**
@@ -104,11 +104,20 @@ public class FormatErrorSet extends LinkedHashSet<FormatError> {
     public FormatErrorSet wrap(Map<?,?> wrapper) {
         var result = new FormatErrorSet();
         stream().map(e -> e.wrap(wrapper)).forEach(result::add);
-        result.wrapper.putAll(wrapper);
+        result.getWrapper().putAll(wrapper);
         return result;
     }
 
-    private final Map<Object,Object> wrapper = new HashMap<>();
+    /** Lazily creates and returns the wrapper map. */
+    private Map<Object,Object> getWrapper() {
+        var result = this.wrapper;
+        if (result == null) {
+            result = this.wrapper = new HashMap<>();
+        }
+        return result;
+    }
+
+    private Map<Object,Object> wrapper;
 
     @Override
     public FormatErrorSet clone() {
