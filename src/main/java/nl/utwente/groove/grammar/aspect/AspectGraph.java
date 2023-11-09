@@ -741,7 +741,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         double offsetY = 0;
         Map<AspectNode,AspectNode> nodeMap = new HashMap<>();
         Map<String,AspectNode> sharedNodes = new HashMap<>();
-
+        var transfer = new AspectGraphMorphism(result);
         // Copy the graphs one by one into the combined graph
         for (AspectGraph graph : graphs) {
             nodeMap.clear();
@@ -766,12 +766,14 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
                     result.addNode(fresh);
                 }
             }
+            transfer.nodeMap().putAll(nodeMap);
             // Copy the edges
             for (AspectEdge edge : graph.edgeSet()) {
                 AspectEdge fresh = new AspectEdge(nodeMap.get(edge.source()), edge.label(),
                     nodeMap.get(edge.target()), edge.getNumber());
                 newLayoutMap.copyEdgeWithOffset(fresh, edge, oldLayoutMap, offsetX, offsetY);
                 result.addEdgeContext(fresh);
+                transfer.putEdge(edge, fresh);
             }
             // Copy the errors
             for (FormatError oldError : graph.getErrors()) {
@@ -788,7 +790,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
 
         // Finalise combined graph.
         GraphInfo.setLayoutMap(result, newLayoutMap);
-        GraphInfo.setErrors(result, newErrors);
+        GraphInfo.setErrors(result, newErrors.project(transfer));
         result.setFixed();
         return result;
     }

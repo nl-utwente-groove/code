@@ -57,23 +57,26 @@ public class TypeNode implements Node, TypeElement {
     }
 
     /**
-     * Type nodes are equal if they have the same number.
-     * However, it is an error to compare type nodes with the same number
-     * and different types.
+     * Type nodes are equal if they have the same type graph and number.
      */
     @Override
     public boolean equals(@Nullable Object obj) {
-        if (obj == null) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof TypeNode other)) {
             return false;
         }
-        // only type nodes from the same type graph may be compared
-        assert getGraph() == ((TypeElement) obj).getGraph()
-            || (isImported() && ((TypeNode) obj).isImported());
-        boolean result = this == obj;
-        // object equality should imply equal numbers and type labels
-        assert !result || !(obj instanceof TypeNode) || (getNumber() == ((TypeNode) obj).getNumber()
-            && label().equals(((TypeNode) obj).label()));
-        return result;
+        if (getGraph() != other.getGraph()) {
+            return false;
+        }
+        if (getNumber() != other.getNumber()) {
+            return false;
+        }
+        assert label().equals(other.label());
+        assert isImported() == other.isImported();
+        assert isAbstract() == other.isAbstract();
+        return true;
     }
 
     @Override

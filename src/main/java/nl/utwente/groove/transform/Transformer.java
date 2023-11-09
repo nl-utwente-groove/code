@@ -37,7 +37,6 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.GraphConverter;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
-import nl.utwente.groove.grammar.model.GraphBasedModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.lts.GTS;
@@ -188,9 +187,8 @@ public class Transformer {
         AspectGraph result = null;
         if (startGraphName != null) {
             // first see if the name refers to a local host graph
-            GraphBasedModel<?> hostModel = getGrammarModel()
-                .getGraphResource(ResourceKind.HOST, QualName.name(startGraphName));
-            if (hostModel == null) {
+            result = getGrammarModel().getGraph(ResourceKind.HOST, QualName.name(startGraphName));
+            if (result == null) {
                 // try to load the graph as a standalone file
                 startGraphName = FileType.STATE.addExtension(startGraphName);
                 File startGraphFile = new File(startGraphName);
@@ -203,8 +201,6 @@ public class Transformer {
                     throw new IOException("Can't find start graph " + startGraphName);
                 }
                 result = GraphConverter.toAspect(Groove.loadGraph(startGraphFile));
-            } else {
-                result = hostModel.getSource();
             }
         }
         return result;

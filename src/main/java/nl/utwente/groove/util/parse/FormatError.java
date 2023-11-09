@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Recipe;
@@ -35,6 +37,7 @@ import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.Element;
+import nl.utwente.groove.graph.GraphMap;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.NodeComparator;
 import nl.utwente.groove.gui.list.ListPanel.SelectableListEntry;
@@ -131,7 +134,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
         if (this.resourceName == null) {
             this.resourceName = prior.getResourceName();
         }
-        this.backMap.putAll(prior.backMap);
+        this.projection.putAll(prior.projection);
     }
 
     /** Compares the error graph, error object and message. */
@@ -215,27 +218,18 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     /** The state in which the error occurs. */
     private GraphState state;
 
-    /** Returns the list of elements in which the error occurs. May be empty. */
-    @Override
-    public final List<Element> getElements() {
-        return this.elements;
-    }
-
     /** List of erroneous elements. */
     private final List<Element> elements = new ArrayList<>();
 
-    /** Collection of the original {@link AspectElement}s that originated
-     * this error.
-     */
-    public Collection<AspectElement> getAspectElements() {
-        var result = new ArrayList<AspectElement>();
-        for (var e : getElements()) {
-            var image = this.backMap.get(e);
-            while (image != null) {
-                if (image instanceof AspectElement ae) {
-                    result.add(ae);
-                }
-                image = this.backMap.get(image);
+    /** Returns the list of elements in which the error occurs, together
+     * with its projections. May be empty. */
+    @Override
+    public List<Element> getElements() {
+        var result = new ArrayList<Element>();
+        for (var e : this.elements) {
+            while (e != null) {
+                result.add(e);
+                e = this.projection.get(e);
             }
         }
         return result;
@@ -244,7 +238,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     /** Mapping from the graph {@link Element}s in this error to the
      * {@link AspectElement}s from which they originated.
      */
-    private final Map<Element,Element> backMap = new HashMap<>();
+    private final Map<Element,Element> projection = new HashMap<>();
 
     /** Returns a list of numbers associated with the error; typically,
      * line and column numbers. May be empty. */
@@ -274,15 +268,65 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     private QualName resourceName;
 
     /** Clones this error while adding a projection.
-     * The projection goes outward, i.e., from graph elements in this error to
-     * contextual graph elements that originated the error.
+     * The projection goes outward, i.e., from (graph) elements in this error to
+     * contextual (graph) elements that originated the error.
+     * @param projection mapping from error {@link Element}s to contextual {@link Element}s
      */
-    public FormatError project(Map<?,?> projection) {
+    FormatError project(Map<? extends Element,? extends Element> projection) {
         var result = this;
         if (!projection.isEmpty()) {
             result = new FormatError(toString());
-            result.copyFrom(this, projection, false);
-            result.extendBackMap(projection);
+            result.copyFrom(this, null);
+            result.extendProjection(projection, true);
+        }
+        return result;
+    }
+
+    /** Clones this error while adding a projection.
+     * The projection goes outward, i.e., from (graph) elements in this error to
+     * contextual (graph) elements that originated the error.
+     * @param projection mapping from error {@link Element}s to contextual {@link Element}s
+     */
+    public FormatError project(GraphMap projection) {
+        var result = this;
+        if (!projection.isEmpty()) {
+            result = new FormatError(toString());
+            result.copyFrom(this, null);
+            result.extendProjection(projection.nodeMap(), true);
+            result.extendProjection(projection.edgeMap(), true);
+        }
+        return result;
+    }
+
+    /** Clones this error while adding a wrapper.
+     * The wrapper goes inward, i.e., from contextual
+     * (graph) elements that originated the error to (graph) elements in this error.
+     * This is the inverse wrt to {@link #project(GraphMap)}
+     * @param wrapper mapping from contextual {@link Element}s to error {@link Element}s
+     */
+    public FormatError unwrap(Map<? extends Element,? extends Element> wrapper) {
+        var result = this;
+        if (!wrapper.isEmpty()) {
+            result = new FormatError(toString());
+            result.copyFrom(this, null);
+            result.extendProjection(wrapper, false);
+        }
+        return result;
+    }
+
+    /** Clones this error while adding a wrapper.
+     * The wrapper goes inward, i.e., from contextual
+     * (graph) elements that originated the error to (graph) elements in this error.
+     * This is the inverse wrt to {@link #project(GraphMap)}
+     * @param wrapper mapping from contextual {@link Element}s to error {@link Element}s
+     */
+    public FormatError unwrap(GraphMap wrapper) {
+        var result = this;
+        if (!wrapper.isEmpty()) {
+            result = new FormatError(toString());
+            result.copyFrom(this, null);
+            result.extendProjection(wrapper.edgeMap(), false);
+            result.extendProjection(wrapper.nodeMap(), false);
         }
         return result;
     }
@@ -291,55 +335,52 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
      * @param map mapping from the context of this error to the context
      * of the result error; or {@code null} if there is no mapping
      */
-    public FormatError transfer(Map<?,?> map) {
+    public FormatError transfer(GraphMap map) {
         var result = this;
         if (!map.isEmpty()) {
             result = new FormatError(toString());
-            result.copyFrom(this, map, true);
-            result.extendBackMap(map);
+            Map<Object,Object> elementMap = new HashMap<>();
+            elementMap.putAll(map.nodeMap());
+            elementMap.putAll(map.edgeMap());
+            result.copyFrom(this, elementMap);
         }
         return result;
     }
 
     /**
-     * Transfers the context information of this error object to
-     * another, modulo a mapping.
-     * @param prior the target of the transfer
+     * Transfers the context information of another error object to
+     * this one, modulo a mapping.
+     * @param prior the source of the transfer
      * @param map mapping from the context of the prior error to the context
      * of this error; or {@code null} if there is no mapping
-     * @param transfer flag indicating if the elements of the prior error
-     * should also be transferred modulo {@code map}
      */
-    private void copyFrom(FormatError prior, Map<?,?> map, boolean transfer) {
-        for (var e : map.entrySet()) {
-            if (!(e.getKey() instanceof Element ke)) {
-                continue;
-            }
-            if (!(e.getValue() instanceof Element kv)) {
-                continue;
-            }
-            this.backMap.put(ke, kv);
-        }
+    private void copyFrom(FormatError prior, @Nullable Map<?,?> map) {
         for (Object arg : prior.getArguments()) {
-            if (transfer && map.containsKey(arg)) {
-                arg = map.get(arg);
+            var transferredArg = map != null && map.containsKey(arg)
+                ? map.get(arg)
+                : arg;
+            addContext(transferredArg);
+            if (transferredArg instanceof Element te && prior.projection.containsKey(arg)) {
+                this.projection.put(te, prior.projection.get(arg));
             }
-            addContext(arg);
         }
         this.resourceKind = prior.getResourceKind();
         this.resourceName = prior.getResourceName();
     }
 
-    /** Extends the backwards map of this error with a given wrapper. */
-    private void extendBackMap(Map<?,?> wrapper) {
-        for (var e : wrapper.entrySet()) {
-            if (!(e.getKey() instanceof Element ke)) {
-                continue;
+    /** Extends the projection map of this error with a given map.
+     * @param map the extension map
+     * @param outward flag indicating if {@code map} goes outward
+     * (<i>from</i> context elements in this error) or inward
+     * (<i>to</i> elements in this error)
+     */
+    private void extendProjection(Map<? extends Element,? extends Element> map, boolean outward) {
+        for (var e : map.entrySet()) {
+            if (outward) {
+                this.projection.put(e.getKey(), e.getValue());
+            } else {
+                this.projection.put(e.getValue(), e.getKey());
             }
-            if (!(e.getValue() instanceof Element kv)) {
-                continue;
-            }
-            this.backMap.put(ke, kv);
         }
     }
 

@@ -69,7 +69,6 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.model.GrammarModel;
-import nl.utwente.groove.grammar.model.GraphBasedModel;
 import nl.utwente.groove.grammar.model.ResourceModel;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.GraphInfo;
@@ -203,11 +202,7 @@ final public class GraphEditorTab extends ResourceTab
 
     @Override
     public void updateGrammar(GrammarModel grammar) {
-        GraphBasedModel<?> graphModel
-            = (GraphBasedModel<?>) grammar.getResource(getResourceKind(), getQualName());
-        AspectGraph source = graphModel == null
-            ? null
-            : graphModel.getSource();
+        AspectGraph source = grammar.getGraph(getResourceKind(), getQualName());
         // test if the graph being edited is still in the grammar;
         // if not, silently dispose it - it's too late to do anything else!
         if (source == null) {

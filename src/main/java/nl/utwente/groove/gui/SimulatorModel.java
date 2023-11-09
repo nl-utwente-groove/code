@@ -271,10 +271,12 @@ public class SimulatorModel implements Cloneable {
         Set<AspectGraph> newGraphs = new HashSet<>();
         for (Map.Entry<QualName,Integer> entry : priorityMap.entrySet()) {
             AspectGraph oldGraph = getStore().getGraphs(ResourceKind.RULE).get(entry.getKey());
-            AspectGraph newGraph = oldGraph.clone();
-            GraphInfo.setPriority(newGraph, entry.getValue());
-            newGraph.setFixed();
-            newGraphs.add(newGraph);
+            if (GraphInfo.getPriority(oldGraph) != entry.getValue()) {
+                AspectGraph newGraph = oldGraph.clone();
+                GraphInfo.setPriority(newGraph, entry.getValue());
+                newGraph.setFixed();
+                newGraphs.add(newGraph);
+            }
         }
         Map<QualName,String> newControl
             = getGrammar().getControlModel().getLoader().changePriority(priorityMap);
@@ -911,7 +913,7 @@ public class SimulatorModel implements Cloneable {
                 continue;
             }
             for (QualName name : getGrammar().getNames(kind)) {
-                AspectGraph graph = getGrammar().getGraphResource(kind, name).getSource();
+                AspectGraph graph = getGrammar().getGraph(kind, name);
                 graph.getSearchResults(label, searchResults);
             }
         }

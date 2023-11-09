@@ -13,7 +13,6 @@ import java.util.Set;
 
 import nl.utwente.groove.algebra.syntax.SortMap;
 import nl.utwente.groove.grammar.QualName;
-import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.type.ImplicitTypeGraph;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
@@ -121,12 +120,12 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
             FormatErrorSet errors = createErrors();
             // There are no errors in each of the models, try to compose the
             // type graph.
-            Map<TypeNode,TypeNode> importNodes = new HashMap<>();
+            Map<TypeNode,TypeNode> nodeMergeMap = new HashMap<>();
             Map<TypeNode,TypeModel> importModels = new HashMap<>();
             for (TypeModel model : typeModelMap.values()) {
                 try {
                     TypeGraph graph = model.toResource();
-                    Map<TypeNode,TypeNode> map = result.add(graph);
+                    nodeMergeMap.putAll(result.add(graph));
                     for (TypeNode node : result.getImports()) {
                         if (!importModels.containsKey(node)) {
                             importModels.put(node, model);
@@ -153,12 +152,11 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
             errors.throwException();
             var imports = result.getImports();
             if (!imports.isEmpty()) {
+                errors.addWrapper(nodeMergeMap);
                 for (var imported : imports) {
                     TypeModel origModel = importModels.get(imported);
-                    errors
-                        .add("Unresolved type import %s", imported,
-                             getInverse(origModel.getMap().nodeMap(), imported),
-                             origModel.getSource());
+                    errors.addWrapper(origModel.getMap());
+                    errors.add("Unresolved type import %s", imported, origModel.getSource());
                 }
             }
             errors.throwException();
@@ -229,16 +227,6 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
         HostModel host = getGrammar().getStartGraphModel();
         if (host != null) {
             result.addAll(host.getLabels());
-        }
-        return result;
-    }
-
-    private AspectNode getInverse(Map<AspectNode,?> map, TypeNode image) {
-        AspectNode result = null;
-        for (Map.Entry<AspectNode,?> entry : map.entrySet()) {
-            if (entry.getValue().equals(image)) {
-                return entry.getKey();
-            }
         }
         return result;
     }

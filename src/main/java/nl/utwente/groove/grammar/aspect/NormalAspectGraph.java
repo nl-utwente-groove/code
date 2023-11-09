@@ -44,6 +44,7 @@ import nl.utwente.groove.algebra.syntax.FieldExpr;
 import nl.utwente.groove.algebra.syntax.Variable;
 import nl.utwente.groove.grammar.aspect.AspectContent.NestedValue;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
+import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Keywords;
@@ -65,7 +66,8 @@ public class NormalAspectGraph extends AspectGraph {
      */
     public NormalAspectGraph(AspectGraph source) {
         super(source.getName(), source.getRole());
-        source.cloneTo(new AspectGraphMorphism(this));
+        var toNormalMap = this.toNormalMap = new AspectGraphMorphism(this);
+        source.cloneTo(toNormalMap);
         this.source = source;
     }
 
@@ -77,12 +79,29 @@ public class NormalAspectGraph extends AspectGraph {
     /** The (non-normalised) source of this normalised aspect graph. */
     private final AspectGraph source;
 
+    /** Morphism from the source {@link AspectGraph} to the normalised {@link AspectGraph}. */
+    private final AspectGraphMorphism toNormalMap;
+
     @Override
     public boolean setFixed() {
         boolean result = !isFixed();
         if (result) {
             setStatus(Status.NORMALISING);
-            doNormalise();
+            var changeMap = doNormalise();
+            var toNormalMap = this.toNormalMap;
+            for (var ne : toNormalMap.nodeMap().entrySet()) {
+                var nk = ne.getKey();
+                if (changeMap.containsNode(nk)) {
+                    ne.setValue(changeMap.getNode(nk));
+                }
+            }
+            for (var ee : toNormalMap.edgeMap().entrySet()) {
+                var ek = ee.getKey();
+                if (changeMap.containsEdge(ek)) {
+                    ee.setValue(changeMap.getEdge(ek));
+                }
+            }
+            GraphInfo.setErrors(this, getErrors().unwrap(toNormalMap));
             super.setFixed();
         }
         return result;
@@ -242,7 +261,7 @@ public class NormalAspectGraph extends AspectGraph {
             removeEdgeSet(outEdges);
             removeNode(node);
         }
-        addErrors(errors.transfer(edgeInverseMap));
+        addErrors(errors.transfer(map));
         return map;
     }
 

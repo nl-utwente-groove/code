@@ -21,8 +21,8 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 
-import nl.utwente.groove.grammar.aspect.AspectElement;
 import nl.utwente.groove.graph.Element;
+import nl.utwente.groove.graph.GraphMap;
 
 /**
  * Set of format errors, with additional functionality for
@@ -79,37 +79,100 @@ public class FormatErrorSet extends LinkedHashSet<FormatError> {
      * @param map mapping from the context of this error to the context
      * of the result error; or {@code null} if there is no mapping
      */
-    public FormatErrorSet transfer(Map<?,?> map) {
+    public FormatErrorSet transfer(GraphMap map) {
         FormatErrorSet result = new FormatErrorSet();
-        for (FormatError error : this) {
-            result.add(error.transfer(map));
-        }
+        stream().map(e -> e.transfer(map)).forEach(result::add);
         return result;
     }
 
     /** Returns a new format error set in which the context information is extended. */
     public FormatErrorSet extend(Object... objects) {
         FormatErrorSet result = new FormatErrorSet();
-        for (FormatError error : this) {
-            result.add(error.extend(objects));
-        }
+        stream().map(e -> e.extend(objects)).forEach(result::add);
+        return result;
+    }
+
+    /** Extends the projection map of this error set with the inverse of a given wrapper.
+     * @param wrapper mapping from contextual {@link Element}s to error {@link Element}s
+     */
+    public void addWrapper(GraphMap wrapper) {
+        addWrapper(wrapper.nodeMap());
+        addWrapper(wrapper.edgeMap());
+    }
+
+    /** Extends the projection map of this error set with the inverse of a given wrapper.
+     * @param wrapper mapping from contextual {@link Element}s to error {@link Element}s
+     */
+    public void addWrapper(Map<? extends Element,? extends Element> wrapper) {
+        var projection = getProjection();
+        wrapper.entrySet().forEach(e -> projection.put(e.getValue(), e.getKey()));
+    }
+
+    /** Extends the projection map of this error set with a given projection.
+     * @param projection mapping from error {@link Element}s to contextual {@link Element}s
+     */
+    public void addProjection(GraphMap projection) {
+        addProjection(projection.nodeMap());
+        addProjection(projection.edgeMap());
+    }
+
+    /** Extends the projection map of this error set with a given projection.
+     * @param projection mapping from error {@link Element}s to contextual {@link Element}s
+     */
+    public void addProjection(Map<? extends Element,? extends Element> projection) {
+        getProjection().putAll(projection);
+    }
+
+    /** Returns a new error set, based on the current one,
+     * in which the projection is extended with the inverse of a wrapper map.
+     * All errors in this set are unwrapped into the result.
+     * @param wrapper mapping from contextual {@link Element}s to error {@link Element}s
+     */
+    public FormatErrorSet unwrap(Map<? extends Element,? extends Element> wrapper) {
+        var result = new FormatErrorSet();
+        stream().map(e -> e.unwrap(wrapper)).forEach(result::add);
+        result.addWrapper(wrapper);
+        return result;
+    }
+
+    /** Returns a new error set, based on the current one,
+     * in which the projection is extended with the inverse of a wrapper map.
+     * All errors in this set are unwrapped into the result.
+     * @param wrapper mapping from contextual {@link Element}s to error {@link Element}s
+     */
+    public FormatErrorSet unwrap(GraphMap wrapper) {
+        var result = new FormatErrorSet();
+        stream().map(e -> e.unwrap(wrapper)).forEach(result::add);
+        result.addWrapper(wrapper);
         return result;
     }
 
     /** Returns a new error set, based on the current one,
      * in which the projection is extended with the given one.
      * All errors in this set are projected into the result.
-     * @param projection mapping from error {@link Element}s to (contextual) {@link AspectElement}s
+     * @param projection mapping from error {@link Element}s to contextual {@link Element}s
      */
-    public FormatErrorSet project(Map<?,?> projection) {
+    public FormatErrorSet project(Map<? extends Element,? extends Element> projection) {
         var result = new FormatErrorSet();
         stream().map(e -> e.project(projection)).forEach(result::add);
-        result.getProjection().putAll(projection);
+        result.addProjection(projection);
+        return result;
+    }
+
+    /** Returns a new error set, based on the current one,
+     * in which the projection is extended with the given one.
+     * All errors in this set are projected into the result.
+     * @param projection mapping from error {@link Element}s to contextual {@link Element}s
+     */
+    public FormatErrorSet project(GraphMap projection) {
+        var result = new FormatErrorSet();
+        stream().map(e -> e.project(projection)).forEach(result::add);
+        result.addProjection(projection);
         return result;
     }
 
     /** Lazily creates and returns the wrapper map. */
-    private Map<Object,Object> getProjection() {
+    private Map<Element,Element> getProjection() {
         var result = this.projection;
         if (result == null) {
             result = this.projection = new HashMap<>();
@@ -118,7 +181,7 @@ public class FormatErrorSet extends LinkedHashSet<FormatError> {
     }
 
     /** Projection from (inner) graph elements to (outer, contextual) graph elements. */
-    private Map<Object,Object> projection;
+    private Map<Element,Element> projection;
 
     @Override
     public FormatErrorSet clone() {

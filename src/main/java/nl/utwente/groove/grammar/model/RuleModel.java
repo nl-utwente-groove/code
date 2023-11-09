@@ -477,13 +477,13 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 errors.addAll(exc.getErrors());
             }
         }
-        transferErrors(errors, levelTree.getModelMap()).throwException();
+        errors.unwrap(levelTree.getModelMap()).throwException();
         // only fix if the rule is not null and there were no errors in the subconditions
         if (result != null) {
             try {
                 result.setFixed();
             } catch (FormatException exc) {
-                transferErrors(exc.getErrors(), levelTree.getModelMap()).throwException();
+                exc.getErrors().unwrap(levelTree.getModelMap()).throwException();
             }
         }
         return result;
@@ -716,7 +716,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             try {
                 level2Map = buildLevels2(this.level1Map, untypedModelMap);
             } catch (FormatException e) {
-                throw new FormatException(transferErrors(e.getErrors(), untypedModelMap));
+                throw new FormatException(e.getErrors().unwrap(untypedModelMap));
             }
             RuleFactory typedFactory = RuleModel.this.ruleFactory;
             RuleGraphMorphism typingMap = new RuleGraphMorphism(typedFactory);
@@ -724,7 +724,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 SortedMap<Index,Level3> level3Map = buildLevels3(level2Map, typingMap);
                 this.level4Map = build4From3(level3Map);
             } catch (FormatException e) {
-                throw new FormatException(transferErrors(e.getErrors(), untypedModelMap));
+                throw new FormatException(e.getErrors().unwrap(untypedModelMap));
             }
             RuleModelMap modelMap = new RuleModelMap(typedFactory);
             for (Map.Entry<AspectNode,RuleNode> nodeEntry : untypedModelMap.nodeMap().entrySet()) {
@@ -2017,7 +2017,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 }
                 checkTypeSpecialisation(parentNodes, this.lhs, this.rhs);
             } catch (FormatException exc) {
-                this.errors.addAll(transferErrors(exc.getErrors(), this.typeMap));
+                this.errors.addAll(exc.getErrors().unwrap(this.typeMap));
             }
             this.errors.throwException();
             for (Map.Entry<RuleNode,Color> colorEntry : origin.colorMap.entrySet()) {

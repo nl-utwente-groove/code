@@ -18,7 +18,6 @@ package nl.utwente.groove.grammar.model;
 
 import static nl.utwente.groove.grammar.aspect.AspectKind.REMARK;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -44,11 +43,9 @@ import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
-import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.gui.dialog.GraphPreviewDialog;
 import nl.utwente.groove.util.Pair;
-import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -223,22 +220,12 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                     result.checkTypeConstraints().throwException();
                 }
             } catch (FormatException e) {
-                // compute inverse element map
-                Map<Element,Element> inverseMap = new HashMap<>();
-                for (Map.Entry<AspectNode,HostNode> nodeEntry : elementMap.nodeMap().entrySet()) {
-                    inverseMap.put(nodeEntry.getValue(), nodeEntry.getKey());
-                }
-                for (Map.Entry<AspectEdge,HostEdge> edgeEntry : elementMap.edgeMap().entrySet()) {
-                    inverseMap.put(edgeEntry.getValue(), edgeEntry.getKey());
-                }
-                for (FormatError error : e.getErrors()) {
-                    errors.add(error.transfer(inverseMap));
-                }
+                errors.addAll(e.getErrors());
             }
         }
         // transfer graph info such as layout from model to resource
         GraphInfo.transfer(normalSource, result, elementMap);
-        GraphInfo.setErrors(result, errors);
+        GraphInfo.setErrors(result, errors.unwrap(elementMap));
         result.setFixed();
         return new Pair<>(result, elementMap);
     }

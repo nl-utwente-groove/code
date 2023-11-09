@@ -78,15 +78,13 @@ final public class GroovyDisplay extends ResourceDisplay {
      * @param name Name of script resource to execute
      */
     public void executeGroovy(QualName name) {
-        String program = getSimulatorModel().getStore()
-            .getTexts(getResourceKind())
-            .get(name);
+        String program = getSimulatorModel().getGrammar().getText(getResourceKind(), name);
         GraphManager manager = new GraphManager(getSimulatorModel());
         Binding binding = new Binding();
 
         PaneWriter writer;
         try (PipedOutputStream output = new PipedOutputStream();
-            PrintStream newstream = new PrintStream(output);) {
+             PrintStream newstream = new PrintStream(output);) {
             writer = new PaneWriter(getEditorPane(), output);
             getEditorPane().setText("");
 
@@ -106,23 +104,23 @@ final public class GroovyDisplay extends ResourceDisplay {
                 newstream.println("Error during execution of Groovy script");
                 String loc = "";
                 for (StackTraceElement elem : e.getStackTrace()) {
-                    if (elem.getFileName()
-                        .endsWith(FileType.GROOVY.getExtension())) {
+                    if (elem.getFileName().endsWith(FileType.GROOVY.getExtension())) {
                         loc = elem.getFileName() + ":" + elem.getLineNumber() + " : ";
                         break;
                     }
                 }
                 newstream.println(loc + e.getMessage());
             } catch (Exception e) {
-                newstream.println(e.getClass()
-                    .getSimpleName() + " during execution of Groovy script");
+                newstream
+                    .println(e.getClass().getSimpleName() + " during execution of Groovy script");
                 newstream.println(e.getMessage());
                 for (StackTraceElement elem : e.getStackTrace()) {
                     newstream.println(elem.toString());
                 }
             } catch (Error e) {
-                newstream.println("!" + e.getClass()
-                    .getSimpleName() + " during execution of Groovy script!");
+                newstream
+                    .println("!" + e.getClass().getSimpleName()
+                        + " during execution of Groovy script!");
                 newstream.println(e.getMessage());
             }
 
