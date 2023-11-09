@@ -40,7 +40,7 @@ public class FormatErrorSet extends LinkedHashSet<FormatError> {
     public FormatErrorSet(Collection<? extends FormatError> c) {
         super(c);
         if (c instanceof FormatErrorSet fes) {
-            getWrapper().putAll(fes.getWrapper());
+            getProjection().putAll(fes.getProjection());
         }
     }
 
@@ -51,17 +51,17 @@ public class FormatErrorSet extends LinkedHashSet<FormatError> {
 
     /** Adds a format error based on a given error message and set of arguments. */
     public boolean add(String message, Object... args) {
-        return add(new FormatError(message, args).wrap(getWrapper()));
+        return add(new FormatError(message, args).project(getProjection()));
     }
 
     /** Adds a format error based on an existing error and set of additional arguments. */
     public boolean add(FormatError error, Object... args) {
-        return add(new FormatError(error, args).wrap(getWrapper()));
+        return add(new FormatError(error, args).project(getProjection()));
     }
 
     @Override
     public boolean add(FormatError e) {
-        return super.add(e.wrap(getWrapper()));
+        return super.add(e.project(getProjection()));
     }
 
     /**
@@ -97,27 +97,28 @@ public class FormatErrorSet extends LinkedHashSet<FormatError> {
     }
 
     /** Returns a new error set, based on the current one,
-     * in which the wrapper has been extended.
-     * All errors in the set are likewise wrapped.
-     * @param wrapper mapping from error {@link Element}s to (contextual) {@link AspectElement}s
+     * in which the projection is extended with the given one.
+     * All errors in this set are projected into the result.
+     * @param projection mapping from error {@link Element}s to (contextual) {@link AspectElement}s
      */
-    public FormatErrorSet wrap(Map<?,?> wrapper) {
+    public FormatErrorSet project(Map<?,?> projection) {
         var result = new FormatErrorSet();
-        stream().map(e -> e.wrap(wrapper)).forEach(result::add);
-        result.getWrapper().putAll(wrapper);
+        stream().map(e -> e.project(projection)).forEach(result::add);
+        result.getProjection().putAll(projection);
         return result;
     }
 
     /** Lazily creates and returns the wrapper map. */
-    private Map<Object,Object> getWrapper() {
-        var result = this.wrapper;
+    private Map<Object,Object> getProjection() {
+        var result = this.projection;
         if (result == null) {
-            result = this.wrapper = new HashMap<>();
+            result = this.projection = new HashMap<>();
         }
         return result;
     }
 
-    private Map<Object,Object> wrapper;
+    /** Projection from (inner) graph elements to (outer, contextual) graph elements. */
+    private Map<Object,Object> projection;
 
     @Override
     public FormatErrorSet clone() {

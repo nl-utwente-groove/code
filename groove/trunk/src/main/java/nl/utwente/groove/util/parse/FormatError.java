@@ -273,17 +273,16 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     /** The name of the resource on which the error occurs. May be {@code null}. */
     private QualName resourceName;
 
-    /** Adds a wrapper map for the graph {@link Element}s in this error.
-     * The wrapper map goes inward, i.e., from {@link AspectElement}s that originated the
-     * error to elements in this error object. It is <i>used</i> in the inverse
-     * direction, to map elements in this error back to {@link AspectElement}s
+    /** Clones this error while adding a projection.
+     * The projection goes outward, i.e., from graph elements in this error to
+     * contextual graph elements that originated the error.
      */
-    public FormatError wrap(Map<?,?> wrapper) {
+    public FormatError project(Map<?,?> projection) {
         var result = this;
-        if (!wrapper.isEmpty()) {
+        if (!projection.isEmpty()) {
             result = new FormatError(toString());
-            result.copyFrom(this, wrapper, false);
-            result.extendBackMap(wrapper);
+            result.copyFrom(this, projection, false);
+            result.extendBackMap(projection);
         }
         return result;
     }

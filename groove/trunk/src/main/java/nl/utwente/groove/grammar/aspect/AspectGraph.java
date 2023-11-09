@@ -444,7 +444,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
      * Copies this aspect graph under a given mapping.
      * The mapping is assumed to be initially empty, and have an empty target graph.
      * The result of the method is the target of the mapping, which then will be filled with a copy of this graph
-     * @param map the morphism under which the clone is to be constructed
+     * @param map the (initially empty) morphism under which the clone is to be constructed
+     * @return the result graph; also obtainable as {@code map.target()}
      */
     AspectGraph cloneTo(AspectGraphMorphism map) {
         assert isFixed();
