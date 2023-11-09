@@ -99,8 +99,7 @@ public class ResourceTree extends AbstractResourceTree {
 
         // add tool tips
         installListeners();
-        ToolTipManager.sharedInstance()
-            .registerComponent(this);
+        ToolTipManager.sharedInstance().registerComponent(this);
         addMouseListener(new DismissDelayer(this));
     }
 
@@ -141,11 +140,9 @@ public class ResourceTree extends AbstractResourceTree {
             for (int i = 0; i < getRowCount(); i++) {
                 TreePath path = getPathForRow(i);
                 TreeNode node = (TreeNode) path.getLastPathComponent();
-                if (node instanceof ResourceTreeNode) {
-                    ResourceTreeNode rnode = (ResourceTreeNode) node;
+                if (node instanceof ResourceTreeNode rnode) {
                     visible.add(rnode.getQualName());
-                } else if (node instanceof PathNode) {
-                    PathNode pnode = (PathNode) node;
+                } else if (node instanceof PathNode pnode) {
                     visible.add(pnode.getQualName());
                 }
             }
@@ -164,7 +161,8 @@ public class ResourceTree extends AbstractResourceTree {
                         if (visible.contains(name) || selected.contains(name)) {
                             TreePath path = new TreePath(node.getPath());
                             expandPath(path.getParentPath());
-                            if (getSimulatorModel().getSelectSet(getResourceKind())
+                            if (getSimulatorModel()
+                                .getSelectSet(getResourceKind())
                                 .contains(name)) {
                                 addSelectionPath(path);
                             }
@@ -183,6 +181,16 @@ public class ResourceTree extends AbstractResourceTree {
 
                 // store new tree and refresh display
                 refresh(source.getState());
+            }
+        } else if (changes.contains(Change.toChange(getResourceKind()))) {
+            var model = source.getResource(getResourceKind()).getQualName();
+            for (int i = 0; i < getRowCount(); i++) {
+                TreePath path = getPathForRow(i);
+                TreeNode node = (TreeNode) path.getLastPathComponent();
+                if (node instanceof ResourceTreeNode rnode && rnode.getQualName().equals(model)) {
+                    setSelectionPath(path);
+                    break;
+                }
             }
         }
         activateListeners();
@@ -258,8 +266,7 @@ public class ResourceTree extends AbstractResourceTree {
 
             // invoke editor, if this was a double click
             if (selected instanceof ResourceTreeNode && evt.getClickCount() > 1) {
-                getActions().getEditAction(getResourceKind())
-                    .execute();
+                getActions().getEditAction(getResourceKind()).execute();
             }
 
             // invoke user actions
@@ -392,8 +399,7 @@ public class ResourceTree extends AbstractResourceTree {
             for (Map.Entry<String,FolderTree> entry : this.folders.entrySet()) {
                 QualName subpath = path.extend(entry.getKey());
                 PathNode node = new PathNode(subpath, entry.getKey());
-                entry.getValue()
-                    .store(node, subpath, created);
+                entry.getValue().store(node, subpath, created);
                 created.add(node);
                 //root.add(node);
                 root.insertSorted(node);

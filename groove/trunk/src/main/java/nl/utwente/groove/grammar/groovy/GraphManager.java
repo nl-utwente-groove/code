@@ -89,9 +89,8 @@ public class GraphManager {
         case RULE:
         case TYPE:
             result = this.simulatorModel
-                .getStore()
-                .getGraphs(ResourceKind.toResource(role))
-                .get(QualName.parse(name));
+                .getGrammar()
+                .getGraph(ResourceKind.toResource(role), QualName.parse(name));
             break;
         default:
             result = null;

@@ -43,9 +43,19 @@ public interface GraphMap {
     public Node getNode(Node key);
 
     /**
+     * Checks if this map contains a given node key.
+     */
+    public boolean containsNode(Node key);
+
+    /**
      * Returns the image for a given edge key.
      */
     public Edge getEdge(Edge key);
+
+    /**
+     * Checks if this map contains a given edge key.
+     */
+    public boolean containsEdge(Edge key);
 
     /**
      * Tests whether all keys are mapped to different elements.

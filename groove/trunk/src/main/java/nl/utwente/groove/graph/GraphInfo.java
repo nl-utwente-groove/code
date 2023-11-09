@@ -67,7 +67,7 @@ public class GraphInfo extends DefaultFixable {
      * @see #getErrors()
      */
     private void setErrors(Collection<FormatError> errors) {
-        this.data.put(ERRORS_KEY, new FormatErrorSet(errors));
+        this.data.put(ERRORS_KEY, errors);
     }
 
     /**
@@ -146,11 +146,7 @@ public class GraphInfo extends DefaultFixable {
                 LayoutMap sourceLayoutMap = sourceInfo.getLayoutMap();
                 targetInfo.setLayoutMap(sourceLayoutMap.afterInverse(elementMap));
                 FormatErrorSet sourceErrors = sourceInfo.getErrors();
-                targetInfo
-                    .getErrors()
-                    .addAll(sourceErrors
-                        .transfer(elementMap.nodeMap())
-                        .transfer(elementMap.edgeMap()));
+                targetInfo.setErrors(sourceErrors.transfer(elementMap));
             } else {
                 targetInfo.setErrors(sourceInfo.getErrors());
                 targetInfo.setLayoutMap(sourceInfo.getLayoutMap());

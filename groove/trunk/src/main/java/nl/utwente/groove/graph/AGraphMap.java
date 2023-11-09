@@ -67,17 +67,21 @@ abstract public class AGraphMap<SN extends Node,SE extends Edge,TN extends Node,
         return nodeMap().size() + edgeMap().size();
     }
 
-    /**
-     * Returns the image for a given node key.
-     */
+    @Override
+    public boolean containsNode(Node key) {
+        return nodeMap().containsKey(key);
+    }
+
+    @Override
+    public boolean containsEdge(Edge key) {
+        return edgeMap().containsKey(key);
+    }
+
     @Override
     public @Nullable TN getNode(Node key) {
         return nodeMap().get(key);
     }
 
-    /**
-     * Returns the image for a given edge key.
-     */
     @Override
     public @Nullable TE getEdge(Edge key) {
         return edgeMap().get(key);

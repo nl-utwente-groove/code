@@ -229,17 +229,10 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
         AspectJModel jModel = this.jModelMap.get(name);
         if (jModel == null && name != null) {
             AspectGraph graph
-                = getSimulatorModel().getStore().getGraphs(getResourceKind()).get(name);
+                = getSimulatorModel().getGrammar().getGraph(getResourceKind(), name);
             if (graph != null) {
                 this.jModelMap.put(name, jModel = getJGraph().newModel());
-                AspectGraph graphClone = graph.clone();
-                graphClone
-                    .setTypeSortMap(getSimulatorModel()
-                        .getGrammar()
-                        .getTypeModel()
-                        .getTypeSortMap());
-                graphClone.setFixed();
-                jModel.loadGraph(graphClone);
+                jModel.loadGraph(graph);
             }
         }
         if (jModel == null) {

@@ -74,12 +74,9 @@ final public class TextTab extends ResourceTab {
     protected PropertyChangeListener createErrorListener() {
         return arg -> {
             if (arg.getNewValue() instanceof FormatError error) {
-                if (error.getNumbers()
-                    .size() > 1) {
-                    int line = error.getNumbers()
-                        .get(0);
-                    int column = error.getNumbers()
-                        .get(1);
+                if (error.getNumbers().size() > 1) {
+                    int line = error.getNumbers().get(0);
+                    int column = error.getNumbers().get(1);
                     select(line, column);
                 }
             }
@@ -115,7 +112,9 @@ final public class TextTab extends ResourceTab {
 
     @Override
     public Icon getIcon() {
-        return isEditor() ? super.getIcon() : Icons.getMainTabIcon(getDisplay().getResourceKind());
+        return isEditor()
+            ? super.getIcon()
+            : Icons.getMainTabIcon(getDisplay().getResourceKind());
     }
 
     @Override
@@ -127,9 +126,7 @@ final public class TextTab extends ResourceTab {
     public boolean setResource(QualName name) {
         String program = null;
         if (name != null) {
-            program = getSimulatorModel().getStore()
-                .getTexts(getResourceKind())
-                .get(name);
+            program = getSimulatorModel().getGrammar().getText(getResourceKind(), name);
         }
         if (program != null) {
             setQualName(name);
@@ -154,7 +151,8 @@ final public class TextTab extends ResourceTab {
     public void updateGrammar(GrammarModel grammar) {
         // test if the graph being edited is still in the grammar;
         // if not, silently dispose it - it's too late to do anything else!
-        TextBasedModel<?> textModel = getQualName() == null ? null
+        TextBasedModel<?> textModel = getQualName() == null
+            ? null
             : (TextBasedModel<?>) grammar.getResource(getResourceKind(), getQualName());
         if (textModel == null) {
             dispose();
@@ -188,8 +186,7 @@ final public class TextTab extends ResourceTab {
         if (name == null) {
             return Collections.emptySet();
         } else {
-            return getDisplay().getResource(name)
-                .getErrors();
+            return getDisplay().getResource(name).getErrors();
         }
     }
 
@@ -218,12 +215,14 @@ final public class TextTab extends ResourceTab {
         case PROLOG:
             return new PrologTokenMaker();
         case GROOVY:
-            return TokenMakerFactory.getDefaultInstance()
+            return TokenMakerFactory
+                .getDefaultInstance()
                 .getTokenMaker(SyntaxConstants.SYNTAX_STYLE_GROOVY);
         case CONTROL:
             return new CtrlTokenMaker();
         default:
-            return TokenMakerFactory.getDefaultInstance()
+            return TokenMakerFactory
+                .getDefaultInstance()
                 .getTokenMaker(SyntaxConstants.SYNTAX_STYLE_NONE);
         }
     }
@@ -302,7 +301,9 @@ final public class TextTab extends ResourceTab {
          * be disabled
          */
         public void setProgram(String program) {
-            setText(program == null ? "" : program);
+            setText(program == null
+                ? ""
+                : program);
             setEnabled(program != null);
             discardAllEdits();
         }

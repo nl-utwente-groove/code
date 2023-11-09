@@ -1184,7 +1184,7 @@ public enum AspectKind {
         /** Parameter aspect. */
         PARAM(ROLE, SORT, ID),
         /** Label mode. */
-        LABEL(ROLE, NESTING),
+        LABEL(REMARK, ROLE, NESTING),
         /** Colour declaration. */
         COLOR(ROLE, ID, PARAM),
         /** Node type-related aspects. */

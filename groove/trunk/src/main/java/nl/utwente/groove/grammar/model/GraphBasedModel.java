@@ -16,7 +16,6 @@
  */
 package nl.utwente.groove.grammar.model;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,11 +31,8 @@ import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.AGraphMap;
 import nl.utwente.groove.graph.Edge;
-import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.ElementFactory;
-import nl.utwente.groove.graph.GraphMap;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
  * General interface for resource models constructed from an
@@ -93,29 +89,6 @@ abstract public class GraphBasedModel<R> extends NamedResourceModel<R> {
      * associated type graph, or {@code null} if {@link #hasErrors()} holds
      */
     abstract public @Nullable TypeModelMap getTypeMap();
-
-    /**
-     * Transfers a collection of errors according to the
-     * inverse of a model map.
-     * @param errors the original errors
-     * @param map mapping from aspect elements to rule graph elements
-     * @return the transferred errors
-     */
-    final FormatErrorSet transferErrors(FormatErrorSet errors, GraphMap map) {
-        return errors.transfer(getInverseMap(map));
-    }
-
-    /** Convenience method to return the inverse of a given model map. */
-    private final Map<Element,Element> getInverseMap(GraphMap map) {
-        Map<Element,Element> result = new HashMap<>();
-        for (Map.Entry<? extends Node,? extends Node> nodeEntry : map.nodeMap().entrySet()) {
-            result.put(nodeEntry.getValue(), nodeEntry.getKey());
-        }
-        for (Map.Entry<? extends Edge,? extends Edge> edgeEntry : map.edgeMap().entrySet()) {
-            result.put(edgeEntry.getValue(), edgeEntry.getKey());
-        }
-        return result;
-    }
 
     private final AspectGraph source;
 

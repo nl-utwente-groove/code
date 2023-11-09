@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -106,6 +107,58 @@ public class GrammarModel implements PropertyChangeListener {
     /** Returns the backing system store. */
     public SystemStore getStore() {
         return this.store;
+    }
+
+    /**
+     * Returns a version of the stored graph of a given type and name
+     * ready for use in the grammar.
+     */
+    public AspectGraph getGraph(ResourceKind kind, QualName name) {
+        assert kind.isGraphBased();
+        var map = this.typedGraphs.get(kind);
+        if (map == null || this.typeTracker.isStale()) {
+            this.typedGraphs.put(kind, map = new HashMap<>());
+        }
+        AspectGraph result = map.get(name);
+        if (result == null) {
+            result = getStore().getGraphs(kind).get(name);
+            if (result != null) {
+                result = toTypedGraph(result);
+                map.put(name, result);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns a version of the stored text of a given type and name
+     * ready for use in the grammar.
+     */
+    public String getText(ResourceKind kind, QualName name) {
+        assert kind.isTextBased();
+        return getStore().getTexts(kind).get(name);
+    }
+
+    private final Map<ResourceKind,Map<QualName,AspectGraph>> typedGraphs
+        = new EnumMap<>(ResourceKind.class);
+
+    private final Tracker typeTracker;
+
+    /** Returns a version of a given AspectGraph in which the typing
+     * information (concretely, the type sort map) has been set
+     * according to the current (explicit) type model.
+     * @param graph source graph
+     * @return clone of {@code graph} in which the type sort map has been set.
+     * This may actually equal {@code graph} itself.
+     */
+    AspectGraph toTypedGraph(AspectGraph graph) {
+        var result = graph;
+        if (graph.getRole() != GraphRole.TYPE || !getTypeModel().isImplicit()) {
+            result = result.clone();
+            result.setTypeSortMap(getTypeModel().getTypeSortMap());
+            result.setFixed();
+        }
+        return result;
     }
 
     /** Returns the system properties of this grammar model. */
@@ -343,7 +396,7 @@ public class GrammarModel implements PropertyChangeListener {
             }
             AspectGraph startGraph = AspectGraph.mergeGraphs(graphMap.values());
             if (startGraph != null) {
-                this.startGraphModel = new HostModel(this, startGraph);
+                this.startGraphModel = new HostModel(this, toTypedGraph(startGraph));
             }
         }
         return this.startGraphModel;
@@ -393,6 +446,9 @@ public class GrammarModel implements PropertyChangeListener {
     public Tracker createChangeTracker(ResourceKind kind) {
         return this.resourceChangeCounts.get(kind).createTracker();
     }
+
+    private final Map<ResourceKind,ChangeCount> resourceChangeCounts
+        = new EnumMap<>(ResourceKind.class);
 
     /**
      * Converts the grammar model to a real grammar. With respect to control, we
@@ -591,23 +647,19 @@ public class GrammarModel implements PropertyChangeListener {
         }
         // update the set of resource models
         Map<QualName,NamedResourceModel<?>> modelMap = this.resourceMap.get(kind);
-        Map<QualName,? extends Object> sourceMap;
-        if (kind.isGraphBased()) {
-            sourceMap = getStore().getGraphs(kind);
-        } else {
-            sourceMap = getStore().getTexts(kind);
-        }
+        Set<QualName> names = getNames(kind);
         // restrict the resources to those whose names are in the store
-        modelMap.keySet().retainAll(sourceMap.keySet());
+        modelMap.keySet().retainAll(names);
         // collect the new active names
         SortedSet<QualName> newActiveNames = new TreeSet<>();
         if (kind != RULE && kind != ResourceKind.CONFIG) {
             newActiveNames.addAll(getProperties().getActiveNames(kind));
         }
         // now synchronise the models with the sources in the store
-        for (Map.Entry<QualName,? extends Object> sourceEntry : sourceMap.entrySet()) {
-            QualName name = sourceEntry.getKey();
-            Object source = sourceEntry.getValue();
+        for (var name : names) {
+            Object source = kind.isGraphBased()
+                ? getGraph(kind, name)
+                : getText(kind, name);
             NamedResourceModel<?> model = modelMap.get(name);
             if (model == null || model.getSource() != source) {
                 modelMap.put(name, model = createModel(kind, name));
@@ -631,13 +683,13 @@ public class GrammarModel implements PropertyChangeListener {
     private NamedResourceModel<?> createModel(ResourceKind kind, QualName name) {
         NamedResourceModel<?> result = null;
         if (kind.isGraphBased()) {
-            AspectGraph graph = getStore().getGraphs(kind).get(name);
+            AspectGraph graph = getGraph(kind, name);
             if (graph != null) {
                 result = createGraphModel(graph);
             }
         } else {
             assert kind.isTextBased();
-            String text = getStore().getTexts(kind).get(name);
+            String text = getText(kind, name);
             if (text != null) {
                 switch (kind) {
                 case CONTROL:
@@ -710,8 +762,6 @@ public class GrammarModel implements PropertyChangeListener {
     private final SystemStore store;
     /** Counter of the number of invalidations of the grammar. */
     private final ChangeCount changeCount;
-    private final Map<ResourceKind,ChangeCount> resourceChangeCounts
-        = new EnumMap<>(ResourceKind.class);
     /** Local properties; if {@code null}, the stored properties are used. */
     private GrammarProperties localProperties;
     /** Flag to indicate if the start graph is external. */
@@ -735,6 +785,7 @@ public class GrammarModel implements PropertyChangeListener {
             this.storedActiveNamesMap.put(kind, new TreeSet<>());
             this.resourceChangeCounts.put(kind, new ChangeCount());
         }
+        this.typeTracker = createChangeTracker(TYPE);
     }
 
     /**
