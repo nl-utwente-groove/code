@@ -1359,14 +1359,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
         return Collections.unmodifiableSortedMap(this.componentMap);
     }
 
-    /** Indicates if this is a composite type graph,
-     * filled through calls of {@link #add(TypeGraph)}.
-     * @see #getComponentMap()
-     */
-    public boolean isComposite() {
-        return !this.componentMap.isEmpty();
-    }
-
     /** Mapping from component type graph names to the type elements in this type graph. */
     private final SortedMap<String,Sub> componentMap = new TreeMap<>();
 
