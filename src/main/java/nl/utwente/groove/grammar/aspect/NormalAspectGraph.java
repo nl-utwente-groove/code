@@ -79,6 +79,11 @@ public class NormalAspectGraph extends AspectGraph {
     /** The (non-normalised) source of this normalised aspect graph. */
     private final AspectGraph source;
 
+    /** Returns the morphism from the source {@link AspectGraph} to the normalised {@link AspectGraph}. */
+    public AspectGraphMorphism toNormalMap() {
+        return this.toNormalMap;
+    }
+
     /** Morphism from the source {@link AspectGraph} to the normalised {@link AspectGraph}. */
     private final AspectGraphMorphism toNormalMap;
 

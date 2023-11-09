@@ -51,6 +51,7 @@ import java.util.TreeSet;
 import javax.swing.SwingUtilities;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.syntax.Expression;
@@ -72,9 +73,11 @@ import nl.utwente.groove.grammar.aspect.AspectContent.NullContent;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectElement;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
+import nl.utwente.groove.grammar.aspect.AspectGraph.AspectGraphMorphism;
 import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.aspect.AspectNode;
+import nl.utwente.groove.grammar.aspect.NormalAspectGraph;
 import nl.utwente.groove.grammar.rule.DefaultRuleNode;
 import nl.utwente.groove.grammar.rule.LabelVar;
 import nl.utwente.groove.grammar.rule.MatchChecker;
@@ -96,6 +99,7 @@ import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.GraphInfo;
+import nl.utwente.groove.graph.GraphMap;
 import nl.utwente.groove.graph.GraphProperties;
 import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.graph.NodeComparator;
@@ -491,24 +495,45 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
     /** Returns the normalised aspect graph underlying this rule model. */
     public AspectGraph getNormalSource() {
-        if (this.normalSource == null) {
+        var result = this.normalSource;
+        if (result == null) {
             var typeModel = getGrammar().getTypeModel();
             var typeSortMap = !typeModel.isImplicit()
                 ? typeModel.getTypeGraph().getTypeSortMap()
                 : null;
-            this.normalSource = getSource().normalise(typeSortMap);
+            result = this.normalSource = getSource().normalise(typeSortMap);
             if (NORMALISE_DEBUG) {
                 // defer in order to avoid circularities in the derivation of the type graph
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        GraphPreviewDialog.showGraph(RuleModel.this.normalSource);
+                        GraphPreviewDialog.showGraph(result);
                     }
                 });
             }
+            GraphMap toNormalSource = null;
+            if (result instanceof NormalAspectGraph ng) {
+                toNormalSource = ng.toNormalMap();
+            } else {
+                toNormalSource = new AspectGraphMorphism(result);
+            }
+            this.toNormalSource = toNormalSource;
         }
-        return this.normalSource;
+        return result;
     }
+
+    /** The normalised source model. */
+    private @Nullable AspectGraph normalSource;
+
+    private GraphMap toNormalSource() {
+        if (this.toNormalSource == null) {
+            getNormalSource();
+        }
+        return this.toNormalSource;
+    }
+
+    /** Mapping from source model to normalised source model. */
+    private @Nullable GraphMap toNormalSource;
 
     private RuleFactory ruleFactory;
     /**
@@ -518,8 +543,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     private RuleModelMap modelMap;
     /** Map from source model to types. */
     private TypeModelMap typeMap;
-    /** The normalised source model. */
-    private AspectGraph normalSource;
     /** Set of all labels occurring in the rule. */
     private Set<TypeLabel> labelSet;
     /** Mapping from level indices to conditions on those levels. */
@@ -2528,6 +2551,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         /** Initialises the internal data structures. */
         public Parameters() throws FormatException {
             FormatErrorSet errors = createErrors();
+            errors.addWrapper(toNormalSource());
             this.hiddenPars = new HashSet<>();
             // Mapping from parameter position to parameter
             Map<Integer,UnitPar.RulePar> parMap = new HashMap<>();
@@ -2571,8 +2595,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             }
             missingPars.removeAll(parMap.keySet());
             if (!missingPars.isEmpty()) {
-                throw new FormatException("Parameters %s missing", missingPars);
+                errors.add("Parameters %s missing", missingPars);
             }
+            errors.throwException();
             UnitPar.RulePar[] sigArray = new UnitPar.RulePar[parCount];
             for (Map.Entry<Integer,UnitPar.RulePar> parEntry : parMap.entrySet()) {
                 sigArray[parEntry.getKey()] = parEntry.getValue();
