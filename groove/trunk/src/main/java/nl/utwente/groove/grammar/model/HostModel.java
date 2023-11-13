@@ -53,7 +53,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * Graph-based model of a host graph graph. Attribute values are represented
  * by {@link ValueNode}s.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Rev$
  */
 public class HostModel extends GraphBasedModel<HostGraph> {
     /**
