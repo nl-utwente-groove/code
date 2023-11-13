@@ -28,8 +28,10 @@ import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -361,24 +363,24 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
     }
 
     /**
-     * If the underlying model is a {@link JModel},
-     * selects the element corresponding to a given graph element.
-     * @return {@code true} if {@code elem} occurs in the {@link JModel}.
+     * Selects the cells corresponding to a given collection of graph elements.
      */
-    public boolean selectJCell(Element elem) {
-        JCell<?> cell = null;
-        if (elem instanceof Node n) {
-            cell = getModel().getJCellForNode(n);
-        } else if (elem instanceof Edge e) {
-            cell = getModel().getJCellForEdge(e);
-        }
-        if (cell != null) {
-            if (cell instanceof AspectJEdge e && e.isSourceLabel()) {
-                cell = e.getSourceVertex();
+    public void setSelectionCells(Collection<Element> elems) {
+        var errorCells = new HashSet<AspectJCell>();
+        for (var elem : elems) {
+            var errorCell = getModel().getJCell(elem);
+            if (errorCell == null && elem instanceof Edge e) {
+                errorCell = getModel().getJCell(e.source());
+            } else if (errorCell instanceof AspectJEdge e && e.isSourceLabel()) {
+                errorCell = e.getSourceVertex();
             }
-            setSelectionCell(cell);
+            if (errorCell != null) {
+                errorCells.add(errorCell);
+            }
         }
-        return cell != null;
+        if (!errorCells.isEmpty()) {
+            setSelectionCells(errorCells.toArray());
+        }
     }
 
     /**

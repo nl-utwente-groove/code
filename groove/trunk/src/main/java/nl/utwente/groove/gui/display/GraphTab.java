@@ -32,6 +32,7 @@ import nl.utwente.groove.gui.jgraph.JModel;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.tree.RuleLevelTree;
 import nl.utwente.groove.gui.tree.TypeTree;
+import nl.utwente.groove.util.parse.FormatError;
 
 /** Display tab component showing a graph-based resource. */
 final public class GraphTab extends ResourceTab implements UndoableEditListener {
@@ -66,10 +67,8 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
         return arg -> {
             var jModel = getJModel();
             if (arg != null && jModel != null) {
-                var errorCells = jModel.getErrorMap().get(arg.getNewValue());
-                if (errorCells != null) {
-                    getJGraph().setSelectionCells(errorCells.toArray());
-                }
+                var error = (FormatError) arg.getNewValue();
+                getJGraph().setSelectionCells(error.getElements());
             }
         };
     }
