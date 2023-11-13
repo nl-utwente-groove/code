@@ -29,7 +29,8 @@ public class PreviewTypeAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getGraph() != null);
+        var typeGraph = getGraph();
+        setEnabled(typeGraph != null && !typeGraph.isImplicit());
     }
 
     /** Convenience method to obtain the composite type graph. */

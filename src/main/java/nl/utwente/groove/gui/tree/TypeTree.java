@@ -194,7 +194,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
             getFilter().clearJCells();
         } else {
             this.typeGraph = getTypeGraph();
-            getFilter().clear();
+            super.clearFilter();
         }
     }
 
