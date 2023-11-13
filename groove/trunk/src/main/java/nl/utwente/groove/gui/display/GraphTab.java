@@ -68,7 +68,11 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
             var jModel = getJModel();
             if (arg != null && jModel != null) {
                 var error = (FormatError) arg.getNewValue();
-                getJGraph().setSelectionCells(error.getElements());
+                if (error == null) {
+                    getJGraph().clearSelection();
+                } else {
+                    getJGraph().setSelectionCells(error.getElements());
+                }
             }
         };
     }

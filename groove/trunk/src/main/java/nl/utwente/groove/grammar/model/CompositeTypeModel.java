@@ -137,18 +137,6 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
                     errors.add(e.getMessage());
                 }
             }
-            //            // test that there are no imported types left
-            //            for (Map.Entry<TypeNode,TypeNode> importEntry : importNodes.entrySet()) {
-            //                if (importEntry.getValue().isImported()) {
-            //                    TypeNode origNode = importEntry.getKey();
-            //                    TypeModel origModel = importModels.get(origNode);
-            //                    errors
-            //                        .add("Error in type graph '%s': Unresolved type import '%s'",
-            //                             origModel.getQualName(), origNode.label(),
-            //                             getInverse(origModel.getMap().nodeMap(), origNode),
-            //                             origModel.getSource());
-            //                }
-            //            }
             errors.throwException();
             var imports = result.getImports();
             if (!imports.isEmpty()) {
