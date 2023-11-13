@@ -122,7 +122,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
      * sort maps for those node types.
      */
     @Nullable
-    Map<TypeLabel,SortMap> getTypeSortMap() {
+    public Map<TypeLabel,SortMap> getTypeSortMap() {
         return this.typeSortMap;
     }
 
@@ -161,7 +161,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             assert image != null;
             result.addEdgeContext(image);
         }
-        GraphInfo.transfer(this, result, elementMap);
+        GraphInfo.transferAll(this, result, elementMap);
         result.setFixed();
         return result;
     }
@@ -180,18 +180,14 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
      * An aspect graph is normalised if all {@link AspectKind#LET} and
      * {@link AspectKind#TEST} edges have been substituted by explicit
      * attribute elements.
-     * @param typeSortMap optional mapping to derive expression types
      */
-    public AspectGraph normalise(@Nullable Map<TypeLabel,SortMap> typeSortMap) {
+    public AspectGraph normalise() {
         assert isFixed();
         AspectGraph result;
         if (isNormal() || hasErrors()) {
             result = this;
         } else {
             result = new NormalAspectGraph(this);
-            if (typeSortMap != null) {
-                result.setTypeSortMap(typeSortMap);
-            }
             result.setFixed();
         }
         return result;
@@ -222,7 +218,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
                 assert image != null;
                 result.addEdgeContext(image);
             }
-            GraphInfo.transfer(this, result, elementMap);
+            GraphInfo.transferProperties(this, result, elementMap);
             result.setFixed();
         }
         return result;
@@ -292,7 +288,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         if (!graphChanged) {
             return this;
         } else {
-            GraphInfo.transfer(this, result, elementMap);
+            GraphInfo.transferProperties(this, result, elementMap);
             result.setFixed();
             return newInstance(result);
         }
@@ -351,7 +347,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         if (!graphChanged) {
             return this;
         } else {
-            GraphInfo.transfer(this, result, elementMap);
+            GraphInfo.transferProperties(this, result, elementMap);
             result.setFixed();
             return newInstance(result);
         }
@@ -463,7 +459,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             assert image != null;
             result.addEdgeContext(image);
         }
-        GraphInfo.transfer(this, result, map);
+        GraphInfo.transferProperties(this, result, map);
         return result;
     }
 
@@ -672,7 +668,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
                          edgeImage);
             }
         }
-        GraphInfo.transfer(graph, result, elementMap);
+        GraphInfo.transferAll(graph, result, elementMap);
         result.addErrors(errors);
         result.setFixed();
         return result;

@@ -234,7 +234,7 @@ abstract public class ResourceModel<R> {
     }
 
     /** Callback factory method to create an appropriate error collection. */
-    final FormatErrorSet createErrors() {
+    protected FormatErrorSet createErrors() {
         return new FormatErrorSet();
     }
 

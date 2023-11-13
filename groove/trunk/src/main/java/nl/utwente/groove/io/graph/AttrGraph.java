@@ -249,7 +249,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
             assert edgeImage != null; // map is constructed to be total on nodes
             target.addEdge(edgeImage);
         }
-        GraphInfo.transfer(this, target, map);
+        GraphInfo.transferAll(this, target, map);
     }
 
     /**
@@ -292,7 +292,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
             assert image != null;
             result.addEdgeContext(image);
         }
-        GraphInfo.transfer(graph, result, elementMap);
+        GraphInfo.transferProperties(graph, result, elementMap);
         result.setFixed();
         return result;
     }

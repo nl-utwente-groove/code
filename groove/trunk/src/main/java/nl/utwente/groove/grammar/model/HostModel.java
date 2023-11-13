@@ -122,7 +122,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
             var typeSortMap = !typeModel.isImplicit()
                 ? typeModel.getTypeGraph().getTypeSortMap()
                 : null;
-            this.normalSource = getSource().normalise(typeSortMap);
+            this.normalSource = getSource().normalise();
         }
         return this.normalSource;
     }
@@ -224,7 +224,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
             }
         }
         // transfer graph info such as layout from model to resource
-        GraphInfo.transfer(normalSource, result, elementMap);
+        GraphInfo.transferProperties(normalSource, result, elementMap);
         GraphInfo.setErrors(result, errors.unwrap(elementMap));
         result.setFixed();
         return new Pair<>(result, elementMap);
