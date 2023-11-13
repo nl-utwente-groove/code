@@ -129,14 +129,26 @@ public class GraphInfo extends DefaultFixable {
     private Map<String,Object> data;
 
     /**
-     * Transfers all available graph information from one graph to another,
+     * Transfers all graph information from one graph to another,
+     * modulo a given element map.
+     * Convenience method combining {@link #transferProperties} and {@link #transferErrors}
+     */
+    public static void transferAll(Graph source, Graph target, GraphMap elementMap) {
+        transferProperties(source, target, elementMap);
+        transferErrors(source, target, elementMap);
+    }
+
+    /**
+     * Transfers all graph properties and layout from one graph to another,
      * modulo a given element map. The element map may be null if the node and
      * edge identities of source and target coincide.
+     * Errors are not transferred (see {@link #transferErrors(Graph, Graph, GraphMap)}.
      * @param source the graph to transfer the information from
      * @param target the graph to transfer the information to
      * @param elementMap map from the source elements to the target elements
      */
-    public static void transfer(Graph source, Graph target, GraphMap elementMap) {
+    public static void transferProperties(Graph source, Graph target, GraphMap elementMap) {
+        assert !target.isFixed();
         if (source.hasInfo()) {
             // copy all the info
             GraphInfo sourceInfo = source.getInfo();
@@ -145,16 +157,35 @@ public class GraphInfo extends DefaultFixable {
                 // modify the layout map using the element map
                 LayoutMap sourceLayoutMap = sourceInfo.getLayoutMap();
                 targetInfo.setLayoutMap(sourceLayoutMap.afterInverse(elementMap));
-                FormatErrorSet sourceErrors = sourceInfo.getErrors();
-                targetInfo.setErrors(sourceErrors.transfer(elementMap));
             } else {
-                targetInfo.setErrors(sourceInfo.getErrors());
                 targetInfo.setLayoutMap(sourceInfo.getLayoutMap());
             }
             // copy rather than clone the graph properties
             GraphProperties properties = sourceInfo.getProperties();
-            assert !target.isFixed();
             targetInfo.setProperties(properties);
+        }
+    }
+
+    /**
+     * Transfers all errors from one graph to another,
+     * modulo a given element map. The element map may be null if the node and
+     * edge identities of source and target coincide.
+     * @param source the graph to transfer the errors from
+     * @param target the graph to transfer the errors to
+     * @param elementMap map from the source elements to the target elements
+     */
+    public static void transferErrors(Graph source, Graph target, GraphMap elementMap) {
+        assert !target.isFixed();
+        if (source.hasInfo()) {
+            // copy all the info
+            var sourceErrors = source.getInfo().getErrors();
+            var targetInfo = target.getInfo();
+            if (elementMap != null) {
+                // modify the errors using the element map
+                targetInfo.setErrors(sourceErrors.transfer(elementMap));
+            } else {
+                targetInfo.setErrors(sourceErrors);
+            }
         }
     }
 

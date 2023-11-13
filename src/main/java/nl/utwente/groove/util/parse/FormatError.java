@@ -79,6 +79,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     private void addContext(Object par) {
         if (par instanceof FormatError e) {
             addContext(e.getArguments());
+            extendProjection(e.projection, true);
         } else if (par instanceof GraphState s) {
             this.state = s;
         } else if (par instanceof AspectGraph g) {

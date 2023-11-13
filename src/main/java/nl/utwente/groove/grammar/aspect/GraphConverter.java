@@ -115,7 +115,7 @@ public class GraphConverter {
             AspectEdge edgeImage = target.addEdge(sourceImage, text.toString(), targetImage);
             result.putEdge(edge, edgeImage);
         }
-        GraphInfo.transfer(type, target, result);
+        GraphInfo.transferAll(type, target, result);
         target.setFixed();
         return result;
     }
@@ -167,7 +167,7 @@ public class GraphConverter {
             AspectEdge edgeImage = targetGraph.addEdge(imageSource, text, imageTarget);
             result.putEdge(edge, edgeImage);
         }
-        GraphInfo.transfer(host, targetGraph, result);
+        GraphInfo.transferAll(host, targetGraph, result);
         targetGraph.setFixed();
         return result;
     }
@@ -176,8 +176,7 @@ public class GraphConverter {
      * Mapping from the elements of a host graph to those of a corresponding
      * aspect graph. For convenience, the aspect graph is bundled in with the map.
      */
-    static public class HostToAspectMap
-        extends AGraphMap<HostNode,HostEdge,AspectNode,AspectEdge> {
+    static public class HostToAspectMap extends AGraphMap<HostNode,HostEdge,AspectNode,AspectEdge> {
         /**
          * Creates a new, empty map.
          */
@@ -198,8 +197,7 @@ public class GraphConverter {
      * Mapping from the elements of a type graph to those of a corresponding
      * aspect graph. For convenience, the aspect graph is bundled in with the map.
      */
-    static public class TypeToAspectMap
-        extends AGraphMap<TypeNode,TypeEdge,AspectNode,AspectEdge> {
+    static public class TypeToAspectMap extends AGraphMap<TypeNode,TypeEdge,AspectNode,AspectEdge> {
         /**
          * Creates a new, empty map.
          */

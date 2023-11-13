@@ -52,7 +52,7 @@ public class NodeSetEdgeSetGraph<N extends @NonNull Node,E extends @NonNull GEdg
         super(graph.getName());
         this.graphNodeSet = createNodeSet(graph.nodeSet());
         this.graphEdgeSet = createEdgeSet(graph.edgeSet());
-        GraphInfo.transfer(graph, this, null);
+        GraphInfo.transferAll(graph, this, null);
     }
 
     // ------------------------- COMMANDS ------------------------------

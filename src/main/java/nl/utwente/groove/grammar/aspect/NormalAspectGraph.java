@@ -95,15 +95,15 @@ public class NormalAspectGraph extends AspectGraph {
             var changeMap = doNormalise();
             var toNormalMap = this.toNormalMap;
             for (var ne : toNormalMap.nodeMap().entrySet()) {
-                var nk = ne.getKey();
-                if (changeMap.containsNode(nk)) {
-                    ne.setValue(changeMap.getNode(nk));
+                var nv = ne.getValue();
+                if (changeMap.containsNode(nv)) {
+                    ne.setValue(changeMap.getNode(nv));
                 }
             }
             for (var ee : toNormalMap.edgeMap().entrySet()) {
-                var ek = ee.getKey();
-                if (changeMap.containsEdge(ek)) {
-                    ee.setValue(changeMap.getEdge(ek));
+                var ev = ee.getValue();
+                if (changeMap.containsEdge(ev)) {
+                    ee.setValue(changeMap.getEdge(ev));
                 }
             }
             GraphInfo.setErrors(this, getErrors().unwrap(toNormalMap));

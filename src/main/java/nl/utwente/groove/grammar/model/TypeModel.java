@@ -198,7 +198,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             }
             errors.throwException();
             // transfer graph info such as layout from model to resource
-            GraphInfo.transfer(source, result, modelMap);
+            GraphInfo.transferProperties(source, result, modelMap);
             setModelMap(modelMap);
             this.result = result;
             return result;

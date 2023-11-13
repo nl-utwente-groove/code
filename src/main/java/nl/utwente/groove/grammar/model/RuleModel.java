@@ -48,8 +48,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import javax.swing.SwingUtilities;
-
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -103,7 +101,6 @@ import nl.utwente.groove.graph.GraphMap;
 import nl.utwente.groove.graph.GraphProperties;
 import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.graph.NodeComparator;
-import nl.utwente.groove.gui.dialog.GraphPreviewDialog;
 import nl.utwente.groove.util.DefaultFixable;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
@@ -497,20 +494,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     public AspectGraph getNormalSource() {
         var result = this.normalSource;
         if (result == null) {
-            var typeModel = getGrammar().getTypeModel();
-            var typeSortMap = !typeModel.isImplicit()
-                ? typeModel.getTypeGraph().getTypeSortMap()
-                : null;
-            result = this.normalSource = getSource().normalise(typeSortMap);
-            if (NORMALISE_DEBUG) {
-                // defer in order to avoid circularities in the derivation of the type graph
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        GraphPreviewDialog.showGraph(result);
-                    }
-                });
-            }
+            result = this.normalSource = getSource().normalise();
             GraphMap toNormalSource = null;
             if (result instanceof NormalAspectGraph ng) {
                 toNormalSource = ng.toNormalMap();
@@ -535,6 +519,13 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     /** Mapping from source model to normalised source model. */
     private @Nullable GraphMap toNormalSource;
 
+    @Override
+    protected FormatErrorSet createErrors() {
+        var result = super.createErrors();
+        result.addWrapper(toNormalSource());
+        return result;
+    }
+
     private RuleFactory ruleFactory;
     /**
      * Mapping from the elements of the aspect graph representation to the
@@ -547,8 +538,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     private Set<TypeLabel> labelSet;
     /** Mapping from level indices to conditions on those levels. */
     private LevelTree levelTree;
-    /** Debug flag for the attribute syntax normalisation. */
-    static private final boolean NORMALISE_DEBUG = false;
 
     /**
      * Class encoding an index in a tree, consisting of a list of indices at
@@ -897,8 +886,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 Index definedAt = getLevel(result, matchCount).getIndex();
                 Index usedAt = matchCountEntry.getKey();
                 if (!definedAt.higherThan(usedAt) || definedAt.equals(usedAt)) {
-                    throw new FormatException("Match count not defined at appropriate level",
-                        matchCount);
+                    errors.add("Match count not defined at appropriate level", matchCount);
                 }
                 Level1 level = result.get(usedAt);
                 // add the match count node to all intermediate levels
@@ -2551,7 +2539,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         /** Initialises the internal data structures. */
         public Parameters() throws FormatException {
             FormatErrorSet errors = createErrors();
-            errors.addWrapper(toNormalSource());
             this.hiddenPars = new HashSet<>();
             // Mapping from parameter position to parameter
             Map<Integer,UnitPar.RulePar> parMap = new HashMap<>();
@@ -2607,6 +2594,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
         private void processNode(Map<Integer,UnitPar.RulePar> parMap, AspectNode node,
                                  Integer nr) throws FormatException {
+            var errors = createErrors();
+
             AspectKind nodeKind = node.getKind(ROLE);
             assert nodeKind != null;
             AspectKind parKind = node.getKind(Category.PARAM);
@@ -2614,18 +2603,20 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             RuleNode nodeImage = getMap().getNode(node);
             assert nodeImage != null;
             if (parKind == PARAM_IN && nodeKind.isCreator()) {
-                throw new FormatException("Input parameter %d cannot be creator node", nr, node);
+                errors.add("Input parameter %d cannot be creator node", nr, node);
             }
             if (nodeKind.inNAC()) {
-                throw new FormatException("Parameter '%d' may not occur in NAC", nr, node);
+                errors.add("Parameter '%d' may not occur in NAC", nr, node);
             }
             UnitPar.RulePar par = new UnitPar.RulePar(parKind, nodeImage, nodeKind.isCreator());
             this.parOriginMap.put(par, node);
             UnitPar.RulePar oldPar = parMap.put(nr, par);
             if (oldPar != null) {
-                throw new FormatException("Parameter '%d' defined more than once", nr, node,
-                    this.parOriginMap.get(oldPar));
+                errors
+                    .add("Parameter '%d' defined more than once", nr, node,
+                         this.parOriginMap.get(oldPar));
             }
+            errors.throwException();
         }
 
         /** Mapping from parameter nodes to their aspect graph origin to enable better error highlighting. */

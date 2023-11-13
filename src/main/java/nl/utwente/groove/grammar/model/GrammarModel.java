@@ -32,10 +32,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumMap;
-import java.util.HashMap;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -83,9 +85,7 @@ public class GrammarModel implements PropertyChangeListener {
             && noActiveStartGraphs) {
             setLocalActiveNames(HOST, QualName.name(Groove.DEFAULT_START_GRAPH_NAME));
         }
-        for (ResourceKind resource : ResourceKind.all(false)) {
-            syncResource(resource);
-        }
+        syncResources(ResourceKind.all(false));
     }
 
     /** Returns the name of the rule system. */
@@ -107,58 +107,6 @@ public class GrammarModel implements PropertyChangeListener {
     /** Returns the backing system store. */
     public SystemStore getStore() {
         return this.store;
-    }
-
-    /**
-     * Returns a version of the stored graph of a given type and name
-     * ready for use in the grammar.
-     */
-    public AspectGraph getGraph(ResourceKind kind, QualName name) {
-        assert kind.isGraphBased();
-        var map = this.typedGraphs.get(kind);
-        if (map == null || this.typeTracker.isStale()) {
-            this.typedGraphs.put(kind, map = new HashMap<>());
-        }
-        AspectGraph result = map.get(name);
-        if (result == null) {
-            result = getStore().getGraphs(kind).get(name);
-            if (result != null) {
-                result = toTypedGraph(result);
-                map.put(name, result);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns a version of the stored text of a given type and name
-     * ready for use in the grammar.
-     */
-    public String getText(ResourceKind kind, QualName name) {
-        assert kind.isTextBased();
-        return getStore().getTexts(kind).get(name);
-    }
-
-    private final Map<ResourceKind,Map<QualName,AspectGraph>> typedGraphs
-        = new EnumMap<>(ResourceKind.class);
-
-    private final Tracker typeTracker;
-
-    /** Returns a version of a given AspectGraph in which the typing
-     * information (concretely, the type sort map) has been set
-     * according to the current (explicit) type model.
-     * @param graph source graph
-     * @return clone of {@code graph} in which the type sort map has been set.
-     * This may actually equal {@code graph} itself.
-     */
-    AspectGraph toTypedGraph(AspectGraph graph) {
-        var result = graph;
-        if (graph.getRole() != GraphRole.TYPE || !getTypeModel().isImplicit()) {
-            result = result.clone();
-            result.setTypeSortMap(getTypeModel().getTypeSortMap());
-            result.setFixed();
-        }
-        return result;
     }
 
     /** Returns the system properties of this grammar model. */
@@ -183,9 +131,7 @@ public class GrammarModel implements PropertyChangeListener {
             properties.check(this);
         }
         this.localProperties = properties;
-        for (ResourceKind kind : ResourceKind.all(false)) {
-            syncResource(kind);
-        }
+        syncResources(ResourceKind.all(false));
         invalidate();
     }
 
@@ -231,6 +177,45 @@ public class GrammarModel implements PropertyChangeListener {
     public NamedResourceModel<?> getResource(ResourceKind kind, QualName name) {
         assert name != null;
         return getResourceMap(kind).get(name);
+    }
+
+    /**
+     * Returns a version of the stored graph of a given type and name
+     * as used in the appropriate model.
+     */
+    public AspectGraph getGraph(ResourceKind kind, QualName name) {
+        assert kind.isGraphBased();
+        var resource = getGraphResource(kind, name);
+        return resource == null
+            ? null
+            : resource.getSource();
+        //        var map = this.typedGraphs.get(kind);
+        //        // always test typeTracker for staleness, otherwise we'll do this twice
+        //        if (map == null | this.typeTracker.isStale()) {
+        //            this.typedGraphs.put(kind, map = new HashMap<>());
+        //        }
+        //        assert map != null;
+        //        AspectGraph result = map.get(name);
+        //        if (result == null) {
+        //            result = getStore().getGraphs(kind).get(name);
+        //            if (result != null) {
+        //                result = toTypedGraph(result);
+        //                map.put(name, result);
+        //            }
+        //        }
+        //        return result;
+    }
+
+    /**
+     * Returns a version of the stored text of a given type and name
+     * ready for use in the grammar.
+     */
+    public String getText(ResourceKind kind, QualName name) {
+        assert kind.isTextBased();
+        var resource = getTextResource(kind, name);
+        return resource == null
+            ? null
+            : resource.getSource();
     }
 
     /**
@@ -396,7 +381,7 @@ public class GrammarModel implements PropertyChangeListener {
             }
             AspectGraph startGraph = AspectGraph.mergeGraphs(graphMap.values());
             if (startGraph != null) {
-                this.startGraphModel = new HostModel(this, toTypedGraph(startGraph));
+                this.startGraphModel = new HostModel(this, startGraph);
             }
         }
         return this.startGraphModel;
@@ -620,12 +605,14 @@ public class GrammarModel implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent evt) {
         SystemStore.Edit edit = (SystemStore.Edit) evt.getNewValue();
         if (edit.getType() != EditType.LAYOUT) {
-            Set<ResourceKind> change = edit.getChange();
-            for (ResourceKind resource : change) {
-                syncResource(resource);
-            }
-            invalidate();
+            syncResources(edit.getChange());
         }
+    }
+
+    /** Synchronises all resources, in order of dependency, and invalidates the grammar model. */
+    private void syncResources(Set<ResourceKind> kinds) {
+        new SyncSet(kinds).forEach(this::syncResource);
+        invalidate();
     }
 
     /**
@@ -657,14 +644,8 @@ public class GrammarModel implements PropertyChangeListener {
         }
         // now synchronise the models with the sources in the store
         for (var name : names) {
-            Object source = kind.isGraphBased()
-                ? getGraph(kind, name)
-                : getText(kind, name);
-            NamedResourceModel<?> model = modelMap.get(name);
-            if (model == null || model.getSource() != source) {
-                modelMap.put(name, model = createModel(kind, name));
-                // collect the active rules
-            }
+            var model = createModel(kind, name);
+            modelMap.put(name, model);
             if (kind == GROOVY
                 || kind == RULE && GraphInfo.isEnabled((AspectGraph) model.getSource())) {
                 newActiveNames.add(name);
@@ -683,13 +664,13 @@ public class GrammarModel implements PropertyChangeListener {
     private NamedResourceModel<?> createModel(ResourceKind kind, QualName name) {
         NamedResourceModel<?> result = null;
         if (kind.isGraphBased()) {
-            AspectGraph graph = getGraph(kind, name);
+            AspectGraph graph = getStore().getGraphs(kind).get(name);
             if (graph != null) {
                 result = createGraphModel(graph);
             }
         } else {
             assert kind.isTextBased();
-            String text = getText(kind, name);
+            String text = getStore().getTexts(kind).get(name);
             if (text != null) {
                 switch (kind) {
                 case CONTROL:
@@ -713,7 +694,8 @@ public class GrammarModel implements PropertyChangeListener {
     }
 
     /**
-     * Creates a graph-based resource model for a given graph.
+     * Creates a graph-based resource model based on a given graph.
+     * The graph may have to be transformed in order to form the source of the model.
      */
     public GraphBasedModel<?> createGraphModel(AspectGraph graph) {
         GraphBasedModel<?> result = null;
@@ -722,6 +704,12 @@ public class GrammarModel implements PropertyChangeListener {
             result = new HostModel(this, graph);
             break;
         case RULE:
+            var currentTypeSortMap = getTypeModel().getTypeSortMap();
+            if (!Objects.equals(currentTypeSortMap, graph.getTypeSortMap())) {
+                graph = graph.clone();
+                graph.setTypeSortMap(currentTypeSortMap);
+                graph.setFixed();
+            }
             result = new RuleModel(this, graph);
             break;
         case TYPE:
@@ -785,7 +773,7 @@ public class GrammarModel implements PropertyChangeListener {
             this.storedActiveNamesMap.put(kind, new TreeSet<>());
             this.resourceChangeCounts.put(kind, new ChangeCount());
         }
-        this.typeTracker = createChangeTracker(TYPE);
+        //        this.typeTracker = createChangeTracker(TYPE);
     }
 
     /**
@@ -851,10 +839,100 @@ public class GrammarModel implements PropertyChangeListener {
     // ENUM: MANIPULATION
     // ========================================================================
 
+    /** Set of resource kinds to be synchronised.
+     * The ordering and content of the set ensures that all dependencies are fulfilled.
+     * @author Rensink
+     * @version $Revision $
+     */
+    static private class SyncSet extends TreeSet<ResourceKind> {
+        /** Constructs a new synchronisation set with given content. */
+        public SyncSet(Set<ResourceKind> set) {
+            super(new MyComparator());
+            addAll(set);
+        }
+
+        @Override
+        public boolean add(ResourceKind e) {
+            var result = super.add(e);
+            if (result) {
+                // also add all resource kinds that depend on this one
+                addAll(backwardMap.get(e));
+            }
+            return result;
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends ResourceKind> c) {
+            var result = super.addAll(c);
+            if (result) {
+                // also add all resource kinds that depend on the ones in c
+                c.forEach(k -> addAll(backwardMap.get(k)));
+            }
+            return result;
+        }
+
+        /** Adds a dependency and constructs the transitive closure. */
+        static private void addDependency(ResourceKind source, ResourceKind target) {
+            var sourcePreds = backwardMap.get(source);
+            if (source == target || sourcePreds.contains(target)) {
+                throw Exceptions.illegalArg("Cyclic dependency between %s and %s", source, target);
+            }
+            var sourceSuccs = forwardMap.get(source);
+            var targetPreds = backwardMap.get(target);
+            var targetSuccs = forwardMap.get(target);
+            sourceSuccs.add(target);
+            sourceSuccs.addAll(targetSuccs);
+            for (var pred : sourcePreds) {
+                var predSuccs = forwardMap.get(pred);
+                predSuccs.add(target);
+                predSuccs.addAll(targetSuccs);
+            }
+            targetPreds.add(source);
+            targetPreds.addAll(sourcePreds);
+            for (var succ : targetSuccs) {
+                var succPreds = backwardMap.get(succ);
+                succPreds.add(source);
+                succPreds.addAll(sourcePreds);
+            }
+        }
+
+        /** Mapping from resource kinds to those kinds they depend on. */
+        static private final Map<ResourceKind,Set<ResourceKind>> forwardMap
+            = new EnumMap<>(ResourceKind.class);
+
+        /** Mapping from resource kinds to those kinds that depend on them. */
+        static private final Map<ResourceKind,Set<ResourceKind>> backwardMap
+            = new EnumMap<>(ResourceKind.class);
+
+        static {
+            for (var kind : ResourceKind.values()) {
+                forwardMap.put(kind, EnumSet.noneOf(ResourceKind.class));
+                backwardMap.put(kind, EnumSet.noneOf(ResourceKind.class));
+            }
+            addDependency(RULE, TYPE);
+        }
+
+        static private class MyComparator implements Comparator<ResourceKind> {
+            @Override
+            public int compare(ResourceKind o1, ResourceKind o2) {
+                // TODO Auto-generated method stub
+                if (o1 == o2) {
+                    return 0;
+                }
+                if (backwardMap.get(o1).contains(o2)) {
+                    return -1;
+                }
+                if (forwardMap.get(o1).contains(o2)) {
+                    return 1;
+                }
+                return o1.ordinal() - o2.ordinal();
+            }
+        }
+    }
+
     /**
      * A {@link Manipulation} distinguishes between different kinds of set
-     * update operations that can be applied to the set of selected start
-     * graphs.
+     * update operations that can be applied to a set of selected resources.
      */
     public static enum Manipulation {
         /** Add elements to the set. */
