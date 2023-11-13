@@ -118,10 +118,6 @@ public class HostModel extends GraphBasedModel<HostGraph> {
 
     private AspectGraph getNormalSource() {
         if (this.normalSource == null) {
-            var typeModel = getGrammar().getTypeModel();
-            var typeSortMap = !typeModel.isImplicit()
-                ? typeModel.getTypeGraph().getTypeSortMap()
-                : null;
             this.normalSource = getSource().normalise();
         }
         return this.normalSource;
