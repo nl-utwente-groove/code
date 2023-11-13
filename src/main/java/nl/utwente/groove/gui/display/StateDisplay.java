@@ -82,6 +82,7 @@ import nl.utwente.groove.lts.StartGraphState;
 import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.util.line.LineStyle;
+import nl.utwente.groove.util.parse.FormatError;
 
 /**
  * Window that displays and controls the current lts graph. Auxiliary class for
@@ -276,10 +277,8 @@ public class StateDisplay extends Display implements SimulatorListener {
     private PropertyChangeListener createErrorListener() {
         return arg -> {
             if (arg != null) {
-                var errorCells = getJGraph().getModel().getErrorMap().get(arg.getNewValue());
-                if (errorCells != null) {
-                    getJGraph().setSelectionCells(errorCells.toArray());
-                }
+                var error = (FormatError) arg.getNewValue();
+                getJGraph().setSelectionCells(error.getElements());
             }
         };
     }

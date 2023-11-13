@@ -87,6 +87,7 @@ import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.jgraph.JGraphMode;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.tree.TypeTree;
+import nl.utwente.groove.util.parse.FormatError;
 
 /**
  * Dialog wrapping a graph editor, such that no file operations are possible.
@@ -143,10 +144,8 @@ final public class GraphEditorTab extends ResourceTab
     protected PropertyChangeListener createErrorListener() {
         return arg -> {
             if (arg != null) {
-                var errorCells = getJModel().getErrorMap().get(arg.getNewValue());
-                if (errorCells != null) {
-                    getJGraph().setSelectionCells(errorCells.toArray());
-                }
+                var error = (FormatError) arg.getNewValue();
+                getJGraph().setSelectionCells(error.getElements());
             }
         };
     }

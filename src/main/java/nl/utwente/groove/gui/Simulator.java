@@ -66,7 +66,6 @@ import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
-import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.gui.SimulatorModel.Change;
 import nl.utwente.groove.gui.action.AboutAction;
 import nl.utwente.groove.gui.action.ActionStore;
@@ -380,11 +379,7 @@ public class Simulator implements SimulatorListener {
                     jGraph = ((GraphTab) resourceTab).getJGraph();
                 }
                 // select the error cell and switch to the panel
-                for (Element cell : entry.getElements()) {
-                    if (jGraph.selectJCell(cell)) {
-                        break;
-                    }
-                }
+                jGraph.setSelectionCells(entry.getElements());
             } else if (entry instanceof FormatError error) {
                 if (error.getNumbers().size() > 1) {
                     int line = error.getNumbers().get(0);
