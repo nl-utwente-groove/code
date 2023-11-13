@@ -42,7 +42,7 @@ import nl.utwente.groove.transform.RuleEvent;
 
 /**
  * @author Ruud
- * @version $Revision $
+ * @version $Revision$
  */
 class ConfluenceAnalyzer {
 

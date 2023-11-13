@@ -24,7 +24,7 @@ import nl.utwente.groove.util.collect.Pool;
 /**
  * Deadlock.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class DeltaTerm extends Term {

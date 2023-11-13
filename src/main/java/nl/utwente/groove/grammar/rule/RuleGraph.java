@@ -35,7 +35,7 @@ import nl.utwente.groove.graph.NodeSetEdgeSetGraph;
  * Special class of graphs that can appear (only) in rules.
  * Rule graphs may only have {@link RuleEdge}s.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class RuleGraph extends NodeSetEdgeSetGraph<@NonNull RuleNode,@NonNull RuleEdge> {
     /**

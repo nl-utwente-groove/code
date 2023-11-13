@@ -38,7 +38,7 @@ import nl.utwente.groove.gui.menu.SetLayoutMenu;
 
 /**
  * @author Eduardo Zambon
- * @version $Revision $
+ * @version $Revision$
  */
 public class LayoutDialog extends JDialog implements ActionListener, WindowFocusListener {
 

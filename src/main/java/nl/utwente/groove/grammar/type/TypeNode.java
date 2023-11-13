@@ -35,7 +35,7 @@ import nl.utwente.groove.util.line.Line;
  * As added functionality w.r.t. default nodes, a type node stores its type
  * (which is a node type label).
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class TypeNode implements Node, TypeElement {

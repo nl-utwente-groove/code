@@ -25,7 +25,7 @@ package nl.utwente.groove.match.rete;
  * structure, happens to them. 
  * 
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public interface DominoEventListener {
     /**

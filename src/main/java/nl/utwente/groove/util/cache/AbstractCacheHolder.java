@@ -11,7 +11,7 @@ import nl.utwente.groove.lts.GraphState;
  * {@link CacheReference} field with the required get and set method, and a hook
  * for the initial value.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
     /**

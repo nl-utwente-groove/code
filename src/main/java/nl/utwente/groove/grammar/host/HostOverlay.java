@@ -21,8 +21,8 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import nl.utwente.groove.graph.AOverlay;
 
 /**
- * @author Rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 @NonNullByDefault
 public class HostOverlay extends AOverlay<HostGraph,HostNode,HostEdge> {

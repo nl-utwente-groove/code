@@ -19,7 +19,7 @@ package nl.utwente.groove.util;
 /**
  * Class defining standard exceptions.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Exceptions {
     /** Fixed exception to be thrown at unreachable program locations,

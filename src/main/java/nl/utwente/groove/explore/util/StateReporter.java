@@ -32,7 +32,7 @@ import nl.utwente.groove.util.Pair;
 /**
  * Exploration reporter that saves the result states.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class StateReporter extends AExplorationReporter {
     /**

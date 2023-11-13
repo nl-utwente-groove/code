@@ -35,7 +35,7 @@ import nl.utwente.groove.match.rete.ReteNetwork.ReteStaticMapping;
  * The checker n-node that corresponds with a data operator applied to
  * data attributes in a graph
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class DataOperatorChecker extends ReteNetworkNode {
 

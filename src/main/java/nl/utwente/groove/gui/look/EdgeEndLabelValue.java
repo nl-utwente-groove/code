@@ -25,7 +25,7 @@ import nl.utwente.groove.gui.jgraph.AspectJVertex;
 /**
  * Value of the edge source or target label (typically the outgoing/incoming multiplicity).
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class EdgeEndLabelValue extends AspectValue<String> {
     /** Creates an label refresher for either the source or the target label. */

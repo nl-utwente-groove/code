@@ -32,7 +32,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Function to check whether a given rule match satisfies a certain condition.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 abstract public class MatchChecker {

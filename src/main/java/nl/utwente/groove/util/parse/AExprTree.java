@@ -24,8 +24,8 @@ import nl.utwente.groove.grammar.QualName;
  * @param <O> the operator type for the expressions
  * @param <T> should be set to the implementing type itself (this is the closes you can get to
  * a MyType in Java)
- * @author rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 public abstract class AExprTree<O extends Op,T extends AExprTree<O,T>> extends ATermTree<O,T> {
     /**

@@ -43,7 +43,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Model combining all enabled control programs.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class CompositeControlModel extends ResourceModel<Automaton> {
     /** Constructs an instance for a given grammar model. */

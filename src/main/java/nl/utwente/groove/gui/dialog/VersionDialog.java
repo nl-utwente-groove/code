@@ -36,7 +36,7 @@ import nl.utwente.groove.util.Version;
 
 /**
  * @author Eduardo Zambon
- * @version $Revision $
+ * @version $Revision$
  */
 public class VersionDialog {
 

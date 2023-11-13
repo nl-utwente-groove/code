@@ -453,7 +453,7 @@ public interface Parser<T> {
     /**
      * Parser for boolean values, with a default value for the empty string.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     class BooleanParser extends AParser<Boolean> {
         /**

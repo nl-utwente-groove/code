@@ -23,7 +23,7 @@ import java.util.List;
  * the class implementing this interface. The list of messages will not be cleared
  * unless clearMessages() is explicitly called.
  * @author s0141844
- * @version $Revision $
+ * @version $Revision$
  */
 public interface Messenger {
     /**

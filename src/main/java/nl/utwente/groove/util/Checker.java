@@ -22,7 +22,7 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
 /**
  * Interface for graph checkers
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface Checker<G extends Graph> {
     /** Checks a given graph.

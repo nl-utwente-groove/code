@@ -10,7 +10,7 @@ import nl.utwente.groove.io.conceptual.type.Class;
  * a container field.
  * Allowed field types: Class, DataType, Container(Class|DataType)
  * @author s0141844
- * @version $Revision $
+ * @version $Revision$
  */
 public class KeysetProperty implements Property {
     private final Class m_relClass;

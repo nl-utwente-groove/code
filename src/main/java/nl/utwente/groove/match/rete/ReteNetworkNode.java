@@ -25,7 +25,7 @@ import nl.utwente.groove.grammar.rule.RuleElement;
  * Class representing the basic behavior of an n-node
  * in a RETE network.
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract class ReteNetworkNode {
 
@@ -268,7 +268,7 @@ public abstract class ReteNetworkNode {
      * The represents the mode in which a RETE network should operate under
      * in run-time when it is fed with edges of a graph.
      * @author Arash Jalali
-     * @version $Revision $
+     * @version $Revision$
      */
     public static enum Action {
         /**

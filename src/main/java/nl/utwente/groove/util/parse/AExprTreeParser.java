@@ -22,7 +22,7 @@ import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.NAME;
 /**
  * Extension of term tree parser that recognises identifiers and constants as atoms.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class AExprTreeParser<O extends Op,T extends AExprTree<O,T>> extends ATermTreeParser<O,T> {
     /**

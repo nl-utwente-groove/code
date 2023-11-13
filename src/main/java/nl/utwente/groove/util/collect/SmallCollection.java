@@ -29,7 +29,7 @@ import org.eclipse.jdt.annotation.Nullable;
  * Saves space with respect to an ordinary collection implementation if the
  * content is typically a singleton.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class SmallCollection<E> extends AbstractCollection<E> {
     /** Constructs an empty collection. */

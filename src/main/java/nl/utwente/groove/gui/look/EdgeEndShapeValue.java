@@ -27,7 +27,7 @@ import nl.utwente.groove.gui.jgraph.JGraph;
 /**
  * Creates a refresher for the edge source or target shape.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class EdgeEndShapeValue implements VisualValue<EdgeEnd> {
     /** Creates an label refresher for either the source or the target shape. */

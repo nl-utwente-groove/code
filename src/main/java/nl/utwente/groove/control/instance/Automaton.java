@@ -33,7 +33,7 @@ import nl.utwente.groove.util.collect.Pool;
 /**
  * Instantiated control program.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Automaton {
     /**

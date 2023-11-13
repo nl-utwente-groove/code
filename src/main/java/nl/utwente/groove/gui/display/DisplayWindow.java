@@ -13,7 +13,7 @@ import javax.swing.JSplitPane;
 /**
  * Independent window wrapping a {@link Display}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 class DisplayWindow extends JFrame {
     private DisplayWindow(Kind kind, String title, ImageIcon icon) {

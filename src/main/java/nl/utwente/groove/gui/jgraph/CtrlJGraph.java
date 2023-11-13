@@ -30,7 +30,7 @@ import nl.utwente.groove.gui.layout.Layouter;
 /**
  * This is the JGraph representation of a ControlAutomaton.
  * @author Tom Staijen
- * @version $Revision $
+ * @version $Revision$
  */
 public class CtrlJGraph extends JGraph<ControlGraph> {
     /**

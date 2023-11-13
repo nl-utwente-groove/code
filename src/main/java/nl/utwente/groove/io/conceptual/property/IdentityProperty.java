@@ -9,7 +9,7 @@ import nl.utwente.groove.io.conceptual.type.Class;
  * Property expressing that a set of fields together define object identity.
  * Allowed field types: Class, DataType, Container(Class|DataType)
  * @author Harold Bruintjes
- * @version $Revision $
+ * @version $Revision$
  */
 public class IdentityProperty implements Property {
     final private Class m_class;

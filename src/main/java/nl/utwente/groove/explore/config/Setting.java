@@ -30,7 +30,7 @@ import nl.utwente.groove.verify.Formula;
 /**
  * Supertype for all values that can be assigned to {@link ExploreKey}s.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public abstract class Setting {
@@ -95,7 +95,7 @@ public abstract class Setting {
     /**
      * Supertype for {@link Setting} keys
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     static public interface Key extends ParsableKey<Setting> {
         /** Returns a description of the content expected for this setting key.

@@ -47,7 +47,7 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
  * the characteristic that they are fixed, and are defined by a delta to another
  * graph (where the delta is the result of a rule application).
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public final class DeltaHostGraph extends AGraph<@NonNull HostNode,@NonNull HostEdge>
     implements HostGraph, Cloneable {
@@ -522,7 +522,7 @@ public final class DeltaHostGraph extends AGraph<@NonNull HostNode,@NonNull Host
      * instance variables of this class during construction time and the
      * invocation of the {@link DeltaTarget} add and remove methods.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     abstract private class DataTarget implements DeltaTarget {
         /** Empty constructor with correct visibility. */

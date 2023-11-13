@@ -35,7 +35,7 @@ import nl.utwente.groove.util.Property;
  * Encodes a constraint on type labels, which can be used to filter
  * sets of type elements.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class TypeGuard extends Property<TypeElement> {

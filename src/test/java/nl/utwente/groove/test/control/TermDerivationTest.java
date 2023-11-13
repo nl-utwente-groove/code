@@ -43,7 +43,7 @@ import nl.utwente.groove.util.Groove;
 
 /**
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @SuppressWarnings("javadoc")
 public class TermDerivationTest {

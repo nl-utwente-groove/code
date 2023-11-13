@@ -24,7 +24,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Factory to create a value oracle for a given GTS.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public interface ValueOracleFactory {

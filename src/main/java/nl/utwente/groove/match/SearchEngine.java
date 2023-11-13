@@ -25,7 +25,7 @@ import nl.utwente.groove.grammar.rule.Anchor;
  * or RETE.
  *
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract class SearchEngine {
     /**

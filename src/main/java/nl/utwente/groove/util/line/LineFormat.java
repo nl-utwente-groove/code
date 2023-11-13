@@ -23,8 +23,8 @@ import nl.utwente.groove.util.line.Line.Style;
 
 /**
  * Strategy for converting a {@link Line} to a {@link String}.
- * @author Rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 abstract public class LineFormat<R extends LineFormat.Builder<R>> {
     /** Converts a given Line to a String representation. */

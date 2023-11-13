@@ -37,7 +37,7 @@ import nl.utwente.groove.util.Exceptions;
 /**
  * Component that can appear on a display tab in the {@link SimulatorModel}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 abstract public class Display extends JPanel {
     /** Creates the singleton instance for a given simulator. */

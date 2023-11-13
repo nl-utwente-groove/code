@@ -24,7 +24,7 @@ import nl.utwente.groove.util.Version;
  * Type for parsable (enumerated) values.
  * Implementing classes are {@link AcceptorValue} and {@link StrategyValue}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface ParsableValue {
     /** Returns the identifying keyword of this value. */

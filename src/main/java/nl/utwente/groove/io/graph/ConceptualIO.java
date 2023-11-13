@@ -36,7 +36,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Reader/writer for type graphs in some conceptual format.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class ConceptualIO extends GraphIO<AspectGraph> {
     /**

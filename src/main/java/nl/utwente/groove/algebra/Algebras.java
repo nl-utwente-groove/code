@@ -40,7 +40,7 @@ import nl.utwente.groove.util.parse.OpKind.Placement;
 /**
  * Helper class for algebra manipulation.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Algebras {
     /** Private constructor to prevent this class from being instantiated. */

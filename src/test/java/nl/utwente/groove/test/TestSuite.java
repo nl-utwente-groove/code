@@ -22,8 +22,8 @@ import org.junit.platform.suite.api.Suite;
 
 /**
  * Test suite for all GROOVE tests
- * @author Rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 @Suite
 @SelectPackages("nl.utwente.groove.test")

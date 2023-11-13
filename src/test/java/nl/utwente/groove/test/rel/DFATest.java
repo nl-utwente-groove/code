@@ -51,7 +51,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Test class for the construction of NormalAutomata
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class DFATest {
     /** Directory with test files (relative to the project) */

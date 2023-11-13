@@ -21,7 +21,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 /**
  * Atomic block.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class AtomTerm extends Term {

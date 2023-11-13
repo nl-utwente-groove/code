@@ -21,7 +21,7 @@ package nl.utwente.groove.transform;
  * Specialisation of the delta applier in which the delta is
  * explicitly stored.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface StoredDeltaApplier extends DeltaApplier {
     /** Total number of delta elements. */

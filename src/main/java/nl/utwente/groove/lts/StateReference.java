@@ -26,7 +26,7 @@ import nl.utwente.groove.util.cache.CacheReference;
  * Cache reference for state caches, which carry the system record as static
  * information.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class StateReference extends CacheReference<@Nullable StateCache> {
     /**

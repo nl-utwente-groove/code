@@ -74,7 +74,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * Extends a standard graph with some useful functionality for querying a type
  * graph.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull TypeEdge>
     implements TypeChecker {

@@ -23,7 +23,7 @@ import nl.utwente.groove.util.Exceptions;
 /**
  * While-do term.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class WhileTerm extends Term {

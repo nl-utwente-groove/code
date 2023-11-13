@@ -22,7 +22,7 @@ import org.antlr.runtime.tree.TreeParser;
  * Dedicated parse tree with the ability to reconstruct
  * the parsed input string.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo> extends CommonTree {
     /** Empty constructor for subclassing. */

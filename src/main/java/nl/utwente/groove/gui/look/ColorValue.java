@@ -27,7 +27,7 @@ import nl.utwente.groove.gui.jgraph.AspectJVertex;
 /**
  * Refresher for the controlled colour value of a JCell.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class ColorValue extends AspectValue<Color> {
     @Override

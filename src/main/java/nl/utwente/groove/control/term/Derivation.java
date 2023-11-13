@@ -31,7 +31,7 @@ import nl.utwente.groove.util.Pair;
  * Symbolic derivation of a term.
  * This is a pair of the control call and the target term.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,Derivation> {

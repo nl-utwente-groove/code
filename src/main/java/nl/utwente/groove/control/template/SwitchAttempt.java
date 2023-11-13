@@ -25,7 +25,7 @@ import nl.utwente.groove.control.Attempt;
 /**
  * Vector of switches in combination with the success and failure alternates.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class SwitchAttempt extends Attempt<Location,SwitchStack> implements Relocatable {

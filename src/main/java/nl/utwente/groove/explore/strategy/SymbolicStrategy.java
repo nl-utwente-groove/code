@@ -39,7 +39,7 @@ import nl.utwente.groove.sts.SwitchRelation;
  * Explores the graph states using a given strategy and builds an STS
  * from the GTS. The best result is obtained using a Point Algebra.
  * @author Vincent de Bruijn
- * @version $Revision $
+ * @version $Revision$
  */
 public class SymbolicStrategy extends GTSStrategy {
 

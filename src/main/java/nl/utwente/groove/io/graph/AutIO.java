@@ -40,7 +40,7 @@ import nl.utwente.groove.io.FileType;
  * Plain graph reader/writer for the CADP {@code .aut} format.
  * @see FileType#AUT
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class AutIO extends GraphIO<PlainGraph> {
     @Override

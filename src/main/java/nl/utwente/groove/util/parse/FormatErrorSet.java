@@ -29,7 +29,7 @@ import nl.utwente.groove.graph.GraphMap;
  * adding errors and throwing an exception on the basis of the
  * errors.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class FormatErrorSet extends LinkedHashSet<FormatError> {
     /** Constructs a fresh, empty error set. */

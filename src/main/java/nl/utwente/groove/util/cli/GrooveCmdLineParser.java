@@ -32,7 +32,7 @@ import org.kohsuke.args4j.spi.OptionHandler;
 /**
  * Specialised command-line parser that provides better help support.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class GrooveCmdLineParser extends CmdLineParser {
     /** 

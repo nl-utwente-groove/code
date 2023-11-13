@@ -42,7 +42,7 @@ import nl.utwente.groove.io.graph.GxlIO;
 /**
  * Import and export resources native to GROOVE, such as type and host graphs, and control programs
  * @author Harold Bruijntjes
- * @version $Revision $
+ * @version $Revision$
  */
 public class NativePorter extends AbstractExporter implements Importer {
     private NativePorter() {

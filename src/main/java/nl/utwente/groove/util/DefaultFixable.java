@@ -19,7 +19,7 @@ package nl.utwente.groove.util;
 /**
  * Default implementation of the {@link Fixable} interface.
  * @author Arend
- * @version $Revision $
+ * @version $Revision$
  */
 public class DefaultFixable implements Fixable {
     @Override

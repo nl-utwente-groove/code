@@ -56,7 +56,7 @@ import nl.utwente.groove.io.conceptual.value.Value;
  * * Only one type graph supported. This type graph is allowed to describe multiple instance graphs however
  * * No cross references to other XML files, the xlink attributes are not supported
  * @author s0141844
- * @version $Revision $
+ * @version $Revision$
  */
 @SuppressWarnings("javadoc")
 public class GxlToType extends TypeImporter {

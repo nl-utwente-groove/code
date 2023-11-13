@@ -33,7 +33,7 @@ import nl.utwente.groove.match.plan.PlanSearchStrategy.Search;
 /**
  * A search item that searches an image for an edge.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 class VarEdgeSearchItem extends Edge2SearchItem {
 

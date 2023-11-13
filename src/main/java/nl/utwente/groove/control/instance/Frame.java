@@ -47,7 +47,7 @@ import nl.utwente.groove.util.LazyFactory;
 /**
  * Run-time composed control location.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class Frame implements Position<Frame,Step>, Fixable {

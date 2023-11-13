@@ -23,8 +23,8 @@ import javax.swing.ToolTipManager;
 
 /**
  * Mouse adapter that will cause tool tips to stay up (essentially) forever.
- * @author Rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 public class LongToolTipAdapter extends MouseAdapter {
     /** Constructs an adapter for a given source object. */

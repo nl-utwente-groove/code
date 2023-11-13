@@ -52,7 +52,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * New command-line Generator class, using the Agrs4J library.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Generator extends GrooveCmdLineTool<ExploreResult> {
     /**

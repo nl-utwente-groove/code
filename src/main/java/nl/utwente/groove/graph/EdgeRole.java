@@ -35,7 +35,7 @@ import nl.utwente.groove.util.Pair;
 /**
  * Role of an edge within a graph: node type, flag or binary.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public enum EdgeRole {
     /** A node type edge, i.e., a self-loop determining the type of a node. */

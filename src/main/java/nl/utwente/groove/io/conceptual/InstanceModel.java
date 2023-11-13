@@ -12,7 +12,7 @@ import nl.utwente.groove.io.conceptual.value.Object;
  * represents instance models in the abstraction.
  * Contains objects with possibly assigned values
  * @author s0141844
- * @version $Revision $
+ * @version $Revision$
  */
 public class InstanceModel implements Serializable {
     private TypeModel m_tm;

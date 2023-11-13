@@ -31,7 +31,7 @@ import nl.utwente.groove.io.Imager;
 /**
  * Test for the Imager command-line facility
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @SuppressWarnings("javadoc")
 public class ImagerTest {

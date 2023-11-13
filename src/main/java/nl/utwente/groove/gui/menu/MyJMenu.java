@@ -22,7 +22,7 @@ import javax.swing.JMenuItem;
 /**
  * Menu specialisation with functionality to add submenus and copy items from other menus.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class MyJMenu extends JMenu {
     /**

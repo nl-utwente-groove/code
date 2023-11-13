@@ -23,8 +23,8 @@ import nl.utwente.groove.util.parse.OpKind;
 
 /**
  * Annotation superclass for (prefix or infix) operators.
- * @author Rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface OpSymbol {

@@ -33,7 +33,7 @@ import nl.utwente.groove.gui.look.VisualValue;
 /**
  * Factory for {@link JGraph}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 abstract public class JGraphFactory<G extends Graph> {
     /** Constructs a factory for a given JGraph. */

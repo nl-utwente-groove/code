@@ -35,7 +35,7 @@ import nl.utwente.groove.util.Reporter;
 
 /**
  * @author Amir Hossein Ghamarian
- * @version $Revision $
+ * @version $Revision$
  */
 public class ReteStrategy extends GTSStrategy {
     @Override

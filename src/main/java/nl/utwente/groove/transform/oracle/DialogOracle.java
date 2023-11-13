@@ -34,7 +34,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Value oracle that asks the user for a value.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class DialogOracle implements ValueOracleFactory, ValueOracle {

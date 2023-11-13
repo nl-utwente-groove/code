@@ -23,7 +23,7 @@ import nl.utwente.groove.algebra.Sort;
  * At least all Java identifiers are considered valid.
  * Also allows to "repair" an invalid identifier.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract class IdValidator implements Fallible {
     /**

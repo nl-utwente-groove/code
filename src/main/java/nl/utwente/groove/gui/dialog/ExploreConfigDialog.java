@@ -54,7 +54,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Dialog to manage exploration configurations.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class ExploreConfigDialog extends ConfigDialog<ExploreConfig> {
     /** Constructs a new dialog, and attempts to load it from the property files in {@link #CONFIG_DIR}. */

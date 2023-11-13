@@ -31,7 +31,7 @@ import nl.utwente.groove.util.parse.OpKind;
 /**
  * Expression consisting of a target (a node ID) and a field name.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public final class FieldExpr extends Expression {

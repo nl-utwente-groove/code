@@ -32,7 +32,7 @@ import nl.utwente.groove.util.line.Line;
  * Content object that is a collection of strings, and can be reloaded from an
  * object of collection.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class AspectJObject extends ArrayList<String> {
     /**

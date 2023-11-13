@@ -42,7 +42,7 @@ import java.util.Set;
 /**
  * Enumerator for LTL versus CTL logic.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public enum Logic {
     /** Linear Temporal Logic. */

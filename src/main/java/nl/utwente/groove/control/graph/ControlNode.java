@@ -23,7 +23,7 @@ import nl.utwente.groove.graph.ANode;
 /**
  * Node in a control graph.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class ControlNode extends ANode {
     /**

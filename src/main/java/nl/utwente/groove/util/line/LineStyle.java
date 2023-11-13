@@ -29,8 +29,8 @@ import nl.utwente.groove.util.Exceptions;
 
 /**
  * Edge layout line styles.
- * @author rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 public enum LineStyle {
     /** Orthogonal line style. */

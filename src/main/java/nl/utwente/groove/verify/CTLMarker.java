@@ -45,7 +45,7 @@ import nl.utwente.groove.util.Exceptions;
 /**
  * Implementation of the CTL model checking algorithm.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class CTLMarker {
     /**

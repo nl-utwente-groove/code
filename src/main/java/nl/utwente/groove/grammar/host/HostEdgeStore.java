@@ -23,7 +23,7 @@ import java.util.Map;
  * Convenience type for a deterministic map from
  * generic key types to sets of edges. 
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public final class HostEdgeStore<K> extends LinkedHashMap<K,HostEdgeSet> {
     /** Returns a fresh empty store. */

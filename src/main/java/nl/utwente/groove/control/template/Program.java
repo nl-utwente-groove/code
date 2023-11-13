@@ -49,7 +49,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * A program can be fixed, after which it has a main template
  * and a map from procedure names to procedure templates.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Program implements Fixable {
     /**

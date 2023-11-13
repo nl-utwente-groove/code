@@ -21,7 +21,7 @@ import nl.utwente.groove.algebra.syntax.Expression;
 /**
  * Term algebra of strings.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public final class TermStringAlgebra
     extends StringAlgebra<Expression,Expression,Expression,Expression> {

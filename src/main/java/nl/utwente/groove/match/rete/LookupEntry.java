@@ -23,7 +23,7 @@ import nl.utwente.groove.graph.Node;
  * Information about a single element in a match,
  * consisting of the index and a role indicator.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 final public record LookupEntry(int pos, nl.utwente.groove.match.rete.LookupEntry.Role role) {
 

@@ -38,7 +38,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Dialog class that lets the user choose a fresh name.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 abstract public class FreshNameDialog<Name> {
     /**

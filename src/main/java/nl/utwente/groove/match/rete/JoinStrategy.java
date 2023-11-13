@@ -23,7 +23,7 @@ import org.eclipse.jdt.annotation.Nullable;
  * subgraph checker node.
  *
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public interface JoinStrategy<LeftMatchType extends AbstractReteMatch,RightMatchType extends AbstractReteMatch> {
     /**

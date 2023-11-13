@@ -24,7 +24,7 @@ import nl.utwente.groove.match.rete.ReteNetwork.ReteStaticMapping;
  * positive and negative components of a condition.
  * 
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class CompositeConditionChecker extends ConditionChecker {
 

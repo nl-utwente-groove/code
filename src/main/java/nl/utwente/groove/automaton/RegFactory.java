@@ -23,7 +23,7 @@ import nl.utwente.groove.graph.Morphism;
 
 /**
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class RegFactory extends ElementFactory<RegNode,RegEdge> {
     @Override

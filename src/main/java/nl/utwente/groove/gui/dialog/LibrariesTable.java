@@ -47,7 +47,7 @@ import nl.utwente.groove.io.Util;
 /**
  * Table containing information about the auxiliary libraries used in Groove.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class LibrariesTable extends JTable {
     private LibrariesTable() {

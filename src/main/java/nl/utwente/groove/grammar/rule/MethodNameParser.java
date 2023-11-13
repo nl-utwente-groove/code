@@ -25,7 +25,7 @@ import nl.utwente.groove.util.parse.Parser;
 
 /**
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class MethodNameParser extends Parser.AParser<MethodName> {
     /** Private constructor for the singleton instance. */

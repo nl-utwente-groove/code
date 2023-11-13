@@ -48,7 +48,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Test for {@link UnitPar}
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @SuppressWarnings("javadoc")
 public class UnitParTest {

@@ -38,7 +38,7 @@ import nl.utwente.groove.util.line.LineFormat.Builder;
  * Class wrapping the functionality to convert a multi-line label
  * into a list of labels with orientation decorations.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class MultiLabel {
     /** Adds an undirected directed line to this multiline label. */
@@ -174,8 +174,8 @@ public class MultiLabel {
     /**
      * Direction of a line of the multi-label.
      * This determines how the orientation decorations are placed.
-     * @author rensink
-     * @version $Revision $
+     * @author Arend Rensink
+     * @version $Revision$
      */
     public static enum Direct {
         /** Undirected label. */

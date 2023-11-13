@@ -34,7 +34,7 @@ import nl.utwente.groove.gui.jgraph.JCell;
  * mapping of those labels to {@link JCell}s bearing
  * the entries.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class TypeFilter extends LabelFilter<AspectGraph> {
     /**

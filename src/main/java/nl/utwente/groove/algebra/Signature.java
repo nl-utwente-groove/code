@@ -32,7 +32,7 @@ package nl.utwente.groove.algebra;
  * <li>There is no overloading of the methods in a signature
  * </ul>
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface Signature {
 

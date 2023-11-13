@@ -34,7 +34,7 @@ import nl.utwente.groove.match.plan.PlanSearchStrategy.Search;
 /**
  * A search item that searches an image for an edge.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 class Edge2SearchItem extends AbstractSearchItem {
     /**
@@ -265,7 +265,7 @@ class Edge2SearchItem extends AbstractSearchItem {
      * Search record to be used if the edge image is completely determined by
      * the pre-matched ends.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     class Edge2SingularRecord extends SingularRecord {
         /** Constructs an instance for a given search. */
@@ -358,7 +358,7 @@ class Edge2SearchItem extends AbstractSearchItem {
      * Record of an edge search item, storing an iterator over the candidate
      * images.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     class Edge2MultipleRecord extends MultipleRecord<HostEdge> {
         /**

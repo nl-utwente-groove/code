@@ -32,7 +32,7 @@ import nl.utwente.groove.util.Exceptions;
  * Class that can create editor for a given exploration key,
  * or for a given key/value pair.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class EditorFactory {
     /** Constructs a factory for a given dialog. */

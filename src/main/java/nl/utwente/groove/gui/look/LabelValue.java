@@ -80,7 +80,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Visual value refresher for the {@link VisualKey#LABEL}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class LabelValue implements VisualValue<MultiLabel> {
     @Override

@@ -21,7 +21,7 @@ import nl.utwente.groove.util.collect.TreeHashSet;
 /**
  * Dedicated set of rule events.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class RuleEventSet extends TreeHashSet<AbstractRuleEvent<?,?>> {
     @Override

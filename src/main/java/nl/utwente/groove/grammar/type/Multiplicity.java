@@ -21,7 +21,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Pair consisting of lower and upper bound.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public record Multiplicity(int lower, int upper) {
     /**

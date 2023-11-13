@@ -41,8 +41,8 @@ import nl.utwente.groove.io.Util;
 
 /**
  * Display class for system properties.
- * @author rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 public class PropertiesDisplay extends Display implements SimulatorListener {
     /** Creates a display for a given simulator. */

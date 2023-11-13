@@ -24,7 +24,7 @@ import nl.utwente.groove.algebra.syntax.Expression;
  * Implementation of integers consisting of a singleton value.
  * To be used in conjunction with {@link PointBoolAlgebra} and {@link PointStringAlgebra}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public final class PointIntAlgebra extends IntAlgebra<Integer,Double,Boolean,String>
     implements PointAlgebra<Integer> {

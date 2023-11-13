@@ -9,7 +9,7 @@ import java.util.Stack;
  * Class that represents Ids. If id.equals(otherId), then id == id.
  * Ids are immutable
  * @author s0141844
- * @version $Revision $
+ * @version $Revision$
  */
 public class Id implements Serializable {
     /** The ROOT namespace Id. All Ids have ROOT as the first namespace. */

@@ -34,7 +34,7 @@ import nl.utwente.groove.verify.Proposition;
 
 /**
  * @author Harmen Kastenberg
- * @version $Revision $
+ * @version $Revision$
  */
 public class LTL2BuchiGraphTest {
 

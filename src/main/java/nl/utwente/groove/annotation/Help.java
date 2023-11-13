@@ -38,7 +38,7 @@ import nl.utwente.groove.util.Pair;
 /**
  * Class offering support for syntax help.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Help {
     /** Constructs a help item using a given token map for syntax formatting. */

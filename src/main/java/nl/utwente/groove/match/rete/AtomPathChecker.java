@@ -21,7 +21,7 @@ import nl.utwente.groove.grammar.host.HostEdge;
 
 /**
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class AtomPathChecker extends SingleEdgePathChecker {
 

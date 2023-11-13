@@ -19,7 +19,7 @@ package nl.utwente.groove.control.term;
 /**
  * Term wrapping the body of a procedure.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class BodyTerm extends Term {
     /**

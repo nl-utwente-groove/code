@@ -21,7 +21,7 @@ import nl.utwente.groove.util.Dispenser;
 /**
  * Factory class for graph elements.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract class ElementFactory<N extends Node,E extends Edge> extends NodeFactory<N> {
     /** Constructor for subclassing. */
@@ -89,8 +89,8 @@ public abstract class ElementFactory<N extends Node,E extends Edge> extends Node
     /**
      * Node factory that delegates its globally implemented methods to the
      * embedding element factory.
-     * @author rensink
-     * @version $Revision $
+     * @author Arend Rensink
+     * @version $Revision$
      */
     abstract protected class DependentNodeFactory extends NodeFactory<N> {
         @Override

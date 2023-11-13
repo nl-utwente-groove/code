@@ -38,7 +38,7 @@ import javax.swing.SpinnerNumberModel;
  * Dialog to warn of a large state space during exploration,
  * and set the next bound to explore to.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class ExploreWarningDialog {
     private ExploreWarningDialog() {

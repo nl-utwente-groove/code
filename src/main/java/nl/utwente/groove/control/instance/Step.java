@@ -40,7 +40,7 @@ import nl.utwente.groove.grammar.Rule;
 /**
  * Run-time control step, instantiating a control edge.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {

@@ -33,7 +33,7 @@ import nl.utwente.groove.util.Exceptions;
 
 /**
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class ReteSimpleMatch extends AbstractReteMatch {
 
@@ -493,7 +493,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
      * as the quantifier's root anchor nodes.
      *
      * @author Arash Jalali
-     * @version $Revision $
+     * @version $Revision$
      */
     public static class ReteCountMatch extends ReteSimpleMatch {
         private final boolean dummy;

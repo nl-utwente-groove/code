@@ -46,7 +46,7 @@ import nl.utwente.groove.gui.look.VisualKey;
 /**
  * Checkbox tree controlling the visibility of rule levels.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener {
     /** Creates a new tree, for a given rule model. */

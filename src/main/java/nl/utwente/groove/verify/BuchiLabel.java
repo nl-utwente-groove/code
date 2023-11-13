@@ -24,7 +24,7 @@ import nl.utwente.groove.graph.TextLabel;
 
 /**
  * @author Harmen Kastenberg
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class BuchiLabel extends TextLabel {

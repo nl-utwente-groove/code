@@ -44,7 +44,7 @@ import nl.utwente.groove.graph.Graph;
  * for example graphs in this format.
  *
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class ColIO extends GraphIO<HostGraph> {
     @Override

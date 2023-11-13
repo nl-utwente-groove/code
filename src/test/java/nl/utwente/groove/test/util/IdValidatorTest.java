@@ -25,7 +25,7 @@ import nl.utwente.groove.util.parse.IdValidator;
 
 /**
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @SuppressWarnings("javadoc")
 public class IdValidatorTest {

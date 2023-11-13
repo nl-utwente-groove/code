@@ -54,7 +54,7 @@ import nl.utwente.groove.util.parse.FormatError;
 /**
  * Superclass for grammar component editors.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 abstract public class ResourceTab extends JPanel {
     /** Creates a panel for a given display. */

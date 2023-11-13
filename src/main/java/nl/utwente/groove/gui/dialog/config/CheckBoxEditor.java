@@ -37,7 +37,7 @@ import nl.utwente.groove.gui.dialog.ExploreConfigDialog;
  * Editor for an explore key, consisting of buttons for each valid setting kind
  * and optional editors for all kinds with non-{@code null} content.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class CheckBoxEditor extends SettingEditor {
     /**

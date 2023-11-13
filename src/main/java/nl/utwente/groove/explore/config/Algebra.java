@@ -25,7 +25,7 @@ import nl.utwente.groove.util.Exceptions;
 
 /**
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public final class Algebra extends Setting {
@@ -40,7 +40,7 @@ public final class Algebra extends Setting {
     /**
      * Kind of traversal strategies.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     public enum Kind implements Setting.Key {
         /** Depth-first search. */

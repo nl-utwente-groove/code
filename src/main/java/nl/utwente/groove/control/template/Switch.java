@@ -31,7 +31,7 @@ import nl.utwente.groove.grammar.UnitPar;
 /**
  * Transition between control locations, bearing a call.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Switch implements Comparable<Switch>, Relocatable {
     /**

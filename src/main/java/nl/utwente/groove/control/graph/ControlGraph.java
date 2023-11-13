@@ -39,7 +39,7 @@ import nl.utwente.groove.graph.NodeSetEdgeSetGraph;
  * as verdict edges.
  * Verdict edges to deadlocks are left out of the graph.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class ControlGraph extends NodeSetEdgeSetGraph<ControlNode,ControlEdge> {

@@ -28,7 +28,7 @@ import nl.utwente.groove.util.collect.TreeHashSet;
  * Abstract factory class that stores canonical representatives
  * of nodes and edges.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label>
     extends ElementFactory<N,E> {

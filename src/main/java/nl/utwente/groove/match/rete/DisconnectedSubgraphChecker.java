@@ -33,7 +33,7 @@ import nl.utwente.groove.util.collect.TreeHashSet;
  * antecedent of type <code>DisconnectedSubgraphChecker</code>
  *
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class DisconnectedSubgraphChecker extends ReteNetworkNode implements ReteStateSubscriber {
 

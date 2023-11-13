@@ -25,7 +25,7 @@ import java.util.List;
  * A node tuple of an attributed graph.
  * This is essentially an ordered sequence of nodes, modelling a node relation.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class AttrTuple {
     /**

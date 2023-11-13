@@ -32,7 +32,7 @@ import nl.utwente.groove.util.Exceptions;
  * signal from the RETE network.
  *
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class ValueNodeChecker extends NodeChecker implements ReteStateSubscriber {
 

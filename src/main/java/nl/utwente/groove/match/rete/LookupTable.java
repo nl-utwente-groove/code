@@ -27,7 +27,7 @@ import nl.utwente.groove.match.rete.LookupEntry.Role;
  * A look up table that determines which entry of a {@link AbstractReteMatch}'s list of units
  * should be looked at to find the image of a specific node  
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class LookupTable {
     final private HashMap<RuleNode,LookupEntry> nodeTable =

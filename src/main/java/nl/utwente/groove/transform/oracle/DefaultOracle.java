@@ -28,7 +28,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Oracle returning the default value for the appropriate type.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class DefaultOracle implements ValueOracleFactory, ValueOracle {

@@ -21,7 +21,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 /**
  * Interface for objects that can be copied under a relocation mapping.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public interface Relocatable {

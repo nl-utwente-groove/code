@@ -21,7 +21,7 @@ import nl.utwente.groove.grammar.GrammarProperties;
 /**
  * Factory for a {@link RandomOracle}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class RandomOracleFactory implements ValueOracleFactory {
     /** Constructor for the singleton instance. */

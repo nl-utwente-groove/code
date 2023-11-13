@@ -51,7 +51,7 @@ import nl.utwente.groove.graph.plain.PlainLabel;
  * <li> The graph maintains a set of node tuples, stored as lists of nodes.
  * (This is used to serialise shape equivalence relations.)
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {

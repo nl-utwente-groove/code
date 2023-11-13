@@ -27,7 +27,7 @@ import org.kohsuke.args4j.spi.Setter;
 /**
  * Checks if a file option value is an existing file.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class ExistingFileHandler extends FileOptionHandler {
     /**

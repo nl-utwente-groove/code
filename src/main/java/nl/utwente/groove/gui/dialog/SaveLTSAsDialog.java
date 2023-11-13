@@ -58,7 +58,7 @@ import nl.utwente.groove.lts.GTS;
 
 /**
  * @author Tom Staijen
- * @version $Revision $
+ * @version $Revision$
  */
 public class SaveLTSAsDialog {
 
@@ -583,7 +583,7 @@ public class SaveLTSAsDialog {
 
     /**
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     abstract private class FieldListener implements DocumentListener {
         private final JTextField field;

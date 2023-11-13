@@ -23,7 +23,7 @@ import nl.utwente.groove.util.Exceptions;
 /**
  * Until-do term.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class UntilTerm extends Term {

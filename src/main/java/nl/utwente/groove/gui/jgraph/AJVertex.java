@@ -35,8 +35,8 @@ import nl.utwente.groove.io.HTMLConverter;
 /**
  * Generic abstract JCell subclass implementing the {@link JVertex} interface.
  * @param <G> the graph type for which the JVertex is intended
- * @author rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 public abstract class AJVertex<G extends Graph,JG extends JGraph<G>,JM extends JModel<G>,JE extends JEdge<G>>
     extends AJCell<G,JG,JM> implements JVertex<G> {

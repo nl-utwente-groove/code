@@ -36,7 +36,7 @@ import nl.utwente.groove.util.parse.OpKind.Placement;
 /**
  * "Proper" term, consisting of an operator applied to other terms.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public final class CallExpr extends Expression {
     /** Constructs a term from a given operator and list of arguments. */

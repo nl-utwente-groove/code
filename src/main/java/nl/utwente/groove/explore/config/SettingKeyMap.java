@@ -23,7 +23,7 @@ import java.util.Map;
  * Mapping from setting key names to the corresponding keys.
  * The mapping is normalised to lowercase.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class SettingKeyMap {
     /** Creates a map initialised to a given setting key. */

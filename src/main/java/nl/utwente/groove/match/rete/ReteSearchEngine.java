@@ -33,7 +33,7 @@ import nl.utwente.groove.util.Reporter;
  * Every object of this class keeps a {@link ReteNetwork} that is shared
  * by all the search strategies.
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class ReteSearchEngine extends SearchEngine {
     /** Creates a new engine, on the basis of a given grammar.

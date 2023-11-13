@@ -23,8 +23,8 @@ import nl.utwente.groove.util.line.Line.Style;
 
 /**
  * String renderer for lines
- * @author rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 public class StringFormat extends LineFormat<StringFormat.Builder> {
     @Override

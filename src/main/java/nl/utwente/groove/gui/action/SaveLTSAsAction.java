@@ -35,7 +35,7 @@ import nl.utwente.groove.lts.GraphState;
 /**
  * Action that takes care of saving the LTS graph under a certain name.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class SaveLTSAsAction extends SimulatorAction {
     /** Constructs an instance of the action, for a given simulator. */

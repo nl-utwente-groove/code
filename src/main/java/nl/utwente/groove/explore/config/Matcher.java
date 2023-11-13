@@ -24,7 +24,7 @@ import nl.utwente.groove.util.Exceptions;
 
 /**
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class Matcher extends Setting {

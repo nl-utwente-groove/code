@@ -21,7 +21,7 @@ import org.junit.Test;
 /**
  * Tests the qualified any construct.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @SuppressWarnings("all")
 public class AnyTest extends AControlTest {

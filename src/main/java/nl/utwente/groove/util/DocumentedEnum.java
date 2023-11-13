@@ -21,7 +21,7 @@ import nl.utwente.groove.io.HTMLConverter;
 /**
  * Interface to provide documentation for a publicly visible enum type.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface DocumentedEnum {
     /** Name by which the used should refer to this value. */

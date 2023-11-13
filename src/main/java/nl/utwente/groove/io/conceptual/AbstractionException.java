@@ -19,7 +19,7 @@ package nl.utwente.groove.io.conceptual;
 /**
  * Exception class for use in the abstraction model. General exception for pretty much anything that goes wrong in the abstraction.
  * @author s0141844
- * @version $Revision $
+ * @version $Revision$
  */
 public class AbstractionException extends Exception {
     /**

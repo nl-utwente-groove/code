@@ -25,7 +25,7 @@ import nl.utwente.groove.graph.Node;
  * Supertype of all nodes that can occur in a {@link DefaultHostGraph}.
  * These are {@link DefaultHostNode}s and {@link ValueNode}s.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public interface HostNode extends Node, HostElement, AnchorValue {

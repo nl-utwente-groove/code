@@ -25,7 +25,7 @@ import nl.utwente.groove.util.Exceptions;
 /**
  * Edge direction in a graph.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public enum Direction {

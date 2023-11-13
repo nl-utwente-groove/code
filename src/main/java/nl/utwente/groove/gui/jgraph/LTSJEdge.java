@@ -17,7 +17,7 @@ import nl.utwente.groove.util.Groove;
 /**
  * JEdge class that describes the underlying edge as a graph transition.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> implements LTSJCell {
     /**

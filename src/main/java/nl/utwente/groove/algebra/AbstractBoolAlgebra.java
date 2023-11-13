@@ -24,7 +24,7 @@ import nl.utwente.groove.algebra.syntax.Expression;
  * Abstract implementation of boolean algebra,
  * in which the values are represented by Java {@link Boolean}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract sealed class AbstractBoolAlgebra
     extends BoolAlgebra<Boolean>permits BigBoolAlgebra, JavaBoolAlgebra {

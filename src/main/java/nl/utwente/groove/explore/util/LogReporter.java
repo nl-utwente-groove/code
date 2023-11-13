@@ -35,7 +35,7 @@ import nl.utwente.groove.lts.GTS;
 /**
  * Reporter that logs the exploration process.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class LogReporter extends AExplorationReporter {
     /**

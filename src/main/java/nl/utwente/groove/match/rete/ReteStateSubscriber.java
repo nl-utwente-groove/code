@@ -24,7 +24,7 @@ import nl.utwente.groove.match.rete.ReteNetwork.ReteState;
  * object communicates with its subscribers through this interface.
  *
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public interface ReteStateSubscriber {
     /**

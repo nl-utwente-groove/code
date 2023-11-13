@@ -23,7 +23,7 @@ import nl.utwente.groove.algebra.syntax.Expression;
 /**
  * Implementation of booleans consisting of a singleton value.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public final class TermBoolAlgebra extends BoolAlgebra<Expression> {
     /** Private constructor for the singleton instance. */

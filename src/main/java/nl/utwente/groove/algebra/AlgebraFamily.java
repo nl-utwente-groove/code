@@ -37,7 +37,7 @@ import nl.utwente.groove.util.Exceptions;
 /**
  * Register for the currently used algebras.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public enum AlgebraFamily implements DocumentedEnum {
     /** Default algebra family:

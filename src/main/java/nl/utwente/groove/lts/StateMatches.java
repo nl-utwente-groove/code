@@ -33,7 +33,7 @@ import nl.utwente.groove.grammar.Rule;
 /**
  * Algorithm class to gradually build up the matches for a given state.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class StateMatches extends MatchResultSet {
     /**

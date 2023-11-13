@@ -27,7 +27,7 @@ import nl.utwente.groove.graph.Node;
 /**
  * JGraph vertex wrapping a single graph node and a set of graph edges.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface JVertex<G extends Graph> extends JCell<G> {
     /** Returns the set of incident JEdges. */

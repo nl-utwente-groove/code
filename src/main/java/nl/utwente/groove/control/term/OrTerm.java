@@ -18,7 +18,7 @@ package nl.utwente.groove.control.term;
 
 /**
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class OrTerm extends Term {
     /**

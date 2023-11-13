@@ -32,7 +32,7 @@ import nl.utwente.groove.util.Visitor;
  * @see MatcherFactory
  * @see Matcher
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface SearchStrategy {
     /**

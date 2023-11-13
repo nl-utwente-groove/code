@@ -58,7 +58,7 @@ import nl.utwente.groove.util.parse.Parser;
  * <li> wrapping and unwrapping between {@link Entry}s and the actual values for the corresponding keys
  * </ul>
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 // I'd like to include the following tag but Maven throws up
 // @NonNullByDefault

@@ -22,7 +22,7 @@ import nl.utwente.groove.util.parse.Parser;
 /**
  * Derived parser that wraps another parser inside brackets of some kind
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class BracketParser<V> extends Parser.AParser<V> {
     /**

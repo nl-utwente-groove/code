@@ -64,7 +64,7 @@ import nl.utwente.groove.util.collect.UncasedStringMap;
 /**
  * Dialog to manage configurations.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 abstract public class ConfigDialog<C> extends JDialog {
     /**

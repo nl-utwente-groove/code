@@ -24,7 +24,7 @@ import org.eclipse.jdt.annotation.NonNull;
  * Pool of objects, used to create canonical representative instances.
  * Canonical instances are identical when they are equal.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Pool<E> extends HashMap<E,E> {
     /** Returns a canonical instance for a given element. */

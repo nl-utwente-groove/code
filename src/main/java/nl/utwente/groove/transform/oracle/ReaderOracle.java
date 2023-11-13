@@ -33,7 +33,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Oracle returning values from a file reader.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class ReaderOracle implements ValueOracle {
     /** Constructor for a file reader.

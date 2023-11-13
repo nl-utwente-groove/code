@@ -55,7 +55,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * Helper class for GCL parsing.
  * Acts as an interface between the grammar and the namespace.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class CtrlHelper {
     /** Constructs a helper object for a given parser and namespace. */
@@ -878,8 +878,8 @@ public class CtrlHelper {
 
     /** Special exception class to signal the effect of a previously
      * detected error.
-     * @author rensink
-     * @version $Revision $
+     * @author Arend Rensink
+     * @version $Revision$
      */
     private static class PreviousErrorException extends Exception {
         // empty

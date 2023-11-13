@@ -30,7 +30,7 @@ import nl.utwente.groove.graph.plain.PlainLabel;
  * This is an ordinary edge extended with a sting-to-string mapping
  * holding additional edge attributes.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class AttrEdge extends AEdge<AttrNode,PlainLabel> {

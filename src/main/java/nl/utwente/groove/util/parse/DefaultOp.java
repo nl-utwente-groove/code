@@ -18,7 +18,7 @@ package nl.utwente.groove.util.parse;
 
 /**
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class DefaultOp implements Op {
     /**

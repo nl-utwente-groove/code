@@ -17,7 +17,7 @@ package nl.utwente.groove.util;
 /**
  * Dispenser that works on the basis of a counter.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class DefaultDispenser extends Dispenser {
     /*

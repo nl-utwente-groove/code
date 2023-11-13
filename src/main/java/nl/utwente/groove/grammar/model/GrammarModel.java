@@ -841,8 +841,8 @@ public class GrammarModel implements PropertyChangeListener {
 
     /** Set of resource kinds to be synchronised.
      * The ordering and content of the set ensures that all dependencies are fulfilled.
-     * @author Rensink
-     * @version $Revision $
+     * @author Arend Rensink
+     * @version $Revision$
      */
     static private class SyncSet extends TreeSet<ResourceKind> {
         /** Constructs a new synchronisation set with given content. */

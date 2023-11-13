@@ -31,7 +31,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Test class for the construction of symbolic control terms.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @SuppressWarnings("javadoc")
 public class TermTest extends CtrlTester {

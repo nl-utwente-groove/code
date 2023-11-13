@@ -50,7 +50,7 @@ import nl.utwente.groove.util.collect.TreeHashSet;
  *
  *
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class QuantifierCountSubgraphChecker
     extends SubgraphCheckerNode<AbstractReteMatch,ReteCountMatch> implements DominoEventListener {
@@ -240,7 +240,7 @@ public class QuantifierCountSubgraphChecker
      * joining with dummy matches if needed.
      *
      * @author Arash Jalali
-     * @version $Revision $
+     * @version $Revision$
      */
     protected static class JoinWithCountStrategy<LT extends AbstractReteMatch>
         extends AbstractSimpleTestJoinStrategy<LT,ReteCountMatch> {

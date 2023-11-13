@@ -23,8 +23,8 @@ import nl.utwente.groove.gui.Simulator;
 
 /**
  * Plain JGraph implementation, not specialised for any particular graph kind.
- * @author rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 public class PlainJGraph extends JGraph<Graph> {
     /**

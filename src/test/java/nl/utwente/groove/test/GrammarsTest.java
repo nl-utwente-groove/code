@@ -29,7 +29,7 @@ import nl.utwente.groove.transform.Transformer;
  * Loads and partially explores all grammars provided with the GROOVE release.
  * To run, set {@link #SAMPLE_DIR} and {@link #GRAMMAR_DIR} to the right locations in your project
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class GrammarsTest {
     /** Tests the samples. */

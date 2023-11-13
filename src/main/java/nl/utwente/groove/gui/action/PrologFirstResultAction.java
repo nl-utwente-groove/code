@@ -23,7 +23,7 @@ import nl.utwente.groove.gui.Simulator;
 /**
  * Action to set the first result of a query on the Prolog display.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class PrologFirstResultAction extends SimulatorAction {
     /** Creates an instance of this action. */

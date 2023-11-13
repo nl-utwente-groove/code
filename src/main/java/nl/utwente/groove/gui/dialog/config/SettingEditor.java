@@ -26,7 +26,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Interface for the editor of a setting kind.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 abstract public class SettingEditor extends JPanel implements Refreshable {
     /** Returns the explore key for which this is an editor. */

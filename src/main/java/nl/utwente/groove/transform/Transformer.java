@@ -49,7 +49,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * Encapsulates a grammar and offers functionality to transform
  * arbitrary graphs.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Transformer {
     /**

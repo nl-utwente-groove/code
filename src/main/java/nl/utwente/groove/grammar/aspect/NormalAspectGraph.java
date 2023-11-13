@@ -56,7 +56,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * In a normal aspect graph, all let-, test- or role:sort:field-edges
  * are substituted by primitive attribute syntax (prod-nodes with argi and sort:op-edges)
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class NormalAspectGraph extends AspectGraph {

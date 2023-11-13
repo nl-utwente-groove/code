@@ -45,7 +45,7 @@ import nl.utwente.groove.util.collect.TreeHashSet;
  * of the quantifier to that value.
  *
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class QuantifierCountChecker extends ReteNetworkNode implements ReteStateUpdateSubscriber {
 

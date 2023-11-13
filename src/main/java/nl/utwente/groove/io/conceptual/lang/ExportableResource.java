@@ -18,8 +18,8 @@ package nl.utwente.groove.io.conceptual.lang;
 
 /**
  * Exportable resource in an external format.
- * @author Rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 public abstract class ExportableResource {
     /** Causes the resource to be exported to the predefined destination. */

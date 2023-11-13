@@ -41,8 +41,8 @@ import nl.utwente.groove.util.Exceptions;
  * @param <REAL> The representation type of the real algebra
  * @param <BOOL> The representation type of the boolean algebra
  * @param <STRING> The representation type of the string algebra
- * @author Rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 public interface GSignature<MAIN,INT,REAL,BOOL,STRING> extends Signature {
     /** Absolute value of a real number. */

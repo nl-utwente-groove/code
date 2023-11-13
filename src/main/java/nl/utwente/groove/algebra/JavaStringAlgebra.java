@@ -19,7 +19,7 @@ package nl.utwente.groove.algebra;
 /**
  * Default implementation of the string algebra.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public final class JavaStringAlgebra extends AbstractStringAlgebra<Integer,Double> {
     /** Empty constructor for the singleton instance. */

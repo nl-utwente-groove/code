@@ -381,7 +381,7 @@ public class Bisimulator extends CertificateStrategy {
      * account. It is assumed that
          * {@link ValueNode} is a subtype of the type parameter {@code N}.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     static private class MyValueNodeCert extends MyNodeCert {
         /**

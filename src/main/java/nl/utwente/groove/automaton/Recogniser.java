@@ -36,7 +36,7 @@ import nl.utwente.groove.graph.Direction;
  * Class that finds matches for a regular automaton
  * in a given graph.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Recogniser {
     /**

@@ -25,7 +25,7 @@ import nl.utwente.groove.util.collect.Pool;
  * creates fresh node identities (to ensure deterministic and consecutive node
  * numbers) and maintains a map of rule events (to save space and time).
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Record {
     /**

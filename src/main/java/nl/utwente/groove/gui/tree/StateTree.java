@@ -81,7 +81,7 @@ import nl.utwente.groove.transform.RuleEvent;
 /**
  * List of states in the LTS.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class StateTree extends JTree implements SimulatorListener {
     /**

@@ -24,7 +24,7 @@ import nl.utwente.groove.grammar.QualName;
 /**
  * General interface for resource models constructed from a flat text.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract class TextBasedModel<M> extends NamedResourceModel<M> {
     /**

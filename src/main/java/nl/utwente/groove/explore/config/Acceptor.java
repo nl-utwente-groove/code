@@ -24,8 +24,8 @@ import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.StringParser;
 
 /**
- * @author Rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 @NonNullByDefault
 public class Acceptor extends Setting {

@@ -19,7 +19,7 @@ package nl.utwente.groove.util.parse;
 /**
  * Parser for strings; either passes through the string unchanged, or trims whitespace.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class StringParser extends Parser.AParser<String> {
     private StringParser(boolean trim) {

@@ -21,7 +21,7 @@ import nl.utwente.groove.grammar.QualName;
 /**
  * Control variables, consisting of a name and a type.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public record CtrlVar(QualName scope, String name, CtrlType type, int nr)
     implements Comparable<CtrlVar> {

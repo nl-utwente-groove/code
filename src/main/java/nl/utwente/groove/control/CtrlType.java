@@ -26,7 +26,7 @@ import nl.utwente.groove.algebra.Sort;
  * A control type is either a node type or a data type.
  * A data type has an attached signature.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public enum CtrlType {
     /** Node type. */

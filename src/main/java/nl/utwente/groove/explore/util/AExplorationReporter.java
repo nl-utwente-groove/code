@@ -24,7 +24,7 @@ import nl.utwente.groove.lts.GTS;
 /**
  * Abstract implementation of an {@link ExplorationReporter}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract class AExplorationReporter implements ExplorationReporter {
     @Override

@@ -28,7 +28,7 @@ import nl.utwente.groove.grammar.QualName;
  * encoded method name in a given language,
  * with functionality to invoke it on a given host graph and rule event.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class MethodName {

@@ -25,7 +25,7 @@ import nl.utwente.groove.lts.GTS;
 /**
  * Collection of reporters, acting like a single reporter.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class CompositeReporter extends ArrayList<ExplorationReporter> implements
         ExplorationReporter {

@@ -50,7 +50,7 @@ import nl.utwente.groove.util.parse.FormatError;
 /**
  * Algorithm to create the set of current match results for a given state.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class MatchCollector {
     /**

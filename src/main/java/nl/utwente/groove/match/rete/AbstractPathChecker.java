@@ -30,7 +30,7 @@ import nl.utwente.groove.grammar.rule.RuleNode;
 
 /**
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract class AbstractPathChecker extends ReteNetworkNode implements ReteStateSubscriber {
 
@@ -171,7 +171,7 @@ public abstract class AbstractPathChecker extends ReteNetworkNode implements Ret
      * Entry in the path match cache, holding a representative match and a
      * count of the number of comparable instances.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     protected static class CacheEntry {
         private final RetePathMatch representative;
@@ -226,7 +226,7 @@ public abstract class AbstractPathChecker extends ReteNetworkNode implements Ret
      * non-path-checker successors for efficiency purposes.
      *
      * @author Arash Jalali
-     * @version $Revision $
+     * @version $Revision$
      */
     public static class PathMatchCache implements DominoEventListener {
 

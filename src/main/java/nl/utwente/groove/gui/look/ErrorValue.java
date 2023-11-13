@@ -24,7 +24,7 @@ import nl.utwente.groove.gui.jgraph.JGraph;
 /**
  * Refresher for the {@link VisualKey#ERROR} value of a {@link AspectJCell}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class ErrorValue implements VisualValue<Boolean> {
     @Override

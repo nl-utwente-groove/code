@@ -858,7 +858,7 @@ public class StringHandler {
     /** Class wrapping a fixed length char array
      * with functionality to add chars and convert the result into a string.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     private static class SimpleStringBuilder {
         /** Constructs a builder with a given (fixed) length. */

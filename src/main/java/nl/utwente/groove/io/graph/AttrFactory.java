@@ -26,7 +26,7 @@ import nl.utwente.groove.util.Dispenser;
 /**
  * Factory for elements of {@link AttrGraph}s.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class AttrFactory extends ElementFactory<AttrNode,AttrEdge> {
     /** Private constructor for the singleton instance. */

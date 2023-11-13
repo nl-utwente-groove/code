@@ -68,7 +68,7 @@ import nl.utwente.groove.io.HTMLConverter;
  * with a single main tab for switching quickly between resources that are merely displayed,
  * and multiple tabs for pinned editors.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class ResourceDisplay extends Display implements SimulatorListener {
     /**

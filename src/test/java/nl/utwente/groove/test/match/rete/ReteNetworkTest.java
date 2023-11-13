@@ -38,7 +38,7 @@ import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class ReteNetworkTest extends TestCase {
     /** Location of the samples. */

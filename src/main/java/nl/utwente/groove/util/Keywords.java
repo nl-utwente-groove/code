@@ -23,7 +23,7 @@ import nl.utwente.groove.grammar.aspect.AspectKind;
 /**
  * Reserved wordt used in GROOVE
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Keywords {
     /**

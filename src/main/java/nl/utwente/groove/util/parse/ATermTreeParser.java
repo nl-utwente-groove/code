@@ -942,7 +942,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
      * This is used as a mechanism to allow some ambiguity of tokens with
      * the same symbol, as long as they are of different token class.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     static class TokenFamily extends EnumMap<TokenClaz,TokenType> {
         /**
@@ -1036,7 +1036,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
      * Token kind; consists of a token type class and (if the type class is non-singular)
      * possibly some additional information.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     public static record TokenType(TokenClaz claz, Sort sort, Op op) {
         /**
@@ -1098,7 +1098,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
      * A token type class can either be singular, meaning that
      * there exists exactly one type of that class, or multiple.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     public static enum TokenClaz {
         /** Prefix operator (including call operator). */

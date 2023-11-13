@@ -35,7 +35,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Abstract superclass for control tests.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @SuppressWarnings("all")
 abstract public class AControlTest {

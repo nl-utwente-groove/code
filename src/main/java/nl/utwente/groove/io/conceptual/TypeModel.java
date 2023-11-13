@@ -20,7 +20,7 @@ import nl.utwente.groove.io.conceptual.type.Tuple;
  * Class responsible for identifiables, don't create self.
  *
  * @author Harold Bruijntjes
- * @version $Revision $
+ * @version $Revision$
  */
 public class TypeModel implements Serializable {
     private QualName m_name;

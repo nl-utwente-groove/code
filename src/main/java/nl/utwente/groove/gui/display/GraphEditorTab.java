@@ -864,8 +864,8 @@ final public class GraphEditorTab extends ResourceTab
     private Action deleteAction;
 
     /**
-     * @author rensink
-     * @version $Revision $
+     * @author Arend Rensink
+     * @version $Revision$
      */
     private final class GraphTabUndoManager extends GraphUndoManager {
         @Override

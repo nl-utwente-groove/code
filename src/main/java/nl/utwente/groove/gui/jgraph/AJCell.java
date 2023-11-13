@@ -40,7 +40,7 @@ import nl.utwente.groove.gui.look.VisualValue;
 /**
  * Abstract JCell implementation, providing some of the basic functionality.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JModel<G>>
     extends DefaultGraphCell implements JCell<G> {

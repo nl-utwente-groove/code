@@ -651,7 +651,7 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
      * Certificate for value nodes. This takes the actual node identity into
      * account.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     private class MyValueNodeCert extends MyNodeCert {
         /**

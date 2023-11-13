@@ -36,7 +36,7 @@ import nl.utwente.groove.util.Visitor.Collector;
 
 /**
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class ReteSearchStrategy implements SearchStrategy {
     /**

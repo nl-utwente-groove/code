@@ -38,7 +38,7 @@ import nl.utwente.groove.util.collect.TransformIterator;
 
 /**
  * @author Harmen Kastenberg
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition> implements Cloneable {

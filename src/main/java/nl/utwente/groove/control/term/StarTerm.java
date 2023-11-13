@@ -19,7 +19,7 @@ package nl.utwente.groove.control.term;
 /**
  * Kleene-starred term.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class StarTerm extends Term {
     /**

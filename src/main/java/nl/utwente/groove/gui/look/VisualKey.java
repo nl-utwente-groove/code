@@ -38,8 +38,8 @@ import nl.utwente.groove.util.line.LineStyle;
  * Visual attribute keys.
  * Some of the keys are derived from the looks, others are
  * under direct control.
- * @author rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 public enum VisualKey {
     /**

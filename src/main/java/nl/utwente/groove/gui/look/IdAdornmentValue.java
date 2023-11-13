@@ -24,7 +24,7 @@ import nl.utwente.groove.gui.jgraph.AspectJVertex;
 /**
  * Strategy for computing the internal identity adornment for a given JVertex
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class IdAdornmentValue extends AspectValue<String> {
     @Override

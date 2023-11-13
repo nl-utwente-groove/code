@@ -19,7 +19,7 @@ package nl.utwente.groove.control.term;
 /**
  * Term with increased transient depth.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class TransitTerm extends Term {
     /**

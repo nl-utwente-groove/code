@@ -25,7 +25,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Assignment in a host or rule graph.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Assignment {
     /** Constructs an assignment from a left hand side and right hand side. */

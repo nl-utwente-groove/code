@@ -22,7 +22,7 @@ import java.beans.PropertyChangeSupport;
 /**
  * Replacement for the deprecated Java </<code>Observable</code> class.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Observable {
     /**

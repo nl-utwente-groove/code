@@ -37,7 +37,7 @@ import nl.utwente.groove.util.parse.StringHandler;
  * values of certain node attribute fields.
  * This is used in labelling nodified edges.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  * @see AspectKind#EDGE
  */
 public class LabelPattern {

@@ -46,7 +46,7 @@ import nl.utwente.groove.lts.GraphState;
 /**
  * Class encoding a single message reporting an error in a graph view.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class FormatError implements Comparable<FormatError>, SelectableListEntry {
     /** Constructs an error consisting of a string message. */

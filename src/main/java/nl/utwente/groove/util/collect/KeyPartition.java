@@ -27,7 +27,7 @@ import java.util.Set;
  * Storage structure combining a map from keys to sets of values, and the set of
  * all values partitioned by the map.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 abstract public class KeyPartition<T,U> {
     /**

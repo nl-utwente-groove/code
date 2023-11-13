@@ -33,7 +33,7 @@ import nl.utwente.groove.util.Groove;
 /**
  * Control-defined callable unit.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract class Procedure implements Callable, Fixable {
     /**

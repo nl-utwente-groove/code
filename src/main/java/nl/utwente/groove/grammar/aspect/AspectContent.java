@@ -58,8 +58,8 @@ import nl.utwente.groove.util.parse.IdValidator;
 
 /**
  * Content of an {@link Aspect}
- * @author Rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 public sealed interface AspectContent
     permits ColorContent, IntegerContent, MultiplicityContent, LabelPatternContent,

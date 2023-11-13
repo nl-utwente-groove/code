@@ -44,7 +44,7 @@ import nl.utwente.groove.util.Pair;
  * Class used to export various resources and graphs to external formats.
  * Export gets initiated by ExportAction.
  * @author Harold Bruijntjes
- * @version $Revision $
+ * @version $Revision$
  */
 public class Exporters {
     /**

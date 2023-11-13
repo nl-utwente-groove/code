@@ -22,7 +22,7 @@ import java.awt.geom.Rectangle2D;
 /**
  * Geometry shapes.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public enum NodeShape {
     /** Rounded rectangle shape. */

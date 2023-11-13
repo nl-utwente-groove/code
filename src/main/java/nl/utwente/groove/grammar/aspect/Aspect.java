@@ -46,7 +46,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * of the models. An aspect consists of an aspect kind and an optional
  * content field.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class Aspect {

@@ -27,7 +27,7 @@ import nl.utwente.groove.gui.look.MultiLabel.Direct;
 /**
  * JGraph edge wrapping a set of graph edges.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface JEdge<G extends Graph> extends JCell<G> {
     /**

@@ -40,7 +40,7 @@ import nl.utwente.groove.util.Dispenser;
  * It is important that all states in a GTS share their host factory,
  * as otherwise node numbers may conflict or overlap.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
     /**

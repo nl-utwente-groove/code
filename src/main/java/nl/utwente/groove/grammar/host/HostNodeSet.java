@@ -26,7 +26,7 @@ import java.util.LinkedHashSet;
  * This class provides an intermediate type that can be changed easily
  * to inherit from {@link LinkedHashSet} or {@link HostNodeTreeHashSet}. 
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public final class HostNodeSet extends HostNodeTreeHashSet {
     /** Constructs an empty instance with default capacity. */

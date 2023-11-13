@@ -24,7 +24,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Oracle returning values from a file reader.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class ReaderOracleFactory implements ValueOracleFactory {

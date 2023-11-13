@@ -35,7 +35,7 @@ import nl.utwente.groove.util.parse.Parser;
 /**
  * Parser for the {@code valueOracle} grammar property.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class OracleParser extends Parser.AParser<ValueOracleFactory> {
     /** Private constructor for the singleton instance. */

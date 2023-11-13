@@ -41,7 +41,7 @@ import nl.utwente.groove.util.parse.OpKind;
  * Parser specialisation that also parses optional sort prefixes,
  * and returns {@link ExprTree} objects.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class ExprTreeParser
     extends nl.utwente.groove.util.parse.ATermTreeParser<ExprTree.ExprOp,ExprTree> {

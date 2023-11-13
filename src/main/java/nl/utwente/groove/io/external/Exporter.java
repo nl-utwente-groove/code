@@ -24,7 +24,7 @@ import nl.utwente.groove.io.FileType;
 /**
  * Subtype of exporters.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface Exporter extends Porter {
     /** 

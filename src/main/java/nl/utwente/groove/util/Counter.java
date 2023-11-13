@@ -20,8 +20,8 @@ import java.util.Objects;
 
 /**
  * Mutable counter.
- * @author Rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 public class Counter {
     /** Increases the value of this counter, and returns the result. */

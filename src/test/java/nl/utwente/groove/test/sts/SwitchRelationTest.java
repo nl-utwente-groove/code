@@ -28,7 +28,7 @@ import nl.utwente.groove.sts.SwitchRelation;
 /**
  * Tests a switch relation in an sts.
  * @author Vincent de Bruijn
- * @version $Revision $
+ * @version $Revision$
  */
 @SuppressWarnings("all")
 public class SwitchRelationTest extends TestCase {

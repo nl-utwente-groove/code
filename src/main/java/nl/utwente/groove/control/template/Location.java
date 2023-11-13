@@ -38,7 +38,7 @@ import nl.utwente.groove.util.LazyFactory;
 /**
  * Location in a control template.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class Location implements Position<Location,SwitchStack>, Comparable<Location>, Relocatable {

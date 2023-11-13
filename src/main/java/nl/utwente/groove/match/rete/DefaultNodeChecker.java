@@ -27,7 +27,7 @@ import nl.utwente.groove.util.collect.TreeHashSet;
 
 /**
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class DefaultNodeChecker extends NodeChecker implements ReteStateSubscriber {
 

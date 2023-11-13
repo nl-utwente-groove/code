@@ -26,7 +26,7 @@ import nl.utwente.groove.util.parse.Parser;
 /**
  * Parser for settings of a given exploration key.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class SettingParser extends Parser.AParser<Setting> {
     /**

@@ -24,7 +24,7 @@ import nl.utwente.groove.graph.Label;
 /**
  * Class of labels occurring on graph transitions.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface ActionLabel extends Label {
     /** Returns the action for which this is a label. */

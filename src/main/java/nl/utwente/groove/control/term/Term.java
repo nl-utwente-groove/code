@@ -36,7 +36,7 @@ import nl.utwente.groove.util.collect.Pool;
  * Symbolic location, obtained by combining a number of existing locations.
  * Used as a device in building control automata.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 abstract public class Term implements Position<Term,Derivation> {

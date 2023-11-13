@@ -19,7 +19,7 @@ package nl.utwente.groove.algebra;
 /**
  * Default implementation of booleans.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public final class JavaBoolAlgebra extends AbstractBoolAlgebra {
     /** Private constructor for the singleton instance. */
