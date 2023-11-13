@@ -82,7 +82,7 @@ public class Version {
      * </ul>
      * A '+' sign at the end of the number indicates a development version.
      */
-    public static final String NUMBER = "6.5.2-SNAPSHOT";
+    public static final String NUMBER = "6.6.0-SNAPSHOT";
 
     /** Minimum Java JRE version required. */
     static public final String NUMBER_JAVAMIN = "17";
