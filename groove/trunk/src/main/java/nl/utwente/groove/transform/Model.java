@@ -27,7 +27,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * Object wrapping a host graph,
  * with conversion functionality.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Model {
     /**

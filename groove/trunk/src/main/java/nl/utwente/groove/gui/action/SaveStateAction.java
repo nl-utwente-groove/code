@@ -15,7 +15,7 @@ import nl.utwente.groove.io.graph.GxlIO;
 /**
  * Action to save the currently selected state.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public final class SaveStateAction extends SimulatorAction {
     /**

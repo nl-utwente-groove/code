@@ -35,7 +35,7 @@ import nl.utwente.groove.util.LazyFactory;
  * All but the top element are procedure calls; all but the bottom element
  * are initial calls of the bodies of the procedure of the next level down.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class CallStack extends Stack<Call> {

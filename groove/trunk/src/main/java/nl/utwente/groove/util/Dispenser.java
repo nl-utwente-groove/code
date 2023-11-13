@@ -19,7 +19,7 @@ import java.util.NoSuchElementException;
 /**
  * Interface for a number dispenser.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract class Dispenser {
     /** 

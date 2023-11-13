@@ -22,7 +22,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * Collection of convenience methods to avoid {@link NoNonNull}-related warnings
  * of standard Java library methods.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class NoNonNull {

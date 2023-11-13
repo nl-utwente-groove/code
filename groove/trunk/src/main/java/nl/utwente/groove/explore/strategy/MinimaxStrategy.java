@@ -338,7 +338,7 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
     /**
      * Abstract class to store the internal minimax heuristic scores as a tree
      * @author Rick
-     * @version $Revision $
+     * @version $Revision$
      */
     private class MinimaxTree {
         private int nodeno;

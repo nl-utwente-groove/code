@@ -10,7 +10,7 @@ import nl.utwente.groove.gui.look.Look;
 /**
  * JVertex class that describes the underlying node as a graph state.
  * @author Tom Staijen
- * @version $Revision $
+ * @version $Revision$
  */
 public class CtrlJVertex extends AJVertex<ControlGraph,CtrlJGraph,JModel<ControlGraph>,CtrlJEdge> {
     /**

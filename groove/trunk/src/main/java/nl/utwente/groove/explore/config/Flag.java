@@ -25,7 +25,7 @@ import nl.utwente.groove.util.Exceptions;
 /**
  * Setting consisting of a boolean value.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public final class Flag extends Setting {
@@ -40,7 +40,7 @@ public final class Flag extends Setting {
     /**
      * Available values.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     public enum Kind implements Setting.Key {
         /** Depth-first search. */

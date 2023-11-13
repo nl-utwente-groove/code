@@ -29,7 +29,7 @@ import nl.utwente.groove.util.parse.FormatError;
  * Object holding the errors for a given {@link AspectJCell}.
  * These consist of the aspect errors and the extra errors.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class AspectJCellErrors implements Iterable<FormatError> {
     AspectJCellErrors(AspectJCell jCell) {

@@ -24,7 +24,7 @@ import nl.utwente.groove.graph.AEdge;
 
 /**
  * @author Harmen Kastenberg
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class BuchiTransition extends AEdge<BuchiLocation,BuchiLabel> {

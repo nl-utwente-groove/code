@@ -82,7 +82,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * Instance of the generic system store where both the graph and the rule
  * representations are {@link AspectGraph}s.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class SystemStore extends UndoableEditSupport {
     /** Error message if a grammar cannot be loaded. */

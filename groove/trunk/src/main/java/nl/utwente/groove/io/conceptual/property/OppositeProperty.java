@@ -11,7 +11,7 @@ import nl.utwente.groove.io.conceptual.type.Class;
  * TODO: not allowed for container of container type?
  * Only for relations
  * @author s0141844
- * @version $Revision $
+ * @version $Revision$
  */
 public class OppositeProperty implements Property {
     private final Class m_class1;

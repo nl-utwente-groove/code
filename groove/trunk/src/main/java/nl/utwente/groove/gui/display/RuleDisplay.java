@@ -36,7 +36,7 @@ import nl.utwente.groove.lts.GraphState;
 /**
  * Panel that holds the rule panel and rule graph editors.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 final public class RuleDisplay extends ResourceDisplay {
     /**

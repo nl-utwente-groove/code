@@ -31,7 +31,7 @@ import nl.utwente.groove.util.line.Line;
 /**
  * Edges used in type graphs.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class TypeEdge extends AEdge<TypeNode,TypeLabel> implements TypeElement {

@@ -28,7 +28,7 @@ import java.util.Set;
  * Set that simultaneously behaves as a mapping from a property of the
  * contained elements to the set of elements with that property.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 abstract public class MapSet<K,E> extends AbstractSet<E> implements Set<E> {
     @Override

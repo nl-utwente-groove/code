@@ -33,7 +33,7 @@ import nl.utwente.groove.util.NodeShape;
 /**
  * Graph element look values.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public enum Look {
     /** Basic node and edge look. */

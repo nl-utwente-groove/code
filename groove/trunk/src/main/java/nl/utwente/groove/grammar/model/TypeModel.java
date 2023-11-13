@@ -46,7 +46,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  *  translating an aspect graph (with type role) to a type graph.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class TypeModel extends GraphBasedModel<TypeGraph> {

@@ -23,7 +23,7 @@ import nl.utwente.groove.grammar.QualName;
 /**
  * Singular resource model, with a qualified name.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 abstract public class NamedResourceModel<R> extends ResourceModel<R> {

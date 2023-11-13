@@ -31,7 +31,7 @@ import nl.utwente.groove.util.line.LineFormat.Builder;
  * The representation can be converted to a String by providing
  * an appropriate {@link LineFormat}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract class Line {
     /** Converts this object to a string representation by applying a given renderer. */

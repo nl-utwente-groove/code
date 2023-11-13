@@ -245,7 +245,7 @@ public class RegExprTyper implements RegExprCalculator<Result> {
      * node of a path through the type graph of which the label sequence
      * is accepted by the regular expression.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     public static class Result {
         /** Creates an empty relation. */

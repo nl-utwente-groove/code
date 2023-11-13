@@ -27,7 +27,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Superclass for STS tests. Do not run, run CompleteSTSTest or OnTheFlySTSTest.
  * @author Vincent de Bruijn
- * @version $Revision $
+ * @version $Revision$
  */
 @SuppressWarnings("all")
 public class STSTest extends TestCase {

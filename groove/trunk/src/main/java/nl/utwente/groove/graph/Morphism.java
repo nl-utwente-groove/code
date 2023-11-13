@@ -21,7 +21,7 @@ import java.util.Map;
 /**
  * Mapping between graphs of the same type.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Morphism<N extends Node,E extends Edge> extends AGraphMap<N,E,N,E> {
     /**

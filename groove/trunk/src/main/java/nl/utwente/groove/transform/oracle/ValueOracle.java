@@ -27,7 +27,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Interface to provide values for unbound variable nodes during matching.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public interface ValueOracle {

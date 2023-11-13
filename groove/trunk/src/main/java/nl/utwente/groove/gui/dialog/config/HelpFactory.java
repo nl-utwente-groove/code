@@ -45,7 +45,7 @@ import nl.utwente.groove.verify.Logic;
 /**
  * Factory for syntax help.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class HelpFactory {
     /**

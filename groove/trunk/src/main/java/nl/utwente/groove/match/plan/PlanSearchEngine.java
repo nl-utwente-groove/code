@@ -158,7 +158,7 @@ public class PlanSearchEngine extends SearchEngine {
      * Plan data extension based on a graph condition. Additionally it takes the
      * control labels of the condition into account.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     private static class PlanData extends Observable implements Comparator<SearchItem> {
         /**
@@ -537,7 +537,7 @@ public class PlanSearchEngine extends SearchEngine {
      * the better. The class is an observer in order to be able to maintain the
      * indegrees.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     static class IndegreeComparator implements Comparator<SearchItem>, PropertyChangeListener {
         /**
@@ -698,7 +698,7 @@ public class PlanSearchEngine extends SearchEngine {
      * Edge comparator for regular expression edges. An edge is better if it is
      * not regular, or if the automaton is not reflexive.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     static class ItemTypeComparator implements Comparator<SearchItem> {
         /**
@@ -782,7 +782,7 @@ public class PlanSearchEngine extends SearchEngine {
      * Edge comparator on the basis of lists of high- and low-priority labels.
      * Preference is given to labels occurring early in this list.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     static class FrequencyComparator implements Comparator<SearchItem> {
         /**

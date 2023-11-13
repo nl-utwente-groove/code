@@ -27,7 +27,7 @@ import nl.utwente.groove.util.Groove;
 /**
  * Checker for dependency cycles in variable nodes.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 class DependencyChecker extends CycleChecker<AspectGraph,AspectNode> {
     /**

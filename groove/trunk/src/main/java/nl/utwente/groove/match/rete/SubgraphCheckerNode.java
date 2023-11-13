@@ -653,7 +653,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
      * node-equality set of a given subgraph-checker.
      *
      * @author Arash Jalali
-     * @version $Revision $
+     * @version $Revision$
      */
     protected static abstract class AbstractSimpleTestJoinStrategy<LT extends AbstractReteMatch,RT extends AbstractReteMatch>
         implements JoinStrategy<LT,RT> {
@@ -718,7 +718,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
      * the possibility of the path match being an {@link EmptyPathMatch}.
      *
      * @author Arash Jalali
-     * @version $Revision $
+     * @version $Revision$
      */
     protected static abstract class AbstractJoinWithPathStrategy<LT extends AbstractReteMatch>
         extends AbstractSimpleTestJoinStrategy<LT,RetePathMatch> {

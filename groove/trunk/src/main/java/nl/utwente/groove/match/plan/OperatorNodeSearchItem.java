@@ -38,7 +38,7 @@ import nl.utwente.groove.match.plan.PlanSearchStrategy.Search;
 /**
  * A search item for an operator node.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 class OperatorNodeSearchItem extends AbstractSearchItem {
     /**
@@ -210,7 +210,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
      * Record of a node search item, storing an iterator over the candidate
      * images.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     private class OperatorNodeRecord extends SingularRecord {
         /**

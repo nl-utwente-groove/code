@@ -29,8 +29,8 @@ import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.line.Line.Style;
 
 /**
- * @author rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 @NonNullByDefault
 public class ControlEdge extends ALabelEdge<ControlNode> {

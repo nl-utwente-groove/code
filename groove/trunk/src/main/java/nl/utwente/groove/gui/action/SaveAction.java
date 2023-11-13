@@ -20,7 +20,7 @@ import nl.utwente.groove.io.graph.GxlIO;
 /**
  * Action to save the resource in an editor panel.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public final class SaveAction extends SimulatorAction {
     /**

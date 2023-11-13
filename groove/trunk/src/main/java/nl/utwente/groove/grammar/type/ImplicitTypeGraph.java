@@ -25,8 +25,8 @@ import nl.utwente.groove.graph.EdgeRole;
  * Type graph with only a single (top) node type and all data types.
  * For all type labels there are edges from the top node type to all node types.
  * Implicit type graphs have no (nontrivial) inheritance.
- * @author rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 public class ImplicitTypeGraph extends TypeGraph {
     /** Constructs a fresh implicit type graph. */

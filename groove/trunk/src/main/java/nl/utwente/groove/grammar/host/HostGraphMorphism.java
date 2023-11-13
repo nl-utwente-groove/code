@@ -21,7 +21,7 @@ import nl.utwente.groove.graph.Morphism;
 /**
  * Mappings from elements of one host graph to those of another.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class HostGraphMorphism extends Morphism<HostNode,HostEdge> {
     /**

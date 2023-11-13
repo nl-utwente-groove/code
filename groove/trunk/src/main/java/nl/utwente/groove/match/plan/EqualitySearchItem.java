@@ -28,7 +28,7 @@ import nl.utwente.groove.match.plan.PlanSearchStrategy.Search;
 /**
  * A search item that checks (in)equality of two node images.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class EqualitySearchItem extends AbstractSearchItem {
     /**

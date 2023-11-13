@@ -23,7 +23,7 @@ import nl.utwente.groove.util.Exceptions;
 /**
  * Sequential composition.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class SeqTerm extends Term {

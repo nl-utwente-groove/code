@@ -45,7 +45,7 @@ import nl.utwente.groove.util.parse.OpKind;
 /**
  * Expression tree, with functionality to convert to an {@link Expression} or {@link Assignment}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
@@ -472,7 +472,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
     /**
      * Operator class collecting data operators with the same symbol.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     static public class ExprOp extends DefaultOp {
         /**

@@ -27,7 +27,7 @@ import nl.utwente.groove.util.collect.TreeHashSet;
  * The criterion for matching depends on the concrete implementation.
  *
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract class SingleEdgePathChecker extends AbstractPathChecker
     implements ReteStateSubscriber {

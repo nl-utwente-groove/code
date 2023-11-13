@@ -38,7 +38,7 @@ import nl.utwente.groove.grammar.host.ValueNode;
  * (only given by a string representation) or instantiated to a {@link ValueNode}.
  * </ul>
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface CtrlPar {
 

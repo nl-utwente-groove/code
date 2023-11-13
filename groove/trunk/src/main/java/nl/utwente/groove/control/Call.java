@@ -31,7 +31,7 @@ import nl.utwente.groove.util.Pair;
 /**
  * Call of a callable unit.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comparable<Call> {
     /**

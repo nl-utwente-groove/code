@@ -27,7 +27,7 @@ import nl.utwente.groove.util.parse.OpKind;
 /**
  * Algebraic variable.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public final class Variable extends Expression {

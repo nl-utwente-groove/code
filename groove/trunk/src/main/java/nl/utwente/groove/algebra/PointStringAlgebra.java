@@ -22,7 +22,7 @@ import nl.utwente.groove.algebra.syntax.Expression;
  * Implementation of strings consisting of a singleton value.
  * To be used in conjunction with {@link PointBoolAlgebra}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public final class PointStringAlgebra extends StringAlgebra<Integer,Double,Boolean,String>
     implements PointAlgebra<String> {

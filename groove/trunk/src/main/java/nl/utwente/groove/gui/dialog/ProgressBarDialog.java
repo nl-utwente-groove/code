@@ -30,7 +30,7 @@ import javax.swing.border.EmptyBorder;
 
 /**
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class ProgressBarDialog extends JDialog {
     /**

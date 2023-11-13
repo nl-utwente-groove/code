@@ -38,7 +38,7 @@ import nl.utwente.groove.graph.Node;
  * General interface for resource models constructed from an
  *  {@link AspectGraph}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 abstract public class GraphBasedModel<R> extends NamedResourceModel<R> {

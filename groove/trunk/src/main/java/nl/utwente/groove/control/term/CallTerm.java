@@ -24,7 +24,7 @@ import nl.utwente.groove.util.collect.Pool;
 /**
  * Term for a call (of a {@link Callable}).
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class CallTerm extends Term {
     /**

@@ -24,7 +24,7 @@ import nl.utwente.groove.verify.ModelChecking.Record;
  * Abstract implementation for boundaries.
  * 
  * @author Harmen Kastenberg
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract class Boundary {
     /** 

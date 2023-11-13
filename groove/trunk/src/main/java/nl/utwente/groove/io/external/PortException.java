@@ -19,7 +19,7 @@ package nl.utwente.groove.io.external;
 /**
  * Exception used within exporting system.
  * @author Harold
- * @version $Revision $
+ * @version $Revision$
  */
 public class PortException extends Exception {
     /** Creates an empty exception. */

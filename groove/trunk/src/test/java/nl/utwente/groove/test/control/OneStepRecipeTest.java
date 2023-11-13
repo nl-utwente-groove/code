@@ -22,7 +22,7 @@ import org.junit.Test;
  * Tests the behaviour of recipes with a single role body,
  * and with an output parameter that is called inside a function.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @SuppressWarnings("all")
 public class OneStepRecipeTest extends AControlTest {

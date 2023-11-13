@@ -23,7 +23,7 @@ import nl.utwente.groove.explore.ExplorationListener;
 /**
  * Listener that will produce output after invoking a method {@link #report()}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface ExplorationReporter extends ExplorationListener {
     /**

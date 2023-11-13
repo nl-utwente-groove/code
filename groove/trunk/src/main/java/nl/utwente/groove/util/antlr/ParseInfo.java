@@ -19,7 +19,7 @@ package nl.utwente.groove.util.antlr;
 /**
  * Object holding additional information generated during parsing.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface ParseInfo {
     // empty

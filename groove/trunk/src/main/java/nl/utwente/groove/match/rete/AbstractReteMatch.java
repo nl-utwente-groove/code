@@ -35,7 +35,7 @@ import nl.utwente.groove.graph.Node;
 
 /**
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract class AbstractReteMatch implements VarMap {
 

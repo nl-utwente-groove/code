@@ -49,7 +49,7 @@ import nl.utwente.groove.io.graph.GxlIO;
 
 /**
  * Globals and convenience methods.
- * @version $Revision $
+ * @version $Revision$
  * @version Arend Rensink
  */
 public class Groove {

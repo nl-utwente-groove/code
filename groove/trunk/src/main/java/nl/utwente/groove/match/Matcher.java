@@ -43,7 +43,7 @@ import nl.utwente.groove.util.Visitor.Finder;
  * Strategy for finding tree matches of a condition in a host graph,
  * given an initial seed map for that condition.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Matcher implements SearchStrategy {
     /** Constructs a fresh instance of this strategy, for a given

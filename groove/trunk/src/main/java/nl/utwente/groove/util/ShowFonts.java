@@ -26,8 +26,8 @@ import nl.utwente.groove.io.Util;
 
 /**
  * Utility class to check which fonts support which characters 
- * @author rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 public class ShowFonts {
     /** Call with hex codes of interesting characters. */

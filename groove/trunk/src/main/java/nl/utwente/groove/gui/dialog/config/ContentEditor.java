@@ -27,7 +27,7 @@ import nl.utwente.groove.gui.dialog.ConfigDialog;
 /**
  * Abstract setting content editor.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract class ContentEditor extends SettingEditor {
     /**

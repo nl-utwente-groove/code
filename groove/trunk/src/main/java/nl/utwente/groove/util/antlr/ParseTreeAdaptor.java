@@ -12,7 +12,7 @@ import org.antlr.runtime.tree.TreeNodeStream;
 /**
  * Tree adaptor creating {@link ParseTree} nodes and error nodes. 
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class ParseTreeAdaptor<T extends ParseTree<T,I>,I extends ParseInfo>
         extends CommonTreeAdaptor {

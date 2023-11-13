@@ -21,7 +21,7 @@ import org.junit.Test;
 /**
  * Tests the variables extension to the control language
  * @author Olaf Keijsers
- * @version $Revision $
+ * @version $Revision$
  */
 @SuppressWarnings("all")
 public class ControlVariablesTest extends AControlTest {

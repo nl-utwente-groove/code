@@ -23,7 +23,7 @@ import nl.utwente.groove.graph.Element;
  * Type of (node and edge) elements that may appear in a {@link HostGraph}.
  * Super-interface of {@link HostNode}s and {@link HostEdge}s.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface HostElement extends Element {
     /**

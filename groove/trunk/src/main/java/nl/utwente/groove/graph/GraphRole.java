@@ -23,7 +23,7 @@ import java.util.Map;
 /** Role of a graph within a rule system.
  *
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public enum GraphRole {
     /** Unspecified graph role. */

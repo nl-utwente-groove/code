@@ -29,7 +29,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Oracle that always throws an exception.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class NoValueOracle implements ValueOracleFactory, ValueOracle {

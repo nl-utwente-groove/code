@@ -31,7 +31,7 @@ import nl.utwente.groove.util.DefaultFixable;
 /** Attribute values for the nodes and edges.
  *
  * @author Arend rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Values {
     /** Dash pattern of absent graphs and transitions. */

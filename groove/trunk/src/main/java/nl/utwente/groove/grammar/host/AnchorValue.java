@@ -22,7 +22,7 @@ import nl.utwente.groove.grammar.AnchorKind;
  * Type of element that can occur as anchor image.
  * Anchors are used to fix a match of a rule graph in a host graph.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface AnchorValue {
     /** Returns the kind of anchor. */

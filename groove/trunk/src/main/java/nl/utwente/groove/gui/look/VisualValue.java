@@ -25,7 +25,7 @@ import nl.utwente.groove.gui.jgraph.JGraph;
 /**
  * Strategy to compute a new value for a refreshable {@link VisualKey}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface VisualValue<T> {
     /** Computes and returns a new value for the relevant key.

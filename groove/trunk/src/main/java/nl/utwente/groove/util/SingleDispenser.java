@@ -19,7 +19,7 @@ package nl.utwente.groove.util;
 /**
  * One-shot dispenser that can only return a single number.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class SingleDispenser extends Dispenser {
     /** Creates a new one-shot dispenser, for a given number. */

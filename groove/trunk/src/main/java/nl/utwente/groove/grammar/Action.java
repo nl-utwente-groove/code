@@ -30,7 +30,7 @@ import nl.utwente.groove.util.collect.Comparator;
 /**
  * Supertype of the actions in a rule system.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface Action extends Callable, Comparable<Action> {
     /** Indicates if this action serves to test a property of a graph.

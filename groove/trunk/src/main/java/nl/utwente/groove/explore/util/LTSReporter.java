@@ -34,7 +34,7 @@ import nl.utwente.groove.util.Pair;
 /**
  * Exploration reporter that saves the LTS.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class LTSReporter extends AExplorationReporter {
     /** Constructs a new LTS reporter, for a given output file name pattern,

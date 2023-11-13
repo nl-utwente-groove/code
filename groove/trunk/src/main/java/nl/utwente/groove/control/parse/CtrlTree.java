@@ -31,7 +31,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Dedicated tree node for GCL parsing.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
     /**

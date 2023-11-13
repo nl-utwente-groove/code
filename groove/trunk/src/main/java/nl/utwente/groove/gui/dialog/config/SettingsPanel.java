@@ -37,7 +37,7 @@ import nl.utwente.groove.gui.dialog.ConfigDialog;
  * Panel for a group of setting kinds.
  * This is divided into a sub-panel for the setting editors, and a sub-panel for syntax help.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class SettingsPanel extends JPanel {
     /**

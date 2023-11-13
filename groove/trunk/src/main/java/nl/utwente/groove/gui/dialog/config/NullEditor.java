@@ -28,7 +28,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Editor for the null content.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class NullEditor extends ContentEditor {
     /**

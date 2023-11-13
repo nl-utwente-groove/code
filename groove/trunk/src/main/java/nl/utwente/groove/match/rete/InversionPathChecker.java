@@ -23,7 +23,7 @@ import nl.utwente.groove.automaton.RegExpr.Inv;
  * inversion operator.
  * 
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class InversionPathChecker extends AbstractPathChecker {
 

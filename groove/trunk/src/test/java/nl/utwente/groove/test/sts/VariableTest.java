@@ -26,7 +26,7 @@ import nl.utwente.groove.sts.Variable;
 /**
  * Tests for variables in an sts.
  * @author Vincent de Bruijn
- * @version $Revision $
+ * @version $Revision$
  */
 @SuppressWarnings("all")
 public class VariableTest extends TestCase {

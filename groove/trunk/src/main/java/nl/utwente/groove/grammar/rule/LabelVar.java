@@ -28,7 +28,7 @@ import nl.utwente.groove.graph.EdgeRole;
  * Essentially consists of a name and a kind, corresponding to the
  * label kind of the allowed values.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class LabelVar implements AnchorKey, Comparable<LabelVar> {

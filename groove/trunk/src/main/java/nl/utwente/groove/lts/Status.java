@@ -24,7 +24,7 @@ import nl.utwente.groove.util.Exceptions;
 /**
  * Set of graph state status flags.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Status {
     /**

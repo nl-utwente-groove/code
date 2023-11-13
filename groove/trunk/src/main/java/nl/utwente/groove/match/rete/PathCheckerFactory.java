@@ -36,7 +36,7 @@ import nl.utwente.groove.util.Exceptions;
  * Factory class that creates path-checkers for each regular expression
  * making sure checkers for similar expressions are reused.
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class PathCheckerFactory {
     private ReteNetwork owner;

@@ -23,7 +23,7 @@ import nl.utwente.groove.util.collect.Pool;
 /**
  * Successful termination.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class EpsilonTerm extends Term {

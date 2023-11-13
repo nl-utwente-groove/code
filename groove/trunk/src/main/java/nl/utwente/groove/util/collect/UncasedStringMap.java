@@ -23,7 +23,7 @@ import java.util.TreeMap;
  * Tree map from strings to values
  * where the keys are compared modulo case distinctions.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class UncasedStringMap<V> extends TreeMap<String,V> {
     /**

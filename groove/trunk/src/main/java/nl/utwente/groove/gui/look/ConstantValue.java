@@ -23,7 +23,7 @@ import nl.utwente.groove.gui.jgraph.JGraph;
 /**
  * Refresher that always returns the same value.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class ConstantValue<T> implements VisualValue<T> {
     /** Constructs a constant refresher for a given value. */

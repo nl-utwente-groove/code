@@ -28,7 +28,7 @@ import nl.utwente.groove.sts.SwitchRelation;
 /**
  * Tests a location in an sts.
  * @author Vincent de Bruijn
- * @version $Revision $
+ * @version $Revision$
  */
 public class LocationTest extends TestCase {
 

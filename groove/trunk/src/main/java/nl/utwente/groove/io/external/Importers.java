@@ -48,7 +48,7 @@ import nl.utwente.groove.io.external.format.NativePorter;
 /**
  * Utilities for importers.
  * @author Harold Bruijntjes
- * @version $Revision $
+ * @version $Revision$
  */
 public class Importers {
     /**

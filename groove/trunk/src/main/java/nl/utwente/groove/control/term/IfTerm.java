@@ -19,7 +19,7 @@ package nl.utwente.groove.control.term;
 /**
  * If-else term.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class IfTerm extends Term {
     /**

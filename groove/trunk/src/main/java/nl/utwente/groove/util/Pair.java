@@ -19,7 +19,7 @@ package nl.utwente.groove.util;
 /**
  * Implements a generic pair of values.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Pair<T,U> implements Fixable {
     /** Constructs a pair with given first and second fields. */

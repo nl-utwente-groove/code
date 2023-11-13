@@ -7,7 +7,7 @@ import nl.utwente.groove.grammar.host.HostGraph;
 
 /**
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class StartGraphState extends AbstractGraphState {
     /**

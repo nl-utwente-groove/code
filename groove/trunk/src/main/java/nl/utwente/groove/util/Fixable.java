@@ -24,7 +24,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * this has finished, the object is fixed, meaning it should not be modified any
  * more.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface Fixable {
     /**

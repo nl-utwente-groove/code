@@ -24,7 +24,7 @@ import nl.utwente.groove.util.ThreadPool;
 /**
  * Normalisation mapping from locations to locations.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Relocation extends HashMap<Location,Location> {
     /** Adds a template to the map of relocated templates.

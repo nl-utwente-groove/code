@@ -19,7 +19,7 @@ package nl.utwente.groove.util.collect;
 /**
  * Comparator class that offers a convenience method for comparing booleans.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract class Comparator<T> implements java.util.Comparator<T> {
     /** Returns a negative number if the first argument is {@code true}

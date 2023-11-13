@@ -21,7 +21,7 @@ import nl.utwente.groove.control.Procedure;
 /**
  * Unit of functionality that can be called from a control program.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface Callable {
     /**

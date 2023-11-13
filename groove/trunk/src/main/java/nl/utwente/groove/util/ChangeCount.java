@@ -20,7 +20,7 @@ package nl.utwente.groove.util;
  * Class that records the change count of a given structure,
  * and allows observers to keep track of the count.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class ChangeCount extends Observable {
     /** Increases the change count without notifying registered observers. */
@@ -103,7 +103,7 @@ public class ChangeCount extends Observable {
      * with capability to recompute the value whenever it gets stale with respect
      * to the parent structure.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     static public abstract class Derived<O> {
         /** Constructs a derived value for a given change count. */

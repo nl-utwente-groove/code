@@ -23,7 +23,7 @@ import nl.utwente.groove.graph.AEdge;
 
 /**
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class RegEdge extends AEdge<RegNode,RuleLabel> {

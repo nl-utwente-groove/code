@@ -29,7 +29,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * An EncodedEdgeList describes an encoding of Rules by means of a List. The syntax
  * is [rulename[; rulename]*]?
  * @author Rick Hindriks (based on code from EncodedEnabledRule)
- * @version $Revision $
+ * @version $Revision$
  */
 public class EncodedRuleList implements EncodedType<List<Rule>,String> {
 

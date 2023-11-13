@@ -23,7 +23,7 @@ import nl.utwente.groove.control.Attempt;
 /**
  * Attempt of a {@link Frame}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class StepAttempt extends Attempt<Frame,Step> {

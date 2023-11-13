@@ -37,7 +37,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Method name in a Groovy script
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class GroovyMatchChecker extends MatchChecker {

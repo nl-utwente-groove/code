@@ -29,7 +29,7 @@ import nl.utwente.groove.io.FileType;
 /**
  * Importer for resources. Can import either graphs or text files.
  * @author Harold Bruijntjes
- * @version $Revision $
+ * @version $Revision$
  */
 public interface Importer extends Porter {
     /**
@@ -61,7 +61,7 @@ public interface Importer extends Porter {
      * A resource that may be generated during import, can contain either a graph or text (not both).
      * Simply union for both types.
      * @author Harold Bruintjes
-     * @version $Revision $
+     * @version $Revision$
      */
     public class Resource {
         private final QualName qualName;

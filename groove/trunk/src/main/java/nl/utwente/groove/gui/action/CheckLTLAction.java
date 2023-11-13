@@ -39,7 +39,7 @@ import nl.utwente.groove.verify.Logic;
 
 /**
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class CheckLTLAction extends ExploreAction {
     /**

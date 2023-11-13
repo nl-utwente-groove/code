@@ -26,7 +26,7 @@ import nl.utwente.groove.util.Exceptions;
 /**
  * Edge end decorations.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public enum EdgeEnd {
     /** Filled arrow decoration. */

@@ -34,7 +34,7 @@ import nl.utwente.groove.util.cli.GrooveCmdLineTool;
  * Command-line tool to list the available operators in a format that
  * can then be used as input to the user manual
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class OperatorLister extends GrooveCmdLineTool<List<String[]>> {
     /**

@@ -34,7 +34,7 @@ import nl.utwente.groove.util.cache.CacheReference;
 /**
  * Rule event consisting of a set of events.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.CompositeEventCache> {
     /**

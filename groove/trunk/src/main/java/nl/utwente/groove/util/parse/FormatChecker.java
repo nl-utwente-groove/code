@@ -22,7 +22,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * Checker interface that tests for format errors in objects of a given type.
  * @param <T> type of the objects to be checked
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public interface FormatChecker<T> {

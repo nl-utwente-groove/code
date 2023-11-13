@@ -27,7 +27,7 @@ import nl.utwente.groove.io.external.PortException;
 /**
  * Simple interface between VectorFormat and GraphToPDF/EPS. Allows GROOVE to be loaded w/o PDF/EPS support
  * @author Harold
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract class GraphToVector {
     /** Saves a given jGraph to a file according to this vector format. */

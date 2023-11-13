@@ -22,7 +22,7 @@ import nl.utwente.groove.automaton.RegExpr.Choice;
  * A Path checker that implements the semantics of the 
  * choice operator.
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class ChoicePathChecker extends AbstractPathChecker {
 

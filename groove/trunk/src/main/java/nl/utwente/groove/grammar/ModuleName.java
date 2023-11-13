@@ -28,7 +28,7 @@ import nl.utwente.groove.util.Groove;
  * Name of a module within a grammar.
  * Serves as namespace for qualified names.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class ModuleName {
     /**

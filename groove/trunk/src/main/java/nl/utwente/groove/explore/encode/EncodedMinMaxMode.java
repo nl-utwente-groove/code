@@ -21,7 +21,7 @@ import java.util.TreeMap;
 
 /**
  * @author Rick
- * @version $Revision $
+ * @version $Revision$
  */
 public class EncodedMinMaxMode extends EncodedFixedEnumeratedType<Boolean> {
     /** Keyword for maximisation. */

@@ -25,7 +25,7 @@ import nl.utwente.groove.util.collect.TreeHashSet;
  * Note that this a <i>weaker</i> equivalence than node equality, except if
  * there are no overlapping node numbers in the set.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 abstract public class HostNodeTreeHashSet extends TreeHashSet<HostNode> {
     /** Constructs an empty set with a given initial capacity. */

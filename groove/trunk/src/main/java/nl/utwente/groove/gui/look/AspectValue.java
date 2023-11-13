@@ -26,7 +26,7 @@ import nl.utwente.groove.gui.jgraph.JGraph;
  * Visual value strategy that delegates its task to
  * specialised helper methods.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract class AspectValue<T> implements VisualValue<T> {
     @Override

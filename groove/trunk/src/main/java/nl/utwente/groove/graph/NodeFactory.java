@@ -28,7 +28,7 @@ import nl.utwente.groove.util.SingleDispenser;
  * Abstract implementation preparing some of the functionality
  * of an {@link ElementFactory}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract class NodeFactory<N extends Node> {
     /**

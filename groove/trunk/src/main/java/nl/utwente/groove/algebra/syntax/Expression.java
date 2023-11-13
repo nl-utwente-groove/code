@@ -37,7 +37,7 @@ import nl.utwente.groove.util.parse.OpKind;
 /**
  * Expressions are constants, variables, field expressions or call expressions.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public sealed abstract class Expression permits Constant, Variable, FieldExpr, CallExpr {

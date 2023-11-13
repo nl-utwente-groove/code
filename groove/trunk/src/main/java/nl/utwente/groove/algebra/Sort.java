@@ -41,7 +41,7 @@ import nl.utwente.groove.util.parse.StringHandler;
 /**
  * Enumeration of the currently supported signatures sorts.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public enum Sort {
     /** Boolean sort. */

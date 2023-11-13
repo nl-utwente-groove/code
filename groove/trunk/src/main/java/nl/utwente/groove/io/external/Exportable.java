@@ -33,7 +33,7 @@ import nl.utwente.groove.io.external.Porter.Kind;
  * Wrapper class for resources to be exported.
  * Can wrap either {@link Graph}s, {@link JGraph}s or {@link ResourceModel}s.
  * @author Harold Bruijntjes
- * @version $Revision $
+ * @version $Revision$
  */
 public class Exportable {
     private final EnumSet<Porter.Kind> porterKinds;

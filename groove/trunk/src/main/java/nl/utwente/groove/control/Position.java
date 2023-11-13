@@ -24,7 +24,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * Position in a control structure that is either deadlocked, final, or
  * offers an {@link Attempt}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public interface Position<P extends Position<P,A>,A extends Attempt.Stage<P,A>> {

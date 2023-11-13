@@ -31,7 +31,7 @@ import nl.utwente.groove.util.line.LineFormat;
 /**
  * TeX renderer for node and edge labels.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
     private TeXLineFormat() {

@@ -44,7 +44,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * Distinguishes the aspects that can be found in a plain graph representation
  * of a rule, host graph or type graph.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public enum AspectKind {
     /** Used for comments/documentation. */
@@ -1153,8 +1153,8 @@ public enum AspectKind {
      * Each aspect element can have at most one aspect of any given category.
      * Some categories have a default value.
      * Some categories are mutually exclusive.
-     * @author Rensink
-     * @version $Revision $
+     * @author Arend Rensink
+     * @version $Revision$
      */
     static public enum Category {
         /** Remark aspect. */

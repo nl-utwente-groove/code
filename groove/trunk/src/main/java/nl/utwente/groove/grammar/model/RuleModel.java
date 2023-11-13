@@ -1973,7 +1973,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
      * A level 3 rule is a typed version of a level 2 rule,
      * or identical to the level 2 rule if there is no type graph.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     private class Level3 {
         public Level3(Level2 origin, Level3 parent,

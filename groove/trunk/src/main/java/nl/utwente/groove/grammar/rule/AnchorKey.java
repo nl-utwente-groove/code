@@ -24,7 +24,7 @@ import nl.utwente.groove.grammar.AnchorKind;
  * Type of element that can occur in an anchor.
  * Anchors are used to fix a match of a rule graph in a host graph.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public interface AnchorKey {

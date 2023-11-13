@@ -41,7 +41,7 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
  * Namespace for building a control automaton.
  * The namespace holds the function, transaction and rule names.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Namespace implements ParseInfo, Fallible {
     /** Constructs a new name space, on the basis of a given algebra family.

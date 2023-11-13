@@ -40,7 +40,7 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
 /**
  * Label storing a set of aspect values and an inner text.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class AspectLabel extends ALabel implements Fixable {

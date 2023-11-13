@@ -44,7 +44,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Command-line tool to load and view a graph.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Viewer extends GrooveCmdLineTool<Object> {
     /**

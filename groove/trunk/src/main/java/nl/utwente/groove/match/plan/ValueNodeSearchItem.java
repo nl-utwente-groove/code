@@ -33,7 +33,7 @@ import nl.utwente.groove.match.plan.PlanSearchStrategy.Search;
 /**
  * A search item for a value node.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 class ValueNodeSearchItem extends AbstractSearchItem {
     /**
@@ -135,7 +135,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
     /**
      * Record of a value node search item.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     private class ValueNodeRecord extends SingularRecord {
         /**

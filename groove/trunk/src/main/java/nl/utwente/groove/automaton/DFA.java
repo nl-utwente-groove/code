@@ -35,7 +35,7 @@ import nl.utwente.groove.graph.Direction;
 /**
  * Deterministic automaton optimised towards matching.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class DFA {
     /**

@@ -56,7 +56,7 @@ import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @SuppressWarnings("javadoc")
 public class AutomatonBuildTest {

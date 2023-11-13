@@ -40,7 +40,7 @@ import nl.utwente.groove.transform.RuleEvent.Reuse;
  * conjunctive, there will be proofs for all subconditions.
  * </ul>
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class Proof {

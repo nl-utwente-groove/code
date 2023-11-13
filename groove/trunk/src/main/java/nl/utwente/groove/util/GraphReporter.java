@@ -30,7 +30,7 @@ import nl.utwente.groove.util.collect.TreeBag;
 /**
  * Tool to test and report various characteristics of a saved graph.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class GraphReporter extends GrooveCmdLineTool<String> {
     /**

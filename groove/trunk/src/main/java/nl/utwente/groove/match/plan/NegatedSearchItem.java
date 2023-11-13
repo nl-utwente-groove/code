@@ -27,7 +27,7 @@ import nl.utwente.groove.match.plan.PlanSearchStrategy.Search;
 /**
  * A search item that negates another search item.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 class NegatedSearchItem extends AbstractSearchItem {
     /**

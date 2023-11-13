@@ -23,7 +23,7 @@ import nl.utwente.groove.lts.GTS;
 /**
  * Supertype of {@link LTSJVertex} and {@link LTSJEdge}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface LTSJCell extends JCell<GTS>, Serializable {
     /**

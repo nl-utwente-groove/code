@@ -27,7 +27,7 @@ import nl.utwente.groove.graph.Label;
 /** Superinterface for {@link TypeNode} and {@link TypeEdge}.
  *
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public interface TypeElement extends Element, AnchorValue, Label {

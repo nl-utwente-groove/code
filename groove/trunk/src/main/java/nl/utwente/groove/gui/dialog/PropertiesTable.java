@@ -58,7 +58,7 @@ import nl.utwente.groove.util.parse.Parser;
 /**
  * Dialog for editing a properties map.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class PropertiesTable extends JTable {
     /**

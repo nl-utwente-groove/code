@@ -27,7 +27,7 @@ import nl.utwente.groove.control.CtrlType;
 /**
  * Keeps track of symbols used in the control language, including scopes.
  * @author Olaf Keijsers
- * @version $Revision $
+ * @version $Revision$
  */
 public class SymbolTable {
     /**
@@ -124,7 +124,7 @@ public class SymbolTable {
      * Keeps track of variables declared and initialised in a given scope.
      * The type parameter is generic.
      * @author Olaf Keijsers
-     * @version $Revision $
+     * @version $Revision$
      */
     private static class Scope {
         /**

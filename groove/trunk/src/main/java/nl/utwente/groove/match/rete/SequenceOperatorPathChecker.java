@@ -26,7 +26,7 @@ import nl.utwente.groove.util.collect.MapSet;
  * Represents sequencing path operator that combines two
  * smaller sub-paths into a bigger one by joining them
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class SequenceOperatorPathChecker extends AbstractPathChecker
     implements ReteStateSubscriber {

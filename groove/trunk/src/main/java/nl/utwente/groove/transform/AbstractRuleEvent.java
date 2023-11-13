@@ -36,7 +36,7 @@ import nl.utwente.groove.util.cache.CacheReference;
 /**
  * Abstract class providing basic rule event functionality.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEvent<R,C>.AbstractEventCache>
     extends AbstractCacheHolder<C> implements RuleEvent {

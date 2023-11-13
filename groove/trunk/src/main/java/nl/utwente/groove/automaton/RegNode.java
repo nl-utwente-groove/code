@@ -21,7 +21,7 @@ import nl.utwente.groove.graph.ANode;
 /**
  * Nodes used in regular automata.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class RegNode extends ANode {
     /**

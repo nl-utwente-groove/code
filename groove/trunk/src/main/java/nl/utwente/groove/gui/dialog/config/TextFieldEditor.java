@@ -34,8 +34,8 @@ import nl.utwente.groove.util.parse.Fallible;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
- * @author rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 public class TextFieldEditor extends ContentEditor {
     /**

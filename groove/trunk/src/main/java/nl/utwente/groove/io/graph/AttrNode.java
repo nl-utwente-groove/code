@@ -27,7 +27,7 @@ import nl.utwente.groove.graph.ANode;
  * This is an ordinary node extended with a sting-to-string mapping
  * holding additional node attributes.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class AttrNode extends ANode {
     /** Constructs a node with a given number. */

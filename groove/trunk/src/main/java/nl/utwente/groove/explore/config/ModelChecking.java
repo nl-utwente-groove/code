@@ -29,7 +29,7 @@ import nl.utwente.groove.verify.Logic;
 
 /**
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public final class ModelChecking extends Setting {
@@ -44,7 +44,7 @@ public final class ModelChecking extends Setting {
     /**
      * Kind of model checking strategies.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     public enum Kind implements Setting.Key {
         /** No model checking. */

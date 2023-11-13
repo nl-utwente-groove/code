@@ -41,7 +41,7 @@ import nl.utwente.groove.graph.Node;
  * The values in a stack frame are in the order of the variables in a {@link Location}.
  *
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Valuator {
     /** Returns the value for a given binding. */

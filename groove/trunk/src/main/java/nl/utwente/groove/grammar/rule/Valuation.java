@@ -24,7 +24,7 @@ import nl.utwente.groove.grammar.type.TypeElement;
 /**
  * Valuation of label variables in terms of type edges.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Valuation extends LinkedHashMap<LabelVar,TypeElement> {
     /** Constructor for an initially empty valuation. */

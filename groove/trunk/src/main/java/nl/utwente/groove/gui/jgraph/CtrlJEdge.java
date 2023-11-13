@@ -13,7 +13,7 @@ import nl.utwente.groove.util.Groove;
 /**
  * JEdge class that describes the underlying edge as a graph transition.
  * @author Tom Staijen
- * @version $Revision $
+ * @version $Revision$
  */
 public class CtrlJEdge extends AJEdge<ControlGraph,CtrlJGraph,JModel<ControlGraph>,CtrlJVertex> {
     /** Constructor for a prototype object. */

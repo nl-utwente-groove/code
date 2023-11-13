@@ -27,7 +27,7 @@ import org.eclipse.jdt.annotation.Nullable;
  * <P> the position type for which this is an attempt
  * <A> the type of call to be attempted
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public abstract class Attempt<P extends Position<P,A>,A extends Attempt.Stage<P,A>>
@@ -111,7 +111,7 @@ public abstract class Attempt<P extends Position<P,A>,A extends Attempt.Stage<P,
     /**
      * Element of a {@link Attempt}.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     public interface Stage<P extends Position<P,A>,A extends Stage<P,A>> {
         /**

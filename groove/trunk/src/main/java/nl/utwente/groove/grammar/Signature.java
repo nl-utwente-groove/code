@@ -27,7 +27,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Class wrapping the signature of a rule, i.e., the list of parameters.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Signature<P extends UnitPar> implements Iterable<P> {
     /**

@@ -24,7 +24,7 @@ import org.eclipse.jdt.annotation.Nullable;
 /**
  * Class implementing a lazy create pattern.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public abstract class LazyFactory<T> implements Supplier<T> {

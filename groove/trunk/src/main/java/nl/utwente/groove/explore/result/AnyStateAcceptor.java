@@ -26,7 +26,7 @@ import nl.utwente.groove.lts.Status.Flag;
  * Acceptor that accepts any new state that is added to the LTS, provided
  * it is done and a real state.
  * @author Maarten de Mol
- * @version $Revision $
+ * @version $Revision$
  * @see Status#isReal(int)
  */
 public class AnyStateAcceptor extends Acceptor {

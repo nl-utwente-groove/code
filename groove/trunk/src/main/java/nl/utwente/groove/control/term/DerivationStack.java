@@ -23,7 +23,7 @@ import nl.utwente.groove.control.CallStack;
 /**
  * Stack of derivations; the bottom (first) element is the original caller.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class DerivationStack extends ArrayDeque<Derivation> {
     /**

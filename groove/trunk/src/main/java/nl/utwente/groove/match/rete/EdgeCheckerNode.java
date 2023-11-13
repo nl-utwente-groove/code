@@ -40,7 +40,7 @@ import nl.utwente.groove.util.collect.TreeHashSet;
 
 /**
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscriber {
 

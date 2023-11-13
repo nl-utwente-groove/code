@@ -22,8 +22,8 @@ import nl.utwente.groove.grammar.QualName;
 
 /**
  * Tree node wrapping an action.
- * @author rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 interface ActionTreeNode extends TreeNode {
     /** Returns the action name. */

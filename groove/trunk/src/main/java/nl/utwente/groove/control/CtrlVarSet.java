@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * Convenience type for sorted sets of control variables.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class CtrlVarSet {
     /** Constructs an initially empty variable set. */

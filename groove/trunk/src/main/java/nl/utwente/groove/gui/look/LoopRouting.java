@@ -36,7 +36,7 @@ import org.jgraph.graph.VertexView;
  * Edge routing class that only touches loops with fewer than two
  * intermediate control points.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 final class LoopRouting implements Routing {
     @Override

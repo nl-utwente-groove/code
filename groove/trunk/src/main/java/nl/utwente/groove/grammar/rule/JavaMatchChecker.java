@@ -29,7 +29,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Method name in the Java language.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class JavaMatchChecker extends MatchChecker {
     /**

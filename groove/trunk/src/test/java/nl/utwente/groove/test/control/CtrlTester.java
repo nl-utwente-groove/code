@@ -35,7 +35,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Tests the revised control automaton building.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 abstract public class CtrlTester {
     /** The directory from which grammars are loaded. */

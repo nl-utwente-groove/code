@@ -37,7 +37,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * A resource model may still contain errors, which could prevent it from
  * being translated to an actual resource.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 abstract public class ResourceModel<R> {
     /**

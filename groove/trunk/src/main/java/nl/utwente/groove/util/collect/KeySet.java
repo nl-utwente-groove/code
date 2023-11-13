@@ -26,7 +26,7 @@ import java.util.Set;
  * Set that simultaneously behaves as a mapping from a uniquely defining
  * property of the contained elements to the element with that property.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 abstract public class KeySet<K,E> extends AbstractSet<E> implements Set<E> {
     @Override

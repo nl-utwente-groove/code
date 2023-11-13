@@ -37,7 +37,7 @@ import nl.utwente.groove.util.Observable;
  * mapping of those labels to {@link JCell}s bearing
  * the entries.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class LabelFilter<G extends Graph> extends Observable {
     /** Clears the inverse mapping from labels to {@link JCell}s. */

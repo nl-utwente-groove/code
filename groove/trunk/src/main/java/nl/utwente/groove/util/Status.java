@@ -19,7 +19,7 @@ package nl.utwente.groove.util;
 /**
  * Construction status of a lazily constructed structure.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public enum Status {
     /** Initial state: nothing has been done. */

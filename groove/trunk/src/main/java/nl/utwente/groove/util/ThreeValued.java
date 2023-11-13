@@ -21,8 +21,8 @@ import java.util.Map;
 
 /**
  * General three-valued enumerator.
- * @author rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 public enum ThreeValued {
     /** Lowest value. */

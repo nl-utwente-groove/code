@@ -29,7 +29,7 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
  * Graph type used for graphs under transformation.
  * Host graphs consist of {@link HostNode}s and {@link HostEdge}s.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public interface HostGraph extends GGraph<HostNode,HostEdge>, DeltaTarget {

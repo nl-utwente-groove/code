@@ -21,7 +21,7 @@ import nl.utwente.groove.algebra.syntax.Expression;
 /**
  * Interface of an algebra (a class implementing a {@link Signature}).
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface Algebra<T> extends Signature {
     /** Tests if a given object is a value of this algebra. */

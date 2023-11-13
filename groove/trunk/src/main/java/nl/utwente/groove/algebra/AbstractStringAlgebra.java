@@ -23,7 +23,7 @@ import nl.utwente.groove.util.parse.StringHandler;
  * Abstract implementation of the string algebra.
  * The only non-implemented features are the methods concerning integers and reals.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract sealed class AbstractStringAlgebra<INT,REAL>
     extends StringAlgebra<INT,REAL,Boolean,String>permits BigStringAlgebra, JavaStringAlgebra {

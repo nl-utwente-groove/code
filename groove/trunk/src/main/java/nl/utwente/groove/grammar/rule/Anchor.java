@@ -30,7 +30,7 @@ import nl.utwente.groove.util.Exceptions;
  * Collection of rule elements that together completely determine the
  * relevant part of a rule match.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Anchor extends ArrayList<AnchorKey> implements Comparable<Anchor> {
     /** Constructs an empty anchor. */

@@ -40,7 +40,7 @@ import nl.utwente.groove.util.collect.FilterIterator;
  * Temporary record of the effects of a rule application.
  * Built up by a {@link RuleEvent} and then used in a {@link RuleApplication}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class RuleEffect extends DefaultFixable {
     /** Creates a full record with respect to a given source graph

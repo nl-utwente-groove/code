@@ -34,7 +34,7 @@ import nl.utwente.groove.match.rete.RetePathMatch.EmptyPathMatch;
  * A Path-checker that finds a (kleene or transitive) sequence closure of
  * a certain path expression.
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class ClosurePathChecker extends AbstractPathChecker implements ReteStateSubscriber {
 
@@ -234,7 +234,7 @@ public class ClosurePathChecker extends AbstractPathChecker implements ReteState
      * the closure computation terminates.
      *
      * @author Arash Jalali
-     * @version $Revision $
+     * @version $Revision$
      */
     public static class ClosureInfo {
         /** The network node to which this closure belongs. */

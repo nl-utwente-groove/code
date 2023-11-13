@@ -19,7 +19,7 @@ package nl.utwente.groove.algebra;
 /**
  * Boolean implementation for the {@link AlgebraFamily#BIG} family.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public final class BigBoolAlgebra extends AbstractBoolAlgebra {
     /** Private constructor for the singleton instance. */

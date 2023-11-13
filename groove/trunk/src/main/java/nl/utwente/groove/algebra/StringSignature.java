@@ -23,7 +23,7 @@ package nl.utwente.groove.algebra;
  * @param <BOOL> The representation type of the boolean algebra
  * @param <STRING> The representation type of the string algebra
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @SuppressWarnings("rawtypes")
 public sealed abstract class StringSignature<INT,REAL,BOOL,STRING>

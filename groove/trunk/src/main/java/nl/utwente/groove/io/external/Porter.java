@@ -27,7 +27,7 @@ import nl.utwente.groove.io.FileType;
 /**
  * Supertype for exporters and importers.
  * @author Harold Bruintjes
- * @version $Revision $
+ * @version $Revision$
  */
 public interface Porter {
     /** Indicates what kind of objects this porter handles. */

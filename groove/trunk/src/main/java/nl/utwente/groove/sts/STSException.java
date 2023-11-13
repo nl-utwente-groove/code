@@ -19,7 +19,7 @@ package nl.utwente.groove.sts;
 /**
  * Exception class for STS related exceptions.
  * @author Vincent de Bruijn
- * @version $Revision $
+ * @version $Revision$
  */
 public class STSException extends Exception {
 

@@ -30,7 +30,7 @@ import nl.utwente.groove.util.Groove;
 /**
  * Abstract type of the resources that make up a grammar.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public enum ResourceKind {
     /** Host graph resources; in other words, potential start graphs of the grammar. */

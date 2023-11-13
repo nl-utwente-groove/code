@@ -31,7 +31,7 @@ import nl.utwente.groove.graph.Node;
 /**
  * Supertype of all nodes that can occur in a {@link RuleGraph}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public interface RuleNode extends Node, RuleElement {

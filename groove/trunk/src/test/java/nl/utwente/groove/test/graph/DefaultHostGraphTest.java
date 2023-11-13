@@ -28,8 +28,8 @@ import nl.utwente.groove.grammar.host.DefaultHostNode;
 import nl.utwente.groove.grammar.host.HostNode;
 
 /**
- * @author rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 public class DefaultHostGraphTest {
     /** Tests fresh node creation. */

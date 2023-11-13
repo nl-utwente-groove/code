@@ -23,7 +23,7 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
 /**
  * Checker for type constraints in host graphs that cannot be statically prevented.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface TypeChecker extends Checker<HostGraph> {
     /** Returns the type graph specifying the constraints being checked. */

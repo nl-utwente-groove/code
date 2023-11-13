@@ -28,7 +28,7 @@ import nl.utwente.groove.sts.InteractionVariable;
 /**
  * Tests for gates in an STS.
  * @author Vincent de Bruijn
- * @version $Revision $
+ * @version $Revision$
  */
 @SuppressWarnings("all")
 public class GateTest extends TestCase {

@@ -20,7 +20,7 @@ import java.util.Comparator;
 
 /** Compares nodes by their numbers.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class NodeComparator implements Comparator<Node> {
     private NodeComparator() {

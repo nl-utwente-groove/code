@@ -29,7 +29,7 @@ import nl.utwente.groove.util.parse.StringHandler;
 /**
  * Class containing special state labels for serialised LTSs.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class LTSLabels {
     /** Constructs a flag object with default values for selected flags. */

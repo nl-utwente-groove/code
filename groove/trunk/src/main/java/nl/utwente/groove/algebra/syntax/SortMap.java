@@ -32,7 +32,7 @@ import nl.utwente.groove.util.NoNonNull;
 /**
  * Mapping from variable names to sorts.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class SortMap {

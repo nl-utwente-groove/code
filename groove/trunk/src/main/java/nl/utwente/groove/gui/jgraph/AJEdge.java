@@ -47,8 +47,8 @@ import nl.utwente.groove.util.parse.FormatError;
 /**
  * Generic abstract JCell subclass implementing the {@link JEdge} interface.
  * @param <G> the graph type for which the JCell is intended
- * @author rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JModel<G>,JV extends JVertex<G>>
     extends AJCell<G,JG,JM> implements org.jgraph.graph.Edge, JEdge<G> {

@@ -53,7 +53,7 @@ import nl.utwente.groove.util.collect.NestedIterator;
 /**
  * Class for constructing control automata.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class TemplateBuilder {
     /** Private constructor. */

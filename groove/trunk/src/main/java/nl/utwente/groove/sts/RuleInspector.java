@@ -37,7 +37,7 @@ import nl.utwente.groove.graph.Node;
  * switch relations. The methods parse the expressions from the rule, given a
  * mapping of nodes to location/interaction variables.
  * @author vincentdebruijn
- * @version $Revision $
+ * @version $Revision$
  */
 public class RuleInspector {
     private static RuleInspector instance;

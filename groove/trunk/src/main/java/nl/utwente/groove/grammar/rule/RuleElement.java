@@ -31,7 +31,7 @@ import nl.utwente.groove.graph.Element;
  * Type of (node and edge) elements that may appear in a {@link RuleGraph}.
  * Super-interface of {@link RuleNode}s and {@link RuleEdge}s.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public interface RuleElement extends Element, AnchorKey {

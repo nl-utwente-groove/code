@@ -24,7 +24,7 @@ import nl.utwente.groove.io.store.SystemStore;
 /**
  * Action that loads a new grammar from a history item of the simulator.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class LoadGrammarFromHistoryAction extends SimulatorAction {
     /**

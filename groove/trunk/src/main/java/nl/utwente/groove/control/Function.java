@@ -25,7 +25,7 @@ import nl.utwente.groove.util.Fixable;
 /**
  * Control program function.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Function extends Procedure implements Fixable {
     /**

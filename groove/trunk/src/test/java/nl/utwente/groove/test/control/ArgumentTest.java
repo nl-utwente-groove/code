@@ -21,7 +21,7 @@ import org.junit.Test;
 /**
  * Tests the attribute parameter part of the control language.
  * @author Olaf Keijsers
- * @version $Revision $
+ * @version $Revision$
  */
 @SuppressWarnings("all")
 public class ArgumentTest extends AControlTest {

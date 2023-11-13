@@ -34,7 +34,7 @@ import nl.utwente.groove.util.collect.TreeHashSet;
  * matches on the left will be domino deleted down-wards.
  *
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class NegativeFilterSubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMatchType extends AbstractReteMatch>
     extends SubgraphCheckerNode<LeftMatchType,RightMatchType> {
@@ -252,7 +252,7 @@ public class NegativeFilterSubgraphCheckerNode<LeftMatchType extends AbstractRet
      * negative matches used by the negative filter subgraph-checker.
      *
      * @author Arash Jalali
-     * @version $Revision $
+     * @version $Revision$
      */
     static protected class BidirectionalInhibitionMap {
         private HashMap<AbstractReteMatch,Set<AbstractReteMatch>> positiveToNegative =

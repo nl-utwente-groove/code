@@ -36,7 +36,7 @@ import nl.utwente.groove.util.Visitor;
 /**
  * Encoding of a condition match as a tree structure.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class TreeMatch implements Fixable {
     /**

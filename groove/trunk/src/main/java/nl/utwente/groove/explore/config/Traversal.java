@@ -24,7 +24,7 @@ import nl.utwente.groove.util.Exceptions;
 
 /**
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public final class Traversal extends Setting {
@@ -39,7 +39,7 @@ public final class Traversal extends Setting {
     /**
      * Kind of traversal strategies.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     public enum Kind implements Setting.Key {
         /** Depth-first search. */

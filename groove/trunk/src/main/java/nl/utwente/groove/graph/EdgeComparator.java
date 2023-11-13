@@ -21,7 +21,7 @@ import java.util.Comparator;
 /**
  * Compares nodes by (successively) their source node numbers, edge numbers, labels, and target node numbers.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class EdgeComparator implements Comparator<Edge> {
     private EdgeComparator() {

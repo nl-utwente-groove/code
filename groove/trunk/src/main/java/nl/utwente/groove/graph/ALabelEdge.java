@@ -24,7 +24,7 @@ import nl.utwente.groove.util.line.Line;
 /**
  * Abstract edge class that is its own label.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public abstract class ALabelEdge<N extends Node> extends AEdge<N,ALabelEdge<N>> implements Label {

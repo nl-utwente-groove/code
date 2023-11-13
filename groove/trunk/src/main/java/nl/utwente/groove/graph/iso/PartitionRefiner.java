@@ -586,7 +586,7 @@ public class PartitionRefiner extends CertificateStrategy {
      * Certificate for value nodes. This takes the actual node identity into
      * account.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     static class MyValueNodeCert extends MyNodeCert {
         /**

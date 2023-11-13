@@ -27,7 +27,7 @@ import nl.utwente.groove.util.Exceptions;
  * Applying the delta adds the nodes and edges in the order specified by the
  * array.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class FrozenDeltaApplier implements StoredDeltaApplier {
     /** Constructs an instance with a given array of elements. */

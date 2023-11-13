@@ -29,7 +29,7 @@ import nl.utwente.groove.match.plan.PlanSearchEngine;
  * have multiple instances, at the cost of linking a shared instance to
  * all the objects that may do matching.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class MatcherFactory {
     private MatcherFactory(boolean simple) {

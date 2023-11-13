@@ -47,7 +47,7 @@ import nl.utwente.groove.lts.GraphTransition;
 /**
  * Strategy to determine whether a given cell is currently visible.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class VisibleValue implements VisualValue<Boolean> {
     @Override

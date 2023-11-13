@@ -29,7 +29,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * Control program fragment, consisting of an optional main term
  * and a map from procedure names to procedures.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Fragment {
     /**

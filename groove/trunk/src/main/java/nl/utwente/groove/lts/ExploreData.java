@@ -32,7 +32,7 @@ import nl.utwente.groove.lts.GraphTransition.Claz;
 /**
  * Information required for the proper exploration of transient states.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 class ExploreData {
     /**

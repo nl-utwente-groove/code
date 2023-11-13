@@ -22,8 +22,8 @@ import java.util.TreeMap;
 
 /**
  * Auxiliary mapping for {@link Help} items
- * @author Rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 public class HelpMap extends TreeMap<String,String> {
     /** Adds a Help item derived from an annotated source.

@@ -25,7 +25,7 @@ import nl.utwente.groove.grammar.type.TypeGuard;
  * expression.
  *
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class WildcardEdgePathChecker extends SingleEdgePathChecker {
 

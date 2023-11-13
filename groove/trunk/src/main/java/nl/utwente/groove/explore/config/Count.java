@@ -26,7 +26,7 @@ import nl.utwente.groove.util.parse.Parser;
 /**
  * Setting that determines whether exploration stops after having found a number of result states.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public final class Count extends Setting {
@@ -47,7 +47,7 @@ public final class Count extends Setting {
     /**
      * Kind of result count.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     public enum Key implements Setting.Key {
         /** Continue regardless of results found. */

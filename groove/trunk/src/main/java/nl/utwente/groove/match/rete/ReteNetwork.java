@@ -66,7 +66,7 @@ import nl.utwente.groove.util.collect.TreeHashSet;
 
 /**
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class ReteNetwork {
     private final String grammarName;
@@ -1323,7 +1323,7 @@ public class ReteNetwork {
      * This class is only used during the static build of the RETE
      * network
      * @author Arash Jalali
-     * @version $Revision $
+     * @version $Revision$
      */
     @SuppressWarnings("javadoc")
     public static class ReteStaticMapping {
@@ -1516,7 +1516,7 @@ public class ReteNetwork {
      *
      * This class is used during the static build of the RETE network
      * @author Arash Jalali
-     * @version $Revision $
+     * @version $Revision$
      */
     static class StaticMap extends ArrayList<ReteStaticMapping> {
 
@@ -1548,7 +1548,7 @@ public class ReteNetwork {
      * Encapsulates a RETE global runtime state.
      *
      * @author Arash Jalali
-     * @version $Revision $
+     * @version $Revision$
      */
     @SuppressWarnings("javadoc")
     public static class ReteState {

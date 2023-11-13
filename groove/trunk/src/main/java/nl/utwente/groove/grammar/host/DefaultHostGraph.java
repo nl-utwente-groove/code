@@ -34,7 +34,7 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
 /**
  * Class providing a default implementation of {@link HostGraph}s.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class DefaultHostGraph extends NodeSetEdgeSetGraph<@NonNull HostNode,@NonNull HostEdge>
     implements HostGraph {

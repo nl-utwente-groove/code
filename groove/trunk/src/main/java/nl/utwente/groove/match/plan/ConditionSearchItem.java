@@ -44,7 +44,7 @@ import nl.utwente.groove.match.plan.PlanSearchStrategy.Search;
 /**
  * Search item to test for the satisfaction of a graph condition.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 class ConditionSearchItem extends AbstractSearchItem {
     /**

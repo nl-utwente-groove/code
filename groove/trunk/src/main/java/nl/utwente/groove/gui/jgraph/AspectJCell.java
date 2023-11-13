@@ -25,7 +25,7 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
  * Instantiation of a {@link JCell} with an {@link AspectJObject}
  * that stores the (editable) string representation of the node/edge label.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface AspectJCell extends JCell<AspectGraph> {
     @Override

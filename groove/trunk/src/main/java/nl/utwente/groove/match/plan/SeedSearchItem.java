@@ -34,7 +34,7 @@ import nl.utwente.groove.match.plan.PlanSearchStrategy.Search;
  * Search item that reflects (and optionally checks) that a set of elements
  * (nodes, variables and edges) have already been matched.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 class SeedSearchItem extends AbstractSearchItem {
     /**

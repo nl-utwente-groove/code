@@ -52,7 +52,7 @@ import nl.utwente.groove.grammar.host.HostFactory;
  * This is especially true for verdict edges to dead locations, as well
  * as for the (unique) final state if it is unreachable.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Template {
     /**

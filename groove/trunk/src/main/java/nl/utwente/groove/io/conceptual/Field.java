@@ -8,7 +8,7 @@ import nl.utwente.groove.io.conceptual.type.Type;
 /**
  * Represents Fields in the TypeModel
  * @author s0141844
- * @version $Revision $
+ * @version $Revision$
  */
 public class Field implements Acceptor {
     private Name m_name;

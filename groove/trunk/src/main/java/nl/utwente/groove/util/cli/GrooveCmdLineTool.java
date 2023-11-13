@@ -40,7 +40,7 @@ import nl.utwente.groove.explore.Verbosity;
  * </pre>
  * @param <T> return type for the {@link #start()} method.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract class GrooveCmdLineTool<T> {
     /**

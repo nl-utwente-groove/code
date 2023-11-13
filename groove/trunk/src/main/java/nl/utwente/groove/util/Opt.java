@@ -28,8 +28,8 @@ import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Non-final re-implementation of Java's {@link Optional}
- * @author Rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 @NonNullByDefault
 public abstract class Opt<T,O extends Opt<? extends T,O>> {

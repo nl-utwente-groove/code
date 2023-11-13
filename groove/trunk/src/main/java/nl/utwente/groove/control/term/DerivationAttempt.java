@@ -24,7 +24,7 @@ import nl.utwente.groove.control.Attempt;
  * List of term derivations in combination with the success and failure alternates.
  * This constitutes a term attempt.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class DerivationAttempt extends Attempt<Term,Derivation> {

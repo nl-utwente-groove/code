@@ -34,7 +34,7 @@ import nl.utwente.groove.match.plan.PlanSearchStrategy.Search;
 /**
  * A search item that searches an image for a typed node.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 class NodeTypeSearchItem extends AbstractSearchItem {
     /**
@@ -193,7 +193,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     /**
      * Search record to be used if the node image is already found.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     private class NodeTypeSingularRecord extends SingularRecord {
         /** Constructs an instance for a given search. */
@@ -273,7 +273,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
      * Record of a node type search item, storing an iterator over the candidate
      * images.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     private class NodeTypeMultipleRecord extends MultipleRecord<HostNode> {
         /**

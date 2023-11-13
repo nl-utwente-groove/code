@@ -27,8 +27,8 @@ import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * Class wrapping either a value or a format exception.
- * @author Rensink
- * @version $Revision $
+ * @author Arend Rensink
+ * @version $Revision$
  */
 public class Fragile<T> {
     /**

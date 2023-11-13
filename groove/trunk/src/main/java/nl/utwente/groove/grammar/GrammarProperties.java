@@ -32,7 +32,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Properties class for graph production systems.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class GrammarProperties extends Properties {
     /**

@@ -25,7 +25,7 @@ import nl.utwente.groove.match.rete.ClosurePathChecker.ClosureInfo;
 
 /**
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class RetePathMatch extends AbstractReteMatch {
     /** Start node of the path. */
@@ -307,7 +307,7 @@ public class RetePathMatch extends AbstractReteMatch {
      * Represents an empty path match, equivalent of an empty word in regular
      * expressions.
      * @author Arash Jalali
-     * @version $Revision $
+     * @version $Revision$
      */
     public static class EmptyPathMatch extends RetePathMatch {
         /**

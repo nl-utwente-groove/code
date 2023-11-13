@@ -17,7 +17,7 @@ import nl.utwente.groove.lts.StartGraphState;
 /**
  * JVertex class that describes the underlying node as a graph state.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> implements LTSJCell {
     /**

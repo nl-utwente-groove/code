@@ -25,7 +25,7 @@ import java.util.NoSuchElementException;
  * Implements a very simple immutable linked list of elements,
  * based on chained nodes.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Chain<E> implements Iterable<E> {
     /** Creates a chain consisting of a single value. */

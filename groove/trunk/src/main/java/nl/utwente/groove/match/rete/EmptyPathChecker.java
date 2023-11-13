@@ -23,7 +23,7 @@ import nl.utwente.groove.match.rete.RetePathMatch.EmptyPathMatch;
 
 /**
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public class EmptyPathChecker extends AbstractPathChecker implements ReteStateSubscriber {
 

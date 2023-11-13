@@ -31,7 +31,7 @@ import nl.utwente.groove.grammar.host.HostFactory;
 /**
  * Stack of switches, corresponding to nested procedure calls.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 @NonNullByDefault
 public class SwitchStack extends Stack<Switch>

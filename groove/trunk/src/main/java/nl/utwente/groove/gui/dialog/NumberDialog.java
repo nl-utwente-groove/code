@@ -33,7 +33,7 @@ import javax.swing.SpinnerNumberModel;
 /**
  * Dialog class that lets the user choose a fresh name.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class NumberDialog {
     /** Creates an instance of the dialog, with a given string prompt. */

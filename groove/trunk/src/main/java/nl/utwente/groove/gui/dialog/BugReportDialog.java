@@ -46,7 +46,7 @@ import nl.utwente.groove.gui.layout.SpringUtilities;
 
 /**
  * @author Eduardo Zambon
- * @version $Revision $
+ * @version $Revision$
  */
 public class BugReportDialog extends JDialog implements ActionListener, HyperlinkListener {
 

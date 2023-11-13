@@ -33,7 +33,7 @@ import nl.utwente.groove.util.line.Line.Style;
 /**
  * HTML renderer for lines.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class HTMLLineFormat extends LineFormat<HTMLLineFormat.HTMLBuilder> {
     private HTMLLineFormat() {

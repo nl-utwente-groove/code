@@ -22,7 +22,7 @@ import nl.utwente.groove.grammar.rule.RuleNode;
 /**
  * Represents the abstract representation of a node checker
  * @author Arash Jalali
- * @version $Revision $
+ * @version $Revision$
  */
 public abstract class NodeChecker extends ReteNetworkNode implements
         ReteStateSubscriber {

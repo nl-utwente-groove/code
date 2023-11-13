@@ -29,7 +29,7 @@ import nl.utwente.groove.util.parse.StringHandler;
 /**
  * Collection of all properties influencing the exploration of a GTS.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class ExploreConfig {
     /** Creates a configuration with values taken from a given properties map. */

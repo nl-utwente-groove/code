@@ -40,7 +40,7 @@ import nl.utwente.groove.util.Exceptions;
  * annotated with {@link Signature} and optionally {@link ToolTipBody} and {@link ToolTipPars}.
  * The declarations themselves consist of a series of calls of {@link #s(String)}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 abstract public class GroovePredicates {
     /** Adds a line to the declaration currently being built up. */

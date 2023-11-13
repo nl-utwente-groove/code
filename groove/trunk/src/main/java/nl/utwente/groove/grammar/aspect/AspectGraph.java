@@ -70,7 +70,7 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
  * aspect graph to a graph where the aspect values are stored in
  * {@link AspectNode}s and {@link AspectEdge}s.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNull AspectEdge> {
     /**
@@ -911,7 +911,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     /**
      * Graph element map from a plain graph to an aspect graph.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     private static class GraphToAspectMap extends AGraphMap<Node,Edge,AspectNode,AspectEdge> {
         /** Creates a fresh, empty map. */

@@ -21,7 +21,7 @@ import nl.utwente.groove.lts.GTS;
 /**
  * Interface to be notified by the start and end of an exploration.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface ExplorationListener {
     /** Notification of the start of the exploration of a given GTS. 

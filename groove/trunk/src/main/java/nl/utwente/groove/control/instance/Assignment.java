@@ -43,7 +43,7 @@ import nl.utwente.groove.util.Exceptions;
 /**
  * Action to be taken as part of a {@link Step}.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Assignment {
     /**

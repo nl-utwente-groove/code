@@ -43,7 +43,7 @@ import nl.utwente.groove.match.plan.PlanSearchStrategy.Search;
  * images are known.
  * </ul>
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public interface SearchItem extends Comparable<SearchItem> {
     /**
@@ -104,7 +104,7 @@ public interface SearchItem extends Comparable<SearchItem> {
     /**
      * Interface for an activation record of a search item.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     interface Record {
         /** Initialises the record for a given host graph. */

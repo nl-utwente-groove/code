@@ -22,7 +22,7 @@ import java.util.Map;
 /**
  * Used for setting on the fly or offline model exploration.
  * @author Vincent de Bruijn
- * @version $Revision $
+ * @version $Revision$
  */
 public class EncodedExplorationMode extends EncodedFixedEnumeratedType<Boolean> {
 

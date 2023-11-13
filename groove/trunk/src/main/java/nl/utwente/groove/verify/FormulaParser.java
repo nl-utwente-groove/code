@@ -43,7 +43,7 @@ import nl.utwente.groove.verify.Proposition.Arg;
 /**
  * Parser for temporal formulas, following the {@code nl.utwente.groove.util.parse} architecture.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
     /**

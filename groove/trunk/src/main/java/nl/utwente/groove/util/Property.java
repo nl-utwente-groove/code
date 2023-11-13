@@ -27,7 +27,7 @@ import java.util.function.Predicate;
 /**
  * Interface to wrap a simple condition on a subject type.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 abstract public class Property<S> implements Predicate<S> {
     /** Creates an instance with <code>null</code> comment and description. */
@@ -143,7 +143,7 @@ abstract public class Property<S> implements Predicate<S> {
      * <code>true</code>, <code>false</code>, or optionally the empty
      * string.
      * @author Arend Rensink
-     * @version $Revision $
+     * @version $Revision$
      */
     static public class IsBoolean extends Property<String> {
         /**

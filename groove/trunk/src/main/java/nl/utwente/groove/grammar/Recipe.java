@@ -26,7 +26,7 @@ import nl.utwente.groove.control.Procedure;
  * Class wrapping a transaction.
  * A transaction consists of a control automaton and an associated priority.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision$
  */
 public class Recipe extends Procedure implements Action {
     /** Constructs a recipe. */

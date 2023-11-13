@@ -36,7 +36,7 @@ import nl.utwente.groove.gui.action.SimulatorAction;
  * A menu for the model-checking actions.
  *
  * @author Iovka Boneva
- * @version $Revision $
+ * @version $Revision$
  */
 public class ModelCheckingMenu extends JMenu implements SimulatorListener {
 
