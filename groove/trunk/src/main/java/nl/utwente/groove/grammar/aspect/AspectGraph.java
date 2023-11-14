@@ -609,7 +609,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     SortMap getSortMap(@Nullable TypeLabel self) {
         var result = getSortMap();
         var typeSortMap = getTypeSortMap();
-        if (self != null && typeSortMap != null) {
+        if (self != null && typeSortMap != null && typeSortMap.containsKey(self)) {
             result = new SortMap().add(result);
             for (var se : typeSortMap.get(self).entrySet()) {
                 var fieldName = new QualName("", se.getKey());
