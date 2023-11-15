@@ -53,6 +53,7 @@ import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.host.HostNodeSet;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.HostModel;
+import nl.utwente.groove.grammar.model.HostModel.HostModelMap;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
@@ -477,26 +478,60 @@ public class StateDisplay extends Display implements SimulatorListener {
      * state then one is created.
      */
     private AspectJModel getAspectJModel(GraphState state) {
-        HostToAspectMap aspectMap = getAspectMap(state);
-        AspectGraph aspectGraph = aspectMap.getAspectGraph();
         AspectJModel result = this.stateToJModel.get(state);
         if (result == null) {
-            result = createAspectJModel(aspectGraph);
+            if (state instanceof GraphNextState ns) {
+                result = createNextStateJModel(ns);
+            } else {
+                // this is the start state
+                result = createStartStateJModel((StartGraphState) state);
+            }
             assert result != null;
             this.stateToJModel.put(state, result);
-            // try to find layout information for the model
-            if (state instanceof GraphNextState) {
-                setNextStateLayout((GraphNextState) state, result);
-            } else {
-                assert state instanceof StartGraphState;
-                // this is the start state
-                setStartGraphLayout(result);
-            }
         }
         return result;
     }
 
-    private void setNextStateLayout(GraphNextState state, AspectJModel result) {
+    /** Copies layout from the host model of the start graph. */
+    private AspectJModel createStartStateJModel(StartGraphState state) {
+        HostToAspectMap stateMap = getAspectMap(state);
+        var result = createAspectJModel(stateMap.getAspectGraph());
+        var startHostModel = getGrammar().getStartGraphModel();
+        AspectGraph startGraph = startHostModel.getSource();
+        HostModelMap startGraphMap = startHostModel.getMap();
+        // the AspectGraph in result does not equal startGraph, we have to convert
+        var startJModel = createAspectJModel(startGraph);
+        for (AspectNode node : startGraph.nodeSet()) {
+            AspectJVertex stateVertex
+                = result.getJCellForNode(stateMap.getNode(startGraphMap.getNode(node)));
+            // nesting nodes are not in the state;
+            // data nodes may have been merged
+            if (stateVertex == null) {
+                continue;
+            }
+            AspectJVertex graphVertex = startJModel.getJCellForNode(node);
+            stateVertex.putVisuals(graphVertex.getVisuals());
+            stateVertex.setGrayedOut(graphVertex.isGrayedOut());
+            result.synchroniseLayout(stateVertex);
+            stateVertex.setLayoutable(false);
+        }
+        for (AspectEdge edge : startGraph.edgeSet()) {
+            AspectJCell stateEdge
+                = result.getJCellForEdge(stateMap.getEdge(startGraphMap.getEdge(edge)));
+            // nesting edges and merged data edges are not in the state
+            if (stateEdge == null) {
+                continue;
+            }
+            AspectJCell graphEdge = startJModel.getJCellForEdge(edge);
+            stateEdge.putVisuals(graphEdge.getVisuals());
+            stateEdge.setGrayedOut(graphEdge.isGrayedOut());
+            result.synchroniseLayout(stateEdge);
+        }
+        return result;
+    }
+
+    private AspectJModel createNextStateJModel(GraphNextState state) {
+        var result = createAspectJModel(getAspectMap(state).getAspectGraph());
         Stack<GraphTransition> stack = new Stack<>();
         GraphState source = state;
         do {
@@ -511,6 +546,7 @@ public class StateDisplay extends Display implements SimulatorListener {
             map = transferAttributes(map, trans);
         }
         applyAttributes(map, result, getAspectMap(state));
+        return result;
     }
 
     /**
@@ -691,36 +727,6 @@ public class StateDisplay extends Display implements SimulatorListener {
             }
         }
         return result;
-    }
-
-    /** Copies layout from the host model of the start graph. */
-    private void setStartGraphLayout(AspectJModel result) {
-        AspectGraph startGraph = getGrammar().getStartGraphModel().getSource();
-        AspectJModel startModel = createAspectJModel(startGraph);
-        for (AspectNode node : startGraph.nodeSet()) {
-            AspectJVertex stateVertex = result.getJCellForNode(node);
-            // nesting nodes are not in the state;
-            // data nodes may have been merged
-            if (stateVertex == null) {
-                continue;
-            }
-            AspectJVertex graphVertex = startModel.getJCellForNode(node);
-            stateVertex.putVisuals(graphVertex.getVisuals());
-            stateVertex.setGrayedOut(graphVertex.isGrayedOut());
-            result.synchroniseLayout(stateVertex);
-            stateVertex.setLayoutable(false);
-        }
-        for (AspectEdge edge : startGraph.edgeSet()) {
-            AspectJCell stateEdge = result.getJCellForEdge(edge);
-            // nesting edges and merged data edges are not in the state
-            if (stateEdge == null) {
-                continue;
-            }
-            AspectJCell graphEdge = startModel.getJCellForEdge(edge);
-            stateEdge.putVisuals(graphEdge.getVisuals());
-            stateEdge.setGrayedOut(graphEdge.isGrayedOut());
-            result.synchroniseLayout(stateEdge);
-        }
     }
 
     /** Creates a j-model for a given aspect graph. */

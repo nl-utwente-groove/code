@@ -153,13 +153,12 @@ public class GraphInfo extends DefaultFixable {
             // copy all the info
             GraphInfo sourceInfo = source.getInfo();
             GraphInfo targetInfo = target.getInfo();
+            LayoutMap sourceLayoutMap = sourceInfo.getLayoutMap();
             if (elementMap != null) {
                 // modify the layout map using the element map
-                LayoutMap sourceLayoutMap = sourceInfo.getLayoutMap();
-                targetInfo.setLayoutMap(sourceLayoutMap.afterInverse(elementMap));
-            } else {
-                targetInfo.setLayoutMap(sourceInfo.getLayoutMap());
+                sourceLayoutMap = sourceLayoutMap.afterInverse(elementMap);
             }
+            targetInfo.setLayoutMap(sourceLayoutMap);
             // copy rather than clone the graph properties
             GraphProperties properties = sourceInfo.getProperties();
             targetInfo.setProperties(properties);
@@ -179,13 +178,11 @@ public class GraphInfo extends DefaultFixable {
         if (source.hasInfo()) {
             // copy all the info
             var sourceErrors = source.getInfo().getErrors();
-            var targetInfo = target.getInfo();
             if (elementMap != null) {
                 // modify the errors using the element map
-                targetInfo.setErrors(sourceErrors.transfer(elementMap));
-            } else {
-                targetInfo.setErrors(sourceErrors);
+                sourceErrors = sourceErrors.transfer(elementMap);
             }
+            target.getInfo().setErrors(sourceErrors);
         }
     }
 

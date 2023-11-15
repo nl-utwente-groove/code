@@ -136,9 +136,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      * cloning a given host graph.
      */
     protected HostGraph createStartGraph() {
-        HostGraph result = getGrammar().getStartGraph().clone(getAlgebraFamily());
-        result.setFixed();
-        return result;
+        return getGrammar().getStartGraph().clone(getAlgebraFamily());
     }
 
     /**
