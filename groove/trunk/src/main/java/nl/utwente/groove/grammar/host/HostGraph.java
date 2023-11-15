@@ -41,7 +41,9 @@ public interface HostGraph extends GGraph<HostNode,HostEdge>, DeltaTarget {
 
     /** Clones this host graph, while optionally changing the algebras. */
     default HostGraph clone(AlgebraFamily family) {
-        return new DefaultHostGraph(this, family);
+        var result = new DefaultHostGraph(this, family);
+        GraphInfo.transferProperties(this, result, null);
+        return result;
     }
 
     @Override
