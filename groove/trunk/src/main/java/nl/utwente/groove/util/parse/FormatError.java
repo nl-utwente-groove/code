@@ -356,13 +356,15 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
      * of this error; or {@code null} if there is no mapping
      */
     private void copyFrom(FormatError prior, @Nullable Map<?,?> map) {
+        this.projection.putAll(prior.projection);
         for (Object arg : prior.getArguments()) {
             var transferredArg = map != null && map.containsKey(arg)
                 ? map.get(arg)
                 : arg;
             addContext(transferredArg);
-            if (transferredArg instanceof Element te && prior.projection.containsKey(arg)) {
-                this.projection.put(te, prior.projection.get(arg));
+            var priorImage = prior.projection.remove(arg);
+            if (priorImage != null && transferredArg instanceof Element te) {
+                this.projection.put(te, priorImage);
             }
         }
         this.resourceKind = prior.getResourceKind();
