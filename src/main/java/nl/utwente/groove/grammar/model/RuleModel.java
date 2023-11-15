@@ -475,18 +475,20 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                     result.setMatchFilter(MatchChecker.createChecker(filter.get(), getGrammar()));
                 }
             } catch (FormatException exc) {
+                result = null;
                 errors.addAll(exc.getErrors());
             }
         }
-        errors.unwrap(levelTree.getModelMap()).throwException();
-        // only fix if the rule is not null and there were no errors in the subconditions
+        // only fix if the rule is not null
         if (result != null) {
             try {
                 result.setFixed();
             } catch (FormatException exc) {
-                exc.getErrors().unwrap(levelTree.getModelMap()).throwException();
+                errors.addAll(exc.getErrors());
             }
         }
+        errors.unwrap(levelTree.getModelMap()).throwException();
+        assert result != null;
         return result;
     }
 

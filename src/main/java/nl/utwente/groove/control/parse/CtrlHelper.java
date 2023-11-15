@@ -659,8 +659,8 @@ public class CtrlHelper {
         List<Callable> result = new ArrayList<>();
         if (nameTree.getType() == ID) {
             Callable unit = this.namespace.getCallable(unitName);
-            Action action = unit instanceof Action
-                ? (Action) unit
+            Action action = unit instanceof Action u
+                ? u
                 : null;
             if (unit == null) {
                 emitErrorMessage(callTree, "Unknown unit '%s'", unitName);
