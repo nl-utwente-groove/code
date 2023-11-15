@@ -501,7 +501,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             } else {
                 toNormalSource = new AspectGraphMorphism(result);
             }
-            this.toNormalSource = toNormalSource;
+            this.toNormalSourceMap = toNormalSource;
         }
         return result;
     }
@@ -509,15 +509,16 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     /** The normalised source model. */
     private @Nullable AspectGraph normalSource;
 
+    /** Returns the mapping from source model to normalised source model. */
     private GraphMap toNormalSource() {
-        if (this.toNormalSource == null) {
+        if (this.toNormalSourceMap == null) {
             getNormalSource();
         }
-        return this.toNormalSource;
+        return this.toNormalSourceMap;
     }
 
     /** Mapping from source model to normalised source model. */
-    private @Nullable GraphMap toNormalSource;
+    private @Nullable GraphMap toNormalSourceMap;
 
     @Override
     protected FormatErrorSet createErrors() {
