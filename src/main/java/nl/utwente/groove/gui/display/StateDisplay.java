@@ -533,12 +533,14 @@ public class StateDisplay extends Display implements SimulatorListener {
     private AspectJModel createNextStateJModel(GraphNextState state) {
         var result = createAspectJModel(getAspectMap(state).getAspectGraph());
         Stack<GraphTransition> stack = new Stack<>();
-        GraphState source = state;
+        GraphNextState source = state;
         do {
-            GraphTransition trans = ((GraphNextState) source).getInTransition();
+            GraphTransition trans = source.getInTransition();
             stack.push(trans);
-            source = trans.source();
-        } while (source instanceof GraphNextState && !this.stateToJModel.containsKey(source));
+            source = trans.source() instanceof GraphNextState ns
+                ? ns
+                : null;
+        } while (source != null && !this.stateToJModel.containsKey(source));
         AspectJModel model = getAspectJModel(source);
         AttributesMap map = extractAttributes(model, getAspectMap(source));
         while (!stack.isEmpty()) {

@@ -61,11 +61,11 @@ public class MatchCollector {
         this.state = state;
         this.record = state.getGTS().getRecord();
         this.checkDiamonds = state.getGTS().checkDiamonds();
-        if (state instanceof GraphNextState) {
-            GraphState parent = ((GraphNextState) state).source();
+        if (state instanceof GraphNextState ns) {
+            GraphState parent = ns.source();
             this.parentClosed = parent.isClosed();
             this.parentTransMap = parent.getCache().getTransitionMap();
-            Rule lastRule = ((GraphNextState) state).getEvent().getRule();
+            Rule lastRule = ns.getEvent().getRule();
             this.enabledRules = this.record.getEnabledRules(lastRule);
             this.disabledRules = this.record.getDisabledRules(lastRule);
         } else {
