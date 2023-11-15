@@ -16,11 +16,14 @@
  */
 package nl.utwente.groove.util.parse;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * General interface for objects that may contain stored errors.
  * @author Arend Rensink
  * @version $Id$
  */
+@NonNullByDefault
 public interface Fallible {
     /** Adds an error to this fallible object. */
     public default void addError(String message, Object... args) {

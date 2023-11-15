@@ -24,6 +24,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.control.term.Term;
 import nl.utwente.groove.grammar.Action;
@@ -43,6 +46,7 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class Namespace implements ParseInfo, Fallible {
     /** Constructs a new name space, on the basis of a given algebra family.
      */
@@ -72,12 +76,12 @@ public class Namespace implements ParseInfo, Fallible {
     }
 
     /** Returns the control program name in which a procedure with a given name has been declared. */
-    public QualName getDeclaringName(QualName procName) {
+    public @Nullable QualName getDeclaringName(QualName procName) {
         return this.declaringNameMap.get(procName);
     }
 
     /** Mapping from declared procedures to the declaring control program. */
-    private final Map<QualName,QualName> declaringNameMap = new HashMap<>();
+    private final Map<QualName,@Nullable QualName> declaringNameMap = new HashMap<>();
 
     /**
      * Adds a rule to the name space.
@@ -97,7 +101,7 @@ public class Namespace implements ParseInfo, Fallible {
     }
 
     /** Returns the callable unit with a given name. */
-    public Callable getCallable(QualName name) {
+    public @Nullable Callable getCallable(QualName name) {
         return this.callableMap.get(name);
     }
 
@@ -108,7 +112,7 @@ public class Namespace implements ParseInfo, Fallible {
 
     /** Tries to add a dependency from a caller to a callee.
      */
-    public void addCall(QualName caller, QualName callee) {
+    public void addCall(@Nullable QualName caller, QualName callee) {
         if (caller != null) {
             Set<QualName> parentCallers = getFromMap(this.callerMap, caller);
             Set<QualName> callees = getFromMap(this.calleeMap, caller);
@@ -125,8 +129,8 @@ public class Namespace implements ParseInfo, Fallible {
         this.usedNames.add(callee);
     }
 
-    private Set<QualName> getFromMap(Map<QualName,Set<QualName>> map, QualName key) {
-        Set<QualName> result = map.get(key);
+    private Set<QualName> getFromMap(Map<QualName,@Nullable Set<QualName>> map, QualName key) {
+        var result = map.get(key);
         if (result == null) {
             map.put(key, result = new HashSet<>());
             result.add(key);
@@ -138,48 +142,52 @@ public class Namespace implements ParseInfo, Fallible {
     private final Map<QualName,Callable> callableMap = new TreeMap<>();
 
     /** Mapping from function names to other functions being invoked from it. */
-    private final Map<QualName,Set<QualName>> calleeMap = new HashMap<>();
+    private final Map<QualName,@Nullable Set<QualName>> calleeMap = new HashMap<>();
     /** Mapping from function names to other functions invoking it. */
-    private final Map<QualName,Set<QualName>> callerMap = new HashMap<>();
+    private final Map<QualName,@Nullable Set<QualName>> callerMap = new HashMap<>();
 
     /** Sets the full name of the control program currently being explored. */
     public void setControlName(QualName controlName) {
-        assert!controlName.hasErrors() : String.format("Errors in control: %s",
-            controlName.getErrors());
-        this.controlName = controlName;
-        if (!this.importedMap.containsKey(this.controlName)) {
-            this.importedMap.put(this.controlName, new HashSet<>());
-            this.importMap.put(this.controlName, new HashMap<>());
+        assert !controlName.hasErrors() : String
+            .format("Errors in control: %s", controlName.getErrors());
+        if (!this.importedMap.containsKey(controlName)) {
+            this.importedMap.put(controlName, new HashSet<>());
+            this.importMap.put(controlName, new HashMap<>());
         }
+        this.controlName = controlName;
     }
 
-    /** Returns the full name of the control program being parsed. */
+    /** Returns the full name of the control program being parsed.
+     * This should only be called if the a control program has been loaded,
+     * and hence the control name is non-{@code null}.
+     */
     public QualName getControlName() {
-        return this.controlName;
+        var result = this.controlName;
+        assert result != null;
+        return result;
     }
 
     /** Returns the module name of this name space,
      * being the parent of the control name.
+     * This should only be called if the a control program has been loaded,
+     * and hence the control name is non-{@code null}.
      */
     public ModuleName getModuleName() {
         return getControlName().parent();
     }
 
     /** Full name of the program file being parsed. */
-    private QualName controlName;
+    private @Nullable QualName controlName;
 
     /** Adds an import to the map of the current control program. */
     public void addImport(QualName fullName) {
-        this.importedMap.get(this.controlName)
-            .add(fullName);
-        this.importMap.get(this.controlName)
-            .put(fullName.last(), fullName);
+        this.importedMap.get(this.controlName).add(fullName);
+        this.importMap.get(this.controlName).put(fullName.last(), fullName);
     }
 
     /** Tests if a given qualified name is imported. */
     public boolean hasImport(QualName fullName) {
-        return this.importedMap.get(this.controlName)
-            .contains(fullName);
+        return this.importedMap.get(this.controlName).contains(fullName);
     }
 
     /** Returns a mapping from last names to full names for all imported names. */
@@ -203,8 +211,7 @@ public class Namespace implements ParseInfo, Fallible {
             Set<QualName> calledNames = new HashSet<>();
             for (Callable callable : this.callableMap.values()) {
                 if (callable instanceof Action) {
-                    if (callable.getKind()
-                        .isProcedure()) {
+                    if (callable.getKind().isProcedure()) {
                         QualName name = callable.getQualName();
                         Set<QualName> newCalledNames = new HashSet<>();
                         Set<QualName> calleeMapValue = this.calleeMap.get(name);
@@ -218,10 +225,9 @@ public class Namespace implements ParseInfo, Fallible {
             }
             result = this.actions = new TreeSet<>();
             for (Callable unit : this.callableMap.values()) {
-                if (!(unit instanceof Action)) {
+                if (!(unit instanceof Action action)) {
                     continue;
                 }
-                Action action = (Action) unit;
                 if (action.isProperty() || !calledNames.contains(action.getQualName())) {
                     result.add(action);
                 }
@@ -231,7 +237,7 @@ public class Namespace implements ParseInfo, Fallible {
     }
 
     /** Set of top-level rule and recipe names. */
-    private Set<Action> actions;
+    private @Nullable Set<Action> actions;
 
     /**
      * Returns the set of all property actions in the grammar.
@@ -250,7 +256,7 @@ public class Namespace implements ParseInfo, Fallible {
     }
 
     /** Set of property actions. */
-    private Set<Action> properties;
+    private @Nullable Set<Action> properties;
 
     /**
      * Returns the set of all top-level transformer actions (rules and recipes).
@@ -267,7 +273,7 @@ public class Namespace implements ParseInfo, Fallible {
     }
 
     /** Set of transformer actions. */
-    private Set<Action> transformers;
+    private @Nullable Set<Action> transformers;
 
     /** Returns the set of all used names,
      * i.e., all rules for which {@link #addCall(QualName, QualName)}
@@ -282,9 +288,8 @@ public class Namespace implements ParseInfo, Fallible {
 
     @Override
     public String toString() {
-        return String.format("Namespace for %s, defining %s",
-            getControlName(),
-            this.callableMap.keySet());
+        return String
+            .format("Namespace for %s, defining %s", getControlName(), this.callableMap.keySet());
     }
 
     /** Adds an error to the errors contained in this name space. */
@@ -311,11 +316,12 @@ public class Namespace implements ParseInfo, Fallible {
      * against this name space.
      */
     public Term getPrototype() {
-        if (this.prototype == null) {
-            this.prototype = Term.prototype();
+        var result = this.prototype;
+        if (result == null) {
+            result = this.prototype = Term.prototype();
         }
-        return this.prototype;
+        return result;
     }
 
-    private Term prototype;
+    private @Nullable Term prototype;
 }
