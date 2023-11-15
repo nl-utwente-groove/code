@@ -73,6 +73,9 @@ public class Version {
         DATE = day + "." + month + "." + year;
     }
 
+    /** Suffix to the {@link #NUMBER} that indicates this is a development version. */
+    static private final String SNAPSHOT = "-SNAPSHOT";
+
     /**
      * Groove Version number of format x.y.z, with
      * <ul>
@@ -82,7 +85,7 @@ public class Version {
      * </ul>
      * A '+' sign at the end of the number indicates a development version.
      */
-    public static final String NUMBER = "6.6.1-SNAPSHOT";
+    public static final String NUMBER = "6.6.3" + SNAPSHOT;
 
     /** Minimum Java JRE version required. */
     static public final String NUMBER_JAVAMIN = "17";
@@ -105,7 +108,7 @@ public class Version {
      * @return the latest grammar version.
      */
     public static String getCurrentGrammarVersion() {
-        return GRAMMAR_VERSION_3_8;
+        return GRAMMAR_VERSION_3_9;
     }
 
     /**
@@ -120,7 +123,7 @@ public class Version {
      *         version, <code>false</code> otherwise
      */
     public static boolean isDevelopmentVersion() {
-        return NUMBER.charAt(NUMBER.length() - 1) == '+';
+        return NUMBER.endsWith(SNAPSHOT);
     }
 
     /**
@@ -275,4 +278,10 @@ public class Version {
      * characterised as not: and new:, meaning that they are not considered to be part of the RHS resp. NAC
      */
     public static final String GRAMMAR_VERSION_3_8 = "3.8";
+    /**
+     * This is the grammar version introduced with Groove version 6.4.0.
+     * letnew: was removed after a very short lifetime, in favour of new:let: and many more.
+     * Moreover, named variables were introduced.
+     */
+    public static final String GRAMMAR_VERSION_3_9 = "3.9";
 }
