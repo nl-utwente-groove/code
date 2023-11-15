@@ -57,9 +57,9 @@ import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
+import nl.utwente.groove.lts.GraphTransition.Claz;
 import nl.utwente.groove.lts.RecipeTransition;
 import nl.utwente.groove.lts.RuleTransition;
-import nl.utwente.groove.lts.GraphTransition.Claz;
 
 /**
  * Implementation of MyJGraph that provides the proper popup menu. To construct
@@ -339,8 +339,7 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
         }
         if (activeTrans != null) {
             for (LTSJCell jCell : getTransitionCells(activeTrans)) {
-                if (jCell.getVisuals()
-                    .isVisible()) {
+                if (jCell.getVisuals().isVisible()) {
                     activeCells.add(jCell);
                 }
                 changed |= jCell.setActive(true);
@@ -360,8 +359,7 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
             }
             if (jCell != null) {
                 changed |= jCell.setActive(true);
-                if (jCell.getVisuals()
-                    .isVisible()) {
+                if (jCell.getVisuals().isVisible()) {
                     activeCells.add(jCell);
                 }
             }
@@ -378,8 +376,8 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
         Set<GraphTransition> newTransitions = new HashSet<>();
         newStates.add(state);
         GraphState parent = state;
-        while (parent instanceof GraphNextState) {
-            GraphTransition in = ((GraphNextState) parent).getInTransition();
+        while (parent instanceof GraphNextState ns) {
+            GraphTransition in = ns.getInTransition();
             newTransitions.add(in);
             parent = in.source();
             if (getModel().getJCellForNode(parent) == null) {
@@ -470,13 +468,14 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
 
     /** Convenience method to test if there is a non-empty result object. */
     private boolean hasResult() {
-        return getSimulatorModel() != null && !getSimulatorModel().getExploreResult()
-            .isEmpty();
+        return getSimulatorModel() != null && !getSimulatorModel().getExploreResult().isEmpty();
     }
 
     /** Convenience method to returns the result object from the simulator model, if any. */
     private ExploreResult getResult() {
-        return getSimulatorModel() == null ? null : getSimulatorModel().getExploreResult();
+        return getSimulatorModel() == null
+            ? null
+            : getSimulatorModel().getExploreResult();
     }
 
     /** Convenience method to test whether a given state is included in the result object. */
@@ -524,8 +523,7 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
         }
         // now change the visibility of the edges
         for (Object root : getRoots()) {
-            if (root instanceof LTSJEdge) {
-                LTSJEdge jEdge = (LTSJEdge) root;
+            if (root instanceof LTSJEdge jEdge) {
                 boolean visible;
                 switch (getFilter()) {
                 case SPANNING:

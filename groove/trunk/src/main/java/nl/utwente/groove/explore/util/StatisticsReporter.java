@@ -164,7 +164,7 @@ public class StatisticsReporter extends AExplorationReporter {
             this.sb.append(sw.toString());
         }
         emit(HIGH,
-            "===============================================================================%n");
+             "===============================================================================%n");
     }
 
     private void reportStatistics() {
@@ -201,10 +201,8 @@ public class StatisticsReporter extends AExplorationReporter {
         emit(MEDIUM, "%n");
         emit(MEDIUM, formatString, "States:", getGTS().getStateCount());
         if (getGTS().hasOpenStates()) {
-            emit(HIGH,
-                subFormatString,
-                "Closed:",
-                getGTS().getStateCount() - getGTS().getOpenStateCount());
+            emit(HIGH, subFormatString, "Closed:",
+                 getGTS().getStateCount() - getGTS().getOpenStateCount());
         }
         ExploreResult result = getExploration().getResult();
         if (!result.isEmpty()) {
@@ -239,19 +237,16 @@ public class StatisticsReporter extends AExplorationReporter {
         emit(HIGH, intFormat, "Reused:", MatchCollector.getEventReuse());
         emit(HIGH, intFormat, "Confluent:", MatchApplier.getConfluentDiamondCount());
         emit(HIGH, intFormat, "Events:", Record.getEventCount());
-        emit(HIGH,
-            ratioFormat,
-            "Coanchor reuse:",
-            HostFactory.getNormaliseGain(),
-            HostFactory.getNormaliseCount());
+        emit(HIGH, ratioFormat, "Coanchor reuse:", HostFactory.getNormaliseGain(),
+             HostFactory.getNormaliseCount());
     }
 
     /** Reports statistics on isomorphism checking. */
     private void reportIsomorphism() {
         int predicted = IsoChecker.getTotalCheckCount();
         int falsePos2 = IsoChecker.getDistinctSimCount();
-        int falsePos1 =
-            falsePos2 + IsoChecker.getDistinctSizeCount() + IsoChecker.getDistinctCertsCount();
+        int falsePos1
+            = falsePos2 + IsoChecker.getDistinctSizeCount() + IsoChecker.getDistinctCertsCount();
         int equalGraphCount = IsoChecker.getEqualGraphsCount();
         int equalCertsCount = IsoChecker.getEqualCertsCount();
         int equalSimCount = IsoChecker.getEqualSimCount();
@@ -263,16 +258,10 @@ public class StatisticsReporter extends AExplorationReporter {
         String percFormat = "   " + format + "%-6d(%4.1f%%)%n";
         emit(HIGH, "%nIsomorphism statistics%n");
         emit(HIGH, intIntFormat, "Predicted:", predicted, intCertOverlap);
-        emit(HIGH,
-            percFormat,
-            "False pos 1:",
-            falsePos1,
-            (double) 100 * falsePos1 / (predicted - intCertOverlap));
-        emit(HIGH,
-            percFormat,
-            "False pos 2:",
-            falsePos2,
-            (double) 100 * falsePos2 / (predicted - intCertOverlap));
+        emit(HIGH, percFormat, "False pos 1:", falsePos1,
+             (double) 100 * falsePos1 / (predicted - intCertOverlap));
+        emit(HIGH, percFormat, "False pos 2:", falsePos2,
+             (double) 100 * falsePos2 / (predicted - intCertOverlap));
         emit(HIGH, intFormat, "Equal graphs:", equalGraphCount);
         emit(HIGH, intFormat, "Equal certificates:", equalCertsCount);
         emit(HIGH, intFormat, "Equal simulation:", equalSimCount);
@@ -340,11 +329,8 @@ public class StatisticsReporter extends AExplorationReporter {
         long certCheck = IsoChecker.getCertCheckTime();
         long simCheck = IsoChecker.getSimCheckTime();
         emit(HIGH, longFormat, "Certifying:", certifying, 100 * certifying / (double) isoChecking);
-        emit(HIGH,
-            longFormat,
-            "Equals check:",
-            equalCheck,
-            100 * equalCheck / (double) isoChecking);
+        emit(HIGH, longFormat, "Equals check:", equalCheck,
+             100 * equalCheck / (double) isoChecking);
         emit(HIGH, longFormat, "Cert check:", certCheck, 100 * certCheck / (double) isoChecking);
         emit(HIGH, longFormat, "Sim check:", simCheck, 100 * simCheck / (double) isoChecking);
 
@@ -359,11 +345,11 @@ public class StatisticsReporter extends AExplorationReporter {
         final Runtime runTime = Runtime.getRuntime();
         // Clear all caches to see all available memory.
         for (GraphState state : getGTS().nodeSet()) {
-            if (state instanceof AbstractCacheHolder<?>) {
-                ((AbstractCacheHolder<?>) state).clearCache();
+            if (state instanceof AbstractCacheHolder<?> ch) {
+                ch.clearCache();
             }
-            if (state instanceof GraphNextState) {
-                ((AbstractCacheHolder<?>) ((GraphNextState) state).getEvent()).clearCache();
+            if (state instanceof GraphNextState ns) {
+                ((AbstractCacheHolder<?>) ns.getEvent()).clearCache();
             }
         }
         // The following is to make sure that the graph reference queue gets
@@ -414,8 +400,7 @@ public class StatisticsReporter extends AExplorationReporter {
         @Override
         public void statusUpdate(GTS graph, GraphState explored, int change) {
             if (Flag.CLOSED.test(change)) {
-                if (explored.getPrimeFrame()
-                    .isInternal()) {
+                if (explored.getPrimeFrame().isInternal()) {
                     this.openRecipeStateCount--;
                 }
                 if (explored.isInternalState()) {
@@ -471,10 +456,8 @@ public class StatisticsReporter extends AExplorationReporter {
 
         @Override
         public void addUpdate(GTS gts, GraphState state) {
-            this.nodeCount += state.getGraph()
-                .nodeCount();
-            this.edgeCount += state.getGraph()
-                .edgeCount();
+            this.nodeCount += state.getGraph().nodeCount();
+            this.edgeCount += state.getGraph().edgeCount();
         }
 
         /** Returns the number of nodes in the added states. */
