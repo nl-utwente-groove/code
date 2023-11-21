@@ -108,24 +108,12 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
      */
     public AttrNode addNode(String id) {
         assert !hasNode(id);
-        // detect a suffix that represents a number
-        boolean digitFound = false;
-        int nodeNr = 0;
-        int unit = 1;
-        int charIx;
-        for (charIx = id.length() - 1; charIx >= 0 && Character.isDigit(id.charAt(charIx));
-             charIx--) {
-            nodeNr += unit * (id.charAt(charIx) - '0');
-            unit *= 10;
-            digitFound = true;
-        }
         AttrNode result = null;
-        if (digitFound) {
-            AttrNode node = getFactory().createNode(nodeNr);
-            // tests if a node with this number exists already
-            if (addNode(node)) {
-                result = node;
-            }
+        int nodeNr = this.dispenser.compute(id);
+        AttrNode node = getFactory().createNode(nodeNr);
+        // tests if a node with this number exists already
+        if (addNode(node)) {
+            result = node;
         }
         if (result == null) {
             result = addNode();
@@ -133,6 +121,8 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
         this.nodeMap.put(id, result);
         return result;
     }
+
+    private NodeNrDispenser dispenser = NodeNrDispenser.instance();
 
     /**
      * Tests if a node with a given string identifier exists
