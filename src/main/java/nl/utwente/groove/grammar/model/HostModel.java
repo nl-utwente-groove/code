@@ -133,10 +133,10 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     @Override
     HostGraph compute() throws FormatException {
         this.algebraFamily = getFamily();
-        GraphInfo.throwException(getSource());
+        getSource().getErrors().throwException();
         var modelPlusMap = computeModel();
         var result = modelPlusMap.one();
-        GraphInfo.throwException(result);
+        result.getErrors().throwException();
         var hostModelMap = modelPlusMap.two();
         // create the type map
         var typeMap = new TypeModelMap(result.getTypeGraph().getFactory());
@@ -221,7 +221,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         }
         // transfer graph info such as layout from model to resource
         GraphInfo.transferProperties(normalSource, result, elementMap);
-        GraphInfo.setErrors(result, errors.unwrap(elementMap));
+        result.setErrors(errors.wrap(elementMap));
         result.setFixed();
         return new Pair<>(result, elementMap);
     }

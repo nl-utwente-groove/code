@@ -29,7 +29,6 @@ import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Rule;
-import nl.utwente.groove.grammar.aspect.AspectElement;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.ControlModel;
 import nl.utwente.groove.grammar.model.PrologModel;
@@ -49,27 +48,16 @@ import nl.utwente.groove.lts.GraphState;
  * @version $Revision$
  */
 public class FormatError implements Comparable<FormatError>, SelectableListEntry {
-    /** Constructs an error consisting of a string message. */
-    public FormatError(String message) {
-        this.message = message;
-    }
-
     /**
      * Constructs an error consisting of a message to be formatted.
      * The actual message is constructed by calling {@link String#format(String, Object...)}
      * The parameters are interpreted as giving information about the error.
      */
     public FormatError(String message, Object... pars) {
-        this(String.format(message, pars));
+        this.message = String.format(message, pars);
         for (Object par : pars) {
             addContext(par);
         }
-    }
-
-    /** Sets the resource in which this error occurs. */
-    public void setResource(ResourceKind kind, QualName name) {
-        this.resourceKind = kind;
-        this.resourceName = name;
     }
 
     /**
@@ -79,7 +67,6 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     private void addContext(Object par) {
         if (par instanceof FormatError e) {
             addContext(e.getArguments());
-            extendProjection(e.projection, true);
         } else if (par instanceof GraphState s) {
             this.state = s;
         } else if (par instanceof AspectGraph g) {
@@ -112,30 +99,6 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
         } else if (par instanceof Resource r) {
             setResource(r.kind(), r.name());
         }
-    }
-
-    /** Constructs an error from an existing error, by adding extra information. */
-    public FormatError(FormatError prior, Object... pars) {
-        // don't call this(String,Object...) as the prior string may contain %'s
-        // which give rise to exceptions in String.format()
-        this(prior.toString());
-        for (Object par : prior.getArguments()) {
-            addContext(par);
-        }
-        for (Object par : pars) {
-            addContext(par);
-        }
-        this.elements.addAll(prior.getElements());
-        if (this.graph == null) {
-            this.graph = prior.getGraph();
-        }
-        if (this.resourceKind == null) {
-            this.resourceKind = prior.getResourceKind();
-        }
-        if (this.resourceName == null) {
-            this.resourceName = prior.getResourceName();
-        }
-        this.projection.putAll(prior.projection);
     }
 
     /** Compares the error graph, error object and message. */
@@ -227,19 +190,17 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     @Override
     public List<Element> getElements() {
         var result = new ArrayList<Element>();
+        var parent = getParent();
         for (var e : this.elements) {
             while (e != null) {
                 result.add(e);
-                e = this.projection.get(e);
+                e = parent == null
+                    ? null
+                    : parent.getProjection().get(e);
             }
         }
         return result;
     }
-
-    /** Mapping from the graph {@link Element}s in this error to the
-     * {@link AspectElement}s from which they originated.
-     */
-    private final Map<Element,Element> projection = new HashMap<>();
 
     /** Returns a list of numbers associated with the error; typically,
      * line and column numbers. May be empty. */
@@ -249,6 +210,12 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
 
     /** List of numbers; typically the line and column number in a textual program. */
     private final List<Integer> numbers = new ArrayList<>();
+
+    /** Sets the resource in which this error occurs. */
+    private void setResource(ResourceKind kind, QualName name) {
+        this.resourceKind = kind;
+        this.resourceName = name;
+    }
 
     /** Returns the resource kind for which this error occurs. */
     @Override
@@ -268,128 +235,32 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     /** The name of the resource on which the error occurs. May be {@code null}. */
     private QualName resourceName;
 
-    /** Clones this error while adding a projection.
-     * The projection goes outward, i.e., from (graph) elements in this error to
-     * contextual (graph) elements that originated the error.
-     * @param projection mapping from error {@link Element}s to contextual {@link Element}s
-     */
-    FormatError project(Map<? extends Element,? extends Element> projection) {
-        var result = this;
-        if (!projection.isEmpty()) {
-            result = new FormatError(toString());
-            result.copyFrom(this, null);
-            result.extendProjection(projection, true);
-        }
-        return result;
-    }
-
-    /** Clones this error while adding a projection.
-     * The projection goes outward, i.e., from (graph) elements in this error to
-     * contextual (graph) elements that originated the error.
-     * @param projection mapping from error {@link Element}s to contextual {@link Element}s
-     */
-    public FormatError project(GraphMap projection) {
-        var result = this;
-        if (!projection.isEmpty()) {
-            result = new FormatError(toString());
-            result.copyFrom(this, null);
-            result.extendProjection(projection.nodeMap(), true);
-            result.extendProjection(projection.edgeMap(), true);
-        }
-        return result;
-    }
-
-    /** Clones this error while adding a wrapper.
-     * The wrapper goes inward, i.e., from contextual
-     * (graph) elements that originated the error to (graph) elements in this error.
-     * This is the inverse wrt to {@link #project(GraphMap)}
-     * @param wrapper mapping from contextual {@link Element}s to error {@link Element}s
-     */
-    public FormatError unwrap(Map<? extends Element,? extends Element> wrapper) {
-        var result = this;
-        if (!wrapper.isEmpty()) {
-            result = new FormatError(toString());
-            result.copyFrom(this, null);
-            result.extendProjection(wrapper, false);
-        }
-        return result;
-    }
-
-    /** Clones this error while adding a wrapper.
-     * The wrapper goes inward, i.e., from contextual
-     * (graph) elements that originated the error to (graph) elements in this error.
-     * This is the inverse wrt to {@link #project(GraphMap)}
-     * @param wrapper mapping from contextual {@link Element}s to error {@link Element}s
-     */
-    public FormatError unwrap(GraphMap wrapper) {
-        var result = this;
-        if (!wrapper.isEmpty()) {
-            result = new FormatError(toString());
-            result.copyFrom(this, null);
-            result.extendProjection(wrapper.edgeMap(), false);
-            result.extendProjection(wrapper.nodeMap(), false);
-        }
-        return result;
-    }
-
-    /** Returns a new format error in which the context information is transferred.
+    /** Returns a new format error in which the context information is transferred modulo
+     * a graph map. The new error has no parent.
      * @param map mapping from the context of this error to the context
      * of the result error; or {@code null} if there is no mapping
      */
-    public FormatError transfer(GraphMap map) {
+    FormatError transfer(GraphMap map) {
         var result = this;
         if (!map.isEmpty()) {
             result = new FormatError(toString());
             Map<Object,Object> elementMap = new HashMap<>();
             elementMap.putAll(map.nodeMap());
             elementMap.putAll(map.edgeMap());
-            result.copyFrom(this, elementMap);
+            result = clone(elementMap);
         }
         return result;
     }
 
-    /**
-     * Transfers the context information of another error object to
-     * this one, modulo a mapping.
-     * @param prior the source of the transfer
-     * @param map mapping from the context of the prior error to the context
-     * of this error; or {@code null} if there is no mapping
+    /** Returns a new format error that extends this one with context information.
+     * The new error has no parent as yet.
      */
-    private void copyFrom(FormatError prior, @Nullable Map<?,?> map) {
-        this.projection.putAll(prior.projection);
-        for (Object arg : prior.getArguments()) {
-            var transferredArg = map != null && map.containsKey(arg)
-                ? map.get(arg)
-                : arg;
-            addContext(transferredArg);
-            var priorImage = prior.projection.remove(arg);
-            if (priorImage != null && transferredArg instanceof Element te) {
-                this.projection.put(te, priorImage);
-            }
+    public FormatError extend(Object... pars) {
+        FormatError result = clone(null);
+        for (Object par : pars) {
+            result.addContext(par);
         }
-        this.resourceKind = prior.getResourceKind();
-        this.resourceName = prior.getResourceName();
-    }
-
-    /** Extends the projection map of this error with a given map.
-     * @param map the extension map
-     * @param outward flag indicating if {@code map} goes outward
-     * (<i>from</i> context elements in this error) or inward
-     * (<i>to</i> elements in this error)
-     */
-    private void extendProjection(Map<? extends Element,? extends Element> map, boolean outward) {
-        for (var e : map.entrySet()) {
-            if (outward) {
-                this.projection.put(e.getKey(), e.getValue());
-            } else {
-                this.projection.put(e.getValue(), e.getKey());
-            }
-        }
-    }
-
-    /** Returns a new format error that extends this one with context information. */
-    public FormatError extend(Object... par) {
-        return new FormatError(this, par);
+        return result;
     }
 
     /** Returns the contextual arguments of this error. */
@@ -409,6 +280,56 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
         if (this.state != null) {
             result.add(this.state);
         }
+        return result;
+    }
+
+    /** Returns the parent error set, if any. */
+    FormatErrorSet getParent() {
+        return this.parent;
+    }
+
+    /** Assigns the parent error set, if the parent was {@code null} or already
+     * identical to the parameter.
+     * Returns {@code true} if the parent was assigned as a result of this call.
+     */
+    boolean setParent(FormatErrorSet parent) {
+        boolean result = false;
+        var current = this.parent;
+        if (current == null || current == parent) {
+            this.parent = parent;
+            result = true;
+        }
+        return result;
+    }
+
+    private FormatErrorSet parent;
+
+    /** Returns a clone of this error for a given (parent) error set.
+     * This is the error itself if there was not parent error set, or a copy
+     * otherwise.
+     * @param set the new parent error set
+     */
+    FormatError cloneFor(FormatErrorSet set) {
+        FormatError result = this;
+        if (!setParent(set)) {
+            result = clone(null);
+            result.setParent(set);
+        }
+        return result;
+    }
+
+    /** Returns a clone of this error, with no parent.
+     * An optional graph map determines how the context arguments are mapped.
+     */
+    private FormatError clone(@Nullable Map<?,?> map) {
+        var result = new FormatError(toString());
+        for (var arg : getArguments()) {
+            var newArg = map != null && map.containsKey(arg)
+                ? map.get(arg)
+                : arg;
+            result.addContext(newArg);
+        }
+        result.setResource(getResourceKind(), getResourceName());
         return result;
     }
 

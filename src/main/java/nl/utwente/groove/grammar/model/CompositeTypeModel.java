@@ -140,10 +140,10 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
             errors.throwException();
             var imports = result.getImports();
             if (!imports.isEmpty()) {
-                errors.addWrapper(nodeMergeMap);
+                errors.wrap(nodeMergeMap);
                 for (var imported : imports) {
                     TypeModel origModel = importModels.get(imported);
-                    errors.addWrapper(origModel.getMap());
+                    errors.wrap(origModel.getMap());
                     errors.add("Unresolved type import %s", imported, origModel.getSource());
                 }
             }
@@ -154,9 +154,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
             } catch (FormatException exc) {
                 errors = new FormatErrorSet();
                 for (var error : exc.getErrors()) {
-                    errors
-                        .add(new FormatError(error.toString() + " in the combined type graph"),
-                             error, this);
+                    errors.add(error.toString() + " in the combined type graph", error, this);
                 }
                 errors.throwException();
             }

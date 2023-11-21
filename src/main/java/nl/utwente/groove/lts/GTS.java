@@ -54,7 +54,6 @@ import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNodeSet;
 import nl.utwente.groove.graph.AGraph;
 import nl.utwente.groove.graph.Graph;
-import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.iso.CertificateStrategy;
@@ -70,7 +69,6 @@ import nl.utwente.groove.util.collect.SetView;
 import nl.utwente.groove.util.collect.TransformIterator;
 import nl.utwente.groove.util.collect.TreeHashSet;
 import nl.utwente.groove.util.parse.FormatError;
-import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -577,11 +575,9 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             listener.statusUpdate(this, state, change);
         }
         if (state.isError()) {
-            FormatErrorSet errors = new FormatErrorSet();
             for (FormatError error : state.getGraph().getErrors()) {
-                errors.add("Error in state %s: %s", state, error);
+                addError("Error in state %s: %s", state, error);
             }
-            GraphInfo.addErrors(this, errors);
         }
     }
 

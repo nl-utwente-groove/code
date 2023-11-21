@@ -44,7 +44,6 @@ import nl.utwente.groove.grammar.type.TypeGuard;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.EdgeRole;
-import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /** Calculates the possible types of a regular expression. */
@@ -66,8 +65,7 @@ public class RegExprTyper implements RegExprCalculator<Result> {
 
     @Override
     public Result computeStar(Star expr, Result arg) {
-        Result result = new Result().getUnion(arg)
-            .getClosure();
+        Result result = new Result().getUnion(arg).getClosure();
         if (!arg.isEmpty() && result.isEmpty()) {
             result.addError("%s cannot be typed", expr);
         }
@@ -126,10 +124,8 @@ public class RegExprTyper implements RegExprCalculator<Result> {
         } else {
             for (TypeEdge edgeType : this.typeGraph.edgeSet(typeLabel)) {
                 if (!edgeType.isAbstract()) {
-                    Set<TypeNode> targetTypes = edgeType.target()
-                        .getSubtypes();
-                    for (TypeNode sourceType : edgeType.source()
-                        .getSubtypes()) {
+                    Set<TypeNode> targetTypes = edgeType.target().getSubtypes();
+                    for (TypeNode sourceType : edgeType.source().getSubtypes()) {
                         result.add(sourceType, targetTypes);
                     }
                 }
@@ -205,10 +201,8 @@ public class RegExprTyper implements RegExprCalculator<Result> {
         }
         TypeGuard guard = expr.getWildcardGuard();
         for (TypeEdge typeEdge : guard.filter(candidates)) {
-            Set<TypeNode> targetTypes = typeEdge.target()
-                .getSubtypes();
-            for (TypeNode sourceType : typeEdge.source()
-                .getSubtypes()) {
+            Set<TypeNode> targetTypes = typeEdge.target().getSubtypes();
+            for (TypeNode sourceType : typeEdge.source().getSubtypes()) {
                 if (expr.getKind() == EdgeRole.BINARY) {
                     result.add(sourceType, targetTypes);
                 } else {
@@ -392,7 +386,7 @@ public class RegExprTyper implements RegExprCalculator<Result> {
         }
 
         /** Adds a collection of format errors to the errors stored in this relation. */
-        private void addErrors(Collection<FormatError> errors) {
+        private void addErrors(FormatErrorSet errors) {
             this.errors.addAll(errors);
         }
 

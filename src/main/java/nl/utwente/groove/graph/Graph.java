@@ -16,12 +16,10 @@
  */
 package nl.utwente.groove.graph;
 
-import java.util.Collection;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
@@ -169,24 +167,43 @@ public interface Graph {
      */
     GraphInfo getInfo();
 
+    /**
+     * Sets the list of format errors of this graph.
+     * @param errors list of errors to be set; non-{@code null}
+     */
+    default public void setErrors(FormatErrorSet errors) {
+        if (!errors.isEmpty()) {
+            assert !isFixed();
+            getInfo().setErrors(errors);
+        }
+    }
+
     /** Adds a given list of errors to the errors already stored in this graph. */
-    default public void addErrors(Collection<FormatError> errors) {
-        GraphInfo.addErrors(this, errors);
+    default public void addErrors(FormatErrorSet errors) {
+        if (!errors.isEmpty()) {
+            getInfo().getErrors().addAll(errors);
+        }
     }
 
     /** Adds a given error to the errors already stored in this graph. */
-    default public void addError(FormatError error) {
-        GraphInfo.addError(this, error);
+    default public void addError(String message, Object... pars) {
+        getInfo().getErrors().add(message, pars);
     }
 
     /** Checks if this graph has an error. */
     default public boolean hasErrors() {
-        return GraphInfo.hasErrors(this);
+        return hasInfo() && !getInfo().getErrors().isEmpty();
     }
 
     /** Returns the set of errors associated with this graph. */
     default public FormatErrorSet getErrors() {
-        return GraphInfo.getErrors(this);
+        FormatErrorSet result;
+        if (hasInfo()) {
+            result = getInfo().getErrors();
+        } else {
+            result = new FormatErrorSet();
+        }
+        return result;
     }
 
     /** Returns the set of properties associated with this graph. */

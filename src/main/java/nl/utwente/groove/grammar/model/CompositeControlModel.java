@@ -70,16 +70,14 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
         for (QualName controlName : controlNames) {
             ControlModel controlModel = getGrammar().getControlModel(controlName);
             if (controlModel == null) {
-                addPartError(controlName, new FormatError("Control program cannot be found"));
+                getPartErrors(controlName).add("Control program cannot be found");
             } else {
                 try {
                     treeMap
                         .put(controlModel,
                              getLoader().addControl(controlName, controlModel.getProgram()));
                 } catch (FormatException exc) {
-                    for (FormatError error : exc.getErrors()) {
-                        addPartError(controlName, error);
-                    }
+                    getPartErrors(controlName).addAll(exc.getErrors());
                 }
             }
         }
@@ -169,11 +167,6 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
             ? error.getResourceName()
             : null;
         getPartErrors(key).add(error);
-    }
-
-    /** Adds an error for a particular control program. */
-    private void addPartError(QualName controlName, FormatError error) {
-        getPartErrors(controlName).add(error);
     }
 
     /** Collects and returns all errors found in the partial control models. */

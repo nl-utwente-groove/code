@@ -74,7 +74,6 @@ import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.line.Line.ColorType;
 import nl.utwente.groove.util.line.Line.Style;
-import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.StringHandler;
@@ -101,10 +100,9 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         this.aspects = new Aspect.Map(false, this.graph.getRole());
         if (!label.hasErrors() && label.isNodeOnly()) {
             if (label.getNodeOnlyAspect() == null) {
-                addError(new FormatError("Empty edge label not allowed"));
+                addError("Empty edge label not allowed");
             } else {
-                addError(new FormatError("Aspect %s not allowed in edge label",
-                    label.getNodeOnlyAspect()));
+                addError("Aspect %s not allowed in edge label", label.getNodeOnlyAspect());
             }
         }
         addErrors(label.getErrors());
@@ -178,7 +176,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     @Override
     public void set(Aspect aspect) {
         if (!aspect.isForEdge(getGraphRole())) {
-            addError(new FormatError("Aspect '%s' not allowed on edge", aspect));
+            addError("Aspect '%s' not allowed on edge", aspect);
         } else {
             try {
                 getAspects().add(aspect);

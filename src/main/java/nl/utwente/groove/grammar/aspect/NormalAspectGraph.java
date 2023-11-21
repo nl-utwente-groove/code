@@ -44,7 +44,6 @@ import nl.utwente.groove.algebra.syntax.FieldExpr;
 import nl.utwente.groove.algebra.syntax.Variable;
 import nl.utwente.groove.grammar.aspect.AspectContent.NestedValue;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
-import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Keywords;
@@ -106,7 +105,7 @@ public class NormalAspectGraph extends AspectGraph {
                     ee.setValue(changeMap.getEdge(ev));
                 }
             }
-            GraphInfo.setErrors(this, getErrors().unwrap(toNormalMap));
+            setErrors(getErrors().wrap(toNormalMap));
             super.setFixed();
         }
         return result;

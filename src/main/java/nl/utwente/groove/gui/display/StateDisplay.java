@@ -437,7 +437,7 @@ public class StateDisplay extends Display implements SimulatorListener {
         }
         Color background;
         if (state != null && state.isError()) {
-            getErrorPanel().setEntries(state.getGraph().getErrors());
+            getErrorPanel().setEntries(state.getGraph().getErrors().get());
             getDisplayPanel().setBottomComponent(getErrorPanel());
             getDisplayPanel().resetToPreferredSizes();
             background = JAttr.ERROR_BACKGROUND;

@@ -34,7 +34,6 @@ import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;
-import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.lts.Status.Flag;
 import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.util.Exceptions;
@@ -170,7 +169,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
             HostGraph graph = getGraph();
             FormatErrorSet errors = graph.checkTypeConstraints();
             if (!errors.isEmpty()) {
-                GraphInfo.addErrors(graph, errors);
+                graph.addErrors(errors);
                 setFrame(getActualFrame().onPolicy(typePolicy));
             }
         }
