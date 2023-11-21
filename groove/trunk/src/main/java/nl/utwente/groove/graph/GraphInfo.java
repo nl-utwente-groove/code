@@ -20,7 +20,6 @@ import static nl.utwente.groove.graph.GraphProperties.Key.ENABLED;
 import static nl.utwente.groove.graph.GraphProperties.Key.INJECTIVE;
 import static nl.utwente.groove.graph.GraphProperties.Key.PRIORITY;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +31,6 @@ import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.gui.layout.LayoutMap;
 import nl.utwente.groove.util.DefaultFixable;
 import nl.utwente.groove.util.Properties.Entry;
-import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -57,7 +55,7 @@ public class GraphInfo extends DefaultFixable {
      * @return the non-{@code null} error set stored in the info object
      * @see #setErrors
      */
-    private FormatErrorSet getErrors() {
+    public FormatErrorSet getErrors() {
         return (FormatErrorSet) this.data.get(ERRORS_KEY);
     }
 
@@ -66,7 +64,7 @@ public class GraphInfo extends DefaultFixable {
      * errors in this info object.
      * @see #getErrors()
      */
-    private void setErrors(Collection<FormatError> errors) {
+    void setErrors(FormatErrorSet errors) {
         this.data.put(ERRORS_KEY, errors);
     }
 
@@ -175,81 +173,14 @@ public class GraphInfo extends DefaultFixable {
      */
     public static void transferErrors(Graph source, Graph target, GraphMap elementMap) {
         assert !target.isFixed();
-        if (source.hasInfo()) {
+        if (source.hasErrors()) {
             // copy all the info
-            var sourceErrors = source.getInfo().getErrors();
+            var sourceErrors = source.getErrors();
             if (elementMap != null) {
                 // modify the errors using the element map
                 sourceErrors = sourceErrors.transfer(elementMap);
             }
-            target.getInfo().setErrors(sourceErrors);
-        }
-    }
-
-    /**
-     * Indicates if a given graph has format errors.
-     * @param graph the queried graph; non-{@code null}
-     * @return {@code true} if {@code graph} has format errors
-     * @see #getErrors(Graph)
-     */
-    public static boolean hasErrors(Graph graph) {
-        return graph.hasInfo() && !graph.getInfo().getErrors().isEmpty();
-    }
-
-    /**
-     * Retrieves the collection of format errors of a graph.
-     * @param graph the queried graph; non-{@code null}
-     * @return a list of errors, which is empty if the graph does not have an info object
-     * @see #getErrors()
-     */
-    public static FormatErrorSet getErrors(Graph graph) {
-        FormatErrorSet result;
-        if (graph.hasInfo()) {
-            result = graph.getInfo().getErrors();
-        } else {
-            result = new FormatErrorSet();
-        }
-        return result;
-    }
-
-    /**
-     * Sets the list of format errors of a graph.
-     * @param graph the graph to be modified; non-{@code null} and not fixed
-     * @param errors list of errors to be set; non-{@code null}
-     */
-    public static void setErrors(Graph graph, Collection<FormatError> errors) {
-        if (!errors.isEmpty()) {
-            assert !graph.isFixed();
-            graph.getInfo().setErrors(errors);
-        }
-    }
-
-    /**
-     * Adds a format error to a graph.
-     * @param graph the graph to be modified; non-{@code null} and not fixed
-     * @param error error to be added; non-{@code null}
-     */
-    public static void addError(Graph graph, FormatError error) {
-        graph.getInfo().getErrors().add(error);
-    }
-
-    /**
-     * Adds a list of format errors to a graph.
-     * @param graph the graph to be modified; non-{@code null}
-     * @param errors list of errors to be added; non-{@code null}
-     */
-    public static void addErrors(Graph graph, Collection<FormatError> errors) {
-        if (!errors.isEmpty()) {
-            graph.getInfo().getErrors().addAll(errors);
-        }
-    }
-
-    /**
-     * Convenience method to throw an exception if a graph has a non-empty set of errors.
-     */
-    public static void throwException(Graph graph) throws FormatException {
-        if (graph.hasInfo()) {
-            graph.getInfo().getErrors().throwException();
+            target.setErrors(sourceErrors);
         }
     }
 

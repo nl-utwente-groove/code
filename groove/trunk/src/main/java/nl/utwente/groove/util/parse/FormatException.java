@@ -16,9 +16,6 @@
  */
 package nl.utwente.groove.util.parse;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import org.antlr.runtime.RecognitionException;
 
 import nl.utwente.groove.util.Groove;
@@ -47,20 +44,14 @@ public class FormatException extends Exception {
      * Constructs a format exception based on a given set of errors. The order
      * of the errors is determined by the set iterator.
      */
-    public FormatException(Collection<?> errors) {
-        this.errors = new FormatErrorSet();
-        for (Object error : errors) {
-            if (error instanceof FormatError e) {
-                this.errors.add(e);
-            } else {
-                this.errors.add(error.toString());
-            }
-        }
+    public FormatException(FormatErrorSet errors) {
+        this.errors = errors;
     }
 
     /** Constructs a format exception from a format error. */
     public FormatException(FormatError err) {
-        this(Collections.singleton(err));
+        this.errors = new FormatErrorSet();
+        this.errors.add(err);
     }
 
     /** Constructs a format exception from an (ANTLR) recognition exception. */
@@ -95,11 +86,7 @@ public class FormatException extends Exception {
      * @see FormatError#extend(Object...)
      */
     public FormatException extend(Object par) {
-        FormatErrorSet newErrors = new FormatErrorSet();
-        for (FormatError error : getErrors()) {
-            newErrors.add(error.extend(par));
-        }
-        return new FormatException(newErrors);
+        return new FormatException(getErrors().extend(par));
     }
 
     /** List of error messages carried around by this exception. */

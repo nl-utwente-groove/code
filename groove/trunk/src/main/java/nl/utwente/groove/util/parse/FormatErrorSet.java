@@ -16,10 +16,14 @@
  */
 package nl.utwente.groove.util.parse;
 
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.GraphMap;
@@ -31,17 +35,14 @@ import nl.utwente.groove.graph.GraphMap;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class FormatErrorSet extends LinkedHashSet<FormatError> {
+public class FormatErrorSet implements Iterable<FormatError> {
     /** Constructs a fresh, empty error set. */
     public FormatErrorSet() {
     }
 
     /** Constructs a copy of a given set of errors. */
-    public FormatErrorSet(Collection<? extends FormatError> c) {
-        super(c);
-        if (c instanceof FormatErrorSet fes) {
-            getProjection().putAll(fes.getProjection());
-        }
+    public FormatErrorSet(FormatErrorSet c) {
+        addAll(c);
     }
 
     /** Constructs a singleton error set. */
@@ -49,19 +50,65 @@ public class FormatErrorSet extends LinkedHashSet<FormatError> {
         add(message, args);
     }
 
+    /** Returns the (modifiable) set of {@link FormatError}s. */
+    private Set<FormatError> getErrorSet() {
+        return this.errorSet;
+    }
+
+    /** The container set. */
+    private final Set<FormatError> errorSet = new LinkedHashSet<>();
+
+    /** Returns the errors in this set, as an unmodifiable set. */
+    public Set<FormatError> get() {
+        return Collections.unmodifiableSet(getErrorSet());
+    }
+
     /** Adds a format error based on a given error message and set of arguments. */
-    public boolean add(String message, Object... args) {
-        return add(new FormatError(message, args).project(getProjection()));
+    public void add(String message, Object... args) {
+        add(new FormatError(message, args));
     }
 
     /** Adds a format error based on an existing error and set of additional arguments. */
-    public boolean add(FormatError error, Object... args) {
-        return add(new FormatError(error, args).project(getProjection()));
+    public void add(FormatError error, Object... args) {
+        add(error.extend(args));
     }
 
+    /** Adds a format error to the set. */
+    public void add(FormatError e) {
+        getErrorSet().add(e.cloneFor(this));
+    }
+
+    /** Copies all errors from a given FormatErrorSet into this one. */
+    public void addAll(FormatErrorSet other) {
+        other.getErrorSet().forEach(this::add);
+        getProjection().putAll(other.getProjection());
+    }
+
+    /** Returns a stream over the errors contained in this error set. */
+    public Stream<FormatError> stream() {
+        return getErrorSet().stream();
+    }
+
+    /** Returns an iterator over the errors contained in this error set. */
     @Override
-    public boolean add(FormatError e) {
-        return super.add(e.project(getProjection()));
+    public Iterator<FormatError> iterator() {
+        return getErrorSet().iterator();
+    }
+
+    /** Returns an array containing the errors in this set. */
+    public FormatError[] toArray() {
+        return getErrorSet().toArray(new FormatError[0]);
+    }
+
+    /** Removes all errors from this set. */
+    public void clear() {
+        getErrorSet().clear();
+        getProjection().clear();
+    }
+
+    /** Indicates if this error set is empty. */
+    public boolean isEmpty() {
+        return getErrorSet().isEmpty();
     }
 
     /**
@@ -92,87 +139,59 @@ public class FormatErrorSet extends LinkedHashSet<FormatError> {
         return result;
     }
 
-    /** Extends the projection map of this error set with the inverse of a given wrapper.
-     * @param wrapper mapping from contextual {@link Element}s to error {@link Element}s
+    /** Adds a mapping from context elements to error elements.
+     * The inverse of this mapping is used to generate the elements returned by {@link FormatError#getElements()}
+     * called on the errors in this set.
+     * The method returns this {@link FormatErrorSet} for chaining.
+     * @see #wrap(GraphMap)
+     * @see #unwrap(Map)
+     * @param map mapping from contextual {@link Element}s to error {@link Element}s
      */
-    public void addWrapper(GraphMap wrapper) {
-        addWrapper(wrapper.nodeMap());
-        addWrapper(wrapper.edgeMap());
-    }
-
-    /** Extends the projection map of this error set with the inverse of a given wrapper.
-     * @param wrapper mapping from contextual {@link Element}s to error {@link Element}s
-     */
-    public void addWrapper(Map<? extends Element,? extends Element> wrapper) {
+    public FormatErrorSet wrap(Map<? extends Element,? extends Element> map) {
         var projection = getProjection();
-        wrapper.entrySet().forEach(e -> projection.put(e.getValue(), e.getKey()));
+        map.entrySet().forEach(e -> projection.put(e.getValue(), e.getKey()));
+        return this;
     }
 
-    /** Extends the projection map of this error set with a given projection.
-     * @param projection mapping from error {@link Element}s to contextual {@link Element}s
+    /** Adds a {@link GraphMap} from context elements to error elements.
+     * The inverse of this mapping is used to generate the elements returned by {@link FormatError#getElements()}
+     * called on the errors in this set.
+     * The method returns this {@link FormatErrorSet} for chaining.
+     * @see #wrap(Map)
+     * @see #unwrap(Map)
+     * @param map mapping from contextual {@link Element}s to error {@link Element}s
      */
-    public void addProjection(GraphMap projection) {
-        addProjection(projection.nodeMap());
-        addProjection(projection.edgeMap());
+    public FormatErrorSet wrap(GraphMap map) {
+        return wrap(map.nodeMap()).wrap(map.edgeMap());
     }
 
-    /** Extends the projection map of this error set with a given projection.
-     * @param projection mapping from error {@link Element}s to contextual {@link Element}s
+    /** Adds a mapping from error elements to context elements.
+     * This mapping is used to generate the elements returned by {@link FormatError#getElements()}
+     * called on the errors in this set.
+     * The method returns this {@link FormatErrorSet} for chaining.
+     * @see #wrap(Map)
+     * @see #unwrap(GraphMap)
+     * @param map mapping from contextual {@link Element}s to error {@link Element}s
      */
-    public void addProjection(Map<? extends Element,? extends Element> projection) {
-        getProjection().putAll(projection);
+    public FormatErrorSet unwrap(Map<? extends Element,? extends Element> map) {
+        getProjection().putAll(map);
+        return this;
     }
 
-    /** Returns a new error set, based on the current one,
-     * in which the projection is extended with the inverse of a wrapper map.
-     * All errors in this set are unwrapped into the result.
-     * @param wrapper mapping from contextual {@link Element}s to error {@link Element}s
+    /** Adds a {@link GraphMap} from error elements to context elements.
+     * This mapping is used to generate the elements returned by {@link FormatError#getElements()}
+     * called on the errors in this set.
+     * The method returns this {@link FormatErrorSet} for chaining.
+     * @see #wrap(GraphMap)
+     * @see #unwrap(Map)
+     * @param map mapping from contextual {@link Element}s to error {@link Element}s
      */
-    public FormatErrorSet unwrap(Map<? extends Element,? extends Element> wrapper) {
-        var result = new FormatErrorSet();
-        stream().map(e -> e.unwrap(wrapper)).forEach(result::add);
-        result.addWrapper(wrapper);
-        return result;
+    public FormatErrorSet unwrap(GraphMap map) {
+        return unwrap(map.nodeMap()).unwrap(map.edgeMap());
     }
 
-    /** Returns a new error set, based on the current one,
-     * in which the projection is extended with the inverse of a wrapper map.
-     * All errors in this set are unwrapped into the result.
-     * @param wrapper mapping from contextual {@link Element}s to error {@link Element}s
-     */
-    public FormatErrorSet unwrap(GraphMap wrapper) {
-        var result = new FormatErrorSet();
-        stream().map(e -> e.unwrap(wrapper)).forEach(result::add);
-        result.addWrapper(wrapper);
-        return result;
-    }
-
-    /** Returns a new error set, based on the current one,
-     * in which the projection is extended with the given one.
-     * All errors in this set are projected into the result.
-     * @param projection mapping from error {@link Element}s to contextual {@link Element}s
-     */
-    public FormatErrorSet project(Map<? extends Element,? extends Element> projection) {
-        var result = new FormatErrorSet();
-        stream().map(e -> e.project(projection)).forEach(result::add);
-        result.addProjection(projection);
-        return result;
-    }
-
-    /** Returns a new error set, based on the current one,
-     * in which the projection is extended with the given one.
-     * All errors in this set are projected into the result.
-     * @param projection mapping from error {@link Element}s to contextual {@link Element}s
-     */
-    public FormatErrorSet project(GraphMap projection) {
-        var result = new FormatErrorSet();
-        stream().map(e -> e.project(projection)).forEach(result::add);
-        result.addProjection(projection);
-        return result;
-    }
-
-    /** Lazily creates and returns the wrapper map. */
-    private Map<Element,Element> getProjection() {
+    /** Lazily creates and returns the projection map from error elements to context elements. */
+    Map<Element,Element> getProjection() {
         var result = this.projection;
         if (result == null) {
             result = this.projection = new HashMap<>();
@@ -182,6 +201,32 @@ public class FormatErrorSet extends LinkedHashSet<FormatError> {
 
     /** Projection from (inner) graph elements to (outer, contextual) graph elements. */
     private Map<Element,Element> projection;
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getErrorSet(), getProjection());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof FormatErrorSet other)) {
+            return false;
+        }
+        return Objects.equals(getErrorSet(), other.getErrorSet())
+            && Objects.equals(getProjection(), other.getProjection());
+    }
+
+    @Override
+    public String toString() {
+        return "FormatErrorSet [errorSet=" + getErrorSet() + ", projection=" + getProjection()
+            + "]";
+    }
 
     @Override
     public FormatErrorSet clone() {

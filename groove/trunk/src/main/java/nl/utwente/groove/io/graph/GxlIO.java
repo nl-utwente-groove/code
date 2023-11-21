@@ -66,7 +66,6 @@ import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Version;
 import nl.utwente.groove.util.line.LineStyle;
-import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -355,10 +354,9 @@ public class GxlIO extends GraphIO<AttrGraph> {
             AttrGraph graph = gxlToGraph(gxlGraph);
             String version = GraphInfo.getVersion(graph);
             if (!Version.isKnownGxlVersion(version)) {
-                GraphInfo
-                    .addErrors(graph, new FormatErrorSet(
-                        "GXL file format version '%s' is higher than supported version '%s'",
-                        version, Version.GXL_VERSION));
+                graph
+                    .addError("GXL file format version '%s' is higher than supported version '%s'",
+                              version, Version.GXL_VERSION);
             }
             return graph;
         } finally {

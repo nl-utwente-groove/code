@@ -64,6 +64,7 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.io.Util;
 import nl.utwente.groove.io.store.EditType;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.StringHandler;
@@ -874,6 +875,8 @@ public class Options implements Cloneable {
     static public final String DELETE_RESOURCE_OPTION = "Delete seletected resource?";
     /** Always check CTL properties on all states, rather than the initial state. */
     static public final String VERIFY_ALL_STATES_OPTION = "Check CTL on all states?";
+    /** Always renumber graph nodes upon loading. */
+    static public final String RENUMBER_NODES_OPTION = "Renumber graph nodes on loading?";
 
     /** Default value map for the boolean options. */
     static private final Map<String,Boolean> boolOptionDefaults = new HashMap<>();
@@ -899,6 +902,7 @@ public class Options implements Cloneable {
         boolOptionDefaults.put(SHOW_BIDIRECTIONAL_EDGES_OPTION, true);
         intOptionDefaults.put(DELETE_RESOURCE_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(VERIFY_ALL_STATES_OPTION, BehaviourOption.NEVER);
+        intOptionDefaults.put(RENUMBER_NODES_OPTION, BehaviourOption.NEVER);
     }
 
     /** Returns the user preferences for a given key, as a list of Strings. */
@@ -964,6 +968,33 @@ public class Options implements Cloneable {
         } catch (BackingStoreException exc) {
             // don't do anything
         }
+    }
+
+    /** Returns the value of a given (stored) boolean user preference.
+     * The return value is that of {@link Boolean#parseBoolean} applied to the value stored for
+     * {@code optionName}.
+     * @throws IllegalArgumentException if there is no value stored for {@code optionName}
+      */
+    static public boolean getBoolOption(String optionName) throws IllegalArgumentException {
+        var result = userPrefs.get(optionName, null);
+        if (result == null) {
+            throw Exceptions.illegalArg("Unknown option name %s", optionName);
+        }
+        return Boolean.parseBoolean(result);
+    }
+
+    /** Returns the value of a given (stored) boolean user preference.
+     * The return value is that of {@link Integer#parseInt} applied to the value stored for
+     * {@code optionName}.
+     * @throws IllegalArgumentException if there is no value stored for {@code optionName}
+      */
+    static public int getIntOption(String optionName) throws IllegalArgumentException,
+                                                      NumberFormatException {
+        var result = userPrefs.get(optionName, null);
+        if (result == null) {
+            throw Exceptions.illegalArg("Unknown option name %s", optionName);
+        }
+        return Integer.parseInt(optionName);
     }
 
     /** Sets the look-and-feel. */

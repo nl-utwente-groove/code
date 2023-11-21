@@ -69,8 +69,8 @@ public class LayoutIO {
         try (BufferedReader layoutReader = new BufferedReader(new InputStreamReader(in))) {
             int version = 1;
             // read in from the layout file until done
-            for (String nextLine = layoutReader.readLine(); nextLine != null; nextLine =
-                layoutReader.readLine()) {
+            for (String nextLine = layoutReader.readLine(); nextLine != null;
+                 nextLine = layoutReader.readLine()) {
                 String[] parts;
                 try {
                     parts = StringHandler.splitExpr(nextLine, WHITESPACE);
@@ -96,7 +96,7 @@ public class LayoutIO {
                 }
             }
         }
-        GraphInfo.addErrors(graph, errors);
+        graph.addErrors(errors);
         GraphInfo.setLayoutMap(graph, result);
     }
 
@@ -104,8 +104,8 @@ public class LayoutIO {
      * Inserts vertex layout information in a given layout map, based on a
      * string array description and node map.
      */
-    private void putVertexLayout(LayoutMap layoutMap, String[] parts, AttrGraph graph)
-        throws FormatException {
+    private void putVertexLayout(LayoutMap layoutMap, String[] parts,
+                                 AttrGraph graph) throws FormatException {
         AttrNode node = graph.getNode(parts[1]);
         if (node == null) {
             throw new FormatException("Unknown node " + parts[1]);
@@ -124,7 +124,7 @@ public class LayoutIO {
      * @param version for version 2, the layout position info has changed
      */
     private AttrEdge putEdgeLayout(LayoutMap layoutMap, String[] parts, AttrGraph graph,
-        int version) throws FormatException {
+                                   int version) throws FormatException {
         if (parts.length < 7) {
             throw new FormatException("Incomplete edge layout line");
         }
@@ -155,10 +155,11 @@ public class LayoutIO {
                 lineStyle = LineStyle.DEFAULT_VALUE.getCode();
             }
             correctPoints(points, layoutMap.getLayout(source), layoutMap.getLayout(target));
-            Point2D labelPosition =
-                calculateLabelPosition(toPoint(parts, 4), points, version, source == target);
-            layoutMap.putEdge(edge,
-                new JEdgeLayout(points, labelPosition, LineStyle.getStyle(lineStyle)));
+            Point2D labelPosition
+                = calculateLabelPosition(toPoint(parts, 4), points, version, source == target);
+            layoutMap
+                .putEdge(edge,
+                         new JEdgeLayout(points, labelPosition, LineStyle.getStyle(lineStyle)));
         } catch (NumberFormatException exc) {
             throw new FormatException(
                 "Number format error " + HTMLConverter.toUppercase(exc.getMessage(), false));
@@ -171,7 +172,7 @@ public class LayoutIO {
      * Fix for SF Bug #3562111.
      */
     public static void correctPoints(List<Point2D> points, JVertexLayout sourceLayout,
-        JVertexLayout targetLayout) {
+                                     JVertexLayout targetLayout) {
         correctPoint(points, 0, sourceLayout);
         correctPoint(points, points.size() - 1, targetLayout);
     }
@@ -190,7 +191,7 @@ public class LayoutIO {
      * file.
      */
     public static Point2D calculateLabelPosition(Point2D label, List<Point2D> points, int version,
-        boolean isLoop) {
+                                                 boolean isLoop) {
         Point2D result;
         if (version == VERSION1) {
             // the y is now an offset rather than a percentile
@@ -316,8 +317,8 @@ public class LayoutIO {
         // the ratio of the label vector to the edge vector
         double ratio = (edge.getX() * pos.getX() + edge.getY() * pos.getY()) / vector2;
         // the distance from the label position to the edge vector
-        double distance =
-            (-pos.getX() * edge.getY() + pos.getY() * edge.getX()) / Math.sqrt(vector2);
+        double distance
+            = (-pos.getX() * edge.getY() + pos.getY() * edge.getX()) / Math.sqrt(vector2);
         return new Point2D.Double(ratio * GraphConstants.PERMILLE, distance);
     }
 
@@ -389,8 +390,8 @@ public class LayoutIO {
     /** The current version number. */
     static public final int CURRENT_VERSION_NUMBER = VERSION2;
     /** Error message in case an error is detected in the layout file. */
-    static private final String LAYOUT_FORMAT_ERROR =
-        String.format("Error in %s file", FileType.LAYOUT.getExtension());
+    static private final String LAYOUT_FORMAT_ERROR
+        = String.format("Error in %s file", FileType.LAYOUT.getExtension());
     /** Double quote character. */
     static private final char DOUBLE_QUOTE = '\"';
     /** Splitting expression for non-empty white space. */

@@ -2,8 +2,6 @@ package nl.utwente.groove.gui.display;
 
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
-import java.util.Collections;
 
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -30,6 +28,7 @@ import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.prolog.util.PrologTokenMaker;
 import nl.utwente.groove.util.parse.FormatError;
+import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
  * Display tab showing a text-based resource.
@@ -181,10 +180,10 @@ final public class TextTab extends ResourceTab {
     }
 
     @Override
-    protected Collection<FormatError> getErrors() {
+    protected FormatErrorSet getErrors() {
         QualName name = getQualName();
         if (name == null) {
-            return Collections.emptySet();
+            return new FormatErrorSet();
         } else {
             return getDisplay().getResource(name).getErrors();
         }

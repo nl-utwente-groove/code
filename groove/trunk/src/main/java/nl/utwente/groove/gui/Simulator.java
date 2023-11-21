@@ -180,7 +180,7 @@ public class Simulator implements SimulatorListener {
      * Displays a list of errors, or hides the error panel if the list is empty.
      */
     private void setErrors(FormatErrorSet grammarErrors) {
-        getResultsPanel().getErrorListPanel().setEntries(grammarErrors);
+        getResultsPanel().getErrorListPanel().setEntries(grammarErrors.get());
         adjustResultsPanel();
     }
 

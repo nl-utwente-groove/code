@@ -545,7 +545,7 @@ public class GrammarModel implements PropertyChangeListener {
                 errors.add("Start graphs '%s' cannot be loaded", startGraphNames);
             }
         } else {
-            Collection<FormatError> startGraphErrors;
+            FormatErrorSet startGraphErrors;
             try {
                 HostGraph startGraph = getStartGraphModel().toResource();
                 result.setStartGraph(startGraph);

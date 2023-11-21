@@ -32,7 +32,6 @@ import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostElement;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
-import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.transform.DeltaApplier;
 import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.transform.RuleApplication;
@@ -41,7 +40,6 @@ import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.collect.KeySet;
 import nl.utwente.groove.util.collect.SetView;
 import nl.utwente.groove.util.collect.TreeHashSet;
-import nl.utwente.groove.util.parse.FormatError;
 
 /**
  * Caches information of a state. Cached are the graph, the set of outgoing
@@ -185,8 +183,8 @@ public class StateCache {
         HostElement[] frozenGraph = this.state.getFrozenGraph();
         DeltaHostGraph result;
         if (frozenGraph != null) {
-            result = this.graphFactory.newGraph(getState().toString(), frozenGraph,
-                                                this.record.getFactory());
+            result = this.graphFactory
+                .newGraph(getState().toString(), frozenGraph, this.record.getFactory());
         } else if (!(this.state instanceof GraphNextState)) {
             throw Exceptions
                 .illegalState("Underlying state does not have information to reconstruct the graph");
@@ -221,7 +219,7 @@ public class StateCache {
             if (getState().getGTS().getTypePolicy() != CheckPolicy.OFF) {
                 // apparently we're reconstructing the graph after the state was already
                 // done and found to be erroneous; so reconstruct the type errors
-                GraphInfo.addErrors(result, result.checkTypeConstraints());
+                result.addErrors(result.checkTypeConstraints());
             }
             // check the property and deadlock constraints
             GTS gts = getState().getGTS();
@@ -265,33 +263,30 @@ public class StateCache {
                 actions.add(call.getRule().getQualName());
             }
         }
-        FormatError error;
         if (actions.isEmpty()) {
-            error = new FormatError("Deadlock (no transformer scheduled)");
+            graph.addError("Deadlock (no transformer scheduled)");
         } else {
-            error = new FormatError("Deadlock: scheduled transformer%s %s failed to be applicable",
-                actions.size() == 1
-                    ? ""
-                    : "s",
-                Groove.toString(actions.toArray(), "'", "'", "', '", "' and '"));
+            graph
+                .addError("Deadlock: scheduled transformer%s %s failed to be applicable",
+                          actions.size() == 1
+                              ? ""
+                              : "s",
+                          Groove.toString(actions.toArray(), "'", "'", "', '", "' and '"));
         }
-        GraphInfo.addError(graph, error);
     }
 
     /** Adds an error message regarding the failure of t graph constraint to a given graph. */
     void addConstraintError(HostGraph graph, Action action) {
-        String error = null;
         switch (action.getRole()) {
         case FORBIDDEN:
-            error = "Graph satisfies forbidden property '%s'";
+            graph.addError("Graph satisfies forbidden property '%s'", action.getQualName());
             break;
         case INVARIANT:
-            error = "Graph fails to satisfy invariant property '%s'";
+            graph.addError("Graph fails to satisfy invariant property '%s'", action.getQualName());
             break;
         default:
             assert false;
         }
-        GraphInfo.addError(graph, new FormatError(error, action.getQualName()));
     }
 
     /**

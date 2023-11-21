@@ -20,8 +20,6 @@ import java.awt.BorderLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
-import java.util.Collections;
 
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -49,7 +47,7 @@ import nl.utwente.groove.gui.action.SaveAction;
 import nl.utwente.groove.gui.action.SimulatorAction;
 import nl.utwente.groove.gui.list.ErrorListPanel;
 import nl.utwente.groove.gui.list.ListPanel;
-import nl.utwente.groove.util.parse.FormatError;
+import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
  * Superclass for grammar component editors.
@@ -71,12 +69,16 @@ abstract public class ResourceTab extends JPanel {
 
     /** Sets the qualified name of this tab. */
     public void setQualName(QualName qualName) {
-        setName(qualName == null ? null : qualName.toString());
+        setName(qualName == null
+            ? null
+            : qualName.toString());
     }
 
     /** Returns the qualified resource name of this tab. */
     public QualName getQualName() {
-        return getName() == null ? null : QualName.parse(getName());
+        return getName() == null
+            ? null
+            : QualName.parse(getName());
     }
 
     /**
@@ -102,8 +104,8 @@ abstract public class ResourceTab extends JPanel {
     /** Creates a panel consisting of the error panel and the status bar. */
     private JSplitPane getMainPanel() {
         if (this.mainPanel == null) {
-            this.mainPanel =
-                new JSplitPane(JSplitPane.VERTICAL_SPLIT, getEditArea(), getErrorPanel());
+            this.mainPanel
+                = new JSplitPane(JSplitPane.VERTICAL_SPLIT, getEditArea(), getErrorPanel());
             this.mainPanel.setDividerSize(1);
             this.mainPanel.setContinuousLayout(true);
             this.mainPanel.setResizeWeight(0.9);
@@ -136,7 +138,7 @@ abstract public class ResourceTab extends JPanel {
      * Displays a list of errors, or hides the error panel if the list is empty.
      */
     final protected void updateErrors() {
-        getErrorPanel().setEntries(getErrors());
+        getErrorPanel().setEntries(getErrors().get());
         if (getErrorPanel().isVisible()) {
             getMainPanel().setBottomComponent(getErrorPanel());
             getMainPanel().setDividerSize(1);
@@ -151,8 +153,7 @@ abstract public class ResourceTab extends JPanel {
      * Returns the icon for this tab.
      */
     public Icon getIcon() {
-        return Icons.getEditorTabIcon(getDisplay().getKind()
-            .getResource());
+        return Icons.getEditorTabIcon(getDisplay().getKind().getResource());
     }
 
     /**
@@ -182,8 +183,8 @@ abstract public class ResourceTab extends JPanel {
         return new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                getDisplay().setInfoTabIndex(upper,
-                    ((JTabbedPane) e.getSource()).getSelectedIndex());
+                getDisplay()
+                    .setInfoTabIndex(upper, ((JTabbedPane) e.getSource()).getSelectedIndex());
             }
         };
     }
@@ -279,12 +280,12 @@ abstract public class ResourceTab extends JPanel {
     public boolean confirmCancel() {
         boolean result = true;
         if (isDirty()) {
-            int answer = JOptionPane.showConfirmDialog(getDisplay(),
-                String.format("%s '%s' has been modified. Save changes?",
-                    getResourceKind().getName(),
-                    getName()),
-                null,
-                JOptionPane.YES_NO_CANCEL_OPTION);
+            int answer = JOptionPane
+                .showConfirmDialog(getDisplay(),
+                                   String
+                                       .format("%s '%s' has been modified. Save changes?",
+                                               getResourceKind().getName(), getName()),
+                                   null, JOptionPane.YES_NO_CANCEL_OPTION);
             if (answer == JOptionPane.YES_OPTION) {
                 saveResource();
             }
@@ -330,8 +331,7 @@ abstract public class ResourceTab extends JPanel {
         if (name == null) {
             return null;
         } else {
-            return getSimulatorModel().getGrammar()
-                .getResource(getResourceKind(), name);
+            return getSimulatorModel().getGrammar().getResource(getResourceKind(), name);
         }
     }
 
@@ -340,8 +340,7 @@ abstract public class ResourceTab extends JPanel {
 
     /** Disposes the editor, by removing it as a listener and simulator panel component. */
     public void dispose() {
-        getDisplay().getTabPane()
-            .remove(this);
+        getDisplay().getTabPane().remove(this);
     }
 
     /**
@@ -352,10 +351,10 @@ abstract public class ResourceTab extends JPanel {
     }
 
     /** Returns the errors of the displayed resource. */
-    protected Collection<FormatError> getErrors() {
+    protected FormatErrorSet getErrors() {
         ResourceModel<?> resource = getResource();
         if (resource == null) {
-            return Collections.emptyList();
+            return new FormatErrorSet();
         } else {
             return getResource().getErrors();
         }
@@ -378,14 +377,12 @@ abstract public class ResourceTab extends JPanel {
 
     /** Creates and returns the cancel action. */
     protected final CancelEditAction getCancelAction() {
-        return getSimulator().getActions()
-            .getCancelEditAction(getResourceKind());
+        return getSimulator().getActions().getCancelEditAction(getResourceKind());
     }
 
     /** Returns the save action of this editor. */
     protected final SaveAction getSaveAction() {
-        return getSimulator().getActions()
-            .getSaveAction(getResourceKind());
+        return getSimulator().getActions().getSaveAction(getResourceKind());
     }
 
     /** Convenience method to retrieve the simulator. */
@@ -416,8 +413,7 @@ abstract public class ResourceTab extends JPanel {
         @Override
         public void mouseClicked(MouseEvent e) {
             if (e.getClickCount() == 2) {
-                getDisplay().getEditAction()
-                    .execute();
+                getDisplay().getEditAction().execute();
             }
         }
     }

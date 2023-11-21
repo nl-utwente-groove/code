@@ -37,7 +37,6 @@ import nl.utwente.groove.grammar.rule.MatchChecker;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
 import nl.utwente.groove.grammar.rule.VariableNode;
-import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.transform.CompositeEvent;
 import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.transform.Record;
@@ -45,7 +44,6 @@ import nl.utwente.groove.transform.RuleEvent;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Visitor;
 import nl.utwente.groove.util.collect.KeySet;
-import nl.utwente.groove.util.parse.FormatError;
 
 /**
  * Algorithm to create the set of current match results for a given state.
@@ -127,10 +125,11 @@ public class MatchCollector {
                             try {
                                 filtered = matchFilter.get().invoke(host, event.getAnchorMap());
                             } catch (InvocationTargetException exc) {
-                                FormatError error = new FormatError(
-                                    "Error at state %s while applying match filter %s: %s", state,
-                                    matchFilter.get().getQualName(), exc.getCause());
-                                GraphInfo.addError(state.getGTS(), error);
+                                state
+                                    .getGTS()
+                                    .addError("Error at state %s while applying match filter %s: %s",
+                                              state, matchFilter.get().getQualName(),
+                                              exc.getCause());
                             }
                         }
                         if (!filtered) {

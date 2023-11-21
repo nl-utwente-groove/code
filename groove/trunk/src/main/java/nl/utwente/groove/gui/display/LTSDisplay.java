@@ -33,7 +33,6 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -76,6 +75,7 @@ import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.Status.Flag;
 import nl.utwente.groove.util.parse.FormatError;
+import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
  * Window that displays and controls the current lts graph. Auxiliary class for
@@ -384,16 +384,16 @@ public class LTSDisplay extends Display implements SimulatorListener {
      * Displays a list of errors, or hides the error panel if the list is empty.
      */
     final private void updateErrors() {
-        Collection<FormatError> errors;
+        FormatErrorSet errors;
         GTS gts = getJModel() == null
             ? null
             : getJModel().getGraph();
         if (gts == null) {
-            errors = Collections.emptyList();
+            errors = new FormatErrorSet();
         } else {
             errors = gts.getErrors();
         }
-        getErrorPanel().setEntries(errors);
+        getErrorPanel().setEntries(errors.get());
         if (getErrorPanel().isVisible()) {
             getMainPanel().setBottomComponent(getErrorPanel());
             getMainPanel().setDividerSize(1);

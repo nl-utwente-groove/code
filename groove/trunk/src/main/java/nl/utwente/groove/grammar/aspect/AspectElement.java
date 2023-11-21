@@ -16,7 +16,6 @@
  */
 package nl.utwente.groove.grammar.aspect;
 
-import java.util.Collection;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -179,8 +178,14 @@ public interface AspectElement extends Element, Fixable {
 
     /** Adds a set of format errors to the errors stored in this aspect element,
      * extending the context information with this element. */
-    default void addErrors(Collection<FormatError> errors) {
+    default void addErrors(FormatErrorSet errors) {
         errors.stream().forEach(this::addError);
+    }
+
+    /** Adds a single format error to the errors stored in this aspect element,
+     * extending the context information with this element. */
+    default void addError(String message, Object... pars) {
+        addError(new FormatError(message, pars));
     }
 
     /** Adds a single format error to the errors stored in this aspect element,

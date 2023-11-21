@@ -1,29 +1,27 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2023 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package nl.utwente.groove.gui.jgraph;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.util.collect.NestedIterator;
 import nl.utwente.groove.util.parse.FormatError;
+import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
  * Object holding the errors for a given {@link AspectJCell}.
@@ -47,7 +45,7 @@ public class AspectJCellErrors implements Iterable<FormatError> {
     /** Adds a collection of format errors to either the aspect errors or the extra errors.
      * @param aspect if {@code true}, adds to the aspect errors, else to the extra errors.
      */
-    void addErrors(Collection<FormatError> errors, boolean aspect) {
+    void addErrors(FormatErrorSet errors, boolean aspect) {
         getErrors(aspect).addAll(errors);
         this.jCell.setStale(VisualKey.ERROR);
     }
@@ -61,8 +59,7 @@ public class AspectJCellErrors implements Iterable<FormatError> {
 
     @Override
     public Iterator<FormatError> iterator() {
-        return new NestedIterator<>(getErrors(true).iterator(),
-            getErrors(false).iterator());
+        return new NestedIterator<>(getErrors(true).iterator(), getErrors(false).iterator());
     }
 
     /** Indicates if the object contains no errors whatsoever. */
@@ -71,11 +68,13 @@ public class AspectJCellErrors implements Iterable<FormatError> {
     }
 
     /** Returns either the errors or the extra errors, depending on a flag. */
-    private List<FormatError> getErrors(boolean aspect) {
-        return aspect ? this.aspectErrors : this.extraErrors;
+    private FormatErrorSet getErrors(boolean aspect) {
+        return aspect
+            ? this.aspectErrors
+            : this.extraErrors;
     }
 
     private final AspectJCell jCell;
-    private final List<FormatError> aspectErrors = new ArrayList<>();
-    private final List<FormatError> extraErrors = new ArrayList<>();
+    private final FormatErrorSet aspectErrors = new FormatErrorSet();
+    private final FormatErrorSet extraErrors = new FormatErrorSet();
 }

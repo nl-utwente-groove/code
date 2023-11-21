@@ -84,7 +84,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         this.role = graphRole;
         this.normal = true;
         // make sure the properties object is initialised
-        GraphInfo.addErrors(this, this.qualName.getErrors());
+        addErrors(this.qualName.getErrors());
     }
 
     /* Also sets the qualified name. */
@@ -92,7 +92,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     public void setName(String name) {
         super.setName(name);
         this.qualName = QualName.parse(name);
-        GraphInfo.addErrors(this, this.qualName.getErrors());
+        addErrors(this.qualName.getErrors());
     }
 
     /** Returns the qualified name of this aspect graph. */
@@ -540,7 +540,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         nodeSet().stream().filter(AspectNode::hasId).forEach(n -> {
             var old = result.put(n.getId(), n);
             if (old != null) {
-                addError(new FormatError("Duplicate node ID '%s'", n.getId(), n, old));
+                addError("Duplicate node ID '%s'", n.getId(), n, old);
             }
         });
         return result;
@@ -786,7 +786,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
 
         // Finalise combined graph.
         GraphInfo.setLayoutMap(result, newLayoutMap);
-        GraphInfo.setErrors(result, newErrors.project(transfer));
+        result.setErrors(newErrors.unwrap(transfer));
         result.setFixed();
         return result;
     }

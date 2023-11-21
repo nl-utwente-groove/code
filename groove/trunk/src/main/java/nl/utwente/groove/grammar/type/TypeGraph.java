@@ -66,7 +66,6 @@ import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.NodeSetEdgeSetGraph;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
-import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -614,9 +613,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                 // upon saving, and the error is confusing, so dont't
                 // throw it
                 if (!sourceImage.getType().isTopType()) {
-                    for (FormatError error : typeResult.getErrors()) {
-                        errors.add(new FormatError(error, edge));
-                    }
+                    errors.addAll(typeResult.getErrors().extend(edge));
                 }
             } else {
                 // check if source and target type fit
