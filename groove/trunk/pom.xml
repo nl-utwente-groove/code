@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>nl.utwente.groove</groupId>
 	<artifactId>groove</artifactId>
-	<version>6.6.3-SNAPSHOT</version>
+	<version>6.6.4-SNAPSHOT</version>
 	<build>
 		<plugins>
 			<!-- Invoking the Eclipse compiler, see https://stackoverflow.com/questions/33164976/using-eclipse-java-compiler-ecj-in-maven-builds -->
