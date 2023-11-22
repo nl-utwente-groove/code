@@ -108,7 +108,7 @@ public class Version {
      * @return the latest grammar version.
      */
     public static String getCurrentGrammarVersion() {
-        return GRAMMAR_VERSION_3_9;
+        return GRAMMAR_VERSION_3_10;
     }
 
     /**
@@ -284,4 +284,12 @@ public class Version {
      * Moreover, named variables were introduced.
      */
     public static final String GRAMMAR_VERSION_3_9 = "3.9";
+    /**
+     * This is the grammar version introduced with Groove version 6.6.3.
+     * The GrammarKey#USE_STORED_NODE_IDS was introduced to determine whether node numbers
+     * should be based on the stored node IDs, as was the default behaviour before this version.
+     * For older grammars, the property is automatically set to {@code true}; the default is
+     * {@code false}.
+     */
+    public static final String GRAMMAR_VERSION_3_10 = "3.10";
 }

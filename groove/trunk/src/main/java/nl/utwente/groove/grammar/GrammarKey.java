@@ -48,14 +48,14 @@ import nl.utwente.groove.util.parse.StringParser;
 /** Grammar property keys. */
 public enum GrammarKey implements Properties.Key, GrammarChecker {
     /** Property name for the GROOVE version. */
-    GROOVE_VERSION("grooveVersion", false, "The Groove version that created this grammar",
+    GROOVE_VERSION("grooveVersion", "The Groove version that created this grammar",
         ValueType.STRING),
 
     /** Property name for the Grammar version. */
-    GRAMMAR_VERSION("grammarVersion", false, "The version of this grammar", ValueType.STRING),
+    GRAMMAR_VERSION("grammarVersion", "The version of this grammar", ValueType.STRING),
 
     /** Location of this Grammar. */
-    LOCATION("location", true, "The place in the file system where this grammar is stored",
+    LOCATION("location", "The place in the file system where this grammar is stored",
         ValueType.PATH),
 
     /** One-line documentation comment on the graph production system. */
@@ -198,7 +198,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      * Flag that determines if transition parameters are included in the LTS
      * transition labels
      */
-    TRANSITION_PARAMETERS("transitionParameters", false, false, "Show parameters",
+    TRANSITION_PARAMETERS("transitionParameters", "Show parameters",
         "Flag controlling if transition labels should include a (possibly empty) argument list. Possibly values:"
             + "<li>- <i>false</i>: no arguments are displayed"
             + "<li>- <i>some</i> (default): arguments are only displayed for rules with parameters and for recipes"
@@ -209,7 +209,12 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      * Flag that determines if (binary) loops can be shown as vertex labels.
      */
     LOOPS_AS_LABELS("loopsAsLabels",
-        "Flag controlling if binary self-edges may be shown as vertex labels", ValueType.BOOLEAN),;
+        "Flag controlling if binary self-edges may be shown as vertex labels", ValueType.BOOLEAN),
+
+    /** Flag that determines if node numbers in loaded graphs are based on the stored (GXL) node ids. */
+    USE_STORED_NODE_IDS("useStoredNodeIDs",
+        "Flag controlling if node numbers in graphs are based on the stored (GXL) node ids",
+        ValueType.BOOLEAN),;
 
     /**
      * Constructor for a key with a plain string value
@@ -217,18 +222,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      * @param explanation short explanation of the meaning of the key
      */
     private GrammarKey(String name, String explanation, ValueType keyType) {
-        this(name, false, false, null, explanation, keyType, null);
-    }
-
-    /**
-     * Constructor for a system key.
-     * @param name name of the key; should be an identifier possibly prefixed by #SYSTEM_KEY_PREFIX
-     * @param derived flag indicating whether this is a derived key
-     * @param explanation short explanation of the meaning of the key
-     * {@link StringParser#identity()} is used
-     */
-    private GrammarKey(String name, boolean derived, String explanation, ValueType keyType) {
-        this(name, true, derived, null, explanation, keyType, null);
+        this(name, null, explanation, keyType, null);
     }
 
     /**
@@ -240,14 +234,12 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      * {@code this} is used
      */
     private GrammarKey(String name, String explanation, ValueType keyType, GrammarChecker checker) {
-        this(name, false, false, null, explanation, keyType, checker);
+        this(name, null, explanation, keyType, checker);
     }
 
     /**
      * Constructor for a key with a plain string value
      * @param name name of the key; should be an identifier possibly prefixed by #SYSTEM_KEY_PREFIX
-     * @param system flag indicating this is a system key
-     * @param derived flag indicating this is a derived key
      * @param keyPhrase user-readable version of the name; if {@code null},
      * the key phrase is constructed from {@code name}
      * @param explanation short explanation of the meaning of the key
@@ -255,12 +247,9 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      * @param checker the checker used to test compatibility with a given grammar model; if {@code null},
      * {@code this} is used
      */
-    private GrammarKey(String name, boolean system, boolean derived, String keyPhrase,
-                       String explanation, ValueType keyType, GrammarChecker checker) {
+    private GrammarKey(String name, String keyPhrase, String explanation, ValueType keyType,
+                       GrammarChecker checker) {
         this.name = name;
-        assert !derived || system : "Derived keys should be system keys";
-        this.system = system;
-        this.derived = derived;
         this.keyPhrase = keyPhrase == null
             ? Strings.unCamel(name, false)
             : keyPhrase;
@@ -285,17 +274,19 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
 
     @Override
     public boolean isSystem() {
-        return this.system;
+        return isDerived() || switch (this) {
+        case GROOVE_VERSION, GRAMMAR_VERSION -> true;
+        default -> false;
+        };
     }
-
-    private final boolean system;
 
     @Override
     public boolean isDerived() {
-        return this.derived;
+        return switch (this) {
+        case LOCATION -> true;
+        default -> false;
+        };
     }
-
-    private final boolean derived;
 
     @Override
     public String getKeyPhrase() {
@@ -311,7 +302,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             var inner = switch (this) {
             case ALGEBRA -> new Parser.EnumParser<>(AlgebraFamily.class, AlgebraFamily.DEFAULT);
             case COMMON_LABELS, CONTROL_LABELS -> Parser.splitter;
-            case CREATOR_EDGE, DANGLING, RHS_AS_NAC, INJECTIVE, STORE_OUT_PARS -> Parser.boolFalse;
+            case CREATOR_EDGE, DANGLING, RHS_AS_NAC, INJECTIVE, STORE_OUT_PARS, USE_STORED_NODE_IDS -> Parser.boolFalse;
             case ISOMORPHISM, LOOPS_AS_LABELS -> Parser.boolTrue;
             case START_GRAPH_NAMES, CONTROL_NAMES, TYPE_NAMES, PROLOG_NAMES -> QualName
                 .listParser();

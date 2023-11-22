@@ -431,6 +431,22 @@ public class GrammarProperties extends Properties {
     }
 
     /**
+     * Sets the use of stored node IDs to a certain value.
+     * @param check if <code>true</code>, stored node IDs are used to generate node numbers
+     */
+    public void setUseStoredNodeIds(boolean check) {
+        storeValue(GrammarKey.USE_STORED_NODE_IDS, check);
+    }
+
+    /**
+     * Returns the use of stored node IDs.
+     * @return if <code>true</code>, stored node IDs are used to generate node numbers
+     */
+    public boolean isUseStoredNodeIds() {
+        return parsePropertyOrDefault(GrammarKey.USE_STORED_NODE_IDS).getBoolean();
+    }
+
+    /**
      * Returns a clone of this properties object where all occurrences of a
      * given label are replaced by a new label.
      * @param oldLabel the label to be replaced
@@ -473,15 +489,17 @@ public class GrammarProperties extends Properties {
         for (GrammarKey key : GrammarKey.values()) {
             try {
                 var property = getProperty(key);
-                var result = key.parse(property == null
-                    ? ""
-                    : property);
+                var result = key
+                    .parse(property == null
+                        ? ""
+                        : property);
                 for (FormatError error : key.check(grammar, result)) {
                     errors.add("Error in property key '%s': %s", key.getKeyPhrase(), error, key);
                 }
             } catch (FormatException exc) {
-                errors.add("Error in property key '%s': %s", key.getKeyPhrase(), exc.getMessage(),
-                           key);
+                errors
+                    .add("Error in property key '%s': %s", key.getKeyPhrase(), exc.getMessage(),
+                         key);
             }
         }
         errors.throwException();

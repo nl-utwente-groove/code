@@ -17,6 +17,7 @@
 package nl.utwente.groove.io.graph;
 
 /**
+ * Class to compute a node number based on a stored (String) node identity.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -24,21 +25,54 @@ public abstract class NodeNrDispenser {
     /** Computes a node number on the basis of a string ID. */
     abstract public int compute(String id);
 
-    /** Returns a node dispenser, depending on the stored user preference. */
+    /** Returns a node dispenser, depending on the {@link #idBased} property. */
     static public NodeNrDispenser instance() {
-        if (STRING) {
-            return new StringBased();
+        if (idBased) {
+            return new IdBased();
         } else {
             return new NextBased();
         }
     }
 
-    static private final boolean STRING = true;
+    /** The maximum node number supported by the {@link IdBased} dispenser.
+     * Stored node IDs with higher numbers will be ignored.
+     */
+    static public final int MAX_NODE_NR = 1_000_000;
+
+    /**
+     * If {@code true}, the dispenser returned by {@link #instance()} is
+     * identity-based; otherwise it always returns the next number in sequence.
+     */
+    static public boolean isIdBased() {
+        return idBased;
+    }
+
+    /**
+     * Determines if the dispenser returned by {@link #instance()} is
+     * identity-based or always picks the next number in sequence.
+     */
+    static public void setIdBased(boolean idBased) {
+        NodeNrDispenser.idBased = idBased;
+    }
+
+    static private boolean idBased = true;
+
+    /** Dispenser that gives out consecutive numbers, starting at 0. */
+    static private class NextBased extends NodeNrDispenser {
+        @Override
+        public int compute(String id) {
+            int result = this.current;
+            this.current++;
+            return result;
+        }
+
+        private int current = 0;
+    }
 
     /** Dispenser that extracts node numbers from the input string.
      * If the string contains no number, behaves as NextBased.
      */
-    static private class StringBased extends NextBased {
+    static private class IdBased extends NextBased {
         @Override
         public int compute(String id) {
             // detect a suffix that represents a number
@@ -52,21 +86,9 @@ public abstract class NodeNrDispenser {
                 unit *= 10;
                 digitFound = true;
             }
-            return digitFound
+            return digitFound && nodeNr < MAX_NODE_NR
                 ? nodeNr
                 : super.compute(id);
         }
-    }
-
-    /** Dispenser that gives out consecutive numbers, starting at 0. */
-    static private class NextBased extends NodeNrDispenser {
-        @Override
-        public int compute(String id) {
-            int result = this.current;
-            this.current++;
-            return result;
-        }
-
-        private int current = 0;
     }
 }

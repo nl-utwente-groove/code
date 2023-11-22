@@ -749,8 +749,8 @@ public class SystemStore extends UndoableEditSupport {
             // store graph in corresponding map
             AspectGraph graph = xmlGraph.toAspectGraph();
             Object oldEntry = getGraphMap(kind).put(fileEntry.getKey(), graph);
-            assert oldEntry == null : String.format("Duplicate %s name '%s'", kind.getGraphRole(),
-                                                    fileEntry.getKey());
+            assert oldEntry == null : String
+                .format("Duplicate %s name '%s'", kind.getGraphRole(), fileEntry.getKey());
         }
     }
 
@@ -907,10 +907,10 @@ public class SystemStore extends UndoableEditSupport {
 
     /** Repair properties, as necessitated because of version changes. */
     private GrammarProperties repairProperties(GrammarProperties props) {
-        GrammarProperties result;
+        GrammarProperties result = props;
         String version = props.getGrammarVersion();
         if (Version.compareGrammarVersions(version, Version.GRAMMAR_VERSION_3_4) == -1) {
-            result = props.clone();
+            result = result.clone();
             result.remove(GrammarKey.ATTRIBUTE_SUPPORT);
             result.remove(GrammarKey.TRANSITION_BRACKETS);
             // convert numeric value of TRANSITION_PARAMETERS
@@ -919,16 +919,19 @@ public class SystemStore extends UndoableEditSupport {
             if (paramsVal != null && !paramsKey.parser().accepts(paramsVal)) {
                 try {
                     int paramsIntVal = Integer.parseInt(paramsVal);
-                    result.setUseParameters(paramsIntVal == 0
-                        ? ThreeValued.FALSE
-                        : ThreeValued.TRUE);
+                    result
+                        .setUseParameters(paramsIntVal == 0
+                            ? ThreeValued.FALSE
+                            : ThreeValued.TRUE);
                 } catch (NumberFormatException exc) {
                     // it was not a number either; remove the key altogether
                     result.remove(paramsKey.getName());
                 }
             }
-        } else {
-            result = props;
+        }
+        if (Version.compareGrammarVersions(version, Version.GRAMMAR_VERSION_3_10) == -1) {
+            result = result.clone();
+            result.setUseStoredNodeIds(true);
         }
         return result;
     }
@@ -1402,8 +1405,9 @@ public class SystemStore extends UndoableEditSupport {
     class PutPropertiesEdit extends MyEdit {
         public PutPropertiesEdit(GrammarProperties oldProperties, GrammarProperties newProperties) {
             super(EditType.MODIFY, PROPERTIES);
-            for (ResourceKind kind : EnumSet.of(ResourceKind.PROLOG, ResourceKind.TYPE,
-                                                ResourceKind.HOST, ResourceKind.CONTROL)) {
+            for (ResourceKind kind : EnumSet
+                .of(ResourceKind.PROLOG, ResourceKind.TYPE, ResourceKind.HOST,
+                    ResourceKind.CONTROL)) {
                 Set<QualName> oldNames = oldProperties.getActiveNames(kind);
                 Set<QualName> newNames = newProperties.getActiveNames(kind);
                 if (!oldNames.equals(newNames)) {

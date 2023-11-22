@@ -381,7 +381,9 @@ public abstract class Properties implements Fixable {
         /** Short description for user consumption. */
         String getKeyPhrase();
 
-        /** Indicates if this is a system key. */
+        /** Indicates if this is a system key.
+         * System keys are not user-modifiable.
+         */
         boolean isSystem();
 
         /** Indicates if the value for this key is derived, i.e.,
@@ -395,12 +397,6 @@ public abstract class Properties implements Fixable {
         /** Specialises the type of the interface. */
         @Override
         KeyParser parser();
-
-        /** Convenience method for {@code parser().getDefaultValue()}. */
-        @Override
-        default public Entry getDefaultValue() {
-            return parser().getDefaultValue();
-        }
 
         /** Indicates if a non-default value should be actively signalled. */
         public boolean isNotable();
