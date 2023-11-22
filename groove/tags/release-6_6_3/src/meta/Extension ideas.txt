@@ -1,0 +1,13 @@
+GROOVE project ideas
+====================
+
+- Extend control language with data expressions
+
+- Add external actions to control language
+
+- Transform Java data structures
+
+- Make model checking more accessible
+
+- Add an API for transformation
+
