@@ -94,6 +94,7 @@ public class Options implements Cloneable {
         addCheckbox(SHOW_BIDIRECTIONAL_EDGES_OPTION);
         addBehaviour(DELETE_RESOURCE_OPTION, 2);
         addBehaviour(VERIFY_ALL_STATES_OPTION, 3);
+        addBehaviour(RENUMBER_NODES_OPTION, 3);
     }
 
     /**
