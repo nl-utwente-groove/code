@@ -63,22 +63,18 @@ public class GrooveResource extends ExportableResource {
     public void count() {
         int constraintCount = 0;
         for (GraphRole role : this.m_graphs.keySet()) {
-            for (GrammarGraph graph : this.m_graphs.get(role)
-                .values()) {
+            for (GrammarGraph graph : this.m_graphs.get(role).values()) {
                 AbsGraph absGraph = graph.getGraph();
-                int nodes = absGraph.getNodes()
-                    .size();
-                int edges = absGraph.getEdges()
-                    .size();
+                int nodes = absGraph.getNodes().size();
+                int edges = absGraph.getEdges().size();
                 QualName qualName = graph.getQualName();
-                if (qualName.parent()
-                    .equals(ConstraintToGroove.CONSTRAINT_NS)
-                    || qualName.last()
-                        .startsWith(ConstraintToGroove.DEFAULT_PRF)) {
+                if (qualName.parent().equals(ConstraintToGroove.CONSTRAINT_NS)
+                    || qualName.last().startsWith(ConstraintToGroove.DEFAULT_PRF)) {
                     constraintCount++;
                 } else {
-                    System.out.println(
-                        "Graph " + graph.getQualName() + ", nodes: " + nodes + ", edges: " + edges);
+                    System.out
+                        .println("Graph " + graph.getQualName() + ", nodes: " + nodes + ", edges: "
+                            + edges);
                 }
             }
         }
@@ -93,17 +89,14 @@ public class GrooveResource extends ExportableResource {
     public boolean export() throws ExportException {
         int timer = Timer.start("Groove save");
         for (GraphRole role : this.m_graphs.keySet()) {
-            for (GrammarGraph graph : this.m_graphs.get(role)
-                .values()) {
-                AspectGraph aspectGraph = graph.getGraph()
-                    .toAspectGraph();
+            for (GrammarGraph graph : this.m_graphs.get(role).values()) {
+                AspectGraph aspectGraph = graph.getGraph().toAspectGraph();
 
                 try {
-                    this.m_simModel.getGrammar()
+                    this.m_simModel
                         .getStore()
                         .putGraphs(ResourceKind.toResource(graph.getGraphRole()),
-                            Collections.singleton(aspectGraph),
-                            false);
+                                   Collections.singleton(aspectGraph), false);
 
                     //Timer.stop(timer);
                     this.m_simModel.doRefreshGrammar();
@@ -116,8 +109,7 @@ public class GrooveResource extends ExportableResource {
                         model.loadGraph(aspectGraph);
                         try {
                             jGraph.setModel(model);
-                            this.m_layouter.newInstance(jGraph)
-                                .start();
+                            this.m_layouter.newInstance(jGraph).start();
                             //m_simModel.synchronize();
                         } catch (Exception e) {
                             // For some reason NullPointerException when filtering and some label keys are null
@@ -140,8 +132,9 @@ public class GrooveResource extends ExportableResource {
         for (Map<QualName,GrammarGraph> graphMap : this.m_graphs.values()) {
             for (GrammarGraph graph : graphMap.values()) {
                 try {
-                    this.m_simModel.doDelete(ResourceKind.toResource(graph.getGraphRole()),
-                        Collections.singleton(graph.getQualName()));
+                    this.m_simModel
+                        .doDelete(ResourceKind.toResource(graph.getGraphRole()),
+                                  Collections.singleton(graph.getQualName()));
                 } catch (IOException e) {
                     throw new ExportException(e);
                 }
@@ -154,14 +147,12 @@ public class GrooveResource extends ExportableResource {
     }
 
     public boolean hasGraph(QualName name, GraphRole graphRole) {
-        return this.m_graphs.get(graphRole)
-            .containsKey(name);
+        return this.m_graphs.get(graphRole).containsKey(name);
     }
 
     public GrammarGraph getGraph(QualName name, GraphRole graphRole) {
         if (hasGraph(name, graphRole)) {
-            GrammarGraph resultGraph = this.m_graphs.get(graphRole)
-                .get(name);
+            GrammarGraph resultGraph = this.m_graphs.get(graphRole).get(name);
             if (resultGraph.getGraphRole() != graphRole) {
                 return null;
             }
@@ -169,8 +160,7 @@ public class GrooveResource extends ExportableResource {
         }
 
         GrammarGraph newGraph = new GrammarGraph(name, graphRole);
-        this.m_graphs.get(graphRole)
-            .put(name, newGraph);
+        this.m_graphs.get(graphRole).put(name, newGraph);
 
         return newGraph;
     }

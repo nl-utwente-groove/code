@@ -57,6 +57,7 @@ import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
+import nl.utwente.groove.grammar.GrammarSource;
 import nl.utwente.groove.grammar.ModuleName;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
@@ -84,7 +85,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class SystemStore extends UndoableEditSupport {
+public class SystemStore extends UndoableEditSupport implements GrammarSource {
     /** Error message if a grammar cannot be loaded. */
     private static final String LOAD_ERROR = "Can't load graph grammar";
 
@@ -122,11 +123,7 @@ public class SystemStore extends UndoableEditSupport {
         }
     }
 
-    /**
-     * Returns the name of this store. This coincides with the last part of the
-     * location, stripped of its extension.
-     * @return the name of this store; cannot be <code>null</code> or empty.
-     */
+    @Override
     public @NonNull String getName() {
         return this.name;
     }
@@ -147,7 +144,7 @@ public class SystemStore extends UndoableEditSupport {
     /** The file obtained from <code>location</code>. */
     private final @NonNull File file;
 
-    /** Checks if the store is empty. */
+    @Override
     public boolean isEmpty() {
         boolean result = true;
         for (ResourceKind kind : ResourceKind.values()) {
@@ -165,10 +162,7 @@ public class SystemStore extends UndoableEditSupport {
         return result;
     }
 
-    /**
-     * Immutable view on the name-to-aspect graph map of a given graph-based resource kind.
-     * @param kind the kind of resource for which the map is requested
-     */
+    @Override
     public Map<QualName,AspectGraph> getGraphs(ResourceKind kind) {
         testInit();
         return Collections.unmodifiableMap(getGraphMap(kind));
@@ -281,10 +275,7 @@ public class SystemStore extends UndoableEditSupport {
             Collections.<AspectGraph>emptySet(), oldProps, newProps);
     }
 
-    /**
-     * Immutable view on the name-to-text map of a given text-based resource kind.
-     * @param kind the kind of resource for which the map is requested
-     */
+    @Override
     public Map<QualName,String> getTexts(ResourceKind kind) {
         testInit();
         return Collections.unmodifiableMap(getTextMap(kind));
@@ -467,17 +458,18 @@ public class SystemStore extends UndoableEditSupport {
             Collections.singleton(newGraph), oldProps, newProps);
     }
 
-    /** The system properties object in the store (non-null). */
+    @Override
     public GrammarProperties getProperties() {
         GrammarProperties properties = null;
-        if (!this.initialised) {
+        if (this.initialised) {
+            properties = this.properties;
+            assert properties != null;
+        } else {
             try {
                 properties = this.loadGrammarProperties();
             } catch (IOException e) {
-                // Should not happen...
+                throw Exceptions.UNREACHABLE;
             }
-        } else {
-            properties = this.properties;
         }
         return properties;
     }
@@ -548,8 +540,8 @@ public class SystemStore extends UndoableEditSupport {
     }
 
     /**
-     * Reloads all data from the persistent storage into this store. Should be
-     * called once immediately after construction of the store.
+     * Reloads all data from the persistent storage into this store. Should
+     * at least be called once immediately after construction of the store.
      */
     public void reload() throws IOException {
         for (ResourceKind kind : ResourceKind.values()) {
@@ -567,7 +559,7 @@ public class SystemStore extends UndoableEditSupport {
 
     /**
      * Saves the content of this grammar store to a given file, and returns the
-     * saved store.
+     * (new) saved store.
      * @throws IOException if the file does not have a known extension, or
      *         already exists, or if something goes wrong during saving. If an
      *         exception is thrown, any partial results are deleted.
@@ -578,12 +570,16 @@ public class SystemStore extends UndoableEditSupport {
 
     /** Returns a grammar model backed up by this store. */
     public GrammarModel toGrammarModel() {
-        if (this.model == null) {
-            this.model = new GrammarModel(this);
-            addObserver(this.model);
+        var result = this.model;
+        if (result == null) {
+            this.model = result = new GrammarModel(this);
+            addObserver(result);
         }
-        return this.model;
+        return result;
     }
+
+    /** The grammar view associated with this store. */
+    private GrammarModel model;
 
     /** Returns the resource map for a given graph-based resource kind. */
     private final Map<QualName,AspectGraph> getGraphMap(ResourceKind kind) {
@@ -998,9 +994,6 @@ public class SystemStore extends UndoableEditSupport {
     /** The observable object associated with this system store. */
     private final Observable observable = new Observable();
 
-    /** The grammar view associated with this store. */
-    private GrammarModel model;
-
     /** Indicates if edits are currently added to the undo list. */
     public boolean isUndoSuspended() {
         return this.undoSuspended;
@@ -1017,128 +1010,6 @@ public class SystemStore extends UndoableEditSupport {
     protected final GxlIO marshaller;
     /** Flag indicating whether the store has been loaded. */
     private boolean initialised;
-
-    /** Saves the content of a given system store to file. */
-    static public SystemStore save(File file, SystemStore store,
-                                   boolean clearDir) throws IOException {
-        if (!GRAMMAR.hasExtension(file)) {
-            throw new IOException(
-                String.format("File '%s' does not refer to a production system", file));
-        }
-        // if the file already exists, rename it
-        // in order to be able to restore if saving fails
-        File newFile = null;
-        if (file.exists()) {
-            newFile = file;
-            do {
-                newFile = new File(newFile.getParent(), "Copy of " + newFile.getName());
-            } while (newFile.exists());
-            if (clearDir) {
-                if (!file.renameTo(newFile)) {
-                    throw new IOException(
-                        String.format("Can't save grammar to existing file '%s'", file));
-                }
-            } else {
-                Util.copyDirectory(file, newFile, true);
-            }
-        }
-        try {
-            SystemStore result = new SystemStore(file, true);
-            result.reload();
-            // save properties
-            for (ResourceKind kind : ResourceKind.values()) {
-                if (kind == PROPERTIES) {
-                    result.putProperties(store.getProperties());
-                } else if (kind.isTextBased()) {
-                    result.putTexts(kind, store.getTexts(kind));
-                } else {
-                    result.putGraphs(kind, store.getGraphs(kind).values(), false);
-                }
-            }
-            if (newFile != null) {
-                boolean deleted = deleteRecursive(newFile);
-                assert deleted : String.format("Failed to delete '%s'", newFile);
-            }
-            return result;
-        } catch (IOException exc) {
-            file.delete();
-            // attempt to re-rename previously existing file
-            if (newFile != null) {
-                newFile.renameTo(file);
-            }
-            throw exc;
-        }
-    }
-
-    /**
-     * Recursively traverses all subdirectories and deletes all files and
-     * directories.
-     */
-    static private boolean deleteRecursive(File location) {
-        if (location.isDirectory()) {
-            for (File file : location.listFiles()) {
-                if (!deleteRecursive(file)) {
-                    return false;
-                }
-            }
-            return location.delete();
-        } else {
-            location.delete();
-            return true;
-        }
-    }
-
-    /**
-     * Creates an appropriate system store from a given file. The resulting
-     * store has not yet been loaded. A flag indicates if the file should be
-     * created if it does not yet exist.
-     * @param file the file to create the store from; non-null
-     * @param create if <code>true</code> and <code>file</code> does not yet
-     *        exist, attempt to create it.
-     * @return a store created from <code>file</code>; non-null
-     * @throws IOException if a store cannot be created from <code>file</code>
-     */
-    static public SystemStore newStore(File file, boolean create) throws IOException {
-        SystemStore result;
-        if (FileType.ZIP.hasExtension(file) || FileType.JAR.hasExtension(file)) {
-            // the file is zipped
-            if (create) {
-                throw new IOException("Can't create zipped grammar " + file.toString());
-            }
-            result = newStoreFromTmp(file.getPath(), Unzipper.instance().unzip(file));
-        } else {
-            result = new SystemStore(file, create);
-        }
-        return result;
-    }
-
-    /**
-     * Creates an appropriate system store from a given URL. The resulting store
-     * has not yet been loaded.
-     * @param url the URL to create the store from; non-null
-     * @return a store created from <code>url</code>; non-null
-     * @throws IOException if a store cannot be created from <code>url</code>
-     */
-    static public SystemStore newStore(URL url) throws IOException {
-        SystemStore result;
-        try {
-            result = newStore(new File(url.toURI()), false);
-        } catch (IllegalArgumentException exc) {
-            result = newStoreFromTmp(url.toString(), Unzipper.instance().unzip(url));
-        } catch (URISyntaxException exc) {
-            throw Exceptions.UNREACHABLE;
-        }
-        return result;
-    }
-
-    static private SystemStore newStoreFromTmp(String orig, Path path) throws IOException {
-        File[] files = path.toFile().listFiles();
-        if (files.length != 1) {
-            throw new IOException(
-                String.format("Zip file %s should only contain production system", orig));
-        }
-        return new SystemStore(files[0], false);
-    }
 
     /** Edit object for system stores. */
     public static interface Edit extends UndoableEdit {
@@ -1500,5 +1371,178 @@ public class SystemStore extends UndoableEditSupport {
         private final Set<ResourceKind> change = EnumSet.noneOf(ResourceKind.class);
         /** The name of this edit. */
         private final String presentationName;
+    }
+
+    /** Saves the content of a given system store to a given file,
+     * and returns the resulting (new, loaded) store.
+     */
+    static public SystemStore save(File file, SystemStore store,
+                                   boolean clearDir) throws IOException {
+        if (!GRAMMAR.hasExtension(file)) {
+            throw new IOException(
+                String.format("File '%s' does not refer to a production system", file));
+        }
+        // if the file already exists, rename it
+        // in order to be able to restore if saving fails
+        File newFile = null;
+        if (file.exists()) {
+            newFile = file;
+            do {
+                newFile = new File(newFile.getParent(), "Copy of " + newFile.getName());
+            } while (newFile.exists());
+            if (clearDir) {
+                if (!file.renameTo(newFile)) {
+                    throw new IOException(
+                        String.format("Can't save grammar to existing file '%s'", file));
+                }
+            } else {
+                Util.copyDirectory(file, newFile, true);
+            }
+        }
+        try {
+            SystemStore result = new SystemStore(file, true);
+            result.reload();
+            // save properties
+            for (ResourceKind kind : ResourceKind.values()) {
+                if (kind == PROPERTIES) {
+                    result.putProperties(store.getProperties());
+                } else if (kind.isTextBased()) {
+                    result.putTexts(kind, store.getTexts(kind));
+                } else {
+                    result.putGraphs(kind, store.getGraphs(kind).values(), false);
+                }
+            }
+            if (newFile != null) {
+                boolean deleted = deleteRecursive(newFile);
+                assert deleted : String.format("Failed to delete '%s'", newFile);
+            }
+            return result;
+        } catch (IOException exc) {
+            file.delete();
+            // attempt to re-rename previously existing file
+            if (newFile != null) {
+                newFile.renameTo(file);
+            }
+            throw exc;
+        }
+    }
+
+    /**
+     * Recursively traverses all subdirectories and deletes all files and
+     * directories.
+     */
+    static private boolean deleteRecursive(File location) {
+        if (location.isDirectory()) {
+            for (File file : location.listFiles()) {
+                if (!deleteRecursive(file)) {
+                    return false;
+                }
+            }
+            return location.delete();
+        } else {
+            location.delete();
+            return true;
+        }
+    }
+
+    /**
+     * Creates an appropriate system store from a given file. The resulting
+     * store has not yet been loaded. A flag indicates if the file should be
+     * created if it does not yet exist, and a second flag indicates if the
+     * store should be loaded.
+     * @param file the file to create the store from; non-null
+     * @param create if <code>true</code> and <code>file</code> does not yet
+     *        exist, attempt to create it.
+     * @param load if {@code true}, the returned store has been loaded
+     * @return a store created from <code>file</code>; non-null
+     * @throws IOException if a store cannot be created from <code>file</code>
+     */
+    static public SystemStore newStore(File file, boolean create, boolean load) throws IOException {
+        SystemStore result;
+        if (FileType.ZIP.hasExtension(file) || FileType.JAR.hasExtension(file)) {
+            // the file is zipped
+            if (create) {
+                throw new IOException("Can't create zipped grammar " + file.toString());
+            }
+            result = newStoreFromTmp(file.getPath(), Unzipper.instance().unzip(file));
+        } else {
+            result = new SystemStore(file, create);
+        }
+        if (load) {
+            result.reload();
+        }
+        return result;
+    }
+
+    /**
+     * Creates an appropriate system store from a given URL. A flag indicates if
+     * the returned store should be loaded.
+     * @param url the URL to create the store from; non-null
+     * @param load if {@code true}, the returned store has been loaded
+     * @return a store created from <code>url</code>; non-null
+     * @throws IOException if a store cannot be created from <code>url</code>
+     */
+    static public SystemStore newStore(URL url, boolean load) throws IOException {
+        SystemStore result;
+        try {
+            result = newStore(new File(url.toURI()), false, false);
+        } catch (IllegalArgumentException exc) {
+            result = newStoreFromTmp(url.toString(), Unzipper.instance().unzip(url));
+        } catch (URISyntaxException exc) {
+            throw Exceptions.UNREACHABLE;
+        }
+        if (load) {
+            result.reload();
+        }
+        return result;
+    }
+
+    /**
+     * Creates a loaded store based on a location given as a string.
+     * The location is attempted to be parsed either as a URL or as a filename.
+     * @param location the location to load the grammar from
+     * @throws IllegalArgumentException if no store can be created from the
+     *         given location
+     * @throws IOException if a store can be created but not loaded
+     */
+    static public SystemStore newStore(String location) throws IllegalArgumentException,
+                                                        IOException {
+        try {
+            return newStore(new URL(location), true);
+        } catch (IllegalArgumentException exc) {
+            return newStore(new File(location), false, true);
+        }
+    }
+
+    /** Creates a systems store from the content of a temporary directory, as produced by unzipping.
+     * The resulting store has not been loaded.
+     */
+    static private SystemStore newStoreFromTmp(String orig, Path path) throws IOException {
+        File[] files = path.toFile().listFiles();
+        if (files.length != 1) {
+            throw new IOException(
+                String.format("Zip file %s should only contain production system", orig));
+        }
+        return new SystemStore(files[0], false);
+    }
+
+    /**
+     * Convenience method to create a grammar model based on a given file.
+     * @param file the file to load the grammar from
+     * @throws IOException if an error occurred while creating the store, or
+     * if the store exists but does not contain a grammar
+     */
+    static public GrammarModel newGrammar(File file) throws IOException {
+        return newStore(file, false, true).toGrammarModel();
+    }
+
+    /**
+     * Creates a grammar model based on a given URL.
+     * @param url the URL to load the grammar from
+     * @throws IOException if an error occurred while creating the store, or
+     * if the store exists but does not contain a grammar
+     */
+    static public GrammarModel newGrammar(URL url) throws IOException {
+        return newStore(url, true).toGrammarModel();
     }
 }

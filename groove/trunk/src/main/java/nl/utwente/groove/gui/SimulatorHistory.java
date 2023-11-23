@@ -65,7 +65,7 @@ class SimulatorHistory implements SimulatorListener {
     }
 
     private LoadGrammarFromHistoryAction createLoadAction(String location) throws IOException {
-        SystemStore store = SystemStore.newStore(new File(location), false);
+        SystemStore store = SystemStore.newStore(new File(location), false, false);
         return new LoadGrammarFromHistoryAction(this.simulator, store);
     }
 

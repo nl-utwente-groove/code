@@ -62,7 +62,7 @@ public class LoadGrammarAction extends SimulatorAction {
     public boolean load(File grammarFile) throws IOException {
         boolean result = false;
         // Load the grammar.
-        final SystemStore store = SystemStore.newStore(grammarFile, false);
+        final SystemStore store = SystemStore.newStore(grammarFile, false, false);
         result = load(store);
         // now we know loading succeeded, we can set the current
         // names & files
@@ -79,7 +79,7 @@ public class LoadGrammarAction extends SimulatorAction {
     }
 
     /**
-     * Loads in a given system store.
+     * Loads in a given (as yet unloaded) system store.
      */
     public boolean load(final SystemStore store) throws IOException {
         if (!getDisplaysPanel().saveAllEditors(true)) {
@@ -140,12 +140,13 @@ public class LoadGrammarAction extends SimulatorAction {
             }
         }
         final GrammarModel grammar = store.toGrammarModel();
-        getSimulatorModel().setGrammar(grammar);
         grammar.getProperties().setCurrentVersionProperties();
         if (saveAfterLoading && newGrammarFile != null) {
             getActions()
                 .getSaveGrammarAction()
                 .save(newGrammarFile, !newGrammarFile.equals(store.getLocation()));
+        } else {
+            getSimulatorModel().setGrammar(store);
         }
         return true;
     }

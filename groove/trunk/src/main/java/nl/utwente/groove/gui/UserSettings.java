@@ -96,7 +96,7 @@ public class UserSettings {
             // reoccur forever from now on
             userPrefs.remove(LOCATION_KEY);
             try {
-                final SystemStore store = SystemStore.newStore(new File(location), false);
+                final SystemStore store = SystemStore.newStore(new File(location), false, false);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {

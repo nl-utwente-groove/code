@@ -38,6 +38,7 @@ import nl.utwente.groove.grammar.rule.RuleGraph;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
 import nl.utwente.groove.grammar.type.TypeLabel;
+import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.transform.BasicEvent;
 import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.transform.RuleEvent.Reuse;
@@ -55,7 +56,7 @@ public class TestDeleteUse {
         File grammarFile = new File(grammar);
         GrammarModel view = null;
         try {
-            view = GrammarModel.newInstance(grammarFile, false);
+            view = SystemStore.newGrammar(grammarFile);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -142,7 +143,7 @@ public class TestDeleteUse {
         File grammarFile = new File(grammar);
         GrammarModel view = null;
         try {
-            view = GrammarModel.newInstance(grammarFile, false);
+            view = SystemStore.newGrammar(grammarFile);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -176,7 +177,7 @@ public class TestDeleteUse {
         File grammarFile = new File(grammar);
         GrammarModel view = null;
         try {
-            view = GrammarModel.newInstance(grammarFile, false);
+            view = SystemStore.newGrammar(grammarFile);
         } catch (IOException e) {
             e.printStackTrace();
         }
