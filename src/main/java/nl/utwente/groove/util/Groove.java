@@ -46,6 +46,7 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.graph.GxlIO;
+import nl.utwente.groove.io.store.SystemStore;
 
 /**
  * Globals and convenience methods.
@@ -165,7 +166,7 @@ public class Groove {
      */
     static public GrammarModel loadGrammar(String dirname) throws IOException {
         File dir = new File(GRAMMAR.addExtension(dirname));
-        return GrammarModel.newInstance(dir);
+        return SystemStore.newGrammar(dir);
     }
 
     /**

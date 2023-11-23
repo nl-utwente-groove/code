@@ -36,6 +36,7 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Groove;
@@ -58,8 +59,7 @@ public class ExplorationTest {
     public class TestCaseRecord {
         /** Sets the fields of this record. */
         public TestCaseRecord(String grammarName, String startFileName, String strategy,
-            int nodeCount, int edgeCount, int openCount) {
-            super();
+                              int nodeCount, int edgeCount, int openCount) {
             this.grammarName = grammarName;
             this.startGraphName = startFileName;
             this.strategy = strategy;
@@ -203,13 +203,8 @@ public class ExplorationTest {
     @Test
     public void testSierpinsky() {
         GTS lts = testExploration("sierpinsky.gps", "start7", "linear", 8, 7);
-        assertEquals(1,
-            lts.getFinalStates()
-                .size());
-        HostGraph finalGraph = lts.getFinalStates()
-            .iterator()
-            .next()
-            .getGraph();
+        assertEquals(1, lts.getFinalStates().size());
+        HostGraph finalGraph = lts.getFinalStates().iterator().next().getGraph();
         assertEquals(3290, finalGraph.nodeCount());
         assertEquals(6577, finalGraph.edgeCount());
     }
@@ -289,11 +284,8 @@ public class ExplorationTest {
      * @return the explored GTS
      */
     protected GTS testExploration(TestCaseRecord testCase) {
-        return testExploration(testCase.grammarName,
-            testCase.startGraphName,
-            testCase.strategy,
-            testCase.nodeCount,
-            testCase.edgeCount);
+        return testExploration(testCase.grammarName, testCase.startGraphName, testCase.strategy,
+                               testCase.nodeCount, testCase.edgeCount);
     }
 
     /**
@@ -306,7 +298,7 @@ public class ExplorationTest {
      * @return the explored GTS
      */
     protected GTS testExploration(GrammarModel view, String strategyDescr, int nodeCount,
-        int edgeCount, int openCount, boolean save) {
+                                  int edgeCount, int openCount, boolean save) {
         try {
             Grammar gg = view.toGrammar();
             GTS gts = new GTS(gg);
@@ -315,8 +307,7 @@ public class ExplorationTest {
             if (strategyDescr == null) {
                 exploreType = ExploreType.DEFAULT;
             } else {
-                Serialized strategy = StrategyEnumerator.instance()
-                    .parseCommandline(strategyDescr);
+                Serialized strategy = StrategyEnumerator.instance().parseCommandline(strategyDescr);
                 Serialized acceptor = new Serialized("final");
                 exploreType = new ExploreType(strategy, acceptor, 0);
             }
@@ -326,8 +317,9 @@ public class ExplorationTest {
 
             if (save) {
                 try {
-                    Groove.saveGraph(gts.toPlainGraph(LTSLabels.DEFAULT, Filter.NONE, null),
-                        view.getName());
+                    Groove
+                        .saveGraph(gts.toPlainGraph(LTSLabels.DEFAULT, Filter.NONE, null),
+                                   view.getName());
                 } catch (IOException exc) { // proceed
                 }
             }
@@ -358,7 +350,7 @@ public class ExplorationTest {
      * @return the explored GTS
      */
     protected GTS testExploration(GrammarModel view, String strategyDescr, int nodeCount,
-        int edgeCount, int openCount) {
+                                  int edgeCount, int openCount) {
         return testExploration(view, strategyDescr, nodeCount, edgeCount, openCount, false);
     }
 
@@ -374,7 +366,7 @@ public class ExplorationTest {
      * @return the explored GTS
      */
     protected GTS testExploration(String grammarName, String startGraphName, String strategyDescr,
-        int nodeCount, int edgeCount, int openCount) {
+                                  int nodeCount, int edgeCount, int openCount) {
         GrammarModel gg = loadGrammar(grammarName, startGraphName);
         return testExploration(gg, strategyDescr, nodeCount, edgeCount, openCount);
     }
@@ -390,13 +382,9 @@ public class ExplorationTest {
      * @return the explored GTS
      */
     protected GTS testExploration(String grammarName, String startGraphName, String strategyDescr,
-        int nodeCount, int edgeCount) {
-        return testExploration(grammarName,
-            startGraphName,
-            strategyDescr,
-            nodeCount,
-            edgeCount,
-            -1);
+                                  int nodeCount, int edgeCount) {
+        return testExploration(grammarName, startGraphName, strategyDescr, nodeCount, edgeCount,
+                               -1);
     }
 
     /**
@@ -409,7 +397,7 @@ public class ExplorationTest {
      * @return the explored GTS
      */
     protected GTS testExploration(String grammarName, String startGraphName, int nodeCount,
-        int edgeCount) {
+                                  int edgeCount) {
         return testExploration(grammarName, startGraphName, null, nodeCount, edgeCount);
     }
 
@@ -427,7 +415,9 @@ public class ExplorationTest {
 
     private GrammarModel loadGrammar(String grammarName, String startGraphName) {
         try {
-            GrammarModel result = GrammarModel.newInstance(new File(INPUT_DIR, grammarName), false);
+            GrammarModel result = SystemStore
+                .newStore(new File(INPUT_DIR, grammarName), false, true)
+                .toGrammarModel();
             if (startGraphName != null) {
                 result.setLocalActiveNames(ResourceKind.HOST, QualName.parse(startGraphName));
             }

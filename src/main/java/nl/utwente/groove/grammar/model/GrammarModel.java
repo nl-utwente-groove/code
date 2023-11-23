@@ -25,9 +25,6 @@ import static nl.utwente.groove.grammar.model.ResourceKind.TYPE;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,6 +45,7 @@ import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
+import nl.utwente.groove.grammar.GrammarSource;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Rule;
@@ -64,6 +62,7 @@ import nl.utwente.groove.util.ChangeCount;
 import nl.utwente.groove.util.ChangeCount.Tracker;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.Version;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -78,7 +77,7 @@ public class GrammarModel implements PropertyChangeListener {
      * graph(s) that are stored in the grammar properties.
      */
     public GrammarModel(SystemStore store) {
-        this.store = store;
+        this.source = store;
         this.changeCount = new ChangeCount();
         String grammarVersion = store.getProperties().getGrammarVersion();
         boolean noActiveStartGraphs = store.getProperties().getActiveNames(HOST).isEmpty();
@@ -91,7 +90,7 @@ public class GrammarModel implements PropertyChangeListener {
 
     /** Returns the name of the rule system. */
     public String getName() {
-        return this.store.getName();
+        return this.source.getName();
     }
 
     /**
@@ -106,15 +105,18 @@ public class GrammarModel implements PropertyChangeListener {
     }
 
     /** Returns the backing system store. */
-    public SystemStore getStore() {
-        return this.store;
+    public GrammarSource getStore() {
+        return this.source;
     }
+
+    /** The source backing this model. */
+    private final GrammarSource source;
 
     /** Returns the system properties of this grammar model. */
     public GrammarProperties getProperties() {
         GrammarProperties result = this.localProperties;
         if (result == null) {
-            result = this.store.getProperties();
+            result = this.source.getProperties();
         }
         return result;
     }
@@ -419,6 +421,9 @@ public class GrammarModel implements PropertyChangeListener {
         return !getErrors().isEmpty();
     }
 
+    /** Possibly empty list of errors found in the conversion to a grammar. */
+    private FormatErrorSet errors;
+
     /**
      * Returns a fresh change tracker for the overall grammar model.
      */
@@ -491,11 +496,6 @@ public class GrammarModel implements PropertyChangeListener {
         }
     }
 
-    /** Checks if this grammar has rules (maybe with errors). */
-    public boolean hasRules() {
-        return !getResourceSet(RULE).isEmpty();
-    }
-
     /**
      * Computes a graph grammar from this model.
      * @throws FormatException if there are syntax errors in the model
@@ -566,27 +566,44 @@ public class GrammarModel implements PropertyChangeListener {
         return result;
     }
 
+    /** The graph grammar derived from the rule models. */
+    private Grammar grammar;
+
+    /** Checks if this grammar has rules (maybe with errors). */
+    public boolean hasRules() {
+        return !getResourceSet(RULE).isEmpty();
+    }
+
     /**
      * Creates a Prolog environment that produces its standard output
      * on a the default {@link GrooveEnvironment} output stream.
      */
     public GrooveEnvironment getPrologEnvironment() {
-        if (this.prologEnvironment == null) {
-            this.prologEnvironment = new GrooveEnvironment(null, null);
-            for (NamedResourceModel<?> model : getResourceSet(PROLOG)) {
-                PrologModel prologModel = (PrologModel) model;
-                if (model.isEnabled()) {
-                    try {
-                        this.prologEnvironment.loadProgram(prologModel.getProgram());
-                        prologModel.clearErrors();
-                    } catch (FormatException e) {
-                        prologModel.setErrors(e.getErrors());
-                    }
+        return this.prologEnvironment.get();
+    }
+
+    /**
+     *
+     */
+    private GrooveEnvironment computePrologEnvironment() {
+        var result = new GrooveEnvironment(null, null);
+        for (NamedResourceModel<?> model : getResourceSet(PROLOG)) {
+            PrologModel prologModel = (PrologModel) model;
+            if (model.isEnabled()) {
+                try {
+                    result.loadProgram(prologModel.getProgram());
+                    prologModel.clearErrors();
+                } catch (FormatException e) {
+                    prologModel.setErrors(e.getErrors());
                 }
             }
         }
-        return this.prologEnvironment;
+        return result;
     }
+
+    /** The prolog environment derived from the system store. */
+    private final LazyFactory<GrooveEnvironment> prologEnvironment
+        = LazyFactory.instance(this::computePrologEnvironment);
 
     /**
      * Resets the {@link #grammar} and {@link #errors} objects, making sure that
@@ -626,7 +643,7 @@ public class GrammarModel implements PropertyChangeListener {
         this.resourceChangeCounts.get(kind).increase();
         switch (kind) {
         case PROLOG:
-            this.prologEnvironment = null;
+            this.prologEnvironment.reset();
             break;
         case PROPERTIES:
             NodeNrDispenser.setIdBased(getProperties().isUseStoredNodeIds());
@@ -748,20 +765,12 @@ public class GrammarModel implements PropertyChangeListener {
      */
     private final Map<ResourceKind,SortedSet<QualName>> localActiveNamesMap
         = new EnumMap<>(ResourceKind.class);
-    /** The store backing this model. */
-    private final SystemStore store;
     /** Counter of the number of invalidations of the grammar. */
     private final ChangeCount changeCount;
     /** Local properties; if {@code null}, the stored properties are used. */
     private GrammarProperties localProperties;
     /** Flag to indicate if the start graph is external. */
     private boolean isExternalStartGraphModel = false;
-    /** Possibly empty list of errors found in the conversion to a grammar. */
-    private FormatErrorSet errors;
-    /** The graph grammar derived from the rule models. */
-    private Grammar grammar;
-    /** The prolog environment derived from the system store. */
-    private GrooveEnvironment prologEnvironment;
     /** The start graph of the grammar. */
     private HostModel startGraphModel;
     /** The type model composed from the individual elements. */
@@ -776,63 +785,6 @@ public class GrammarModel implements PropertyChangeListener {
             this.resourceChangeCounts.put(kind, new ChangeCount());
         }
         //        this.typeTracker = createChangeTracker(TYPE);
-    }
-
-    /**
-     * Creates an instance based on a store located at a given URL.
-     * @param url the URL to load the grammar from
-     * @throws IllegalArgumentException if no store can be created from the
-     *         given URL
-     * @throws IOException if a store can be created but not loaded
-     */
-    static public GrammarModel newInstance(URL url) throws IllegalArgumentException, IOException {
-        SystemStore store = SystemStore.newStore(url);
-        store.reload();
-        GrammarModel result = store.toGrammarModel();
-        return result;
-    }
-
-    /**
-     * Creates an instance based on a given file.
-     * @param file the file to load the grammar from
-     * @throws IOException if the store exists  does not contain a grammar
-     */
-    static public GrammarModel newInstance(File file) throws IOException {
-        return newInstance(file, false);
-    }
-
-    /**
-     * Creates an instance based on a given file.
-     * @param file the file to load the grammar from
-     * @param create if <code>true</code> and <code>file</code> does not yet
-     *        exist, attempt to create it.
-     * @throws IOException if an error occurred while creating the store, or
-     * if the store exists but does not contain a grammar
-     */
-    static public GrammarModel newInstance(File file, boolean create) throws IOException {
-        SystemStore store = SystemStore.newStore(file, create);
-        store.reload();
-        GrammarModel result = store.toGrammarModel();
-        return result;
-    }
-
-    /**
-     * Creates an instance based on a given location, which is given either as a
-     * URL or as a filename.
-     * @param location the location to load the grammar from
-     * @throws IllegalArgumentException if no store can be created from the
-     *         given location
-     * @throws IOException if a store can be created but not loaded
-     */
-    static public GrammarModel newInstance(String location) throws IllegalArgumentException,
-                                                            IOException {
-        try {
-            return newInstance(new URL(location));
-        } catch (IllegalArgumentException exc) {
-            return newInstance(new File(location), false);
-        } catch (IOException exc) {
-            return newInstance(new File(location), false);
-        }
     }
 
     static private final boolean DEBUG = false;

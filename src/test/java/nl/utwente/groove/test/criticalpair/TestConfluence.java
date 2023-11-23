@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2023 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.model.GrammarModel;
+import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.transform.criticalpair.ConfluenceResult;
 import nl.utwente.groove.transform.criticalpair.ConfluenceStatus;
 import nl.utwente.groove.transform.criticalpair.CriticalPair;
@@ -43,7 +44,7 @@ public class TestConfluence {
         GrammarModel view = null;
         Grammar grammar = null;
         try {
-            view = GrammarModel.newInstance(grammarFile, false);
+            view = SystemStore.newGrammar(grammarFile);
             grammar = view.toGrammar();
         } catch (IOException e) {
             e.printStackTrace();
@@ -64,7 +65,7 @@ public class TestConfluence {
         GrammarModel view = null;
         Grammar grammar = null;
         try {
-            view = GrammarModel.newInstance(grammarFile, false);
+            view = SystemStore.newGrammar(grammarFile);
             grammar = view.toGrammar();
         } catch (IOException e) {
             e.printStackTrace();
@@ -87,7 +88,7 @@ public class TestConfluence {
         GrammarModel view = null;
         Grammar grammar = null;
         try {
-            view = GrammarModel.newInstance(grammarFile, false);
+            view = SystemStore.newGrammar(grammarFile);
             grammar = view.toGrammar();
         } catch (IOException e) {
             e.printStackTrace();
@@ -117,7 +118,7 @@ public class TestConfluence {
         GrammarModel view = null;
         Grammar grammar = null;
         try {
-            view = GrammarModel.newInstance(grammarFile, false);
+            view = SystemStore.newGrammar(grammarFile);
             //            GrammarProperties props = view.getProperties();
             //            props.setInjective(true);
             //            view.setProperties(props);
@@ -128,8 +129,8 @@ public class TestConfluence {
             e.printStackTrace();
         }
         ConfluenceStatus expected = ConfluenceStatus.NOT_STICTLY_CONFLUENT;
-        ConfluenceResult result =
-            ConfluenceResult.checkStrictlyConfluent(grammar, ConfluenceStatus.UNTESTED, true);
+        ConfluenceResult result
+            = ConfluenceResult.checkStrictlyConfluent(grammar, ConfluenceStatus.UNTESTED, true);
         result.analyzeAll();
         assertTrue(result.getStatus() == expected);
     }

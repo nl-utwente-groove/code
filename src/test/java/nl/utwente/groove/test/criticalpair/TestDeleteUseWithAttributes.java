@@ -27,6 +27,7 @@ import org.junit.Test;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.model.GrammarModel;
+import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.transform.criticalpair.CriticalPair;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -41,7 +42,7 @@ public class TestDeleteUseWithAttributes {
         File grammarFile = new File(grammar);
         GrammarModel view = null;
         try {
-            view = GrammarModel.newInstance(grammarFile, false);
+            view = SystemStore.newGrammar(grammarFile);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -50,8 +51,8 @@ public class TestDeleteUseWithAttributes {
         Rule deleteNumber = getSimpleRule("deleteNumber", view);
         Rule deleteNumberOne = getSimpleRule("deleteNumberOne", view);
 
-        Set<CriticalPair> pairs =
-            CriticalPair.computeCriticalPairs(addOneToNumber, addOneToNumber_2);
+        Set<CriticalPair> pairs
+            = CriticalPair.computeCriticalPairs(addOneToNumber, addOneToNumber_2);
         assertTrue(pairs.size() == 1);
         pairs = CriticalPair.computeCriticalPairs(addOneToNumber, deleteNumber);
         assertTrue(pairs.size() == 1);
@@ -73,7 +74,7 @@ public class TestDeleteUseWithAttributes {
         File grammarFile = new File(grammar);
         GrammarModel view = null;
         try {
-            view = GrammarModel.newInstance(grammarFile, false);
+            view = SystemStore.newGrammar(grammarFile);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -105,8 +106,7 @@ public class TestDeleteUseWithAttributes {
     private Rule getSimpleRule(String name, GrammarModel view) {
         Rule result = null;
         try {
-            result = view.getRuleModel(QualName.name(name))
-                .toResource();
+            result = view.getRuleModel(QualName.name(name)).toResource();
         } catch (FormatException e) {
             e.printStackTrace();
         }

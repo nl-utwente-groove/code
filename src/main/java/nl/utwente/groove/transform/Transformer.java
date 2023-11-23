@@ -39,6 +39,7 @@ import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.io.FileType;
+import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.Groove;
@@ -54,10 +55,11 @@ import nl.utwente.groove.util.parse.FormatException;
 public class Transformer {
     /**
      * Constructs a transformer based on the grammar found at a given location.
+     * The location is given as a string that could either be a URL or a filename.
      * @throws IOException if the grammar cannot be loaded from the given location
      */
     public Transformer(String grammarFileName) throws IOException {
-        this(GrammarModel.newInstance(grammarFileName));
+        this(SystemStore.newStore(grammarFileName));
     }
 
     /**
@@ -65,22 +67,27 @@ public class Transformer {
      * @throws IOException if the grammar cannot be loaded from the given location
      */
     public Transformer(File grammarLocation) throws IOException {
-        this(GrammarModel.newInstance(grammarLocation));
+        this(SystemStore.newStore(grammarLocation, false, true));
     }
 
     /**
-     * Constructs a transformer based on a given grammar model.
+     * Constructs a transformer based on a given system store.
      */
-    public Transformer(GrammarModel grammarModel) {
-        this.grammarModel = grammarModel;
+    public Transformer(SystemStore store) {
+        this.store = store;
     }
+
+    /** Returns the system store wrapped in this transformer. */
+    public SystemStore getStore() {
+        return this.store;
+    }
+
+    private final SystemStore store;
 
     /** Returns the grammar model wrapped in this transformer. */
     public GrammarModel getGrammarModel() {
-        return this.grammarModel;
+        return getStore().toGrammarModel();
     }
-
-    private final GrammarModel grammarModel;
 
     /**
      * Changes a property in the grammar model.
@@ -194,7 +201,7 @@ public class Transformer {
                 File startGraphFile = new File(startGraphName);
                 if (!startGraphFile.exists()) {
                     // look for the name within the grammar location
-                    File grammarLocation = getGrammarModel().getStore().getLocation();
+                    File grammarLocation = getStore().getLocation();
                     startGraphFile = new File(grammarLocation, startGraphName);
                 }
                 if (!startGraphFile.exists()) {

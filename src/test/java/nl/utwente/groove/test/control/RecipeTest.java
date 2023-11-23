@@ -36,6 +36,7 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Viewer;
+import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSCounter;
 import nl.utwente.groove.util.parse.FormatException;
@@ -110,7 +111,7 @@ public class RecipeTest {
      * @param llt low-level transition count
      */
     private void testExploration(String startGraphName, String control, int hls, int lls, int hlt,
-        int llt) {
+                                 int llt) {
         setStateCount(hls, lls);
         setTransitionCount(hlt, llt);
         testExploration(startGraphName, control);
@@ -146,13 +147,13 @@ public class RecipeTest {
             }
             runExploration(gg, strategyDescr);
             assertEquals(this.highLevelStateCount,
-                counter.getStateCount() - counter.getRecipeStageCount());
+                         counter.getStateCount() - counter.getRecipeStageCount());
             assertEquals(this.lowLevelStateCount,
-                counter.getStateCount() - counter.getAbsentStateCount());
+                         counter.getStateCount() - counter.getAbsentStateCount());
             assertEquals(this.highLevelTransCount,
-                counter.getTransitionCount() - counter.getRecipeStepCount());
+                         counter.getTransitionCount() - counter.getRecipeStepCount());
             assertEquals(this.lowLevelTransCount,
-                counter.getRuleTransitionCount() - counter.getAbsentTransitionCount());
+                         counter.getRuleTransitionCount() - counter.getAbsentTransitionCount());
         } catch (FormatException exc) {
             fail(exc.toString());
         }
@@ -167,13 +168,11 @@ public class RecipeTest {
             if (strategyDescr == null) {
                 exploreType = ExploreType.DEFAULT;
             } else {
-                Serialized strategy = StrategyEnumerator.instance()
-                    .parseCommandline(strategyDescr);
+                Serialized strategy = StrategyEnumerator.instance().parseCommandline(strategyDescr);
                 Serialized acceptor = new Serialized("final");
                 exploreType = new ExploreType(strategy, acceptor, 0);
             }
-            Exploration exploration = exploreType.newExploration(gts)
-                .play();
+            Exploration exploration = exploreType.newExploration(gts).play();
             assertFalse(exploration.isInterrupted());
         } catch (FormatException exc) {
             fail(exc.toString());
@@ -182,7 +181,7 @@ public class RecipeTest {
 
     private GrammarModel loadGrammar(String grammarName, String startGraphName) {
         try {
-            GrammarModel result = GrammarModel.newInstance(new File(grammarName), false);
+            GrammarModel result = SystemStore.newGrammar(new File(grammarName));
             if (startGraphName != null) {
                 result.setLocalActiveNames(ResourceKind.HOST, QualName.name(startGraphName));
             }

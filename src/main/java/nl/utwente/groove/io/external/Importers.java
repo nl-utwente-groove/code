@@ -67,12 +67,13 @@ public class Importers {
         }
     }
 
-    private static void doChosenImport(Simulator simulator, GrammarModel grammar)
-        throws PortException, IOException {
+    private static void doChosenImport(Simulator simulator,
+                                       GrammarModel grammar) throws PortException, IOException {
         FileType fileType = getFormatChooser().getFileType();
         File file = getFormatChooser().getSelectedFile();
         Importer ri = getImporter(fileType);
         ri.setSimulator(simulator);
+        var store = simulator.getModel().getStore();
         Set<Resource> resources = ri.doImport(file, fileType, grammar);
         if (resources != null) {
             Map<ResourceKind,Collection<AspectGraph>> newGraphs = new EnumMap<>(ResourceKind.class);
@@ -96,18 +97,15 @@ public class Importers {
                             newTexts.put(kind, texts = new HashMap<>());
                         }
                         texts.put(name, text);
-                        grammar.getStore()
-                            .putTexts(resource.getKind(), Collections.singletonMap(name, text));
+                        store.putTexts(resource.getKind(), Collections.singletonMap(name, text));
                     }
                 }
             }
             for (Map.Entry<ResourceKind,Collection<AspectGraph>> entry : newGraphs.entrySet()) {
-                grammar.getStore()
-                    .putGraphs(entry.getKey(), entry.getValue(), true);
+                store.putGraphs(entry.getKey(), entry.getValue(), true);
             }
             for (Map.Entry<ResourceKind,Map<QualName,String>> entry : newTexts.entrySet()) {
-                grammar.getStore()
-                    .putTexts(entry.getKey(), entry.getValue());
+                store.putTexts(entry.getKey(), entry.getValue());
             }
         }
     }
@@ -117,11 +115,11 @@ public class Importers {
      * should be replaced by a newly loaded one.
      */
     private static boolean confirmOverwrite(Component parent, ResourceKind resource,
-        QualName name) {
-        int response = JOptionPane.showConfirmDialog(parent,
-            String.format("Replace existing %s '%s'?", resource.getDescription(), name),
-            null,
-            JOptionPane.OK_CANCEL_OPTION);
+                                            QualName name) {
+        int response = JOptionPane
+            .showConfirmDialog(parent, String
+                .format("Replace existing %s '%s'?", resource.getDescription(), name), null,
+                               JOptionPane.OK_CANCEL_OPTION);
         return response == JOptionPane.OK_OPTION;
     }
 

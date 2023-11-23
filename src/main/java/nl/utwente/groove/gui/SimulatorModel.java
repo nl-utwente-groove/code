@@ -350,8 +350,7 @@ public class SimulatorModel implements Cloneable {
      * @throws IOException if the create action failed
      */
     public boolean doNewGrammar(File grammarFile) throws IOException {
-        GrammarModel grammar = GrammarModel.newInstance(grammarFile, true);
-        setGrammar(grammar);
+        setGrammar(SystemStore.newStore(grammarFile, true, true));
         return true;
     }
 
@@ -795,10 +794,11 @@ public class SimulatorModel implements Cloneable {
         return this.grammar;
     }
 
-    /** Updates the model according to a given grammar. */
-    public final void setGrammar(GrammarModel grammar) {
+    /** Updates the model according to a given store. */
+    public final void setGrammar(SystemStore store) {
         start();
-        if (changeGrammar(grammar)) {
+        this.store = store;
+        if (changeGrammar(store.toGrammarModel())) {
             // reset the GTS in any case
             changeGTS(null);
             changeState(null);
@@ -862,10 +862,10 @@ public class SimulatorModel implements Cloneable {
      * grammar view, if any.
      */
     public final SystemStore getStore() {
-        return hasGrammar()
-            ? getGrammar().getStore()
-            : null;
+        return this.store;
     }
+
+    private SystemStore store;
 
     /**
      * Returns the selected resource of a given kind, or {@code null}

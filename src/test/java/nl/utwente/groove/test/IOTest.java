@@ -24,14 +24,15 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-import org.junit.Assert;
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatException;
@@ -58,46 +59,20 @@ public class IOTest {
         int nodecount = 11;
         int edgecount = 12;
         try {
-            testControl(Groove.loadGrammar(DIRECTORY),
-                DEF_START,
-                DEF_CONTROL,
-                nodecount,
-                edgecount);
-            testControl(Groove.loadGrammar(DIRECTORY),
-                DEF_START,
-                DEF_CONTROL,
-                nodecount,
-                edgecount);
+            testControl(Groove.loadGrammar(DIRECTORY), DEF_START, DEF_CONTROL, nodecount,
+                        edgecount);
+            testControl(Groove.loadGrammar(DIRECTORY), DEF_START, DEF_CONTROL, nodecount,
+                        edgecount);
 
             File file = new File(DIRECTORY);
             URL url = Groove.toURL(file);
 
-            testControl(GrammarModel.newInstance(file, false),
-                DEF_START,
-                DEF_CONTROL,
-                nodecount,
-                edgecount);
-            testControl(GrammarModel.newInstance(file, false),
-                DEF_START,
-                DEF_CONTROL,
-                nodecount,
-                edgecount);
+            testControl(SystemStore.newGrammar(file), DEF_START, DEF_CONTROL, nodecount, edgecount);
+            testControl(SystemStore.newGrammar(file), DEF_START, DEF_CONTROL, nodecount, edgecount);
 
-            testControl(GrammarModel.newInstance(url),
-                DEF_START,
-                DEF_CONTROL,
-                nodecount,
-                edgecount);
-            testControl(GrammarModel.newInstance(url),
-                DEF_START,
-                DEF_CONTROL,
-                nodecount,
-                edgecount);
-            testControl(GrammarModel.newInstance(url),
-                DEF_START,
-                DEF_CONTROL,
-                nodecount,
-                edgecount);
+            testControl(SystemStore.newGrammar(url), DEF_START, DEF_CONTROL, nodecount, edgecount);
+            testControl(SystemStore.newGrammar(url), DEF_START, DEF_CONTROL, nodecount, edgecount);
+            testControl(SystemStore.newGrammar(url), DEF_START, DEF_CONTROL, nodecount, edgecount);
 
         } catch (IOException e) {
             Assert.fail(e.toString());
@@ -109,11 +84,8 @@ public class IOTest {
         int nodecount = 12;
         int edgecount = 14;
         try {
-            testControl(Groove.loadGrammar(DIRECTORY),
-                ALT_START,
-                DEF_CONTROL,
-                nodecount,
-                edgecount);
+            testControl(Groove.loadGrammar(DIRECTORY), ALT_START, DEF_CONTROL, nodecount,
+                        edgecount);
         } catch (IOException e) {
             Assert.fail(e.toString());
         }
@@ -125,7 +97,7 @@ public class IOTest {
         int edgecount = 16;
         try {
             URL dir = Groove.toURL(new File(DIRECTORY));
-            GrammarModel grammarView = GrammarModel.newInstance(dir);
+            GrammarModel grammarView = SystemStore.newGrammar(dir);
             testControl(grammarView, ALT_START, ALT_CONTROL, nodecount, edgecount);
         } catch (IOException e) {
             Assert.fail(e.toString());
@@ -134,7 +106,7 @@ public class IOTest {
     }
 
     protected void testControl(GrammarModel view, String startName, String controlName,
-        int nodecount, int edgecount) {
+                               int nodecount, int edgecount) {
         testExploration(view, "control", startName, controlName, 3, nodecount, edgecount);
     }
 
@@ -146,7 +118,7 @@ public class IOTest {
      * @return the explored GTS
      */
     protected GTS testExploration(GrammarModel view, String grammarName, String startName,
-        String controlName, int rulecount, int nodeCount, int edgeCount) {
+                                  String controlName, int rulecount, int nodeCount, int edgeCount) {
         try {
             // and also set the start graph directly
             view.setLocalActiveNames(ResourceKind.CONTROL, QualName.parse(controlName));
@@ -156,12 +128,9 @@ public class IOTest {
             Grammar gg = view.toGrammar();
 
             assertEquals(grammarName, gg.getName());
-            assertEquals(startName, view.getStartGraphModel()
-                .getQualName()
-                .toString());
+            assertEquals(startName, view.getStartGraphModel().getQualName().toString());
             //            assertEquals(controlName, gg.getCtrlAut().getName());
-            assertEquals(rulecount, gg.getActions()
-                .size());
+            assertEquals(rulecount, gg.getActions().size());
 
             GTS gts = new GTS(gg);
             Exploration exploration = Exploration.explore(gts);

@@ -23,6 +23,7 @@ import gnu.prolog.vm.PrologException;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.prolog.GrooveEnvironment;
 import nl.utwente.groove.prolog.GrooveState;
 import nl.utwente.groove.prolog.PrologEngine;
@@ -52,8 +53,8 @@ public class PrologTestUtil {
      * @param query             A query
      * @return                  Did the query succeed?
      */
-    public static boolean test(GrooveState grooveState, String query)
-        throws FormatException, PrologException {
+    public static boolean test(GrooveState grooveState, String query) throws FormatException,
+                                                                      PrologException {
         if (prologQuery == null) {
             prologQuery = new PrologEngine(new GrooveEnvironment(null, null));
         }
@@ -75,7 +76,7 @@ public class PrologTestUtil {
     public static GrammarModel loadGrammar(String grammarName, String startGraphName) {
         GrammarModel result = null;
         try {
-            result = GrammarModel.newInstance(new File(GRAMMAR_DIR, grammarName), false);
+            result = SystemStore.newGrammar(new File(GRAMMAR_DIR, grammarName));
             result.setLocalActiveNames(ResourceKind.HOST, QualName.parse(startGraphName));
         } catch (IOException exc) {
             throw new RuntimeException(exc);
