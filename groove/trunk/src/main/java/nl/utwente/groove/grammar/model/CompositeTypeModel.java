@@ -126,9 +126,10 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
                 try {
                     TypeGraph graph = model.toResource();
                     nodeMergeMap.putAll(result.add(graph));
-                    for (TypeNode node : result.getImports()) {
-                        if (!importModels.containsKey(node)) {
-                            importModels.put(node, model);
+                    for (TypeNode node : graph.getImports()) {
+                        var nodeImage = nodeMergeMap.get(node);
+                        if (nodeImage.isImported() && !importModels.containsKey(nodeImage)) {
+                            importModels.put(nodeImage, model);
                         }
                     }
                 } catch (FormatException e) {
