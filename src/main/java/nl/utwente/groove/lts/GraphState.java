@@ -16,17 +16,15 @@
  */
 package nl.utwente.groove.lts;
 
-import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.control.instance.Frame;
 import nl.utwente.groove.grammar.CheckPolicy;
-import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.lts.Status.Flag;
+import nl.utwente.groove.transform.Phase;
 
 /**
  * Combination of graph and node functionality, used to store the state of a
@@ -37,7 +35,7 @@ import nl.utwente.groove.lts.Status.Flag;
  * flags:
  * <ul>
  * <li> <b>Closed:</b> A graph state is closed if all rule applications have been explored.
- * <li> <b>Cooked:</b> A graph state is done if it is closed and all reachable states up
+ * <li> <b>Done:</b> A graph state is done if it is closed and all reachable states up
  * until the first non-transient states are also closed. This means that all outgoing
  * transitions (including recipe transitions) are known.
  * <li> <b>Transient:</b> A graph state is transient if it is an intermediate state in
@@ -57,54 +55,9 @@ import nl.utwente.groove.lts.Status.Flag;
  * @version $Revision$ $Date: 2008-02-22 13:02:44 $
  */
 @NonNullByDefault
-public interface GraphState extends Node {
+public interface GraphState extends Node, Phase {
     /** Returns the Graph Transition System of which this is a state. */
     public GTS getGTS();
-
-    /** Returns the graph contained in this state. */
-    public HostGraph getGraph();
-
-    /**
-     * Sets a new actual frame for this state.
-     * This also initialises the prime frame, if that has not been done yet.
-     * If the prime frame has been initialised, it should equal the prime of
-     * the new actual frame.
-     */
-    public void setFrame(Frame frame);
-
-    /**
-     * Returns the prime control frame associated with this state.
-     * The prime frame is the frame with which the state is initialised;
-     * it is fixed for the lifetime of the state.
-     * This is in contrast with the actual frame, which may change as
-     * the state is explored.
-     */
-    public Frame getPrimeFrame();
-
-    /**
-     * Returns the actual control frame associated with this state.
-     * The actual control frame evolves as the state is explored, whereas the
-     * prime frame is fixed at creation time.
-     * The prime frame is always the prime of the actual frame.
-     * @see Frame#getPrime()
-     */
-    public Frame getActualFrame();
-
-    /**
-     * Returns a stack of values for the bound variables of
-     * the prime control frame.
-     * @see #getPrimeFrame()
-     * @see Frame#getVars()
-     */
-    public Object[] getPrimeValues();
-
-    /**
-     * Returns a stack of values for the bound variables of
-     * the actual control frame.
-     * @see #getPrimeFrame()
-     * @see Frame#getVars()
-     */
-    public Object[] getActualValues();
 
     /**
      * Retrieves an outgoing transition with a given match, if it exists. Yields
@@ -146,18 +99,6 @@ public interface GraphState extends Node {
      *         <code>false</code> otherwise
      */
     public boolean addTransition(GraphTransition transition);
-
-    /**
-     * Returns the first unexplored match found for this state, insofar one can
-     * currently be computed.
-     */
-    public @Nullable MatchResult getMatch();
-
-    /**
-     * Returns the set of all unexplored matches for this state, insofar they can
-     * currently be computed.
-     */
-    public List<MatchResult> getMatches();
 
     /**
      * Applies a rule match to this state.

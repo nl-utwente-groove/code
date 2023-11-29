@@ -31,6 +31,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.StringTokenizer;
 
@@ -487,6 +488,32 @@ public class Groove {
         if (value == null) {
             throw exc;
         }
+        return value;
+    }
+
+    /** Utility method to get a @Nullable value from any map. */
+    static public <T,U> @Nullable U get(Map<? extends T,? extends U> map, T key) {
+        return map.get(key);
+    }
+
+    /** Utility method to insert a value into any map and get the return value as a @Nullable. */
+    static public <T,U> @Nullable U put(Map<T,U> map, T key, U value) {
+        return map.put(key, value);
+    }
+
+    /** Utility method to remove a value from any map and get the return value as a @Nullable. */
+    static public <T,U> @Nullable U remove(Map<T,U> map, T key) {
+        return map.remove(key);
+    }
+
+    /** Returns the parameter value as a @Nullable. */
+    static public <T> @Nullable T nu(T value) {
+        return value;
+    }
+
+    /** Returns the parameter value as a @NonNull. */
+    static public <T> @NonNull T nn(T value) {
+        assert value != null;
         return value;
     }
 

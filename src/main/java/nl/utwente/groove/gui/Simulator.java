@@ -18,7 +18,6 @@ package nl.utwente.groove.gui;
 
 import static nl.utwente.groove.gui.Options.DELETE_RESOURCE_OPTION;
 import static nl.utwente.groove.gui.Options.HELP_MENU_NAME;
-import static nl.utwente.groove.gui.Options.RENUMBER_NODES_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_ABSENT_STATES_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_ARROWS_ON_LABELS_OPTION;
@@ -619,7 +618,6 @@ public class Simulator implements SimulatorListener {
         result.addSeparator();
         result.add(getOptions().getItem(DELETE_RESOURCE_OPTION));
         result.add(getOptions().getItem(VERIFY_ALL_STATES_OPTION));
-        result.add(getOptions().getItem(RENUMBER_NODES_OPTION));
         return result;
     }
 

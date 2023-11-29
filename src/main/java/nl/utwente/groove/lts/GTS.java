@@ -582,14 +582,6 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     }
 
     /**
-     * Indicates if the match collector should check for confluent diamonds
-     * in this GTS.
-     */
-    public boolean checkDiamonds() {
-        return true;
-    }
-
-    /**
      * Exports the GTS to a plain graph representation,
      * optionally including special edges to represent start, final and
      * open states, and state identifiers.

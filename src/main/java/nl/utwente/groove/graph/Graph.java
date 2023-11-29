@@ -195,15 +195,13 @@ public interface Graph {
         return hasInfo() && !getInfo().getErrors().isEmpty();
     }
 
-    /** Returns the set of errors associated with this graph. */
+    /** Returns the set of errors associated with this graph.
+     * This creates the info object if it was not yet there.
+     * If the aim is just to test whether there are errors, calling
+     * {@link #hasErrors()} is preferable.
+     */
     default public FormatErrorSet getErrors() {
-        FormatErrorSet result;
-        if (hasInfo()) {
-            result = getInfo().getErrors();
-        } else {
-            result = new FormatErrorSet();
-        }
-        return result;
+        return getInfo().getErrors();
     }
 
     /** Returns the set of properties associated with this graph. */
