@@ -19,7 +19,6 @@ package nl.utwente.groove.grammar.model;
 import static nl.utwente.groove.grammar.aspect.AspectKind.REMARK;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
@@ -201,7 +200,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                 HostGraphMorphism typing = type.analyzeHost(result);
                 result = typing.createImage(result.getName());
                 HostModelMap newElementMap = new HostModelMap(result.getFactory());
-                for (Map.Entry<AspectNode,HostNode> nodeEntry : elementMap.nodeMap().entrySet()) {
+                for (var nodeEntry : elementMap.nodeMap().entrySet()) {
                     HostNode typedNode = typing.getNode(nodeEntry.getValue());
                     if (typedNode != null) {
                         newElementMap.putNode(nodeEntry.getKey(), typedNode);
@@ -230,12 +229,16 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         if (normalSource instanceof NormalAspectGraph ng) {
             var sourceMap = new HostModelMap(result.getFactory());
             for (var ne : ng.toNormalMap().nodeMap().entrySet()) {
-                var hostNode = (@NonNull HostNode) elementMap.getNode(ne.getValue());
-                sourceMap.putNode(ne.getKey(), hostNode);
+                var hostNode = elementMap.getNode(ne.getValue());
+                if (hostNode != null) {
+                    sourceMap.putNode(ne.getKey(), hostNode);
+                }
             }
             for (var ee : ng.toNormalMap().edgeMap().entrySet()) {
-                var hostEdge = (@NonNull HostEdge) elementMap.getEdge(ee.getValue());
-                sourceMap.putEdge(ee.getKey(), hostEdge);
+                var hostEdge = elementMap.getEdge(ee.getValue());
+                if (hostEdge != null) {
+                    sourceMap.putEdge(ee.getKey(), hostEdge);
+                }
             }
             elementMap = sourceMap;
         }
@@ -285,6 +288,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         assert hostLabel != null && !hostLabel.isSort() : String
             .format("Inappropriate label %s", hostLabel);
         HostEdge hostEdge = result.addEdge(hostSource, hostLabel, hostNode);
+        assert hostEdge != null;
         elementMap.putEdge(modelEdge, hostEdge);
     }
 

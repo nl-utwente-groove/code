@@ -153,6 +153,15 @@ public class TypeNode implements Node, TypeElement {
         return this.type == TypeLabel.NODE;
     }
 
+    /** Changes the importedness status of this node.
+     * Also notifies the containing type graph of the change
+     * @param imported the new value for the importedness
+     */
+    public final void setImported(boolean imported) {
+        this.imported = imported;
+        getGraph().setImported(this, imported);
+    }
+
     /** Indicates if this node type is imported. */
     public final boolean isImported() {
         return this.imported;
@@ -164,12 +173,6 @@ public class TypeNode implements Node, TypeElement {
     /** Indicates if this node type stands for a data type. */
     public final boolean isSort() {
         return this.type.isSort();
-    }
-
-    /** Sets this node type to imported. */
-    public final void setImported() {
-        this.imported = true;
-        getGraph().setImported(this);
     }
 
     /** Returns the (possibly {@code null}) label pattern associated with this type node. */

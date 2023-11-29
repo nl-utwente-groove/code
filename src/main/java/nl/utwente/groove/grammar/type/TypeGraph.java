@@ -126,9 +126,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
             }
             image.setLabelPattern(source.getLabelPattern());
             boolean imported = source.isImported() && (oldImage == null || oldImage.isImported());
-            if (imported) {
-                image.setImported();
-            } else {
+            image.setImported(imported);
+            if (!imported) {
                 newNodes.add(image);
             }
             otherToThis.put(source, image);
@@ -161,9 +160,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
             this.nodeDirectSupertypeMap.add(node);
             this.nodeSubtypeMap.add(node);
             this.nodeSupertypeMap.add(node);
-        }
-        if (node.isImported()) {
-            setImported(node);
         }
         return result;
     }
@@ -378,9 +374,14 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
 
     /** Changes the status of a node type to imported.
      * The node type is assumed to be in the graph already.
+     * @param imported TODO
      */
-    public void setImported(TypeNode node) {
-        this.imports.add(node);
+    public void setImported(TypeNode node, boolean imported) {
+        if (imported) {
+            this.imports.add(node);
+        } else {
+            this.imports.remove(node);
+        }
     }
 
     /** Returns the set of imported node types.
