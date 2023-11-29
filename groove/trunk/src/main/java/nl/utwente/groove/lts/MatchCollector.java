@@ -57,8 +57,7 @@ public class MatchCollector {
      */
     public MatchCollector(GraphState state) {
         this.state = state;
-        this.record = state.getGTS().getRecord();
-        this.checkDiamonds = state.getGTS().checkDiamonds();
+        this.record = state.getRecord();
         if (state instanceof GraphNextState ns) {
             GraphState parent = ns.source();
             this.parentClosed = parent.isClosed();
@@ -93,7 +92,7 @@ public class MatchCollector {
         if (!isDisabled) {
             for (GraphTransition trans : this.parentTransMap) {
                 if (trans instanceof RuleTransition ruleTrans) {
-                    if (ruleTrans.getEvent().getRule().equals(step.getRule())) {
+                    if (ruleTrans.getAction().equals(step.getRule())) {
                         MatchResult match = ruleTrans.getKey();
                         if (isModifying) {
                             // we can reuse the event but not the control step
@@ -285,7 +284,7 @@ public class MatchCollector {
      */
     private MatchResult getParentTrans(MatchResult key) {
         MatchResult result;
-        if (this.checkDiamonds && this.parentTransMap != null) {
+        if (this.record.checkDiamonds() && this.parentTransMap != null) {
             RuleTransition trans = (RuleTransition) this.parentTransMap.get(key);
             result = trans == null
                 ? key
@@ -303,10 +302,6 @@ public class MatchCollector {
      * This means that all outgoing transitions have been added.
      */
     protected final boolean parentClosed;
-    /**
-     * Flag indicating that confluent diamonds should be checked.
-     */
-    protected final boolean checkDiamonds;
     /** The system record is set at construction. */
     protected final Record record;
     /** Possibly {@code null} mapping from rules to sets of outgoing

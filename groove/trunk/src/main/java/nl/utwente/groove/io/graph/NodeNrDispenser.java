@@ -25,22 +25,30 @@ public abstract class NodeNrDispenser {
     /** Computes a node number on the basis of a string ID. */
     abstract public int compute(String id);
 
-    /** Returns a node dispenser, depending on the {@link #idBased} property. */
-    static public NodeNrDispenser instance() {
-        if (idBased) {
-            return new IdBased();
-        } else {
-            return new NextBased();
-        }
+    /** Returns a node dispenser, depending on the {@link #idBased} property.
+     * @see #newIdBased()
+     * @see #newNextBased()
+     */
+    static public NodeNrDispenser newInstance() {
+        return idBased
+            ? newIdBased()
+            : newNextBased();
     }
 
-    /** The maximum node number supported by the {@link IdBased} dispenser.
-     * Stored node IDs with higher numbers will be ignored.
-     */
-    static public final int MAX_NODE_NR = 1_000_000;
+    /** Returns a fresh node number dispenser that gives out
+     * consecutive numbers. */
+    static public NodeNrDispenser newNextBased() {
+        return new NextBased();
+    }
+
+    /** Returns a fresh node number dispenser that gives out
+     * numbers based on the provided node ID. */
+    static public NodeNrDispenser newIdBased() {
+        return new IdBased();
+    }
 
     /**
-     * If {@code true}, the dispenser returned by {@link #instance()} is
+     * If {@code true}, the dispenser returned by {@link #newInstance()} is
      * identity-based; otherwise it always returns the next number in sequence.
      */
     static public boolean isIdBased() {
@@ -48,7 +56,7 @@ public abstract class NodeNrDispenser {
     }
 
     /**
-     * Determines if the dispenser returned by {@link #instance()} is
+     * Determines if the dispenser returned by {@link #newInstance()} is
      * identity-based or always picks the next number in sequence.
      */
     static public void setIdBased(boolean idBased) {
@@ -86,7 +94,7 @@ public abstract class NodeNrDispenser {
                 unit *= 10;
                 digitFound = true;
             }
-            return digitFound && nodeNr < MAX_NODE_NR
+            return digitFound
                 ? nodeNr
                 : super.compute(id);
         }

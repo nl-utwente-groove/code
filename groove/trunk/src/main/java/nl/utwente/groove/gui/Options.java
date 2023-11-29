@@ -94,7 +94,6 @@ public class Options implements Cloneable {
         addCheckbox(SHOW_BIDIRECTIONAL_EDGES_OPTION);
         addBehaviour(DELETE_RESOURCE_OPTION, 2);
         addBehaviour(VERIFY_ALL_STATES_OPTION, 3);
-        addBehaviour(RENUMBER_NODES_OPTION, 3);
     }
 
     /**
@@ -876,8 +875,6 @@ public class Options implements Cloneable {
     static public final String DELETE_RESOURCE_OPTION = "Delete seletected resource?";
     /** Always check CTL properties on all states, rather than the initial state. */
     static public final String VERIFY_ALL_STATES_OPTION = "Check CTL on all states?";
-    /** Always renumber graph nodes upon loading. */
-    static public final String RENUMBER_NODES_OPTION = "Renumber graph nodes on loading?";
 
     /** Default value map for the boolean options. */
     static private final Map<String,Boolean> boolOptionDefaults = new HashMap<>();
@@ -903,7 +900,6 @@ public class Options implements Cloneable {
         boolOptionDefaults.put(SHOW_BIDIRECTIONAL_EDGES_OPTION, true);
         intOptionDefaults.put(DELETE_RESOURCE_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(VERIFY_ALL_STATES_OPTION, BehaviourOption.NEVER);
-        intOptionDefaults.put(RENUMBER_NODES_OPTION, BehaviourOption.NEVER);
     }
 
     /** Returns the user preferences for a given key, as a list of Strings. */

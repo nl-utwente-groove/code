@@ -27,7 +27,6 @@ import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.transform.RuleApplication;
-import nl.utwente.groove.transform.RuleEvent;
 
 /**
  *
@@ -45,10 +44,6 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
     GraphState target();
 
     /* Overrides the method to specialise the result type. */
-    @Override
-    RuleEvent getEvent();
-
-    /** Overrides the method to specialise the result type. */
     @Override
     RuleTransitionLabel label();
 

@@ -52,10 +52,8 @@ public class Record {
         this.grammar = grammar;
         this.hostFactory = hostFactory;
         grammar.testFixed(true);
-        this.checkIso = grammar.getProperties()
-            .isCheckIsomorphism();
-        this.family = grammar.getProperties()
-            .getAlgebraFamily();
+        this.checkIso = grammar.getProperties().isCheckIsomorphism();
+        this.family = grammar.getProperties().getAlgebraFamily();
     }
 
     /** Returns the stored rule system on which the derivations are based. */
@@ -91,6 +89,13 @@ public class Record {
      */
     public RuleEvent getEvent(Proof proof) {
         return proof.newEvent(this);
+    }
+
+    /**
+     * Indicates if the match collector should check for confluent diamonds.
+     */
+    public boolean checkDiamonds() {
+        return true;
     }
 
     /**
@@ -157,8 +162,8 @@ public class Record {
      */
     public Set<Rule> getDisabledRules(Rule disabler) {
         Set<Rule> result = getDependencies().getDisableds(disabler);
-        assert result != null : String.format("Null rule dependencies for %s",
-            disabler.getQualName());
+        assert result != null : String
+            .format("Null rule dependencies for %s", disabler.getQualName());
         return result;
     }
 

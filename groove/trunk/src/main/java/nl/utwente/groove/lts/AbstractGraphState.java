@@ -433,8 +433,8 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
      */
     private final int nr;
 
-    /** Returns the system record associated with this state. */
-    protected Record getRecord() {
+    @Override
+    public Record getRecord() {
         return getGTS().getRecord();
     }
 

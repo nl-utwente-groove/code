@@ -109,7 +109,17 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
         assert !hasNode(id);
         AttrNode result = null;
         int nodeNr = this.dispenser.compute(id);
-        AttrNode node = getFactory().createNode(nodeNr);
+        AttrNode node;
+        try {
+            node = getFactory().createNode(nodeNr);
+        } catch (OutOfMemoryError exc) {
+            this.dispenser = NodeNrDispenser.newNextBased();
+            int oldNodeNr = nodeNr;
+            nodeNr = this.dispenser.compute(id);
+            node = getFactory().createNode(nodeNr);
+            addError("Stored node ID %s caused memory overflow. Set grammar property 'Use stored node IDs' to 'false'",
+                     oldNodeNr, node);
+        }
         // tests if a node with this number exists already
         if (addNode(node)) {
             result = node;
@@ -120,7 +130,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
         return result;
     }
 
-    private NodeNrDispenser dispenser = NodeNrDispenser.instance();
+    private NodeNrDispenser dispenser = NodeNrDispenser.newInstance();
 
     /**
      * Tests if a node with a given string identifier exists
