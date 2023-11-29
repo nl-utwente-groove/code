@@ -25,9 +25,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-import org.junit.Assert;
 import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.explore.Generator;
 import nl.utwente.groove.explore.util.LTSLabels;
@@ -103,7 +103,7 @@ public class CTLTest {
         testFormula("EXEX add_score(n0, _)", 2);
         testFormula("EXEX add_score(_, _)", 2);
         testFormula("EXEX add_score", 2);
-        testFormula("EXEX add_score(n1, _)", 0);
+        testFormula("EXEX add_score(n3, _)", 0);
         testFormula("EXEX add_score(_)", 0);
         testFormula("EXEX add_score()", 0);
         testFormula("EXEX add_score('n0',100)", 0);
@@ -131,12 +131,10 @@ public class CTLTest {
             File tmp = File.createTempFile("gts-" + grammarName, ".gxl");
             this.ltsLabels = new LTSLabels("sfro");
             List<String> genArgs = new ArrayList<>();
-            genArgs.addAll(Arrays.asList("-v",
-                "0",
-                "-o",
-                tmp.getCanonicalPath(),
-                "-ef",
-                this.ltsLabels.toString()));
+            genArgs
+                .addAll(Arrays
+                    .asList("-v", "0", "-o", tmp.getCanonicalPath(), "-ef",
+                            this.ltsLabels.toString()));
             genArgs.addAll(Arrays.asList(otherArgs));
             genArgs.add("junit/samples/" + grammarName);
             if (startGraphName != null) {
@@ -157,12 +155,11 @@ public class CTLTest {
     private void testFormula(String formula, int stateCount) {
         try {
             // all states satisfy the following property
-            Formula property = Formula.parse(formula)
-                .toCtlFormula();
+            Formula property = Formula.parse(formula).toCtlFormula();
             CTLMarker marker = new CTLMarker(property, CTLModelChecker.newModel(this.result));
             assertEquals(stateCount, marker.getCount(true));
-            marker =
-                new CTLMarker(property, CTLModelChecker.newModel(this.gtsGraph, this.ltsLabels));
+            marker
+                = new CTLMarker(property, CTLModelChecker.newModel(this.gtsGraph, this.ltsLabels));
             assertEquals(stateCount, marker.getCount(true));
         } catch (Exception efe) {
             fail(efe.getMessage());

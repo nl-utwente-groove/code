@@ -42,6 +42,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
@@ -70,6 +71,7 @@ import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.Util;
 import nl.utwente.groove.io.graph.AttrGraph;
 import nl.utwente.groove.io.graph.GxlIO;
+import nl.utwente.groove.io.graph.NodeNrDispenser;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Observable;
@@ -476,11 +478,12 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
 
     /**
      * Replaces the system properties in the store
-     * @param properties the new system properties object
+     * @param newProperties the new system properties object
      * @throws IOException if an error occurred while storing the properties
      */
-    public void putProperties(GrammarProperties properties) throws IOException {
-        PutPropertiesEdit edit = doPutProperties(properties);
+    public void putProperties(GrammarProperties newProperties) throws IOException {
+        PutPropertiesEdit edit = doPutProperties(newProperties);
+        // only post the properties change
         if (edit != null) {
             edit.checkAndSetVersion();
             postEdit(edit);
@@ -491,12 +494,21 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
      * Implements the functionality of {@link #putProperties(GrammarProperties)}.
      * Returns an undoable edit wrapping this functionality.
      */
-    PutPropertiesEdit doPutProperties(GrammarProperties properties) throws IOException {
+    PutPropertiesEdit doPutProperties(GrammarProperties newProperties) throws IOException {
         testInit();
         GrammarProperties oldProperties = this.properties;
-        this.properties = properties;
+        this.properties = newProperties;
         saveProperties();
-        return new PutPropertiesEdit(oldProperties, properties);
+        boolean requiresReload = GrammarKey
+            .getReloadKeys()
+            .stream()
+            .anyMatch(k -> !Objects
+                .equals(oldProperties.getProperty(k), newProperties.getProperty(k)));
+        if (requiresReload) {
+            // do a full reload
+            doReload();
+        }
+        return new PutPropertiesEdit(oldProperties, newProperties, requiresReload);
     }
 
     /**
@@ -540,21 +552,31 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
     }
 
     /**
-     * Reloads all data from the persistent storage into this store. Should
+     * Reloads all data from the persistent storage into this store. This
+     * resets the undo history. Should
      * at least be called once immediately after construction of the store.
      */
     public void reload() throws IOException {
+        notifyObservers(doReload());
+        this.initialised = true;
+    }
+
+    /**
+     * Implements the functionality of {@link #reload()} and returns
+     * (but does not yet post) the corresponding edit.
+     */
+    private MyEdit doReload() throws IOException {
+        // load the properties first as this may affect how other resources
+        // (in particular graphs, viz-a-viz node numbers) may be loaded in
+        loadProperties();
         for (ResourceKind kind : ResourceKind.values()) {
-            if (kind == PROPERTIES) {
-                loadProperties();
-            } else if (kind.isTextBased()) {
+            if (kind.isTextBased()) {
                 loadTexts(kind);
-            } else {
+            } else if (kind.isGraphBased()) {
                 loadGraphs(kind);
             }
         }
-        notifyObservers(new MyEdit(EditType.CREATE, EnumSet.allOf(ResourceKind.class)));
-        this.initialised = true;
+        return new MyEdit(EditType.CREATE, EnumSet.allOf(ResourceKind.class));
     }
 
     /**
@@ -814,7 +836,9 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
      * to {@link #properties}.
      */
     private void loadProperties() throws IOException {
-        this.properties = this.loadGrammarProperties();
+        var properties = loadGrammarProperties();
+        NodeNrDispenser.setIdBased(properties.isUseStoredNodeIds());
+        this.properties = properties;
     }
 
     /**
@@ -882,7 +906,9 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
 
     /** Saves the currently stored grammar properties. */
     private void saveProperties() throws IOException {
-        saveProperties(this.properties);
+        var properties = this.properties;
+        properties.setCurrentVersionProperties();
+        saveProperties(properties);
     }
 
     /** Overwrites the grammar properties file. */
@@ -1274,8 +1300,11 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
 
     /** Edit consisting of changing the grammar properties. */
     class PutPropertiesEdit extends MyEdit {
-        public PutPropertiesEdit(GrammarProperties oldProperties, GrammarProperties newProperties) {
-            super(EditType.MODIFY, PROPERTIES);
+        public PutPropertiesEdit(GrammarProperties oldProperties, GrammarProperties newProperties,
+                                 boolean reload) {
+            super(EditType.MODIFY, reload
+                ? EnumSet.allOf(ResourceKind.class)
+                : EnumSet.of(PROPERTIES));
             for (ResourceKind kind : EnumSet
                 .of(ResourceKind.PROLOG, ResourceKind.TYPE, ResourceKind.HOST,
                     ResourceKind.CONTROL)) {

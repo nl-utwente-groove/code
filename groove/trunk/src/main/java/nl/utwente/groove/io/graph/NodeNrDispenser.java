@@ -22,7 +22,10 @@ package nl.utwente.groove.io.graph;
  * @version $Revision$
  */
 public abstract class NodeNrDispenser {
-    /** Computes a node number on the basis of a string ID. */
+    /** Computes a node number, using a given string ID as a hint.
+     * If the hint is not used, attempts to give out successive numbers.
+     * The returned numbers are not guaranteed to be unique.
+     */
     abstract public int compute(String id);
 
     /** Returns a node dispenser, depending on the {@link #idBased} property.
@@ -63,7 +66,7 @@ public abstract class NodeNrDispenser {
         NodeNrDispenser.idBased = idBased;
     }
 
-    static private boolean idBased = true;
+    static private boolean idBased = false;
 
     /** Dispenser that gives out consecutive numbers, starting at 0. */
     static private class NextBased extends NodeNrDispenser {
@@ -72,6 +75,14 @@ public abstract class NodeNrDispenser {
             int result = this.current;
             this.current++;
             return result;
+        }
+
+        /** Sets the current value to a given value.
+         * The next invocations of {@link #compute(String)} will
+         * start with this value.
+         */
+        void setCurrent(int value) {
+            this.current = value;
         }
 
         private int current = 0;
@@ -94,9 +105,12 @@ public abstract class NodeNrDispenser {
                 unit *= 10;
                 digitFound = true;
             }
-            return digitFound
-                ? nodeNr
-                : super.compute(id);
+            if (digitFound) {
+                setCurrent(nodeNr + 1);
+                return nodeNr;
+            } else {
+                return super.compute(id);
+            }
         }
     }
 }

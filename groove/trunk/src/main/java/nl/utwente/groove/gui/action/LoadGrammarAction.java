@@ -141,12 +141,11 @@ public class LoadGrammarAction extends SimulatorAction {
         }
         final GrammarModel grammar = store.toGrammarModel();
         grammar.getProperties().setCurrentVersionProperties();
+        getSimulatorModel().setGrammar(store);
         if (saveAfterLoading && newGrammarFile != null) {
             getActions()
                 .getSaveGrammarAction()
                 .save(newGrammarFile, !newGrammarFile.equals(store.getLocation()));
-        } else {
-            getSimulatorModel().setGrammar(store);
         }
         return true;
     }
