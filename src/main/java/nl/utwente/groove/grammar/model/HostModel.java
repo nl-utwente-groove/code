@@ -34,6 +34,7 @@ import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.aspect.AspectNode;
+import nl.utwente.groove.grammar.aspect.NormalAspectGraph;
 import nl.utwente.groove.grammar.host.DefaultHostGraph;
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostFactory;
@@ -152,17 +153,18 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     }
 
     /**
-     * Computes a fresh model from a given aspect graph, together with a mapping
+     * Computes a host graph from the source aspect graph, together with a mapping
      * from the aspect graph's node to the (fresh) graph nodes.
      */
     private Pair<DefaultHostGraph,HostModelMap> computeModel() {
+        // actually, we start with the normalised source graph
         AspectGraph normalSource = getNormalSource();
         if (debug) {
             GraphPreviewDialog.showGraph(normalSource);
         }
         FormatErrorSet errors = new FormatErrorSet(normalSource.getErrors());
         DefaultHostGraph result = new DefaultHostGraph(normalSource.getName());
-        // we need to record the model-to-resource element map for layout transfer
+        // we need to record the normal-source-to-host element map for layout transfer
         HostModelMap elementMap = new HostModelMap(result.getFactory());
         // copy the nodes from model to resource
         // first the non-value nodes because their numbers are fixed
@@ -223,6 +225,20 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         GraphInfo.transferProperties(normalSource, result, elementMap);
         result.setErrors(errors.wrap(elementMap));
         result.setFixed();
+        // for the result value we need a map from the source to the host graph,
+        // whereas elementMap goes from the normalised source
+        if (normalSource instanceof NormalAspectGraph ng) {
+            var sourceMap = new HostModelMap(result.getFactory());
+            for (var ne : ng.toNormalMap().nodeMap().entrySet()) {
+                var hostNode = (@NonNull HostNode) elementMap.getNode(ne.getValue());
+                sourceMap.putNode(ne.getKey(), hostNode);
+            }
+            for (var ee : ng.toNormalMap().edgeMap().entrySet()) {
+                var hostEdge = (@NonNull HostEdge) elementMap.getEdge(ee.getValue());
+                sourceMap.putEdge(ee.getKey(), hostEdge);
+            }
+            elementMap = sourceMap;
+        }
         return new Pair<>(result, elementMap);
     }
 

@@ -4,8 +4,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -514,6 +516,17 @@ public class GrammarProperties extends Properties {
             return true;
         }
         return false;
+    }
+
+    /** Returns the set of keys for which this properties object differs from another. */
+    public Set<GrammarKey> getChanges(GrammarProperties properties) {
+        var result = EnumSet.noneOf(GrammarKey.class);
+        for (var key : GrammarKey.values()) {
+            if (!Objects.equals(getProperty(key), properties.getProperty(key))) {
+                result.add(key);
+            }
+        }
+        return result;
     }
 
     /** Returns a non-fixed clone of the properties. */

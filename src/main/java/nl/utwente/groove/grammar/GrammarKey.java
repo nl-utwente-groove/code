@@ -19,10 +19,12 @@ package nl.utwente.groove.grammar;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -358,6 +360,13 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
     static public Optional<GrammarKey> getKey(String name) {
         return Optional.ofNullable(nameKeyMap.get().get(name));
     }
+
+    /** Returns the grammar keys that require a full grammar reload upon value changes. */
+    static public Set<GrammarKey> getReloadKeys() {
+        return reloadKeys;
+    }
+
+    static private Set<GrammarKey> reloadKeys = EnumSet.of(USE_STORED_NODE_IDS);
 
     /** Creator methods for the {@link #nameKeyMap}*/
     static private Map<String,GrammarKey> createNameKeyMap() {

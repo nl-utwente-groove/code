@@ -54,7 +54,6 @@ import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.io.graph.NodeNrDispenser;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.prolog.GrooveEnvironment;
@@ -646,7 +645,6 @@ public class GrammarModel implements PropertyChangeListener {
             this.prologEnvironment.reset();
             break;
         case PROPERTIES:
-            NodeNrDispenser.setIdBased(getProperties().isUseStoredNodeIds());
             return;
         default:
             // proceed

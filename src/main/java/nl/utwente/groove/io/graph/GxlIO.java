@@ -32,6 +32,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBElement;
@@ -64,6 +65,7 @@ import nl.utwente.groove.gxl_1_0.RelendType;
 import nl.utwente.groove.gxl_1_0.TypedElementType;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.Version;
 import nl.utwente.groove.util.line.LineStyle;
 import nl.utwente.groove.util.parse.FormatException;
@@ -374,27 +376,32 @@ public class GxlIO extends GraphIO<AttrGraph> {
         // Initialize the new objects to be created.
         AttrGraph graph = new AttrGraph(gxlGraph.getId());
         LayoutMap layoutMap = new LayoutMap();
-
         // Extract nodes out of the gxl elements.
+        // First collect an ordered set of all node types
+        Set<NodeType> nodes
+            = new TreeSet<>((n1, n2) -> Strings.compareNatural(n1.getId(), n2.getId()));
         for (GraphElementType gxlElement : gxlGraph.getNodeOrEdgeOrRel()) {
-            if (gxlElement instanceof NodeType) {
-                // Extract the node id and create the node out of it.
-                String nodeId = gxlElement.getId();
-                if (graph.hasNode(nodeId)) {
-                    throw new FormatException(
-                        "The node " + nodeId + " is declared more than once.");
-                }
-                AttrNode node = graph.addNode(nodeId);
-                Map<String,String> attrs = loadAttributes(gxlElement);
-                // check for the presence of layout information
-                String layoutText = attrs.remove(LAYOUT_ATTR_NAME);
-                if (layoutText != null) {
-                    loadNodeLayout(layoutMap, node, layoutText);
-                }
-                // put the rest of the attributes into the node
-                for (Map.Entry<String,String> e : attrs.entrySet()) {
-                    node.setAttribute(e.getKey(), e.getValue());
-                }
+            if (gxlElement instanceof NodeType nt) {
+                nodes.add(nt);
+            }
+        }
+        // now process the node types in order
+        for (var nt : nodes) {
+            // Extract the node id and create the node out of it.
+            String nodeId = nt.getId();
+            if (graph.hasNode(nodeId)) {
+                throw new FormatException("The node " + nodeId + " is declared more than once.");
+            }
+            AttrNode node = graph.addNode(nodeId);
+            Map<String,String> attrs = loadAttributes(nt);
+            // check for the presence of layout information
+            String layoutText = attrs.remove(LAYOUT_ATTR_NAME);
+            if (layoutText != null) {
+                loadNodeLayout(layoutMap, node, layoutText);
+            }
+            // put the rest of the attributes into the node
+            for (Map.Entry<String,String> e : attrs.entrySet()) {
+                node.setAttribute(e.getKey(), e.getValue());
             }
         }
 
