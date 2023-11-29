@@ -86,16 +86,13 @@ public class QuantifierCountChecker extends ReteNetworkNode implements ReteState
         this.condition = condition;
         makePattern();
         getPatternLookupTable(); //Just to fill out the pattern index
-        this.getOwner()
-            .getState()
-            .subscribe(this, true);
+        this.getOwner().getState().subscribe(this, true);
 
     }
 
     private void makePattern() {
         ArrayList<RuleNode> rootNodes = new ArrayList<>();
-        rootNodes.addAll(this.condition.getRoot()
-            .nodeSet());
+        rootNodes.addAll(this.condition.getRoot().nodeSet());
         Collections.sort(rootNodes, NodeComparator.instance());
         this.pattern = new RuleElement[rootNodes.size() + 1];
         int i = 0;
@@ -162,8 +159,7 @@ public class QuantifierCountChecker extends ReteNetworkNode implements ReteState
      * Set the associated condition checker for the universal quantifier
      */
     public void setUniversalQuantifierChecker(ConditionChecker cc) {
-        assert cc.getCondition()
-            .equals(this.condition);
+        assert cc.getCondition().equals(this.condition);
         this.universalQuantifierChecker = cc;
     }
 
@@ -172,8 +168,7 @@ public class QuantifierCountChecker extends ReteNetworkNode implements ReteState
      * of the associated condition.
      */
     public VariableNode getCountNode() {
-        return this.universalQuantifierChecker.getCondition()
-            .getCountNode();
+        return this.condition.getCountNode();
     }
 
     /**
@@ -231,10 +226,11 @@ public class QuantifierCountChecker extends ReteNetworkNode implements ReteState
 
     private void calculateMatches() {
         this.matches.clear();
-        Set<RuleToHostMap> activeAnchors =
-            this.universalQuantifierChecker.getActiveConflictsetAnchors(false);
+        Set<RuleToHostMap> activeAnchors
+            = this.universalQuantifierChecker.getActiveConflictsetAnchors(false);
         if (this.conditionMatcher == null) {
-            this.conditionMatcher = this.getOwner()
+            this.conditionMatcher = this
+                .getOwner()
                 .getOwnerEngine()
                 .createMatcher(this.universalQuantifierChecker.getCondition(), null);
         }
@@ -251,10 +247,10 @@ public class QuantifierCountChecker extends ReteNetworkNode implements ReteState
                 this.matches.add(m);
             }
         }
-        if (this.condition.getCountNode()
-            .getConstant() == null) {
+        if (this.condition.getCountNode().getConstant() == null) {
             Algebra<Integer> intAlgebra = JavaIntAlgebra.instance;
-            ValueNode countNode = this.getOwner()
+            ValueNode countNode = this
+                .getOwner()
                 .getOwnerEngine()
                 .getNetwork()
                 .getHostFactory()
@@ -270,22 +266,18 @@ public class QuantifierCountChecker extends ReteNetworkNode implements ReteState
         ReteCountMatch countMatch = null;
         List<TreeMatch> matchList = new ArrayList<>();
         Collector<TreeMatch,?> collector = Visitor.newCollector(matchList);
-        this.conditionMatcher.traverse(this.getOwner()
-            .getOwnerEngine()
-            .getNetwork()
-            .getState()
-            .getHostGraph(), anchor, collector);
+        this.conditionMatcher
+            .traverse(this.getOwner().getOwnerEngine().getNetwork().getState().getHostGraph(),
+                      anchor, collector);
         Algebra<Integer> intAlgebra = JavaIntAlgebra.instance;
-        ValueNode vn = this.getOwner()
+        ValueNode vn = this
+            .getOwner()
             .getOwnerEngine()
             .getNetwork()
             .getHostFactory()
             .createNode(intAlgebra, intAlgebra.toValueFromJava(matchList.size()));
-        if (this.getCountNode()
-            .hasConstant()) {
-            if (this.getCountNode()
-                .getConstant()
-                .equals(vn.getTerm())) {
+        if (this.getCountNode().hasConstant()) {
+            if (this.getCountNode().getConstant().equals(vn.getTerm())) {
                 countMatch = new ReteCountMatch(this, getAnchorNodes(anchor), vn);
             }
         } else {
@@ -318,8 +310,7 @@ public class QuantifierCountChecker extends ReteNetworkNode implements ReteState
      * n-node will only produce one count match.
      */
     public boolean isAnchored() {
-        return !this.condition.getRoot()
-            .isEmpty();
+        return !this.condition.getRoot().isEmpty();
     }
 
     /**
@@ -328,8 +319,7 @@ public class QuantifierCountChecker extends ReteNetworkNode implements ReteState
      * is not produced. Returns <code>false</code> otherwise.
      */
     public boolean isConstant() {
-        return this.getCountNode()
-            .getConstant() != null;
+        return this.getCountNode().getConstant() != null;
     }
 
 }

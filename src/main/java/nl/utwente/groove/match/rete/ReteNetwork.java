@@ -470,32 +470,34 @@ public class ReteNetwork {
                 candidates.put(node, argumentComponents);
             }
         }
-        OperatorNode[] resultCandidates = new OperatorNode[candidates.keySet().size()];
-        candidates.keySet().toArray(resultCandidates);
-        Arrays.sort(resultCandidates, new Comparator<OperatorNode>() {
+        if (!candidates.isEmpty()) {
+            OperatorNode[] resultCandidates = new OperatorNode[candidates.keySet().size()];
+            candidates.keySet().toArray(resultCandidates);
+            Arrays.sort(resultCandidates, new Comparator<OperatorNode>() {
 
-            @Override
-            public int compare(OperatorNode arg0, OperatorNode arg1) {
-                int result = candidates.get(arg0).size() - candidates.get(arg1).size();
-                if (result == 0) {
-                    result
-                        = getTotalSize(candidates.get(arg0)) - getTotalSize(candidates.get(arg1));
+                @Override
+                public int compare(OperatorNode arg0, OperatorNode arg1) {
+                    int result = candidates.get(arg0).size() - candidates.get(arg1).size();
+                    if (result == 0) {
+                        result = getTotalSize(candidates.get(arg0))
+                            - getTotalSize(candidates.get(arg1));
+                    }
+                    return 0;
                 }
-                return 0;
-            }
 
-            private int getTotalSize(List<ReteStaticMapping> argumentComps) {
-                int result = 0;
-                for (int i = 0; i < argumentComps.size(); i++) {
-                    result += argumentComps.get(i).getElements().length;
+                private int getTotalSize(List<ReteStaticMapping> argumentComps) {
+                    int result = 0;
+                    for (int i = 0; i < argumentComps.size(); i++) {
+                        result += argumentComps.get(i).getElements().length;
+                    }
+                    return result;
                 }
-                return result;
-            }
 
-        });
-        result = resultCandidates[0];
-        argumentSources.clear();
-        argumentSources.addAll(candidates.get(result));
+            });
+            result = resultCandidates[0];
+            argumentSources.clear();
+            argumentSources.addAll(candidates.get(result));
+        }
         return result;
     }
 
@@ -626,10 +628,15 @@ public class ReteNetwork {
                 mappedLHSNodes.add(e.target());
             }
         }
-        for (Condition c : this.quantifierCountCheckerNodes.keySet()) {
-            assert c.getCountNode() != null;
-            mappedLHSNodes.add(c.getCountNode());
+        for (var entry : openList) {
+            if (entry.getNNode() instanceof QuantifierCountChecker q) {
+                mappedLHSNodes.add(q.getCountNode());
+            }
         }
+        //        for (Condition c : this.quantifierCountCheckerNodes.keySet()) {
+        //            assert c.getCountNode() != null;
+        //            mappedLHSNodes.add(c.getCountNode());
+        //        }
         //Now we see if there are any unmatched nodes on the lhs
         //These are isolated nodes. We will use one node checker but each
         //will be represented by a separate static mapping in the open list.
