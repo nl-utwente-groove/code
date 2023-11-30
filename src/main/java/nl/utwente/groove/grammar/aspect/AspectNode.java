@@ -287,6 +287,9 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         } else {
             this.errors = FormatErrorSet.EMPTY;
         }
+        if (this.nestedMap.isEmpty()) {
+            this.nestedMap = EMPTY_MAP;
+        }
     }
 
     @Override
@@ -718,4 +721,6 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         return result;
     }
 
+    static private final EnumMap<NestedValue,AspectEdge> EMPTY_MAP
+        = new EnumMap<>(NestedValue.class);
 }

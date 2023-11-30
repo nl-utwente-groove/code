@@ -17,6 +17,7 @@
 package nl.utwente.groove.graph;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +28,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.graph.iso.CertificateStrategy;
 import nl.utwente.groove.util.DefaultDispenser;
 import nl.utwente.groove.util.Dispenser;
+import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.collect.TreeHashSet;
 
@@ -38,7 +40,7 @@ import nl.utwente.groove.util.collect.TreeHashSet;
  * @version $Revision$
  */
 @NonNullByDefault
-public class GraphCache<N extends Node,E extends GEdge<N>> {
+public class GraphCache<N extends Node,E extends GEdge<N>> implements Fixable {
     /**
      * Constructs a dynamic graph cache for a given graph.
      * @param graph the graph for which the cache is to be created.
@@ -88,6 +90,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * Keeps the cached sets in sync with changes in the graph.
      */
     protected void addUpdate(N node) {
+        assert !isFixed();
         addToNodeEdgeMap(this.nodeEdgeMap, node);
         addToNodeEdgeMap(this.nodeInEdgeMap, node);
         addToNodeEdgeMap(this.nodeOutEdgeMap, node);
@@ -98,6 +101,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * Keeps the cached sets in sync with changes in the graph.
      */
     protected void addUpdate(E edge) {
+        assert !isFixed();
         addToLabelEdgeMap(this.labelEdgeMap, edge);
         addToNodeInEdgeMap(this.nodeInEdgeMap, edge);
         addToNodeOutEdgeMap(this.nodeOutEdgeMap, edge);
@@ -108,6 +112,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * Keeps the cached sets in sync with changes in the graph.
      */
     protected void removeUpdate(N node) {
+        assert !isFixed();
         removeFromNodeEdgeMap(this.nodeEdgeMap, node);
         removeFromNodeEdgeMap(this.nodeInEdgeMap, node);
         removeFromNodeEdgeMap(this.nodeOutEdgeMap, node);
@@ -117,6 +122,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * Keeps the cached sets in sync with changes in the graph.
      */
     protected void removeUpdate(E elem) {
+        assert !isFixed();
         removeFromLabelEdgeMap(this.labelEdgeMap, elem);
         removeFromNodeEdgeMap(this.nodeEdgeMap, elem);
         removeFromNodeInEdgeMap(this.nodeInEdgeMap, elem);
@@ -476,7 +482,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * only be added if it is certain that it is not already in the set.
      */
     private Set<E> createSmallEdgeSet() {
-        return new TreeHashSet<>();
+        return new TreeHashSet<>(INIT_SET_CAPACITY);
     }
 
     /** Indicates if the precomputed data should be permanently stored. */
@@ -550,4 +556,38 @@ public class GraphCache<N extends Node,E extends GEdge<N>> {
      * <tt>null</tt>.
      */
     private @Nullable CertificateStrategy certificateStrategy;
+
+    @Override
+    public boolean setFixed() {
+        var result = !isFixed();
+        if (result) {
+            cleanEdgeMap(this.nodeInEdgeMap);
+            cleanEdgeMap(this.nodeOutEdgeMap);
+            cleanEdgeMap(this.nodeEdgeMap);
+            this.fixed = true;
+        }
+        return result;
+    }
+
+    @Override
+    public boolean isFixed() {
+        return this.fixed;
+    }
+
+    /** Replaces empty entries with a constant empty set. */
+    private void cleanEdgeMap(@Nullable Map<?,@Nullable Set<E>> map) {
+        if (map != null) {
+            for (var e : map.entrySet()) {
+                var v = e.getValue();
+                if (v != null && v.isEmpty()) {
+                    e.setValue(Collections.emptySet());
+                }
+            }
+        }
+    }
+
+    private boolean fixed;
+
+    /** The default initial capacity of an edge set. */
+    static private final int INIT_SET_CAPACITY = 4;
 }
