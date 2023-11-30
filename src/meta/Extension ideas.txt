@@ -1,13 +1,21 @@
 GROOVE project ideas
 ====================
 
-- Extend control language with data expressions
+1. Extend control language with data expressions
 
-- Add external actions to control language
+2. Add external actions to control language
 
-- Transform Java data structures
+3. Transform Java data structures
 
-- Make model checking more accessible
+4. Make model checking more accessible
 
-- Add an API for transformation
+5. Add an API for transformation
+
+6. Add support for identity-full edges (real SPO at last!)
+
+7. (As a step towards 4.) Support for partial GTSs (loading/saving/...)
+
+8. Support for Petri graphs
+
+9. Support for left-shifting conditions
 
