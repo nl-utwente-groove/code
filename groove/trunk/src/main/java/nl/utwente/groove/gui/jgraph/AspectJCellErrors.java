@@ -38,7 +38,7 @@ public class AspectJCellErrors implements Iterable<FormatError> {
      * @param aspect if {@code true}, adds to the aspect errors, else to the extra errors.
      */
     void addError(FormatError error, boolean aspect) {
-        getErrors(aspect).add(error);
+        getErrors(aspect, true).add(error);
         this.jCell.setStale(VisualKey.ERROR);
     }
 
@@ -46,20 +46,21 @@ public class AspectJCellErrors implements Iterable<FormatError> {
      * @param aspect if {@code true}, adds to the aspect errors, else to the extra errors.
      */
     void addErrors(FormatErrorSet errors, boolean aspect) {
-        getErrors(aspect).addAll(errors);
+        getErrors(aspect, true).addAll(errors);
         this.jCell.setStale(VisualKey.ERROR);
     }
 
     /** Clears either the aspect errors or the extra errors. */
     void clear() {
-        getErrors(true).clear();
-        getErrors(false).clear();
+        this.aspectErrors = FormatErrorSet.EMPTY;
+        this.extraErrors = FormatErrorSet.EMPTY;
         this.jCell.setStale(VisualKey.ERROR);
     }
 
     @Override
     public Iterator<FormatError> iterator() {
-        return new NestedIterator<>(getErrors(true).iterator(), getErrors(false).iterator());
+        return new NestedIterator<>(getErrors(true, false).iterator(),
+            getErrors(false, false).iterator());
     }
 
     /** Indicates if the object contains no errors whatsoever. */
@@ -67,14 +68,26 @@ public class AspectJCellErrors implements Iterable<FormatError> {
         return this.aspectErrors.isEmpty() && this.extraErrors.isEmpty();
     }
 
-    /** Returns either the errors or the extra errors, depending on a flag. */
-    private FormatErrorSet getErrors(boolean aspect) {
-        return aspect
+    /** Returns either the errors or the extra errors, depending on a flag.
+     * A second flag determines if the returned set must be modifiable.
+     */
+    private FormatErrorSet getErrors(boolean aspect, boolean modifiable) {
+        FormatErrorSet result;
+        result = aspect
             ? this.aspectErrors
             : this.extraErrors;
+        if (modifiable && result.isFixed()) {
+            assert result.isEmpty();
+            if (aspect) {
+                result = this.aspectErrors = new FormatErrorSet();
+            } else {
+                result = this.extraErrors = new FormatErrorSet();
+            }
+        }
+        return result;
     }
 
     private final AspectJCell jCell;
-    private final FormatErrorSet aspectErrors = new FormatErrorSet();
-    private final FormatErrorSet extraErrors = new FormatErrorSet();
+    private FormatErrorSet aspectErrors = FormatErrorSet.EMPTY;
+    private FormatErrorSet extraErrors = FormatErrorSet.EMPTY;
 }

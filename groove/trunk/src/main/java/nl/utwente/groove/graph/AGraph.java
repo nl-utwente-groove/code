@@ -167,6 +167,9 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>>
             if (GATHER_STATISTICS) {
                 modifiableGraphCount--;
             }
+            if (hasCache()) {
+                getCache().setFixed();
+            }
         }
         return result;
     }

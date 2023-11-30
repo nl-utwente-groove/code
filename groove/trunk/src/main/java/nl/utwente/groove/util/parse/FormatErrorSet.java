@@ -241,7 +241,7 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
         boolean result = !isFixed();
         if (result) {
             getErrorSet().forEach(FormatError::setFixed);
-            getProjection().clear();
+            this.projection = null;
             this.fixed = true;
         }
         return result;
