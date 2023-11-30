@@ -87,7 +87,7 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
         return this.errors;
     }
 
-    private final FormatErrorSet errors;
+    private FormatErrorSet errors;
 
     @Override
     public boolean setFixed() {
@@ -103,6 +103,11 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
                 getErrors().addAll(arg.getErrors());
             }
             super.setFixed();
+            if (this.errors.isEmpty()) {
+                this.errors = FormatErrorSet.EMPTY;
+            } else {
+                this.errors.setFixed();
+            }
         }
         return result;
     }

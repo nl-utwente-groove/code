@@ -41,13 +41,14 @@ import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.NodeComparator;
 import nl.utwente.groove.gui.list.ListPanel.SelectableListEntry;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.util.Fixable;
 
 /**
  * Class encoding a single message reporting an error in a graph view.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class FormatError implements Comparable<FormatError>, SelectableListEntry {
+public class FormatError implements Comparable<FormatError>, SelectableListEntry, Fixable {
     /**
      * Constructs an error consisting of a message to be formatted.
      * The actual message is constructed by calling {@link String#format(String, Object...)}
@@ -65,6 +66,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
      * {@link #elements}) from a given object.
      */
     private void addContext(Object par) {
+        assert !isFixed();
         if (par instanceof FormatError e) {
             addContext(e.getArguments());
         } else if (par instanceof GraphState s) {
@@ -189,17 +191,21 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
      * with its projections. May be empty. */
     @Override
     public List<Element> getElements() {
-        var result = new ArrayList<Element>();
-        var parent = getParent();
-        for (var e : this.elements) {
-            while (e != null) {
-                result.add(e);
-                e = parent == null
-                    ? null
-                    : parent.getProjection().get(e);
+        if (isFixed()) {
+            return this.elements;
+        } else {
+            var result = new ArrayList<Element>();
+            var parent = getParent();
+            for (var e : this.elements) {
+                while (e != null) {
+                    result.add(e);
+                    e = parent == null
+                        ? null
+                        : parent.getProjection().get(e);
+                }
             }
+            return result;
         }
-        return result;
     }
 
     /** Returns a list of numbers associated with the error; typically,
@@ -332,6 +338,26 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
         result.setResource(getResourceKind(), getResourceName());
         return result;
     }
+
+    @Override
+    public boolean setFixed() {
+        boolean result = !isFixed();
+        if (result) {
+            var allElements = getElements();
+            this.elements.clear();
+            this.elements.addAll(allElements);
+            this.fixed = true;
+        }
+        return result;
+    }
+
+    @Override
+    public boolean isFixed() {
+        return this.fixed;
+    }
+
+    /** Flag indicating if this object is fixed. */
+    private boolean fixed;
 
     private static int compare(Element o1, Element o2) {
         int result = o1.getClass().getName().compareTo(o2.getClass().getName());

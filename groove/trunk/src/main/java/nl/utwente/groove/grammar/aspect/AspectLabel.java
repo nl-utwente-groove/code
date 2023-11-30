@@ -104,8 +104,13 @@ public class AspectLabel extends ALabel implements Fixable {
         boolean result = this.fixable.setFixed();
         if (result && this.innerText == null) {
             this.innerText = "";
+            if (this.errors.isEmpty()) {
+                this.errors = FormatErrorSet.EMPTY;
+            } else {
+                this.errors.setFixed();
+            }
+            hashCode();
         }
-        hashCode();
         return result;
     }
 
@@ -186,6 +191,7 @@ public class AspectLabel extends ALabel implements Fixable {
      *         if {@code oldLabel} did not occur
      */
     public AspectLabel relabel(TypeLabel oldLabel, TypeLabel newLabel, SortMap typing) {
+        assert isFixed();
         AspectLabel result = this;
         boolean isNew = false;
         List<Aspect> newAspects = new ArrayList<>();
@@ -199,6 +205,7 @@ public class AspectLabel extends ALabel implements Fixable {
             for (Aspect newAspect : newAspects) {
                 result.addAspect(newAspect);
             }
+            result.setFixed();
         }
         return result;
     }
@@ -345,7 +352,7 @@ public class AspectLabel extends ALabel implements Fixable {
     }
 
     /** List of errors detected while building this label. */
-    private final FormatErrorSet errors = new FormatErrorSet();
+    private FormatErrorSet errors = new FormatErrorSet();
 
     /**
      * Returns a fixed copy of this label minus any {@link AspectKind#LITERAL}

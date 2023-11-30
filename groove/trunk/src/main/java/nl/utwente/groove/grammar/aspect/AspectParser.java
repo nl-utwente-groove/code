@@ -16,6 +16,10 @@
  */
 package nl.utwente.groove.grammar.aspect;
 
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
+
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.GraphRole;
@@ -42,9 +46,13 @@ public class AspectParser {
      */
     public AspectLabel parse(String text, GraphRole role) {
         assert role.inGrammar();
-        AspectLabel result = new AspectLabel(role);
-        parse(text, result);
-        result.setFixed();
+        var result = parseMap.get(role).get(text);
+        if (result == null) {
+            result = new AspectLabel(role);
+            parse(text, result);
+            result.setFixed();
+            parseMap.get(role).put(text, result);
+        }
         return result;
     }
 
@@ -117,6 +125,14 @@ public class AspectParser {
     }
 
     static private final AspectParser instance = new AspectParser();
+
+    static private final EnumMap<GraphRole,Map<String,AspectLabel>> parseMap;
+    static {
+        parseMap = new EnumMap<>(GraphRole.class);
+        for (var role : GraphRole.values()) {
+            parseMap.put(role, new HashMap<>());
+        }
+    }
 
     /** Status of the parsing process. */
     static enum Status {
