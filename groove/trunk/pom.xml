@@ -52,6 +52,30 @@
 					<destDir>javadoc</destDir>
 				</configuration>
 			</plugin>
+			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.5.1</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<artifactSet>
+								<includes>
+									<include>nl.utwente.groove:gnuprologjava</include>
+									<include>nl.utwente.groove:ltl2buchi</include>
+									<include>nl.utwente.groove:osxadapter</include>
+									<include>nl.utwente.groove:groove-gxl</include>
+								</includes>
+							</artifactSet>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 
 		<resources>
