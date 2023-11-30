@@ -39,6 +39,7 @@ import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -260,7 +261,8 @@ public class Aspect {
     }
 
     /** Mapping from aspect kinds to aspects. */
-    static public class Map extends EnumMap<AspectKind.Category,Aspect> implements Comparable<Map> {
+    static public class Map extends EnumMap<AspectKind.Category,Aspect>
+        implements Comparable<Map>, Fixable {
         /** Constructs an empty map for a node or edge. */
         public Map(boolean forNode, GraphRole role) {
             super(AspectKind.Category.class);
@@ -279,6 +281,7 @@ public class Aspect {
          */
         @SuppressWarnings("null")
         public void add(Aspect aspect) throws FormatException {
+            assert !isFixed();
             Aspect old = get(aspect.getCategory());
             boolean add;
             if (old == null) {
@@ -476,5 +479,35 @@ public class Aspect {
         private @Nullable Aspect put(Aspect newAspect) {
             return put(newAspect.getCategory(), newAspect);
         }
+
+        @Override
+        public boolean setFixed() {
+            boolean result = !isFixed();
+            if (result) {
+                this.fixed = true;
+            }
+            return result;
+        }
+
+        @Override
+        public boolean isFixed() {
+            return this.fixed;
+        }
+
+        private boolean fixed;
     }
+
+    /** Returns a normalised version of a (fixed) aspect map. */
+    @SuppressWarnings("null")
+    static public Map normalise(Map original) {
+        assert original.isFixed();
+        Map result = normalisedMap.get(original);
+        if (result == null) {
+            normalisedMap.put(original, original);
+            result = original;
+        }
+        return result;
+    }
+
+    static private final java.util.Map<Map,Map> normalisedMap = new HashMap<>();
 }

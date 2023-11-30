@@ -171,7 +171,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     }
 
     /** The initially empty aspect map. */
-    private final Aspect.Map aspects;
+    private Aspect.Map aspects;
 
     @Override
     public void set(Aspect aspect) {
@@ -423,7 +423,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     }
 
     /** List of syntax errors in this edge. */
-    private final FormatErrorSet errors = new FormatErrorSet();
+    private FormatErrorSet errors = new FormatErrorSet();
 
     /**
      * Tests if regular expression usage does not go beyond what is allowed.
@@ -453,6 +453,17 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             if (message != null) {
                 errors.add(message, ruleLabel, this);
             }
+        }
+    }
+
+    @Override
+    public void fixDataStructures() {
+        this.aspects.setFixed();
+        this.aspects = Aspect.normalise(this.aspects);
+        if (hasErrors()) {
+            this.errors.setFixed();
+        } else {
+            this.errors = FormatErrorSet.EMPTY;
         }
     }
 

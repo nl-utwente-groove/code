@@ -401,6 +401,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             addErrors(DependencyChecker.instance().check(this));
             setStatus(Status.FIXED);
             super.setFixed();
+            getErrors().setFixed();
         }
         return result;
     }

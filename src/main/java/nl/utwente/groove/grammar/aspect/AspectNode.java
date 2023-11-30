@@ -28,6 +28,7 @@ import static nl.utwente.groove.grammar.aspect.AspectKind.READER;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
@@ -221,7 +222,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     }
 
     /** The initially empty aspect map. */
-    private final Aspect.Map aspects;
+    private Aspect.Map aspects;
 
     @Override
     public void parseAspects() throws FormatException {
@@ -278,6 +279,17 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     }
 
     @Override
+    public void fixDataStructures() {
+        this.aspects.setFixed();
+        this.aspects = Aspect.normalise(this.aspects);
+        if (hasErrors()) {
+            this.errors.setFixed();
+        } else {
+            this.errors = FormatErrorSet.EMPTY;
+        }
+    }
+
+    @Override
     public void setStatus(Status status) {
         this.status = status;
     }
@@ -322,7 +334,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     }
 
     /** List of syntax errors in this node. */
-    private final FormatErrorSet errors = new FormatErrorSet();
+    private FormatErrorSet errors = new FormatErrorSet();
 
     /**
      * Analyzes the outgoing edge of this (product) node to
@@ -378,7 +390,9 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
                              signature, operator, opSignature, opEdge);
                 }
             }
-            this.argNodes = argNodes;
+            this.argNodes = argNodes.isEmpty()
+                ? Collections.emptyList()
+                : argNodes;
         }
     }
 

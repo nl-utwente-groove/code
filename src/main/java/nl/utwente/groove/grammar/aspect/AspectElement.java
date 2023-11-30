@@ -252,6 +252,7 @@ public interface AspectElement extends Element, Fixable {
                 }
             }
             setStatus(Status.CHECKED);
+            fixDataStructures();
         }
         return result;
     }
@@ -269,6 +270,9 @@ public interface AspectElement extends Element, Fixable {
      * @throws FormatException if the aspect categories give rise to conflicts
      */
     void checkAspects() throws FormatException;
+
+    /** Callback method invoked as the final stage of setFixed. */
+    void fixDataStructures();
 
     @Override
     default boolean setFixed() {

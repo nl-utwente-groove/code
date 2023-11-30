@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.GraphMap;
+import nl.utwente.groove.util.Fixable;
 
 /**
  * Set of format errors, with additional functionality for
@@ -35,7 +36,7 @@ import nl.utwente.groove.graph.GraphMap;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class FormatErrorSet implements Iterable<FormatError> {
+public class FormatErrorSet implements Iterable<FormatError>, Fixable {
     /** Constructs a fresh, empty error set. */
     public FormatErrorSet() {
     }
@@ -75,6 +76,7 @@ public class FormatErrorSet implements Iterable<FormatError> {
 
     /** Adds a format error to the set. */
     public void add(FormatError e) {
+        assert !isFixed();
         getErrorSet().add(e.cloneFor(this));
     }
 
@@ -102,6 +104,7 @@ public class FormatErrorSet implements Iterable<FormatError> {
 
     /** Removes all errors from this set. */
     public void clear() {
+        assert !isFixed();
         getErrorSet().clear();
         getProjection().clear();
     }
@@ -231,5 +234,30 @@ public class FormatErrorSet implements Iterable<FormatError> {
     @Override
     public FormatErrorSet clone() {
         return new FormatErrorSet(this);
+    }
+
+    @Override
+    public boolean setFixed() {
+        boolean result = !isFixed();
+        if (result) {
+            getErrorSet().forEach(FormatError::setFixed);
+            getProjection().clear();
+            this.fixed = true;
+        }
+        return result;
+    }
+
+    @Override
+    public boolean isFixed() {
+        return this.fixed;
+    }
+
+    /** Flag indicating if this object is fixed. */
+    private boolean fixed;
+
+    /** A constant fixed empty error set. */
+    static public FormatErrorSet EMPTY = new FormatErrorSet();
+    static {
+        EMPTY.clear();
     }
 }
