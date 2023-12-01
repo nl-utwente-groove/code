@@ -22,6 +22,7 @@ import static nl.utwente.groove.gui.SimulatorModel.Change.MATCH;
 import static nl.utwente.groove.gui.SimulatorModel.Change.STATE;
 import static nl.utwente.groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static nl.utwente.groove.gui.jgraph.JGraphMode.SELECT_MODE;
+import static nl.utwente.groove.gui.list.ListPanel.LIST_EVENT;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -373,7 +374,8 @@ public class LTSDisplay extends Display implements SimulatorListener {
         return new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getNewValue() instanceof FormatError error) {
+                if (evt.getPropertyName().equals(LIST_EVENT)
+                    && evt.getNewValue() instanceof FormatError error) {
                     getSimulatorModel().setState(error.getState());
                 }
             }

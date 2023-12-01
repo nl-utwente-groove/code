@@ -38,7 +38,6 @@ import nl.utwente.groove.grammar.host.DefaultHostGraph;
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostFactory;
 import nl.utwente.groove.grammar.host.HostGraph;
-import nl.utwente.groove.grammar.host.HostGraphMorphism;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.grammar.type.TypeGraph;
@@ -85,7 +84,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     }
 
     @Override
-    public TypeModelMap getTypeMap() {
+    public @NonNull TypeModelMap getTypeMap() {
         synchronise();
         return this.typeMap;
     }
@@ -136,7 +135,6 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         getSource().getErrors().throwException();
         var modelPlusMap = computeModel();
         var result = modelPlusMap.one();
-        result.getErrors().throwException();
         var hostModelMap = modelPlusMap.two();
         // create the type map
         var typeMap = new TypeModelMap(result.getTypeGraph().getFactory());
@@ -148,6 +146,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         }
         this.typeMap = typeMap;
         this.hostModelMap = hostModelMap;
+        result.getErrors().throwException();
         return result;
     }
 
@@ -197,7 +196,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
             try {
                 // test against the type graph, if any
                 TypeGraph type = getGrammar().getTypeGraph();
-                HostGraphMorphism typing = type.analyzeHost(result);
+                var typing = type.analyzeHost(result);
                 result = typing.createImage(result.getName());
                 HostModelMap newElementMap = new HostModelMap(result.getFactory());
                 for (var nodeEntry : elementMap.nodeMap().entrySet()) {

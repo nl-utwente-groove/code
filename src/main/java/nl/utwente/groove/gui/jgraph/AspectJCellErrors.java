@@ -46,8 +46,10 @@ public class AspectJCellErrors implements Iterable<FormatError> {
      * @param aspect if {@code true}, adds to the aspect errors, else to the extra errors.
      */
     void addErrors(FormatErrorSet errors, boolean aspect) {
-        getErrors(aspect, true).addAll(errors);
-        this.jCell.setStale(VisualKey.ERROR);
+        if (!errors.isEmpty()) {
+            getErrors(aspect, true).addAll(errors);
+            this.jCell.setStale(VisualKey.ERROR);
+        }
     }
 
     /** Clears either the aspect errors or the extra errors. */

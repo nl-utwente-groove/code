@@ -46,6 +46,7 @@ import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.GraphBasedModel;
+import nl.utwente.groove.grammar.model.HostModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.ResourceModel;
 import nl.utwente.groove.grammar.model.TypeModel;
@@ -105,6 +106,8 @@ final public class AspectJModel extends JModel<AspectGraph> {
                     } catch (FormatException e) {
                         result = ImplicitTypeGraph.newInstance(resourceModel.getLabels());
                     }
+                } else if (resourceModel instanceof HostModel h) {
+                    result = h.getTypeMap().getFactory().getGraph();
                 } else {
                     result = getGrammar().getTypeGraph();
                 }

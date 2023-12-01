@@ -258,6 +258,6 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
     /** A constant fixed empty error set. */
     static public FormatErrorSet EMPTY = new FormatErrorSet();
     static {
-        EMPTY.clear();
+        EMPTY.setFixed();
     }
 }
