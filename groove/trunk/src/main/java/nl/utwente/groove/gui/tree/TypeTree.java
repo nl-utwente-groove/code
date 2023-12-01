@@ -177,8 +177,9 @@ public class TypeTree extends LabelTree<AspectGraph> {
      */
     private TypeGraph getTypeGraph() {
         TypeGraph result = null;
-        if (getJGraph().getModel() != null) {
-            result = ((AspectJGraph) getJGraph()).getModel().getTypeGraph();
+        var jModel = (AspectJModel) getJModel();
+        if (jModel != null) {
+            result = jModel.getTypeGraph();
         }
         return result;
     }

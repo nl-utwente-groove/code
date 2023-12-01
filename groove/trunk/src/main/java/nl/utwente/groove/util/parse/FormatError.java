@@ -20,8 +20,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -140,14 +142,15 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     public int compareTo(FormatError other) {
         int result = toString().compareTo(other.toString());
         // establish lexicographical ordering of error objects
-        List<Element> myElements = this.getElements();
-        List<Element> otherElements = other.getElements();
-        int upper = Math.min(myElements.size(), otherElements.size());
-        for (int i = 0; result == 0 && i < upper; i++) {
-            result = compare(myElements.get(i), otherElements.get(i));
+        var myElems = getElements();
+        var myIter = myElems.iterator();
+        var otherElems = other.getElements();
+        var otherIter = otherElems.iterator();
+        while (result == 0 && myIter.hasNext() && otherIter.hasNext()) {
+            result = compare(myIter.next(), otherIter.next());
         }
         if (result == 0) {
-            result = myElements.size() - otherElements.size();
+            result = myElems.size() - otherElems.size();
         }
         return result;
     }
@@ -185,18 +188,18 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     private GraphState state;
 
     /** List of erroneous elements. */
-    private final List<Element> elements = new ArrayList<>();
+    private final Set<Element> elements = new LinkedHashSet<>();
 
     /** Returns the list of elements in which the error occurs, together
      * with its projections. May be empty. */
     @Override
-    public List<Element> getElements() {
-        if (isFixed()) {
-            return this.elements;
-        } else {
-            var result = new ArrayList<Element>();
+    public Collection<Element> getElements() {
+        var result = this.elements;
+        if (!isFixed()) {
+            var elements = result;
+            result = new LinkedHashSet<>();
             var parent = getParent();
-            for (var e : this.elements) {
+            for (var e : elements) {
                 while (e != null) {
                     result.add(e);
                     e = parent == null
@@ -204,8 +207,8 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
                         : parent.getProjection().get(e);
                 }
             }
-            return result;
         }
+        return result;
     }
 
     /** Returns a list of numbers associated with the error; typically,
@@ -272,7 +275,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     /** Returns the contextual arguments of this error. */
     private List<Object> getArguments() {
         List<Object> result = new ArrayList<>();
-        result.addAll(this.elements);
+        result.addAll(getElements());
         if (this.control != null) {
             result.add(this.control);
         }

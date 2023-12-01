@@ -17,6 +17,7 @@
 package nl.utwente.groove.gui.list;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import nl.utwente.groove.grammar.QualName;
@@ -94,7 +95,7 @@ public class SearchResult implements SelectableListEntry {
 
     /** Returns the list of elements in which the error occurs. May be empty. */
     @Override
-    public final List<Element> getElements() {
+    public final Collection<Element> getElements() {
         return this.elements;
     }
 

@@ -25,7 +25,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
@@ -77,8 +76,10 @@ public abstract class ListPanel extends JPanel {
 
     /** Clears all entries from the list. */
     public void clearEntries() {
-        getEntryArea().setListData(Collections.<SelectableListEntry>emptySet()
-            .toArray(new SelectableListEntry[] {}));
+        getEntryArea()
+            .setListData(Collections
+                .<SelectableListEntry>emptySet()
+                .toArray(new SelectableListEntry[] {}));
         setVisible(false);
     }
 
@@ -91,8 +92,9 @@ public abstract class ListPanel extends JPanel {
         getEntryArea().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                listener.propertyChange(new PropertyChangeEvent(e.getSource(), "LIST_SELECTION",
-                    null, getEntryArea().getSelectedValue()));
+                listener
+                    .propertyChange(new PropertyChangeEvent(e.getSource(), LIST_EVENT, null,
+                        getEntryArea().getSelectedValue()));
             }
         });
         getEntryArea().addMouseListener(new MouseAdapter() {
@@ -100,8 +102,9 @@ public abstract class ListPanel extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 int index = getIndexAt(e.getPoint());
                 if (index >= 0 && getEntryArea().isSelectedIndex(index)) {
-                    listener.propertyChange(new PropertyChangeEvent(e.getSource(), "MOUSE", null,
-                        getEntryArea().getSelectedValue()));
+                    listener
+                        .propertyChange(new PropertyChangeEvent(e.getSource(), MOUSE_EVENT, null,
+                            getEntryArea().getSelectedValue()));
                 }
             }
         });
@@ -136,8 +139,7 @@ public abstract class ListPanel extends JPanel {
     }
 
     private int getContentSize() {
-        return getEntryArea().getModel()
-            .getSize();
+        return getEntryArea().getModel().getSize();
     }
 
     /** Lazily creates and returns the panel. */
@@ -169,7 +171,9 @@ public abstract class ListPanel extends JPanel {
         int result = getEntryArea().locationToIndex(point);
         Rectangle cellBounds = getEntryArea().getCellBounds(result, result);
         boolean cellSelected = cellBounds != null && cellBounds.contains(point);
-        return cellSelected ? result : -1;
+        return cellSelected
+            ? result
+            : -1;
     }
 
     /** Normal background color for entries. */
@@ -183,16 +187,19 @@ public abstract class ListPanel extends JPanel {
     private class CellRenderer extends DefaultListCellRenderer {
 
         private CellRenderer() {
-            super();
         }
 
         @SuppressWarnings("rawtypes")
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index,
-            boolean isSelected, boolean cellHasFocus) {
-            Component result =
-                super.getListCellRendererComponent(list, value, index, isSelected, false);
-            Mode mode = cellHasFocus ? Mode.FOCUSED : isSelected ? Mode.SELECTED : Mode.NONE;
+                                                      boolean isSelected, boolean cellHasFocus) {
+            Component result
+                = super.getListCellRendererComponent(list, value, index, isSelected, false);
+            Mode mode = cellHasFocus
+                ? Mode.FOCUSED
+                : isSelected
+                    ? Mode.SELECTED
+                    : Mode.NONE;
             result.setBackground(getColors().getBackground(mode));
             result.setForeground(getColors().getForeground(mode));
             return result;
@@ -208,6 +215,11 @@ public abstract class ListPanel extends JPanel {
         public QualName getResourceName();
 
         /** Returns the list of elements in which the entry occurs. May be empty. */
-        public List<Element> getElements();
+        public Collection<Element> getElements();
     }
+
+    /** Name of a list selection event. */
+    static public final String LIST_EVENT = "LIST_SELECTION";
+    /** Name of a mouse event. */
+    static public final String MOUSE_EVENT = "MOUSE";
 }

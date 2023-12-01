@@ -80,15 +80,6 @@ public class FormatException extends Exception {
         return Groove.toString(getErrors().toArray(), "", "", "\n");
     }
 
-    /**
-     * Returns a new format exception that extends all the errors
-     * stored in this exception with additional context information.
-     * @see FormatError#extend(Object...)
-     */
-    public FormatException extend(Object par) {
-        return new FormatException(getErrors().extend(par));
-    }
-
     /** List of error messages carried around by this exception. */
     private final FormatErrorSet errors;
 }

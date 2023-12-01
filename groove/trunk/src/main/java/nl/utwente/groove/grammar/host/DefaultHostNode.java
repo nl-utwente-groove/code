@@ -16,6 +16,9 @@
  */
 package nl.utwente.groove.grammar.host;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.AnchorKind;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.grammar.type.TypeNode;
@@ -28,6 +31,7 @@ import nl.utwente.groove.graph.ANode;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class DefaultHostNode extends ANode implements HostNode {
     /**
      * Constructs a fresh node, with an explicitly given number and node type.
@@ -41,12 +45,11 @@ public class DefaultHostNode extends ANode implements HostNode {
      */
     protected DefaultHostNode(int nr, TypeNode type) {
         super(nr);
-        assert type != null : "Can't create untyped host node";
         this.type = type;
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }
