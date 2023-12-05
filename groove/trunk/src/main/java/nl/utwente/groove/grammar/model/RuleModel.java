@@ -164,11 +164,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     /** Returns the action role of this rule. */
     public Role getRole() {
         if (this.role == null) {
-            this.role = GraphInfo
-                .getRole(getSource())
-                .orElse(testAsProperty() == null
-                    ? Role.CONDITION
-                    : Role.TRANSFORMER);
+            this.role = GraphInfo.getRole(getSource()).orElse(getDefaultRole());
         }
         return this.role;
     }
@@ -186,6 +182,22 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         return result;
     }
 
+    /** Returns the default role for this rule.
+     * The default is {@link Role#TRANSFORMER} if the rule has a positive priority,
+     * or has parameters, or modifies the graph; otherwise it is {@link Role#CONDITION}.
+     */
+    private Role getDefaultRole() {
+        Role result;
+        if (getSource().nodeSet().stream().anyMatch(n -> n.has(Category.PARAM))) {
+            result = Role.TRANSFORMER;
+        } else {
+            result = testAsProperty() == null
+                ? Role.CONDITION
+                : Role.TRANSFORMER;
+        }
+        return result;
+    }
+
     /**
      * Tests if this rule may be used as a graph condition.
      * @return an appropriate {@link FormatError} if the rule is unsuitable
@@ -196,19 +208,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             return new FormatError("positive priority not allowed");
         }
         for (AspectNode node : getSource().nodeSet()) {
-            if (node.has(Category.PARAM)) {
-                return new FormatError("parameter not allowed", node);
-                /* who would we ever want graph conditions with parameters?
-                // don't use #getRole() here as it causes infinite recursion
-                Optional<Role> role = GraphInfo.getRole(getSource());
-                if (role.isPresent() && role.get().isConstraint()) {
-                    return new FormatError("parameter not allowed", node);
-                } else if (node.getParamKind() == PARAM_IN) {
-                    return new FormatError("input parameter not allowed", node);
-                } else if (node.getParamNr() < 0) {
-                    return new FormatError("anonymous parameter not allowed", node);
-                }
-                */
+            /* Only input parameters are problematic for conditions */
+            if (node.has(PARAM_IN)) {
+                return new FormatError("input parameter not allowed", node);
             }
             if (node.hasColor()) {
                 return new FormatError("colour change not allowed", node);

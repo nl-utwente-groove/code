@@ -79,11 +79,12 @@ public class GraphProperties extends Properties {
 
         /** Action role. */
         ROLE("actionRole", "<body>Role of the action. Values are:"
-            + "<li>* <i>transformer</i>: action that causes the graph to change; scheduled by the (im- or explicit) control"
+            + "<li>- <i>transformer</i>: action that causes the graph to change; scheduled by the (im- or explicit) control. "
+            + "Default for rules that modify the graph or have parameters"
             + "<li>- <i>forbidden</i>: forbidden graph pattern, dealt with as dictated by the violation policy"
             + "<li>- <i>invariant</i>: invariant graph property, dealt with as dictated by the violation policy"
-            + "<li>- <i>condition</i>: unmodifying, parameterless action, checked at every state",
-            ValueType.ROLE),
+            + "<li>- <i>condition</i>: unmodifying, parameterless action, checked at every state. "
+            + "Default for parameterless, unmodifying rules", ValueType.ROLE),
 
         /** Match filter. */
         FILTER("matchFilter",
