@@ -381,7 +381,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             case FINAL -> state.isFinal();
             case OPEN -> !state.isClosed();
             case START -> state == this.gts.startState();
-            case RESULT -> this.result != null && this.result.containsState(state);
+            case RESULT -> this.result != null && this.result.contains(state);
             default -> false;
             };
             return result;

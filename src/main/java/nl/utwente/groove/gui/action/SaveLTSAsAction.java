@@ -50,44 +50,27 @@ public class SaveLTSAsAction extends SimulatorAction {
             dialog.setCurrentDirectory(getLastGrammarFile().getAbsolutePath());
         }
         if (dialog.showDialog(getSimulator())) {
-            doSave(dialog.getDirectory(),
-                dialog.getLtsPattern(),
-                dialog.getStatePattern(),
-                dialog.getExportStates(),
-                dialog.getLTSLabels());
+            doSave(dialog.getDirectory(), dialog.getLtsPattern(), dialog.getStatePattern(),
+                   dialog.getExportStates(), dialog.getLTSLabels());
         }
     }
 
     private void doSave(String dir, String ltsPattern, String statePattern,
-        StateExport exportStates, LTSLabels flags) {
+                        StateExport exportStates, LTSLabels flags) {
         GTS gts = getSimulatorModel().getGTS();
-
-        Iterable<? extends GraphState> export = new HashSet<>(0);
-        switch (exportStates) {
-        case ALL:
-            export = gts.nodeSet();
-            break;
-        case TOP:
-            export = gts.getStates();
-            break;
-        case FINAL:
-            export = gts.getFinalStates();
-            break;
-        case RESULT:
-            export = getSimulatorModel().getExploreResult();
-            break;
-        default:
-            assert exportStates == StateExport.NONE;
-        }
-
-        Filter filter = getLtsDisplay().getFilter();
-
         try {
-            LTSReporter.exportLTS(gts,
-                new File(dir, ltsPattern).toString(),
-                flags,
-                filter,
-                getSimulatorModel().getExploreResult());
+            Filter filter = getLtsDisplay().getFilter();
+            LTSReporter
+                .exportLTS(gts, new File(dir, ltsPattern).toString(), flags, filter,
+                           getSimulatorModel().getExploreResult());
+            Iterable<? extends GraphState> export = switch (exportStates) {
+            case ALL -> gts.nodeSet();
+            case TOP -> gts.getStates();
+            case FINAL -> gts.getFinalStates();
+            case RESULT -> getSimulatorModel().getExploreResult().getStates();
+            case NONE -> new HashSet<>(0);
+            };
+
             for (GraphState state : export) {
                 StateReporter.exportState(state, new File(dir, statePattern).toString());
             }

@@ -208,6 +208,15 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
         this.edgeJCellMap.clear();
     }
 
+    /** Returns the set of {@link JCell}s associated with a given collection
+     * of graph elements.
+     */
+    public Set<JCell<?>> getJCells(Collection<? extends Element> elements) {
+        var result = new HashSet<JCell<?>>();
+        elements.stream().map(this::getJCell).forEach(result::add);
+        return result;
+    }
+
     /**
      * Returns the {@link JCell} associated with a given graph element. The
      * result is a {@link JVertex} for which the graph element is the

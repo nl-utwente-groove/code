@@ -54,6 +54,7 @@ import nl.utwente.groove.gui.menu.ModelCheckingMenu;
 import nl.utwente.groove.gui.menu.MyJMenu;
 import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.lts.GTS;
+import nl.utwente.groove.lts.GTSFragment;
 import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
@@ -481,62 +482,34 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
     /** Convenience method to test whether a given state is included in the result object. */
     public boolean isResult(GraphState state) {
         ExploreResult result = getResult();
-        return result != null && result.containsState(state);
-    }
-
-    /** Returns the trace from a given result set. */
-    private Set<LTSJCell> findTraces() {
-        Set<LTSJCell> result;
-        ExploreResult answer = getResult();
-        if (getResult().storesTransitions()) {
-            result = new HashSet<>();
-            LTSJModel model = getModel();
-            for (GraphState state : answer) {
-                result.add((LTSJCell) model.getJCellForNode(state));
-            }
-            for (GraphTransition trans : answer.getTransitions()) {
-                result.add((LTSJEdge) model.getJCellForEdge(trans));
-            }
-            getSimulatorModel().setTrace(answer.getTransitions());
-        } else {
-            result = findTraces(answer);
-        }
-        return result;
+        return result != null && result.contains(state);
     }
 
     /** Filters the LTS.
      * @return {@code true} if any cells were added (necessitating a relayout). */
     public boolean refreshFiltering() {
         boolean result = false;
-        Set<LTSJCell> traces = null;
+        GTSFragment fragment;
         if (getFilter() == Filter.RESULT && hasResult()) {
-            traces = findTraces();
+            fragment = getResult().toFragment(isShowRecipeSteps());
+        } else {
+            fragment
+                = getModel().getGraph().toFragment(getFilter() == Filter.NONE, isShowRecipeSteps());
         }
         // first make the vertices (in)visible,
         // as otherwise they may prevent the edges from becoming visible
         for (Object root : getRoots()) {
-            if (root instanceof LTSJVertex) {
-                boolean visible = traces == null || traces.contains(root);
-                boolean thisChanged = ((LTSJVertex) root).setVisibleFlag(visible);
+            if (root instanceof LTSJVertex jVertex) {
+                boolean visible = fragment.nodeSet().contains(jVertex.getNode());
+                boolean thisChanged = jVertex.setVisibleFlag(visible);
                 result |= thisChanged & visible;
             }
         }
         // now change the visibility of the edges
         for (Object root : getRoots()) {
             if (root instanceof LTSJEdge jEdge) {
-                boolean visible;
-                switch (getFilter()) {
-                case SPANNING:
-                    LTSJVertex target = jEdge.getTargetVertex();
-                    assert target != null; // ensured by now
-                    visible = target.getParentEdge() == jEdge;
-                    break;
-                case RESULT:
-                    visible = traces == null || traces.contains(root);
-                    break;
-                default:
-                    visible = true;
-                }
+                var visibleEdges = fragment.edgeSet();
+                boolean visible = jEdge.getEdges().stream().anyMatch(visibleEdges::contains);
                 boolean thisChanged = jEdge.setVisibleFlag(visible);
                 result |= thisChanged & visible;
             }

@@ -17,21 +17,15 @@
 
 package nl.utwente.groove.explore.result;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.explore.strategy.LTLStrategy;
-import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
-import nl.utwente.groove.lts.GraphTransition;
+import nl.utwente.groove.verify.ModelChecking.Outcome;
+import nl.utwente.groove.verify.ModelChecking.Record;
 import nl.utwente.groove.verify.ProductListener;
 import nl.utwente.groove.verify.ProductState;
 import nl.utwente.groove.verify.ProductStateSet;
 import nl.utwente.groove.verify.ProductTransition;
-import nl.utwente.groove.verify.ModelChecking.Outcome;
-import nl.utwente.groove.verify.ModelChecking.Record;
 
 /**
  * Acceptor that is notified on closing a Buchi graph-state in a
@@ -56,11 +50,6 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
     }
 
     @Override
-    protected ExploreResult createResult(GTS gts) {
-        return new CycleResult(gts);
-    }
-
-    @Override
     public boolean done() {
         return !getResult().isEmpty();
     }
@@ -75,15 +64,27 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
 
     @Override
     public void closeUpdate(ProductStateSet gts, ProductState state) {
-        if (state.getBuchiLocation()
-            .isAccepting()) {
+        if (state.getBuchiLocation().isAccepting()) {
             Outcome event = redDFS(state);
             if (event != Outcome.OK) {
+                var result = getResult();
+                GraphState previous = null;
                 // put the counter-example in the result
                 for (ProductState stackState : this.strategy.getStateStack()) {
-                    getResult().addState(stackState.getGraphState());
+                    var next = stackState.getGraphState();
+                    result.addState(next);
+                    if (previous != null) {
+                        var inTrans = previous
+                            .getTransitions()
+                            .stream()
+                            .filter(t -> t.target().equals(next))
+                            .findAny()
+                            .get();
+                        result.add(inTrans);
+                    }
+                    previous = next;
                 }
-                getResult().addState(state.getGraphState());
+                result.addState(state.getGraphState());
             }
         }
     }
@@ -132,56 +133,4 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
 
     /** Prototype acceptor. */
     public static final CycleAcceptor PROTOTYPE = new CycleAcceptor(true);
-
-    /**
-     * Type of the result object for the {@link CycleAcceptor}.
-     * The result is a list rather than a set, allowing for the multiple
-     * occurrence of the same graph state in a counter-example.
-     */
-    static private class CycleResult extends ExploreResult {
-        public CycleResult(GTS gts) {
-            super(gts);
-            this.transitions = new ArrayList<>();
-        }
-
-        @Override
-        public void addState(GraphState state) {
-            super.addState(state);
-            if (this.lastState != null) {
-                // look for the outgoing transition to state
-                for (GraphTransition trans : this.lastState.getTransitions()) {
-                    if (trans.target() == state) {
-                        addTransition(trans);
-                        break;
-                    }
-                }
-            }
-            this.lastState = state;
-        }
-
-        /** The previously added state. */
-        private GraphState lastState;
-
-        @Override
-        protected Collection<GraphState> createResultSet() {
-            return new ArrayList<>();
-        }
-
-        @Override
-        public boolean storesTransitions() {
-            return true;
-        }
-
-        /** Adds a transition to those stored in this result object. */
-        private void addTransition(GraphTransition trans) {
-            this.transitions.add(trans);
-        }
-
-        @Override
-        public Collection<GraphTransition> getTransitions() {
-            return this.transitions;
-        }
-
-        private List<GraphTransition> transitions;
-    }
 }
