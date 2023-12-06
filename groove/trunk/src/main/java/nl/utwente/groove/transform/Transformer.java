@@ -238,7 +238,7 @@ public class Transformer {
         setResultCount(1);
         ExploreResult exploreResult = explore();
         if (!exploreResult.isEmpty()) {
-            result = createModel(exploreResult.iterator().next().getGraph());
+            result = createModel(exploreResult.getStates().iterator().next().getGraph());
         }
         setResultCount(oldResultCount);
         return result;

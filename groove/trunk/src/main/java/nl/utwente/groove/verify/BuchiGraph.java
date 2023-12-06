@@ -34,7 +34,6 @@ import nl.utwente.groove.graph.AGraph;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.gui.dialog.GraphPreviewDialog;
 import nl.utwente.groove.util.collect.NestedIterator;
-import nl.utwente.groove.util.collect.TransformIterator;
 
 /**
  * @author Harmen Kastenberg
@@ -220,14 +219,8 @@ public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition> implements
 
         @Override
         public Iterator<BuchiTransition> iterator() {
-            return new NestedIterator<>(
-                new TransformIterator<BuchiLocation,Iterator<BuchiTransition>>(
-                    nodeSet().iterator()) {
-                    @Override
-                    protected Iterator<BuchiTransition> toOuter(BuchiLocation from) {
-                        return from.outTransitions().iterator();
-                    }
-                });
+            return NestedIterator
+                .newInstance(nodeSet().stream().map(BuchiLocation::outTransitions));
         }
 
         @Override

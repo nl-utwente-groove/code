@@ -26,15 +26,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Queue;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -43,11 +38,8 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.control.Valuator;
 import nl.utwente.groove.control.instance.Frame;
-import nl.utwente.groove.explore.ExploreResult;
-import nl.utwente.groove.explore.util.LTSLabels;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.Grammar;
-import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.host.HostEdgeSet;
 import nl.utwente.groove.grammar.host.HostFactory;
 import nl.utwente.groove.grammar.host.HostGraph;
@@ -58,15 +50,11 @@ import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.iso.CertificateStrategy;
 import nl.utwente.groove.graph.iso.IsoChecker;
-import nl.utwente.groove.graph.multi.MultiGraph;
-import nl.utwente.groove.graph.multi.MultiNode;
 import nl.utwente.groove.lts.Status.Flag;
 import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.transform.oracle.ValueOracle;
-import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.collect.NestedIterator;
 import nl.utwente.groove.util.collect.SetView;
-import nl.utwente.groove.util.collect.TransformIterator;
 import nl.utwente.groove.util.collect.TreeHashSet;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatException;
@@ -582,159 +570,24 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     }
 
     /**
-     * Exports the GTS to a plain graph representation,
-     * optionally including special edges to represent start, final and
-     * open states, and state identifiers.
-     * @param filter determines which part of the LTS should be included
-     * @param answer if non-{@code null}, the result that should be saved.
-     * Only used if {@code filter} equals {@link Filter#RESULT}
+     * Creates a GTS fragment, consisting of all states (optionally including internal ones),
+     * and either all or just spanning transitions (optionally including internal ones).
+     * @param complete if {@code true}, all transitions are included, otherwise only the spanning ones
+     * @param internal if {@code true}, internal states and transitions are included
      */
-    public MultiGraph toPlainGraph(LTSLabels flags, Filter filter, @Nullable ExploreResult answer) {
-        MultiGraph result = new MultiGraph(getName(), GraphRole.LTS);
-        // Set of nodes and edges to be saved
-        Collection<? extends GraphState> states;
-        Collection<? extends GraphTransition> transitions;
-        switch (filter) {
-        case NONE:
-            states = nodeSet();
-            transitions = edgeSet();
-            break;
-        case SPANNING:
-            states = nodeSet();
-            transitions = getSpanningTransitions(states, flags.showRecipes());
-            break;
-        case RESULT:
-            if (answer == null) {
-                throw Exceptions.illegalArg("Result object should not be null");
-            }
-            if (answer.storesTransitions()) {
-                transitions = answer.getTransitions();
-                states = answer.getStates();
-            } else {
-                transitions = getSpanningTransitions(answer.getStates(), flags.showRecipes());
-                Set<GraphState> traces = new LinkedHashSet<>();
-                traces.add(startState());
-                for (GraphTransition trans : transitions) {
-                    traces.add(trans.target());
-                }
-                states = traces;
-            }
-            break;
-        default:
-            throw Exceptions.UNREACHABLE;
-        }
-        Map<GraphState,MultiNode> nodeMap = new HashMap<>();
-        for (GraphState state : states) {
-            // don't include transient states unless forced to
-            if (state.isInternalState() && !flags.showRecipes()) {
-                continue;
-            }
-            if (state.isAbsent()) {
-                continue;
-            }
-            MultiNode image = result.addNode(state.getNumber());
-            nodeMap.put(state, image);
-            if (flags.showResult() && answer != null && answer.containsState(state)) {
-                result.addEdge(image, flags.getResultLabel(), image);
-            }
-            if (flags.showFinal() && state.isFinal()) {
-                result.addEdge(image, flags.getFinalLabel(), image);
-            }
-            if (flags.showStart() && startState().equals(state)) {
-                result.addEdge(image, flags.getStartLabel(), image);
-            }
-            if (flags.showOpen() && !state.isClosed()) {
-                result.addEdge(image, flags.getOpenLabel(), image);
-            }
-            if (flags.showNumber()) {
-                String label = flags.getNumberLabel().replaceAll("#", "" + state.getNumber());
-                result.addEdge(image, label, image);
-            }
-            if (flags.showTransience() && state.isTransient()) {
-                String label = flags
-                    .getTransienceLabel()
-                    .replaceAll("#", "" + state.getActualFrame().getTransience());
-                result.addEdge(image, label, image);
-            }
-            if (flags.showRecipes() && state.isInternalState()) {
-                Optional<Recipe> recipe = state.getActualFrame().getRecipe();
-                recipe.map(r -> r.getQualName()).ifPresent(n -> {
-                    String label = flags.getRecipeLabel().replaceAll("#", "" + n);
-                    result.addEdge(image, label, image);
-                });
-            }
-        }
-        for (GraphTransition transition : transitions) {
-            // don't include partial transitions unless forced to
-            if (transition.isInternalStep() && !flags.showRecipes()) {
-                continue;
-            }
-            MultiNode sourceImage = nodeMap.get(transition.source());
-            MultiNode targetImage = nodeMap.get(transition.target());
-            result.addEdge(sourceImage, transition.label().text(), targetImage);
-        }
-        return result;
-    }
-
-    /** Returns the set of transitions leading from the start state
-     * to any of a given set of target states. Optionally includes
-     * the internal recipe steps.
-     */
-    private Set<GraphTransition> getSpanningTransitions(Collection<? extends GraphState> targets,
-                                                        boolean internal) {
-        Set<GraphTransition> result = new LinkedHashSet<>();
-        Queue<GraphState> queue = new LinkedList<>(targets);
-        Set<GraphState> reached = new HashSet<>();
-        while (!queue.isEmpty()) {
-            GraphState target = queue.poll();
-            if (!reached.add(target)) {
-                continue;
-            }
-            // it's a new target
-            if (!(target instanceof GraphNextState incoming)) {
-                continue;
-            }
-            // it's not the start state
-            if (target.isInternalState()) {
-                if (internal) {
-                    result.add(incoming);
-                }
-                queue.add(incoming.source());
-                continue;
-            }
-            // it's not an internal state; we have to look for an incoming
-            // non-internal transition
-            if (!incoming.isInternalStep()) {
-                result.add(incoming);
-                queue.add(incoming.source());
-                continue;
-            }
-            // it's an internal step leading to a non-internal state,
-            // hence the final step of a recipe transition
-            if (internal) {
-                result.add(incoming);
-            }
-            GraphState source = incoming.source();
-            while (source.isInternalState()) {
-                incoming = (GraphNextState) source;
-                if (internal) {
-                    result.add(incoming);
-                }
-                source = incoming.source();
-            }
-            // incoming is now the initial transition of the recipe transition
-            // leading from source to target
-            // look for the corresponding recipe transition
-            for (GraphTransition outgoing : source.getTransitions()) {
-                if (!(outgoing instanceof RecipeTransition candidate)) {
-                    continue;
-                }
-                if (candidate.getInitial() == incoming && candidate.target() == target) {
-                    result.add(candidate);
-                    break;
-                }
-            }
-            queue.add(source);
+    public GTSFragment toFragment(boolean complete, boolean internal) {
+        GTSFragment result;
+        var states = internal
+            ? nodeSet()
+            : getStates();
+        var transitions = internal
+            ? edgeSet()
+            : getTransitions();
+        if (complete) {
+            result = new GTSFragment(this, states, transitions);
+        } else {
+            result = new GTSFragment(this, states, Collections.emptySet());
+            result.complete(internal);
         }
         return result;
     }
@@ -1002,15 +855,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
          */
         @Override
         public Iterator<GraphTransition> iterator() {
-            Iterator<Iterator<? extends GraphTransition>> stateOutTransitionIter
-                = new TransformIterator<GraphState,Iterator<? extends GraphTransition>>(
-                    nodeSet().iterator()) {
-                    @Override
-                    public Iterator<? extends GraphTransition> toOuter(GraphState state) {
-                        return outEdgeSet(state).iterator();
-                    }
-                };
-            return new NestedIterator<>(stateOutTransitionIter);
+            return NestedIterator.newInstance(nodeSet().stream().map(GTS.this::outEdgeSet));
         }
 
         @Override

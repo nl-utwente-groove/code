@@ -37,7 +37,6 @@ import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.io.store.SystemStore;
-import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatException;
@@ -318,8 +317,9 @@ public class ExplorationTest {
             if (save) {
                 try {
                     Groove
-                        .saveGraph(gts.toPlainGraph(LTSLabels.DEFAULT, Filter.NONE, null),
-                                   view.getName());
+                        .saveGraph(gts
+                            .toFragment(false, false)
+                            .toPlainGraph(LTSLabels.DEFAULT, null), view.getName());
                 } catch (IOException exc) { // proceed
                 }
             }

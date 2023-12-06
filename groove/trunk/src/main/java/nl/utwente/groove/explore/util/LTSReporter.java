@@ -43,19 +43,17 @@ public class LTSReporter extends AExplorationReporter {
      */
     public LTSReporter(String filePattern, LTSLabels labels, LogReporter logger, Filter filter) {
         this.filePattern = filePattern;
-        this.labels = labels == null ? LTSLabels.DEFAULT : labels;
+        this.labels = labels == null
+            ? LTSLabels.DEFAULT
+            : labels;
         this.filter = filter;
         this.logger = logger;
     }
 
     @Override
     public void report() throws IOException {
-        File outFile =
-            exportLTS(getGTS(),
-                this.filePattern,
-                this.labels,
-                this.filter,
-                getExploration().getResult());
+        File outFile = exportLTS(getGTS(), this.filePattern, this.labels, this.filter,
+                                 getExploration().getResult());
         this.logger.append("LTS saved as %s%n", outFile.getPath());
     }
 
@@ -77,9 +75,15 @@ public class LTSReporter extends AExplorationReporter {
      * @throws IOException if any error occurred during export
      */
     static public File exportLTS(GTS lts, String filePattern, LTSLabels labels, Filter filter,
-        ExploreResult answer) throws IOException {
+                                 ExploreResult answer) throws IOException {
         // Create the LTS view to be exported.
-        MultiGraph ltsGraph = lts.toPlainGraph(labels, filter, answer);
+        boolean internal = labels.showRecipes();
+        var gtsFragment = switch (filter) {
+        case NONE -> lts.toFragment(true, internal);
+        case SPANNING -> lts.toFragment(false, internal);
+        case RESULT -> answer.toFragment(internal);
+        };
+        MultiGraph ltsGraph = gtsFragment.toPlainGraph(labels, answer);
         // Export GTS.
         String ltsName;
         File dir = new File(filePattern);
