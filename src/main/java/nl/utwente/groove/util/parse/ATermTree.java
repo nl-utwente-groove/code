@@ -355,8 +355,9 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
     public String toString() {
         String result;
         if (hasErrors()) {
+            // don't invoke getParseString() as computing it gives rise to infinite recursion
             result = String
-                .format("Parse errors in '%s': %s", getParseString(), getErrors().toString());
+                .format("Parse errors in '%s': %s", this.parseString, getErrors().toString());
         } else if (getOp().getKind() == OpKind.ATOM) {
             result = getOp().hasSymbol()
                 ? getOp().getSymbol()

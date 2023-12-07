@@ -291,6 +291,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
         try {
             result = parse(OpKind.NONE);
             if (!has(EOT)) {
+                result = result.clone();
                 result
                     .getErrors()
                     .add("Unparsed suffix: %s",

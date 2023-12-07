@@ -211,7 +211,9 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
             try {
                 result.toLtlFormula();
             } catch (FormatException exc) {
-                // do nothing; errors are now stored in the formula object
+                result = result.clone();
+                result.getErrors().addAll(exc.getErrors());
+                result.setFixed();
             }
             return result;
         }
@@ -223,7 +225,9 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
             try {
                 result = result.toCtlFormula();
             } catch (FormatException exc) {
-                // do nothing; errors are now stored in the formula object
+                result = result.clone();
+                result.getErrors().addAll(exc.getErrors());
+                result.setFixed();
             }
             return result;
         }

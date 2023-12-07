@@ -17,8 +17,8 @@
 package nl.utwente.groove.util.collect;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
+import java.util.stream.Stream;
 
 /**
  * An iterator obtained by <i>flattening</i> other iterators. The inner
@@ -32,15 +32,8 @@ public class NestedIterator<T> extends AbstractNestedIterator<T> {
      * @param iterList the list of iterators from which this nested iterator is
      *        to be constructed
      */
-    public NestedIterator(Collection<? extends Iterator<? extends T>> iterList) {
+    public NestedIterator(Iterable<? extends Iterator<? extends T>> iterList) {
         this(iterList.iterator());
-    }
-
-    /**
-     * Constructs a nested iterator from existing iterators.
-     */
-    public NestedIterator(Iterator<? extends T> iter1, Iterator<? extends T> iter2) {
-        this(Arrays.asList(iter1, iter2));
     }
 
     /**
@@ -79,4 +72,21 @@ public class NestedIterator<T> extends AbstractNestedIterator<T> {
      *            <tt>outerIterator.next() instanceof Iterator</tt>
      */
     private final Iterator<? extends Iterator<? extends T>> outerIterator;
+
+    /** Creates a new iterator from a sequence of iterators. */
+    @SafeVarargs
+    static public <T> Iterator<T> newInstance(Iterator<? extends T>... iterators) {
+        return new NestedIterator<>(iterators);
+    }
+
+    /** Creates a new iterator from a sequence of iterables. */
+    @SafeVarargs
+    static public <T> Iterator<T> newInstance(Iterable<? extends T>... iterables) {
+        return new NestedIterator<>(Arrays.stream(iterables).map(Iterable::iterator).toList());
+    }
+
+    /** Creates a new iterator from a stream of iterables. */
+    static public <T> Iterator<T> newInstance(Stream<Iterable<? extends T>> iterables) {
+        return new NestedIterator<>(iterables.map(Iterable::iterator).toList());
+    }
 }
