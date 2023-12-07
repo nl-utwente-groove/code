@@ -63,6 +63,19 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
     }
 
     @Override
+    boolean isShouldRebuild() {
+        boolean result = super.isShouldRebuild();
+        if (!result) {
+            if (getGrammar().getTypeModel().isImplicit()) {
+                // the implicit type graph gets rebuilt when the start graph changes
+                // the rules then also get rebuilt, and hence so must the control graph
+                result = isStale(ResourceKind.HOST);
+            }
+        }
+        return result;
+    }
+
+    @Override
     Automaton compute() throws FormatException {
         Collection<QualName> controlNames = getGrammar().getActiveNames(CONTROL);
         // first build the trees, then check to avoid errors due to unresolved dependencies

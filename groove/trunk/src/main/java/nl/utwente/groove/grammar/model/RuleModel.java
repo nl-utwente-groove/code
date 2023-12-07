@@ -287,12 +287,16 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     @Override
     boolean isShouldRebuild() {
         boolean result = super.isShouldRebuild();
-        if (getGrammar().getTypeModel().isImplicit()) {
-            // the implicit type graph gets rebuilt when the start graph changes
-            // so we must also rebuild, otherwise the type graphs will diverge
-            result |= isStale(ResourceKind.HOST);
-        } else {
-            result |= isStale(ResourceKind.TYPE);
+        if (!result) {
+            if (getGrammar().getTypeModel().isImplicit()) {
+                // the implicit type graph gets rebuilt when the start graph changes
+                // so we must also rebuild, otherwise the type graphs will diverge
+                result = isStale(ResourceKind.HOST);
+            } else {
+                // the type graph is a dependency only if it is not implicit
+                // if it is implicit, then instead it depends on the set of rules
+                result = isStale(ResourceKind.TYPE);
+            }
         }
         return result;
     }
