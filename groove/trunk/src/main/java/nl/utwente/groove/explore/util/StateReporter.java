@@ -47,12 +47,13 @@ public class StateReporter extends AExplorationReporter {
     public void report() throws IOException {
         Pair<FileType,Exporter> stateFormat = Exporters.getAcceptingFormat(this.statePattern);
         if (stateFormat == null) {
-            this.logger.append("Pattern %s does not specify export format: states saved in native GXL%n",
-                this.statePattern);
+            this.logger
+                .append("Pattern %s does not specify export format: states saved in native GXL%n",
+                        this.statePattern);
         } else {
             this.logger.append("States saved as %s%n", stateFormat.one().getDescription());
         }
-        for (GraphState state : getExploration().getResult()) {
+        for (GraphState state : getExploration().getResult().getStates()) {
             File savedFile = exportState(state, this.statePattern);
             this.logger.append("State saved: %s%n", savedFile);
         }
@@ -73,9 +74,9 @@ public class StateReporter extends AExplorationReporter {
         Pair<FileType,Exporter> stateFormat = Exporters.getAcceptingFormat(stateFilename);
         if (stateFormat != null) {
             try {
-                stateFormat.two().doExport(new Exportable(state.getGraph()),
-                    stateFile,
-                    stateFormat.one());
+                stateFormat
+                    .two()
+                    .doExport(new Exportable(state.getGraph()), stateFile, stateFormat.one());
             } catch (PortException e1) {
                 throw new IOException(e1);
             }

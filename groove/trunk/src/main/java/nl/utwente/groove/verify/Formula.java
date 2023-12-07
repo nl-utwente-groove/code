@@ -106,8 +106,8 @@ public class Formula extends ATermTree<LogicOp,Formula> {
             toString2(b);
             break;
         default:
-            assert false : String.format("Arity %d of operator %s not supported",
-                                         getOp().getArity(), getOp());
+            assert false : String
+                .format("Arity %d of operator %s not supported", getOp().getArity(), getOp());
         }
     }
 
@@ -245,12 +245,7 @@ public class Formula extends ATermTree<LogicOp,Formula> {
                     getParseString());
             }
             this.logic = Logic.CTL;
-            try {
-                this.ctlFormula = computeCtlFormula();
-            } catch (FormatException exc) {
-                getErrors().addAll(exc.getErrors());
-                throw exc;
-            }
+            this.ctlFormula = computeCtlFormula();
         }
         return this.ctlFormula;
     }
@@ -352,12 +347,7 @@ public class Formula extends ATermTree<LogicOp,Formula> {
                     getParseString());
             }
             this.logic = Logic.LTL;
-            try {
-                this.ltlFormula = computeLtlFormula();
-            } catch (FormatException exc) {
-                getErrors().addAll(exc.getErrors());
-                throw exc;
-            }
+            this.ltlFormula = computeLtlFormula();
         }
         return this.ltlFormula;
     }
@@ -430,6 +420,7 @@ public class Formula extends ATermTree<LogicOp,Formula> {
     public Formula clone() {
         Formula result = super.clone();
         result.prop = this.prop;
+        result.logic = this.logic;
         return result;
     }
 
