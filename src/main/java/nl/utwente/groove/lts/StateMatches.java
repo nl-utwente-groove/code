@@ -191,7 +191,7 @@ public class StateMatches extends MatchResultSet {
                 // the control transition does not increase the transient depth
                 // so the existence of a match guarantees the existence of a transition
                 // to a state that is present on the level of the frame
-                // (not that we already know outstanding to be nonempty)
+                // (note that we already know outstanding to be nonempty)
                 // MODIFICATION: this is only true if the target state cannot be
                 // declared absent due to some policy
                 nextFrame = attempt.onSuccess();

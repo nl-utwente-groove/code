@@ -41,8 +41,7 @@ class ExploreData {
     ExploreData(StateCache cache) {
         this.cache = cache;
         GraphState state = this.state = cache.getState();
-        this.absence = state.getActualFrame()
-            .getTransience();
+        this.absence = state.getActualFrame().getTransience();
         this.inRecipe = state.isInternalState();
         if (!state.isClosed()) {
             this.recipeTargets = new ArrayList<>();
@@ -50,7 +49,9 @@ class ExploreData {
                 this.recipeTargets.add(state);
             }
         }
-        this.recipeInits = state.isInternalState() ? new ArrayList<>() : null;
+        this.recipeInits = state.isInternalState()
+            ? new ArrayList<>()
+            : null;
     }
 
     @Override
@@ -74,20 +75,17 @@ class ExploreData {
      */
     void notifyOutPartial(RuleTransition partial) {
         if (DEBUG) {
-            System.out.printf("Rule transition added: %s--%s-->%s%n",
-                partial.source(),
-                partial.label(),
-                partial.target());
+            System.out
+                .printf("Rule transition added: %s--%s-->%s%n", partial.source(), partial.label(),
+                        partial.target());
         }
         assert partial.isPartial() || partial.isInternalStep();
         assert partial.source() == getState();
         GraphState succ = partial.target();
-        if (succ.getActualFrame()
-            .isRemoved()) {
+        if (succ.getActualFrame().isRemoved()) {
             return;
         }
-        ExploreData succData = succ.getCache()
-            .getExploreData();
+        ExploreData succData = succ.getCache().getExploreData();
         // The reason for the following exit condition is lost in the mists of time
         /*if (childCache == this) {
             return;
@@ -107,8 +105,7 @@ class ExploreData {
                     succData.rawPreds.add(this);
                 }
             }
-        } else if (partial.getStep()
-            .isInitial()) {
+        } else if (partial.getStep().isInitial()) {
             // immediately add recipe transitions to the
             // previously found surface descendants of the child
             for (GraphState target : succData.getRecipeTargets()) {
@@ -230,13 +227,11 @@ class ExploreData {
 
     private void addRecipeTransition(RuleTransition partial, GraphState target) {
         RecipeTransition trans = new RecipeTransition(partial, target);
-        getState().getGTS()
-            .addTransition(trans);
+        getState().getGTS().addTransition(trans);
         if (DEBUG) {
-            System.out.printf("Recipe transition added: %s--%s-->%s%n",
-                trans.source(),
-                trans.label(),
-                target);
+            System.out
+                .printf("Recipe transition added: %s--%s-->%s%n", trans.source(), trans.label(),
+                        target);
         }
     }
 
@@ -290,7 +285,7 @@ class ExploreData {
     /** Set of states reachable through a non-empty sequence of partial transitions. */
     private final Set<GraphState> reachables = new HashSet<>();
 
-    private final static boolean DEBUG = false;
+    private final static boolean DEBUG = true;
 
     /**
      * Helper class to reconstruct the top-level reachable fields
@@ -317,17 +312,11 @@ class ExploreData {
         private void build() {
             while (!this.queue.isEmpty()) {
                 ExploreData source = this.queue.poll();
-                for (GraphTransition trans : source.getState()
-                    .getTransitions(Claz.PRESENT)) {
-                    assert !trans.target()
-                        .isInternalState() || trans.target()
-                            .isDone();
-                    ExploreData target = trans.target()
-                        .getCache()
-                        .getExploreData();
+                for (GraphTransition trans : source.getState().getTransitions(Claz.PRESENT)) {
+                    assert !trans.target().isInternalState() || trans.target().isDone();
+                    ExploreData target = trans.target().getCache().getExploreData();
                     addData(target);
-                    this.backward.get(target)
-                        .add(source);
+                    this.backward.get(target).add(source);
                 }
             }
             if (DEBUG) {
@@ -347,13 +336,12 @@ class ExploreData {
                 it.remove();
                 Set<GraphState> reachables = this.resultMap.get(data);
                 for (ExploreData pred : this.backward.get(data)) {
-                    if (this.resultMap.get(pred)
-                        .addAll(reachables)) {
+                    if (this.resultMap.get(pred).addAll(reachables)) {
                         changed.add(pred);
                         if (DEBUG) {
-                            System.out.printf("Adding reachables %s for %s%n",
-                                reachables,
-                                pred.getState());
+                            System.out
+                                .printf("Adding reachables %s for %s%n", reachables,
+                                        pred.getState());
                         }
                     }
                 }
@@ -369,9 +357,9 @@ class ExploreData {
                 List<GraphState> topLevelReachables = new ArrayList<>(entry.getValue());
                 ExploreData keyData = entry.getKey();
                 if (DEBUG) {
-                    System.out.printf("Top-level reachables of %s determined as %s%n",
-                        keyData.getState(),
-                        topLevelReachables);
+                    System.out
+                        .printf("Top-level reachables of %s determined as %s%n", keyData.getState(),
+                                topLevelReachables);
                 }
                 keyData.recipeTargets = topLevelReachables;
             }
@@ -391,16 +379,15 @@ class ExploreData {
                 List<GraphState> targets = data.recipeTargets;
                 if (targets == null) {
                     // we're going to traverse further
-                    if (data.getState()
-                        .isInternalState()) {
+                    if (data.getState().isInternalState()) {
                         if (DEBUG) {
                             System.out.printf("Traversing further for %s%n", data.getState());
                         }
                         this.queue.add(data);
                     } else {
                         if (DEBUG) {
-                            System.out.printf("Recording top-level status for %s%n",
-                                data.getState());
+                            System.out
+                                .printf("Recording top-level status for %s%n", data.getState());
                         }
                         resultEntry.add(data.getState());
                     }
