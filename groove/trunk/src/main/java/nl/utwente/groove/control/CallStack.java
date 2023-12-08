@@ -18,9 +18,9 @@ package nl.utwente.groove.control;
 
 import java.util.Optional;
 import java.util.Stack;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.grammar.Action;
@@ -40,7 +40,7 @@ import nl.utwente.groove.util.LazyFactory;
 @NonNullByDefault
 public class CallStack extends Stack<Call> {
     /**
-     * Constructs an initially empty stack.
+     * Constructs stack from a given stream of calls.
      */
     public CallStack(Stream<Call> calls) {
         calls.forEach(c -> this.add(c));
@@ -49,6 +49,13 @@ public class CallStack extends Stack<Call> {
     /** Returns the rule invoked in the top element of the call stack. */
     public Rule getRule() {
         return peek().getRule();
+    }
+
+    @Override
+    public synchronized @NonNull Call pop() {
+        var result = super.pop();
+        this.recipe.reset();
+        return result;
     }
 
     /** Indicates if this call stack represents a recipe step.
@@ -68,7 +75,7 @@ public class CallStack extends Stack<Call> {
     }
 
     /** The first recipe in the call stack, or {@code null} if there is none. */
-    private Supplier<Optional<Recipe>> recipe = LazyFactory
+    private LazyFactory<Optional<Recipe>> recipe = LazyFactory
         .instance(() -> stream()
             .map(c -> c.getUnit())
             .filter(u -> u instanceof Recipe)

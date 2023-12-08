@@ -19,6 +19,7 @@ package nl.utwente.groove.control.template;
 import java.util.Optional;
 import java.util.Stack;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -46,6 +47,18 @@ public class SwitchStack extends Stack<Switch>
         // empty
     }
 
+    @Override
+    public synchronized @NonNull Switch pop() {
+        Switch result = super.pop();
+        if (this.callStack != null) {
+            this.callStack.pop();
+        }
+        if (this.depth >= 0) {
+            this.depth -= result.getTransience();
+        }
+        return result;
+    }
+
     /** Returns the bottom of the stack. */
     public Switch getBottom() {
         return get(0);
@@ -67,7 +80,7 @@ public class SwitchStack extends Stack<Switch>
     }
 
     @Override
-    public int getTransience() {
+    public synchronized int getTransience() {
         if (this.depth < 0) {
             this.depth = computeDepth();
         }
@@ -86,10 +99,11 @@ public class SwitchStack extends Stack<Switch>
 
     /** Returns the call stack corresponding to this switch stack. */
     @Override
-    public CallStack getCallStack() {
+    public synchronized CallStack getCallStack() {
         var result = this.callStack;
         if (result == null) {
-            this.callStack = result = new CallStack(stream().map(s -> s.getCall()));
+            var callStream = stream().map(s -> s.getCall());
+            this.callStack = result = new CallStack(callStream);
         }
         return result;
     }
