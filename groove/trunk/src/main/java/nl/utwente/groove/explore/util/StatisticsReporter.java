@@ -354,7 +354,6 @@ public class StatisticsReporter extends AExplorationReporter {
         }
         // The following is to make sure that the graph reference queue gets
         // flushed.
-        System.runFinalization();
         System.gc();
         long usedMemory = runTime.totalMemory() - runTime.freeMemory();
         String format = "%-20s%d%n";
