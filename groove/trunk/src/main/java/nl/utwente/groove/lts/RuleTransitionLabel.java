@@ -26,6 +26,7 @@ import nl.utwente.groove.control.CtrlPar;
 import nl.utwente.groove.control.CtrlPar.Wild;
 import nl.utwente.groove.control.instance.Step;
 import nl.utwente.groove.control.template.Switch;
+import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.host.HostNode;
@@ -77,7 +78,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
 
     @Override
     public Switch getSwitch() {
-        return getStep().getRuleSwitch();
+        return getStep().getInnerSwitch();
     }
 
     /** Returns the nodes added by the transition to the target state.
@@ -92,8 +93,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
     @Override
     public HostNode[] getArguments() {
         HostNode[] result;
-        List<? extends CtrlPar> callArgs = getStep().getRuleCall()
-            .getArgs();
+        List<? extends CtrlPar> callArgs = getStep().getInnerCall().getArgs();
         if (callArgs.isEmpty()) {
             result = EMPTY_NODE_ARRAY;
         } else {
@@ -103,7 +103,9 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
                 Binding binding = getAction().getParBinding(i);
                 result[i] = switch (binding.type()) {
                 case ANCHOR -> (HostNode) getEvent().getAnchorImage(binding.index());
-                case CREATOR -> added == null ? null : added[binding.index()];
+                case CREATOR -> added == null
+                    ? null
+                    : added[binding.index()];
                 default -> throw Exceptions.illegalState("Binding %s is of a wrong type", binding);
                 };
             }
@@ -116,10 +118,8 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         Line result = Line.atom(text(false));
         if (getRole() == EdgeRole.FLAG) {
             result = result.style(Style.ITALIC);
-            if (getAction().getRole()
-                .hasColor()) {
-                result = result.color(getAction().getRole()
-                    .getColor());
+            if (getAction().getRole().hasColor()) {
+                result = result.color(getAction().getRole().getColor());
             }
         }
         return result;
@@ -132,16 +132,14 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
      */
     public String text(boolean anchored) {
         StringBuilder result = new StringBuilder();
-        for (int i = getStep().getSource()
-            .getSwitchStack()
-            .size(); i < getStep().getSwitchStack()
-                .size() - 1; i++) {
-            Switch sw = getStep().getSwitchStack()
-                .get(i);
-            result.append(sw.getQualName());
-            result.append('/');
+        for (var swt : getStep().getSwitch()) {
+            if (swt.getKind() == Kind.RULE) {
+                result.append(getAction().getTransitionLabel());
+            } else {
+                result.append(swt.getQualName());
+                result.append('/');
+            }
         }
-        result.append(getAction().getTransitionLabel());
         if (anchored) {
             result.append(getEvent().getAnchorImageString());
         } else {
@@ -212,21 +210,14 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
 
     static StringBuilder computeParameters(ActionLabel label) {
         StringBuilder result = new StringBuilder();
-        ThreeValued useParameters = label.getAction()
-            .getGrammarProperties()
-            .isUseParameters();
+        ThreeValued useParameters = label.getAction().getGrammarProperties().isUseParameters();
         // also show parameters for properties, unless global property is FALSE
-        if (useParameters.isSome() && label.getAction()
-            .isProperty()
-            && !label.getAction()
-                .getSignature()
-                .isEmpty()) {
+        if (useParameters.isSome() && label.getAction().isProperty()
+            && !label.getAction().getSignature().isEmpty()) {
             useParameters = ThreeValued.TRUE;
         }
         if (!useParameters.isFalse()) {
-            List<? extends CtrlPar> args = label.getSwitch()
-                .getCall()
-                .getArgs();
+            List<? extends CtrlPar> args = label.getSwitch().getCall().getArgs();
             // test if there is a showable argument
             boolean showArgs = false;
             StringBuilder params = new StringBuilder();
@@ -241,8 +232,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
                 if (arg == null) {
                     params.append('_');
                 } else if (arg instanceof ValueNode) {
-                    params.append(((ValueNode) arg).getTerm()
-                        .toDisplayString());
+                    params.append(((ValueNode) arg).getTerm().toDisplayString());
                 } else {
                     params.append(arg);
                 }
@@ -273,11 +263,12 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
      * the added nodes are not specified
      */
     public static final @NonNull RuleTransitionLabel createLabel(GraphState source,
-        MatchResult match, HostNode[] addedNodes) {
-        @NonNull RuleTransitionLabel result = new RuleTransitionLabel(source, match, addedNodes);
+                                                                 MatchResult match,
+                                                                 HostNode[] addedNodes) {
+        @NonNull
+        RuleTransitionLabel result = new RuleTransitionLabel(source, match, addedNodes);
         if (REUSE_LABELS) {
-            Record record = source.getGTS()
-                .getRecord();
+            Record record = source.getGTS().getRecord();
             RuleTransitionLabel newResult = record.normaliseLabel(result);
             result = newResult;
         }
@@ -287,7 +278,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
     /** Flag controlling whether transition labels are normalised. */
     public static boolean REUSE_LABELS = true;
     /** Global empty set of nodes. */
-    static private final HostNode[] EMPTY_NODE_ARRAY = new HostNode[0];
+    static private final HostNode[] EMPTY_NODE_ARRAY = {};
     /** Flag controlling the behaviour in case the {@link GrammarKey#TRANSITION_PARAMETERS}
      * key is set to {@link ThreeValued#SOME}.
      * If this flag is set to <code>true</code>, then parameters are shown for

@@ -327,7 +327,7 @@ public class Program implements Fixable {
         if (term.isTrial()) {
             DerivationAttempt derivList = term.getAttempt(false);
             for (Derivation edge : derivList) {
-                result.add(edge.getCall());
+                result.add(edge.getOuterCall());
             }
             result.addAll(getInitCalls(derivList.onSuccess()));
             result.addAll(getInitCalls(derivList.onFailure()));

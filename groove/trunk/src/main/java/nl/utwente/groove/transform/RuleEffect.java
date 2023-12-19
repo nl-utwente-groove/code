@@ -563,10 +563,9 @@ public class RuleEffect extends DefaultFixable {
                     return new FilterIterator<>(RuleEffect.this.createdEdges.iterator()) {
                         @Override
                         protected boolean approves(Object obj) {
-                            if (!(obj instanceof HostEdge)) {
+                            if (!(obj instanceof HostEdge edge)) {
                                 return false;
                             }
-                            HostEdge edge = (HostEdge) obj;
                             if (getSource().containsEdge(edge) && !isErasedEdge(edge)) {
                                 return false;
                             }
@@ -594,10 +593,34 @@ public class RuleEffect extends DefaultFixable {
         return this.mergeMap != null;
     }
 
-    /** Returns the (possibly {@code null}) merge map. */
+    /** Returns the (possibly {@code null}) merge map.
+     * This maps nodes that were merged as a consequence of the rule application
+     * to the result node, and also maps removed nodes to {@code null}.
+     */
     public final MergeMap getMergeMap() {
         assert isFixed();
         return this.mergeMap;
+    }
+
+    /** Function indicating whether the the associated node mapping is the identity.
+     */
+    public boolean isNodeId() {
+        assert isFixed();
+        return !hasMergeMap() && !hasRemovedNodes();
+    }
+
+    /** Function mapping a given (source) node to its image,
+     * taking the merge map and removed nodes into account.
+     */
+    public HostNode mapNode(HostNode node) {
+        assert isFixed();
+        if (hasMergeMap()) {
+            return getMergeMap().getNode(node);
+        } else if (hasRemovedNodes() && getRemovedNodes().contains(node)) {
+            return null;
+        } else {
+            return node;
+        }
     }
 
     /** Values indicating which part of the effect is recorded. */

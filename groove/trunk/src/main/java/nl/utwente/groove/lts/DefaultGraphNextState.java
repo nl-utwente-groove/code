@@ -15,19 +15,15 @@
 package nl.utwente.groove.lts;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.control.instance.Step;
-import nl.utwente.groove.control.template.Switch;
-import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.host.DeltaHostGraph;
 import nl.utwente.groove.grammar.host.HostGraphMorphism;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.transform.DeltaApplier;
-import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.transform.RuleEvent;
 
@@ -62,23 +58,8 @@ public class DefaultGraphNextState extends AbstractGraphState
     }
 
     @Override
-    public String text(boolean anchored) {
-        return label().text(anchored);
-    }
-
-    @Override
     public RuleEvent getEvent() {
         return this.event;
-    }
-
-    @Override
-    public Rule getAction() {
-        return getEvent().getRule();
-    }
-
-    @Override
-    public RuleTransition getInitial() {
-        return this;
     }
 
     @Override
@@ -94,15 +75,6 @@ public class DefaultGraphNextState extends AbstractGraphState
     @Override
     public Object[] getPrimeValues() {
         return this.frameValues;
-    }
-
-    /**
-     * This implementation reconstructs the matching using the rule, the anchor
-     * images, and the basis graph.
-     */
-    @Override
-    public Proof getProof() {
-        return getEvent().getMatch(source().getGraph());
     }
 
     /**
@@ -203,11 +175,6 @@ public class DefaultGraphNextState extends AbstractGraphState
         return result == null
             ? this
             : result;
-    }
-
-    @Override
-    public MatchResult getKey() {
-        return new MatchResult(this);
     }
 
     @Override
@@ -322,31 +289,6 @@ public class DefaultGraphNextState extends AbstractGraphState
     @Override
     public Step getStep() {
         return this.step;
-    }
-
-    @Override
-    public Switch getSwitch() {
-        return getStep().getRuleSwitch();
-    }
-
-    @Override
-    public List<HostNode> getArguments() {
-        return DefaultRuleTransition.getArguments(this);
-    }
-
-    @Override
-    public final boolean isPartial() {
-        return getStep().isPartial();
-    }
-
-    @Override
-    public final boolean isInternalStep() {
-        return getStep().isInternal();
-    }
-
-    @Override
-    public final boolean isRealStep() {
-        return !isInternalStep() && source().isRealState() && target().isRealState();
     }
 
     /** Keeps track of bound variables */

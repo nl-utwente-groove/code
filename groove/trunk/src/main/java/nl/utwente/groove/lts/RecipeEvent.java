@@ -17,8 +17,8 @@
 package nl.utwente.groove.lts;
 
 import nl.utwente.groove.control.template.Switch;
-import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Callable.Kind;
+import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.transform.Event;
 
 /** Event class for recipe transitions. */
@@ -27,18 +27,8 @@ public class RecipeEvent implements GraphTransitionStub, Event, GraphTransitionK
     public RecipeEvent(RecipeTransition trans) {
         this.recipeSwitch = trans.getSwitch();
         assert this.recipeSwitch.getKind() == Kind.RECIPE;
-        this.initial = trans.getInitial()
-            .toStub();
+        this.initial = trans.getInitial().toStub();
         this.target = trans.target();
-    }
-
-    /**
-     * Constructs an event for a given recipe, initial transition and target state.
-     */
-    public RecipeEvent(Switch recipeSwitch, RuleTransition initial, GraphState target) {
-        this.recipeSwitch = recipeSwitch;
-        this.initial = initial.toStub();
-        this.target = target;
     }
 
     @Override
@@ -109,10 +99,9 @@ public class RecipeEvent implements GraphTransitionStub, Event, GraphTransitionK
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof RecipeEvent)) {
+        if (!(obj instanceof RecipeEvent other)) {
             return false;
         }
-        RecipeEvent other = (RecipeEvent) obj;
         if (!this.recipeSwitch.equals(other.recipeSwitch)) {
             return false;
         }

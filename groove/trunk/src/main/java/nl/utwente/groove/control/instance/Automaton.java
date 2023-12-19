@@ -24,7 +24,7 @@ import java.util.Set;
 import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.control.graph.ControlGraph;
 import nl.utwente.groove.control.template.Program;
-import nl.utwente.groove.control.template.SwitchStack;
+import nl.utwente.groove.control.template.NestedSwitch;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.host.HostFactory;
 import nl.utwente.groove.util.ThreadPool;
@@ -44,7 +44,7 @@ public class Automaton {
         this.program = program;
         this.framePool = new Pool<>();
         Frame start = new Frame(this, program.getTemplate()
-            .getStart(), new SwitchStack(), null);
+            .getStart(), new NestedSwitch(), null);
         start.setFixed();
         this.start = addFrame(start);
     }

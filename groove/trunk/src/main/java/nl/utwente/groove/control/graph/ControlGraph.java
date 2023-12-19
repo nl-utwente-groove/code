@@ -189,6 +189,6 @@ public class ControlGraph extends NodeSetEdgeSetGraph<ControlNode,ControlEdge> {
                                                                                Queue<P> fresh) {
         ControlNode target;
         target = addNode(result, nodeMap, out.onFinish(), fresh);
-        node.addCallEdge(target, out.getCallStack());
+        node.addCallEdge(target, out.getCall());
     }
 }

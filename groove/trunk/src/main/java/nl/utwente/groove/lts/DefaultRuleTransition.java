@@ -16,20 +16,13 @@
  */
 package nl.utwente.groove.lts;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.control.CtrlPar;
-import nl.utwente.groove.control.CtrlPar.Const;
-import nl.utwente.groove.control.CtrlPar.Var;
 import nl.utwente.groove.control.instance.Step;
-import nl.utwente.groove.control.template.Switch;
-import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostGraphMorphism;
@@ -38,7 +31,6 @@ import nl.utwente.groove.graph.AEdge;
 import nl.utwente.groove.graph.AGraph;
 import nl.utwente.groove.graph.Morphism;
 import nl.utwente.groove.graph.iso.IsoChecker;
-import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.transform.RuleEvent;
 import nl.utwente.groove.util.Exceptions;
@@ -68,28 +60,8 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     }
 
     @Override
-    public String text(boolean anchored) {
-        return label().text(anchored);
-    }
-
-    @Override
-    public Rule getAction() {
-        return getEvent().getRule();
-    }
-
-    @Override
     public RuleEvent getEvent() {
         return label().getEvent();
-    }
-
-    @Override
-    public GTS getGTS() {
-        return source().getGTS();
-    }
-
-    @Override
-    public RuleTransition getInitial() {
-        return this;
     }
 
     @Override
@@ -108,16 +80,6 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     }
 
     @Override
-    public List<HostNode> getArguments() {
-        return getArguments(this);
-    }
-
-    @Override
-    public MatchResult getKey() {
-        return new MatchResult(this);
-    }
-
-    @Override
     public RuleTransitionStub toStub() {
         if (isSymmetry()) {
             return new SymmetryTransitionStub(getKey(), getAddedNodes(), target());
@@ -126,11 +88,6 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
         } else {
             return new IdentityTransitionStub(getKey(), getAddedNodes(), target());
         }
-    }
-
-    @Override
-    public Proof getProof() {
-        return getEvent().getMatch(source().getGraph());
     }
 
     /**
@@ -296,26 +253,6 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
         return label().getStep();
     }
 
-    @Override
-    public Switch getSwitch() {
-        return getStep().getRuleSwitch();
-    }
-
-    @Override
-    public final boolean isPartial() {
-        return getStep().isPartial();
-    }
-
-    @Override
-    public final boolean isInternalStep() {
-        return getStep().isInternal();
-    }
-
-    @Override
-    public final boolean isRealStep() {
-        return !isInternalStep() && source().isRealState() && target().isRealState();
-    }
-
     /** Flag indicating that the underlying morphism is a partial identity. */
     private final boolean symmetry;
 
@@ -326,33 +263,4 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
 
     /** The total number of anchor images created. */
     static private int anchorImageCount = 0;
-
-    /** Computes the list of call arguments for a given graph transition. */
-    public static List<HostNode> getArguments(GraphTransition trans) {
-        List<HostNode> result;
-        List<? extends CtrlPar> args = trans.getSwitch().getArgs();
-        if (args.isEmpty()) {
-            result = EMPTY_ARGS;
-        } else {
-            result = new ArrayList<>();
-            for (int i = 0; i < args.size(); i++) {
-                CtrlPar par = args.get(i);
-                if (par instanceof Var v) {
-                    if (v.inOnly()) {
-                        // look up value in source state
-                    } else {
-                        assert v.outOnly();
-                        // look up value in target state
-                    }
-                } else if (par instanceof Const c) {
-                    result.add(c.getNode());
-                } else {
-                    throw Exceptions.UNREACHABLE;
-                }
-            }
-        }
-        return result;
-    }
-
-    private static final List<HostNode> EMPTY_ARGS = Collections.emptyList();
 }

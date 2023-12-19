@@ -36,7 +36,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
-import nl.utwente.groove.control.Valuator;
+import nl.utwente.groove.control.CallStack;
 import nl.utwente.groove.control.instance.Frame;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.Grammar;
@@ -729,7 +729,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             HostGraph otherGraph = otherState.getGraph();
             if (this.collapse == COLLAPSE_EQUAL) {
                 // check for equality of the bound nodes
-                if (!Valuator.areEqual(myBoundNodes, otherBoundNodes)) {
+                if (!CallStack.areEqual(myBoundNodes, otherBoundNodes)) {
                     return false;
                 }
                 // check for graph equality
@@ -757,7 +757,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 result = graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
                 Frame ctrlState = stateKey.getPrimeFrame();
                 result += ctrlState.hashCode();
-                result += Valuator.hashCode(stateKey.getPrimeValues());
+                result += CallStack.hashCode(stateKey.getPrimeValues());
             } else {
                 CertificateStrategy certifier
                     = this.checker.getCertifier(stateKey.getGraph(), true);
@@ -766,7 +766,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 Frame ctrlState = stateKey.getPrimeFrame();
                 result += ctrlState.hashCode();
                 result
-                    += Valuator.hashCode(stateKey.getPrimeValues(), certifier.getCertificateMap());
+                    += CallStack.hashCode(stateKey.getPrimeValues(), certifier.getCertificateMap());
             }
             if (CHECK_CONTROL_LOCATION) {
                 result += System.identityHashCode(stateKey.getPrimeFrame());

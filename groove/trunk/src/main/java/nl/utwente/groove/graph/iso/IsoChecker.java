@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import nl.utwente.groove.control.Valuator;
+import nl.utwente.groove.control.CallStack;
 import nl.utwente.groove.graph.AGraph;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeComparator;
@@ -151,7 +151,7 @@ public class IsoChecker {
     private boolean areGraphEqual(Graph dom, Graph cod, Object[] domValues, Object[] codValues) {
         equalsTestReporter.start();
         // test if the value lists of domain and codomain coincide
-        boolean result = (domValues == null || Valuator.areEqual(domValues, codValues));
+        boolean result = (domValues == null || CallStack.areEqual(domValues, codValues));
         if (result) {
             CertificateStrategy domCertifier = getCertifier(dom, false);
             CertificateStrategy codCertifier = getCertifier(cod, false);
@@ -273,7 +273,7 @@ public class IsoChecker {
         if (result && domValues != null) {
             assert iso != null;
             // now test correspondence of the node arrays
-            result = Valuator.areEqual(domValues, codValues, iso.nodeMap());
+            result = CallStack.areEqual(domValues, codValues, iso.nodeMap());
         }
         if (ISO_PRINT) {
             if (!result) {
@@ -345,7 +345,7 @@ public class IsoChecker {
             result = iso != null;
             if (result && domValues != null) {
                 assert iso != null;
-                result = Valuator.areEqual(domValues, codValues, iso.nodeMap());
+                result = CallStack.areEqual(domValues, codValues, iso.nodeMap());
             } else {
                 break;
             }

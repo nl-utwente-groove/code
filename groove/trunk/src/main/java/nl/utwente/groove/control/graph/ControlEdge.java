@@ -21,7 +21,7 @@ import java.util.function.Predicate;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import nl.utwente.groove.control.CallStack;
+import nl.utwente.groove.control.NestedCall;
 import nl.utwente.groove.graph.ALabelEdge;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeRole;
@@ -43,7 +43,7 @@ public class ControlEdge extends ALabelEdge<ControlNode> {
     public ControlEdge(ControlNode source, ControlNode target, boolean success) {
         super(source, target);
         this.success = success;
-        this.callStack = Optional.empty();
+        this.call = Optional.empty();
     }
 
     /**
@@ -51,15 +51,15 @@ public class ControlEdge extends ALabelEdge<ControlNode> {
      * @param source source node of the control edge
      * @param target target node of the control edge
      */
-    public ControlEdge(ControlNode source, ControlNode target, CallStack callStack) {
+    public ControlEdge(ControlNode source, ControlNode target, NestedCall call) {
         super(source, target);
         this.success = false;
-        this.callStack = Optional.of(callStack);
+        this.call = Optional.of(call);
     }
 
     /** Indicates if this is a verdict edge. */
     public boolean isVerdict() {
-        return getCallStack().isEmpty();
+        return getCall().isEmpty();
     }
 
     /**
@@ -75,28 +75,28 @@ public class ControlEdge extends ALabelEdge<ControlNode> {
     private final boolean success;
 
     /** Returns the call wrapped in this edge, if it is a call edge. */
-    public Optional<CallStack> getCallStack() {
-        return this.callStack;
+    public Optional<NestedCall> getCall() {
+        return this.call;
     }
 
     /** Tests if this edge wraps a call with a given property. */
-    public boolean hasCallStack(Predicate<CallStack> prop) {
-        return this.callStack.filter(prop).isPresent();
+    public boolean hasCallStack(Predicate<NestedCall> prop) {
+        return this.call.filter(prop).isPresent();
     }
 
     /** Call wrapped in this edge, if this is a call edge. */
-    private final Optional<CallStack> callStack;
+    private final Optional<NestedCall> call;
 
     @Override
     protected Line computeLine() {
-        String text = getCallStack().map(cs -> cs.toString()).orElse(isSuccess()
+        String text = getCall().map(cs -> cs.toString()).orElse(isSuccess()
             ? "succ"
             : "fail");
         Line result = Line.atom(text);
         if (isVerdict() || getRole() == EdgeRole.FLAG) {
             result = result.style(Style.ITALIC);
         }
-        var newColor = getCallStack().map(cs -> cs.getRule().getRole().getColor())
+        var newColor = getCall().map(cs -> cs.getRule().getRole().getColor())
             .filter(c -> c != null).map(c -> source().isStart()
                 ? c.brighter().brighter()
                 : c);
@@ -117,7 +117,7 @@ public class ControlEdge extends ALabelEdge<ControlNode> {
     protected int computeLabelHash() {
         return isVerdict()
             ? Boolean.valueOf(isSuccess()).hashCode()
-            : getCallStack().hashCode();
+            : getCall().hashCode();
     }
 
     @Override
@@ -130,6 +130,6 @@ public class ControlEdge extends ALabelEdge<ControlNode> {
                 return false;
             }
         }
-        return getCallStack().equals(other.getCallStack());
+        return getCall().equals(other.getCall());
     }
 }

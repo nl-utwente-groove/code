@@ -41,7 +41,7 @@ import nl.utwente.groove.util.LazyFactory;
  * @version $Revision$
  */
 @NonNullByDefault
-public class Location implements Position<Location,SwitchStack>, Comparable<Location>, Relocatable {
+public class Location implements Position<Location,NestedSwitch>, Comparable<Location>, Relocatable {
     /**
      * Constructs a numbered location for a given template, or a dead location.
      * @param template the template for which this is a location, or {@code null} if this is the universal dead location

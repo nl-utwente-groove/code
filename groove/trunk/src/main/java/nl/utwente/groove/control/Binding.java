@@ -16,75 +16,153 @@
  */
 package nl.utwente.groove.control;
 
+import java.util.function.Function;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.control.CtrlPar.Const;
+import nl.utwente.groove.grammar.UnitPar;
+import nl.utwente.groove.grammar.host.HostNode;
 
-/** Source for a variable assignment in a control step. */
-public record Binding(Binding.Source type, int index, Const value) {
+/** Individual variable assignment in a control step.
+ * @param type the type of source from which the value is to be obtained
+ * @param target the target variable or parameter of the assignment
+ * @param index the index if this is a {@link Source#VAR}, {@link Source#ANCHOR} or {@link Source#CREATOR} binding
+ * @param value the value if this is a {@link Source#CONST} binding
+ */
+@NonNullByDefault
+public record Binding(Binding.Source type, Object target, int index, @Nullable Const value) {
 
-    /** Returns the index, if this is not a constant assignment. */
+    /** Returns the index, if this is not a value binding. */
     public int index() {
         assert type() != Source.CONST;
         return this.index;
     }
 
+    /** Returns the target of this binding as a (rule or procedure) parameter.
+     * Only valid if the target is a non-{@code null} {@link UnitPar} value.
+     */
+    public UnitPar par() {
+        var result = (UnitPar) target();
+        assert result != null;
+        return result;
+    }
+
+    /** Returns the target of this binding as a control variable.
+     * Only valid if the target is a non-{@code null} {@link CtrlVar} value.
+     */
+    public CtrlVar var() {
+        var result = (CtrlVar) target();
+        assert result != null;
+        return result;
+    }
+
+    /** Returns a value from the top level of a given call stack,
+     * if this ia a {@link Source#VAR} binding. */
+    public @Nullable HostNode get(Object[] stack) {
+        assert type() == Source.VAR;
+        return (HostNode) stack[this.index];
+    }
+
     /** Returns the assigned value, if this is a value binding. */
     public Const value() {
         assert type() == Source.CONST;
-        return this.value;
+        Const result = this.value;
+        assert result != null;
+        return result;
     }
 
     @Override
     public String toString() {
-        return this.type.name() + ":" + (type() == Source.CONST ? value() : index());
+        return target() + ":=" + type().name() + ":" + (type() == Source.CONST
+            ? value()
+            : index());
     }
 
-    /** Constructs a binding to a constant value.
+    /**
+     * Applies this assignment to a given call stack, using a retrieval function to
+     * get the values for {@link Source#ANCHOR} and {@link Source#CREATOR} bindings.
+     * @param stack the call stack to apply this assignment to
+     * @param getPar function retrieving the value of {@link Source#CREATOR} and
+     * {@link Source#ANCHOR} bindings. If {@code null}, no such bindings may exist.
+     * @return the array of values obtained for the individual bindings of this assignment.
+     * Note that this is <i>not</i> a call stack, but rather just the top level for such a stack
+     */
+    public @Nullable HostNode apply(Object[] stack, @Nullable Function<Binding,HostNode> getPar) {
+        return switch (type()) {
+        case CONST -> value().getNode();
+        case VAR -> CallStack.get(stack, index());
+        case ANCHOR, CREATOR -> {
+            assert getPar != null : String
+                .format("Can't apply %s: can't retrieve parameter values", this,
+                        CallStack.toString(stack));
+            // this is a rule parameter
+            yield getPar.apply(this);
+        }
+        case NONE -> null;
+        };
+    }
+
+    /** Concatenates this binding (which must be a {@link Source#VAR}) with another.
+     */
+    Binding then(Assignment assign) {
+        assert type() == Source.VAR;
+        return bind(target(), assign.get(index()));
+    }
+
+    /** Constructs a targeted binding to a constant value.
      * @see Source#CONST
      */
-    public static Binding value(Const value) {
-        return new Binding(Source.CONST, 0, value);
+    public static Binding value(Object target, Const value) {
+        return new Binding(Source.CONST, target, 0, value);
     }
 
-    /** Constructs a binding to a variable in the caller location.
-     * This is used for procedure call arguments.
-     * @see Source#CALLER
-     */
-    public static Binding caller(int index) {
-        return new Binding(Source.CALLER, index, null);
-    }
-
-    /** Constructs a binding to a variable in the source location.
+    /** Constructs a targeted binding to a variable in the source location.
      * @see Source#VAR
      */
-    public static Binding var(int index) {
-        return new Binding(Source.VAR, index, null);
+    public static Binding var(Object target, int index) {
+        return new Binding(Source.VAR, target, index, null);
     }
 
-    /** Constructs a binding to an anchor node of a rule match.
+    /** Constructs a targeted binding to an anchor node of a rule match.
      * @see Source#ANCHOR
      */
-    public static Binding anchor(int index) {
-        return new Binding(Source.ANCHOR, index, null);
+    public static Binding anchor(Object target, int index) {
+        return new Binding(Source.ANCHOR, target, index, null);
     }
 
-    /** Constructs a binding to a creator node in a rule application.
+    /** Constructs a targeted binding to a creator node in a rule application.
      * @see Source#CREATOR
      */
-    public static Binding creator(int index) {
-        return new Binding(Source.CREATOR, index, null);
+    public static Binding creator(Object target, int index) {
+        return new Binding(Source.CREATOR, target, index, null);
+    }
+
+    /** Constructs targeted a binding to an unspecified value.
+     * @see Source#NONE
+     */
+    public static Binding none(Object target) {
+        return new Binding(Source.NONE, target, 0, null);
+    }
+
+    /** Constructs a binding to a given target, with RHS determined by another binding. */
+    static public Binding bind(Object target, Binding other) {
+        return new Binding(other.type(), target, other.index, other.value);
+
     }
 
     /** Kind of source for a variable assignment. */
     public enum Source {
         /** Source location variable. */
         VAR,
-        /** Parent location variable. */
-        CALLER,
         /** Rule anchor. */
         ANCHOR,
         /** Creator node image. */
         CREATOR,
         /** Constant value. */
-        CONST,;
+        CONST,
+        /** Null value. */
+        NONE,;
     }
 }

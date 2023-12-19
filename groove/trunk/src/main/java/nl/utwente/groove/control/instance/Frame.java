@@ -29,13 +29,13 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.control.Call;
-import nl.utwente.groove.control.CallStack;
 import nl.utwente.groove.control.CtrlVar;
+import nl.utwente.groove.control.NestedCall;
 import nl.utwente.groove.control.Position;
 import nl.utwente.groove.control.template.Location;
+import nl.utwente.groove.control.template.NestedSwitch;
 import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.control.template.SwitchAttempt;
-import nl.utwente.groove.control.template.SwitchStack;
 import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.Recipe;
@@ -53,15 +53,15 @@ import nl.utwente.groove.util.LazyFactory;
 public class Frame implements Position<Frame,Step>, Fixable {
     /** Constructs a new frame.
      * @param ctrl the control automaton being built
-     * @param loc top template location of the frame; non-{@code null}
-     * @param stack underlying call stack; non-{@code null}
+     * @param loc top template location of the frame
+     * @param swt stack of switches forming the context of this frame
      * @param pred predecessor in a verdict transition; if {@code null}, this is
      * a prime frame
      */
-    Frame(Automaton ctrl, Location loc, SwitchStack stack, @Nullable Frame pred) {
+    Frame(Automaton ctrl, Location loc, NestedSwitch swt, @Nullable Frame pred) {
         this.aut = ctrl;
         this.nr = ctrl.getFrames().size();
-        List<Assignment> pops = new ArrayList<>();
+        List<CallStackChange> pops = new ArrayList<>();
         // avoid sharing
         this.pred = pred;
         if (pred == null) {
@@ -70,23 +70,28 @@ public class Frame implements Position<Frame,Step>, Fixable {
             this.prime = pred.getPrime();
             pops.addAll(pred.getPops());
         }
-        stack = new SwitchStack(stack);
+        var context = new NestedSwitch(swt);
+        // look for an outer recipe with output variables
+        var recipe = context
+            .stream()
+            .filter(s -> s.getKind() == Kind.RECIPE)
+            .filter(s -> s.getCall().hasOutVars())
+            .findFirst();
         // pop the call stack until we have a non-final location or empty stack
         // add pop actions if we are not a prime frame
         boolean addPops = pred != null;
-        while (loc.isFinal() && !stack.isEmpty()) {
-            Switch done = stack.pop();
+        while (loc.isFinal() && !context.isEmpty()) {
+            Switch done = context.pop();
             // also start adding pop actions once we pass the outer recipe call,
             // if the recipe call has out-parameters that we cannot retrieve otherwise
-            addPops |= done.getKind() == Kind.RECIPE && !done.getCall().getOutVars().isEmpty()
-                && !stack.inRecipe();
+            addPops |= recipe.filter(s -> s == done).isPresent();
             if (addPops) {
-                pops.add(Assignment.exit(loc, done));
+                pops.add(CallStackChange.exit(loc, done));
             }
             loc = done.onFinish();
         }
         this.pops = pops;
-        this.switchStack = stack;
+        this.context = context;
         this.location = loc;
     }
 
@@ -113,12 +118,12 @@ public class Frame implements Position<Frame,Step>, Fixable {
         return getAut().getStart() == this;
     }
 
-    /** Returns the call stack giving rise to this frame. */
-    public SwitchStack getSwitchStack() {
-        return this.switchStack;
+    /** Returns the contextual nested switch of this frame. */
+    public NestedSwitch getContext() {
+        return this.context;
     }
 
-    private final SwitchStack switchStack;
+    private final NestedSwitch context;
 
     /**
      * Returns the top (non-{@code null}) control location instantiated by this frame.
@@ -170,12 +175,12 @@ public class Frame implements Position<Frame,Step>, Fixable {
      * Returns the set of called actions that have been tried
      * between the prime frame and this one (inclusive).
      */
-    public Set<CallStack> getPastAttempts() {
+    public Set<NestedCall> getPastAttempts() {
         return this.pastAttempts.get();
     }
 
-    private Supplier<Set<CallStack>> pastAttempts = lazyFactory(() -> {
-        var result = new HashSet<CallStack>();
+    private Supplier<Set<NestedCall>> pastAttempts = lazyFactory(() -> {
+        var result = new HashSet<NestedCall>();
         if (!isPrime()) {
             var pred = getPred();
             assert pred != null;
@@ -183,7 +188,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
         }
         if (isTrial()) {
             for (Step step : getAttempt()) {
-                result.add(step.getCallStack());
+                result.add(step.getCall());
             }
         }
         return result;
@@ -196,7 +201,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
 
     private Supplier<Set<Call>> pastCalls = lazyFactory(() -> {
         var result = new HashSet<Call>();
-        getPastAttempts().stream().map(a -> a.peek()).forEach(c -> result.add(c));
+        getPastAttempts().stream().map(NestedCall::getInner).forEach(result::add);
         return result;
     });
 
@@ -204,18 +209,18 @@ public class Frame implements Position<Frame,Step>, Fixable {
      * Returns the list of frame pop actions corresponding to procedure exits
      * up to (but not including) the outer recipe call, if there is one.
      */
-    public List<Assignment> getPops() {
+    public List<CallStackChange> getPops() {
         return this.pops;
     }
 
-    private final List<Assignment> pops;
+    private final List<CallStackChange> pops;
 
     /**
      * Returns the total nesting depth of the frame,
-     * being the sum of the switch stack size and number of pop actions.
+     * being the sum of the nested switch depth and number of pop actions.
      */
     public int getNestingDepth() {
-        return getSwitchStack().size() + getPops().size();
+        return getContext().size() + getPops().size();
     }
 
     @Override
@@ -258,10 +263,10 @@ public class Frame implements Position<Frame,Step>, Fixable {
         SwitchAttempt locAttempt = getLocation().getAttempt();
         // divide the switches of the control location
         // into constraints and "proper" calls
-        List<SwitchStack> constraintCalls = new ArrayList<>();
-        List<SwitchStack> properCalls = new ArrayList<>();
-        for (SwitchStack sw : locAttempt) {
-            if (sw.peek().getCall().getRule().getRole().isConstraint()) {
+        List<NestedSwitch> constraintCalls = new ArrayList<>();
+        List<NestedSwitch> properCalls = new ArrayList<>();
+        for (NestedSwitch sw : locAttempt) {
+            if (sw.getInnerCall().getRule().getRole().isConstraint()) {
                 constraintCalls.add(sw);
             } else {
                 properCalls.add(sw);
@@ -273,7 +278,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
             Frame onVerdict = newFrame(locAttempt.onSuccess());
             assert onVerdict.getLocation() == locAttempt.onFailure();
             result = new StepAttempt(onVerdict);
-            for (SwitchStack sw : constraintCalls) {
+            for (NestedSwitch sw : constraintCalls) {
                 result.add(createStep(sw));
             }
         } else if (constraintCalls.isEmpty()) {
@@ -281,7 +286,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
             Frame onSuccess = newFrame(locAttempt.onSuccess());
             Frame onFailure = newFrame(locAttempt.onFailure());
             result = new StepAttempt(onSuccess, onFailure);
-            for (SwitchStack sw : properCalls) {
+            for (NestedSwitch sw : properCalls) {
                 result.add(createStep(sw));
             }
         } else {
@@ -289,7 +294,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
             // the verdict leads to an intermediate frame
             Frame inter = newFrame(getLocation());
             result = new StepAttempt(inter);
-            for (SwitchStack sw : constraintCalls) {
+            for (NestedSwitch sw : constraintCalls) {
                 result.add(createStep(sw));
             }
             // this is followed by an attempt for the proper steps
@@ -299,7 +304,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
             // that the success and failure locations coincide
             assert onVerdict.getLocation() == locAttempt.onFailure();
             StepAttempt interAttempt = new StepAttempt(onVerdict, onVerdict);
-            for (SwitchStack sw : properCalls) {
+            for (NestedSwitch sw : properCalls) {
                 result.add(inter.createStep(sw));
             }
             inter.attempt.set(interAttempt);
@@ -308,22 +313,12 @@ public class Frame implements Position<Frame,Step>, Fixable {
     }
 
     /** Constructs a step from this frame, based on a given control location switch. */
-    private Step createStep(SwitchStack sw) {
-        SwitchStack targetStack = new SwitchStack();
-        targetStack.addAll(getSwitchStack());
-        targetStack.addAll(sw);
-        Switch call = targetStack.pop();
-        Frame target;
-        // the following exception is wrong, if an explicit condition call occurs
-        // whereas for other property calls, why bother?
-        //        if (call.getCall().getRule().getRole().isProperty()) {
-        //            // all properties should leave the control frame unchanged
-        //            assert sw.size() == 1;
-        //            target = this;
-        //        } else {
-        target = new Frame(getAut(), call.onFinish(), targetStack, null).normalise();
-        //        }
-        return new Step(this, sw, target);
+    private Step createStep(NestedSwitch sw) {
+        NestedSwitch targetSwitch = new NestedSwitch(getContext());
+        sw.forEach(targetSwitch::push);
+        Switch call = targetSwitch.pop();
+        Frame onFinish = new Frame(getAut(), call.onFinish(), targetSwitch, null).normalise();
+        return new Step(this, sw, onFinish);
     }
 
     /** Returns the successor frame, depending on a given policy value. */
@@ -388,7 +383,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
      * @see #isTransient()
      */
     public boolean isInternal() {
-        return getSwitchStack().inRecipe();
+        return getContext().inRecipe();
     }
 
     /**
@@ -398,7 +393,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
      * @see #isInternal()
      */
     public Optional<Recipe> getRecipe() {
-        return getSwitchStack().getRecipe();
+        return getContext().getRecipe();
     }
 
     /**
@@ -411,7 +406,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
 
     @Override
     public int getTransience() {
-        return getSwitchStack().getTransience() + getLocation().getTransience();
+        return getContext().getTransience() + getLocation().getTransience();
     }
 
     @Override
@@ -429,7 +424,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
      * with the same prime frame and call stack as this frame.
      */
     private Frame newFrame(Location loc) {
-        Frame result = new Frame(getAut(), loc, getSwitchStack(), this);
+        Frame result = new Frame(getAut(), loc, getContext(), this);
         return result.normalise();
     }
 
@@ -450,7 +445,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
         result = prime * result + System.identityHashCode(this.pred);
         result = prime * result + this.location.hashCode();
         result = prime * result + this.pops.hashCode();
-        result = prime * result + this.switchStack.hashCode();
+        result = prime * result + this.context.hashCode();
         return result;
     }
 
@@ -477,7 +472,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
         if (!this.location.equals(other.location)) {
             return false;
         }
-        if (!this.switchStack.equals(other.switchStack)) {
+        if (!this.context.equals(other.context)) {
             return false;
         }
         return true;
@@ -501,11 +496,13 @@ public class Frame implements Position<Frame,Step>, Fixable {
                 result += "\nPrime: " + getPrime().getIdString();
                 if (VERY_RICH_LABELS) {
                     result += "\nTried:";
-                    for (CallStack tried : getPastAttempts()) {
+                    for (NestedCall tried : getPastAttempts()) {
                         result += " " + tried.toString();
                     }
                 }
             }
+            result += "\nLocation: " + getLocation();
+            result += "\nCall stack: " + getContext();
         }
         return result;
     }
@@ -549,6 +546,6 @@ public class Frame implements Position<Frame,Step>, Fixable {
 
     private final DefaultFixable fixable = new DefaultFixable();
 
-    private final static boolean RICH_LABELS = false;
+    private final static boolean RICH_LABELS = true;
     private final static boolean VERY_RICH_LABELS = false;
 }

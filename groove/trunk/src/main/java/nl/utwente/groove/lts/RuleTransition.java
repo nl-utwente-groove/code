@@ -16,17 +16,26 @@
  */
 package nl.utwente.groove.lts;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
+import nl.utwente.groove.control.CtrlPar;
+import nl.utwente.groove.control.CtrlPar.Const;
+import nl.utwente.groove.control.CtrlPar.Var;
 import nl.utwente.groove.control.instance.Step;
+import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.grammar.Action.Role;
+import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.host.HostGraphMorphism;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.transform.RuleApplication;
+import nl.utwente.groove.transform.RuleEvent;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  *
@@ -48,12 +57,25 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
     RuleTransitionLabel label();
 
     @Override
+    public default String text(boolean anchored) {
+        return label().text(anchored);
+    }
+
+    @Override
     default public EdgeRole getRole() {
         if (getAction().getRole() == Role.TRANSFORMER || getStep().isModifying()) {
             return EdgeRole.BINARY;
         } else {
             return EdgeRole.FLAG;
         }
+    }
+
+    @Override
+    public RuleEvent getEvent();
+
+    @Override
+    public default Rule getAction() {
+        return getEvent().getRule();
     }
 
     /** Callback method to construct a rule application from this
@@ -65,12 +87,63 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
     Step getStep();
 
     @Override
-    public MatchResult getKey();
+    public default Switch getSwitch() {
+        return getStep().getInnerSwitch();
+    }
+
+    @Override
+    public default boolean isPartial() {
+        return getStep().isPartial();
+    }
+
+    @Override
+    public default boolean isInternalStep() {
+        return getStep().isInternal();
+    }
+
+    @Override
+    public default boolean isRealStep() {
+        return !isInternalStep() && source().isRealState() && target().isRealState();
+    }
+
+    @Override
+    public default RuleTransition getInitial() {
+        return this;
+    }
+
+    @Override
+    public default MatchResult getKey() {
+        return new MatchResult(this);
+    }
 
     /**
      * Returns the list of concrete arguments of this transition.
      */
-    public List<HostNode> getArguments();
+    public default List<HostNode> getArguments() {
+        List<HostNode> result;
+        List<? extends CtrlPar> args = getSwitch().getArgs();
+        if (args.isEmpty()) {
+            result = EMPTY_ARGS;
+        } else {
+            result = new ArrayList<>();
+            for (int i = 0; i < args.size(); i++) {
+                CtrlPar par = args.get(i);
+                if (par instanceof Var v) {
+                    if (v.inOnly()) {
+                        // look up value in source state
+                    } else {
+                        assert v.outOnly();
+                        // look up value in target state
+                    }
+                } else if (par instanceof Const c) {
+                    result.add(c.getNode());
+                } else {
+                    throw Exceptions.UNREACHABLE;
+                }
+            }
+        }
+        return result;
+    }
 
     /**
      * Returns the nodes added by this transition, in coanchor order.
@@ -80,7 +153,9 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
     /**
      * Returns the proof of the matching of the LHS into the source graph.
      */
-    public Proof getProof();
+    public default Proof getProof() {
+        return getEvent().getMatch(source().getGraph());
+    }
 
     /**
      * Returns the (partial) morphism from the source to the target graph.
@@ -107,4 +182,7 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
      */
     @Override
     public RuleTransitionStub toStub();
+
+    /** Static empty list of rule transition arguments. */
+    public static final List<HostNode> EMPTY_ARGS = Collections.emptyList();
 }

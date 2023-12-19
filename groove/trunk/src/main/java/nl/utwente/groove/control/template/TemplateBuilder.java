@@ -34,8 +34,8 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.control.Call;
-import nl.utwente.groove.control.CallStack;
 import nl.utwente.groove.control.CtrlVar;
+import nl.utwente.groove.control.NestedCall;
 import nl.utwente.groove.control.Position;
 import nl.utwente.groove.control.Position.Type;
 import nl.utwente.groove.control.Procedure;
@@ -140,9 +140,9 @@ public class TemplateBuilder {
      * @param deriv the derivation to be added
      * @return the fresh or pre-existing control switch
      */
-    private SwitchStack getExternalSwitch(Location loc, Derivation deriv) {
+    private NestedSwitch getExternalSwitch(Location loc, Derivation deriv) {
         Builder builder = this.builderMap.get(loc.getTemplate().get());
-        SwitchStack result = builder.getSwitch(loc, deriv);
+        NestedSwitch result = builder.getSwitch(loc, deriv);
         assert result != null;
         return result;
     }
@@ -205,7 +205,7 @@ public class TemplateBuilder {
             Term term = next.term();
             Type locType = term.getType();
             // property switches
-            Set<SwitchStack> switches = new LinkedHashSet<>();
+            Set<NestedSwitch> switches = new LinkedHashSet<>();
             // see if we need a property test
             // start states of procedures are exempt
             boolean isProcStartOrFinal
@@ -215,8 +215,8 @@ public class TemplateBuilder {
                 for (Action prop : getProperties()) {
                     assert prop.isProperty() && prop instanceof Rule;
                     if (((Rule) prop).getPolicy() != CheckPolicy.OFF) {
-                        SwitchStack sw = new SwitchStack();
-                        sw.add(new Switch(loc, new Call(prop), 0, loc));
+                        NestedSwitch sw = new NestedSwitch();
+                        sw.push(new Switch(loc, new Call(prop), 0, loc));
                         switches.add(sw);
                     }
                 }
@@ -306,23 +306,23 @@ public class TemplateBuilder {
          * @param deriv the derivation to be added
          * @return the fresh or pre-existing control switch
          */
-        SwitchStack getSwitch(Location source, Derivation deriv) {
-            Map<Derivation,SwitchStack> switchMap = getSwitchMap(source);
-            SwitchStack result = switchMap.get(deriv);
+        NestedSwitch getSwitch(Location source, Derivation deriv) {
+            Map<Derivation,NestedSwitch> switchMap = getSwitchMap(source);
+            NestedSwitch result = switchMap.get(deriv);
             if (result == null) {
                 // only switches from this template or initial switches can be requested
                 assert source.getTemplate().get() == getResult();
-                var stack = result = new SwitchStack();
-                Location target = addLocation(deriv.onFinish(), null, deriv.getCall());
-                stack.add(new Switch(source, deriv.getCall(), deriv.getTransience(), target));
+                var swt = result = new NestedSwitch();
+                Location target = addLocation(deriv.onFinish(), null, deriv.getOuterCall());
+                swt.push(new Switch(source, deriv.getOuterCall(), deriv.getTransience(), target));
                 deriv.getNested().ifPresent(nd -> {
-                    Procedure caller = (Procedure) deriv.getCall().getUnit();
+                    Procedure caller = (Procedure) deriv.getOuterCall().getUnit();
                     Template callerTemplate = caller.getTemplate();
-                    SwitchStack nested = getExternalSwitch(callerTemplate.getStart(), nd);
-                    stack.addAll(nested);
+                    NestedSwitch nested = getExternalSwitch(callerTemplate.getStart(), nd);
+                    nested.forEach(swt::push);
                 });
-                assert stack.getBottom().getSource() == source;
-                switchMap.put(deriv, stack);
+                assert swt.getOuter().getSource() == source;
+                switchMap.put(deriv, swt);
             }
             return result;
         }
@@ -346,7 +346,7 @@ public class TemplateBuilder {
         /**
          * Returns the mapping from derivations to switches for a given location.
          */
-        private Map<Derivation,SwitchStack> getSwitchMap(Location loc) {
+        private Map<Derivation,NestedSwitch> getSwitchMap(Location loc) {
             if (this.switchMaps.size() <= loc.getNumber()) {
                 synchronized (this.switchMaps) {
                     for (int i = this.switchMaps.size(); i <= loc.getNumber(); i++) {
@@ -358,7 +358,7 @@ public class TemplateBuilder {
         }
 
         /** For each template, a mapping from derivations to switches. */
-        private final List<Map<Derivation,SwitchStack>> switchMaps = new ArrayList<>();
+        private final List<Map<Derivation,NestedSwitch>> switchMaps = new ArrayList<>();
     }
 
     /** Computes the quotient of a given template under bisimilarity,
@@ -462,8 +462,8 @@ public class TemplateBuilder {
         Location onFailure = null;
         if (loc.isTrial()) {
             SwitchAttempt attempt = loc.getAttempt();
-            for (SwitchStack swit : attempt) {
-                targets.add(swit.getBottom().onFinish());
+            for (NestedSwitch swit : attempt) {
+                targets.add(swit.getOuter().onFinish());
             }
             onSuccess = attempt.onSuccess();
             onFailure = attempt.onFailure();
@@ -517,19 +517,17 @@ public class TemplateBuilder {
      * The distinction is made on the basis of the call stacks and nested locations
      * of the switch stacks in the attempt.
      */
-    private static class AttemptKey extends ArrayList<Pair<CallStack,List<Location>>> {
+    private static class AttemptKey extends ArrayList<Pair<NestedCall,List<Location>>> {
         AttemptKey(SwitchAttempt attempt) {
             super(attempt.size());
-            for (SwitchStack sw : attempt) {
-                add(Pair.newPair(sw.getCallStack(), getNested(sw)));
+            for (NestedSwitch sw : attempt) {
+                add(Pair.newPair(sw.getCall(), getNested(sw)));
             }
         }
 
-        private List<Location> getNested(SwitchStack sw) {
+        private List<Location> getNested(NestedSwitch sw) {
             List<Location> result = new ArrayList<>(sw.size() - 1);
-            for (int i = 1; i < sw.size(); i++) {
-                result.add(sw.get(i).onFinish());
-            }
+            sw.stream().map(Switch::onFinish).forEach(result::add);
             return result;
         }
     }

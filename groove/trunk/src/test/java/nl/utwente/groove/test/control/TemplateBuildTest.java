@@ -26,20 +26,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.junit.Assert;
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.CtrlPar;
 import nl.utwente.groove.control.CtrlType;
 import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.control.template.Location;
+import nl.utwente.groove.control.template.NestedSwitch;
 import nl.utwente.groove.control.template.Program;
 import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.control.template.SwitchAttempt;
-import nl.utwente.groove.control.template.SwitchStack;
 import nl.utwente.groove.control.template.Template;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.util.parse.FormatException;
@@ -206,14 +206,12 @@ public class TemplateBuildTest extends CtrlTester {
         //
         build("bInt(_);");
         loc = getInit(bIntWildCall);
-        assertTrue(loc.getVars()
-            .isEmpty());
+        assertTrue(loc.getVars().isEmpty());
         assertTrue(loc.isFinal());
         //
         build("int x; bInt(_); a;");
         loc = getInit(bIntWildCall);
-        assertTrue(loc.getVars()
-            .isEmpty());
+        assertTrue(loc.getVars().isEmpty());
         assertFalse(loc.isFinal());
         //
         build("int x; bInt(out x); bInt(x);");
@@ -241,70 +239,54 @@ public class TemplateBuildTest extends CtrlTester {
         assertTrue(getNext(loc, this.bCall).isFinal());
         //
         build("function f() { (a|g); c; } function g() { (b|c); } (d|f);");
-        SwitchAttempt s = this.template.getStart()
-            .getAttempt();
+        SwitchAttempt s = this.template.getStart().getAttempt();
         assertEquals(4, s.size());
         assertTrue(s.sameVerdict());
-        SwitchStack s0 = s.get(0);
-        assertEquals(this.dCall, s0.getBottomCall());
+        var s0Iter = s.get(0).iterator();
+        assertEquals(this.dCall, s0Iter.next().getCall());
         //
-        SwitchStack s1 = s.get(1);
-        Procedure f = (Procedure) s1.getBottomCall()
-            .getUnit();
-        assertEquals("f", f.getQualName()
-            .toString());
-        Switch s1N = s1.get(1);
+        var s1Iter = s.get(1).iterator();
+        Procedure f = (Procedure) s1Iter.next().getCall().getUnit();
+        assertEquals("f", f.getQualName().toString());
+        Switch s1N = s1Iter.next();
         assertEquals(this.aCall, s1N.getCall());
-        assertEquals(getNext(f.getTemplate()
-            .getStart(), this.aCall), s1N.onFinish());
+        assertEquals(getNext(f.getTemplate().getStart(), this.aCall), s1N.onFinish());
         //
-        SwitchStack s2 = s.get(2);
-        assertEquals(f, s2.getBottomCall()
-            .getUnit());
-        Switch s2N = s2.get(1);
-        Procedure g = (Procedure) s2N.getCall()
-            .getUnit();
-        assertEquals("g", g.getQualName()
-            .toString());
-        Switch s2NN = s2.get(2);
+        var s2Iter = s.get(2).iterator();
+        assertEquals(f, s2Iter.next().getUnit());
+        Switch s2N = s2Iter.next();
+        Procedure g = (Procedure) s2N.getCall().getUnit();
+        assertEquals("g", g.getQualName().toString());
+        Switch s2NN = s2Iter.next();
         assertEquals(this.bCall, s2NN.getCall());
-        assertEquals(getNext(g.getTemplate()
-            .getStart(), this.bCall), s2NN.onFinish());
+        assertEquals(getNext(g.getTemplate().getStart(), this.bCall), s2NN.onFinish());
         //
-        SwitchStack s3 = s.get(3);
-        assertEquals(f, s3.getBottomCall()
-            .getUnit());
-        Switch s3N = s3.get(1);
-        assertEquals(g, s3N.getCall()
-            .getUnit());
-        Switch s3NN = s3.get(2);
+        var s3Iter = s.get(3).iterator();
+        assertEquals(f, s3Iter.next().getCall().getUnit());
+        Switch s3N = s3Iter.next();
+        assertEquals(g, s3N.getCall().getUnit());
+        Switch s3NN = s3Iter.next();
         assertEquals(this.cCall, s3NN.getCall());
         //
         build("function f() { a*; } f;b;");
-        s = this.template.getStart()
-            .getAttempt();
+        s = this.template.getStart().getAttempt();
         assertEquals(1, s.size());
         assertTrue(s.sameVerdict());
-        s0 = s.get(0);
-        f = (Procedure) s0.getBottomCall()
-            .getUnit();
-        assertEquals("f", f.getQualName()
-            .toString());
-        Switch s0N = s0.get(1);
+        s0Iter = s.get(0).iterator();
+        f = (Procedure) s0Iter.next().getUnit();
+        assertEquals("f", f.getQualName().toString());
+        Switch s0N = s0Iter.next();
         assertEquals(this.aCall, s0N.getCall());
-        assertEquals(f.getTemplate()
-            .getStart(), s0N.onFinish());
+        assertEquals(f.getTemplate().getStart(), s0N.onFinish());
     }
 
     private void assertSize(int locCount) {
-        Assert.assertEquals(locCount, this.template.getLocations()
-            .size());
+        Assert.assertEquals(locCount, this.template.getLocations().size());
     }
 
     private void buildFunction(String program, String procName) {
         Program prog = buildProgram(program + procName + ";");
-        this.template = prog.getProc(QualName.parse(procName))
-            .getTemplate();
+        this.template = prog.getProc(QualName.parse(procName)).getTemplate();
     }
 
     private void build(String program) {
@@ -332,9 +314,8 @@ public class TemplateBuildTest extends CtrlTester {
 
     private Set<Location> getNexts(Location loc, Call call) {
         Set<Location> result = new HashSet<>();
-        for (SwitchStack swit : loc.getAttempt()) {
-            if (swit.getBottomCall()
-                .equals(call)) {
+        for (NestedSwitch swit : loc.getAttempt()) {
+            if (swit.getOuterCall().equals(call)) {
                 result.add(swit.onFinish());
             }
         }
@@ -345,8 +326,7 @@ public class TemplateBuildTest extends CtrlTester {
     private Location getNext(Location loc, Call call) {
         Set<Location> result = getNexts(loc, call);
         assertEquals(1, result.size());
-        return result.iterator()
-            .next();
+        return result.iterator().next();
     }
 
     private boolean hasNext(Location loc, Call call) {
@@ -356,14 +336,12 @@ public class TemplateBuildTest extends CtrlTester {
 
     private Location onSuccess(Location loc) {
         assertTrue(loc.isTrial());
-        return loc.getAttempt()
-            .onSuccess();
+        return loc.getAttempt().onSuccess();
     }
 
     private Location onFailure(Location loc) {
         assertTrue(loc.isTrial());
-        return loc.getAttempt()
-            .onFailure();
+        return loc.getAttempt().onFailure();
     }
 
     private Template template;

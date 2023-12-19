@@ -60,7 +60,9 @@ public interface GraphTransition extends GEdge<GraphState> {
     public Event getEvent();
 
     /** Returns the GTS in which this transition occurs. */
-    public GTS getGTS();
+    public default GTS getGTS() {
+        return source().getGTS();
+    }
 
     /** Indicates if this transition is part of an atomic block. */
     public boolean isPartial();
@@ -76,23 +78,23 @@ public interface GraphTransition extends GEdge<GraphState> {
     /**'
      * Indicates if this transition is a real part of the GTS.
      * This is the case if it is not an internal recipe step, and its source and
-     * target states are real.
+     * target states are real (i.e., not absent).
      * @see #isInternalStep()
      * @see GraphState#isRealState()
      */
     public boolean isRealStep();
 
     /** Returns the corresponding switch from the control template.
-     * For rule transitions, this is the top switch in the call stack of the step;
-     * for recipe transitions, it is the recipe call switch in the main template.
+     * For rule transitions, this is the inner switch of the control step;
+     * for recipe transitions, it is the recipe call switch.
      * */
     public Switch getSwitch();
 
     /**
      * Returns the initial rule transition of this graph transition.
-     * If the graph transition is itself a rule transition, this returns
-     * the object itself; otherwise, it returns the initial outgoing
-     * rule transition in the recipe transition.
+     * For rule transitions, this is
+     * the object itself; for recipe transitions, it is the initial internal
+     * rule transition from the source state.
      */
     public RuleTransition getInitial();
 

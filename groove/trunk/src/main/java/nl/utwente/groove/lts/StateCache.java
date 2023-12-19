@@ -22,7 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import nl.utwente.groove.control.CallStack;
+import nl.utwente.groove.control.NestedCall;
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.CheckPolicy;
@@ -258,7 +258,7 @@ public class StateCache {
      */
     void addDeadlockError(HostGraph graph) {
         Set<QualName> actions = new LinkedHashSet<>();
-        for (CallStack call : getState().getActualFrame().getPastAttempts()) {
+        for (NestedCall call : getState().getActualFrame().getPastAttempts()) {
             if (call.getAction().getRole() == Role.TRANSFORMER) {
                 actions.add(call.getRule().getQualName());
             }

@@ -23,19 +23,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.control.Assignment;
 import nl.utwente.groove.control.Attempt;
 import nl.utwente.groove.control.Call;
-import nl.utwente.groove.control.CallStack;
 import nl.utwente.groove.control.CtrlVar;
+import nl.utwente.groove.control.NestedCall;
+import nl.utwente.groove.control.template.NestedSwitch;
 import nl.utwente.groove.control.template.Switch;
-import nl.utwente.groove.control.template.SwitchStack;
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Rule;
+import nl.utwente.groove.util.LazyFactory;
 
 /**
  * Run-time control step, instantiating a control edge.
@@ -50,11 +53,9 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      * @param newSwitches stack of new switches invoked from the source frame
      * @param onFinish target frame for the step
      */
-    public Step(Frame source, SwitchStack newSwitches, Frame onFinish) {
-        assert newSwitches.peek().getUnit().getKind() == Callable.Kind.RULE;
-        this.stack = new SwitchStack();
-        this.stack.addAll(source.getSwitchStack());
-        this.stack.addAll(newSwitches);
+    public Step(Frame source, NestedSwitch newSwitches, Frame onFinish) {
+        assert newSwitches.getInner().getUnit().getKind() == Callable.Kind.RULE;
+        this.swt = new NestedSwitch(newSwitches);
         this.onFinish = onFinish;
         this.source = source;
     }
@@ -73,37 +74,43 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
 
     private final Frame onFinish;
 
+    /** Returns the contextual nested switch within which this step takes place. */
+    public NestedSwitch getContext() {
+        return getSource().getContext();
+    }
+
     /** Convenience method to return the top switch of this step. */
-    public Switch getRuleSwitch() {
-        return getSwitchStack().peek();
+    public Switch getInnerSwitch() {
+        return getSwitch().getInner();
     }
 
     @Override
-    public Call getRuleCall() {
-        return getSwitchStack().getRuleCall();
+    public Call getInnerCall() {
+        return getSwitch().getInnerCall();
     }
 
     @Override
     public int getTransience() {
-        return getSwitchStack().getTransience() - getSource().getTransience();
+        return getSwitch().getTransience();
     }
 
     /** Returns the number of levels by which the call stack depth changes from source
      * to target frame. */
     public int getCallDepthChange() {
-        return onFinish().getSwitchStack().size() - getSource().getSwitchStack().size();
+        return onFinish().getContext().size() - getContext().size();
     }
 
-    /** Returns the stack of switches in this step. */
-    public final SwitchStack getSwitchStack() {
-        return this.stack;
+    /** Returns the stack of switches in the source frame, extended with the ones
+     * entered by this step. */
+    public final NestedSwitch getSwitch() {
+        return this.swt;
     }
 
-    private SwitchStack stack;
+    private NestedSwitch swt;
 
     @Override
-    public CallStack getCallStack() {
-        return getSwitchStack().getCallStack();
+    public NestedCall getCall() {
+        return getSwitch().getCall();
     }
 
     /** Indicates if this step is part of an atomic block. */
@@ -123,7 +130,7 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      * @see #getRecipe()
      */
     public boolean isInternal() {
-        return getCallStack().inRecipe();
+        return getContext().inRecipe() || getCall().inRecipe();
     }
 
     /**
@@ -131,17 +138,20 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      * @see #isInternal()
      */
     public Optional<Recipe> getRecipe() {
-        return getCallStack().getRecipe();
+        var result = getContext().getRecipe();
+        return result.isPresent()
+            ? result
+            : getCall().getRecipe();
     }
 
     /** Convenience method to return the called rule of this step. */
     public final Rule getRule() {
-        return getRuleCall().getRule();
+        return getInnerCall().getRule();
     }
 
     /** Returns the mapping of output variables to argument positions of the called unit. */
-    public Map<CtrlVar,Integer> getOutVars() {
-        return getRuleCall().getOutVars();
+    public Map<CtrlVar,@Nullable Integer> getOutVars() {
+        return getInnerCall().getOutVars();
     }
 
     /**
@@ -150,49 +160,60 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      * or the call has out-parameters.
      */
     public boolean isModifying() {
-        return getSource().getPrime() != onFinish() || getRuleCall().hasOutVars();
+        return getSource().getPrime() != onFinish() || getInnerCall().hasOutVars();
     }
 
-    /**
-     * Returns the stack push assignments necessary to prepare for the actual action
-     * of this step.
+    /** Returns an assignment to the parameters of the inner call of this step,
+     * based on the source variables of the outer call.
      */
-    public List<Assignment> getEnterAssignments() {
-        return this.enters.get();
+    public Assignment getParAssign() {
+        return this.parAssign.get();
     }
 
-    private Supplier<List<Assignment>> enters = lazyFactory(this::computeEnterAssignments);
+    /** Lazily computed assignment to the parameters of the inner call of this step,
+     * based on the source variables of the outer call.
+     */
+    private final Supplier<Assignment> parAssign = LazyFactory.instance(this::computeParAssign);
 
-    private List<Assignment> computeEnterAssignments() {
-        List<Assignment> result = new ArrayList<>();
-        // add push actions for every successive call on the
-        // stack of entered calls
-        for (int i = getSource().getSwitchStack().size(); i < getSwitchStack().size() - 1; i++) {
-            result.add(Assignment.enter(getSwitchStack().get(i)));
+    /** Computes the value for {@link #parAssign}. */
+    private Assignment computeParAssign() {
+        var switchIter = getSwitch().outIterator();
+        var result = switchIter.next().getParAssign();
+        while (switchIter.hasNext()) {
+            result = result.then(switchIter.next().getCalleeAssign());
         }
         return result;
     }
 
     /**
-     * Returns the list of frame value assignments involved in applying this step.
+     * Returns the list of call stack changes involved in applying this step.
      * These consist pushes due to fresh
      * procedure calls, followed by the action of this step, followed by pops due to
      * procedures explicitly exited by this step.
      */
-    public List<Assignment> getApplyAssignments() {
-        return this.applyAssignments.get();
+    public List<CallStackChange> getApplyChanges() {
+        return this.applyChanges.get();
     }
 
-    private Supplier<List<Assignment>> applyAssignments
-        = lazyFactory(this::computeApplyAssignments);
+    private Supplier<List<CallStackChange>> applyChanges = lazyFactory(this::computeApplyChanges);
 
-    private List<Assignment> computeApplyAssignments() {
-        List<Assignment> result = computeEnterAssignments();
-        SwitchStack stack = getSwitchStack();
-        result.add(Assignment.modify(stack.peek()));
-        // add pop actions for the calls that are finished
-        for (int i = stack.size() - 2; i >= onFinish().getNestingDepth(); i--) {
-            result.add(Assignment.exit(stack.get(i + 1).onFinish(), stack.get(i)));
+    private List<CallStackChange> computeApplyChanges() {
+        List<CallStackChange> result = new ArrayList<>();
+        // add modification and push actions for every successive call on the
+        // stack of entered calls
+        result.add(CallStackChange.enter(this));
+        // add exit actions for the calls that are finished;
+        // those might include calls from the context
+        var exitCount
+            = getSwitch().size() + getSource().getContext().size() - onFinish().getNestingDepth();
+        var outIter = Stream
+            .concat(getSwitch().outStream(), getSource().getContext().outStream())
+            .iterator();
+        var callee = outIter.next();
+        while (result.size() < exitCount) {
+            var caller = outIter.next();
+            result.add(CallStackChange.exit(callee.onFinish(), caller));
+            callee = caller;
         }
         return result;
     }
@@ -203,7 +224,7 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
         if (result != 0) {
             return result;
         }
-        result = getSwitchStack().compareTo(other.getSwitchStack());
+        result = getSwitch().compareTo(other.getSwitch());
         if (result != 0) {
             return result;
         }
@@ -223,6 +244,6 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
 
     @Override
     public String toString() {
-        return "Step " + this.source + "--" + this.stack + "-> " + this.onFinish;
+        return "Step " + this.source + "--" + this.swt + "-> " + this.onFinish;
     }
 }

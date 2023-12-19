@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.control.graph;
 
-import nl.utwente.groove.control.CallStack;
+import nl.utwente.groove.control.NestedCall;
 import nl.utwente.groove.control.Position;
 import nl.utwente.groove.graph.ANode;
 
@@ -61,8 +61,8 @@ public class ControlNode extends ANode {
     }
 
     /** Adds an outgoing call edge to the control graph. */
-    public ControlEdge addCallEdge(ControlNode target, CallStack callStack) {
-        ControlEdge result = new ControlEdge(this, target, callStack);
+    public ControlEdge addCallEdge(ControlNode target, NestedCall call) {
+        ControlEdge result = new ControlEdge(this, target, call);
         this.graph.addEdge(result);
         return result;
     }

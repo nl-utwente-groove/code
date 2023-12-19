@@ -192,5 +192,5 @@ public class RecipeTest {
     }
 
     private final static boolean DEBUG = false;
-    private final static boolean FULL_GRAPH = false;
+    private final static boolean FULL_GRAPH = true;
 }

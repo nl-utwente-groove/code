@@ -27,15 +27,13 @@ import static nl.utwente.groove.util.line.Line.Style.UNDERLINE;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 import nl.utwente.groove.algebra.Sort;
+import nl.utwente.groove.control.CallStack;
 import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.Position;
-import nl.utwente.groove.control.Valuator;
 import nl.utwente.groove.control.instance.Frame;
 import nl.utwente.groove.control.template.Location;
-import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.aspect.Aspect;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
@@ -426,10 +424,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 result.add(getStackLine(frame.getPrime().getLocation(), values));
                 hasControl = true;
             }
-            Stack<Switch> stack = frame.getPrime().getSwitchStack();
-            for (int i = stack.size() - 1; i >= 0; i--) {
-                values = Valuator.pop(values);
-                Switch sw = stack.get(i);
+            for (var sw : frame.getPrime().getContext()) {
+                values = CallStack.pop(values);
                 result.add(getStackLine(sw.getSource(), values));
                 hasControl = true;
             }

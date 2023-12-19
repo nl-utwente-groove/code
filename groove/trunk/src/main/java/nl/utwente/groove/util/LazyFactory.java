@@ -79,6 +79,14 @@ public abstract class LazyFactory<T> implements Supplier<T> {
     /** Flag indicating whether the value has been computed. */
     private boolean set;
 
+    @Override
+    public String toString() {
+        var value = this.value;
+        return value == null
+            ? "null"
+            : this.toString();
+    }
+
     /** Creates an instance of this factory from a given supplier. */
     static public <T> LazyFactory<T> instance(Supplier<T> create) {
         return new LazyFactory<>() {

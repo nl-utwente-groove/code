@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /**
- * 
+ *
  */
 package nl.utwente.groove.lts;
 
@@ -23,8 +23,12 @@ package nl.utwente.groove.lts;
  * @version $Revision$
  */
 public interface GraphNextState extends GraphState, RuleTransition {
-    /** 
-     * Returns the (rule or recipe) transition 
+    /* The default implementation from RuleTransition won't work here. */
+    @Override
+    public GTS getGTS();
+
+    /**
+     * Returns the (rule or recipe) transition
      * leading up to this state. The resulting transition is
      * internal if and only if this state is so.
      */

@@ -28,15 +28,15 @@ import java.util.Stack;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.control.CallStack;
 import nl.utwente.groove.control.CtrlPar;
 import nl.utwente.groove.control.CtrlPar.Const;
 import nl.utwente.groove.control.CtrlPar.Var;
 import nl.utwente.groove.control.CtrlPar.Wild;
 import nl.utwente.groove.control.CtrlVar;
-import nl.utwente.groove.control.Valuator;
-import nl.utwente.groove.control.instance.Assignment;
+import nl.utwente.groove.control.instance.CallStackChange;
+import nl.utwente.groove.control.template.NestedSwitch;
 import nl.utwente.groove.control.template.Switch;
-import nl.utwente.groove.control.template.SwitchStack;
 import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.host.HostGraphMorphism;
@@ -65,23 +65,22 @@ public class RecipeTransition extends ALabelEdge<GraphState>
     public RecipeTransition(RuleTransition initial, GraphState target) {
         super(initial.source(), target);
         this.initial = initial;
-        SwitchStack initialStack = initial.getStep().getSwitchStack();
-        int depth = 0;
-        while (initialStack.get(depth).getKind() != Kind.RECIPE) {
-            depth++;
+        assert initial.source().isRealState();
+        NestedSwitch initialSwitch = initial.getStep().getSwitch();
+        var iter = initialSwitch.iterator();
+        Switch recipeSwitch = iter.next();
+        int recipeDepth = 0;
+        while (recipeSwitch.getKind() != Kind.RECIPE) {
+            recipeSwitch = iter.next();
+            recipeDepth++;
         }
-        this.recipeCallDepth = depth;
-        this.recipeSwitch = initialStack.get(depth);
+        this.recipeDepth = recipeDepth;
+        this.recipeSwitch = recipeSwitch;
     }
 
     @Override
     public RecipeTransition label() {
         return this;
-    }
-
-    @Override
-    public GTS getGTS() {
-        return source().getGTS();
     }
 
     @Override
@@ -107,7 +106,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
 
     private final Switch recipeSwitch;
     /** Depth of the recipe switch in the initial call of this transition. */
-    private final int recipeCallDepth;
+    private final int recipeDepth;
 
     @Override
     public RecipeEvent getEvent() {
@@ -248,13 +247,13 @@ public class RecipeTransition extends ALabelEdge<GraphState>
                 CtrlVar var = v.var();
                 if (arg.inOnly()) {
                     int varIndex = getSwitch().getSource().getVars().indexOf(var);
-                    node = Valuator.get(source().getPrimeValues(), varIndex);
+                    node = CallStack.get(source().getPrimeValues(), varIndex);
                 } else {
                     assert arg.outOnly();
                     Map<CtrlVar,Integer> varIxMap = getSwitch().onFinish().getVarIxMap();
                     int varIndex = varIxMap.get(var);
                     Object[] values = getFrameValues();
-                    node = Valuator.get(values, varIndex);
+                    node = CallStack.get(values, varIndex);
                 }
             } else {
                 throw Exceptions.UNREACHABLE;
@@ -269,8 +268,8 @@ public class RecipeTransition extends ALabelEdge<GraphState>
      */
     private Object[] getFrameValues() {
         Object[] result = target().getPrimeValues();
-        List<Assignment> pops = target().getActualFrame().getPops();
-        int popCount = target().getActualFrame().getNestingDepth() - this.recipeCallDepth;
+        List<CallStackChange> pops = target().getActualFrame().getPops();
+        int popCount = target().getActualFrame().getNestingDepth() - this.recipeDepth;
         assert popCount <= pops.size();
         for (int i = 0; i < popCount; i++) {
             result = pops.get(i).apply(result);

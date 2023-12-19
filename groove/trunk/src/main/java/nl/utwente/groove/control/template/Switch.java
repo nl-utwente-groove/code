@@ -16,17 +16,24 @@
  */
 package nl.utwente.groove.control.template;
 
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
 
+import nl.utwente.groove.control.Assignment;
 import nl.utwente.groove.control.Binding;
+import nl.utwente.groove.control.Binding.Source;
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.CtrlPar;
+import nl.utwente.groove.control.CtrlVar;
+import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.Signature;
 import nl.utwente.groove.grammar.UnitPar;
+import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.LazyFactory;
 
 /**
  * Transition between control locations, bearing a call.
@@ -76,7 +83,6 @@ public class Switch implements Comparable<Switch>, Relocatable {
     /**
      * Convenience method to return the name of the unit called in
      * this switch.
-     * Only valid if this is a call switch.
      */
     public QualName getQualName() {
         return getUnit().getQualName();
@@ -84,7 +90,6 @@ public class Switch implements Comparable<Switch>, Relocatable {
 
     /**
      * Convenience method to return the arguments of the call of this switch.
-     * Only valid if this is a call switch.
      * @return the list of arguments
      */
     public final List<? extends CtrlPar> getArgs() {
@@ -93,23 +98,20 @@ public class Switch implements Comparable<Switch>, Relocatable {
 
     /**
      * Convenience method to return the called unit of this switch.
-     * Only valid if this is a call switch.
-     * @see #getKind()
      */
     public final Callable getUnit() {
         return getCall().getUnit();
     }
 
     /**
-     * Returns the rule or procedure call wrapped in this switch.
+     * Returns the call wrapped in this switch.
      */
     public final Call getCall() {
         return this.call;
     }
 
     /**
-     * The invoked unit of this call.
-     * Is {@code null} if this is not a call switch.
+     * The call of this switch.
      */
     private final Call call;
 
@@ -120,37 +122,78 @@ public class Switch implements Comparable<Switch>, Relocatable {
 
     private final int transience;
 
-    /**
-     * Returns pairs of formal input parameters of this call and corresponding
-     * bindings to source location variables and constant values.
-     * This is only valid for rule calls.
+    /** Returns the assignment to source variables of the initial location of
+     * the callee template, based on source variables of this switch and
+     * constant arguments of the call.
+     * This is only valid if the callee is a procedure.
      */
-    public List<ParBinding> getCallBinding() {
-        assert getKind() == Callable.Kind.RULE;
-        if (this.callBinding == null) {
-            this.callBinding = computeCallBinding();
-        }
-        return this.callBinding;
+    public Assignment getCalleeAssign() {
+        Procedure callee = (Procedure) getUnit();
+        Template template = callee.getTemplate();
+        return template.getSourceAssign().then(getParAssign());
     }
 
-    /** Binding of in-parameter positions to source variables and constant arguments. */
-    private List<ParBinding> callBinding;
+    /**
+     * Returns an assignment to the target variables of this
+     * switch, based on the source variables and the output parameters of the call.
+     * If the switch is a rule call, the output parameter values
+     * are available at the moment of applying the assignment and
+     * can be retrieved from the rule application; if it is a procedure
+     * call, the output parameter values are not yet available and will
+     * be set to {@code null}.
+     */
+    public Assignment getTargetAssign() {
+        Assignment result = new Assignment();
+        var sourceVars = getSource().getVarIxMap();
+        Map<CtrlVar,Integer> outVars = getCall().getOutVars();
+        for (CtrlVar var : onFinish().getVars()) {
+            Integer ix = outVars.get(var);
+            Binding rhs;
+            if (ix == null) {
+                // the value comes from the source variables
+                int pos = sourceVars.get(var);
+                assert pos >= 0;
+                rhs = Binding.var(var, pos);
+            } else if (getUnit() instanceof Rule rule) {
+                // the value is an output parameter of the rule
+                rhs = Binding.bind(var, rule.getParBinding(ix));
+                assert rhs != null;
+            } else {
+                rhs = Binding.none(var);
+            }
+            result.add(rhs);
+        }
+        return result;
+    }
 
     /**
-     * Computes the binding of formal call parameters to source location
-     * variables and constant values.
-     * @return a list of pairs of call parameter variables and bindings.
-     * The binding is {@code null} for a non-input-parameter.
+     * Returns an assignment to the formal parameters of the call, based on
+     * bindings to source location variables and constant values derived
+     * from the arguments.
+     * The binding is {@link Source#NONE} for output parameters and wildcard arguments
      */
-    private List<ParBinding> computeCallBinding() {
-        List<ParBinding> result = new LinkedList<>();
+    public Assignment getParAssign() {
+        return this.parAssign.get();
+    }
+
+    /** Lazily computed assignment to the formal parameters of the call, based on
+     * bindings to source location variables and constant values derived
+     * from the arguments.
+     * The binding is {@link Source#NONE} for output parameters and wildcard arguments
+     */
+    private Supplier<Assignment> parAssign = LazyFactory.instance(this::computeParAssign);
+
+    /**
+     * Computes the value for {@link #parAssign}.
+     */
+    private Assignment computeParAssign() {
+        Assignment result = new Assignment();
         List<? extends CtrlPar> args = getArgs();
-        Signature<UnitPar.RulePar> sig = ((Rule) getUnit()).getSignature();
-        int size = args == null
-            ? 0
-            : args.size();
+        Signature<? extends UnitPar> sig = getUnit().getSignature();
+        int size = args.size();
         var sourceVars = getSource().getVarIxMap();
         for (int i = 0; i < size; i++) {
+            var target = sig.getPar(i);
             assert args != null; // size is at least one
             CtrlPar arg = args.get(i);
             Binding bind;
@@ -158,30 +201,23 @@ public class Switch implements Comparable<Switch>, Relocatable {
                 if (arg.inOnly()) {
                     int ix = sourceVars.get(v.var());
                     assert ix >= 0;
-                    bind = Binding.var(ix);
+                    bind = Binding.var(target, ix);
                 } else if (arg.outOnly()) {
-                    bind = null;
+                    bind = Binding.none(target);
                 } else {
-                    assert false;
-                    bind = null;
+                    throw Exceptions
+                        .illegalState("Call argument %s of %s is neither input-only nor output-only",
+                                      arg, this);
                 }
             } else if (arg instanceof CtrlPar.Const c) {
-                bind = Binding.value(c);
+                bind = Binding.value(target, c);
             } else {
                 assert arg instanceof CtrlPar.Wild;
-                bind = null;
+                bind = Binding.none(target);
             }
-            result.add(new ParBinding(sig.getPar(i), bind));
+            result.add(bind);
         }
         return result;
-    }
-
-    /**
-     * Binding of a formal call parameter to source location
-     * variable or constant value.
-     */
-    public record ParBinding(UnitPar.RulePar par, Binding bind) {
-        // no additional functionality
     }
 
     @Override
