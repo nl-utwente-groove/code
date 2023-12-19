@@ -424,9 +424,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 result.add(getStackLine(frame.getPrime().getLocation(), values));
                 hasControl = true;
             }
-            for (var sw : frame.getPrime().getContext()) {
+            for (var sw : frame.getPrime().getContext().outIterable()) {
                 values = CallStack.pop(values);
-                result.add(getStackLine(sw.getSource(), values));
+                result.add(getStackLine(sw.onFinish(), values));
                 hasControl = true;
             }
         }
