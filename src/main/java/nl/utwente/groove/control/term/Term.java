@@ -304,7 +304,7 @@ abstract public class Term implements Position<Term,Derivation> {
         case TRIAL -> {
             DerivationAttempt attempt = getAttempt(false);
             for (Derivation deriv : attempt) {
-                result = result + "\n  --" + deriv.getCall() + "--> " + deriv.onFinish().toString();
+                result = result + "\n  --" + deriv.getOuterCall() + "--> " + deriv.onFinish().toString();
             }
             result = result + "\nSuccess: " + attempt.onSuccess().toString();
             result = result + "\nFailure: " + attempt.onFailure().toString();

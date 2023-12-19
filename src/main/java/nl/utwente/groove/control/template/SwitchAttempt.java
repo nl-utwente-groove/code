@@ -28,10 +28,10 @@ import nl.utwente.groove.control.Attempt;
  * @version $Revision$
  */
 @NonNullByDefault
-public class SwitchAttempt extends Attempt<Location,SwitchStack> implements Relocatable {
+public class SwitchAttempt extends Attempt<Location,NestedSwitch> implements Relocatable {
     /** Constructs a switch attempt for a given source location. */
     public SwitchAttempt(Location source, Location onSuccess, Location onFailure, int switchCount,
-                         Stream<SwitchStack> switches) {
+                         Stream<NestedSwitch> switches) {
         super(switchCount);
         this.source = source;
         setSuccess(onSuccess);

@@ -512,6 +512,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
                         .getVar(creatorNodes[i].getTypeGuards().get(0).getVar());
                 }
                 if (type.isSort()) {
+                    // value nodes can only be created if they are input parameters
                     result[i] = createValueNode(record, creatorNodes[i].getPar().get());
                 } else {
                     result[i] = createNode(record, i, type);

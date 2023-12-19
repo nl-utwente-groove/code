@@ -54,7 +54,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import nl.utwente.groove.control.CallStack;
+import nl.utwente.groove.control.NestedCall;
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.ModuleName;
@@ -523,12 +523,12 @@ public class RuleTree extends AbstractResourceTree {
      */
     private Set<NamePair> getTried(GraphState state) {
         // set the tried status of the rules
-        Set<? extends CallStack> pastAttempts = state == null
-            ? Collections.<CallStack>emptySet()
+        Set<? extends NestedCall> pastAttempts = state == null
+            ? Collections.<NestedCall>emptySet()
             : state.getActualFrame().getPastAttempts();
         // convert the transitions to pairs of rule name + recipe name
         Set<NamePair> triedPairs = new HashSet<>();
-        for (CallStack t : pastAttempts) {
+        for (NestedCall t : pastAttempts) {
             QualName ruleName = t.getRule().getQualName();
             QualName recipeName = t.getRecipe().map(r -> r.getQualName()).orElse(null);
             triedPairs.add(new NamePair(ruleName, recipeName));

@@ -27,19 +27,22 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.control.Assignment;
+import nl.utwente.groove.control.Binding;
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.CtrlVar;
-import nl.utwente.groove.control.Function;
 import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.control.graph.ControlGraph;
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.host.HostFactory;
+import nl.utwente.groove.util.LazyFactory;
 
 /**
  * Control automaton template.
@@ -112,6 +115,37 @@ public class Template {
 
     private final Location start;
 
+    /** Returns the assignment to source variables of the start state of this template,
+     * based on parameters of the owning procedure.
+     * This is only valid if the template is owned by a procedure.
+     */
+    public Assignment getSourceAssign() {
+        assert hasOwner();
+        return this.sourceAssign.get();
+    }
+
+    /** Lazily computed assignment to source variables of the start state of this template,
+     * based on parameters of the owning procedure.
+     * This is only valid if the template is owned by a procedure.
+     */
+    private Supplier<Assignment> sourceAssign = LazyFactory.instance(this::computeSourceAssign);
+
+    /** Computer the value of {@link #sourceAssign}. */
+    private Assignment computeSourceAssign() {
+        var owner = getOwner();
+        assert owner != null;
+        var varIxMap = getStart().getVarIxMap();
+        Binding[] bindings = new Binding[varIxMap.size()];
+        var pars = owner.getSignature().getPars();
+        for (int i = 0; i < pars.size(); i++) {
+            var parVar = pars.get(i).getVar();
+            if (varIxMap.containsKey(parVar)) {
+                bindings[varIxMap.get(parVar)] = Binding.var(parVar, i);
+            }
+        }
+        return new Assignment(bindings);
+    }
+
     /** Creates and adds a control location to this automaton. */
     public Location addLocation(int depth) {
         this.maxNodeNr++;
@@ -138,9 +172,18 @@ public class Template {
      * Returns the set of actions occurring on control edges,
      * either on this level or recursively within function calls.
      */
-    public Set<Action> getActions() {
-        Set<Action> result = new LinkedHashSet<>();
-        Set<Function> seen = new HashSet<>();
+    public Collection<Action> getActions() {
+        return this.actions.get().values();
+    }
+
+    /** Mapping from qualified names to actions with that name in this control program. */
+    private final Supplier<Map<QualName,Action>> actions
+        = LazyFactory.instance(this::computeActions);
+
+    /** Computes the value for {@link #actions}. */
+    private Map<QualName,Action> computeActions() {
+        Map<QualName,Action> result = new LinkedHashMap<>();
+        Set<Procedure> seen = new HashSet<>();
         Queue<Template> todo = new LinkedList<>();
         todo.add(this);
         while (!todo.isEmpty()) {
@@ -149,14 +192,14 @@ public class Template {
                 if (!loc.isTrial()) {
                     continue;
                 }
-                for (SwitchStack swit : loc.getAttempt()) {
-                    Callable unit = swit.getBottomCall().getUnit();
-                    if (unit instanceof Action) {
-                        result.add((Action) unit);
+                for (NestedSwitch swit : loc.getAttempt()) {
+                    Callable unit = swit.getOuterCall().getUnit();
+                    if (unit instanceof Action a) {
+                        result.put(a.getQualName(), a);
                     } else {
-                        Function function = (Function) unit;
-                        Template fresh = ((Function) unit).getTemplate();
-                        if (seen.add(function) && fresh != null) {
+                        var proc = (Procedure) unit;
+                        Template fresh = proc.getTemplate();
+                        if (seen.add(proc) && fresh != null) {
                             todo.add(fresh);
                         }
                     }
@@ -164,6 +207,11 @@ public class Template {
             }
         }
         return result;
+    }
+
+    /** Returns the action associated with a given qualified name. */
+    public @Nullable Action getAction(QualName name) {
+        return this.actions.get().get(name);
     }
 
     /**
@@ -180,8 +228,8 @@ public class Template {
             if (loc.isFinal() && owner != null) {
                 loc.addVars(owner.getOutPars().keySet());
             } else if (loc.isTrial()) {
-                for (SwitchStack s : loc.getAttempt()) {
-                    Switch bottom = s.get(0);
+                for (NestedSwitch s : loc.getAttempt()) {
+                    Switch bottom = s.getOuter();
                     Call bottomCall = bottom.getCall();
                     loc.addVars(bottomCall.getInVars().keySet());
                     bottom.onFinish().addVars(bottomCall.getOutVars().keySet());
@@ -274,10 +322,10 @@ public class Template {
                 SwitchAttempt attempt = loc.getAttempt();
                 result.addBackLink(loc, attempt.onSuccess(), EMPTY_VAR_SET);
                 result.addBackLink(loc, attempt.onFailure(), EMPTY_VAR_SET);
-                for (SwitchStack swit : attempt) {
+                for (NestedSwitch swit : attempt) {
                     result
                         .addBackLink(loc, swit.onFinish(),
-                                     swit.getBottomCall().getOutVars().keySet());
+                                     swit.getOuterCall().getOutVars().keySet());
                 }
             }
         }
@@ -298,7 +346,7 @@ public class Template {
     public void initialise(HostFactory factory) {
         for (Location loc : getLocations()) {
             if (loc.isTrial()) {
-                for (SwitchStack sw : loc.getAttempt()) {
+                for (NestedSwitch sw : loc.getAttempt()) {
                     sw.initialise(factory);
                 }
             }

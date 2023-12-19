@@ -16,21 +16,21 @@
  */
 package nl.utwente.groove.lts;
 
-import java.util.Set;
+import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.control.Binding;
-import nl.utwente.groove.control.Valuator;
-import nl.utwente.groove.control.instance.Assignment;
+import nl.utwente.groove.control.CallStack;
+import nl.utwente.groove.control.instance.CallStackChange;
 import nl.utwente.groove.control.instance.Step;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.transform.CompositeEvent;
-import nl.utwente.groove.transform.MergeMap;
 import nl.utwente.groove.transform.RuleEffect;
 import nl.utwente.groove.transform.RuleEffect.Fragment;
 import nl.utwente.groove.transform.RuleEvent;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Reporter;
 
 /**
@@ -206,68 +206,26 @@ public class MatchApplier {
     private Object[] computeFrameValues(Step step, GraphState source, RuleEvent event,
                                         RuleEffect record) {
         Object[] result = source.getActualValues();
-        for (Assignment assign : step.getApplyAssignments()) {
-            switch (assign.getKind()) {
-            case MODIFY:
-                Object[] values = apply(assign, result, event, record);
-                result = Valuator.replace(result, values);
-                break;
-            case POP:
-            case PUSH:
-                result = assign.apply(result);
-                break;
-            default:
-                assert false;
-            }
+        if (!record.isNodeId()) {
+            // map the entire valuation stack through the node mapping of the record
+            result = CallStack.map(result, record::mapNode);
         }
-        return result;
-    }
-
-    /** Computes the frame values for the target of a rule application. */
-    private HostNode[] apply(Assignment assign, Object[] sourceValues, RuleEvent event,
-                             RuleEffect record) {
-        Binding[] bindings = assign.getBindings();
-        int valueCount = bindings.length;
-        HostNode[] result = new HostNode[valueCount];
         HostNode[] createdNodes = record.getCreatedNodeArray();
-        Set<HostNode> removedNodes = record.getRemovedNodes();
-        MergeMap mergeMap = record.getMergeMap();
-        for (int i = 0; i < valueCount; i++) {
-            Binding bind = bindings[i];
-            HostNode value = null;
-            switch (bind.type()) {
-            case VAR:
-                // this is an input parameter of the rule
-                HostNode sourceValue = Valuator.get(sourceValues, bind);
-                value = getNodeImage(sourceValue, mergeMap, removedNodes);
-                break;
-            case ANCHOR:
-                // the parameter is not a creator node
-                sourceValue = (HostNode) event.getAnchorImage(bind.index());
-                value = getNodeImage(sourceValue, mergeMap, removedNodes);
-                break;
-            case CREATOR:
-                // the parameter is a creator node
-                value = createdNodes[bind.index()];
-                break;
-            default:
-                assert false;
-            }
-            result[i] = value;
+        Function<Binding,HostNode> getValue = (b -> {
+            return switch (b.type()) {
+            case ANCHOR ->
+                // this is a rule parameter (not a creator node)
+                record.mapNode((HostNode) event.getAnchorImage(b.index()));
+            case CREATOR ->
+                // this is an output parameter corresponding to a creator node
+                createdNodes[b.index()];
+            default -> throw Exceptions.illegalArg("Function not applicable to binding %s", b);
+            };
+        });
+        for (CallStackChange assign : step.getApplyChanges()) {
+            result = assign.apply(result, getValue);
         }
         return result;
-    }
-
-    private HostNode getNodeImage(HostNode key, MergeMap mergeMap, Set<HostNode> removedNodes) {
-        if (mergeMap == null) {
-            if (removedNodes == null || !removedNodes.contains(key)) {
-                return key;
-            } else {
-                return null;
-            }
-        } else {
-            return mergeMap.getNode(key);
-        }
     }
 
     /** The underlying GTS. */

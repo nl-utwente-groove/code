@@ -117,12 +117,12 @@ public abstract class Attempt<P extends Position<P,A>,A extends Attempt.Stage<P,
         /**
          * The rule called in this stage.
          * This is the top element of the call stack.
-         * @see #getCallStack()
+         * @see #getCall()
          */
-        Call getRuleCall();
+        Call getInnerCall();
 
         /** Returns the stack of calls of this stage. */
-        CallStack getCallStack();
+        NestedCall getCall();
 
         /** The target position. */
         P onFinish();

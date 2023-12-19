@@ -25,7 +25,7 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.control.instance.Assignment;
+import nl.utwente.groove.control.instance.CallStackChange;
 import nl.utwente.groove.control.instance.Frame;
 import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.CheckPolicy;
@@ -490,7 +490,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     @Override
     public Object[] getActualValues() {
         Object[] result = getPrimeValues();
-        for (Assignment pop : getActualFrame().getPops()) {
+        for (CallStackChange pop : getActualFrame().getPops()) {
             result = pop.apply(result);
         }
         return result;

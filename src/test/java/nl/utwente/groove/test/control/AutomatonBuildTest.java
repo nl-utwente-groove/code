@@ -30,22 +30,24 @@ import org.junit.Before;
 import org.junit.Test;
 
 import nl.utwente.groove.algebra.JavaIntAlgebra;
+import nl.utwente.groove.control.Assignment;
 import nl.utwente.groove.control.Binding;
-import nl.utwente.groove.control.Binding.Source;
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.CtrlLoader;
 import nl.utwente.groove.control.CtrlPar;
+import nl.utwente.groove.control.CtrlType;
+import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.Position;
 import nl.utwente.groove.control.Procedure;
-import nl.utwente.groove.control.instance.Assignment;
 import nl.utwente.groove.control.instance.Automaton;
+import nl.utwente.groove.control.instance.CallStackChange;
 import nl.utwente.groove.control.instance.Frame;
 import nl.utwente.groove.control.instance.Step;
 import nl.utwente.groove.control.instance.StepAttempt;
 import nl.utwente.groove.control.template.Fragment;
+import nl.utwente.groove.control.template.NestedSwitch;
 import nl.utwente.groove.control.template.Program;
 import nl.utwente.groove.control.template.Switch;
-import nl.utwente.groove.control.template.SwitchStack;
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.QualName;
@@ -86,68 +88,43 @@ public class AutomatonBuildTest {
         Call fCall = call("f");
         Call aCall = call("a");
         Call bCall = call("b");
-        assertEquals(2,
-            s.get(0)
-                .getSwitchStack()
-                .size());
-        assertEquals(fCall,
-            s.get(0)
-                .getSwitchStack()
-                .getBottomCall());
-        assertEquals(bCall,
-            s.get(0)
-                .getRuleCall());
-        assertEquals(aCall,
-            s.get(1)
-                .getRuleCall());
+        assertEquals(2, s.get(0).getSwitch().size());
+        assertEquals(fCall, s.get(0).getSwitch().getOuterCall());
+        assertEquals(bCall, s.get(0).getInnerCall());
+        assertEquals(aCall, s.get(1).getInnerCall());
         assertEquals(s.onFailure(), s.onSuccess());
         //
         Frame fFail = s.onFailure();
         StepAttempt sFail = fFail.getAttempt();
         assertEquals(2, sFail.size());
-        Call rCall = call("r",
-            new CtrlPar.Const(JavaIntAlgebra.instance, 1),
-            CtrlPar.outVar(QualName.parse("f"), "arg", "node"));
+        Call rCall = call("r", new CtrlPar.Const(JavaIntAlgebra.instance, 1),
+                          CtrlPar.outVar(QualName.parse("f"), "arg", "node"));
         Call oNodeCall = call("oNode", CtrlPar.outVar(QualName.parse("r"), "q", "node"));
         Call bNodeCall = call("bNode", CtrlPar.outVar(QualName.parse("r"), "q", "node"));
-        SwitchStack swFail0 = sFail.get(0)
-            .getSwitchStack();
-        assertEquals(fCall,
-            swFail0.get(0)
-                .getCall());
-        assertEquals(rCall,
-            swFail0.get(1)
-                .getCall());
-        assertEquals(oNodeCall, swFail0.getRuleCall());
-        assertEquals(bNodeCall,
-            sFail.get(1)
-                .getRuleCall());
+        NestedSwitch swFail0 = sFail.get(0).getSwitch();
+        var swFail0Iter = swFail0.iterator();
+        assertEquals(fCall, swFail0Iter.next().getCall());
+        assertEquals(rCall, swFail0Iter.next().getCall());
+        assertEquals(oNodeCall, swFail0Iter.next().getCall());
+        assertEquals(bNodeCall, sFail.get(1).getInnerCall());
         //
         Frame fFailFail = sFail.onFailure();
-        assertEquals(0,
-            fFailFail.getSwitchStack()
-                .size());
+        assertEquals(0, fFailFail.getContext().size());
         assertTrue(fFailFail.isFinal());
         //
         Frame fFailSucc = sFail.onSuccess();
         assertTrue(fFailSucc.isDead());
-        assertTrue(sFail.get(0)
-            .onFinish()
-            .isFinal());
-        Frame fNext = sFail.get(1)
-            .onFinish();
-        SwitchStack swNext = fNext.getSwitchStack();
+        assertTrue(sFail.get(0).onFinish().isFinal());
+        Frame fNext = sFail.get(1).onFinish();
+        NestedSwitch swNext = fNext.getContext();
         assertEquals(2, swNext.size());
-        assertEquals(fCall, swNext.getBottomCall());
-        assertEquals(rCall,
-            swNext.get(1)
-                .getCall());
+        var swNextIter = swNext.iterator();
+        assertEquals(fCall, swNextIter.next().getCall());
+        assertEquals(rCall, swNextIter.next().getCall());
         StepAttempt sNext = fNext.getAttempt();
         assertEquals(1, sNext.size());
         Call bIntCall = call("bInt", CtrlPar.inVar(QualName.parse("r"), "p", "int"));
-        assertEquals(bIntCall,
-            sNext.get(0)
-                .getRuleCall());
+        assertEquals(bIntCall, sNext.get(0).getInnerCall());
     }
 
     @Test
@@ -162,98 +139,81 @@ public class AutomatonBuildTest {
             Viewer.showGraph(p.toGraph(FULL_GRAPH), true);
         }
         Frame f0 = p.getStart();
-        assertEquals(1,
-            f0.getAttempt()
-                .size());
-        Step s0 = f0.getAttempt()
-            .get(0);
+        assertEquals(1, f0.getAttempt().size());
+        Step s0 = f0.getAttempt().get(0);
         Frame f1 = s0.onFinish();
-        assertEquals(1,
-            f1.getAttempt()
-                .size());
-        Step s1 = f1.getAttempt()
-            .get(0);
+        assertEquals(1, f1.getAttempt().size());
+        Step s1 = f1.getAttempt().get(0);
         Frame f2 = s1.onFinish();
-        assertEquals(1,
-            f2.getAttempt()
-                .size());
-        Step s2 = f2.getAttempt()
-            .get(0);
+        assertEquals(1, f2.getAttempt().size());
+        Step s2 = f2.getAttempt().get(0);
         Frame f3 = s2.onFinish();
-        assertEquals(1,
-            f3.getAttempt()
-                .size());
-        Step s3 = f3.getAttempt()
-            .get(0);
+        assertEquals(1, f3.getAttempt().size());
+        Step s3 = f3.getAttempt().get(0);
         Frame f4 = s3.onFinish();
-        assertEquals(1,
-            f4.getAttempt()
-                .size());
-        Step s4 = f4.getAttempt()
-            .get(0);
+        assertEquals(1, f4.getAttempt().size());
+        Step s4 = f4.getAttempt().get(0);
         Frame f5 = s4.onFinish();
-        assertEquals(1,
-            f5.getAttempt()
-                .size());
-        Step s5 = f5.getAttempt()
-            .get(0);
+        assertEquals(1, f5.getAttempt().size());
+        Step s5 = f5.getAttempt().get(0);
         Frame f6 = s5.onFinish();
         //
+        var oNode = p.getProgram().getTemplate().getAction(QualName.name("oNode"));
+        var oNode0 = oNode.getSignature().getPar(0);
+        //
+        var n = new CtrlVar(null, "n", CtrlType.NODE);
+        var fx = new CtrlVar(new QualName("f"), "fx", CtrlType.NODE);
+        var fy = new CtrlVar(new QualName("f"), "fy", CtrlType.NODE);
+        var gx = new CtrlVar(new QualName("g"), "gx", CtrlType.NODE);
+        var gy = new CtrlVar(new QualName("g"), "gy", CtrlType.NODE);
+        //
         assertEquals(0, s0.getCallDepthChange());
-        List<Assignment> change = s0.getApplyAssignments();
+        List<CallStackChange> change = s0.getApplyChanges();
         assertEquals(1, change.size());
-        Assignment a00 = change.get(0);
-        assertEquals(Assignment.Kind.MODIFY, a00.getKind());
-        Binding[] b00 = a00.getBindings();
-        assertEquals(1, b00.length);
-        assertEquals(Source.CREATOR, b00[0].type());
-        assertEquals(0, b00[0].index());
+        var aMain = new Assignment(Binding.creator(n, 0));
+        assertEquals(CallStackChange.push(aMain), change.get(0));
         //
         assertEquals(2, s1.getCallDepthChange());
-        change = s1.getApplyAssignments();
-        assertEquals(3, change.size());
-        List<Binding> b = Arrays.asList(Binding.var(0));
-        assertEquals(Assignment.push(b), change.get(0));
-        b = Arrays.asList();
-        assertEquals(Assignment.push(b), change.get(1));
-        b = Arrays.asList(Binding.anchor(0), Binding.creator(0));
-        assertEquals(Assignment.call(b), change.get(2));
+        change = s1.getApplyChanges();
+        assertEquals(1, change.size());
+        aMain = new Assignment(Binding.none(n));
+        var aF = new Assignment(Binding.var(fx, 0), Binding.none(fy));
+        var aG = new Assignment(Binding.anchor(gx, 0), Binding.creator(gy, 0));
+        assertEquals(CallStackChange.push(aMain, aF, aG), change.get(0));
         //
         assertEquals(-1, s2.getCallDepthChange());
-        change = s2.getApplyAssignments();
+        change = s2.getApplyChanges();
         assertEquals(2, change.size());
-        b = Arrays.asList(Binding.var(1));
-        assertEquals(Assignment.call(b), change.get(0));
-        b = Arrays.asList(Binding.caller(0), Binding.var(0));
-        assertEquals(Assignment.pop(b), change.get(1));
+        aG = new Assignment(Binding.var(gy, 1));
+        assertEquals(CallStackChange.push(aG), change.get(0));
+        aF = new Assignment(Binding.none(fx), Binding.var(fy, 0));
+        assertEquals(CallStackChange.pop(aF), change.get(1));
         //
         assertEquals(0, s3.getCallDepthChange());
-        change = s3.getApplyAssignments();
+        change = s3.getApplyChanges();
         assertEquals(1, change.size());
-        b = Arrays.asList(Binding.var(0), Binding.var(1));
-        assertEquals(Assignment.call(b), change.get(0));
+        aF = new Assignment(Binding.var(fx, 0), Binding.var(fy, 1));
+        assertEquals(CallStackChange.push(aF), change.get(0));
         //
         assertEquals(0, s4.getCallDepthChange());
-        change = s4.getApplyAssignments();
-        assertEquals(3, change.size());
-        b = Arrays.asList(Binding.var(0));
-        assertEquals(Assignment.push(b), change.get(0));
-        b = Arrays.asList();
-        assertEquals(Assignment.call(b), change.get(1));
-        b = Arrays.asList(Binding.caller(1));
-        assertEquals(Assignment.pop(b), change.get(2));
+        change = s4.getApplyChanges();
+        assertEquals(2, change.size());
+        aF = new Assignment(Binding.var(fy, 1));
+        var aH = new Assignment();
+        assertEquals(CallStackChange.push(aF, aH), change.get(0));
+        aF = new Assignment(Binding.none(fy));
+        assertEquals(CallStackChange.pop(aF), change.get(1));
         //
         assertEquals(-1, s5.getCallDepthChange());
-        change = s5.getApplyAssignments();
-        assertEquals(4, change.size());
-        b = Arrays.asList(Binding.var(0));
-        assertEquals(Assignment.push(b), change.get(0));
-        b = Arrays.asList();
-        assertEquals(Assignment.call(b), change.get(1));
-        b = Arrays.asList(Binding.caller(0));
-        assertEquals(Assignment.pop(b), change.get(2));
-        b = Arrays.asList(Binding.var(0));
-        assertEquals(Assignment.pop(b), change.get(3));
+        change = s5.getApplyChanges();
+        assertEquals(3, change.size());
+        aF = new Assignment(Binding.var(fy, 0));
+        aH = new Assignment();
+        assertEquals(CallStackChange.push(aF, aH), change.get(0));
+        aF = new Assignment(Binding.none(fy));
+        assertEquals(CallStackChange.pop(aF), change.get(1));
+        aMain = new Assignment(Binding.var(n, 0));
+        assertEquals(CallStackChange.pop(aMain), change.get(2));
         //
         assertTrue(f6.isFinal());
     }
@@ -263,26 +223,14 @@ public class AutomatonBuildTest {
         Automaton p = build("alap-choice", "alap a|b;");
         p.explore();
         Frame f = p.getStart();
-        assertEquals(2,
-            f.getAttempt()
-                .size());
-        assertTrue(f.getAttempt()
-            .onSuccess()
-            .isDead());
-        assertTrue(f.getAttempt()
-            .onFailure()
-            .isFinal());
-        Step s = f.getAttempt()
-            .get(0);
+        assertEquals(2, f.getAttempt().size());
+        assertTrue(f.getAttempt().onSuccess().isDead());
+        assertTrue(f.getAttempt().onFailure().isFinal());
+        Step s = f.getAttempt().get(0);
         assertEquals(f, s.onFinish());
-        assertEquals(call("a"),
-            s.getCallStack()
-                .peek());
-        s = f.getAttempt()
-            .get(1);
-        assertEquals(call("b"),
-            s.getCallStack()
-                .peek());
+        assertEquals(call("a"), s.getCall().getInner());
+        s = f.getAttempt().get(1);
+        assertEquals(call("b"), s.getCall().getInner());
         assertEquals(f, s.onFinish());
         //
         p = build("nested", "function f() { a; alap a; } recipe r() { f; alap f; } r;");
@@ -290,63 +238,42 @@ public class AutomatonBuildTest {
         if (DEBUG) {
             Viewer.showGraph(p.toGraph(FULL_GRAPH), true);
         }
-        SwitchStack stack = new SwitchStack();
-        stack.add(this.prog.getTemplate()
-            .getStart()
-            .getAttempt()
-            .get(0)
-            .getBottom());
-        Switch r0Switch = proc("r").getTemplate()
-            .getStart()
-            .getAttempt()
-            .get(0)
-            .getBottom();
-        stack.add(r0Switch);
-        Switch f0Switch = proc("f").getTemplate()
-            .getStart()
-            .getAttempt()
-            .get(0)
-            .getBottom();
-        stack.add(f0Switch);
+        NestedSwitch swt = new NestedSwitch();
+        swt.push(this.prog.getTemplate().getStart().getAttempt().get(0).getOuter());
+        Switch r0Switch = proc("r").getTemplate().getStart().getAttempt().get(0).getOuter();
+        swt.push(r0Switch);
+        Switch f0Switch = proc("f").getTemplate().getStart().getAttempt().get(0).getOuter();
+        swt.push(f0Switch);
         Frame f0 = p.getStart();
         StepAttempt a0 = f0.getAttempt();
         assertEquals(1, a0.size());
-        assertTrue(a0.onSuccess()
-            .isDead());
+        assertTrue(a0.onSuccess().isDead());
         assertEquals(a0.onFailure(), a0.onSuccess());
         Step s0 = a0.get(0);
-        assertEquals(stack, s0.getSwitchStack());
+        assertEquals(swt, s0.getSwitch());
         Frame f1 = s0.onFinish();
         StepAttempt a1 = f1.getAttempt();
-        assertTrue(a1.onSuccess()
-            .isDead());
+        assertTrue(a1.onSuccess().isDead());
         assertEquals(1, a1.size());
         Step s1 = a1.get(0);
-        Switch f1Switch = f0Switch.onFinish()
-            .getAttempt()
-            .get(0)
-            .getBottom();
-        assertDistinct(f1Switch, stack.get(2));
-        SwitchStack f1Stack = new SwitchStack(stack);
-        f1Stack.set(2, f1Switch);
-        assertEquals(f1Stack, s1.getSwitchStack());
+        Switch f1Switch = f0Switch.onFinish().getAttempt().get(0).getOuter();
+        assertDistinct(f1Switch, f0Switch);
+        NestedSwitch f1Stack = new NestedSwitch();
+        f1Stack.push(f1Switch);
+        assertEquals(f1Stack, s1.getSwitch());
         assertEquals(f1, s1.onFinish());
         Frame f2 = a1.onFailure();
         StepAttempt a2 = f2.getAttempt();
         Step s2 = a2.get(0);
-        Switch r2Switch = r0Switch.onFinish()
-            .getAttempt()
-            .get(0)
-            .getBottom();
-        assertDistinct(r2Switch, stack.get(1));
-        SwitchStack r2Stack = new SwitchStack(stack);
-        r2Stack.set(1, r2Switch);
-        assertEquals(r2Stack, s2.getSwitchStack());
+        Switch r2Switch = r0Switch.onFinish().getAttempt().get(0).getOuter();
+        assertDistinct(r2Switch, r0Switch);
+        NestedSwitch r2Stack = new NestedSwitch();
+        r2Stack.push(r2Switch);
+        r2Stack.push(f0Switch);
+        assertEquals(r2Stack, s2.getSwitch());
         assertDistinct(f1, s2.onFinish());
-        assertTrue(a2.onSuccess()
-            .isDead());
-        assertTrue(a2.onFailure()
-            .isFinal());
+        assertTrue(a2.onSuccess().isDead());
+        assertTrue(a2.onFailure().isFinal());
     }
 
     /** Builds an automaton consisting of a single non-trivial recipe. */
@@ -356,58 +283,32 @@ public class AutomatonBuildTest {
         Frame f0 = p.getStart();
         StepAttempt a0 = f0.getAttempt();
         assertEquals(1, a0.size());
-        assertTrue(a0.onSuccess()
-            .isDead());
-        assertTrue(a0.onFailure()
-            .isFinal());
+        assertTrue(a0.onSuccess().isDead());
+        assertTrue(a0.onFailure().isFinal());
         Step s0 = a0.get(0);
-        assertEquals(2,
-            s0.getCallStack()
-                .size());
-        assertEquals(proc("f"),
-            s0.getCallStack()
-                .get(0)
-                .getUnit());
-        assertEquals(rule("a"),
-            s0.getCallStack()
-                .get(1)
-                .getUnit());
+        assertEquals(2, s0.getCall().depth());
+        var s0Iter = s0.getCall().iterator();
+        assertEquals(proc("f"), s0Iter.next().getUnit());
+        assertEquals(rule("a"), s0Iter.next().getUnit());
         Frame f1 = s0.onFinish();
+        var f1Call = f1.getContext().getCall();
+        assertEquals(1, f1Call.depth());
+        assertEquals(proc("f"), f1Call.getOuter().getUnit());
         StepAttempt a1 = f1.getAttempt();
         assertEquals(1, a1.size());
-        assertTrue(a1.onSuccess()
-            .isDead());
+        assertTrue(a1.onSuccess().isDead());
         Step s1 = a1.get(0);
         assertEquals(f1, s1.onFinish());
-        assertEquals(2,
-            s1.getCallStack()
-                .size());
-        assertEquals(proc("f"),
-            s1.getCallStack()
-                .get(0)
-                .getUnit());
-        assertEquals(rule("b"),
-            s1.getCallStack()
-                .get(1)
-                .getUnit());
+        assertEquals(1, s1.getCall().depth());
+        assertEquals(rule("b"), s1.getCall().getOuter().getUnit());
         Frame f2 = a1.onFailure();
         StepAttempt a2 = f2.getAttempt();
         assertEquals(1, a2.size());
-        assertTrue(a2.onSuccess()
-            .isDead());
+        assertTrue(a2.onSuccess().isDead());
         Step s2 = a2.get(0);
         assertEquals(f0, s2.onFinish());
-        assertEquals(2,
-            s2.getCallStack()
-                .size());
-        assertEquals(proc("f"),
-            s2.getCallStack()
-                .get(0)
-                .getUnit());
-        assertEquals(rule("c"),
-            s2.getCallStack()
-                .get(1)
-                .getUnit());
+        assertEquals(1, s2.getCall().depth());
+        assertEquals(rule("c"), s2.getCall().getOuter().getUnit());
         p.explore();
         if (DEBUG) {
             Viewer.showGraph(p.toGraph(FULL_GRAPH), true);
@@ -435,8 +336,7 @@ public class AutomatonBuildTest {
     protected Grammar loadGrammar(String name) {
         Grammar result = null;
         try {
-            result = Groove.loadGrammar(CONTROL_DIR + name)
-                .toGrammar();
+            result = Groove.loadGrammar(CONTROL_DIR + name).toGrammar();
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.toString());
@@ -463,9 +363,8 @@ public class AutomatonBuildTest {
         Automaton result = null;
         try {
             QualName qualControlName = QualName.parse(controlName);
-            Fragment fragment = createLoader().addControl(qualControlName, program)
-                .check()
-                .toFragment();
+            Fragment fragment
+                = createLoader().addControl(qualControlName, program).check().toFragment();
             prog.add(fragment);
             prog.setFixed();
             result = new Automaton(prog);
@@ -529,8 +428,8 @@ public class AutomatonBuildTest {
 
     /** Callback factory method for a loader of the test grammar. */
     protected CtrlLoader createLoader() {
-        CtrlLoader result =
-            new CtrlLoader(this.testGrammar.getProperties(), this.testGrammar.getAllRules());
+        CtrlLoader result
+            = new CtrlLoader(this.testGrammar.getProperties(), this.testGrammar.getAllRules());
         return result;
     }
 

@@ -217,7 +217,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         }
         String suffix = "";
         try {
-            Signature<?> sig = getRule().getSignature();
+            Signature<?> sig = getRule().toResource().getSignature();
             if (!sig.isEmpty()) {
                 suffix = sig.toString();
             }

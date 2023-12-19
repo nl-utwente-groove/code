@@ -21,6 +21,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.Signature;
@@ -33,6 +36,7 @@ import nl.utwente.groove.util.Pair;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comparable<Call> {
     /**
      * Constructs a call of a given unit, with arguments.
@@ -86,25 +90,35 @@ public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comp
     }
 
     /** Returns the mapping of output variables to argument positions of this call. */
-    public Map<CtrlVar,Integer> getOutVars() {
-        if (this.outVars == null) {
+    public Map<CtrlVar,@Nullable Integer> getOutVars() {
+        var result = this.outVars;
+        if (result == null) {
             initVars();
+            result = this.outVars;
+            assert result != null;
         }
-        return this.outVars;
+        return result;
     }
 
+    private @Nullable Map<CtrlVar,@Nullable Integer> outVars;
+
     /** Returns the mapping of input variables to argument positions of this call. */
-    public Map<CtrlVar,Integer> getInVars() {
-        if (this.inVars == null) {
+    public Map<CtrlVar,@Nullable Integer> getInVars() {
+        var result = this.inVars;
+        if (result == null) {
             initVars();
+            result = this.inVars;
+            assert result != null;
         }
-        return this.inVars;
+        return result;
     }
+
+    private @Nullable Map<CtrlVar,@Nullable Integer> inVars;
 
     /** Initialises the input and output variables of this call. */
     private void initVars() {
-        Map<CtrlVar,Integer> outVars = new LinkedHashMap<>();
-        Map<CtrlVar,Integer> inVars = new LinkedHashMap<>();
+        Map<CtrlVar,@Nullable Integer> outVars = new LinkedHashMap<>();
+        Map<CtrlVar,@Nullable Integer> inVars = new LinkedHashMap<>();
         int size = getArgs().size();
         for (int i = 0; i < size; i++) {
             CtrlPar arg = getArgs().get(i);
@@ -122,15 +136,10 @@ public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comp
         this.inVars = inVars;
     }
 
-    private Map<CtrlVar,Integer> inVars;
-    private Map<CtrlVar,Integer> outVars;
-
     /** Computes and inserts the host nodes to be used for constant value arguments. */
     public void initialise(HostFactory factory) {
-        if (getArgs() != null) {
-            for (CtrlPar arg : getArgs()) {
-                arg.initialise(factory);
-            }
+        for (CtrlPar arg : getArgs()) {
+            arg.initialise(factory);
         }
     }
 
@@ -141,23 +150,16 @@ public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comp
 
     @Override
     public int compareTo(Call o) {
-        int result = getUnit().getQualName()
-            .compareTo(o.getUnit()
-                .getQualName());
+        int result = getUnit().getQualName().compareTo(o.getUnit().getQualName());
         if (result != 0) {
             return result;
         }
-        result = getArgs().size() - o.getArgs()
-            .size();
+        result = getArgs().size() - o.getArgs().size();
         if (result != 0) {
             return result;
         }
         for (int i = 0; i < getArgs().size(); i++) {
-            result = getArgs().get(i)
-                .toString()
-                .compareTo(o.getArgs()
-                    .get(i)
-                    .toString());
+            result = getArgs().get(i).toString().compareTo(o.getArgs().get(i).toString());
             if (result != 0) {
                 return result;
             }

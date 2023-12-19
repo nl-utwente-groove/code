@@ -412,12 +412,12 @@ public class Rule implements Action, Fixable {
             RuleNode ruleNode = par.getNode();
             if (par.isCreator() || par.isAsk()) {
                 // look up the node in the creator nodes
-                binding = Binding.creator(creatorNodes.indexOf(ruleNode));
+                binding = Binding.creator(par, creatorNodes.indexOf(ruleNode));
             } else {
                 // look up the node in the anchor
                 int ix = getAnchor().indexOf(ruleNode);
                 assert ix >= 0 : String.format("Node %s not in anchors %s", ruleNode, getAnchor());
-                binding = Binding.anchor(ix);
+                binding = Binding.anchor(par, ix);
             }
             result.add(binding);
         }

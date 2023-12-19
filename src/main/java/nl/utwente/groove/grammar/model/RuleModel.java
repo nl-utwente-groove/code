@@ -254,15 +254,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         return GraphInfo.getFormatString(getSource());
     }
 
-    /** Returns the signature of this rule.
-     * @throws FormatException if the model contains errors that prevent the signature
-     * from being computed
-     */
-    public Signature<UnitPar.RulePar> getSignature() throws FormatException {
-        getErrors().throwException();
-        return new Parameters().getSignature();
-    }
-
     @Override
     Rule compute() throws FormatException {
         this.ruleFactory = RuleFactory.newInstance(getType().getFactory());
@@ -2037,7 +2028,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 }
                 checkTypeSpecialisation(parentNodes, this.lhs, this.rhs);
             } catch (FormatException exc) {
-                this.errors.addAll(exc.getErrors().wrap(this.typeMap));
+                this.errors.addAll(exc.getErrors());
             }
             this.errors.throwException();
             for (Map.Entry<RuleNode,Color> colorEntry : origin.colorMap.entrySet()) {
@@ -2609,7 +2600,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             assert nodeKind != null;
             AspectKind parKind = node.getKind(Category.PARAM);
             assert parKind != null;
-            RuleNode nodeImage = getMap().getNode(node);
+            RuleNode nodeImage = RuleModel.this.modelMap.getNode(node);
             assert nodeImage != null;
             if (parKind == PARAM_IN && nodeKind.isCreator()) {
                 errors.add("Input parameter %d cannot be creator node", nr, node);

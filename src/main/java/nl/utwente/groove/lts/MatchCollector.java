@@ -20,14 +20,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.algebra.Constant;
-import nl.utwente.groove.control.Binding;
 import nl.utwente.groove.control.Call;
-import nl.utwente.groove.control.Valuator;
-import nl.utwente.groove.control.instance.Assignment;
 import nl.utwente.groove.control.instance.Step;
-import nl.utwente.groove.control.template.Switch.ParBinding;
 import nl.utwente.groove.grammar.Rule;
+import nl.utwente.groove.grammar.UnitPar.RulePar;
 import nl.utwente.groove.grammar.host.AnchorValue;
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostGraph;
@@ -87,7 +86,7 @@ public class MatchCollector {
         // save matching time, to reuse added nodes, and to find confluent
         // diamonds. The first is only relevant if the rule is not (re)enabled,
         // the third only if the parent match target is already closed
-        final boolean isDisabled = isDisabled(step.getRuleCall());
+        final boolean isDisabled = isDisabled(step.getInnerCall());
         boolean isModifying = step.isModifying();
         if (!isDisabled) {
             for (GraphTransition trans : this.parentTransMap) {
@@ -106,7 +105,7 @@ public class MatchCollector {
                 }
             }
         }
-        if (isDisabled || isEnabled(step.getRuleCall())) {
+        if (isDisabled || isEnabled(step.getInnerCall())) {
             // the rule was possibly enabled afresh, so we have to add the fresh
             // matches
             RuleToHostMap boundMap = extractBinding(step);
@@ -230,26 +229,27 @@ public class MatchCollector {
      * @return if {@code null}, the binding cannot be constructed and
      * so the rule cannot match
      */
-    private RuleToHostMap extractBinding(Step step) {
+    private @Nullable RuleToHostMap extractBinding(Step step) {
         RuleToHostMap result = this.state.getGraph().getFactory().createRuleToHostMap();
         Object[] sourceValues = this.state.getActualValues();
-        for (Assignment assign : step.getEnterAssignments()) {
-            sourceValues = assign.compute(sourceValues);
-        }
-        for (ParBinding entry : step.getRuleSwitch().getCallBinding()) {
-            Binding bind = entry.bind();
-            if (bind == null) {
+        for (var bind : step.getParAssign()) {
+            HostNode value;
+            switch (bind.type()) {
+            case CONST:
+                value = bind.value().getNode();
+                break;
+            case VAR:
+                value = bind.get(sourceValues);
+                break;
+            case NONE:
                 // this corresponds to an output parameter of the call
                 continue;
+            default:
+                throw Exceptions
+                    .illegalState("Input parameter binding %s should be constant or initialised variable",
+                                  bind);
             }
-            HostNode value = switch (bind.type()) {
-            case CONST -> bind.value().getNode();
-            case VAR -> Valuator.get(sourceValues, bind);
-            default -> throw Exceptions
-                .illegalState("Input parameter %s should be constant or initialised variable",
-                              entry.par());
-            };
-            RuleNode ruleNode = entry.par().getNode();
+            RuleNode ruleNode = ((RulePar) bind.par()).getNode();
             if (isCompatible(ruleNode, value)) {
                 result.putNode(ruleNode, value);
             } else {

@@ -29,6 +29,7 @@ import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -515,6 +516,30 @@ public class Groove {
     static public <T> @NonNull T nn(T value) {
         assert value != null;
         return value;
+    }
+
+    /** Hashcode for collections that don't do content-based hashing. */
+    static public int hashCode(Collection<?> collection) {
+        int result = 1;
+        for (var sw : collection) {
+            result = 31 * result + sw.hashCode();
+        }
+        return result;
+    }
+
+    /** Equality method for collections that don't do content-based equality. */
+    static public boolean equals(Collection<?> coll1, Collection<?> coll2) {
+        if (coll1.size() != coll2.size()) {
+            return false;
+        }
+        var iter1 = coll1.iterator();
+        var iter2 = coll2.iterator();
+        while (iter1.hasNext()) {
+            if (!iter1.next().equals(iter2.next())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     // Platform dependent information.

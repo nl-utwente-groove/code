@@ -17,31 +17,33 @@
 package nl.utwente.groove.control.term;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.control.Attempt;
 import nl.utwente.groove.control.Call;
-import nl.utwente.groove.control.CallStack;
+import nl.utwente.groove.control.NestedCall;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.Pair;
 
 /**
  * Symbolic derivation of a term.
- * This is a pair of the control call and the target term.
+ * This is a pair of the inner control call and the target term.
  * @author Arend Rensink
  * @version $Revision$
  */
 @NonNullByDefault
 public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,Derivation> {
     /**
-     * Constructs a derivation out of a call and a target term,
-     * with a given caller.
+     * Constructs a derivation out of an (outer) call and a target term,
+     * with an optional nested (inner) derivation.
      */
-    public Derivation(Call call, int depth, Term target, @Nullable Derivation nested) {
-        super(call, target);
-        this.depth = depth;
+    public Derivation(Call outer, int depth, Term target, @Nullable Derivation nested) {
+        super(outer, target);
+        this.transience = depth;
         this.nested = Groove.ofNullable(nested);
     }
 
@@ -53,8 +55,8 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
     }
 
     @Override
-    public Call getRuleCall() {
-        return getStack().peekLast().getCall();
+    public Call getInnerCall() {
+        return getCall().getInner();
     }
 
     /**
@@ -63,7 +65,7 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
      * then this is a procedure call, otherwise it is a rule call
      * (identical to #getRuleCall())
      */
-    public Call getCall() {
+    public Call getOuterCall() {
         return one();
     }
 
@@ -77,32 +79,36 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
 
     @Override
     public int getTransience() {
-        return this.depth;
+        return this.transience;
     }
 
-    private final int depth;
+    private final int transience;
 
-    /** Returns the optional nested derivation of this derivation. */
+    /** Returns the optional nested (inner) derivation of this derivation. */
     public Optional<Derivation> getNested() {
         return this.nested;
     }
 
     private final Optional<Derivation> nested;
 
-    /** Returns the stack of derivations of which this is the top element. */
-    public DerivationStack getStack() {
-        var result = this.stack;
-        if (result == null) {
-            this.stack = result = new DerivationStack(this);
-        }
-        return result;
+    @Override
+    public NestedCall getCall() {
+        return this.call.get();
     }
 
-    private @Nullable DerivationStack stack;
+    /** The nested call of this derivation. */
+    private Supplier<NestedCall> call = LazyFactory.instance(this::computeCall);
 
-    @Override
-    public CallStack getCallStack() {
-        return getStack().getCallStack();
+    /** Computes the value for {@link #call}. */
+    private NestedCall computeCall() {
+        var result = new NestedCall();
+        result.push(one());
+        var derivation = this;
+        while (derivation.getNested().isPresent()) {
+            derivation = derivation.getNested().get();
+            result.push(derivation.one());
+        }
+        return result;
     }
 
     /** Creates a new derivation, with the call and derivation stack of this one but another target term. */
@@ -110,16 +116,15 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
         int depth = getTransience() + (enterAtom
             ? 1
             : 0);
-        return new Derivation(getCall(), depth, target, Groove.orElse(getNested(), null));
+        return new Derivation(getOuterCall(), depth, target, Groove.orElse(getNested(), null));
     }
 
     /**
-     * Creates a new derivation, with a given nested call at the top of
-     * the call stack.
+     * Creates a new derivation, pushing a given derivation to the top of the nested derivation stack.
      */
     public Derivation newInstance(Derivation nested) {
         var newNested = getNested().map(n -> n.newInstance(nested)).orElse(nested);
-        return new Derivation(getCall(), getTransience(), onFinish(), newNested);
+        return new Derivation(getOuterCall(), getTransience(), onFinish(), newNested);
     }
 
     @Override
