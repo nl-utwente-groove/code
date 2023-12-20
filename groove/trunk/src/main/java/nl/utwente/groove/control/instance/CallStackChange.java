@@ -29,7 +29,6 @@ import nl.utwente.groove.control.Binding.Source;
 import nl.utwente.groove.control.CallStack;
 import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.Procedure;
-import nl.utwente.groove.control.instance.CallStackChange.Kind;
 import nl.utwente.groove.control.template.Location;
 import nl.utwente.groove.control.template.NestedSwitch;
 import nl.utwente.groove.control.template.Switch;

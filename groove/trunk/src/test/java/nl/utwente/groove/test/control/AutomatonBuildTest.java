@@ -158,9 +158,6 @@ public class AutomatonBuildTest {
         Step s5 = f5.getAttempt().get(0);
         Frame f6 = s5.onFinish();
         //
-        var oNode = p.getProgram().getTemplate().getAction(QualName.name("oNode"));
-        var oNode0 = oNode.getSignature().getPar(0);
-        //
         var n = new CtrlVar(null, "n", CtrlType.NODE);
         var fx = new CtrlVar(new QualName("f"), "fx", CtrlType.NODE);
         var fy = new CtrlVar(new QualName("f"), "fy", CtrlType.NODE);

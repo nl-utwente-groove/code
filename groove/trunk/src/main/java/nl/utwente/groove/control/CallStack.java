@@ -63,17 +63,14 @@ public class CallStack {
     /**
      * Replaces the current top-level values of a given call stack by the non-{@code null}
      * elements of a new top level, and returns the resulting call stack.
-     * <i>Note</i>: this is an in-place modification, and the returned call stack
-     * is an alias of the original stack.
      */
     public static Object[] modify(Object[] stack, Object[] top) {
         for (int i = 0; i < top.length; i++) {
-            var val = top[i];
-            if (val != null) {
-                stack[i] = val;
+            if (top[i] == null) {
+                top[i] = stack[i];
             }
         }
-        return stack;
+        return replace(stack, top);
     }
 
     /**
