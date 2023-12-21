@@ -167,27 +167,53 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      * based on the source variables of the outer call.
      */
     public Assignment getParAssign() {
-        return this.parAssign.get();
+        return this.assignSource2Par.get();
     }
 
     /** Lazily computed assignment to the parameters of the inner call of this step,
      * based on the source variables of the outer call.
      */
-    private final Supplier<Assignment> parAssign = LazyFactory.instance(this::computeParAssign);
+    private final Supplier<Assignment> assignSource2Par
+        = LazyFactory.instance(this::computeParAssign);
 
-    /** Computes the value for {@link #parAssign}. */
+    /** Computes the value for {@link #assignSource2Par}. */
     private Assignment computeParAssign() {
         var switchIter = getSwitch().outIterator();
-        var result = switchIter.next().getParAssign();
+        var result = switchIter.next().assignSource2Par();
         while (switchIter.hasNext()) {
-            result = result.then(switchIter.next().getCalleeAssign());
+            result = result.after(switchIter.next().assignSource2Init());
         }
         return result;
     }
 
     /**
+     * Computes the call stack change for this step that creates the initial target stack.
+     * Output parameters of the outer calls as as yet unknown and hence not yet entered.
+     * For all but the outer and inner switch of the step, the assignment pushes a new level onto the
+     * call stack; for the outer switch, it modifies the call frame at the current top of the stack.
+     * All (modified or pushed) levels are assignments to the target variables of the
+     * respective switch.
+     */
+    public CallStackChange changeOnEnter() {
+        NestedSwitch swt = getSwitch();
+        Assignment[] result = new Assignment[swt.size()];
+        Assignment sourceAssign = Assignment.identity(getSource().getVars());
+        var iter = swt.iterator();
+        int i = 0;
+        while (iter.hasNext()) {
+            Switch s = iter.next();
+            result[i] = s.assignSource2Target().after(sourceAssign);
+            if (iter.hasNext()) {
+                sourceAssign = s.assignSource2Init().after(sourceAssign);
+                i++;
+            }
+        }
+        return CallStackChange.push(result);
+    }
+
+    /**
      * Returns the list of call stack changes involved in applying this step.
-     * These consist pushes due to fresh
+     * These consist of pushes due to fresh
      * procedure calls, followed by the action of this step, followed by pops due to
      * procedures explicitly exited by this step.
      */
@@ -197,11 +223,12 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
 
     private Supplier<List<CallStackChange>> applyChanges = lazyFactory(this::computeApplyChanges);
 
+    /** Computes the value of {@link #applyChanges}. */
     private List<CallStackChange> computeApplyChanges() {
         List<CallStackChange> result = new ArrayList<>();
         // add modification and push actions for every successive call on the
         // stack of entered calls
-        result.add(CallStackChange.enter(this));
+        result.add(changeOnEnter());
         // add exit actions for the calls that are finished;
         // those might include calls from the context
         var exitCount
@@ -209,11 +236,11 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
         var outIter = Stream
             .concat(getSwitch().outStream(), getSource().getContext().outStream())
             .iterator();
-        var callee = outIter.next();
+        var exit = outIter.next().onFinish();
         while (result.size() < exitCount) {
             var caller = outIter.next();
-            result.add(CallStackChange.exit(callee.onFinish(), caller));
-            callee = caller;
+            result.add(caller.assignFinal2Target(exit).toPop());
+            exit = caller.onFinish();
         }
         return result;
     }

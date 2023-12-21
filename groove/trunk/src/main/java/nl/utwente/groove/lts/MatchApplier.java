@@ -116,7 +116,7 @@ public class MatchApplier {
                                        MatchResult match) throws InterruptedException {
         @NonNull
         HostNode[] addedNodes;
-        Object[] frameValues;
+        Object[] stack;
         RuleEvent event = match.getEvent();
         Step ctrlStep = match.getStep();
         boolean hasFrameValues = ctrlStep.onFinish().hasVars();
@@ -143,12 +143,12 @@ public class MatchApplier {
                 event.recordEffect(effectRecord);
                 effectRecord.setFixed();
             }
-            frameValues = computeFrameValues(ctrlStep, source, event, effectRecord);
+            stack = computeTargetStack(ctrlStep, source, event, effectRecord);
         } else {
-            frameValues = EMPTY_NODE_ARRAY;
+            stack = EMPTY_NODE_ARRAY;
         }
         return new DefaultGraphNextState(this.gts.nodeCount(), (AbstractGraphState) source, match,
-            addedNodes, frameValues);
+            addedNodes, stack);
     }
 
     /**
@@ -202,10 +202,12 @@ public class MatchApplier {
         return sourceEvent != matchEvent;
     }
 
-    /** Computes the value stack for the target state of a given rule transition. */
-    private Object[] computeFrameValues(Step step, GraphState source, RuleEvent event,
+    /** Computes the prime call stack for the target state of a given rule transition. */
+    private Object[] computeTargetStack(Step step, GraphState source, RuleEvent event,
                                         RuleEffect record) {
-        Object[] result = source.getActualValues();
+        // we assume that the actual frame of the source state equals the source frame of the step
+        assert source.getActualFrame() == step.getSource();
+        Object[] result = source.getActualStack();
         if (!record.isNodeId()) {
             // map the entire valuation stack through the node mapping of the record
             result = CallStack.map(result, record::mapNode);
@@ -222,8 +224,8 @@ public class MatchApplier {
             default -> throw Exceptions.illegalArg("Function not applicable to binding %s", b);
             };
         });
-        for (CallStackChange assign : step.getApplyChanges()) {
-            result = assign.apply(result, getValue);
+        for (CallStackChange change : step.getApplyChanges()) {
+            result = change.apply(result, getValue);
         }
         return result;
     }

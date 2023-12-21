@@ -16,25 +16,28 @@
  */
 package nl.utwente.groove.lts;
 
-import nl.utwente.groove.control.template.Switch;
-import nl.utwente.groove.grammar.Callable.Kind;
+import java.util.Arrays;
+
 import nl.utwente.groove.grammar.Recipe;
+import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.transform.Event;
 
 /** Event class for recipe transitions. */
 public class RecipeEvent implements GraphTransitionStub, Event, GraphTransitionKey {
     /** Constructs an instance from a recipe transition. */
     public RecipeEvent(RecipeTransition trans) {
-        this.recipeSwitch = trans.getSwitch();
-        assert this.recipeSwitch.getKind() == Kind.RECIPE;
+        this.recipe = (Recipe) trans.getSwitch().getUnit();
         this.initial = trans.getInitial().toStub();
         this.target = trans.target();
+        this.arguments = trans.getArguments();
     }
 
     @Override
     public Recipe getAction() {
-        return (Recipe) this.recipeSwitch.getUnit();
+        return this.recipe;
     }
+
+    private final Recipe recipe;
 
     @Override
     public RecipeEvent getEvent() {
@@ -62,16 +65,8 @@ public class RecipeEvent implements GraphTransitionStub, Event, GraphTransitionK
 
     @Override
     public RecipeTransition toTransition(GraphState source) {
-        return new RecipeTransition(this.initial.toTransition(source), this.target);
+        return new RecipeTransition(source, this);
     }
-
-    /** Returns the switch corresponding to the invocation wrapped in this event. */
-    public Switch getSwitch() {
-        return this.recipeSwitch;
-    }
-
-    /** The invocation wrapped in this event. */
-    private final Switch recipeSwitch;
 
     /** Returns the initial transition for this event. */
     public RuleTransitionStub getInitial() {
@@ -81,13 +76,23 @@ public class RecipeEvent implements GraphTransitionStub, Event, GraphTransitionK
     /** Initial rule transition of the event. */
     private final RuleTransitionStub initial;
 
+    /**
+     * Returns the arguments of the transition.
+     */
+    public HostNode[] getArguments() {
+        return this.arguments;
+    }
+
+    /** The arguments of the transition. */
+    private final HostNode[] arguments;
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + this.recipeSwitch.hashCode();
         result = prime * result + this.initial.hashCode();
         result = prime * result + this.target.hashCode();
+        result = prime * result + Arrays.hashCode(this.arguments);
         return result;
     }
 
@@ -102,13 +107,13 @@ public class RecipeEvent implements GraphTransitionStub, Event, GraphTransitionK
         if (!(obj instanceof RecipeEvent other)) {
             return false;
         }
-        if (!this.recipeSwitch.equals(other.recipeSwitch)) {
-            return false;
-        }
         if (!this.initial.equals(other.initial)) {
             return false;
         }
         if (!this.target.equals(other.target)) {
+            return false;
+        }
+        if (!Arrays.equals(this.arguments, other.arguments)) {
             return false;
         }
         return true;
@@ -116,7 +121,7 @@ public class RecipeEvent implements GraphTransitionStub, Event, GraphTransitionK
 
     @Override
     public String toString() {
-        return "RecipeEvent [target=" + this.target + ", recipeSwitch=" + this.recipeSwitch
-            + ", initial=" + this.initial + "]";
+        return "RecipeEvent [target=" + this.target + ", initial=" + this.initial + ", arguments="
+            + Arrays.toString(this.arguments) + "]";
     }
 }

@@ -48,7 +48,7 @@ public class DefaultGraphNextState extends AbstractGraphState
         this.addedNodes = addedNodes;
         this.step = match.getStep();
         setFrame(this.step.onFinish());
-        this.frameValues = frameValues;
+        this.callStack = frameValues;
         if (DEBUG) {
             System.out.printf("Created state %s from %s:%n", this, source);
             System.out.printf("  Graph: %s%n", source.getGraph());
@@ -73,8 +73,8 @@ public class DefaultGraphNextState extends AbstractGraphState
     }
 
     @Override
-    public Object[] getPrimeValues() {
-        return this.frameValues;
+    public Object[] getPrimeStack() {
+        return this.callStack;
     }
 
     /**
@@ -292,7 +292,7 @@ public class DefaultGraphNextState extends AbstractGraphState
     }
 
     /** Keeps track of bound variables */
-    private Object[] frameValues;
+    private Object[] callStack;
     /**
      * The rule of the incoming transition with which this state was created.
      */

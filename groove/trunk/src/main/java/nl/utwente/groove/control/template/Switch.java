@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.control.template;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -122,58 +123,14 @@ public class Switch implements Comparable<Switch>, Relocatable {
 
     private final int transience;
 
-    /** Returns the assignment to source variables of the initial location of
-     * the callee template, based on source variables of this switch and
-     * constant arguments of the call.
-     * This is only valid if the callee is a procedure.
-     */
-    public Assignment getCalleeAssign() {
-        Procedure callee = (Procedure) getUnit();
-        Template template = callee.getTemplate();
-        return template.getSourceAssign().then(getParAssign());
-    }
-
-    /**
-     * Returns an assignment to the target variables of this
-     * switch, based on the source variables and the output parameters of the call.
-     * If the switch is a rule call, the output parameter values
-     * are available at the moment of applying the assignment and
-     * can be retrieved from the rule application; if it is a procedure
-     * call, the output parameter values are not yet available and will
-     * be set to {@code null}.
-     */
-    public Assignment getTargetAssign() {
-        Assignment result = new Assignment();
-        var sourceVars = getSource().getVarIxMap();
-        Map<CtrlVar,Integer> outVars = getCall().getOutVars();
-        for (CtrlVar var : onFinish().getVars()) {
-            Integer ix = outVars.get(var);
-            Binding rhs;
-            if (ix == null) {
-                // the value comes from the source variables
-                int pos = sourceVars.get(var);
-                assert pos >= 0;
-                rhs = Binding.var(var, pos);
-            } else if (getUnit() instanceof Rule rule) {
-                // the value is an output parameter of the rule
-                rhs = Binding.bind(var, rule.getParBinding(ix));
-                assert rhs != null;
-            } else {
-                rhs = Binding.none(var);
-            }
-            result.add(rhs);
-        }
-        return result;
-    }
-
     /**
      * Returns an assignment to the formal parameters of the call, based on
      * bindings to source location variables and constant values derived
      * from the arguments.
      * The binding is {@link Source#NONE} for output parameters and wildcard arguments
      */
-    public Assignment getParAssign() {
-        return this.parAssign.get();
+    public Assignment assignSource2Par() {
+        return this.assignSource2Par.get();
     }
 
     /** Lazily computed assignment to the formal parameters of the call, based on
@@ -181,12 +138,13 @@ public class Switch implements Comparable<Switch>, Relocatable {
      * from the arguments.
      * The binding is {@link Source#NONE} for output parameters and wildcard arguments
      */
-    private Supplier<Assignment> parAssign = LazyFactory.instance(this::computeParAssign);
+    private Supplier<Assignment> assignSource2Par
+        = LazyFactory.instance(this::computeAssignSource2Par);
 
     /**
-     * Computes the value for {@link #parAssign}.
+     * Computes the value for {@link #assignSource2Par}.
      */
-    private Assignment computeParAssign() {
+    private Assignment computeAssignSource2Par() {
         Assignment result = new Assignment();
         List<? extends CtrlPar> args = getArgs();
         Signature<? extends UnitPar> sig = getUnit().getSignature();
@@ -218,6 +176,116 @@ public class Switch implements Comparable<Switch>, Relocatable {
             result.add(bind);
         }
         return result;
+    }
+
+    /**
+     * Returns an assignment to the target variables of this
+     * switch, based on the source variables complemented with
+     * the output parameters of the call, insofar available.
+     * If the switch is a rule call, the output parameter values
+     * are available at the moment of applying the assignment and
+     * can be retrieved from the rule application; if it is a procedure
+     * call, the output parameter values are not yet available and will
+     * be set to {@code null}.
+     */
+    public Assignment assignSource2Target() {
+        return this.assignSource2Target.get();
+    }
+
+    /**
+     * Lazily computed assignment to the target variables of this
+     * switch, based on the source variables complemented with
+     * the output parameters of the call, insofar available.
+     * If the switch is a rule call, the output parameter values
+     * are available at the moment of applying the assignment and
+     * can be retrieved from the rule application; if it is a procedure
+     * call, the output parameter values are not yet available and will
+     * be set to {@code null}.
+     */
+    private final Supplier<Assignment> assignSource2Target
+        = LazyFactory.instance(this::computeAssignSource2Target);
+
+    /**
+     * Computes the value for {@link #assignSource2Target}
+     */
+    private Assignment computeAssignSource2Target() {
+        Assignment result = new Assignment();
+        var sourceVars = getSource().getVarIxMap();
+        Map<CtrlVar,Integer> outVars = getCall().getOutVars();
+        for (CtrlVar var : onFinish().getVars()) {
+            Integer ix = outVars.get(var);
+            Binding rhs;
+            if (ix == null) {
+                // the value comes from the source variables
+                int pos = sourceVars.get(var);
+                assert pos >= 0;
+                rhs = Binding.var(var, pos);
+            } else if (getUnit() instanceof Rule rule) {
+                // the value is an output parameter of the rule
+                rhs = rule.getParBinding(ix).withTarget(var);
+                assert rhs != null;
+            } else {
+                // the value is an output parameter of the procedure
+                rhs = Binding.none(var);
+            }
+            result.add(rhs);
+        }
+        return result;
+    }
+
+    /**
+     * Returns an assignment to the target variables of this
+     * switch, based on the output parameters of the (procedure) call.
+     * This is only valid if this switch contains a procedure call.
+     */
+    public Assignment assignPar2Target() {
+        return this.assignPar2Target.get();
+    }
+
+    /**
+     * Lazily computed assignment to the target variables of this
+     * switch, based on the output parameters of the (procedure) call.
+     * This is only valid if this switch contains a procedure call.
+     */
+    private final Supplier<Assignment> assignPar2Target
+        = LazyFactory.instance(this::computeAssignPar2Target);
+
+    /** Computes the value for {@link #assignPar2Target}. */
+    private Assignment computeAssignPar2Target() {
+        assert getKind().isProcedure();
+        var outParMap = ((Procedure) getUnit()).getOutPars();
+        List<Binding> bindings = new ArrayList<>();
+        for (var var : onFinish().getVars()) {
+            var parIx = outParMap.get(var);
+            Binding bind;
+            if (parIx == null) {
+                bind = Binding.none(var);
+            } else {
+                bind = Binding.var(var, parIx);
+            }
+            bindings.add(bind);
+        }
+        return new Assignment(bindings);
+    }
+
+    /** Returns the assignment to source variables of the initial location of
+     * the callee template, based on source variables of this switch and
+     * constant arguments of the call.
+     * This is only valid if the callee is a procedure.
+     */
+    public Assignment assignSource2Init() {
+        Procedure callee = (Procedure) getUnit();
+        Template template = callee.getTemplate();
+        return template.getStart().assignPar2Init().after(assignSource2Par());
+    }
+
+    /** Returns an assignment to the target variables of this switch, based on
+     * the variables in a final location of the called procedure.
+     * This is only valid if this switch is a procedure call.
+     * @param exit the final location of the called procedure template
+     */
+    public Assignment assignFinal2Target(Location exit) {
+        return assignPar2Target().after(exit.assignFinal2Par());
     }
 
     @Override

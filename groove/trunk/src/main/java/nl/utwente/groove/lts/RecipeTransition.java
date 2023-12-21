@@ -28,14 +28,7 @@ import java.util.Stack;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.control.CallStack;
-import nl.utwente.groove.control.CtrlPar;
-import nl.utwente.groove.control.CtrlPar.Const;
-import nl.utwente.groove.control.CtrlPar.Var;
-import nl.utwente.groove.control.CtrlPar.Wild;
-import nl.utwente.groove.control.CtrlVar;
-import nl.utwente.groove.control.instance.CallStackChange;
-import nl.utwente.groove.control.template.NestedSwitch;
+import nl.utwente.groove.control.Assignment;
 import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.Recipe;
@@ -62,20 +55,20 @@ public class RecipeTransition extends ALabelEdge<GraphState>
      * a given source and target state, on the basis of
      * an initial underlying rule transition.
      */
-    public RecipeTransition(RuleTransition initial, GraphState target) {
+    public RecipeTransition(RuleTransition initial, HostNode[] outValues, GraphState target) {
         super(initial.source(), target);
         this.initial = initial;
+        this.arguments = computeArguments(outValues);
         assert initial.source().isRealState();
-        NestedSwitch initialSwitch = initial.getStep().getSwitch();
-        var iter = initialSwitch.iterator();
-        Switch recipeSwitch = iter.next();
-        int recipeDepth = 0;
-        while (recipeSwitch.getKind() != Kind.RECIPE) {
-            recipeSwitch = iter.next();
-            recipeDepth++;
-        }
-        this.recipeDepth = recipeDepth;
-        this.recipeSwitch = recipeSwitch;
+    }
+
+    /**
+     * Reconstructs a recipe transition from a recipe event.
+     */
+    public RecipeTransition(GraphState source, RecipeEvent event) {
+        super(source, event.getTarget());
+        this.initial = event.getInitial().toTransition(source);
+        this.arguments = event.getArguments();
     }
 
     @Override
@@ -98,15 +91,22 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         return (Recipe) getSwitch().getUnit();
     }
 
-    /** Returns the control switch instantiated by this transition. */
     @Override
     public Switch getSwitch() {
-        return this.recipeSwitch;
+        var result = this.recipeSwitch;
+        if (result == null) {
+            result = this.recipeSwitch = getInitial()
+                .getStep()
+                .getSwitch()
+                .stream()
+                .filter(swt -> swt.getKind() == Kind.RECIPE)
+                .findFirst()
+                .get();
+        }
+        return result;
     }
 
-    private final Switch recipeSwitch;
-    /** Depth of the recipe switch in the initial call of this transition. */
-    private final int recipeDepth;
+    private @Nullable Switch recipeSwitch;
 
     @Override
     public RecipeEvent getEvent() {
@@ -234,47 +234,45 @@ public class RecipeTransition extends ALabelEdge<GraphState>
 
     @Override
     public HostNode[] getArguments() {
-        List<? extends CtrlPar> args = getSwitch().getArgs();
-        HostNode[] result = new HostNode[args.size()];
-        for (int i = 0; i < args.size(); i++) {
-            CtrlPar arg = args.get(i);
-            HostNode node;
-            if (arg instanceof Const c) {
-                node = c.getNode();
-            } else if (arg instanceof Wild) {
-                node = null;
-            } else if (arg instanceof Var v) {
-                CtrlVar var = v.var();
-                if (arg.inOnly()) {
-                    int varIndex = getSwitch().getSource().getVars().indexOf(var);
-                    node = CallStack.get(source().getPrimeValues(), varIndex);
-                } else {
-                    assert arg.outOnly();
-                    Map<CtrlVar,Integer> varIxMap = getSwitch().onFinish().getVarIxMap();
-                    int varIndex = varIxMap.get(var);
-                    Object[] values = getFrameValues();
-                    node = CallStack.get(values, varIndex);
-                }
-            } else {
-                throw Exceptions.UNREACHABLE;
-            }
-            result[i] = node;
-        }
-        return result;
+        return this.arguments;
     }
 
-    /** Retrieves the frame values of the target state
-     * popped to the level corresponding to the switch' target location.
+    /** Array of out-parameter values, containing one element per out-parameter. */
+    private final HostNode[] arguments;
+
+    /** Computes the arguments of this recipe transition,
+     * based on a given array of out-parameter values.
+     * @param outValues array sized to the number of arguments of this transition,
+     * with {@code null} values for the in-parameters and concrete values for
+     * the out-parameters.
      */
-    private Object[] getFrameValues() {
-        Object[] result = target().getPrimeValues();
-        List<CallStackChange> pops = target().getActualFrame().getPops();
-        int popCount = target().getActualFrame().getNestingDepth() - this.recipeDepth;
-        assert popCount <= pops.size();
-        for (int i = 0; i < popCount; i++) {
-            result = pops.get(i).apply(result);
+    private HostNode[] computeArguments(HostNode[] outValues) {
+        int argCount = outValues.length;
+        if (argCount == 0) {
+            return EMPTY_OUT_VALUES;
         }
-        return result;
+        // the transition has at least one argument
+        var initStep = getInitial().getStep();
+        var sourceFrame = initStep.getSource();
+        Object[] stack = source().getFrameStack(sourceFrame);
+        // construct the parameter assignment from the source frame of the initial step
+        var assign = Assignment.identity(sourceFrame.getVars());
+        for (Switch swt : initStep.getSwitch()) {
+            if (swt == getSwitch()) {
+                assign = swt.assignSource2Par().after(assign);
+                break;
+            } else {
+                assign = swt.assignSource2Init().after(assign);
+            }
+        }
+        var inValues = assign.apply(stack);
+        assert inValues.length == argCount;
+        for (int i = 0; i < argCount; i++) {
+            if (inValues[i] == null) {
+                inValues[i] = outValues[i];
+            }
+        }
+        return inValues;
     }
 
     @Override
@@ -382,4 +380,6 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         return other instanceof RecipeTransition
             && ((RecipeTransition) other).initial.equals(this.initial);
     }
+
+    static private final HostNode[] EMPTY_OUT_VALUES = new HostNode[0];
 }
