@@ -29,8 +29,8 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.control.Binding.Source;
-import nl.utwente.groove.control.template.Switch;
-import nl.utwente.groove.grammar.Rule;
+import nl.utwente.groove.control.instance.CallStackChange;
+import nl.utwente.groove.control.instance.CallStackChange.Kind;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.util.LazyFactory;
 
@@ -45,7 +45,7 @@ public class Assignment implements Iterable<Binding> {
      * Creates an initially empty assignment.
      */
     public Assignment() {
-        this(Arrays.asList());
+        this(new ArrayList<>());
     }
 
     /**
@@ -63,6 +63,14 @@ public class Assignment implements Iterable<Binding> {
     }
 
     private final List<Binding> bindings;
+
+    /** Returns a binding based on this one, in which the values are retrieved
+     * from a given call stack depth. */
+    public Assignment toDepth(int depth) {
+        Assignment result = new Assignment();
+        stream().map(b -> b.toDepth(depth)).forEach(result::add);
+        return result;
+    }
 
     /** Adds a binding to this assignmnent. */
     public void add(Binding bind) {
@@ -91,23 +99,28 @@ public class Assignment implements Iterable<Binding> {
         return this.bindings.iterator();
     }
 
-    /** Concatenates this assignment with another.
+    /** Concatenates this assignment with another, by applying this one after the other.
      * This results in a new assignment, in which each {@link Source#VAR} binding
      * of this one (call it {@code b}) is replaced with the binding in {@code other}
      * at index {@code b.index()}.
      * @param other the other assignment, to be applied after this one
      * @return the new assignment
      */
-    public Assignment then(Assignment other) {
+    public Assignment after(Assignment other) {
         Assignment result = new Assignment();
         for (Binding bind : this.bindings) {
             if (bind.type() == Source.VAR) {
-                result.add(bind.then(other));
+                result.add(bind.after(other));
             } else {
                 result.add(bind);
             }
         }
         return result;
+    }
+
+    /** Returns a change of type {@link Kind#POP} based on this assignment. */
+    public CallStackChange toPop() {
+        return CallStackChange.pop(this);
     }
 
     /** Indicates if all the bindings in this assignment are {@link Source#NONE}. */
@@ -192,38 +205,6 @@ public class Assignment implements Iterable<Binding> {
     @Override
     public String toString() {
         return this.bindings.toString();
-    }
-
-    /**
-     * Returns an assignment to the target variables of a
-     * switch, based on the source variables and the output parameters of the call.
-     * If the switch is a rule call, the output parameter values
-     * are available at the moment of applying the assignment and
-     * can be retrieved from the rule application; if it is a procedure
-     * call, the output parameter values are not yet available and will
-     * be set to {@code null}.
-     */
-    static public Assignment process(Switch swit) {
-        Assignment result = new Assignment();
-        var sourceVars = swit.getSource().getVarIxMap();
-        var outVars = swit.getCall().getOutVars();
-        for (CtrlVar var : swit.onFinish().getVars()) {
-            Integer ix = outVars.get(var);
-            Binding rhs;
-            if (ix == null) {
-                // the value comes from the source
-                int pos = sourceVars.get(var);
-                assert pos >= 0;
-                rhs = Binding.var(var, pos);
-            } else if (swit.getUnit() instanceof Rule rule) {
-                // the value is an output parameter of the rule
-                rhs = rule.getParBinding(ix);
-            } else {
-                rhs = Binding.none(var);
-            }
-            result.add(rhs);
-        }
-        return result;
     }
 
     /** Returns an identity assignment of a given size. */

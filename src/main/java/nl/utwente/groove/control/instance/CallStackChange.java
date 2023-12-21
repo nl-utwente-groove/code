@@ -49,19 +49,6 @@ public record CallStackChange(Kind kind, List<Assignment> assigns) {
         this(kind, Arrays.asList(assigns));
     }
 
-    /**
-     * Applies this assignment to a given frame
-     * valuation, and returns the modified frame valuation.
-     * Only valid for {@link Kind#POP} and {@link Kind#PUSH} assignments;
-     * use {@link #apply(Object[], Function)} with non-{@code null} parameter
-     * retrieval function to apply {@link Kind#REPLACE}.
-     * @return the frame valuation stack obtained by applying this assignment
-     */
-    public Object[] apply(Object[] stack) {
-        assert kind() != Kind.REPLACE;
-        return apply(stack, null);
-    }
-
     /** Returns the first assignment in this change. */
     public Assignment assign() {
         return assign(0);
@@ -73,12 +60,25 @@ public record CallStackChange(Kind kind, List<Assignment> assigns) {
     }
 
     /**
-     * Applies this assignment to a given frame
-     * value stack, and returns the modified value stack.
-     * @param stack the current frame value stack
-     * @param getPar function retrieving the value of {@link Source#CREATOR} and
+     * Applies this change to a given call stack
+     * and returns the modified stack.
+     * Only valid for {@link Kind#POP} and {@link Kind#PUSH} assignments;
+     * use {@link #apply(Object[], Function)} with non-{@code null} parameter
+     * retrieval function to apply {@link Kind#REPLACE}.
+     * @return the call stack obtained by applying this change
+     */
+    public Object[] apply(Object[] stack) {
+        assert kind() != Kind.REPLACE;
+        return apply(stack, null);
+    }
+
+    /**
+     * Applies this change to a given call
+     * stack, and returns the modified stack.
+     * @param stack the current call stack
+     * @param getPar optional function retrieving the value of {@link Source#CREATOR} and
      * {@link Source#ANCHOR} bindings.
-     * @return the frame value stack obtained by applying this assignment
+     * @return the call stack obtained by applying this assignment
      */
     public Object[] apply(Object[] stack, @Nullable Function<Binding,HostNode> getPar) {
         Object[] result;
@@ -100,11 +100,11 @@ public record CallStackChange(Kind kind, List<Assignment> assigns) {
             }
             break;
         case REPLACE:
-            if (!assign().isIdentity()) {
+            if (assign().isIdentity()) {
+                result = stack;
+            } else {
                 HostNode[] newTop = assign().apply(stack, getPar);
                 result = CallStack.replace(stack, newTop);
-            } else {
-                result = stack;
             }
             break;
         default:
@@ -163,9 +163,9 @@ public record CallStackChange(Kind kind, List<Assignment> assigns) {
         int i = 0;
         while (iter.hasNext()) {
             Switch s = iter.next();
-            result[i] = s.getTargetAssign().then(sourceAssign);
+            result[i] = s.assignSource2Target().after(sourceAssign);
             if (iter.hasNext()) {
-                sourceAssign = s.getCalleeAssign().then(sourceAssign);
+                sourceAssign = s.assignSource2Init().after(sourceAssign);
                 i++;
             }
         }
@@ -173,8 +173,8 @@ public record CallStackChange(Kind kind, List<Assignment> assigns) {
     }
 
     /**
-     * Computes the variable assignment for the target location of a caller
-     * from the variables in the final location of the callee's template.
+     * Computes the call stack change from a final frame in a called
+     * procedure to the target frame of the call switch.
      * @param top final location of the callee's template
      * @param swit the caller switch
      */

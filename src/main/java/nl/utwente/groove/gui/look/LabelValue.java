@@ -419,7 +419,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         if (jGraph.isShowControlStates()) {
             GraphState state = jVertex.getNode();
             Frame frame = state.getActualFrame();
-            Object[] values = state.getPrimeValues();
+            Object[] values = state.getPrimeStack();
             if (!frame.isStart() || values.length > 0) {
                 result.add(getStackLine(frame.getPrime().getLocation(), values));
                 hasControl = true;

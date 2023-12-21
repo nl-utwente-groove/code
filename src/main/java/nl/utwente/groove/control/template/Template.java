@@ -116,16 +116,15 @@ public class Template {
     private final Location start;
 
     /** Returns the assignment to source variables of the start state of this template,
-     * based on parameters of the owning procedure.
+     * based on the formal parameters of the owning procedure.
      * This is only valid if the template is owned by a procedure.
      */
     public Assignment getSourceAssign() {
-        assert hasOwner();
         return this.sourceAssign.get();
     }
 
     /** Lazily computed assignment to source variables of the start state of this template,
-     * based on parameters of the owning procedure.
+     * based on the formal parameters of the owning procedure.
      * This is only valid if the template is owned by a procedure.
      */
     private Supplier<Assignment> sourceAssign = LazyFactory.instance(this::computeSourceAssign);

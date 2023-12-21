@@ -21,6 +21,7 @@ import java.util.List;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.control.instance.CallStackChange;
 import nl.utwente.groove.control.instance.Frame;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.lts.MatchResult;
@@ -67,20 +68,33 @@ public interface Phase {
     public Frame getActualFrame();
 
     /**
-     * Returns a stack of values for the bound variables of
-     * the prime control frame.
+     * Returns the call stack corresponding to the prime control frame.
      * @see #getPrimeFrame()
      * @see Frame#getVars()
      */
-    public Object[] getPrimeValues();
+    public Object[] getPrimeStack();
 
     /**
-     * Returns a stack of values for the bound variables of
-     * the actual control frame.
+     * Returns the call stack corresponding to a given control frame,
+     * which is assumed to be a predecessor of the actual frame.
+     */
+    default public Object[] getFrameStack(Frame frame) {
+        assert getActualFrame().isPredecessor(frame);
+        Object[] result = getPrimeStack();
+        for (CallStackChange pop : frame.getPops()) {
+            result = pop.apply(result);
+        }
+        return result;
+    }
+
+    /**
+     * Returns the call stack corresponding to the actual control frame.
      * @see #getActualFrame()
      * @see Frame#getVars()
      */
-    public Object[] getActualValues();
+    default public Object[] getActualStack() {
+        return getFrameStack(getActualFrame());
+    }
 
     /**
      * Returns the first unexplored match found for this phase, insofar one can

@@ -30,8 +30,12 @@ import java.util.function.Supplier;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.control.Assignment;
+import nl.utwente.groove.control.Binding;
+import nl.utwente.groove.control.Binding.Source;
 import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.Position;
+import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.util.LazyFactory;
 
@@ -41,7 +45,8 @@ import nl.utwente.groove.util.LazyFactory;
  * @version $Revision$
  */
 @NonNullByDefault
-public class Location implements Position<Location,NestedSwitch>, Comparable<Location>, Relocatable {
+public class Location
+    implements Position<Location,NestedSwitch>, Comparable<Location>, Relocatable {
     /**
      * Constructs a numbered location for a given template, or a dead location.
      * @param template the template for which this is a location, or {@code null} if this is the universal dead location
@@ -233,6 +238,46 @@ public class Location implements Position<Location,NestedSwitch>, Comparable<Loc
     }
 
     private Supplier<Map<CtrlVar,Integer>> varIxMap = LazyFactory.instance(this::computeVarIxMap);
+
+    /** Returns an assignment from the in-parameters of the owning procedure
+     * to the variables of this location.
+     * Only valid if this location's template is owned by a procedure, and
+     * this location is the start location.
+     */
+    public Assignment assignPar2Init() {
+        Procedure owner = getTemplate().get().getOwner();
+        assert owner != null && isStart();
+        List<Binding> bindings = new ArrayList<>();
+        for (var var : getVars()) {
+            var parIx = owner.getInPars().get(var);
+            bindings.add(Binding.var(var, parIx));
+        }
+        return new Assignment(bindings);
+    }
+
+    /** Returns an assignment from the variables of this location
+     * to the (out-)parameters of the owning procedure.
+     * Only valid if this location's template is owned by a procedure, and
+     * this location is final.
+     * The resulting assignment is {@link Source#NONE} for input parameters.
+     */
+    public Assignment assignFinal2Par() {
+        Procedure owner = getTemplate().get().getOwner();
+        assert owner != null && isFinal();
+        var signature = owner.getSignature();
+        var bindings = new ArrayList<Binding>();
+        for (var par : signature.getPars()) {
+            Binding bind;
+            if (par.isOutOnly()) {
+                var varIx = getVarIxMap().get(par.getVar());
+                bind = Binding.var(par, varIx);
+            } else {
+                bind = Binding.none(par);
+            }
+            bindings.add(bind);
+        }
+        return new Assignment(bindings);
+    }
 
     @Override
     public Location relocate(Relocation map) {

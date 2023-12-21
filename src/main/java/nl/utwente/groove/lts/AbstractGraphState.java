@@ -483,13 +483,13 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     private Frame actualFrame;
 
     @Override
-    public Object[] getPrimeValues() {
+    public Object[] getPrimeStack() {
         return EMPTY_NODE_LIST;
     }
 
     @Override
-    public Object[] getActualValues() {
-        Object[] result = getPrimeValues();
+    public Object[] getActualStack() {
+        Object[] result = getPrimeStack();
         for (CallStackChange pop : getActualFrame().getPops()) {
             result = pop.apply(result);
         }

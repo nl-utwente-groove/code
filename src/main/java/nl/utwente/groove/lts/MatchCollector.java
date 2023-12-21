@@ -231,7 +231,7 @@ public class MatchCollector {
      */
     private @Nullable RuleToHostMap extractBinding(Step step) {
         RuleToHostMap result = this.state.getGraph().getFactory().createRuleToHostMap();
-        Object[] sourceValues = this.state.getActualValues();
+        Object[] sourceValues = this.state.getActualStack();
         for (var bind : step.getParAssign()) {
             HostNode value;
             switch (bind.type()) {

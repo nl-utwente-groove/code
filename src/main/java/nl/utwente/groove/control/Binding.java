@@ -30,9 +30,25 @@ import nl.utwente.groove.grammar.host.HostNode;
  * @param target the target variable or parameter of the assignment
  * @param index the index if this is a {@link Source#VAR}, {@link Source#ANCHOR} or {@link Source#CREATOR} binding
  * @param value the value if this is a {@link Source#CONST} binding
+ * @param depth the depth in the call stack from which the value is to be obtained
  */
 @NonNullByDefault
-public record Binding(Binding.Source type, Object target, int index, @Nullable Const value) {
+public record Binding(Binding.Source type, Object target, int index, @Nullable Const value,
+    int depth) {
+    /** Constructs a top-level binding (depth {@code 0}). */
+    private Binding(Source type, Object target, int index, @Nullable Const value) {
+        this(type, target, index, value, 0);
+    }
+
+    /** Returns a binding based on this one, with a given depth. */
+    public Binding toDepth(int depth) {
+        return new Binding(type(), target(), index(), value(), depth);
+    }
+
+    /** Returns a binding based on this one, with a given target. */
+    public Binding withTarget(Object target) {
+        return new Binding(type(), target, index(), value(), depth());
+    }
 
     /** Returns the index, if this is not a value binding. */
     public int index() {
@@ -90,6 +106,9 @@ public record Binding(Binding.Source type, Object target, int index, @Nullable C
      * Note that this is <i>not</i> a call stack, but rather just the top level for such a stack
      */
     public @Nullable HostNode apply(Object[] stack, @Nullable Function<Binding,HostNode> getPar) {
+        for (int i = 0; i < depth(); i++) {
+            stack = CallStack.pop(stack);
+        }
         return switch (type()) {
         case CONST -> value().getNode();
         case VAR -> CallStack.get(stack, index());
@@ -104,11 +123,12 @@ public record Binding(Binding.Source type, Object target, int index, @Nullable C
         };
     }
 
-    /** Concatenates this binding (which must be a {@link Source#VAR}) with another.
+    /** Constructs a new binding that applies this binding
+     * (which must be a {@link Source#VAR}) to the outcome of an assignment.
      */
-    Binding then(Assignment assign) {
+    Binding after(Assignment assign) {
         assert type() == Source.VAR;
-        return bind(target(), assign.get(index()));
+        return assign.get(index()).withTarget(target());
     }
 
     /** Constructs a targeted binding to a constant value.
@@ -144,12 +164,6 @@ public record Binding(Binding.Source type, Object target, int index, @Nullable C
      */
     public static Binding none(Object target) {
         return new Binding(Source.NONE, target, 0, null);
-    }
-
-    /** Constructs a binding to a given target, with RHS determined by another binding. */
-    static public Binding bind(Object target, Binding other) {
-        return new Binding(other.type(), target, other.index, other.value);
-
     }
 
     /** Kind of source for a variable assignment. */

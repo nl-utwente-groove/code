@@ -48,7 +48,7 @@ public abstract class Procedure implements Callable, Fixable {
      * @param grammarProperties grammar properties for this procedure
      */
     protected Procedure(QualName fullName, Kind kind, Signature<UnitPar.ProcedurePar> signature,
-        QualName controlName, int startLine, GrammarProperties grammarProperties) {
+                        QualName controlName, int startLine, GrammarProperties grammarProperties) {
         this.fullName = fullName;
         this.signature = signature;
         this.controlName = controlName;
@@ -101,7 +101,9 @@ public abstract class Procedure implements Callable, Fixable {
         assert body != null;
         assert !isFixed();
         // make the body atomic if it is a recipe
-        this.term = getKind() == Kind.RECIPE ? body.atom() : body;
+        this.term = getKind() == Kind.RECIPE
+            ? body.atom()
+            : body;
         setFixed();
     }
 
@@ -137,6 +139,7 @@ public abstract class Procedure implements Callable, Fixable {
     /**
      * Returns a mapping from input variables occurring in the signature of this procedure
      * to their corresponding indices in the signature.
+     * Iterating over the map will return the parameter in-order.
      */
     public Map<CtrlVar,Integer> getInPars() {
         assert isFixed();
@@ -149,6 +152,7 @@ public abstract class Procedure implements Callable, Fixable {
     /**
      * Returns a mapping from output variables occurring in the signature of this procedure
      * to their corresponding indices in the signature.
+     * Iterating over the map will return the parameter in-order.
      */
     public Map<CtrlVar,Integer> getOutPars() {
         assert isFixed();
@@ -191,8 +195,7 @@ public abstract class Procedure implements Callable, Fixable {
     @Override
     public String toString() {
         return getKind().getName(true) + " " + getQualName()
-            + Groove.toString(getSignature().getPars()
-                .toArray(), "(", ")", ", ");
+            + Groove.toString(getSignature().getPars().toArray(), "(", ")", ", ");
     }
 
     @Override
@@ -205,10 +208,9 @@ public abstract class Procedure implements Callable, Fixable {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof Procedure)) {
+        if (!(obj instanceof Procedure other)) {
             return false;
         }
-        Procedure other = (Procedure) obj;
         return getQualName().equals(other.getQualName());
     }
 
@@ -225,8 +227,9 @@ public abstract class Procedure implements Callable, Fixable {
      * @param grammarProperties grammar properties for the new procedure
      */
     public static Procedure newInstance(QualName fullName, Kind kind, int priority,
-        Signature<UnitPar.ProcedurePar> signature, QualName controlName, int startLine,
-        GrammarProperties grammarProperties) {
+                                        Signature<UnitPar.ProcedurePar> signature,
+                                        QualName controlName, int startLine,
+                                        GrammarProperties grammarProperties) {
         assert kind.isProcedure();
         Procedure result;
         switch (kind) {

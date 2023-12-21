@@ -127,19 +127,21 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
         } else {
             result = new ArrayList<>();
             for (int i = 0; i < args.size(); i++) {
+                HostNode node;
                 CtrlPar par = args.get(i);
                 if (par instanceof Var v) {
-                    if (v.inOnly()) {
-                        // look up value in source state
-                    } else {
-                        assert v.outOnly();
-                        // look up value in target state
-                    }
+                    var bind = getAction().getParBinding(i);
+                    node = switch (bind.type()) {
+                    case ANCHOR -> (HostNode) getEvent().getAnchorImage(bind.index());
+                    case CREATOR -> getAddedNodes()[bind.index()];
+                    default -> throw Exceptions.UNREACHABLE;
+                    };
                 } else if (par instanceof Const c) {
-                    result.add(c.getNode());
+                    node = c.getNode();
                 } else {
                     throw Exceptions.UNREACHABLE;
                 }
+                result.add(node);
             }
         }
         return result;

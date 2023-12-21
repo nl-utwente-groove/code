@@ -86,7 +86,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
             // if the recipe call has out-parameters that we cannot retrieve otherwise
             addPops |= recipe.filter(s -> s == done).isPresent();
             if (addPops) {
-                pops.add(CallStackChange.exit(loc, done));
+                pops.add(done.assignFinal2Target(loc).toPop());
             }
             loc = done.onFinish();
         }
@@ -142,6 +142,18 @@ public class Frame implements Position<Frame,Step>, Fixable {
     /** Indicates whether this is an error frame. */
     public boolean isError() {
         return getLocation().isError();
+    }
+
+    /** Indicates if a given frame is on the path between the prime frame and this one.*/
+    public boolean isPredecessor(Frame frame) {
+        if (frame == this) {
+            return true;
+        }
+        var pred = getPred();
+        if (pred == null) {
+            return false;
+        }
+        return pred.isPredecessor(frame);
     }
 
     /**
@@ -214,6 +226,35 @@ public class Frame implements Position<Frame,Step>, Fixable {
     }
 
     private final List<CallStackChange> pops;
+
+    /** Returns an optional assignment to the output parameters of a recipe call
+     * exited between the prime and this frame. The assignment should be
+     * applied to the prime call stack of any state of which this is the actual frame.
+     */
+    public @Nullable List<CallStackChange> getRecipeOutAssign() {
+        return this.recipeOutAssign.get();
+    }
+
+    private Supplier<@Nullable List<CallStackChange>> recipeOutAssign
+        = LazyFactory.instance(this::computeRecipeOutAssign);
+
+    private @Nullable List<CallStackChange> computeRecipeOutAssign() {
+        List<CallStackChange> result = null;
+        if (getPrime().isInternal() && !isInternal()) {
+            result = new ArrayList<>();
+            var exit = getLocation();
+            for (var caller : getPrime().getContext().outIterable()) {
+                assert exit.isFinal();
+                result.add(CallStackChange.exit(exit, caller));
+                if (caller.getKind() == Kind.RECIPE) {
+                    break;
+                } else {
+                    exit = caller.onFinish();
+                }
+            }
+        }
+        return result;
+    }
 
     /**
      * Returns the total nesting depth of the frame,
@@ -312,12 +353,12 @@ public class Frame implements Position<Frame,Step>, Fixable {
         return result;
     }
 
-    /** Constructs a step from this frame, based on a given control location switch. */
+    /** Constructs a step from this frame, based on a given nested switch. */
     private Step createStep(NestedSwitch sw) {
         NestedSwitch targetSwitch = new NestedSwitch(getContext());
         sw.forEach(targetSwitch::push);
-        Switch call = targetSwitch.pop();
-        Frame onFinish = new Frame(getAut(), call.onFinish(), targetSwitch, null).normalise();
+        Switch callSwitch = targetSwitch.pop();
+        Frame onFinish = new Frame(getAut(), callSwitch.onFinish(), targetSwitch, null).normalise();
         return new Step(this, sw, onFinish);
     }
 
@@ -421,7 +462,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
 
     /**
      * Constructs a frame for a given control location,
-     * with the same prime frame and call stack as this frame.
+     * with the same prime frame and context switch as this frame.
      */
     private Frame newFrame(Location loc) {
         Frame result = new Frame(getAut(), loc, getContext(), this);
