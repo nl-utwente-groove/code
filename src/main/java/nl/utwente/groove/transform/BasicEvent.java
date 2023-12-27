@@ -73,7 +73,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
         assert anchorMap != null : String
             .format("Can't produce event for %s with null anchor map", rule.getQualName());
         rule.testFixed(true);
-        this.anchorImage = computeAnchorImage(anchorMap);
+        this.anchorImages = computeAnchorImage(anchorMap);
         this.hostFactory = anchorMap.getFactory();
         if (reuse == NONE) {
             this.freshNodeList = NO_REUSE_LIST;
@@ -120,7 +120,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
      */
     @Override
     public String getAnchorImageString() {
-        return Groove.toString(getAnchorImage(), ANCHOR_START, ANCHOR_END, ANCHOR_SEPARATOR);
+        return Groove.toString(getAnchorImages(), ANCHOR_START, ANCHOR_END, ANCHOR_SEPARATOR);
     }
 
     /**
@@ -149,7 +149,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
         // we don't use getAnchorImage() because the events are often
         // just created to look up a stored event; then we shouldn't spend too
         // much time on this one
-        AnchorValue[] anchorImage = getAnchorImage();
+        AnchorValue[] anchorImage = getAnchorImages();
         int MAX_HASHED_ANCHOR_COUNT = 10;
         int hashedAnchorCount = Math.min(anchorImage.length, MAX_HASHED_ANCHOR_COUNT);
         for (int i = 0; i < hashedAnchorCount; i++) {
@@ -177,7 +177,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
         if (!getRule().equals(obj.getRule())) {
             return false;
         }
-        if (!Arrays.equals(getAnchorImage(), other.getAnchorImage())) {
+        if (!Arrays.equals(getAnchorImages(), other.getAnchorImages())) {
             return false;
         }
         return true;
@@ -206,9 +206,9 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
             return result;
         }
         // we have the same rule (so the other event is also a SPOEvent)
-        AnchorValue[] anchorImage = getAnchorImage();
+        AnchorValue[] anchorImage = getAnchorImages();
         // retrieve the other even't anchor image array
-        AnchorValue[] hisAnchorImage = ((BasicEvent) other).getAnchorImage();
+        AnchorValue[] hisAnchorImage = ((BasicEvent) other).getAnchorImages();
         // now compare the anchor images
         // find the first index in which the anchor images differ
         int upper = Math.min(anchorImage.length, hisAnchorImage.length);
@@ -222,22 +222,18 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
         }
     }
 
-    @Override
-    public AnchorValue getAnchorImage(int i) {
-        return getAnchorImage()[i];
-    }
-
     /**
      * Returns the set of source elements that form the anchor image.
      */
-    AnchorValue[] getAnchorImage() {
-        return this.anchorImage;
+    @Override
+    public AnchorValue[] getAnchorImages() {
+        return this.anchorImages;
     }
 
     /**
      * The array of source elements that form the anchor image.
      */
-    private final AnchorValue[] anchorImage;
+    private final AnchorValue[] anchorImages;
 
     /**
      * Callback method to lazily compute the set of source elements that form
@@ -667,7 +663,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
          */
         private RuleToHostMap computeAnchorMap() {
             Anchor anchor = getRule().getAnchor();
-            AnchorValue[] anchorImage = getAnchorImage();
+            AnchorValue[] anchorImage = getAnchorImages();
             RuleToHostMap result = createRuleToHostMap();
             for (int i = 0; i < anchor.size(); i++) {
                 result.put(anchor.get(i), anchorImage[i]);

@@ -100,13 +100,6 @@ public class StateCache {
         getExploreData().notifyClosed();
     }
 
-    /**
-     * Callback method invoked when the state has become done.
-     */
-    void notifyDone() {
-        //getExploreData().notifyDone();
-    }
-
     final AbstractGraphState getState() {
         return this.state;
     }
@@ -260,7 +253,7 @@ public class StateCache {
         Set<QualName> actions = new LinkedHashSet<>();
         for (NestedCall call : getState().getActualFrame().getPastAttempts()) {
             if (call.getAction().getRole() == Role.TRANSFORMER) {
-                actions.add(call.getRule().getQualName());
+                actions.add(call.getAction().getQualName());
             }
         }
         if (actions.isEmpty()) {

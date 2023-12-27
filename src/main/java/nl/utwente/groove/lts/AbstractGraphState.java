@@ -290,7 +290,6 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
             //            setStatus(Flag.ABSENT, getActualFrame().isRemoved());
             setStatus(Flag.FINAL, getActualFrame().isFinal());
             checkDoneConstraints();
-            getCache().notifyDone();
             setCacheCollectable();
             fireStatus(oldStatus);
         }

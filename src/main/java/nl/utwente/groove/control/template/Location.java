@@ -257,13 +257,12 @@ public class Location
 
     /** Returns an assignment from the variables of this location
      * to the (out-)parameters of the owning procedure.
-     * Only valid if this location's template is owned by a procedure, and
-     * this location is final.
+     * Only valid if this location's template is owned by a procedure.
      * The resulting assignment is {@link Source#NONE} for input parameters.
      */
     public Assignment assignFinal2Par() {
         Procedure owner = getTemplate().get().getOwner();
-        assert owner != null && isFinal();
+        assert owner != null;
         var signature = owner.getSignature();
         var bindings = new ArrayList<Binding>();
         for (var par : signature.getPars()) {

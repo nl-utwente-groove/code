@@ -22,7 +22,6 @@ import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.control.Binding;
 import nl.utwente.groove.control.CallStack;
-import nl.utwente.groove.control.instance.CallStackChange;
 import nl.utwente.groove.control.instance.Step;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.host.HostNode;
@@ -119,14 +118,14 @@ public class MatchApplier {
         Object[] stack;
         RuleEvent event = match.getEvent();
         Step ctrlStep = match.getStep();
-        boolean hasFrameValues = ctrlStep.onFinish().hasVars();
+        boolean hasVars = ctrlStep.onFinish().hasVars();
         RuleEffect effectRecord = null;
         if (reuseCreatedNodes(source, match)) {
             RuleTransition parentOut = match.getTransition();
             addedNodes = parentOut.getAddedNodes();
         } else if (event.getRule().hasNodeCreators()) {
             // compute the frame values at the same time, if there are any
-            Fragment fragment = hasFrameValues
+            Fragment fragment = hasVars
                 ? Fragment.NODE_ALL
                 : Fragment.NODE_CREATION;
             effectRecord = new RuleEffect(source.getGraph(), fragment, this.gts.getOracle());
@@ -136,7 +135,7 @@ public class MatchApplier {
         } else {
             addedNodes = EMPTY_NODE_ARRAY;
         }
-        if (hasFrameValues || ctrlStep.onFinish().getNestingDepth() > 0) {
+        if (hasVars || ctrlStep.onFinish().getNestingDepth() > 0) {
             // only compute the effect if it has not yet been done
             if (effectRecord == null) {
                 effectRecord = new RuleEffect(source.getGraph(), addedNodes, Fragment.NODE_ALL);
@@ -205,28 +204,25 @@ public class MatchApplier {
     /** Computes the prime call stack for the target state of a given rule transition. */
     private Object[] computeTargetStack(Step step, GraphState source, RuleEvent event,
                                         RuleEffect record) {
-        // we assume that the actual frame of the source state equals the source frame of the step
-        assert source.getActualFrame() == step.getSource();
-        Object[] result = source.getActualStack();
+        Object[] result = source.getFrameStack(step.getSource());
         if (!record.isNodeId()) {
             // map the entire valuation stack through the node mapping of the record
             result = CallStack.map(result, record::mapNode);
         }
         HostNode[] createdNodes = record.getCreatedNodeArray();
+        var anchorImages = event.getAnchorImages();
         Function<Binding,HostNode> getValue = (b -> {
             return switch (b.type()) {
             case ANCHOR ->
                 // this is a rule parameter (not a creator node)
-                record.mapNode((HostNode) event.getAnchorImage(b.index()));
+                record.mapNode((HostNode) anchorImages[b.index()]);
             case CREATOR ->
                 // this is an output parameter corresponding to a creator node
                 createdNodes[b.index()];
             default -> throw Exceptions.illegalArg("Function not applicable to binding %s", b);
             };
         });
-        for (CallStackChange change : step.getApplyChanges()) {
-            result = change.apply(result, getValue);
-        }
+        result = step.getApplyChange().apply(result, getValue);
         return result;
     }
 

@@ -40,6 +40,7 @@ import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.control.graph.ControlGraph;
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Callable;
+import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.host.HostFactory;
 import nl.utwente.groove.util.LazyFactory;
@@ -96,6 +97,15 @@ public class Template {
      */
     public boolean hasOwner() {
         return getOwner() != null;
+    }
+
+    /**
+     * Indicates if this automaton is the body of a procedure
+     * of a given kind.
+     */
+    public boolean hasOwner(Kind kind) {
+        var owner = getOwner();
+        return owner != null && owner.getKind() == kind;
     }
 
     /**

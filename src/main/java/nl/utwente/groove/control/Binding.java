@@ -35,6 +35,7 @@ import nl.utwente.groove.grammar.host.HostNode;
 @NonNullByDefault
 public record Binding(Binding.Source type, Object target, int index, @Nullable Const value,
     int depth) {
+
     /** Constructs a top-level binding (depth {@code 0}). */
     private Binding(Source type, Object target, int index, @Nullable Const value) {
         this(type, target, index, value, 0);
@@ -42,12 +43,12 @@ public record Binding(Binding.Source type, Object target, int index, @Nullable C
 
     /** Returns a binding based on this one, with a given depth. */
     public Binding toDepth(int depth) {
-        return new Binding(type(), target(), index(), value(), depth);
+        return new Binding(this.type, this.target, this.index, this.value, depth);
     }
 
     /** Returns a binding based on this one, with a given target. */
     public Binding withTarget(Object target) {
-        return new Binding(type(), target, index(), value(), depth());
+        return new Binding(this.type, target, this.index, this.value, this.depth);
     }
 
     /** Returns the index, if this is not a value binding. */
@@ -91,9 +92,9 @@ public record Binding(Binding.Source type, Object target, int index, @Nullable C
 
     @Override
     public String toString() {
-        return target() + ":=" + type().name() + ":" + (type() == Source.CONST
+        return target() + ":=" + type().name() + "(" + (type() == Source.CONST
             ? value()
-            : index());
+            : index()) + ")";
     }
 
     /**
@@ -146,6 +147,7 @@ public record Binding(Binding.Source type, Object target, int index, @Nullable C
     }
 
     /** Constructs a targeted binding to an anchor node of a rule match.
+     * @param index the index of the anchor node
      * @see Source#ANCHOR
      */
     public static Binding anchor(Object target, int index) {
@@ -153,6 +155,7 @@ public record Binding(Binding.Source type, Object target, int index, @Nullable C
     }
 
     /** Constructs a targeted binding to a creator node in a rule application.
+     * @param index the index of the creator node
      * @see Source#CREATOR
      */
     public static Binding creator(Object target, int index) {

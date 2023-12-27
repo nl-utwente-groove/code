@@ -77,9 +77,7 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
      * @param enabledrules a collection of enabled rules, duplicates will be removed
      */
     public MinimaxStrategy(int heuristicparam, int maxdepth, Collection<Rule> enabledrules,
-        Rule evalrule, int minmaxparam) {
-        super();
-
+                           Rule evalrule, int minmaxparam) {
         //parameters
         this.heuristicparam = heuristicparam;
         this.minmaxparam = minmaxparam;
@@ -176,8 +174,7 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
         AnchorValue result = null;
         Rule r = s.getAction();
         RuleEvent ev = s.getEvent();
-        result = ev.getAnchorImage(r.getParBinding(num)
-            .index());
+        result = ev.getAnchorImages()[r.getParBinding(num).index()];
         return result;
     }
 
@@ -218,8 +215,7 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
      * The file is overwritten by this method
      */
     public void printMinimaxDebugTree(File out) {
-        MinimaxTree mt = getNodeValue(this.getStartState()
-            .getNumber());
+        MinimaxTree mt = getNodeValue(this.getStartState().getNumber());
         try { //write to a file, as tree representations can get quite large (10MB for tic-tac-toe)
             File f = out;
             if (f.exists()) {
@@ -284,8 +280,9 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
     public void finish() {
         super.finish();
         if (DEBUG) {
-            System.out.println("Exploration Finished! It took "
-                + (System.currentTimeMillis() - this.timer) + "ms");
+            System.out
+                .println("Exploration Finished! It took "
+                    + (System.currentTimeMillis() - this.timer) + "ms");
             printMinimaxDebugTree(new File("tree.txt"));
         }
     }
@@ -298,8 +295,7 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
         MinimaxTree mts = getNodeValue(source.getNumber());
         MinimaxTree mtt = getNodeValue(target.getNumber());
         if (mts == null) {
-            assert source.getNumber() == this.getStartState()
-                .getNumber(); //the source node only exists at the first node
+            assert source.getNumber() == this.getStartState().getNumber(); //the source node only exists at the first node
             mts = new MinimaxTree(source.getNumber());
             setNodeValue(mts.getNodeno(), mts);
         }
@@ -308,20 +304,16 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
             setNodeValue(mtt.getNodeno(), mtt);
         }
         if (VERBOSE) {
-            System.out.println("State added: " + transition.target()
-                .getNumber());
+            System.out.println("State added: " + transition.target().getNumber());
         }
         //if we have a minmax rule, update the variable in the tree, and dont add tree nodes
-        if (isMinMaxrule(transition.label()
-            .getAction()
-            .getLastName())) {
+        if (isMinMaxrule(transition.label().getAction().getLastName())) {
             Boolean minmax = getMinMaxParam((RuleTransition) transition);
             mts.setMinMax(minmax);
         } else {
             //update the score
-            if (isRuleEnabled(transition.label()
-                .getAction()
-                .getLastName()) && target.getMatch() == null) {
+            if (isRuleEnabled(transition.label().getAction().getLastName())
+                && target.getMatch() == null) {
                 int score = getHeuristicScore((RuleTransition) transition);
                 mtt.setScore(score);
             }
@@ -483,8 +475,9 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
 
         @Override
         public String toString() {
-            String result =
-                "[" + getNodeno() + ";" + (getMinMax() ? "min()" : "max()") + ":" + getText() + "]";
+            String result = "[" + getNodeno() + ";" + (getMinMax()
+                ? "min()"
+                : "max()") + ":" + getText() + "]";
             return result;
         }
 

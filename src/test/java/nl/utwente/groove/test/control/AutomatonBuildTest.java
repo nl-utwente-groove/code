@@ -23,7 +23,6 @@ import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.junit.Before;
@@ -165,13 +164,13 @@ public class AutomatonBuildTest {
         var gy = new CtrlVar(new QualName("g"), "gy", CtrlType.NODE);
         //
         assertEquals(0, s0.getCallDepthChange());
-        List<CallStackChange> change = s0.getApplyChanges();
+        var change = s0.getApplyChange().toList();
         assertEquals(1, change.size());
         var aMain = new Assignment(Binding.creator(n, 0));
         assertEquals(CallStackChange.push(aMain), change.get(0));
         //
         assertEquals(2, s1.getCallDepthChange());
-        change = s1.getApplyChanges();
+        change = s1.getApplyChange().toList();
         assertEquals(1, change.size());
         aMain = new Assignment(Binding.none(n));
         var aF = new Assignment(Binding.var(fx, 0), Binding.none(fy));
@@ -179,7 +178,7 @@ public class AutomatonBuildTest {
         assertEquals(CallStackChange.push(aMain, aF, aG), change.get(0));
         //
         assertEquals(-1, s2.getCallDepthChange());
-        change = s2.getApplyChanges();
+        change = s2.getApplyChange().toList();
         assertEquals(2, change.size());
         aG = new Assignment(Binding.var(gy, 1));
         assertEquals(CallStackChange.push(aG), change.get(0));
@@ -187,13 +186,13 @@ public class AutomatonBuildTest {
         assertEquals(CallStackChange.pop(aF), change.get(1));
         //
         assertEquals(0, s3.getCallDepthChange());
-        change = s3.getApplyChanges();
+        change = s3.getApplyChange().toList();
         assertEquals(1, change.size());
         aF = new Assignment(Binding.var(fx, 0), Binding.var(fy, 1));
         assertEquals(CallStackChange.push(aF), change.get(0));
         //
         assertEquals(0, s4.getCallDepthChange());
-        change = s4.getApplyChanges();
+        change = s4.getApplyChange().toList();
         assertEquals(2, change.size());
         aF = new Assignment(Binding.var(fy, 1));
         var aH = new Assignment();
@@ -202,7 +201,7 @@ public class AutomatonBuildTest {
         assertEquals(CallStackChange.pop(aF), change.get(1));
         //
         assertEquals(-1, s5.getCallDepthChange());
-        change = s5.getApplyChanges();
+        change = s5.getApplyChange().toList();
         assertEquals(3, change.size());
         aF = new Assignment(Binding.var(fy, 0));
         aH = new Assignment();

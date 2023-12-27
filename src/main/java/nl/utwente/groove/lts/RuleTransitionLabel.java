@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNull;
 
-import nl.utwente.groove.control.Binding;
 import nl.utwente.groove.control.CtrlPar;
 import nl.utwente.groove.control.CtrlPar.Wild;
 import nl.utwente.groove.control.instance.Step;
@@ -98,15 +97,16 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
             result = EMPTY_NODE_ARRAY;
         } else {
             result = new HostNode[callArgs.size()];
-            HostNode[] added = getAddedNodes();
+            var addedNodes = getAddedNodes();
+            var anchorImages = getEvent().getAnchorImages();
             for (int i = 0; i < callArgs.size(); i++) {
-                Binding binding = getAction().getParBinding(i);
-                result[i] = switch (binding.type()) {
-                case ANCHOR -> (HostNode) getEvent().getAnchorImage(binding.index());
-                case CREATOR -> added == null
+                var bind = getAction().getParBinding(i);
+                result[i] = switch (bind.type()) {
+                case ANCHOR -> (HostNode) anchorImages[bind.index()];
+                case CREATOR -> addedNodes == null
                     ? null
-                    : added[binding.index()];
-                default -> throw Exceptions.illegalState("Binding %s is of a wrong type", binding);
+                    : addedNodes[bind.index()];
+                default -> throw Exceptions.illegalState("Binding %s is of a wrong type", bind);
                 };
             }
         }

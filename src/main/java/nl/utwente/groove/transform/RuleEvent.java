@@ -50,10 +50,10 @@ public interface RuleEvent extends Comparable<RuleEvent>, Event {
     public RuleToHostMap getAnchorMap();
 
     /**
-     * Returns the anchor image at a given position.
+     * Returns the array of anchor images.
      * This always refers to the anchor of the top level existential event.
      */
-    public AnchorValue getAnchorImage(int i);
+    public AnchorValue[] getAnchorImages();
 
     /**
      * Returns a proof of this event's rule condition in a given host graph,
