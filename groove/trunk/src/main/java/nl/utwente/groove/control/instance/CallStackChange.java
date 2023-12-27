@@ -32,7 +32,6 @@ import nl.utwente.groove.control.Assignment;
 import nl.utwente.groove.control.Binding;
 import nl.utwente.groove.control.Binding.Source;
 import nl.utwente.groove.control.CallStack;
-import nl.utwente.groove.control.instance.CallStackChange.Kind;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.util.Exceptions;
 

@@ -215,4 +215,22 @@ public class Assignment implements Iterable<Binding> {
         }
         return result;
     }
+
+    /** Applies a node mapping to an assignment record, and returns the result.
+     */
+    static public HostNode[] map(HostNode[] record, Function<HostNode,HostNode> map) {
+        HostNode[] result = new HostNode[record.length];
+        boolean changed = false;
+        var size = record.length;
+        for (int i = 0; i < size; i++) {
+            var oldVal = record[i];
+            var newVal = map.apply(oldVal);
+            changed |= newVal != oldVal;
+            result[i] = newVal;
+        }
+        return changed
+            ? result
+            : record;
+    }
+
 }
