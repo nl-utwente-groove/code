@@ -28,8 +28,8 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.function.Function;
 
+import nl.utwente.groove.control.Assignment;
 import nl.utwente.groove.control.Binding;
-import nl.utwente.groove.control.CallStack;
 import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.host.HostNode;
@@ -327,10 +327,15 @@ class ExploreData {
             while (!this.queue.isEmpty()) {
                 ExploreData source = this.queue.poll();
                 for (GraphTransition trans : source.getState().getTransitions(Claz.PRESENT)) {
-                    assert !trans.target().isInternalState() || trans.target().isDone();
-                    ExploreData target = trans.target().getCache().getExploreData();
-                    addData(target);
-                    this.backward.get(target).add(source);
+                    var target = trans.target();
+                    assert !target.isInternalState() || trans.target().isDone();
+                    if (target.getPrimeFrame().isInternal()) {
+                        ExploreData targetData = target.getCache().getExploreData();
+                        addData(targetData);
+                        this.backward.get(targetData).add(source);
+                    } else {
+                        this.resultMap.get(source).add(new RecipeTarget((RuleTransition) trans));
+                    }
                 }
             }
             if (DEBUG) {
@@ -451,31 +456,25 @@ class ExploreData {
 
         /** Computes the recipe out-parameter values from the prime frame of a state. */
         static private HostNode[] getOutValues(GraphState state) {
+            // look for the last frame between the state's prime and actual frames
+            // that was still internal; the corresponding stack contains the out-parameter values
             var frame = state.getActualFrame();
             while (!frame.isInternal()) {
                 var pred = frame.getPred();
                 assert pred != null;
                 frame = pred;
             }
+            // get the stack at that frame
             Object[] stack = state.getFrameStack(frame);
-            var exit = state.getPrimeFrame().getLocation();
-            for (var swt : state.getPrimeFrame().getContext().outIterable()) {
-                if (swt.getKind() == Kind.RECIPE) {
-                    break;
-                } else {
-                    stack = swt.assignFinal2Target(exit).toPop().apply(stack);
-                    exit = swt.onFinish();
-                }
-            }
-            return exit.assignFinal2Par().apply(stack);
+            // get the out-parameter assignment
+            return frame.getLocation().assignFinal2Par().apply(stack);
         }
 
         /** Computes the recipe out-parameter values from the final internal transition. */
         static private HostNode[] getOutValues(RuleTransition partial) {
-            var source = partial.source();
             var step = partial.getStep();
-            Object[] result = source.getFrameStack(step.getSource());
-            // compute the push changes; for this we need the rule arguments
+            Object[] stack = partial.source().getFrameStack(step.getSource());
+            // apply the transition's push change; for this we need the rule arguments
             var addedNodes = partial.getAddedNodes();
             var anchorImages = partial.getEvent().getAnchorImages();
             Function<Binding,HostNode> getValue = (b -> switch (b.type()) {
@@ -483,21 +482,23 @@ class ExploreData {
             case CREATOR -> addedNodes[b.index()];
             default -> throw Exceptions.UNREACHABLE;
             });
-            result = step.getPush().apply(result, getValue);
-            // pop until the switch within the outer recipe body
+            stack = step.getPush().apply(stack, getValue);
+            // pop until the (final) switch within the outer recipe body
             var recipeFinal = step
                 .getSwitch()
                 .stream()
                 .filter(s -> s.getTemplate().filter(t -> t.hasOwner(Kind.RECIPE)).isPresent())
                 .findFirst()
                 .get();
-            result = step.getPopUntil(s -> s == recipeFinal).apply(result);
+            stack = step.getPopUntil(s -> s == recipeFinal).apply(stack);
+            // now obtain the parameter values
+            var result = recipeFinal.onFinish().assignFinal2Par().apply(stack);
             // apply the transition's permutation, if it is not the identity
             if (!partial.getMorphism().isIdentity()) {
                 var nodeMap = partial.getMorphism().nodeMap();
-                result = CallStack.map(result, n -> nodeMap.get(n));
+                result = Assignment.map(result, n -> nodeMap.get(n));
             }
-            return recipeFinal.onFinish().assignFinal2Par().apply(result);
+            return result;
         }
     }
 }

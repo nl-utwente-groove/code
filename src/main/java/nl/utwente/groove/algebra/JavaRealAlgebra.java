@@ -43,21 +43,21 @@ public final class JavaRealAlgebra extends RealAlgebra<Integer,Double,Boolean,St
 
     @Override
     public Double bigmax(List<Double> arg) {
-        return arg.stream()
-            .max(Double::compareTo)
-            .get();
+        return arg.stream().max(Double::compareTo).get();
     }
 
     @Override
     public Double bigmin(List<Double> arg) {
-        return arg.stream()
-            .min(Double::compareTo)
-            .get();
+        return arg.stream().min(Double::compareTo).get();
     }
 
     @Override
     public Double div(Double arg0, Double arg1) {
-        return arg0 / arg1;
+        var result = arg0 / arg1;
+        if (Double.isInfinite(result) || Double.isNaN(result)) {
+            throw new ArithmeticException("Real value " + result + " is not allowed");
+        }
+        return result;
     }
 
     @Override
@@ -87,7 +87,9 @@ public final class JavaRealAlgebra extends RealAlgebra<Integer,Double,Boolean,St
 
     @Override
     public Double ite(Boolean arg0, Double arg1, Double arg2) {
-        return arg0 ? arg1 : arg2;
+        return arg0
+            ? arg1
+            : arg2;
     }
 
     @Override
@@ -117,8 +119,7 @@ public final class JavaRealAlgebra extends RealAlgebra<Integer,Double,Boolean,St
 
     @Override
     public Double prod(List<Double> arg) {
-        return arg.stream()
-            .reduce(1., (i, j) -> i * j);
+        return arg.stream().reduce(1., (i, j) -> i * j);
     }
 
     @Override
@@ -128,8 +129,7 @@ public final class JavaRealAlgebra extends RealAlgebra<Integer,Double,Boolean,St
 
     @Override
     public Double sum(List<Double> arg) {
-        return arg.stream()
-            .reduce(0., (i, j) -> i + j);
+        return arg.stream().reduce(0., (i, j) -> i + j);
     }
 
     @Override
@@ -154,8 +154,7 @@ public final class JavaRealAlgebra extends RealAlgebra<Integer,Double,Boolean,St
 
     @Override
     public Double toValueFromConstant(Constant constant) {
-        return constant.getRealRepr()
-            .doubleValue();
+        return constant.getRealRepr().doubleValue();
     }
 
     /* The value is already of the right type. */
