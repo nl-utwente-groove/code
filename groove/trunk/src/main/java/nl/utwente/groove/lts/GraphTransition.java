@@ -59,6 +59,11 @@ public interface GraphTransition extends GEdge<GraphState> {
     /** Returns the action instance on which this transition is based. */
     public Event getEvent();
 
+    /**
+     * Returns the concrete arguments of this transition.
+     */
+    public HostNode[] getArguments();
+
     /** Returns the GTS in which this transition occurs. */
     public default GTS getGTS() {
         return source().getGTS();

@@ -36,7 +36,6 @@ import nl.utwente.groove.control.template.Location;
 import nl.utwente.groove.control.template.NestedSwitch;
 import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.control.template.SwitchAttempt;
-import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.util.DefaultFixable;
@@ -64,28 +63,20 @@ public class Frame implements Position<Frame,Step>, Fixable {
         List<CallStackChange> pops = new ArrayList<>();
         // avoid sharing
         this.pred = pred;
-        if (pred == null) {
+        boolean isPrime = pred == null;
+        if (isPrime) {
             this.prime = this;
         } else {
+            assert pred != null;
             this.prime = pred.getPrime();
             pops.addAll(pred.getPops());
         }
         var context = new NestedSwitch(swt);
-        // look for an outer recipe with output variables
-        var recipe = context
-            .stream()
-            .filter(s -> s.getKind() == Kind.RECIPE)
-            .filter(s -> s.getCall().hasOutVars())
-            .findFirst();
         // pop the call stack until we have a non-final location or empty stack
-        // add pop actions if we are not a prime frame
-        boolean addPops = pred != null;
         while (loc.isFinal() && !context.isEmpty()) {
             Switch done = context.pop();
-            // also start adding pop actions once we pass the outer recipe call,
-            // if the recipe call has out-parameters that we cannot retrieve otherwise
-            addPops |= recipe.filter(s -> s == done).isPresent();
-            if (addPops) {
+            // add pop actions if we are not a prime frame
+            if (!isPrime) {
                 pops.add(done.assignFinal2Target(loc).toPop());
             }
             loc = done.onFinish();
@@ -160,7 +151,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
      * Returns the predecessor frame in the chain between the
      * prime frame and this, or {@code null} if this is a prime frame.
      */
-    private @Nullable Frame getPred() {
+    public @Nullable Frame getPred() {
         return this.pred;
     }
 
@@ -226,35 +217,6 @@ public class Frame implements Position<Frame,Step>, Fixable {
     }
 
     private final List<CallStackChange> pops;
-
-    /** Returns an optional assignment to the output parameters of a recipe call
-     * exited between the prime and this frame. The assignment should be
-     * applied to the prime call stack of any state of which this is the actual frame.
-     */
-    public @Nullable List<CallStackChange> getRecipeOutAssign() {
-        return this.recipeOutAssign.get();
-    }
-
-    private Supplier<@Nullable List<CallStackChange>> recipeOutAssign
-        = LazyFactory.instance(this::computeRecipeOutAssign);
-
-    private @Nullable List<CallStackChange> computeRecipeOutAssign() {
-        List<CallStackChange> result = null;
-        if (getPrime().isInternal() && !isInternal()) {
-            result = new ArrayList<>();
-            var exit = getLocation();
-            for (var caller : getPrime().getContext().outIterable()) {
-                assert exit.isFinal();
-                result.add(CallStackChange.exit(exit, caller));
-                if (caller.getKind() == Kind.RECIPE) {
-                    break;
-                } else {
-                    exit = caller.onFinish();
-                }
-            }
-        }
-        return result;
-    }
 
     /**
      * Returns the total nesting depth of the frame,

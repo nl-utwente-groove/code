@@ -39,6 +39,7 @@ abstract public class AGraphMap<SN extends Node,SE extends Edge,TN extends Node,
         this.nodeMap = createNodeMap();
         this.edgeMap = createEdgeMap();
         this.factory = factory;
+        this.identity = true;
     }
 
     /**
@@ -92,8 +93,11 @@ abstract public class AGraphMap<SN extends Node,SE extends Edge,TN extends Node,
      * @return the old image for <code>key</code>, or <code>null</code> if
      *         there was none
      */
+    @SuppressWarnings("unlikely-arg-type")
     public @Nullable TN putNode(SN key, TN value) {
-        return this.nodeMap.put(key, value);
+        var result = this.nodeMap.put(key, value);
+        this.identity &= key.equals(value);
+        return result;
     }
 
     /**
@@ -101,8 +105,11 @@ abstract public class AGraphMap<SN extends Node,SE extends Edge,TN extends Node,
      * @return the old image for <code>key</code>, or <code>null</code> if
      *         there was none
      */
+    @SuppressWarnings("unlikely-arg-type")
     public @Nullable TE putEdge(SE key, TE value) {
-        return this.edgeMap.put(key, value);
+        var result = this.edgeMap.put(key, value);
+        this.identity &= key.equals(value);
+        return result;
     }
 
     /**
@@ -112,24 +119,21 @@ abstract public class AGraphMap<SN extends Node,SE extends Edge,TN extends Node,
     public void putAll(AGraphMap<SN,SE,TN,TE> other) {
         this.nodeMap.putAll(other.nodeMap());
         this.edgeMap.putAll(other.edgeMap());
+        this.identity &= other.isIdentity();
     }
 
-    /**
-     * Removes a node key-value pair from this map.
+    /** Indicates if this is an identity map, i.e., all nodes and edges are mapped to themselves.
+     * The result may be a false negative, i.e., the method may return {@code false}
+     * even though the map is the identity.
      */
-    public TN removeNode(SN key) {
-        return nodeMap().remove(key);
+    public boolean isIdentity() {
+        return this.identity;
     }
 
-    /**
-     * Removes an edge key-value pair from this map.
-     */
-    public TE removeEdge(SE key) {
-        return edgeMap().remove(key);
-    }
+    private boolean identity;
 
     /**
-     * Tests whether all keys are mapped to different elements.
+     * Indicates if all keys are mapped to different elements.
      */
     @Override
     public boolean isInjective() {

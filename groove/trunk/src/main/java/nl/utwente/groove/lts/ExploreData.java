@@ -26,11 +26,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.function.Function;
 
+import nl.utwente.groove.control.Binding;
+import nl.utwente.groove.control.CallStack;
 import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.lts.GraphTransition.Claz;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Information required for the proper exploration of transient states.
@@ -113,8 +117,10 @@ class ExploreData {
         } else if (partial.getStep().isInitial()) {
             // immediately add recipe transitions to the
             // previously found recipe targets of the successor
-            for (var target : succData.getRecipeTargets()) {
-                addRecipeTransition(partial, target);
+            if (succ.isInternalState()) {
+                succData.getRecipeTargets().forEach(t -> addRecipeTransition(partial, t));
+            } else {
+                addRecipeTransition(partial, new RecipeTarget(partial));
             }
             if (succ.isTransient() && !succ.isDone()) {
                 succData.inRecipeInits.add(partial);
@@ -163,7 +169,7 @@ class ExploreData {
             assert parent != this;
             parent.notifyChildChanged(child, change);
         }
-        if (getState().isInternalState() && change == Change.TOP_LEVEL) {
+        if (getState().getPrimeFrame().isInternal() && change == Change.TOP_LEVEL) {
             if (DEBUG) {
                 System.out
                     .printf("Top-level reachables of %s augmented by %s%n", getState(), child);
@@ -177,9 +183,9 @@ class ExploreData {
      * @param change the kind of change
      */
     private void notifyChildChanged(GraphState child, Change change) {
-        int childAbsence = child.getAbsence();
         if ((!child.isTransient() || child.isClosed()) && this.reachableTransients.remove(child)
             || this.reachableTransients.contains(child)) {
+            int childAbsence = child.getAbsence();
             if (childAbsence < this.transience) {
                 this.transience = childAbsence;
             }
@@ -208,7 +214,7 @@ class ExploreData {
                 this.reachableTransients.add(target);
             }
         }
-        if (getState().isInternalState() && !target.isInternalState()) {
+        if (getState().getPrimeFrame().isInternal() && !target.isInternalState()) {
             addRecipeTarget(new RecipeTarget(partial));
         }
     }
@@ -220,7 +226,7 @@ class ExploreData {
 
     /** Adds recipe transitions from the known recipe sources to a given recipe target. */
     private void addRecipeTarget(RecipeTarget target) {
-        assert getState().isInternalState() && !target.state().isInternalState();
+        assert getState().getPrimeFrame().isInternal() && !target.state().isInternalState();
         if (DEBUG) {
             System.out.printf("Recipe targets of %s augmented by %s%n", getState(), target);
         }
@@ -230,11 +236,11 @@ class ExploreData {
         }
     }
 
-    /** Returns the list of reachable external states.
+    /** Returns the list of reachable recipe targets.
      * Only non-{@code null} for states that started their existence as transient.
      */
     private List<RecipeTarget> getRecipeTargets() {
-        assert getState().isInternalState();
+        assert getState().getPrimeFrame().isInternal();
         if (this.recipeTargets == null) {
             new RecipeTargetSearch(this).run();
         }
@@ -346,7 +352,7 @@ class ExploreData {
                 Set<RecipeTarget> resultEntry = new LinkedHashSet<>();
                 var targets = data.recipeTargets;
                 if (targets == null) {
-                    // we're going to traverse further
+                    // this cache was also lost, we're going to traverse further
                     if (state.isInternalState()) {
                         if (DEBUG) {
                             System.out.printf("Traversing further for %s%n", state);
@@ -433,19 +439,25 @@ class ExploreData {
          */
         RecipeTarget(GraphState state) {
             this(state.getPrimeFrame().getRecipe().get(), getOutValues(state), state);
-            assert state.getPrimeFrame().isInternal();
+            assert state.getPrimeFrame().isInternal() && !state.isInternalState();
         }
 
         /** Creates a recipe target from the last partial transition in the recipe.
          */
         RecipeTarget(RuleTransition partial) {
             this(partial.getStep().getRecipe().get(), getOutValues(partial), partial.target());
-            assert this.state.getPrimeFrame().isInternal();
+            assert partial.isInternalStep() && !state().isInternalState();
         }
 
         /** Computes the recipe out-parameter values from the prime frame of a state. */
         static private HostNode[] getOutValues(GraphState state) {
-            Object[] stack = state.getPrimeStack();
+            var frame = state.getActualFrame();
+            while (!frame.isInternal()) {
+                var pred = frame.getPred();
+                assert pred != null;
+                frame = pred;
+            }
+            Object[] stack = state.getFrameStack(frame);
             var exit = state.getPrimeFrame().getLocation();
             for (var swt : state.getPrimeFrame().getContext().outIterable()) {
                 if (swt.getKind() == Kind.RECIPE) {
@@ -462,18 +474,30 @@ class ExploreData {
         static private HostNode[] getOutValues(RuleTransition partial) {
             var source = partial.source();
             var step = partial.getStep();
-            Object[] stack = source.getFrameStack(step.getSource());
-            stack = step.changeOnEnter().apply(stack);
-            var exit = this.state.getPrimeFrame().getLocation();
-            for (var swt : this.state.getPrimeFrame().getContext().outIterable()) {
-                if (swt.getKind() == Kind.RECIPE) {
-                    break;
-                } else {
-                    stack = swt.assignFinal2Target(exit).toPop().apply(stack);
-                    exit = swt.onFinish();
-                }
+            Object[] result = source.getFrameStack(step.getSource());
+            // compute the push changes; for this we need the rule arguments
+            var addedNodes = partial.getAddedNodes();
+            var anchorImages = partial.getEvent().getAnchorImages();
+            Function<Binding,HostNode> getValue = (b -> switch (b.type()) {
+            case ANCHOR -> (HostNode) anchorImages[b.index()];
+            case CREATOR -> addedNodes[b.index()];
+            default -> throw Exceptions.UNREACHABLE;
+            });
+            result = step.getPush().apply(result, getValue);
+            // pop until the switch within the outer recipe body
+            var recipeFinal = step
+                .getSwitch()
+                .stream()
+                .filter(s -> s.getTemplate().filter(t -> t.hasOwner(Kind.RECIPE)).isPresent())
+                .findFirst()
+                .get();
+            result = step.getPopUntil(s -> s == recipeFinal).apply(result);
+            // apply the transition's permutation, if it is not the identity
+            if (!partial.getMorphism().isIdentity()) {
+                var nodeMap = partial.getMorphism().nodeMap();
+                result = CallStack.map(result, n -> nodeMap.get(n));
             }
-            return exit.assignFinal2Par().apply(stack);
+            return recipeFinal.onFinish().assignFinal2Par().apply(result);
         }
     }
 }

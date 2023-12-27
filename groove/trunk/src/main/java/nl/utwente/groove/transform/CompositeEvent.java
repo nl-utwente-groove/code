@@ -72,8 +72,8 @@ public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.Compos
     }
 
     @Override
-    public AnchorValue getAnchorImage(int i) {
-        return this.eventArray[0].getAnchorImage(i);
+    public AnchorValue[] getAnchorImages() {
+        return this.eventArray[0].getAnchorImages();
     }
 
     @Override

@@ -62,7 +62,9 @@ public class RuleApplication implements DeltaApplier {
      */
     public RuleApplication(RuleEvent event, HostGraph source) {
         this(event, source, (ValueOracle) null);
-        assert !event.getRule().getSignature()
+        assert !event
+            .getRule()
+            .getSignature()
             .has(Direction.ASK) : "Rule signature should not have user-provided parameters";
     }
 
@@ -127,7 +129,8 @@ public class RuleApplication implements DeltaApplier {
             }
         };
         Finder<TreeMatch> matchFinder = Visitor.newFinder(matchContainsProof);
-        boolean result = getRule().getEventMatcher(source.isSimple())
+        boolean result = getRule()
+            .getEventMatcher(source.isSimple())
             .traverse(source, event.getAnchorMap(), matchFinder) != null;
         eventFinder.dispose();
         matchFinder.dispose();
@@ -410,8 +413,7 @@ public class RuleApplication implements DeltaApplier {
         if (record.hasAddedEdges()) {
             for (HostEdge edge : record.getAddedEdges()) {
                 HostNode targetNode = edge.target();
-                if (targetNode instanceof ValueNode) {
-                    ValueNode valueNode = (ValueNode) targetNode;
+                if (targetNode instanceof ValueNode valueNode) {
                     if (this.source.containsNode(targetNode)) {
                         unregisterIsolatedValueNode(valueNode);
                     } else if (registerAddedValueNode(valueNode)) {
@@ -439,10 +441,9 @@ public class RuleApplication implements DeltaApplier {
         if (obj == this) {
             return true;
         }
-        if (!(obj instanceof RuleApplication)) {
+        if (!(obj instanceof RuleApplication other)) {
             return false;
         }
-        RuleApplication other = (RuleApplication) obj;
         return getEvent() == other.getEvent() && getSource() == other.getSource();
     }
 
@@ -549,10 +550,11 @@ public class RuleApplication implements DeltaApplier {
     private void collectComatch(Map<RuleNode,HostNodeSet> result, BasicEvent event) {
         Rule rule = event.getRule();
         Anchor anchor = rule.getAnchor();
+        var anchorImages = event.getAnchorImages();
         for (int i = 0; i < anchor.size(); i++) {
             AnchorKey anchorKey = anchor.get(i);
             if (anchorKey instanceof RuleNode) {
-                HostNode anchorValue = (HostNode) event.getAnchorImage(i);
+                HostNode anchorValue = (HostNode) anchorImages[i];
                 HostNode image = getMorphism().getNode(anchorValue);
                 if (image != null) {
                     addToComatch(result, (RuleNode) anchorKey, image);

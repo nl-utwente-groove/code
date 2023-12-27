@@ -61,14 +61,12 @@ public class MergeMap extends Morphism<HostNode,HostEdge> {
     public void putAll(AGraphMap<HostNode,HostEdge,HostNode,HostEdge> other) {
         assert other instanceof MergeMap;
         // first copy the edges
-        for (Map.Entry<HostEdge,? extends HostEdge> edgeEntry : other.edgeMap()
-            .entrySet()) {
+        for (Map.Entry<HostEdge,? extends HostEdge> edgeEntry : other.edgeMap().entrySet()) {
             HostEdge oldTarget = putEdge(edgeEntry.getKey(), edgeEntry.getValue());
             assert oldTarget == null : "Edges should not be remapped during merging";
         }
         // override to make sure putNode is called
-        for (Map.Entry<HostNode,? extends HostNode> nodeEntry : other.nodeMap()
-            .entrySet()) {
+        for (Map.Entry<HostNode,? extends HostNode> nodeEntry : other.nodeMap().entrySet()) {
             putNode(nodeEntry.getKey(), nodeEntry.getValue());
         }
     }
@@ -119,12 +117,10 @@ public class MergeMap extends Morphism<HostNode,HostEdge> {
         // choose node with most specialised type as image
         TypeNode oldType = n1.getType();
         TypeNode newType = n2.getType();
-        if (newType.getSubtypes()
-            .contains(oldType)) {
+        if (newType.getSubtypes().contains(oldType)) {
             key = n2;
             image = n1;
-        } else if (oldType.getSubtypes()
-            .contains(newType)) {
+        } else if (oldType.getSubtypes().contains(newType)) {
             key = n1;
             image = n2;
         } else {
@@ -162,7 +158,6 @@ public class MergeMap extends Morphism<HostNode,HostEdge> {
     /**
      * Removes the key and its pre-images from the map.
      */
-    @Override
     public HostNode removeNode(HostNode key) {
         HostNode keyImage = getNode(key);
         if (keyImage != null) {

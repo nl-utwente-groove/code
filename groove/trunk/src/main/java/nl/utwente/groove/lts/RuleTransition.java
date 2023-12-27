@@ -16,8 +16,6 @@
  */
 package nl.utwente.groove.lts;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -116,23 +114,22 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
         return new MatchResult(this);
     }
 
-    /**
-     * Returns the list of concrete arguments of this transition.
-     */
-    public default List<HostNode> getArguments() {
-        List<HostNode> result;
+    @Override
+    public default HostNode[] getArguments() {
+        HostNode[] result;
         List<? extends CtrlPar> args = getSwitch().getArgs();
         if (args.isEmpty()) {
             result = EMPTY_ARGS;
         } else {
-            result = new ArrayList<>();
+            var anchorImages = getEvent().getAnchorImages();
+            result = new HostNode[args.size()];
             for (int i = 0; i < args.size(); i++) {
                 HostNode node;
                 CtrlPar par = args.get(i);
                 if (par instanceof Var v) {
                     var bind = getAction().getParBinding(i);
                     node = switch (bind.type()) {
-                    case ANCHOR -> (HostNode) getEvent().getAnchorImage(bind.index());
+                    case ANCHOR -> (HostNode) anchorImages[bind.index()];
                     case CREATOR -> getAddedNodes()[bind.index()];
                     default -> throw Exceptions.UNREACHABLE;
                     };
@@ -141,7 +138,7 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
                 } else {
                     throw Exceptions.UNREACHABLE;
                 }
-                result.add(node);
+                result[i] = node;
             }
         }
         return result;
@@ -186,5 +183,5 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
     public RuleTransitionStub toStub();
 
     /** Static empty list of rule transition arguments. */
-    public static final List<HostNode> EMPTY_ARGS = Collections.emptyList();
+    public static final HostNode[] EMPTY_ARGS = new HostNode[0];
 }

@@ -19,6 +19,7 @@ package nl.utwente.groove.control.template;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import nl.utwente.groove.control.Assignment;
@@ -29,6 +30,7 @@ import nl.utwente.groove.control.CtrlPar;
 import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.grammar.Callable;
+import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.Signature;
@@ -72,14 +74,25 @@ public class Switch implements Comparable<Switch>, Relocatable {
 
     private final Location onFinish;
 
+    /** Returns the (optional) template of which this switch is an element. */
+    public Optional<Template> getTemplate() {
+        return getSource().getTemplate();
+    }
+
+    /** Indicates if this switch has a call of a given kind. */
+    public boolean hasKind(Kind kind) {
+        return getKind() == kind;
+    }
+
     /**
-     * Returns the kind of switch.
+     * Returns the kind of call of this switch.
      */
-    public Callable.Kind getKind() {
+    public Kind getKind() {
         return this.kind;
     }
 
-    private final Callable.Kind kind;
+    /** The kind of call of this switch. */
+    private final Kind kind;
 
     /**
      * Convenience method to return the name of the unit called in
@@ -253,7 +266,7 @@ public class Switch implements Comparable<Switch>, Relocatable {
     /** Computes the value for {@link #assignPar2Target}. */
     private Assignment computeAssignPar2Target() {
         assert getKind().isProcedure();
-        var outParMap = ((Procedure) getUnit()).getOutPars();
+        var outParMap = getCall().getOutVars();
         List<Binding> bindings = new ArrayList<>();
         for (var var : onFinish().getVars()) {
             var parIx = outParMap.get(var);
@@ -268,9 +281,8 @@ public class Switch implements Comparable<Switch>, Relocatable {
         return new Assignment(bindings);
     }
 
-    /** Returns the assignment to source variables of the initial location of
-     * the callee template, based on source variables of this switch and
-     * constant arguments of the call.
+    /** Returns an assignment to source variables of the initial location of
+     * the callee template, based on source variables of this switch.
      * This is only valid if the callee is a procedure.
      */
     public Assignment assignSource2Init() {

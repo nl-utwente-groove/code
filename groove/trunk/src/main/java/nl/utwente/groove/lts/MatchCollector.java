@@ -159,13 +159,12 @@ public class MatchCollector {
 
     /** Tests if all anchor images in a given event actually occur in the graph. */
     private void checkEvent(RuleEvent event) {
-        if (event instanceof CompositeEvent) {
-            for (RuleEvent subEvent : ((CompositeEvent) event).getEventSet()) {
-                checkEvent(subEvent);
-            }
+        if (event instanceof CompositeEvent ce) {
+            ce.getEventSet().forEach(this::checkEvent);
         } else {
-            for (int i = 0; i < event.getRule().getAnchor().size(); i++) {
-                AnchorValue anchorImage = event.getAnchorImage(i);
+            var anchorImages = event.getAnchorImages();
+            for (int i = 0; i < anchorImages.length; i++) {
+                AnchorValue anchorImage = anchorImages[i];
                 HostGraph host = MatchCollector.this.state.getGraph();
                 switch (anchorImage.getAnchorKind()) {
                 case EDGE:

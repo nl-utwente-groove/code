@@ -84,7 +84,7 @@ public abstract class LazyFactory<T> implements Supplier<T> {
         var value = this.value;
         return value == null
             ? "null"
-            : this.toString();
+            : value.toString();
     }
 
     /** Creates an instance of this factory from a given supplier. */

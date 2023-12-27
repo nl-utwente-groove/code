@@ -16,6 +16,11 @@
  */
 package nl.utwente.groove.control.instance;
 
+import static nl.utwente.groove.control.instance.CallStackChange.Kind.NONE;
+import static nl.utwente.groove.control.instance.CallStackChange.Kind.POP;
+import static nl.utwente.groove.control.instance.CallStackChange.Kind.PUSH;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
@@ -27,13 +32,7 @@ import nl.utwente.groove.control.Assignment;
 import nl.utwente.groove.control.Binding;
 import nl.utwente.groove.control.Binding.Source;
 import nl.utwente.groove.control.CallStack;
-import nl.utwente.groove.control.CtrlVar;
-import nl.utwente.groove.control.Procedure;
-import nl.utwente.groove.control.template.Location;
-import nl.utwente.groove.control.template.NestedSwitch;
-import nl.utwente.groove.control.template.Switch;
-import nl.utwente.groove.grammar.Signature;
-import nl.utwente.groove.grammar.UnitPar;
+import nl.utwente.groove.control.instance.CallStackChange.Kind;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.util.Exceptions;
 
@@ -43,10 +42,45 @@ import nl.utwente.groove.util.Exceptions;
  * @version $Revision$
  */
 @NonNullByDefault
-public record CallStackChange(Kind kind, List<Assignment> assigns) {
+public record CallStackChange(Kind kind, List<Assignment> assigns, @Nullable CallStackChange pred) {
 
     private CallStackChange(Kind kind, Assignment... assigns) {
-        this(kind, Arrays.asList(assigns));
+        this(kind, Arrays.asList(assigns), null);
+    }
+
+    /** Returns a new call stack change that first applies the effects of this one
+     * and then another change passed in as a parameter.
+     * @param next the change to be applied after this one
+     */
+    public CallStackChange then(CallStackChange next) {
+        return kind() == NONE
+            ? next
+            : next.kind() == NONE
+                ? this
+                : next.after(this);
+    }
+
+    /** Returns a list of singular changes based on this composite change,
+     *  in the order in which they are applied. */
+    public List<CallStackChange> toList() {
+        var pred = pred();
+        List<CallStackChange> result = pred == null
+            ? new ArrayList<>()
+            : pred.toList();
+        result.add(new CallStackChange(this.kind(), this.assigns(), null));
+        return result;
+    }
+
+    /** Returns a new call stack change that first applies the effects of another
+     * change passed in as a parameter, and then this one.
+     * @param first the change to be applied before this one
+     */
+    public CallStackChange after(CallStackChange first) {
+        var oldPred = pred();
+        var newPred = oldPred == null
+            ? first
+            : oldPred.after(first);
+        return new CallStackChange(kind(), assigns(), newPred);
     }
 
     /** Returns the first assignment in this change. */
@@ -64,11 +98,11 @@ public record CallStackChange(Kind kind, List<Assignment> assigns) {
      * and returns the modified stack.
      * Only valid for {@link Kind#POP} and {@link Kind#PUSH} assignments;
      * use {@link #apply(Object[], Function)} with non-{@code null} parameter
-     * retrieval function to apply {@link Kind#REPLACE}.
+     * retrieval function to apply {@link Kind#PUSH}.
      * @return the call stack obtained by applying this change
      */
     public Object[] apply(Object[] stack) {
-        assert kind() != Kind.REPLACE;
+        assert kind() != Kind.PUSH;
         return apply(stack, null);
     }
 
@@ -81,6 +115,12 @@ public record CallStackChange(Kind kind, List<Assignment> assigns) {
      * @return the call stack obtained by applying this assignment
      */
     public Object[] apply(Object[] stack, @Nullable Function<Binding,HostNode> getPar) {
+        // first apply the effects of the predecessor, if any
+        var pred = pred();
+        if (pred != null) {
+            stack = pred.apply(stack, getPar);
+        }
+        // now apply the effects of this change
         Object[] result;
         switch (kind()) {
         case POP:
@@ -99,13 +139,8 @@ public record CallStackChange(Kind kind, List<Assignment> assigns) {
                     : CallStack.push(result, newTop);
             }
             break;
-        case REPLACE:
-            if (assign().isIdentity()) {
-                result = stack;
-            } else {
-                HostNode[] newTop = assign().apply(stack, getPar);
-                result = CallStack.replace(stack, newTop);
-            }
+        case NONE:
+            result = stack;
             break;
         default:
             throw Exceptions.UNREACHABLE;
@@ -144,74 +179,25 @@ public record CallStackChange(Kind kind, List<Assignment> assigns) {
 
     @Override
     public String toString() {
-        return this.kind.name() + this.assigns;
+        var pred = pred();
+        return (pred == null
+            ? ""
+            : pred.toString() + "; ") + this.kind.name() + this.assigns;
     }
 
-    /**
-     * Computes a multi-level call stack change for the nested switch of a given step.
-     * For all but the outer and inner switch of the step, the assignment pushes a new level onto the
-     * call stack; for the outer switch, it modifies the call frame at the current top of the stack.
-     * All (modified or pushed) levels are assignments to the target variables of the
-     * respective switch.
-     * @param step the step for which the change is to be computed
-     */
-    static CallStackChange enter(Step step) {
-        NestedSwitch swt = step.getSwitch();
-        Assignment[] result = new Assignment[swt.size()];
-        Assignment sourceAssign = Assignment.identity(step.getSource().getVars());
-        var iter = swt.iterator();
-        int i = 0;
-        while (iter.hasNext()) {
-            Switch s = iter.next();
-            result[i] = s.assignSource2Target().after(sourceAssign);
-            if (iter.hasNext()) {
-                sourceAssign = s.assignSource2Init().after(sourceAssign);
-                i++;
-            }
-        }
-        return CallStackChange.push(result);
+    /** Returns a new {@link #NONE} change (which does not change the stack. */
+    public static CallStackChange none() {
+        return new CallStackChange(NONE);
     }
 
-    /**
-     * Computes the call stack change from a final frame in a called
-     * procedure to the target frame of the call switch.
-     * @param top final location of the callee's template
-     * @param swit the caller switch
-     */
-    static CallStackChange exit(Location top, Switch swit) {
-        assert swit.getKind().isProcedure();
-        assert top.isFinal();
-        Assignment result = new Assignment();
-        Signature<UnitPar.ProcedurePar> sig = ((Procedure) swit.getUnit()).getSignature();
-        var outVars = swit.getCall().getOutVars();
-        var finalVars = top.getVarIxMap();
-        for (CtrlVar var : swit.onFinish().getVars()) {
-            Integer ix = outVars.get(var);
-            Binding rhs;
-            if (ix == null) {
-                // the value does not come from the call
-                // which means it has already been copied from the caller's source location
-                rhs = Binding.none(var);
-            } else {
-                // the value comes from an output parameter of the call
-                // find the variable of the corresponding formal parameter
-                CtrlVar par = sig.getPar(ix).getVar();
-                // look it up in the final location variables
-                rhs = Binding.var(var, finalVars.get(par));
-            }
-            result.add(rhs);
-        }
-        return pop(result);
-    }
-
-    /** Creates a new {@link Kind#PUSH} action with a given list of assignments. */
+    /** Creates a new {@link #PUSH} action with a given list of assignments. */
     public static CallStackChange push(Assignment... assigs) {
-        return new CallStackChange(Kind.PUSH, assigs);
+        return new CallStackChange(PUSH, assigs);
     }
 
     /** Creates a new {@link Kind#POP} action with a given assignment. */
     public static CallStackChange pop(Assignment assign) {
-        return new CallStackChange(Kind.POP, assign);
+        return new CallStackChange(POP, assign);
     }
 
     /** Kind of {@link CallStackChange}. */
@@ -220,7 +206,7 @@ public record CallStackChange(Kind kind, List<Assignment> assigns) {
         PUSH,
         /** Pop a frame instance. */
         POP,
-        /** Invoke a rule. */
-        REPLACE,;
+        /** Do nothing. */
+        NONE,;
     }
 }
