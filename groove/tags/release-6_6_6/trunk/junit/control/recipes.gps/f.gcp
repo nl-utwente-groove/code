@@ -1,0 +1,10 @@
+recipe r(out node x) {
+	x := a;
+}
+
+function f() {
+	node y := r;
+}
+
+// node z := r;
+f;

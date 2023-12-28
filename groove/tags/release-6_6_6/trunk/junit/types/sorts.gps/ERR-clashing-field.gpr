@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph role="rule" edgeids="false" edgemode="directed" id="ERR-clashing-field">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <attr name="enabled">
+            <string>false</string>
+        </attr>
+        <node id="n0">
+            <attr name="layout">
+                <string>174 145 23 18</string>
+            </attr>
+        </node>
+        <node id="n1">
+            <attr name="layout">
+                <string>180 237 16 18</string>
+            </attr>
+        </node>
+        <edge from="n0" to="n0">
+            <attr name="label">
+                <string>id:a</string>
+            </attr>
+        </edge>
+        <edge from="n0" to="n0">
+            <attr name="label">
+                <string>type:A</string>
+            </attr>
+        </edge>
+        <edge from="n1" to="n1">
+            <attr name="label">
+                <string>real:a.x</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

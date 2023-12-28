@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph edgemode="directed" edgeids="false" role="rule" id="addNext">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n77">
+            <attr name="layout">
+                <string>31 191 18 18</string>
+            </attr>
+        </node>
+        <node id="n74">
+            <attr name="layout">
+                <string>36 122 18 18</string>
+            </attr>
+        </node>
+        <node id="n75">
+            <attr name="layout">
+                <string>181 123 18 18</string>
+            </attr>
+        </node>
+        <node id="n76">
+            <attr name="layout">
+                <string>175 25 18 18</string>
+            </attr>
+        </node>
+        <edge to="n77" from="n77">
+            <attr name="label">
+                <string>not:</string>
+            </attr>
+        </edge>
+        <edge to="n77" from="n77">
+            <attr name="label">
+                <string>not:A</string>
+            </attr>
+        </edge>
+        <edge to="n74" from="n74">
+            <attr name="label">
+                <string>A</string>
+            </attr>
+        </edge>
+        <edge to="n75" from="n74">
+            <attr name="label">
+                <string>new:next</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 44 131 189 132 12</string>
+            </attr>
+        </edge>
+        <edge to="n77" from="n74">
+            <attr name="label">
+                <string>not:next</string>
+            </attr>
+        </edge>
+        <edge to="n74" from="n75">
+            <attr name="label">
+                <string>not:=</string>
+            </attr>
+            <attr name="layout">
+                <string>490 35 189 132 123 95 44 131 13</string>
+            </attr>
+        </edge>
+        <edge to="n75" from="n75">
+            <attr name="label">
+                <string>A</string>
+            </attr>
+        </edge>
+        <edge to="n74" from="n75">
+            <attr name="label">
+                <string>not:next</string>
+            </attr>
+            <attr name="layout">
+                <string>490 35 189 132 123 95 44 131 13</string>
+            </attr>
+        </edge>
+        <edge to="n76" from="n76">
+            <attr name="label">
+                <string>not:</string>
+            </attr>
+        </edge>
+        <edge to="n75" from="n76">
+            <attr name="label">
+                <string>not:next</string>
+            </attr>
+        </edge>
+        <edge to="n76" from="n76">
+            <attr name="label">
+                <string>not:A</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>
