@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.control;
 
+import java.util.Objects;
 import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -167,6 +168,19 @@ public record Binding(Binding.Source type, Object target, int index, @Nullable C
      */
     public static Binding none(Object target) {
         return new Binding(Source.NONE, target, 0, null);
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof Binding other)) {
+            return false;
+        }
+        return Objects.equals(this.type, other.type) && Objects.equals(this.target, other.target)
+            && this.index == other.index && Objects.equals(this.value, other.value)
+            && this.depth == other.depth;
     }
 
     /** Kind of source for a variable assignment. */

@@ -83,9 +83,9 @@ public class Version {
      * <li>y = minor version
      * <li>z = bug fix version
      * </ul>
-     * A '+' sign at the end of the number indicates a development version.
+     * The suffix {@link #SNAPSHOT} indicates a development version.
      */
-    public static final String NUMBER = "6.6.5" + SNAPSHOT;
+    public static final String NUMBER = "6.6.6" + SNAPSHOT;
 
     /** Minimum Java JRE version required. */
     static public final String NUMBER_JAVAMIN = "17";
