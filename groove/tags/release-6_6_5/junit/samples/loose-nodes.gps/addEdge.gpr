@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph edgemode="directed" edgeids="false" role="rule" id="addEdge">
+        <node id="n29">
+            <attr name="layout">
+                <string>96 88 18 18</string>
+            </attr>
+        </node>
+        <node id="n30">
+            <attr name="layout">
+                <string>238 90 18 18</string>
+            </attr>
+        </node>
+        <edge to="n30" from="n29">
+            <attr name="label">
+                <string>not:=</string>
+            </attr>
+            <attr name="layout">
+                <string>250 -32 105 97 174 59 247 99 12</string>
+            </attr>
+        </edge>
+        <edge to="n30" from="n29">
+            <attr name="label">
+                <string>not:distinct</string>
+            </attr>
+            <attr name="layout">
+                <string>250 -32 105 97 174 59 247 99 12</string>
+            </attr>
+        </edge>
+        <edge to="n30" from="n29">
+            <attr name="label">
+                <string>new:distinct</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>
