@@ -1,5 +1,0 @@
-recipe r(out node x) {
-	x := a;
-}
-
-node z := r;

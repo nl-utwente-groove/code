@@ -1,6 +1,0 @@
-package sub;
-import rule;
-
-recipe a() {
-  rule;
-}
