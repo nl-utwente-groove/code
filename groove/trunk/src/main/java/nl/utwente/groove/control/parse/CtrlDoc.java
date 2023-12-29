@@ -104,8 +104,9 @@ public class CtrlDoc {
                 }
             }
         } catch (IOException e) {
-            throw Exceptions.illegalState("Error while reading grammar file %s: %s",
-                                          CTRL_GRAMMAR_FILE, e.getMessage());
+            throw Exceptions
+                .illegalState("Error while reading grammar file %s: %s", CTRL_GRAMMAR_FILE,
+                              e.getMessage());
         }
 
         return grammarText;
@@ -153,31 +154,30 @@ public class CtrlDoc {
             if (token.type == TOKEN_SINGLE_COMMENT) {
                 String text = token.getAttribute();
                 String syntax = getSuffix(text, SYNTAX_PATTERN);
-                if (syntax == null) {
-                    continue;
+                if (syntax != null) {
+                    currentHelp = new Help(this.tokenMap);
+                    // add the new help item to the content for this rule, or
+                    // to the content of rule 'name' if the syntax starts with 'name:'
+                    int colonIx = syntax.indexOf(':');
+                    if (colonIx >= 0) {
+                        String ruleName = syntax.substring(0, colonIx);
+                        syntax = syntax.substring(colonIx + 1);
+                        content.add(Pair.newPair(ruleName, currentHelp));
+                    } else {
+                        content.add(Pair.newPair(rule.name, currentHelp));
+                    }
+                    currentHelp.setSyntax(syntax);
                 }
-                currentHelp = new Help(this.tokenMap);
-                // add the new help item to the content for this rule, or
-                // to the content of rule 'name' if the syntax starts with 'name:'
-                int colonIx = syntax.indexOf(':');
-                if (colonIx >= 0) {
-                    String ruleName = syntax.substring(0, colonIx);
-                    syntax = syntax.substring(colonIx + 1);
-                    content.add(Pair.newPair(ruleName, currentHelp));
-                } else {
-                    content.add(Pair.newPair(rule.name, currentHelp));
-                }
-                currentHelp.setSyntax(syntax);
                 String header = getSuffix(text, HEADER_PATTERN);
-                if (header != null) {
+                if (header != null && currentHelp != null) {
                     currentHelp.setHeader(header);
                 }
                 String body = getSuffix(text, BODY_PATTERN);
-                if (body != null) {
+                if (body != null && currentHelp != null) {
                     currentHelp.addBody(body);
                 }
                 String par = getSuffix(text, PARS_PATTERN);
-                if (par != null) {
+                if (par != null && currentHelp != null) {
                     currentHelp.addPar(par);
                 }
             }
