@@ -6,12 +6,12 @@
         </attr>
         <node id="n0">
             <attr name="layout">
-                <string>167 145 30 18</string>
+                <string>164 145 36 18</string>
             </attr>
         </node>
         <node id="n1">
             <attr name="layout">
-                <string>312 142 74 18</string>
+                <string>304 142 90 18</string>
             </attr>
         </node>
         <edge from="n0" to="n0">
@@ -41,7 +41,7 @@
         </edge>
         <edge from="n1" to="n1">
             <attr name="label">
-                <string>int:x+1</string>
+                <string>real:x+1.0</string>
             </attr>
         </edge>
     </graph>
