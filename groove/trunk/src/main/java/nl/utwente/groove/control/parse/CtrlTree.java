@@ -439,7 +439,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
             try {
                 getInfo().setControlName(getControlName());
                 CtrlChecker checker = createChecker();
-                CtrlTree result = (CtrlTree) checker.program().getTree();
+                CtrlTree result = checker.program().getTree();
                 getInfo().getErrors().throwException();
                 result.setControlName(getControlName());
                 result.setChecked();

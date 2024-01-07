@@ -256,6 +256,10 @@ final public class AspectJModel extends JModel<AspectGraph> {
         this.edgeJCellMap.clear();
         this.edgeJCellMap.putAll(edgeJCellMap);
         setGraph(graph);
+        // There may be a more efficient way to do the following, but it's not obvious.
+        // Without the refresh, size changes in other cells than the one just edited
+        // are not carried through
+        getJGraph().refreshAllCells();
         if (GUI_DEBUG) {
             System.out.printf("Graph resynchronised with model %s%n", getName());
             Groove.printStackTrace(System.out, false);

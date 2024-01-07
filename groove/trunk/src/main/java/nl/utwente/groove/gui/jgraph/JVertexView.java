@@ -346,10 +346,10 @@ public class JVertexView extends VertexView {
                                                boolean focus, boolean preview) {
             assert view instanceof JVertexView : String
                 .format("This renderer is only meant for %s", JVertexView.class);
-            this.view = (JVertexView) view;
+            var jView = this.view = (JVertexView) view;
             this.cell = this.view.getCell();
-            VisualMap visuals = this.visuals = this.view.getCellVisuals();
-            this.parAdornment = this.visuals.getParAdornment();
+            VisualMap visuals = this.visuals = jView.getCellVisuals();
+            this.parAdornment = visuals.getParAdornment();
             if (this.parAdornment == null) {
                 this.parAdornHeight = 0;
                 this.parAdornWidth = 0;
@@ -357,7 +357,7 @@ public class JVertexView extends VertexView {
                 this.parAdornHeight = 12;
                 this.parAdornWidth = getAdornWidth(this.parAdornment);
             }
-            this.idAdornment = this.visuals.getIdAdornment();
+            this.idAdornment = visuals.getIdAdornment();
             if (this.idAdornment == null) {
                 this.idAdornHeight = 0;
                 this.idAdornWidth = 0;
@@ -369,7 +369,7 @@ public class JVertexView extends VertexView {
             this.dash = visuals.getDash();
             this.lineColor = visuals.getForeground();
             this.selected = visuals.isEmphasised();
-            boolean emph = this.view.armed || this.selected;
+            boolean emph = jView.armed || this.selected;
             float lineWidth = visuals.getLineWidth();
             if (emph) {
                 lineWidth += JAttr.EMPH_INCREMENT;
@@ -409,7 +409,7 @@ public class JVertexView extends VertexView {
             setFont((font != null)
                 ? font
                 : graph.getFont());
-            setText(this.view.getText());
+            setText(jView.getText());
             // set alignment so any extra space goes to the top
             // setVerticalAlignment(SwingConstants.BOTTOM);
             this.error = visuals.isError();

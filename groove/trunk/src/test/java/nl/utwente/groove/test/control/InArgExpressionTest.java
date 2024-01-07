@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
- * $Id$
+ * $Id: TermTest.java 6285 2023-11-13 14:26:58Z rensink $
  */
 package nl.utwente.groove.test.control;
 
@@ -31,10 +31,10 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Test class for the construction of symbolic control terms.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 6285 $
  */
 @SuppressWarnings("javadoc")
-public class TermTest extends CtrlTester {
+public class InArgExpressionTest extends CtrlTester {
     {
         initGrammar("abc");
     }

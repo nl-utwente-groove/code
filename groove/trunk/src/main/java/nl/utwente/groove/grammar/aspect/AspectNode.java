@@ -275,13 +275,15 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         default:
             // no other checks
         }
-        addErrors(errors);
+        errors.throwException();
     }
 
     @Override
     public void fixDataStructures() {
         this.aspects.setFixed();
         this.aspects = Aspect.normalise(this.aspects);
+        // generate derived terms before errors are fixed
+        this.expression.get();
         if (hasErrors()) {
             this.errors.setFixed();
         } else {

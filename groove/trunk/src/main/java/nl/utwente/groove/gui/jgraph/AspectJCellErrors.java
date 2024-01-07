@@ -70,7 +70,7 @@ public class AspectJCellErrors implements Iterable<FormatError> {
         return this.aspectErrors.isEmpty() && this.extraErrors.isEmpty();
     }
 
-    /** Returns either the errors or the extra errors, depending on a flag.
+    /** Returns either the aspect errors or the extra errors, depending on a flag.
      * A second flag determines if the returned set must be modifiable.
      */
     private FormatErrorSet getErrors(boolean aspect, boolean modifiable) {
@@ -89,7 +89,10 @@ public class AspectJCellErrors implements Iterable<FormatError> {
         return result;
     }
 
+    /** The JCell of which this is the error set. */
     private final AspectJCell jCell;
+    /** Initially empty set of aspect errors. */
     private FormatErrorSet aspectErrors = FormatErrorSet.EMPTY;
+    /** Initially empty set of extra errors. */
     private FormatErrorSet extraErrors = FormatErrorSet.EMPTY;
 }
