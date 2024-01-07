@@ -398,7 +398,8 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 }
             }
         }
-        errors.throwException();
+        addErrors(errors);
+        getErrors().throwException();
     }
 
     /** Tests whether a given edge role is compatible with the role of an adjacent node. */
@@ -460,6 +461,13 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     public void fixDataStructures() {
         this.aspects.setFixed();
         this.aspects = Aspect.normalise(this.aspects);
+        // generate derived terms before errors are fixed
+        if (isTest()) {
+            this.test.get();
+        }
+        if (isAssign()) {
+            this.assign.get();
+        }
         if (hasErrors()) {
             this.errors.setFixed();
         } else {
@@ -809,7 +817,9 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     /** The expression tree, if this is an assignment edge. */
     private @Nullable ExprTree assignTree;
 
-    /** Convenience method to retrieve the attribute aspect content as an assignment. */
+    /** Returns the assignment wrapped by this edge, if any.
+     * Should only be called if {@link #isAssign()} holds.
+     */
     public Assignment getAssign() throws FormatException {
         var result = this.assign.get();
         getErrors().throwException();
@@ -888,7 +898,9 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     private LazyFactory<Expression> test = LazyFactory.instance(this::createTest);
 
-    /** Convenience method to retrieve the attribute aspect content as a predicate. */
+    /** Returns the test wrapped by this edge, if any.
+     * Should only be called if {@link #isTest()} holds.
+     */
     public Expression getTest() throws FormatException {
         var result = this.test.get();
         getErrors().throwException();

@@ -193,6 +193,7 @@ public class NormalAspectGraph extends AspectGraph {
                 boolean nac = edge.has(Category.ROLE, AspectKind::inNAC)
                     && (sourceIsNesting || !source.has(Category.ROLE, AspectKind::inNAC));
                 Expression predicate = edge.getTest();
+                assert predicate != null;
                 AspectNode level = sourceIsNesting
                     ? source.getParentNode()
                     : source.getLevelNode();

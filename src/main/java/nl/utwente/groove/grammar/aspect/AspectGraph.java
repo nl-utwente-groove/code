@@ -398,10 +398,12 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             }
             // create the node id map to check for duplicate IDs
             getNodeIdMap();
-            addErrors(DependencyChecker.instance().check(this));
+            if (!hasErrors()) {
+                addErrors(DependencyChecker.instance().check(this));
+            }
+            getErrors().setFixed();
             setStatus(Status.FIXED);
             super.setFixed();
-            getErrors().setFixed();
         }
         return result;
     }

@@ -455,8 +455,9 @@ public class CtrlHelper {
      */
     void checkVarArg(CtrlTree argTree) {
         int childCount = argTree.getChildCount();
-        assert argTree.getType() == CtrlChecker.ARG && childCount > 0 && childCount <= 2;
-        boolean isOutArg = childCount == 2;
+        assert (argTree.getType() == CtrlChecker.ARG_ID || argTree.getType() == CtrlChecker.ARG_OUT)
+            && childCount > 0 && childCount <= 2;
+        boolean isOutArg = argTree.getType() == CtrlChecker.ARG_OUT;
         CtrlVar var = checkVar(argTree.getChild(childCount - 1), !isOutArg);
         if (var != null) {
             CtrlPar par = new CtrlPar.Var(var, !isOutArg);
@@ -465,13 +466,13 @@ public class CtrlHelper {
     }
 
     void checkDontCareArg(CtrlTree argTree) {
-        assert argTree.getType() == CtrlChecker.ARG && argTree.getChildCount() == 1;
+        assert argTree.getType() == CtrlChecker.ARG_WILD && argTree.getChildCount() == 0;
         CtrlPar result = CtrlPar.wild();
         argTree.setCtrlPar(result);
     }
 
     void checkConstArg(CtrlTree argTree) {
-        assert argTree.getType() == CtrlChecker.ARG && argTree.getChildCount() == 1;
+        assert argTree.getType() == CtrlChecker.ARG_LIT && argTree.getChildCount() == 1;
         try {
             Expression constant = Expression.parse(argTree.getChild(0).getText()).toExpression();
             AlgebraFamily family = this.namespace.getGrammarProperties().getAlgebraFamily();
@@ -484,6 +485,16 @@ public class CtrlHelper {
             assert false : String
                 .format("%s is not a parsable constant", argTree.getChild(0).getText());
         }
+    }
+
+    void checkOpArg(CtrlTree argTree) {
+        assert argTree.getType() == CtrlChecker.ARG_OP && argTree.getChildCount() == 3;
+        // TODO
+    }
+
+    void checkCallArg(CtrlTree argTree) {
+        assert argTree.getType() == CtrlChecker.ARG_CALL && argTree.getChildCount() == 2;
+        // TODO
     }
 
     /**

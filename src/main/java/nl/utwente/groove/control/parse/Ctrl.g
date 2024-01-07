@@ -9,7 +9,12 @@ options {
 tokens {
   IMPORTS;
   RECIPES;
-  ARG;
+  ARG_OUT;
+  ARG_WILD;
+  ARG_ID;
+  ARG_CALL;
+  ARG_OP;
+  ARG_LIT;
   ARGS;
   PAR;
   PARS;
@@ -344,7 +349,7 @@ assign
   ;
 
 target
-  : ID -> ^(ARG OUT ID)
+  : ID -> ^(ARG_OUT ID)
   ;
 
 /** @H Rule, procedure or group call. */
@@ -353,7 +358,7 @@ call
 	  //@B Invokes a rule, procedure or group %s, with optional arguments %s.
 	  //@P the rule, procedure or group name
 	  //@P optional comma-separated list of arguments
-	  rule_name arg_list?
+	  rule_name arg_list[true]?
     { helper.registerCall($rule_name.tree); }
 	  -> ^(CALL[$rule_name.start] rule_name arg_list?)
 	;
@@ -377,32 +382,47 @@ rule_name
 /** @H Argument list 
   * @B List of arguments for a rule, function or recipe call. 
   */
-arg_list
+arg_list[boolean out]
   : //@S [ arg (COMMA arg)* ]
     //@B Possibly empty, comma-separated list of arguments
-    open=LPAR (arg (COMMA arg)*)? close=RPAR
+    open=LPAR (arg[out] (COMMA arg[out])*)? close=RPAR
     -> ^(ARGS[$open] arg* RPAR[$close])
   ;
 
 /** @H Argument
   * @B Argument for a rule, procedure or group call. 
   */
-arg
+arg[boolean out]
   : //@S OUT id
     //@H Output argument
     //@B Variable %s will receive a value through the call.
-    OUT ID -> ^(ARG OUT ID)
-  | //@S id
-    //@H Input argument
-    //@B Variable %s must be bound to a value, which will be passed into the call.
-    ID -> ^(ARG ID)
+    { out }? OUT ID -> ^(ARG_OUT ID)
   | //@S DONT_CARE
     //@H Don't-care argument
     //@B The parameter does not affect the match or the control state.
-    DONT_CARE -> ^(ARG DONT_CARE)   
-  | literal -> ^(ARG literal)
+    { out }? DONT_CARE -> ^(ARG_WILD)   
+  | in_arg_expr
   ;
 
+/** @H Input argument expression
+  * @B Input argument for a rule, procedure or group call. 
+  */
+in_arg_expr
+  : //@S arg: id
+    //@H Variable input argument
+    //@B Variable %s must be bound to a value, which will be passed into the call.
+    ID ( arg_list[false] -> ^(ARG_CALL ID arg_list)
+       | operator in_arg_expr -> ^(ARG_OP ID operator in_arg_expr)
+       | -> ^(ARG_ID ID)
+       )
+  | literal -> ^(ARG_LIT literal)
+  | LPAR in_arg_expr RPAR -> in_arg_expr
+  ;
+
+operator
+  : LANGLE | RANGLE | LEQ | GEQ | EQ | NEQ | PLUS | MINUS | PERCENT | ASTERISK | SLASH | AMP | BAR | NOT
+  ;
+  	
 literal
   : //@S arg: TRUE
     //@B Boolean value for truth.
@@ -519,17 +539,24 @@ BAR       : '|' ;
 SHARP     : '#' ;
 PLUS      : '+' ;
 ASTERISK  : '*' ;
-DONT_CARE	: '_' ;
+PERCENT   : '%' ;
+DONT_CARE : '_' ;
 MINUS     : '-' ;
 QUOTE     : '"' ;
 BQUOTE    : '`' ;
+SLASH     : '/';
 BSLASH    : '\\';
 COMMA     : ',' ;
+COLON     : ':' ;
 SEMI      : ';' ;
 LPAR      : '(' ;
 RPAR      : ')' ;
 LANGLE    : '<' ;
 RANGLE    : '>' ;
+LEQ       : '<=' ;
+GEQ       : '>=' ;
+EQ        : '==' ;
+NEQ       : '!=' ;
 LCURLY    : '{' ;
 RCURLY    : '}' ;
 

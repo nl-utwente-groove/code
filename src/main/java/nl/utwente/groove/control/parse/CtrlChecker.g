@@ -193,15 +193,19 @@ arg_list
   ;
 
 arg
-	: ^( ARG 
-	     ( OUT? ID { helper.checkVarArg($ARG); }
-	     | DONT_CARE { helper.checkDontCareArg($ARG); }
-	     | literal { helper.checkConstArg($ARG); }
-	     )
-	   )
-	;
+  : ^( ARG_OUT ID { helper.checkVarArg($ARG_OUT); } )
+  | ^( ARG_WILD { helper.checkDontCareArg($ARG_WILD); } )
+  | ^( ARG_ID ID { helper.checkVarArg($ARG_ID); } )
+  | ^( ARG_LIT literal { helper.checkConstArg($ARG_LIT); } )
+  | ^( ARG_OP ID operator arg { helper.checkOpArg($ARG_OP); } )
+  | ^( ARG_CALL ID arg_list { helper.checkCallArg($ARG_CALL); } )
+  ;
 
 literal
   : TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT
   ;
-  
+
+
+operator
+  : LANGLE | RANGLE | LEQ | GEQ | EQ | NEQ | PLUS | MINUS | PERCENT | ASTERISK | SLASH | AMP | BAR | NOT
+  ;
