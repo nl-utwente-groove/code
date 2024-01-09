@@ -26,7 +26,7 @@ import nl.utwente.groove.control.Assignment;
 import nl.utwente.groove.control.Binding;
 import nl.utwente.groove.control.Binding.Source;
 import nl.utwente.groove.control.Call;
-import nl.utwente.groove.control.CtrlPar;
+import nl.utwente.groove.control.CtrlArg;
 import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.grammar.Callable;
@@ -106,7 +106,7 @@ public class Switch implements Comparable<Switch>, Relocatable {
      * Convenience method to return the arguments of the call of this switch.
      * @return the list of arguments
      */
-    public final List<? extends CtrlPar> getArgs() {
+    public final List<? extends CtrlArg> getArgs() {
         return getCall().getArgs();
     }
 
@@ -159,16 +159,16 @@ public class Switch implements Comparable<Switch>, Relocatable {
      */
     private Assignment computeAssignSource2Par() {
         Assignment result = new Assignment();
-        List<? extends CtrlPar> args = getArgs();
+        List<? extends CtrlArg> args = getArgs();
         Signature<? extends UnitPar> sig = getUnit().getSignature();
         int size = args.size();
         var sourceVars = getSource().getVarIxMap();
         for (int i = 0; i < size; i++) {
             var target = sig.getPar(i);
             assert args != null; // size is at least one
-            CtrlPar arg = args.get(i);
+            CtrlArg arg = args.get(i);
             Binding bind;
-            if (arg instanceof CtrlPar.Var v) {
+            if (arg instanceof CtrlArg.Var v) {
                 if (arg.inOnly()) {
                     int ix = sourceVars.get(v.var());
                     assert ix >= 0;
@@ -180,10 +180,10 @@ public class Switch implements Comparable<Switch>, Relocatable {
                         .illegalState("Call argument %s of %s is neither input-only nor output-only",
                                       arg, this);
                 }
-            } else if (arg instanceof CtrlPar.Const c) {
+            } else if (arg instanceof CtrlArg.Const c) {
                 bind = Binding.value(target, c);
             } else {
-                assert arg instanceof CtrlPar.Wild;
+                assert arg instanceof CtrlArg.Wild;
                 bind = Binding.none(target);
             }
             result.add(bind);

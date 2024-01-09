@@ -24,6 +24,8 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Constant;
+import nl.utwente.groove.algebra.Operator;
+import nl.utwente.groove.algebra.Signature.OpValue;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.annotation.Help;
 import nl.utwente.groove.annotation.HelpMap;
@@ -172,6 +174,57 @@ public sealed abstract class Expression permits Constant, Variable, FieldExpr, C
 
     /** Flag indicating if the parsed text for this expression had a type prefix. */
     private final boolean prefixed;
+
+    /** Creates and returns an integer constant, with given value.
+     * Convenience method for {@link Constant#instance(int)}.
+     */
+    static public Expression i(int value) {
+        return Constant.instance(value);
+    }
+
+    /** Creates and returns a string constant, with given value.
+     * Convenience method for {@link Constant#instance(String)}.
+     */
+    static public Expression s(String value) {
+        return Constant.instance(value);
+    }
+
+    /** Creates and returns a boolean constant, with given value.
+     * Convenience method for {@link Constant#instance(Boolean)}.
+     */
+    static public Expression b(boolean value) {
+        return Constant.instance(value);
+    }
+
+    /** Creates and returns a real constant, with given value.
+     * Convenience method for {@link Constant#instance(double)}.
+     */
+    static public Expression r(double value) {
+        return Constant.instance(value);
+    }
+
+    /** Creates and returns a an expression consisting of the application
+     * of a given operator to a given list of arguments.
+     */
+    static public Expression apply(Operator op, Expression... args) {
+        return new CallExpr(op, args);
+    }
+
+    /** Creates and returns a an expression consisting of the application
+     * of a given operator to a given list of arguments.
+     * The operator is given as an {@link OpValue}.
+     */
+    static public Expression apply(OpValue op, Expression... args) {
+        return new CallExpr(op.getOperator(), args);
+    }
+
+    /** Creates and returns a an expression consisting of the application
+     * of a given operator to a given list of arguments.
+     * The operator is given as an combination of sort and name or symbol.
+     */
+    static public Expression apply(Sort sort, String name, Expression... args) {
+        return new CallExpr(Operator.getOp(sort, name), args);
+    }
 
     /**
      * Returns the expression tree for a given test:-content string.

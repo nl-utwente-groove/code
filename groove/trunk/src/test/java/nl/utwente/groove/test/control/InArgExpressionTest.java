@@ -36,7 +36,7 @@ import nl.utwente.groove.util.parse.FormatException;
 @SuppressWarnings("javadoc")
 public class InArgExpressionTest extends CtrlTester {
     {
-        initGrammar("abc");
+        initGrammar("inArgs");
     }
 
     @BeforeClass

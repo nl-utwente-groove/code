@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.algebra.Signature.OpValue;
 import nl.utwente.groove.algebra.syntax.CallExpr;
 import nl.utwente.groove.algebra.syntax.ExprTreeParser;
@@ -309,9 +311,24 @@ public class Operator {
         return opLookupMap;
     }
 
+    /** Returns, for a given sort and name, the (unique) operators defined
+     * for that sort with that symbol/name; or {@code null} if there is no
+     * such operator. */
+    public static @Nullable Operator getOp(Sort sort, String name) {
+        if (sortOpLookupMap.isEmpty()) {
+            getOps().forEach(Operator::registerOp);
+        }
+        return sortOpLookupMap.get(sort).get(name);
+    }
+
     /** Adds an operator to the store, both by symbol and by name. */
     private static void registerOp(Operator op) {
         String symbol = op.getSymbol();
+        var sortOps = sortOpLookupMap.get(op.getSort());
+        if (sortOps == null) {
+            sortOps = new HashMap<>();
+            sortOpLookupMap.put(op.getSort(), sortOps);
+        }
         if (symbol != null) {
             List<Operator> ops = opLookupMap.get(symbol);
             if (ops == null) {
@@ -319,6 +336,7 @@ public class Operator {
                 opLookupMap.put(symbol, ops);
             }
             ops.add(op);
+            sortOps.put(symbol, op);
         }
         String opName = op.getName();
         List<Operator> ops = opLookupMap.get(opName);
@@ -327,8 +345,12 @@ public class Operator {
             opLookupMap.put(opName, ops);
         }
         ops.add(op);
+        sortOps.put(symbol, op);
     }
 
     /** Mapping from operator names and symbols to lists of operators with that symbol. */
     private static final Map<String,List<Operator>> opLookupMap = new HashMap<>();
+    /** Mapping from sorts plus operator names and symbols to the (optional) operator
+     * with that symbol defined in that sort. */
+    private static final Map<Sort,Map<String,Operator>> sortOpLookupMap = new HashMap<>();
 }

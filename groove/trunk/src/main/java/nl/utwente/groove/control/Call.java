@@ -37,11 +37,11 @@ import nl.utwente.groove.util.Pair;
  * @version $Revision$
  */
 @NonNullByDefault
-public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comparable<Call> {
+public class Call extends Pair<Callable,List<? extends CtrlArg>> implements Comparable<Call> {
     /**
      * Constructs a call of a given unit, with arguments.
      */
-    private Call(Callable unit, List<? extends CtrlPar> args, boolean explicitArgs) {
+    private Call(Callable unit, List<? extends CtrlArg> args, boolean explicitArgs) {
         super(unit, args);
         assert args != null;
         this.explicitArgs = explicitArgs;
@@ -50,7 +50,7 @@ public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comp
     /**
      * Constructs a call of a given unit, with (non-{@code null}) arguments.
      */
-    public Call(Callable unit, List<? extends CtrlPar> args) {
+    public Call(Callable unit, List<? extends CtrlArg> args) {
         this(unit, args, true);
     }
 
@@ -80,7 +80,7 @@ public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comp
     }
 
     /** Returns the list of arguments. */
-    public List<? extends CtrlPar> getArgs() {
+    public List<? extends CtrlArg> getArgs() {
         return two();
     }
 
@@ -121,8 +121,8 @@ public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comp
         Map<CtrlVar,@Nullable Integer> inVars = new LinkedHashMap<>();
         int size = getArgs().size();
         for (int i = 0; i < size; i++) {
-            CtrlPar arg = getArgs().get(i);
-            if (arg instanceof CtrlPar.Var v) {
+            CtrlArg arg = getArgs().get(i);
+            if (arg instanceof CtrlArg.Var v) {
                 CtrlVar var = v.var();
                 if (arg.inOnly()) {
                     inVars.put(var, i);
@@ -138,7 +138,7 @@ public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comp
 
     /** Computes and inserts the host nodes to be used for constant value arguments. */
     public void initialise(HostFactory factory) {
-        for (CtrlPar arg : getArgs()) {
+        for (CtrlArg arg : getArgs()) {
             arg.initialise(factory);
         }
     }
@@ -167,11 +167,11 @@ public class Call extends Pair<Callable,List<? extends CtrlPar>> implements Comp
         return result;
     }
 
-    private static List<CtrlPar> createWildArgs(Signature<?> sig) {
+    private static List<CtrlArg> createWildArgs(Signature<?> sig) {
         int count = sig.size();
-        List<CtrlPar> result = new ArrayList<>(count);
+        List<CtrlArg> result = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
-            result.add(CtrlPar.wild());
+            result.add(CtrlArg.wild());
         }
         return result;
     }

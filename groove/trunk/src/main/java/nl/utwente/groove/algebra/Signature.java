@@ -48,6 +48,13 @@ public interface Signature {
          */
         String name();
 
+        /** Returns the sort that defines this operator.
+         * Convenience method for {@link Operator#getSort()}.
+         */
+        default public Sort getSort() {
+            return getOperator().getSort();
+        }
+
         /** Returns the corresponding operator object. */
         public Operator getOperator();
 

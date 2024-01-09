@@ -20,9 +20,9 @@ import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import nl.utwente.groove.control.CtrlPar;
-import nl.utwente.groove.control.CtrlPar.Const;
-import nl.utwente.groove.control.CtrlPar.Var;
+import nl.utwente.groove.control.CtrlArg;
+import nl.utwente.groove.control.CtrlArg.Const;
+import nl.utwente.groove.control.CtrlArg.Var;
 import nl.utwente.groove.control.instance.Step;
 import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.grammar.Action.Role;
@@ -117,7 +117,7 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
     @Override
     public default HostNode[] getArguments() {
         HostNode[] result;
-        List<? extends CtrlPar> args = getSwitch().getArgs();
+        List<? extends CtrlArg> args = getSwitch().getArgs();
         if (args.isEmpty()) {
             result = EMPTY_ARGS;
         } else {
@@ -125,7 +125,7 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
             result = new HostNode[args.size()];
             for (int i = 0; i < args.size(); i++) {
                 HostNode node;
-                CtrlPar par = args.get(i);
+                CtrlArg par = args.get(i);
                 if (par instanceof Var v) {
                     var bind = getAction().getParBinding(i);
                     node = switch (bind.type()) {

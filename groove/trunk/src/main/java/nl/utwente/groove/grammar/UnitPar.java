@@ -26,7 +26,7 @@ import java.util.Arrays;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.control.CtrlPar;
+import nl.utwente.groove.control.CtrlArg;
 import nl.utwente.groove.control.CtrlType;
 import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.grammar.aspect.Aspect;
@@ -114,7 +114,7 @@ public abstract class UnitPar {
      * @param arg the control argument to test against; non-{@code null}
      * @return if <code>true</code>, this variable is compatible with {@code arg}
      */
-    public boolean compatibleWith(CtrlPar arg) {
+    public boolean compatibleWith(CtrlArg arg) {
         CtrlType argType = arg.getType();
         if (argType != null && !getType().equals(argType)) {
             return false;
