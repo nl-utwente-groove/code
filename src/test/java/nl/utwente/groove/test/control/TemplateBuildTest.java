@@ -31,7 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import nl.utwente.groove.control.Call;
-import nl.utwente.groove.control.CtrlPar;
+import nl.utwente.groove.control.CtrlArg;
 import nl.utwente.groove.control.CtrlType;
 import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.Procedure;
@@ -58,7 +58,7 @@ public class TemplateBuildTest extends CtrlTester {
         this.cCall = new Call(getRule("c"));
         this.dCall = new Call(getRule("d"));
         this.xInt = new CtrlVar(null, "x", CtrlType.INT);
-        this.xIntOut = new CtrlPar.Var(this.xInt, false);
+        this.xIntOut = new CtrlArg.Var(this.xInt, false);
     }
 
     private Call aCall;
@@ -66,7 +66,7 @@ public class TemplateBuildTest extends CtrlTester {
     private Call cCall;
     private Call dCall;
     private CtrlVar xInt;
-    private CtrlPar xIntOut;
+    private CtrlArg xIntOut;
 
     @Test
     public void testSimple() {
@@ -196,7 +196,7 @@ public class TemplateBuildTest extends CtrlTester {
     public void testVars() {
         initGrammar("emptyrules");
         Call bIntXCall = new Call(getRule("bInt"), Arrays.asList(this.xIntOut));
-        Call bIntWildCall = new Call(getRule("bInt"), Arrays.asList(CtrlPar.wild()));
+        Call bIntWildCall = new Call(getRule("bInt"), Arrays.asList(CtrlArg.wild()));
         List<CtrlVar> xList = Arrays.asList(this.xInt);
         //
         build("int x; bInt(out x);");

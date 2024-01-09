@@ -12,7 +12,7 @@ import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
 
 import nl.utwente.groove.control.Call;
-import nl.utwente.groove.control.CtrlPar;
+import nl.utwente.groove.control.CtrlArg;
 import nl.utwente.groove.control.CtrlType;
 import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.Procedure;
@@ -105,17 +105,17 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
     private CtrlVar var;
 
     /** Returns the control parameter stored in this tree node, if any. */
-    public CtrlPar getCtrlPar() {
+    public CtrlArg getCtrlPar() {
         return this.par;
     }
 
     /** Stores a control parameter in this tree node. */
-    public void setCtrlPar(CtrlPar par) {
+    public void setCtrlPar(CtrlArg par) {
         assert par != null;
         this.par = par;
     }
 
-    private CtrlPar par;
+    private CtrlArg par;
 
     /** Returns the set of calls stored in this tree node, if any. */
     public List<Call> getCalls() {

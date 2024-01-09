@@ -22,25 +22,23 @@ import java.util.List;
 import java.util.Map;
 
 import nl.utwente.groove.algebra.Algebra;
+import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.UnitPar.Direction;
 import nl.utwente.groove.grammar.host.HostFactory;
 import nl.utwente.groove.grammar.host.HostNode;
-import nl.utwente.groove.grammar.host.ValueNode;
 
 /**
  * Class representing a control argument in an action call.
- * A control parameter has two properties:
+ * A control argument has two properties:
  * <ul>
  * <li>Its direction: input-only, output-only or don't care
  * <li>Its content: <i>variable</i>, <i>constant</i> or <i>wildcard</i>.
- * A constant can be virtual
- * (only given by a string representation) or instantiated to a {@link ValueNode}.
  * </ul>
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface CtrlPar {
+public interface CtrlArg {
 
     /**
      * Indicates whether this parameter is input-only.
@@ -52,7 +50,9 @@ public interface CtrlPar {
      * Indicates whether this parameter is output-only.
      * A parameter is either input-only, output-only, or don't care.
      */
-    public abstract boolean outOnly();
+    public default boolean outOnly() {
+        return !inOnly();
+    }
 
     /**
      * Indicates if this parameter is a don't care; i.e., its direction is irrelevant.
@@ -117,31 +117,10 @@ public interface CtrlPar {
     }
 
     /**
-     * Variable control parameter.
-     * A variable parameter has a name and type,
-     * and an optional direction.
-     * Can be used as formal parameter or argument.
+     * Variable control argument.
+     * A variable argument has a name, type and direction.
      */
-    public static record Var(CtrlVar var, boolean inOnly, boolean outOnly) implements CtrlPar {
-        /**
-         * Constructs a new, non-directional variable control parameter.
-         * @param var the control variable of this parameter
-         */
-        public Var(CtrlVar var) {
-            this(var, false, false);
-        }
-
-        /**
-         * Constructs a new, directional variable control argument.
-         * @param var the control variable of this parameter
-         * @param inOnly if {@code true}, the parameter is input-only,
-         * otherwise it is output-only
-         */
-        public Var(CtrlVar var, boolean inOnly) {
-            this(var, inOnly, !inOnly);
-            assert var != null;
-        }
-
+    public static record Var(CtrlVar var, boolean inOnly) implements CtrlArg {
         @Override
         public CtrlType getType() {
             return var().type();
@@ -149,7 +128,7 @@ public interface CtrlPar {
 
         @Override
         public boolean dontCare() {
-            return !(inOnly() || outOnly());
+            return false;
         }
 
         @Override
@@ -169,7 +148,7 @@ public interface CtrlPar {
          * @param arg the control argument to test against; non-{@code null}
          * @return if <code>true</code>, this variable is compatible with {@code arg}
          */
-        public boolean compatibleWith(CtrlPar arg) {
+        public boolean compatibleWith(CtrlArg arg) {
             CtrlType argType = arg.getType();
             if (argType != null && !getType().equals(argType)) {
                 return false;
@@ -192,7 +171,7 @@ public interface CtrlPar {
     /**
      * Constant control argument.
      */
-    public static class Const implements CtrlPar {
+    public static class Const implements CtrlArg {
         /**
          * Constructs a constant argument from an algebra value
          * @param algebra the algebra from which the value is taken
@@ -244,11 +223,6 @@ public interface CtrlPar {
             return true;
         }
 
-        @Override
-        public boolean outOnly() {
-            return false;
-        }
-
         /** Returns the host node containing the value of this constant. */
         public HostNode getNode() {
             assert this.node != null;
@@ -277,7 +251,7 @@ public interface CtrlPar {
     /**
      * Wildcard parameter.
      */
-    public record Wild() implements CtrlPar {
+    public record Wild() implements CtrlArg {
 
         @Override
         public boolean equals(Object obj) {
@@ -316,5 +290,25 @@ public interface CtrlPar {
 
         /** The singleton instance of the untyped wildcard argument. */
         private static Wild WILD = new Wild();
+    }
+
+    /**
+     * Expression control argument, wrapping an {@link Expression}.
+     */
+    static public record Expr(Expression expr) implements CtrlArg {
+        @Override
+        public boolean inOnly() {
+            return true;
+        }
+
+        @Override
+        public boolean dontCare() {
+            return false;
+        }
+
+        @Override
+        public CtrlType getType() {
+            return CtrlType.getType(expr().getSort());
+        }
     }
 }

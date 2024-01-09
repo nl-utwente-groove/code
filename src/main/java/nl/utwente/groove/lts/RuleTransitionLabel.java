@@ -21,8 +21,8 @@ import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNull;
 
-import nl.utwente.groove.control.CtrlPar;
-import nl.utwente.groove.control.CtrlPar.Wild;
+import nl.utwente.groove.control.CtrlArg;
+import nl.utwente.groove.control.CtrlArg.Wild;
 import nl.utwente.groove.control.instance.Step;
 import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.grammar.Callable.Kind;
@@ -92,7 +92,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
     @Override
     public HostNode[] getArguments() {
         HostNode[] result;
-        List<? extends CtrlPar> callArgs = getStep().getInnerCall().getArgs();
+        List<? extends CtrlArg> callArgs = getStep().getInnerCall().getArgs();
         if (callArgs.isEmpty()) {
             result = EMPTY_NODE_ARRAY;
         } else {
@@ -217,7 +217,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
             useParameters = ThreeValued.TRUE;
         }
         if (!useParameters.isFalse()) {
-            List<? extends CtrlPar> args = label.getSwitch().getCall().getArgs();
+            List<? extends CtrlArg> args = label.getSwitch().getCall().getArgs();
             // test if there is a showable argument
             boolean showArgs = false;
             StringBuilder params = new StringBuilder();

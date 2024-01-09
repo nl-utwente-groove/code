@@ -33,8 +33,7 @@ import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.collect.Pool;
 
 /**
- * Symbolic location, obtained by combining a number of existing locations.
- * Used as a device in building control automata.
+ * Control term
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -304,7 +303,8 @@ abstract public class Term implements Position<Term,Derivation> {
         case TRIAL -> {
             DerivationAttempt attempt = getAttempt(false);
             for (Derivation deriv : attempt) {
-                result = result + "\n  --" + deriv.getOuterCall() + "--> " + deriv.onFinish().toString();
+                result = result + "\n  --" + deriv.getOuterCall() + "--> "
+                    + deriv.onFinish().toString();
             }
             result = result + "\nSuccess: " + attempt.onSuccess().toString();
             result = result + "\nFailure: " + attempt.onFailure().toString();

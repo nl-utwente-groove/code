@@ -33,7 +33,7 @@ import nl.utwente.groove.control.Assignment;
 import nl.utwente.groove.control.Binding;
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.CtrlLoader;
-import nl.utwente.groove.control.CtrlPar;
+import nl.utwente.groove.control.CtrlArg;
 import nl.utwente.groove.control.CtrlType;
 import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.Position;
@@ -96,10 +96,10 @@ public class AutomatonBuildTest {
         Frame fFail = s.onFailure();
         StepAttempt sFail = fFail.getAttempt();
         assertEquals(2, sFail.size());
-        Call rCall = call("r", new CtrlPar.Const(JavaIntAlgebra.instance, 1),
-                          CtrlPar.outVar(QualName.parse("f"), "arg", "node"));
-        Call oNodeCall = call("oNode", CtrlPar.outVar(QualName.parse("r"), "q", "node"));
-        Call bNodeCall = call("bNode", CtrlPar.outVar(QualName.parse("r"), "q", "node"));
+        Call rCall = call("r", new CtrlArg.Const(JavaIntAlgebra.instance, 1),
+                          CtrlArg.outVar(QualName.parse("f"), "arg", "node"));
+        Call oNodeCall = call("oNode", CtrlArg.outVar(QualName.parse("r"), "q", "node"));
+        Call bNodeCall = call("bNode", CtrlArg.outVar(QualName.parse("r"), "q", "node"));
         NestedSwitch swFail0 = sFail.get(0).getSwitch();
         var swFail0Iter = swFail0.iterator();
         assertEquals(fCall, swFail0Iter.next().getCall());
@@ -122,7 +122,7 @@ public class AutomatonBuildTest {
         assertEquals(rCall, swNextIter.next().getCall());
         StepAttempt sNext = fNext.getAttempt();
         assertEquals(1, sNext.size());
-        Call bIntCall = call("bInt", CtrlPar.inVar(QualName.parse("r"), "p", "int"));
+        Call bIntCall = call("bInt", CtrlArg.inVar(QualName.parse("r"), "p", "int"));
         assertEquals(bIntCall, sNext.get(0).getInnerCall());
     }
 
@@ -414,7 +414,7 @@ public class AutomatonBuildTest {
         return new Call(unit);
     }
 
-    protected Call call(String name, CtrlPar... pars) {
+    protected Call call(String name, CtrlArg... pars) {
         Callable unit = rule(name);
         if (unit == null) {
             unit = this.prog.getProc(QualName.parse(name));

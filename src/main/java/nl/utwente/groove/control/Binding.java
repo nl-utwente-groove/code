@@ -22,7 +22,7 @@ import java.util.function.Function;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.control.CtrlPar.Const;
+import nl.utwente.groove.control.CtrlArg.Const;
 import nl.utwente.groove.grammar.UnitPar;
 import nl.utwente.groove.grammar.host.HostNode;
 

@@ -27,7 +27,7 @@ import org.junit.Test;
 
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.CtrlLoader;
-import nl.utwente.groove.control.CtrlPar;
+import nl.utwente.groove.control.CtrlArg;
 import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.control.template.Location;
 import nl.utwente.groove.control.template.Program;
@@ -159,10 +159,10 @@ public class ProgramBuildTest {
         build("pars",
             "function f(int x, out node n) { iInt(x); node n2; oNode(out n2); bNode-oNode(n2, out n); }");
         Procedure fProc = proc("f");
-        CtrlPar xIn = CtrlPar.inVar(QualName.parse("f"), "x", "int");
-        CtrlPar nOut = CtrlPar.outVar(QualName.parse("f"), "n", "node");
-        CtrlPar n2In = CtrlPar.inVar(QualName.parse("f"), "n2", "node");
-        CtrlPar n2Out = CtrlPar.outVar(QualName.parse("f"), "n2", "node");
+        CtrlArg xIn = CtrlArg.inVar(QualName.parse("f"), "x", "int");
+        CtrlArg nOut = CtrlArg.outVar(QualName.parse("f"), "n", "node");
+        CtrlArg n2In = CtrlArg.inVar(QualName.parse("f"), "n2", "node");
+        CtrlArg n2Out = CtrlArg.outVar(QualName.parse("f"), "n2", "node");
         assertEquals(call(rule("iInt"), xIn).seq(call(rule("oNode"), n2Out))
             .seq(call(rule("bNode-oNode"), n2In, nOut)), fProc.getTerm());
         //
@@ -183,11 +183,11 @@ public class ProgramBuildTest {
         Program p = build();
         Procedure fProc = proc("sub.f");
         Procedure gProc = proc("sub.g");
-        assertEquals(call(fProc, CtrlPar.outVar(null, "n", "int")), p.getMain());
-        CtrlPar xIn = CtrlPar.inVar(QualName.parse("sub.f"), "x", "int");
-        CtrlPar xOut = CtrlPar.outVar(QualName.parse("sub.f"), "x", "int");
+        assertEquals(call(fProc, CtrlArg.outVar(null, "n", "int")), p.getMain());
+        CtrlArg xIn = CtrlArg.inVar(QualName.parse("sub.f"), "x", "int");
+        CtrlArg xOut = CtrlArg.outVar(QualName.parse("sub.f"), "x", "int");
         assertEquals(call(rule("bInt"), xOut).seq(call(gProc, xIn)), fProc.getTerm());
-        CtrlPar yIn = CtrlPar.inVar(QualName.parse("sub.g"), "y", "int");
+        CtrlArg yIn = CtrlArg.inVar(QualName.parse("sub.g"), "y", "int");
         assertEquals(call(rule("bInt"), yIn), gProc.getTerm());
     }
 
@@ -334,7 +334,7 @@ public class ProgramBuildTest {
         return call(unit);
     }
 
-    protected Term call(Callable proc, CtrlPar... pars) {
+    protected Term call(Callable proc, CtrlArg... pars) {
         return prot.call(new Call(proc, Arrays.asList(pars)));
     }
 
