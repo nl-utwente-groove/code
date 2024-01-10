@@ -507,7 +507,8 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
                     type = (TypeNode) getCoanchorMap()
                         .getVar(creatorNodes[i].getTypeGuards().get(0).getVar());
                 }
-                if (type.isSort()) {
+                var sort = type.getSort();
+                if (sort != null) {
                     // value nodes can only be created if they are input parameters
                     result[i] = createValueNode(record, creatorNodes[i].getPar().get());
                 } else {

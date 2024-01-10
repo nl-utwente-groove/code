@@ -16,6 +16,15 @@
  */
 package nl.utwente.groove.test.algebra;
 
+import static nl.utwente.groove.algebra.syntax.Expression.i;
+import static nl.utwente.groove.algebra.syntax.Expression.iField;
+import static nl.utwente.groove.algebra.syntax.Expression.iOp;
+import static nl.utwente.groove.algebra.syntax.Expression.r;
+import static nl.utwente.groove.algebra.syntax.Expression.rField;
+import static nl.utwente.groove.algebra.syntax.Expression.rOp;
+import static nl.utwente.groove.algebra.syntax.Expression.s;
+import static nl.utwente.groove.algebra.syntax.Expression.sField;
+import static nl.utwente.groove.algebra.syntax.Expression.sOp;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -84,6 +93,16 @@ public class ExpressionTest {
     public void testComplex() {
         parseFail("self.x-max(p1.speed,p2.speed)");
         parse("int:self.x-max(p1.speed,p2.speed)");
+    }
+
+    /** Tests equality with manually built expressions. */
+    @Test
+    public void testEquals() {
+        assertEquals(iOp("+", i(1), iField("x")), parse("1+x"));
+        assertEquals(sOp("concat", sField("x"), s("suffix")), parse("concat(x,\"suffix\")"));
+        assertEquals(rOp("ite", iOp("==", i(1), iField("x")), r(1.1),
+                         rOp("*", rField("y"), rField("a", "y"))),
+                     parse("ite(1==x,1.1,real:y*a.y)"));
     }
 
     private void testOperators(Sort sig) {

@@ -1434,7 +1434,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                         sortMap.remove(name);
                     }
                     if (!multiSorted.contains(name)) {
-                        sortMap.add(name, e.target().label().getSort());
+                        var sort = e.target().getSort();
+                        assert sort != null;
+                        sortMap.add(name, sort);
                     }
                 }
             }

@@ -46,7 +46,7 @@ public sealed abstract class Expression permits Constant, Variable, FieldExpr, C
     /**
      * Constructor for subclasses.
      * @param prefixed indicates if the expression was explicitly typed
-     * my a type prefix in the parsed text
+     * by a type prefix in the parsed text
      */
     protected Expression(boolean prefixed) {
         this.prefixed = prefixed;
@@ -175,24 +175,17 @@ public sealed abstract class Expression permits Constant, Variable, FieldExpr, C
     /** Flag indicating if the parsed text for this expression had a type prefix. */
     private final boolean prefixed;
 
-    /** Creates and returns an integer constant, with given value.
-     * Convenience method for {@link Constant#instance(int)}.
-     */
-    static public Expression i(int value) {
-        return Constant.instance(value);
-    }
-
-    /** Creates and returns a string constant, with given value.
-     * Convenience method for {@link Constant#instance(String)}.
-     */
-    static public Expression s(String value) {
-        return Constant.instance(value);
-    }
-
     /** Creates and returns a boolean constant, with given value.
      * Convenience method for {@link Constant#instance(Boolean)}.
      */
     static public Expression b(boolean value) {
+        return Constant.instance(value);
+    }
+
+    /** Creates and returns an integer constant, with given value.
+     * Convenience method for {@link Constant#instance(int)}.
+     */
+    static public Expression i(int value) {
         return Constant.instance(value);
     }
 
@@ -203,10 +196,17 @@ public sealed abstract class Expression permits Constant, Variable, FieldExpr, C
         return Constant.instance(value);
     }
 
+    /** Creates and returns a string constant, with given value.
+     * Convenience method for {@link Constant#instance(String)}.
+     */
+    static public Expression s(String value) {
+        return Constant.instance(value);
+    }
+
     /** Creates and returns a an expression consisting of the application
      * of a given operator to a given list of arguments.
      */
-    static public Expression apply(Operator op, Expression... args) {
+    static public Expression op(Operator op, Expression... args) {
         return new CallExpr(op, args);
     }
 
@@ -214,16 +214,130 @@ public sealed abstract class Expression permits Constant, Variable, FieldExpr, C
      * of a given operator to a given list of arguments.
      * The operator is given as an {@link OpValue}.
      */
-    static public Expression apply(OpValue op, Expression... args) {
-        return new CallExpr(op.getOperator(), args);
+    static public Expression op(OpValue op, Expression... args) {
+        return op(op.getOperator(), args);
     }
 
-    /** Creates and returns a an expression consisting of the application
+    /** Creates and returns an expression consisting of the application
      * of a given operator to a given list of arguments.
      * The operator is given as an combination of sort and name or symbol.
      */
-    static public Expression apply(Sort sort, String name, Expression... args) {
-        return new CallExpr(Operator.getOp(sort, name), args);
+    static public Expression op(Sort sort, String name, Expression... args) {
+        var op = Operator.getOp(sort, name);
+        assert op != null;
+        return op(op, args);
+    }
+
+    /** Creates and returns an expression consisting of the application
+     * of a given boolean operator to a given list of arguments.
+     */
+    static public Expression bOp(String name, Expression... args) {
+        return op(Sort.BOOL, name, args);
+    }
+
+    /** Creates and returns an expression consisting of the application
+     * of a given integer operator to a given list of arguments.
+     */
+    static public Expression iOp(String name, Expression... args) {
+        return op(Sort.INT, name, args);
+    }
+
+    /** Creates and returns an expression consisting of the application
+     * of a given real operator to a given list of arguments.
+     */
+    static public Expression rOp(String name, Expression... args) {
+        return op(Sort.REAL, name, args);
+    }
+
+    /** Creates and returns an expression consisting of the application
+     * of a given string operator to a given list of arguments.
+     */
+    static public Expression sOp(String name, Expression... args) {
+        return op(Sort.STRING, name, args);
+    }
+
+    /** Creates and returns a variable of given sort and name.
+     */
+    static public Expression var(Sort sort, String name) {
+        return new Variable(name, sort);
+    }
+
+    /** Creates and returns a boolean variable with given name.
+     */
+    static public Expression bVar(String name) {
+        return var(Sort.BOOL, name);
+    }
+
+    /** Creates and returns an integer variable with given name.
+     */
+    static public Expression iVar(String name) {
+        return var(Sort.INT, name);
+    }
+
+    /** Creates and returns a real variable with given name.
+     */
+    static public Expression rVar(String name) {
+        return var(Sort.REAL, name);
+    }
+
+    /** Creates and returns a string variable with given name.
+     */
+    static public Expression sVar(String name) {
+        return var(Sort.STRING, name);
+    }
+
+    /** Creates and returns a field expression of given sort, (optional) target and field name.
+     */
+    static public Expression field(Sort sort, @Nullable String target, String name) {
+        return new FieldExpr(target, name, sort);
+    }
+
+    /** Creates and returns a boolean field expression with given target and field name.
+     */
+    static public Expression bField(String target, String name) {
+        return field(Sort.BOOL, target, name);
+    }
+
+    /** Creates and returns a boolean field expression with {@code null} target and given field name.
+     */
+    static public Expression bField(String name) {
+        return field(Sort.BOOL, null, name);
+    }
+
+    /** Creates and returns an integer field expression with given target and field name.
+     */
+    static public Expression iField(String target, String name) {
+        return field(Sort.INT, target, name);
+    }
+
+    /** Creates and returns an integer field expression with {@code null} target and given field name.
+     */
+    static public Expression iField(String name) {
+        return field(Sort.INT, null, name);
+    }
+
+    /** Creates and returns a real-typed field expression with given target and field name.
+     */
+    static public Expression rField(String target, String name) {
+        return field(Sort.REAL, target, name);
+    }
+
+    /** Creates and returns a real-typed field expression with {@code null} target and given field name.
+     */
+    static public Expression rField(String name) {
+        return field(Sort.REAL, null, name);
+    }
+
+    /** Creates and returns a string-typed field expression with given target and field name.
+     */
+    static public Expression sField(String target, String name) {
+        return field(Sort.STRING, target, name);
+    }
+
+    /** Creates and returns a string-typed field expression with {@code null} target and given field name.
+     */
+    static public Expression sField(String name) {
+        return field(Sort.STRING, null, name);
     }
 
     /**

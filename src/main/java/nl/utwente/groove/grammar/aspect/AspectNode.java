@@ -649,31 +649,6 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
             : levelNode.getId();
     }
 
-    /** Sets the nesting level parent of this node.
-     * @param edge outgoing parent edge of type {@link NestedValue#IN}
-     * @throws FormatException if the parent edge is incompatible with other aspects
-    private void setParentEdge(AspectEdge edge) throws FormatException {
-        if (!has(Category.NESTING)) {
-            throw new FormatException("Source node of %s-edge should be quantifier", edge.label());
-        }
-        if (this.parentEdge != null) {
-            throw new FormatException("Duplicate outgoing '%s'-edges", edge.label(),
-                this.parentEdge, edge);
-        }
-        // collect collective nesting grandparents to test for circularity
-        Set<AspectNode> ancestors = new HashSet<>();
-        AspectNode parent = edge.target();
-        while (parent != null) {
-            ancestors.add(parent);
-            parent = parent.getParentNode();
-        }
-        if (ancestors.contains(this)) {
-            throw new FormatException("Circularity in the nesting hierarchy");
-        }
-        this.parentEdge = edge;
-    }
-     */
-
     /**
      * Retrieves the parent of this node in the nesting hierarchy.
      * Only non-{@code null} if this node is a quantifier node.
@@ -681,18 +656,6 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     public @Nullable AspectNode getParentNode() {
         return getNested(NestedValue.IN);
     }
-
-    /** Adds a match count edge to this (quantifier) node.
-     * @param edge  outgoing count edge of type {@link NestedValue#COUNT}
-     * @throws FormatException if the count edge is incompatible with other aspects
-    private void setMatchCount(AspectEdge edge) throws FormatException {
-        if (!has(FORALL) && !has(FORALL_POS)) {
-            throw new FormatException("Source node of %s-edge should be universal quantifier",
-                edge.label());
-        }
-        this.matchCountList.add(edge.target());
-    }
-     */
 
     /**
      * Retrieves a nodes encapsulating the match count for this node.
@@ -716,6 +679,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
             .filter(Objects::nonNull)
             .filter(l -> l.hasRole(EdgeRole.NODE_TYPE))
             .forEach(ruleLabels::add);
+        // only return a non-null result if there is exactly one candidate
         if (ruleLabels.size() == 1) {
             var ruleLabel = ruleLabels.iterator().next();
             result = ruleLabel.getTypeLabel();

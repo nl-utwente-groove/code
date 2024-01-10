@@ -34,7 +34,7 @@ public final class Constant extends Expression {
     Constant(String value) {
         super(true);
         assert value != null;
-        this.signature = Sort.STRING;
+        this.sort = Sort.STRING;
         this.stringRepr = value;
         this.boolRepr = null;
         this.intRepr = null;
@@ -47,7 +47,7 @@ public final class Constant extends Expression {
     Constant(Boolean value) {
         super(true);
         assert value != null;
-        this.signature = Sort.BOOL;
+        this.sort = Sort.BOOL;
         this.boolRepr = value;
         this.stringRepr = null;
         this.intRepr = null;
@@ -59,7 +59,7 @@ public final class Constant extends Expression {
      */
     Constant(BigDecimal value) {
         super(true);
-        this.signature = Sort.REAL;
+        this.sort = Sort.REAL;
         this.symbol = value.toString();
         this.realRepr = value;
         this.boolRepr = null;
@@ -72,7 +72,7 @@ public final class Constant extends Expression {
      */
     Constant(BigInteger value) {
         super(true);
-        this.signature = Sort.INT;
+        this.sort = Sort.INT;
         this.symbol = value.toString();
         this.intRepr = value;
         this.boolRepr = null;
@@ -99,8 +99,8 @@ public final class Constant extends Expression {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + this.signature.hashCode();
-        switch (this.signature) {
+        result = prime * result + this.sort.hashCode();
+        switch (this.sort) {
         case BOOL:
             result = prime * result + this.boolRepr.hashCode();
             break;
@@ -127,10 +127,10 @@ public final class Constant extends Expression {
         if (!(obj instanceof Constant other)) {
             return false;
         }
-        if (!this.signature.equals(other.signature)) {
+        if (!this.sort.equals(other.sort)) {
             return false;
         }
-        switch (this.signature) {
+        switch (this.sort) {
         case BOOL:
             return this.boolRepr.equals(other.boolRepr);
         case INT:
@@ -151,7 +151,7 @@ public final class Constant extends Expression {
 
     @Override
     public final Sort getSort() {
-        return this.signature;
+        return this.sort;
     }
 
     @Override
@@ -204,7 +204,7 @@ public final class Constant extends Expression {
         return this.boolRepr;
     }
 
-    private final Sort signature;
+    private final Sort sort;
     /** Internal representation in case this is a {@link Sort#STRING} constant. */
     private final String stringRepr;
     /** Internal representation in case this is a {@link Sort#INT} constant. */

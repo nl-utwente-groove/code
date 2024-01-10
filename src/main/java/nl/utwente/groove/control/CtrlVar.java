@@ -16,18 +16,21 @@
  */
 package nl.utwente.groove.control;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.QualName;
 
 /**
- * Control variables, consisting of a name and a type.
+ * Control variables, consisting of an optional scope (being the defining procedure
+ * within which it is a local variable), name and (control) type.
  * @author Arend Rensink
  * @version $Revision$
  */
-public record CtrlVar(QualName scope, String name, CtrlType type, int nr)
+public record CtrlVar(@Nullable QualName scope, @NonNull String name, @NonNull CtrlType type)
     implements Comparable<CtrlVar> {
     /**
-     * Constructs a control variable with a given (non-{@code null}) name, type
-     * and distinguishing number.
+     * Constructs a control variable with a given scope, name and type.
      * @param scope procedure name of the defining scope (possible {@code null})
      * @param name variable name
      * @param type type of the variable
@@ -36,13 +39,12 @@ public record CtrlVar(QualName scope, String name, CtrlType type, int nr)
         assert name != null && type != null;
     }
 
-    /** Constructs a control variable with a given (non-{@code null}) name and type.
-     * @param scope procedure name of the defining scope (possible {@code null})
+    /** Constructs a control variable with no scope and a given (non-{@code null}) name and type.
      * @param name variable name
      * @param type type of the variable
      */
-    public CtrlVar(QualName scope, String name, CtrlType type) {
-        this(scope, name, type, 0);
+    public CtrlVar(String name, CtrlType type) {
+        this(null, name, type);
     }
 
     @Override
@@ -52,19 +54,26 @@ public record CtrlVar(QualName scope, String name, CtrlType type, int nr)
 
     @Override
     public int compareTo(CtrlVar o) {
-        int result = name().compareTo(o.name());
+        int result = 0;
+        var scope = scope();
+        if (scope == null) {
+            if (o.scope() != null) {
+                return -1;
+            }
+        } else {
+            if (o.scope() == null) {
+                return 1;
+            } else {
+                result = scope.compareTo(o.scope());
+            }
+        }
         if (result != 0) {
             return result;
         }
-        result = type().compareTo(o.type());
+        result = name().compareTo(o.name());
         if (result != 0) {
             return result;
         }
-        return this.nr - o.nr;
-    }
-
-    /** Returns a fresh wildcard variable of a given type and number. */
-    public static CtrlVar wild(CtrlType type, int nr) {
-        return new CtrlVar(null, "_", type, nr);
+        return type().compareTo(o.type());
     }
 }
