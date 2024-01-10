@@ -18,14 +18,28 @@ package nl.utwente.groove.test.control;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import nl.utwente.groove.algebra.Sort;
+import nl.utwente.groove.algebra.syntax.ExprTreeParser;
+import nl.utwente.groove.algebra.syntax.Expression;
+import nl.utwente.groove.algebra.syntax.SortMap;
 import nl.utwente.groove.control.Call;
+import nl.utwente.groove.control.CtrlArg;
+import nl.utwente.groove.control.CtrlArg.Expr;
+import nl.utwente.groove.control.CtrlArg.Var;
+import nl.utwente.groove.control.CtrlType;
+import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.parse.CtrlTree;
 import nl.utwente.groove.control.term.Term;
+import nl.utwente.groove.grammar.Rule;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -45,50 +59,57 @@ public class InArgExpressionTest extends CtrlTester {
     }
 
     @Before
-    public void initCalls() {
-        this.a = p.call(new Call(getRule("a")));
-        this.b = p.call(new Call(getRule("b")));
-        this.c = p.call(new Call(getRule("c")));
-        this.d = p.call(new Call(getRule("d")));
+    public void init() {
+        this.sRule = getRule("inStringOutString");
+        this.iRule = getRule("inIntOutInt");
+        this.rRule = getRule("inRealOutReal");
+        this.sortMap = new SortMap();
+        this.sortMap.add("ix", Sort.INT);
+        this.sortMap.add("iy", Sort.INT);
+        this.sortMap.add("rx", Sort.REAL);
+        this.sortMap.add("ry", Sort.REAL);
+        this.sortMap.add("sx", Sort.STRING);
+        this.sortMap.add("sy", Sort.STRING);
     }
+
+    private Rule iRule;
+    private Rule sRule;
+    private Rule rRule;
+    private SortMap sortMap;
 
     @Test
     public void test() {
-        Term a = this.a;
-        Term b = this.b;
-        Term c = this.c;
-        equal("a;", a);
-        equal("{}", epsilon());
-        equal("{ a; b; }", a.seq(b));
-        equal("a|b;", a.or(b));
-        equal("choice { a; } or b;", a.or(b));
-        equal("a*;", a.star());
-        equal("a+;", a.seq(a.star()));
-        equal("#a;", a.alap());
-        equal("while (a) { b; }", a.whileDo(b));
-        equal("if (a) b;", a.ifOnly(b));
-        equal("if (a) b; else c;", a.ifElse(b, c));
-        equal("try b; else c;", b.tryElse(c));
+        Rule iRule = this.iRule;
+        //equal("int ix := inIntOutInt(1);", call(iRule, "1", "ix"));
+        equal("int ix := inIntOutInt(ite(true,ix+3,iy+3));", call(iRule, "1", "ix"));
+        equal("int ix; inIntOutInt(ite(true,ix+3,iy+3), out ix);", call(iRule, "1", "ix"));
     }
 
-    @Test
-    public void testAnyOther() {
-        Term a = this.a;
-        Term b = this.b;
-        Term c = this.c;
-        Term d = this.d;
-        equal("a; other;", a.seq(b.or(c).or(d)));
-        equal("a; any;", a.seq(a.or(b).or(c).or(d)));
+    private Term call(Rule rule, String... args) {
+        List<CtrlArg> ruleArgs = new ArrayList<>();
+        for (int i = 0; i < args.length; i++) {
+            var arg = args[i];
+            var par = rule.getSignature().getPar(i);
+            CtrlArg ruleArg;
+            if (par.getType() == CtrlType.NODE || par.isOutOnly()) {
+                ruleArg = new Var(new CtrlVar(arg, par.getType()), !par.isOutOnly());
+            } else {
+                ruleArg = new Expr(parseAsExpr(arg));
+            }
+            ruleArgs.add(ruleArg);
+        }
+        return p.call(new Call(rule, ruleArgs));
     }
 
-    @Test
-    public void testProcedures() {
-        assertEquals(buildTerm("a;b;"), buildProcTerm("function f() { a; b; }", "f", true));
-        assertEquals(buildTerm("a;b;"), buildProcTerm("recipe r() { a; b; }", "r", false));
-    }
-
-    private Term epsilon() {
-        return p.epsilon();
+    private Expression parseAsExpr(String arg) {
+        try {
+            return ExprTreeParser.EXPR_PARSER.parse(arg).toExpression(this.sortMap);
+        } catch (FormatException exc) {
+            Assert
+                .fail(String
+                    .format("%s cannot be parsed as expression: %s", arg, exc.getMessage()));
+            throw Exceptions.UNREACHABLE;
+        }
     }
 
     void equal(String program, Term term) {
@@ -132,5 +153,4 @@ public class InArgExpressionTest extends CtrlTester {
     }
 
     static private Term p;
-    private Term a, b, c, d;
 }

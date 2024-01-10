@@ -408,11 +408,16 @@ arg[boolean out]
   * @B Input argument for a rule, procedure or group call. 
   */
 in_arg_expr
+  : in_arg_atom ( operator in_arg_expr -> ^(ARG_OP operator in_arg_atom in_arg_expr)
+                | -> in_arg_atom
+                )
+  ;
+
+in_arg_atom
   : //@S arg: id
     //@H Variable input argument
     //@B Variable %s must be bound to a value, which will be passed into the call.
     ID ( arg_list[false] -> ^(ARG_CALL ID arg_list)
-       | operator in_arg_expr -> ^(ARG_OP ID operator in_arg_expr)
        | -> ^(ARG_ID ID)
        )
   | literal -> ^(ARG_LIT literal)
