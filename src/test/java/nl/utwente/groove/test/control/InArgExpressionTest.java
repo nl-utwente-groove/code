@@ -60,9 +60,10 @@ public class InArgExpressionTest extends CtrlTester {
 
     @Before
     public void init() {
-        this.sRule = getRule("inStringOutString");
+        this.iOut = getRule("outInt");
         this.iRule = getRule("inIntOutInt");
         this.rRule = getRule("inRealOutReal");
+        this.sRule = getRule("inStringOutString");
         this.sortMap = new SortMap();
         this.sortMap.add("ix", Sort.INT);
         this.sortMap.add("iy", Sort.INT);
@@ -72,6 +73,7 @@ public class InArgExpressionTest extends CtrlTester {
         this.sortMap.add("sy", Sort.STRING);
     }
 
+    private Rule iOut;
     private Rule iRule;
     private Rule sRule;
     private Rule rRule;
@@ -81,7 +83,8 @@ public class InArgExpressionTest extends CtrlTester {
     public void test() {
         Rule iRule = this.iRule;
         //equal("int ix := inIntOutInt(1);", call(iRule, "1", "ix"));
-        equal("int ix := inIntOutInt(ite(true,ix+3,iy+3));", call(iRule, "1", "ix"));
+        equal("int iy := outInt(); int ix := inIntOutInt(ite(true,3,iy+3));",
+              call(this.iOut, "iy").seq(call(iRule, "ite(true,ix+3,iy+3)", "ix")));
         equal("int ix; inIntOutInt(ite(true,ix+3,iy+3), out ix);", call(iRule, "1", "ix"));
     }
 
