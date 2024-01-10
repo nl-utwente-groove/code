@@ -384,6 +384,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         boolean result = !isFixed();
         if (result) {
             FormatErrorSet errors = new FormatErrorSet();
+            // first parse all nodes and edges
+            nodeSet().forEach(AspectNode::setParsed);
+            edgeSet().forEach(AspectEdge::setParsed);
             // first fix the edges, then the nodes
             for (AspectElement edge : edgeSet()) {
                 edge.setFixed();

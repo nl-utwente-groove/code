@@ -62,8 +62,8 @@ public class ReaderOracle implements ValueOracle {
 
     @Override
     public Constant getValue(HostGraph host, RuleEvent event, RulePar par) throws FormatException {
-        Sort sort = par.getType()
-            .getSort();
+        Sort sort = par.getType().getSort();
+        assert sort != null;
         try {
             String input = this.reader.readLine();
             if (input == null) {

@@ -55,6 +55,7 @@ public class DialogOracle implements ValueOracleFactory, ValueOracle {
             .toString();
         Sort sort = par.getType()
             .getSort();
+        assert sort != null;
         Constant result = null;
         boolean answered = false;
         do {

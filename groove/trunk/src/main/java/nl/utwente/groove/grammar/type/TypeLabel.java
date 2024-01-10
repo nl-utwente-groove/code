@@ -22,6 +22,8 @@ import static nl.utwente.groove.graph.EdgeRole.NODE_TYPE;
 import java.util.EnumMap;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.grammar.rule.RuleLabel;
 import nl.utwente.groove.graph.ALabel;
@@ -98,11 +100,11 @@ public final class TypeLabel extends ALabel {
     }
 
     /** Returns the data sort wrapped in this label, if any. */
-    public Sort getSort() {
+    public @Nullable Sort getSort() {
         return this.sort;
     }
 
-    private final Sort sort;
+    private final @Nullable Sort sort;
 
     /** The label text. */
     private final String text;

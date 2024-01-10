@@ -24,6 +24,7 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.grammar.AnchorKind;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
@@ -173,6 +174,11 @@ public class TypeNode implements Node, TypeElement {
     /** Indicates if this node type stands for a data type. */
     public final boolean isSort() {
         return this.type.isSort();
+    }
+
+    /** Returns the data type of this node type, if any. */
+    public final @Nullable Sort getSort() {
+        return this.type.getSort();
     }
 
     /** Returns the (possibly {@code null}) label pattern associated with this type node. */

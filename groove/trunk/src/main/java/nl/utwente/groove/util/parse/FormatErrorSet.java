@@ -64,26 +64,38 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
         return Collections.unmodifiableSet(getErrorSet());
     }
 
-    /** Adds a format error based on a given error message and set of arguments. */
-    public void add(String message, Object... args) {
+    /** Adds a format error based on a given error message and set of arguments.
+     * @return this object itself, for chaining
+     */
+    public FormatErrorSet add(String message, Object... args) {
         add(new FormatError(message, args));
+        return this;
     }
 
-    /** Adds a format error based on an existing error and set of additional arguments. */
-    public void add(FormatError error, Object... args) {
+    /** Adds a format error based on an existing error and set of additional arguments
+    * @return this object itself, for chaining
+    */
+    public FormatErrorSet add(FormatError error, Object... args) {
         add(error.extend(args));
+        return this;
     }
 
-    /** Adds a format error to the set. */
-    public void add(FormatError e) {
+    /** Adds a format error to the set.
+    * @return this object itself, for chaining
+    */
+    public FormatErrorSet add(FormatError e) {
         assert !isFixed();
         getErrorSet().add(e.cloneFor(this));
+        return this;
     }
 
-    /** Copies all errors from a given FormatErrorSet into this one. */
-    public void addAll(FormatErrorSet other) {
+    /** Copies all errors from a given FormatErrorSet into this one.
+    * @return this object itself, for chaining
+    */
+    public FormatErrorSet addAll(FormatErrorSet other) {
         other.getErrorSet().forEach(this::add);
         getProjection().putAll(other.getProjection());
+        return this;
     }
 
     /** Returns a stream over the errors contained in this error set. */

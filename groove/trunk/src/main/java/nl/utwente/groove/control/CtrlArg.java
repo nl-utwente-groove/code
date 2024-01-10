@@ -16,11 +16,6 @@
  */
 package nl.utwente.groove.control;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-
 import nl.utwente.groove.algebra.Algebra;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.grammar.QualName;
@@ -99,18 +94,6 @@ public interface CtrlArg {
         return var(scope, name, CtrlType.getType(type), false);
     }
 
-    /** Returns a wildcard parameter with a given type and number. */
-    public static Var wild(CtrlType type, int nr) {
-        List<Var> typeVars = Var.wildMap.get(type);
-        if (typeVars == null) {
-            Var.wildMap.put(type, typeVars = new ArrayList<>());
-        }
-        for (int i = typeVars.size(); i <= nr; i++) {
-            typeVars.add(new Var(CtrlVar.wild(type, i), false));
-        }
-        return typeVars.get(nr);
-    }
-
     /** Returns the single untyped wildcard argument. */
     public static Wild wild() {
         return Wild.WILD;
@@ -162,10 +145,6 @@ public interface CtrlArg {
                 return !arg.inOnly();
             }
         }
-
-        /** Store of wildcard variables. */
-        private static Map<CtrlType,List<Var>> wildMap = new EnumMap<>(CtrlType.class);
-
     }
 
     /**

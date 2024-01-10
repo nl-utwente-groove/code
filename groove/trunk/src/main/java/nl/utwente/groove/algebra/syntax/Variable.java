@@ -31,14 +31,22 @@ import nl.utwente.groove.util.parse.OpKind;
  */
 @NonNullByDefault
 public final class Variable extends Expression {
-    /** Constructs a new variable with a given name and sort. */
+    /** Constructs a new variable with a given name and sort.
+     * @param prefixed indicates if the expression was explicitly typed
+     * by a type prefix in the parsed text
+     * @param name name of the new variable
+     * @param sort sort of the new variable
+     */
     public Variable(boolean prefixed, String name, Sort sort) {
         super(prefixed);
         this.sort = sort;
         this.name = name;
     }
 
-    /** Constructs a new, non-prefixed variable with a given name and sort. */
+    /** Constructs a new, non-prefixed variable with a given name and sort.
+     * @param name name of the new variable
+     * @param sort sort of the new variable
+     */
     public Variable(String name, Sort sort) {
         this(false, name, sort);
     }
@@ -59,11 +67,6 @@ public final class Variable extends Expression {
     }
 
     @Override
-    public int hashCode() {
-        return getName().hashCode();
-    }
-
-    @Override
     public boolean isTerm() {
         return true;
     }
@@ -76,6 +79,11 @@ public final class Variable extends Expression {
     @Override
     public SortMap computeTyping() {
         return SortMap.newInstance(getName(), getSort());
+    }
+
+    @Override
+    public int hashCode() {
+        return getName().hashCode();
     }
 
     @Override

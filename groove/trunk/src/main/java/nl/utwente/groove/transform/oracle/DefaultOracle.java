@@ -44,9 +44,9 @@ public class DefaultOracle implements ValueOracleFactory, ValueOracle {
 
     @Override
     public Constant getValue(HostGraph host, RuleEvent event, RulePar par) throws FormatException {
-        return par.getType()
-            .getSort()
-            .getDefaultValue();
+        var sort = par.getType().getSort();
+        assert sort != null;
+        return sort.getDefaultValue();
     }
 
     @Override

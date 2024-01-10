@@ -21,6 +21,8 @@ import java.util.Collections;
 import nl.utwente.groove.control.CtrlLoader;
 import nl.utwente.groove.control.template.Program;
 import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -47,7 +49,11 @@ public class ControlModel extends TextBasedModel<Program> {
             if (model.hasErrors()) {
                 model.getPartErrors(getQualName()).throwException();
                 // there were errors in the composite model but not in this particular part
-                throw new FormatException("The composite control model cannot be built");
+                new FormatErrorSet(
+                    "The composite control model cannot be built due to the following errors:")
+                    .addAll(model.getErrors())
+                    .throwException();
+                throw Exceptions.UNREACHABLE;
             } else {
                 result = model.getProgram();
             }

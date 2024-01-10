@@ -345,7 +345,7 @@ public class Operator {
             opLookupMap.put(opName, ops);
         }
         ops.add(op);
-        sortOps.put(symbol, op);
+        sortOps.put(opName, op);
     }
 
     /** Mapping from operator names and symbols to lists of operators with that symbol. */

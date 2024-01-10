@@ -18,6 +18,8 @@ package nl.utwente.groove.algebra.syntax;
 
 import static nl.utwente.groove.graph.EdgeRole.BINARY;
 
+import java.util.Objects;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -36,17 +38,22 @@ import nl.utwente.groove.util.parse.OpKind;
 @NonNullByDefault
 public final class FieldExpr extends Expression {
     /** Constructs a new field expression. */
-    public FieldExpr(boolean prefixed, @Nullable String target, String field, Sort type) {
+    public FieldExpr(boolean prefixed, @Nullable String target, String field, Sort sort) {
         super(prefixed);
-        assert field != null && type != null;
+        assert field != null && sort != null;
         this.target = target;
         this.field = field;
-        this.type = type;
+        this.sort = sort;
+    }
+
+    /** Constructs a new, non-prefixed field expression. */
+    public FieldExpr(@Nullable String target, String field, Sort sort) {
+        this(false, target, field, sort);
     }
 
     @Override
     public Sort getSort() {
-        return this.type;
+        return this.sort;
     }
 
     /**
@@ -112,33 +119,16 @@ public final class FieldExpr extends Expression {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof FieldExpr other) {
-            if (this.type != other.type) {
-                return false;
-            }
-            String target = this.target;
-            if (target == null) {
-                if (other.target != null) {
-                    return false;
-                }
-            } else if (!target.equals(other.target)) {
-                return false;
-            }
-            return this.field.equals(other.field);
+        if (!(obj instanceof FieldExpr other)) {
+            return false;
         }
-        return false;
+        return Objects.equals(this.sort, other.sort) && Objects.equals(this.field, other.field)
+            && Objects.equals(this.target, other.target);
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = this.field.hashCode();
-        String target = this.target;
-        result = prime * result + (target == null
-            ? 0
-            : target.hashCode());
-        result = prime * result + this.type.hashCode();
-        return result;
+        return Objects.hash(this.sort, this.field, this.target);
     }
 
     @Override
@@ -157,5 +147,5 @@ public final class FieldExpr extends Expression {
 
     private final @Nullable String target;
     private final String field;
-    private final Sort type;
+    private final Sort sort;
 }

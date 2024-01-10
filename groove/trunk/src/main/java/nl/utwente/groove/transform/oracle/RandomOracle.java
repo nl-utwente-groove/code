@@ -40,7 +40,9 @@ public class RandomOracle implements ValueOracle {
     RandomOracle(boolean hasSeed, long seed) {
         this.hasSeed = hasSeed;
         this.seed = seed;
-        this.random = hasSeed ? new Random(seed) : new Random();
+        this.random = hasSeed
+            ? new Random(seed)
+            : new Random();
     }
 
     /** Indicates if this random value oracle is seeded. */
@@ -60,12 +62,14 @@ public class RandomOracle implements ValueOracle {
 
     @Override
     public Constant getValue(HostGraph host, RuleEvent event, RulePar par) throws FormatException {
-        Sort sort = par.getType()
-            .getSort();
+        Sort sort = par.getType().getSort();
+        assert sort != null;
         Constant result;
         switch (sort) {
         case BOOL:
-            result = this.random.nextBoolean() ? BoolSignature.TRUE : BoolSignature.FALSE;
+            result = this.random.nextBoolean()
+                ? BoolSignature.TRUE
+                : BoolSignature.FALSE;
             break;
         case INT:
             result = Constant.instance((this.random.nextInt()));

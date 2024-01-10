@@ -19,12 +19,14 @@ package nl.utwente.groove.control;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.algebra.Sort;
 
 /**
  * Class encapsulating control variable types.
- * A control type is either a node type or a data type.
- * A data type has an attached signature.
+ * A control type is either {@link #NODE} or a data sort.
+ * A data type has an attached sort.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -40,16 +42,16 @@ public enum CtrlType {
     /** String type. */
     STRING(Sort.STRING);
 
-    /** Constructs a control data type from a given data signature. */
+    /** Constructs the unique a control node type. */
     private CtrlType() {
         this.sort = null;
         this.name = NODE_TYPE_NAME;
     }
 
-    /** Constructs a control data type from a given data signature. */
-    private CtrlType(Sort signature) {
-        this.sort = signature;
-        this.name = signature.getName();
+    /** Constructs a control data type from a given data sort. */
+    private CtrlType(Sort sort) {
+        this.sort = sort;
+        this.name = sort.getName();
     }
 
     @Override
@@ -62,15 +64,15 @@ public enum CtrlType {
      * @return the data sort, or {@code null} if this type
      * is a node type.
      */
-    public Sort getSort() {
+    public @Nullable Sort getSort() {
         return this.sort;
     }
 
     /** Data sort of this type, in case it is a data type. */
-    private final Sort sort;
+    private final @Nullable Sort sort;
 
     /**
-     * Returns the name of this type.
+     * Returns the name of this control type.
      */
     public String getName() {
         return this.name;
@@ -80,11 +82,11 @@ public enum CtrlType {
     private final String name;
 
     /**
-     * Returns a data type instance for a given signature.
-     * @throws IllegalArgumentException if there is no signature with the given name
+     * Returns a data type instance for a given data sort.
+     * @throws IllegalArgumentException if there is no sort with the given name
      */
-    public static CtrlType getType(Sort signature) {
-        return valueOf(signature.name());
+    public static CtrlType getType(Sort sort) {
+        return valueOf(sort.name());
     }
 
     /** Returns the control type with a given name. */
