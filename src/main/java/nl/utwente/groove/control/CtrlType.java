@@ -59,10 +59,16 @@ public enum CtrlType {
         return this.name;
     }
 
+    /** Indicates if this control type corresponds to a data sort. */
+    public boolean isSort() {
+        return this != NODE;
+    }
+
     /**
      * Returns the associated data sort, if this type is a data type.
      * @return the data sort, or {@code null} if this type
      * is a node type.
+     * @see #isSort()
      */
     public @Nullable Sort getSort() {
         return this.sort;

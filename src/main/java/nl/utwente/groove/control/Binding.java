@@ -17,12 +17,11 @@
 package nl.utwente.groove.control;
 
 import java.util.Objects;
-import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.control.CtrlArg.Const;
+import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.grammar.UnitPar;
 import nl.utwente.groove.grammar.host.HostNode;
 
@@ -30,31 +29,31 @@ import nl.utwente.groove.grammar.host.HostNode;
  * @param type the type of source from which the value is to be obtained
  * @param target the target variable or parameter of the assignment
  * @param index the index if this is a {@link Source#VAR}, {@link Source#ANCHOR} or {@link Source#CREATOR} binding
- * @param value the value if this is a {@link Source#CONST} binding
+ * @param expr the value if this is an {@link Source#EXPR} binding
  * @param depth the depth in the call stack from which the value is to be obtained
  */
 @NonNullByDefault
-public record Binding(Binding.Source type, Object target, int index, @Nullable Const value,
+public record Binding(Binding.Source type, Object target, int index, @Nullable Expression expr,
     int depth) {
 
     /** Constructs a top-level binding (depth {@code 0}). */
-    private Binding(Source type, Object target, int index, @Nullable Const value) {
-        this(type, target, index, value, 0);
+    private Binding(Source type, Object target, int index, @Nullable Expression expr) {
+        this(type, target, index, expr, 0);
     }
 
     /** Returns a binding based on this one, with a given depth. */
     public Binding toDepth(int depth) {
-        return new Binding(this.type, this.target, this.index, this.value, depth);
+        return new Binding(this.type, this.target, this.index, this.expr, depth);
     }
 
     /** Returns a binding based on this one, with a given target. */
     public Binding withTarget(Object target) {
-        return new Binding(this.type, target, this.index, this.value, this.depth);
+        return new Binding(this.type, target, this.index, this.expr, this.depth);
     }
 
     /** Returns the index, if this is not a value binding. */
     public int index() {
-        assert type() != Source.CONST;
+        assert type() != Source.EXPR;
         return this.index;
     }
 
@@ -84,46 +83,48 @@ public record Binding(Binding.Source type, Object target, int index, @Nullable C
     }
 
     /** Returns the assigned value, if this is a value binding. */
-    public Const value() {
-        assert type() == Source.CONST;
-        Const result = this.value;
+    public Expression expr() {
+        assert type() == Source.EXPR;
+        Expression result = this.expr;
         assert result != null;
         return result;
     }
 
     @Override
     public String toString() {
-        return target() + ":=" + type().name() + "(" + (type() == Source.CONST
-            ? value()
-            : index()) + ")";
-    }
-
-    /**
-     * Applies this assignment to a given call stack, using a retrieval function to
-     * get the values for {@link Source#ANCHOR} and {@link Source#CREATOR} bindings.
-     * @param stack the call stack to apply this assignment to
-     * @param getPar function retrieving the value of {@link Source#CREATOR} and
-     * {@link Source#ANCHOR} bindings. If {@code null}, no such bindings may exist.
-     * @return the array of values obtained for the individual bindings of this assignment.
-     * Note that this is <i>not</i> a call stack, but rather just the top level for such a stack
-     */
-    public @Nullable HostNode apply(Object[] stack, @Nullable Function<Binding,HostNode> getPar) {
-        for (int i = 0; i < depth(); i++) {
-            stack = CallStack.pop(stack);
-        }
-        return switch (type()) {
-        case CONST -> value().getNode();
-        case VAR -> CallStack.get(stack, index());
-        case ANCHOR, CREATOR -> {
-            assert getPar != null : String
-                .format("Can't apply %s: can't retrieve parameter values", this,
-                        CallStack.toString(stack));
-            // this is a rule parameter
-            yield getPar.apply(this);
-        }
-        case NONE -> null;
+        var rhs = switch (type()) {
+        case EXPR -> expr();
+        default -> index();
         };
+        return target() + ":=" + type().name() + "(" + rhs + ")";
     }
+    //
+    //    /**
+    //     * Applies this binding to a given call stack, using a retrieval function to
+    //     * get the value for {@link Source#ANCHOR} and {@link Source#CREATOR} bindings.
+    //     * @param stack the call stack to apply this assignment to
+    //     * @param getPar function retrieving the value of {@link Source#EXPR}, {@link Source#CREATOR} and
+    //     * {@link Source#ANCHOR} bindings. If {@code null}, this binding should not have one of those
+    //     * sources.
+    //     * @return the value obtained for this binding
+    //     */
+    //    public @Nullable HostNode apply(Object[] stack, @Nullable Function<Binding,HostNode> getPar) {
+    //        for (int i = 0; i < depth(); i++) {
+    //            stack = CallStack.pop(stack);
+    //        }
+    //        return switch (type()) {
+    //        case CONST -> value().getNode();
+    //        case VAR -> CallStack.get(stack, index());
+    //        case ANCHOR, CREATOR, EXPR -> {
+    //            assert getPar != null : String
+    //                .format("Can't apply %s: can't retrieve parameter values", this,
+    //                        CallStack.toString(stack));
+    //            // this is a rule parameter
+    //            yield getPar.apply(this);
+    //        }
+    //        case NONE -> null;
+    //        };
+    //    }
 
     /** Constructs a new binding that applies this binding
      * (which must be a {@link Source#VAR}) to the outcome of an assignment.
@@ -133,14 +134,7 @@ public record Binding(Binding.Source type, Object target, int index, @Nullable C
         return assign.get(index()).withTarget(target());
     }
 
-    /** Constructs a targeted binding to a constant value.
-     * @see Source#CONST
-     */
-    public static Binding value(Object target, Const value) {
-        return new Binding(Source.CONST, target, 0, value);
-    }
-
-    /** Constructs a targeted binding to a variable in the source location.
+    /** Constructs a targeted binding to a control variable.
      * @see Source#VAR
      */
     public static Binding var(Object target, int index) {
@@ -163,6 +157,14 @@ public record Binding(Binding.Source type, Object target, int index, @Nullable C
         return new Binding(Source.CREATOR, target, index, null);
     }
 
+    /** Constructs a targeted binding to an expression.
+     * @param expr the binding expression
+     * @see Source#EXPR
+     */
+    public static Binding expr(Object target, Expression expr) {
+        return new Binding(Source.EXPR, target, 0, expr);
+    }
+
     /** Constructs targeted a binding to an unspecified value.
      * @see Source#NONE
      */
@@ -179,7 +181,7 @@ public record Binding(Binding.Source type, Object target, int index, @Nullable C
             return false;
         }
         return Objects.equals(this.type, other.type) && Objects.equals(this.target, other.target)
-            && this.index == other.index && Objects.equals(this.value, other.value)
+            && this.index == other.index && Objects.equals(this.expr, other.expr)
             && this.depth == other.depth;
     }
 
@@ -191,9 +193,16 @@ public record Binding(Binding.Source type, Object target, int index, @Nullable C
         ANCHOR,
         /** Creator node image. */
         CREATOR,
-        /** Constant value. */
-        CONST,
+        /** Expression. */
+        EXPR,
         /** Null value. */
         NONE,;
+
+        /** Indicates if source can be looked up
+         * in the call stack.
+         */
+        public boolean isStackBased() {
+            return this == VAR || this == NONE;
+        }
     }
 }

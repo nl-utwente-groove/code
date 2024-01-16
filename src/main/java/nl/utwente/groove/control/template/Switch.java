@@ -17,11 +17,14 @@
 package nl.utwente.groove.control.template;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
+import nl.utwente.groove.algebra.syntax.Variable;
 import nl.utwente.groove.control.Assignment;
 import nl.utwente.groove.control.Binding;
 import nl.utwente.groove.control.Binding.Source;
@@ -56,7 +59,7 @@ public class Switch implements Comparable<Switch>, Relocatable {
         this.source = source;
         this.onFinish = onFinish;
         this.kind = call.getUnit().getKind();
-        this.call = call;
+        this.call = call.bind(getSourceBindMap());
         this.transience = transience;
     }
 
@@ -136,6 +139,19 @@ public class Switch implements Comparable<Switch>, Relocatable {
 
     private final int transience;
 
+    /** Returns a function mapping all sorted source variables to corresponding bindings.
+     */
+    private Function<Variable,Object> getSourceBindMap() {
+        Map<Variable,Binding> result = new HashMap<>();
+        for (var e : getSource().getVarIxMap().entrySet()) {
+            var sourceVar = e.getKey();
+            if (sourceVar.type().isSort()) {
+                result.put(sourceVar.toVar(), Binding.var(sourceVar.name(), e.getValue()));
+            }
+        }
+        return v -> result.get(v);
+    }
+
     /**
      * Returns an assignment to the formal parameters of the call, based on
      * bindings to source location variables and constant values derived
@@ -180,8 +196,8 @@ public class Switch implements Comparable<Switch>, Relocatable {
                         .illegalState("Call argument %s of %s is neither input-only nor output-only",
                                       arg, this);
                 }
-            } else if (arg instanceof CtrlArg.Const c) {
-                bind = Binding.value(target, c);
+            } else if (arg instanceof CtrlArg.Expr e) {
+                bind = Binding.expr(target, e.expr());
             } else {
                 assert arg instanceof CtrlArg.Wild;
                 bind = Binding.none(target);

@@ -16,20 +16,13 @@
  */
 package nl.utwente.groove.algebra;
 
-import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.util.Exceptions;
 
 /** Abstract superclass of all boolean algebras.
  * <Bool> Representation type for boolean values
  */
-public abstract sealed class BoolAlgebra<BOOL> extends BoolSignature<BOOL>
-    implements Algebra<BOOL>permits AbstractBoolAlgebra, PointBoolAlgebra, TermBoolAlgebra {
-    @Override
-    @SuppressWarnings("unchecked")
-    public BOOL toValue(Expression term) {
-        return (BOOL) getFamily().toValue(term);
-    }
-
+public abstract sealed class BoolAlgebra<BOOL> extends BoolSignature<BOOL> implements Algebra<BOOL>
+    permits AbstractBoolAlgebra, PointBoolAlgebra, TermBoolAlgebra {
     /*
      * Specialises the return type.
      * @throws IllegalArgumentException if the parameter is not of type {@link Boolean}
@@ -37,10 +30,9 @@ public abstract sealed class BoolAlgebra<BOOL> extends BoolSignature<BOOL>
     @Override
     public final BOOL toValueFromJava(Object value) {
         if (!(value instanceof Boolean)) {
-            throw Exceptions.illegalArg("Native boolean type is %s, not %s",
-                Boolean.class.getSimpleName(),
-                value.getClass()
-                    .getSimpleName());
+            throw Exceptions
+                .illegalArg("Native boolean type is %s, not %s", Boolean.class.getSimpleName(),
+                            value.getClass().getSimpleName());
         }
         return toValueFromJavaBoolean((Boolean) value);
     }

@@ -16,12 +16,12 @@
  */
 package nl.utwente.groove.control;
 
-import nl.utwente.groove.algebra.Algebra;
+import java.util.function.Function;
+
 import nl.utwente.groove.algebra.syntax.Expression;
+import nl.utwente.groove.algebra.syntax.Variable;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.UnitPar.Direction;
-import nl.utwente.groove.grammar.host.HostFactory;
-import nl.utwente.groove.grammar.host.HostNode;
 
 /**
  * Class representing a control argument in an action call.
@@ -62,9 +62,12 @@ public interface CtrlArg {
      */
     public abstract CtrlType getType();
 
-    /** Computes and inserts the host nodes to be used for constant value arguments. */
-    public default void initialise(HostFactory factory) {
-        // empty
+    /** Returns a copy of this control argument in which all variables
+     * have been enriched with binding information.
+     * @param bindMap Mapping from variables to corresponding binding information.
+     */
+    public default CtrlArg bind(java.util.function.Function<Variable,Object> bindMap) {
+        return this;
     }
 
     /** String representation of a don't care parameter. */
@@ -92,6 +95,11 @@ public interface CtrlArg {
      */
     public static Var outVar(QualName scope, String name, String type) {
         return var(scope, name, CtrlType.getType(type), false);
+    }
+
+    /** Returns a new {@link Expr} argument based on a given expression. */
+    public static Expr expr(Expression expr) {
+        return new Expr(expr);
     }
 
     /** Returns the single untyped wildcard argument. */
@@ -145,86 +153,6 @@ public interface CtrlArg {
                 return !arg.inOnly();
             }
         }
-    }
-
-    /**
-     * Constant control argument.
-     */
-    public static class Const implements CtrlArg {
-        /**
-         * Constructs a constant argument from an algebra value
-         * @param algebra the algebra from which the value is taken
-         * @param value the algebra value
-         */
-        public Const(Algebra<?> algebra, Object value) {
-            this.algebra = algebra;
-            this.value = value;
-            this.type = CtrlType.getType(algebra.getSort());
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            } else if (!(obj instanceof Const other)) {
-                return false;
-            }
-            return getValue().equals(other.getValue());
-        }
-
-        /** Returns the value of this constant. */
-        public Algebra<?> getAlgebra() {
-            return this.algebra;
-        }
-
-        /** Returns the value of this constant. */
-        public Object getValue() {
-            return this.value;
-        }
-
-        @Override
-        public CtrlType getType() {
-            return this.type;
-        }
-
-        @Override
-        public int hashCode() {
-            return getValue().hashCode();
-        }
-
-        @Override
-        public boolean dontCare() {
-            return false;
-        }
-
-        @Override
-        public boolean inOnly() {
-            return true;
-        }
-
-        /** Returns the host node containing the value of this constant. */
-        public HostNode getNode() {
-            assert this.node != null;
-            return this.node;
-        }
-
-        @Override
-        public void initialise(HostFactory factory) {
-            this.node = factory.createNode(getAlgebra(), getValue());
-        }
-
-        @Override
-        public String toString() {
-            return this.algebra.getSymbol(this.value);
-        }
-
-        private final Algebra<?> algebra;
-        /** The value of this constant. */
-        private final Object value;
-        /** The type of the constant. */
-        private final CtrlType type;
-        /** The host node to be used as image. */
-        private HostNode node;
     }
 
     /**
@@ -288,6 +216,11 @@ public interface CtrlArg {
         @Override
         public CtrlType getType() {
             return CtrlType.getType(expr().getSort());
+        }
+
+        @Override
+        public CtrlArg bind(Function<Variable,Object> bindMap) {
+            return new Expr(expr().bind(bindMap));
         }
     }
 }

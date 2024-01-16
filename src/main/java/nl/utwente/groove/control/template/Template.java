@@ -42,7 +42,6 @@ import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.QualName;
-import nl.utwente.groove.grammar.host.HostFactory;
 import nl.utwente.groove.util.LazyFactory;
 
 /**
@@ -349,17 +348,6 @@ public class Template {
         return owner == null
             ? new Template(getQualName())
             : new Template(owner);
-    }
-
-    /** Computes and inserts the host nodes to be used for constant value arguments. */
-    public void initialise(HostFactory factory) {
-        for (Location loc : getLocations()) {
-            if (loc.isTrial()) {
-                for (NestedSwitch sw : loc.getAttempt()) {
-                    sw.initialise(factory);
-                }
-            }
-        }
     }
 
     @Override

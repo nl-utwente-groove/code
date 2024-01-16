@@ -401,33 +401,64 @@ arg[boolean out]
     //@H Don't-care argument
     //@B The parameter does not affect the match or the control state.
     { out }? DONT_CARE -> ^(ARG_WILD)   
-  | in_arg_expr
+  | in_arg
   ;
 
-/** @H Input argument expression
-  * @B Input argument for a rule, procedure or group call. 
+/** @H Input argument
+  * @B Input argument for a rule, procedure, operator or group call. 
   */
-in_arg_expr
-  : in_arg_atom ( operator in_arg_expr -> ^(ARG_OP operator in_arg_atom in_arg_expr)
-                | -> in_arg_atom
-                )
+in_arg
+  : //@S unary in_arg
+    //@H Unary operator expression as input argument
+    //@B Applies unary operator %1s to %2s and passes the result into the call
+    //@P unary operator symbol
+    //@P expression to which %1s is applied
+    op1 in_arg -> ^(ARG_OP op1 in_arg)
+  | //@S in_arg1 binary in_arg2
+    //@H Binary operator expression as input argument
+    //@B Applies binary operator %2s to %1s and %3s and passes the result into the call
+    //@P first argument for %2s
+    //@P binary operator symbol
+    //@P second argument for %2s
+    in_atom ( op2 in_arg -> ^(ARG_OP op2 in_atom in_arg)
+            | -> in_atom
+            )
   ;
 
-in_arg_atom
-  : //@S arg: id
+in_atom
+  : //@S in_arg: id
     //@H Variable input argument
     //@B Variable %s must be bound to a value, which will be passed into the call.
+    //@S in_arg: op.LPAR.in_arg (COMMA in_arg)*.RPAR
+    //@H Operator invocation as input argument
+    //@B Applies operator %1s to the comma-separated list of %2s, and passes the result into the call
+    //@P operator name
+    //@P first argument for %1s
+    //@P optional further arguments for %1s
     ID ( arg_list[false] -> ^(ARG_CALL ID arg_list)
        | -> ^(ARG_ID ID)
        )
   | literal -> ^(ARG_LIT literal)
-  | LPAR in_arg_expr RPAR -> in_arg_expr
+  | //@S in_arg: LPAR in_arg RPAR
+    //@H Parenthesised input argument
+    LPAR ( // parenthesised expression
+           in_arg RPAR -> in_arg
+         | // unary cast operator; put LPAR as the operator to ensure the ExprParser has the full text
+           (REAL | INT | STRING) RPAR in_arg -> ^(ARG_OP LPAR in_arg)
+         )
   ;
 
-operator
+// Unary operator
+op1
+  : MINUS 
+  | NOT
+  ;
+
+// Binary operator
+op2
   : LANGLE | RANGLE | LEQ | GEQ | EQ | NEQ | PLUS | MINUS | PERCENT | ASTERISK | SLASH | AMP | BAR | NOT
   ;
-  	
+
 literal
   : //@S arg: TRUE
     //@B Boolean value for truth.
@@ -466,9 +497,8 @@ var_type
 	;
 
 // LEXER RULES
-
 ALAP     : 'alap';
-ANY		   : 'any';
+ANY	 : 'any';
 ATOM     : 'atomic';
 BOOL     : 'bool';
 CHOICE   : 'choice';
@@ -482,7 +512,7 @@ INT      : 'int';
 NODE     : 'node';
 OR       : 'or';
 OTHER    : 'other';
-OUT	     : 'out';
+OUT	 : 'out';
 REAL     : 'real';
 PACKAGE  : 'package';
 PRIORITY : 'priority';
@@ -531,6 +561,10 @@ EscapeSequence
     )          
   ;    
 
+//REAL_CAST   : '(real)';
+//INT_CAST    : '(int)';
+//STRING_CAST : '(string)';
+
 ID
   : ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')*
   | BQUOTE ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')* BQUOTE
@@ -564,7 +598,7 @@ EQ        : '==' ;
 NEQ       : '!=' ;
 LCURLY    : '{' ;
 RCURLY    : '}' ;
-
+	
 ML_COMMENT : '/*' ( options {greedy=false;} : . )* '*/' { $channel=HIDDEN; };
 SL_COMMENT : '//' ~('\n')* { $channel=HIDDEN; };
 

@@ -19,7 +19,10 @@ package nl.utwente.groove.control;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.algebra.syntax.Expression;
+import nl.utwente.groove.algebra.syntax.Variable;
 import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Control variables, consisting of an optional scope (being the defining procedure
@@ -50,6 +53,21 @@ public record CtrlVar(@Nullable QualName scope, @NonNull String name, @NonNull C
     @Override
     public String toString() {
         return this.name;
+    }
+
+    /** Converts this control variable into a data variable.
+     * Only valid if the control type is a data type.
+     * @throws UnsupportedOperationException if the control type of this control variable
+     * is not a data type.
+     * @return A data variable with the data type and name of this control variable
+     */
+    public Variable toVar() throws UnsupportedOperationException {
+        var sort = this.type.getSort();
+        if (sort == null) {
+            throw Exceptions.unsupportedOp("Control variable %s is not a data variable", this);
+        } else {
+            return Expression.var(sort, name());
+        }
     }
 
     @Override

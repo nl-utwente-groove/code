@@ -265,7 +265,8 @@ public class RecipeTransition extends ALabelEdge<GraphState>
                 assign = swt.assignSource2Init().after(assign);
             }
         }
-        var inValues = assign.apply(stack);
+        var valuator = getGTS().getRecord().getValuator();
+        var inValues = valuator.eval(assign, stack);
         assert inValues.length == argCount;
         for (int i = 0; i < argCount; i++) {
             if (inValues[i] == null) {

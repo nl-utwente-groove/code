@@ -19,6 +19,7 @@ package nl.utwente.groove.algebra.syntax;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -175,38 +176,44 @@ public sealed abstract class Expression permits Constant, Variable, FieldExpr, C
     /** Flag indicating if the parsed text for this expression had a type prefix. */
     private final boolean prefixed;
 
+    /** Returns a copy of this Expression in which the variables are enriched
+     * with binding information.
+     * @param bindMap mapping from variables to corresponding binding information
+     */
+    public abstract Expression bind(Function<Variable,Object> bindMap);
+
     /** Creates and returns a boolean constant, with given value.
      * Convenience method for {@link Constant#instance(Boolean)}.
      */
-    static public Expression b(boolean value) {
+    static public Constant b(boolean value) {
         return Constant.instance(value);
     }
 
     /** Creates and returns an integer constant, with given value.
      * Convenience method for {@link Constant#instance(int)}.
      */
-    static public Expression i(int value) {
+    static public Constant i(int value) {
         return Constant.instance(value);
     }
 
     /** Creates and returns a real constant, with given value.
      * Convenience method for {@link Constant#instance(double)}.
      */
-    static public Expression r(double value) {
+    static public Constant r(double value) {
         return Constant.instance(value);
     }
 
     /** Creates and returns a string constant, with given value.
      * Convenience method for {@link Constant#instance(String)}.
      */
-    static public Expression s(String value) {
+    static public Constant s(String value) {
         return Constant.instance(value);
     }
 
     /** Creates and returns a an expression consisting of the application
      * of a given operator to a given list of arguments.
      */
-    static public Expression op(Operator op, Expression... args) {
+    static public CallExpr op(Operator op, Expression... args) {
         return new CallExpr(op, args);
     }
 
@@ -214,7 +221,7 @@ public sealed abstract class Expression permits Constant, Variable, FieldExpr, C
      * of a given operator to a given list of arguments.
      * The operator is given as an {@link OpValue}.
      */
-    static public Expression op(OpValue op, Expression... args) {
+    static public CallExpr op(OpValue op, Expression... args) {
         return op(op.getOperator(), args);
     }
 
@@ -222,7 +229,7 @@ public sealed abstract class Expression permits Constant, Variable, FieldExpr, C
      * of a given operator to a given list of arguments.
      * The operator is given as an combination of sort and name or symbol.
      */
-    static public Expression op(Sort sort, String name, Expression... args) {
+    static public CallExpr op(Sort sort, String name, Expression... args) {
         var op = Operator.getOp(sort, name);
         assert op != null;
         return op(op, args);
@@ -231,58 +238,58 @@ public sealed abstract class Expression permits Constant, Variable, FieldExpr, C
     /** Creates and returns an expression consisting of the application
      * of a given boolean operator to a given list of arguments.
      */
-    static public Expression bOp(String name, Expression... args) {
+    static public CallExpr bOp(String name, Expression... args) {
         return op(Sort.BOOL, name, args);
     }
 
     /** Creates and returns an expression consisting of the application
      * of a given integer operator to a given list of arguments.
      */
-    static public Expression iOp(String name, Expression... args) {
+    static public CallExpr iOp(String name, Expression... args) {
         return op(Sort.INT, name, args);
     }
 
     /** Creates and returns an expression consisting of the application
      * of a given real operator to a given list of arguments.
      */
-    static public Expression rOp(String name, Expression... args) {
+    static public CallExpr rOp(String name, Expression... args) {
         return op(Sort.REAL, name, args);
     }
 
     /** Creates and returns an expression consisting of the application
      * of a given string operator to a given list of arguments.
      */
-    static public Expression sOp(String name, Expression... args) {
+    static public CallExpr sOp(String name, Expression... args) {
         return op(Sort.STRING, name, args);
     }
 
     /** Creates and returns a variable of given sort and name.
      */
-    static public Expression var(Sort sort, String name) {
+    static public Variable var(Sort sort, String name) {
         return new Variable(name, sort);
     }
 
     /** Creates and returns a boolean variable with given name.
      */
-    static public Expression bVar(String name) {
+    static public Variable bVar(String name) {
         return var(Sort.BOOL, name);
     }
 
     /** Creates and returns an integer variable with given name.
      */
-    static public Expression iVar(String name) {
+    static public Variable iVar(String name) {
         return var(Sort.INT, name);
     }
 
     /** Creates and returns a real variable with given name.
      */
-    static public Expression rVar(String name) {
+    static public Variable rVar(String name) {
         return var(Sort.REAL, name);
     }
 
     /** Creates and returns a string variable with given name.
      */
-    static public Expression sVar(String name) {
+    static public Variable sVar(String name) {
         return var(Sort.STRING, name);
     }
 

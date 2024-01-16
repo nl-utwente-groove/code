@@ -24,10 +24,10 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.algebra.syntax.Variable;
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.Signature;
-import nl.utwente.groove.grammar.host.HostFactory;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Pair;
 
@@ -136,11 +136,10 @@ public class Call extends Pair<Callable,List<? extends CtrlArg>> implements Comp
         this.inVars = inVars;
     }
 
-    /** Computes and inserts the host nodes to be used for constant value arguments. */
-    public void initialise(HostFactory factory) {
-        for (CtrlArg arg : getArgs()) {
-            arg.initialise(factory);
-        }
+    /** Returns a copy of this call in which all data variables are enriched with binding information. */
+    public Call bind(java.util.function.Function<Variable,Object> bindMap) {
+        var newArgs = getArgs().stream().map(a -> a.bind(bindMap)).toList();
+        return new Call(getUnit(), newArgs);
     }
 
     @Override

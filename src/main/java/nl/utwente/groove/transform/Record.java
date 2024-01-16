@@ -10,6 +10,7 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
+import nl.utwente.groove.control.Valuator;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.RuleDependencies;
@@ -54,6 +55,8 @@ public class Record {
         grammar.testFixed(true);
         this.checkIso = grammar.getProperties().isCheckIsomorphism();
         this.family = grammar.getProperties().getAlgebraFamily();
+        this.valuator = new Valuator();
+        this.valuator.setExprInfo(this.family, hostFactory);
     }
 
     /** Returns the stored rule system on which the derivations are based. */
@@ -82,6 +85,15 @@ public class Record {
     }
 
     private final AlgebraFamily family;
+
+    /** Returns the valuator for the GTS, initialised with this records
+     * algebra family and host factory.
+     */
+    public Valuator getValuator() {
+        return this.valuator;
+    }
+
+    private final Valuator valuator;
 
     /**
      * Returns an event for a given rule match. If {@link #getReuse()} is

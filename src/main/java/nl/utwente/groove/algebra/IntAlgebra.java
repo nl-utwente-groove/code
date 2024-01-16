@@ -16,7 +16,6 @@
  */
 package nl.utwente.groove.algebra;
 
-import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.util.Exceptions;
 
 /** Abstract superclass of all integer algebras.
@@ -26,14 +25,8 @@ import nl.utwente.groove.util.Exceptions;
  * @param <STRING> The representation type of the string algebra
  */
 public abstract sealed class IntAlgebra<INT,REAL,BOOL,STRING>
-    extends IntSignature<INT,REAL,BOOL,STRING>
-    implements Algebra<INT>permits BigIntAlgebra, JavaIntAlgebra, PointIntAlgebra, TermIntAlgebra {
-    @Override
-    @SuppressWarnings("unchecked")
-    public INT toValue(Expression term) {
-        return (INT) getFamily().toValue(term);
-    }
-
+    extends IntSignature<INT,REAL,BOOL,STRING> implements Algebra<INT>
+    permits BigIntAlgebra, JavaIntAlgebra, PointIntAlgebra, TermIntAlgebra {
     /*
      * Specialises the return type.
      * @throws IllegalArgumentException if the parameter is not of type {@link Integer}
@@ -41,10 +34,9 @@ public abstract sealed class IntAlgebra<INT,REAL,BOOL,STRING>
     @Override
     public final INT toValueFromJava(Object value) {
         if (!(value instanceof Integer)) {
-            throw Exceptions.illegalArg("Native int type is %s, not %s",
-                Integer.class.getSimpleName(),
-                value.getClass()
-                    .getSimpleName());
+            throw Exceptions
+                .illegalArg("Native int type is %s, not %s", Integer.class.getSimpleName(),
+                            value.getClass().getSimpleName());
         }
         return toValue((Integer) value);
     }

@@ -30,7 +30,6 @@ import nl.utwente.groove.control.Attempt;
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.NestedCall;
 import nl.utwente.groove.grammar.Recipe;
-import nl.utwente.groove.grammar.host.HostFactory;
 import nl.utwente.groove.util.Groove;
 
 /**
@@ -185,13 +184,6 @@ public class NestedSwitch implements Attempt.Stage<Location,NestedSwitch>, Compa
         NestedSwitch result = new NestedSwitch();
         stream().map(s -> s.relocate(map)).forEach(result::push);
         return result;
-    }
-
-    /** Computes and inserts the host nodes to be used for constant value arguments. */
-    public void initialise(HostFactory factory) {
-        for (Call call : getCall()) {
-            call.initialise(factory);
-        }
     }
 
     @Override

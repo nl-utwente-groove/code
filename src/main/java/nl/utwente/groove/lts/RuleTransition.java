@@ -21,8 +21,6 @@ import java.util.List;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.control.CtrlArg;
-import nl.utwente.groove.control.CtrlArg.Const;
-import nl.utwente.groove.control.CtrlArg.Var;
 import nl.utwente.groove.control.instance.Step;
 import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.grammar.Action.Role;
@@ -124,21 +122,12 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
             var anchorImages = getEvent().getAnchorImages();
             result = new HostNode[args.size()];
             for (int i = 0; i < args.size(); i++) {
-                HostNode node;
-                CtrlArg par = args.get(i);
-                if (par instanceof Var v) {
-                    var bind = getAction().getParBinding(i);
-                    node = switch (bind.type()) {
-                    case ANCHOR -> (HostNode) anchorImages[bind.index()];
-                    case CREATOR -> getAddedNodes()[bind.index()];
-                    default -> throw Exceptions.UNREACHABLE;
-                    };
-                } else if (par instanceof Const c) {
-                    node = c.getNode();
-                } else {
-                    throw Exceptions.UNREACHABLE;
-                }
-                result[i] = node;
+                var bind = getAction().getParBinding(i);
+                result[i] = switch (bind.type()) {
+                case ANCHOR -> (HostNode) anchorImages[bind.index()];
+                case CREATOR -> getAddedNodes()[bind.index()];
+                default -> throw Exceptions.UNREACHABLE;
+                };
             }
         }
         return result;

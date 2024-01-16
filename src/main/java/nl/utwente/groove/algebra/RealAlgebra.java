@@ -16,7 +16,6 @@
  */
 package nl.utwente.groove.algebra;
 
-import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.util.Exceptions;
 
 /** Abstract superclass of all real-number algebras.
@@ -26,14 +25,8 @@ import nl.utwente.groove.util.Exceptions;
  * @param <STRING> The representation type of the string algebra
  */
 public abstract sealed class RealAlgebra<INT,REAL,BOOL,STRING>
-    extends RealSignature<INT,REAL,BOOL,STRING> implements
-    Algebra<REAL>permits BigRealAlgebra, JavaRealAlgebra, PointRealAlgebra, TermRealAlgebra {
-    @Override
-    @SuppressWarnings("unchecked")
-    public REAL toValue(Expression term) {
-        return (REAL) getFamily().toValue(term);
-    }
-
+    extends RealSignature<INT,REAL,BOOL,STRING> implements Algebra<REAL>
+    permits BigRealAlgebra, JavaRealAlgebra, PointRealAlgebra, TermRealAlgebra {
     /*
      * Specialises the return type.
      * @throws IllegalArgumentException if the parameter is not of type {@link Double}
@@ -41,10 +34,9 @@ public abstract sealed class RealAlgebra<INT,REAL,BOOL,STRING>
     @Override
     public final REAL toValueFromJava(Object value) {
         if (!(value instanceof Double)) {
-            throw Exceptions.illegalArg("Native double type is %s, not %s",
-                Double.class.getSimpleName(),
-                value.getClass()
-                    .getSimpleName());
+            throw Exceptions
+                .illegalArg("Native double type is %s, not %s", Double.class.getSimpleName(),
+                            value.getClass().getSimpleName());
         }
         return toValueFromJavaDouble((Double) value);
     }

@@ -19,12 +19,15 @@ package nl.utwente.groove.algebra.syntax;
 import static nl.utwente.groove.graph.EdgeRole.BINARY;
 
 import java.util.Objects;
+import java.util.function.Function;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.grammar.type.TypeLabel;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Keywords;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.line.Line.Style;
@@ -112,6 +115,11 @@ public final class FieldExpr extends Expression {
     @Override
     protected SortMap computeTyping() {
         return SortMap.newInstance();
+    }
+
+    @Override
+    public @NonNull Expression bind(Function<Variable,Object> bindMap) {
+        throw Exceptions.unsupportedOp("Field expresstion %s cannot be bound", this);
     }
 
     @Override

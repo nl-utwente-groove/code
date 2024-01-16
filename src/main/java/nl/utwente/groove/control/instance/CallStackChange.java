@@ -23,15 +23,13 @@ import static nl.utwente.groove.control.instance.CallStackChange.Kind.PUSH;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.control.Assignment;
-import nl.utwente.groove.control.Binding;
-import nl.utwente.groove.control.Binding.Source;
 import nl.utwente.groove.control.CallStack;
+import nl.utwente.groove.control.Valuator;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.util.Exceptions;
 
@@ -95,44 +93,44 @@ public record CallStackChange(Kind kind, List<Assignment> assigns, @Nullable Cal
     /**
      * Applies this change to a given call stack
      * and returns the modified stack.
-     * Only valid for {@link Kind#POP} and {@link Kind#PUSH} assignments;
-     * use {@link #apply(Object[], Function)} with non-{@code null} parameter
+     * Only valid for {@link Kind#POP} and {@link Kind#NONE} assignments;
+     * use {@link #apply(Object[], Valuator)} with non-{@code null} parameter
      * retrieval function to apply {@link Kind#PUSH}.
      * @return the call stack obtained by applying this change
      */
     public Object[] apply(Object[] stack) {
         assert kind() != Kind.PUSH;
-        return apply(stack, null);
+        return apply(stack, Valuator.vars());
     }
 
     /**
      * Applies this change to a given call
      * stack, and returns the modified stack.
      * @param stack the current call stack
-     * @param getPar optional function retrieving the value of {@link Source#CREATOR} and
-     * {@link Source#ANCHOR} bindings.
+     * @param valuator retrieval function for the bindings
      * @return the call stack obtained by applying this assignment
      */
-    public Object[] apply(Object[] stack, @Nullable Function<Binding,HostNode> getPar) {
+    public Object[] apply(Object[] stack, Valuator valuator) {
         // first apply the effects of the predecessor, if any
         var pred = pred();
         if (pred != null) {
-            stack = pred.apply(stack, getPar);
+            stack = pred.apply(stack, valuator);
         }
         // now apply the effects of this change
         Object[] result;
+        valuator.setVarInfo(stack);
         switch (kind()) {
         case POP:
             result = CallStack.pop(stack);
             if (!assign().isNone()) {
-                HostNode[] newTop = assign().apply(stack, getPar);
+                HostNode[] newTop = valuator.eval(assign());
                 result = CallStack.modify(result, newTop);
             }
             break;
         case PUSH:
             result = stack;
             for (int i = 0; i < assigns().size(); i++) {
-                HostNode[] newTop = assign(i).apply(stack, getPar);
+                HostNode[] newTop = valuator.eval(assign(i));
                 result = i == 0
                     ? CallStack.replace(result, newTop)
                     : CallStack.push(result, newTop);
@@ -145,35 +143,6 @@ public record CallStackChange(Kind kind, List<Assignment> assigns, @Nullable Cal
             throw Exceptions.UNREACHABLE;
         }
         return result;
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + this.assigns.hashCode();
-        result = prime * result + this.kind.hashCode();
-        return result;
-    }
-
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof CallStackChange other)) {
-            return false;
-        }
-        if (!this.assigns.equals(other.assigns)) {
-            return false;
-        }
-        if (this.kind != other.kind) {
-            return false;
-        }
-        return true;
     }
 
     @Override

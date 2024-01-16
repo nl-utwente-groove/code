@@ -37,9 +37,14 @@ public class Exceptions {
         return new IllegalStateException(String.format(message, args));
     }
 
+    /** Constructs an {@link UnsupportedOperationException} without message. */
+    public static final UnsupportedOperationException unsupportedOp() {
+        return new UnsupportedOperationException();
+    }
+
     /** Constructs an {@link UnsupportedOperationException} for a given message and set of message parameters. */
     public static final UnsupportedOperationException unsupportedOp(String message,
-        Object... args) {
+                                                                    Object... args) {
         return new UnsupportedOperationException(String.format(message, args));
     }
 

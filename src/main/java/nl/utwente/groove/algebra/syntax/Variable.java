@@ -16,6 +16,9 @@
  */
 package nl.utwente.groove.algebra.syntax;
 
+import java.util.Objects;
+import java.util.function.Function;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -36,11 +39,23 @@ public final class Variable extends Expression {
      * by a type prefix in the parsed text
      * @param name name of the new variable
      * @param sort sort of the new variable
+     * @param binding optional binding information for this variable.
      */
-    public Variable(boolean prefixed, String name, Sort sort) {
+    private Variable(boolean prefixed, String name, Sort sort, @Nullable Object binding) {
         super(prefixed);
         this.sort = sort;
         this.name = name;
+        this.binding = binding;
+    }
+
+    /** Constructs a new variable with a given name and sort.
+     * @param prefixed indicates if the expression was explicitly typed
+     * by a type prefix in the parsed text
+     * @param name name of the new variable
+     * @param sort sort of the new variable
+     */
+    public Variable(boolean prefixed, String name, Sort sort) {
+        this(prefixed, name, sort, null);
     }
 
     /** Constructs a new, non-prefixed variable with a given name and sort.
@@ -56,6 +71,9 @@ public final class Variable extends Expression {
         return this.name;
     }
 
+    /** The name of this variable. */
+    private final String name;
+
     @Override
     protected Line toLine(OpKind context) {
         return Line.atom(getName()).style(Style.ITALIC).style(Style.UNDERLINE);
@@ -64,6 +82,31 @@ public final class Variable extends Expression {
     @Override
     public Sort getSort() {
         return this.sort;
+    }
+
+    /** The signature of this variable. */
+    private final Sort sort;
+
+    /** Indicates if this variable has non-{@code null} binding information. */
+    public boolean isBound() {
+        return this.binding != null;
+    }
+
+    /** Returns the optional binding information of this variable.
+     * Should only be invoked if {@link #isBound()} holds.
+     */
+    public Object getBinding() {
+        var result = this.binding;
+        assert result != null;
+        return result;
+    }
+
+    /** Optional binding information of this variable. */
+    private final @Nullable Object binding;
+
+    @Override
+    public Variable bind(Function<Variable,Object> bindMap) {
+        return new Variable(isPrefixed(), getName(), getSort(), bindMap.apply(this));
     }
 
     @Override
@@ -83,7 +126,7 @@ public final class Variable extends Expression {
 
     @Override
     public int hashCode() {
-        return getName().hashCode();
+        return Objects.hash(getSort(), getName(), this.binding);
     }
 
     @Override
@@ -97,7 +140,7 @@ public final class Variable extends Expression {
         if (!getName().equals(other.getName())) {
             return false;
         }
-        assert getSort() == other.getSort();
+        assert getSort() == other.getSort() && Objects.equals(this.binding, other.binding);
         return true;
     }
 
@@ -114,11 +157,6 @@ public final class Variable extends Expression {
     public String toString() {
         return getSort().getName() + ":" + getName();
     }
-
-    /** The name of this variable. */
-    private final String name;
-    /** The signature of this variable. */
-    private final Sort sort;
 
     /** Callback method to determine if a given character is suitable as first character for a variable name. */
     static public boolean isIdentifierStart(char c) {

@@ -26,15 +26,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.function.Function;
+
+import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.control.Assignment;
-import nl.utwente.groove.control.Binding;
+import nl.utwente.groove.control.Valuator;
 import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.lts.GraphTransition.Claz;
-import nl.utwente.groove.util.Exceptions;
 
 /**
  * Information required for the proper exploration of transient states.
@@ -298,6 +298,12 @@ class ExploreData {
     /** Transitively closed set of reachable partial transitions. */
     private final Set<RuleTransition> reachablePartials = new HashSet<>();
 
+    /** Returns the valuator for this exploration. */
+    @NonNull
+    Valuator getValuator() {
+        return getState().getGTS().getRecord().getValuator();
+    }
+
     private final static boolean DEBUG = false;
 
     /**
@@ -467,22 +473,20 @@ class ExploreData {
             // get the stack at that frame
             Object[] stack = state.getFrameStack(frame);
             // get the out-parameter assignment
-            return frame.getLocation().assignFinal2Par().apply(stack);
+            return frame.getLocation().assignFinal2Par().lookup(stack);
         }
 
         /** Computes the recipe out-parameter values from the final internal transition. */
         static private HostNode[] getOutValues(RuleTransition partial) {
             var step = partial.getStep();
-            Object[] stack = partial.source().getFrameStack(step.getSource());
+            var valuator = partial.getGTS().getRecord().getValuator();
             // apply the transition's push change; for this we need the rule arguments
-            var addedNodes = partial.getAddedNodes();
             var anchorImages = partial.getEvent().getAnchorImages();
-            Function<Binding,HostNode> getValue = (b -> switch (b.type()) {
-            case ANCHOR -> (HostNode) anchorImages[b.index()];
-            case CREATOR -> addedNodes[b.index()];
-            default -> throw Exceptions.UNREACHABLE;
-            });
-            stack = step.getPush().apply(stack, getValue);
+            valuator.setAnchorInfo(i -> (HostNode) anchorImages[i]);
+            var addedNodes = partial.getAddedNodes();
+            valuator.setCreatorInfo(i -> addedNodes[i]);
+            Object[] stack = partial.source().getFrameStack(step.getSource());
+            stack = step.getPush().apply(stack, valuator);
             // pop until the (final) switch within the outer recipe body
             var recipeFinal = step
                 .getSwitch()
@@ -492,7 +496,7 @@ class ExploreData {
                 .get();
             stack = step.getPopUntil(s -> s == recipeFinal).apply(stack);
             // now obtain the parameter values
-            var result = recipeFinal.onFinish().assignFinal2Par().apply(stack);
+            var result = recipeFinal.onFinish().assignFinal2Par().lookup(stack);
             // apply the transition's permutation, if it is not the identity
             if (!partial.getMorphism().isIdentity()) {
                 var nodeMap = partial.getMorphism().nodeMap();

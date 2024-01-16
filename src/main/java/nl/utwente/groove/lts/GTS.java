@@ -111,7 +111,6 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         var result = this.startState;
         if (result == null) {
             this.startState = result = createStartState();
-            getGrammar().getControl().initialise(result.getGraph().getFactory());
             addState(result);
         }
         return result;

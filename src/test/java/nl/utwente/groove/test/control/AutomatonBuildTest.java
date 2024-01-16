@@ -28,12 +28,12 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
-import nl.utwente.groove.algebra.JavaIntAlgebra;
+import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.control.Assignment;
 import nl.utwente.groove.control.Binding;
 import nl.utwente.groove.control.Call;
-import nl.utwente.groove.control.CtrlLoader;
 import nl.utwente.groove.control.CtrlArg;
+import nl.utwente.groove.control.CtrlLoader;
 import nl.utwente.groove.control.CtrlType;
 import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.Position;
@@ -96,7 +96,7 @@ public class AutomatonBuildTest {
         Frame fFail = s.onFailure();
         StepAttempt sFail = fFail.getAttempt();
         assertEquals(2, sFail.size());
-        Call rCall = call("r", new CtrlArg.Const(JavaIntAlgebra.instance, 1),
+        Call rCall = call("r", new CtrlArg.Expr(Expression.i(1)),
                           CtrlArg.outVar(QualName.parse("f"), "arg", "node"));
         Call oNodeCall = call("oNode", CtrlArg.outVar(QualName.parse("r"), "q", "node"));
         Call bNodeCall = call("bNode", CtrlArg.outVar(QualName.parse("r"), "q", "node"));

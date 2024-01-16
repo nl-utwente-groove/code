@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.NonNull;
 
@@ -73,8 +74,7 @@ public final class CallExpr extends Expression {
     @Override
     protected SortMap computeTyping() {
         SortMap result = new SortMap();
-        getArgs().stream()
-            .forEach(a -> result.add(a.getTyping()));
+        getArgs().stream().forEach(a -> result.add(a.getTyping()));
         return result;
     }
 
@@ -110,6 +110,13 @@ public final class CallExpr extends Expression {
             }
         }
         return result;
+    }
+
+    @Override
+    public @NonNull Expression bind(Function<Variable,Object> bindMap) {
+        List<Expression> newArgs = new ArrayList<>();
+        getArgs().stream().map(a -> a.bind(bindMap)).forEach(newArgs::add);
+        return new CallExpr(isPrefixed(), getOperator(), newArgs);
     }
 
     @Override
@@ -180,8 +187,12 @@ public final class CallExpr extends Expression {
         }
         if (me.getPlace() != Placement.PREFIX) {
             // add left argument
-            result.add(this.args.get(nextArgIx)
-                .toLine(me.getDirection() == Direction.LEFT ? me : me.increase()));
+            result
+                .add(this.args
+                    .get(nextArgIx)
+                    .toLine(me.getDirection() == Direction.LEFT
+                        ? me
+                        : me.increase()));
             nextArgIx++;
             if (addSpaces) {
                 result.add(Line.atom(" "));
@@ -193,8 +204,12 @@ public final class CallExpr extends Expression {
             if (addSpaces) {
                 result.add(Line.atom(" "));
             }
-            result.add(this.args.get(nextArgIx)
-                .toLine(me.getDirection() == Direction.RIGHT ? me : me.increase()));
+            result
+                .add(this.args
+                    .get(nextArgIx)
+                    .toLine(me.getDirection() == Direction.RIGHT
+                        ? me
+                        : me.increase()));
             nextArgIx++;
         }
         if (addPars) {
@@ -250,8 +265,7 @@ public final class CallExpr extends Expression {
             return false;
         }
         for (int i = 0; i < arity; i++) {
-            if (getArgs().get(i)
-                .getSort() != argTypes.get(i)) {
+            if (getArgs().get(i).getSort() != argTypes.get(i)) {
                 return false;
             }
         }

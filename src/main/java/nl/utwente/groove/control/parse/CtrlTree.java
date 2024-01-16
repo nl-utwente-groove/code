@@ -110,7 +110,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
     }
 
     /** Stores a control parameter in this tree node. */
-    public void setCtrlPar(CtrlArg par) {
+    public void setCtrlArg(CtrlArg par) {
         assert par != null;
         this.par = par;
     }

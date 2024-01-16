@@ -28,9 +28,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.syntax.CallExpr;
 import nl.utwente.groove.algebra.syntax.Expression;
+import nl.utwente.groove.algebra.syntax.Expression.Kind;
+import nl.utwente.groove.algebra.syntax.Variable;
 import nl.utwente.groove.util.DocumentedEnum;
 import nl.utwente.groove.util.Exceptions;
 
@@ -145,27 +150,45 @@ public enum AlgebraFamily implements DocumentedEnum {
     }
 
     /**
-     * Returns the value for a given term.
+     * Returns the value for a given expression, not containing {@link Kind#FIELD} sub-expressions,
+     * using a valuation for the free variables
+     * @param expr the expression to be evaluated
+     * @param valuation mapping from free variables in {@code expr} to
+     * their corresponding values (assumed to be elements of this algebra
+     * family). May be {@code null}, in which case either this should be
+     * the {@link #POINT} algebra family or {@code term} should be cloased.
      * @return the value {@code term} (in the appropriate algebra)
      */
-    public Object toValue(Expression term) {
-        switch (term.getKind()) {
+    public Object compute(Expression expr, @Nullable Function<Variable,Object> valuation) {
+        switch (expr.getKind()) {
         case CONST:
-            return getAlgebra(term.getSort()).toValueFromConstant((Constant) term);
+            return getAlgebra(expr.getSort()).toValueFromConstant((Constant) expr);
         case VAR:
-            assert this == POINT;
-            return ((PointAlgebra<?>) getAlgebra(term.getSort())).getPointValue();
+            if (this == POINT) {
+                return ((PointAlgebra<?>) getAlgebra(expr.getSort())).getPointValue();
+            } else {
+                assert valuation != null;
+                return valuation.apply((Variable) expr);
+            }
         case CALL:
-            CallExpr call = (CallExpr) term;
+            CallExpr call = (CallExpr) expr;
             List<Object> args = new ArrayList<>();
             for (Expression arg : call.getArgs()) {
                 args.add(toValue(arg));
             }
             return getOperation(call.getOperator()).apply(args);
         default:
-            assert false;
-            return null;
+            throw Exceptions.illegalArg("Field expression %s cannot be evaluated", expr);
         }
+    }
+
+    /**
+     * Returns the value for a given term, not containing {@link Kind#FIELD} sub-expressions.
+     * Either the term has to be closed or this should be the {@link #POINT} algebra family.
+     * @return the value of {@code term} (in the appropriate algebra)
+     */
+    public Object toValue(Expression term) {
+        return compute(term, null);
     }
 
     /**
