@@ -197,7 +197,7 @@ arg
   | ^( ARG_WILD { helper.checkDontCareArg($ARG_WILD); } )
   | ^( ARG_ID ID { helper.checkVarArg($ARG_ID); } )
   | ^( ARG_LIT literal { helper.checkConstArg($ARG_LIT); } )
-  | ^( ARG_OP operator arg arg { helper.checkOpArg($ARG_OP); } )
+  | ^( ARG_OP operator arg arg? { helper.checkOpArg($ARG_OP); } )
   | ^( ARG_CALL ID arg_list { helper.checkCallArg($ARG_CALL); } )
   ;
 
@@ -207,5 +207,5 @@ literal
 
 
 operator
-  : LANGLE | RANGLE | LEQ | GEQ | EQ | NEQ | PLUS | MINUS | PERCENT | ASTERISK | SLASH | AMP | BAR | NOT
+  : LANGLE | RANGLE | LEQ | GEQ | EQ | NEQ | PLUS | MINUS | PERCENT | ASTERISK | SLASH | AMP | BAR | NOT | LPAR
   ;

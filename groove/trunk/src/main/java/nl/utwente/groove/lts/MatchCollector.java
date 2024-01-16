@@ -23,6 +23,7 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Constant;
+import nl.utwente.groove.control.Binding.Source;
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.instance.Step;
 import nl.utwente.groove.grammar.Rule;
@@ -40,7 +41,6 @@ import nl.utwente.groove.transform.CompositeEvent;
 import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.transform.RuleEvent;
-import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Visitor;
 import nl.utwente.groove.util.collect.KeySet;
 
@@ -230,24 +230,15 @@ public class MatchCollector {
      */
     private @Nullable RuleToHostMap extractBinding(Step step) {
         RuleToHostMap result = this.state.getGraph().getFactory().createRuleToHostMap();
-        Object[] sourceValues = this.state.getActualStack();
+        var valuator = this.state.getGTS().getRecord().getValuator();
+        Object[] stack = this.state.getActualStack();
+        valuator.setVarInfo(stack);
         for (var bind : step.getParAssign()) {
-            HostNode value;
-            switch (bind.type()) {
-            case CONST:
-                value = bind.value().getNode();
-                break;
-            case VAR:
-                value = bind.get(sourceValues);
-                break;
-            case NONE:
-                // this corresponds to an output parameter of the call
+            if (bind.type() == Source.NONE) {
+                // this corresponds to an output or wildcard parameter
                 continue;
-            default:
-                throw Exceptions
-                    .illegalState("Input parameter binding %s should be constant or initialised variable",
-                                  bind);
             }
+            var value = valuator.eval(bind);
             RuleNode ruleNode = ((RulePar) bind.par()).getNode();
             if (isCompatible(ruleNode, value)) {
                 result.putNode(ruleNode, value);

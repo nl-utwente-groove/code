@@ -50,7 +50,6 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
      */
     protected HostFactory(TypeFactory typeFactory, boolean simple) {
         this.typeFactory = typeFactory;
-        this.valueMaps = new HashMap<>();
         this.simple = simple;
     }
 
@@ -76,8 +75,7 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
 
     @Override
     protected boolean isAllowed(HostNode node) {
-        return node.getType()
-            .isTopType();
+        return node.getType().isTopType();
     }
 
     /** Returns a node factory for typed default host nodes. */
@@ -87,8 +85,20 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
 
     /** Returns a node factory for a given value node. */
     public NodeFactory<HostNode> values(Algebra<?> algebra, Object value) {
-        return new ValueNodeFactory(algebra, value);
+        var factoryMap = this.valueFactoryMaps.get(algebra);
+        if (factoryMap == null) {
+            this.valueFactoryMaps.put(algebra, factoryMap = new HashMap<>());
+        }
+        var result = factoryMap.get(value);
+        if (result == null) {
+            TypeNode type = getTypeFactory().getDataType(algebra.getSort());
+            factoryMap.put(value, result = new ValueNodeFactory(algebra, value, type));
+        }
+        return result;
     }
+
+    /** Internal store of previously generated value node factories. */
+    private final Map<Algebra<?>,Map<Object,ValueNodeFactory>> valueFactoryMaps = new HashMap<>();
 
     /**
      * Returns a (numbered) value node for a given algebra and value, creating
@@ -101,27 +111,10 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         return (ValueNode) values(algebra, value).createNode();
     }
 
-    /** Retrieves the value-to-node map for a given algebra,
-     * creating it if necessary.
-     */
-    Map<Object,ValueNode> getValueMap(Algebra<?> algebra) {
-        Map<Object,ValueNode> result = this.valueMaps.get(algebra.getName());
-        if (result == null) {
-            result = new HashMap<>();
-            this.valueMaps.put(algebra.getName(), result);
-        }
-        return result;
-    }
-
-    /** Internal store of previously generated value nodes. */
-    private final Map<String,Map<Object,ValueNode>> valueMaps;
-
     @Override
     public HostEdge createEdge(HostNode source, Label label, HostNode target) {
-        TypeEdge type = getTypeFactory().createEdge(source.getType(),
-            (TypeLabel) label,
-            target.getType(),
-            false);
+        TypeEdge type = getTypeFactory()
+            .createEdge(source.getType(), (TypeLabel) label, target.getType(), false);
         assert type != null;
         return createEdge(source, type, target);
     }
@@ -274,26 +267,27 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         private final TypeNode type;
     }
 
-    /** Factory for (typed) {@link DefaultHostNode}s. */
+    /** Factory for {@link ValueNode}s containing a given value. */
     private class ValueNodeFactory extends DependentNodeFactory {
-        ValueNodeFactory(Algebra<?> algebra, Object value) {
+        ValueNodeFactory(Algebra<?> algebra, Object value, TypeNode type) {
             this.algebra = algebra;
             this.value = value;
+            this.type = type;
         }
 
         /* Overridden as value nodes should always be reused when possible. */
         @Override
         public HostNode createNode(Dispenser dispenser) {
-            Map<Object,ValueNode> valueMap = getValueMap(this.algebra);
-            ValueNode result = valueMap.get(this.value);
+            var result = this.node;
             if (result == null) {
-                // create a new node only if it is currently unknown
-                result = newNode(dispenser.getNext());
-                valueMap.put(this.value, result);
+                this.node = result = newNode(dispenser.getNext());
                 registerNode(result);
             }
             return result;
         }
+
+        /** The (unique) node created by this factory. */
+        private HostNode node;
 
         @Override
         protected boolean isAllowed(HostNode node) {
@@ -303,11 +297,11 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
 
         @Override
         protected ValueNode newNode(int nr) {
-            TypeNode type = getTypeFactory().getDataType(this.algebra.getSort());
-            return new ValueNode(nr, this.algebra, this.value, type);
+            return new ValueNode(nr, this.algebra, this.value, this.type);
         }
 
         private final Algebra<?> algebra;
         private final Object value;
+        private final TypeNode type;
     }
 }

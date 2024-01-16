@@ -123,6 +123,17 @@ public class Assignment implements Iterable<Binding> {
         return CallStackChange.pop(this);
     }
 
+    /** Indicates if all the bindings in this assignment can be looked up in the call stack.
+     * @see Source#isStackBased()
+     */
+    public boolean isStackBased() {
+        return this.stackBased.get();
+    }
+
+    /** Lazily computed flag indicating if all the bindings in this assignment are stack-based. */
+    private Supplier<Boolean> stackBased
+        = LazyFactory.instance(() -> stream().allMatch(b -> b.type().isStackBased()));
+
     /** Indicates if all the bindings in this assignment are {@link Source#NONE}. */
     public boolean isNone() {
         return this.none.get();
@@ -153,33 +164,13 @@ public class Assignment implements Iterable<Binding> {
     }
 
     /**
-     * Applies this assignment to a given call stack.
-     * Only valid if this assignment contains no {@link Source#ANCHOR} or {@link Source#CREATOR}
-     * bindings; otherwise, use {@link #apply(Object[], Function)} with non-{@code null}
-     * retrieval function.
-     * @return the array of values obtained for the individual bindings of this assignment.
-     * Note that this is <i>not</i> a value stack, but rather just the top level level in such a stack
+     * Looks up the values for this assignment in a given call stack.
+     * Only valid if this assignment is stack-based, i.e., contains
+     * only {@link Source#VAR} and {@link Source#NONE} bindings.
      */
-    public HostNode[] apply(Object[] stack) {
-        return apply(stack, null);
-    }
-
-    /**
-     * Applies this assignment to a given call stack, using a retrieval function to
-     * get the values for {@link Source#ANCHOR} and {@link Source#CREATOR} bindings.
-     * @param stack the call stack to apply this assignment to
-     * @param getPar function retrieving the value of {@link Source#CREATOR} and
-     * {@link Source#ANCHOR} bindings. If {@code null}, no such bindings may exist.
-     * @return the array of values obtained for the individual bindings of this assignment.
-     * Note that this is <i>not</i> a call stack, but rather just the top level for such a stack
-     */
-    public HostNode[] apply(Object[] stack, @Nullable Function<Binding,HostNode> getPar) {
-        var bindings = this.bindings;
-        HostNode[] result = new HostNode[bindings.size()];
-        for (int i = 0; i < bindings.size(); i++) {
-            result[i] = bindings.get(i).apply(stack, getPar);
-        }
-        return result;
+    public HostNode[] lookup(Object[] stack) {
+        assert isStackBased();
+        return Valuator.vars().eval(this, stack);
     }
 
     @Override
@@ -232,5 +223,4 @@ public class Assignment implements Iterable<Binding> {
             ? result
             : record;
     }
-
 }

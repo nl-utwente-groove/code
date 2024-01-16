@@ -16,12 +16,10 @@
  */
 package nl.utwente.groove.lts;
 
-import java.util.function.Function;
-
 import org.eclipse.jdt.annotation.NonNull;
 
-import nl.utwente.groove.control.Binding;
 import nl.utwente.groove.control.CallStack;
+import nl.utwente.groove.control.Valuator;
 import nl.utwente.groove.control.instance.Step;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.host.HostNode;
@@ -29,7 +27,6 @@ import nl.utwente.groove.transform.CompositeEvent;
 import nl.utwente.groove.transform.RuleEffect;
 import nl.utwente.groove.transform.RuleEffect.Fragment;
 import nl.utwente.groove.transform.RuleEvent;
-import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Reporter;
 
 /**
@@ -44,6 +41,7 @@ public class MatchApplier {
      */
     public MatchApplier(GTS gts) {
         this.gts = gts;
+        this.valuator = gts.getRecord().getValuator();
     }
 
     /**
@@ -52,6 +50,12 @@ public class MatchApplier {
     protected GTS getGTS() {
         return this.gts;
     }
+
+    /** The underlying GTS. */
+    private final GTS gts;
+
+    /** The valuator of the underlying GTS. */
+    private final Valuator valuator;
 
     /**
      * Adds a transition to the GTS, from a given source state and for a given
@@ -209,25 +213,19 @@ public class MatchApplier {
             // map the entire valuation stack through the node mapping of the record
             result = CallStack.map(result, record::mapNode);
         }
+        var valuator = this.valuator;
         HostNode[] createdNodes = record.getCreatedNodeArray();
+        valuator.setCreatorInfo(i -> createdNodes[i]);
         var anchorImages = event.getAnchorImages();
-        Function<Binding,HostNode> getValue = (b -> {
-            return switch (b.type()) {
-            case ANCHOR ->
-                // this is a rule parameter (not a creator node)
-                record.mapNode((HostNode) anchorImages[b.index()]);
-            case CREATOR ->
-                // this is an output parameter corresponding to a creator node
-                createdNodes[b.index()];
-            default -> throw Exceptions.illegalArg("Function not applicable to binding %s", b);
-            };
-        });
-        result = step.getApplyChange().apply(result, getValue);
+        if (record.isNodeId()) {
+            valuator.setAnchorInfo(i -> (HostNode) anchorImages[i]);
+        } else {
+            valuator.setAnchorInfo(i -> record.mapNode((HostNode) anchorImages[i]));
+        }
+        result = step.getApplyChange().apply(result, valuator);
         return result;
     }
 
-    /** The underlying GTS. */
-    private final GTS gts;
     /**
      * The number of confluent diamonds found.
      */

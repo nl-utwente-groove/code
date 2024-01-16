@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -214,6 +213,7 @@ public class Location
             result = getVarSet().addAll(variables);
             if (result) {
                 this.vars = null;
+                this.varIxMap.reset();
             }
         }
         return result;
@@ -234,10 +234,12 @@ public class Location
         for (int i = 0; i < getVars().size(); i++) {
             result.put(getVars().get(i), i);
         }
+        assert result.size() == getVars().size();
         return result;
     }
 
-    private Supplier<Map<CtrlVar,Integer>> varIxMap = LazyFactory.instance(this::computeVarIxMap);
+    private LazyFactory<Map<CtrlVar,Integer>> varIxMap
+        = LazyFactory.instance(this::computeVarIxMap);
 
     /** Returns an assignment from the in-parameters of the owning procedure
      * to the variables of this location.

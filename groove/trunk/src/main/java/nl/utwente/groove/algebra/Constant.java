@@ -18,10 +18,15 @@ package nl.utwente.groove.algebra;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Objects;
+import java.util.function.Function;
+
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.SortMap;
-import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.algebra.syntax.Variable;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.OpKind;
 import nl.utwente.groove.util.parse.StringHandler;
@@ -96,63 +101,16 @@ public final class Constant extends Expression {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + this.sort.hashCode();
-        switch (this.sort) {
-        case BOOL:
-            result = prime * result + this.boolRepr.hashCode();
-            break;
-        case INT:
-            result = prime * result + this.intRepr.hashCode();
-            break;
-        case REAL:
-            result = prime * result + this.realRepr.hashCode();
-            break;
-        case STRING:
-            result = prime * result + this.stringRepr.hashCode();
-            break;
-        default:
-            throw Exceptions.UNREACHABLE;
-        }
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof Constant other)) {
-            return false;
-        }
-        if (!this.sort.equals(other.sort)) {
-            return false;
-        }
-        switch (this.sort) {
-        case BOOL:
-            return this.boolRepr.equals(other.boolRepr);
-        case INT:
-            return this.intRepr.equals(other.intRepr);
-        case REAL:
-            return this.realRepr.equals(other.realRepr);
-        case STRING:
-            return this.stringRepr.equals(other.stringRepr);
-        default:
-            throw Exceptions.UNREACHABLE;
-        }
-    }
-
-    @Override
-    public String toString() {
-        return getSort() + ":" + toDisplayString();
+    public @NonNull Expression bind(Function<Variable,Object> bindMap) {
+        return this;
     }
 
     @Override
     public final Sort getSort() {
         return this.sort;
     }
+
+    private final Sort sort;
 
     @Override
     protected Line toLine(OpKind context) {
@@ -177,6 +135,9 @@ public final class Constant extends Expression {
         return this.stringRepr;
     }
 
+    /** Internal representation in case this is a {@link Sort#STRING} constant. */
+    private final String stringRepr;
+
     /**
      * Returns the internal integer representation, if this is a {@link Sort#INT} constant.
      * This is the unquoted version of the constant symbol.
@@ -185,6 +146,9 @@ public final class Constant extends Expression {
         assert getSort() == Sort.INT;
         return this.intRepr;
     }
+
+    /** Internal representation in case this is a {@link Sort#INT} constant. */
+    private final BigInteger intRepr;
 
     /**
      * Returns the internal string representation, if this is a {@link Sort#REAL} constant.
@@ -195,6 +159,9 @@ public final class Constant extends Expression {
         return this.realRepr;
     }
 
+    /** Internal representation in case this is a {@link Sort#REAL} constant. */
+    private final BigDecimal realRepr;
+
     /**
      * Returns the internal string representation, if this is a {@link Sort#BOOL} constant.
      * This is the unquoted version of the constant symbol.
@@ -204,37 +171,29 @@ public final class Constant extends Expression {
         return this.boolRepr;
     }
 
-    private final Sort sort;
-    /** Internal representation in case this is a {@link Sort#STRING} constant. */
-    private final String stringRepr;
-    /** Internal representation in case this is a {@link Sort#INT} constant. */
-    private final BigInteger intRepr;
-    /** Internal representation in case this is a {@link Sort#REAL} constant. */
-    private final BigDecimal realRepr;
     /** Internal representation in case this is a {@link Sort#BOOL} constant. */
     private final Boolean boolRepr;
 
+    /** Returns the representational object of this constant. */
+    private @NonNull Object getRepr() {
+        return switch (getSort()) {
+        case BOOL -> getBoolRepr();
+        case INT -> getIntRepr();
+        case REAL -> getRealRepr();
+        case STRING -> getStringRepr();
+        };
+    }
+
     /** Returns the symbolic string representation of this constant. */
-    public String getSymbol() {
-        if (this.symbol == null) {
-            switch (getSort()) {
-            case BOOL:
-                this.symbol = this.boolRepr.toString();
-                break;
-            case INT:
-                this.symbol = this.intRepr.toString();
-                break;
-            case REAL:
-                this.symbol = this.realRepr.toString();
-                break;
-            case STRING:
-                this.symbol = StringHandler.toQuoted(this.stringRepr, '"');
-                break;
-            default:
-                throw Exceptions.UNREACHABLE;
-            }
+    public @NonNull String getSymbol() {
+        String result = this.symbol;
+        if (result == null) {
+            this.symbol = result = switch (getSort()) {
+            case STRING -> StringHandler.toQuoted(getStringRepr(), '"');
+            default -> getRepr().toString();
+            };
         }
-        return this.symbol;
+        return result;
     }
 
     /** Sets the symbolic string representation of this constant. */
@@ -243,6 +202,27 @@ public final class Constant extends Expression {
     }
 
     private String symbol;
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getSort(), getRepr());
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof Constant other)) {
+            return false;
+        }
+        return Objects.equals(this.sort, other.sort) && Objects.equals(getRepr(), other.getRepr());
+    }
+
+    @Override
+    public String toString() {
+        return getSort() + ":" + toDisplayString();
+    }
 
     /** Returns a string constant containing the given string representation. */
     public static Constant instance(String value) {

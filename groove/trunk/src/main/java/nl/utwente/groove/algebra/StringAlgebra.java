@@ -16,7 +16,6 @@
  */
 package nl.utwente.groove.algebra;
 
-import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.util.Exceptions;
 
 /** Abstract superclass of all string algebras.
@@ -27,14 +26,8 @@ import nl.utwente.groove.util.Exceptions;
  */
 @SuppressWarnings("rawtypes")
 public sealed abstract class StringAlgebra<INT,REAL,BOOL,STRING>
-    extends StringSignature<INT,REAL,BOOL,STRING>
-    implements Algebra<STRING>permits AbstractStringAlgebra, PointStringAlgebra, TermStringAlgebra {
-    @Override
-    @SuppressWarnings("unchecked")
-    public STRING toValue(Expression term) {
-        return (STRING) getFamily().toValue(term);
-    }
-
+    extends StringSignature<INT,REAL,BOOL,STRING> implements Algebra<STRING>
+    permits AbstractStringAlgebra, PointStringAlgebra, TermStringAlgebra {
     /*
      * Specialises the return type.
      * @throws IllegalArgumentException if the parameter is not of type {@link java.lang.String}

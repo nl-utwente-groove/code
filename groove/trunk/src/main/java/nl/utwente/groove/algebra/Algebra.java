@@ -32,7 +32,10 @@ public interface Algebra<T> extends Signature {
      * @param term the term to be converted to a value; required to be of the correct
      * signature and to satisfy {@link Expression#isTerm()} and {@link Expression#isClosed()}
      */
-    T toValue(Expression term);
+    @SuppressWarnings("unchecked")
+    default T toValue(Expression term) {
+        return (T) getFamily().toValue(term);
+    }
 
     /**
      * Converts a constant of the right signature to the corresponding algebra value.

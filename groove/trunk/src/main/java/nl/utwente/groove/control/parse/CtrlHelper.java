@@ -32,7 +32,6 @@ import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.tree.CommonTree;
 
-import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.CtrlArg;
@@ -451,50 +450,69 @@ public class CtrlHelper {
     /**
      * Checks that a given syntax tree is a correct (input or output) variable argument;
      * if so, sets the parameter field of that tree.
-     * @see CtrlTree#setCtrlPar(CtrlArg)
+     * @see CtrlTree#setCtrlArg(CtrlArg)
      */
     void checkVarArg(CtrlTree argTree) {
         int childCount = argTree.getChildCount();
         assert (argTree.getType() == CtrlChecker.ARG_ID || argTree.getType() == CtrlChecker.ARG_OUT)
-            && childCount > 0 && childCount <= 2;
+            && childCount == 1;
         boolean isOutArg = argTree.getType() == CtrlChecker.ARG_OUT;
-        CtrlVar var = checkVar(argTree.getChild(childCount - 1), !isOutArg);
+        CtrlVar var = checkVar(argTree.getChild(0), !isOutArg);
         if (var != null) {
             CtrlArg par = new CtrlArg.Var(var, !isOutArg);
-            argTree.setCtrlPar(par);
+            argTree.setCtrlArg(par);
         }
     }
 
     void checkDontCareArg(CtrlTree argTree) {
         assert argTree.getType() == CtrlChecker.ARG_WILD && argTree.getChildCount() == 0;
         CtrlArg result = CtrlArg.wild();
-        argTree.setCtrlPar(result);
+        argTree.setCtrlArg(result);
     }
 
     void checkConstArg(CtrlTree argTree) {
         assert argTree.getType() == CtrlChecker.ARG_LIT && argTree.getChildCount() == 1;
         try {
-            Expression constant = Expression.parse(argTree.getChild(0).getText()).toExpression();
-            AlgebraFamily family = this.namespace.getGrammarProperties().getAlgebraFamily();
-            CtrlArg result = new CtrlArg.Const(family.getAlgebra(constant.getSort()),
-                family.toValue(constant));
-            argTree.setCtrlPar(result);
+            argTree.setCtrlArg(CtrlArg.expr(parseExpr(argTree)));
         } catch (FormatException e) {
-            // this cannot occur, as the constant string has just been approved
-            // by the control parser
-            assert false : String
-                .format("%s is not a parsable constant", argTree.getChild(0).getText());
+            emitErrorMessage(argTree, e.getMessage());
         }
+        //        try {
+        //            Expression constant = Expression.parse(argTree.getChild(0).getText()).toExpression();
+        //            AlgebraFamily family = this.namespace.getGrammarProperties().getAlgebraFamily();
+        //            CtrlArg result = new CtrlArg.Const(family.getAlgebra(constant.getSort()),
+        //                family.toValue(constant));
+        //            argTree.setCtrlArg(result);
+        //        } catch (FormatException e) {
+        //            // this cannot occur, as the constant string has just been approved
+        //            // by the control parser
+        //            assert false : String
+        //                .format("%s is not a parsable constant", argTree.getChild(0).getText());
+        //        }
     }
 
     void checkOpArg(CtrlTree argTree) {
-        assert argTree.getType() == CtrlChecker.ARG_OP && argTree.getChildCount() == 3;
-        // TODO
+        assert argTree.getType() == CtrlChecker.ARG_OP
+            && (argTree.getChildCount() == 2 || argTree.getChildCount() == 3);
+        try {
+            argTree.setCtrlArg(CtrlArg.expr(parseExpr(argTree)));
+        } catch (FormatException e) {
+            emitErrorMessage(argTree, e.getMessage());
+        }
     }
 
     void checkCallArg(CtrlTree argTree) {
         assert argTree.getType() == CtrlChecker.ARG_CALL && argTree.getChildCount() == 2;
-        // TODO
+        try {
+            argTree.setCtrlArg(CtrlArg.expr(parseExpr(argTree)));
+        } catch (FormatException e) {
+            emitErrorMessage(argTree, e.getMessage());
+        }
+    }
+
+    /** Parses the input string of a given control tree node as an expression. */
+    private Expression parseExpr(CtrlTree tree) throws FormatException {
+        return Expression.parse(tree.toInputString()).toExpression(this.symbolTable.getSortMap());
     }
 
     /**

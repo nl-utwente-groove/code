@@ -21,13 +21,10 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 
-import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.control.graph.ControlGraph;
-import nl.utwente.groove.control.template.Program;
 import nl.utwente.groove.control.template.NestedSwitch;
+import nl.utwente.groove.control.template.Program;
 import nl.utwente.groove.grammar.QualName;
-import nl.utwente.groove.grammar.host.HostFactory;
-import nl.utwente.groove.util.ThreadPool;
 import nl.utwente.groove.util.collect.Pool;
 
 /**
@@ -43,8 +40,7 @@ public class Automaton {
         assert program.isFixed();
         this.program = program;
         this.framePool = new Pool<>();
-        Frame start = new Frame(this, program.getTemplate()
-            .getStart(), new NestedSwitch(), null);
+        Frame start = new Frame(this, program.getTemplate().getStart(), new NestedSwitch(), null);
         start.setFixed();
         this.start = addFrame(start);
     }
@@ -101,25 +97,6 @@ public class Automaton {
 
     private final Pool<Frame> framePool;
 
-    /** Computes and inserts the host nodes to be used for constant value arguments. */
-    public void initialise(final HostFactory factory) {
-        getProgram().getTemplate()
-            .initialise(factory);
-        ThreadPool threads = ThreadPool.instance();
-        for (final Procedure proc : getProgram().getProcs()
-            .values()) {
-            threads.start(new Runnable() {
-                @Override
-                public void run() {
-                    proc.getTemplate()
-                        .initialise(factory);
-                }
-            });
-        }
-        threads.sync();
-        threads.shutdown();
-    }
-
     /** Fully explores this automaton. */
     public void explore() {
         Queue<Frame> fresh = new LinkedList<>();
@@ -137,13 +114,11 @@ public class Automaton {
                     fresh.add(onFinish);
                 }
             }
-            Frame onFailure = next.getAttempt()
-                .onFailure();
+            Frame onFailure = next.getAttempt().onFailure();
             if (nodes.add(onFailure)) {
                 fresh.add(onFailure);
             }
-            Frame onSuccess = next.getAttempt()
-                .onSuccess();
+            Frame onSuccess = next.getAttempt().onSuccess();
             if (nodes.add(onSuccess)) {
                 fresh.add(onSuccess);
             }

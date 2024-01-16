@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2023 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -18,11 +18,14 @@ package nl.utwente.groove.control.parse;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import nl.utwente.groove.algebra.syntax.SortMap;
 import nl.utwente.groove.control.CtrlType;
+import nl.utwente.groove.util.LazyFactory;
 
 /**
  * Keeps track of symbols used in the control language, including scopes.
@@ -49,6 +52,7 @@ public class SymbolTable {
      */
     public void closeScope() {
         this.scopes.pop();
+        this.sortMap.reset();
     }
 
     /**
@@ -60,6 +64,7 @@ public class SymbolTable {
     public boolean declareSymbol(String symbolName, CtrlType symbolType) {
         if (!this.scopes.peek().isDeclared(symbolName)) {
             this.scopes.peek().declare(symbolName, symbolType, false);
+            this.sortMap.reset();
             return true;
         } else {
             return false;
@@ -67,16 +72,16 @@ public class SymbolTable {
     }
 
     /**
-     * Declares a symbol in the current scope, optionally 
+     * Declares a symbol in the current scope, optionally
      * declaring it to be an output parameter.
      * @param symbolName the name of the symbol to be declared
      * @require this.scopes.peek().get(symbolName) == null
      * @return true if the declaration succeeded, false if not
      */
-    public boolean declareSymbol(String symbolName, CtrlType symbolType,
-            boolean out) {
+    public boolean declareSymbol(String symbolName, CtrlType symbolType, boolean out) {
         if (!this.scopes.peek().isDeclared(symbolName)) {
             this.scopes.peek().declare(symbolName, symbolType, out);
+            this.sortMap.reset();
             return true;
         } else {
             return false;
@@ -94,12 +99,14 @@ public class SymbolTable {
      * @return true if the symbol is declared, false if not
      */
     public boolean isDeclared(String symbolName) {
-        for (Scope s : this.scopes) {
-            if (s.isDeclared(symbolName)) {
-                return true;
-            }
-        }
-        return false;
+        return !this.scopes.stream().noneMatch(s -> s.isDeclared(symbolName));
+    }
+
+    /** Returns the set of all symbols currently declared in this table. */
+    public Set<String> getDeclared() {
+        Set<String> result = new HashSet<>();
+        this.scopes.stream().flatMap(s -> s.getDeclared().stream()).forEach(result::add);
+        return result;
     }
 
     /**
@@ -119,6 +126,25 @@ public class SymbolTable {
     }
 
     private final ArrayDeque<Scope> scopes;
+
+    /** Returns the sort map for the data variables that are currently in scope. */
+    public SortMap getSortMap() {
+        return this.sortMap.get();
+    }
+
+    private final LazyFactory<SortMap> sortMap = LazyFactory.instance(this::computeSortMap);
+
+    /** Computes the value for {@link #sortMap}. */
+    private SortMap computeSortMap() {
+        var result = new SortMap();
+        for (var symbol : getDeclared()) {
+            var sort = getType(symbol).getSort();
+            if (sort != null) {
+                result.add(symbol, sort);
+            }
+        }
+        return result;
+    }
 
     /**
      * Keeps track of variables declared and initialised in a given scope.
@@ -153,6 +179,11 @@ public class SymbolTable {
          */
         public boolean isDeclared(String var) {
             return this.declared.containsKey(var);
+        }
+
+        /** Returns the set of symbols declared in this scope. */
+        public Set<String> getDeclared() {
+            return this.declared.keySet();
         }
 
         /**
