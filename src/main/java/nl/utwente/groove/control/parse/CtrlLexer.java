@@ -1,4 +1,4 @@
-// $ANTLR null C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g 2024-01-16 11:25:37
+// $ANTLR null C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g 2024-01-17 09:18:54
 
 package nl.utwente.groove.control.parse;
 import nl.utwente.groove.control.*;
@@ -37,10 +37,10 @@ public class CtrlLexer extends Lexer {
 	public static final int COLON=24;
 	public static final int COMMA=25;
 	public static final int DO=26;
-	public static final int DONT_CARE=27;
-	public static final int DOT=28;
-	public static final int DO_UNTIL=29;
-	public static final int DO_WHILE=30;
+	public static final int DOT=27;
+	public static final int DO_UNTIL=28;
+	public static final int DO_WHILE=29;
+	public static final int Digit=30;
 	public static final int ELSE=31;
 	public static final int EQ=32;
 	public static final int EscapeSequence=33;
@@ -59,43 +59,46 @@ public class CtrlLexer extends Lexer {
 	public static final int LCURLY=46;
 	public static final int LEQ=47;
 	public static final int LPAR=48;
-	public static final int MINUS=49;
-	public static final int ML_COMMENT=50;
-	public static final int NEQ=51;
-	public static final int NODE=52;
-	public static final int NOT=53;
-	public static final int NonIntegerNumber=54;
-	public static final int OR=55;
-	public static final int OTHER=56;
-	public static final int OUT=57;
-	public static final int PACKAGE=58;
-	public static final int PAR=59;
-	public static final int PARS=60;
-	public static final int PERCENT=61;
-	public static final int PLUS=62;
-	public static final int PRIORITY=63;
-	public static final int PROGRAM=64;
-	public static final int QUOTE=65;
-	public static final int RANGLE=66;
-	public static final int RCURLY=67;
-	public static final int REAL=68;
-	public static final int REAL_LIT=69;
-	public static final int RECIPE=70;
-	public static final int RECIPES=71;
-	public static final int RPAR=72;
-	public static final int SEMI=73;
-	public static final int SHARP=74;
-	public static final int SLASH=75;
-	public static final int SL_COMMENT=76;
-	public static final int STAR=77;
-	public static final int STRING=78;
-	public static final int STRING_LIT=79;
-	public static final int TRUE=80;
-	public static final int TRY=81;
-	public static final int UNTIL=82;
-	public static final int VAR=83;
-	public static final int WHILE=84;
-	public static final int WS=85;
+	public static final int Letter=49;
+	public static final int MINUS=50;
+	public static final int ML_COMMENT=51;
+	public static final int NEQ=52;
+	public static final int NODE=53;
+	public static final int NOT=54;
+	public static final int NonIntegerNumber=55;
+	public static final int OR=56;
+	public static final int OTHER=57;
+	public static final int OUT=58;
+	public static final int PACKAGE=59;
+	public static final int PAR=60;
+	public static final int PARS=61;
+	public static final int PERCENT=62;
+	public static final int PLUS=63;
+	public static final int PRIORITY=64;
+	public static final int PROGRAM=65;
+	public static final int PosDigit=66;
+	public static final int QUOTE=67;
+	public static final int RANGLE=68;
+	public static final int RCURLY=69;
+	public static final int REAL=70;
+	public static final int REAL_LIT=71;
+	public static final int RECIPE=72;
+	public static final int RECIPES=73;
+	public static final int RPAR=74;
+	public static final int SEMI=75;
+	public static final int SHARP=76;
+	public static final int SLASH=77;
+	public static final int SL_COMMENT=78;
+	public static final int STAR=79;
+	public static final int STRING=80;
+	public static final int STRING_LIT=81;
+	public static final int TRUE=82;
+	public static final int TRY=83;
+	public static final int UNDER=84;
+	public static final int UNTIL=85;
+	public static final int VAR=86;
+	public static final int WHILE=87;
+	public static final int WS=88;
 
 	    /** Name space to record lexer errors. */
 	    private Namespace namespace;
@@ -125,15 +128,15 @@ public class CtrlLexer extends Lexer {
 	public CtrlLexer(CharStream input, RecognizerSharedState state) {
 		super(input,state);
 	}
-	@Override public String getGrammarFileName() { return "C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g"; }
+	@Override public String getGrammarFileName() { return "C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g"; }
 
 	// $ANTLR start "ALAP"
 	public final void mALAP() throws RecognitionException {
 		try {
 			int _type = ALAP;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:500:10: ( 'alap' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:500:12: 'alap'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:500:10: ( 'alap' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:500:12: 'alap'
 			{
 			match("alap"); 
 
@@ -153,8 +156,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = ANY;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:501:6: ( 'any' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:501:8: 'any'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:501:6: ( 'any' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:501:8: 'any'
 			{
 			match("any"); 
 
@@ -174,8 +177,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = ATOM;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:502:10: ( 'atomic' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:502:12: 'atomic'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:502:10: ( 'atomic' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:502:12: 'atomic'
 			{
 			match("atomic"); 
 
@@ -195,8 +198,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = BOOL;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:503:10: ( 'bool' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:503:12: 'bool'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:503:10: ( 'bool' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:503:12: 'bool'
 			{
 			match("bool"); 
 
@@ -216,8 +219,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = CHOICE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:504:10: ( 'choice' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:504:12: 'choice'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:504:10: ( 'choice' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:504:12: 'choice'
 			{
 			match("choice"); 
 
@@ -237,8 +240,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = DO;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:505:10: ( 'do' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:505:12: 'do'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:505:10: ( 'do' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:505:12: 'do'
 			{
 			match("do"); 
 
@@ -258,8 +261,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = ELSE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:506:10: ( 'else' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:506:12: 'else'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:506:10: ( 'else' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:506:12: 'else'
 			{
 			match("else"); 
 
@@ -279,8 +282,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = FALSE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:507:10: ( 'false' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:507:12: 'false'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:507:10: ( 'false' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:507:12: 'false'
 			{
 			match("false"); 
 
@@ -300,8 +303,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = FUNCTION;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:508:10: ( 'function' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:508:12: 'function'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:508:10: ( 'function' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:508:12: 'function'
 			{
 			match("function"); 
 
@@ -321,8 +324,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = IF;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:509:10: ( 'if' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:509:12: 'if'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:509:10: ( 'if' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:509:12: 'if'
 			{
 			match("if"); 
 
@@ -342,8 +345,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = IMPORT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:510:10: ( 'import' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:510:12: 'import'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:510:10: ( 'import' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:510:12: 'import'
 			{
 			match("import"); 
 
@@ -363,8 +366,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = INT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:511:10: ( 'int' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:511:12: 'int'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:511:10: ( 'int' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:511:12: 'int'
 			{
 			match("int"); 
 
@@ -384,8 +387,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = NODE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:512:10: ( 'node' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:512:12: 'node'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:512:10: ( 'node' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:512:12: 'node'
 			{
 			match("node"); 
 
@@ -405,8 +408,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = OR;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:513:10: ( 'or' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:513:12: 'or'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:513:10: ( 'or' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:513:12: 'or'
 			{
 			match("or"); 
 
@@ -426,8 +429,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = OTHER;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:514:10: ( 'other' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:514:12: 'other'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:514:10: ( 'other' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:514:12: 'other'
 			{
 			match("other"); 
 
@@ -447,8 +450,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = OUT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:515:6: ( 'out' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:515:8: 'out'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:515:6: ( 'out' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:515:8: 'out'
 			{
 			match("out"); 
 
@@ -468,8 +471,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = REAL;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:516:10: ( 'real' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:516:12: 'real'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:516:10: ( 'real' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:516:12: 'real'
 			{
 			match("real"); 
 
@@ -489,8 +492,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = PACKAGE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:517:10: ( 'package' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:517:12: 'package'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:517:10: ( 'package' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:517:12: 'package'
 			{
 			match("package"); 
 
@@ -510,8 +513,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = PRIORITY;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:518:10: ( 'priority' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:518:12: 'priority'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:518:10: ( 'priority' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:518:12: 'priority'
 			{
 			match("priority"); 
 
@@ -531,8 +534,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = RECIPE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:519:10: ( 'recipe' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:519:12: 'recipe'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:519:10: ( 'recipe' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:519:12: 'recipe'
 			{
 			match("recipe"); 
 
@@ -552,8 +555,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = STAR;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:520:10: ( 'star' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:520:12: 'star'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:520:10: ( 'star' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:520:12: 'star'
 			{
 			match("star"); 
 
@@ -573,8 +576,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = STRING;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:521:10: ( 'string' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:521:12: 'string'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:521:10: ( 'string' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:521:12: 'string'
 			{
 			match("string"); 
 
@@ -594,8 +597,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = TRY;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:522:10: ( 'try' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:522:12: 'try'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:522:10: ( 'try' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:522:12: 'try'
 			{
 			match("try"); 
 
@@ -615,8 +618,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = TRUE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:523:10: ( 'true' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:523:12: 'true'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:523:10: ( 'true' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:523:12: 'true'
 			{
 			match("true"); 
 
@@ -636,8 +639,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = UNTIL;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:524:10: ( 'until' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:524:12: 'until'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:524:10: ( 'until' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:524:12: 'until'
 			{
 			match("until"); 
 
@@ -657,8 +660,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = WHILE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:525:10: ( 'while' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:525:12: 'while'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:525:10: ( 'while' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:525:12: 'while'
 			{
 			match("while"); 
 
@@ -673,31 +676,79 @@ public class CtrlLexer extends Lexer {
 	}
 	// $ANTLR end "WHILE"
 
-	// $ANTLR start "INT_LIT"
-	public final void mINT_LIT() throws RecognitionException {
+	// $ANTLR start "Digit"
+	public final void mDigit() throws RecognitionException {
 		try {
-			int _type = INT_LIT;
-			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:528:3: ( IntegerNumber )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:528:5: IntegerNumber
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:527:16: ( '0' .. '9' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:
 			{
-			mIntegerNumber(); 
-
+			if ( (input.LA(1) >= '0' && input.LA(1) <= '9') ) {
+				input.consume();
+			}
+			else {
+				MismatchedSetException mse = new MismatchedSetException(null,input);
+				recover(mse);
+				throw mse;
+			}
 			}
 
-			state.type = _type;
-			state.channel = _channel;
 		}
 		finally {
 			// do for sure before leaving
 		}
 	}
-	// $ANTLR end "INT_LIT"
+	// $ANTLR end "Digit"
+
+	// $ANTLR start "PosDigit"
+	public final void mPosDigit() throws RecognitionException {
+		try {
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:528:19: ( '1' .. '9' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:
+			{
+			if ( (input.LA(1) >= '1' && input.LA(1) <= '9') ) {
+				input.consume();
+			}
+			else {
+				MismatchedSetException mse = new MismatchedSetException(null,input);
+				recover(mse);
+				throw mse;
+			}
+			}
+
+		}
+		finally {
+			// do for sure before leaving
+		}
+	}
+	// $ANTLR end "PosDigit"
+
+	// $ANTLR start "Letter"
+	public final void mLetter() throws RecognitionException {
+		try {
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:529:17: ( 'a' .. 'z' | 'A' .. 'Z' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:
+			{
+			if ( (input.LA(1) >= 'A' && input.LA(1) <= 'Z')||(input.LA(1) >= 'a' && input.LA(1) <= 'z') ) {
+				input.consume();
+			}
+			else {
+				MismatchedSetException mse = new MismatchedSetException(null,input);
+				recover(mse);
+				throw mse;
+			}
+			}
+
+		}
+		finally {
+			// do for sure before leaving
+		}
+	}
+	// $ANTLR end "Letter"
 
 	// $ANTLR start "IntegerNumber"
 	public final void mIntegerNumber() throws RecognitionException {
 		try {
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:534:3: ( '0' | '1' .. '9' ( '0' .. '9' )* )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:531:3: ( '0' | PosDigit ( Digit )* )
 			int alt2=2;
 			int LA2_0 = input.LA(1);
 			if ( (LA2_0=='0') ) {
@@ -715,16 +766,17 @@ public class CtrlLexer extends Lexer {
 
 			switch (alt2) {
 				case 1 :
-					// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:534:5: '0'
+					// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:531:5: '0'
 					{
 					match('0'); 
 					}
 					break;
 				case 2 :
-					// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:535:5: '1' .. '9' ( '0' .. '9' )*
+					// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:532:5: PosDigit ( Digit )*
 					{
-					matchRange('1','9'); 
-					// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:535:14: ( '0' .. '9' )*
+					mPosDigit(); 
+
+					// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:532:14: ( Digit )*
 					loop1:
 					while (true) {
 						int alt1=2;
@@ -735,7 +787,7 @@ public class CtrlLexer extends Lexer {
 
 						switch (alt1) {
 						case 1 :
-							// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:
+							// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:
 							{
 							if ( (input.LA(1) >= '0' && input.LA(1) <= '9') ) {
 								input.consume();
@@ -764,52 +816,33 @@ public class CtrlLexer extends Lexer {
 	}
 	// $ANTLR end "IntegerNumber"
 
-	// $ANTLR start "REAL_LIT"
-	public final void mREAL_LIT() throws RecognitionException {
-		try {
-			int _type = REAL_LIT;
-			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:538:3: ( NonIntegerNumber )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:538:5: NonIntegerNumber
-			{
-			mNonIntegerNumber(); 
-
-			}
-
-			state.type = _type;
-			state.channel = _channel;
-		}
-		finally {
-			// do for sure before leaving
-		}
-	}
-	// $ANTLR end "REAL_LIT"
-
 	// $ANTLR start "NonIntegerNumber"
 	public final void mNonIntegerNumber() throws RecognitionException {
 		try {
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:544:5: ( ( '0' .. '9' )+ '.' ( '0' .. '9' )* | '.' ( '0' .. '9' )+ )
-			int alt6=2;
-			int LA6_0 = input.LA(1);
-			if ( ((LA6_0 >= '0' && LA6_0 <= '9')) ) {
-				alt6=1;
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:535:5: ( IntegerNumber '.' ( Digit )* | '.' ( Digit )+ )
+			int alt5=2;
+			int LA5_0 = input.LA(1);
+			if ( ((LA5_0 >= '0' && LA5_0 <= '9')) ) {
+				alt5=1;
 			}
-			else if ( (LA6_0=='.') ) {
-				alt6=2;
+			else if ( (LA5_0=='.') ) {
+				alt5=2;
 			}
 
 			else {
 				NoViableAltException nvae =
-					new NoViableAltException("", 6, 0, input);
+					new NoViableAltException("", 5, 0, input);
 				throw nvae;
 			}
 
-			switch (alt6) {
+			switch (alt5) {
 				case 1 :
-					// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:544:9: ( '0' .. '9' )+ '.' ( '0' .. '9' )*
+					// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:535:9: IntegerNumber '.' ( Digit )*
 					{
-					// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:544:9: ( '0' .. '9' )+
-					int cnt3=0;
+					mIntegerNumber(); 
+
+					match('.'); 
+					// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:535:27: ( Digit )*
 					loop3:
 					while (true) {
 						int alt3=2;
@@ -820,7 +853,7 @@ public class CtrlLexer extends Lexer {
 
 						switch (alt3) {
 						case 1 :
-							// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:
+							// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:
 							{
 							if ( (input.LA(1) >= '0' && input.LA(1) <= '9') ) {
 								input.consume();
@@ -834,15 +867,18 @@ public class CtrlLexer extends Lexer {
 							break;
 
 						default :
-							if ( cnt3 >= 1 ) break loop3;
-							EarlyExitException eee = new EarlyExitException(3, input);
-							throw eee;
+							break loop3;
 						}
-						cnt3++;
 					}
 
+					}
+					break;
+				case 2 :
+					// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:536:9: '.' ( Digit )+
+					{
 					match('.'); 
-					// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:544:27: ( '0' .. '9' )*
+					// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:536:13: ( Digit )+
+					int cnt4=0;
 					loop4:
 					while (true) {
 						int alt4=2;
@@ -853,7 +889,7 @@ public class CtrlLexer extends Lexer {
 
 						switch (alt4) {
 						case 1 :
-							// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:
+							// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:
 							{
 							if ( (input.LA(1) >= '0' && input.LA(1) <= '9') ) {
 								input.consume();
@@ -867,47 +903,11 @@ public class CtrlLexer extends Lexer {
 							break;
 
 						default :
-							break loop4;
-						}
-					}
-
-					}
-					break;
-				case 2 :
-					// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:545:9: '.' ( '0' .. '9' )+
-					{
-					match('.'); 
-					// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:545:13: ( '0' .. '9' )+
-					int cnt5=0;
-					loop5:
-					while (true) {
-						int alt5=2;
-						int LA5_0 = input.LA(1);
-						if ( ((LA5_0 >= '0' && LA5_0 <= '9')) ) {
-							alt5=1;
-						}
-
-						switch (alt5) {
-						case 1 :
-							// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:
-							{
-							if ( (input.LA(1) >= '0' && input.LA(1) <= '9') ) {
-								input.consume();
-							}
-							else {
-								MismatchedSetException mse = new MismatchedSetException(null,input);
-								recover(mse);
-								throw mse;
-							}
-							}
-							break;
-
-						default :
-							if ( cnt5 >= 1 ) break loop5;
-							EarlyExitException eee = new EarlyExitException(5, input);
+							if ( cnt4 >= 1 ) break loop4;
+							EarlyExitException eee = new EarlyExitException(4, input);
 							throw eee;
 						}
-						cnt5++;
+						cnt4++;
 					}
 
 					}
@@ -921,73 +921,11 @@ public class CtrlLexer extends Lexer {
 	}
 	// $ANTLR end "NonIntegerNumber"
 
-	// $ANTLR start "STRING_LIT"
-	public final void mSTRING_LIT() throws RecognitionException {
-		try {
-			int _type = STRING_LIT;
-			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:549:3: ( QUOTE ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )* QUOTE )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:549:5: QUOTE ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )* QUOTE
-			{
-			mQUOTE(); 
-
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:550:5: ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )*
-			loop7:
-			while (true) {
-				int alt7=3;
-				int LA7_0 = input.LA(1);
-				if ( (LA7_0=='\\') ) {
-					alt7=1;
-				}
-				else if ( ((LA7_0 >= '\u0000' && LA7_0 <= '\t')||(LA7_0 >= '\u000B' && LA7_0 <= '\f')||(LA7_0 >= '\u000E' && LA7_0 <= '!')||(LA7_0 >= '#' && LA7_0 <= '[')||(LA7_0 >= ']' && LA7_0 <= '\uFFFF')) ) {
-					alt7=2;
-				}
-
-				switch (alt7) {
-				case 1 :
-					// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:550:7: EscapeSequence
-					{
-					mEscapeSequence(); 
-
-					}
-					break;
-				case 2 :
-					// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:551:7: ~ ( BSLASH | QUOTE | '\\r' | '\\n' )
-					{
-					if ( (input.LA(1) >= '\u0000' && input.LA(1) <= '\t')||(input.LA(1) >= '\u000B' && input.LA(1) <= '\f')||(input.LA(1) >= '\u000E' && input.LA(1) <= '!')||(input.LA(1) >= '#' && input.LA(1) <= '[')||(input.LA(1) >= ']' && input.LA(1) <= '\uFFFF') ) {
-						input.consume();
-					}
-					else {
-						MismatchedSetException mse = new MismatchedSetException(null,input);
-						recover(mse);
-						throw mse;
-					}
-					}
-					break;
-
-				default :
-					break loop7;
-				}
-			}
-
-			mQUOTE(); 
-
-			}
-
-			state.type = _type;
-			state.channel = _channel;
-		}
-		finally {
-			// do for sure before leaving
-		}
-	}
-	// $ANTLR end "STRING_LIT"
-
 	// $ANTLR start "EscapeSequence"
 	public final void mEscapeSequence() throws RecognitionException {
 		try {
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:559:3: ( BSLASH ( QUOTE | BSLASH ) )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:559:5: BSLASH ( QUOTE | BSLASH )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:539:3: ( BSLASH ( QUOTE | BSLASH ) )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:539:5: BSLASH ( QUOTE | BSLASH )
 			{
 			mBSLASH(); 
 
@@ -1008,32 +946,82 @@ public class CtrlLexer extends Lexer {
 	}
 	// $ANTLR end "EscapeSequence"
 
-	// $ANTLR start "ID"
-	public final void mID() throws RecognitionException {
+	// $ANTLR start "INT_LIT"
+	public final void mINT_LIT() throws RecognitionException {
 		try {
-			int _type = ID;
+			int _type = INT_LIT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:569:3: ( ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )* | BQUOTE ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )* BQUOTE )
-			int alt10=2;
-			int LA10_0 = input.LA(1);
-			if ( ((LA10_0 >= 'A' && LA10_0 <= 'Z')||(LA10_0 >= 'a' && LA10_0 <= 'z')) ) {
-				alt10=1;
-			}
-			else if ( (LA10_0=='`') ) {
-				alt10=2;
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:546:3: ( IntegerNumber )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:546:5: IntegerNumber
+			{
+			mIntegerNumber(); 
+
 			}
 
-			else {
-				NoViableAltException nvae =
-					new NoViableAltException("", 10, 0, input);
-				throw nvae;
+			state.type = _type;
+			state.channel = _channel;
+		}
+		finally {
+			// do for sure before leaving
+		}
+	}
+	// $ANTLR end "INT_LIT"
+
+	// $ANTLR start "REAL_LIT"
+	public final void mREAL_LIT() throws RecognitionException {
+		try {
+			int _type = REAL_LIT;
+			int _channel = DEFAULT_TOKEN_CHANNEL;
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:550:3: ( NonIntegerNumber )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:550:5: NonIntegerNumber
+			{
+			mNonIntegerNumber(); 
+
 			}
 
-			switch (alt10) {
+			state.type = _type;
+			state.channel = _channel;
+		}
+		finally {
+			// do for sure before leaving
+		}
+	}
+	// $ANTLR end "REAL_LIT"
+
+	// $ANTLR start "STRING_LIT"
+	public final void mSTRING_LIT() throws RecognitionException {
+		try {
+			int _type = STRING_LIT;
+			int _channel = DEFAULT_TOKEN_CHANNEL;
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:555:3: ( QUOTE ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )* QUOTE )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:555:5: QUOTE ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )* QUOTE
+			{
+			mQUOTE(); 
+
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:556:5: ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )*
+			loop6:
+			while (true) {
+				int alt6=3;
+				int LA6_0 = input.LA(1);
+				if ( (LA6_0=='\\') ) {
+					alt6=1;
+				}
+				else if ( ((LA6_0 >= '\u0000' && LA6_0 <= '\t')||(LA6_0 >= '\u000B' && LA6_0 <= '\f')||(LA6_0 >= '\u000E' && LA6_0 <= '!')||(LA6_0 >= '#' && LA6_0 <= '[')||(LA6_0 >= ']' && LA6_0 <= '\uFFFF')) ) {
+					alt6=2;
+				}
+
+				switch (alt6) {
 				case 1 :
-					// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:569:5: ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )*
+					// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:556:7: EscapeSequence
 					{
-					if ( (input.LA(1) >= 'A' && input.LA(1) <= 'Z')||(input.LA(1) >= 'a' && input.LA(1) <= 'z') ) {
+					mEscapeSequence(); 
+
+					}
+					break;
+				case 2 :
+					// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:557:7: ~ ( BSLASH | QUOTE | '\\r' | '\\n' )
+					{
+					if ( (input.LA(1) >= '\u0000' && input.LA(1) <= '\t')||(input.LA(1) >= '\u000B' && input.LA(1) <= '\f')||(input.LA(1) >= '\u000E' && input.LA(1) <= '!')||(input.LA(1) >= '#' && input.LA(1) <= '[')||(input.LA(1) >= ']' && input.LA(1) <= '\uFFFF') ) {
 						input.consume();
 					}
 					else {
@@ -1041,7 +1029,93 @@ public class CtrlLexer extends Lexer {
 						recover(mse);
 						throw mse;
 					}
-					// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:569:25: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )*
+					}
+					break;
+
+				default :
+					break loop6;
+				}
+			}
+
+			mQUOTE(); 
+
+			}
+
+			state.type = _type;
+			state.channel = _channel;
+		}
+		finally {
+			// do for sure before leaving
+		}
+	}
+	// $ANTLR end "STRING_LIT"
+
+	// $ANTLR start "ID"
+	public final void mID() throws RecognitionException {
+		try {
+			int _type = ID;
+			int _channel = DEFAULT_TOKEN_CHANNEL;
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:563:3: ( Letter ( Letter | Digit | UNDER | MINUS )* | BQUOTE Letter ( Letter | Digit | UNDER | MINUS )* BQUOTE )
+			int alt9=2;
+			int LA9_0 = input.LA(1);
+			if ( ((LA9_0 >= 'A' && LA9_0 <= 'Z')||(LA9_0 >= 'a' && LA9_0 <= 'z')) ) {
+				alt9=1;
+			}
+			else if ( (LA9_0=='`') ) {
+				alt9=2;
+			}
+
+			else {
+				NoViableAltException nvae =
+					new NoViableAltException("", 9, 0, input);
+				throw nvae;
+			}
+
+			switch (alt9) {
+				case 1 :
+					// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:563:5: Letter ( Letter | Digit | UNDER | MINUS )*
+					{
+					mLetter(); 
+
+					// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:563:12: ( Letter | Digit | UNDER | MINUS )*
+					loop7:
+					while (true) {
+						int alt7=2;
+						int LA7_0 = input.LA(1);
+						if ( (LA7_0=='-'||(LA7_0 >= '0' && LA7_0 <= '9')||(LA7_0 >= 'A' && LA7_0 <= 'Z')||LA7_0=='_'||(LA7_0 >= 'a' && LA7_0 <= 'z')) ) {
+							alt7=1;
+						}
+
+						switch (alt7) {
+						case 1 :
+							// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:
+							{
+							if ( input.LA(1)=='-'||(input.LA(1) >= '0' && input.LA(1) <= '9')||(input.LA(1) >= 'A' && input.LA(1) <= 'Z')||input.LA(1)=='_'||(input.LA(1) >= 'a' && input.LA(1) <= 'z') ) {
+								input.consume();
+							}
+							else {
+								MismatchedSetException mse = new MismatchedSetException(null,input);
+								recover(mse);
+								throw mse;
+							}
+							}
+							break;
+
+						default :
+							break loop7;
+						}
+					}
+
+					}
+					break;
+				case 2 :
+					// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:564:5: BQUOTE Letter ( Letter | Digit | UNDER | MINUS )* BQUOTE
+					{
+					mBQUOTE(); 
+
+					mLetter(); 
+
+					// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:564:19: ( Letter | Digit | UNDER | MINUS )*
 					loop8:
 					while (true) {
 						int alt8=2;
@@ -1052,7 +1126,7 @@ public class CtrlLexer extends Lexer {
 
 						switch (alt8) {
 						case 1 :
-							// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:
+							// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:
 							{
 							if ( input.LA(1)=='-'||(input.LA(1) >= '0' && input.LA(1) <= '9')||(input.LA(1) >= 'A' && input.LA(1) <= 'Z')||input.LA(1)=='_'||(input.LA(1) >= 'a' && input.LA(1) <= 'z') ) {
 								input.consume();
@@ -1067,50 +1141,6 @@ public class CtrlLexer extends Lexer {
 
 						default :
 							break loop8;
-						}
-					}
-
-					}
-					break;
-				case 2 :
-					// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:570:5: BQUOTE ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )* BQUOTE
-					{
-					mBQUOTE(); 
-
-					if ( (input.LA(1) >= 'A' && input.LA(1) <= 'Z')||(input.LA(1) >= 'a' && input.LA(1) <= 'z') ) {
-						input.consume();
-					}
-					else {
-						MismatchedSetException mse = new MismatchedSetException(null,input);
-						recover(mse);
-						throw mse;
-					}
-					// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:570:32: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )*
-					loop9:
-					while (true) {
-						int alt9=2;
-						int LA9_0 = input.LA(1);
-						if ( (LA9_0=='-'||(LA9_0 >= '0' && LA9_0 <= '9')||(LA9_0 >= 'A' && LA9_0 <= 'Z')||LA9_0=='_'||(LA9_0 >= 'a' && LA9_0 <= 'z')) ) {
-							alt9=1;
-						}
-
-						switch (alt9) {
-						case 1 :
-							// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:
-							{
-							if ( input.LA(1)=='-'||(input.LA(1) >= '0' && input.LA(1) <= '9')||(input.LA(1) >= 'A' && input.LA(1) <= 'Z')||input.LA(1)=='_'||(input.LA(1) >= 'a' && input.LA(1) <= 'z') ) {
-								input.consume();
-							}
-							else {
-								MismatchedSetException mse = new MismatchedSetException(null,input);
-								recover(mse);
-								throw mse;
-							}
-							}
-							break;
-
-						default :
-							break loop9;
 						}
 					}
 
@@ -1134,8 +1164,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = AMP;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:573:11: ( '&' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:573:13: '&'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:567:11: ( '&' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:567:13: '&'
 			{
 			match('&'); 
 			}
@@ -1154,8 +1184,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = BECOMES;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:574:11: ( ':=' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:574:13: ':='
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:568:11: ( ':=' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:568:13: ':='
 			{
 			match(":="); 
 
@@ -1175,8 +1205,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = DOT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:575:11: ( '.' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:575:13: '.'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:569:11: ( '.' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:569:13: '.'
 			{
 			match('.'); 
 			}
@@ -1195,8 +1225,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = NOT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:576:11: ( '!' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:576:13: '!'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:570:11: ( '!' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:570:13: '!'
 			{
 			match('!'); 
 			}
@@ -1215,8 +1245,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = BAR;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:577:11: ( '|' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:577:13: '|'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:571:11: ( '|' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:571:13: '|'
 			{
 			match('|'); 
 			}
@@ -1235,8 +1265,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = SHARP;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:578:11: ( '#' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:578:13: '#'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:572:11: ( '#' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:572:13: '#'
 			{
 			match('#'); 
 			}
@@ -1255,8 +1285,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = PLUS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:579:11: ( '+' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:579:13: '+'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:573:11: ( '+' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:573:13: '+'
 			{
 			match('+'); 
 			}
@@ -1275,8 +1305,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = ASTERISK;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:580:11: ( '*' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:580:13: '*'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:574:11: ( '*' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:574:13: '*'
 			{
 			match('*'); 
 			}
@@ -1295,8 +1325,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = PERCENT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:581:11: ( '%' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:581:13: '%'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:575:11: ( '%' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:575:13: '%'
 			{
 			match('%'); 
 			}
@@ -1310,13 +1340,13 @@ public class CtrlLexer extends Lexer {
 	}
 	// $ANTLR end "PERCENT"
 
-	// $ANTLR start "DONT_CARE"
-	public final void mDONT_CARE() throws RecognitionException {
+	// $ANTLR start "UNDER"
+	public final void mUNDER() throws RecognitionException {
 		try {
-			int _type = DONT_CARE;
+			int _type = UNDER;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:582:11: ( '_' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:582:13: '_'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:576:11: ( '_' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:576:13: '_'
 			{
 			match('_'); 
 			}
@@ -1328,15 +1358,15 @@ public class CtrlLexer extends Lexer {
 			// do for sure before leaving
 		}
 	}
-	// $ANTLR end "DONT_CARE"
+	// $ANTLR end "UNDER"
 
 	// $ANTLR start "MINUS"
 	public final void mMINUS() throws RecognitionException {
 		try {
 			int _type = MINUS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:583:11: ( '-' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:583:13: '-'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:577:11: ( '-' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:577:13: '-'
 			{
 			match('-'); 
 			}
@@ -1355,8 +1385,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = QUOTE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:584:11: ( '\"' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:584:13: '\"'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:578:11: ( '\"' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:578:13: '\"'
 			{
 			match('\"'); 
 			}
@@ -1375,8 +1405,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = BQUOTE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:585:11: ( '`' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:585:13: '`'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:579:11: ( '`' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:579:13: '`'
 			{
 			match('`'); 
 			}
@@ -1395,8 +1425,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = SLASH;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:586:11: ( '/' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:586:13: '/'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:580:11: ( '/' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:580:13: '/'
 			{
 			match('/'); 
 			}
@@ -1415,8 +1445,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = BSLASH;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:587:11: ( '\\\\' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:587:13: '\\\\'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:581:11: ( '\\\\' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:581:13: '\\\\'
 			{
 			match('\\'); 
 			}
@@ -1435,8 +1465,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = COMMA;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:588:11: ( ',' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:588:13: ','
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:582:11: ( ',' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:582:13: ','
 			{
 			match(','); 
 			}
@@ -1455,8 +1485,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = COLON;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:589:11: ( ':' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:589:13: ':'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:583:11: ( ':' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:583:13: ':'
 			{
 			match(':'); 
 			}
@@ -1475,8 +1505,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = SEMI;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:590:11: ( ';' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:590:13: ';'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:584:11: ( ';' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:584:13: ';'
 			{
 			match(';'); 
 			}
@@ -1495,8 +1525,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = LPAR;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:591:11: ( '(' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:591:13: '('
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:585:11: ( '(' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:585:13: '('
 			{
 			match('('); 
 			}
@@ -1515,8 +1545,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = RPAR;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:592:11: ( ')' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:592:13: ')'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:586:11: ( ')' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:586:13: ')'
 			{
 			match(')'); 
 			}
@@ -1535,8 +1565,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = LANGLE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:593:11: ( '<' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:593:13: '<'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:587:11: ( '<' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:587:13: '<'
 			{
 			match('<'); 
 			}
@@ -1555,8 +1585,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = RANGLE;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:594:11: ( '>' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:594:13: '>'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:588:11: ( '>' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:588:13: '>'
 			{
 			match('>'); 
 			}
@@ -1575,8 +1605,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = LEQ;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:595:11: ( '<=' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:595:13: '<='
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:589:11: ( '<=' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:589:13: '<='
 			{
 			match("<="); 
 
@@ -1596,8 +1626,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = GEQ;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:596:11: ( '>=' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:596:13: '>='
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:590:11: ( '>=' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:590:13: '>='
 			{
 			match(">="); 
 
@@ -1617,8 +1647,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = EQ;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:597:11: ( '==' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:597:13: '=='
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:591:11: ( '==' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:591:13: '=='
 			{
 			match("=="); 
 
@@ -1638,8 +1668,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = NEQ;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:598:11: ( '!=' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:598:13: '!='
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:592:11: ( '!=' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:592:13: '!='
 			{
 			match("!="); 
 
@@ -1659,8 +1689,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = LCURLY;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:599:11: ( '{' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:599:13: '{'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:593:11: ( '{' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:593:13: '{'
 			{
 			match('{'); 
 			}
@@ -1679,8 +1709,8 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = RCURLY;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:600:11: ( '}' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:600:13: '}'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:594:11: ( '}' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:594:13: '}'
 			{
 			match('}'); 
 			}
@@ -1699,40 +1729,40 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = ML_COMMENT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:602:12: ( '/*' ( options {greedy=false; } : . )* '*/' )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:602:14: '/*' ( options {greedy=false; } : . )* '*/'
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:596:12: ( '/*' ( options {greedy=false; } : . )* '*/' )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:596:14: '/*' ( options {greedy=false; } : . )* '*/'
 			{
 			match("/*"); 
 
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:602:19: ( options {greedy=false; } : . )*
-			loop11:
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:596:19: ( options {greedy=false; } : . )*
+			loop10:
 			while (true) {
-				int alt11=2;
-				int LA11_0 = input.LA(1);
-				if ( (LA11_0=='*') ) {
-					int LA11_1 = input.LA(2);
-					if ( (LA11_1=='/') ) {
-						alt11=2;
+				int alt10=2;
+				int LA10_0 = input.LA(1);
+				if ( (LA10_0=='*') ) {
+					int LA10_1 = input.LA(2);
+					if ( (LA10_1=='/') ) {
+						alt10=2;
 					}
-					else if ( ((LA11_1 >= '\u0000' && LA11_1 <= '.')||(LA11_1 >= '0' && LA11_1 <= '\uFFFF')) ) {
-						alt11=1;
+					else if ( ((LA10_1 >= '\u0000' && LA10_1 <= '.')||(LA10_1 >= '0' && LA10_1 <= '\uFFFF')) ) {
+						alt10=1;
 					}
 
 				}
-				else if ( ((LA11_0 >= '\u0000' && LA11_0 <= ')')||(LA11_0 >= '+' && LA11_0 <= '\uFFFF')) ) {
-					alt11=1;
+				else if ( ((LA10_0 >= '\u0000' && LA10_0 <= ')')||(LA10_0 >= '+' && LA10_0 <= '\uFFFF')) ) {
+					alt10=1;
 				}
 
-				switch (alt11) {
+				switch (alt10) {
 				case 1 :
-					// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:602:47: .
+					// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:596:47: .
 					{
 					matchAny(); 
 					}
 					break;
 
 				default :
-					break loop11;
+					break loop10;
 				}
 			}
 
@@ -1755,23 +1785,23 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = SL_COMMENT;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:603:12: ( '//' (~ ( '\\n' ) )* )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:603:14: '//' (~ ( '\\n' ) )*
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:597:12: ( '//' (~ ( '\\n' ) )* )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:597:14: '//' (~ ( '\\n' ) )*
 			{
 			match("//"); 
 
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:603:19: (~ ( '\\n' ) )*
-			loop12:
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:597:19: (~ ( '\\n' ) )*
+			loop11:
 			while (true) {
-				int alt12=2;
-				int LA12_0 = input.LA(1);
-				if ( ((LA12_0 >= '\u0000' && LA12_0 <= '\t')||(LA12_0 >= '\u000B' && LA12_0 <= '\uFFFF')) ) {
-					alt12=1;
+				int alt11=2;
+				int LA11_0 = input.LA(1);
+				if ( ((LA11_0 >= '\u0000' && LA11_0 <= '\t')||(LA11_0 >= '\u000B' && LA11_0 <= '\uFFFF')) ) {
+					alt11=1;
 				}
 
-				switch (alt12) {
+				switch (alt11) {
 				case 1 :
-					// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:
+					// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:
 					{
 					if ( (input.LA(1) >= '\u0000' && input.LA(1) <= '\t')||(input.LA(1) >= '\u000B' && input.LA(1) <= '\uFFFF') ) {
 						input.consume();
@@ -1785,7 +1815,7 @@ public class CtrlLexer extends Lexer {
 					break;
 
 				default :
-					break loop12;
+					break loop11;
 				}
 			}
 
@@ -1806,22 +1836,22 @@ public class CtrlLexer extends Lexer {
 		try {
 			int _type = WS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:605:5: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:605:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:599:5: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:599:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
 			{
-			// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:605:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
-			int cnt13=0;
-			loop13:
+			// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:599:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
+			int cnt12=0;
+			loop12:
 			while (true) {
-				int alt13=2;
-				int LA13_0 = input.LA(1);
-				if ( ((LA13_0 >= '\t' && LA13_0 <= '\n')||LA13_0=='\r'||LA13_0==' ') ) {
-					alt13=1;
+				int alt12=2;
+				int LA12_0 = input.LA(1);
+				if ( ((LA12_0 >= '\t' && LA12_0 <= '\n')||LA12_0=='\r'||LA12_0==' ') ) {
+					alt12=1;
 				}
 
-				switch (alt13) {
+				switch (alt12) {
 				case 1 :
-					// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:
+					// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:
 					{
 					if ( (input.LA(1) >= '\t' && input.LA(1) <= '\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
 						input.consume();
@@ -1835,11 +1865,11 @@ public class CtrlLexer extends Lexer {
 					break;
 
 				default :
-					if ( cnt13 >= 1 ) break loop13;
-					EarlyExitException eee = new EarlyExitException(13, input);
+					if ( cnt12 >= 1 ) break loop12;
+					EarlyExitException eee = new EarlyExitException(12, input);
 					throw eee;
 				}
-				cnt13++;
+				cnt12++;
 			}
 
 			 _channel=HIDDEN; 
@@ -1856,432 +1886,432 @@ public class CtrlLexer extends Lexer {
 
 	@Override
 	public void mTokens() throws RecognitionException {
-		// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:8: ( ALAP | ANY | ATOM | BOOL | CHOICE | DO | ELSE | FALSE | FUNCTION | IF | IMPORT | INT | NODE | OR | OTHER | OUT | REAL | PACKAGE | PRIORITY | RECIPE | STAR | STRING | TRY | TRUE | UNTIL | WHILE | INT_LIT | REAL_LIT | STRING_LIT | ID | AMP | BECOMES | DOT | NOT | BAR | SHARP | PLUS | ASTERISK | PERCENT | DONT_CARE | MINUS | QUOTE | BQUOTE | SLASH | BSLASH | COMMA | COLON | SEMI | LPAR | RPAR | LANGLE | RANGLE | LEQ | GEQ | EQ | NEQ | LCURLY | RCURLY | ML_COMMENT | SL_COMMENT | WS )
-		int alt14=61;
-		alt14 = dfa14.predict(input);
-		switch (alt14) {
+		// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:8: ( ALAP | ANY | ATOM | BOOL | CHOICE | DO | ELSE | FALSE | FUNCTION | IF | IMPORT | INT | NODE | OR | OTHER | OUT | REAL | PACKAGE | PRIORITY | RECIPE | STAR | STRING | TRY | TRUE | UNTIL | WHILE | INT_LIT | REAL_LIT | STRING_LIT | ID | AMP | BECOMES | DOT | NOT | BAR | SHARP | PLUS | ASTERISK | PERCENT | UNDER | MINUS | QUOTE | BQUOTE | SLASH | BSLASH | COMMA | COLON | SEMI | LPAR | RPAR | LANGLE | RANGLE | LEQ | GEQ | EQ | NEQ | LCURLY | RCURLY | ML_COMMENT | SL_COMMENT | WS )
+		int alt13=61;
+		alt13 = dfa13.predict(input);
+		switch (alt13) {
 			case 1 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:10: ALAP
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:10: ALAP
 				{
 				mALAP(); 
 
 				}
 				break;
 			case 2 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:15: ANY
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:15: ANY
 				{
 				mANY(); 
 
 				}
 				break;
 			case 3 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:19: ATOM
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:19: ATOM
 				{
 				mATOM(); 
 
 				}
 				break;
 			case 4 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:24: BOOL
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:24: BOOL
 				{
 				mBOOL(); 
 
 				}
 				break;
 			case 5 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:29: CHOICE
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:29: CHOICE
 				{
 				mCHOICE(); 
 
 				}
 				break;
 			case 6 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:36: DO
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:36: DO
 				{
 				mDO(); 
 
 				}
 				break;
 			case 7 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:39: ELSE
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:39: ELSE
 				{
 				mELSE(); 
 
 				}
 				break;
 			case 8 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:44: FALSE
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:44: FALSE
 				{
 				mFALSE(); 
 
 				}
 				break;
 			case 9 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:50: FUNCTION
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:50: FUNCTION
 				{
 				mFUNCTION(); 
 
 				}
 				break;
 			case 10 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:59: IF
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:59: IF
 				{
 				mIF(); 
 
 				}
 				break;
 			case 11 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:62: IMPORT
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:62: IMPORT
 				{
 				mIMPORT(); 
 
 				}
 				break;
 			case 12 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:69: INT
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:69: INT
 				{
 				mINT(); 
 
 				}
 				break;
 			case 13 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:73: NODE
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:73: NODE
 				{
 				mNODE(); 
 
 				}
 				break;
 			case 14 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:78: OR
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:78: OR
 				{
 				mOR(); 
 
 				}
 				break;
 			case 15 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:81: OTHER
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:81: OTHER
 				{
 				mOTHER(); 
 
 				}
 				break;
 			case 16 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:87: OUT
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:87: OUT
 				{
 				mOUT(); 
 
 				}
 				break;
 			case 17 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:91: REAL
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:91: REAL
 				{
 				mREAL(); 
 
 				}
 				break;
 			case 18 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:96: PACKAGE
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:96: PACKAGE
 				{
 				mPACKAGE(); 
 
 				}
 				break;
 			case 19 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:104: PRIORITY
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:104: PRIORITY
 				{
 				mPRIORITY(); 
 
 				}
 				break;
 			case 20 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:113: RECIPE
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:113: RECIPE
 				{
 				mRECIPE(); 
 
 				}
 				break;
 			case 21 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:120: STAR
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:120: STAR
 				{
 				mSTAR(); 
 
 				}
 				break;
 			case 22 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:125: STRING
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:125: STRING
 				{
 				mSTRING(); 
 
 				}
 				break;
 			case 23 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:132: TRY
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:132: TRY
 				{
 				mTRY(); 
 
 				}
 				break;
 			case 24 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:136: TRUE
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:136: TRUE
 				{
 				mTRUE(); 
 
 				}
 				break;
 			case 25 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:141: UNTIL
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:141: UNTIL
 				{
 				mUNTIL(); 
 
 				}
 				break;
 			case 26 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:147: WHILE
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:147: WHILE
 				{
 				mWHILE(); 
 
 				}
 				break;
 			case 27 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:153: INT_LIT
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:153: INT_LIT
 				{
 				mINT_LIT(); 
 
 				}
 				break;
 			case 28 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:161: REAL_LIT
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:161: REAL_LIT
 				{
 				mREAL_LIT(); 
 
 				}
 				break;
 			case 29 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:170: STRING_LIT
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:170: STRING_LIT
 				{
 				mSTRING_LIT(); 
 
 				}
 				break;
 			case 30 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:181: ID
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:181: ID
 				{
 				mID(); 
 
 				}
 				break;
 			case 31 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:184: AMP
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:184: AMP
 				{
 				mAMP(); 
 
 				}
 				break;
 			case 32 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:188: BECOMES
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:188: BECOMES
 				{
 				mBECOMES(); 
 
 				}
 				break;
 			case 33 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:196: DOT
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:196: DOT
 				{
 				mDOT(); 
 
 				}
 				break;
 			case 34 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:200: NOT
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:200: NOT
 				{
 				mNOT(); 
 
 				}
 				break;
 			case 35 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:204: BAR
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:204: BAR
 				{
 				mBAR(); 
 
 				}
 				break;
 			case 36 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:208: SHARP
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:208: SHARP
 				{
 				mSHARP(); 
 
 				}
 				break;
 			case 37 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:214: PLUS
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:214: PLUS
 				{
 				mPLUS(); 
 
 				}
 				break;
 			case 38 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:219: ASTERISK
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:219: ASTERISK
 				{
 				mASTERISK(); 
 
 				}
 				break;
 			case 39 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:228: PERCENT
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:228: PERCENT
 				{
 				mPERCENT(); 
 
 				}
 				break;
 			case 40 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:236: DONT_CARE
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:236: UNDER
 				{
-				mDONT_CARE(); 
+				mUNDER(); 
 
 				}
 				break;
 			case 41 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:246: MINUS
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:242: MINUS
 				{
 				mMINUS(); 
 
 				}
 				break;
 			case 42 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:252: QUOTE
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:248: QUOTE
 				{
 				mQUOTE(); 
 
 				}
 				break;
 			case 43 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:258: BQUOTE
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:254: BQUOTE
 				{
 				mBQUOTE(); 
 
 				}
 				break;
 			case 44 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:265: SLASH
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:261: SLASH
 				{
 				mSLASH(); 
 
 				}
 				break;
 			case 45 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:271: BSLASH
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:267: BSLASH
 				{
 				mBSLASH(); 
 
 				}
 				break;
 			case 46 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:278: COMMA
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:274: COMMA
 				{
 				mCOMMA(); 
 
 				}
 				break;
 			case 47 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:284: COLON
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:280: COLON
 				{
 				mCOLON(); 
 
 				}
 				break;
 			case 48 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:290: SEMI
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:286: SEMI
 				{
 				mSEMI(); 
 
 				}
 				break;
 			case 49 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:295: LPAR
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:291: LPAR
 				{
 				mLPAR(); 
 
 				}
 				break;
 			case 50 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:300: RPAR
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:296: RPAR
 				{
 				mRPAR(); 
 
 				}
 				break;
 			case 51 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:305: LANGLE
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:301: LANGLE
 				{
 				mLANGLE(); 
 
 				}
 				break;
 			case 52 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:312: RANGLE
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:308: RANGLE
 				{
 				mRANGLE(); 
 
 				}
 				break;
 			case 53 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:319: LEQ
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:315: LEQ
 				{
 				mLEQ(); 
 
 				}
 				break;
 			case 54 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:323: GEQ
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:319: GEQ
 				{
 				mGEQ(); 
 
 				}
 				break;
 			case 55 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:327: EQ
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:323: EQ
 				{
 				mEQ(); 
 
 				}
 				break;
 			case 56 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:330: NEQ
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:326: NEQ
 				{
 				mNEQ(); 
 
 				}
 				break;
 			case 57 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:334: LCURLY
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:330: LCURLY
 				{
 				mLCURLY(); 
 
 				}
 				break;
 			case 58 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:341: RCURLY
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:337: RCURLY
 				{
 				mRCURLY(); 
 
 				}
 				break;
 			case 59 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:348: ML_COMMENT
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:344: ML_COMMENT
 				{
 				mML_COMMENT(); 
 
 				}
 				break;
 			case 60 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:359: SL_COMMENT
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:355: SL_COMMENT
 				{
 				mSL_COMMENT(); 
 
 				}
 				break;
 			case 61 :
-				// C:\\Eclipse\\workspace-2022-09\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:370: WS
+				// C:\\Eclipse\\workspace-2023-03\\groove\\src\\main\\java\\nl\\utwente\\groove\\control\\parse\\Ctrl.g:1:366: WS
 				{
 				mWS(); 
 
@@ -2292,8 +2322,8 @@ public class CtrlLexer extends Lexer {
 	}
 
 
-	protected DFA14 dfa14 = new DFA14(this);
-	static final String DFA14_eotS =
+	protected DFA13 dfa13 = new DFA13(this);
+	static final String DFA13_eotS =
 		"\1\uffff\17\24\2\103\1\106\1\107\1\uffff\1\111\1\uffff\1\113\1\115\7\uffff"+
 		"\1\120\5\uffff\1\122\1\124\4\uffff\5\24\1\132\3\24\1\136\3\24\1\142\11"+
 		"\24\2\uffff\1\103\17\uffff\1\24\1\160\3\24\1\uffff\3\24\1\uffff\1\24\1"+
@@ -2303,9 +2333,9 @@ public class CtrlLexer extends Lexer {
 		"\24\1\uffff\1\u009e\1\uffff\3\24\1\uffff\1\24\1\uffff\1\u00a3\1\u00a4"+
 		"\1\u00a5\1\u00a6\1\uffff\1\24\1\u00a8\1\uffff\1\u00a9\2\24\1\u00ac\4\uffff"+
 		"\1\24\2\uffff\1\u00ae\1\24\1\uffff\1\u00b0\1\uffff\1\u00b1\2\uffff";
-	static final String DFA14_eofS =
+	static final String DFA13_eofS =
 		"\u00b2\uffff";
-	static final String DFA14_minS =
+	static final String DFA13_minS =
 		"\1\11\1\154\1\157\1\150\1\157\1\154\1\141\1\146\1\157\1\162\1\145\1\141"+
 		"\1\164\1\162\1\156\1\150\2\56\1\60\1\0\1\uffff\1\101\1\uffff\2\75\7\uffff"+
 		"\1\52\5\uffff\2\75\4\uffff\1\141\1\171\3\157\1\55\1\163\1\154\1\156\1"+
@@ -2318,21 +2348,21 @@ public class CtrlLexer extends Lexer {
 		"\1\145\1\uffff\1\55\1\151\1\164\1\uffff\1\55\1\uffff\1\145\1\147\1\151"+
 		"\1\uffff\1\147\1\uffff\4\55\1\uffff\1\157\1\55\1\uffff\1\55\1\145\1\164"+
 		"\1\55\4\uffff\1\156\2\uffff\1\55\1\171\1\uffff\1\55\1\uffff\1\55\2\uffff";
-	static final String DFA14_maxS =
+	static final String DFA13_maxS =
 		"\1\175\1\164\1\157\1\150\1\157\1\154\1\165\1\156\1\157\1\165\1\145\1\162"+
-		"\1\164\1\162\1\156\1\150\3\71\1\uffff\1\uffff\1\172\1\uffff\2\75\7\uffff"+
-		"\1\57\5\uffff\2\75\4\uffff\1\141\1\171\3\157\1\172\1\163\1\154\1\156\1"+
-		"\172\1\160\1\164\1\144\1\172\1\150\1\164\2\143\1\151\1\162\1\171\1\164"+
-		"\1\151\2\uffff\1\71\17\uffff\1\160\1\172\1\155\1\154\1\151\1\uffff\1\145"+
-		"\1\163\1\143\1\uffff\1\157\1\172\1\145\1\uffff\1\145\1\172\1\154\1\151"+
-		"\1\153\1\157\1\162\1\151\1\172\1\145\1\151\1\154\1\172\1\uffff\1\151\1"+
-		"\172\1\143\1\172\1\145\1\164\1\162\1\uffff\1\172\1\162\1\uffff\1\172\1"+
-		"\160\1\141\1\162\1\172\1\156\1\uffff\1\172\1\154\1\145\1\uffff\1\143\1"+
-		"\uffff\1\145\1\uffff\1\172\1\151\1\164\1\uffff\1\172\1\uffff\1\145\1\147"+
-		"\1\151\1\uffff\1\147\1\uffff\4\172\1\uffff\1\157\1\172\1\uffff\1\172\1"+
-		"\145\1\164\1\172\4\uffff\1\156\2\uffff\1\172\1\171\1\uffff\1\172\1\uffff"+
-		"\1\172\2\uffff";
-	static final String DFA14_acceptS =
+		"\1\164\1\162\1\156\1\150\1\56\2\71\1\uffff\1\uffff\1\172\1\uffff\2\75"+
+		"\7\uffff\1\57\5\uffff\2\75\4\uffff\1\141\1\171\3\157\1\172\1\163\1\154"+
+		"\1\156\1\172\1\160\1\164\1\144\1\172\1\150\1\164\2\143\1\151\1\162\1\171"+
+		"\1\164\1\151\2\uffff\1\71\17\uffff\1\160\1\172\1\155\1\154\1\151\1\uffff"+
+		"\1\145\1\163\1\143\1\uffff\1\157\1\172\1\145\1\uffff\1\145\1\172\1\154"+
+		"\1\151\1\153\1\157\1\162\1\151\1\172\1\145\1\151\1\154\1\172\1\uffff\1"+
+		"\151\1\172\1\143\1\172\1\145\1\164\1\162\1\uffff\1\172\1\162\1\uffff\1"+
+		"\172\1\160\1\141\1\162\1\172\1\156\1\uffff\1\172\1\154\1\145\1\uffff\1"+
+		"\143\1\uffff\1\145\1\uffff\1\172\1\151\1\164\1\uffff\1\172\1\uffff\1\145"+
+		"\1\147\1\151\1\uffff\1\147\1\uffff\4\172\1\uffff\1\157\1\172\1\uffff\1"+
+		"\172\1\145\1\164\1\172\4\uffff\1\156\2\uffff\1\172\1\171\1\uffff\1\172"+
+		"\1\uffff\1\172\2\uffff";
+	static final String DFA13_acceptS =
 		"\24\uffff\1\36\1\uffff\1\37\2\uffff\1\43\1\44\1\45\1\46\1\47\1\50\1\51"+
 		"\1\uffff\1\55\1\56\1\60\1\61\1\62\2\uffff\1\67\1\71\1\72\1\75\27\uffff"+
 		"\1\33\1\34\1\uffff\1\41\1\52\1\35\1\53\1\40\1\57\1\70\1\42\1\73\1\74\1"+
@@ -2341,9 +2371,9 @@ public class CtrlLexer extends Lexer {
 		"\uffff\1\7\3\uffff\1\15\1\uffff\1\21\3\uffff\1\25\1\uffff\1\30\4\uffff"+
 		"\1\10\2\uffff\1\17\4\uffff\1\31\1\32\1\3\1\5\1\uffff\1\13\1\24\2\uffff"+
 		"\1\26\1\uffff\1\22\1\uffff\1\11\1\23";
-	static final String DFA14_specialS =
+	static final String DFA13_specialS =
 		"\23\uffff\1\0\u009e\uffff}>";
-	static final String[] DFA14_transitionS = {
+	static final String[] DFA13_transitionS = {
 			"\2\53\2\uffff\1\53\22\uffff\1\53\1\30\1\23\1\32\1\uffff\1\35\1\26\1\uffff"+
 			"\1\44\1\45\1\34\1\33\1\42\1\37\1\22\1\40\1\20\11\21\1\27\1\43\1\46\1"+
 			"\50\1\47\2\uffff\32\24\1\uffff\1\41\2\uffff\1\36\1\25\1\1\1\2\1\3\1\4"+
@@ -2364,7 +2394,7 @@ public class CtrlLexer extends Lexer {
 			"\1\100",
 			"\1\101",
 			"\1\102",
-			"\1\104\1\uffff\12\104",
+			"\1\104",
 			"\1\104\1\uffff\12\105",
 			"\12\104",
 			"\12\110\1\uffff\2\110\1\uffff\ufff2\110",
@@ -2528,38 +2558,38 @@ public class CtrlLexer extends Lexer {
 			""
 	};
 
-	static final short[] DFA14_eot = DFA.unpackEncodedString(DFA14_eotS);
-	static final short[] DFA14_eof = DFA.unpackEncodedString(DFA14_eofS);
-	static final char[] DFA14_min = DFA.unpackEncodedStringToUnsignedChars(DFA14_minS);
-	static final char[] DFA14_max = DFA.unpackEncodedStringToUnsignedChars(DFA14_maxS);
-	static final short[] DFA14_accept = DFA.unpackEncodedString(DFA14_acceptS);
-	static final short[] DFA14_special = DFA.unpackEncodedString(DFA14_specialS);
-	static final short[][] DFA14_transition;
+	static final short[] DFA13_eot = DFA.unpackEncodedString(DFA13_eotS);
+	static final short[] DFA13_eof = DFA.unpackEncodedString(DFA13_eofS);
+	static final char[] DFA13_min = DFA.unpackEncodedStringToUnsignedChars(DFA13_minS);
+	static final char[] DFA13_max = DFA.unpackEncodedStringToUnsignedChars(DFA13_maxS);
+	static final short[] DFA13_accept = DFA.unpackEncodedString(DFA13_acceptS);
+	static final short[] DFA13_special = DFA.unpackEncodedString(DFA13_specialS);
+	static final short[][] DFA13_transition;
 
 	static {
-		int numStates = DFA14_transitionS.length;
-		DFA14_transition = new short[numStates][];
+		int numStates = DFA13_transitionS.length;
+		DFA13_transition = new short[numStates][];
 		for (int i=0; i<numStates; i++) {
-			DFA14_transition[i] = DFA.unpackEncodedString(DFA14_transitionS[i]);
+			DFA13_transition[i] = DFA.unpackEncodedString(DFA13_transitionS[i]);
 		}
 	}
 
-	protected class DFA14 extends DFA {
+	protected class DFA13 extends DFA {
 
-		public DFA14(BaseRecognizer recognizer) {
+		public DFA13(BaseRecognizer recognizer) {
 			this.recognizer = recognizer;
-			this.decisionNumber = 14;
-			this.eot = DFA14_eot;
-			this.eof = DFA14_eof;
-			this.min = DFA14_min;
-			this.max = DFA14_max;
-			this.accept = DFA14_accept;
-			this.special = DFA14_special;
-			this.transition = DFA14_transition;
+			this.decisionNumber = 13;
+			this.eot = DFA13_eot;
+			this.eof = DFA13_eof;
+			this.min = DFA13_min;
+			this.max = DFA13_max;
+			this.accept = DFA13_accept;
+			this.special = DFA13_special;
+			this.transition = DFA13_transition;
 		}
 		@Override
 		public String getDescription() {
-			return "1:1: Tokens : ( ALAP | ANY | ATOM | BOOL | CHOICE | DO | ELSE | FALSE | FUNCTION | IF | IMPORT | INT | NODE | OR | OTHER | OUT | REAL | PACKAGE | PRIORITY | RECIPE | STAR | STRING | TRY | TRUE | UNTIL | WHILE | INT_LIT | REAL_LIT | STRING_LIT | ID | AMP | BECOMES | DOT | NOT | BAR | SHARP | PLUS | ASTERISK | PERCENT | DONT_CARE | MINUS | QUOTE | BQUOTE | SLASH | BSLASH | COMMA | COLON | SEMI | LPAR | RPAR | LANGLE | RANGLE | LEQ | GEQ | EQ | NEQ | LCURLY | RCURLY | ML_COMMENT | SL_COMMENT | WS );";
+			return "1:1: Tokens : ( ALAP | ANY | ATOM | BOOL | CHOICE | DO | ELSE | FALSE | FUNCTION | IF | IMPORT | INT | NODE | OR | OTHER | OUT | REAL | PACKAGE | PRIORITY | RECIPE | STAR | STRING | TRY | TRUE | UNTIL | WHILE | INT_LIT | REAL_LIT | STRING_LIT | ID | AMP | BECOMES | DOT | NOT | BAR | SHARP | PLUS | ASTERISK | PERCENT | UNDER | MINUS | QUOTE | BQUOTE | SLASH | BSLASH | COMMA | COLON | SEMI | LPAR | RPAR | LANGLE | RANGLE | LEQ | GEQ | EQ | NEQ | LCURLY | RCURLY | ML_COMMENT | SL_COMMENT | WS );";
 		}
 		@Override
 		public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
@@ -2567,15 +2597,15 @@ public class CtrlLexer extends Lexer {
 			int _s = s;
 			switch ( s ) {
 					case 0 : 
-						int LA14_19 = input.LA(1);
+						int LA13_19 = input.LA(1);
 						s = -1;
-						if ( ((LA14_19 >= '\u0000' && LA14_19 <= '\t')||(LA14_19 >= '\u000B' && LA14_19 <= '\f')||(LA14_19 >= '\u000E' && LA14_19 <= '\uFFFF')) ) {s = 72;}
+						if ( ((LA13_19 >= '\u0000' && LA13_19 <= '\t')||(LA13_19 >= '\u000B' && LA13_19 <= '\f')||(LA13_19 >= '\u000E' && LA13_19 <= '\uFFFF')) ) {s = 72;}
 						else s = 71;
 						if ( s>=0 ) return s;
 						break;
 			}
 			NoViableAltException nvae =
-				new NoViableAltException(getDescription(), 14, _s, input);
+				new NoViableAltException(getDescription(), 13, _s, input);
 			error(nvae);
 			throw nvae;
 		}

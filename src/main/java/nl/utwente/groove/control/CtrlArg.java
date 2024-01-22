@@ -222,5 +222,10 @@ public interface CtrlArg {
         public CtrlArg bind(Function<Variable,Object> bindMap) {
             return new Expr(expr().bind(bindMap));
         }
+
+        @Override
+        public String toString() {
+            return expr().toDisplayString();
+        }
     }
 }

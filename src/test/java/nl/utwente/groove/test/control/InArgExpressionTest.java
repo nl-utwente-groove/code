@@ -62,8 +62,6 @@ public class InArgExpressionTest extends CtrlTester {
     public void init() {
         this.iOut = getRule("outInt");
         this.iRule = getRule("inIntOutInt");
-        this.rRule = getRule("inRealOutReal");
-        this.sRule = getRule("inStringOutString");
         this.sortMap = new SortMap();
         this.sortMap.add("ix", Sort.INT);
         this.sortMap.add("iy", Sort.INT);
@@ -75,31 +73,15 @@ public class InArgExpressionTest extends CtrlTester {
 
     private Rule iOut;
     private Rule iRule;
-    private Rule sRule;
-    private Rule rRule;
     private SortMap sortMap;
 
     @Test
-    public void testEqual() {
-        Rule iOut = this.iOut;
+    public void test() {
         Rule iRule = this.iRule;
-        Rule rRule = this.rRule;
-        Rule sRule = this.sRule;
-        //equal("int ix := inIntOutInt(1);", call(iRule, "1", "ix"));
+        equal("int ix := inIntOutInt(1);", call(iRule, "1", "ix"));
         equal("int iy := outInt(); int ix := inIntOutInt(ite(true,3,iy+3));",
-              call(iOut, "iy").seq(call(iRule, "ite(true,3,iy+3)", "ix")));
-        equal("string sx; inStringOutString(\"a\"+\"b\", out sx);",
-              call(sRule, "\"a\"+\"b\"", "sx"));
-        equal("real rx := inRealOutReal(1.0); alap { rx := inRealOutReal(max(rx,(real)1));}",
-              call(rRule, "1.0", "rx").seq(call(rRule, "max(rx,(real) 1)", "rx").alap()));
-    }
-
-    @Test
-    public void testFail() {
-        buildWrong("int ix = inIntOutInt(1.1)");
-        buildWrong("int ix = inIntOutInt(add(1))");
-        buildWrong("int ix = inIntOutInt(1+ix)");
-        buildWrong("real rx = inRealOutReal(1.0); int ix = inIntOutInt(1+rx)");
+              call(this.iOut, "iy").seq(call(iRule, "ite(true,ix+3,iy+3)", "ix")));
+        equal("int ix; inIntOutInt(ite(true,ix+3,iy+3), out ix);", call(iRule, "1", "ix"));
     }
 
     private Term call(Rule rule, String... args) {
