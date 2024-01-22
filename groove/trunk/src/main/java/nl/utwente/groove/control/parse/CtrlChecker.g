@@ -195,10 +195,10 @@ arg_list
 arg
   : ^( ARG_OUT ID { helper.checkVarArg($ARG_OUT); } )
   | ^( ARG_WILD { helper.checkDontCareArg($ARG_WILD); } )
-  | ^( ARG_ID ID { helper.checkVarArg($ARG_ID); } )
-  | ^( ARG_LIT literal { helper.checkConstArg($ARG_LIT); } )
-  | ^( ARG_OP operator arg arg? { helper.checkOpArg($ARG_OP); } )
-  | ^( ARG_CALL ID arg_list { helper.checkCallArg($ARG_CALL); } )
+  | ^( ARG_ID ID { helper.checkInArg($ARG_ID); } )
+  | ^( ARG_LIT literal { helper.checkInArg($ARG_LIT); } )
+  | ^( ARG_OP operator arg arg? { helper.checkInArg($ARG_OP); } )
+  | ^( ARG_CALL ID arg_list { helper.checkInArg($ARG_CALL); } )
   ;
 
 literal

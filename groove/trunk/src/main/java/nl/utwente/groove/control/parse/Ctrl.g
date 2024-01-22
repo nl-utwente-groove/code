@@ -400,7 +400,7 @@ arg[boolean out]
   | //@S DONT_CARE
     //@H Don't-care argument
     //@B The parameter does not affect the match or the control state.
-    { out }? DONT_CARE -> ^(ARG_WILD)   
+    { out }? UNDER -> ^(ARG_WILD)   
   | in_arg
   ;
 
@@ -524,25 +524,31 @@ TRUE     : 'true';
 UNTIL    : 'until';
 WHILE    : 'while';
 
+fragment Digit : '0'..'9';
+fragment PosDigit : '1'..'9';
+fragment Letter : 'a'..'z'|'A'..'Z';
+fragment IntegerNumber
+  : '0' 
+  | PosDigit Digit*     
+  ;
+fragment NonIntegerNumber
+    :   IntegerNumber '.' Digit*
+    |   '.' Digit+
+    ;
+fragment EscapeSequence 
+  : BSLASH
+    ( QUOTE
+    | BSLASH 
+    )          
+  ;    
+
 INT_LIT
   : IntegerNumber 
-  ;
-
-fragment
-IntegerNumber
-  : '0' 
-  | '1'..'9' ('0'..'9')*     
   ;
 
 REAL_LIT
   : NonIntegerNumber
   ;
-
-fragment
-NonIntegerNumber
-    :   ('0' .. '9')+ '.' ('0' .. '9')*
-    |   '.' ( '0' .. '9' )+
-    ;
 
 STRING_LIT
 // @after{ setText(toUnquoted($text)); }
@@ -553,21 +559,9 @@ STRING_LIT
     QUOTE 
   ;
 
-fragment
-EscapeSequence 
-  : BSLASH
-    ( QUOTE
-    | BSLASH 
-    )          
-  ;    
-
-//REAL_CAST   : '(real)';
-//INT_CAST    : '(int)';
-//STRING_CAST : '(string)';
-
 ID
-  : ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')*
-  | BQUOTE ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')* BQUOTE
+  : Letter ( Letter | Digit | UNDER | MINUS )*
+  | BQUOTE Letter ( Letter | Digit | UNDER | MINUS )* BQUOTE
   ;
 
 AMP       : '&' ;
@@ -579,7 +573,7 @@ SHARP     : '#' ;
 PLUS      : '+' ;
 ASTERISK  : '*' ;
 PERCENT   : '%' ;
-DONT_CARE : '_' ;
+UNDER     : '_' ;
 MINUS     : '-' ;
 QUOTE     : '"' ;
 BQUOTE    : '`' ;

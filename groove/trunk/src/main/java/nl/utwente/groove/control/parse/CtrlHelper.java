@@ -470,39 +470,7 @@ public class CtrlHelper {
         argTree.setCtrlArg(result);
     }
 
-    void checkConstArg(CtrlTree argTree) {
-        assert argTree.getType() == CtrlChecker.ARG_LIT && argTree.getChildCount() == 1;
-        try {
-            argTree.setCtrlArg(CtrlArg.expr(parseExpr(argTree)));
-        } catch (FormatException e) {
-            emitErrorMessage(argTree, e.getMessage());
-        }
-        //        try {
-        //            Expression constant = Expression.parse(argTree.getChild(0).getText()).toExpression();
-        //            AlgebraFamily family = this.namespace.getGrammarProperties().getAlgebraFamily();
-        //            CtrlArg result = new CtrlArg.Const(family.getAlgebra(constant.getSort()),
-        //                family.toValue(constant));
-        //            argTree.setCtrlArg(result);
-        //        } catch (FormatException e) {
-        //            // this cannot occur, as the constant string has just been approved
-        //            // by the control parser
-        //            assert false : String
-        //                .format("%s is not a parsable constant", argTree.getChild(0).getText());
-        //        }
-    }
-
-    void checkOpArg(CtrlTree argTree) {
-        assert argTree.getType() == CtrlChecker.ARG_OP
-            && (argTree.getChildCount() == 2 || argTree.getChildCount() == 3);
-        try {
-            argTree.setCtrlArg(CtrlArg.expr(parseExpr(argTree)));
-        } catch (FormatException e) {
-            emitErrorMessage(argTree, e.getMessage());
-        }
-    }
-
-    void checkCallArg(CtrlTree argTree) {
-        assert argTree.getType() == CtrlChecker.ARG_CALL && argTree.getChildCount() == 2;
+    void checkInArg(CtrlTree argTree) {
         try {
             argTree.setCtrlArg(CtrlArg.expr(parseExpr(argTree)));
         } catch (FormatException e) {
