@@ -35,7 +35,7 @@ import nl.utwente.groove.graph.ANode;
  * @version $Revision$ $Date: 2008-02-12 15:15:32 $
  */
 @NonNullByDefault
-public class ValueNode extends ANode implements HostNode {
+final public class ValueNode extends ANode implements HostNode {
     /** Constructor for the unique dummy node. */
     private ValueNode() {
         super(Integer.MAX_VALUE);

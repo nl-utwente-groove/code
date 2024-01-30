@@ -196,6 +196,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         if (result != 0) {
             return result;
         }
+        // Rule transitions are always smaller than recipe transitions
         if (obj instanceof RecipeTransition) {
             return -1;
         }

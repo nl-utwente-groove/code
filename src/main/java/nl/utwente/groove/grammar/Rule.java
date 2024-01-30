@@ -689,8 +689,8 @@ public class Rule implements Action, Fixable {
             lhs()
                 .edgeSet(eraserNode)
                 .stream()
-                .filter(e -> !(e.target() instanceof ValueNode))
                 .map(e -> match.getEdge(e))
+                .filter(e -> !(e == null || e.target() instanceof ValueNode))
                 .forEach(e -> danglingEdges.remove(e));
             if (!danglingEdges.isEmpty()) {
                 result = false;

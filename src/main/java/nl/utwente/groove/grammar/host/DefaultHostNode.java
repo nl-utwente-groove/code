@@ -32,7 +32,7 @@ import nl.utwente.groove.graph.ANode;
  * @version $Revision$
  */
 @NonNullByDefault
-public class DefaultHostNode extends ANode implements HostNode {
+final public class DefaultHostNode extends ANode implements HostNode {
     /**
      * Constructs a fresh node, with an explicitly given number and node type.
      * Note that node

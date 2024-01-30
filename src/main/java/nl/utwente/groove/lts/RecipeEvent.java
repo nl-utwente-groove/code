@@ -20,10 +20,12 @@ import java.util.Arrays;
 
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.host.HostNode;
+import nl.utwente.groove.grammar.host.HostNodeComparator;
 import nl.utwente.groove.transform.Event;
 
 /** Event class for recipe transitions. */
-public class RecipeEvent implements GraphTransitionStub, Event, GraphTransitionKey {
+public class RecipeEvent
+    implements GraphTransitionStub, Event, GraphTransitionKey, Comparable<RecipeEvent> {
     /** Constructs an instance from a recipe transition. */
     public RecipeEvent(RecipeTransition trans) {
         this.recipe = (Recipe) trans.getSwitch().getUnit();
@@ -124,4 +126,24 @@ public class RecipeEvent implements GraphTransitionStub, Event, GraphTransitionK
         return "RecipeEvent [target=" + this.target + ", initial=" + this.initial + ", arguments="
             + Arrays.toString(this.arguments) + "]";
     }
+
+    @Override
+    public int compareTo(RecipeEvent o) {
+        int result = getAction().compareTo(o.getAction());
+        if (result != 0) {
+            return result;
+        }
+        result = getInitial().getEvent().compareTo(o.getInitial().getEvent());
+        if (result != 0) {
+            return result;
+        }
+        var comparator = HostNodeComparator.instance();
+        var args = this.arguments;
+        var oArgs = o.arguments;
+        for (int i = 0; i < args.length && result == 0; i++) {
+            result = comparator.compare(args[i], oArgs[i]);
+        }
+        return result;
+    }
+
 }
