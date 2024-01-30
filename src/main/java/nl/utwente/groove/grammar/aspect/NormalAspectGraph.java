@@ -255,6 +255,10 @@ public class NormalAspectGraph extends AspectGraph {
             }
             var outEdges = new LinkedList<>(outEdgeSet(node));
             for (var outEdge : outEdges) {
+                // don't copy over any nesting edges
+                if (outEdge.has(Category.NESTING)) {
+                    continue;
+                }
                 var outEdgeImage = addEdge(image, outEdge.label(), outEdge.target());
                 outEdgeImage.setParsed();
                 if (edgeInverseMap.containsKey(outEdge)) {
@@ -266,7 +270,7 @@ public class NormalAspectGraph extends AspectGraph {
             removeEdgeSet(outEdges);
             removeNode(node);
         }
-        addErrors(errors.transfer(map));
+        addErrors(errors.wrap(map).unwrap(edgeInverseMap));
         return map;
     }
 

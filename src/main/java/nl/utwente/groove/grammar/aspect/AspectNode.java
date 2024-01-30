@@ -467,7 +467,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     /** The colour of this node, if any. */
     private @Nullable Color color;
 
-    /** Sets an expression on this node. */
+    /** Sets a constant data value on this node. */
     private void setValue(Constant value) {
         this.value = value;
     }
@@ -493,7 +493,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         return value.toLine();
     }
 
-    /** Sets an expression on this node.
+    /** Sets an expression tree on this node.
      * Also notifies the containing aspect graph that it is no longer normal
      */
     private void setExprTree(ExprTree exprTree) {
@@ -503,7 +503,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         }
     }
 
-    /** Returns the expression on this node, if any. */
+    /** Returns the expression tree on this node, if any. */
     private @Nullable ExprTree getExprTree() {
         return this.exprTree;
     }
@@ -516,7 +516,17 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         return getExprTree() != null;
     }
 
-    /** Returns the expression on this node, if any. */
+    /** Checks if there is an expression on this node that denotes a constant. */
+    public boolean hasConstant() {
+        var exprTree = getExprTree();
+        if (exprTree == null) {
+            return false;
+        } else {
+            return exprTree.hasConstant();
+        }
+    }
+
+    /** Returns the parsed expression on this node, if any. */
     public @Nullable Expression getExpression() {
         return this.expression.get();
     }
@@ -602,21 +612,6 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         assert content != null;
         this.nestedMap.remove(content.get());
     }
-
-    /** Sets the nesting level edge of this node.
-     * @param edge outgoing parent edge of type {@link NestedValue#AT}
-     * @throws FormatException if the level edge is incompatible with other aspects
-    private void setLevelEdge(AspectEdge edge) throws FormatException {
-        if (has(Category.NESTING)) {
-            throw new FormatException("Source node of %s-edge should be rule element", edge.label(),
-                edge);
-        }
-        if (this.levelEdge != null) {
-            throw new FormatException("Duplicate '%s'-edges", edge.label(), edge, this.levelEdge);
-        }
-        this.levelEdge = edge;
-    }
-     */
 
     /** Returns an outgoing nesting edge with a given nested value, if any. */
     private @Nullable AspectEdge getNestedEdge(NestedValue value) {
