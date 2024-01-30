@@ -40,6 +40,7 @@ import nl.utwente.groove.grammar.host.HostFactory;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.host.ValueNode;
+import nl.utwente.groove.grammar.type.ImplicitTypeGraph;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.GraphInfo;
@@ -84,7 +85,17 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     }
 
     @Override
-    public @NonNull TypeModelMap getTypeMap() {
+    public @NonNull TypeGraph getTypeGraph() {
+        var typeMap = getTypeMap();
+        if (typeMap == null) {
+            return ImplicitTypeGraph.newInstance(getLabels());
+        } else {
+            return typeMap.getFactory().getGraph();
+        }
+    }
+
+    @Override
+    public TypeModelMap getTypeMap() {
         synchronise();
         return this.typeMap;
     }

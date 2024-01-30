@@ -27,6 +27,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.SortMap;
 import nl.utwente.groove.algebra.syntax.Variable;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.OpKind;
 import nl.utwente.groove.util.parse.StringHandler;
@@ -181,6 +182,7 @@ public final class Constant extends Expression {
         case INT -> getIntRepr();
         case REAL -> getRealRepr();
         case STRING -> getStringRepr();
+        case USER -> throw Exceptions.unsupportedOp();
         };
     }
 

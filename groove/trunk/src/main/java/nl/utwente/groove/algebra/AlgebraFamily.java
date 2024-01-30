@@ -54,7 +54,7 @@ public enum AlgebraFamily implements DocumentedEnum {
     DEFAULT("default",
         "Java-based values (<tt>int</tt>, <tt>boolean</tt>, <tt>String</tt>, <tt>double</tt>)",
         JavaIntAlgebra.instance, JavaBoolAlgebra.instance, JavaStringAlgebra.instance,
-        JavaRealAlgebra.instance),
+        JavaRealAlgebra.instance, UserAlgebra.instance),
     /** Point algebra family: every sort has a single value. */
     POINT("point", "A single value for every type (so all values are equal)",
         PointIntAlgebra.instance, PointBoolAlgebra.instance, PointStringAlgebra.instance,
@@ -97,11 +97,11 @@ public enum AlgebraFamily implements DocumentedEnum {
      * @param algebra the algebra to be added
      */
     private void setImplementation(Algebra<?> algebra) {
-        Sort sigKind = algebra.getSort();
-        Algebra<?> oldAlgebra = this.algebraMap.put(sigKind, algebra);
+        Sort sort = algebra.getSort();
+        Algebra<?> oldAlgebra = this.algebraMap.put(sort, algebra);
         if (oldAlgebra != null) {
             throw Exceptions
-                .illegalArg("Signature '%s' already implemented by '%s'", sigKind,
+                .illegalArg("Signature '%s' already implemented by '%s'", sort,
                             oldAlgebra.getName());
         }
     }
@@ -112,10 +112,12 @@ public enum AlgebraFamily implements DocumentedEnum {
      *         some signature.
      */
     private void checkCompleteness() throws IllegalStateException {
-        for (Sort sigKind : Sort.values()) {
-            if (!this.algebraMap.containsKey(sigKind)) {
-                throw Exceptions
-                    .illegalState("Implementation of signature '%s' is missing", sigKind);
+        for (Sort sort : Sort.values()) {
+            if (sort == Sort.USER && this != DEFAULT) {
+                continue;
+            }
+            if (!this.algebraMap.containsKey(sort)) {
+                throw Exceptions.illegalState("Implementation of signature '%s' is missing", sort);
             }
         }
     }
@@ -281,12 +283,12 @@ public enum AlgebraFamily implements DocumentedEnum {
 
     /** Implementation of an algebra operation. */
     public static class Operation implements nl.utwente.groove.algebra.Operation {
-        Operation(AlgebraFamily register, Algebra<?> algebra, Method method) {
+        Operation(AlgebraFamily family, Algebra<?> algebra, Method method) {
             this.algebra = algebra;
             this.method = method;
             @SuppressWarnings("null")
             Sort returnType = algebra.getSort().getOperator(method.getName()).getResultType();
-            this.returnType = register.getAlgebra(returnType);
+            this.returnType = family.getAlgebra(returnType);
         }
 
         @Override

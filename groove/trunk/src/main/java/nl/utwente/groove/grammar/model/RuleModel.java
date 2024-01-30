@@ -256,14 +256,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
     @Override
     Rule compute() throws FormatException {
-        this.ruleFactory = RuleFactory.newInstance(getType().getFactory());
+        this.ruleFactory = RuleFactory.newInstance(getTypeGraph().getFactory());
         this.modelMap = new RuleModelMap(this.ruleFactory);
         getSource().getErrors().throwException();
         AspectGraph normalSource = getNormalSource();
         normalSource.getErrors().throwException();
         this.levelTree = new LevelTree(normalSource);
         this.modelMap.putAll(this.levelTree.getModelMap());
-        this.typeMap = new TypeModelMap(getType().getFactory());
+        this.typeMap = new TypeModelMap(getTypeGraph().getFactory());
         for (Map.Entry<AspectNode,RuleNode> nodeEntry : this.modelMap.nodeMap().entrySet()) {
             this.typeMap.putNode(nodeEntry.getKey(), nodeEntry.getValue().getType());
         }
@@ -333,6 +333,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         return this.typeMap;
     }
 
+    /** Returns the (implicit or explicit) type graph of this grammar. */
+    @Override
+    public TypeGraph getTypeGraph() {
+        return getGrammar().getTypeGraph();
+    }
+
     /** Returns a mapping from rule nesting levels to sets of aspect elements on that level. */
     public TreeMap<Index,Set<AspectElement>> getLevelTree() {
         synchronise();
@@ -363,11 +369,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     @Override
     public String toString() {
         return String.format("Rule model on '%s'", getQualName());
-    }
-
-    /** Returns the (implicit or explicit) type graph of this grammar. */
-    final TypeGraph getType() {
-        return getGrammar().getTypeGraph();
     }
 
     /**
@@ -1445,7 +1446,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                     if (roleKind.inRHS()) {
                         this.rhs.addEdgeContext(ruleEdge);
                         this.mid.addEdgeContext(ruleEdge);
-                    } else if (getType().isNodeType(ruleEdge)
+                    } else if (getTypeGraph().isNodeType(ruleEdge)
                         && this.rhs.containsNode(ruleEdge.source())) {
                         throw new FormatException("Node type label %s cannot be deleted",
                             ruleEdge.label().text(), modelEdge.source());
@@ -1465,7 +1466,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 }
                 if (roleKind.inRHS()) {
                     // creator edge
-                    if (getType().isNodeType(ruleEdge)
+                    if (getTypeGraph().isNodeType(ruleEdge)
                         && this.lhs.containsNode(ruleEdge.source())) {
                         throw new FormatException("Node type %s cannot be created",
                             ruleEdge.label(), modelEdge.source());
@@ -2057,7 +2058,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                                        RuleGraphMorphism typeMap) {
             RuleGraph result = createGraph(graph.getName());
             try {
-                RuleGraphMorphism typing = getType().analyzeRule(graph, parentTypeMap);
+                RuleGraphMorphism typing = getTypeGraph().analyzeRule(graph, parentTypeMap);
                 if (typeMap != null) {
                     typeMap.putAll(typing);
                 }
@@ -2128,7 +2129,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                         errors
                             .add("Actual target types of %s-merger may be ambiguous",
                                  sourceType.label().text(), edge);
-                    } else if (!getType().isSubtype(targetType, sourceType)) {
+                    } else if (!getTypeGraph().isSubtype(targetType, sourceType)) {
                         errors
                             .add("Merged %s-node must be supertype of %s",
                                  sourceType.label().text(), targetType.label().text(), source);
@@ -2493,7 +2494,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         private Condition createCondition(RuleGraph root, RuleGraph pattern) {
             Condition result = new Condition(this.index.getName(), this.index.getOperator(),
                 pattern, root, getGrammarProperties());
-            result.setTypeGraph(getType());
+            result.setTypeGraph(getTypeGraph());
             if (this.index.isPositive()) {
                 result.setPositive();
             }

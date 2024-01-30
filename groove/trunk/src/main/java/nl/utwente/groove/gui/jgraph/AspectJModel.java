@@ -46,11 +46,8 @@ import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.GraphBasedModel;
-import nl.utwente.groove.grammar.model.HostModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.ResourceModel;
-import nl.utwente.groove.grammar.model.TypeModel;
-import nl.utwente.groove.grammar.type.ImplicitTypeGraph;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
@@ -65,7 +62,6 @@ import nl.utwente.groove.util.ChangeCount;
 import nl.utwente.groove.util.ChangeCount.Derived;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatError;
-import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * Implements jgraph's GraphModel interface on top of a {@link ResourceModel}. This is
@@ -98,20 +94,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
         this.typeGraph = new Derived<>(this.graphModCount) {
             @Override
             protected TypeGraph computeValue() {
-                TypeGraph result;
-                GraphBasedModel<?> resourceModel = getResourceModel();
-                if (resourceModel instanceof TypeModel t) {
-                    try {
-                        result = t.toResource();
-                    } catch (FormatException e) {
-                        result = ImplicitTypeGraph.newInstance(resourceModel.getLabels());
-                    }
-                } else if (resourceModel instanceof HostModel h) {
-                    result = h.getTypeMap().getFactory().getGraph();
-                } else {
-                    result = getGrammar().getTypeGraph();
-                }
-                return result;
+                return getResourceModel().getTypeGraph();
             }
         };
         addGraphChangeListener(new PropertyChangeListener() {
@@ -256,10 +239,6 @@ final public class AspectJModel extends JModel<AspectGraph> {
         this.edgeJCellMap.clear();
         this.edgeJCellMap.putAll(edgeJCellMap);
         setGraph(graph);
-        // There may be a more efficient way to do the following, but it's not obvious.
-        // Without the refresh, size changes in other cells than the one just edited
-        // are not carried through
-        getJGraph().refreshAllCells();
         if (GUI_DEBUG) {
             System.out.printf("Graph resynchronised with model %s%n", getName());
             Groove.printStackTrace(System.out, false);

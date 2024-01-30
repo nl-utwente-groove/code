@@ -1,0 +1,74 @@
+/* GROOVE: GRaphs for Object Oriented VErification
+ * Copyright 2003--2023 University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * $Id: RealAlgebra.java 6353 2024-01-16 11:48:01Z rensink $
+ */
+package nl.utwente.groove.algebra;
+
+import nl.utwente.groove.algebra.syntax.Expression;
+import nl.utwente.groove.util.Exceptions;
+
+/** User algebra.
+ */
+public final class UserAlgebra extends UserSignature implements Algebra<Object> {
+    @Override
+    public Sort getSort() {
+        return Sort.USER;
+    }
+
+    @Override
+    public boolean isValue(Object value) {
+        return true;
+    }
+
+    @Override
+    public Object toValueFromConstant(Constant constant) {
+        throw Exceptions.unsupportedOp();
+    }
+
+    @Override
+    public Expression toTerm(Object value) {
+        throw Exceptions.unsupportedOp();
+    }
+
+    @Override
+    public String getSymbol(Object value) {
+        return value.toString();
+    }
+
+    @Override
+    public String getName() {
+        return NAME;
+    }
+
+    @Override
+    public AlgebraFamily getFamily() {
+        return AlgebraFamily.DEFAULT;
+    }
+
+    @Override
+    public final Object toValueFromJava(Object value) {
+        return value;
+    }
+
+    @Override
+    public Object toJavaValue(Object value) {
+        return value;
+    }
+
+    /** The name of this algebra. */
+    public static final String NAME = "user";
+    /** Singleton instance of this algebra. */
+    public static final UserAlgebra instance = new UserAlgebra();
+}

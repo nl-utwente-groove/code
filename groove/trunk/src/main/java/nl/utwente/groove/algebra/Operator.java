@@ -20,6 +20,7 @@ import nl.utwente.groove.annotation.OpSymbol;
 import nl.utwente.groove.annotation.ToolTipHeader;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.parse.OpKind;
 
 /**
@@ -27,7 +28,7 @@ import nl.utwente.groove.util.parse.OpKind;
  */
 public class Operator {
     /**
-     * Constructs an operator from a given method.
+     * Constructs an operator from a given {@link Signature} method.
      * It is assumed that the method has only generic type variables as
      * parameter and result types, and that for each such type variable <code>Xxx</code>
      * there is a corresponding signature <code>XxxSignature</code>.
@@ -39,7 +40,7 @@ public class Operator {
     private Operator(Sort sort, OpValue opValue, Method method) throws IllegalArgumentException {
         Type[] methodParameterTypes = method.getGenericParameterTypes();
         this.sort = sort;
-        this.opValue = opValue;
+        this.inverse = opValue == IntSignature.Op.NEG || opValue == RealSignature.Op.NEG;
         this.arity = methodParameterTypes.length;
         this.setOperator = this.arity == 1 && methodParameterTypes[0] instanceof ParameterizedType;
         this.supportsZero = opValue.isSupportsZero();
@@ -95,12 +96,15 @@ public class Operator {
 
     private final Sort sort;
 
-    /** Returns the enumerated operator value of the operator. */
-    public OpValue getOpValue() {
-        return this.opValue;
+    /** Indicates if this operator is a numeric inverse,
+     * which can alternatively be regarded as part of a constant.
+     */
+    public boolean isInverse() {
+        return this.inverse;
     }
 
-    private final OpValue opValue;
+    /** Flag indicating if this is a numeric inverse operator. */
+    private final boolean inverse;
 
     /** Returns the name of the operator. */
     public String getName() {
@@ -282,18 +286,26 @@ public class Operator {
 
     /** Returns the list of all operators of all sorts. */
     public static List<Operator> getOps() {
-        if (ops.isEmpty()) {
-            for (Sort sort : Sort.values()) {
-                for (OpValue opValue : sort.getOpValues()) {
-                    ops.add(opValue.getOperator());
-                }
-            }
-        }
-        return ops;
+        return ops.get();
     }
 
-    /** List of all operators of all sorts. */
-    private static final List<Operator> ops = new ArrayList<>();
+    /** Lazyly computed list of all operators of all sorts. */
+    private static final LazyFactory<List<Operator>> ops
+        = LazyFactory.instance(Operator::computeOps);
+
+    /** Computes the value of {@link #ops}. */
+    private static List<Operator> computeOps() {
+        List<Operator> result = new ArrayList<>();
+        if (result.isEmpty()) {
+            for (Sort sort : Sort.values()) {
+                for (OpValue opValue : sort.getOpValues()) {
+                    result.add(opValue.getOperator());
+                }
+            }
+            result.addAll(UserSignature.getOperators());
+        }
+        return result;
+    }
 
     /** Returns the operators for a given (prefix or infix) operator symbol or name. */
     public static List<Operator> getOps(String symbol) {

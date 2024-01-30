@@ -27,6 +27,7 @@ import static nl.utwente.groove.graph.EdgeRole.NODE_TYPE;
 import java.util.Collections;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -34,6 +35,7 @@ import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.aspect.AspectNode;
+import nl.utwente.groove.grammar.type.ImplicitTypeGraph;
 import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeFactory;
 import nl.utwente.groove.grammar.type.TypeGraph;
@@ -71,6 +73,15 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             throw new IllegalStateException();
         }
         return result;
+    }
+
+    @Override
+    public @NonNull TypeGraph getTypeGraph() {
+        try {
+            return toResource();
+        } catch (FormatException exc) {
+            return ImplicitTypeGraph.newInstance(getLabels());
+        }
     }
 
     @Override

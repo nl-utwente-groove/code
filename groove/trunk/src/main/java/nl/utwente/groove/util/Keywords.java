@@ -86,4 +86,9 @@ public class Keywords {
      * @see Sort#BOOL
      */
     public static final String TRUE = "true";
+    /** The user-defined value type.
+     * @see Sort#USER
+     * @see AspectKind#USER
+     */
+    public static final String USER = "user";
 }

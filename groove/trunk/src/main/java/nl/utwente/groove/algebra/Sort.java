@@ -33,6 +33,7 @@ import nl.utwente.groove.annotation.Syntax;
 import nl.utwente.groove.annotation.ToolTipBody;
 import nl.utwente.groove.annotation.ToolTipHeader;
 import nl.utwente.groove.annotation.ToolTipPars;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Keywords;
 import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.parse.FormatException;
@@ -140,6 +141,23 @@ public enum Sort {
             }
         }
     },
+    /** User-defined sort. */
+    USER(Keywords.USER, UserSignature.class, Collections.emptySet()) {
+        @Override
+        public Constant getDefaultValue() {
+            throw Exceptions.unsupportedOp();
+        }
+
+        @Override
+        public Constant createConstant(String symbol) throws FormatException {
+            throw Exceptions.unsupportedOp();
+        }
+
+        @Override
+        public boolean denotesConstant(String symbol) {
+            return false;
+        }
+    },
     /** String sort. */
     @Syntax("QUOTE.text.QUOTE")
     @ToolTipHeader("String literal")
@@ -226,10 +244,11 @@ public enum Sort {
     /** Creates content for {@link #operatorMap}. */
     private SortedMap<String,Operator> computeOperatorMap() {
         SortedMap<String,Operator> result = new TreeMap<>();
-        for (OpValue op : this.opValues) {
-            Operator operator = op.getOperator();
-            result.put(operator.getName(), operator);
-        }
+        var opStream = switch (this) {
+        case USER -> UserSignature.getOperators().stream();
+        default -> this.opValues.stream().map(OpValue::getOperator);
+        };
+        opStream.forEach(o -> result.put(o.getName(), o));
         return result;
     }
 

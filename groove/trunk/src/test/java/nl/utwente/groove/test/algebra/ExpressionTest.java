@@ -128,6 +128,7 @@ public class ExpressionTest {
                 case INT -> this.intOperands[i];
                 case REAL -> this.realOperands[i];
                 case STRING -> this.stringOperands[i];
+                case USER -> throw Exceptions.UNREACHABLE;
                 };
                 args.add(arg);
                 call = call + arg;

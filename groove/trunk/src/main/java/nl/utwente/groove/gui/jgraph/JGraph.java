@@ -387,16 +387,9 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
                 boolean autosize = GraphConstants.isAutoSize(view.getAllAttributes());
                 boolean resize = GraphConstants.isResize(view.getAllAttributes());
                 if (autosize || resize) {
-                    Dimension2D d = getPreferredSize(view);
-                    int inset = 2 * GraphConstants.getInset(view.getAllAttributes());
-                    // adjust the x,y corner so that the center stays in place
-                    double shiftX = (bounds.getWidth() - d.getWidth() - inset) / 2;
-                    double shiftY = (bounds.getHeight() - d.getHeight() - inset) / 2;
-                    bounds
-                        .setFrame(bounds.getX() + shiftX, bounds.getY() + shiftY, d.getWidth(),
-                                  d.getHeight());
-                    // Remove resize attribute
+                    setToPreferredSize(view, bounds);
                     snap(bounds);
+                    // Remove resize attribute
                     if (resize) {
                         if (view.getAttributes() != null) {
                             view.getAttributes().remove(GraphConstants.RESIZE);
@@ -407,6 +400,18 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
                 }
             }
         }
+    }
+
+    /** Modifies a given bounds object with the current preferred size of a given cell view.
+     */
+    void setToPreferredSize(CellView view, Rectangle2D bounds) {
+        Dimension2D d = getPreferredSize(view);
+        int inset = 2 * GraphConstants.getInset(view.getAllAttributes());
+        // adjust the x,y corner so that the center stays in place
+        double shiftX = (bounds.getWidth() - d.getWidth() - inset) / 2;
+        double shiftY = (bounds.getHeight() - d.getHeight() - inset) / 2;
+        bounds
+            .setFrame(bounds.getX() + shiftX, bounds.getY() + shiftY, d.getWidth(), d.getHeight());
     }
 
     private Dimension2D getPreferredSize(CellView view) {

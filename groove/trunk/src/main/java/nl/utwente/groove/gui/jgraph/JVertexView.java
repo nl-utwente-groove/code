@@ -78,6 +78,18 @@ public class JVertexView extends VertexView {
         this.jGraph = jGraph;
     }
 
+    /** Underlying graph model, used to construct the preferred size. */
+    private final JGraph<?> jGraph;
+
+    @Override
+    public Rectangle2D getBounds() {
+        var result = super.getBounds();
+        if (getCell().isStale(VisualKey.NODE_SIZE)) {
+            this.jGraph.setToPreferredSize(this, result);
+        }
+        return result;
+    }
+
     /*
      * Specialises the return type.
      */
@@ -291,8 +303,6 @@ public class JVertexView extends VertexView {
         newG.dispose();
     }
 
-    /** Underlying graph model, used to construct the autosize. */
-    private final JGraph<?> jGraph;
     /** The color from which {@link #text} was derived. */
     private Color color;
     /** The label instance from which {@link #text} was derived. */
@@ -565,6 +575,7 @@ public class JVertexView extends VertexView {
             if (this.cell.isStale(VisualKey.NODE_SIZE)) {
                 result = computeTextSize();
                 this.cell.putVisual(VisualKey.NODE_SIZE, result);
+                this.visuals.setNodeSize(result);
             } else {
                 result = new Dimension();
                 result.setSize(this.visuals.getNodeSize());
@@ -579,7 +590,7 @@ public class JVertexView extends VertexView {
                 result = JAttr.NODE_EDGE_DIMENSION;
             } else {
                 String text = convertDigits(getText());
-                result = this.sizeMap.get(text);
+                result = sizeMap.get(text);
                 if (result == null) {
                     if (text.length() == 0) {
                         result = JAttr.DEFAULT_NODE_SIZE;
@@ -592,17 +603,17 @@ public class JVertexView extends VertexView {
                         // reset the border
                         setBorder(border);
                     }
-                    this.sizeMap.put(text, result);
+                    sizeMap.put(text, result);
                 }
             }
             return result;
         }
 
         private int getAdornWidth(String text) {
-            Integer result = this.adornWidthMap.get(text);
+            Integer result = adornWidthMap.get(text);
             if (result == null) {
                 result = SwingUtilities.computeStringWidth(getFontMetrics(ADORNMENT_FONT), text);
-                this.adornWidthMap.put(text, result);
+                adornWidthMap.put(text, result);
             }
             return result;
         }
@@ -911,7 +922,8 @@ public class JVertexView extends VertexView {
         private int idAdornHeight;
         private int idAdornWidth;
         /** Mapping from (HTML) text to the preferred size for that text. */
-        private final Map<String,Dimension> sizeMap = new HashMap<>();
-        private final Map<String,Integer> adornWidthMap = new HashMap<>();
+        static private final Map<String,Dimension> sizeMap = new HashMap<>();
+        /** Mapping from text to the preferred size for the adornment of that text. */
+        static private final Map<String,Integer> adornWidthMap = new HashMap<>();
     }
 }

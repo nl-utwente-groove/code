@@ -60,8 +60,8 @@ public class RegExprTyperTest {
 
     static RegExprTyper implicitTyper;
     static RegExprTyper explicitTyper;
-    static TypeNode A, A1, A2, B, B1, C, D, XInt, XBool, XReal, XString;
-    static TypeNode Top, IInt, IBool, IReal, IString;
+    static TypeNode A, A1, A2, B, B1, C, D, XInt, XBool, XReal, XString, XUser;
+    static TypeNode Top, IInt, IBool, IReal, IString, IUser;
     static String xBin, xFlag, xType;
     /** Flag switching between implicit and explicit typing. */
     boolean implicit;
@@ -75,11 +75,9 @@ public class RegExprTyperTest {
         TypeGraph explicitType;
         try {
             GrammarModel view = Groove.loadGrammar(GRAMMAR);
-            explicitType = view.getTypeModel(QualName.name("type"))
-                .toResource();
+            explicitType = view.getTypeModel(QualName.name("type")).toResource();
             assert explicitType != null; // test grammar has this type graph
-            startGraph = view.getHostModel(QualName.name("start"))
-                .toResource();
+            startGraph = view.getHostModel(QualName.name("start")).toResource();
             assert startGraph != null; // test grammar has this start graph
         } catch (FormatException e) {
             fail(e.getMessage());
@@ -93,21 +91,19 @@ public class RegExprTyperTest {
             implicitType.addLabel(testEdge.label());
         }
         for (HostNode testNode : startGraph.nodeSet()) {
-            implicitType.addLabel(testNode.getType()
-                .label());
+            implicitType.addLabel(testNode.getType().label());
         }
         xBin = "xBin";
         xFlag = "xFlag";
         xType = "xType";
         Map<LabelVar,Set<? extends TypeElement>> implicitVars = new HashMap<>();
         for (TypeEdge edge : implicitType.edgeSet()) {
-            String label = edge.label()
-                .toString();
+            String label = edge.label().toString();
             if (label.equals("flag:a2")) {
                 implicitVars.put(new LabelVar(xFlag, EdgeRole.FLAG), Collections.singleton(edge));
             } else if (label.equals("type:A2")) {
-                implicitVars.put(new LabelVar(xType, EdgeRole.NODE_TYPE),
-                    Collections.singleton(edge));
+                implicitVars
+                    .put(new LabelVar(xType, EdgeRole.NODE_TYPE), Collections.singleton(edge));
             } else if (label.equals("aToB")) {
                 implicitVars.put(new LabelVar(xBin, EdgeRole.BINARY), Collections.singleton(edge));
             }
@@ -115,16 +111,16 @@ public class RegExprTyperTest {
         implicitTyper = new RegExprTyper(implicitType, implicitVars);
         Map<LabelVar,Set<? extends TypeElement>> explicitVars = new HashMap<>();
         for (TypeEdge edge : explicitType.edgeSet()) {
-            String label = edge.label()
-                .toString();
+            String label = edge.label().toString();
             if (label.equals("flag:a2")) {
                 explicitVars.put(new LabelVar(xFlag, EdgeRole.FLAG), Collections.singleton(edge));
             } else if (label.equals("aToB")) {
                 explicitVars.put(new LabelVar(xBin, EdgeRole.BINARY), Collections.singleton(edge));
             }
         }
-        explicitVars.put(new LabelVar(xType, EdgeRole.NODE_TYPE),
-            Collections.singleton(explicitType.getNode("type:A2")));
+        explicitVars
+            .put(new LabelVar(xType, EdgeRole.NODE_TYPE),
+                 Collections.singleton(explicitType.getNode("type:A2")));
         explicitTyper = new RegExprTyper(explicitType, explicitVars);
         A = explicitType.getNode("type:A");
         A1 = explicitType.getNode("type:A1");
@@ -138,12 +134,14 @@ public class RegExprTyperTest {
         XInt = explicitFactory.getDataType(Sort.INT);
         XReal = explicitFactory.getDataType(Sort.REAL);
         XString = explicitFactory.getDataType(Sort.STRING);
+        XUser = explicitFactory.getDataType(Sort.USER);
         Top = implicitType.getTopNode();
         TypeFactory implicitFactory = implicitType.getFactory();
         IBool = implicitFactory.getDataType(Sort.BOOL);
         IInt = implicitFactory.getDataType(Sort.INT);
         IReal = implicitFactory.getDataType(Sort.REAL);
         IString = implicitFactory.getDataType(Sort.STRING);
+        IUser = implicitFactory.getDataType(Sort.USER);
     }
 
     /** Tests the construction of atoms. */
@@ -159,7 +157,8 @@ public class RegExprTyperTest {
         this.implicit = true;
         TypeNode[][] n2 = {{Top, Top}};
         equals("type:A", n2);
-        TypeNode[][] e2 = {{Top, Top}, {Top, IInt}, {Top, IReal}, {Top, IString}, {Top, IBool}};
+        TypeNode[][] e2
+            = {{Top, Top}, {Top, IInt}, {Top, IReal}, {Top, IString}, {Top, IUser}, {Top, IBool}};
         equals("aTo", e2);
         TypeNode[][] f2 = {{Top, Top}};
         equals("flag:a2", f2);
@@ -170,12 +169,12 @@ public class RegExprTyperTest {
     public void testEmpty() {
         this.implicit = false;
         TypeNode[][] n1 = {{A, A}, {A, A1}, {A, A2}, {A1, A}, {A1, A1}, {A2, A}, {A2, A2}, {B, B},
-            {B, B1}, {B1, B}, {B1, B1}, {C, C}, {D, D}, {XInt, XInt}, {XReal, XReal},
-            {XString, XString}, {XBool, XBool}};
+                {B, B1}, {B1, B}, {B1, B1}, {C, C}, {D, D}, {XInt, XInt}, {XReal, XReal},
+                {XString, XString}, {XBool, XBool}, {XUser, XUser}};
         equals("=", n1);
         this.implicit = true;
-        TypeNode[][] n2 =
-            {{Top, Top}, {IInt, IInt}, {IReal, IReal}, {IString, IString}, {IBool, IBool}};
+        TypeNode[][] n2 = {{Top, Top}, {IInt, IInt}, {IReal, IReal}, {IString, IString},
+                {IUser, IUser}, {IBool, IBool}};
         equals("=", n2);
     }
 
@@ -213,7 +212,8 @@ public class RegExprTyperTest {
         equals("type:?", n2);
         TypeNode[][] f2 = {};
         equals("flag:?[^a,a1,a2]", f2);
-        TypeNode[][] e2 = {{Top, Top}, {Top, IInt}, {Top, IReal}, {Top, IString}, {Top, IBool}};
+        TypeNode[][] e2
+            = {{Top, Top}, {Top, IInt}, {Top, IReal}, {Top, IString}, {Top, IUser}, {Top, IBool}};
         equals("?", e2);
     }
 
@@ -265,7 +265,10 @@ public class RegExprTyperTest {
 
     private Pair<RegExpr,TypeNode[][]> equals(String expr, TypeNode[][] matrix) {
         RegExpr e = parse(expr);
-        Result r = e.apply(this.implicit ? implicitTyper : explicitTyper);
+        Result r = e
+            .apply(this.implicit
+                ? implicitTyper
+                : explicitTyper);
         assertEquals(r(matrix), r.getMap());
         return Pair.newPair(e, matrix);
     }
