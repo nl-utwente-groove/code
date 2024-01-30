@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 
@@ -341,22 +342,25 @@ public class RecipeTransition extends ALabelEdge<GraphState>
 
     @Override
     public int compareTo(Label obj) {
+        if (this == obj) {
+            return 0;
+        }
         if (!(obj instanceof ActionLabel)) {
             throw Exceptions.illegalArg("Can't compare %s and %s", this.getClass(), obj.getClass());
         }
         if (obj instanceof RuleTransitionLabel) {
             return -obj.compareTo(this);
         }
-        int result = super.compareTo(obj);
-        if (result != 0) {
-            return result;
-        }
         RecipeTransition other = (RecipeTransition) obj;
-        result = getAction().compareTo(other.getAction());
+        int result = source().getNumber() - other.source().getNumber();
         if (result != 0) {
             return result;
         }
-        return getInitial().label().compareTo(other.getInitial().label());
+        result = getEvent().compareTo(other.getEvent());
+        if (result != 0) {
+            return result;
+        }
+        return target().getNumber() - other.target().getNumber();
     }
 
     @Override
@@ -373,13 +377,21 @@ public class RecipeTransition extends ALabelEdge<GraphState>
 
     @Override
     protected int computeLabelHash() {
-        return this.initial.hashCode();
+        return Objects.hash(this.initial, Arrays.hashCode(getArguments()));
     }
 
     @Override
     protected boolean isLabelEqual(Edge other) {
-        return other instanceof RecipeTransition
-            && ((RecipeTransition) other).initial.equals(this.initial);
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof RecipeTransition trans)) {
+            return false;
+        }
+        if (!getInitial().equals(trans.getInitial())) {
+            return false;
+        }
+        return Arrays.equals(getArguments(), trans.getArguments());
     }
 
     static private final HostNode[] EMPTY_OUT_VALUES = new HostNode[0];

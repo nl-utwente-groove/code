@@ -30,11 +30,10 @@ public class EdgeComparator implements Comparator<Edge> {
 
     @Override
     public int compare(Edge o1, Edge o2) {
-        int result = o1.source().getNumber() - o2.source().getNumber();
-        if (result != 0) {
-            return result;
+        if (o1 == o2) {
+            return 0;
         }
-        result = o1.getNumber() - o2.getNumber();
+        int result = o1.source().getNumber() - o2.source().getNumber();
         if (result != 0) {
             return result;
         }

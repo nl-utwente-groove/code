@@ -28,7 +28,8 @@ import nl.utwente.groove.graph.Node;
  * @version $Revision$
  */
 @NonNullByDefault
-public interface HostNode extends Node, HostElement, AnchorValue {
+public sealed interface HostNode extends Node, HostElement, AnchorValue
+    permits DefaultHostNode, ValueNode {
     /** Returns the type of the host node, or {@code null} if
      * the host node is untyped. */
     @Override
