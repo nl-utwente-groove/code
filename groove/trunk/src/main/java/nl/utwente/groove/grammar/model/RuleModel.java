@@ -1493,28 +1493,34 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
         private void addOperator(AspectEdge operatorEdge) throws FormatException {
             AspectNode productNode = operatorEdge.source();
+            Operator operator = operatorEdge.getOperator();
+            assert operator != null;
             boolean embargo = productNode.has(ROLE, AspectKind::inNAC);
             List<VariableNode> arguments = new ArrayList<>();
             for (AspectNode argModelNode : productNode.getArgNodes()) {
                 VariableNode argument = (VariableNode) getNodeImage(argModelNode);
                 boolean argOnThisLevel = this.lhs.nodeSet().contains(argument);
                 if (!(argOnThisLevel || embargo && this.nacNodeSet.contains(argument))) {
+                    String nodeName = argModelNode.hasId()
+                        ? argModelNode.getId()
+                        : argModelNode.toString();
                     throw new FormatException(
-                        "Argument '%s' must exist on the level of the product node", argModelNode,
-                        productNode);
+                        "Argument '%s' does not exist on the level of the operator '%s'", nodeName,
+                        operator.getName(), argModelNode, operatorEdge);
                 }
                 arguments.add(argument);
             }
             AspectNode targetModelNode = operatorEdge.target();
             VariableNode target = (VariableNode) getNodeImage(targetModelNode);
-            Operator operator = operatorEdge.getOperator();
-            assert operator != null;
             boolean setOperator = operator.isSetOperator();
             if (!(setOperator || this.lhs.nodeSet().contains(target)
                 || embargo && this.nacNodeSet.contains(target))) {
+                String nodeName = targetModelNode.hasId()
+                    ? targetModelNode.getId()
+                    : targetModelNode.toString();
                 throw new FormatException(
-                    "Target of operator '%s' must exist on the level of the operator edge",
-                    operator.getName(), operatorEdge);
+                    "Target of operator '%s' does not exist on the level of the operator edge",
+                    nodeName, operator.getName(), operatorEdge);
             }
             // make sure that set operator targets appear on the parent level already
             if (setOperator) {

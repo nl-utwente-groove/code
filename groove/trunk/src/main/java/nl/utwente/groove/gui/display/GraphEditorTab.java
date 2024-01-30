@@ -145,7 +145,9 @@ final public class GraphEditorTab extends ResourceTab
         return arg -> {
             if (arg != null) {
                 var error = (FormatError) arg.getNewValue();
-                getJGraph().setSelectionCells(error.getElements());
+                if (error != null) {
+                    getJGraph().setSelectionCells(error.getElements());
+                }
             }
         };
     }

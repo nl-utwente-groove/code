@@ -132,7 +132,7 @@ public class VisibleValue implements VisualValue<Boolean> {
             return true;
         }
         // nodes with expressions should be shown
-        if (node.hasExpression()) {
+        if (node.hasExpression() && !node.hasConstant()) {
             return true;
         }
         // data type nodes in type graphs should never be shown
@@ -143,7 +143,7 @@ public class VisibleValue implements VisualValue<Boolean> {
         @SuppressWarnings({"cast", "unchecked"})
         var edges = (Set<AspectJEdge>) jVertex.getPort().getEdges();
         // any non-source-label of an incoming edge makes the node visible
-        return edges.stream().anyMatch(e -> !e.isSourceLabel());
+        return edges.stream().anyMatch(e -> e.getTargetVertex() == jVertex && !e.isSourceLabel());
     }
 
     private boolean getAspectEdgeValue(AspectJGraph jGraph, AspectJEdge jEdge) {

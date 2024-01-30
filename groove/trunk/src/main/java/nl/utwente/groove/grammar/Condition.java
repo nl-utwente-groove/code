@@ -291,7 +291,8 @@ public class Condition implements Fixable {
 
     /** Indicates that all subconditions of this condition are evaluated. */
     private final boolean isConjunctive() {
-        return this.disjunctCount <= 0;
+        // this was at one point <= 0, but that would seem to be wrong
+        return this.disjunctCount <= 1;
     }
 
     /** Number of disjunctively interpreted subconditions. */
