@@ -124,4 +124,13 @@ public class JGraphLayoutCache extends GraphLayoutCache {
     public void updatePorts() {
         super.updatePorts();
     }
+
+    /** Overridden to increase visibility. */
+    @SuppressWarnings("rawtypes")
+    @Override
+    public GraphLayoutCacheEdit createLocalEdit(Object[] inserted, Map nested, Object[] visible,
+                                                Object[] invisible) {
+        return super.createLocalEdit(inserted, nested, visible, invisible);
+    }
+
 }

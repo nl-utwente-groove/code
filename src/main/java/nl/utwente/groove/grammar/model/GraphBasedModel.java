@@ -27,6 +27,7 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeFactory;
+import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.AGraphMap;
@@ -89,6 +90,13 @@ abstract public class GraphBasedModel<R> extends NamedResourceModel<R> {
      * associated type graph, or {@code null} if {@link #hasErrors()} holds
      */
     abstract public @Nullable TypeModelMap getTypeMap();
+
+    /** Returns the type graph that types the source aspect graph.
+     * In contrast to {@link #getTypeMap()}, this always returns a non-{@code null}
+     * object, which might be just a temporary construction in case {@link #hasErrors()}
+     * holds.
+     */
+    abstract public TypeGraph getTypeGraph();
 
     private final AspectGraph source;
 

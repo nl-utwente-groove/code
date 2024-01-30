@@ -27,10 +27,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Constant;
-import nl.utwente.groove.algebra.IntSignature;
 import nl.utwente.groove.algebra.Operator;
-import nl.utwente.groove.algebra.RealSignature;
-import nl.utwente.groove.algebra.Signature.OpValue;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.type.TypeLabel;
@@ -348,9 +345,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         }
         // we distinguish negated constants, to make sure that
         // int:-1 parses to the same expression as -1
-        OpValue opValue = op.getOpValue();
-        if ((opValue == IntSignature.Op.NEG || opValue == RealSignature.Op.NEG)
-            && selectedArgs.get(0) instanceof Constant) {
+        if (op.isInverse() && selectedArgs.get(0) instanceof Constant) {
             return op
                 .getResultType()
                 .createConstant(op.getSymbol() + selectedArgs.get(0).toDisplayString());

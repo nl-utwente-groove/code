@@ -71,6 +71,8 @@ public enum AspectKind {
     REAL(Category.SORT, Keywords.REAL, ContentKind.REAL_LITERAL),
     /** Indicates a string value or operator. */
     STRING(Category.SORT, Keywords.STRING, ContentKind.STRING_LITERAL),
+    /** Indicates a user-defined value or operator. */
+    USER(Category.SORT, Keywords.USER, ContentKind.NONE),
 
     // auxiliary attribute-related aspects
     /** Indicates an argument edge. */
