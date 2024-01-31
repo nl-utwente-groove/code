@@ -54,7 +54,7 @@ final public class ValueNode extends ANode implements HostNode {
      */
     public ValueNode(int nr, Algebra<?> algebra, Object value, TypeNode type) {
         super(nr);
-        assert algebra != null && value != null && type != null && algebra.isValue(value);
+        assert algebra.isValue(value);
         this.algebra = algebra;
         this.sort = algebra.getSort();
         this.value = value;

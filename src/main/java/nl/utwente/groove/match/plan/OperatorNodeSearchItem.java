@@ -278,21 +278,14 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
          *         arguments was bound to a non-value.
          */
         Object calculateResult() {
-            try {
-                List<Object> arguments = calculateArguments();
-                Object result = OperatorNodeSearchItem.this.operation.apply(arguments);
-                if (PRINT) {
-                    System.out
-                        .printf("Applying %s to %s yields %s%n",
-                                OperatorNodeSearchItem.this.operation, arguments, result);
-                }
-                return result;
-            } catch (ClassCastException | NullPointerException | IllegalArgumentException exc) {
-                // one of the arguments was not bound to a value
-                // (probably due to some typing error in another rule)
-                // and so we cannot match the node
-                return null;
+            List<Object> arguments = calculateArguments();
+            Object result = OperatorNodeSearchItem.this.operation.applyFoldError(arguments);
+            if (PRINT) {
+                System.out
+                    .printf("Applying %s to %s yields %s%n", OperatorNodeSearchItem.this.operation,
+                            arguments, result);
             }
+            return result;
         }
 
         /**

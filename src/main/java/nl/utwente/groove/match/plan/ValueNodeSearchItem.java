@@ -21,6 +21,7 @@ import java.util.Collections;
 
 import nl.utwente.groove.algebra.Algebra;
 import nl.utwente.groove.algebra.AlgebraFamily;
+import nl.utwente.groove.algebra.ErrorValue;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Variable;
 import nl.utwente.groove.grammar.Condition;
@@ -45,9 +46,9 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         this.boundNodes = Collections.<RuleNode>singleton(node);
         this.algebra = family.getAlgebra(node.getSort());
         Expression term = node.getTerm();
-        assert !(term instanceof Variable) || this.algebra.getFamily()
-            .supportsSymbolic();
-        this.value = family.toValue(node.getTerm());
+        assert !(term instanceof Variable) || this.algebra.getFamily().supportsSymbolic();
+        this.value = family.toValueFoldError(term);
+        assert !(this.value instanceof ErrorValue);
     }
 
     @Override
@@ -115,8 +116,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
     @Override
     public void activate(PlanSearchStrategy strategy) {
         this.nodeIx = strategy.getNodeIx(this.node);
-        this.condition = strategy.getPlan()
-            .getCondition();
+        this.condition = strategy.getPlan().getCondition();
     }
 
     /** Singleton set consisting of <code>node</code>. */
@@ -148,7 +148,8 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         @Override
         public void initialise(HostGraph host) {
             super.initialise(host);
-            this.image = host.getFactory()
+            this.image = host
+                .getFactory()
                 .createNode(ValueNodeSearchItem.this.algebra, ValueNodeSearchItem.this.value);
         }
 

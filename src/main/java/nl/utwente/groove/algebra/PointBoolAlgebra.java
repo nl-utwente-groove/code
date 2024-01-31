@@ -77,27 +77,24 @@ public final class PointBoolAlgebra extends BoolAlgebra<Boolean> implements Poin
     }
 
     @Override
-    public String getSymbol(Object value) {
-        return value.toString();
-    }
-
-    @Override
     public Boolean getPointValue() {
         return singleBool;
     }
 
     @Override
-    public boolean isValue(Object value) {
+    public boolean isValidValue(Object value) {
         return value == singleBool;
     }
 
     @Override
     public Expression toTerm(Object value) {
-        return singleBool ? BoolSignature.TRUE : BoolSignature.FALSE;
+        return singleBool
+            ? BoolSignature.TRUE
+            : BoolSignature.FALSE;
     }
 
     @Override
-    public Boolean toJavaValue(Object value) {
+    public Object toJavaValue(Object value) {
         return singleBool;
     }
 

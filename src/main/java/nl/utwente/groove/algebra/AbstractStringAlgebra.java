@@ -26,7 +26,7 @@ import nl.utwente.groove.util.parse.StringHandler;
  * @version $Revision$
  */
 public abstract sealed class AbstractStringAlgebra<INT,REAL>
-    extends StringAlgebra<INT,REAL,Boolean,String>permits BigStringAlgebra, JavaStringAlgebra {
+    extends StringAlgebra<INT,REAL,Boolean,String> permits BigStringAlgebra, JavaStringAlgebra {
     /** Empty constructor for the singleton instance. */
     AbstractStringAlgebra() {
         // empty
@@ -89,7 +89,9 @@ public abstract sealed class AbstractStringAlgebra<INT,REAL>
 
     @Override
     public String ite(Boolean arg0, String arg1, String arg2) {
-        return arg0 ? arg1 : arg2;
+        return arg0
+            ? arg1
+            : arg2;
     }
 
     @Override
@@ -103,7 +105,7 @@ public abstract sealed class AbstractStringAlgebra<INT,REAL>
     }
 
     @Override
-    public boolean isValue(Object value) {
+    public boolean isValidValue(Object value) {
         return value instanceof String;
     }
 
@@ -115,11 +117,6 @@ public abstract sealed class AbstractStringAlgebra<INT,REAL>
     @Override
     public Expression toTerm(Object value) {
         return Constant.instance((String) value);
-    }
-
-    @Override
-    public String toJavaValue(Object value) {
-        return (String) value;
     }
 
     @Override

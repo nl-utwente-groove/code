@@ -81,4 +81,14 @@ public class PointAlgebraTest extends NonFinalAlgebraTest<Object,Object,Object,O
         assertEquals(createString("a"), createString("b"));
         assertEquals(PointStringAlgebra.singleString, createString("a"));
     }
+
+    @Override
+    public void testIntError() {
+        // empty as these errors do not occur in the point algebra
+    }
+
+    @Override
+    public void testRealError() {
+        // empty as these errors do not occur in the point algebra
+    }
 }

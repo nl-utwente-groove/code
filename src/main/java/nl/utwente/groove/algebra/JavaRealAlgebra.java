@@ -143,7 +143,7 @@ public final class JavaRealAlgebra extends RealAlgebra<Integer,Double,Boolean,St
     }
 
     @Override
-    public boolean isValue(Object value) {
+    public boolean isValidValue(Object value) {
         return value instanceof Double;
     }
 
@@ -157,20 +157,9 @@ public final class JavaRealAlgebra extends RealAlgebra<Integer,Double,Boolean,St
         return constant.getRealRepr().doubleValue();
     }
 
-    /* The value is already of the right type. */
-    @Override
-    public Double toJavaValue(Object value) {
-        return (Double) value;
-    }
-
     @Override
     protected Double toValueFromJavaDouble(Double value) {
         return value;
-    }
-
-    @Override
-    public String getSymbol(Object value) {
-        return value.toString();
     }
 
     @Override

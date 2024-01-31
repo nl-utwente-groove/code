@@ -17,6 +17,7 @@
 package nl.utwente.groove.test.algebra;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 
@@ -25,6 +26,7 @@ import org.junit.Test;
 import nl.utwente.groove.algebra.Algebra;
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.BoolAlgebra;
+import nl.utwente.groove.algebra.ErrorValue;
 import nl.utwente.groove.algebra.IntAlgebra;
 import nl.utwente.groove.algebra.RealAlgebra;
 import nl.utwente.groove.algebra.Sort;
@@ -130,7 +132,11 @@ public abstract class AlgebraTest<B,I,R,S> {
 
     /** Tests conversion from algebra value to term and back. */
     private void testConversion(Algebra<?> algebra, Object value) {
-        assertEquals(value, algebra.toValue(algebra.toTerm(value)));
+        try {
+            assertEquals(value, algebra.toValue(algebra.toTerm(value)));
+        } catch (ErrorValue exc) {
+            fail(exc.getMessage());
+        }
     }
 
     /** Returns the representation of the Boolean value {@code true} */

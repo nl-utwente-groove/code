@@ -45,16 +45,12 @@ public final class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolea
 
     @Override
     public BigInteger bigmax(List<BigInteger> arg) {
-        return arg.stream()
-            .max(BigInteger::compareTo)
-            .get();
+        return arg.stream().max(BigInteger::compareTo).get();
     }
 
     @Override
     public BigInteger bigmin(List<BigInteger> arg) {
-        return arg.stream()
-            .min(BigInteger::compareTo)
-            .get();
+        return arg.stream().min(BigInteger::compareTo).get();
     }
 
     @Override
@@ -74,31 +70,29 @@ public final class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolea
 
     @Override
     public Boolean ge(BigInteger arg0, BigInteger arg1) {
-        return arg0.subtract(arg1)
-            .signum() >= 0;
+        return arg0.subtract(arg1).signum() >= 0;
     }
 
     @Override
     public Boolean gt(BigInteger arg0, BigInteger arg1) {
-        return arg0.subtract(arg1)
-            .signum() > 0;
+        return arg0.subtract(arg1).signum() > 0;
     }
 
     @Override
     public BigInteger ite(Boolean arg0, BigInteger arg1, BigInteger arg2) {
-        return arg0 ? arg1 : arg2;
+        return arg0
+            ? arg1
+            : arg2;
     }
 
     @Override
     public Boolean le(BigInteger arg0, BigInteger arg1) {
-        return arg0.subtract(arg1)
-            .signum() <= 0;
+        return arg0.subtract(arg1).signum() <= 0;
     }
 
     @Override
     public Boolean lt(BigInteger arg0, BigInteger arg1) {
-        return arg0.subtract(arg1)
-            .signum() < 0;
+        return arg0.subtract(arg1).signum() < 0;
     }
 
     @Override
@@ -128,8 +122,7 @@ public final class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolea
 
     @Override
     public BigInteger prod(List<BigInteger> arg) {
-        return arg.stream()
-            .reduce(BigInteger.ONE, (i, j) -> i.multiply(j));
+        return arg.stream().reduce(BigInteger.ONE, (i, j) -> i.multiply(j));
     }
 
     @Override
@@ -139,8 +132,7 @@ public final class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolea
 
     @Override
     public BigInteger sum(List<BigInteger> arg) {
-        return arg.stream()
-            .reduce(BigInteger.ZERO, (i, j) -> i.add(j));
+        return arg.stream().reduce(BigInteger.ZERO, (i, j) -> i.add(j));
     }
 
     @Override
@@ -154,7 +146,7 @@ public final class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolea
     }
 
     @Override
-    public boolean isValue(Object value) {
+    public boolean isValidValue(Object value) {
         return value instanceof BigInteger;
     }
 
@@ -169,18 +161,18 @@ public final class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolea
     }
 
     @Override
-    public Integer toJavaValue(Object value) {
-        return ((BigInteger) value).intValue();
+    public Object toJavaValue(Object value) {
+        if (value instanceof BigInteger bigInt) {
+            return bigInt.intValue();
+        } else {
+            assert value instanceof ErrorValue;
+            return value;
+        }
     }
 
     @Override
     protected BigInteger toValue(Integer constant) {
         return BigInteger.valueOf(constant);
-    }
-
-    @Override
-    public String getSymbol(Object value) {
-        return value.toString();
     }
 
     @Override

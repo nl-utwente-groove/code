@@ -28,7 +28,7 @@ public final class UserAlgebra extends UserSignature implements Algebra<Object> 
     }
 
     @Override
-    public boolean isValue(Object value) {
+    public boolean isValidValue(Object value) {
         return true;
     }
 
@@ -43,11 +43,6 @@ public final class UserAlgebra extends UserSignature implements Algebra<Object> 
     }
 
     @Override
-    public String getSymbol(Object value) {
-        return value.toString();
-    }
-
-    @Override
     public String getName() {
         return NAME;
     }
@@ -59,11 +54,6 @@ public final class UserAlgebra extends UserSignature implements Algebra<Object> 
 
     @Override
     public final Object toValueFromJava(Object value) {
-        return value;
-    }
-
-    @Override
-    public Object toJavaValue(Object value) {
         return value;
     }
 

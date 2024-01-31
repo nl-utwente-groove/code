@@ -46,8 +46,4 @@ public abstract sealed class RealAlgebra<INT,REAL,BOOL,STRING>
      * representation to the algebra representation.
      */
     protected abstract REAL toValueFromJavaDouble(Double value);
-
-    /* Specialises the return type. */
-    @Override
-    public abstract Double toJavaValue(Object value);
 }

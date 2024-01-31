@@ -130,7 +130,7 @@ public class Valuator {
             var expr = b.expr();
             assert expr != null;
             var algebra = family.getAlgebra(expr.getSort());
-            var value = family.compute(expr, valuation);
+            var value = family.computeFoldError(expr, valuation);
             return factory.createNode(algebra, value);
         });
     }

@@ -20,21 +20,52 @@ import nl.utwente.groove.algebra.syntax.Expression;
 
 /**
  * Interface of an algebra (a class implementing a {@link Signature}).
+ * @param <T> the Java type used as carrier set for this algebra
  * @author Arend Rensink
  * @version $Revision$
  */
 public interface Algebra<T> extends Signature {
-    /** Tests if a given object is a value of this algebra. */
-    boolean isValue(Object value);
+    /** Tests if a given object is a value of this algebra (i.e., either a correct value
+     * or an error value).
+     * @see #isValidValue(Object)
+     * @see #isErrorValue(Object)
+     */
+    default boolean isValue(Object value) {
+        return isValidValue(value) || isErrorValue(value);
+    }
+
+    /** Tests if a given object is a correct value of this algebra (i.e., not an error value). */
+    boolean isValidValue(Object value);
+
+    /** Tests if a given object is an error value of this algebra's sort. */
+    default boolean isErrorValue(Object value) {
+        return value instanceof ErrorValue error && error.getSort() == getSort();
+    }
+
+    /**
+     * Converts a constant of the correct signature to the corresponding algebra value.
+     * @param constant the constant to be converted to a value; required to be of the correct
+     * signature
+     */
+    @SuppressWarnings("unchecked")
+    default T toValue(Constant constant) {
+        return (T) getFamily().toValue(constant);
+    }
 
     /**
      * Converts a closed term of the correct signature to the corresponding algebra value.
      * @param term the term to be converted to a value; required to be of the correct
      * signature and to satisfy {@link Expression#isTerm()} and {@link Expression#isClosed()}
+     * @throws ErrorValue if the conversion involves any operation that cannot be applied
      */
     @SuppressWarnings("unchecked")
-    default T toValue(Expression term) {
+    default T toValue(Expression term) throws ErrorValue {
         return (T) getFamily().toValue(term);
+    }
+
+    /** Returns an error value for this algebra, based on a given exception. */
+    default ErrorValue errorValue(Exception exc) {
+        return new ErrorValue(getSort(), exc);
     }
 
     /**
@@ -57,20 +88,24 @@ public interface Algebra<T> extends Signature {
      * Converts a given algebra value to the corresponding Java algebra value.
      * @param value a value from this algebra; must satisfy {@link #isValue(Object)}
      */
-    Object toJavaValue(Object value);
+    default Object toJavaValue(Object value) {
+        return value;
+    }
 
     /**
      * Converts an algebra value to the canonical term representing it.
      * Typically this will be a constant, but for the term algebras it is the value itself.
-     * @param value a value from this algebra; must satisfy {@link #isValue(Object)}
+     * @param value a value from this algebra; must satisfy {@link #isValidValue(Object)}
      */
     Expression toTerm(Object value);
 
     /**
      * Converts an algebra value to its symbolic string representation.
-     * @param value a value from this algebra; must satisfy {@link #isValue(Object)}
+     * @param value a value from this algebra; must satisfy {@link #isValidValue(Object)}
      */
-    String getSymbol(Object value);
+    default String getSymbol(Object value) {
+        return value.toString();
+    }
 
     /**
      * Returns the name of the algebra.

@@ -33,44 +33,37 @@ public final class TermBoolAlgebra extends BoolAlgebra<Expression> {
 
     @Override
     public Expression and(Expression arg0, Expression arg1) {
-        return Op.AND.getOperator()
-            .newTerm(arg0, arg1);
+        return Op.AND.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
     public Expression bigand(List<Expression> arg) {
-        return Op.BIGAND.getOperator()
-            .newTerm(arg.toArray(new Expression[arg.size()]));
+        return Op.BIGAND.getOperator().newTerm(arg.toArray(new Expression[arg.size()]));
     }
 
     @Override
     public Expression bigor(List<Expression> arg) {
-        return Op.BIGOR.getOperator()
-            .newTerm(arg.toArray(new Expression[arg.size()]));
+        return Op.BIGOR.getOperator().newTerm(arg.toArray(new Expression[arg.size()]));
     }
 
     @Override
     public Expression eq(Expression arg0, Expression arg1) {
-        return Op.EQ.getOperator()
-            .newTerm(arg0, arg1);
+        return Op.EQ.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
     public Expression neq(Expression arg0, Expression arg1) {
-        return Op.NEQ.getOperator()
-            .newTerm(arg0, arg1);
+        return Op.NEQ.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
     public Expression not(Expression arg) {
-        return Op.NOT.getOperator()
-            .newTerm(arg);
+        return Op.NOT.getOperator().newTerm(arg);
     }
 
     @Override
     public Expression or(Expression arg0, Expression arg1) {
-        return Op.OR.getOperator()
-            .newTerm(arg0, arg1);
+        return Op.OR.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
@@ -84,7 +77,7 @@ public final class TermBoolAlgebra extends BoolAlgebra<Expression> {
     }
 
     @Override
-    public boolean isValue(Object value) {
+    public boolean isValidValue(Object value) {
         return value instanceof Expression && ((Expression) value).getSort() == getSort();
     }
 
@@ -104,8 +97,13 @@ public final class TermBoolAlgebra extends BoolAlgebra<Expression> {
     }
 
     @Override
-    public Boolean toJavaValue(Object value) {
-        return (Boolean) AlgebraFamily.DEFAULT.toValue((Expression) value);
+    public Object toJavaValue(Object value) {
+        if (value instanceof Expression expr) {
+            return AlgebraFamily.DEFAULT.toValueFoldError(expr);
+        } else {
+            assert value instanceof ErrorValue;
+            return value;
+        }
     }
 
     @Override

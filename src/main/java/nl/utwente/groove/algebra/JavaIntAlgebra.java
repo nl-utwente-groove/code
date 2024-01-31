@@ -43,16 +43,12 @@ public final class JavaIntAlgebra extends IntAlgebra<Integer,Double,Boolean,Stri
 
     @Override
     public Integer bigmax(List<Integer> arg) {
-        return arg.stream()
-            .max(Integer::compareTo)
-            .get();
+        return arg.stream().max(Integer::compareTo).get();
     }
 
     @Override
     public Integer bigmin(List<Integer> arg) {
-        return arg.stream()
-            .min(Integer::compareTo)
-            .get();
+        return arg.stream().min(Integer::compareTo).get();
     }
 
     @Override
@@ -82,7 +78,9 @@ public final class JavaIntAlgebra extends IntAlgebra<Integer,Double,Boolean,Stri
 
     @Override
     public Integer ite(Boolean arg0, Integer arg1, Integer arg2) {
-        return arg0 ? arg1 : arg2;
+        return arg0
+            ? arg1
+            : arg2;
     }
 
     @Override
@@ -122,8 +120,7 @@ public final class JavaIntAlgebra extends IntAlgebra<Integer,Double,Boolean,Stri
 
     @Override
     public Integer prod(List<Integer> arg) {
-        return arg.stream()
-            .reduce(1, (i, j) -> i * j);
+        return arg.stream().reduce(1, (i, j) -> i * j);
     }
 
     @Override
@@ -133,8 +130,7 @@ public final class JavaIntAlgebra extends IntAlgebra<Integer,Double,Boolean,Stri
 
     @Override
     public Integer sum(List<Integer> arg) {
-        return arg.stream()
-            .reduce(0, (i, j) -> i + j);
+        return arg.stream().reduce(0, (i, j) -> i + j);
     }
 
     @Override
@@ -148,7 +144,7 @@ public final class JavaIntAlgebra extends IntAlgebra<Integer,Double,Boolean,Stri
     }
 
     @Override
-    public boolean isValue(Object value) {
+    public boolean isValidValue(Object value) {
         return value instanceof Integer;
     }
 
@@ -159,27 +155,12 @@ public final class JavaIntAlgebra extends IntAlgebra<Integer,Double,Boolean,Stri
 
     @Override
     public Integer toValueFromConstant(Constant constant) {
-        return constant.getIntRepr()
-            .intValue();
-    }
-
-    /* The value is already of the right type. */
-    @Override
-    public Integer toJavaValue(Object value) {
-        return (Integer) value;
+        return constant.getIntRepr().intValue();
     }
 
     @Override
     protected Integer toValue(Integer constant) {
         return constant;
-    }
-
-    /**
-     * Delegates to {@link Integer#toString()}.
-     */
-    @Override
-    public String getSymbol(Object value) {
-        return value.toString();
     }
 
     /** Returns {@link #NAME}. */

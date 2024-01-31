@@ -499,18 +499,15 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
         } else {
             result = new HostNode[count];
             for (int i = 0; i < count; i++) {
-                TypeNode type;
-                if (creatorNodes[i].getTypeGuards().isEmpty()) {
-                    type = creatorNodes[i].getType();
-                } else {
-                    // get the type from the image of the first label variable
-                    type = (TypeNode) getCoanchorMap()
-                        .getVar(creatorNodes[i].getTypeGuards().get(0).getVar());
-                }
-                var sort = type.getSort();
-                if (sort != null) {
-                    // value nodes can only be created if they are input parameters
-                    result[i] = createValueNode(record, creatorNodes[i].getPar().get());
+                var creatorNode = creatorNodes[i];
+                var typeGuards = creatorNode.getTypeGuards();
+                TypeNode type = typeGuards.isEmpty()
+                    ? creatorNode.getType()
+                    : (TypeNode) getCoanchorMap()
+                        .getVar(creatorNode.getTypeGuards().get(0).getVar());
+                if (type.isSort()) {
+                    // value nodes can only be created if they are ask parameters
+                    result[i] = createValueNode(record, creatorNode.getPar().get());
                 } else {
                     result[i] = createNode(record, i, type);
                 }

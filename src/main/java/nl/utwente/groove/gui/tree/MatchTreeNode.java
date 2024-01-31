@@ -16,7 +16,11 @@
  */
 package nl.utwente.groove.gui.tree;
 
+import java.util.function.Supplier;
+
 import javax.swing.Icon;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.gui.Icons;
@@ -26,17 +30,19 @@ import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.MatchResult;
 import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.lts.RuleTransitionLabel;
+import nl.utwente.groove.util.LazyFactory;
 
 /**
  * Tree node wrapping a graph transition.
  */
+@NonNullByDefault
 class MatchTreeNode extends DisplayTreeNode {
     /**
      * Creates a new tree node based on a given graph transition. The node cannot have
      * children.
      */
     public MatchTreeNode(SimulatorModel model, GraphState source, MatchResult match, int nr,
-        boolean anchored) {
+                         boolean anchored) {
         super(match, false);
         this.source = source;
         this.nr = nr;
@@ -46,8 +52,7 @@ class MatchTreeNode extends DisplayTreeNode {
 
     @Override
     public boolean isInternal() {
-        return getMatch().getStep()
-            .isInternal();
+        return getMatch().getStep().isInternal();
     }
 
     /**
@@ -77,14 +82,12 @@ class MatchTreeNode extends DisplayTreeNode {
     @Override
     public String getTip() {
         StringBuilder result = new StringBuilder();
-        QualName actionName = getMatch().getAction()
-            .getQualName();
+        QualName actionName = getMatch().getAction().getQualName();
         if (isProperty()) {
             result.append(String.format("Property '%s' is satisfied", actionName));
         } else if (isEnabled()) {
             result.append(String.format("Explored transition of '%s'", actionName));
-            GraphState target = getMatch().getTransition()
-                .target();
+            GraphState target = getMatch().getTransition().target();
             if (target.isAbsent()) {
                 result.append(HTMLConverter.HTML_LINEBREAK);
                 result.append(String.format("Target state %s is not real", target));
@@ -94,40 +97,35 @@ class MatchTreeNode extends DisplayTreeNode {
             result.append(HTMLConverter.HTML_LINEBREAK);
             result.append("Doubleclick to apply");
         }
-        return HTMLConverter.HTML_TAG.on(result)
-            .toString();
+        return HTMLConverter.HTML_TAG.on(result).toString();
     }
 
     @Override
     public String getText() {
-        if (this.label == null) {
-            this.label = computeText();
-        }
-        return this.label;
+        return this.label.get();
     }
 
+    /** Lazily computed label text of this node. */
+    private final Supplier<String> label = LazyFactory.instance(this::computeText);
+
+    /** Computes the value for {@link #label}. */
     private String computeText() {
         StringBuilder result = new StringBuilder();
         result.append(this.nr);
         result.append(": ");
-        boolean showArrow = !getMatch().getAction()
-            .isProperty()
-            || getMatch().getStep()
-                .isModifying();
+        boolean showArrow
+            = !getMatch().getAction().isProperty() || getMatch().getStep().isModifying();
         if (isEnabled()) {
             RuleTransition trans = getMatch().getTransition();
             result.append(trans.text(this.anchored));
             if (showArrow) {
                 result.append(RIGHTARROW);
-                result.append(HTMLConverter.ITALIC_TAG.on(trans.target()
-                    .toString()));
+                result.append(HTMLConverter.ITALIC_TAG.on(trans.target().toString()));
             }
-            if (this.model.getTrace()
-                .contains(trans)) {
+            if (this.model.getTrace().contains(trans)) {
                 result.append(TRACE_SUFFIX);
             }
-            if (trans.target()
-                .isAbsent()) {
+            if (trans.target().isAbsent()) {
                 HTMLConverter.STRIKETHROUGH_TAG.on(result);
             }
         } else {
@@ -147,15 +145,13 @@ class MatchTreeNode extends DisplayTreeNode {
 
     /** Indicates if this is a match of a property. */
     private boolean isProperty() {
-        return getMatch().getAction()
-            .isProperty();
+        return getMatch().getAction().isProperty();
     }
 
     private final SimulatorModel model;
     private final GraphState source;
     private final int nr;
     private final boolean anchored;
-    private String label;
     /** HTML representation of the right arrow. */
     private static final String RIGHTARROW = "-->";
     /** The suffix for a match that is in the selected trace. */

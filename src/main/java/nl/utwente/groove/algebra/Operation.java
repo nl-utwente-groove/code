@@ -8,14 +8,30 @@ import java.util.List;
 public interface Operation {
     /**
      * Applies this operation on the list of operands and returns the result
-     * value.
+     * value. Throws an exception if the operation cannot be applied.
      * @param args the operands on which this operation operates
      * @return the resulting value when applying this operation on its
      *         <tt>args</tt>
-     * @throws IllegalArgumentException if the operation cannot be performed,
-     *         due to typing errors of the operands or zero division
+     * @throws ErrorValue if the operation cannot be applied for any reason
+     * @see #applyFoldError(List)
      */
-    public Object apply(List<Object> args) throws IllegalArgumentException;
+    public Object apply(List<Object> args) throws ErrorValue;
+
+    /**
+     * Applies this operation on the list of operands and returns the result
+     * value, also if this is an error value.
+     * @param args the operands on which this operation operates
+     * @return the resulting value when applying this operation on its
+     *         <tt>args</tt>
+     * @see #apply(List)
+     */
+    default public Object applyFoldError(List<Object> args) {
+        try {
+            return apply(args);
+        } catch (ErrorValue error) {
+            return error;
+        }
+    }
 
     /**
      * Returns the string representation of this operation.

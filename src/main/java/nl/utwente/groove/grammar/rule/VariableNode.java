@@ -47,6 +47,7 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
      */
     public VariableNode(int nr, Expression term, TypeNode type) {
         super(nr);
+        assert term instanceof Constant || term instanceof Variable;
         this.term = term;
         assert type != null && type.isSort();
         this.type = type;
@@ -59,7 +60,9 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
 
     @Override
     public String getId() {
-        return this.id == null ? toString() : this.id;
+        return this.id == null
+            ? toString()
+            : this.id;
     }
 
     /** The optional special ID of this rule node. */
@@ -101,10 +104,9 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof VariableNode)) {
+        if (!(obj instanceof VariableNode other)) {
             return false;
         }
-        VariableNode other = (VariableNode) obj;
         return getNumber() == other.getNumber();
     }
 
@@ -141,7 +143,9 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
      * if its wrapped term is a constant; otherwise returns {@code null}.
      */
     public Constant getConstant() {
-        return hasConstant() ? (Constant) getTerm() : null;
+        return hasConstant()
+            ? (Constant) getTerm()
+            : null;
     }
 
     /**
@@ -149,7 +153,9 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
      * if its wrapped term is a variable; otherwise returns {@code null}.
      */
     public Variable getVariable() {
-        return hasConstant() ? null : (Variable) getTerm();
+        return hasConstant()
+            ? null
+            : (Variable) getTerm();
     }
 
     @Override

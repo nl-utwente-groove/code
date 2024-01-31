@@ -99,8 +99,7 @@ public class StateTree extends JTree implements SimulatorListener {
         getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         this.setCellRenderer(new DisplayTreeCellRenderer(this));
         installListeners();
-        ToolTipManager.sharedInstance()
-            .registerComponent(this);
+        ToolTipManager.sharedInstance().registerComponent(this);
     }
 
     @Override
@@ -130,8 +129,7 @@ public class StateTree extends JTree implements SimulatorListener {
         addTreeWillExpandListener(new TreeWillExpandListener() {
             @Override
             public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
-                Object lastComponent = event.getPath()
-                    .getLastPathComponent();
+                Object lastComponent = event.getPath().getLastPathComponent();
                 if (!this.busy && lastComponent instanceof RangeTreeNode) {
                     this.busy = true;
                     fill((RangeTreeNode) lastComponent);
@@ -155,20 +153,15 @@ public class StateTree extends JTree implements SimulatorListener {
                 if (suspendListening()) {
                     SimulatorModel model = getSimulatorModel();
                     refreshList(model.getGTS(), model.getState());
-                    refreshSelection(model.getState(),
-                        (RuleModel) model.getResource(RULE),
-                        model.getMatch(),
-                        model.getTransition());
+                    refreshSelection(model.getState(), (RuleModel) model.getResource(RULE),
+                                     model.getMatch(), model.getTransition());
                     activateListening();
                 }
             }
         };
-        getOptions().getItem(Options.SHOW_ANCHORS_OPTION)
-            .addItemListener(refreshListener);
-        getOptions().getItem(Options.SHOW_RECIPE_STEPS_OPTION)
-            .addItemListener(refreshListener);
-        getOptions().getItem(Options.SHOW_ABSENT_STATES_OPTION)
-            .addItemListener(refreshListener);
+        getOptions().getItem(Options.SHOW_ANCHORS_OPTION).addItemListener(refreshListener);
+        getOptions().getItem(Options.SHOW_RECIPE_STEPS_OPTION).addItemListener(refreshListener);
+        getOptions().getItem(Options.SHOW_ABSENT_STATES_OPTION).addItemListener(refreshListener);
         activateListening();
     }
 
@@ -216,7 +209,9 @@ public class StateTree extends JTree implements SimulatorListener {
     @Override
     public void setEnabled(boolean enabled) {
         if (enabled != isEnabled()) {
-            setBackground(enabled ? JAttr.STATE_BACKGROUND : null);
+            setBackground(enabled
+                ? JAttr.STATE_BACKGROUND
+                : null);
         }
         super.setEnabled(enabled);
     }
@@ -257,10 +252,8 @@ public class StateTree extends JTree implements SimulatorListener {
                 }
                 refreshStates(refreshables);
             }
-            refreshSelection(source.getState(),
-                ruleModel,
-                source.getMatch(),
-                source.getTransition());
+            refreshSelection(source.getState(), ruleModel, source.getMatch(),
+                             source.getTransition());
             activateListening();
         }
     }
@@ -351,7 +344,9 @@ public class StateTree extends JTree implements SimulatorListener {
         if (parent.getChildCount() <= 1) {
             parent.removeAllChildren();
             List<StateTreeNode> stateNodes = new ArrayList<>(RANGE_SIZE);
-            int lower = parent instanceof RangeTreeNode ? ((RangeTreeNode) parent).getLower() : 0;
+            int lower = parent instanceof RangeTreeNode
+                ? ((RangeTreeNode) parent).getLower()
+                : 0;
             int upper = Math.min(this.states.length, lower + RANGE_SIZE);
             for (int s = lower; s < upper; s++) {
                 GraphState state = this.states[s];
@@ -412,9 +407,9 @@ public class StateTree extends JTree implements SimulatorListener {
             for (GraphTransitionKey trans : matchEntry.getValue()) {
                 count++;
                 DisplayTreeNode transNode;
-                if (trans instanceof MatchResult) {
-                    transNode = new MatchTreeNode(getSimulatorModel(), state, (MatchResult) trans,
-                        count, anchored);
+                if (trans instanceof MatchResult match) {
+                    transNode
+                        = new MatchTreeNode(getSimulatorModel(), state, match, count, anchored);
                 } else {
                     transNode = new RecipeTransitionTreeNode(getSimulatorModel(), state,
                         (RecipeEvent) trans, count);
@@ -429,7 +424,7 @@ public class StateTree extends JTree implements SimulatorListener {
      * Changes the selection to a given state.
      */
     private void refreshSelection(GraphState state, RuleModel ruleModel, MatchResult match,
-        GraphTransition trans) {
+                                  GraphTransition trans) {
         if (state != null) {
             StateTreeNode stateNode = getStateNode(state);
             if (stateNode != null) {
@@ -439,16 +434,12 @@ public class StateTree extends JTree implements SimulatorListener {
                 // find the match or transitions among the grandchildren of the state node
                 for (int i = 0; i < stateNode.getChildCount(); i++) {
                     TreeNode child = stateNode.getChildAt(i);
-                    if (match != null && child instanceof RuleTreeNode) {
-                        RuleTreeNode ruleNode = (RuleTreeNode) child;
-                        if (ruleNode.getRule()
-                            .equals(ruleModel)) {
+                    if (match != null && child instanceof RuleTreeNode ruleNode) {
+                        if (ruleNode.getRule().equals(ruleModel)) {
                             RuleEvent event = match.getEvent();
                             for (int m = 0; m < ruleNode.getChildCount(); m++) {
                                 MatchTreeNode matchNode = (MatchTreeNode) ruleNode.getChildAt(m);
-                                if (matchNode.getMatch()
-                                    .getEvent()
-                                    .equals(event)) {
+                                if (matchNode.getMatch().getEvent().equals(event)) {
                                     selectPath = createPath(matchNode);
                                     break;
                                 }
@@ -456,15 +447,12 @@ public class StateTree extends JTree implements SimulatorListener {
                             break;
                         }
                     } else if (trans instanceof RecipeTransition
-                        && child instanceof RecipeTreeNode) {
-                        RecipeTreeNode recipeNode = (RecipeTreeNode) child;
-                        if (recipeNode.getRecipe()
-                            .equals(trans.getAction())) {
+                        && child instanceof RecipeTreeNode recipeNode) {
+                        if (recipeNode.getRecipe().equals(trans.getAction())) {
                             for (int m = 0; m < recipeNode.getChildCount(); m++) {
-                                RecipeTransitionTreeNode matchNode =
-                                    (RecipeTransitionTreeNode) recipeNode.getChildAt(m);
-                                if (matchNode.getTransition()
-                                    .equals(trans)) {
+                                RecipeTransitionTreeNode matchNode
+                                    = (RecipeTransitionTreeNode) recipeNode.getChildAt(m);
+                                if (matchNode.getTransition().equals(trans)) {
                                     selectPath = createPath(matchNode);
                                     break;
                                 }
@@ -528,7 +516,9 @@ public class StateTree extends JTree implements SimulatorListener {
                 upper = mid - 1;
             }
         }
-        return found ? result : null;
+        return found
+            ? result
+            : null;
     }
 
     /**
@@ -549,8 +539,7 @@ public class StateTree extends JTree implements SimulatorListener {
     }
 
     private final ResourceDisplay getRuleDisplay() {
-        return (ResourceDisplay) this.simulator.getDisplaysPanel()
-            .getDisplay(DisplayKind.RULE);
+        return (ResourceDisplay) this.simulator.getDisplaysPanel().getDisplay(DisplayKind.RULE);
     }
 
     private final Options getOptions() {
@@ -563,7 +552,7 @@ public class StateTree extends JTree implements SimulatorListener {
     /** The fixed tree model. */
     private final DefaultTreeModel treeModel = new DefaultTreeModel(this.topNode);
     /** List of states in the most recently loaded GTS. */
-    private GraphState[] states = new GraphState[0];
+    private GraphState[] states = {};
     /** State that should be expanded. */
     private Queue<GraphState> expanded = new LinkedList<>();
     /** Flag indicating if listeners should be active. */
@@ -680,7 +669,8 @@ public class StateTree extends JTree implements SimulatorListener {
             } else if (state.isFinal()) {
                 return Icons.STATE_FINAL_ICON;
             } else if (state.isInternalState()) {
-                return state.isAbsent() ? Icons.STATE_INTERNAL_ABSENT_ICON
+                return state.isAbsent()
+                    ? Icons.STATE_INTERNAL_ABSENT_ICON
                     : Icons.STATE_INTERNAL_ICON;
             } else if (state.isTransient()) {
                 return Icons.STATE_TRANSIENT_ICON;
@@ -694,8 +684,8 @@ public class StateTree extends JTree implements SimulatorListener {
         }
 
         private boolean isResult(GraphState state) {
-            return getSimulatorModel().hasExploreResult() && getSimulatorModel().getExploreResult()
-                .contains(state);
+            return getSimulatorModel().hasExploreResult()
+                && getSimulatorModel().getExploreResult().contains(state);
         }
 
         private final boolean expanded;
@@ -745,8 +735,7 @@ public class StateTree extends JTree implements SimulatorListener {
                 }
                 break;
             case 2:
-                getActions().getApplyMatchAction()
-                    .execute();
+                getActions().getApplyMatchAction().execute();
                 break;
             default: // nothing happens
             }
@@ -755,8 +744,9 @@ public class StateTree extends JTree implements SimulatorListener {
         private void maybeShowPopup(MouseEvent evt) {
             if (evt.isPopupTrigger()) {
                 TreePath selectedPath = getPathForLocation(evt.getX(), evt.getY());
-                TreeNode selectedNode =
-                    selectedPath == null ? null : (TreeNode) selectedPath.getLastPathComponent();
+                TreeNode selectedNode = selectedPath == null
+                    ? null
+                    : (TreeNode) selectedPath.getLastPathComponent();
                 StateTree.this.requestFocus();
                 createPopupMenu(selectedNode).show(evt.getComponent(), evt.getX(), evt.getY());
             }
@@ -819,8 +809,7 @@ public class StateTree extends JTree implements SimulatorListener {
                     Object[] nodes = getPathForRow(selectedRow).getPath();
                     for (int i = nodes.length - 1; i >= 0; i--) {
                         if (nodes[i] instanceof RuleTreeNode) {
-                            result.add(((RuleTreeNode) nodes[i]).getRule()
-                                .getQualName());
+                            result.add(((RuleTreeNode) nodes[i]).getRule().getQualName());
                         }
                     }
                 }
