@@ -26,8 +26,8 @@ import nl.utwente.groove.algebra.syntax.Expression;
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract sealed class AbstractBoolAlgebra
-    extends BoolAlgebra<Boolean>permits BigBoolAlgebra, JavaBoolAlgebra {
+public abstract sealed class AbstractBoolAlgebra extends BoolAlgebra<Boolean>
+    permits BigBoolAlgebra, JavaBoolAlgebra {
     /** Private constructor for the singleton instance. */
     AbstractBoolAlgebra() {
         // empty
@@ -40,14 +40,12 @@ public abstract sealed class AbstractBoolAlgebra
 
     @Override
     public Boolean bigand(List<Boolean> arg) {
-        return arg.stream()
-            .reduce(Boolean.TRUE, (b, c) -> Boolean.logicalAnd(b, c));
+        return arg.stream().reduce(Boolean.TRUE, (b, c) -> Boolean.logicalAnd(b, c));
     }
 
     @Override
     public Boolean bigor(List<Boolean> arg) {
-        return arg.stream()
-            .reduce(Boolean.FALSE, (b, c) -> Boolean.logicalOr(b, c));
+        return arg.stream().reduce(Boolean.FALSE, (b, c) -> Boolean.logicalOr(b, c));
     }
 
     @Override
@@ -71,13 +69,8 @@ public abstract sealed class AbstractBoolAlgebra
     }
 
     @Override
-    public boolean isValue(Object value) {
-        return value instanceof Boolean;
-    }
-
-    @Override
-    public String getSymbol(Object value) {
-        return value.toString();
+    public boolean isValidValue(Object value) {
+        return value instanceof Boolean || isErrorValue(value);
     }
 
     @Override
@@ -88,11 +81,6 @@ public abstract sealed class AbstractBoolAlgebra
     @Override
     public Boolean toValueFromConstant(Constant constant) {
         return constant.getBoolRepr();
-    }
-
-    @Override
-    public Boolean toJavaValue(Object value) {
-        return (Boolean) value;
     }
 
     @Override

@@ -42,8 +42,4 @@ public abstract sealed class BoolAlgebra<BOOL> extends BoolSignature<BOOL> imple
      * representation to the algebra representation.
      */
     protected abstract BOOL toValueFromJavaBoolean(Boolean value);
-
-    /* Specialises the return type. */
-    @Override
-    public abstract Boolean toJavaValue(Object value);
 }

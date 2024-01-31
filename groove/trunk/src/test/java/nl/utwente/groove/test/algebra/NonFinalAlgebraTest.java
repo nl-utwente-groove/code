@@ -17,6 +17,8 @@
 package nl.utwente.groove.test.algebra;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
@@ -70,6 +72,19 @@ public abstract class NonFinalAlgebraTest<B,I,R,S> extends AlgebraTest<B,I,R,S> 
 
     }
 
+    /** Checks if integer operations properly throw an exception. */
+    @Test
+    public void testIntError() {
+        I zero = createInt(0);
+        I one = createInt(1);
+        try {
+            iDiv(one, zero);
+            fail("Division by zero should fail");
+        } catch (Exception exc) {
+            assertTrue(exc instanceof ArithmeticException);
+        }
+    }
+
     /** Tests the real-number algebra. */
     @Test
     public void testReal() {
@@ -107,6 +122,19 @@ public abstract class NonFinalAlgebraTest<B,I,R,S> extends AlgebraTest<B,I,R,S> 
         // if-then-else
         assertEquals(one, rIte(bTrue(), one, two));
         assertEquals(two, rIte(bFalse(), one, two));
+    }
+
+    /** Checks if real operations properly throw an exception. */
+    @Test
+    public void testRealError() {
+        R zero = createReal(0);
+        R one = createReal(1);
+        try {
+            rDiv(one, zero);
+            fail("Division by zero should fail");
+        } catch (Exception exc) {
+            assertTrue(exc instanceof ArithmeticException);
+        }
     }
 
     /** Tests the boolean algebra. */

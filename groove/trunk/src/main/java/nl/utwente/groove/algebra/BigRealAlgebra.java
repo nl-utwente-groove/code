@@ -46,16 +46,12 @@ public final class BigRealAlgebra extends RealAlgebra<BigInteger,BigDecimal,Bool
 
     @Override
     public BigDecimal bigmax(List<BigDecimal> arg) {
-        return arg.stream()
-            .max(BigDecimal::compareTo)
-            .get();
+        return arg.stream().max(BigDecimal::compareTo).get();
     }
 
     @Override
     public BigDecimal bigmin(List<BigDecimal> arg) {
-        return arg.stream()
-            .min(BigDecimal::compareTo)
-            .get();
+        return arg.stream().min(BigDecimal::compareTo).get();
     }
 
     @Override
@@ -75,31 +71,29 @@ public final class BigRealAlgebra extends RealAlgebra<BigInteger,BigDecimal,Bool
 
     @Override
     public Boolean ge(BigDecimal arg0, BigDecimal arg1) {
-        return arg0.subtract(arg1)
-            .signum() >= 0 || approximatelyEquals(arg0, arg1);
+        return arg0.subtract(arg1).signum() >= 0 || approximatelyEquals(arg0, arg1);
     }
 
     @Override
     public Boolean gt(BigDecimal arg0, BigDecimal arg1) {
-        return arg0.subtract(arg1)
-            .signum() > 0 && !approximatelyEquals(arg0, arg1);
+        return arg0.subtract(arg1).signum() > 0 && !approximatelyEquals(arg0, arg1);
     }
 
     @Override
     public Boolean le(BigDecimal arg0, BigDecimal arg1) {
-        return arg0.subtract(arg1)
-            .signum() <= 0 || approximatelyEquals(arg0, arg1);
+        return arg0.subtract(arg1).signum() <= 0 || approximatelyEquals(arg0, arg1);
     }
 
     @Override
     public BigDecimal ite(Boolean arg0, BigDecimal arg1, BigDecimal arg2) {
-        return arg0 ? arg1 : arg2;
+        return arg0
+            ? arg1
+            : arg2;
     }
 
     @Override
     public Boolean lt(BigDecimal arg0, BigDecimal arg1) {
-        return arg0.subtract(arg1)
-            .signum() < 0 && !approximatelyEquals(arg0, arg1);
+        return arg0.subtract(arg1).signum() < 0 && !approximatelyEquals(arg0, arg1);
     }
 
     @Override
@@ -124,8 +118,7 @@ public final class BigRealAlgebra extends RealAlgebra<BigInteger,BigDecimal,Bool
 
     @Override
     public BigDecimal prod(List<BigDecimal> arg) {
-        return arg.stream()
-            .reduce(BigDecimal.ONE, (i, j) -> i.multiply(j));
+        return arg.stream().reduce(BigDecimal.ONE, (i, j) -> i.multiply(j));
     }
 
     @Override
@@ -135,8 +128,7 @@ public final class BigRealAlgebra extends RealAlgebra<BigInteger,BigDecimal,Bool
 
     @Override
     public BigDecimal sum(List<BigDecimal> arg) {
-        return arg.stream()
-            .reduce(BigDecimal.ZERO, (i, j) -> i.add(j));
+        return arg.stream().reduce(BigDecimal.ZERO, (i, j) -> i.add(j));
     }
 
     @Override
@@ -150,7 +142,7 @@ public final class BigRealAlgebra extends RealAlgebra<BigInteger,BigDecimal,Bool
     }
 
     @Override
-    public boolean isValue(Object value) {
+    public boolean isValidValue(Object value) {
         return value instanceof BigDecimal;
     }
 
@@ -165,21 +157,18 @@ public final class BigRealAlgebra extends RealAlgebra<BigInteger,BigDecimal,Bool
     }
 
     @Override
-    public Double toJavaValue(Object value) {
-        return ((BigDecimal) value).doubleValue();
+    public Object toJavaValue(Object value) {
+        if (value instanceof BigDecimal bigReal) {
+            return bigReal.doubleValue();
+        } else {
+            assert value instanceof ErrorValue;
+            return value;
+        }
     }
 
     @Override
     protected BigDecimal toValueFromJavaDouble(Double value) {
         return BigDecimal.valueOf(value);
-    }
-
-    /**
-     * Delegates to {@link Double#toString()}.
-     */
-    @Override
-    public String getSymbol(Object value) {
-        return value.toString();
     }
 
     /** Returns {@link #NAME}. */
@@ -195,13 +184,11 @@ public final class BigRealAlgebra extends RealAlgebra<BigInteger,BigDecimal,Bool
 
     /** Tests if two numbers are equal up to {@link #TOLERANCE}. */
     public static boolean approximatelyEquals(BigDecimal d1, BigDecimal d2) {
-        return d1.subtract(d2)
+        return d1
+            .subtract(d2)
             .abs()
-            .doubleValue() < (d1.abs()
-                .doubleValue()
-                + d2.abs()
-                    .doubleValue()
-                + TOLERANCE) * TOLERANCE;
+            .doubleValue() < (d1.abs().doubleValue() + d2.abs().doubleValue() + TOLERANCE)
+                * TOLERANCE;
     }
 
     /**

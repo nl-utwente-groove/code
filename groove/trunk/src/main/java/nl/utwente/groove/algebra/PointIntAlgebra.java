@@ -44,13 +44,8 @@ public final class PointIntAlgebra extends IntAlgebra<Integer,Double,Boolean,Str
     }
 
     @Override
-    public boolean isValue(Object value) {
+    public boolean isValidValue(Object value) {
         return value == singleInt;
-    }
-
-    @Override
-    public String getSymbol(Object value) {
-        return value.toString();
     }
 
     @Override

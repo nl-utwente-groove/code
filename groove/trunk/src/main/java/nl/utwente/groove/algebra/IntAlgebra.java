@@ -46,8 +46,4 @@ public abstract sealed class IntAlgebra<INT,REAL,BOOL,STRING>
      * representation of a value to the algebra representation.
      */
     protected abstract INT toValue(Integer constant);
-
-    /* Specialises the return type to Integer. */
-    @Override
-    public abstract Integer toJavaValue(Object value);
 }

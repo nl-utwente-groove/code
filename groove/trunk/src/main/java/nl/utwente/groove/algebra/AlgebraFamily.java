@@ -153,30 +153,32 @@ public enum AlgebraFamily implements DocumentedEnum {
 
     /**
      * Returns the value for a given expression, not containing {@link Kind#FIELD} sub-expressions,
-     * using a valuation for the free variables
+     * using a valuation for the free variables. Throws an {@link ErrorValue} if the value cannot
+     * be computed.
      * @param expr the expression to be evaluated
      * @param valuation mapping from free variables in {@code expr} to
      * their corresponding values (assumed to be elements of this algebra
      * family). May be {@code null}, in which case either this should be
      * the {@link #POINT} algebra family or {@code term} should be cloased.
      * @return the value {@code term} (in the appropriate algebra)
+     * @throws ErrorValue if the computation involves any operation that cannot be applied
      */
-    public Object compute(Expression expr, @Nullable Function<Variable,Object> valuation) {
+    public Object compute(Expression expr,
+                          @Nullable Function<Variable,Object> valuation) throws ErrorValue {
+        if (this == POINT) {
+            return ((PointAlgebra<?>) getAlgebra(expr.getSort())).getPointValue();
+        }
         switch (expr.getKind()) {
         case CONST:
-            return getAlgebra(expr.getSort()).toValueFromConstant((Constant) expr);
+            return toValue((Constant) expr);
         case VAR:
-            if (this == POINT) {
-                return ((PointAlgebra<?>) getAlgebra(expr.getSort())).getPointValue();
-            } else {
-                assert valuation != null;
-                return valuation.apply((Variable) expr);
-            }
+            assert valuation != null;
+            return valuation.apply((Variable) expr);
         case CALL:
             CallExpr call = (CallExpr) expr;
             List<Object> args = new ArrayList<>();
             for (Expression arg : call.getArgs()) {
-                args.add(toValue(arg));
+                args.add(computeFoldError(arg, valuation));
             }
             return getOperation(call.getOperator()).apply(args);
         default:
@@ -185,12 +187,56 @@ public enum AlgebraFamily implements DocumentedEnum {
     }
 
     /**
-     * Returns the value for a given term, not containing {@link Kind#FIELD} sub-expressions.
-     * Either the term has to be closed or this should be the {@link #POINT} algebra family.
+     * Returns the value for a given expression, not containing {@link Kind#FIELD} sub-expressions,
+     * using a valuation for the free variables.
+     * @param expr the expression to be evaluated
+     * @param valuation mapping from free variables in {@code expr} to
+     * their corresponding values (assumed to be elements of this algebra
+     * family). May be {@code null}, in which case either this should be
+     * the {@link #POINT} algebra family or {@code term} should be cloased.
+     * @return the value {@code term} (in the appropriate algebra); may be an {@link ErrorValue}.
+     */
+    public Object computeFoldError(Expression expr, @Nullable Function<Variable,Object> valuation) {
+        try {
+            return compute(expr, valuation);
+        } catch (ErrorValue error) {
+            return error;
+        }
+    }
+
+    /**
+     * Returns the value for a given constant.
      * @return the value of {@code term} (in the appropriate algebra)
      */
-    public Object toValue(Expression term) {
+    public Object toValue(Constant constant) {
+        return getAlgebra(constant.getSort()).toValueFromConstant(constant);
+    }
+
+    /**
+     * Returns the value for a given term, not containing {@link Kind#FIELD} sub-expressions,
+     * throwing an exception if the term cannot be evaluated.
+     * Either the term has to be closed or this should be the {@link #POINT} algebra family.
+     * @return the value of {@code term} (in the appropriate algebra)
+     * @throws ErrorValue if the computation involves any operation that cannot be applied
+     * @see #toValueFoldError(Expression)
+     */
+    public Object toValue(Expression term) throws ErrorValue {
         return compute(term, null);
+    }
+
+    /**
+     * Returns the value for a given term, not containing {@link Kind#FIELD} sub-expressions,
+     * returning an error value if the term cannot be evaluated.
+     * Either the term has to be closed or this should be the {@link #POINT} algebra family.
+     * @return the value of {@code term} (in the appropriate algebra)
+     * @see #toValue(Expression)
+     */
+    public Object toValueFoldError(Expression term) {
+        try {
+            return toValue(term);
+        } catch (ErrorValue error) {
+            return error;
+        }
     }
 
     /**
@@ -292,17 +338,23 @@ public enum AlgebraFamily implements DocumentedEnum {
         }
 
         @Override
-        public Object apply(List<Object> args) throws IllegalArgumentException {
+        public Object apply(List<Object> args) throws ErrorValue {
+            var argsArray = args.toArray();
+            for (var arg : argsArray) {
+                if (arg instanceof ErrorValue error) {
+                    throw getResultAlgebra().errorValue(error);
+                }
+            }
             try {
                 return this.method.invoke(this.algebra, args.toArray());
-            } catch (IllegalAccessException e) {
-                throw Exceptions.illegalArg("Caused by %s", e);
-            } catch (InvocationTargetException e) {
-                if (e.getCause() instanceof Error err) {
-                    throw err;
-                } else {
-                    throw Exceptions.illegalArg("Caused by %s", e);
-                }
+            } catch (IllegalAccessException exc) {
+                throw Exceptions.illegalArg("Can't apply %s to %s", this, args);
+            } catch (InvocationTargetException exc) {
+                // this catches any invocation error, including IllegalArgumentExceptions
+                var error = exc.getCause() instanceof Exception inner
+                    ? inner
+                    : exc;
+                throw getResultAlgebra().errorValue(error);
             }
         }
 

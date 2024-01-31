@@ -792,7 +792,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
         }
     }
 
-    /** Creates an exception reporting an unexpected token. */
+    /** Creates an exception reporting an mismatch in arity. */
     protected ParseException argumentMismatch(O op, int argCount, Token token) {
         return new ParseException("Operator '%s' expects %s arguments but has %s at index %s",
             op.getSymbol(), op.getArity(), argCount, token.start());

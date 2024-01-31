@@ -51,6 +51,7 @@ import java.util.TreeSet;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Variable;
@@ -1879,6 +1880,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 String id = node.getId();
                 if (node.hasExpression()) {
                     term = node.getExpression();
+                    assert term instanceof Constant;
                 } else {
                     String varName = id == null
                         ? VariableNode.TO_STRING_PREFIX + nr

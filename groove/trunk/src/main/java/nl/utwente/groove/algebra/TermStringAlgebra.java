@@ -32,110 +32,92 @@ public final class TermStringAlgebra
 
     @Override
     public Expression concat(Expression arg0, Expression arg1) {
-        return Op.CONCAT.getOperator()
-            .newTerm(arg0, arg1);
+        return Op.CONCAT.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
     public Expression isBool(Expression arg0) {
-        return Op.IS_BOOL.getOperator()
-            .newTerm(arg0);
+        return Op.IS_BOOL.getOperator().newTerm(arg0);
     }
 
     @Override
     public Expression isInt(Expression arg0) {
-        return Op.IS_INT.getOperator()
-            .newTerm(arg0);
+        return Op.IS_INT.getOperator().newTerm(arg0);
     }
 
     @Override
     public Expression isReal(Expression arg0) {
-        return Op.IS_REAL.getOperator()
-            .newTerm(arg0);
+        return Op.IS_REAL.getOperator().newTerm(arg0);
     }
 
     @Override
     public Expression toBool(Expression arg0) {
-        return Op.TO_BOOL.getOperator()
-            .newTerm(arg0);
+        return Op.TO_BOOL.getOperator().newTerm(arg0);
     }
 
     @Override
     public Expression toInt(Expression arg0) {
-        return Op.TO_INT.getOperator()
-            .newTerm(arg0);
+        return Op.TO_INT.getOperator().newTerm(arg0);
     }
 
     @Override
     public Expression toReal(Expression arg0) {
-        return Op.TO_REAL.getOperator()
-            .newTerm(arg0);
+        return Op.TO_REAL.getOperator().newTerm(arg0);
     }
 
     @Override
     public Expression eq(Expression arg0, Expression arg1) {
-        return Op.EQ.getOperator()
-            .newTerm(arg0, arg1);
+        return Op.EQ.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
     public Expression ge(Expression arg0, Expression arg1) {
-        return Op.GE.getOperator()
-            .newTerm(arg0, arg1);
+        return Op.GE.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
     public Expression gt(Expression arg0, Expression arg1) {
-        return Op.GT.getOperator()
-            .newTerm(arg0, arg1);
+        return Op.GT.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
     public Expression ite(Expression arg0, Expression arg1, Expression arg2) {
-        return Op.ITE.getOperator()
-            .newTerm(arg0);
+        return Op.ITE.getOperator().newTerm(arg0);
     }
 
     @Override
     public Expression le(Expression arg0, Expression arg1) {
-        return Op.LE.getOperator()
-            .newTerm(arg0, arg1);
+        return Op.LE.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
     public Expression lt(Expression arg0, Expression arg1) {
-        return Op.LT.getOperator()
-            .newTerm(arg0, arg1);
+        return Op.LT.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
     public Expression neq(Expression arg0, Expression arg1) {
-        return Op.NEQ.getOperator()
-            .newTerm(arg0, arg1);
+        return Op.NEQ.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
     public Expression length(Expression arg) {
-        return Op.LENGTH.getOperator()
-            .newTerm(arg);
+        return Op.LENGTH.getOperator().newTerm(arg);
     }
 
     @Override
     public Expression substring(Expression arg0, Expression arg1, Expression arg2) {
-        return Op.SUBSTRING.getOperator()
-            .newTerm(arg0, arg1, arg2);
+        return Op.SUBSTRING.getOperator().newTerm(arg0, arg1, arg2);
     }
 
     @Override
     public Expression suffix(Expression arg0, Expression arg1) {
-        return Op.SUFFIX.getOperator()
-            .newTerm(arg0, arg1);
+        return Op.SUFFIX.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
     public Expression lookup(Expression arg0, Expression arg1) {
-        return Op.LOOKUP.getOperator()
-            .newTerm(arg0, arg1);
+        return Op.LOOKUP.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
@@ -149,7 +131,7 @@ public final class TermStringAlgebra
     }
 
     @Override
-    public boolean isValue(Object value) {
+    public boolean isValidValue(Object value) {
         return value instanceof Expression && ((Expression) value).getSort() == getSort();
     }
 
@@ -169,8 +151,13 @@ public final class TermStringAlgebra
     }
 
     @Override
-    public String toJavaValue(Object value) {
-        return (String) AlgebraFamily.DEFAULT.toValue((Expression) value);
+    public Object toJavaValue(Object value) {
+        if (value instanceof Expression expr) {
+            return AlgebraFamily.DEFAULT.toValueFoldError(expr);
+        } else {
+            assert value instanceof ErrorValue;
+            return value;
+        }
     }
 
     @Override

@@ -132,13 +132,8 @@ public final class PointStringAlgebra extends StringAlgebra<Integer,Double,Boole
     }
 
     @Override
-    public boolean isValue(Object value) {
+    public boolean isValidValue(Object value) {
         return value == singleString;
-    }
-
-    @Override
-    public String getSymbol(Object value) {
-        return singleString;
     }
 
     @Override
@@ -147,7 +142,7 @@ public final class PointStringAlgebra extends StringAlgebra<Integer,Double,Boole
     }
 
     @Override
-    public String toJavaValue(Object value) {
+    public Object toJavaValue(Object value) {
         return singleString;
     }
 

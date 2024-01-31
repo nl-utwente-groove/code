@@ -57,20 +57,15 @@ public class DataOperatorChecker extends ReteNetworkNode {
      *               the operation this checker node should perform.
      */
     public DataOperatorChecker(ReteNetwork network, ReteStaticMapping antecedent,
-        OperatorNode opNode) {
+                               OperatorNode opNode) {
         super(network);
-        assert antecedent.getLhsNodes()
-            .containsAll(opNode.getArguments());
+        assert antecedent.getLhsNodes().containsAll(opNode.getArguments());
         this.operator = opNode.getOperator();
-        this.operation = AlgebraFamily.getInstance()
-            .getOperation(this.operator);
-        this.dataCreator = !antecedent.getLhsNodes()
-            .contains(opNode.getTarget())
-            && (opNode.getTarget()
-                .getConstant() == null);
+        this.operation = AlgebraFamily.getInstance().getOperation(this.operator);
+        this.dataCreator = !antecedent.getLhsNodes().contains(opNode.getTarget())
+            && (opNode.getTarget().getConstant() == null);
         this.addAntecedent(antecedent.getNNode());
-        antecedent.getNNode()
-            .addSuccessor(this);
+        antecedent.getNNode().addSuccessor(this);
         adjustPattern(opNode);
         for (VariableNode vn : opNode.getArguments()) {
             this.argumentLocator.add(antecedent.locateNode(vn));
@@ -129,38 +124,41 @@ public class DataOperatorChecker extends ReteNetworkNode {
             arguments.add(vn.getValue());
         }
 
-        Object outcome = this.operation.apply(arguments);
+        Object outcome = this.operation.applyFoldError(arguments);
         VariableNode opResultVarNode = ((VariableNode) this.pattern[this.pattern.length - 1]);
         ValueNode resultValueNode = null;
         boolean passDown = false;
 
         if (this.isDataCreator()) {
             passDown = true;
-            resultValueNode = this.getOwner()
+            resultValueNode = this
+                .getOwner()
                 .getHostFactory()
                 .createNode(this.operation.getResultAlgebra(), outcome);
         } else if (opResultVarNode.getConstant() != null) {
-            resultValueNode = this.getOwner()
+            resultValueNode = this
+                .getOwner()
                 .getHostFactory()
                 .createNode(this.operation.getResultAlgebra(), outcome);
-            passDown = this.operation.getResultAlgebra()
+            passDown = this.operation
+                .getResultAlgebra()
                 .toTerm(outcome)
                 .equals(opResultVarNode.getConstant());
         } else {
-            LookupEntry entry = this.getAntecedents()
+            LookupEntry entry = this
+                .getAntecedents()
                 .get(0)
                 .getPatternLookupTable()
                 .getNode((RuleNode) this.pattern[this.pattern.length - 1]);
             ValueNode n = (ValueNode) entry.lookup(matchUnits);
-            if (n.getValue()
-                .equals(outcome)) {
+            if (n.getValue().equals(outcome)) {
                 resultValueNode = n;
                 passDown = true;
             }
         }
         if (passDown) {
-            ReteSimpleMatch m = new ReteSimpleMatch(this, this.getOwner()
-                .isInjective(), subgraph, new HostElement[] {resultValueNode});
+            ReteSimpleMatch m = new ReteSimpleMatch(this, this.getOwner().isInjective(), subgraph,
+                new HostElement[] {resultValueNode});
             passDownMatchToSuccessors(m);
         }
     }
@@ -173,8 +171,11 @@ public class DataOperatorChecker extends ReteNetworkNode {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(
-            String.format("- Data Operator Checker%s\n", this.isDataCreator() ? "(creator)" : ""));
+        sb
+            .append(String
+                .format("- Data Operator Checker%s\n", this.isDataCreator()
+                    ? "(creator)"
+                    : ""));
         sb.append(String.format("- Operator - %s\n", this.operator.toString()));
         sb.append("---  Pattern-\n");
         for (int i = 0; i < this.pattern.length; i++) {
@@ -183,10 +184,12 @@ public class DataOperatorChecker extends ReteNetworkNode {
         for (int i = 0; i < this.argumentLocator.size(); i++) {
             LookupEntry entry = this.argumentLocator.get(i);
             if (entry.role() != Role.NODE) {
-                sb.append(String.format("-- argument[%d]=element[%d]%s\n",
-                    i,
-                    entry.pos(),
-                    entry.role() == Role.SOURCE ? ".source" : ".target"));
+                sb
+                    .append(String
+                        .format("-- argument[%d]=element[%d]%s\n", i, entry.pos(),
+                                entry.role() == Role.SOURCE
+                                    ? ".source"
+                                    : ".target"));
             } else {
                 sb.append(String.format("-- argument[%d]=element[%d]\n", i, entry.pos()));
             }

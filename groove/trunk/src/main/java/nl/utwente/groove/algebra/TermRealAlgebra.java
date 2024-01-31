@@ -44,7 +44,7 @@ public final class TermRealAlgebra
     }
 
     @Override
-    public boolean isValue(Object value) {
+    public boolean isValidValue(Object value) {
         return value instanceof Expression && ((Expression) value).getSort() == getSort();
     }
 
@@ -64,8 +64,13 @@ public final class TermRealAlgebra
     }
 
     @Override
-    public Double toJavaValue(Object value) {
-        return (Double) AlgebraFamily.DEFAULT.toValue((Expression) value);
+    public Object toJavaValue(Object value) {
+        if (value instanceof Expression expr) {
+            return AlgebraFamily.DEFAULT.toValueFoldError(expr);
+        } else {
+            assert value instanceof ErrorValue;
+            return value;
+        }
     }
 
     @Override

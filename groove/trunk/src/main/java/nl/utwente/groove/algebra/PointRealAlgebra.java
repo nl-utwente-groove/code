@@ -44,13 +44,8 @@ public final class PointRealAlgebra extends RealAlgebra<Integer,Double,Boolean,S
     }
 
     @Override
-    public boolean isValue(Object value) {
+    public boolean isValidValue(Object value) {
         return value == singleReal;
-    }
-
-    @Override
-    public String getSymbol(Object value) {
-        return value.toString();
     }
 
     @Override
@@ -64,7 +59,7 @@ public final class PointRealAlgebra extends RealAlgebra<Integer,Double,Boolean,S
     }
 
     @Override
-    public Double toJavaValue(Object value) {
+    public Object toJavaValue(Object value) {
         return singleReal;
     }
 

@@ -47,8 +47,4 @@ public sealed abstract class StringAlgebra<INT,REAL,BOOL,STRING>
      * representation to the algebra representation.
      */
     protected abstract STRING toValueFromJavaString(java.lang.String value);
-
-    /* Specialises the return type. */
-    @Override
-    public abstract java.lang.String toJavaValue(Object value);
 }

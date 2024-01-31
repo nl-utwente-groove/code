@@ -686,19 +686,19 @@ public class RuleTree extends AbstractResourceTree {
         void setSelection(Collection<TreeNode> selectedNodes) {
             boolean done = false;
             for (TreeNode node : selectedNodes) {
-                if (node instanceof MatchTreeNode) {
+                if (node instanceof MatchTreeNode mtn) {
                     // selected tree node is a match (level 2 node)
-                    GraphState state = ((MatchTreeNode) node).getSource();
-                    MatchResult match = ((MatchTreeNode) node).getMatch();
+                    GraphState state = mtn.getSource();
+                    MatchResult match = mtn.getMatch();
                     getSimulatorModel().setMatch(state, match);
                     done = true;
                     break;
                 }
             }
             for (TreeNode node : selectedNodes) {
-                if (node instanceof RecipeTransitionTreeNode) {
+                if (node instanceof RecipeTransitionTreeNode rttn) {
                     // selected tree node is a match (level 2 node)
-                    GraphTransition trans = ((RecipeTransitionTreeNode) node).getTransition();
+                    GraphTransition trans = rttn.getTransition();
                     getSimulatorModel().setTransition(trans);
                     done = true;
                     break;
@@ -707,8 +707,8 @@ public class RuleTree extends AbstractResourceTree {
             if (!done) {
                 // otherwise, select a recipe if appropriate
                 for (TreeNode node : selectedNodes) {
-                    if (node instanceof RecipeTreeNode) {
-                        Recipe recipe = ((RecipeTreeNode) node).getRecipe();
+                    if (node instanceof RecipeTreeNode rtn) {
+                        Recipe recipe = rtn.getRecipe();
                         getSimulatorModel()
                             .doSelectSet(ResourceKind.RULE, Collections.<QualName>emptySet());
                         getSimulatorModel().doSelect(ResourceKind.CONTROL, recipe.getControlName());

@@ -24,11 +24,10 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.utwente.groove.algebra.Algebra;
-import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.grammar.Condition;
-import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.Condition.Op;
+import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.grammar.rule.LabelVar;
@@ -54,11 +53,9 @@ class ConditionSearchItem extends AbstractSearchItem {
     public ConditionSearchItem(Condition condition, boolean simple) {
         this.condition = condition;
         GrammarProperties properties = condition.getGrammarProperties();
-        this.matcher = MatcherFactory.instance(simple)
-            .createMatcher(condition);
+        this.matcher = MatcherFactory.instance(simple).createMatcher(condition);
         if (condition.hasPattern()) {
-            this.intAlgebra = properties.getAlgebraFamily()
-                .getAlgebra(Sort.INT);
+            this.intAlgebra = properties.getAlgebraFamily().getAlgebra(Sort.INT);
             this.rootGraph = condition.getRoot();
             this.neededNodes = condition.getInputNodes();
             this.neededVars = this.rootGraph.varSet();
@@ -98,8 +95,7 @@ class ConditionSearchItem extends AbstractSearchItem {
             return result;
         }
         ConditionSearchItem other = (ConditionSearchItem) item;
-        return this.condition.getName()
-            .compareTo(other.condition.getName());
+        return this.condition.getName().compareTo(other.condition.getName());
     }
 
     @Override
@@ -108,8 +104,9 @@ class ConditionSearchItem extends AbstractSearchItem {
         case EXISTS:
         case FORALL:
         case NOT:
-            return -this.condition.getPattern()
-                .nodeCount() - (this.rootGraph == null ? 0 : this.rootGraph.size());
+            return -this.condition.getPattern().nodeCount() - (this.rootGraph == null
+                ? 0
+                : this.rootGraph.size());
         case TRUE:
             return 0;
         case FALSE:
@@ -188,11 +185,9 @@ class ConditionSearchItem extends AbstractSearchItem {
 
     @Override
     public String toString() {
-        return String.format("%s %s: %s",
-            this.condition.getOp()
-                .getName(),
-            this.condition.getName(),
-            ((PlanSearchStrategy) this.matcher.getSearchStrategy()).getPlan());
+        return String
+            .format("%s %s: %s", this.condition.getOp().getName(), this.condition.getName(),
+                    ((PlanSearchStrategy) this.matcher.getSearchStrategy()).getPlan());
     }
 
     @Override
@@ -218,8 +213,7 @@ class ConditionSearchItem extends AbstractSearchItem {
     private boolean isModifying(Condition condition) {
         boolean result = false;
         if (condition.hasRule()) {
-            result = condition.getRule()
-                .isModifying();
+            result = condition.getRule().isModifying();
         } else {
             for (Condition subCondition : condition.getSubConditions()) {
                 if (isModifying(subCondition)) {
@@ -274,8 +268,9 @@ class ConditionSearchItem extends AbstractSearchItem {
 
         @Override
         boolean write() {
-            this.search.putSubMatch(ConditionSearchItem.this.condIx,
-                new TreeMatch(ConditionSearchItem.this.condition, null));
+            this.search
+                .putSubMatch(ConditionSearchItem.this.condIx,
+                             new TreeMatch(ConditionSearchItem.this.condition, null));
             return true;
         }
 
@@ -304,8 +299,7 @@ class ConditionSearchItem extends AbstractSearchItem {
          * the elements found so far during the search.
          */
         final RuleToHostMap createContextMap() {
-            RuleToHostMap result = this.host.getFactory()
-                .createRuleToHostMap();
+            RuleToHostMap result = this.host.getFactory().createRuleToHostMap();
             for (Map.Entry<RuleNode,Integer> nodeIxEntry : ConditionSearchItem.this.nodeIxMap
                 .entrySet()) {
                 result.putNode(nodeIxEntry.getKey(), this.search.getNode(nodeIxEntry.getValue()));
@@ -336,12 +330,11 @@ class ConditionSearchItem extends AbstractSearchItem {
             boolean result = true;
             if (ConditionSearchItem.this.preCounted) {
                 HostNode countImage = this.search.getNode(ConditionSearchItem.this.countNodeIx);
-                this.preCount =
-                    (Integer) AlgebraFamily.DEFAULT.toValue(((ValueNode) countImage).getTerm());
+                this.preCount = (Integer) ((ValueNode) countImage).toJavaValue();
             }
             RuleToHostMap contextMap = createContextMap();
-            List<TreeMatch> matches =
-                ConditionSearchItem.this.matcher.findAll(this.host, contextMap);
+            List<TreeMatch> matches
+                = ConditionSearchItem.this.matcher.findAll(this.host, contextMap);
             if (ConditionSearchItem.this.condition.getOp() == Op.FORALL
                 && ConditionSearchItem.this.positive && matches.isEmpty()) {
                 result = false;
@@ -349,7 +342,8 @@ class ConditionSearchItem extends AbstractSearchItem {
                 result = matches.size() == this.preCount;
             } else if (ConditionSearchItem.this.countNode != null) {
                 Algebra<?> intAlgebra = ConditionSearchItem.this.intAlgebra;
-                this.countImage = this.host.getFactory()
+                this.countImage = this.host
+                    .getFactory()
                     .createNode(intAlgebra, intAlgebra.toValueFromJava(matches.size()));
             }
             if (result) {
@@ -368,16 +362,28 @@ class ConditionSearchItem extends AbstractSearchItem {
             Condition.Op op;
             switch (ConditionSearchItem.this.condition.getOp()) {
             case AND:
-                op = noMatches ? Op.TRUE : Op.AND;
+                op = noMatches
+                    ? Op.TRUE
+                    : Op.AND;
                 break;
             case FORALL:
-                op = noMatches ? (positive ? Op.FALSE : Op.TRUE) : Op.AND;
+                op = noMatches
+                    ? (positive
+                        ? Op.FALSE
+                        : Op.TRUE)
+                    : Op.AND;
                 break;
             case OR:
-                op = noMatches ? Op.FALSE : Op.OR;
+                op = noMatches
+                    ? Op.FALSE
+                    : Op.OR;
                 break;
             case EXISTS:
-                op = noMatches ? (positive ? Op.FALSE : Op.TRUE) : Op.OR;
+                op = noMatches
+                    ? (positive
+                        ? Op.FALSE
+                        : Op.TRUE)
+                    : Op.OR;
                 break;
             default:
                 throw new IllegalStateException();
