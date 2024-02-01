@@ -54,7 +54,7 @@ public final class PointIntAlgebra extends IntAlgebra<Integer,Double,Boolean,Str
     }
 
     @Override
-    public Expression toTerm(Object value) {
+    public Expression toValidTerm(Object value) {
         return singleIntConstant;
     }
 

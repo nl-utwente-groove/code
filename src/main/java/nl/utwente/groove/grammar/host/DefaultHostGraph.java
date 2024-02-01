@@ -81,7 +81,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<@NonNull HostNode,@Non
             if (sn instanceof ValueNode vn && family != null) {
                 tn = getFactory()
                     .createNode(family.getAlgebra(vn.getSort()),
-                                family.toValueFoldError(vn.getTerm()));
+                                family.toValue(vn.toTerm()));
             } else {
                 tn = sn;
             }

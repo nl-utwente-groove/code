@@ -8,12 +8,14 @@ import java.util.List;
 public interface Operation {
     /**
      * Applies this operation on the list of operands and returns the result
-     * value. Throws an exception if the operation cannot be applied.
+     * value. Throws an exception if the operation cannot be applied,
+     * either because one or more of the arguments are themselves error values
+     * or because the operation is not defined on the argument values.
      * @param args the operands on which this operation operates
      * @return the resulting value when applying this operation on its
      *         <tt>args</tt>
      * @throws ErrorValue if the operation cannot be applied for any reason
-     * @see #applyFoldError(List)
+     * @see #applyStrict(List)
      */
     public Object apply(List<Object> args) throws ErrorValue;
 
@@ -25,7 +27,7 @@ public interface Operation {
      *         <tt>args</tt>
      * @see #apply(List)
      */
-    default public Object applyFoldError(List<Object> args) {
+    default public Object applyStrict(List<Object> args) {
         try {
             return apply(args);
         } catch (ErrorValue error) {
@@ -42,6 +44,9 @@ public interface Operation {
      * Returns the number of parameters of this operation.
      */
     public int getArity();
+
+    /** Signals if this is a collection-based operation, i.e., with a variable number of arguments. */
+    public boolean isVarArgs();
 
     /**
      * Returns the algebra to which this operation belongs.

@@ -227,7 +227,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
                     }
                     family.add(type);
                     // also add a NAME or BOOL type for the symbol, if appropriate
-                    if (Sort.BOOL.denotesConstant(symbol)) {
+                    if (Sort.BOOL.denotesValue(symbol)) {
                         family.add(getConstTokenType(Sort.BOOL));
                     } else if (getIdValidator().isValid(symbol)) {
                         family.add(NAME.type());
@@ -418,8 +418,12 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
                 if (consume(RPAR) == null) {
                     throw expectedToken(RPAR, next());
                 }
-                if (result.getArgs().size() != op.getArity()) {
-                    throw argumentMismatch(op, result.getArgs().size(), opToken);
+                if (!op.allowsArgCount(result.getArgs().size())) {
+                    if (op.isVarArgs()) {
+                        throw zeroArgsMismatch(op, opToken);
+                    } else {
+                        throw argumentMismatch(op, result.getArgs().size(), opToken);
+                    }
                 }
             }
         } else if (op.getArity() == 1) {
@@ -665,9 +669,15 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
         String symbol = fragment.substring();
         TokenFamily family = getTokenFamily(symbol);
         if (family == null) {
-            if (Sort.BOOL.denotesConstant(symbol)) {
-                family = getTokenFamily(getConstTokenType(Sort.BOOL));
-            } else if (validator.isValid(symbol)) {
+            for (var sort : Sort.values()) {
+                if (sort.denotesValue(symbol)) {
+                    family = getTokenFamily(getConstTokenType(sort));
+                    break;
+                }
+            }
+        }
+        if (family == null) {
+            if (validator.isValid(symbol)) {
                 family = getTokenFamily(NAME.type());
             } else {
                 // roll back until the beginning of this token
@@ -796,6 +806,12 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
     protected ParseException argumentMismatch(O op, int argCount, Token token) {
         return new ParseException("Operator '%s' expects %s arguments but has %s at index %s",
             op.getSymbol(), op.getArity(), argCount, token.start());
+    }
+
+    /** Creates an exception reporting zero arguments for a collection-based operator. */
+    protected ParseException zeroArgsMismatch(O op, Token token) {
+        return new ParseException("Collection-based must have arguments at index %s",
+            op.getSymbol(), token.start());
     }
 
     private ScanException unrecognisedToken() {

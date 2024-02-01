@@ -124,7 +124,7 @@ public class DataOperatorChecker extends ReteNetworkNode {
             arguments.add(vn.getValue());
         }
 
-        Object outcome = this.operation.applyFoldError(arguments);
+        Object outcome = this.operation.applyStrict(arguments);
         VariableNode opResultVarNode = ((VariableNode) this.pattern[this.pattern.length - 1]);
         ValueNode resultValueNode = null;
         boolean passDown = false;

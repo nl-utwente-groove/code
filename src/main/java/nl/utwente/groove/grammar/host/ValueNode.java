@@ -94,18 +94,11 @@ final public class ValueNode extends ANode implements HostNode {
     }
 
     /**
-     * Returns a symbolic description of the value, which uniquely identifies
+     * Returns a symbolic (parsable) description of the value, which uniquely identifies
      * the value in the algebra.
      */
     public String getSymbol() {
-        return getAlgebra().getSymbol(getValue());
-    }
-
-    /**
-     * Returns the normalised term for the algebra value.
-     */
-    public Expression getTerm() {
-        return getAlgebra().toTerm(getValue());
+        return getAlgebra().toSymbol(getValue());
     }
 
     /**

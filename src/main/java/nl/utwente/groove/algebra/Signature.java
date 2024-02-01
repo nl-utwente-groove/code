@@ -61,7 +61,7 @@ public interface Signature {
         /** Indicates if this operator supports zero arguments.
          * This is especially relevant for set-based operators.
          */
-        default public boolean isSupportsZero() {
+        default public boolean isZeroArgs() {
             return false;
         }
     }

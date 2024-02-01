@@ -54,7 +54,7 @@ public final class PointRealAlgebra extends RealAlgebra<Integer,Double,Boolean,S
     }
 
     @Override
-    public Expression toTerm(Object value) {
+    public Expression toValidTerm(Object value) {
         return singlRealConstant;
     }
 

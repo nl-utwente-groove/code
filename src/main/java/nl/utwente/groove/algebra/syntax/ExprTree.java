@@ -329,14 +329,21 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
      * for the required operator types
      */
     private Expression newCallExpr(Operator op, List<MultiExpression> args) throws FormatException {
-        if (op.getArity() != args.size()) {
-            throw new FormatException("Operator '%s' expects %s parameters but has %s",
-                op.toString(), op.getArity(), args.size());
+        if (!op.allowsArgCount(args.size())) {
+            if (op.isVarArgs()) {
+                throw new FormatException("Operator '%s' must have arguments", op.toString());
+            } else {
+                throw new FormatException("Operator '%s' expects %s parameters but has %s",
+                    op.toString(), op.getArity(), args.size());
+            }
         }
         List<Sort> parTypes = op.getParamTypes();
         List<Expression> selectedArgs = new ArrayList<>();
         for (int i = 0; i < args.size(); i++) {
-            Expression arg = args.get(i).get(parTypes.get(i));
+            var sort = op.isVarArgs()
+                ? parTypes.get(0)
+                : parTypes.get(i);
+            Expression arg = args.get(i).get(sort);
             if (arg == null) {
                 throw new FormatException("Parameter %s of '%s' should have type %s", i,
                     getParseString(), parTypes.get(i));
@@ -474,19 +481,45 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
          * Constructs the unique atomic operator, with empty symbol.
          */
         private ExprOp() {
+            this.varArgs = false;
+            this.zeroArgs = false;
         }
 
         /**
-         * Constructs an operator with a given kind, symbol and arity.
+         * Constructs a non-collection-based operator with a given kind, symbol and arity.
          * The arity should equal the kind's arity, unless the latter is unspecified.
          */
         public ExprOp(OpKind kind, String symbol, int arity) {
+            this(kind, symbol, arity, false, false);
+        }
+
+        /**
+         * Constructs a (possible collection-based) operator with a given kind and symbol,
+         * based on a given (sorted) operator.
+         * The arity should equal the kind's arity, unless the latter is unspecified.
+         */
+        public ExprOp(OpKind kind, String symbol, Operator sortOp) {
+            this(kind, symbol, sortOp.getArity(), sortOp.isVarArgs(), sortOp.isZeroArgs());
+        }
+
+        /**
+         * Constructs a (possible collection-based) operator with a given kind, symbol and arity.
+         * The arity should equal the kind's arity, unless the latter is unspecified.
+         * @param varArgs if {@code true}, the operator allows a variable number of arguments
+         */
+        public ExprOp(OpKind kind, String symbol, int arity, boolean varArgs, boolean zeroArgs) {
             super(kind, symbol, arity);
+            this.varArgs = varArgs;
+            this.zeroArgs = zeroArgs;
+            assert !varArgs || arity == 1;
         }
 
         /** Adds an algebra operator to the operators wrapped in this object. */
         @SuppressWarnings("null")
         public void add(Operator sortOp) {
+            assert sortOp.getArity() == getArity();
+            assert sortOp.isVarArgs() == isVarArgs();
+            assert sortOp.isZeroArgs() == isZeroArgs();
             Operator old = this.sortOps.put(sortOp.getSort(), sortOp);
             assert old == null;
         }
@@ -505,7 +538,23 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
             return this.sortOps.values();
         }
 
-        private Map<Sort,Operator> sortOps = new EnumMap<>(Sort.class);
+        private final Map<Sort,Operator> sortOps = new EnumMap<>(Sort.class);
+
+        @Override
+        public boolean isVarArgs() {
+            return this.varArgs;
+        }
+
+        /** Flag indicating whether this is a collection-based operator. */
+        private final boolean varArgs;
+
+        @Override
+        public boolean isZeroArgs() {
+            return this.zeroArgs;
+        }
+
+        /** Flag indicating whether this is a collection-based operator that supports zero arguments. */
+        private final boolean zeroArgs;
 
         @Override
         public String toString() {

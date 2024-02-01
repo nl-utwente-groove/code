@@ -137,7 +137,7 @@ public final class PointStringAlgebra extends StringAlgebra<Integer,Double,Boole
     }
 
     @Override
-    public Expression toTerm(Object value) {
+    public Expression toValidTerm(Object value) {
         return Constant.instance(singleString);
     }
 

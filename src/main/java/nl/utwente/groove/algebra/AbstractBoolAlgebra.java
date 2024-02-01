@@ -74,7 +74,7 @@ public abstract sealed class AbstractBoolAlgebra extends BoolAlgebra<Boolean>
     }
 
     @Override
-    public Expression toTerm(Object value) {
+    public Expression toValidTerm(Object value) {
         return Constant.instance((Boolean) value);
     }
 

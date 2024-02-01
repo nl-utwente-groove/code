@@ -147,7 +147,7 @@ public final class BigRealAlgebra extends RealAlgebra<BigInteger,BigDecimal,Bool
     }
 
     @Override
-    public Expression toTerm(Object value) {
+    public Expression toValidTerm(Object value) {
         return Constant.instance((BigDecimal) value);
     }
 

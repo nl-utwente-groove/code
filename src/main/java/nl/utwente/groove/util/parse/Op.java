@@ -44,4 +44,25 @@ public interface Op {
      * If negative, there is no known or fixed arity.
      */
     public int getArity();
+
+    /** Signals if this is a collection-based operator, i.e., with a variable number of arguments. */
+    default boolean isVarArgs() {
+        return false;
+    }
+
+    /** Signals if this is a collection-based operator that supports zero arguments.
+     * @see #isVarArgs()
+     */
+    default boolean isZeroArgs() {
+        return false;
+    }
+
+    /** Tests if this operator supports a given argument count. */
+    default public boolean allowsArgCount(int argCount) {
+        if (isVarArgs()) {
+            return argCount > 0 || isZeroArgs();
+        } else {
+            return argCount == getArity();
+        }
+    }
 }

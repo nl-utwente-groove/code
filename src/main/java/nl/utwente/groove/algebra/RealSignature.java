@@ -172,7 +172,7 @@ public sealed abstract class RealSignature<INT,REAL,BOOL,STRING>
         private Operator operator;
 
         @Override
-        public boolean isSupportsZero() {
+        public boolean isZeroArgs() {
             return this.supportsZero;
         }
 

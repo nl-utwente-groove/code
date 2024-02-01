@@ -303,7 +303,7 @@ class ParallelPair {
                     } else {
                         ValueNode valNode = (ValueNode) result.getNode(varNode);
                         assert valNode != null;
-                        term = valNode.getTerm();
+                        term = valNode.toTerm();
                     }
                     args[i] = term;
                 }

@@ -206,7 +206,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements ReteStateSubscri
     private boolean valuesMatch(VariableNode n1, ValueNode n2) {
         assert n2.getSort().equals((n2.getSort()));
         Constant c = n1.getConstant();
-        return (c == null) || (c.equals(n2.getTerm()));
+        return (c == null) || (c.equals(n2.toTerm()));
     }
 
     /**

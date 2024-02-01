@@ -277,7 +277,7 @@ public class QuantifierCountChecker extends ReteNetworkNode implements ReteState
             .getHostFactory()
             .createNode(intAlgebra, intAlgebra.toValueFromJava(matchList.size()));
         if (this.getCountNode().hasConstant()) {
-            if (this.getCountNode().getConstant().equals(vn.getTerm())) {
+            if (this.getCountNode().getConstant().equals(vn.toTerm())) {
                 countMatch = new ReteCountMatch(this, getAnchorNodes(anchor), vn);
             }
         } else {

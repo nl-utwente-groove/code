@@ -446,7 +446,7 @@ public class NormalAspectGraph extends AspectGraph {
         var levelErrors = new FormatErrorSet();
         AspectNode argLevel;
         Operator operator = call.getOperator();
-        if (operator.isSetOperator()) {
+        if (operator.isVarArgs()) {
             Expression arg = call.getArgs().get(0);
             argLevel = getLevel(arg);
             if (argLevel == null || source.getLevelNode() != argLevel.getParentNode()) {

@@ -47,7 +47,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         this.algebra = family.getAlgebra(node.getSort());
         Expression term = node.getTerm();
         assert !(term instanceof Variable) || this.algebra.getFamily().supportsSymbolic();
-        this.value = family.toValueFoldError(term);
+        this.value = family.toValue(term);
         assert !(this.value instanceof ErrorValue);
     }
 

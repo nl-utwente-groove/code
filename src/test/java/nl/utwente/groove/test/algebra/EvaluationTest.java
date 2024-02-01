@@ -65,7 +65,7 @@ public class EvaluationTest {
     }
 
     private Object eval(Expression expr) {
-        return this.family.toValueFoldError(expr);
+        return this.family.toValue(expr);
     }
 
     private AlgebraFamily family;

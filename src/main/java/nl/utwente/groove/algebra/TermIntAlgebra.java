@@ -44,16 +44,16 @@ public final class TermIntAlgebra extends IntAlgebra<Expression,Expression,Expre
 
     @Override
     public boolean isValidValue(Object value) {
-        return value instanceof Expression && ((Expression) value).getSort() == getSort();
+        return value instanceof Expression expr && expr.getSort() == getSort();
     }
 
     @Override
-    public String getSymbol(Object value) {
+    public String toValidSymbol(Object value) {
         return ((Expression) value).toDisplayString();
     }
 
     @Override
-    public Expression toTerm(Object value) {
+    public Expression toValidTerm(Object value) {
         return (Expression) value;
     }
 
@@ -65,7 +65,7 @@ public final class TermIntAlgebra extends IntAlgebra<Expression,Expression,Expre
     @Override
     public Object toJavaValue(Object value) {
         if (value instanceof Expression expr) {
-            return AlgebraFamily.DEFAULT.toValueFoldError(expr);
+            return AlgebraFamily.DEFAULT.toValue(expr);
         } else {
             assert value instanceof ErrorValue;
             return value;

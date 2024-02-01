@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.util.parse;
 
-import nl.utwente.groove.algebra.Sort;
+import nl.utwente.groove.util.Keywords;
 
 /**
  * Functionality to test whether a given string is a valid identifier.
@@ -26,6 +26,22 @@ import nl.utwente.groove.algebra.Sort;
  * @version $Revision$
  */
 public abstract class IdValidator implements Fallible {
+    /** Creates a validator that allows the use of reserved keywords as identifiers. */
+    protected IdValidator() {
+        this(false);
+    }
+
+    /** Created a validator that optionally forbids reserved keywords.
+     * @param noReserved if {@code true}, reserved keywords are repaired
+     * @see Keywords#isReserved(String)
+     */
+    protected IdValidator(boolean noReserved) {
+        this.noReserved = noReserved;
+    }
+
+    /** Flag indicating whether reserved keywords are forbidden. */
+    private final boolean noReserved;
+
     /**
      * Turns a given name into one that is valid according to the rules of this validator,
      * while collecting the errors found along the way.
@@ -43,6 +59,11 @@ public abstract class IdValidator implements Fallible {
         } else if (name.isEmpty()) {
             this.errors.add("Empty name");
             result.append(EMPTY_TEXT);
+        } else if (this.noReserved && Keywords.isReserved(name)) {
+            this.errors.add("Reserved keyword");
+            result.append('_');
+            result.append(name);
+            result.append('_');
         } else {
             // flag indicating if an alphanumeric character has been found
             boolean containsAlpha = false;
@@ -227,8 +248,13 @@ public abstract class IdValidator implements Fallible {
     private static final String NULL_TEXT = "_NULL_";
     private static final String EMPTY_TEXT = "_EMP_";
 
-    /** Validator for standard Java identifiers. */
+    /** Validator for standard Java identifiers (including reserved keywords). */
     public static final IdValidator JAVA_ID = new IdValidator() {
+        // empty
+    };
+
+    /** Validator for standard Java identifiers, excluding reserved keywords. */
+    public static final IdValidator JAVA_ID_NON_RESERVED = new IdValidator(true) {
         // empty
     };
 
@@ -240,16 +266,11 @@ public abstract class IdValidator implements Fallible {
         }
     };
 
-    /** Validator for standard Java identifiers that are not Boolean constants. */
-    public static final IdValidator JAVA_ID_NON_BOOL = new IdValidator() {
+    /** Validator for GROOVE identifiers (edge labels, wildcards and the like), excluding reserved keywords. */
+    public static final IdValidator GROOVE_ID_NON_RESERVED = new IdValidator(true) {
         @Override
-        public String testValid(String name) throws FormatException {
-            var result = super.testValid(name);
-            if (Sort.BOOL.denotesConstant(name)) {
-                throw new FormatException("Boolean constant '%s' not allowed as identifier", name);
-            }
-            return result;
+        public boolean isIdentifierPart(char c) {
+            return super.isIdentifierPart(c) || c == '-';
         }
-
     };
 }

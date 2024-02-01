@@ -1217,7 +1217,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
         private boolean isSetOperator(AspectEdge edge) {
             Operator op = edge.getOperator();
-            return op != null && op.isSetOperator();
+            return op != null && op.isVarArgs();
         }
 
         /**
@@ -1513,7 +1513,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             }
             AspectNode targetModelNode = operatorEdge.target();
             VariableNode target = (VariableNode) getNodeImage(targetModelNode);
-            boolean setOperator = operator.isSetOperator();
+            boolean setOperator = operator.isVarArgs();
             if (!(setOperator || this.lhs.nodeSet().contains(target)
                 || embargo && this.nacNodeSet.contains(target))) {
                 String nodeName = targetModelNode.hasId()
@@ -1535,7 +1535,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                         "Argument of set operator '%s' must be universally quantified",
                         operator.getName(), operatorEdge);
                 }
-                if (!operator.isSupportsZero() && !getIndex().isPositive()) {
+                if (!operator.isZeroArgs() && !getIndex().isPositive()) {
                     throw new FormatException(
                         "Argument of set operator '%s' needs a non-vacuous quantification",
                         operator.getName(), operatorEdge);

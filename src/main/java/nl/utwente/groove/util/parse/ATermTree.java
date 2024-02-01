@@ -93,20 +93,28 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
     public boolean setFixed() {
         boolean result = !isFixed();
         if (result) {
-            if (!hasErrors() && getOp().getArity() >= 0 && getOp().getArity() != getArgs().size()) {
-                getErrors()
-                    .add("Operator '%s' expects %s but has %s operands in %s", getOp().getSymbol(),
-                         getOp().getArity(), getArgs().size(), getParseString());
+            var errors = getErrors();
+            if (errors.isEmpty() && !getOp().allowsArgCount(getArgs().size())) {
+                if (getOp().isVarArgs()) {
+                    errors
+                        .add("Operator '%s' must have arguments in %s", getOp().getSymbol(),
+                             getParseString());
+                } else {
+                    errors
+                        .add("Operator '%s' expects %s but has %s operands in %s",
+                             getOp().getSymbol(), getOp().getArity(), getArgs().size(),
+                             getParseString());
+                }
             }
             for (T arg : getArgs()) {
                 arg.setFixed();
-                getErrors().addAll(arg.getErrors());
+                errors.addAll(arg.getErrors());
             }
             super.setFixed();
-            if (this.errors.isEmpty()) {
+            if (errors.isEmpty()) {
                 this.errors = FormatErrorSet.EMPTY;
             } else {
-                this.errors.setFixed();
+                errors.setFixed();
             }
         }
         return result;

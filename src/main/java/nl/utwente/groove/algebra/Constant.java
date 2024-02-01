@@ -18,6 +18,9 @@ package nl.utwente.groove.algebra;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -86,6 +89,17 @@ public final class Constant extends Expression {
         this.realRepr = null;
     }
 
+    /** Constructs a new error constant for a given sort. */
+    Constant(Sort sort) {
+        super(true);
+        this.sort = sort;
+        this.symbol = sort.getErrorSymbol();
+        this.intRepr = null;
+        this.boolRepr = null;
+        this.stringRepr = null;
+        this.realRepr = null;
+    }
+
     @Override
     public boolean isTerm() {
         return true;
@@ -112,6 +126,11 @@ public final class Constant extends Expression {
     }
 
     private final Sort sort;
+
+    /** Indicates if this constants represents an error value. */
+    public boolean isError() {
+        return getRepr() == null;
+    }
 
     @Override
     protected Line toLine(OpKind context) {
@@ -176,7 +195,7 @@ public final class Constant extends Expression {
     private final Boolean boolRepr;
 
     /** Returns the representational object of this constant. */
-    private @NonNull Object getRepr() {
+    private Object getRepr() {
         return switch (getSort()) {
         case BOOL -> getBoolRepr();
         case INT -> getIntRepr();
@@ -254,5 +273,16 @@ public final class Constant extends Expression {
     /** Returns a string constant containing the given integer representation. */
     public static Constant instance(int value) {
         return new Constant(BigInteger.valueOf(value));
+    }
+
+    /** Returns a (unique) constant representing the error value of a given sort. */
+    public static Constant error(Sort sort) {
+        return errorMap.get(sort);
+    }
+
+    private static Map<Sort,Constant> errorMap = new EnumMap<>(Sort.class);
+
+    static {
+        Arrays.stream(Sort.values()).forEach(s -> errorMap.put(s, new Constant(s)));
     }
 }

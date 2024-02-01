@@ -49,18 +49,18 @@ public enum Sort {
     @Syntax("TRUE.BAR.FALSE")
     @ToolTipHeader("Boolean literal")
     @ToolTipBody({"Representation of a BOOL constant.", "Only lowercase is valid."})
-    BOOL(Keywords.BOOL, BoolSignature.class, EnumSet.allOf(BoolSignature.Op.class)) {
+    BOOL(Keywords.BOOL, BoolSignature.class, EnumSet.allOf(BoolSignature.Op.class), Keywords.NAB) {
         @Override
         public Constant getDefaultValue() {
             return BoolSignature.FALSE;
         }
 
         @Override
-        public Constant createConstant(String symbol) throws FormatException {
+        public Constant createValidConstant(String symbol) throws FormatException {
             Constant result;
-            if (symbol.equals(Boolean.toString(true))) {
+            if (symbol.equals(Keywords.TRUE)) {
                 result = BoolSignature.TRUE;
-            } else if (symbol.equals(Boolean.toString(false))) {
+            } else if (symbol.equals(Keywords.FALSE)) {
                 result = BoolSignature.FALSE;
             } else {
                 throw new FormatException("'%s' is not a valid Boolean constant", symbol);
@@ -70,8 +70,8 @@ public enum Sort {
         }
 
         @Override
-        public boolean denotesConstant(String symbol) {
-            return symbol.equals(Boolean.toString(true)) || symbol.equals(Boolean.toString(false));
+        public boolean denotesValidValue(String symbol) {
+            return symbol.equals(Keywords.TRUE) || symbol.equals(Keywords.FALSE);
         }
     },
     /** Integer sort. */
@@ -79,14 +79,14 @@ public enum Sort {
     @ToolTipHeader("Integer literal")
     @ToolTipBody("Representation of an INT constant.")
     @ToolTipPars("non-empty sequence of digits")
-    INT(Keywords.INT, IntSignature.class, EnumSet.allOf(IntSignature.Op.class)) {
+    INT(Keywords.INT, IntSignature.class, EnumSet.allOf(IntSignature.Op.class), Keywords.NAI) {
         @Override
         public Constant getDefaultValue() {
             return IntSignature.ZERO;
         }
 
         @Override
-        public Constant createConstant(String symbol) throws FormatException {
+        public Constant createValidConstant(String symbol) throws FormatException {
             try {
                 Constant result = Constant.instance(new BigInteger(symbol));
                 result.setSymbol(symbol);
@@ -97,7 +97,7 @@ public enum Sort {
         }
 
         @Override
-        public boolean denotesConstant(String symbol) {
+        public boolean denotesValidValue(String symbol) {
             try {
                 // Test that the symbol is a correct integer
                 Integer.parseInt(symbol);
@@ -113,14 +113,14 @@ public enum Sort {
     @ToolTipBody({"Representation of a REAL constant.", "Either %1$s or %2$s must be provided."})
     @ToolTipPars({"optional whole-number part of the REAL: a non-empty sequence of digits",
             "optional fractional part of the REAL: a non-empty sequence of digits"})
-    REAL(Keywords.REAL, RealSignature.class, EnumSet.allOf(RealSignature.Op.class)) {
+    REAL(Keywords.REAL, RealSignature.class, EnumSet.allOf(RealSignature.Op.class), Keywords.NAR) {
         @Override
         public Constant getDefaultValue() {
             return RealSignature.ZERO;
         }
 
         @Override
-        public Constant createConstant(String symbol) throws FormatException {
+        public Constant createValidConstant(String symbol) throws FormatException {
             try {
                 Constant result = Constant.instance(new BigDecimal(symbol));
                 result.setSymbol(symbol);
@@ -131,7 +131,7 @@ public enum Sort {
         }
 
         @Override
-        public boolean denotesConstant(String symbol) {
+        public boolean denotesValidValue(String symbol) {
             try {
                 // Test whether the symbol correctly represents a double
                 Double.parseDouble(symbol);
@@ -142,19 +142,19 @@ public enum Sort {
         }
     },
     /** User-defined sort. */
-    USER(Keywords.USER, UserSignature.class, Collections.emptySet()) {
+    USER(Keywords.USER, UserSignature.class, Collections.emptySet(), Keywords.NAU) {
         @Override
         public Constant getDefaultValue() {
             throw Exceptions.unsupportedOp();
         }
 
         @Override
-        public Constant createConstant(String symbol) throws FormatException {
+        public Constant createValidConstant(String symbol) throws FormatException {
             throw Exceptions.unsupportedOp();
         }
 
         @Override
-        public boolean denotesConstant(String symbol) {
+        public boolean denotesValidValue(String symbol) {
             return false;
         }
     },
@@ -163,37 +163,39 @@ public enum Sort {
     @ToolTipHeader("String literal")
     @ToolTipBody("Representation of a STRING constant.")
     @ToolTipPars("text of the literal. Follows the java rules for escaping special characters")
-    STRING(Keywords.STRING, StringSignature.class, EnumSet.allOf(StringSignature.Op.class)) {
+    STRING(Keywords.STRING, StringSignature.class, EnumSet.allOf(StringSignature.Op.class),
+        Keywords.NAS) {
         @Override
         public Constant getDefaultValue() {
             return StringSignature.EMPTY;
         }
 
         @Override
-        public Constant createConstant(String symbol) throws FormatException {
+        public Constant createValidConstant(String symbol) throws FormatException {
             Constant result = Constant.instance(StringHandler.toUnquoted(symbol));
             result.setSymbol(symbol);
             return result;
         }
 
         @Override
-        public boolean denotesConstant(String symbol) {
+        public boolean denotesValidValue(String symbol) {
             try {
                 createConstant(symbol);
                 return true;
             } catch (FormatException exc) {
-                return false;
+                return denotesError(symbol);
             }
         }
     };
 
     /** Constructs a sort with a given name. */
-    private Sort(String name, Class<? extends Signature> sigClass,
-                 Set<? extends OpValue> opValues) {
+    private Sort(String name, Class<? extends Signature> sigClass, Set<? extends OpValue> opValues,
+                 String errorSymbol) {
         assert name != null;
         this.name = name;
         this.sigClass = sigClass;
         this.opValues = opValues;
+        this.errorSymbol = errorSymbol;
     }
 
     /** Returns the name of this sort. */
@@ -255,21 +257,71 @@ public enum Sort {
     private LazyFactory<? extends Map<String,Operator>> operatorMap
         = LazyFactory.instance(this::computeOperatorMap);
 
+    /** Returns the symbolic representation of the error value. */
+    public String getErrorSymbol() {
+        return this.errorSymbol;
+    }
+
+    private final String errorSymbol;
+
     /**
-     * Creates a constant of this sort
+     * Creates a (valid or error) constant of this sort
      * from a given symbolic string representation.
      * @param symbol the symbolic representation; non-{@code null}
-     * @throws FormatException if {@code symbol} is not a valid representation
-     * of a constant of this sort
-     * @see #denotesConstant(String)
+     * @throws FormatException if {@code symbol} does not represent
+     * a value of this sort
+     * @see #denotesValue(String)
      */
-    public abstract Constant createConstant(String symbol) throws FormatException;
+    public Constant createConstant(String symbol) throws FormatException {
+        try {
+            return createErrorConstant(symbol);
+        } catch (FormatException exc) {
+            return createValidConstant(symbol);
+        }
+    }
+
+    /**
+     * Creates a valid (i.e., non-error) constant of this sort
+     * from a given symbolic string representation.
+     * @param symbol the symbolic representation; non-{@code null}
+     * @throws FormatException if {@code symbol} does not represent
+     * a valid value of this sort
+     * @see #denotesValidValue(String)
+     */
+    abstract public Constant createValidConstant(String symbol) throws FormatException;
+
+    /**
+     * Creates an error constant of this sort
+     * from a given symbolic string representation.
+     * @param symbol the symbolic representation; non-{@code null}
+     * @throws FormatException if {@code symbol} does not represent
+     * the error value of this sort
+     * @see #denotesError(String)
+     */
+    public Constant createErrorConstant(String symbol) throws FormatException {
+        if (denotesError(symbol)) {
+            return Constant.error(this);
+        } else {
+            throw new FormatException("'%s' does not represent an error value of sort %s", symbol,
+                this);
+        }
+    }
 
     /**
      * Indicates if a given string is a valid symbolic representation of
      * a constant of this sort.
      */
-    public abstract boolean denotesConstant(String symbol);
+    public boolean denotesValue(String symbol) {
+        return denotesError(symbol) || denotesValidValue(symbol);
+    }
+
+    /** Indicates if a given symbol represents the error symbol of this sort. */
+    public boolean denotesError(String symbol) {
+        return symbol.equals(getErrorSymbol());
+    }
+
+    /** Indicates if a given symbol represents a valid (non-error) value of this sort. */
+    abstract public boolean denotesValidValue(String symbol);
 
     /** Returns the sort for a given sort name.
      * @return the sort for {@code name}, or {@code null} if {@code name} is not a sort name

@@ -110,12 +110,12 @@ public abstract sealed class AbstractStringAlgebra<INT,REAL>
     }
 
     @Override
-    public String getSymbol(Object value) {
+    public String toValidSymbol(Object value) {
         return StringHandler.toQuoted((String) value, StringHandler.DOUBLE_QUOTE_CHAR);
     }
 
     @Override
-    public Expression toTerm(Object value) {
+    public Expression toValidTerm(Object value) {
         return Constant.instance((String) value);
     }
 

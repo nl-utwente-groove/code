@@ -148,7 +148,7 @@ public final class JavaRealAlgebra extends RealAlgebra<Integer,Double,Boolean,St
     }
 
     @Override
-    public Expression toTerm(Object value) {
+    public Expression toValidTerm(Object value) {
         return Constant.instance((Double) value);
     }
 

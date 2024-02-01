@@ -56,7 +56,7 @@ public class OperatorNode extends ANode implements RuleNode {
 
     /** Convenience method indicating that the wrapped operator is a set operator. */
     public boolean isSetOperator() {
-        return getOperator().isSetOperator();
+        return getOperator().isVarArgs();
     }
 
     /**
