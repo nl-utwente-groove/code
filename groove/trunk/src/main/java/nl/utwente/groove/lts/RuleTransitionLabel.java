@@ -233,7 +233,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
                 if (arg == null) {
                     params.append('_');
                 } else if (arg instanceof ValueNode) {
-                    params.append(((ValueNode) arg).getTerm().toDisplayString());
+                    params.append(((ValueNode) arg).getSymbol());
                 } else {
                     params.append(arg);
                 }

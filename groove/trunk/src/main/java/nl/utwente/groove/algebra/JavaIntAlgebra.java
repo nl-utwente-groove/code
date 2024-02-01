@@ -149,7 +149,7 @@ public final class JavaIntAlgebra extends IntAlgebra<Integer,Double,Boolean,Stri
     }
 
     @Override
-    public Expression toTerm(Object value) {
+    public Expression toValidTerm(Object value) {
         return Constant.instance((Integer) value);
     }
 

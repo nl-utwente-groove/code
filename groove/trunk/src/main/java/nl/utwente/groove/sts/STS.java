@@ -321,7 +321,7 @@ public class STS {
             if (node.getType().isSort() && !isFinal(graph, edge.source())) {
                 ValueNode valueNode = (ValueNode) node;
                 addLocationVariable(edge,
-                                    this.ruleInspector.getSymbol((Constant) valueNode.getTerm()));
+                                    this.ruleInspector.getSymbol((Constant) valueNode.toTerm()));
             }
         }
     }

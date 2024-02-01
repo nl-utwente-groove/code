@@ -6,17 +6,17 @@
         </attr>
         <node id="n0">
             <attr name="layout">
-                <string>171 120 9 15</string>
+                <string>171 118 9 18</string>
             </attr>
         </node>
         <node id="n1">
             <attr name="layout">
-                <string>277 181 8 15</string>
+                <string>277 179 8 18</string>
             </attr>
         </node>
         <node id="n2">
             <attr name="layout">
-                <string>279 122 8 15</string>
+                <string>279 120 8 18</string>
             </attr>
         </node>
         <edge from="n0" to="n0">

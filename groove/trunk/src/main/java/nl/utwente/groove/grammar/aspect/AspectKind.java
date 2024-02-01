@@ -138,7 +138,7 @@ public enum AspectKind {
     CONNECT(Category.NESTING, "or", ContentKind.EMPTY),
 
     /** Node identity. */
-    ID(Category.ID, "id", ContentKind.NAME),
+    ID(Category.ID, "id", ContentKind.NODE_NAME),
     /** Node type colour. */
     COLOR(Category.COLOR, "color", ContentKind.COLOR);
 

@@ -147,7 +147,7 @@ public class GraphConverter {
             String text;
             if (edge.target() instanceof ValueNode vn) {
                 imageTarget = imageSource;
-                String constant = vn.getTerm().toParseString();
+                String constant = vn.getSymbol();
                 text = AspectKind.LET.getPrefix() + edgeText + "=" + constant;
             } else if (edge.getRole() == EdgeRole.BINARY) {
                 imageTarget = result.getNode(edge.target());

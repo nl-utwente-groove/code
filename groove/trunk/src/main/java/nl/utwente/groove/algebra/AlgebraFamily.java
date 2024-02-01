@@ -19,6 +19,7 @@ package nl.utwente.groove.algebra;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -178,7 +179,7 @@ public enum AlgebraFamily implements DocumentedEnum {
             CallExpr call = (CallExpr) expr;
             List<Object> args = new ArrayList<>();
             for (Expression arg : call.getArgs()) {
-                args.add(computeFoldError(arg, valuation));
+                args.add(computeStrict(arg, valuation));
             }
             return getOperation(call.getOperator()).apply(args);
         default:
@@ -196,7 +197,7 @@ public enum AlgebraFamily implements DocumentedEnum {
      * the {@link #POINT} algebra family or {@code term} should be cloased.
      * @return the value {@code term} (in the appropriate algebra); may be an {@link ErrorValue}.
      */
-    public Object computeFoldError(Expression expr, @Nullable Function<Variable,Object> valuation) {
+    public Object computeStrict(Expression expr, @Nullable Function<Variable,Object> valuation) {
         try {
             return compute(expr, valuation);
         } catch (ErrorValue error) {
@@ -209,7 +210,26 @@ public enum AlgebraFamily implements DocumentedEnum {
      * @return the value of {@code term} (in the appropriate algebra)
      */
     public Object toValue(Constant constant) {
-        return getAlgebra(constant.getSort()).toValueFromConstant(constant);
+        if (constant.isError()) {
+            return ErrorValue.instance(constant.getSort());
+        } else {
+            return getAlgebra(constant.getSort()).toValueFromConstant(constant);
+        }
+    }
+
+    /**
+     * Returns the value for a given term, not containing {@link Kind#FIELD} sub-expressions,
+     * returning an error value if the term cannot be evaluated.
+     * Either the term has to be closed or this should be the {@link #POINT} algebra family.
+     * @return the value of {@code term} (in the appropriate algebra)
+     * @see #toValidValue(Expression)
+     */
+    public Object toValue(Expression term) {
+        try {
+            return toValidValue(term);
+        } catch (ErrorValue error) {
+            return error;
+        }
     }
 
     /**
@@ -218,25 +238,10 @@ public enum AlgebraFamily implements DocumentedEnum {
      * Either the term has to be closed or this should be the {@link #POINT} algebra family.
      * @return the value of {@code term} (in the appropriate algebra)
      * @throws ErrorValue if the computation involves any operation that cannot be applied
-     * @see #toValueFoldError(Expression)
-     */
-    public Object toValue(Expression term) throws ErrorValue {
-        return compute(term, null);
-    }
-
-    /**
-     * Returns the value for a given term, not containing {@link Kind#FIELD} sub-expressions,
-     * returning an error value if the term cannot be evaluated.
-     * Either the term has to be closed or this should be the {@link #POINT} algebra family.
-     * @return the value of {@code term} (in the appropriate algebra)
      * @see #toValue(Expression)
      */
-    public Object toValueFoldError(Expression term) {
-        try {
-            return toValue(term);
-        } catch (ErrorValue error) {
-            return error;
-        }
+    public Object toValidValue(Expression term) throws ErrorValue {
+        return compute(term, null);
     }
 
     /**
@@ -332,6 +337,9 @@ public enum AlgebraFamily implements DocumentedEnum {
         Operation(AlgebraFamily family, Algebra<?> algebra, Method method) {
             this.algebra = algebra;
             this.method = method;
+            Type[] methodParameterTypes = method.getParameterTypes();
+            this.arity = methodParameterTypes.length;
+            this.varArgs = this.arity == 1 && methodParameterTypes[0].equals(List.class);
             @SuppressWarnings("null")
             Sort returnType = algebra.getSort().getOperator(method.getName()).getResultType();
             this.returnType = family.getAlgebra(returnType);
@@ -339,17 +347,21 @@ public enum AlgebraFamily implements DocumentedEnum {
 
         @Override
         public Object apply(List<Object> args) throws ErrorValue {
-            var argsArray = args.toArray();
-            for (var arg : argsArray) {
+            for (var arg : args) {
                 if (arg instanceof ErrorValue error) {
                     throw getResultAlgebra().errorValue(error);
                 }
             }
             try {
-                return this.method.invoke(this.algebra, args.toArray());
+                if (isVarArgs() && !(args.size() == 1 && args.get(0) instanceof List)) {
+                    return this.method.invoke(this.algebra, args);
+                } else {
+                    var argsArray = args.toArray();
+                    return this.method.invoke(this.algebra, argsArray);
+                }
             } catch (IllegalAccessException exc) {
                 throw Exceptions.illegalArg("Can't apply %s to %s", this, args);
-            } catch (InvocationTargetException exc) {
+            } catch (InvocationTargetException | IllegalArgumentException exc) {
                 // this catches any invocation error, including IllegalArgumentExceptions
                 var error = exc.getCause() instanceof Exception inner
                     ? inner
@@ -365,8 +377,17 @@ public enum AlgebraFamily implements DocumentedEnum {
 
         @Override
         public int getArity() {
-            return this.method.getParameterTypes().length;
+            return this.arity;
         }
+
+        private final int arity;
+
+        @Override
+        public boolean isVarArgs() {
+            return this.varArgs;
+        }
+
+        private final boolean varArgs;
 
         @Override
         public Algebra<?> getResultAlgebra() {

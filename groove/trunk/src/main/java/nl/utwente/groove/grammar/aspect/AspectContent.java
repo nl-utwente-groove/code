@@ -185,7 +185,7 @@ public sealed interface AspectContent
                 if (text.isEmpty()) {
                     throw new FormatException("Empty quantifier level");
                 }
-                if (!idValidator.isValid(text)) {
+                if (!nodeNameValidator.isValid(text)) {
                     throw new FormatException("Invalid quantifier level name '%s'", text);
                 }
                 return new IdContent(this, text);
@@ -382,7 +382,7 @@ public sealed interface AspectContent
             }
         },
         /** Node identifier. */
-        NAME {
+        NODE_NAME {
             @Override
             Pair<IdContent,String> parse(String text, int pos, GraphRole role,
                                          Status status) throws FormatException {
@@ -395,13 +395,8 @@ public sealed interface AspectContent
             @Override
             IdContent parseContent(String text, GraphRole role,
                                    Status status) throws FormatException {
-                for (int i = 0; i < text.length(); i++) {
-                    char c = text.charAt(i);
-                    if (i == 0
-                        ? !isValidFirstChar(c)
-                        : !isValidNextChar(c)) {
-                        throw new FormatException("Invalid node id '%s'", text);
-                    }
+                if (!nodeNameValidator.isValid(text)) {
+                    throw new FormatException("Invalid node id '%s'", text);
                 }
                 if (text.length() == 0) {
                     throw new FormatException("Node id cannot be empty", text);
@@ -525,7 +520,7 @@ public sealed interface AspectContent
                 // in a type graph, this is the declaration of an attribute;
                 // within a rule role, it is an attribute field name or operator name
                 assert text.length() > 0;
-                if (!idValidator.isValid(text)) {
+                if (!nodeNameValidator.isValid(text)) {
                     throw new FormatException("Illegal field name '%s'", text);
                 }
                 result = new IdContent(this, text);
@@ -575,42 +570,12 @@ public sealed interface AspectContent
 
         private final Sort sort;
 
-        /**
-         * Builds a string description of a given aspect kind and content
-         * of this {@link ContentKind}.
-        public String toString(AspectKind aspect, AspectContent content) {
-            if (content == null) {
-                return aspect.getPrefix();
-            } else if (this == LEVEL || this == MULTIPLICITY) {
-                return aspect.getName() + ASSIGN + content.toParsableString() + SEPARATOR;
-            } else {
-                return aspect.getPrefix() + content.toParsableString();
-            }
-        }
-         */
-
-        /**
-         * Indicates if a given character is allowed as the first part of a name.
-         * Delegates to {@link Character#isJavaIdentifierStart(char)}.
-         */
-        static private boolean isValidFirstChar(char c) {
-            return Character.isJavaIdentifierStart(c);
-        }
-
-        /**
-         * Indicates if a given character is allowed in a name names.
-         * Delegates to {@link Character#isJavaIdentifierPart(char)}.
-         */
-        static private boolean isValidNextChar(char c) {
-            return Character.isJavaIdentifierPart(c);
-        }
-
         /** Start character of parameter strings. */
         static public final char PARAM_START_CHAR = '$';
         /** Reserved name "self". */
         static public final String SELF_NAME = "self";
-        /** Validator for identifiers. */
-        static private final IdValidator idValidator = IdValidator.GROOVE_ID;
+        /** Validator for field names. */
+        static private final IdValidator nodeNameValidator = IdValidator.JAVA_ID_NON_RESERVED;
     }
 
     /** Correct values of the {@link ContentKind#NESTED} content kind. */

@@ -42,13 +42,13 @@ public class Operator {
         this.sort = sort;
         this.inverse = opValue == IntSignature.Op.NEG || opValue == RealSignature.Op.NEG;
         this.arity = methodParameterTypes.length;
-        this.setOperator = this.arity == 1 && methodParameterTypes[0] instanceof ParameterizedType;
-        this.supportsZero = opValue.isSupportsZero();
+        this.varArgs = this.arity == 1 && methodParameterTypes[0] instanceof ParameterizedType;
+        this.zeroArgs = opValue.isZeroArgs();
         this.name = method.getName();
         this.parameterTypes = new ArrayList<>();
         for (int i = 0; i < this.arity; i++) {
             Type type = methodParameterTypes[i];
-            if (this.setOperator) {
+            if (this.varArgs) {
                 if (((ParameterizedType) type).getRawType() != List.class) {
                     throw Exceptions
                         .illegalArg("Method '%s' does not represent collection operator");
@@ -113,19 +113,21 @@ public class Operator {
 
     private final String name;
 
-    /** Indicates if this is a collection-based operator. */
-    public boolean isSetOperator() {
-        return this.setOperator;
+    /** Indicates if this is a collection-based operator, i.e.,
+     * with a variable number of arguments
+     */
+    public boolean isVarArgs() {
+        return this.varArgs;
     }
 
-    private final boolean setOperator;
+    private final boolean varArgs;
 
     /** Indicates if this collection operator supports zero arguments. */
-    public boolean isSupportsZero() {
-        return this.supportsZero;
+    public boolean isZeroArgs() {
+        return this.zeroArgs;
     }
 
-    private final boolean supportsZero;
+    private final boolean zeroArgs;
 
     /** Returns the number of parameters of this operator.
      * For a collection-based operator, the arity is 1.
@@ -135,6 +137,15 @@ public class Operator {
     }
 
     private final int arity;
+
+    /** Tests if this operator supports a given argument count. */
+    public boolean allowsArgCount(int argCount) {
+        if (isVarArgs()) {
+            return argCount > 0 || isZeroArgs();
+        } else {
+            return argCount == getArity();
+        }
+    }
 
     /**
      * Returns the parameter types of this operator.
@@ -198,7 +209,7 @@ public class Operator {
             // there are more operators with the same name
             result = false;
             for (Operator op : ops) {
-                if (op != this && op.getArity() == getArity()) {
+                if (op != this && op.getArity() == getArity() && op.isVarArgs() == isVarArgs()) {
                     result = true;
                     break;
                 }

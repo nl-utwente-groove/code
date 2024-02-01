@@ -151,7 +151,7 @@ public final class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolea
     }
 
     @Override
-    public Expression toTerm(Object value) {
+    public Expression toValidTerm(Object value) {
         return Constant.instance((BigInteger) value);
     }
 

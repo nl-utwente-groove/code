@@ -16,6 +16,14 @@
  */
 package nl.utwente.groove.util;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Supplier;
+
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.grammar.aspect.AspectContent.ContentKind;
 import nl.utwente.groove.grammar.aspect.AspectKind;
@@ -31,11 +39,13 @@ public class Keywords {
      * @see Sort#BOOL
      * @see AspectKind#BOOL
      */
+    @Reserved
     public static final String BOOL = "bool";
     /**
      * Boolean value for "false"
      * @see Sort#BOOL
      */
+    @Reserved
     public static final String FALSE = "false";
     /** The id prefix.
      * @see AspectKind#ID
@@ -45,7 +55,29 @@ public class Keywords {
      * @see Sort#INT
      * @see AspectKind#INT
      */
+    @Reserved
     public static final String INT = "int";
+
+    /** Error value denotation of {@link Sort#BOOL}. */
+    @Reserved
+    public static final String NAB = "NaB";
+
+    /** Error value denotation of {@link Sort#INT}. */
+    @Reserved
+    public static final String NAI = "NaI";
+
+    /** Error value denotation of {@link Sort#REAL}. */
+    @Reserved
+    public static final String NAR = "NaR";
+
+    /** Error value denotation of {@link Sort#STRING}. */
+    @Reserved
+    public static final String NAS = "NaS";
+
+    /** Error value denotation of {@link Sort#USER}. */
+    @Reserved
+    public static final String NAU = "NaU";
+
     /**
      * The parameter prefix.
      * @see AspectKind#PARAM_BI
@@ -70,25 +102,61 @@ public class Keywords {
      * @see Sort#REAL
      * @see AspectKind#REAL
      */
+    @Reserved
     public static final String REAL = "real";
     /**
      * The self keyword in attribute expressions.
-     * @see ContentKind#NAME
+     * @see ContentKind#NODE_NAME
      */
+    @Reserved
     public static final String SELF = "self";
     /** The string type.
      * @see Sort#STRING
      * @see AspectKind#STRING
      */
+    @Reserved
     public static final String STRING = "string";
     /**
      * Boolean value for "true"
      * @see Sort#BOOL
      */
+    @Reserved
     public static final String TRUE = "true";
     /** The user-defined value type.
      * @see Sort#USER
      * @see AspectKind#USER
      */
+    @Reserved
     public static final String USER = "user";
+
+    /** Tests whether a given (identifier) string is a reserved keyword. */
+    public static boolean isReserved(String id) {
+        return keywords.get().contains(id);
+    }
+
+    /** The set of reserved keywords defined in this class. */
+    static private final Supplier<Set<String>> keywords
+        = LazyFactory.instance(Keywords::computeKeywords);
+
+    /** Computes the value of {@link #keywords}. */
+    static private Set<String> computeKeywords() {
+        Set<String> result = new HashSet<>();
+        for (var field : Keywords.class.getDeclaredFields()) {
+            if (field.getAnnotationsByType(Reserved.class).length > 0) {
+                try {
+                    result.add((String) field.get(null));
+                } catch (IllegalArgumentException | IllegalAccessException exc) {
+                    // do nothing
+                }
+            }
+        }
+        return result;
+    }
+
+    /** Annotation for reserved keywords, i.e., which may not be used as identifiers. */
+    @Target(ElementType.FIELD)
+    @Retention(RetentionPolicy.RUNTIME)
+    static public @interface Reserved {
+        // empty
+    }
 }

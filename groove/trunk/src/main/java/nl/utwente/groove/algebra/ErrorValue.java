@@ -16,10 +16,16 @@
  */
 package nl.utwente.groove.algebra;
 
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
- * Class encoding the (singular) error value of a sort.
+ * Class encoding an error value of a given sort.
+ * The object also wraps an {@link Exception} and acts as an {@link Exception}
+ * itself, but equality is only defined by the sort, so effectively there is only
+ * one error value per sort.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -41,13 +47,13 @@ public class ErrorValue extends Exception {
     /**
      * Returns the inner exception causing this {@link ErrorValue}.
      */
-    public Exception getInner() {
+    public Exception getException() {
         return (Exception) getCause();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.sort, getMessage());
+        return Objects.hash(this.sort);
     }
 
     @Override
@@ -62,11 +68,26 @@ public class ErrorValue extends Exception {
             return false;
         }
         ErrorValue other = (ErrorValue) obj;
-        return this.sort == other.sort && getMessage().equals(other.getMessage());
+        return this.sort == other.sort;
     }
 
     @Override
     public String toString() {
-        return getSort() + "error";
+        return getSort().getErrorSymbol();
+    }
+
+    /** Returns an error value for a given sort, with default exception. */
+    static public ErrorValue instance(Sort sort) {
+        return errorMap.get(sort);
+    }
+
+    static private final Map<Sort,ErrorValue> errorMap = new EnumMap<>(Sort.class);
+
+    static {
+        Arrays
+            .stream(Sort.values())
+            .forEach(s -> errorMap
+                .put(s, new ErrorValue(s,
+                    new ArithmeticException("Invalid " + s.getName() + " value"))));
     }
 }

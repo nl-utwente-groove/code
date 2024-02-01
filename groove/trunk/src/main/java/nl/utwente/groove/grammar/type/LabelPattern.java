@@ -92,8 +92,8 @@ public class LabelPattern {
         Object[] values = new Object[this.argNames.size()];
         for (HostEdge outEdge : host.outEdgeSet(source)) {
             Integer position = this.argPositions.get(outEdge.label().text());
-            if (position != null && outEdge.target() instanceof ValueNode) {
-                values[position] = ((ValueNode) outEdge.target()).getTerm().toDisplayString();
+            if (position != null && outEdge.target() instanceof ValueNode vn) {
+                values[position] = vn.getSymbol();
             }
         }
         return getLabel(values);
@@ -158,7 +158,9 @@ public class LabelPattern {
             for (int i = 0; i < getArgNames().size(); i++) {
                 String oldArgName = getArgNames().get(i);
                 boolean relabel = oldLabel.text().equals(oldArgName);
-                String newArgName = relabel ? newLabel.text() : oldArgName;
+                String newArgName = relabel
+                    ? newLabel.text()
+                    : oldArgName;
                 isNew |= newArgName != oldArgName;
                 newArgNames.add(newArgName);
             }

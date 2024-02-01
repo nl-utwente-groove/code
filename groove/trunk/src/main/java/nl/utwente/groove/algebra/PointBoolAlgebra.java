@@ -87,7 +87,7 @@ public final class PointBoolAlgebra extends BoolAlgebra<Boolean> implements Poin
     }
 
     @Override
-    public Expression toTerm(Object value) {
+    public Expression toValidTerm(Object value) {
         return singleBool
             ? BoolSignature.TRUE
             : BoolSignature.FALSE;

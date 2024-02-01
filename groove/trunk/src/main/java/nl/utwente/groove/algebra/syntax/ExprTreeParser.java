@@ -232,7 +232,7 @@ public class ExprTreeParser
         }
         ExprOp result = opMap.get(opKind);
         if (result == null) {
-            result = new ExprOp(opKind, symbol, sortOp.getArity());
+            result = new ExprOp(opKind, symbol, sortOp);
             opMap.put(opKind, result);
             opList.add(result);
         }

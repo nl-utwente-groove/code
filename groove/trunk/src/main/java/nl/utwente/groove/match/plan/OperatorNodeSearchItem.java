@@ -51,7 +51,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
      */
     public OperatorNodeSearchItem(OperatorNode node, AlgebraFamily family) {
         this.node = node;
-        this.setOperator = node.getOperator().isSetOperator();
+        this.setOperator = node.getOperator().isVarArgs();
         this.operation = family.getOperation(node.getOperator());
         assert this.operation != null;
         this.arguments = node.getArguments();
@@ -279,7 +279,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
          */
         Object calculateResult() {
             List<Object> arguments = calculateArguments();
-            Object result = OperatorNodeSearchItem.this.operation.applyFoldError(arguments);
+            Object result = OperatorNodeSearchItem.this.operation.applyStrict(arguments);
             if (PRINT) {
                 System.out
                     .printf("Applying %s to %s yields %s%n", OperatorNodeSearchItem.this.operation,

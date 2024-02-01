@@ -259,14 +259,22 @@ public final class CallExpr extends Expression {
 
     /** Method to check the type correctness of the operator/arguments combination. */
     private boolean isTypeCorrect() {
-        int arity = this.op.getArity();
-        List<Sort> argTypes = this.op.getParamTypes();
-        if (arity != getArgs().size()) {
+        var args = getArgs();
+        var argTypes = this.op.getParamTypes();
+        if (!this.op.allowsArgCount(args.size())) {
             return false;
         }
-        for (int i = 0; i < arity; i++) {
-            if (getArgs().get(i).getSort() != argTypes.get(i)) {
-                return false;
+        if (this.op.isVarArgs()) {
+            for (var arg : args) {
+                if (arg.getSort() != argTypes.get(0)) {
+                    return false;
+                }
+            }
+        } else {
+            for (int i = 0; i < args.size(); i++) {
+                if (args.get(i).getSort() != argTypes.get(i)) {
+                    return false;
+                }
             }
         }
         return true;

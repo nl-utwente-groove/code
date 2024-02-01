@@ -133,7 +133,7 @@ public abstract class AlgebraTest<B,I,R,S> {
     /** Tests conversion from algebra value to term and back. */
     private void testConversion(Algebra<?> algebra, Object value) {
         try {
-            assertEquals(value, algebra.toValue(algebra.toTerm(value)));
+            assertEquals(value, algebra.toValue(algebra.toValidTerm(value)));
         } catch (ErrorValue exc) {
             fail(exc.getMessage());
         }

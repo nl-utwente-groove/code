@@ -60,7 +60,7 @@ public interface Algebra<T> extends Signature {
      */
     @SuppressWarnings("unchecked")
     default T toValue(Expression term) throws ErrorValue {
-        return (T) getFamily().toValue(term);
+        return (T) getFamily().toValidValue(term);
     }
 
     /** Returns an error value for this algebra, based on a given exception. */
@@ -69,7 +69,8 @@ public interface Algebra<T> extends Signature {
     }
 
     /**
-     * Converts a constant of the right signature to the corresponding algebra value.
+     * Converts a (non-error) constant of the right signature to the corresponding algebra value.
+     * Should only be invoked if {@link Constant#isError()} does not hold for {@code constant}.
      * @see #toValue(Expression)
      */
     T toValueFromConstant(Constant constant);
@@ -93,17 +94,44 @@ public interface Algebra<T> extends Signature {
     }
 
     /**
-     * Converts an algebra value to the canonical term representing it.
+     * Converts a (valid or error) algebra value to the canonical term representing it.
      * Typically this will be a constant, but for the term algebras it is the value itself.
-     * @param value a value from this algebra; must satisfy {@link #isValidValue(Object)}
+     * @param value a value from this algebra
      */
-    Expression toTerm(Object value);
+    default Expression toTerm(Object value) {
+        if (value instanceof ErrorValue) {
+            return Constant.error(getSort());
+        } else {
+            return toValidTerm(value);
+        }
+    }
 
     /**
-     * Converts an algebra value to its symbolic string representation.
+     * Converts a valid algebra value to the canonical term representing it.
+     * Typically this will be a constant, but for the term algebras it is the value itself.
+     * Should only be called if {@code value} is not an {@link ErrorValue}.
      * @param value a value from this algebra; must satisfy {@link #isValidValue(Object)}
      */
-    default String getSymbol(Object value) {
+    Expression toValidTerm(Object value);
+
+    /**
+     * Converts a (valid or error) algebra value to its symbolic (parsable) string representation.
+     * @param value a value from this algebra
+     */
+    default String toSymbol(Object value) {
+        if (value instanceof ErrorValue) {
+            return value.toString();
+        } else {
+            return toValidSymbol(value);
+        }
+    }
+
+    /**
+     * Converts a valid algebra value to its symbolic (parsable) string representation.
+     * Should only be called if {@code value} is not an {@link ErrorValue}.
+     * @param value a value from this algebra; must satisfy {@link #isValidValue(Object)}
+     */
+    default String toValidSymbol(Object value) {
         return value.toString();
     }
 

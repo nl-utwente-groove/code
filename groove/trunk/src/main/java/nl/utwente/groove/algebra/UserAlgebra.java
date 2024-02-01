@@ -38,7 +38,7 @@ public final class UserAlgebra extends UserSignature implements Algebra<Object> 
     }
 
     @Override
-    public Expression toTerm(Object value) {
+    public Expression toValidTerm(Object value) {
         throw Exceptions.unsupportedOp();
     }
 
