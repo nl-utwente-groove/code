@@ -190,11 +190,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         }
         // copy the edges from model to resource
         for (AspectEdge modelEdge : normalSource.edgeSet()) {
-            try {
-                processModelEdge(result, elementMap, modelEdge);
-            } catch (FormatException exc) {
-                errors.addAll(exc.getErrors());
-            }
+            processModelEdge(result, elementMap, modelEdge);
         }
         // remove isolated value nodes from the result graph
         for (HostNode modelNode : elementMap.nodeMap().values()) {
@@ -205,7 +201,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         }
         if (getGrammar() != null) {
             try {
-                // test against the type graph, if any
+                // test against the type graph
                 TypeGraph type = getGrammar().getTypeGraph();
                 var typing = type.analyzeHost(result);
                 result = typing.createImage(result.getName());
@@ -223,11 +219,11 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                     }
                 }
                 elementMap = newElementMap;
-                if (getGrammar().getProperties().getTypePolicy() != CheckPolicy.OFF) {
-                    result.checkTypeConstraints().throwException();
-                }
             } catch (FormatException e) {
                 errors.addAll(e.getErrors());
+            }
+            if (getGrammar().getProperties().getTypePolicy() != CheckPolicy.OFF) {
+                errors.addAll(result.checkTypeConstraints());
             }
         }
         // transfer graph info such as layout from model to resource
@@ -281,10 +277,8 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     /**
      * Processes the information in a model edge by updating the resource, element
      * map and subtypes.
-     * @throws FormatException if the presence of the edge signifies an error
      */
-    private void processModelEdge(HostGraph result, HostModelMap elementMap,
-                                  AspectEdge modelEdge) throws FormatException {
+    private void processModelEdge(HostGraph result, HostModelMap elementMap, AspectEdge modelEdge) {
         if (!modelEdge.has(Category.LABEL)) {
             return;
         }

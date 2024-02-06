@@ -173,9 +173,8 @@ public class JEdgeView extends EdgeView {
         if (getPointCount() == 2 && !isLoop()) {
             if (!source && this.source instanceof PortView) {
                 VertexView sourceCellView = (VertexView) this.source.getParentView();
-                result = sourceCellView.getPerimeterPoint(this,
-                    null,
-                    getPointLocation(getPointCount() - 1));
+                result = sourceCellView
+                    .getPerimeterPoint(this, null, getPointLocation(getPointCount() - 1));
             }
         }
         if (result == null) {
@@ -239,9 +238,7 @@ public class JEdgeView extends EdgeView {
         while (iter.hasNext()) {
             JEdge<?> edge = iter.next();
             // determine if this is a parallel edge
-            if (edge.getVisuals()
-                .getPoints()
-                .size() > 2) {
+            if (edge.getVisuals().getPoints().size() > 2) {
                 continue;
             }
             found |= edge == getCell();
@@ -273,7 +270,9 @@ public class JEdgeView extends EdgeView {
         // parallel edges, as determined by the parameter rank
         Point2D adjustedCenter;
         Point2D adjustedNextPoint;
-        int parRank = source ? getParRank() : -getParRank();
+        int parRank = source
+            ? getParRank()
+            : -getParRank();
         if (parRank == 0) {
             adjustedCenter = center;
             adjustedNextPoint = nextPoint;
@@ -287,17 +286,16 @@ public class JEdgeView extends EdgeView {
             double offDist = center.distance(nextPoint);
             // calculate vertex radius in the specified direction
             Rectangle2D bounds = vertex.getBounds();
-            double offMax = vertexView.getCellVisuals()
-                .getNodeShape()
-                .getRadius(bounds, offDirX, offDirY);
+            double offMax
+                = vertexView.getCellVisuals().getNodeShape().getRadius(bounds, offDirX, offDirY);
             // calculate actual offset
-            double offset =
-                Math.signum(parRank) * Math.min(PAR_EDGES_DISTANCE * Math.abs(parRank), offMax);
+            double offset
+                = Math.signum(parRank) * Math.min(PAR_EDGES_DISTANCE * Math.abs(parRank), offMax);
             double offX = offset * offDirX / offDist;
             double offY = offset * offDirY / offDist;
             adjustedCenter = new Point2D.Double(center.getX() + offX, center.getY() + offY);
-            adjustedNextPoint =
-                new Point2D.Double(nextPoint.getX() + offX, nextPoint.getY() + offY);
+            adjustedNextPoint
+                = new Point2D.Double(nextPoint.getX() + offX, nextPoint.getY() + offY);
         }
         return vertexView.getPerimeterPoint(this, adjustedCenter, adjustedNextPoint);
     }
@@ -309,8 +307,8 @@ public class JEdgeView extends EdgeView {
     public Point2D getLabelVector() {
         Point2D p0 = getPoint(0);
         Point2D p1 = getPoint(1);
-        if (getCell().getVisuals()
-            .getLineStyle() == LineStyle.MANHATTAN && p1.getX() != p0.getX()) {
+        if (getCell().getVisuals().getLineStyle() == LineStyle.MANHATTAN
+            && p1.getX() != p0.getX()) {
             p1 = new Point2D.Double(p1.getX(), p0.getY());
         }
         double dx = p1.getX() - p0.getX();
@@ -377,7 +375,8 @@ public class JEdgeView extends EdgeView {
         @Override
         protected ConnectionSet createConnectionSet(EdgeView view, boolean verbose) {
             if (view.getTarget() == null) {
-                @SuppressWarnings("unchecked") List<Object> points = view.getPoints();
+                @SuppressWarnings("unchecked")
+                List<Object> points = view.getPoints();
                 points.add(points.get(points.size() - 1));
                 view.setTarget(view.getSource());
             }
@@ -405,14 +404,16 @@ public class JEdgeView extends EdgeView {
             this.jLabel = new JLabel();
             this.jLabel.setBorder(null);
             this.jLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            // initialise here so extra labels get painted
+            this.metrics = fontGraphics.getFontMetrics();
         }
 
         @Override
         public Component getRendererComponent(org.jgraph.JGraph jGraph, CellView v, boolean sel,
-            boolean focus, boolean preview) {
+                                              boolean focus, boolean preview) {
 
-            assert v instanceof JEdgeView : String.format("This renderer is only meant for %s",
-                JEdgeView.class);
+            assert v instanceof JEdgeView : String
+                .format("This renderer is only meant for %s", JEdgeView.class);
 
             JEdgeView view = this.jView = (JEdgeView) v;
             this.cell = this.jView.getCell();
@@ -501,7 +502,8 @@ public class JEdgeView extends EdgeView {
             if (this.lineStyle == Values.STYLE_MANHATTAN && this.view.getPointCount() > 2) {
                 result = createManhattanShape();
             } else if (this.view.isLoop() && this.view.getPointCount() == 3) {
-                @SuppressWarnings({"unchecked"}) List<Object> points = this.view.getPoints();
+                @SuppressWarnings({"unchecked"})
+                List<Object> points = this.view.getPoints();
                 List<Object> oldPoints = new ArrayList<>(points);
                 List<Object> newPoints = new ArrayList<>(points);
                 Point2D first = this.view.getPoint(0);
@@ -660,7 +662,9 @@ public class JEdgeView extends EdgeView {
                 int sh = (int) size.getHeight();
                 Graphics2D g2 = (Graphics2D) g;
                 int dx = -sw / 2;
-                int offset = this.isMoveBelowZero ? 0 : Math.min(0, (int) (dx + p.getX()));
+                int offset = this.isMoveBelowZero
+                    ? 0
+                    : Math.min(0, (int) (dx + p.getX()));
                 g2.translate(p.getX() - offset, p.getY());
                 if (isOpaque()) {
                     g.setColor(getBackground());
@@ -686,16 +690,13 @@ public class JEdgeView extends EdgeView {
             Dimension result = this.jLabelSize;
             Color foreground = getForeground();
             // see if we can use the previously stored value
-            MultiLabel lines = view.getCell()
-                .getVisuals()
-                .getLabel();
+            MultiLabel lines = view.getCell().getVisuals().getLabel();
             if (lines.isEmpty()) {
                 result = this.jLabelSize = new Dimension();
             } else if (lines != this.jLabelLines || foreground != this.jLabelColor) {
                 // no, the text or colour have changed; reload the jLabel component
                 StringBuilder text;
-                JGraph<?> jGraph = view.getCell()
-                    .getJGraph();
+                JGraph<?> jGraph = view.getCell().getJGraph();
                 assert jGraph != null; // guaranteed by now
                 if (jGraph.isShowArrowsOnLabels()) {
                     Point2D start = view.getPoint(0);
@@ -730,7 +731,9 @@ public class JEdgeView extends EdgeView {
         @Override
         public Dimension getLabelSize(EdgeView view, String label) {
             Dimension result = null;
-            JEdge<?> edge = view instanceof JEdgeView ? ((JEdgeView) view).getCell() : null;
+            JEdge<?> edge = view instanceof JEdgeView
+                ? ((JEdgeView) view).getCell()
+                : null;
             if (edge == null) {
                 result = computeLabelSize(view, label);
             } else if (edge.isStale(VisualKey.TEXT_SIZE)) {
@@ -738,8 +741,7 @@ public class JEdgeView extends EdgeView {
                 edge.putVisual(VisualKey.TEXT_SIZE, result);
             } else {
                 result = new Dimension();
-                Dimension2D textSize = edge.getVisuals()
-                    .getTextSize();
+                Dimension2D textSize = edge.getVisuals().getTextSize();
                 result = new Dimension((int) textSize.getWidth(), (int) textSize.getHeight());
             }
             return result;

@@ -170,6 +170,8 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
             FormatErrorSet errors = graph.checkTypeConstraints();
             if (!errors.isEmpty()) {
                 graph.addErrors(errors);
+            }
+            if (graph.hasErrors()) {
                 setFrame(getActualFrame().onPolicy(typePolicy));
             }
         }

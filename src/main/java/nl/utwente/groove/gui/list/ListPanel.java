@@ -33,8 +33,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -89,13 +87,10 @@ public abstract class ListPanel extends JPanel {
      * focus is regained.
      */
     public void addSelectionListener(final PropertyChangeListener listener) {
-        getEntryArea().addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                listener
-                    .propertyChange(new PropertyChangeEvent(e.getSource(), LIST_EVENT, null,
-                        getEntryArea().getSelectedValue()));
-            }
+        getEntryArea().addListSelectionListener(e -> {
+            listener
+                .propertyChange(new PropertyChangeEvent(e.getSource(), LIST_EVENT, null,
+                    getEntryArea().getSelectedValue()));
         });
         getEntryArea().addMouseListener(new MouseAdapter() {
             @Override

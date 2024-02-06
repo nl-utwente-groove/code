@@ -36,6 +36,8 @@ import static nl.utwente.groove.io.FileType.GRAMMAR;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
@@ -204,15 +206,16 @@ public class Simulator implements SimulatorListener {
      * Lazily creates and returns the frame of this simulator.
      */
     public JFrame getFrame() {
-        if (this.frame == null) {
+        JFrame result = this.frame;
+        if (result == null) {
             // force the LAF to be set
             nl.utwente.groove.gui.Options.initLookAndFeel();
 
             // set up the frame
-            this.frame = new JFrame(APPLICATION_NAME);
+            result = this.frame = new JFrame(APPLICATION_NAME);
             // small icon doesn't look nice due to shadow
-            this.frame.setIconImage(Icons.GROOVE_ICON_16x16.getImage());
-            this.frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+            result.setIconImage(Icons.GROOVE_ICON_16x16.getImage());
+            result.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
             // register doQuit() for the Command-Q shortcut on MacOS
             if (Groove.IS_PLATFORM_MAC) {
@@ -224,18 +227,44 @@ public class Simulator implements SimulatorListener {
                 }
             }
             // register doQuit() as the closing method of the window
-            this.frame.addWindowListener(new WindowAdapter() {
+            result.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
                     Simulator.this.actions.getQuitAction().execute();
                 }
             });
-            this.frame.setJMenuBar(createMenuBar());
-            this.frame.setContentPane(getContentPanel());
+            addDisplayKey(result, KeyEvent.VK_G, DisplayKind.HOST);
+            addDisplayKey(result, KeyEvent.VK_H, DisplayKind.HOST);
+            addDisplayKey(result, KeyEvent.VK_R, DisplayKind.RULE);
+            addDisplayKey(result, KeyEvent.VK_T, DisplayKind.TYPE);
+            addDisplayKey(result, KeyEvent.VK_C, DisplayKind.CONTROL);
+            addDisplayKey(result, KeyEvent.VK_P, DisplayKind.PROLOG);
+            addDisplayKey(result, KeyEvent.VK_Y, DisplayKind.GROOVY);
+            addDisplayKey(result, KeyEvent.VK_S, DisplayKind.STATE);
+            addDisplayKey(result, KeyEvent.VK_L, DisplayKind.LTS);
+            result.setJMenuBar(createMenuBar());
+            result.setContentPane(getContentPanel());
             // make sure tool tips get displayed
             ToolTipManager.sharedInstance().registerComponent(getContentPanel());
         }
-        return this.frame;
+        return result;
+    }
+
+    private void addDisplayKey(JFrame frame, int keyCode, DisplayKind display) {
+        var mask = InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK;
+        var keyStroke = KeyStroke.getKeyStroke(keyCode, mask);
+        var pane = frame.getRootPane();
+        pane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyStroke, display);
+        pane.getActionMap().put(display, switchTo(display));
+    }
+
+    private AbstractAction switchTo(DisplayKind display) {
+        return new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                getModel().setDisplay(display);
+            }
+        };
     }
 
     /**
