@@ -22,11 +22,11 @@ import static nl.utwente.groove.gui.SimulatorModel.Change.MATCH;
 import static nl.utwente.groove.gui.SimulatorModel.Change.STATE;
 import static nl.utwente.groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static nl.utwente.groove.gui.jgraph.JGraphMode.SELECT_MODE;
-import static nl.utwente.groove.gui.list.ListPanel.LIST_EVENT;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
@@ -371,13 +371,14 @@ public class LTSDisplay extends Display implements SimulatorListener {
     private nl.utwente.groove.gui.list.ListPanel errorPanel;
 
     private PropertyChangeListener createErrorListener() {
-        return new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(LIST_EVENT)
-                    && evt.getNewValue() instanceof FormatError error) {
-                    getSimulatorModel().setState(error.getState());
-                }
+        return evt -> {
+            if (evt.getNewValue() instanceof FormatError error) {
+                getSimulatorModel().setState(error.getState());
+                getSimulatorModel().setDisplay(DisplayKind.STATE);
+                var stateDisplay = (StateDisplay) getSimulator()
+                    .getDisplaysPanel()
+                    .getDisplay(DisplayKind.STATE);
+                stateDisplay.selectError(error);
             }
         };
     }
@@ -662,14 +663,20 @@ public class LTSDisplay extends Display implements SimulatorListener {
                     java.awt.Point loc = evt.getPoint();
                     // find cell in model coordinates
                     JCell<GTS> cell = getJGraph().getFirstCellForLocation(loc.x, loc.y);
+                    var ctrl = (evt.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) != 0;
                     if (cell instanceof LTSJEdge) {
                         GraphTransition trans = ((LTSJEdge) cell).getEdge();
                         getSimulatorModel().setTransition(trans);
+                        if (ctrl) {
+                            getSimulatorModel().setDisplay(DisplayKind.STATE);
+                        }
                     } else if (cell instanceof LTSJVertex) {
                         GraphState node = ((LTSJVertex) cell).getNode();
                         getSimulatorModel().setState(node);
                         if (evt.getClickCount() == 2) {
                             getActions().getExploreAction().doExploreState();
+                        } else if (ctrl) {
+                            getSimulatorModel().setDisplay(DisplayKind.STATE);
                         }
                     }
                 }

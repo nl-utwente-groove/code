@@ -65,7 +65,8 @@ public class SpringLayouter extends AbstractLayouter {
         SpringLayouter.this.damper = 1.0;
         prepare(false);
         long currentTime = System.currentTimeMillis();
-        while (SpringLayouter.this.damper > 0 && System.currentTimeMillis() - currentTime < TIMEOUT) {
+        while (SpringLayouter.this.damper > 0
+            && System.currentTimeMillis() - currentTime < TIMEOUT) {
             relax();
         }
         finish();
@@ -87,7 +88,7 @@ public class SpringLayouter extends AbstractLayouter {
         for (LayoutNode layoutable : this.layoutMap.values()) {
             this.layoutables[layoutableIndex] = layoutable;
             if (!this.immovableMap.containsKey(layoutable.getVertex())) {
-                this.deltas[layoutableIndex] = new Point2D.Float(0, 0);
+                this.deltas[layoutableIndex] = new Point2D.Float(100, 100);
                 this.deltaMap.put(layoutable, this.deltas[layoutableIndex]);
             }
             double p2X = layoutable.getX() + layoutable.getWidth() / 2;
@@ -140,8 +141,8 @@ public class SpringLayouter extends AbstractLayouter {
             // If by the time the damper has ticked down to 0.9, maxMotion is
             // still>1, damp away
             // We never want the damper to be negative though
-            if ((this.maxMotion < FAST_DAMPING_MOTION_TRESHHOLD || this.damper < FAST_DAMPING_DAMPER_TRESHHOLD)
-                && this.damper > FAST_DAMPING) {
+            if ((this.maxMotion < FAST_DAMPING_MOTION_TRESHHOLD
+                || this.damper < FAST_DAMPING_DAMPER_TRESHHOLD) && this.damper > FAST_DAMPING) {
                 this.damper -= FAST_DAMPING;
             } else if (this.maxMotion < MEDIUM_DAMPING_MOTION_TRESHHOLD
                 && this.damper > MEDIUM_DAMPING) {
@@ -246,8 +247,9 @@ public class SpringLayouter extends AbstractLayouter {
                         }
                         position.y = 0;
                     }
-                    key.setLocation(Math.max(0, (int) position.x - key.getWidth() / 2),
-                        Math.max(0, (int) position.y - key.getHeight() / 2));
+                    key
+                        .setLocation(Math.max(0, (int) position.x - key.getWidth() / 2),
+                                     Math.max(0, (int) position.y - key.getHeight() / 2));
                 }
             }
         }

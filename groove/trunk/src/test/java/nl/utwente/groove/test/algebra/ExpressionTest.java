@@ -114,7 +114,8 @@ public class ExpressionTest {
             for (int i = 0; i <= 2; i++) {
                 if (i == op.getArity()) {
                     result = parse(call + ")");
-                } else {
+                    break;
+                } else if (!op.isVarArgs()) {
                     parseFail(call + ")");
                 }
                 if (i > 0) {

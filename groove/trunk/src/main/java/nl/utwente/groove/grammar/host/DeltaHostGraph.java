@@ -28,6 +28,7 @@ import java.util.Stack;
 
 import org.eclipse.jdt.annotation.NonNull;
 
+import nl.utwente.groove.algebra.ErrorValue;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.AGraph;
 import nl.utwente.groove.graph.Edge;
@@ -482,11 +483,6 @@ public final class DeltaHostGraph extends AGraph<@NonNull HostNode,@NonNull Host
      */
     private boolean copyData = true;
 
-    @Override
-    public FormatErrorSet checkTypeConstraints() {
-        return getTypeGraph().check(this);
-    }
-
     /** Maximum basis chain length at which the data target is set
      * to a {@link CopyTarget} regardless of the value of {@link #copyData}.
      */
@@ -544,6 +540,7 @@ public final class DeltaHostGraph extends AGraph<@NonNull HostNode,@NonNull Host
             child.labelEdgeStore = this.labelEdgeStore;
             child.delta = null;
             child.basis = null;
+            child.addErrors(this.errors);
         }
 
         /* Adds the node to the node set and the node-edge map. */
@@ -583,6 +580,9 @@ public final class DeltaHostGraph extends AGraph<@NonNull HostNode,@NonNull Host
             // adapt node-edge map
             HostNode source = edge.source();
             HostNode target = edge.target();
+            if (target instanceof ValueNode val && val.getValue() instanceof ErrorValue error) {
+                this.errors.add(error.getMessage(), edge);
+            }
             addToEdgeToStore(this.nodeEdgeStore, source, edge, refreshSource);
             if (source != target) {
                 addToEdgeToStore(this.nodeEdgeStore, target, edge, refreshTarget);
@@ -684,6 +684,8 @@ public final class DeltaHostGraph extends AGraph<@NonNull HostNode,@NonNull Host
         HostEdgeStore<HostNode> nodeOutEdgeStore;
         /** Label/edge map to be filled by this target. */
         HostEdgeStore<@NonNull TypeLabel> labelEdgeStore;
+        /** Error set collected in this target. */
+        final FormatErrorSet errors = new FormatErrorSet();
     }
 
     /** Delta target to initialise the data structures. */

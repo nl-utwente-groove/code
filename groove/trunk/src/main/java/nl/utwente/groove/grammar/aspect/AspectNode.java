@@ -93,7 +93,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
      */
     @Override
     protected int computeHashCode() {
-        return getNumber() ^ getClass().hashCode() + Objects.hashCode(getGraph());
+        return Objects.hash(getNumber(), getGraph().getClass(), getGraph().getName());
     }
 
     /**
@@ -111,7 +111,8 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         if (other.getNumber() != getNumber()) {
             return false;
         }
-        return other.getGraph() == getGraph();
+        return Objects.equals(getGraph().getClass(), other.getGraph().getClass())
+            && Objects.equals(getGraph().getName(), other.getGraph().getName());
     }
 
     /**
@@ -270,6 +271,10 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
                 errors
                     .add("Node identifier ('%s') not allowed for value node %s", getId(),
                          getValue());
+            }
+            var value = getValue();
+            if (value != null && value.isError()) {
+                errors.add("Error value '%s'", value.getSymbol());
             }
             break;
         default:

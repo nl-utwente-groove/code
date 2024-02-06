@@ -22,6 +22,7 @@ import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.algebra.Algebra;
 import nl.utwente.groove.algebra.AlgebraFamily;
+import nl.utwente.groove.algebra.ErrorValue;
 import nl.utwente.groove.graph.AGraphMap;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
@@ -29,7 +30,6 @@ import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.NodeSetEdgeSetGraph;
-import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
  * Class providing a default implementation of {@link HostGraph}s.
@@ -80,8 +80,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<@NonNull HostNode,@Non
             HostNode tn;
             if (sn instanceof ValueNode vn && family != null) {
                 tn = getFactory()
-                    .createNode(family.getAlgebra(vn.getSort()),
-                                family.toValue(vn.toTerm()));
+                    .createNode(family.getAlgebra(vn.getSort()), family.toValue(vn.toTerm()));
             } else {
                 tn = sn;
             }
@@ -163,7 +162,11 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<@NonNull HostNode,@Non
     private final HostFactory factory;
 
     @Override
-    public FormatErrorSet checkTypeConstraints() {
-        return getTypeGraph().check(this);
+    public boolean addNode(@NonNull HostNode node) {
+        boolean result = super.addNode(node);
+        if (node instanceof ValueNode val && val.getValue() instanceof ErrorValue error) {
+            addError(error.getMessage(), node);
+        }
+        return result;
     }
 }

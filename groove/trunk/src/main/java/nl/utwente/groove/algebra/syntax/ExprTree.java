@@ -346,7 +346,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
             Expression arg = args.get(i).get(sort);
             if (arg == null) {
                 throw new FormatException("Parameter %s of '%s' should have type %s", i,
-                    getParseString(), parTypes.get(i));
+                    getParseString(), sort);
             }
             selectedArgs.add(arg);
         }

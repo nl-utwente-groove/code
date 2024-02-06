@@ -186,7 +186,7 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
      * The method returns this {@link FormatErrorSet} for chaining.
      * @see #wrap(Map)
      * @see #unwrap(GraphMap)
-     * @param map mapping from contextual {@link Element}s to error {@link Element}s
+     * @param map mapping from error {@link Element}s to contextual {@link Element}s
      */
     public FormatErrorSet unwrap(Map<? extends Element,? extends Element> map) {
         getProjection().putAll(map);

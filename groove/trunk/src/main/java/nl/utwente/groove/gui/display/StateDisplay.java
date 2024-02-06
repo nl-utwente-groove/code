@@ -25,6 +25,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -43,6 +44,7 @@ import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
 
 import nl.utwente.groove.grammar.aspect.AspectEdge;
+import nl.utwente.groove.grammar.aspect.AspectElement;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.aspect.GraphConverter;
@@ -55,6 +57,7 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.HostModel;
 import nl.utwente.groove.grammar.model.HostModel.HostModelMap;
 import nl.utwente.groove.grammar.rule.RuleNode;
+import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorListener;
@@ -66,6 +69,7 @@ import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.gui.jgraph.AspectJVertex;
 import nl.utwente.groove.gui.jgraph.JAttr;
+import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.list.ErrorListPanel;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
@@ -279,9 +283,30 @@ public class StateDisplay extends Display implements SimulatorListener {
         return arg -> {
             if (arg != null) {
                 var error = (FormatError) arg.getNewValue();
-                getJGraph().setSelectionCells(error.getElements());
+                selectError(error);
             }
         };
+    }
+
+    /** Selects the elements of a given error in the {@link JGraph}. */
+    void selectError(FormatError error) {
+        if (error == null) {
+            getJGraph().clearSelection();
+        } else {
+            // the error elements may be host elements rather than aspect elements
+            List<Element> elements = new ArrayList<>();
+            var aspectMap = getAspectMap(getSimulatorModel().getState());
+            for (var elem : error.getElements()) {
+                if (elem instanceof AspectElement) {
+                    elements.add(elem);
+                } else if (elem instanceof HostNode node) {
+                    elements.add(aspectMap.getNode(node));
+                } else if (elem instanceof HostEdge edge) {
+                    elements.add(aspectMap.getEdge(edge));
+                }
+            }
+            getJGraph().setSelectionCells(elements);
+        }
     }
 
     @Override
@@ -437,7 +462,7 @@ public class StateDisplay extends Display implements SimulatorListener {
         }
         Color background;
         if (state != null && state.isError()) {
-            getErrorPanel().setEntries(state.getGraph().getErrors().get());
+            getErrorPanel().setEntries(getAspectGraph(state).getErrors().get());
             getDisplayPanel().setBottomComponent(getErrorPanel());
             getDisplayPanel().resetToPreferredSizes();
             background = JAttr.ERROR_BACKGROUND;
@@ -739,6 +764,14 @@ public class StateDisplay extends Display implements SimulatorListener {
     /** Convenience method to retrieve the current grammar view. */
     private GrammarModel getGrammar() {
         return getSimulatorModel().getGrammar();
+    }
+
+    /**
+     * Returns the aspect graph for a given state.
+     * Convenience method for {@code getAspectMap(state).getAspectGraph()}.
+     */
+    private AspectGraph getAspectGraph(GraphState state) {
+        return getAspectMap(state).getAspectGraph();
     }
 
     /**

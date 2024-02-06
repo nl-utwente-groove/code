@@ -65,5 +65,7 @@ public interface HostGraph extends GGraph<HostNode,HostEdge>, DeltaTarget {
      * violations. Any errors found are collected and returned.
      * @see GraphInfo#getErrors
      */
-    public FormatErrorSet checkTypeConstraints();
+    default public FormatErrorSet checkTypeConstraints() {
+        return getTypeGraph().check(this);
+    }
 }
