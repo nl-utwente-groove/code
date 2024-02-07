@@ -52,6 +52,7 @@ import nl.utwente.groove.graph.iso.CertificateStrategy;
 import nl.utwente.groove.graph.iso.IsoChecker;
 import nl.utwente.groove.lts.Status.Flag;
 import nl.utwente.groove.transform.Record;
+import nl.utwente.groove.transform.oracle.NoValueOracle;
 import nl.utwente.groove.transform.oracle.ValueOracle;
 import nl.utwente.groove.util.collect.NestedIterator;
 import nl.utwente.groove.util.collect.SetView;
@@ -92,11 +93,18 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     /**
      * Constructs a GTS from a (fixed) graph grammar.
      */
-    public GTS(Grammar grammar) throws FormatException {
+    public GTS(Grammar grammar) {
         super(grammar.getName() + "-gts");
         grammar.testFixed(true);
         this.grammar = grammar;
-        this.oracle = grammar.getProperties().getValueOracle();
+        ValueOracle oracle;
+        try {
+            oracle = grammar.getProperties().getValueOracle();
+        } catch (FormatException exc) {
+            addErrors(exc.getErrors());
+            oracle = NoValueOracle.instance();
+        }
+        this.oracle = oracle;
     }
 
     /** Indicates if the grammar works with simple or multi-graphs. */

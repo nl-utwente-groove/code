@@ -44,6 +44,7 @@ import nl.utwente.groove.util.Properties.ValueType;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.ThreeValued;
 import nl.utwente.groove.util.parse.FormatErrorSet;
+import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.Parser;
 import nl.utwente.groove.util.parse.StringParser;
 
@@ -73,7 +74,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         "Source of values for unbound value parameters"
             + DocumentedEnum.document(ValueOracleKind.class)
             + "<p>If the algebra family is set to <i>point</i>, the oracle is disregarded",
-        ValueType.ORACLE_FACTORY),
+        ValueType.ORACLE_FACTORY, new OracleChecker()),
 
     /**
      * Flag determining the injectivity of the rule system. If <code>true</code>,
@@ -486,6 +487,20 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         }
 
         public static ExplorationChecker instance = new ExplorationChecker();
+    }
+
+    /** Checks whether the oracle specified by {@link GrammarKey#ORACLE} can be instantiated. */
+    private static class OracleChecker implements GrammarChecker {
+        @Override
+        public FormatErrorSet check(GrammarModel grammar, Entry value) {
+            FormatErrorSet result = new FormatErrorSet();
+            try {
+                grammar.getProperties().getValueOracle();
+            } catch (FormatException exc) {
+                result.addAll(exc.getErrors());
+            }
+            return result;
+        }
     }
 
     /** Workaround for apparent null annotation bug. */
