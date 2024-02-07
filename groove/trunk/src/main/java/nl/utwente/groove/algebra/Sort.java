@@ -34,8 +34,8 @@ import nl.utwente.groove.annotation.ToolTipBody;
 import nl.utwente.groove.annotation.ToolTipHeader;
 import nl.utwente.groove.annotation.ToolTipPars;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Keywords;
-import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.StringHandler;
 
@@ -243,6 +243,9 @@ public enum Sort {
         return this.operatorMap.get().containsKey(name);
     }
 
+    private Factory<? extends Map<String,Operator>> operatorMap
+        = Factory.lazy(this::computeOperatorMap);
+
     /** Creates content for {@link #operatorMap}. */
     private SortedMap<String,Operator> computeOperatorMap() {
         SortedMap<String,Operator> result = new TreeMap<>();
@@ -253,9 +256,6 @@ public enum Sort {
         opStream.forEach(o -> result.put(o.getName(), o));
         return result;
     }
-
-    private LazyFactory<? extends Map<String,Operator>> operatorMap
-        = LazyFactory.instance(this::computeOperatorMap);
 
     /** Returns the symbolic representation of the error value. */
     public String getErrorSymbol() {

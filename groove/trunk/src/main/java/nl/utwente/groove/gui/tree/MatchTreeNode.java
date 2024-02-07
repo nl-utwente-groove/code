@@ -30,7 +30,7 @@ import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.MatchResult;
 import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.lts.RuleTransitionLabel;
-import nl.utwente.groove.util.LazyFactory;
+import nl.utwente.groove.util.Factory;
 
 /**
  * Tree node wrapping a graph transition.
@@ -106,7 +106,7 @@ class MatchTreeNode extends DisplayTreeNode {
     }
 
     /** Lazily computed label text of this node. */
-    private final Supplier<String> label = LazyFactory.instance(this::computeText);
+    private final Supplier<String> label = Factory.lazy(this::computeText);
 
     /** Computes the value for {@link #label}. */
     private String computeText() {

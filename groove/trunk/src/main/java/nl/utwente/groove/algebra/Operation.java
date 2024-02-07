@@ -48,6 +48,11 @@ public interface Operation {
     /** Signals if this is a collection-based operation, i.e., with a variable number of arguments. */
     public boolean isVarArgs();
 
+    /** If {@code true}, the outcome of this operation is not fully determined by its parameters.
+     * This is true for, e.g., random number generation.
+     */
+    public boolean isIndeterminate();
+
     /**
      * Returns the algebra to which this operation belongs.
      */

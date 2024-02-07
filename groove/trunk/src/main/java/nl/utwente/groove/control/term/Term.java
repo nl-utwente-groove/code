@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.control.term;
 
-import static nl.utwente.groove.util.LazyFactory.lazyFactory;
+import static nl.utwente.groove.util.Factory.lazy;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -137,11 +137,11 @@ abstract public class Term implements Position<Term,Derivation> {
     }
 
     @Override
-    synchronized public final Type getType() {
+    public final Type getType() {
         return this.type.get();
     }
 
-    private Supplier<Type> type = lazyFactory(this::computeType);
+    private Supplier<Type> type = lazy(this::computeType);
 
     /** Computes the position type of this term. */
     abstract protected Type computeType();
@@ -171,15 +171,14 @@ abstract public class Term implements Position<Term,Derivation> {
      * @param nested if {@code true}, the nested derivation is computed,
      * otherwise only the bottom-level derivation is computed
      */
-    synchronized public final DerivationAttempt getAttempt(boolean nested) {
+    public final DerivationAttempt getAttempt(boolean nested) {
         return nested
             ? this.nestedAttempt.get()
             : this.flatAttempt.get();
     }
 
-    private Supplier<DerivationAttempt> flatAttempt = lazyFactory(() -> this.computeAttempt(false));
-    private Supplier<DerivationAttempt> nestedAttempt
-        = lazyFactory(() -> this.computeAttempt(true));
+    private Supplier<DerivationAttempt> flatAttempt = lazy(() -> this.computeAttempt(false));
+    private Supplier<DerivationAttempt> nestedAttempt = lazy(() -> this.computeAttempt(true));
 
     /**
      * Computes the derivation of this term.
@@ -231,14 +230,14 @@ abstract public class Term implements Position<Term,Derivation> {
 
     /** Returns the transient depth of this symbolic location. */
     @Override
-    synchronized public final int getTransience() {
+    public final int getTransience() {
         return this.depth.get();
     }
 
     /** Computes the transient depth of this symbolic location. */
     abstract protected int computeDepth();
 
-    private Supplier<Integer> depth = lazyFactory(this::computeDepth);
+    private Supplier<Integer> depth = lazy(this::computeDepth);
 
     /**
      * Indicates if the execution of this term is guaranteed to

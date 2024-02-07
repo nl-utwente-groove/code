@@ -24,8 +24,8 @@ import java.util.Optional;
 import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.rule.MethodName.Language;
 import nl.utwente.groove.grammar.rule.MethodNameParser;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Groove;
-import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.Parser;
@@ -223,8 +223,8 @@ public class GraphProperties extends Properties {
     }
 
     /** Mapping from key names (as in {@link Key#getName()}) to keys. */
-    static private final LazyFactory<Map<String,Key>> nameKeyMap
-        = LazyFactory.instance(GraphProperties::createNameKeyMap);
+    static private final Factory<Map<String,Key>> nameKeyMap
+        = Factory.lazy(GraphProperties::createNameKeyMap);
 
     static private Map<String,Key> createNameKeyMap() {
         var result = new HashMap<String,Key>();

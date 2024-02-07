@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -37,6 +38,7 @@ import nl.utwente.groove.algebra.syntax.CallExpr;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Expression.Kind;
 import nl.utwente.groove.algebra.syntax.Variable;
+import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.util.DocumentedEnum;
 import nl.utwente.groove.util.Exceptions;
 
@@ -147,6 +149,9 @@ public enum AlgebraFamily implements DocumentedEnum {
         return this.algebraMap.get(sigKind);
     }
 
+    /** A map from signature kinds to algebras registered for that name. */
+    private final Map<Sort,Algebra<?>> algebraMap = new EnumMap<>(Sort.class);
+
     /** Indicates if this algebra family can assign definite values to variables. */
     public boolean supportsSymbolic() {
         return this == POINT;
@@ -248,28 +253,31 @@ public enum AlgebraFamily implements DocumentedEnum {
      * Returns the method associated with a certain operator.
      */
     public Operation getOperation(Operator operator) {
-        Algebra<?> algebra = getAlgebra(operator.getSort());
-        assert algebra != null;
-        return getOperations(algebra).get(operator.getName());
+        return getOpsMap().get(operator.getSort()).get().get(operator.getName());
     }
 
     /**
-     * Returns, for a given algebra, the corresponding mapping from
-     * method names to methods.
+     * Returns a mapping from sorts to operation maps.
      */
-    private Map<String,Operation> getOperations(Algebra<?> algebra) {
-        Map<String,Operation> result = this.operationsMap.get(algebra);
-        if (result == null) {
-            result = createOperationsMap(algebra);
-            this.operationsMap.put(algebra, result);
+    private Map<Sort,Supplier<Map<String,Operation>>> getOpsMap() {
+        var result = this.opsMap;
+        if (result.isEmpty()) {
+            for (Sort sort : Sort.values()) {
+                Supplier<Map<String,Operation>> ops = switch (sort) {
+                case USER -> nl.utwente.groove.util.Factory.lazy(this::computeUserOps);
+                default -> nl.utwente.groove.util.Factory.value(computeSystemOps(sort));
+                };
+                result.put(sort, ops);
+            }
         }
         return result;
     }
 
     /**
-     * Returns a mapping from operation names to operations for a given algebra.
+     * Returns a mapping from operator names to operations for a given system sort.
      */
-    private Map<String,Operation> createOperationsMap(Algebra<?> algebra) {
+    private Map<String,Operation> computeSystemOps(Sort sort) {
+        var algebra = getAlgebra(sort);
         Map<String,Operation> result = new HashMap<>();
         // first find out what methods were declared in the signature
         Set<String> methodNames = new HashSet<>();
@@ -295,6 +303,22 @@ public enum AlgebraFamily implements DocumentedEnum {
     }
 
     /**
+     * Returns a mapping from operation names to operations for a given sort.
+     */
+    private Map<String,Operation> computeUserOps() {
+        Map<String,Operation> result = new HashMap<>();
+        var algebra = getAlgebra(Sort.USER);
+        for (var m : UserSignature.getMethods()) {
+            var operation = createOperation(algebra, m);
+            result.put(m.getName(), operation);
+        }
+        return result;
+    }
+
+    /** Store of operations created from the algebras. */
+    private final Map<Sort,Supplier<Map<String,Operation>>> opsMap = new EnumMap<>(Sort.class);
+
+    /**
      * Returns a new algebra operation object for the given method (from a given
      * algebra).
      */
@@ -306,11 +330,6 @@ public enum AlgebraFamily implements DocumentedEnum {
     public String toString() {
         return this.algebraMap.toString();
     }
-
-    /** A map from signature kinds to algebras registered for that name. */
-    private final Map<Sort,Algebra<?>> algebraMap = new EnumMap<>(Sort.class);
-    /** Store of operations created from the algebras. */
-    private final Map<Algebra<?>,Map<String,Operation>> operationsMap = new HashMap<>();
 
     /** Returns the algebra register with the family of default algebras. */
     public static AlgebraFamily getInstance() {
@@ -334,15 +353,17 @@ public enum AlgebraFamily implements DocumentedEnum {
 
     /** Implementation of an algebra operation. */
     public static class Operation implements nl.utwente.groove.algebra.Operation {
+        @SuppressWarnings("null")
         Operation(AlgebraFamily family, Algebra<?> algebra, Method method) {
             this.algebra = algebra;
             this.method = method;
             Type[] methodParameterTypes = method.getParameterTypes();
             this.arity = methodParameterTypes.length;
             this.varArgs = this.arity == 1 && methodParameterTypes[0].equals(List.class);
-            @SuppressWarnings("null")
             Sort returnType = algebra.getSort().getOperator(method.getName()).getResultType();
             this.returnType = family.getAlgebra(returnType);
+            var annotation = method.getAnnotation(UserOperation.class);
+            this.indeterminate = annotation != null && annotation.indeterminate();
         }
 
         @Override
@@ -375,6 +396,8 @@ public enum AlgebraFamily implements DocumentedEnum {
             return this.algebra;
         }
 
+        private final Algebra<?> algebra;
+
         @Override
         public int getArity() {
             return this.arity;
@@ -394,18 +417,25 @@ public enum AlgebraFamily implements DocumentedEnum {
             return this.returnType;
         }
 
+        private final Algebra<?> returnType;
+
         @Override
         public String getName() {
             return this.method.getName();
         }
 
         @Override
+        public boolean isIndeterminate() {
+            return this.indeterminate;
+        }
+
+        private final boolean indeterminate;
+
+        @Override
         public String toString() {
             return getName();
         }
 
-        private final Algebra<?> algebra;
-        private final Algebra<?> returnType;
         private final Method method;
     }
 }

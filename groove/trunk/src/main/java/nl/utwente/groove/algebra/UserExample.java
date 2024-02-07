@@ -14,21 +14,31 @@
  *
  * $Id$
  */
-package nl.utwente.groove.annotation;
+package nl.utwente.groove.algebra;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import nl.utwente.groove.annotation.UserOperation;
 
 /**
- * Annotation for user-defined algebraic operators
+ * Excample class with user operations.
  * @author Arend Rensink
  * @version $Revision$
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface UserOperation {
-    /** Flag indicating if this is an indeterminate operation. */
-    boolean indeterminate() default false;
+public class UserExample {
+    /** Returns a random integer number between 0 and 9 (inclusive). */
+    @UserOperation(indeterminate = true)
+    static public int randomInt() {
+        return (int) (10 * Math.random());
+    }
+
+    /** Returns a the square root of its parameter. */
+    @UserOperation
+    static public double sqrt(double num) {
+        return Math.sqrt(num);
+    }
+
+    /** Returns a the square root of its parameter. */
+    @UserOperation
+    static public int one() {
+        return 1;
+    }
 }

@@ -19,6 +19,7 @@ package nl.utwente.groove.grammar.aspect;
 import static nl.utwente.groove.grammar.aspect.AspectKind.COLOR;
 import static nl.utwente.groove.graph.GraphRole.HOST;
 import static nl.utwente.groove.graph.GraphRole.TYPE;
+import static nl.utwente.groove.util.Factory.lazy;
 
 import java.awt.Point;
 import java.awt.geom.Rectangle2D;
@@ -60,8 +61,8 @@ import nl.utwente.groove.graph.plain.PlainNode;
 import nl.utwente.groove.gui.layout.JVertexLayout;
 import nl.utwente.groove.gui.layout.LayoutMap;
 import nl.utwente.groove.gui.list.SearchResult;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Keywords;
-import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
@@ -502,7 +503,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     }
 
     /** Aspect factory for this graph. */
-    private LazyFactory<AspectFactory> aspectFactory = LazyFactory.instance(this::createFactory);
+    private Factory<AspectFactory> aspectFactory = lazy(this::createFactory);
 
     /** The graph role of the aspect graph. */
     private final GraphRole role;
@@ -553,8 +554,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     }
 
     /** Mapping from node identifiers to nodes. */
-    private LazyFactory<Map<String,AspectNode>> nodeIdMap
-        = LazyFactory.instance(this::createNodeIdMap);
+    private Factory<Map<String,AspectNode>> nodeIdMap = lazy(this::createNodeIdMap);
 
     /** Returns the node with a given ID, if any. */
     AspectNode getNodeForId(String id) {
@@ -605,7 +605,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     }
 
     /** Mapping from node identifiers to sorts. */
-    private LazyFactory<SortMap> sortMap = LazyFactory.instance(this::createSortMap);
+    private Factory<SortMap> sortMap = lazy(this::createSortMap);
 
     /** Returns the mapping from variables and field to primitive node sorts,
      * extended with self-fields for a given node type label.

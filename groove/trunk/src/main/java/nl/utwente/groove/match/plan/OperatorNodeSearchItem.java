@@ -244,10 +244,17 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
                 result = OperatorNodeSearchItem.this.value.equals(outcome);
             } else if (OperatorNodeSearchItem.this.targetFound || this.targetPreMatch != null) {
                 HostNode targetFind = this.targetPreMatch;
-                if (targetFind == null) {
-                    targetFind = this.search.getNode(OperatorNodeSearchItem.this.targetIx);
+                if (targetFind != null && OperatorNodeSearchItem.this.operation.isIndeterminate()) {
+                    // the value of this indeterminate operation was seeded,
+                    // hence this is a reconstruction of the match, hence we're going
+                    // to assume the seeded value is correct
+                    result = true;
+                } else {
+                    if (targetFind == null) {
+                        targetFind = this.search.getNode(OperatorNodeSearchItem.this.targetIx);
+                    }
+                    result = ((ValueNode) targetFind).getValue().equals(outcome);
                 }
-                result = ((ValueNode) targetFind).getValue().equals(outcome);
             } else {
                 ValueNode targetImage = this.factory
                     .createNode(OperatorNodeSearchItem.this.operation.getResultAlgebra(), outcome);

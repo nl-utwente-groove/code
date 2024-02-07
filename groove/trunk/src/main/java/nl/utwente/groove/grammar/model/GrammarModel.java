@@ -60,8 +60,8 @@ import nl.utwente.groove.prolog.GrooveEnvironment;
 import nl.utwente.groove.util.ChangeCount;
 import nl.utwente.groove.util.ChangeCount.Tracker;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Groove;
-import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.Version;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -601,8 +601,8 @@ public class GrammarModel implements PropertyChangeListener {
     }
 
     /** The prolog environment derived from the system store. */
-    private final LazyFactory<GrooveEnvironment> prologEnvironment
-        = LazyFactory.instance(this::computePrologEnvironment);
+    private final Factory<GrooveEnvironment> prologEnvironment
+        = Factory.lazy(this::computePrologEnvironment);
 
     /**
      * Resets the {@link #grammar} and {@link #errors} objects, making sure that

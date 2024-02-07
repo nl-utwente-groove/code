@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.control.instance;
 
-import static nl.utwente.groove.util.LazyFactory.lazyFactory;
+import static nl.utwente.groove.util.Factory.lazy;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,8 +40,8 @@ import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.util.DefaultFixable;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Fixable;
-import nl.utwente.groove.util.LazyFactory;
 
 /**
  * Run-time composed control location.
@@ -182,7 +182,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
         return this.pastAttempts.get();
     }
 
-    private Supplier<Set<NestedCall>> pastAttempts = lazyFactory(() -> {
+    private Supplier<Set<NestedCall>> pastAttempts = lazy(() -> {
         var result = new HashSet<NestedCall>();
         if (!isPrime()) {
             var pred = getPred();
@@ -202,7 +202,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
         return this.pastCalls.get();
     }
 
-    private Supplier<Set<Call>> pastCalls = lazyFactory(() -> {
+    private Supplier<Set<Call>> pastCalls = lazy(() -> {
         var result = new HashSet<Call>();
         getPastAttempts().stream().map(NestedCall::getInner).forEach(result::add);
         return result;
@@ -259,7 +259,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
         return this.attempt.get();
     }
 
-    private final LazyFactory<StepAttempt> attempt = LazyFactory.instance(this::computeAttempt);
+    private final Factory<StepAttempt> attempt = lazy(this::computeAttempt);
 
     /** Computes the attempt of this frame. */
     private StepAttempt computeAttempt() {

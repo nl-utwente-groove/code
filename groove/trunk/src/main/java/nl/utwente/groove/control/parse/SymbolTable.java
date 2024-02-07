@@ -25,7 +25,7 @@ import java.util.Set;
 
 import nl.utwente.groove.algebra.syntax.SortMap;
 import nl.utwente.groove.control.CtrlType;
-import nl.utwente.groove.util.LazyFactory;
+import nl.utwente.groove.util.Factory;
 
 /**
  * Keeps track of symbols used in the control language, including scopes.
@@ -132,7 +132,7 @@ public class SymbolTable {
         return this.sortMap.get();
     }
 
-    private final LazyFactory<SortMap> sortMap = LazyFactory.instance(this::computeSortMap);
+    private final Factory<SortMap> sortMap = Factory.lazy(this::computeSortMap);
 
     /** Computes the value for {@link #sortMap}. */
     private SortMap computeSortMap() {

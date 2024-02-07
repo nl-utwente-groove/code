@@ -36,7 +36,7 @@ import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.Position;
 import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.grammar.CheckPolicy;
-import nl.utwente.groove.util.LazyFactory;
+import nl.utwente.groove.util.Factory;
 
 /**
  * Location in a control template.
@@ -238,8 +238,7 @@ public class Location
         return result;
     }
 
-    private LazyFactory<Map<CtrlVar,Integer>> varIxMap
-        = LazyFactory.instance(this::computeVarIxMap);
+    private Factory<Map<CtrlVar,Integer>> varIxMap = Factory.lazy(this::computeVarIxMap);
 
     /** Returns an assignment from the in-parameters of the owning procedure
      * to the variables of this location.

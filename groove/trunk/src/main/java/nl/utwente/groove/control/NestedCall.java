@@ -29,7 +29,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Rule;
-import nl.utwente.groove.util.LazyFactory;
+import nl.utwente.groove.util.Factory;
 
 /**
  * Stack of nested calls.
@@ -117,8 +117,8 @@ public class NestedCall implements Iterable<Call> {
     }
 
     /** The first recipe in this nested call, or {@code null} if there is none. */
-    private LazyFactory<Optional<Recipe>> recipe = LazyFactory
-        .instance(() -> stream()
+    private Factory<Optional<Recipe>> recipe = Factory
+        .lazy(() -> stream()
             .map(c -> c.getUnit())
             .filter(u -> u instanceof Recipe)
             .findFirst()

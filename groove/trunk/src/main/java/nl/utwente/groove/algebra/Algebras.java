@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.algebra;
 
+import static nl.utwente.groove.util.Factory.lazy;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
@@ -32,8 +34,8 @@ import nl.utwente.groove.annotation.ToolTipBody;
 import nl.utwente.groove.annotation.ToolTipHeader;
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Groove;
-import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.OpKind.Placement;
 
@@ -124,8 +126,7 @@ public class Algebras {
     }
 
     /** Syntax helper map for operators, from syntax items to associated tool tips. */
-    private static final LazyFactory<HelpMap> opDocMap
-        = LazyFactory.instance(Algebras::computeOpDocMap);
+    private static final Factory<HelpMap> opDocMap = lazy(Algebras::computeOpDocMap);
 
     /**
      * Returns a syntax helper mapping for all operators.
@@ -133,6 +134,9 @@ public class Algebras {
     public static HelpMap getExprDocMap() {
         return exprDocMap.get();
     }
+
+    /** Syntax helper map for expressions, from syntax items to associated tool tips. */
+    private static final Factory<HelpMap> exprDocMap = lazy(Algebras::computeExprDocMap);
 
     private static HelpMap computeExprDocMap() {
         var result = new HelpMap();
@@ -176,10 +180,6 @@ public class Algebras {
         result.add(getOperatorHelp());
         return result;
     }
-
-    /** Syntax helper map for expressions, from syntax items to associated tool tips. */
-    private static final LazyFactory<HelpMap> exprDocMap
-        = LazyFactory.instance(Algebras::computeExprDocMap);
 
     static private Help getLiteralHelp(Sort sort) {
         try {

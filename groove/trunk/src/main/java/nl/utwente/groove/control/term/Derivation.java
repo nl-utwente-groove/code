@@ -25,8 +25,8 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.control.Attempt;
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.NestedCall;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Groove;
-import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.Pair;
 
 /**
@@ -97,7 +97,7 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
     }
 
     /** The nested call of this derivation. */
-    private Supplier<NestedCall> call = LazyFactory.instance(this::computeCall);
+    private Supplier<NestedCall> call = Factory.lazy(this::computeCall);
 
     /** Computes the value for {@link #call}. */
     private NestedCall computeCall() {

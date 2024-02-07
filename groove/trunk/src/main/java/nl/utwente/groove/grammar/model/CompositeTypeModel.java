@@ -17,7 +17,7 @@ import nl.utwente.groove.grammar.type.ImplicitTypeGraph;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.grammar.type.TypeNode;
-import nl.utwente.groove.util.LazyFactory;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -189,8 +189,8 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
     }
 
     /** The implicit type graph. */
-    private final LazyFactory<TypeGraph> implicitTypeGraph
-        = LazyFactory.instance(() -> ImplicitTypeGraph.newInstance(getLabels()));
+    private final Factory<TypeGraph> implicitTypeGraph
+        = Factory.lazy(() -> ImplicitTypeGraph.newInstance(getLabels()));
 
     @Override
     void notifyWillRebuild() {
