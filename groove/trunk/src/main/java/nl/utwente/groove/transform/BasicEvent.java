@@ -29,6 +29,7 @@ import java.util.Set;
 
 import nl.utwente.groove.algebra.Algebra;
 import nl.utwente.groove.algebra.Constant;
+import nl.utwente.groove.algebra.ErrorValue;
 import nl.utwente.groove.grammar.AnchorKind;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.UnitPar.RulePar;
@@ -525,14 +526,16 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
      * @throws InterruptedException if an oracle input was cancelled
      */
     private ValueNode createValueNode(RuleEffect record, RulePar par) throws InterruptedException {
+        var sort = par.getType().getSort();
+        Algebra<?> alg = getAction().getGrammarProperties().getAlgebraFamily().getAlgebra(sort);
+        Object value;
         try {
             Constant c = record.getOracle().getValue(record.getSource(), this, par);
-            Algebra<?> alg
-                = getAction().getGrammarProperties().getAlgebraFamily().getAlgebra(c.getSort());
-            return record.getSource().getFactory().createNode(alg, alg.toValueFromConstant(c));
+            value = alg.toValueFromConstant(c);
         } catch (FormatException exc) {
-            throw new InterruptedException(exc.getMessage());
+            value = new ErrorValue(sort, exc);
         }
+        return record.getSource().getFactory().createNode(alg, value);
     }
 
     /**

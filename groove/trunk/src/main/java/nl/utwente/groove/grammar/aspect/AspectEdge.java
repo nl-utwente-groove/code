@@ -348,9 +348,10 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 errors.add("Test '%s' cannot be eraser", test.getParseString());
             }
             if (source().has(PARAM_ASK) || target().has(PARAM_ASK)) {
-                if (!has(CREATOR) && !has(REMARK)) {
+                if (!has(CREATOR) && !has(REMARK) && !has(ARGUMENT)) {
                     errors
-                        .add("User-provided parameter '%s' must be unconstrained", get(PARAM_ASK));
+                        .add("User-provided parameter '%s' must be unconstrained",
+                             target().get(PARAM_ASK));
                 }
             }
             AspectKind role = getKind(Category.ROLE);

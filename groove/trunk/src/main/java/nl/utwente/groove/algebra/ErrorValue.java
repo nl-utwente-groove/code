@@ -30,7 +30,8 @@ import java.util.Objects;
  * @version $Revision$
  */
 public class ErrorValue extends Exception {
-    ErrorValue(Sort sort, Exception exc) {
+    /** Creates a new error value of a given sort, with a given exception. */
+    public ErrorValue(Sort sort, Exception exc) {
         super(exc);
         this.sort = sort;
     }
