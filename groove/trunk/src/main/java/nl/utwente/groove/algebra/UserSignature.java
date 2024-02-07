@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import nl.utwente.groove.annotation.UserOperation;
+import nl.utwente.groove.util.LazyFactory;
 
 /**
  * The signature for the user algebra.
@@ -33,13 +34,24 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
      */
     public static void setUserClass(Class<?> userClass) {
         UserSignature.userClass = userClass;
+        operators.reset();
     }
 
+    /** The class containing user operations. */
     static private Class<?> userClass;
 
-    @SuppressWarnings("null")
     /** Returns the set of operators defined in the user class. */
     public static Set<Operator> getOperators() {
+        return operators.get();
+    }
+
+    /** Lazily computed set of operators in the user class. */
+    static private final LazyFactory<Set<Operator>> operators
+        = LazyFactory.instance(UserSignature::computeOperators);
+
+    /** Computes the value of {@link #operators}. */
+    @SuppressWarnings("null")
+    static private Set<Operator> computeOperators() {
         Set<Operator> result = new HashSet<>();
         var userClass = UserSignature.userClass;
         if (userClass != null) {
@@ -48,7 +60,6 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
                 if (m.getAnnotation(UserOperation.class) == null) {
                     continue;
                 }
-
                 for (var parType : m.getParameterTypes()) {
 
                 }
@@ -56,4 +67,5 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
         }
         return result;
     }
+
 }

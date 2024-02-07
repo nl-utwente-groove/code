@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -37,13 +38,14 @@ public class Operator {
      * are not type variables.
      */
     @SuppressWarnings("null")
-    private Operator(Sort sort, OpValue opValue, Method method) throws IllegalArgumentException {
+    private Operator(Sort sort, Method method, boolean inverse,
+                     boolean zeroArgs) throws IllegalArgumentException {
         Type[] methodParameterTypes = method.getGenericParameterTypes();
         this.sort = sort;
-        this.inverse = opValue == IntSignature.Op.NEG || opValue == RealSignature.Op.NEG;
+        this.inverse = inverse;
         this.arity = methodParameterTypes.length;
         this.varArgs = this.arity == 1 && methodParameterTypes[0] instanceof ParameterizedType;
-        this.zeroArgs = opValue.isZeroArgs();
+        this.zeroArgs = zeroArgs;
         this.name = method.getName();
         this.parameterTypes = new ArrayList<>();
         for (int i = 0; i < this.arity; i++) {
@@ -71,9 +73,23 @@ public class Operator {
             ? null
             : op.symbol();
         this.kind = op == null
-            ? OpKind.ATOM
+            ? OpKind.CALL
             : op.kind();
         this.description = superMethod.getAnnotation(ToolTipHeader.class).value();
+    }
+
+    /**
+     * Constructs an operator from a given {@link Signature} method.
+     * It is assumed that the method has only generic type variables as
+     * parameter and result types, and that for each such type variable <code>Xxx</code>
+     * there is a corresponding signature <code>XxxSignature</code>.
+     * @param method the method to be converted into an operator
+     * @throws IllegalArgumentException if the method parameter or return types
+     * are not type variables.
+     */
+    private Operator(Sort sort, OpValue opValue, Method method) throws IllegalArgumentException {
+        this(sort, method, opValue == IntSignature.Op.NEG || opValue == RealSignature.Op.NEG,
+             opValue.isZeroArgs());
     }
 
     /** Converts a reflected type into a GROOVE sort. */
@@ -325,55 +341,65 @@ public class Operator {
 
     /** Returns a map from operator symbols and names to operators with that symbol/name. */
     public static Map<String,List<Operator>> getOpsMap() {
-        if (opLookupMap.isEmpty()) {
-            // register all operators
-            for (Operator op : getOps()) {
-                registerOp(op);
+        return opLookupMap.get();
+    }
+
+    /** Mapping from operator names and symbols to lists of operators with that symbol. */
+    private static final Supplier<Map<String,List<Operator>>> opLookupMap
+        = LazyFactory.instance(Operator::computeOpLookupMap);
+
+    /** Adds an operator to the store, both by symbol and by name. */
+    private static Map<String,List<Operator>> computeOpLookupMap() {
+        Map<String,List<Operator>> result = new HashMap<>();
+        for (Operator op : getOps()) {
+            String symbol = op.getSymbol();
+            if (symbol != null) {
+                List<Operator> ops = result.get(symbol);
+                if (ops == null) {
+                    ops = new ArrayList<>();
+                    result.put(symbol, ops);
+                }
+                ops.add(op);
             }
+            String opName = op.getName();
+            List<Operator> ops = result.get(opName);
+            if (ops == null) {
+                ops = new ArrayList<>();
+                result.put(opName, ops);
+            }
+            ops.add(op);
         }
-        return opLookupMap;
+        return result;
     }
 
     /** Returns, for a given sort and name, the (unique) operators defined
      * for that sort with that symbol/name; or {@code null} if there is no
      * such operator. */
     public static @Nullable Operator getOp(Sort sort, String name) {
-        if (sortOpLookupMap.isEmpty()) {
-            getOps().forEach(Operator::registerOp);
-        }
-        return sortOpLookupMap.get(sort).get(name);
+        return sortOpLookupMap.get().get(sort).get(name);
     }
 
-    /** Adds an operator to the store, both by symbol and by name. */
-    private static void registerOp(Operator op) {
-        String symbol = op.getSymbol();
-        var sortOps = sortOpLookupMap.get(op.getSort());
-        if (sortOps == null) {
-            sortOps = new HashMap<>();
-            sortOpLookupMap.put(op.getSort(), sortOps);
-        }
-        if (symbol != null) {
-            List<Operator> ops = opLookupMap.get(symbol);
-            if (ops == null) {
-                ops = new ArrayList<>();
-                opLookupMap.put(symbol, ops);
-            }
-            ops.add(op);
-            sortOps.put(symbol, op);
-        }
-        String opName = op.getName();
-        List<Operator> ops = opLookupMap.get(opName);
-        if (ops == null) {
-            ops = new ArrayList<>();
-            opLookupMap.put(opName, ops);
-        }
-        ops.add(op);
-        sortOps.put(opName, op);
-    }
-
-    /** Mapping from operator names and symbols to lists of operators with that symbol. */
-    private static final Map<String,List<Operator>> opLookupMap = new HashMap<>();
     /** Mapping from sorts plus operator names and symbols to the (optional) operator
      * with that symbol defined in that sort. */
-    private static final Map<Sort,Map<String,Operator>> sortOpLookupMap = new HashMap<>();
+    private static final Supplier<Map<Sort,Map<String,Operator>>> sortOpLookupMap
+        = LazyFactory.instance(Operator::computeSortOpLookupMap);
+
+    /** Adds an operator to the store, both by symbol and by name. */
+    private static Map<Sort,Map<String,Operator>> computeSortOpLookupMap() {
+        Map<Sort,Map<String,Operator>> result = new HashMap<>();
+        for (Operator op : getOps()) {
+            var sortOps = result.get(op.getSort());
+            if (sortOps == null) {
+                sortOps = new HashMap<>();
+                result.put(op.getSort(), sortOps);
+            }
+            String opName = op.getName();
+            sortOps.put(opName, op);
+            String symbol = op.getSymbol();
+            if (symbol != null) {
+                sortOps.put(symbol, op);
+            }
+        }
+        return result;
+    }
 }
