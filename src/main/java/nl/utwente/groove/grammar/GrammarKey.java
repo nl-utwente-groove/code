@@ -35,8 +35,8 @@ import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.RuleModel;
 import nl.utwente.groove.transform.oracle.ValueOracleKind;
 import nl.utwente.groove.util.DocumentedEnum;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Groove;
-import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.Properties.Entry;
 import nl.utwente.groove.util.Properties.KeyParser;
@@ -377,8 +377,8 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
     }
 
     /** Mapping from key names (as in {@link GrammarKey#getName()}) to keys. */
-    static private final LazyFactory<Map<String,GrammarKey>> nameKeyMap
-        = LazyFactory.instance(GrammarKey::createNameKeyMap);
+    static private final Factory<Map<String,GrammarKey>> nameKeyMap
+        = Factory.lazy(GrammarKey::createNameKeyMap);
 
     /** Name of deprecated key for attribute support. */
     static public final String ATTRIBUTE_SUPPORT = "attributeSupport";

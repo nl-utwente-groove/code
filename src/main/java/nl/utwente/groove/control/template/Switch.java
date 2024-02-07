@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.control.template;
 
+import static nl.utwente.groove.util.Factory.lazy;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +41,6 @@ import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.Signature;
 import nl.utwente.groove.grammar.UnitPar;
 import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.LazyFactory;
 
 /**
  * Transition between control locations, bearing a call.
@@ -167,8 +168,7 @@ public class Switch implements Comparable<Switch>, Relocatable {
      * from the arguments.
      * The binding is {@link Source#NONE} for output parameters and wildcard arguments
      */
-    private Supplier<Assignment> assignSource2Par
-        = LazyFactory.instance(this::computeAssignSource2Par);
+    private Supplier<Assignment> assignSource2Par = lazy(this::computeAssignSource2Par);
 
     /**
      * Computes the value for {@link #assignSource2Par}.
@@ -231,8 +231,7 @@ public class Switch implements Comparable<Switch>, Relocatable {
      * call, the output parameter values are not yet available and will
      * be set to {@code null}.
      */
-    private final Supplier<Assignment> assignSource2Target
-        = LazyFactory.instance(this::computeAssignSource2Target);
+    private final Supplier<Assignment> assignSource2Target = lazy(this::computeAssignSource2Target);
 
     /**
      * Computes the value for {@link #assignSource2Target}
@@ -276,8 +275,7 @@ public class Switch implements Comparable<Switch>, Relocatable {
      * switch, based on the output parameters of the (procedure) call.
      * This is only valid if this switch contains a procedure call.
      */
-    private final Supplier<Assignment> assignPar2Target
-        = LazyFactory.instance(this::computeAssignPar2Target);
+    private final Supplier<Assignment> assignPar2Target = lazy(this::computeAssignPar2Target);
 
     /** Computes the value for {@link #assignPar2Target}. */
     private Assignment computeAssignPar2Target() {

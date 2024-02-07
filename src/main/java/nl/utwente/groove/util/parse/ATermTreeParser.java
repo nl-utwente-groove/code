@@ -18,6 +18,7 @@ package nl.utwente.groove.util.parse;
 
 import static nl.utwente.groove.algebra.Sort.INT;
 import static nl.utwente.groove.algebra.Sort.REAL;
+import static nl.utwente.groove.util.Factory.lazy;
 import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.CONST;
 import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.EOT;
 import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.LATE_OP;
@@ -29,12 +30,12 @@ import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.RPAR;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -44,6 +45,7 @@ import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.io.Util;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.parse.OpKind.Direction;
 import nl.utwente.groove.util.parse.OpKind.Placement;
 
@@ -82,8 +84,9 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
      */
     @SuppressWarnings("unchecked")
     protected ATermTreeParser(String description, X prototype) {
-        this(description, prototype,
-             Arrays.asList(((Class<? extends O>) prototype.getOp().getClass()).getEnumConstants()));
+        this(description, prototype, Factory
+            .value(Arrays
+                .asList(((Class<? extends O>) prototype.getOp().getClass()).getEnumConstants())));
     }
 
     /**
@@ -98,30 +101,22 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
      * should contain exactly one instance of type {@link OpKind#ATOM}
      */
     @SuppressWarnings("unchecked")
-    protected ATermTreeParser(String description, X prototype, Collection<? extends O> ops) {
+    protected ATermTreeParser(String description, X prototype,
+                              Supplier<? extends Collection<? extends O>> ops) {
         super(description, (Class<X>) prototype.getClass());
         this.prototype = prototype;
         this.atomOp = prototype.getOp();
         assert !this.atomOp.hasSymbol();
-        this.ops = computeParsableOps(ops);
+        this.ops = ops;
     }
 
-    private List<O> computeParsableOps(Collection<? extends O> ops) {
-        List<O> result = new ArrayList<>();
-        for (O op : ops) {
-            if (op.getKind() != OpKind.NONE) {
-                result.add(op);
-            }
-        }
-        return Collections.unmodifiableList(result);
+    /** Returns the set of all operators that the parser should recognise. */
+    private Collection<? extends O> getOps() {
+        return this.ops.get();
     }
 
-    /** Returns the list of operators that this parser recognises. */
-    public List<? extends O> getOps() {
-        return this.ops;
-    }
-
-    private final List<? extends O> ops;
+    /** Supplier for the set of all operators that the parser should recognise. */
+    private final Supplier<? extends Collection<? extends O>> ops;
 
     /** Sets the ability to recognise qualified identifiers. */
     public void setQualIds(boolean qualIds) {
@@ -185,87 +180,97 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
     }
 
     /** Returns the list of all token types recognised by this parser. */
-    List<TokenType> getTokenTypes() {
-        if (this.tokenTypes == null) {
-            this.tokenTypes = new ArrayList<>();
-            this.tokenTypes.addAll(getConstTokenMap().values());
-            for (O op : getOps()) {
-                if (op.hasSymbol()) {
-                    this.tokenTypes.add(new TokenType(op));
-                }
-            }
-            for (Sort sort : Sort.values()) {
-                this.tokenTypes.add(new TokenType(TokenClaz.SORT, sort));
-            }
-            for (TokenClaz claz : TokenClaz.values()) {
-                if (claz.single()) {
-                    this.tokenTypes.add(claz.type());
-                }
-            }
-        }
-        return this.tokenTypes;
+    private List<TokenType> getTokenTypes() {
+        return this.tokenTypes.get();
     }
 
     /** Lazily created list of all token types. */
-    private List<TokenType> tokenTypes;
+    private Supplier<List<TokenType>> tokenTypes = lazy(this::computeTokenTypes);
+
+    /** Computes the value for {@link #tokenTypes}. */
+    private List<TokenType> computeTokenTypes() {
+        List<TokenType> result = new ArrayList<>();
+        result.addAll(getConstTokenMap().values());
+        for (O op : getOps()) {
+            if (op.getKind() != OpKind.NONE && op.hasSymbol()) {
+                result.add(new TokenType(op));
+            }
+        }
+        for (Sort sort : Sort.values()) {
+            result.add(new TokenType(TokenClaz.SORT, sort));
+        }
+        for (TokenClaz claz : TokenClaz.values()) {
+            if (claz.single()) {
+                result.add(claz.type());
+            }
+        }
+        return result;
+    }
 
     /** Returns the (predefined) token family for a given string symbol, if any.*/
-    TokenFamily getTokenFamily(String symbol) {
+    private TokenFamily getTokenFamily(String symbol) {
         return getSymbolFamilyMap().get(symbol);
     }
 
     /** Returns the map from symbols to predefined (parsable) token types of this parser. */
     private Map<String,TokenFamily> getSymbolFamilyMap() {
-        if (this.symbolFamilyMap == null) {
-            Map<String,TokenFamily> result = this.symbolFamilyMap = new TreeMap<>();
-            for (TokenType type : getTokenTypes()) {
-                if (type.parsable()) {
-                    String symbol = type.symbol();
-                    TokenFamily family = result.get(symbol);
-                    if (family == null) {
-                        result.put(symbol, family = new TokenFamily());
-                    }
-                    family.add(type);
-                    // also add a NAME or BOOL type for the symbol, if appropriate
-                    if (Sort.BOOL.denotesValue(symbol)) {
-                        family.add(getConstTokenType(Sort.BOOL));
-                    } else if (getIdValidator().isValid(symbol)) {
-                        family.add(NAME.type());
-                    }
+        return this.symbolFamilyMap.get();
+    }
+
+    /** Lazily computed map from symbols to predefined (parsable) token types of this parser. */
+    private Supplier<Map<String,TokenFamily>> symbolFamilyMap = lazy(this::computeSymbolFamilyMap);
+
+    /** Computes the value for {@link #symbolFamilyMap}. */
+    private Map<String,TokenFamily> computeSymbolFamilyMap() {
+        Map<String,TokenFamily> result = new TreeMap<>();
+        for (TokenType type : getTokenTypes()) {
+            if (type.parsable()) {
+                String symbol = type.symbol();
+                TokenFamily family = result.get(symbol);
+                if (family == null) {
+                    result.put(symbol, family = new TokenFamily());
+                }
+                family.add(type);
+                // also add a NAME or BOOL type for the symbol, if appropriate
+                if (Sort.BOOL.denotesValue(symbol)) {
+                    family.add(getConstTokenType(Sort.BOOL));
+                } else if (getIdValidator().isValid(symbol)) {
+                    family.add(NAME.type());
                 }
             }
         }
-        return this.symbolFamilyMap;
+        return result;
     }
-
-    private Map<String,TokenFamily> symbolFamilyMap;
 
     /** Returns the fixed default token family for a given token type. */
     @NonNull
-    TokenFamily getTokenFamily(TokenType type) {
-        if (this.typeFamilyMap == null) {
-            Map<TokenType,TokenFamily> result = this.typeFamilyMap = new HashMap<>();
-            for (TokenType t : getTokenTypes()) {
-                if (t.parsable()) {
-                    result.put(t, getTokenFamily(t.symbol()));
-                } else {
-                    assert t.claz() == TokenClaz.CONST || t.claz() == NAME;
-                    result.put(t, new TokenFamily(t));
-                }
-            }
-        }
-        assert this.typeFamilyMap.containsKey(type);
-        TokenFamily result = this.typeFamilyMap.get(type);
+    private TokenFamily getTokenFamily(TokenType type) {
+        TokenFamily result = this.tokenFamilyMap.get().get(type);
         assert result != null;
         return result;
     }
 
-    private Map<TokenType,TokenFamily> typeFamilyMap;
+    private Supplier<Map<TokenType,TokenFamily>> tokenFamilyMap = lazy(this::computeTokenFamilyMap);
+
+    /** Returns the fixed default token family for a given token type. */
+    @NonNull
+    private Map<TokenType,TokenFamily> computeTokenFamilyMap() {
+        Map<TokenType,TokenFamily> result = new HashMap<>();
+        for (TokenType t : getTokenTypes()) {
+            if (t.parsable()) {
+                result.put(t, getTokenFamily(t.symbol()));
+            } else {
+                assert t.claz() == TokenClaz.CONST || t.claz() == NAME;
+                result.put(t, new TokenFamily(t));
+            }
+        }
+        return result;
+    }
 
     /** Returns the fixed constant token type for a given sort.
      * @see TokenClaz#CONST
      */
-    TokenType getConstTokenType(Sort sort) {
+    private TokenType getConstTokenType(Sort sort) {
         return getConstTokenMap().get(sort);
     }
 
@@ -419,10 +424,15 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
                     throw expectedToken(RPAR, next());
                 }
                 if (!op.allowsArgCount(result.getArgs().size())) {
+                    throw argumentMismatch(op, result.getArgs().size(), opToken);
+                }
+            } else {
+                // nullary call
+                if (!op.allowsArgCount(0)) {
                     if (op.isVarArgs()) {
                         throw zeroArgsMismatch(op, opToken);
                     } else {
-                        throw argumentMismatch(op, result.getArgs().size(), opToken);
+                        throw argumentMismatch(op, 0, opToken);
                     }
                 }
             }
@@ -845,14 +855,17 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
     }
 
     /** Returns the symbol table for this parser. */
-    SymbolTable getSymbolTable() {
-        if (this.symbolTable == null) {
-            this.symbolTable = new SymbolTable(getSymbolFamilyMap().values());
-        }
-        return this.symbolTable;
+    private SymbolTable getSymbolTable() {
+        return this.symbolTable.get();
     }
 
-    private SymbolTable symbolTable;
+    /** Lazily computed symbol table for this parser. */
+    private Supplier<SymbolTable> symbolTable = lazy(this::computeSymbolTable);
+
+    /** Computes the value for {@link #symbolTable}. */
+    private SymbolTable computeSymbolTable() {
+        return new SymbolTable(getSymbolFamilyMap().values());
+    }
 
     /** Mapping to enable efficient scanning of tokens. */
     private class SymbolTable extends HashMap<Character,SymbolTable> {

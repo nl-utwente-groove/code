@@ -25,6 +25,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.NonNull;
 
@@ -32,6 +33,7 @@ import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.syntax.ExprTree.ExprOp;
 import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -52,7 +54,7 @@ public class ExprTreeParser
      * (having a "=" on the top level), which is converted to
      */
     private ExprTreeParser(boolean assign, boolean test) {
-        super("Attribute expression", new ExprTree(getAtom()), getOpList());
+        super("Attribute expression", new ExprTree(getAtom()), getOpListSupplier());
         super.setQualIds(true);
         assert !assign || !test;
         this.assign = assign;
@@ -197,13 +199,15 @@ public class ExprTreeParser
 
     /** Returns the collection of operators to be recognised by the parser. */
     public static List<ExprOp> getOpList() {
-        if (opList == null) {
-            opList = createOpList();
-        }
+        return opList.get();
+    }
+
+    /** Returns the collection of operators to be recognised by the parser. */
+    private static Supplier<List<ExprOp>> getOpListSupplier() {
         return opList;
     }
 
-    private static List<ExprOp> opList;
+    private static Supplier<List<ExprOp>> opList = Factory.lazy(ExprTreeParser::createOpList);
 
     /** Returns the mapping from operator symbols to arity-indexed lists of operators. */
     private static List<ExprOp> createOpList() {

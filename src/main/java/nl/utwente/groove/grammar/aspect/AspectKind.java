@@ -34,9 +34,9 @@ import nl.utwente.groove.grammar.aspect.AspectContent.ContentKind;
 import nl.utwente.groove.grammar.aspect.AspectContent.NestedValue;
 import nl.utwente.groove.grammar.aspect.AspectParser.Status;
 import nl.utwente.groove.graph.GraphRole;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Keywords;
-import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -64,15 +64,15 @@ public enum AspectKind {
 
     // data types
     /** Indicates a boolean value or operator. */
-    BOOL(Category.SORT, Keywords.BOOL, ContentKind.BOOL_LITERAL),
+    BOOL(Category.SORT, Keywords.BOOL, ContentKind.BOOL),
     /** Indicates an integer value or operator. */
-    INT(Category.SORT, Keywords.INT, ContentKind.INT_LITERAL),
+    INT(Category.SORT, Keywords.INT, ContentKind.INT),
     /** Indicates a floating-point value or operator. */
-    REAL(Category.SORT, Keywords.REAL, ContentKind.REAL_LITERAL),
+    REAL(Category.SORT, Keywords.REAL, ContentKind.REAL),
     /** Indicates a string value or operator. */
-    STRING(Category.SORT, Keywords.STRING, ContentKind.STRING_LITERAL),
+    STRING(Category.SORT, Keywords.STRING, ContentKind.STRING),
     /** Indicates a user-defined value or operator. */
-    USER(Category.SORT, Keywords.USER, ContentKind.NONE),
+    USER(Category.SORT, Keywords.USER, ContentKind.USER),
 
     // auxiliary attribute-related aspects
     /** Indicates an argument edge. */
@@ -1001,6 +1001,10 @@ public enum AspectKind {
             }
             break;
 
+        case USER:
+            // no help available
+            break;
+
         default:
             throw new IllegalStateException();
         }
@@ -1130,7 +1134,7 @@ public enum AspectKind {
                         EXISTS, EXISTS_OPT, ID, COLOR);
                 edgeKinds = EnumSet
                     .of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, CONNECT, BOOL, INT, REAL,
-                        STRING, ARGUMENT, ATOM, PATH, LITERAL, FORALL, FORALL_POS, EXISTS,
+                        STRING, USER, ARGUMENT, ATOM, PATH, LITERAL, FORALL, FORALL_POS, EXISTS,
                         EXISTS_OPT, NESTED, LET, TEST);
                 break;
             case TYPE:
@@ -1276,6 +1280,6 @@ public enum AspectKind {
         }
 
         /** The categories with which this one conflicts. */
-        private LazyFactory<Set<Category>> ok = LazyFactory.instance(this::createOk);
+        private Factory<Set<Category>> ok = Factory.lazy(this::createOk);
     }
 }

@@ -1,5 +1,7 @@
 package nl.utwente.groove.algebra;
 
+import static nl.utwente.groove.util.Factory.lazy;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -19,15 +21,37 @@ import nl.utwente.groove.algebra.syntax.ExprTreeParser;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.annotation.OpSymbol;
 import nl.utwente.groove.annotation.ToolTipHeader;
+import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Groove;
-import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.parse.OpKind;
 
 /**
  * Class encoding an operator declaration in a {@link Signature}.
  */
 public class Operator {
+    /** Constructs an operator based on a user-defined method. */
+    Operator(Method method) {
+        Type[] parTypes = method.getParameterTypes();
+        this.sort = Sort.USER;
+        this.inverse = false;
+        this.arity = parTypes.length;
+        this.varArgs = false;
+        this.zeroArgs = false;
+        this.name = method.getName();
+        this.parameterTypes = new ArrayList<>();
+        for (Type t : parTypes) {
+            this.parameterTypes.add(toSort(t));
+        }
+        this.returnType = toSort(method.getReturnType());
+        this.symbol = null;
+        this.kind = OpKind.CALL;
+        this.description = "User-defined method '" + this.name + "'";
+        var annotation = method.getAnnotation(UserOperation.class);
+        this.indeterminate = annotation.indeterminate();
+    }
+
     /**
      * Constructs an operator from a given {@link Signature} method.
      * It is assumed that the method has only generic type variables as
@@ -38,14 +62,13 @@ public class Operator {
      * are not type variables.
      */
     @SuppressWarnings("null")
-    private Operator(Sort sort, Method method, boolean inverse,
-                     boolean zeroArgs) throws IllegalArgumentException {
+    private Operator(Sort sort, OpValue opValue, Method method) throws IllegalArgumentException {
         Type[] methodParameterTypes = method.getGenericParameterTypes();
         this.sort = sort;
-        this.inverse = inverse;
+        this.inverse = opValue == IntSignature.Op.NEG || opValue == RealSignature.Op.NEG;
         this.arity = methodParameterTypes.length;
         this.varArgs = this.arity == 1 && methodParameterTypes[0] instanceof ParameterizedType;
-        this.zeroArgs = zeroArgs;
+        this.zeroArgs = opValue.isZeroArgs();
         this.name = method.getName();
         this.parameterTypes = new ArrayList<>();
         for (int i = 0; i < this.arity; i++) {
@@ -76,33 +99,32 @@ public class Operator {
             ? OpKind.CALL
             : op.kind();
         this.description = superMethod.getAnnotation(ToolTipHeader.class).value();
-    }
-
-    /**
-     * Constructs an operator from a given {@link Signature} method.
-     * It is assumed that the method has only generic type variables as
-     * parameter and result types, and that for each such type variable <code>Xxx</code>
-     * there is a corresponding signature <code>XxxSignature</code>.
-     * @param method the method to be converted into an operator
-     * @throws IllegalArgumentException if the method parameter or return types
-     * are not type variables.
-     */
-    private Operator(Sort sort, OpValue opValue, Method method) throws IllegalArgumentException {
-        this(sort, method, opValue == IntSignature.Op.NEG || opValue == RealSignature.Op.NEG,
-             opValue.isZeroArgs());
+        this.indeterminate = false;
     }
 
     /** Converts a reflected type into a GROOVE sort. */
     private Sort toSort(Type type) throws IllegalArgumentException {
-        if (!(type instanceof TypeVariable)) {
-            throw Exceptions.illegalArg("Type '%s' should be generic", type);
+        if (type instanceof TypeVariable) {
+            String typeName = ((TypeVariable<?>) type).getName();
+            Sort result = Sort.getSort(typeName.toLowerCase());
+            if (result == null) {
+                throw Exceptions.illegalArg("Type '%s' is not an existing sort", typeName);
+            }
+            return result;
+        } else {
+            if (type == int.class) {
+                return Sort.INT;
+            } else if (type == double.class) {
+                return Sort.REAL;
+            } else if (type == boolean.class) {
+                return Sort.BOOL;
+            } else if (type == String.class) {
+                return Sort.STRING;
+            } else {
+                throw Exceptions
+                    .illegalArg("Type %s cannot be converted to GROOVE sort", type.getTypeName());
+            }
         }
-        String typeName = ((TypeVariable<?>) type).getName();
-        Sort result = Sort.getSort(typeName.toLowerCase());
-        if (result == null) {
-            throw Exceptions.illegalArg("Type '%s' is not an existing sort", typeName);
-        }
-        return result;
     }
 
     /** Returns the sort to which this operator belongs. */
@@ -144,6 +166,15 @@ public class Operator {
     }
 
     private final boolean zeroArgs;
+
+    /** If {@code true}, the outcome of this operation is not fully determined by its parameters.
+     * This is true for, e.g., random number generation.
+     */
+    public boolean isIndeterminate() {
+        return this.indeterminate;
+    }
+
+    private final boolean indeterminate;
 
     /** Returns the number of parameters of this operator.
      * For a collection-based operator, the arity is 1.
@@ -317,8 +348,7 @@ public class Operator {
     }
 
     /** Lazyly computed list of all operators of all sorts. */
-    private static final LazyFactory<List<Operator>> ops
-        = LazyFactory.instance(Operator::computeOps);
+    private static final Factory<List<Operator>> ops = lazy(Operator::computeOps);
 
     /** Computes the value of {@link #ops}. */
     private static List<Operator> computeOps() {
@@ -346,7 +376,7 @@ public class Operator {
 
     /** Mapping from operator names and symbols to lists of operators with that symbol. */
     private static final Supplier<Map<String,List<Operator>>> opLookupMap
-        = LazyFactory.instance(Operator::computeOpLookupMap);
+        = lazy(Operator::computeOpLookupMap);
 
     /** Adds an operator to the store, both by symbol and by name. */
     private static Map<String,List<Operator>> computeOpLookupMap() {
@@ -382,7 +412,7 @@ public class Operator {
     /** Mapping from sorts plus operator names and symbols to the (optional) operator
      * with that symbol defined in that sort. */
     private static final Supplier<Map<Sort,Map<String,Operator>>> sortOpLookupMap
-        = LazyFactory.instance(Operator::computeSortOpLookupMap);
+        = lazy(Operator::computeSortOpLookupMap);
 
     /** Adds an operator to the store, both by symbol and by name. */
     private static Map<Sort,Map<String,Operator>> computeSortOpLookupMap() {

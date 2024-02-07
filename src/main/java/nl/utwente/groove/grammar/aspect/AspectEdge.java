@@ -37,6 +37,7 @@ import static nl.utwente.groove.grammar.aspect.AspectKind.TEST;
 import static nl.utwente.groove.graph.GraphRole.HOST;
 import static nl.utwente.groove.graph.GraphRole.RULE;
 import static nl.utwente.groove.graph.GraphRole.TYPE;
+import static nl.utwente.groove.util.Factory.lazy;
 
 import java.util.Objects;
 
@@ -69,8 +70,8 @@ import nl.utwente.groove.graph.plain.PlainLabel;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.io.Util;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Fixable;
-import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.line.Line.ColorType;
 import nl.utwente.groove.util.line.Line.Style;
@@ -715,7 +716,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     }
 
     /** The (possibly {@code null}) rule label modelled by this edge. */
-    private LazyFactory<RuleLabel> ruleLabel = LazyFactory.instance(this::createRuleLabel);
+    private Factory<RuleLabel> ruleLabel = lazy(this::createRuleLabel);
 
     /** Returns the (possibly {@code null}) type label of this edge. */
     public TypeLabel getTypeLabel() {
@@ -746,7 +747,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     }
 
     /** The (possibly {@code null}) type label modelled by this edge. */
-    private LazyFactory<TypeLabel> typeLabel = LazyFactory.instance(this::createTypeLabel);
+    private Factory<TypeLabel> typeLabel = lazy(this::createTypeLabel);
 
     /**
      * Parses a given string as a regular expression,
@@ -840,7 +841,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         return result;
     }
 
-    private LazyFactory<Assignment> assign = LazyFactory.instance(this::createAssign);
+    private Factory<Assignment> assign = lazy(this::createAssign);
 
     /** Returns a line describing the assignment.
      * Should only be called if {@link #isAssign()} holds.
@@ -897,7 +898,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         return result;
     }
 
-    private LazyFactory<Expression> test = LazyFactory.instance(this::createTest);
+    private Factory<Expression> test = lazy(this::createTest);
 
     /** Returns the test wrapped by this edge, if any.
      * Should only be called if {@link #isTest()} holds.

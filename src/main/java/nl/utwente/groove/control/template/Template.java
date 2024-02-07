@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.control.template;
 
+import static nl.utwente.groove.util.Factory.lazy;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,7 +44,6 @@ import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.QualName;
-import nl.utwente.groove.util.LazyFactory;
 
 /**
  * Control automaton template.
@@ -136,7 +137,7 @@ public class Template {
      * based on the formal parameters of the owning procedure.
      * This is only valid if the template is owned by a procedure.
      */
-    private Supplier<Assignment> sourceAssign = LazyFactory.instance(this::computeSourceAssign);
+    private Supplier<Assignment> sourceAssign = lazy(this::computeSourceAssign);
 
     /** Computer the value of {@link #sourceAssign}. */
     private Assignment computeSourceAssign() {
@@ -185,8 +186,7 @@ public class Template {
     }
 
     /** Mapping from qualified names to actions with that name in this control program. */
-    private final Supplier<Map<QualName,Action>> actions
-        = LazyFactory.instance(this::computeActions);
+    private final Supplier<Map<QualName,Action>> actions = lazy(this::computeActions);
 
     /** Computes the value for {@link #actions}. */
     private Map<QualName,Action> computeActions() {

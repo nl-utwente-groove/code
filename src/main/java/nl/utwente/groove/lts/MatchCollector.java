@@ -220,6 +220,9 @@ public class MatchCollector {
         if (state.getStep().isModifying()) {
             return true;
         }
+        if (call.getRule().isIndeterminate() || state.getStep().getRule().isIndeterminate()) {
+            return true;
+        }
         return false;
     }
 

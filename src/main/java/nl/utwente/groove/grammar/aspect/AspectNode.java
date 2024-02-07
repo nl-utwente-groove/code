@@ -59,8 +59,8 @@ import nl.utwente.groove.graph.ANode;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.plain.PlainLabel;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Fixable;
-import nl.utwente.groove.util.LazyFactory;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -355,9 +355,6 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         var outEdges = getGraph().outEdgeSet(this);
         var argEdges = new HashSet<AspectEdge>();
         outEdges.stream().filter(AspectEdge::isArgument).forEach(argEdges::add);
-        if (argEdges.isEmpty()) {
-            errors.add("Product node has no arguments");
-        }
         var opEdges = new HashSet<AspectEdge>();
         outEdges.stream().filter(AspectEdge::isOperator).forEach(opEdges::add);
         if (opEdges.isEmpty()) {
@@ -554,7 +551,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     }
 
     /** The expression on this node, if any. */
-    private LazyFactory<Expression> expression = LazyFactory.instance(this::createExpression);
+    private Factory<Expression> expression = Factory.lazy(this::createExpression);
 
     /** Returns the line displaying the expression, if any.
      * Should only be called if {@link #hasExpression()} holds.

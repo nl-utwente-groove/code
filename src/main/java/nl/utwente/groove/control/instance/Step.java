@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.control.instance;
 
-import static nl.utwente.groove.util.LazyFactory.lazyFactory;
+import static nl.utwente.groove.util.Factory.lazy;
 
 import java.util.Map;
 import java.util.Optional;
@@ -37,7 +37,6 @@ import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Rule;
-import nl.utwente.groove.util.LazyFactory;
 
 /**
  * Run-time control step, instantiating a control edge.
@@ -172,8 +171,7 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
     /** Lazily computed assignment to the parameters of the inner call of this step,
      * based on the source variables of the outer call.
      */
-    private final Supplier<Assignment> assignSource2Par
-        = LazyFactory.instance(this::computeParAssign);
+    private final Supplier<Assignment> assignSource2Par = lazy(this::computeParAssign);
 
     /** Computes the value for {@link #assignSource2Par}. */
     private Assignment computeParAssign() {
@@ -204,7 +202,7 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      * Lazily created call stack change for entering this step.
      * @see #getPush()
      */
-    private final Supplier<CallStackChange> push = LazyFactory.instance(this::computePush);
+    private final Supplier<CallStackChange> push = lazy(this::computePush);
 
     /**
      * Computes the value for {@link #push}
@@ -261,7 +259,7 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      * procedure calls and the action of this step, followed by pops due to
      * procedures explicitly exited by this step.
      */
-    private Supplier<CallStackChange> applyChange = lazyFactory(this::computeApplyChange);
+    private Supplier<CallStackChange> applyChange = lazy(this::computeApplyChange);
 
     /** Computes the value of {@link #applyChange}. */
     private CallStackChange computeApplyChange() {

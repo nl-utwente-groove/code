@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.grammar;
 
-import static nl.utwente.groove.util.LazyFactory.lazyFactory;
+import static nl.utwente.groove.util.Factory.lazy;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -38,6 +38,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
+import nl.utwente.groove.algebra.Operation;
 import nl.utwente.groove.control.Binding;
 import nl.utwente.groove.grammar.UnitPar.RulePar;
 import nl.utwente.groove.grammar.host.HostEdge;
@@ -48,6 +49,7 @@ import nl.utwente.groove.grammar.rule.Anchor;
 import nl.utwente.groove.grammar.rule.DefaultRuleNode;
 import nl.utwente.groove.grammar.rule.LabelVar;
 import nl.utwente.groove.grammar.rule.MatchChecker;
+import nl.utwente.groove.grammar.rule.OperatorNode;
 import nl.utwente.groove.grammar.rule.RuleEdge;
 import nl.utwente.groove.grammar.rule.RuleGraph;
 import nl.utwente.groove.grammar.rule.RuleNode;
@@ -247,6 +249,36 @@ public class Rule implements Action, Fixable {
     /** The rule priority. */
     private int priority;
 
+    /** Returns {@code true} if the rule (or any of its subrules)
+     * contains indeterminate operators.
+     * @see Operation#isIndeterminate()
+     */
+    public boolean isIndeterminate() {
+        return !getIndeterminates().isEmpty()
+            || getSubRules().stream().anyMatch(Rule::isIndeterminate);
+    }
+
+    /** Returns the list of operator nodes in the LHS with indeterminate operators. */
+    public List<OperatorNode> getIndeterminates() {
+        return this.indeterminates.get();
+    }
+
+    /** The lazily created list of operator nodes with indeterminate operators. */
+    private final Supplier<List<OperatorNode>> indeterminates = lazy(this::computeIndeterminates);
+
+    /** Computes the value for {@link #indeterminates}. */
+    private List<OperatorNode> computeIndeterminates() {
+        List<OperatorNode> result = new ArrayList<>();
+        for (var lhsNode : lhs().nodeSet()) {
+            if (lhsNode instanceof OperatorNode opNode) {
+                if (opNode.getOperator().isIndeterminate()) {
+                    result.add(opNode);
+                }
+            }
+        }
+        return result;
+    }
+
     /** Sets the match filter method. */
     public void setMatchFilter(MatchChecker matchFilter) {
         this.matchFilter = matchFilter;
@@ -332,7 +364,7 @@ public class Rule implements Action, Fixable {
      * The collection of direct sub-rules of this rules. Lazily created by
      * {@link #getSubRules()}.
      */
-    private final Supplier<Collection<Rule>> subRules = lazyFactory(() -> {
+    private final Supplier<Collection<Rule>> subRules = lazy(() -> {
         var result = new TreeSet<Rule>();
         getCondition()
             .getSubConditions()
@@ -429,7 +461,7 @@ public class Rule implements Action, Fixable {
      * anchor position or to the position in the created nodes list.
      * The latter are offset by the length of the anchor.
      */
-    private final Supplier<List<Binding>> parBinding = lazyFactory(this::computeParBinding);
+    private final Supplier<List<Binding>> parBinding = lazy(this::computeParBinding);
 
     /**
      * Tests if this condition is ground and has a match to a given host graph.
@@ -611,11 +643,11 @@ public class Rule implements Action, Fixable {
 
     /** The matcher for events of this rule. */
     private final Supplier<Matcher> simpleEventMatcher
-        = lazyFactory(() -> createMatcher(getAnchor(), true));
+        = lazy(() -> createMatcher(getAnchor(), true));
 
     /** The matcher for events of this rule. */
     private final Supplier<Matcher> multiEeventMatcher
-        = lazyFactory(() -> createMatcher(getAnchor(), false));
+        = lazy(() -> createMatcher(getAnchor(), false));
 
     /**
      * Mapping from sets of initialised parameters to match strategies.
@@ -639,16 +671,14 @@ public class Rule implements Action, Fixable {
      * <code>null</code>; set by {@link #getMatcher(boolean)} upon its first
      * invocation.
      */
-    private final Supplier<Matcher> simpleSeedMatcher
-        = lazyFactory(() -> createMatcher(getSeed(), true));
+    private final Supplier<Matcher> simpleSeedMatcher = lazy(() -> createMatcher(getSeed(), true));
 
     /**
      * The fixed multi-graph matching strategy for this graph rule. Initially
      * <code>null</code>; set by {@link #getMatcher(boolean)} upon its first
      * invocation.
      */
-    private final Supplier<Matcher> multiSeedMatcher
-        = lazyFactory(() -> createMatcher(getSeed(), false));
+    private final Supplier<Matcher> multiSeedMatcher = lazy(() -> createMatcher(getSeed(), false));
 
     /** Returns a matcher factory, tuned to the properties of this rule. */
     private MatcherFactory getMatcherFactory(boolean simple) {
@@ -722,7 +752,7 @@ public class Rule implements Action, Fixable {
     }
 
     /** The rule anchor. */
-    private final Supplier<Anchor> anchor = lazyFactory(() -> anchorFactory.newAnchor(this));
+    private final Supplier<Anchor> anchor = lazy(() -> anchorFactory.newAnchor(this));
 
     /** Returns the seed of the rule. */
     public Anchor getSeed() {
@@ -730,7 +760,7 @@ public class Rule implements Action, Fixable {
     }
 
     /** The rule seed. */
-    private final Supplier<Anchor> seed = lazyFactory(() -> new Anchor(getRoot()));
+    private final Supplier<Anchor> seed = lazy(() -> new Anchor(getRoot()));
 
     @Override
     public String toString() {
@@ -829,7 +859,7 @@ public class Rule implements Action, Fixable {
     /**
      * The LHS nodes that do not have any incident edges in the LHS.
      */
-    private final Supplier<RuleNode[]> isolatedNodes = lazyFactory(this::computeIsolatedNodes);
+    private final Supplier<RuleNode[]> isolatedNodes = lazy(this::computeIsolatedNodes);
 
     /**
      * Indicates if application of this rule actually changes the host graph. If
@@ -860,7 +890,7 @@ public class Rule implements Action, Fixable {
     /**
      * Indicates if this rule makes changes to a graph at all.
      */
-    private final Supplier<Boolean> modifying = lazyFactory(this::computeIsModifying);
+    private final Supplier<Boolean> modifying = lazy(this::computeIsModifying);
 
     /**
      * Returns an array of LHS nodes that are endpoints of eraser edges, creator
@@ -901,7 +931,7 @@ public class Rule implements Action, Fixable {
      * The lhs nodes that are end points of eraser or creator edges or mergers,
      * either in this rule or one of its sub-rules.
      */
-    private final Supplier<Set<RuleNode>> modifierEnds = lazyFactory(this::computeModifierEnds);
+    private final Supplier<Set<RuleNode>> modifierEnds = lazy(this::computeModifierEnds);
 
     /**
      * Returns an array of variables that are used in erasers or creators.
@@ -940,7 +970,7 @@ public class Rule implements Action, Fixable {
      * The lhs variables that occur in eraser or creator edges, either in this rule or
      * one of its sub-rules.
      */
-    private final Supplier<Set<LabelVar>> modifierVars = lazyFactory(this::computeModifierVars);
+    private final Supplier<Set<LabelVar>> modifierVars = lazy(this::computeModifierVars);
 
     /**
      * Indicates if the rule creates any nodes.
@@ -965,7 +995,7 @@ public class Rule implements Action, Fixable {
     /**
      * Indicates if this rule has creator nodes.
      */
-    private final Supplier<Boolean> hasNodeCreators = lazyFactory(this::computeHasNodeCreators);
+    private final Supplier<Boolean> hasNodeCreators = lazy(this::computeHasNodeCreators);
 
     /**
      * Returns the RHS nodes that are not images of an LHS node.
@@ -991,7 +1021,7 @@ public class Rule implements Action, Fixable {
      * The rhs nodes that are not ruleMorph images
      * @invariant creatorNodes \subseteq rhs.nodeSet()
      */
-    private final Supplier<RuleNode[]> creatorNodes = lazyFactory(this::computeCreatorNodes);
+    private final Supplier<RuleNode[]> creatorNodes = lazy(this::computeCreatorNodes);
 
     /**
      * Indicates if the rule creates any edges.
@@ -1016,7 +1046,7 @@ public class Rule implements Action, Fixable {
     /**
      * Indicates if this rule has creator edges.
      */
-    private final Supplier<Boolean> hasEdgeCreators = lazyFactory(this::computeHasEdgeCreators);
+    private final Supplier<Boolean> hasEdgeCreators = lazy(this::computeHasEdgeCreators);
 
     /**
      * Returns the RHS edges that are not images of an LHS edge.
@@ -1043,7 +1073,7 @@ public class Rule implements Action, Fixable {
     /**
      * The rhs edges that are not ruleMorph images
      */
-    private final Supplier<RuleEdge[]> creatorEdges = lazyFactory(this::computeCreatorEdges);
+    private final Supplier<RuleEdge[]> creatorEdges = lazy(this::computeCreatorEdges);
 
     /**
      * Returns the creator edges between reader nodes.
@@ -1073,8 +1103,7 @@ public class Rule implements Action, Fixable {
      * The rhs edges that are not ruleMorph images but with all ends morphism
      * images
      */
-    private final Supplier<RuleEdge[]> simpleCreatorEdges
-        = lazyFactory(this::computeSimpleCreatorEdges);
+    private final Supplier<RuleEdge[]> simpleCreatorEdges = lazy(this::computeSimpleCreatorEdges);
 
     /**
      * Returns the creator edges that have at least one creator end.
@@ -1096,7 +1125,7 @@ public class Rule implements Action, Fixable {
      * The rhs edges with at least one end not a morphism image
      */
     private final Supplier<Set<RuleEdge>> complexCreatorEdges
-        = lazyFactory(this::computeComplexCreatorEdges);
+        = lazy(this::computeComplexCreatorEdges);
 
     /**
      * Returns the variables that occur in creator edges.
@@ -1127,7 +1156,7 @@ public class Rule implements Action, Fixable {
     /**
      * Variables occurring in the rhsOnlyEdges
      */
-    private final Supplier<LabelVar[]> creatorVars = lazyFactory(this::computeCreatorVars);
+    private final Supplier<LabelVar[]> creatorVars = lazy(this::computeCreatorVars);
 
     /**
      * Returns a sub-graph of the RHS consisting of the creator nodes and the
@@ -1154,7 +1183,7 @@ public class Rule implements Action, Fixable {
      * A sub-graph of the production rule's right hand side, consisting only of
      * the fresh nodes and edges.
      */
-    private final Supplier<RuleGraph> creatorGraph = lazyFactory(this::computeCreatorGraph);
+    private final Supplier<RuleGraph> creatorGraph = lazy(this::computeCreatorGraph);
 
     /**
      * Returns the RHS nodes that are not themselves creator nodes but are
@@ -1169,7 +1198,7 @@ public class Rule implements Action, Fixable {
      * the restriction of the inverse of <tt>ruleMorph</tt> to
      * <tt>rhsOnlyGraph</tt>.
      */
-    private final Supplier<Set<RuleNode>> creatorEnds = lazyFactory(() -> {
+    private final Supplier<Set<RuleNode>> creatorEnds = lazy(() -> {
         var result = new HashSet<>(getCreatorGraph().nodeSet());
         result.retainAll(lhs().nodeSet());
         return result;
@@ -1198,7 +1227,7 @@ public class Rule implements Action, Fixable {
     /**
      * Indicates if this rule has eraser nodes.
      */
-    private final Supplier<Boolean> hasNodeErasers = lazyFactory(this::computeHasNodeErasers);
+    private final Supplier<Boolean> hasNodeErasers = lazy(this::computeHasNodeErasers);
 
     /**
      * Returns the LHS nodes that are not mapped to the RHS.
@@ -1221,7 +1250,7 @@ public class Rule implements Action, Fixable {
      * The lhs nodes that are not ruleMorph keys
      * @invariant lhsOnlyNodes \subseteq lhs.nodeSet()
      */
-    private final Supplier<DefaultRuleNode[]> eraserNodes = lazyFactory(this::computeEraserNodes);
+    private final Supplier<DefaultRuleNode[]> eraserNodes = lazy(this::computeEraserNodes);
 
     /**
      * Indicates if the rule creates any edges.
@@ -1246,7 +1275,7 @@ public class Rule implements Action, Fixable {
     /**
      * Indicates if this rule has eraser edges.
      */
-    private final Supplier<Boolean> hasEdgeErasers = lazyFactory(this::computeHasEdgeErasers);
+    private final Supplier<Boolean> hasEdgeErasers = lazy(this::computeHasEdgeErasers);
 
     /** Returns the eraser (i.e., LHS-only) edges. */
     public final RuleEdge[] getEraserEdges() {
@@ -1272,7 +1301,7 @@ public class Rule implements Action, Fixable {
      * The lhs edges that are not ruleMorph keys
      * @invariant lhsOnlyEdges \subseteq lhs.edgeSet()
      */
-    private final Supplier<RuleEdge[]> eraserEdges = lazyFactory(this::computeEraserEdges);
+    private final Supplier<RuleEdge[]> eraserEdges = lazy(this::computeEraserEdges);
 
     /** Returns the eraser edges that are not themselves anchors. */
     public final RuleEdge[] getEraserNonAnchorEdges() {
@@ -1292,7 +1321,7 @@ public class Rule implements Action, Fixable {
      * The lhs edges that are not ruleMorph keys and are not anchors
      */
     private final Supplier<RuleEdge[]> eraserNonAnchorEdges
-        = lazyFactory(this::computeEraserNonAnchorEdges);
+        = lazy(this::computeEraserNonAnchorEdges);
 
     /**
      * Indicates if this rule has mergers.
@@ -1320,7 +1349,7 @@ public class Rule implements Action, Fixable {
     /**
      * Indicates if this rule has node mergers.
      */
-    private final Supplier<Boolean> hasMergers = lazyFactory(this::computeHasMergers);
+    private final Supplier<Boolean> hasMergers = lazy(this::computeHasMergers);
 
     /** Returns the set of merger edges in the RHS of which both ends are in the LHS. */
     public final Set<RuleEdge> getLhsMergers() {
@@ -1355,7 +1384,7 @@ public class Rule implements Action, Fixable {
         return this.mergers.get();
     }
 
-    private final Supplier<Mergers> mergers = lazyFactory(() -> new Mergers(this));
+    private final Supplier<Mergers> mergers = lazy(() -> new Mergers(this));
 
     /** Merger information.
      * @param lhsMergers he set of merger edges in the RHS of which both ends are in the LHS

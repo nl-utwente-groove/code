@@ -193,21 +193,25 @@ public sealed interface AspectContent
 
         },
         /**
-         * String constant, used in a typed value aspect.
+         * String constant or operation, used in a typed value aspect.
          */
-        STRING_LITERAL(Sort.STRING),
+        STRING(Sort.STRING),
         /**
-         * Boolean constant, used in a typed value aspect.
+         * Boolean constant or operation, used in a typed value aspect.
          */
-        BOOL_LITERAL(Sort.BOOL),
+        BOOL(Sort.BOOL),
         /**
-         * Integer number constant, used in a typed value aspect.
+         * Integer number constant or operation, used in a typed value aspect.
          */
-        INT_LITERAL(Sort.INT),
+        INT(Sort.INT),
         /**
-         * Real number constant, used in a typed value aspect.
+         * Real number constant or operation, used in a typed value aspect.
          */
-        REAL_LITERAL(Sort.REAL),
+        REAL(Sort.REAL),
+        /**
+         * User-defined operation, used in a typed value aspect.
+         */
+        USER(Sort.USER),
         /**
          * Multiplicity: either a single number,
          * or of the form {@code n..m} where {@code n<m} or {@code m=*}.

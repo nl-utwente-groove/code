@@ -32,7 +32,7 @@ import nl.utwente.groove.annotation.Help;
 import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.EdgeRole;
-import nl.utwente.groove.util.LazyFactory;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.OpKind;
@@ -393,6 +393,9 @@ public sealed abstract class Expression permits Constant, Variable, FieldExpr, C
         return docMap.get();
     }
 
+    /** Syntax helper map, from syntax items to associated tool tips. */
+    private static final Factory<HelpMap> docMap = Factory.lazy(Expression::computeDocMap);
+
     /** Computes the documentation map for the edge roles. */
     private static HelpMap computeDocMap() {
         var result = new HelpMap();
@@ -403,10 +406,6 @@ public sealed abstract class Expression permits Constant, Variable, FieldExpr, C
         }
         return result;
     }
-
-    /** Syntax helper map, from syntax items to associated tool tips. */
-    private static final LazyFactory<HelpMap> docMap
-        = LazyFactory.instance(Expression::computeDocMap);
 
     /**
      * Mapping from keywords in syntax descriptions to corresponding text.

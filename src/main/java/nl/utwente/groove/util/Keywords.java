@@ -135,8 +135,7 @@ public class Keywords {
     }
 
     /** The set of reserved keywords defined in this class. */
-    static private final Supplier<Set<String>> keywords
-        = LazyFactory.instance(Keywords::computeKeywords);
+    static private final Supplier<Set<String>> keywords = Factory.lazy(Keywords::computeKeywords);
 
     /** Computes the value of {@link #keywords}. */
     static private Set<String> computeKeywords() {

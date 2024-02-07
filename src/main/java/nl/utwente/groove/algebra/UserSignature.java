@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import nl.utwente.groove.annotation.UserOperation;
-import nl.utwente.groove.util.LazyFactory;
+import nl.utwente.groove.util.Factory;
 
 /**
  * The signature for the user algebra.
@@ -38,7 +38,7 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
     }
 
     /** The class containing user operations. */
-    static private Class<?> userClass;
+    static protected Class<?> userClass;
 
     /** Returns the set of operators defined in the user class. */
     public static Set<Operator> getOperators() {
@@ -46,13 +46,28 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
     }
 
     /** Lazily computed set of operators in the user class. */
-    static private final LazyFactory<Set<Operator>> operators
-        = LazyFactory.instance(UserSignature::computeOperators);
+    static private final Factory<Set<Operator>> operators
+        = Factory.lazy(UserSignature::computeOperators);
 
     /** Computes the value of {@link #operators}. */
-    @SuppressWarnings("null")
     static private Set<Operator> computeOperators() {
         Set<Operator> result = new HashSet<>();
+        getMethods().stream().map(Operator::new).forEach(result::add);
+        return result;
+    }
+
+    /** Returns the set of {@link UserOperation}-annotated methods in the user class. */
+    static protected Set<Method> getMethods() {
+        return methods.get();
+    }
+
+    /** Lazily computed set of {@link UserOperation}-annotated methods in the user class. */
+    static private final Factory<Set<Method>> methods = Factory.lazy(UserSignature::computeMethods);
+
+    /** Computes the value of {@link #methods}. */
+    @SuppressWarnings("null")
+    static private Set<Method> computeMethods() {
+        Set<Method> result = new HashSet<>();
         var userClass = UserSignature.userClass;
         if (userClass != null) {
             // retrieve the @UserOperation-annotated methods
@@ -60,12 +75,13 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
                 if (m.getAnnotation(UserOperation.class) == null) {
                     continue;
                 }
-                for (var parType : m.getParameterTypes()) {
-
-                }
+                result.add(m);
             }
         }
         return result;
     }
 
+    static {
+        setUserClass(UserExample.class);
+    }
 }

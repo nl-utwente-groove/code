@@ -24,6 +24,7 @@ import java.util.Set;
 
 import nl.utwente.groove.grammar.rule.Anchor;
 import nl.utwente.groove.grammar.rule.AnchorKey;
+import nl.utwente.groove.grammar.rule.OperatorNode;
 import nl.utwente.groove.grammar.rule.RuleEdge;
 import nl.utwente.groove.grammar.rule.RuleGraph;
 import nl.utwente.groove.grammar.rule.RuleNode;
@@ -53,12 +54,12 @@ public class DefaultAnchorFactory implements AnchorFactory {
     public Anchor newAnchor(Rule rule) {
         RuleGraph lhs = rule.lhs();
         Set<AnchorKey> result = new LinkedHashSet<>();
-        Set<RuleNode> colorNodes = new HashSet<>(rule.getColorMap()
-            .keySet());
+        Set<RuleNode> colorNodes = new HashSet<>(rule.getColorMap().keySet());
         colorNodes.retainAll(lhs.nodeSet());
         result.addAll(colorNodes);
         result.addAll(Arrays.asList(rule.getEraserNodes()));
         result.addAll(rule.getModifierEnds());
+        rule.getIndeterminates().stream().map(OperatorNode::getTarget).forEach(result::add);
         // add the root elements of modifying subrules
         for (Rule subrule : rule.getSubRules()) {
             if (subrule.isModifying()) {
@@ -79,7 +80,8 @@ public class DefaultAnchorFactory implements AnchorFactory {
             if (hiddenPars != null) {
                 result.addAll(hiddenPars);
             }
-            rule.getSignature()
+            rule
+                .getSignature()
                 .stream()
                 .filter(v -> !v.isCreator() && !v.isAsk())
                 .map(v -> v.getNode())

@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.control;
 
+import static nl.utwente.groove.util.Factory.lazy;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -32,7 +34,6 @@ import nl.utwente.groove.control.Binding.Source;
 import nl.utwente.groove.control.instance.CallStackChange;
 import nl.utwente.groove.control.instance.CallStackChange.Kind;
 import nl.utwente.groove.grammar.host.HostNode;
-import nl.utwente.groove.util.LazyFactory;
 
 /**
  * Control variable assignment, consisting of a list of bindings.
@@ -132,7 +133,7 @@ public class Assignment implements Iterable<Binding> {
 
     /** Lazily computed flag indicating if all the bindings in this assignment are stack-based. */
     private Supplier<Boolean> stackBased
-        = LazyFactory.instance(() -> stream().allMatch(b -> b.type().isStackBased()));
+        = lazy(() -> stream().allMatch(b -> b.type().isStackBased()));
 
     /** Indicates if all the bindings in this assignment are {@link Source#NONE}. */
     public boolean isNone() {
@@ -140,8 +141,7 @@ public class Assignment implements Iterable<Binding> {
     }
 
     /** Lazily computed flag indicating if all the bindings in this assignment are {@link Source#NONE}. */
-    private Supplier<Boolean> none
-        = LazyFactory.instance(() -> stream().allMatch(b -> b.type() == Source.NONE));
+    private Supplier<Boolean> none = lazy(() -> stream().allMatch(b -> b.type() == Source.NONE));
 
     /** Indicates if all the bindings in this assignment are {@link Source#VAR}
      * with the index of the binding itself. */
@@ -151,7 +151,7 @@ public class Assignment implements Iterable<Binding> {
 
     /** Lazily computed flag indicating if all the bindings in this assignment are {@link Source#VAR}
      * with the index of the binding itself. */
-    private final Supplier<Boolean> identity = LazyFactory.instance(this::computeIdentity);
+    private final Supplier<Boolean> identity = lazy(this::computeIdentity);
 
     /** Computes the value of {@link #identity}. */
     private boolean computeIdentity() {
