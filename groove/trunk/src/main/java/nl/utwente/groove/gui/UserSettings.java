@@ -194,7 +194,7 @@ public class UserSettings {
     static private void syncFileChoosers() {
         GrooveFileChooser
             .getChoosers()
-            .forEach(c -> Options.storeUserPrefs(c.toString(), c.newPrefs()));
+            .forEach(c -> Options.storeUserPrefs(c.toKey(), c.newPrefs()));
     }
 
     /** The persistently stored user preferences. */
