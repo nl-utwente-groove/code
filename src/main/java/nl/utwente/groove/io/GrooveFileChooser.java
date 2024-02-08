@@ -17,6 +17,7 @@
 package nl.utwente.groove.io;
 
 import java.io.File;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -79,6 +80,11 @@ public class GrooveFileChooser extends JFileChooser {
     @Override
     public String toString() {
         return toString(this.fileTypes);
+    }
+
+    /** Returns a key suitable for storing values of this chooser in the user preferences. */
+    public String toKey() {
+        return toKey(this.fileTypes);
     }
 
     @Override
@@ -219,6 +225,20 @@ public class GrooveFileChooser extends JFileChooser {
         return "GrooveFileChooser [fileTypes=" + fileTypes + "]";
     }
 
+    /** Constructs a unique key for a file chooser. */
+    static private String toKey(Set<FileType> fileTypes) {
+        BitSet set = new BitSet();
+        fileTypes.stream().map(t -> t.ordinal()).forEach(set::set);
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < set.size(); i++) {
+            builder
+                .append(set.get(i)
+                    ? '1'
+                    : '0');
+        }
+        return "GFC " + builder;
+    }
+
     /** Returns the starting directory for a new file chooser.
      * This is retrieved from the persistent user properties, or if not present,
      * initialised to {@link Groove#CURRENT_WORKING_DIR}.
@@ -234,7 +254,7 @@ public class GrooveFileChooser extends JFileChooser {
      * set of file types.
      */
     static private @Nullable String getPref(Set<FileType> fileTypes, int index) {
-        var prefs = Options.getUserPrefs(toString(fileTypes));
+        var prefs = Options.getUserPrefs(toKey(fileTypes));
         return prefs.length > index
             ? prefs[index]
             : null;
