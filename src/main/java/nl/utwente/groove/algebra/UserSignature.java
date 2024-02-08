@@ -17,11 +17,16 @@
 package nl.utwente.groove.algebra;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import nl.utwente.groove.annotation.UserOperation;
+import nl.utwente.groove.util.Callback;
 import nl.utwente.groove.util.Factory;
+import nl.utwente.groove.util.parse.FormatErrorSet;
+import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * The signature for the user algebra.
@@ -32,9 +37,51 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
     /** Sets the used-defined class containing the operator definitions.
      * All methods with an {@link UserOperation}-annotations are taken as operators.
      */
+    public static void setUserClass(String className) {
+        Class<?> userClass = null;
+        if (!className.isBlank()) {
+            try {
+                userClass = loadUserClass(className);
+            } catch (FormatException exc) {
+                // do nothing
+            }
+        }
+        setUserClass(userClass);
+    }
+
+    /** Loads a class with a given name while checking whether it
+     * has suitable user operation definitions.
+     */
+    public static Class<?> loadUserClass(String className) throws FormatException {
+        Class<?> result;
+        try {
+            var errors = new FormatErrorSet();
+            result = ClassLoader.getSystemClassLoader().loadClass(className);
+            for (var m : extractMethods(result)) {
+                try {
+                    new Operator(m);
+                } catch (IllegalArgumentException exc) {
+                    errors
+                        .add("Erroneous user operation in '%s.%s': %s", className, m.getName(),
+                             exc.getMessage());
+                }
+            }
+            errors.throwException();
+        } catch (ClassNotFoundException exc) {
+            throw new FormatException("Class '%s' cannot be loaded", className);
+        }
+        return result;
+    }
+
+    /** (Re)sets the used-defined class containing the operator definitions.
+     * All methods with an {@link UserOperation}-annotations are taken as operators.
+     */
     public static void setUserClass(Class<?> userClass) {
-        UserSignature.userClass = userClass;
-        operators.reset();
+        if (userClass != UserSignature.userClass) {
+            methods.reset();
+            resetUsers();
+            UserSignature.userClass = userClass;
+        }
     }
 
     /** The class containing user operations. */
@@ -65,13 +112,17 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
     static private final Factory<Set<Method>> methods = Factory.lazy(UserSignature::computeMethods);
 
     /** Computes the value of {@link #methods}. */
-    @SuppressWarnings("null")
     static private Set<Method> computeMethods() {
+        return extractMethods(userClass);
+    }
+
+    /** Extracts the {@link UserOperation}-annotated methods from a given class. */
+    @SuppressWarnings("null")
+    static private Set<Method> extractMethods(Class<?> claz) {
         Set<Method> result = new HashSet<>();
-        var userClass = UserSignature.userClass;
-        if (userClass != null) {
+        if (claz != null) {
             // retrieve the @UserOperation-annotated methods
-            for (Method m : userClass.getMethods()) {
+            for (Method m : claz.getMethods()) {
                 if (m.getAnnotation(UserOperation.class) == null) {
                     continue;
                 }
@@ -81,7 +132,16 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
         return result;
     }
 
-    static {
-        setUserClass(UserExample.class);
+    /** Adds a reset method of a user that needs to be invoked when a new user class is loaded. */
+    static public void addUser(Callback user) {
+        users.add(user);
+    }
+
+    /** List of dependants that need to be reset when a new user class is loaded. */
+    static private List<Callback> users = new ArrayList<>();
+
+    /** Calls the {@link Runnable#run()} method on all elements of {@link #users}. */
+    static private void resetUsers() {
+        users.forEach(Callback::call);
     }
 }

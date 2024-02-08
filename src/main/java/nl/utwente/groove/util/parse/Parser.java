@@ -207,13 +207,27 @@ public interface Parser<T> {
          * @param description HTML-formatted description of a parsable string, starting with uppercase.
          * May be {@code null}, in which case the description will be obtained through {@link #createDescription()}
          * immediately after construction.
-         * @param defaultValue the explicit default value of this parser
+         * @param prototype the value to derive the value type from; optionally the default value
+         * @param deflt flag indicating whether {@code prototype} should be used as default value
          */
         @SuppressWarnings("unchecked")
-        protected AParser(@Nullable String description, T defaultValue) {
+        protected AParser(@Nullable String description, T prototype, boolean deflt) {
             this.description = description;
-            this.valueType = (Class<? extends T>) defaultValue.getClass();
-            this.defaultValue = Optional.of(defaultValue);
+            this.valueType = (Class<? extends T>) prototype.getClass();
+            this.defaultValue = deflt
+                ? Optional.of(prototype)
+                : Optional.empty();
+        }
+
+        /**
+         * Constructs a parser with a given description of its parsable strings.
+         * @param description HTML-formatted description of a parsable string, starting with uppercase.
+         * May be {@code null}, in which case the description will be obtained through {@link #createDescription()}
+         * immediately after construction.
+         * @param defaultValue the explicit default value of this parser
+         */
+        protected AParser(@Nullable String description, T defaultValue) {
+            this(description, defaultValue, true);
         }
 
         /**
@@ -662,7 +676,7 @@ public interface Parser<T> {
          * @param inner the inner parser
          */
         public OptionalParser(Parser<T> inner) {
-            super("Optional" + Strings.toLower(inner.getDescription()), Optional.empty());
+            super("Optional " + Strings.toLower(inner.getDescription()), Optional.empty());
             this.inner = inner;
         }
 

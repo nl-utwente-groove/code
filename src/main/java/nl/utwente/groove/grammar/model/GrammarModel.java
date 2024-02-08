@@ -84,7 +84,7 @@ public class GrammarModel implements PropertyChangeListener {
             && noActiveStartGraphs) {
             setLocalActiveNames(HOST, QualName.name(Groove.DEFAULT_START_GRAPH_NAME));
         }
-        syncResources(ResourceKind.all(false));
+        syncResources(ResourceKind.all(true));
     }
 
     /** Returns the name of the rule system. */

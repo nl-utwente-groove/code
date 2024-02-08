@@ -56,6 +56,7 @@ import javax.swing.undo.UndoableEditSupport;
 
 import org.eclipse.jdt.annotation.NonNull;
 
+import nl.utwente.groove.algebra.UserSignature;
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.GrammarSource;
@@ -837,6 +838,7 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
      */
     private void loadProperties() throws IOException {
         var properties = loadGrammarProperties();
+        UserSignature.setUserClass(properties.getUserOperations());
         NodeNrDispenser.setIdBased(properties.isUseStoredNodeIds());
         this.properties = properties;
     }

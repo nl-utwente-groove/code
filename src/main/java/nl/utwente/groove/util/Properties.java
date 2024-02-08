@@ -485,6 +485,8 @@ public abstract class Properties implements Fixable {
         /** Value for type {@link List}. */
         QUAL_NAME_LIST(List.class),
         /** Value for type {@link MethodName}. */
+        CLAZ(Optional.class),
+        /** Value for type {@link MethodName}. */
         METHOD_NAME(Optional.class),
         /** Value for type {@link List}. */
         STRING_LIST(List.class),
@@ -598,6 +600,17 @@ public abstract class Properties implements Fixable {
         public Integer getInteger() {
             check(ValueType.INTEGER);
             return (Integer) value();
+        }
+
+        /**
+         * Casts the wrapped value to an optional {@link Class}.
+         * This is only valid if this entry's key type is {@link ValueType#CLAZ}
+         * @throws UnsupportedOperationException if this entry's key type is inappropriate
+         */
+        @SuppressWarnings("unchecked")
+        public Optional<Class<?>> getClaz() {
+            check(ValueType.CLAZ);
+            return (Optional<Class<?>>) value();
         }
 
         /**
