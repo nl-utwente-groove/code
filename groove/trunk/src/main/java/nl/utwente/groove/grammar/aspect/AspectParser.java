@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nl.utwente.groove.algebra.Sort;
+import nl.utwente.groove.algebra.UserSignature;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.util.Pair;
@@ -132,6 +133,7 @@ public class AspectParser {
         for (var role : GraphRole.values()) {
             parseMap.put(role, new HashMap<>());
         }
+        UserSignature.addUser(() -> parseMap.values().forEach(Map::clear));
     }
 
     /** Status of the parsing process. */

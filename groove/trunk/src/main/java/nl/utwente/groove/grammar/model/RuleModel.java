@@ -72,7 +72,6 @@ import nl.utwente.groove.grammar.aspect.AspectContent.NullContent;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectElement;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
-import nl.utwente.groove.grammar.aspect.AspectGraph.AspectGraphMorphism;
 import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.aspect.AspectNode;
@@ -98,7 +97,6 @@ import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.GraphInfo;
-import nl.utwente.groove.graph.GraphMap;
 import nl.utwente.groove.graph.GraphProperties;
 import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.graph.NodeComparator;
@@ -496,13 +494,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         var result = this.normalSource;
         if (result == null) {
             result = this.normalSource = getSource().normalise();
-            GraphMap toNormalSource = null;
-            if (result instanceof NormalAspectGraph ng) {
-                toNormalSource = ng.toNormalMap();
-            } else {
-                toNormalSource = new AspectGraphMorphism(result);
-            }
-            this.toNormalSourceMap = toNormalSource;
         }
         return result;
     }
@@ -510,21 +501,28 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     /** The normalised source model. */
     private @Nullable AspectGraph normalSource;
 
-    /** Returns the mapping from source model to normalised source model. */
-    private GraphMap toNormalSource() {
-        if (this.toNormalSourceMap == null) {
-            getNormalSource();
+    /** Returns an element map from the normalised graph to the source graph. */
+    private Map<Element,Element> normalToSourceMap() {
+        var result = this.normalToSourceMap;
+        if (result == null) {
+            var normal = getNormalSource();
+            if (normal instanceof NormalAspectGraph ng) {
+                result = ng.normalToSourceMap();
+            } else {
+                result = new HashMap<>();
+            }
+            this.normalToSourceMap = result;
         }
-        return this.toNormalSourceMap;
+        return result;
     }
 
-    /** Mapping from source model to normalised source model. */
-    private @Nullable GraphMap toNormalSourceMap;
+    /** Mapping from normalised source model to source model. */
+    private @Nullable Map<Element,Element> normalToSourceMap;
 
     @Override
     protected FormatErrorSet createErrors() {
         var result = super.createErrors();
-        result.wrap(toNormalSource());
+        result.unwrap(normalToSourceMap());
         return result;
     }
 
@@ -1496,6 +1494,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             AspectNode productNode = operatorEdge.source();
             Operator operator = operatorEdge.getOperator();
             assert operator != null;
+            if (productNode.getLevelNode() != null && operator.isIndeterminate()) {
+                throw new FormatException(
+                    "Indeterminate operator '%s' not allowed on quantified level "
+                        + "(do a feature request if you want this constraint dropped!)",
+                    operator.getName(), operatorEdge);
+            }
             boolean embargo = productNode.has(ROLE, AspectKind::inNAC);
             List<VariableNode> arguments = new ArrayList<>();
             for (AspectNode argModelNode : productNode.getArgNodes()) {

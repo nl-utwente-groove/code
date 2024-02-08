@@ -29,6 +29,7 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
+import nl.utwente.groove.algebra.UserSignature;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -76,6 +77,11 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             + "<p>If the algebra family is set to <i>point</i>, the oracle is disregarded",
         ValueType.ORACLE_FACTORY, new OracleChecker()),
 
+    /** Name of a class containing user-defined algebraic operations. */
+    USER_OPS("userOperations",
+        "Qualified class name of a class containing used-defined data operations. "
+            + "<p>Static methods annotated with @UserOperation can be used in rules.",
+        ValueType.STRING, new UserOperationsChecker()),
     /**
      * Flag determining the injectivity of the rule system. If <code>true</code>,
      * all rules should be matched injectively. Default is <code>false</code>.
@@ -367,7 +373,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         return reloadKeys;
     }
 
-    static private Set<GrammarKey> reloadKeys = EnumSet.of(USE_STORED_NODE_IDS);
+    static private Set<GrammarKey> reloadKeys = EnumSet.of(USE_STORED_NODE_IDS, USER_OPS);
 
     /** Creator methods for the {@link #nameKeyMap}*/
     static private Map<String,GrammarKey> createNameKeyMap() {
@@ -498,6 +504,29 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
                 grammar.getProperties().getValueOracle();
             } catch (FormatException exc) {
                 result.addAll(exc.getErrors());
+            }
+            return result;
+        }
+    }
+
+    /** Checks whether the user-defined operations conflict with the algebra family. */
+    private static class UserOperationsChecker implements GrammarChecker {
+        @Override
+        public FormatErrorSet check(GrammarModel grammar, Entry value) {
+            FormatErrorSet result = new FormatErrorSet();
+            var family = grammar.getProperties().getAlgebraFamily();
+            String className = value.getString();
+            if (!className.isEmpty()) {
+                try {
+                    UserSignature.loadUserClass(className);
+                } catch (FormatException exc) {
+                    result.addAll(exc.getErrors());
+                }
+                if (family != AlgebraFamily.DEFAULT && family != AlgebraFamily.POINT) {
+                    result
+                        .add("User-defined operations cannot be used with '%s' algebra family",
+                             family.getName());
+                }
             }
             return result;
         }

@@ -234,13 +234,13 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         // whereas elementMap goes from the normalised source
         if (normalSource instanceof NormalAspectGraph ng) {
             var sourceMap = new HostModelMap(result.getFactory());
-            for (var ne : ng.toNormalMap().nodeMap().entrySet()) {
+            for (var ne : ng.sourceToNormalMap().nodeMap().entrySet()) {
                 var hostNode = elementMap.getNode(ne.getValue());
                 if (hostNode != null) {
                     sourceMap.putNode(ne.getKey(), hostNode);
                 }
             }
-            for (var ee : ng.toNormalMap().edgeMap().entrySet()) {
+            for (var ee : ng.sourceToNormalMap().edgeMap().entrySet()) {
                 var hostEdge = elementMap.getEdge(ee.getValue());
                 if (hostEdge != null) {
                     sourceMap.putEdge(ee.getKey(), hostEdge);

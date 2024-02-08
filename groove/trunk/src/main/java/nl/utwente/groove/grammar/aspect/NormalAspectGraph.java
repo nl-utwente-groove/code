@@ -83,7 +83,7 @@ public class NormalAspectGraph extends AspectGraph {
     /** Returns the morphism from the source {@link AspectGraph} to this normalised {@link AspectGraph}.
      * Should only be called after the normalised graph has been fixed.
      */
-    public AspectGraphMorphism toNormalMap() {
+    public AspectGraphMorphism sourceToNormalMap() {
         assert isFixed();
         return this.sourceToNormalMap;
     }
@@ -130,6 +130,14 @@ public class NormalAspectGraph extends AspectGraph {
     private void replaceNormalisedNode(AspectNode orig, AspectNode replacement) {
         var source = (AspectNode) this.normalToSourceMap.remove(orig);
         this.sourceToNormalMap.putNode(source, replacement);
+    }
+
+    /** Returns the morphism from this normalised graph to the source {@link AspectGraph}.
+     * Should only be called after the normalised graph has been fixed.
+     */
+    public Map<Element,Element> normalToSourceMap() {
+        assert isFixed();
+        return this.normalToSourceMap;
     }
 
     /** Inverse of the {@link #sourceToNormalMap} before actual normalisation. */

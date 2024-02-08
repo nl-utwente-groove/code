@@ -1008,38 +1008,6 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
         private String symbol;
     }
 
-    /** A placement-indexed family of operators with the same symbol. */
-    static record OpFamily<O extends Op>(O op, String symbol) {
-        /** Returns an operator family, initialised with a given operator. */
-        OpFamily(O op) {
-            this(op, op.getSymbol());
-        }
-
-        /** Indicates if there is a prefix operator in this family. */
-        public boolean hasPrefixOp() {
-            return op().getKind().getPlace() == Placement.PREFIX;
-        }
-
-        /** Returns the prefix operator in this family. */
-        public O prefixOp() {
-            return hasPrefixOp()
-                ? op()
-                : null;
-        }
-
-        /** Indicates if there is a non-prefix operator in this family. */
-        public boolean hasLatefixOp() {
-            return op().getKind().getPlace() == Placement.PREFIX;
-        }
-
-        /** Returns the non-prefix operator in this family. */
-        public O latefixOp() {
-            return hasLatefixOp()
-                ? op()
-                : null;
-        }
-    }
-
     /** A string fragment, consisting of an input line with start and end position. */
     static record LineFragment(String line, int start, int end) {
         /**

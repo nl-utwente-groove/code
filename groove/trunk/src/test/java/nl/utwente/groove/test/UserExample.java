@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.algebra;
+package nl.utwente.groove.test;
 
 import nl.utwente.groove.annotation.UserOperation;
 
@@ -68,7 +68,7 @@ public class UserExample {
 
     /** User operation with erroneous return type. */
     @UserOperation
-    static public int errObjectPar(Object par) {
-        return 0;
+    static public Object errObjectPar(Object par) {
+        return null;
     }
 }
