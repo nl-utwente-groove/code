@@ -34,6 +34,9 @@ public class ImplicitTypeGraph extends TypeGraph {
         super(QualName.name("implicit-type-graph"), true);
         // instantiate the top node
         getFactory().getTopNode();
+        addLabel(TypeLabel.createLabel(EdgeRole.BINARY, "edge"));
+        addLabel(TypeLabel.createLabel(EdgeRole.FLAG, "flag"));
+        addLabel(TypeLabel.createLabel(EdgeRole.NODE_TYPE, "Type"));
     }
 
     /** Returns the top node type. */
