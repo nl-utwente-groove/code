@@ -109,6 +109,12 @@ public class TypeCheckTest {
         test("wildcards");
     }
 
+    /** Tests the implicit type graph. */
+    @Test
+    public void testImplicit() {
+        test("implicit");
+    }
+
     /** Tests all rules in a named grammar (to be loaded from {@link #INPUT_DIR}). */
     private void test(String grammarName) {
         try {
