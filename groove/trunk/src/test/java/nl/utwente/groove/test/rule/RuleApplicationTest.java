@@ -129,7 +129,7 @@ public class RuleApplicationTest extends TestCase {
         test("regression");
     }
 
-    /** Collection of regression tests. */
+    /** Tests the working of some oracles. */
     @Test
     public void testOracle() {
         test("oracle-default");
@@ -137,10 +137,16 @@ public class RuleApplicationTest extends TestCase {
         test("oracle-reader");
     }
 
-    /** Collection of regression tests. */
+    /** Test the working of collection operators. */
     @Test
     public void testSums() {
         test("sums");
+    }
+
+    /** Tests the integration of user-defined operations. */
+    @Test
+    public void testUserOps() {
+        test("userOps");
     }
 
     /** Tests all rules in a named grammar (to be loaded from {@link #INPUT_DIR}). */

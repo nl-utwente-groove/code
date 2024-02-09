@@ -233,7 +233,7 @@ public class Operator {
 
     /** Tests if this is an equality operator (i.e., a direct comparison). */
     public boolean isEquality() {
-        return getSymbol().equals(ExprTreeParser.EQUALS_SYMBOL);
+        return hasSymbol() && getSymbol().equals(ExprTreeParser.EQUALS_SYMBOL);
     }
 
     /**

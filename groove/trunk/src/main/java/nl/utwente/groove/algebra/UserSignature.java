@@ -49,6 +49,11 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
         setUserClass(userClass);
     }
 
+    /** Returns the currently installed user-operation defining class. */
+    public static Class<?> getUserClass() {
+        return userClass;
+    }
+
     /** Loads a class with a given name while checking whether it
      * has suitable user operation definitions.
      */
@@ -76,7 +81,7 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
     /** (Re)sets the used-defined class containing the operator definitions.
      * All methods with an {@link UserOperation}-annotations are taken as operators.
      */
-    public static void setUserClass(Class<?> userClass) {
+    private static void setUserClass(Class<?> userClass) {
         if (userClass != UserSignature.userClass) {
             methods.reset();
             resetUsers();
