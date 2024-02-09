@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.test;
+package nl.utwente.groove.test.algebra;
 
 import nl.utwente.groove.annotation.UserOperation;
 
@@ -23,11 +23,11 @@ import nl.utwente.groove.annotation.UserOperation;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class UserExample {
+public class UserOperations {
     /** Returns a random integer number between 0 and 9 (inclusive). */
     @UserOperation(indeterminate = true)
-    static public int randomInt() {
-        return (int) (10 * Math.random());
+    static public int randomInt(int bound) {
+        return (int) (bound * Math.random());
     }
 
     /** Returns the square root of its parameter. */
@@ -52,23 +52,5 @@ public class UserExample {
     @UserOperation
     static public boolean isPrefix(String prefix, String total) {
         return total.startsWith(prefix);
-    }
-
-    /** User operation with erroneous return type. */
-    @UserOperation
-    static public Object errObjectReturn() {
-        return null;
-    }
-
-    /** User operation with erroneous void type. */
-    @UserOperation
-    static public void errVoidReturn() {
-        // empty
-    }
-
-    /** User operation with erroneous return type. */
-    @UserOperation
-    static public Object errObjectPar(Object par) {
-        return null;
     }
 }

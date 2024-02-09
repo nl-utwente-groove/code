@@ -23,6 +23,7 @@ import static nl.utwente.groove.control.instance.CallStackChange.Kind.PUSH;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -166,6 +167,22 @@ public record CallStackChange(Kind kind, List<Assignment> assigns, @Nullable Cal
     /** Creates a new {@link Kind#POP} action with a given assignment. */
     public static CallStackChange pop(Assignment assign) {
         return new CallStackChange(POP, assign);
+    }
+
+    /* Have to override because otherwise Maven compiler throws up */
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof CallStackChange other)) {
+            return false;
+        }
+        return Objects.equals(this.assigns, other.assigns) && this.kind == other.kind
+            && Objects.equals(this.pred, other.pred);
     }
 
     /** Kind of {@link CallStackChange}. */
