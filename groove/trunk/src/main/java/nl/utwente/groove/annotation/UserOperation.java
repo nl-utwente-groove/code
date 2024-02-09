@@ -22,7 +22,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for user-defined algebraic operators
+ * Annotation for a user-defined algebraic operation.
+ * The method thus annotated should be static and only have parameters
+ * and return type int, double, boolean or String.
  * @author Arend Rensink
  * @version $Revision$
  */

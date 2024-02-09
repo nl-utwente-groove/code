@@ -57,4 +57,10 @@ public class UserExample {
     static public boolean isPrefix(String prefix, String total) {
         return total.startsWith(prefix);
     }
+
+    /** Non-static user operation. */
+    @UserOperation
+    public int error(int par) {
+        return par;
+    }
 }
