@@ -1,0 +1,2 @@
+int iy := outInt();
+int ix := inIntOutInt(ite(true,3,iy+3));
