@@ -25,7 +25,6 @@ import static nl.utwente.groove.util.Properties.INFO_COLOR_TAG;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 import javax.swing.Icon;
 
@@ -63,7 +62,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     @Override
     public Icon getIcon() {
         Icon result;
-        if (isRecipeChild()) {
+        if (isFragment()) {
             result = Icons.PUZZLE_ICON;
         } else if (super.getIcon() == Icons.EDIT_WIDE_ICON) {
             result = super.getIcon();
@@ -95,12 +94,8 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     }
 
     /** Indicates if this rule node is part of a recipe. */
-    public boolean isPartial() {
+    public boolean isFragment() {
         return getRule().hasRecipes();
-    }
-
-    private boolean isRecipeChild() {
-        return getParent() instanceof RecipeTreeNode;
     }
 
     @Override
@@ -124,11 +119,18 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
             result.append(": ");
             result.append(HTMLConverter.toHtml(remark));
         }
-        if (isRecipeChild()) {
+        if (isFragment()) {
+            var recipes = getRule().getRecipes();
             result.append(HTML_LINEBREAK);
-            result.append("Invoked as part of the recipe ");
+            result.append("Invoked from ");
             result
-                .append(HTMLConverter.ITALIC_TAG.on(((RecipeTreeNode) getParent()).getQualName()));
+                .append(recipes.size() == 1
+                    ? "recipe "
+                    : "recipes ");
+            result
+                .append(Groove
+                    .toString(getRule().getRecipes().toArray(), "<i>", "</i>", "</i>, <i>",
+                              "</i> and <i>"));
         }
         if (getRule().getRole().isConstraint()) {
             result.append(HTML_LINEBREAK);
@@ -140,19 +142,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         } else if (getRule().getPolicy() == CheckPolicy.OFF) {
             result.append(HTML_LINEBREAK);
             result.append("Turned off by the rule policy in the grammar properties");
-        } else if (!isRecipeChild() && getRule().hasRecipes()) {
-            Set<QualName> recipes = getRule().getRecipes();
-            result.append(HTML_LINEBREAK);
-            result.append("Not enabled stand-alone because it is invoked from ");
-            result
-                .append(recipes.size() == 1
-                    ? "recipe "
-                    : "recipes ");
-            result
-                .append(Groove
-                    .toString(getRule().getRecipes().toArray(), "<i>", "</i>", "</i>, <i>",
-                              "</i> and <i>"));
-        } else if (!isTried()) {
+        } else if (getStatus() == Status.STANDBY) {
             result.append(HTML_LINEBREAK);
             result.append("Not scheduled in this state, due to rule priorities or control");
         } else if (getChildCount() == 0) {
@@ -203,18 +193,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     }
 
     @Override
-    public boolean isEnabled() {
-        return this.tried;
-    }
-
-    /** Returns the text to be displayed on the tree node. */
-    @Override
     public String getText() {
-        boolean showEnabled = getRule().isEnabled();
-        if (showEnabled) {
-            showEnabled = isProperty() || !isPartial() || (getParent() instanceof RecipeTreeNode)
-                || (getParent() instanceof StateTree.StateTreeNode);
-        }
         String suffix = "";
         try {
             Signature<?> sig = getRule().toResource().getSignature();
@@ -226,22 +205,26 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         }
         suffix += getRule().isProperty()
             ? roleSuffixMap.get(getRule().getRole())
-            : isRecipeChild()
+            : isFragment()
                 ? INGREDIENT_SUFFIX
                 : RULE_SUFFIX;
-        var result = getDisplay().getLabelText(getQualName(), suffix, showEnabled);
+        var result = getDisplay().getLabelText(getQualName(), suffix, getStatus().isEnabled());
         if (getRuleGraph().getProperties().isNotable()) {
             result += "  " + INFO_SYMBOL;
         }
         return result;
     }
 
-    /** Indicates if the rule wrapped by this node has been tried on the current state. */
-    public boolean isTried() {
-        return this.tried;
+    @Override
+    public Status getStatus() {
+        return this.tried
+            ? Status.ACTIVE
+            : getRule().isEnabled()
+                ? Status.STANDBY
+                : Status.DISABLED;
     }
 
-    /** Sets the tried state of the rule wrapped by this node. */
+    @Override
     public void setTried(boolean tried) {
         this.tried = tried;
     }

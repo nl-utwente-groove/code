@@ -36,7 +36,7 @@ public class ResourceTreeNode extends DisplayTreeNode {
 
     /** Constructor with an argument that controls the possibility of having children. */
     protected ResourceTreeNode(ResourceDisplay display, QualName resourceName,
-        boolean allowsChildren) {
+                               boolean allowsChildren) {
         super(resourceName, allowsChildren);
         this.display = display;
     }
@@ -60,9 +60,10 @@ public class ResourceTreeNode extends DisplayTreeNode {
 
     /** Indicates if this tree node is enabled. */
     @Override
-    public boolean isEnabled() {
-        return getDisplay().getResource(getQualName())
-            .isEnabled();
+    Status getStatus() {
+        return getDisplay().getResource(getQualName()).isEnabled()
+            ? Status.ACTIVE
+            : Status.DISABLED;
     }
 
     /** Returns the text to be displayed on the tree node. */
