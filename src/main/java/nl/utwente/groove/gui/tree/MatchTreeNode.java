@@ -75,8 +75,10 @@ class MatchTreeNode extends DisplayTreeNode {
     }
 
     @Override
-    public boolean isEnabled() {
-        return isTransition();
+    Status getStatus() {
+        return isTransition()
+            ? Status.ACTIVE
+            : Status.STANDBY;
     }
 
     @Override
@@ -85,7 +87,7 @@ class MatchTreeNode extends DisplayTreeNode {
         QualName actionName = getMatch().getAction().getQualName();
         if (isProperty()) {
             result.append(String.format("Property '%s' is satisfied", actionName));
-        } else if (isEnabled()) {
+        } else if (isTransition()) {
             result.append(String.format("Explored transition of '%s'", actionName));
             GraphState target = getMatch().getTransition().target();
             if (target.isAbsent()) {
@@ -115,7 +117,7 @@ class MatchTreeNode extends DisplayTreeNode {
         result.append(": ");
         boolean showArrow
             = !getMatch().getAction().isProperty() || getMatch().getStep().isModifying();
-        if (isEnabled()) {
+        if (isTransition()) {
             RuleTransition trans = getMatch().getTransition();
             result.append(trans.text(this.anchored));
             if (showArrow) {

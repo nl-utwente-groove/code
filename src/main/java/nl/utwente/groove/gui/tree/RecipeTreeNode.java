@@ -17,7 +17,6 @@
 package nl.utwente.groove.gui.tree;
 
 import javax.swing.Icon;
-import javax.swing.tree.TreeNode;
 
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Recipe;
@@ -67,31 +66,27 @@ class RecipeTreeNode extends DisplayTreeNode implements ActionTreeNode {
         return getRecipe().getLastName() + RECIPE_SUFFIX;
     }
 
-    /** Indicates if the rule wrapped by this node has been tried on the current state. */
     @Override
-    public boolean isEnabled() {
-        boolean result = false;
-        int count = getChildCount();
-        for (int i = 0; !result && i < count; i++) {
-            TreeNode child = getChildAt(i);
-            if (child instanceof RecipeTransitionTreeNode) {
-                result = true;
-            } else if (child instanceof RuleTreeNode) {
-                result = ((RuleTreeNode) child).isEnabled();
-            }
-            if (result) {
-                break;
-            }
-        }
-        return result;
+    public Status getStatus() {
+        return this.tried
+            ? Status.ACTIVE
+            : Status.STANDBY;
     }
+
+    @Override
+    public void setTried(boolean tried) {
+        this.tried = tried;
+    }
+
+    /** Flag indicating whether the recipe has been tried on the displayed state. */
+    private boolean tried;
 
     @Override
     public String getTip() {
         StringBuilder result = new StringBuilder();
         result.append("Recipe ");
         result.append(HTMLConverter.ITALIC_TAG.on(getQualName()));
-        if (!isEnabled()) {
+        if (getStatus() == Status.STANDBY) {
             result.append(HTMLConverter.HTML_LINEBREAK);
             result.append("Not scheduled in this state");
         }

@@ -25,7 +25,7 @@ import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.collect.Comparator;
 
 /** Superclass for tree nodes in a display-related list. */
-public class DisplayTreeNode extends DefaultMutableTreeNode {
+class DisplayTreeNode extends DefaultMutableTreeNode {
     /** Constructor for an empty node. */
     DisplayTreeNode() {
         // empty
@@ -51,9 +51,9 @@ public class DisplayTreeNode extends DefaultMutableTreeNode {
         return false;
     }
 
-    /** Indicates if this tree node is enabled. */
-    public boolean isEnabled() {
-        return true;
+    /** Returns the current status of this tree node. */
+    Status getStatus() {
+        return Status.ACTIVE;
     }
 
     /** Returns the text to be displayed on the tree node. */
@@ -93,24 +93,39 @@ public class DisplayTreeNode extends DefaultMutableTreeNode {
     private static class ChildComparator extends Comparator<TreeNode> {
         @Override
         public int compare(TreeNode o1, TreeNode o2) {
-            int result = compare(o1 instanceof RecipeTreeNode, o2 instanceof RecipeTreeNode);
-            if (result != 0) {
-                return result;
-            }
+            int result;
+            /** Action nodes come before others. */
             result = compare(o1 instanceof ActionTreeNode, o2 instanceof ActionTreeNode);
             if (result != 0) {
                 return result;
             }
+            /** Properties come after others. */
             if (o1 instanceof ActionTreeNode atn1) {
                 result = compare(((ActionTreeNode) o2).isProperty(), atn1.isProperty());
                 if (result != 0) {
                     return result;
                 }
             }
+            // Otherwise, compare on the basis of names
             return stringComparator.compare(o1.toString(), o2.toString());
         }
 
         private final static java.util.Comparator<String> stringComparator
             = Strings.getNaturalComparator();
+    }
+
+    /** Diaplay status of a tree node. */
+    static enum Status {
+        /** Not considered for inclusion. */
+        DISABLED,
+        /** Enabled but not currently active. */
+        STANDBY,
+        /** Currently active. */
+        ACTIVE;
+
+        /** Indicates if this status is not {@link Status#DISABLED}. */
+        public boolean isEnabled() {
+            return this != DISABLED;
+        }
     }
 }

@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.gui.tree;
 
+import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
 import nl.utwente.groove.grammar.QualName;
@@ -25,10 +26,18 @@ import nl.utwente.groove.grammar.QualName;
  * @author Arend Rensink
  * @version $Revision$
  */
-interface ActionTreeNode extends TreeNode {
+interface ActionTreeNode extends MutableTreeNode {
     /** Returns the action name. */
     public QualName getQualName();
 
     /** Indicates if the wrapped action is a property. */
     public boolean isProperty();
+
+    /** Returns the current status of this tree node. */
+    public DisplayTreeNode.Status getStatus();
+
+    /** Sets the tried state of the action wrapped by this node. */
+    public void setTried(boolean tried);
+
+    public TreeNode[] getPath();
 }

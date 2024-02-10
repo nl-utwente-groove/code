@@ -28,6 +28,7 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
 import nl.utwente.groove.gui.look.Values;
+import nl.utwente.groove.gui.tree.DisplayTreeNode.Status;
 import nl.utwente.groove.io.HTMLConverter;
 
 /**
@@ -49,14 +50,14 @@ class DisplayTreeCellRenderer extends DefaultTreeCellRenderer {
         Icon icon = null;
         String tip = null;
         String text = value.toString();
-        boolean enabled = true;
+        boolean active = true;
         boolean error = false;
         boolean inRecipe = false;
         if (value instanceof DisplayTreeNode node) {
             tip = node.getTip();
             icon = node.getIcon();
             text = node.getText();
-            enabled = node.isEnabled();
+            active = node.getStatus() == Status.ACTIVE;
             error = node.isError();
             inRecipe = node.isInternal();
         }
@@ -83,7 +84,7 @@ class DisplayTreeCellRenderer extends DefaultTreeCellRenderer {
         } else {
             setBackgroundNonSelectionColor(background);
         }
-        setTransparent(!enabled);
+        setTransparent(!active);
         setOpaque(false);
         return result;
     }
