@@ -21,9 +21,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
-import nl.utwente.groove.util.Strings;
-import nl.utwente.groove.util.collect.Comparator;
-
 /** Superclass for tree nodes in a display-related list. */
 class DisplayTreeNode extends DefaultMutableTreeNode {
     /** Constructor for an empty node. */
@@ -32,22 +29,22 @@ class DisplayTreeNode extends DefaultMutableTreeNode {
     }
 
     /** Constructs a node. */
-    protected DisplayTreeNode(Object userObject, boolean allowsChildren) {
+    DisplayTreeNode(Object userObject, boolean allowsChildren) {
         super(userObject, allowsChildren);
     }
 
     /** Returns the icon to be used when rendering this tree node. */
-    public Icon getIcon() {
+    Icon getIcon() {
         return null;
     }
 
     /** Indicates if this tree node contains an error. */
-    public boolean isError() {
+    boolean isError() {
         return false;
     }
 
     /** Indicates if this tree node represents part of a recipe. */
-    public boolean isInternal() {
+    boolean isInRecipe() {
         return false;
     }
 
@@ -57,12 +54,12 @@ class DisplayTreeNode extends DefaultMutableTreeNode {
     }
 
     /** Returns the text to be displayed on the tree node. */
-    public String getText() {
+    String getText() {
         return toString();
     }
 
     /** Returns the tooltip to be used when rendering this tree node. */
-    public String getTip() {
+    String getTip() {
         return null;
     }
 
@@ -71,47 +68,20 @@ class DisplayTreeNode extends DefaultMutableTreeNode {
      * Uses a natural ordering sort
      * @param child Child node to insert.
      */
-    public void insertSorted(MutableTreeNode child) {
-        Comparator<TreeNode> comparator = this.comparator;
+    void insertSorted(MutableTreeNode child) {
         // binary search for the right position to insert
         int lower = 0;
         int upper = getChildCount();
         while (lower < upper) {
             int mid = (lower + upper) / 2;
             TreeNode midChild = getChildAt(mid);
-            if (comparator.compare(child, midChild) < 0) {
+            if (child.toString().compareTo(midChild.toString()) < 0) {
                 upper = mid;
             } else {
                 lower = mid + 1;
             }
         }
         insert(child, lower);
-    }
-
-    private final Comparator<TreeNode> comparator = new ChildComparator();
-
-    private static class ChildComparator extends Comparator<TreeNode> {
-        @Override
-        public int compare(TreeNode o1, TreeNode o2) {
-            int result;
-            /** Action nodes come before others. */
-            result = compare(o1 instanceof ActionTreeNode, o2 instanceof ActionTreeNode);
-            if (result != 0) {
-                return result;
-            }
-            /** Properties come after others. */
-            if (o1 instanceof ActionTreeNode atn1) {
-                result = compare(((ActionTreeNode) o2).isProperty(), atn1.isProperty());
-                if (result != 0) {
-                    return result;
-                }
-            }
-            // Otherwise, compare on the basis of names
-            return stringComparator.compare(o1.toString(), o2.toString());
-        }
-
-        private final static java.util.Comparator<String> stringComparator
-            = Strings.getNaturalComparator();
     }
 
     /** Diaplay status of a tree node. */

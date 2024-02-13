@@ -16,9 +16,6 @@
  */
 package nl.utwente.groove.gui.tree;
 
-import javax.swing.Icon;
-
-import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.lts.GraphState;
@@ -28,37 +25,25 @@ import nl.utwente.groove.lts.RecipeTransition;
 /**
  * Tree node wrapping a recipe transition.
  */
-class RecipeTransitionTreeNode extends DisplayTreeNode {
+class RecipeTransitionTreeNode extends MatchTreeNode {
     /**
      * Creates a new tree node based on a given recipe transition. The node cannot have
      * children.
      * @param source source state of the recipe transition
      */
-    public RecipeTransitionTreeNode(SimulatorModel model, GraphState source, RecipeEvent event,
-                                    int nr) {
-        super(event.toTransition(source), false);
-        this.nr = nr;
-        this.model = model;
+    RecipeTransitionTreeNode(SimulatorModel model, GraphState source, RecipeEvent event, int nr) {
+        super(model, source, nr);
+        this.trans = event.toTransition(source);
     }
 
     /**
      * Convenience method to retrieve the user object as a recipe event.
      */
-    public RecipeTransition getTransition() {
-        return (RecipeTransition) getUserObject();
+    RecipeTransition getTransition() {
+        return this.trans;
     }
 
-    /**
-     * Returns the graph state for which this is a match.
-     */
-    public GraphState getSource() {
-        return getTransition().source();
-    }
-
-    @Override
-    public Icon getIcon() {
-        return Icons.GRAPH_MATCH_ICON;
-    }
+    private final RecipeTransition trans;
 
     @Override
     Status getStatus() {
@@ -66,33 +51,20 @@ class RecipeTransitionTreeNode extends DisplayTreeNode {
     }
 
     @Override
-    public String getText() {
-        if (this.text == null) {
-            this.text = computeText();
-        }
-        return this.text;
-    }
-
-    private String text;
-
-    private String computeText() {
+    String computeText() {
         StringBuilder result = new StringBuilder();
-        result.append(this.nr);
+        result.append(getNumber());
         result.append(": ");
         RecipeTransition trans = getTransition();
         result.append(trans.text());
         result.append(RIGHTARROW);
         result.append(HTMLConverter.ITALIC_TAG.on(trans.target().toString()));
-        if (this.model.getTrace().contains(trans)) {
+        if (getSimulator().getTrace().contains(trans)) {
             result.append(TRACE_SUFFIX);
         }
         return result.toString();
     }
 
-    private final SimulatorModel model;
-    private final int nr;
-    /** HTML representation of the right arrow. */
-    private static final String RIGHTARROW = "-->";
     /** The suffix for a match that is in the selected trace. */
     private static final String TRACE_SUFFIX = " " + HTMLConverter.STRONG_TAG.on("(*)");
 }

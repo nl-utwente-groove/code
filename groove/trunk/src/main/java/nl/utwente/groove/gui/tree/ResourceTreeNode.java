@@ -20,7 +20,6 @@ import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import nl.utwente.groove.grammar.QualName;
-import nl.utwente.groove.grammar.model.ResourceModel;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.io.HTMLConverter;
 
@@ -28,9 +27,9 @@ import nl.utwente.groove.io.HTMLConverter;
  * A {@link ResourceTreeNode} is a {@link DefaultMutableTreeNode} that
  * corresponds to a resource.
  */
-public class ResourceTreeNode extends DisplayTreeNode {
+class ResourceTreeNode extends DisplayTreeNode {
     /** Default constructor. */
-    public ResourceTreeNode(ResourceDisplay display, QualName resourceName) {
+    ResourceTreeNode(ResourceDisplay display, QualName resourceName) {
         this(display, resourceName, false);
     }
 
@@ -42,38 +41,45 @@ public class ResourceTreeNode extends DisplayTreeNode {
     }
 
     /** Returns the resource name. */
-    public QualName getQualName() {
+    QualName getQualName() {
         return (QualName) getUserObject();
     }
 
+    /** Returns the display with which this tree node is associated. */
+    ResourceDisplay getDisplay() {
+        return this.display;
+    }
+
+    private final ResourceDisplay display;
+
     /** Returns the icon to be used when rendering this tree node. */
     @Override
-    public Icon getIcon() {
+    Icon getIcon() {
         return getDisplay().getListIcon(getQualName());
     }
 
     /** Indicates if this tree node contains an error. */
     @Override
-    public boolean isError() {
+    boolean isError() {
         return getDisplay().hasError(getQualName());
     }
 
     /** Indicates if this tree node is enabled. */
     @Override
     Status getStatus() {
-        return getDisplay().getResource(getQualName()).isEnabled()
+        return isActivated()
             ? Status.ACTIVE
             : Status.DISABLED;
     }
 
     /** Returns the text to be displayed on the tree node. */
     @Override
-    public String getText() {
+    String getText() {
         return getDisplay().getLabelText(getQualName());
     }
 
     @Override
-    public String getTip() {
+    String getTip() {
         StringBuilder result = new StringBuilder();
         switch (getDisplay().getResourceKind()) {
         case HOST:
@@ -93,15 +99,8 @@ public class ResourceTreeNode extends DisplayTreeNode {
         return result.toString();
     }
 
-    /** Returns the resource model. */
-    protected ResourceModel<?> getResource() {
-        return getDisplay().getResource(getQualName());
+    /** Returns the tried state of the resource wrapped by this node. */
+    boolean isActivated() {
+        return getDisplay().getResource(getQualName()).isEnabled();
     }
-
-    /** Returns the display with which this tree node is associated. */
-    protected ResourceDisplay getDisplay() {
-        return this.display;
-    }
-
-    private final ResourceDisplay display;
 }

@@ -10,9 +10,12 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
+import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
+import nl.utwente.groove.lts.GraphTransition.Claz;
 import nl.utwente.groove.lts.MatchResult;
+import nl.utwente.groove.lts.RecipeTransition;
 import nl.utwente.groove.lts.RuleTransition;
 
 /**
@@ -46,8 +49,7 @@ public class ApplyMatchAction extends SimulatorAction {
      */
     private void exploreState() {
         // no match is selected; explore the selected state instead
-        getActions().getExploreAction()
-            .doExploreState();
+        getActions().getExploreAction().doExploreState();
     }
 
     /**
@@ -64,18 +66,28 @@ public class ApplyMatchAction extends SimulatorAction {
             trans = state.applyMatch(match);
         }
         GraphState target = trans.target();
-        if (target.isRealState() || getLtsDisplay().getJGraph()
-            .isShowRecipeSteps()) {
+        if (target.isRealState() || getLtsDisplay().getJGraph().isShowRecipeSteps()) {
             getSimulatorModel().doSetStateAndMatch(target, trans);
         } else {
-            Exploration e = getActions().getExploreAction()
-                .explore(target, getStateExploration());
-            if (e.getResult()
-                .isEmpty()) {
+            Exploration e = getActions().getExploreAction().explore(target, getStateExploration());
+            if (e.isInterrupted()) {
                 getSimulatorModel().doSetStateAndMatch(state, null);
             } else {
-                getSimulatorModel().doSetStateAndMatch(e.getResult()
-                    .getLastState(), trans);
+                // find a recipe transition that just got added that contains trans
+                var source = trans.source();
+                while (!source.isRealState()) {
+                    source = ((GraphNextState) source).source();
+                }
+                // this must be the initial state of that recipe transition
+                RecipeTransition recipeTrans = null;
+                for (var outTrans : source.getTransitions(Claz.REAL)) {
+                    if (outTrans instanceof RecipeTransition r && r.getSteps().contains(trans)) {
+                        recipeTrans = r;
+                        break;
+                    }
+                }
+                assert recipeTrans != null;
+                getSimulatorModel().doSetStateAndMatch(recipeTrans.target(), recipeTrans);
             }
         }
     }
@@ -93,9 +105,9 @@ public class ApplyMatchAction extends SimulatorAction {
         GrammarModel grammar = getSimulatorModel().getGrammar();
         setEnabled(getSimulatorModel().hasState() && grammar != null && !grammar.hasErrors()
             && grammar.hasRules());
-        putValue(Action.SHORT_DESCRIPTION,
-            getSimulatorModel().hasMatch() ? Options.APPLY_MATCH_ACTION_NAME
-                : Options.EXPLORE_STATE_ACTION_NAME);
+        putValue(Action.SHORT_DESCRIPTION, getSimulatorModel().hasMatch()
+            ? Options.APPLY_MATCH_ACTION_NAME
+            : Options.EXPLORE_STATE_ACTION_NAME);
     }
 
     /**
@@ -103,7 +115,7 @@ public class ApplyMatchAction extends SimulatorAction {
      */
     private ExploreType getStateExploration() {
         if (this.stateExploration == null) {
-            this.stateExploration = new ExploreType(StrategyValue.STATE, AcceptorValue.ANY, 0);
+            this.stateExploration = new ExploreType(StrategyValue.STATE, AcceptorValue.NONE, 0);
         }
         return this.stateExploration;
     }

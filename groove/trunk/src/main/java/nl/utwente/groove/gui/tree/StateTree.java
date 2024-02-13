@@ -226,7 +226,7 @@ public class StateTree extends JTree implements SimulatorListener {
             result.add(getActions().getEditStateAction());
             result.add(getActions().getSaveStateAction());
             result.add(getActions().getExportStateAction());
-        } else if (node instanceof MatchTreeNode) {
+        } else if (node instanceof RuleMatchTreeNode) {
             result.add(getActions().getApplyMatchAction());
         }
         return result;
@@ -379,42 +379,66 @@ public class StateTree extends JTree implements SimulatorListener {
         boolean isExpanded = this.expanded.contains(state);
         StateTreeNode result = new StateTreeNode(state, isExpanded);
         Collection<GraphTransitionKey> matches = new ArrayList<>();
+        Collection<MatchResult> recipeInits = new ArrayList<>();
         Claz claz = Claz.getClass(isShowInternal(), isShowAbsent());
         for (GraphTransition trans : state.getTransitions(claz)) {
             matches.add(trans.getKey());
         }
-        matches.addAll(state.getMatches());
-        Map<Action,Set<GraphTransitionKey>> matchMap = new TreeMap<>(Action.PARTIAL_COMPARATOR);
-        for (GraphTransitionKey match : matches) {
-            Action action = match.getAction();
-            Set<GraphTransitionKey> ruleMatches = matchMap.get(action);
-            if (ruleMatches == null) {
-                matchMap.put(action, ruleMatches = new TreeSet<>(GraphTransitionKey.COMPARATOR));
+        for (var match : state.getMatches()) {
+            var step = match.getStep();
+            if (isShowInternal() || !step.isInternal()) {
+                matches.add(match);
             }
-            ruleMatches.add(match);
+            var recipe = step.getRecipe();
+            if (recipe.isPresent()) {
+                recipeInits.add(match);
+            }
+        }
+        Map<Action,Set<GraphTransitionKey>> matchMap = new TreeMap<>(Action.PARTIAL_COMPARATOR);
+        for (var match : matches) {
+            Action action = match.getAction();
+            var actionMatches = matchMap.get(action);
+            if (actionMatches == null) {
+                matchMap.put(action, actionMatches = new TreeSet<>(GraphTransitionKey.COMPARATOR));
+            }
+            actionMatches.add(match);
+        }
+        for (var match : recipeInits) {
+            Action action = match.getStep().getRecipe().get();
+            Set<GraphTransitionKey> recipeMatches = matchMap.get(action);
+            if (recipeMatches == null) {
+                matchMap.put(action, recipeMatches = new TreeSet<>(GraphTransitionKey.COMPARATOR));
+            }
+            recipeMatches.add(match);
         }
         boolean anchored = getOptions().isSelected(Options.SHOW_ANCHORS_OPTION);
         for (Map.Entry<Action,Set<GraphTransitionKey>> matchEntry : matchMap.entrySet()) {
             Action action = matchEntry.getKey();
-            DisplayTreeNode ruleNode;
-            if (action instanceof Rule) {
-                ruleNode = new RuleTreeNode(getRuleDisplay(), action.getQualName());
+            ActionTreeNode actionNode;
+            if (action instanceof Rule rule) {
+                actionNode = new RuleTreeNode(getRuleDisplay(), rule);
             } else {
-                ruleNode = new RecipeTreeNode((Recipe) action);
+                actionNode = new RecipeTreeNode(getRuleDisplay(), (Recipe) action);
             }
-            result.add(ruleNode);
+            actionNode.setActivated(true);
+            result.add(actionNode);
             int count = 0;
             for (GraphTransitionKey trans : matchEntry.getValue()) {
                 count++;
-                DisplayTreeNode transNode;
+                MatchTreeNode transNode;
                 if (trans instanceof MatchResult match) {
-                    transNode
-                        = new MatchTreeNode(getSimulatorModel(), state, match, count, anchored);
+                    if (action instanceof Rule) {
+                        transNode = new RuleMatchTreeNode(getSimulatorModel(), state, match, count,
+                            anchored);
+                    } else {
+                        transNode
+                            = new RecipeMatchTreeNode(getSimulatorModel(), state, match, count);
+                    }
                 } else {
                     transNode = new RecipeTransitionTreeNode(getSimulatorModel(), state,
                         (RecipeEvent) trans, count);
                 }
-                ruleNode.add(transNode);
+                actionNode.add(transNode);
             }
         }
         return result;
@@ -435,10 +459,11 @@ public class StateTree extends JTree implements SimulatorListener {
                 for (int i = 0; i < stateNode.getChildCount(); i++) {
                     TreeNode child = stateNode.getChildAt(i);
                     if (match != null && child instanceof RuleTreeNode ruleNode) {
-                        if (ruleNode.getRule().equals(ruleModel)) {
+                        if (ruleNode.getRuleModel().equals(ruleModel)) {
                             RuleEvent event = match.getEvent();
                             for (int m = 0; m < ruleNode.getChildCount(); m++) {
-                                MatchTreeNode matchNode = (MatchTreeNode) ruleNode.getChildAt(m);
+                                RuleMatchTreeNode matchNode
+                                    = (RuleMatchTreeNode) ruleNode.getChildAt(m);
                                 if (matchNode.getMatch().getEvent().equals(event)) {
                                     selectPath = createPath(matchNode);
                                     break;
@@ -772,10 +797,10 @@ public class StateTree extends JTree implements SimulatorListener {
                     MatchResult selectedMatch = null;
                     GraphTransition selectedTrans = null;
                     Object selectedNode = paths[0].getLastPathComponent();
-                    if (selectedNode instanceof MatchTreeNode) {
+                    if (selectedNode instanceof RuleMatchTreeNode) {
                         // selected tree node is a match (level 2 node)
-                        selectedMatch = ((MatchTreeNode) selectedNode).getMatch();
-                        selectedState = ((MatchTreeNode) selectedNode).getSource();
+                        selectedMatch = ((RuleMatchTreeNode) selectedNode).getMatch();
+                        selectedState = ((RuleMatchTreeNode) selectedNode).getSource();
                     } else if (selectedNode instanceof RecipeTransitionTreeNode) {
                         // selected tree node is a match (level 2 node)
                         selectedTrans = ((RecipeTransitionTreeNode) selectedNode).getTransition();
@@ -809,7 +834,7 @@ public class StateTree extends JTree implements SimulatorListener {
                     Object[] nodes = getPathForRow(selectedRow).getPath();
                     for (int i = nodes.length - 1; i >= 0; i--) {
                         if (nodes[i] instanceof RuleTreeNode) {
-                            result.add(((RuleTreeNode) nodes[i]).getRule().getQualName());
+                            result.add(((RuleTreeNode) nodes[i]).getQualName());
                         }
                     }
                 }

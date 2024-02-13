@@ -16,28 +16,28 @@
  */
 package nl.utwente.groove.gui.tree;
 
-import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeNode;
-
 import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.gui.display.ResourceDisplay;
 
 /**
- * Tree node wrapping an action.
  * @author Arend Rensink
  * @version $Revision$
  */
-interface ActionTreeNode extends MutableTreeNode {
-    /** Returns the action name. */
-    public QualName getQualName();
+class ActionTreeNode extends ResourceTreeNode {
+    ActionTreeNode(ResourceDisplay display, QualName actionName) {
+        super(display, actionName, true);
+    }
 
-    /** Indicates if the wrapped action is a property. */
-    public boolean isProperty();
+    /** Sets the activated state of the rule wrapped by this node. */
+    void setActivated(boolean tried) {
+        this.activated = tried;
+    }
 
-    /** Returns the current status of this tree node. */
-    public DisplayTreeNode.Status getStatus();
+    @Override
+    boolean isActivated() {
+        return this.activated;
+    }
 
-    /** Sets the tried state of the action wrapped by this node. */
-    public void setTried(boolean tried);
-
-    public TreeNode[] getPath();
+    /** Flag indicating whether the rule has been tried on the displayed state. */
+    private boolean activated;
 }

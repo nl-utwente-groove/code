@@ -18,71 +18,59 @@ package nl.utwente.groove.gui.tree;
 
 import javax.swing.Icon;
 
-import nl.utwente.groove.grammar.QualName;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.grammar.Recipe;
+import nl.utwente.groove.grammar.Signature;
 import nl.utwente.groove.gui.Icons;
+import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.io.HTMLConverter;
 
 /**
  * Recipe nodes of the directory
  */
-class RecipeTreeNode extends DisplayTreeNode implements ActionTreeNode {
+@NonNullByDefault
+class RecipeTreeNode extends ActionTreeNode {
     /**
      * Creates a new transaction node based on a given control automaton.
      */
-    public RecipeTreeNode(Recipe recipe) {
-        super(recipe, true);
+    RecipeTreeNode(ResourceDisplay display, Recipe recipe) {
+        super(display, recipe.getQualName());
+        this.recipe = recipe;
     }
 
     /**
-     * Returns the control automaton of the transaction wrapped in this node.
+     * Returns the recipe wrapped in this node.
      */
-    public Recipe getRecipe() {
-        return (Recipe) getUserObject();
+    Recipe getRecipe() {
+        return this.recipe;
     }
 
-    @Override
-    public boolean isProperty() {
-        return getRecipe().isProperty();
-    }
+    private final Recipe recipe;
 
     @Override
-    public Icon getIcon() {
+    Icon getIcon() {
         return Icons.RECIPE_TREE_ICON;
     }
 
     @Override
-    public QualName getQualName() {
-        return getRecipe().getQualName();
-    }
-
-    @Override
-    public boolean isError() {
+    boolean isError() {
         return getRecipe().getTemplate() == null;
     }
 
     @Override
-    public String getText() {
-        return getRecipe().getLastName() + RECIPE_SUFFIX;
+    String getText() {
+        String suffix = "";
+        Signature<?> sig = getRecipe().getSignature();
+        if (!sig.isEmpty()) {
+            suffix = sig.toString();
+        }
+        suffix += RECIPE_SUFFIX;
+        return getRecipe().getLastName() + suffix;
     }
 
     @Override
-    public Status getStatus() {
-        return this.tried
-            ? Status.ACTIVE
-            : Status.STANDBY;
-    }
-
-    @Override
-    public void setTried(boolean tried) {
-        this.tried = tried;
-    }
-
-    /** Flag indicating whether the recipe has been tried on the displayed state. */
-    private boolean tried;
-
-    @Override
-    public String getTip() {
+    String getTip() {
         StringBuilder result = new StringBuilder();
         result.append("Recipe ");
         result.append(HTMLConverter.ITALIC_TAG.on(getQualName()));
@@ -92,17 +80,6 @@ class RecipeTreeNode extends DisplayTreeNode implements ActionTreeNode {
         }
         HTMLConverter.HTML_TAG.on(result);
         return result.toString();
-    }
-
-    /** Returns the number of child {@link RecipeTransitionTreeNode} nodes. */
-    public int getTransitionCount() {
-        int result = 0;
-        for (int i = 0; i < getChildCount(); i++) {
-            if (getChildAt(i) instanceof RecipeTransitionTreeNode) {
-                result++;
-            }
-        }
-        return result;
     }
 
     private final static String RECIPE_SUFFIX = " : " + HTMLConverter.STRONG_TAG.on("recipe");

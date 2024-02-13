@@ -1137,9 +1137,7 @@ public class SimulatorModel implements Cloneable {
 
     @Override
     public String toString() {
-        return "GuiState [gts=" + this.gts + ", state=" + this.state + ", match=" + this.match
-            + ", grammar=" + this.grammar + ", resources=" + this.resources + ", changes="
-            + this.changes + "]";
+        return "Simulator model for " + this.grammar.getId();
     }
 
     /** Returns a counter registering all kinds of counts for the currently loaded GTS. */

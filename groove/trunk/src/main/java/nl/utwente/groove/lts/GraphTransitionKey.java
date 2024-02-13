@@ -16,9 +16,11 @@
  */
 package nl.utwente.groove.lts;
 
+import java.util.Arrays;
 import java.util.Comparator;
 
 import nl.utwente.groove.grammar.Action;
+import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.transform.Event;
 
 /**
@@ -53,6 +55,10 @@ public interface GraphTransitionKey {
 
             private int compare(RecipeEvent o1, RecipeEvent o2) {
                 int result = o1.getAction().compareTo(o2.getAction());
+                if (result != 0) {
+                    return result;
+                }
+                result = Arrays.compare(o1.getArguments(), o2.getArguments(), HostNode.COMPARATOR);
                 if (result != 0) {
                     return result;
                 }

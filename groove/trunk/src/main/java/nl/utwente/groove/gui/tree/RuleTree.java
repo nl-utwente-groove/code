@@ -140,7 +140,7 @@ public class RuleTree extends AbstractResourceTree {
             res.add(getActions().getShiftPriorityAction(true));
             res.add(getActions().getShiftPriorityAction(false));
             res.add(getActions().getEditRulePropertiesAction());
-        } else if (node instanceof MatchTreeNode) {
+        } else if (node instanceof RuleMatchTreeNode) {
             res.addSeparator();
             res.add(getActions().getApplyMatchAction());
         }
@@ -191,7 +191,7 @@ public class RuleTree extends AbstractResourceTree {
     /** Clears all maps of the tree. */
     private void clearAllMaps() {
         this.actionNodeMap.clear();
-        this.matchNodeMap.clear();
+        this.ruleMatchNodeMap.clear();
     }
 
     /**
@@ -275,12 +275,12 @@ public class RuleTree extends AbstractResourceTree {
         setSelectionPaths(selectedPaths.toArray(new TreePath[0]));
     }
 
-    private ActionTreeNode createActionNode(ActionEntry action, List<TreePath> expandedPaths,
-                                            List<TreePath> selectedPaths) {
+    private ResourceTreeNode createActionNode(ActionEntry action, List<TreePath> expandedPaths,
+                                              List<TreePath> selectedPaths) {
         Collection<QualName> selection = getSimulatorModel().getSelectSet(ResourceKind.RULE);
         QualName name = action.getQualName();
         // create the rule node and register it
-        ActionTreeNode node = action.createTreeNode();
+        var node = action.createTreeNode();
         this.actionNodeMap.put(action.getQualName(), node);
         TreePath path = new TreePath(node.getPath());
         expandedPaths.add(path);
@@ -433,14 +433,14 @@ public class RuleTree extends AbstractResourceTree {
     private void selectMatch(RuleModel rule, Set<GraphTransitionKey> keys) {
         List<DisplayTreeNode> treeNodes = new ArrayList<>();
         for (GraphTransitionKey key : keys) {
-            DisplayTreeNode node = this.matchNodeMap.get(key);
+            DisplayTreeNode node = this.ruleMatchNodeMap.get(key);
             if (node != null) {
                 treeNodes.add(node);
             }
         }
         boolean matchSelected = !treeNodes.isEmpty();
         if (!matchSelected && rule != null) {
-            treeNodes.add((RuleTreeNode) this.actionNodeMap.get(rule.getQualName()));
+            treeNodes.add(this.actionNodeMap.get(rule.getQualName()));
         }
         TreePath[] paths = new TreePath[treeNodes.size()];
         TreePath lastPath = null;
@@ -455,20 +455,30 @@ public class RuleTree extends AbstractResourceTree {
 
     /**
      * Refreshes the match nodes, based on a given match result set.
-     * @param matches the set of matches used to create {@link MatchTreeNode}s
+     * @param matches the set of matches used to create {@link RuleMatchTreeNode}s
      */
     private void refreshMatches(GraphState state, Collection<GraphTransitionKey> matches) {
         // remove current matches
-        for (DisplayTreeNode matchNode : this.matchNodeMap.values()) {
+        for (var matchNode : this.ruleMatchNodeMap.values()) {
             this.ruleDirectory.removeNodeFromParent(matchNode);
         }
         // clean up current match node map
-        this.matchNodeMap.clear();
-        Collection<ActionTreeNode> treeNodes = new ArrayList<>();
+        this.ruleMatchNodeMap.clear();
+        // remove current matches
+        for (var matchNode : this.recipeMatchNodeMap.values()) {
+            this.ruleDirectory.removeNodeFromParent(matchNode);
+        }
+        // clean up current match node map
+        this.recipeMatchNodeMap.clear();
+        if (this.ongoingRecipeNode != null) {
+            this.ruleDirectory.removeNodeFromParent(this.ongoingRecipeNode);
+            this.ongoingRecipeNode = null;
+        }
+        Collection<ResourceTreeNode> treeNodes = new ArrayList<>();
         var tried = getTried(state);
         // for all action nodes, check if it has been tried
         for (var actionNode : this.actionNodeMap.values()) {
-            actionNode.setTried(tried.contains(actionNode.getQualName()));
+            actionNode.setActivated(tried.contains(actionNode.getQualName()));
             treeNodes.add(actionNode);
         }
         // expand all rule nodes and subsequently collapse all directory nodes
@@ -478,30 +488,81 @@ public class RuleTree extends AbstractResourceTree {
         for (var n : treeNodes) {
             collapsePath(new TreePath(n.getPath()));
         }
-        // recollect the match results so that they are ordered according to the
-        // rule events
+        // flag to detect ongoing recipe transition
+        boolean ongoing = false;
+        // potential initial recipe matches
+        List<MatchResult> potential = new ArrayList<>();
         // insert new matches
         for (GraphTransitionKey key : matches) {
             QualName actionName = key.getAction().getQualName();
             // new node to be created for this key
             DisplayTreeNode newNode;
             // parent node of the new node
-            ActionTreeNode parentNode = this.actionNodeMap.get(actionName);
+            var parentNode = this.actionNodeMap.get(actionName);
             // child index of the new node in the parent node
             int matchCount = parentNode.getChildCount();
             if (key instanceof MatchResult match) {
-                newNode = new MatchTreeNode(getSimulatorModel(), state, match, matchCount + 1,
+                newNode = new RuleMatchTreeNode(getSimulatorModel(), state, match, matchCount + 1,
                     getSimulator().getOptions().isSelected(Options.SHOW_ANCHORS_OPTION));
+                var recipe = match.getStep().getRecipe();
+                if (recipe.isPresent()) {
+                    // the match is part of a recipe, but maybe it is already among the recipe transitions
+                    var trans = match.getTransition();
+                    if (state.isInternalState()) {
+                        // register an ongoing transition
+                        ongoing = true;
+                    } else if (trans == null || !trans.target().isDone()) {
+                        // register a potential initial recipe match
+                        potential.add(match);
+                    }
+                }
             } else {
                 RecipeEvent event = (RecipeEvent) key;
                 newNode = new RecipeTransitionTreeNode(getSimulatorModel(), state, event,
                     matchCount + 1);
             }
-            this.matchNodeMap.put(key, newNode);
+            this.ruleMatchNodeMap.put(key, newNode);
+            this.ruleDirectory.insertNodeInto(newNode, parentNode, matchCount);
+            expandPath(new TreePath(parentNode.getPath()));
+        }
+        // add the optional ongoing recipe
+        if (ongoing) {
+            // parent node of the new node
+            var recipe = state.getActualFrame().getRecipe().get();
+            var parentNode = this.actionNodeMap.get(recipe.getQualName());
+            int matchCount = parentNode.getChildCount();
+            var newNode = new RecipeOngoingTreeNode(getSimulatorModel(), state, matchCount + 1);
+            this.ongoingRecipeNode = newNode;
+            this.ruleDirectory.insertNodeInto(newNode, parentNode, matchCount);
+            expandPath(new TreePath(parentNode.getPath()));
+        }
+        // add the recipe matches
+        for (var match : potential) {
+            // parent node of the new node
+            var recipe = match.getStep().getRecipe().get();
+            var parentNode = this.actionNodeMap.get(recipe.getQualName());
+            int matchCount = parentNode.getChildCount();
+            MatchTreeNode newNode
+                = new RecipeMatchTreeNode(getSimulatorModel(), state, match, matchCount + 1);
+            this.recipeMatchNodeMap.put(match, newNode);
             this.ruleDirectory.insertNodeInto(newNode, parentNode, matchCount);
             expandPath(new TreePath(parentNode.getPath()));
         }
     }
+
+    /**
+     * Mapping from {@link MatchResult} in the current LTS to recipe match nodes in the rule
+     * directory
+     */
+    private final Map<GraphTransitionKey,DisplayTreeNode> recipeMatchNodeMap
+        = new LinkedHashMap<>();
+    /**
+     * Mapping from {@link MatchResult} in the current LTS to rule match nodes in the rule
+     * directory
+     */
+    private final Map<GraphTransitionKey,DisplayTreeNode> ruleMatchNodeMap = new LinkedHashMap<>();
+    /** Match node for an ongoing recipe, if any. */
+    private DisplayTreeNode ongoingRecipeNode;
 
     /** Returns the set of pairs of rule/recipe name that have been tried
      * in the current state.
@@ -554,12 +615,6 @@ public class RuleTree extends AbstractResourceTree {
      * current rule directory.
      */
     private final Map<QualName,ActionTreeNode> actionNodeMap = new HashMap<>();
-    /**
-     * Mapping from {@link MatchResult} in the current LTS to match nodes in the rule
-     * directory
-     */
-    private final Map<GraphTransitionKey,DisplayTreeNode> matchNodeMap = new LinkedHashMap<>();
-
     /** Flag to indicate that the anchor image option listener has been set. */
     private boolean anchorImageOptionListenerSet = false;
 
@@ -572,20 +627,20 @@ public class RuleTree extends AbstractResourceTree {
 
     /** Tree entry showing the application of a rule. */
     private class RuleEntry implements ActionEntry {
-        public RuleEntry(RuleModel model) {
-            this.name = model.getQualName();
+        public RuleEntry(RuleModel rule) {
+            this.rule = rule;
         }
 
         @Override
         public QualName getQualName() {
-            return this.name;
+            return this.rule.getQualName();
         }
 
-        private final QualName name;
+        private final RuleModel rule;
 
         @Override
         public RuleTreeNode createTreeNode() {
-            return new RuleTreeNode(getParentDisplay(), this.name);
+            return new RuleTreeNode(getParentDisplay(), this.rule);
         }
     }
 
@@ -604,7 +659,7 @@ public class RuleTree extends AbstractResourceTree {
 
         @Override
         public RecipeTreeNode createTreeNode() {
-            return new RecipeTreeNode(this.recipe);
+            return new RecipeTreeNode(getParentDisplay(), this.recipe);
         }
     }
 
@@ -625,7 +680,7 @@ public class RuleTree extends AbstractResourceTree {
         void setSelection(Collection<TreeNode> selectedNodes) {
             boolean done = false;
             for (TreeNode node : selectedNodes) {
-                if (node instanceof MatchTreeNode mtn) {
+                if (node instanceof RuleMatchTreeNode mtn) {
                     // selected tree node is a match (level 2 node)
                     GraphState state = mtn.getSource();
                     MatchResult match = mtn.getMatch();
@@ -682,7 +737,7 @@ public class RuleTree extends AbstractResourceTree {
                     toDisplay = DisplayKind.RULE;
                 } else if (lastComponent instanceof RecipeTreeNode) {
                     toDisplay = DisplayKind.CONTROL;
-                } else if (lastComponent instanceof MatchTreeNode
+                } else if (lastComponent instanceof RuleMatchTreeNode
                     && getSimulatorModel().getDisplay() != DisplayKind.LTS) {
                     toDisplay = DisplayKind.STATE;
                 }
@@ -712,7 +767,7 @@ public class RuleTree extends AbstractResourceTree {
                 return;
             }
             Object selectedNode = path.getLastPathComponent();
-            if (selectedNode instanceof MatchTreeNode
+            if (selectedNode instanceof RuleMatchTreeNode
                 || selectedNode instanceof RecipeTransitionTreeNode) {
                 if (evt.getClickCount() == 2) {
                     getActions().getApplyMatchAction().execute();
@@ -745,7 +800,7 @@ public class RuleTree extends AbstractResourceTree {
     /**
      * Directory nodes (priorities of check policies).
      */
-    public static class DirectoryTreeNode extends FolderTreeNode {
+    static public class DirectoryTreeNode extends FolderTreeNode {
         /**
          * Creates a new priority node based on a given priority. The node can
          * (and will) have children.
