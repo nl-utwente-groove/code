@@ -20,142 +20,106 @@ import java.util.function.Supplier;
 
 import javax.swing.Icon;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-
-import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.control.Assignment;
+import nl.utwente.groove.control.instance.Step;
+import nl.utwente.groove.control.template.Switch;
+import nl.utwente.groove.grammar.Callable.Kind;
+import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.SimulatorModel;
-import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.lts.GraphState;
-import nl.utwente.groove.lts.MatchResult;
-import nl.utwente.groove.lts.RuleTransition;
-import nl.utwente.groove.lts.RuleTransitionLabel;
 import nl.utwente.groove.util.Factory;
 
 /**
- * Tree node wrapping a graph transition.
+ * @author Arend Rensink
+ * @version $Revision$
  */
-@NonNullByDefault
-class MatchTreeNode extends DisplayTreeNode {
-    /**
-     * Creates a new tree node based on a given graph transition. The node cannot have
-     * children.
+abstract class MatchTreeNode extends DisplayTreeNode {
+    /** Retrieves the (input) arguments of a recipe match
+     * from the source state and initial step of the recipe.
      */
-    public MatchTreeNode(SimulatorModel model, GraphState source, MatchResult match, int nr,
-                         boolean anchored) {
-        super(match, false);
+    protected static HostNode[] getRecipeArgs(SimulatorModel model, GraphState source,
+                                              Step initStep) {
+        // the transition has at least one argument
+        var sourceFrame = initStep.getSource();
+        Object[] stack = source.getFrameStack(sourceFrame);
+        // construct the parameter assignment from the source frame of the initial step
+        var assign = Assignment.identity(sourceFrame.getVars());
+        for (Switch swt : initStep.getSwitch()) {
+            if (swt.getKind() == Kind.RECIPE) {
+                assign = swt.assignSource2Par().after(assign);
+                break;
+            } else {
+                assign = swt.assignSource2Init().after(assign);
+            }
+        }
+        var valuator = model.getGTS().getRecord().getValuator();
+        return valuator.eval(assign, stack);
+    }
+
+    /**
+     * Converts an array of argument host nodes to a string description.
+     */
+    protected static String toArgsString(HostNode[] args) {
+        StringBuilder result = new StringBuilder();
+        result.append('(');
+        for (int i = 0; i < args.length; i++) {
+            var arg = args[i];
+            result
+                .append(arg == null
+                    ? "_"
+                    : arg.toString());
+            if (i < args.length - 1) {
+                result.append(',');
+            }
+        }
+        result.append(')');
+        return result.toString();
+    }
+
+    /** Creates a node containing an (optionally explored) match of a rule or recipe. */
+    MatchTreeNode(SimulatorModel simulator, GraphState source, int nr) {
+        super(simulator, false);
         this.source = source;
         this.nr = nr;
-        this.model = model;
-        this.anchored = anchored;
     }
 
-    @Override
-    public boolean isInternal() {
-        return getMatch().getStep().isInternal();
+    /** Returns the simulator model. */
+    SimulatorModel getSimulator() {
+        return (SimulatorModel) getUserObject();
     }
 
-    /**
-     * Convenience method to retrieve the user object as a graph transition.
-     */
-    public MatchResult getMatch() {
-        return (MatchResult) getUserObject();
-    }
-
-    /**
-     * Returns the graph state for which this is a match.
-     */
-    public GraphState getSource() {
+    /** Returns the source state of the match wrapped by this node. */
+    GraphState getSource() {
         return this.source;
     }
+
+    private final GraphState source;
+
+    /** Returns the sequence number of this match node. */
+    int getNumber() {
+        return this.nr;
+    }
+
+    private final int nr;
+
+    @Override
+    public String getText() {
+        return this.text.get();
+    }
+
+    private final Supplier<String> text = Factory.lazy(this::computeText);
+
+    /** Computes the text for the node. */
+    abstract String computeText();
 
     @Override
     public Icon getIcon() {
         return Icons.GRAPH_MATCH_ICON;
     }
 
-    @Override
-    Status getStatus() {
-        return isTransition()
-            ? Status.ACTIVE
-            : Status.STANDBY;
-    }
-
-    @Override
-    public String getTip() {
-        StringBuilder result = new StringBuilder();
-        QualName actionName = getMatch().getAction().getQualName();
-        if (isProperty()) {
-            result.append(String.format("Property '%s' is satisfied", actionName));
-        } else if (isTransition()) {
-            result.append(String.format("Explored transition of '%s'", actionName));
-            GraphState target = getMatch().getTransition().target();
-            if (target.isAbsent()) {
-                result.append(HTMLConverter.HTML_LINEBREAK);
-                result.append(String.format("Target state %s is not real", target));
-            }
-        } else {
-            result.append(String.format("Currently unexplored match of '%s'", actionName));
-            result.append(HTMLConverter.HTML_LINEBREAK);
-            result.append("Doubleclick to apply");
-        }
-        return HTMLConverter.HTML_TAG.on(result).toString();
-    }
-
-    @Override
-    public String getText() {
-        return this.label.get();
-    }
-
-    /** Lazily computed label text of this node. */
-    private final Supplier<String> label = Factory.lazy(this::computeText);
-
-    /** Computes the value for {@link #label}. */
-    private String computeText() {
-        StringBuilder result = new StringBuilder();
-        result.append(this.nr);
-        result.append(": ");
-        boolean showArrow
-            = !getMatch().getAction().isProperty() || getMatch().getStep().isModifying();
-        if (isTransition()) {
-            RuleTransition trans = getMatch().getTransition();
-            result.append(trans.text(this.anchored));
-            if (showArrow) {
-                result.append(RIGHTARROW);
-                result.append(HTMLConverter.ITALIC_TAG.on(trans.target().toString()));
-            }
-            if (this.model.getTrace().contains(trans)) {
-                result.append(TRACE_SUFFIX);
-            }
-            if (trans.target().isAbsent()) {
-                HTMLConverter.STRIKETHROUGH_TAG.on(result);
-            }
-        } else {
-            result.append(RuleTransitionLabel.text(this.source, getMatch(), this.anchored));
-            if (showArrow) {
-                result.append(RIGHTARROW);
-                result.append("?");
-            }
-        }
-        return result.toString();
-    }
-
-    /** Indicates if this match corresponds to a transition from the source state. */
-    private boolean isTransition() {
-        return getMatch().hasTransitionFrom(this.source);
-    }
-
-    /** Indicates if this is a match of a property. */
-    private boolean isProperty() {
-        return getMatch().getAction().isProperty();
-    }
-
-    private final SimulatorModel model;
-    private final GraphState source;
-    private final int nr;
-    private final boolean anchored;
+    /** HTML representation of an arrow tail. */
+    static final String ARROW_TAIL = "--";
     /** HTML representation of the right arrow. */
-    private static final String RIGHTARROW = "-->";
-    /** The suffix for a match that is in the selected trace. */
-    private static final String TRACE_SUFFIX = " " + HTMLConverter.STRONG_TAG.on("(*)");
+    static final String RIGHTARROW = "-->";
 }

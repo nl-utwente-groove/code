@@ -30,8 +30,7 @@ import javax.swing.Icon;
 
 import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.CheckPolicy;
-import nl.utwente.groove.grammar.QualName;
-import nl.utwente.groove.grammar.Signature;
+import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.RuleModel;
 import nl.utwente.groove.graph.GraphInfo;
@@ -49,27 +48,34 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Rule nodes (= level 1 nodes) of the directory
  */
-class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
+class RuleTreeNode extends ActionTreeNode {
     /**
-     * Creates a new rule node based on a given rule name. The node can have
-     * children.
+     * Creates a new action node node based on a given rule.
      */
-    public RuleTreeNode(ResourceDisplay display, QualName ruleName) {
-        super(display, ruleName, true);
-        this.tried = true;
+    public RuleTreeNode(ResourceDisplay display, RuleModel ruleModel) {
+        super(display, ruleModel.getQualName());
+        this.ruleModel = ruleModel;
+    }
+
+    /**
+     * Creates a new action node node based on a given rule name.
+     */
+    public RuleTreeNode(ResourceDisplay display, Rule rule) {
+        super(display, rule.getQualName());
+        this.rule = rule;
     }
 
     @Override
-    public Icon getIcon() {
+    Icon getIcon() {
         Icon result;
         if (isFragment()) {
             result = Icons.PUZZLE_ICON;
         } else if (super.getIcon() == Icons.EDIT_WIDE_ICON) {
             result = super.getIcon();
         } else {
-            boolean injective = getRule().isInjective();
-            if (getRule().isProperty()) {
-                result = getIconMap(injective).get(getRule().getRole());
+            boolean injective = getRuleModel().isInjective();
+            if (getRuleModel().isProperty()) {
+                result = getIconMap(injective).get(getRuleModel().getRole());
             } else {
                 result = injective
                     ? Icons.RULE_I_TREE_ICON
@@ -79,38 +85,15 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         return result;
     }
 
-    /**
-     * Returns the rule associated with this node.
-     */
-    public RuleModel getRule() {
-        return (RuleModel) getResource();
-    }
-
-    /**
-     * Returns the graph underlying the rule associated with this node.
-     */
-    public AspectGraph getRuleGraph() {
-        return ((RuleModel) getResource()).getSource();
-    }
-
-    /** Indicates if this rule node is part of a recipe. */
-    public boolean isFragment() {
-        return getRule().hasRecipes();
-    }
-
-    @Override
-    public boolean isProperty() {
-        return getRule().isProperty();
-    }
-
     /** Returns HTML-formatted tool tip text for this rule node. */
     @Override
-    public String getTip() {
+    String getTip() {
         StringBuilder result = new StringBuilder();
+        var ruleRole = getRuleModel().getRole();
         result
-            .append(getRule().getRole() == Role.TRANSFORMER
+            .append(ruleRole == Role.TRANSFORMER
                 ? "Rule"
-                : getRule().getRole().text(true));
+                : ruleRole.text(true));
         result.append(" ");
         result.append(HTMLConverter.ITALIC_TAG.on(getQualName()));
         AspectGraph source = getRuleGraph();
@@ -120,7 +103,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
             result.append(HTMLConverter.toHtml(remark));
         }
         if (isFragment()) {
-            var recipes = getRule().getRecipes();
+            var recipes = getRuleModel().getRecipes();
             result.append(HTML_LINEBREAK);
             result.append("Invoked from ");
             result
@@ -129,17 +112,17 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
                     : "recipes ");
             result
                 .append(Groove
-                    .toString(getRule().getRecipes().toArray(), "<i>", "</i>", "</i>, <i>",
-                              "</i> and <i>"));
+                    .toString(recipes.toArray(), "<i>", "</i>", "</i>, <i>", "</i> and <i>"));
         }
-        if (getRule().getRole().isConstraint()) {
+        var rulePolicy = getRuleModel().getPolicy();
+        if (ruleRole.isConstraint()) {
             result.append(HTML_LINEBREAK);
-            result.append(getRule().getPolicy().getExplanation());
+            result.append(rulePolicy.getExplanation());
         }
         if (!GraphInfo.isEnabled(source)) {
             result.append(HTML_LINEBREAK);
             result.append("Explicitly disabled in the rule properties");
-        } else if (getRule().getPolicy() == CheckPolicy.OFF) {
+        } else if (rulePolicy == CheckPolicy.OFF) {
             result.append(HTML_LINEBREAK);
             result.append("Turned off by the rule policy in the grammar properties");
         } else if (getStatus() == Status.STANDBY) {
@@ -166,7 +149,7 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
             if (key.isSystem()) {
                 continue;
             }
-            if (key == Key.PRIORITY && getRule().getRole().isConstraint()) {
+            if (key == Key.PRIORITY && ruleRole.isConstraint()) {
                 continue;
             }
             String value = properties.getProperty(key);
@@ -192,19 +175,51 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         return "<b>" + entry.getKey() + "</b> = " + entry.getValue();
     }
 
+    RuleModel getRuleModel() {
+        RuleModel result = this.ruleModel;
+        if (result == null) {
+            this.ruleModel = result = ((RuleModel) getDisplay().getResource(getQualName()));
+        }
+        return result;
+    }
+
+    private RuleModel ruleModel;
+
+    private AspectGraph getRuleGraph() {
+        return getRuleModel().getSource();
+    }
+
+    /**
+     * Returns the rule associated with this node.
+     */
+    private Rule getRule() throws FormatException {
+        Rule result = this.rule;
+        if (result == null) {
+            this.rule = result = getRuleModel().toResource();
+        }
+        return result;
+    }
+
+    private Rule rule;
+
+    /** Indicates if this rule node is part of a recipe. */
+    private boolean isFragment() {
+        return getRuleModel().hasRecipes();
+    }
+
     @Override
-    public String getText() {
+    String getText() {
         String suffix = "";
         try {
-            Signature<?> sig = getRule().toResource().getSignature();
+            var sig = getRule().getSignature();
             if (!sig.isEmpty()) {
                 suffix = sig.toString();
             }
         } catch (FormatException exc) {
-            // don't add a suffix string
+            // do nothing
         }
-        suffix += getRule().isProperty()
-            ? roleSuffixMap.get(getRule().getRole())
+        suffix += getRuleModel().isProperty()
+            ? roleSuffixMap.get(getRuleModel().getRole())
             : isFragment()
                 ? INGREDIENT_SUFFIX
                 : RULE_SUFFIX;
@@ -216,21 +231,13 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     }
 
     @Override
-    public Status getStatus() {
-        return this.tried
+    Status getStatus() {
+        return isActivated()
             ? Status.ACTIVE
-            : getRule().isEnabled()
+            : getRuleModel().isEnabled()
                 ? Status.STANDBY
                 : Status.DISABLED;
     }
-
-    @Override
-    public void setTried(boolean tried) {
-        this.tried = tried;
-    }
-
-    /** Flag indicating whether the rule has been tried on the displayed state. */
-    private boolean tried;
 
     private final static String INGREDIENT_SUFFIX
         = " : " + HTMLConverter.STRONG_TAG.on("ingredient");

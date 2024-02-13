@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.grammar.host;
 
+import java.util.Comparator;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.grammar.type.TypeNode;
@@ -34,4 +36,7 @@ public sealed interface HostNode extends Node, HostElement, AnchorValue
      * the host node is untyped. */
     @Override
     public TypeNode getType();
+
+    /** Host node comparator, based on their {@link #toString()} value. */
+    static Comparator<HostNode> COMPARATOR = (h1, h2) -> h1.toString().compareTo(h2.toString());
 }
