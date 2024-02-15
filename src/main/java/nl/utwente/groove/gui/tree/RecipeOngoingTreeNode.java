@@ -16,11 +16,14 @@
  */
 package nl.utwente.groove.gui.tree;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.lts.MatchResult;
 import nl.utwente.groove.lts.RuleTransition;
 
 /**
@@ -30,17 +33,37 @@ class RecipeOngoingTreeNode extends MatchTreeNode {
     /**
      * Creates a new tree node based on a given recipe transition. The node cannot have
      * children.
-     * @param state source state of the recipe transition
+     * @param source source state of the recipe transition
      */
-    public RecipeOngoingTreeNode(SimulatorModel model, GraphState state, int nr) {
-        super(model, state, nr);
+    public RecipeOngoingTreeNode(SimulatorModel model, GraphState source, MatchResult innerMatch,
+                                 int nr) {
+        super(model, source, nr);
+        this.innerMatch = innerMatch;
     }
+
+    @Override
+    MatchResult getKey() {
+        return getInnerMatch();
+    }
+
+    MatchResult getInnerMatch() {
+        return this.innerMatch;
+    }
+
+    private final MatchResult innerMatch;
 
     /**
      * Convenience method to retrieve the user object as a recipe event.
      */
-    public Recipe getRecipe() {
+    @Override
+    @NonNull
+    Recipe getRecipe() {
         return getSource().getActualFrame().getRecipe().get();
+    }
+
+    @Override
+    MatchResult getInitMatch() {
+        return getInitStep().getKey();
     }
 
     /** Returns initial source state of the ongoing recipe transition. */
@@ -92,5 +115,10 @@ class RecipeOngoingTreeNode extends MatchTreeNode {
         result.append(HTMLConverter.ITALIC_TAG.on(initSource.toString()));
         HTMLConverter.HTML_TAG.on(result);
         return result.toString();
+    }
+
+    @Override
+    public String toString() {
+        return "Ongoing recipe transition of " + getRecipe() + ", initial match " + getInitMatch();
     }
 }

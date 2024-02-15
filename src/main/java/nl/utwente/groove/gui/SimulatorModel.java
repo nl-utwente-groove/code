@@ -977,7 +977,10 @@ public class SimulatorModel implements Cloneable {
      */
     public final boolean doSelectSet(ResourceKind kind, Collection<QualName> names) {
         start();
-        changeSelectedSet(kind, names);
+        if (changeSelectedSet(kind, names) && kind == ResourceKind.RULE && !names.isEmpty()) {
+            changeMatch(null);
+            changeTransition(null);
+        }
         return finish();
     }
 
@@ -1020,6 +1023,7 @@ public class SimulatorModel implements Cloneable {
         if (!newSelection.equals(getSelectSet(resource))) {
             this.resources.put(resource, newSelection);
             this.changes.add(Change.toChange(resource));
+            result = true;
         }
         return result;
     }

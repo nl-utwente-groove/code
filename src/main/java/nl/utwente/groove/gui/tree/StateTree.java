@@ -378,42 +378,46 @@ public class StateTree extends JTree implements SimulatorListener {
     private StateTreeNode createStateNode(GraphState state) {
         boolean isExpanded = this.expanded.contains(state);
         StateTreeNode result = new StateTreeNode(state, isExpanded);
-        Collection<GraphTransitionKey> matches = new ArrayList<>();
+        // set of child keys for the result node
+        Collection<GraphTransitionKey> keys = new ArrayList<>();
+        // set of initial recipe transitions
         Collection<MatchResult> recipeInits = new ArrayList<>();
         Claz claz = Claz.getClass(isShowInternal(), isShowAbsent());
-        for (GraphTransition trans : state.getTransitions(claz)) {
-            matches.add(trans.getKey());
+        // add the outgoing transitions to the keys
+        for (var trans : state.getTransitions(claz)) {
+            keys.add(trans.getKey());
         }
+        // add the unexplored matches to the keys and to the potential recipes
         for (var match : state.getMatches()) {
             var step = match.getStep();
             if (isShowInternal() || !step.isInternal()) {
-                matches.add(match);
+                keys.add(match);
             }
             var recipe = step.getRecipe();
-            if (recipe.isPresent()) {
+            if (recipe.isPresent() && !state.isInternalState()) {
                 recipeInits.add(match);
             }
         }
-        Map<Action,Set<GraphTransitionKey>> matchMap = new TreeMap<>(Action.PARTIAL_COMPARATOR);
-        for (var match : matches) {
-            Action action = match.getAction();
-            var actionMatches = matchMap.get(action);
-            if (actionMatches == null) {
-                matchMap.put(action, actionMatches = new TreeSet<>(GraphTransitionKey.COMPARATOR));
+        Map<Action,Set<GraphTransitionKey>> keyMap = new TreeMap<>(Action.PARTIAL_COMPARATOR);
+        for (var key : keys) {
+            Action action = key.getAction();
+            var actionKeys = keyMap.get(action);
+            if (actionKeys == null) {
+                keyMap.put(action, actionKeys = new TreeSet<>(GraphTransitionKey.COMPARATOR));
             }
-            actionMatches.add(match);
+            actionKeys.add(key);
         }
-        for (var match : recipeInits) {
-            Action action = match.getStep().getRecipe().get();
-            Set<GraphTransitionKey> recipeMatches = matchMap.get(action);
-            if (recipeMatches == null) {
-                matchMap.put(action, recipeMatches = new TreeSet<>(GraphTransitionKey.COMPARATOR));
+        for (var init : recipeInits) {
+            var recipe = init.getStep().getRecipe().get();
+            Set<GraphTransitionKey> recipeKeys = keyMap.get(recipe);
+            if (recipeKeys == null) {
+                keyMap.put(recipe, recipeKeys = new TreeSet<>(GraphTransitionKey.COMPARATOR));
             }
-            recipeMatches.add(match);
+            recipeKeys.add(init);
         }
         boolean anchored = getOptions().isSelected(Options.SHOW_ANCHORS_OPTION);
-        for (Map.Entry<Action,Set<GraphTransitionKey>> matchEntry : matchMap.entrySet()) {
-            Action action = matchEntry.getKey();
+        for (Map.Entry<Action,Set<GraphTransitionKey>> keyEntry : keyMap.entrySet()) {
+            Action action = keyEntry.getKey();
             ActionTreeNode actionNode;
             if (action instanceof Rule rule) {
                 actionNode = new RuleTreeNode(getRuleDisplay(), rule);
@@ -423,7 +427,7 @@ public class StateTree extends JTree implements SimulatorListener {
             actionNode.setActivated(true);
             result.add(actionNode);
             int count = 0;
-            for (GraphTransitionKey trans : matchEntry.getValue()) {
+            for (GraphTransitionKey trans : keyEntry.getValue()) {
                 count++;
                 MatchTreeNode transNode;
                 if (trans instanceof MatchResult match) {

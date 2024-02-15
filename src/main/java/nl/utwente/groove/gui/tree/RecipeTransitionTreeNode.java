@@ -16,9 +16,13 @@
  */
 package nl.utwente.groove.gui.tree;
 
+import org.eclipse.jdt.annotation.NonNull;
+
+import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.lts.MatchResult;
 import nl.utwente.groove.lts.RecipeEvent;
 import nl.utwente.groove.lts.RecipeTransition;
 
@@ -34,6 +38,25 @@ class RecipeTransitionTreeNode extends MatchTreeNode {
     RecipeTransitionTreeNode(SimulatorModel model, GraphState source, RecipeEvent event, int nr) {
         super(model, source, nr);
         this.trans = event.toTransition(source);
+        this.recipe = event.getAction();
+    }
+
+    @Override
+    MatchResult getKey() {
+        return getInitMatch();
+    }
+
+    @Override
+    @NonNull
+    Recipe getRecipe() {
+        return this.recipe;
+    }
+
+    private final Recipe recipe;
+
+    @Override
+    MatchResult getInitMatch() {
+        return getTransition().getInitial().getKey();
     }
 
     /**
@@ -65,6 +88,8 @@ class RecipeTransitionTreeNode extends MatchTreeNode {
         return result.toString();
     }
 
-    /** The suffix for a match that is in the selected trace. */
-    private static final String TRACE_SUFFIX = " " + HTMLConverter.STRONG_TAG.on("(*)");
+    @Override
+    public String toString() {
+        return "Explored recipe transition of " + getRecipe() + ", initial match " + getInitMatch();
+    }
 }

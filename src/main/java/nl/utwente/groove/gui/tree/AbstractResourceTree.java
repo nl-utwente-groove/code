@@ -77,7 +77,7 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
             throw new IllegalStateException();
         }
         this.listening = true;
-        addTreeSelectionListener(getSelectionListener());
+        activateSelectionListener();
         getSimulatorModel().addListener(this, GRAMMAR, GTS, Change.toChange(getResourceKind()));
     }
 
@@ -87,9 +87,25 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
             throw new IllegalStateException();
         }
         this.listening = false;
-        removeTreeSelectionListener(getSelectionListener());
+        suspendSelectionListener();
         getSimulatorModel().removeListener(this);
     }
+
+    void activateSelectionListener() {
+        this.selectionListenerSuspensionCount--;
+        if (this.selectionListenerSuspensionCount == 0) {
+            addTreeSelectionListener(getSelectionListener());
+        }
+    }
+
+    void suspendSelectionListener() {
+        if (this.selectionListenerSuspensionCount == 0) {
+            removeTreeSelectionListener(getSelectionListener());
+        }
+        this.selectionListenerSuspensionCount++;
+    }
+
+    private int selectionListenerSuspensionCount = 1;
 
     private TreeSelectionListener getSelectionListener() {
         if (this.selectionListener == null) {
@@ -97,6 +113,8 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
         }
         return this.selectionListener;
     }
+
+    private TreeSelectionListener selectionListener;
 
     /** Callback factory method for the mouse listener of this resource tree. */
     TreeSelectionListener createSelectionListener() {
@@ -109,6 +127,8 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
         }
         return this.mouseListener;
     }
+
+    private MouseListener mouseListener;
 
     /** Callback factory method for the mouse listener of this resource tree. */
     abstract MouseListener createMouseListener();
@@ -168,6 +188,8 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
         return this.parentDisplay;
     }
 
+    private final ResourceDisplay parentDisplay;
+
     /** Convenience method to retrieve the associated simulator. */
     final Simulator getSimulator() {
         return this.parentDisplay.getSimulator();
@@ -188,10 +210,8 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
         return this.resourceKind;
     }
 
-    private final ResourceDisplay parentDisplay;
     private final ResourceKind resourceKind;
-    private MouseListener mouseListener;
-    private TreeSelectionListener selectionListener;
+
     /** Flag indicating if the listeners are currently active. */
     private boolean listening;
     /**
@@ -215,29 +235,40 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
          */
         @Override
         public void valueChanged(TreeSelectionEvent evt) {
-            List<TreeNode> selected = new ArrayList<>();
-            suspendListeners();
+            List<DisplayTreeNode> selected = new ArrayList<>();
+            suspendSelectionListener();
             TreePath[] paths = getSelectionPaths();
-            for (int i = 0; paths != null && i < paths.length; i++) {
-                TreeNode node = (TreeNode) paths[i].getLastPathComponent();
-                collectResources(node, selected);
+            if (paths != null) {
+                for (int i = 0; i < paths.length; i++) {
+                    DisplayTreeNode node = (DisplayTreeNode) paths[i].getLastPathComponent();
+                    collectResources(node, selected);
+                }
+                if (selected.size() > paths.length) {
+                    var newPaths = selected
+                        .stream()
+                        .map(DisplayTreeNode::getPath)
+                        .map(TreePath::new)
+                        .toList();
+                    setSelectionPaths(newPaths.toArray(TreePath[]::new));
+                }
             }
-            setSelection(selected);
-            activateListeners();
+            pushSelection(selected);
+            activateSelectionListener();
         }
 
         /** Collects the selected resources by descending into the tree nodes with children. */
-        private void collectResources(TreeNode node, Collection<TreeNode> result) {
+        void collectResources(DisplayTreeNode node, Collection<DisplayTreeNode> result) {
             if (node instanceof FolderTreeNode path) {
                 for (int i = 0; i < path.getChildCount(); i++) {
-                    collectResources(path.getChildAt(i), result);
+                    collectResources((DisplayTreeNode) path.getChildAt(i), result);
                 }
             } else {
                 result.add(node);
             }
         }
 
-        void setSelection(Collection<TreeNode> selectedNodes) {
+        /** Pushes the information in the selected nodes to the simulator model. */
+        void pushSelection(Collection<DisplayTreeNode> selectedNodes) {
             List<QualName> selectedNames = new ArrayList<>();
             for (TreeNode node : selectedNodes) {
                 if (node instanceof ResourceTreeNode t) {
