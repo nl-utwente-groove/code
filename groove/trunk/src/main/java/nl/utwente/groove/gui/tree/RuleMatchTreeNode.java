@@ -17,8 +17,10 @@
 package nl.utwente.groove.gui.tree;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.lts.GraphState;
@@ -27,18 +29,23 @@ import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.lts.RuleTransitionLabel;
 
 /**
- * Tree node wrapping a graph transition.
+ * Tree node wrapping a rule match.
  */
 @NonNullByDefault
 class RuleMatchTreeNode extends MatchTreeNode {
     /**
-     * Creates a new tree node based on a given graph transition.
+     * Creates a new tree node based on a given source state and rule match.
      */
     public RuleMatchTreeNode(SimulatorModel simulator, GraphState source, MatchResult match, int nr,
                              boolean anchored) {
         super(simulator, source, nr);
         this.match = match;
         this.anchored = anchored;
+    }
+
+    @Override
+    MatchResult getKey() {
+        return getMatch();
     }
 
     /**
@@ -51,8 +58,20 @@ class RuleMatchTreeNode extends MatchTreeNode {
     private final MatchResult match;
 
     @Override
-    public boolean isInRecipe() {
+    boolean isInRecipe() {
         return getMatch().getStep().isInternal();
+    }
+
+    @Override
+    @Nullable
+    Recipe getRecipe() {
+        return null;
+    }
+
+    @Override
+    @Nullable
+    MatchResult getInitMatch() {
+        return null;
     }
 
     /** Indicates if this match corresponds to a transition from the source state. */
@@ -73,7 +92,7 @@ class RuleMatchTreeNode extends MatchTreeNode {
     }
 
     @Override
-    public String getTip() {
+    String getTip() {
         StringBuilder result = new StringBuilder();
         QualName actionName = getMatch().getAction().getQualName();
         if (isProperty()) {
@@ -124,6 +143,9 @@ class RuleMatchTreeNode extends MatchTreeNode {
     }
 
     private final boolean anchored;
-    /** The suffix for a match that is in the selected trace. */
-    private static final String TRACE_SUFFIX = " " + HTMLConverter.STRONG_TAG.on("(*)");
+
+    @Override
+    public String toString() {
+        return "Rule match " + getMatch();
+    }
 }

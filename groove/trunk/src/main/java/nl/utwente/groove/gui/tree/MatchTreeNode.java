@@ -20,14 +20,21 @@ import java.util.function.Supplier;
 
 import javax.swing.Icon;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.control.Assignment;
 import nl.utwente.groove.control.instance.Step;
 import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.grammar.Callable.Kind;
+import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.SimulatorModel;
+import nl.utwente.groove.io.HTMLConverter;
+import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.lts.MatchResult;
+import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.util.Factory;
 
 /**
@@ -35,6 +42,83 @@ import nl.utwente.groove.util.Factory;
  * @version $Revision$
  */
 abstract class MatchTreeNode extends DisplayTreeNode {
+    /** Creates a node containing an (optionally explored) match of a rule or recipe. */
+    MatchTreeNode(SimulatorModel simulator, GraphState source, int nr) {
+        super(simulator, false);
+        this.source = source;
+        this.nr = nr;
+    }
+
+    /** Returns the key under which this match node will be stored in the tree. */
+    abstract MatchResult getKey();
+
+    /** Returns the simulator model. */
+    SimulatorModel getSimulator() {
+        return (SimulatorModel) getUserObject();
+    }
+
+    /** Returns the source state of the match wrapped by this node. */
+    GraphState getSource() {
+        return this.source;
+    }
+
+    private final GraphState source;
+
+    /** Returns the sequence number of this match node. */
+    int getNumber() {
+        return this.nr;
+    }
+
+    private final int nr;
+
+    @Override
+    String getText() {
+        return this.text.get();
+    }
+
+    private final Supplier<String> text = Factory.lazy(this::computeText);
+
+    /** Computes the text for the node. */
+    abstract String computeText();
+
+    @Override
+    Icon getIcon() {
+        return Icons.GRAPH_MATCH_ICON;
+    }
+
+    /** Checks if this is a recipe-based match that contains another, inner rule match. */
+    boolean contains(RuleMatchTreeNode inner) {
+        boolean result = false;
+        if (isRecipe() && inner.isInRecipe()) {
+            // go back to the last transition of inner with a real source state
+            var source = inner.getSource();
+            RuleTransition trans = null;
+            while (!source.isInternalState()) {
+                trans = (GraphNextState) source;
+                source = trans.source();
+            }
+            var innerMatch = trans == null
+                ? inner.getMatch()
+                : trans.getKey();
+            result = getInitMatch() == innerMatch;
+        }
+        return result;
+    }
+
+    /** Indicates if this match tree node is based on a recipe. */
+    boolean isRecipe() {
+        return getRecipe() == null;
+    }
+
+    /** Returns the recipe that this node is based on;
+     * or {@code null} if it is not based on a recipe.
+     */
+    @Nullable
+    abstract Recipe getRecipe();
+
+    /** Returns the initial match if this is a recipe-based node; or {@code null} otherwise. */
+    abstract MatchResult getInitMatch();
+
     /** Retrieves the (input) arguments of a recipe match
      * from the source state and initial step of the recipe.
      */
@@ -77,49 +161,10 @@ abstract class MatchTreeNode extends DisplayTreeNode {
         return result.toString();
     }
 
-    /** Creates a node containing an (optionally explored) match of a rule or recipe. */
-    MatchTreeNode(SimulatorModel simulator, GraphState source, int nr) {
-        super(simulator, false);
-        this.source = source;
-        this.nr = nr;
-    }
-
-    /** Returns the simulator model. */
-    SimulatorModel getSimulator() {
-        return (SimulatorModel) getUserObject();
-    }
-
-    /** Returns the source state of the match wrapped by this node. */
-    GraphState getSource() {
-        return this.source;
-    }
-
-    private final GraphState source;
-
-    /** Returns the sequence number of this match node. */
-    int getNumber() {
-        return this.nr;
-    }
-
-    private final int nr;
-
-    @Override
-    public String getText() {
-        return this.text.get();
-    }
-
-    private final Supplier<String> text = Factory.lazy(this::computeText);
-
-    /** Computes the text for the node. */
-    abstract String computeText();
-
-    @Override
-    public Icon getIcon() {
-        return Icons.GRAPH_MATCH_ICON;
-    }
-
     /** HTML representation of an arrow tail. */
     static final String ARROW_TAIL = "--";
     /** HTML representation of the right arrow. */
     static final String RIGHTARROW = "-->";
+    /** The suffix for a match that is in the selected trace. */
+    static final String TRACE_SUFFIX = " " + HTMLConverter.STRONG_TAG.on("(*)");
 }

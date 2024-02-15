@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.gui.tree;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.io.HTMLConverter;
@@ -27,8 +29,7 @@ import nl.utwente.groove.lts.MatchResult;
  */
 class RecipeMatchTreeNode extends MatchTreeNode {
     /**
-     * Creates a new tree node based on a given recipe transition. The node cannot have
-     * children.
+     * Creates a new tree node based on a given initial rule match from a given state.
      * @param initMatch rule match on this this recipe match is based
      * @param nr transition number
      */
@@ -38,10 +39,16 @@ class RecipeMatchTreeNode extends MatchTreeNode {
         this.initMatch = initMatch;
     }
 
+    @Override
+    MatchResult getKey() {
+        return getInitMatch();
+    }
+
     /**
      * Convenience method to retrieve the user object as the initial transition of this recipe.
      */
-    private MatchResult getInitMatch() {
+    @Override
+    MatchResult getInitMatch() {
         return this.initMatch;
     }
 
@@ -50,7 +57,9 @@ class RecipeMatchTreeNode extends MatchTreeNode {
     /**
      * Convenience method to retrieve the user object as a recipe event.
      */
-    private Recipe getRecipe() {
+    @Override
+    @NonNull
+    Recipe getRecipe() {
         return getInitMatch().getStep().getRecipe().get();
     }
 
@@ -75,7 +84,7 @@ class RecipeMatchTreeNode extends MatchTreeNode {
     }
 
     @Override
-    public String getTip() {
+    String getTip() {
         StringBuilder result = new StringBuilder();
         result
             .append(getStatus() == Status.STANDBY
@@ -87,5 +96,10 @@ class RecipeMatchTreeNode extends MatchTreeNode {
         }
         HTMLConverter.HTML_TAG.on(result);
         return result.toString();
+    }
+
+    @Override
+    public String toString() {
+        return "Recipe transition match of " + getRecipe() + ", initial match " + getInitMatch();
     }
 }
