@@ -24,7 +24,9 @@ import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.MatchResult;
+import nl.utwente.groove.lts.RecipeTransition;
 import nl.utwente.groove.lts.RuleTransition;
+import nl.utwente.groove.util.Factory;
 
 /**
  * Tree node wrapping a potential recipe transition.
@@ -33,7 +35,8 @@ class RecipeOngoingTreeNode extends MatchTreeNode {
     /**
      * Creates a new tree node based on a given recipe transition. The node cannot have
      * children.
-     * @param source source state of the recipe transition
+     * @param source source state of the inner match
+     * @param innerMatch match for a rule transition within the recipe
      */
     public RecipeOngoingTreeNode(SimulatorModel model, GraphState source, MatchResult innerMatch,
                                  int nr) {
@@ -51,6 +54,27 @@ class RecipeOngoingTreeNode extends MatchTreeNode {
     }
 
     private final MatchResult innerMatch;
+
+    /** Returns the potential explored recipe transition of this ongoing recipe. */
+    RecipeTransition getRecipeTransition() {
+        return this.recipeTransition.get();
+    }
+
+    private final Factory<RecipeTransition> recipeTransition
+        = Factory.lazy(this::computeRecipeTransition);
+
+    private final RecipeTransition computeRecipeTransition() {
+        // now look for a recipe transition with the correct initial internal step
+        RecipeTransition result = null;
+        for (var trans : getInitSource().getTransitions()) {
+            if (trans instanceof RecipeTransition recipeTrans
+                && recipeTrans.getInitial() == getInitStep()) {
+                result = recipeTrans;
+                break;
+            }
+        }
+        return result;
+    }
 
     /**
      * Convenience method to retrieve the user object as a recipe event.
@@ -74,7 +98,7 @@ class RecipeOngoingTreeNode extends MatchTreeNode {
     /** Returns the initial step of the ongoing recipe transition. */
     private RuleTransition getInitStep() {
         var result = (GraphNextState) getSource();
-        while (!result.source().isRealState()) {
+        while (result.source().isInternalState()) {
             result = (GraphNextState) result.source();
         }
         return result;
@@ -91,13 +115,18 @@ class RecipeOngoingTreeNode extends MatchTreeNode {
     String computeText() {
         StringBuilder result = new StringBuilder();
         var realSource = getInitSource();
-        result.append(HTMLConverter.ITALIC_TAG.on(realSource.toString()));
-        result.append(ARROW_TAIL);
-        result.append(getRecipe().getTransitionLabel());
-        var args = getRecipeArgs(getSimulator(), getInitSource(), getInitStep().getStep());
-        result.append(toArgsString(args));
-        result.append(RIGHTARROW);
-        result.append('?');
+        var trans = getRecipeTransition();
+        if (trans == null) {
+            result.append(HTMLConverter.ITALIC_TAG.on(realSource.toString()));
+            result.append(ARROW_TAIL);
+            result.append(getRecipe().getTransitionLabel());
+            var args = getRecipeArgs(getSimulator(), getInitSource(), getInitStep().getStep());
+            result.append(toArgsString(args));
+            result.append(RIGHTARROW);
+            result.append('?');
+        } else {
+            result.append(trans.label());
+        }
         return result.toString();
     }
 

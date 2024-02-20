@@ -18,6 +18,7 @@ package nl.utwente.groove.lts;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
+import nl.utwente.groove.control.instance.Step;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.transform.RuleEvent;
@@ -36,8 +37,16 @@ public interface RuleTransitionStub extends GraphTransitionStub {
     /** Returns the rule event on which this transition stub is based. */
     public RuleEvent getEvent();
 
+    /** Returns the control step on which this stub is based. */
+    public Step getStep();
+
+    /** Returns the native match result of this stub.
+     * @see #getKey(GraphState)
+     */
+    public MatchResult getKey();
+
     /**
-     * Returns the event that underlies the transition from a given source to
+     * Returns the match result that underlies the transition from a given source to
      * this object.
      */
     @Override

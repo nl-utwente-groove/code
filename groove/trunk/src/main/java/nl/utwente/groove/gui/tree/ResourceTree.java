@@ -32,7 +32,6 @@ import java.util.TreeSet;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JPopupMenu;
-import javax.swing.ToolTipManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -46,7 +45,6 @@ import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.SimulatorModel.Change;
-import nl.utwente.groove.gui.display.DismissDelayer;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.lts.GraphState;
@@ -97,10 +95,8 @@ public class ResourceTree extends AbstractResourceTree {
         im.put(Options.BACK_KEY, Options.BACK_ACTION_NAME);
         im.put(Options.FORWARD_KEY, Options.FORWARD_ACTION_NAME);
 
-        // add tool tips
+        // add all listeners
         installListeners();
-        ToolTipManager.sharedInstance().registerComponent(this);
-        addMouseListener(new DismissDelayer(this));
     }
 
     @Override
@@ -132,68 +128,70 @@ public class ResourceTree extends AbstractResourceTree {
 
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
-        suspendListeners();
-        if (changes.contains(GRAMMAR)) {
-            // remember the visible and selected resources (+paths)
-            Set<QualName> visible = new HashSet<>();
-            Set<QualName> selected = getSimulatorModel().getSelectSet(getResourceKind());
-            for (int i = 0; i < getRowCount(); i++) {
-                TreePath path = getPathForRow(i);
-                TreeNode node = (TreeNode) path.getLastPathComponent();
-                if (node instanceof ResourceTreeNode rnode) {
-                    visible.add(rnode.getQualName());
-                } else if (node instanceof PathNode pnode) {
-                    visible.add(pnode.getQualName());
-                }
-            }
-
-            // build new tree
-            this.root.removeAllChildren();
-            GrammarModel grammar = source.getGrammar();
-            if (grammar != null) {
-                Set<DisplayTreeNode> created = loadGrammar(grammar);
-                this.tree.reload(this.root);
-
-                // expand/select all the previously expanded/selected nodes
-                for (DisplayTreeNode node : created) {
-                    if (node instanceof ResourceTreeNode) {
-                        QualName name = ((ResourceTreeNode) node).getQualName();
-                        if (visible.contains(name) || selected.contains(name)) {
-                            TreePath path = new TreePath(node.getPath());
-                            expandPath(path.getParentPath());
-                            if (getSimulatorModel()
-                                .getSelectSet(getResourceKind())
-                                .contains(name)) {
-                                addSelectionPath(path);
-                            }
-                            if (selected.contains(name)) {
-                                addSelectionPath(path);
-                            }
-                        }
-                    } else if (node instanceof PathNode) {
-                        QualName name = ((PathNode) node).getQualName();
-                        if (visible.contains(name)) {
-                            TreePath path = new TreePath(node.getPath());
-                            expandPath(path.getParentPath());
-                        }
+        if (suspendListening()) {
+            if (changes.contains(GRAMMAR)) {
+                // remember the visible and selected resources (+paths)
+                Set<QualName> visible = new HashSet<>();
+                Set<QualName> selected = getSimulatorModel().getSelectSet(getResourceKind());
+                for (int i = 0; i < getRowCount(); i++) {
+                    TreePath path = getPathForRow(i);
+                    TreeNode node = (TreeNode) path.getLastPathComponent();
+                    if (node instanceof ResourceTreeNode rnode) {
+                        visible.add(rnode.getQualName());
+                    } else if (node instanceof PathNode pnode) {
+                        visible.add(pnode.getQualName());
                     }
                 }
 
-                // store new tree and refresh display
-                refresh(source.getState());
-            }
-        } else if (changes.contains(Change.toChange(getResourceKind()))) {
-            var model = source.getResource(getResourceKind()).getQualName();
-            for (int i = 0; i < getRowCount(); i++) {
-                TreePath path = getPathForRow(i);
-                TreeNode node = (TreeNode) path.getLastPathComponent();
-                if (node instanceof ResourceTreeNode rnode && rnode.getQualName().equals(model)) {
-                    setSelectionPath(path);
-                    break;
+                // build new tree
+                this.root.removeAllChildren();
+                GrammarModel grammar = source.getGrammar();
+                if (grammar != null) {
+                    Set<DisplayTreeNode> created = loadGrammar(grammar);
+                    this.tree.reload(this.root);
+
+                    // expand/select all the previously expanded/selected nodes
+                    for (DisplayTreeNode node : created) {
+                        if (node instanceof ResourceTreeNode) {
+                            QualName name = ((ResourceTreeNode) node).getQualName();
+                            if (visible.contains(name) || selected.contains(name)) {
+                                TreePath path = new TreePath(node.getPath());
+                                expandPath(path.getParentPath());
+                                if (getSimulatorModel()
+                                    .getSelectSet(getResourceKind())
+                                    .contains(name)) {
+                                    addSelectionPath(path);
+                                }
+                                if (selected.contains(name)) {
+                                    addSelectionPath(path);
+                                }
+                            }
+                        } else if (node instanceof PathNode) {
+                            QualName name = ((PathNode) node).getQualName();
+                            if (visible.contains(name)) {
+                                TreePath path = new TreePath(node.getPath());
+                                expandPath(path.getParentPath());
+                            }
+                        }
+                    }
+
+                    // store new tree and refresh display
+                    refresh(source.getState());
+                }
+            } else if (changes.contains(Change.toChange(getResourceKind()))) {
+                var model = source.getResource(getResourceKind()).getQualName();
+                for (int i = 0; i < getRowCount(); i++) {
+                    TreePath path = getPathForRow(i);
+                    TreeNode node = (TreeNode) path.getLastPathComponent();
+                    if (node instanceof ResourceTreeNode rnode
+                        && rnode.getQualName().equals(model)) {
+                        setSelectionPath(path);
+                        break;
+                    }
                 }
             }
+            activateListening();
         }
-        activateListeners();
     }
 
     /**

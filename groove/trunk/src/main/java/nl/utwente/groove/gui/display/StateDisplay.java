@@ -23,6 +23,7 @@ import static nl.utwente.groove.gui.SimulatorModel.Change.STATE;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.geom.Point2D;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -257,7 +258,15 @@ public class StateDisplay extends Display implements SimulatorListener {
     final public AspectJGraph getJGraph() {
         AspectJGraph result = this.jGraph;
         if (result == null) {
-            result = this.jGraph = new AspectJGraph(getSimulator(), getKind(), false);
+            result = this.jGraph = new AspectJGraph(getSimulator(), getKind(), false) {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    if (getSimulatorModel().hasAbsentState()) {
+                        JAttr.paintHatch(this, g);
+                    }
+                }
+            };
             result.setLabelTree(getLabelTree());
         }
         return result;
@@ -270,7 +279,15 @@ public class StateDisplay extends Display implements SimulatorListener {
     private TypeTree getLabelTree() {
         TypeTree result = this.labelTree;
         if (result == null) {
-            result = this.labelTree = new TypeTree(getJGraph(), true);
+            result = this.labelTree = new TypeTree(getJGraph(), true) {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    if (getSimulatorModel().hasAbsentState()) {
+                        JAttr.paintHatch(this, g);
+                    }
+                }
+            };
         }
         return result;
     }
@@ -418,7 +435,12 @@ public class StateDisplay extends Display implements SimulatorListener {
                         ? ", "
                         : " (");
                 brackets = true;
-                result.append("removed from state space");
+                result.append("not included in state space because the enclosing ");
+                result
+                    .append(state.isInternalState()
+                        ? "recipe"
+                        : "atomic block");
+                result.append(" does not terminate");
             }
             if (state.isError()) {
                 result
@@ -453,26 +475,26 @@ public class StateDisplay extends Display implements SimulatorListener {
     /** Changes the display to a given state. */
     public void displayState(GraphState state) {
         clearSelectedMatch(true);
+        boolean error = false;
+        boolean internal = false;
         if (state == null) {
             getJGraph().setModel(null);
         } else {
             AspectJModel model = getAspectJModel(state);
             getJGraph().setModel(model);
             getJGraph().doLayout(false);
+            error = state.isError();
+            internal = state.isInternalState();
         }
-        Color background;
-        if (state != null && state.isError()) {
+        if (error) {
             getErrorPanel().setEntries(getAspectGraph(state).getErrors().get());
             getDisplayPanel().setBottomComponent(getErrorPanel());
             getDisplayPanel().resetToPreferredSizes();
-            background = JAttr.ERROR_BACKGROUND;
         } else {
             getErrorPanel().clearEntries();
             getDisplayPanel().remove(getErrorPanel());
-            background = state != null && state.isInternalState()
-                ? JAttr.TRANSIENT_BACKGROUND
-                : JAttr.STATE_BACKGROUND;
         }
+        Color background = JAttr.getStateBackground(error, internal);
         getGraphPanel().setEnabledBackground(background);
         getLabelTree().setBackground(background);
     }

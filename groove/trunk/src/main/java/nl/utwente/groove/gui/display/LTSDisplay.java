@@ -26,6 +26,7 @@ import static nl.utwente.groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -411,7 +412,15 @@ public class LTSDisplay extends Display implements SimulatorListener {
     public LTSJGraph getJGraph() {
         LTSJGraph result = this.jGraph;
         if (result == null) {
-            result = this.jGraph = new LTSJGraph(getSimulator());
+            result = this.jGraph = new LTSJGraph(getSimulator()) {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    if (getSimulatorModel().hasAbsentState()) {
+                        JAttr.paintHatch(this, g);
+                    }
+                }
+            };
             result.setLabelTree(getLabelTree());
             //result.addProgressObserver(new ProgressObserver());
         }
@@ -428,7 +437,15 @@ public class LTSDisplay extends Display implements SimulatorListener {
     private LabelTree<GTS> getLabelTree() {
         LabelTree<GTS> result = this.labelTree;
         if (result == null) {
-            result = this.labelTree = new LabelTree<>(getJGraph(), true);
+            result = this.labelTree = new LabelTree<>(getJGraph(), true) {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    if (getSimulatorModel().hasAbsentState()) {
+                        JAttr.paintHatch(this, g);
+                    }
+                }
+            };
         }
         return result;
     }
@@ -487,6 +504,9 @@ public class LTSDisplay extends Display implements SimulatorListener {
         if (changes.contains(STATE) || changes.contains(MATCH)) {
             if (getJModel() != null) {
                 GraphState state = source.getState();
+                var error = state != null && state.isError();
+                var internal = state != null && state.isInternalState();
+                getJGraph().setBackground(JAttr.getStateBackground(error, internal));
                 GraphTransition transition = source.getTransition();
                 if (getJGraph().setActive(state, transition)) {
                     getJGraph().doLayout(false);

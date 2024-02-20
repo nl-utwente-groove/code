@@ -26,6 +26,7 @@ import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
 
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
@@ -38,6 +39,7 @@ import javax.swing.tree.TreePath;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorListener;
 import nl.utwente.groove.gui.SimulatorModel;
@@ -45,6 +47,7 @@ import nl.utwente.groove.gui.SimulatorModel.Change;
 import nl.utwente.groove.gui.action.ActionStore;
 import nl.utwente.groove.gui.display.DismissDelayer;
 import nl.utwente.groove.gui.display.ResourceDisplay;
+import nl.utwente.groove.util.Factory;
 
 /** Abstract superclass for all display trees. */
 public abstract class AbstractResourceTree extends JTree implements SimulatorListener {
@@ -52,12 +55,45 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
     protected AbstractResourceTree(ResourceDisplay parentDisplay) {
         this.parentDisplay = parentDisplay;
         this.resourceKind = parentDisplay.getResourceKind();
-        ToolTipManager.sharedInstance().registerComponent(this);
-        addMouseListener(new DismissDelayer(this));
     }
 
+    /** Adds all listeners to this resource tree. */
     void installListeners() {
-        addFocusListener(new FocusListener() {
+        ToolTipManager.sharedInstance().registerComponent(this);
+        addFocusListener(getFocusListener());
+        addMouseListener(getMouseListener());
+        addMouseListener(getDismissDelayer());
+        addTreeSelectionListener(getSelectionListener());
+        getSimulatorModel().addListener(this, GRAMMAR, GTS, Change.toChange(getResourceKind()));
+        activateListening();
+    }
+
+    /** Disposes the listeners of this resource tree.
+     * This is the inverse of {@link #installListeners()};
+     * if a subclass overrides one, it should also override the other
+     */
+    void disposeListeners() {
+        ToolTipManager.sharedInstance().unregisterComponent(this);
+        removeFocusListener(getFocusListener());
+        removeMouseListener(getMouseListener());
+        removeMouseListener(getDismissDelayer());
+        removeTreeSelectionListener(getSelectionListener());
+        getSimulatorModel().removeListener(this);
+    }
+
+    /** Returns the (lazily computed) focus listener. */
+    private FocusListener getFocusListener() {
+        return this.focusListener.get();
+    }
+
+    /** The (lazily computed) focus listener. */
+    private final Supplier<FocusListener> focusListener = Factory.lazy(this::computeFocusListener);
+
+    /**
+     * Computes the values for {@link #focusListener}.
+     */
+    private FocusListener computeFocusListener() {
+        return new FocusListener() {
             @Override
             public void focusLost(FocusEvent e) {
                 AbstractResourceTree.this.repaint();
@@ -67,71 +103,97 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
             public void focusGained(FocusEvent e) {
                 AbstractResourceTree.this.repaint();
             }
-        });
-        addMouseListener(getMouseListener());
-        activateListeners();
+        };
     }
 
-    void activateListeners() {
-        if (this.listening) {
-            throw new IllegalStateException();
-        }
-        this.listening = true;
-        activateSelectionListener();
-        getSimulatorModel().addListener(this, GRAMMAR, GTS, Change.toChange(getResourceKind()));
+    /** Returns the (lazily computed) selection listener.
+     * @see #createSelectionListener()
+     */
+    final TreeSelectionListener getSelectionListener() {
+        return this.selectionListener.get();
     }
 
-    /** Suspend the listeners of this tree. */
-    void suspendListeners() {
-        if (!this.listening) {
-            throw new IllegalStateException();
-        }
-        this.listening = false;
-        suspendSelectionListener();
-        getSimulatorModel().removeListener(this);
-    }
+    private final Supplier<TreeSelectionListener> selectionListener
+        = Factory.lazy(this::createSelectionListener);
 
-    void activateSelectionListener() {
-        this.selectionListenerSuspensionCount--;
-        if (this.selectionListenerSuspensionCount == 0) {
-            addTreeSelectionListener(getSelectionListener());
-        }
-    }
-
-    void suspendSelectionListener() {
-        if (this.selectionListenerSuspensionCount == 0) {
-            removeTreeSelectionListener(getSelectionListener());
-        }
-        this.selectionListenerSuspensionCount++;
-    }
-
-    private int selectionListenerSuspensionCount = 1;
-
-    private TreeSelectionListener getSelectionListener() {
-        if (this.selectionListener == null) {
-            this.selectionListener = createSelectionListener();
-        }
-        return this.selectionListener;
-    }
-
-    private TreeSelectionListener selectionListener;
-
-    /** Callback factory method for the mouse listener of this resource tree. */
+    /** Callback factory method to create the mouse listener of this resource tree. */
     TreeSelectionListener createSelectionListener() {
         return new MySelectionListener();
     }
 
+    /** Returns the (lazily computed) mouse listener. */
     private MouseListener getMouseListener() {
-        if (this.mouseListener == null) {
-            this.mouseListener = createMouseListener();
-        }
-        return this.mouseListener;
+        return this.mouseListener.get();
     }
 
-    private MouseListener mouseListener;
+    /** The (lazily computed) mouse listener. */
+    private final Supplier<MouseListener> mouseListener = Factory.lazy(this::createMouseListener);
 
     /** Callback factory method for the mouse listener of this resource tree. */
     abstract MouseListener createMouseListener();
+
+    /** Returns the (lazily computed) dismiss delay mouse listener. */
+    private MouseListener getDismissDelayer() {
+        return this.dismissDelayer.get();
+    }
+
+    /** The (lazily computed) dismiss delay mouse listener. */
+    private final Supplier<MouseListener> dismissDelayer = Factory.lazy(this::createDismissDelayer);
+
+    /** Callback factory method for the dismiss delay mouse listener of this resource tree. */
+    private MouseListener createDismissDelayer() {
+        return new DismissDelayer(this);
+    }
+
+    /**
+     * Sets the listening status to {@code false}, if it was not already {@code false}.
+     * @return {@code true} if listening was suspended as a result of this call;
+     * {@code false} if it was already suspended.
+     */
+    final boolean suspendListening() {
+        boolean result = this.listening;
+        if (result) {
+            this.listening = false;
+        }
+        return result;
+    }
+
+    /** Sets the listening flag to {@code true}. */
+    final void activateListening() {
+        if (this.listening) {
+            throw new IllegalStateException();
+        }
+        this.listening = true;
+    }
+
+    /** Returns the listening status. */
+    final boolean isListening() {
+        return this.listening;
+    }
+
+    /** Flag indicating if the listeners are currently active. */
+    private boolean listening;
+
+    /** Indicates if internal states and transitions should be included.
+     * @see Options#SHOW_RECIPE_STEPS_OPTION
+     */
+    boolean isShowInternal() {
+        return getOptions().isSelected(Options.SHOW_RECIPE_STEPS_OPTION);
+    }
+
+    /** Indicates if absent states and transitions should be included.
+     * @see Options#SHOW_ABSENT_STATES_OPTION
+     */
+    boolean isShowAbsent() {
+        return getOptions().isSelected(Options.SHOW_ABSENT_STATES_OPTION);
+    }
+
+    /** Indicates if anchors should be shown
+     * @see Options#SHOW_ANCHORS_OPTION
+     */
+    boolean isShowAnchors() {
+        return getOptions().isSelected(Options.SHOW_ANCHORS_OPTION);
+    }
 
     /**
      * Creates a popup menu for the resource tree.
@@ -175,7 +237,7 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
 
     /** Unhooks this object from all observables. */
     public void dispose() {
-        suspendListeners();
+        disposeListeners();
     }
 
     /** Convenience method to retrieve the current grammar view. */
@@ -195,6 +257,11 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
         return this.parentDisplay.getSimulator();
     }
 
+    /** Convenience method to retrieve the simulator options. */
+    final Options getOptions() {
+        return getSimulator().getOptions();
+    }
+
     /** Convenience method to retrieve the simulator model. */
     final SimulatorModel getSimulatorModel() {
         return this.parentDisplay.getSimulatorModel();
@@ -212,8 +279,6 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
 
     private final ResourceKind resourceKind;
 
-    /** Flag indicating if the listeners are currently active. */
-    private boolean listening;
     /**
      * The background colour of this component when it is enabled.
      */
@@ -235,25 +300,26 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
          */
         @Override
         public void valueChanged(TreeSelectionEvent evt) {
-            List<DisplayTreeNode> selected = new ArrayList<>();
-            suspendSelectionListener();
-            TreePath[] paths = getSelectionPaths();
-            if (paths != null) {
-                for (int i = 0; i < paths.length; i++) {
-                    DisplayTreeNode node = (DisplayTreeNode) paths[i].getLastPathComponent();
-                    collectResources(node, selected);
+            if (suspendListening()) {
+                List<DisplayTreeNode> selected = new ArrayList<>();
+                TreePath[] paths = getSelectionPaths();
+                if (paths != null) {
+                    for (int i = 0; i < paths.length; i++) {
+                        var node = (DisplayTreeNode) paths[i].getLastPathComponent();
+                        collectResources(node, selected);
+                    }
+                    if (selected.size() > paths.length) {
+                        var newPaths = selected
+                            .stream()
+                            .map(DisplayTreeNode::getPath)
+                            .map(TreePath::new)
+                            .toList();
+                        setSelectionPaths(newPaths.toArray(TreePath[]::new));
+                    }
                 }
-                if (selected.size() > paths.length) {
-                    var newPaths = selected
-                        .stream()
-                        .map(DisplayTreeNode::getPath)
-                        .map(TreePath::new)
-                        .toList();
-                    setSelectionPaths(newPaths.toArray(TreePath[]::new));
-                }
+                pushSelection(selected);
+                activateListening();
             }
-            pushSelection(selected);
-            activateSelectionListener();
         }
 
         /** Collects the selected resources by descending into the tree nodes with children. */

@@ -69,6 +69,11 @@ class RecipeTransitionTreeNode extends MatchTreeNode {
     private final RecipeTransition trans;
 
     @Override
+    boolean isAbsent() {
+        return getTransition().target().isAbsent();
+    }
+
+    @Override
     Status getStatus() {
         return Status.ACTIVE;
     }
