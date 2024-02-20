@@ -60,10 +60,10 @@ public class Version {
         return version == null || version.isEmpty() || GXL_VERSION.equals(version);
     }
 
-    /** Build number (timestamp with format yyyyMMddHHmmssSSS). */
-    public static final String BUILD = "20230204";
+    /** Build number (timestamp with format yyyymmdd). */
+    public static final String BUILD = "20230220";
 
-    /** Release date of this version (date format dd.MM.yyyy). */
+    /** Release date of this version (date format dd.mm.yyyy). */
     public static final String DATE;
 
     static {
@@ -85,7 +85,7 @@ public class Version {
      * </ul>
      * The suffix {@link #SNAPSHOT} indicates a development version.
      */
-    public static final String NUMBER = "6.7.0" + SNAPSHOT;
+    public static final String NUMBER = "6.7.1";// + SNAPSHOT;
 
     /** Minimum Java JRE version required. */
     static public final String NUMBER_JAVAMIN = "17";
