@@ -34,9 +34,10 @@ class RecipeMatchTreeNode extends MatchTreeNode {
      * @param nr transition number
      */
     public RecipeMatchTreeNode(SimulatorModel model, GraphState source, MatchResult initMatch,
-                               int nr) {
+                               int nr, boolean anchored) {
         super(model, source, nr);
         this.initMatch = initMatch;
+        this.anchored = anchored;
     }
 
     @Override
@@ -76,8 +77,12 @@ class RecipeMatchTreeNode extends MatchTreeNode {
         result.append(getNumber());
         result.append(": ");
         result.append(getRecipe().getTransitionLabel());
-        var args = getRecipeArgs(getSimulator(), getSource(), getInitMatch().getStep());
-        result.append(toArgsString(args));
+        if (this.anchored) {
+            result.append(getKey().getEvent().getAnchorImageString());
+        } else {
+            var args = getRecipeArgs(getSimulator(), getSource(), getInitMatch().getStep());
+            result.append(toArgsString(args));
+        }
         result.append(RIGHTARROW);
         result.append('?');
         return result.toString();
@@ -97,6 +102,8 @@ class RecipeMatchTreeNode extends MatchTreeNode {
         HTMLConverter.HTML_TAG.on(result);
         return result.toString();
     }
+
+    private final boolean anchored;
 
     @Override
     public String toString() {

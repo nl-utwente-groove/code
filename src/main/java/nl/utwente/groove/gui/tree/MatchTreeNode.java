@@ -89,7 +89,7 @@ abstract class MatchTreeNode extends DisplayTreeNode {
     /** Checks if this is a recipe-based match that contains another, inner rule match. */
     boolean contains(RuleMatchTreeNode inner) {
         boolean result = false;
-        if (isRecipe() && inner.isInRecipe()) {
+        if (isRecipe() && inner.isInternal()) {
             // go back to the last transition of inner with a real source state
             var source = inner.getSource();
             RuleTransition trans = null;
@@ -103,6 +103,11 @@ abstract class MatchTreeNode extends DisplayTreeNode {
             result = getInitMatch() == innerMatch;
         }
         return result;
+    }
+
+    /** Indicates if this tree node represents an absent transition. */
+    boolean isAbsent() {
+        return false;
     }
 
     /** Indicates if this match tree node is based on a recipe. */

@@ -22,7 +22,6 @@ import static nl.utwente.groove.gui.SimulatorModel.Change.MATCH;
 import static nl.utwente.groove.gui.SimulatorModel.Change.RULE;
 import static nl.utwente.groove.gui.SimulatorModel.Change.STATE;
 
-import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -40,13 +39,12 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 
 import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.InputMap;
-import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -77,7 +75,10 @@ import nl.utwente.groove.lts.GraphTransition.Claz;
 import nl.utwente.groove.lts.GraphTransitionKey;
 import nl.utwente.groove.lts.MatchResult;
 import nl.utwente.groove.lts.RecipeEvent;
+import nl.utwente.groove.lts.RecipeTransition;
+import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Factory;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
@@ -117,19 +118,56 @@ public class RuleTree extends AbstractResourceTree {
     }
 
     @Override
-    void activateListeners() {
-        super.activateListeners();
+    void installListeners() {
+        super.installListeners();
         getSimulatorModel().addListener(this, STATE, MATCH, RULE);
+        getOptions().getItem(Options.SHOW_ANCHORS_OPTION).addItemListener(getOptionsListener());
+        getOptions()
+            .getItem(Options.SHOW_RECIPE_STEPS_OPTION)
+            .addItemListener(getOptionsListener());
+        getOptions()
+            .getItem(Options.SHOW_ABSENT_STATES_OPTION)
+            .addItemListener(getOptionsListener());
     }
 
     @Override
-    TreeSelectionListener createSelectionListener() {
+    void disposeListeners() {
+        super.disposeListeners();
+        getOptions().removeItemListener(getOptionsListener());
+    }
+
+    @Override
+    RuleSelectionListener createSelectionListener() {
         return new RuleSelectionListener();
     }
 
     @Override
     MouseListener createMouseListener() {
         return new MyMouseListener();
+    }
+
+    /** Returns the lazily computed options listener. */
+    private ItemListener getOptionsListener() {
+        return this.optionsListener.get();
+    }
+
+    /** Lazily computed options listener. */
+    private final Supplier<ItemListener> optionsListener
+        = Factory.lazy(this::computeOptionsListener);
+
+    /** Computes the value for {@link #optionsListener}. */
+    private ItemListener computeOptionsListener() {
+        return e -> {
+            if (suspendListening()) {
+                if (e.getItem() == Options.SHOW_ANCHORS_OPTION) {
+                    refresh(getSimulatorModel().getState());
+                } else {
+                    loadGrammar(getSimulatorModel().getGrammar());
+                    refresh(getSimulatorModel().getState());
+                }
+                activateListening();
+            }
+        };
     }
 
     @Override
@@ -149,51 +187,62 @@ public class RuleTree extends AbstractResourceTree {
 
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
-        suspendListeners();
-        boolean renewSelection = false;
-        if (changes.contains(GRAMMAR)) {
-            GrammarModel grammar = source.getGrammar();
-            if (grammar == null) {
-                this.clearAllMaps();
-                this.topDirectoryNode.removeAllChildren();
-                this.ruleDirectory.reload();
-            } else {
-                loadGrammar(grammar);
-            }
-            refresh(source.getState());
-            renewSelection = true;
-        } else {
-            if (changes.contains(GTS) || changes.contains(STATE)) {
-                // if the GTS has changed, this may mean that the state
-                // displayed here has been closed, in which case we have to refresh
-                // since the rule events have been changed into transitions
+        if (suspendListening()) {
+            boolean renewSelection = false;
+            if (changes.contains(GRAMMAR)) {
+                GrammarModel grammar = source.getGrammar();
+                if (grammar == null) {
+                    this.clearAllMaps();
+                    this.topDirectoryNode.removeAllChildren();
+                    this.ruleDirectory.reload();
+                } else {
+                    loadGrammar(grammar);
+                }
                 refresh(source.getState());
                 renewSelection = true;
+            } else {
+                if (changes.contains(GTS) || changes.contains(STATE)) {
+                    // if the GTS has changed, this may mean that the state
+                    // displayed here has been closed, in which case we have to refresh
+                    // since the rule events have been changed into transitions
+                    refresh(source.getState());
+                    renewSelection = true;
+                }
+                if (changes.contains(MATCH) || changes.contains(RULE)) {
+                    renewSelection = true;
+                }
             }
-            if (changes.contains(MATCH) || changes.contains(RULE)) {
-                renewSelection = true;
+            if (renewSelection) {
+                DisplayTreeNode node = null;
+                if (source.hasTransition()) {
+                    var trans = source.getTransition();
+                    if (trans instanceof RuleTransition ruleTrans) {
+                        node = this.actionMatchNodeMap.get(ruleTrans.getKey());
+                    } else {
+                        node = this.recipeTransitionNodeMap
+                            .get(((RecipeTransition) trans).getKey());
+                    }
+                } else if (source.hasMatch()) {
+                    var match = source.getMatch();
+                    node = this.actionMatchNodeMap.get(match);
+                } else {
+                    var rule = source.getResource(ResourceKind.RULE);
+                    if (rule != null) {
+                        node = this.actionNodeMap.get(rule.getQualName());
+                    }
+                }
+                TreePath path = null;
+                if (node != null) {
+                    path = new TreePath(node.getPath());
+                }
+                setSelectionPath(path);
+                if (path != null) {
+                    scrollPathToVisible(path);
+                }
             }
+            selectSiblings();
+            activateListening();
         }
-        if (renewSelection) {
-            ResourceModel<?> ruleModel = source.getResource(ResourceKind.RULE);
-            Set<GraphTransitionKey> keys = new HashSet<>();
-            if (source.hasMatch()) {
-                keys.add(source.getMatch());
-            }
-            if (source.hasTransition()) {
-                var trans = source.getTransition();
-                keys.add(trans.getKey());
-            }
-            selectMatch((RuleModel) ruleModel, keys);
-        }
-        activateListeners();
-    }
-
-    /** Clears all maps of the tree. */
-    private void clearAllMaps() {
-        this.actionNodeMap.clear();
-        this.actionMatchNodeMap.clear();
-        this.recipeMatchNodeMap.clear();
     }
 
     /**
@@ -201,19 +250,19 @@ public class RuleTree extends AbstractResourceTree {
      * @param grammar the grammar to be loaded; non-{@code null}
      */
     private void loadGrammar(GrammarModel grammar) {
-        setShowAnchorsOptionListener();
         this.clearAllMaps();
-        this.topDirectoryNode.removeAllChildren();
-        DisplayTreeNode topNode = this.topDirectoryNode;
-        Map<Integer,Set<ActionEntry>> priorityMap = getPriorityMap(grammar);
-        Map<CheckPolicy,Set<ActionEntry>> policyMap = getPolicyMap(grammar);
-        Set<RuleEntry> fragmentSet = getFragments(grammar);
+        var absoluteTopNode = this.topDirectoryNode;
+        absoluteTopNode.removeAllChildren();
+        var topNode = absoluteTopNode;
+        var priorityMap = getPriorityMap(grammar);
+        var policyMap = getPolicyMap(grammar);
+        Set<RuleTreeNode> fragmentSet = getFragments(grammar);
         List<TreePath> expandedPaths = new ArrayList<>();
         List<TreePath> selectedPaths = new ArrayList<>();
         boolean hasMultipleLevels
             = !fragmentSet.isEmpty() || priorityMap.size() + policyMap.size() > 1;
         // add the recipes and rules
-        for (Map.Entry<Integer,Set<ActionEntry>> priorityEntry : priorityMap.entrySet()) {
+        for (var priorityEntry : priorityMap.entrySet()) {
             int priority = priorityEntry.getKey();
             Map<QualName,FolderTreeNode> dirNodeMap = new HashMap<>();
             // if the rule system has multiple priorities, we want an extra
@@ -221,33 +270,25 @@ public class RuleTree extends AbstractResourceTree {
             if (hasMultipleLevels) {
                 topNode = new DirectoryTreeNode(DirectoryKind.ACTION, null, priority,
                     priorityMap.size() > 1);
-                this.topDirectoryNode.add(topNode);
+                absoluteTopNode.add(topNode);
                 dirNodeMap.clear();
             }
             // add the actions to the tree
-            for (var action : priorityEntry.getValue()) {
-                QualName name = action.getQualName();
-                // recursively add parent directory nodes as required
-                DisplayTreeNode parentNode = addParentNode(topNode, dirNodeMap, name.parent());
-                var node = createActionNode(action, expandedPaths, selectedPaths);
-                parentNode.insertSorted(node);
+            for (var node : priorityEntry.getValue()) {
+                addActionNode(node, topNode, dirNodeMap, expandedPaths, selectedPaths);
             }
         }
         // add the recipe fragments
-        if (!fragmentSet.isEmpty()) {
+        if (isShowInternal() && !fragmentSet.isEmpty()) {
             topNode = new DirectoryTreeNode(DirectoryKind.FRAGMENT, null, 0, false);
-            this.topDirectoryNode.add(topNode);
-            for (var ruleEntry : fragmentSet) {
-                Map<QualName,FolderTreeNode> dirNodeMap = new HashMap<>();
-                QualName name = ruleEntry.getQualName();
-                // recursively add parent directory nodes as required
-                var parentNode = addParentNode(topNode, dirNodeMap, name.parent());
-                var actionNode = createActionNode(ruleEntry, expandedPaths, selectedPaths);
-                parentNode.insertSorted(actionNode);
+            absoluteTopNode.add(topNode);
+            Map<QualName,FolderTreeNode> dirNodeMap = new HashMap<>();
+            for (var node : fragmentSet) {
+                addActionNode(node, topNode, dirNodeMap, expandedPaths, selectedPaths);
             }
         }
         // add the conditions
-        for (Map.Entry<CheckPolicy,Set<ActionEntry>> priorityEntry : policyMap.entrySet()) {
+        for (var priorityEntry : policyMap.entrySet()) {
             CheckPolicy policy = priorityEntry.getKey();
             if (policy == CheckPolicy.OFF) {
                 policy = CheckPolicy.SILENT;
@@ -258,80 +299,68 @@ public class RuleTree extends AbstractResourceTree {
             if (hasMultipleLevels) {
                 topNode = new DirectoryTreeNode(DirectoryKind.CONDITION, policy, 0,
                     policyMap.size() > 1);
-                this.topDirectoryNode.add(topNode);
+                absoluteTopNode.add(topNode);
                 dirNodeMap.clear();
             }
             // add the property rules to the tree
-            for (ActionEntry action : priorityEntry.getValue()) {
-                QualName name = action.getQualName();
-                // recursively add parent directory nodes as required
-                DisplayTreeNode parentNode = addParentNode(topNode, dirNodeMap, name.parent());
-                var node = createActionNode(action, expandedPaths, selectedPaths);
-                parentNode.insertSorted(node);
+            for (var node : priorityEntry.getValue()) {
+                addActionNode(node, topNode, dirNodeMap, expandedPaths, selectedPaths);
             }
         }
-        this.ruleDirectory.reload(this.topDirectoryNode);
+        this.ruleDirectory.reload(absoluteTopNode);
         for (TreePath path : expandedPaths) {
             expandPath(path);
         }
         setSelectionPaths(selectedPaths.toArray(new TreePath[0]));
     }
 
-    private ResourceTreeNode createActionNode(ActionEntry action, List<TreePath> expandedPaths,
-                                              List<TreePath> selectedPaths) {
-        Collection<QualName> selection = getSimulatorModel().getSelectSet(ResourceKind.RULE);
-        QualName name = action.getQualName();
-        // create the rule node and register it
-        var node = action.createTreeNode();
-        this.actionNodeMap.put(action.getQualName(), node);
-        TreePath path = new TreePath(node.getPath());
-        expandedPaths.add(path);
-        if (selection.contains(name)) {
-            selectedPaths.add(path);
-        }
-        return node;
+    /** Clears all maps of the tree. */
+    private void clearAllMaps() {
+        this.actionNodeMap.clear();
+        clearMatchNodeMaps();
     }
 
     /**
-     * Creates a map from priorities to nonempty sets of rules with that
+     * Creates a map from priorities to nonempty sets of rule tree nodes with that
      * priority from the rule in a given grammar view.
      * @param grammar the source of the rule map
      */
-    private Map<Integer,Set<ActionEntry>> getPriorityMap(GrammarModel grammar) {
-        Map<Integer,Set<ActionEntry>> result = new TreeMap<>(Action.PRIORITY_COMPARATOR);
+    private Map<Integer,Set<ActionTreeNode>> getPriorityMap(GrammarModel grammar) {
+        Map<Integer,Set<ActionTreeNode>> result = new TreeMap<>(Action.PRIORITY_COMPARATOR);
+        var display = getParentDisplay();
         for (Recipe recipe : grammar.getControlModel().getRecipes()) {
             int priority = recipe.getPriority();
-            Set<ActionEntry> recipes = result.get(priority);
+            var recipes = result.get(priority);
             if (recipes == null) {
                 result.put(priority, recipes = new HashSet<>());
             }
-            recipes.add(new RecipeEntry(recipe));
+            recipes.add(new RecipeTreeNode(display, recipe));
         }
-        for (ResourceModel<?> model : grammar.getResourceSet(ResourceKind.RULE)) {
+        for (var model : grammar.getResourceSet(ResourceKind.RULE)) {
             RuleModel rule = (RuleModel) model;
             if (!rule.isProperty() && !rule.hasRecipes()) {
                 int priority = rule.getPriority();
-                Set<ActionEntry> rules = result.get(priority);
+                var rules = result.get(priority);
                 if (rules == null) {
                     result.put(priority, rules = new HashSet<>());
                 }
-                rules.add(new RuleEntry(rule));
+                rules.add(new RuleTreeNode(display, rule));
             }
         }
         return result;
     }
 
     /**
-     * Creates a map from check policies to nonempty sets of property rules with that
-     * policy.
+     * Creates a set of fragment rules in the grammar.
      * @param grammar the source of the rule map
      */
-    private Set<RuleEntry> getFragments(GrammarModel grammar) {
-        Set<RuleEntry> result = new HashSet<>();
-        for (ResourceModel<?> model : grammar.getResourceSet(ResourceKind.RULE)) {
+    private Set<RuleTreeNode> getFragments(GrammarModel grammar) {
+        Set<RuleTreeNode> result = new HashSet<>();
+        var display = getParentDisplay();
+        for (var model : grammar.getResourceSet(ResourceKind.RULE)) {
             RuleModel rule = (RuleModel) model;
             if (rule.hasRecipes()) {
-                result.add(new RuleEntry(rule));
+                result.add(new RuleTreeNode(display, rule));
             }
         }
         return result;
@@ -342,8 +371,9 @@ public class RuleTree extends AbstractResourceTree {
      * policy.
      * @param grammar the source of the rule map
      */
-    private Map<CheckPolicy,Set<ActionEntry>> getPolicyMap(GrammarModel grammar) {
-        Map<CheckPolicy,Set<ActionEntry>> result = new EnumMap<>(CheckPolicy.class);
+    private Map<CheckPolicy,Set<ActionTreeNode>> getPolicyMap(GrammarModel grammar) {
+        Map<CheckPolicy,Set<ActionTreeNode>> result = new EnumMap<>(CheckPolicy.class);
+        var display = getParentDisplay();
         for (ResourceModel<?> model : grammar.getResourceSet(ResourceKind.RULE)) {
             RuleModel ruleModel = (RuleModel) model;
             if (ruleModel.isProperty()) {
@@ -351,37 +381,31 @@ public class RuleTree extends AbstractResourceTree {
                 policy = policy == CheckPolicy.OFF
                     ? CheckPolicy.SILENT
                     : policy;
-                Set<ActionEntry> rules = result.get(policy);
+                Set<ActionTreeNode> rules = result.get(policy);
                 if (rules == null) {
                     result.put(policy, rules = new HashSet<>());
                 }
-                rules.add(new RuleEntry(ruleModel));
+                rules.add(new RuleTreeNode(display, ruleModel));
             }
         }
         return result;
     }
 
-    /**
-     * Sets a listener to the anchor image option, if that has not yet been
-     * done.
-     */
-    private void setShowAnchorsOptionListener() {
-        if (!this.anchorImageOptionListenerSet) {
-            JMenuItem showAnchorsOptionItem
-                = getSimulator().getOptions().getItem(Options.SHOW_ANCHORS_OPTION);
-            if (showAnchorsOptionItem != null) {
-                // listen to the option controlling the rule anchor display
-                showAnchorsOptionItem.addItemListener(new ItemListener() {
-                    @Override
-                    public void itemStateChanged(ItemEvent e) {
-                        suspendListeners();
-                        refresh(getSimulatorModel().getState());
-                        activateListeners();
-                    }
-                });
-                this.anchorImageOptionListenerSet = true;
-            }
+    /** Adds an action tree node to the tree. */
+    private void addActionNode(ActionTreeNode node, DisplayTreeNode topNode,
+                               Map<QualName,FolderTreeNode> dirNodeMap,
+                               List<TreePath> expandedPaths, List<TreePath> selectedPaths) {
+        Collection<QualName> selection = getSimulatorModel().getSelectSet(ResourceKind.RULE);
+        QualName name = node.getQualName();
+        // create the rule node and register it
+        this.actionNodeMap.put(name, node);
+        TreePath path = new TreePath(node.getPath());
+        expandedPaths.add(path);
+        if (selection.contains(name)) {
+            selectedPaths.add(path);
         }
+        DisplayTreeNode parentNode = addParentNode(topNode, dirNodeMap, name.parent());
+        parentNode.insertSorted(node);
     }
 
     /** Adds tree nodes for all levels of a structured rule name. */
@@ -426,46 +450,20 @@ public class RuleTree extends AbstractResourceTree {
         setEnabled(getGrammar() != null);
     }
 
-    /**
-     * Selects the rows of a given set of match keys, or if that is empty, a
-     * given rule.
-     * @param rule the rule to be selected if the event is {@code null}
-     * @param keys the match results to be selected
-     */
-    private void selectMatch(RuleModel rule, Set<GraphTransitionKey> keys) {
-        List<DisplayTreeNode> treeNodes = new ArrayList<>();
-        keys.stream().map(this::getNodesForKey).forEach(treeNodes::addAll);
-        boolean matchSelected = !treeNodes.isEmpty();
-        if (!matchSelected && rule != null) {
-            treeNodes.add(this.actionNodeMap.get(rule.getQualName()));
+    /** Clears all maps of the tree. */
+    private void clearMatchNodeMaps() {
+        var directory = this.ruleDirectory;
+        // remove current rule matches and clean up the map
+        this.actionMatchNodeMap.values().forEach(directory::removeNodeFromParent);
+        this.recipeMatchNodeMap.values().forEach(directory::removeNodeFromParent);
+        this.recipeTransitionNodeMap.values().forEach(directory::removeNodeFromParent);
+        if (this.ongoingRecipeNode != null) {
+            directory.removeNodeFromParent(this.ongoingRecipeNode);
         }
-        TreePath[] paths = new TreePath[treeNodes.size()];
-        TreePath lastPath = null;
-        for (int i = 0; i < treeNodes.size(); i++) {
-            lastPath = paths[i] = new TreePath(treeNodes.get(i).getPath());
-        }
-        setSelectionPaths(paths);
-        if (matchSelected) {
-            scrollPathToVisible(lastPath);
-        }
-    }
-
-    /** Returns the set of match nodes based on a given graph transition key. */
-    private Set<MatchTreeNode> getNodesForKey(GraphTransitionKey key) {
-        Set<MatchTreeNode> result = new HashSet<>();
-        MatchTreeNode node = this.actionMatchNodeMap.get(key);
-        if (node != null) {
-            result.add(node);
-        }
-        node = this.recipeMatchNodeMap.get(key);
-        if (node != null) {
-            result.add(node);
-        }
-        node = this.ongoingRecipeNode;
-        if (node != null) {
-            result.add(node);
-        }
-        return result;
+        this.actionMatchNodeMap.clear();
+        this.recipeTransitionNodeMap.clear();
+        this.recipeMatchNodeMap.clear();
+        this.ongoingRecipeNode = null;
     }
 
     /**
@@ -473,22 +471,7 @@ public class RuleTree extends AbstractResourceTree {
      * @param matches the set of matches used to create {@link RuleMatchTreeNode}s
      */
     private void refreshMatches(GraphState state, Collection<GraphTransitionKey> matches) {
-        // remove current matches
-        for (var matchNode : this.actionMatchNodeMap.values()) {
-            this.ruleDirectory.removeNodeFromParent(matchNode);
-        }
-        // clean up current match node map
-        this.actionMatchNodeMap.clear();
-        // remove current matches
-        for (var matchNode : this.recipeMatchNodeMap.values()) {
-            this.ruleDirectory.removeNodeFromParent(matchNode);
-        }
-        // clean up current match node map
-        this.recipeMatchNodeMap.clear();
-        if (this.ongoingRecipeNode != null) {
-            this.ruleDirectory.removeNodeFromParent(this.ongoingRecipeNode);
-            this.ongoingRecipeNode = null;
-        }
+        clearMatchNodeMaps();
         Collection<ResourceTreeNode> treeNodes = new ArrayList<>();
         var tried = getTried(state);
         // for all action nodes, check if it has been tried
@@ -510,15 +493,25 @@ public class RuleTree extends AbstractResourceTree {
         // insert new matches
         for (GraphTransitionKey key : matches) {
             QualName actionName = key.getAction().getQualName();
-            // new node to be created for this key
-            MatchTreeNode newNode;
             // parent node of the new node
             var parentNode = this.actionNodeMap.get(actionName);
+            if (parentNode == null) {
+                // this indicates that the action is a fragment rule and internals are not shown
+                // we may still need this as a recipe match
+                var match = (MatchResult) key;
+                var trans = match.getTransition();
+                if (trans == null || !trans.target().isDone()) {
+                    // register a potential initial recipe match
+                    potential.add(match);
+                }
+                continue;
+            }
             // child index of the new node in the parent node
             int matchCount = parentNode.getChildCount();
+            MatchTreeNode newNode;
             if (key instanceof MatchResult match) {
-                newNode = new RuleMatchTreeNode(getSimulatorModel(), state, match, matchCount + 1,
-                    getSimulator().getOptions().isSelected(Options.SHOW_ANCHORS_OPTION));
+                var node = new RuleMatchTreeNode(getSimulatorModel(), state, match, matchCount + 1,
+                    isShowAnchors());
                 var recipe = match.getStep().getRecipe();
                 if (recipe.isPresent()) {
                     // the match is part of a recipe, but maybe it is already among the recipe transitions
@@ -531,12 +524,21 @@ public class RuleTree extends AbstractResourceTree {
                         potential.add(match);
                     }
                 }
+                if (node.isAbsent() && !isShowAbsent()) {
+                    continue;
+                }
+                this.actionMatchNodeMap.put(match, node);
+                newNode = node;
             } else {
                 RecipeEvent event = (RecipeEvent) key;
-                newNode = new RecipeTransitionTreeNode(getSimulatorModel(), state, event,
+                var node = new RecipeTransitionTreeNode(getSimulatorModel(), state, event,
                     matchCount + 1);
+                if (node.isAbsent() && !isShowAbsent()) {
+                    continue;
+                }
+                this.recipeTransitionNodeMap.put(event, node);
+                newNode = node;
             }
-            this.actionMatchNodeMap.put(key, newNode);
             this.ruleDirectory.insertNodeInto(newNode, parentNode, matchCount);
             expandPath(new TreePath(parentNode.getPath()));
         }
@@ -558,27 +560,13 @@ public class RuleTree extends AbstractResourceTree {
             var recipe = match.getStep().getRecipe().get();
             var parentNode = this.actionNodeMap.get(recipe.getQualName());
             int matchCount = parentNode.getChildCount();
-            var newNode
-                = new RecipeMatchTreeNode(getSimulatorModel(), state, match, matchCount + 1);
+            var newNode = new RecipeMatchTreeNode(getSimulatorModel(), state, match, matchCount + 1,
+                isShowAnchors());
             this.recipeMatchNodeMap.put(match, newNode);
             this.ruleDirectory.insertNodeInto(newNode, parentNode, matchCount);
             expandPath(new TreePath(parentNode.getPath()));
         }
     }
-
-    /**
-     * Mapping from {@link MatchResult}s in the current state to {@link RuleMatchTreeNode}s
-     * and {@link RecipeMatchTreeNode}s in the rule directory
-     */
-    private final Map<GraphTransitionKey,MatchTreeNode> actionMatchNodeMap = new LinkedHashMap<>();
-    /**
-     * Mapping from {@link MatchResult}s in the current state to recipe match nodes in the rule
-     * directory
-     */
-    private final Map<GraphTransitionKey,RecipeMatchTreeNode> recipeMatchNodeMap
-        = new LinkedHashMap<>();
-    /** Match node for an ongoing recipe, if any. */
-    private RecipeOngoingTreeNode ongoingRecipeNode;
 
     /** Returns the set of pairs of rule/recipe name that have been tried
      * in the current state.
@@ -593,6 +581,68 @@ public class RuleTree extends AbstractResourceTree {
                 attempt.getRecipe().map(Recipe::getQualName).ifPresent(result::add);
             }
             frame.getRecipe().map(Recipe::getQualName).ifPresent(result::add);
+        }
+        return result;
+    }
+
+    /**
+     * Mapping from {@link MatchResult}s in the current state to {@link RuleMatchTreeNode}s in the rule directory
+     */
+    private final Map<MatchResult,RuleMatchTreeNode> actionMatchNodeMap = new LinkedHashMap<>();
+    /**
+     * Mapping from {@link MatchResult}s in the current state to {@link RecipeTransitionTreeNode}s in the rule directory
+     */
+    private final Map<RecipeEvent,RecipeTransitionTreeNode> recipeTransitionNodeMap
+        = new LinkedHashMap<>();
+    /**
+     * Mapping from {@link MatchResult}s in the current state to recipe match nodes in the rule
+     * directory
+     */
+    private final Map<MatchResult,RecipeMatchTreeNode> recipeMatchNodeMap = new LinkedHashMap<>();
+    /** Match node for an ongoing recipe, if any. */
+    private MatchTreeNode ongoingRecipeNode;
+
+    /** Selects any match nodes from the same state and with the same match key. */
+    void selectSiblings() {
+        var paths = getSelectionPaths();
+        if (paths != null) {
+            List<TreePath> siblingPaths = new ArrayList<>();
+            for (int i = 0; i < paths.length; i++) {
+                var path = paths[i];
+                if (path.getLastPathComponent() instanceof MatchTreeNode matchNode) {
+                    var key = matchNode.getKey();
+                    for (var sibling : getSiblings(key)) {
+                        if (sibling == matchNode || matchNode.getClass() != sibling.getClass()) {
+                            siblingPaths.add(new TreePath(sibling.getPath()));
+                        }
+                    }
+                } else {
+                    siblingPaths.add(path);
+                }
+            }
+            setSelectionPaths(siblingPaths.toArray(TreePath[]::new));
+        }
+    }
+
+    /** Returns the set of match nodes based on a given graph transition key. */
+    private Set<MatchTreeNode> getSiblings(MatchResult key) {
+        Set<MatchTreeNode> result = new HashSet<>();
+        MatchTreeNode node = this.actionMatchNodeMap.get(key);
+        if (node != null) {
+            result.add(node);
+        }
+        node = this.recipeMatchNodeMap.get(key);
+        if (node != null) {
+            result.add(node);
+        }
+        for (var transNode : this.recipeTransitionNodeMap.values()) {
+            if (transNode.getKey().equals(key)) {
+                result.add(transNode);
+            }
+        }
+        node = this.ongoingRecipeNode;
+        if (node != null) {
+            result.add(node);
         }
         return result;
     }
@@ -631,53 +681,6 @@ public class RuleTree extends AbstractResourceTree {
      * current rule directory.
      */
     private final Map<QualName,ActionTreeNode> actionNodeMap = new HashMap<>();
-    /** Flag to indicate that the anchor image option listener has been set. */
-    private boolean anchorImageOptionListenerSet = false;
-
-    /** Tree entry showing the application of a rule or recipe. */
-    private interface ActionEntry {
-        public QualName getQualName();
-
-        abstract public ActionTreeNode createTreeNode();
-    }
-
-    /** Tree entry showing the application of a rule. */
-    private class RuleEntry implements ActionEntry {
-        public RuleEntry(RuleModel rule) {
-            this.rule = rule;
-        }
-
-        @Override
-        public QualName getQualName() {
-            return this.rule.getQualName();
-        }
-
-        private final RuleModel rule;
-
-        @Override
-        public RuleTreeNode createTreeNode() {
-            return new RuleTreeNode(getParentDisplay(), this.rule);
-        }
-    }
-
-    /** Tree entry showing the application of a recipe. */
-    private class RecipeEntry implements ActionEntry {
-        public RecipeEntry(Recipe recipe) {
-            this.recipe = recipe;
-        }
-
-        private final Recipe recipe;
-
-        @Override
-        public QualName getQualName() {
-            return this.recipe.getQualName();
-        }
-
-        @Override
-        public RecipeTreeNode createTreeNode() {
-            return new RecipeTreeNode(getParentDisplay(), this.recipe);
-        }
-    }
 
     /**
      * Selection listener that invokes <tt>setRule</tt> if a rule node is
@@ -694,9 +697,10 @@ public class RuleTree extends AbstractResourceTree {
 
         @Override
         void collectResources(DisplayTreeNode node, Collection<DisplayTreeNode> result) {
-            // add all tree nodes for a given match key
-            if (node instanceof MatchTreeNode mn) {
-                result.addAll(getNodesForKey(mn.getKey()));
+            if (node instanceof MatchTreeNode) {
+                // only select this node itself for now,
+                // so we still know which node the user selected
+                result.add(node);
             } else {
                 super.collectResources(node, result);
             }
@@ -733,8 +737,10 @@ public class RuleTree extends AbstractResourceTree {
                     break;
                 }
             }
-            if (!done) {
-                // otherwise, select a recipe if appropriate
+            if (done) {
+                selectSiblings();
+            } else {
+                // otherwise, select a recipe node if appropriate
                 for (TreeNode node : selectedNodes) {
                     if (node instanceof RecipeTreeNode rtn) {
                         Recipe recipe = rtn.getRecipe();
@@ -797,13 +803,15 @@ public class RuleTree extends AbstractResourceTree {
             if (evt.getButton() != MouseEvent.BUTTON1) {
                 return;
             }
-            TreePath path = getSelectionPath();
+            TreePath path = getPathForLocation(evt.getX(), evt.getY());
             if (path == null) {
                 return;
             }
             Object selectedNode = path.getLastPathComponent();
-            if (selectedNode instanceof MatchTreeNode) {
-                if (evt.getClickCount() == 2) {
+            if (evt.getClickCount() == 2) {
+                if (selectedNode instanceof RecipeMatchTreeNode) {
+                    getActions().getExploreAction().doExploreState();
+                } else if (selectedNode instanceof MatchTreeNode) {
                     getActions().getApplyMatchAction().execute();
                 }
             }

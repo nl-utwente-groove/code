@@ -20,13 +20,19 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.Paint;
 import java.awt.RadialGradientPaint;
 import java.awt.Rectangle;
 import java.awt.Stroke;
+import java.awt.TexturePaint;
+import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.swing.JComponent;
 
 import nl.utwente.groove.gui.Options;
 
@@ -52,10 +58,13 @@ public class JAttr {
     public static final Color STATE_BACKGROUND = new Color(242, 250, 254);
 
     /** Error background for state panels. */
-    public static final Color ERROR_BACKGROUND = new Color(255, 245, 245);
+    public static final Color ERROR_BACKGROUND = new Color(255, 242, 242);
 
     /** Background for internal state panels. */
-    public static final Color TRANSIENT_BACKGROUND = new Color(255, 235, 245);
+    public static final Color TRANSIENT_BACKGROUND = new Color(250, 245, 250);
+
+    /** Fully transparent colour. */
+    public static final Color TRANSPARENT = new Color(0, 0, 0, 0);
 
     /** Default background for LTS with filtering. */
     public static final Color FILTER_BACKGROUND = new Color(230, 230, 255);
@@ -117,6 +126,33 @@ public class JAttr {
                 dash, 1.0f);
         }
         return result;
+    }
+
+    /** Paints a hatch pattern over a given component. */
+    public static void paintHatch(JComponent component, Graphics g) {
+        var g2 = (Graphics2D) g;
+        g2.setPaint(createHatchPaint());
+        g2.fill(new Rectangle(0, 0, component.getWidth(), component.getHeight()));
+    }
+
+    /** Creates a hatch pattern in transparent black. */
+    public static Paint createHatchPaint() {
+        int size = 30;
+        BufferedImage bi = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = bi.createGraphics();
+        g2.setPaint(new Color(0, 0, 0, 20));
+        g2.drawLine(0, 0, size, size);
+        Rectangle r = new Rectangle(0, 0, size, size);
+        return new TexturePaint(bi, r);
+    }
+
+    /** Returns the background colour, depending on the error and transient status of a state. */
+    public static Color getStateBackground(boolean error, boolean internal) {
+        return error
+            ? ERROR_BACKGROUND
+            : internal
+                ? TRANSIENT_BACKGROUND
+                : STATE_BACKGROUND;
     }
 
     /**

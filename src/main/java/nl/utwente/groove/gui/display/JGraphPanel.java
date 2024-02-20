@@ -77,14 +77,15 @@ public class JGraphPanel<G extends Graph> extends JPanel {
                 getScrollPane().setWheelScrollingEnabled(evt.getNewValue() != PAN_MODE);
             }
         });
-        getJGraph().addPropertyChangeListener(org.jgraph.JGraph.GRAPH_MODEL_PROPERTY,
-            new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    JModel<?> jModel = (JModel<?>) evt.getNewValue();
-                    setEnabled(jModel != null);
-                }
-            });
+        getJGraph()
+            .addPropertyChangeListener(org.jgraph.JGraph.GRAPH_MODEL_PROPERTY,
+                                       new PropertyChangeListener() {
+                                           @Override
+                                           public void propertyChange(PropertyChangeEvent evt) {
+                                               JModel<?> jModel = (JModel<?>) evt.getNewValue();
+                                               setEnabled(jModel != null);
+                                           }
+                                       });
     }
 
     /**
@@ -95,8 +96,7 @@ public class JGraphPanel<G extends Graph> extends JPanel {
         JScrollPane result = this.scrollPane;
         if (result == null) {
             result = this.scrollPane = new JScrollPane(getJGraph());
-            result.getVerticalScrollBar()
-                .setUnitIncrement(10);
+            result.getVerticalScrollBar().setUnitIncrement(10);
             result.setDoubleBuffered(false);
             result.setPreferredSize(new Dimension(500, 400));
         }
@@ -165,15 +165,15 @@ public class JGraphPanel<G extends Graph> extends JPanel {
     @Override
     public void setEnabled(boolean enabled) {
         this.jGraph.setEnabled(enabled);
-        getScrollPane().getHorizontalScrollBar()
-            .setEnabled(enabled);
-        getScrollPane().getVerticalScrollBar()
-            .setEnabled(enabled);
+        getScrollPane().getHorizontalScrollBar().setEnabled(enabled);
+        getScrollPane().getVerticalScrollBar().setEnabled(enabled);
         if (hasStatusBar()) {
             getStatusBar().setEnabled(enabled);
         }
         super.setEnabled(enabled);
-        Color background = enabled ? getEnabledBackground() : null;
+        Color background = enabled
+            ? getEnabledBackground()
+            : null;
         getJGraph().setBackground(background);
     }
 
@@ -189,7 +189,8 @@ public class JGraphPanel<G extends Graph> extends JPanel {
     /** Sets the background colour for an enabled panel. */
     protected void setEnabledBackground(Color enabledBackground) {
         // only do something when it actually changes the background colour
-        if (enabledBackground == null ? this.enabledBackground != null
+        if (enabledBackground == null
+            ? this.enabledBackground != null
             : !enabledBackground.equals(this.enabledBackground)) {
             this.enabledBackground = enabledBackground;
             if (isEnabled()) {

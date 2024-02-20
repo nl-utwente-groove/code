@@ -37,6 +37,8 @@ import static nl.utwente.groove.io.FileType.GRAMMAR;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -47,6 +49,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -91,7 +95,10 @@ import nl.utwente.groove.gui.list.ListTabbedPane;
 import nl.utwente.groove.gui.list.SearchResult;
 import nl.utwente.groove.gui.menu.ModelCheckingMenu;
 import nl.utwente.groove.gui.menu.MyJMenu;
+import nl.utwente.groove.lts.GraphNextState;
+import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.transform.oracle.DialogOracle;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -106,14 +113,52 @@ public class Simulator implements SimulatorListener {
      * Constructs a simulator with an empty graph grammar.
      */
     public Simulator() {
-        this.model = new SimulatorModel();
+        this.model = new SimulatorModel(this);
         this.actions = new ActionStore(this);
-        this.model.addListener(this, Change.GRAMMAR, Change.DISPLAY);
         this.undoManager = new SimulatorUndoManager(this);
         GraphPreviewDialog.setSimulator(this);
         JFrame frame = getFrame();
         DialogOracle.instance().setParent(frame);
         this.actions.initialiseRemainingActions();
+        installListeners();
+    }
+
+    private void installListeners() {
+        this.model.addListener(this, Change.GRAMMAR, Change.DISPLAY);
+        getOptions()
+            .getItem(Options.SHOW_RECIPE_STEPS_OPTION)
+            .addItemListener(getOptionsListener());
+        getOptions()
+            .getItem(Options.SHOW_ABSENT_STATES_OPTION)
+            .addItemListener(getOptionsListener());
+    }
+
+    /** Returns the (lazily computed) options listener. */
+    private ItemListener getOptionsListener() {
+        return this.optionsListener.get();
+    }
+
+    /** The (lazily computed) options listener. */
+    private final Supplier<ItemListener> optionsListener
+        = Factory.lazy(this::computeOptionsListener);
+
+    /** Computes the value for {@link #optionsListener}. */
+    private ItemListener computeOptionsListener() {
+        return e -> {
+            var currentState = getModel().getState();
+            if (currentState != null && e.getStateChange() == ItemEvent.DESELECTED) {
+                GraphState newState = currentState;
+                Predicate<GraphState> stateNOK = e.getSource() == Options.SHOW_ABSENT_STATES_OPTION
+                    ? s -> s.isAbsent()
+                    : s -> s.isInternalState();
+                while (stateNOK.test(newState)) {
+                    newState = ((GraphNextState) newState).source();
+                }
+                if (newState != currentState) {
+                    getModel().setState(newState);
+                }
+            }
+        };
     }
 
     /**

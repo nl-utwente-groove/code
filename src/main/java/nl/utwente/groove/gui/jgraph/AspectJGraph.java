@@ -71,7 +71,7 @@ import nl.utwente.groove.util.line.LineStyle;
 /**
  * Extension of {@link JGraph} for {@link AspectGraph}s.
  */
-final public class AspectJGraph extends JGraph<AspectGraph> {
+public class AspectJGraph extends JGraph<AspectGraph> {
     /**
      * Creates a new instance, for a given graph role.
      * A flag determines whether the graph is editable.

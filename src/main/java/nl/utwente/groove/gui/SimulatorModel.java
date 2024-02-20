@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExplorationListener;
 import nl.utwente.groove.explore.ExploreResult;
@@ -35,6 +38,7 @@ import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSChangeListener;
 import nl.utwente.groove.lts.GTSCounter;
+import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.MatchResult;
@@ -49,6 +53,24 @@ import nl.utwente.groove.util.parse.FormatException;
  * a transaction on this object.
  */
 public class SimulatorModel implements Cloneable {
+    /** Greates a model for a given Simulator. */
+    public SimulatorModel(Simulator simulator) {
+        this.simulator = simulator;
+    }
+
+    /** Returns the Simulator for which this is a model. */
+    private Simulator getSimulator() {
+        return this.simulator;
+    }
+
+    /** The Simulator for which this is a model. */
+    private final Simulator simulator;
+
+    /** Convenience method to return the {@link Options} set in the Simulator. */
+    private Options getOptions() {
+        return getSimulator().getOptions();
+    }
+
     /**
      * Deletes a set of named resources from the grammar.
      * @param resource the kind of the resources
@@ -413,26 +435,29 @@ public class SimulatorModel implements Cloneable {
     /**
      * Sets the selected state and optionally the incoming transition through which
      * this state was reached, as well as a randomly selected outgoing match.
+     * Note that the state is possibly adjusted to the last visible one
      * @param state the new selected state; non-{@code null}
      * @param trans if not {@code null}, a transition that should be inserted post-hoc into the
      * history as the one that was selected before this change
      * @return if {@code true}, the transition or state was really changed
      * @see #setMatch(GraphState,MatchResult)
      */
-    public final boolean doSetStateAndMatch(GraphState state, GraphTransition trans) {
+    public final boolean doSetStateAndMatch(@NonNull GraphState state,
+                                            @Nullable GraphTransition trans) {
         assert state != null;
         start();
-        if (trans != null) {
+        var actualState = lastVisiblePredecessor(state);
+        if (actualState == state && trans != null) {
             assert state == trans.target();
             // fake the history: the previously selected match is supposed
             // to have been this transition already
             this.old.trans = trans;
         }
         changeGTS();
-        changeState(state);
-        MatchResult match = getMatch(state);
+        changeState(actualState);
+        MatchResult match = getMatch(actualState);
         changeMatch(match);
-        changeTransition(match != null && match.hasTransitionFrom(state)
+        changeTransition(match != null && match.hasTransitionFrom(actualState)
             ? match.getTransition()
             : null);
         if (getDisplay() != DisplayKind.LTS) {
@@ -442,16 +467,22 @@ public class SimulatorModel implements Cloneable {
     }
 
     /**
-     * Returns the first unexplored match of the state; if there is none,
+     * Returns the first unexplored, visible match of the state; if there is none,
      * returns the first outgoing transition that is not a self-loop,
      * preferably one that also leads to an open state.
      * Returns {@code null} if there is no such match or transition.
      */
     private MatchResult getMatch(GraphState state) {
-        MatchResult result = state.getMatch();
+        MatchResult result = null;
+        for (var match : state.getMatches()) {
+            if (isVisible(match)) {
+                result = match;
+                break;
+            }
+        }
         if (result == null) {
             for (RuleTransition trans : state.getRuleTransitions()) {
-                if (trans.target() != state) {
+                if (trans.target() != state && isVisible(trans.getKey())) {
                     result = trans.getKey();
                     if (!trans.target().isClosed()) {
                         break;
@@ -600,6 +631,15 @@ public class SimulatorModel implements Cloneable {
         return getState() != null;
     }
 
+    /** Indicates if {@link GraphState#isAbsent()} holds for the
+     * active state. Returns {@code true} if there is no active state.
+     */
+    public final boolean hasAbsentState() {
+        return hasState()
+            ? getState().isAbsent()
+            : false;
+    }
+
     /**
      * Returns the currently active state, if any.
      * If the GTS is set, there is always an active state.
@@ -612,12 +652,14 @@ public class SimulatorModel implements Cloneable {
      * Sets the selected state and fires an update event if this results in a change.
      * If the new state is different from the old, the transition
      * and event are set to {@code null}.
+     * Note that the state is possibly adjusted to the last visible one
      * @return if {@code true}, the state was really changed
      * @see #setMatch(GraphState,MatchResult)
      */
     public final boolean setState(GraphState state) {
         start();
         changeGTS();
+        state = lastVisiblePredecessor(state);
         if (changeState(state)) {
             changeMatch(null);
             changeTransition(null);
@@ -626,6 +668,38 @@ public class SimulatorModel implements Cloneable {
             }
         }
         return finish();
+    }
+
+    /** Returns the last predecessor state of a given state
+     * that is visible according to the current options setting.
+     */
+    private GraphState lastVisiblePredecessor(@Nullable GraphState state) {
+        while (!isVisible(state)) {
+            assert state != null;
+            state = ((GraphNextState) state).source();
+        }
+        return state;
+    }
+
+    /** Checks if a given state is visible according to the current options setting. */
+    private boolean isVisible(@Nullable GraphState state) {
+        if (state == null) {
+            return true;
+        }
+        return (getOptions().isSelected(Options.SHOW_RECIPE_STEPS_OPTION)
+            || !state.isInternalState())
+            && (getOptions().isSelected(Options.SHOW_ABSENT_STATES_OPTION) || !state.isAbsent());
+    }
+
+    /** Checks if a given match result is visible according to the current options setting. */
+    private boolean isVisible(@Nullable MatchResult match) {
+        if (match != null && match.hasTransition()) {
+            var trans = match.getTransition();
+            return (getOptions().isSelected(Options.SHOW_RECIPE_STEPS_OPTION)
+                || !trans.isInternalStep()) && isVisible(trans.target());
+        } else {
+            return true;
+        }
     }
 
     /**
@@ -660,19 +734,24 @@ public class SimulatorModel implements Cloneable {
      * If the match is changed to a non-null event, also sets the rule.
      * If the match is changed to a non-null transition from the selected state,
      * also sets the transition.
+     * Note that the state is possibly adjusted to the last visible one
      * @param state the new selected state; if {@code null}, the selected state
      * is unchanged
      * @param match the new selected match; if {@code null}, the match is
      * deselected
      * @return if {@code true}, the match was really changed
      */
-    public final boolean setMatch(GraphState state, MatchResult match) {
+    public final boolean setMatch(@Nullable GraphState state, @Nullable MatchResult match) {
         start();
-        boolean stateChanged = changeState(state);
-        boolean matchChanged = changeMatch(match);
+        var newState = lastVisiblePredecessor(state);
+        var newMatch = newState == state
+            ? match
+            : null;
+        boolean stateChanged = changeState(newState);
+        boolean matchChanged = changeMatch(newMatch);
         if (matchChanged || stateChanged) {
-            if (match != null && match.hasTransitionFrom(state)) {
-                changeTransition(match.getTransition());
+            if (newMatch != null && newMatch.hasTransitionFrom(newState)) {
+                changeTransition(newMatch.getTransition());
             } else {
                 changeTransition(null);
             }
@@ -681,9 +760,9 @@ public class SimulatorModel implements Cloneable {
             }
         }
         if (matchChanged) {
-            changeSelected(ResourceKind.RULE, match == null
+            changeSelected(ResourceKind.RULE, newMatch == null
                 ? null
-                : match.getAction().getQualName());
+                : newMatch.getAction().getQualName());
         }
         return finish();
     }

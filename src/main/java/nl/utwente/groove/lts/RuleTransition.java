@@ -18,6 +18,7 @@ package nl.utwente.groove.lts;
 
 import java.util.List;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.control.CtrlArg;
@@ -39,7 +40,12 @@ import nl.utwente.groove.util.Exceptions;
  * @version $Revision$
  */
 @NonNullByDefault
-public interface RuleTransition extends RuleTransitionStub, GraphTransition {
+public interface RuleTransition extends GraphTransition, RuleTransitionStub {
+    @Override
+    default @NonNull Rule getAction() {
+        return getEvent().getRule();
+    }
+
     /* Overrides the method to specialise the result type. */
     @Override
     GraphState source();
@@ -69,17 +75,13 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition {
     @Override
     public RuleEvent getEvent();
 
-    @Override
-    public default Rule getAction() {
-        return getEvent().getRule();
-    }
-
     /** Callback method to construct a rule application from this
      * graph transition.
      */
     public RuleApplication createRuleApplication();
 
     /** Returns the control step associated with this transition. */
+    @Override
     Step getStep();
 
     @Override

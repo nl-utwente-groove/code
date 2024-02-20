@@ -18,6 +18,7 @@ package nl.utwente.groove.gui.tree;
 
 import static nl.utwente.groove.grammar.model.ResourceKind.RULE;
 
+import java.awt.Graphics;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
@@ -75,6 +76,7 @@ import nl.utwente.groove.lts.GraphTransitionKey;
 import nl.utwente.groove.lts.MatchResult;
 import nl.utwente.groove.lts.RecipeEvent;
 import nl.utwente.groove.lts.RecipeTransition;
+import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.lts.StartGraphState;
 import nl.utwente.groove.transform.RuleEvent;
 
@@ -144,7 +146,7 @@ public class StateTree extends JTree implements SimulatorListener {
 
             private boolean busy = false;
         });
-        addTreeSelectionListener(new StateSelectionListener());
+        addTreeSelectionListener(getSelectionListener());
         addMouseListener(new StateMouseListener());
         // listen to the option controlling the rule anchor display
         ItemListener refreshListener = new ItemListener() {
@@ -164,6 +166,17 @@ public class StateTree extends JTree implements SimulatorListener {
         getOptions().getItem(Options.SHOW_ABSENT_STATES_OPTION).addItemListener(refreshListener);
         activateListening();
     }
+
+    /** Returns the selection listener for this tree. */
+    private StateSelectionListener getSelectionListener() {
+        var result = this.selectionListener;
+        if (result == null) {
+            result = this.selectionListener = new StateSelectionListener();
+        }
+        return result;
+    }
+
+    private StateSelectionListener selectionListener;
 
     /**
      * Sets the listening status to {@code false}, if it was not already {@code false}.
@@ -191,6 +204,14 @@ public class StateTree extends JTree implements SimulatorListener {
         return this.listening;
     }
 
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        if (getSimulatorModel().hasAbsentState()) {
+            JAttr.paintHatch(this, g);
+        }
+    }
+
     /** Indicates if internal states and transitions should be included. */
     private boolean isShowInternal() {
         return getOptions().isSelected(Options.SHOW_RECIPE_STEPS_OPTION);
@@ -199,6 +220,11 @@ public class StateTree extends JTree implements SimulatorListener {
     /** Indicates if absent states and transitions should be included. */
     private boolean isShowAbsent() {
         return getOptions().isSelected(Options.SHOW_ABSENT_STATES_OPTION);
+    }
+
+    /** Indicates if absent states and transitions should be included. */
+    private boolean isShowAnchored() {
+        return getOptions().isSelected(Options.SHOW_ANCHORS_OPTION);
     }
 
     /**
@@ -254,6 +280,11 @@ public class StateTree extends JTree implements SimulatorListener {
             }
             refreshSelection(source.getState(), ruleModel, source.getMatch(),
                              source.getTransition());
+            var state = source.getState();
+            var error = state != null && state.isError();
+            var internal = state != null && state.isInternalState();
+            setBackground(JAttr.getStateBackground(error, internal));
+            getSelectionListener().selectSiblings();
             activateListening();
         }
     }
@@ -382,10 +413,20 @@ public class StateTree extends JTree implements SimulatorListener {
         Collection<GraphTransitionKey> keys = new ArrayList<>();
         // set of initial recipe transitions
         Collection<MatchResult> recipeInits = new ArrayList<>();
-        Claz claz = Claz.getClass(isShowInternal(), isShowAbsent());
+        Claz claz = Claz.getClass(true, isShowAbsent());
         // add the outgoing transitions to the keys
         for (var trans : state.getTransitions(claz)) {
-            keys.add(trans.getKey());
+            if (isShowInternal() || !trans.isInternalStep()) {
+                keys.add(trans.getKey());
+            }
+            // check if this is the initial transition of a recipe
+            if (!state.isInternalState() && trans.isInternalStep()) {
+                var target = trans.target();
+                // check if the recipe transition is not already fully explored
+                if (target.isInternalState() && !target.isDone()) {
+                    recipeInits.add(((RuleTransition) trans).getKey());
+                }
+            }
         }
         // add the unexplored matches to the keys and to the potential recipes
         for (var match : state.getMatches()) {
@@ -435,8 +476,8 @@ public class StateTree extends JTree implements SimulatorListener {
                         transNode = new RuleMatchTreeNode(getSimulatorModel(), state, match, count,
                             anchored);
                     } else {
-                        transNode
-                            = new RecipeMatchTreeNode(getSimulatorModel(), state, match, count);
+                        transNode = new RecipeMatchTreeNode(getSimulatorModel(), state, match,
+                            count, isShowAnchored());
                     }
                 } else {
                     transNode = new RecipeTransitionTreeNode(getSimulatorModel(), state,
@@ -746,7 +787,7 @@ public class StateTree extends JTree implements SimulatorListener {
             if (evt.getButton() != MouseEvent.BUTTON1) {
                 return;
             }
-            TreePath path = getSelectionPath();
+            TreePath path = getPathForLocation(evt.getX(), evt.getY());
             if (path == null) {
                 return;
             }
@@ -764,7 +805,11 @@ public class StateTree extends JTree implements SimulatorListener {
                 }
                 break;
             case 2:
-                getActions().getApplyMatchAction().execute();
+                if (node instanceof RecipeMatchTreeNode) {
+                    getActions().getExploreAction().doExploreState();
+                } else if (node instanceof MatchTreeNode) {
+                    getActions().getApplyMatchAction().execute();
+                }
                 break;
             default: // nothing happens
             }
@@ -801,15 +846,18 @@ public class StateTree extends JTree implements SimulatorListener {
                     MatchResult selectedMatch = null;
                     GraphTransition selectedTrans = null;
                     Object selectedNode = paths[0].getLastPathComponent();
-                    if (selectedNode instanceof RuleMatchTreeNode) {
+                    if (selectedNode instanceof RuleMatchTreeNode matchNode) {
                         // selected tree node is a match (level 2 node)
-                        selectedMatch = ((RuleMatchTreeNode) selectedNode).getMatch();
-                        selectedState = ((RuleMatchTreeNode) selectedNode).getSource();
-                    } else if (selectedNode instanceof RecipeTransitionTreeNode) {
+                        selectedMatch = matchNode.getMatch();
+                        selectedState = matchNode.getSource();
+                    } else if (selectedNode instanceof RecipeTransitionTreeNode recipeNode) {
                         // selected tree node is a match (level 2 node)
-                        selectedTrans = ((RecipeTransitionTreeNode) selectedNode).getTransition();
-                    } else if (selectedNode instanceof StateTreeNode) {
-                        selectedState = ((StateTreeNode) selectedNode).getState();
+                        selectedTrans = recipeNode.getTransition();
+                    } else if (selectedNode instanceof RecipeMatchTreeNode matchNode) {
+                        selectedMatch = matchNode.getInitMatch();
+                        selectedState = matchNode.getSource();
+                    } else if (selectedNode instanceof StateTreeNode stateNode) {
+                        selectedState = stateNode.getState();
                     } else if (selectedNode instanceof RuleTreeNode) {
                         Object parentNode = paths[0].getPathComponent(paths[0].getPathCount() - 2);
                         selectedState = ((StateTreeNode) parentNode).getState();
@@ -825,6 +873,7 @@ public class StateTree extends JTree implements SimulatorListener {
                     }
                 }
                 getSimulatorModel().doSelectSet(ResourceKind.RULE, getSelectedRules());
+                selectSiblings();
                 activateListening();
             }
         }
@@ -844,6 +893,38 @@ public class StateTree extends JTree implements SimulatorListener {
                 }
             }
             return result;
+        }
+
+        /** Selects any match nodes from the same state and with the same match key. */
+        void selectSiblings() {
+            var paths = getSelectionPaths();
+            if (paths != null) {
+                List<TreePath> siblingPaths = new ArrayList<>();
+                for (int i = 0; i < paths.length; i++) {
+                    var path = paths[i];
+                    if (path.getLastPathComponent() instanceof MatchTreeNode matchNode) {
+                        var key = matchNode.getKey();
+                        var stateNode = matchNode.getParent().getParent();
+                        for (int si = 0; si < stateNode.getChildCount(); si++) {
+                            var actionNode = stateNode.getChildAt(si);
+                            for (int ai = 0; ai < actionNode.getChildCount(); ai++) {
+                                var sibling = (MatchTreeNode) actionNode.getChildAt(ai);
+                                if (matchNode instanceof RecipeTransitionTreeNode
+                                    && sibling instanceof RecipeTransitionTreeNode
+                                    && matchNode != sibling) {
+                                    continue;
+                                }
+                                if (sibling.getKey().equals(key)) {
+                                    siblingPaths.add(new TreePath(sibling.getPath()));
+                                }
+                            }
+                        }
+                    } else {
+                        siblingPaths.add(path);
+                    }
+                }
+                setSelectionPaths(siblingPaths.toArray(TreePath[]::new));
+            }
         }
     }
 }

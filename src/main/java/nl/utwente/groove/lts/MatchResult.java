@@ -67,7 +67,6 @@ public class MatchResult implements GraphTransitionKey {
 
     private final RuleTransition ruleTrans;
 
-    /** Returns the event wrapped by this transition key. */
     @Override
     public RuleEvent getEvent() {
         return this.event;
@@ -85,7 +84,7 @@ public class MatchResult implements GraphTransitionKey {
     /** Returns the underlying rule of this match. */
     @Override
     public Rule getAction() {
-        return this.event.getRule();
+        return getEvent().getRule();
     }
 
     @Override
@@ -117,10 +116,9 @@ public class MatchResult implements GraphTransitionKey {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof MatchResult)) {
+        if (!(obj instanceof MatchResult other)) {
             return false;
         }
-        MatchResult other = (MatchResult) obj;
         if (!getStep().equals(other.getStep())) {
             return false;
         }

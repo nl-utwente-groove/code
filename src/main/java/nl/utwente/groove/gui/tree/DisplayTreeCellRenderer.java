@@ -59,7 +59,7 @@ class DisplayTreeCellRenderer extends DefaultTreeCellRenderer {
             text = node.getText();
             active = node.getStatus() == Status.ACTIVE;
             error = node.isError();
-            inRecipe = node.isInRecipe();
+            inRecipe = node.isInternal();
         }
         if (icon != null) {
             setIcon(icon);

@@ -18,6 +18,8 @@ package nl.utwente.groove.lts;
 
 import java.util.Arrays;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.control.instance.Step;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.host.HostNode;
@@ -56,20 +58,45 @@ abstract class AbstractRuleTransitionStub implements RuleTransitionStub {
         return this.event;
     }
 
+    /**
+     * The rule event of this transition stub.
+     */
+    private final RuleEvent event;
+
     @Override
     public final Rule getAction() {
         return getEvent().getRule();
     }
 
     @Override
+    public Step getStep() {
+        return this.step;
+    }
+
+    /**
+     * The control transition of this transition stub.
+     */
+    private final Step step;
+
+    @Override
+    public @NonNull MatchResult getKey() {
+        return new MatchResult(getEvent(), getStep());
+    }
+
+    @Override
     public MatchResult getKey(GraphState source) {
-        return new MatchResult(this.event, this.step);
+        return getKey();
     }
 
     @Override
     public HostNode[] getAddedNodes(GraphState source) {
         return this.addedNodes;
     }
+
+    /**
+     * The added nodes of this transition stub.
+     */
+    private final HostNode[] addedNodes;
 
     /**
      * This implementation compares events for identity.
@@ -122,16 +149,4 @@ abstract class AbstractRuleTransitionStub implements RuleTransitionStub {
      * @invariant <tt>target != null</tt>
      */
     private final GraphState target;
-    /**
-     * The control transition of this transition stub.
-     */
-    private final Step step;
-    /**
-     * The rule event of this transition stub.
-     */
-    private final RuleEvent event;
-    /**
-     * The added nodes of this transition stub.
-     */
-    private final HostNode[] addedNodes;
 }

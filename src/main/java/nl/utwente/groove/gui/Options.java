@@ -219,6 +219,11 @@ public class Options implements Cloneable {
         }
     }
 
+    /** Removes a given item listener from all items in this options map. */
+    public void removeItemListener(ItemListener listener) {
+        this.itemMap.values().forEach(i -> i.removeItemListener(listener));
+    }
+
     /** Returns a map from option keys to the enabled status of the option. */
     @Override
     public String toString() {
