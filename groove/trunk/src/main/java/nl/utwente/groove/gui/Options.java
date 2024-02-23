@@ -323,14 +323,14 @@ public class Options implements Cloneable {
     }
 
     /**
-     * Returns the action name for resource enabling and disabling.
+     * Returns the action name for resource activation.
      * @param resource the kind of resource that is enabled/disabled
-     * @param enable {@code true} if the resource is to be enabled,
-     * {@code false} if it is to be disabled
+     * @param activate {@code true} if the resource is to be activated,
+     * {@code false} if it is to be deactivated
      * @return The appropriate action name
      */
-    public static String getEnableName(ResourceKind resource, boolean enable) {
-        StringBuilder result = new StringBuilder(EditType.getEnableName(enable));
+    public static String getActivationName(ResourceKind resource, boolean activate) {
+        StringBuilder result = new StringBuilder(EditType.getEnableName(activate));
         result.append(' ');
         result.append(resource.getName());
         return result.toString();

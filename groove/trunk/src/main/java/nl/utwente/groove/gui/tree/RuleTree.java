@@ -279,7 +279,7 @@ public class RuleTree extends AbstractResourceTree {
             }
         }
         // add the recipe fragments
-        if (isShowInternal() && !fragmentSet.isEmpty()) {
+        if (!fragmentSet.isEmpty()) {
             topNode = new DirectoryTreeNode(DirectoryKind.FRAGMENT, null, 0, false);
             absoluteTopNode.add(topNode);
             Map<QualName,FolderTreeNode> dirNodeMap = new HashMap<>();

@@ -44,7 +44,7 @@ public class ControlModel extends TextBasedModel<Program> {
     @Override
     public Program compute() throws FormatException {
         Program result;
-        if (isEnabled()) {
+        if (isActive()) {
             CompositeControlModel model = getGrammar().getControlModel();
             if (model.hasErrors()) {
                 model.getPartErrors(getQualName()).throwException();

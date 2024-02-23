@@ -42,7 +42,7 @@ public class ConfigModel extends TextBasedModel<String> {
 
     // Cannot be enabled
     @Override
-    public boolean isEnabled() {
+    public boolean isActive() {
         return false;
     }
 

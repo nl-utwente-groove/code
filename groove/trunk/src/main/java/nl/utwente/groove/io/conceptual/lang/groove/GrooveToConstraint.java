@@ -79,7 +79,7 @@ public class GrooveToConstraint implements Messenger {
     private void parseRules() {
         Constraints constraints = this.m_cfg.getConfig().getTypeModel().getConstraints();
         for (RuleModel model : this.m_ruleModels) {
-            if (!model.isEnabled() || model.hasErrors()) {
+            if (!model.isActive() || model.hasErrors()) {
                 continue;
             }
             String lastName = model.getLastName();

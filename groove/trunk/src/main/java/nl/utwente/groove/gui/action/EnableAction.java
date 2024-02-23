@@ -37,9 +37,8 @@ public class EnableAction extends SimulatorAction {
             try {
                 getSimulatorModel().doEnable(resource, names);
             } catch (IOException exc) {
-                showErrorDialog(exc,
-                    "Error during %s enabling",
-                    getResourceKind().getDescription());
+                showErrorDialog(exc, "Error during %s enabling",
+                                getResourceKind().getDescription());
             }
         }
     }
@@ -49,13 +48,13 @@ public class EnableAction extends SimulatorAction {
         ResourceKind resourceKind = getResourceKind();
         QualName name = getSimulatorModel().getSelected(resourceKind);
         NamedResourceModel<?> resource = getSimulatorModel().getResource(resourceKind);
-        boolean isEnabling = resource == null || !resource.isEnabled();
+        boolean isActive = resource == null || !resource.isActive();
         boolean enabled = resourceKind.isEnableable() && name != null;
         if (enabled && getResourceKind() == ResourceKind.RULE) {
             assert resource != null; // implied by name != null, which is implied by enabled
             enabled = !((RuleModel) resource).hasRecipes();
         }
-        String description = Options.getEnableName(resourceKind, isEnabling);
+        String description = Options.getActivationName(resourceKind, isActive);
         putValue(NAME, description);
         putValue(SHORT_DESCRIPTION, description);
         setEnabled(enabled);

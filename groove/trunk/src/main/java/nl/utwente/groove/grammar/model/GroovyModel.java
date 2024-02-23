@@ -44,7 +44,7 @@ public class GroovyModel extends TextBasedModel<String> {
     }
 
     @Override
-    public boolean isEnabled() {
+    public boolean isActive() {
         return Util.isGroovyPresent();
     }
 

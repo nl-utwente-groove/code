@@ -1,5 +1,6 @@
 package nl.utwente.groove.gui.display;
 
+import java.awt.Color;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.dialog.PropertiesTable;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
+import nl.utwente.groove.gui.jgraph.JAttr;
 import nl.utwente.groove.gui.jgraph.JModel;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.tree.RuleLevelTree;
@@ -206,7 +208,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     private JPanel lowerInfoPanel;
 
     /** Lazily creates and returns the (possibly {@code null}) rule level tree. */
-    private RuleLevelTree getLevelTree() {
+    private @Nullable RuleLevelTree getLevelTree() {
         RuleLevelTree result = this.levelTree;
         if (result == null && getResourceKind() == ResourceKind.RULE) {
             result = this.levelTree = new RuleLevelTree(getJGraph());
@@ -254,6 +256,19 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
             ? null
             : name.toString();
         getTabLabel().setTitle(nameString);
+        var resource = getResource();
+        if (resource != null) {
+            Color background = getResource().isActive()
+                ? JAttr.ACTIVE_BACKGROUND
+                : JAttr.INACTIVE_BACKGROUND;
+            getEditArea().setEnabledBackground(background);
+            getLabelTree().setBackground(background);
+            var levelTree = getLevelTree();
+            if (levelTree != null) {
+                levelTree.setBackground(background);
+            }
+            getPropertiesPanel().setBackground(background);
+        }
         updateErrors();
         updatePropertiesNotable();
         return jModel != null;
