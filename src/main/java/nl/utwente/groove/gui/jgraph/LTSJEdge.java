@@ -31,6 +31,7 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> impleme
     public void initialise() {
         super.initialise();
         this.visibleFlag = true;
+        setLook(Look.RESULT, isResult());
     }
 
     @Override
@@ -132,6 +133,15 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> impleme
     /** Indicates that this edge is part of a recipe. */
     final boolean isInternal() {
         return getEdge().isInternalStep();
+    }
+
+    /**
+     * Returns {@code true} if the transition is a result transition.
+     */
+    boolean isResult() {
+        LTSJGraph jGraph = getJGraph();
+        assert jGraph != null; // guaranteed by now
+        return jGraph.isResult(getEdge());
     }
 
     @Override

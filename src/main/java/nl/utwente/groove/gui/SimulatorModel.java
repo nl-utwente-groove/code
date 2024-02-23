@@ -41,7 +41,10 @@ import nl.utwente.groove.lts.GTSCounter;
 import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
+import nl.utwente.groove.lts.GraphTransition.Claz;
+import nl.utwente.groove.lts.GraphTransitionKey;
 import nl.utwente.groove.lts.MatchResult;
+import nl.utwente.groove.lts.RecipeEvent;
 import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
@@ -455,11 +458,17 @@ public class SimulatorModel implements Cloneable {
         }
         changeGTS();
         changeState(actualState);
-        MatchResult match = getMatch(actualState);
-        changeMatch(match);
-        changeTransition(match != null && match.hasTransitionFrom(actualState)
-            ? match.getTransition()
-            : null);
+        var key = getMatch(actualState);
+        if (key instanceof MatchResult match) {
+            changeMatch(match);
+            changeTransition(match.getTransition());
+        } else if (key instanceof RecipeEvent event) {
+            changeMatch(event.getInitial().getKey());
+            changeTransition(event.toTransition(actualState));
+        } else {
+            changeMatch(null);
+            changeTransition(null);
+        }
         if (getDisplay() != DisplayKind.LTS) {
             changeDisplay(DisplayKind.STATE);
         }
@@ -467,20 +476,37 @@ public class SimulatorModel implements Cloneable {
     }
 
     /**
-     * Returns the first unexplored, visible match of the state; if there is none,
+     * Returns the most interesting graph transition from a given state.
+     * In order of declining interest:
+     * <ul>
+     * <li> A transition in the current trace
+     * <li> A currently unexplored match
+     * <li> A visible transition
+     * </ul>
+     * first unexplored, visible match of the state; if there is none,
      * returns the first outgoing transition that is not a self-loop,
      * preferably one that also leads to an open state.
      * Returns {@code null} if there is no such match or transition.
      */
-    private MatchResult getMatch(GraphState state) {
-        MatchResult result = null;
-        for (var match : state.getMatches()) {
-            if (isVisible(match)) {
-                result = match;
-                break;
+    private GraphTransitionKey getMatch(GraphState state) {
+        GraphTransitionKey result = null;
+        // find an outgoing transition that is in the trace, if any
+        for (var trans : state.getTransitions(Claz.PRESENT)) {
+            if (getTrace().contains(trans)) {
+                result = trans.getKey();
+            }
+        }
+        // find a visible unexplored match
+        if (result == null) {
+            for (var match : state.getMatches()) {
+                if (isVisible(match)) {
+                    result = match;
+                    break;
+                }
             }
         }
         if (result == null) {
+            // find a visible explored rule transition
             for (RuleTransition trans : state.getRuleTransitions()) {
                 if (trans.target() != state && isVisible(trans.getKey())) {
                     result = trans.getKey();
@@ -573,7 +599,6 @@ public class SimulatorModel implements Cloneable {
             changeExploreResult(gts == null
                 ? null
                 : new ExploreResult(gts));
-            this.trace.clear();
         }
         if (gts != null && getState() == null) {
             changeState(gts.startState());
@@ -595,7 +620,7 @@ public class SimulatorModel implements Cloneable {
     }
 
     /**
-     * Changes the internally stored exploration result.
+     * Changes the internally stored exploration result, as well as the trace.
      * The new result should have the currently set GTS.
      */
     private void changeExploreResult(ExploreResult result) {
@@ -603,6 +628,9 @@ public class SimulatorModel implements Cloneable {
             ? this.gts == null
             : result.getGTS() == this.gts;
         this.exploreResult = result;
+        changeTrace(result == null
+            ? null
+            : result.getTransitions());
         changeGTS();
     }
 
@@ -776,9 +804,7 @@ public class SimulatorModel implements Cloneable {
         start();
         boolean result = !this.trace.equals(trace);
         if (result) {
-            this.trace.clear();
-            this.trace.addAll(trace);
-            this.changes.add(Change.TRACE);
+            changeTrace(trace);
         }
         finish();
         return result;
@@ -787,6 +813,12 @@ public class SimulatorModel implements Cloneable {
     /** Returns the currently selected trace. */
     public final Set<GraphTransition> getTrace() {
         return Collections.unmodifiableSet(this.trace);
+    }
+
+    private void changeTrace(Collection<GraphTransition> trace) {
+        this.trace.clear();
+        this.trace.addAll(trace);
+        this.changes.add(Change.TRACE);
     }
 
     /** Currently selected trace (set of transitions). */
