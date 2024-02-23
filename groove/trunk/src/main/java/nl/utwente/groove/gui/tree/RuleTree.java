@@ -495,7 +495,8 @@ public class RuleTree extends AbstractResourceTree {
             QualName actionName = key.getAction().getQualName();
             // parent node of the new node
             var parentNode = this.actionNodeMap.get(actionName);
-            if (parentNode == null) {
+            if (!getGrammar().getControlModel().getRecipes(actionName).isEmpty()
+                && !isShowInternal()) {
                 // this indicates that the action is a fragment rule and internals are not shown
                 // we may still need this as a recipe match
                 var match = (MatchResult) key;
