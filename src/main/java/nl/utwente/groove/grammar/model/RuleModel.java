@@ -142,7 +142,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     }
 
     /** Returns the set of recipe names in which this rule is called. */
-
     public Set<QualName> getRecipes() {
         return getGrammar().getControlModel().getRecipes(getQualName());
     }
