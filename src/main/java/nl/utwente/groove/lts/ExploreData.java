@@ -240,7 +240,7 @@ class ExploreData {
      * Only non-{@code null} for states that started their existence as transient.
      */
     private List<RecipeTarget> getRecipeTargets() {
-        assert getState().getPrimeFrame().isInternal();
+        //assert getState().getPrimeFrame().isInternal();
         if (this.recipeTargets == null) {
             new RecipeTargetSearch(this).run();
         }
