@@ -101,6 +101,6 @@ class ResourceTreeNode extends DisplayTreeNode {
 
     /** Returns the tried state of the resource wrapped by this node. */
     boolean isActivated() {
-        return getDisplay().getResource(getQualName()).isEnabled();
+        return getDisplay().getResource(getQualName()).isActive();
     }
 }

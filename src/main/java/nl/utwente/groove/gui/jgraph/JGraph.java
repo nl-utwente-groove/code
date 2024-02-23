@@ -715,6 +715,11 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     }
 
     /**
+     * The background color of this component when it is enabled.
+     */
+    private Color enabledBackground;
+
+    /**
      * Sets a graph UI that speeds up preferred size checking by caching
      * previous values.
      */
@@ -1371,11 +1376,6 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
      * The permanent layout action associated with this jGraph.
      */
     private LayoutAction layoutAction;
-    /**
-     * The background color of this component when it is enabled.
-     */
-    private Color enabledBackground;
-
     /**
      * Flag to indicate whether this jgraph is currently registered with the
      * {@link ToolTipManager}.

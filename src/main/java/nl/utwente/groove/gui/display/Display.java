@@ -27,6 +27,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.ToolTipManager;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Simulator;
@@ -112,13 +114,17 @@ abstract public class Display extends JPanel {
     /**
      * Returns the information panel of the display.
      */
-    public JComponent getInfoPanel() {
-        if (this.infoPanel == null) {
-            this.infoPanel = createInfoPanel();
-            this.infoPanel.setEnabled(false);
+    public @NonNull JComponent getInfoPanel() {
+        var result = this.infoPanel;
+        if (result == null) {
+            this.infoPanel = result = createInfoPanel();
+            result.setEnabled(false);
         }
-        return this.infoPanel;
+        return result;
     }
+
+    /** Information panel for the display. */
+    private JComponent infoPanel;
 
     /** Callback method to create the information panel of the display. */
     abstract protected JComponent createInfoPanel();
@@ -180,8 +186,6 @@ abstract public class Display extends JPanel {
     private final ResourceKind resource;
     /** Panel with the label list. */
     private ListPanel listPanel;
-    /** Information panel for the display. */
-    private JComponent infoPanel;
     /** Production system control program list. */
     private JComponent resourceList;
     /** Toolbar for the {@link #listPanel}. */

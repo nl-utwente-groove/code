@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import nl.utwente.groove.grammar.ModuleName;
 import nl.utwente.groove.grammar.QualName;
@@ -25,8 +26,6 @@ import nl.utwente.groove.io.conceptual.configuration.Config;
 import nl.utwente.groove.io.conceptual.lang.ImportException;
 import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.parse.FormatException;
-
-import java.util.Set;
 
 @SuppressWarnings("javadoc")
 public class GrammarVisitor {
@@ -52,9 +51,7 @@ public class GrammarVisitor {
         this.m_namespace = namespace;
 
         this.m_types = new GraphNodeTypes();
-        this.useMeta = this.m_cfg.getConfig()
-            .getTypeModel()
-            .isMetaSchema();
+        this.useMeta = this.m_cfg.getConfig().getTypeModel().isMetaSchema();
     }
 
     public void setFixedType(QualName fixedType) {
@@ -76,9 +73,7 @@ public class GrammarVisitor {
     }
 
     public boolean isParseable() {
-        if (this.m_cfg.getConfig()
-            .getTypeModel()
-            .isMetaSchema()) {
+        if (this.m_cfg.getConfig().getTypeModel().isMetaSchema()) {
             return (this.m_typeMap.size() == 1 || this.m_metaMap.size() == 1);
         }
 
@@ -105,9 +100,7 @@ public class GrammarVisitor {
             return false;
         }
 
-        if (this.m_cfg.getConfig()
-            .getTypeModel()
-            .isMetaSchema()) {
+        if (this.m_cfg.getConfig().getTypeModel().isMetaSchema()) {
             if (dlg.getMetaModel() != null) {
                 filterMap(this.m_metaMap, dlg.getTypeModel());
             } else {
@@ -130,13 +123,11 @@ public class GrammarVisitor {
         filterMap(this.m_ruleMap, namespace);
 
         if (this.useMeta) {
-            Iterator<Entry<QualName,nl.utwente.groove.grammar.model.TypeModel>> it = this.m_typeMap.entrySet()
-                .iterator();
+            Iterator<Entry<QualName,nl.utwente.groove.grammar.model.TypeModel>> it
+                = this.m_typeMap.entrySet().iterator();
             while (it.hasNext()) {
                 Entry<QualName,nl.utwente.groove.grammar.model.TypeModel> entry = it.next();
-                if (entry.getKey()
-                    .last()
-                    .contains("meta")) {
+                if (entry.getKey().last().contains("meta")) {
                     it.remove();
                     this.m_metaMap.put(entry.getKey(), entry.getValue());
                     continue;
@@ -145,13 +136,15 @@ public class GrammarVisitor {
         }
 
         if (this.m_fixedType != null && this.m_typeMap.containsKey(this.m_fixedType)) {
-            nl.utwente.groove.grammar.model.TypeModel keepModel = this.m_typeMap.get(this.m_fixedType);
+            nl.utwente.groove.grammar.model.TypeModel keepModel
+                = this.m_typeMap.get(this.m_fixedType);
             this.m_typeMap.clear();
             this.m_typeMap.put(this.m_fixedType, keepModel);
         }
 
         if (this.m_fixedMeta != null && this.m_metaMap.containsKey(this.m_fixedMeta)) {
-            nl.utwente.groove.grammar.model.TypeModel keepModel = this.m_metaMap.get(this.m_fixedMeta);
+            nl.utwente.groove.grammar.model.TypeModel keepModel
+                = this.m_metaMap.get(this.m_fixedMeta);
             this.m_metaMap.clear();
             this.m_metaMap.put(this.m_fixedMeta, keepModel);
         }
@@ -172,22 +165,19 @@ public class GrammarVisitor {
      */
     // Removed checks for disabled and error, graphsd are checked an enabled during export process where applicable
     private <M extends NamedResourceModel<?>> void filterMap(Map<QualName,M> map,
-        ModuleName namespace) {
-        Iterator<Entry<QualName,M>> it = map.entrySet()
-            .iterator();
+                                                             ModuleName namespace) {
+        Iterator<Entry<QualName,M>> it = map.entrySet().iterator();
         while (it.hasNext()) {
             Entry<QualName,M> entry = it.next();
             if (!namespace.contains(entry.getKey())) {
                 it.remove();
                 continue;
             }
-            if (!entry.getValue()
-                .isEnabled()) {
+            if (!entry.getValue().isActive()) {
                 //it.remove();
                 continue;
             }
-            if (entry.getValue()
-                .hasErrors()) {
+            if (entry.getValue().hasErrors()) {
                 //it.remove();
                 continue;
             }
@@ -196,12 +186,13 @@ public class GrammarVisitor {
 
     @SuppressWarnings("unchecked")
     public boolean doVisit(Frame parent, GrammarModel grammar) throws ImportException {
-        this.m_typeMap = new HashMap<>((Map<QualName,nl.utwente.groove.grammar.model.TypeModel>) grammar
-            .getResourceMap(ResourceKind.TYPE));
-        this.m_hostMap =
-            new HashMap<>((Map<QualName,HostModel>) grammar.getResourceMap(ResourceKind.HOST));
-        this.m_ruleMap =
-            new HashMap<>((Map<QualName,RuleModel>) grammar.getResourceMap(ResourceKind.RULE));
+        this.m_typeMap
+            = new HashMap<>((Map<QualName,nl.utwente.groove.grammar.model.TypeModel>) grammar
+                .getResourceMap(ResourceKind.TYPE));
+        this.m_hostMap
+            = new HashMap<>((Map<QualName,HostModel>) grammar.getResourceMap(ResourceKind.HOST));
+        this.m_ruleMap
+            = new HashMap<>((Map<QualName,RuleModel>) grammar.getResourceMap(ResourceKind.RULE));
         this.m_metaMap = new HashMap<>();
 
         browseGraphs(this.m_namespace);
@@ -222,14 +213,9 @@ public class GrammarVisitor {
         int timer = Timer.start("Load GROOVE grammar");
 
         // Parse meta graph
-        if (this.m_cfg.getConfig()
-            .getTypeModel()
-            .isMetaSchema()) {
+        if (this.m_cfg.getConfig().getTypeModel().isMetaSchema()) {
             try {
-                TypeGraph metaGraph = this.m_metaMap.values()
-                    .iterator()
-                    .next()
-                    .toResource();
+                TypeGraph metaGraph = this.m_metaMap.values().iterator().next().toResource();
 
                 Timer.stop(timer);
                 setMetaGraph(metaGraph);
@@ -241,8 +227,8 @@ public class GrammarVisitor {
 
         Set<QualName> typeGraphSet = new HashSet<>(this.m_typeMap.keySet());
         Set<QualName> hostGraphSet = new HashSet<>(this.m_hostMap.keySet());
-        Pair<TypeGraph,HostGraph> graphs =
-            computeCompositeGraphs(grammar, typeGraphSet, hostGraphSet);
+        Pair<TypeGraph,HostGraph> graphs
+            = computeCompositeGraphs(grammar, typeGraphSet, hostGraphSet);
 
         // Parse type and rule graphs
         //No need to enable rule graphs (but ignore the disabled ones) as the model is still accessible
@@ -280,8 +266,8 @@ public class GrammarVisitor {
     }
 
     private void setInstanceGraph(HostGraph hostGraph) throws ImportException {
-        GrooveToInstance gti =
-            new GrooveToInstance(hostGraph, this.m_types, this.m_cfg, this.m_typeModel);
+        GrooveToInstance gti
+            = new GrooveToInstance(hostGraph, this.m_types, this.m_cfg, this.m_typeModel);
         this.m_instanceModel = gti.getInstanceModel();
     }
 
@@ -294,7 +280,8 @@ public class GrammarVisitor {
     }
 
     private Pair<TypeGraph,HostGraph> computeCompositeGraphs(GrammarModel grammar,
-        Set<QualName> typeModels, Set<QualName> hostModels) throws ImportException {
+                                                             Set<QualName> typeModels,
+                                                             Set<QualName> hostModels) throws ImportException {
         Set<QualName> localTypeNames = grammar.getLocalActiveNames(ResourceKind.TYPE);
         if (localTypeNames == null) {
             localTypeNames = grammar.getActiveNames(ResourceKind.TYPE);
@@ -316,7 +303,9 @@ public class GrammarVisitor {
             HostModel hm = grammar.getStartGraphModel();
 
             TypeGraph tg = tm.getTypeGraph();
-            HostGraph hg = (hm != null) ? hm.toHost() : null;
+            HostGraph hg = (hm != null)
+                ? hm.toHost()
+                : null;
 
             result = new Pair<>(tg, hg);
         } catch (FormatException e) {

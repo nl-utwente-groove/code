@@ -51,17 +51,23 @@ public class JAttr {
      */
     public static final int DEFAULT_LINE_WIDTH = 1;
 
+    /** Default background for active resources. */
+    public static final Color ACTIVE_BACKGROUND = Color.WHITE;
+
+    /** Default background for inactive resources. */
+    public static final Color INACTIVE_BACKGROUND = new Color(245, 245, 245);
+
     /** Default background for editor panels. */
     public static final Color EDITOR_BACKGROUND = new Color(255, 255, 230);
 
     /** Default background for state panels. */
     public static final Color STATE_BACKGROUND = new Color(242, 250, 254);
 
-    /** Error background for state panels. */
+    /** Error background for panels. */
     public static final Color ERROR_BACKGROUND = new Color(255, 242, 242);
 
-    /** Background for internal state panels. */
-    public static final Color TRANSIENT_BACKGROUND = new Color(250, 245, 250);
+    /** Background for internal panels. */
+    public static final Color INTERNAL_BACKGROUND = new Color(250, 245, 250);
 
     /** Fully transparent colour. */
     public static final Color TRANSPARENT = new Color(0, 0, 0, 0);
@@ -151,7 +157,7 @@ public class JAttr {
         return error
             ? ERROR_BACKGROUND
             : internal
-                ? TRANSIENT_BACKGROUND
+                ? INTERNAL_BACKGROUND
                 : STATE_BACKGROUND;
     }
 

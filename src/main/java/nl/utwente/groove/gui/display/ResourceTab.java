@@ -34,8 +34,11 @@ import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
+import nl.utwente.groove.grammar.model.NamedResourceModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.ResourceModel;
 import nl.utwente.groove.gui.Icons;
@@ -170,13 +173,13 @@ abstract public class ResourceTab extends JPanel {
      * Returns the upper information panel of this tab.
      * @return the upper information panel
      */
-    protected abstract JComponent getUpperInfoPanel();
+    protected abstract @Nullable JComponent getUpperInfoPanel();
 
     /**
      * Returns the lower information panel of this tab.
      * @return the lower information panel, or {@code null} if there is none such.
      */
-    protected abstract JComponent getLowerInfoPanel();
+    protected abstract @Nullable JComponent getLowerInfoPanel();
 
     /** Creates a listener that conveys the selected tab index to the display. */
     protected ChangeListener createInfoListener(final boolean upper) {
@@ -326,7 +329,7 @@ abstract public class ResourceTab extends JPanel {
      * Returns the resource model displayed on this tab,
      * or {@code null} if nothing is displayed.
      */
-    protected ResourceModel<?> getResource() {
+    protected NamedResourceModel<?> getResource() {
         QualName name = getQualName();
         if (name == null) {
             return null;

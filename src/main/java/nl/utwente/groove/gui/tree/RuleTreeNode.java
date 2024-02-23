@@ -234,7 +234,7 @@ class RuleTreeNode extends ActionTreeNode {
     Status getStatus() {
         return isActivated()
             ? Status.ACTIVE
-            : getRuleModel().isEnabled()
+            : getRuleModel().isActive()
                 ? Status.STANDBY
                 : Status.DISABLED;
     }

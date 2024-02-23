@@ -23,6 +23,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Objects;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -189,9 +190,7 @@ public class JGraphPanel<G extends Graph> extends JPanel {
     /** Sets the background colour for an enabled panel. */
     protected void setEnabledBackground(Color enabledBackground) {
         // only do something when it actually changes the background colour
-        if (enabledBackground == null
-            ? this.enabledBackground != null
-            : !enabledBackground.equals(this.enabledBackground)) {
+        if (!Objects.equals(enabledBackground, this.enabledBackground)) {
             this.enabledBackground = enabledBackground;
             if (isEnabled()) {
                 getJGraph().setBackground(enabledBackground);
@@ -201,6 +200,7 @@ public class JGraphPanel<G extends Graph> extends JPanel {
 
     /** The background colour in case the panel is enabled. */
     private Color enabledBackground = Color.WHITE;
+
     /**
      * The minimum width of the label pane. If the label list is empty, the
      * preferred width is set to the minimum width.

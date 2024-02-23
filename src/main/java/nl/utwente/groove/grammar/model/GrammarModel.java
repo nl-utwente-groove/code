@@ -508,8 +508,8 @@ public class GrammarModel implements PropertyChangeListener {
         // set rules
         for (NamedResourceModel<?> ruleModel : getResourceSet(RULE)) {
             try {
-                // only add the enabled rules
-                if (ruleModel.isEnabled()) {
+                // only add the active rules
+                if (ruleModel.isActive()) {
                     result.add(((RuleModel) ruleModel).toResource());
                 }
             } catch (FormatException exc) {
@@ -588,7 +588,7 @@ public class GrammarModel implements PropertyChangeListener {
         var result = new GrooveEnvironment(null, null);
         for (NamedResourceModel<?> model : getResourceSet(PROLOG)) {
             PrologModel prologModel = (PrologModel) model;
-            if (model.isEnabled()) {
+            if (model.isActive()) {
                 try {
                     result.loadProgram(prologModel.getProgram());
                     prologModel.clearErrors();

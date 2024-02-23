@@ -69,7 +69,7 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.model.GrammarModel;
-import nl.utwente.groove.grammar.model.ResourceModel;
+import nl.utwente.groove.grammar.model.NamedResourceModel;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphProperties;
@@ -332,7 +332,7 @@ final public class GraphEditorTab extends ResourceTab
     }
 
     @Override
-    protected ResourceModel<?> getResource() {
+    protected NamedResourceModel<?> getResource() {
         return getJModel().getResourceModel();
     }
 

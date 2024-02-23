@@ -371,8 +371,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     protected ResourceTab createEditorTab(QualName name) {
         ResourceKind kind = getResourceKind();
         if (kind.isGraphBased()) {
-            AspectGraph graph
-                = getSimulatorModel().getGrammar().getGraph(getResourceKind(), name);
+            AspectGraph graph = getSimulatorModel().getGrammar().getGraph(getResourceKind(), name);
             GraphEditorTab result = new GraphEditorTab(this, graph.getRole());
             result.setGraph(graph);
             return result;
@@ -445,7 +444,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
                 updateGrammar(source.getGrammar(), source.getGrammar() != oldModel.getGrammar());
             }
             NamedResourceModel<?> resourceModel = source.getResource(getResourceKind());
-            getEnableButton().setSelected(resourceModel != null && resourceModel.isEnabled());
+            getEnableButton().setSelected(resourceModel != null && resourceModel.isActive());
             selectResource(source.getSelected(getResourceKind()));
             buildInfoPanel();
             activateListening();
@@ -648,7 +647,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * tab component.
      */
     public final String getLabelText(QualName name) {
-        return getLabelText(name, "", getResource(name).isEnabled());
+        return getLabelText(name, "", getResource(name).isActive());
     }
 
     /**
@@ -690,23 +689,23 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      */
     protected String getToolTip(QualName name) {
         NamedResourceModel<?> model = getResource(name);
-        boolean enabled = model != null && model.isEnabled();
-        return getToolTip(name, enabled);
+        boolean active = model != null && model.isActive();
+        return getToolTip(name, active);
     }
 
-    /** Returns the tool tip text for a resource, depending on its enabling. */
-    private String getToolTip(QualName name, boolean enabled) {
-        String result = enabled
-            ? this.enabledText
-            : this.disabledText;
+    /** Returns the tool tip text for a resource, depending on its active status. */
+    private String getToolTip(QualName name, boolean active) {
+        String result = active
+            ? this.activeText
+            : this.inactiveText;
         if (result == null) {
-            this.enabledText = String
-                .format("Enabled %s; doubleclick to edit", getResourceKind().getDescription());
-            this.disabledText = String
-                .format("Disabled %s; doubleclick to edit", getResourceKind().getDescription());
-            result = enabled
-                ? this.enabledText
-                : this.disabledText;
+            this.activeText = String
+                .format("Active %s; doubleclick to edit", getResourceKind().getDescription());
+            this.inactiveText = String
+                .format("Inactive %s; doubleclick to edit", getResourceKind().getDescription());
+            result = active
+                ? this.activeText
+                : this.inactiveText;
         }
         return result;
     }
@@ -751,9 +750,9 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     private ResourceTab mainTab;
 
     /** Tool tip text for an enabled resource. */
-    private String enabledText;
+    private String activeText;
     /** Tool tip text for a disabled resource. */
-    private String disabledText;
+    private String inactiveText;
 
     private class MyTabbedPane extends JTabbedPane {
         /** Constructs an instance of the panel. */

@@ -22,28 +22,27 @@ public class DeleteAction extends SimulatorAction {
     public void execute() {
         ResourceKind resource = getResourceKind();
         Set<QualName> names = getSimulatorModel().getSelectSet(resource);
-        boolean enabled = false;
+        boolean active = false;
         for (QualName name : names) {
-            enabled |= getGrammarModel().getResource(resource, name)
-                .isEnabled();
-            if (enabled) {
+            active |= getGrammarModel().getResource(resource, name).isActive();
+            if (active) {
                 break;
             }
         }
         String question;
         if (names.size() == 1) {
-            String description = resource == ResourceKind.HOST && enabled ? "start graph"
+            String description = resource == ResourceKind.HOST && active
+                ? "start graph"
                 : resource.getDescription();
-            QualName name = names.iterator()
-                .next();
+            QualName name = names.iterator().next();
             question = String.format("Delete %s '%s'?", description, name);
         } else {
-            String addendum =
-                enabled && resource == ResourceKind.HOST ? " (including start graph)" : "";
-            question = String.format("Delete these %d %ss%s?",
-                names.size(),
-                resource.getDescription(),
-                addendum);
+            String addendum = active && resource == ResourceKind.HOST
+                ? " (including start graph)"
+                : "";
+            question = String
+                .format("Delete these %d %ss%s?", names.size(), resource.getDescription(),
+                        addendum);
         }
         if (confirmBehaviour(Options.DELETE_RESOURCE_OPTION, question)) {
             // we do not ask for editor cancellation,
@@ -52,9 +51,11 @@ public class DeleteAction extends SimulatorAction {
                 getSimulatorModel().doDelete(resource, names);
             } catch (IOException exc) {
                 showErrorDialog(exc,
-                    String.format("Error while deleting %s%s",
-                        resource.getDescription(),
-                        names.size() == 1 ? "" : "s"));
+                                String
+                                    .format("Error while deleting %s%s", resource.getDescription(),
+                                            names.size() == 1
+                                                ? ""
+                                                : "s"));
             }
         }
     }

@@ -62,11 +62,9 @@ abstract public class NamedResourceModel<R> extends ResourceModel<R> {
     private final QualName name;
 
     /**
-     * Indicates if this resource is currently enabled for use in the grammar.
-     * For non-composite resource models, this is the case if and only if
-     * the name is active in the grammar.
+     * Indicates if this resource is currently active in the grammar.
      */
-    public boolean isEnabled() {
+    public boolean isActive() {
         return getGrammar() == null
             || getGrammar().getActiveNames(getKind()).contains(getQualName());
     }

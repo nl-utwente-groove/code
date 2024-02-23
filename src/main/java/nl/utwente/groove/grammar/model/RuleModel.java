@@ -137,7 +137,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     }
 
     @Override
-    public boolean isEnabled() {
+    public boolean isActive() {
         return GraphInfo.isEnabled(getSource()) || hasRecipes();
     }
 

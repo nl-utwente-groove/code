@@ -33,7 +33,7 @@ public class ExecGroovyAction extends SimulatorAction {
     public void execute() {
         for (QualName name : getSimulatorModel().getSelectSet(getResourceKind())) {
             GroovyModel model = (GroovyModel) getGrammarModel().getResource(GROOVY, name);
-            if (model.isEnabled()) {
+            if (model.isActive()) {
                 ((GroovyDisplay) getDisplay()).executeGroovy(name);
             }
         }
@@ -43,8 +43,7 @@ public class ExecGroovyAction extends SimulatorAction {
     public void refresh() {
         boolean enabled = this.enabled;
         if (enabled) {
-            enabled = !getSimulatorModel().getSelectSet(getResourceKind())
-                .isEmpty();
+            enabled = !getSimulatorModel().getSelectSet(getResourceKind()).isEmpty();
         }
         setEnabled(enabled);
     }
@@ -52,6 +51,6 @@ public class ExecGroovyAction extends SimulatorAction {
     private final boolean enabled;
 
     static private final String DESCRIPTION = "Execute Groovy script";
-    static private final String DISABLED_DESCRIPTION =
-        "To enable, insert the Groovy jars in the Groove bin directory";
+    static private final String DISABLED_DESCRIPTION
+        = "To enable, insert the Groovy jars in the Groove bin directory";
 }

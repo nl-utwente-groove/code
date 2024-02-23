@@ -110,8 +110,8 @@ public class RuleDependencies {
         // set rules
         for (NamedResourceModel<?> ruleModel : grammar.getResourceSet(RULE)) {
             try {
-                // only add the enabled rules
-                if (ruleModel.isEnabled()) {
+                // only add the active rules
+                if (ruleModel.isActive()) {
                     result.add(((RuleModel) ruleModel).toResource());
                 }
             } catch (FormatException exc) {
