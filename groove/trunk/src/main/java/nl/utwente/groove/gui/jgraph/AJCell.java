@@ -49,7 +49,9 @@ public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JMo
      * Call {@link #setJModel(JModel)} to initialise to a given model.
      */
     protected AJCell() {
-        // empty
+        this.staleKeys = EnumSet.noneOf(VisualKey.class);
+        this.staleKeys.addAll(Arrays.asList(VisualKey.refreshables()));
+        this.visuals = new VisualMap();
     }
 
     @SuppressWarnings("unchecked")
@@ -103,8 +105,6 @@ public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JMo
             this.visuals.putAll(oldVisuals);
         }
         this.looksChanged = true;
-        this.staleKeys = EnumSet.noneOf(VisualKey.class);
-        this.staleKeys.addAll(Arrays.asList(VisualKey.refreshables()));
         this.errors = null;
     }
 

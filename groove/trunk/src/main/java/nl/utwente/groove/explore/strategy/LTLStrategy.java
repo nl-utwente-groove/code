@@ -39,11 +39,11 @@ import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.verify.BuchiGraph;
 import nl.utwente.groove.verify.BuchiLocation;
 import nl.utwente.groove.verify.BuchiTransition;
+import nl.utwente.groove.verify.ModelChecking.Record;
 import nl.utwente.groove.verify.ProductState;
 import nl.utwente.groove.verify.ProductStateSet;
 import nl.utwente.groove.verify.ProductTransition;
 import nl.utwente.groove.verify.Proposition;
-import nl.utwente.groove.verify.ModelChecking.Record;
 import nl.utwente.groove.verify.Proposition.Arg;
 
 /**
@@ -58,8 +58,7 @@ public class LTLStrategy extends Strategy {
     protected void prepare(GTS gts, GraphState state, Acceptor acceptor) {
         assert acceptor instanceof CycleAcceptor;
         super.prepare(gts, state, acceptor);
-        MatcherFactory.instance(gts.isSimple())
-            .setDefaultEngine();
+        MatcherFactory.instance(gts.isSimple()).setDefaultEngine();
         this.stateSet = new ProductStateSet();
         this.stateSet.addListener(this.collector);
         this.acceptor = (CycleAcceptor) acceptor;
@@ -113,10 +112,9 @@ public class LTLStrategy extends Strategy {
         assert property != null;
         this.property = property;
         try {
-            Formula<Proposition> formula = nl.utwente.groove.verify.Formula.parse(property)
-                .toLtlFormula();
-            BuchiGraph buchiGraph = BuchiGraph.getPrototype()
-                .newBuchiGraph(Formula.Not(formula));
+            Formula<Proposition> formula
+                = nl.utwente.groove.verify.Formula.parse(property).toLtlFormula();
+            BuchiGraph buchiGraph = BuchiGraph.getPrototype().newBuchiGraph(Formula.Not(formula));
             this.startLocation = buchiGraph.getInitial();
         } catch (FormatException e) {
             throw new IllegalStateException(String.format("Error in property '%s'", property), e);
@@ -160,7 +158,9 @@ public class LTLStrategy extends Strategy {
         // close the current state
         getStateSet().setClosed(previous);
         colourState(previous);
-        return getStateStack().isEmpty() ? null : getStateStack().peek();
+        return getStateStack().isEmpty()
+            ? null
+            : getStateStack().peek();
     }
 
     /**
@@ -171,18 +171,16 @@ public class LTLStrategy extends Strategy {
      */
     protected boolean exploreState(ProductState prodState) {
         boolean result = false;
-        Set<? extends GraphTransition> outTransitions = prodState.getGraphState()
-            .getTransitions();
+        Set<? extends GraphTransition> outTransitions = prodState.getGraphState().getTransitions();
         Set<Proposition> satisfiedProps = getProps(outTransitions);
-        trans: for (BuchiTransition buchiTrans : prodState.getBuchiLocation()
-            .outTransitions()) {
+        trans: for (BuchiTransition buchiTrans : prodState.getBuchiLocation().outTransitions()) {
             if (buchiTrans.isEnabled(satisfiedProps)) {
                 boolean finalState = true;
                 for (GraphTransition trans : outTransitions) {
                     if (trans.getRole() == EdgeRole.BINARY) {
                         finalState = false;
-                        ProductTransition prodTrans =
-                            addTransition(prodState, trans, buchiTrans.target());
+                        ProductTransition prodTrans
+                            = addTransition(prodState, trans, buchiTrans.target());
                         result = findCounterExample(prodState, prodTrans.target());
                         if (result) {
                             break trans;
@@ -253,14 +251,25 @@ public class LTLStrategy extends Strategy {
      * @return {@code true} if a counterexample was found
      */
     protected final boolean findCounterExample(ProductState source, ProductState target) {
-        boolean result = (target.colour() == getRecord().cyan()) && (source.getBuchiLocation()
-            .isAccepting()
-            || target.getBuchiLocation()
-                .isAccepting());
+        boolean result = (target.colour() == getRecord().cyan())
+            && (source.getBuchiLocation().isAccepting() || target.getBuchiLocation().isAccepting());
         if (result) {
             // notify counter-example
-            for (ProductState state : getStateStack()) {
-                this.result.addState(state.getGraphState());
+            var exploreResult = this.result;
+            GraphState previous = null;
+            for (ProductState stackState : getStateStack()) {
+                var next = stackState.getGraphState();
+                exploreResult.addState(next);
+                if (previous != null) {
+                    var inTrans = previous
+                        .getTransitions()
+                        .stream()
+                        .filter(t -> t.target().equals(next))
+                        .findAny()
+                        .get();
+                    exploreResult.add(inTrans);
+                }
+                previous = next;
             }
         }
         return result;
@@ -296,19 +305,17 @@ public class LTLStrategy extends Strategy {
      * @return the set of label texts of the transitions in {@code transitions}
      */
     private Set<Proposition> getProps(Set<? extends GraphTransition> transitions) {
-        return transitions.stream()
-            .map(t -> toProp(t))
-            .collect(Collectors.toSet());
+        return transitions.stream().map(t -> toProp(t)).collect(Collectors.toSet());
     }
 
     private Proposition toProp(GraphTransition trans) {
-        List<Arg> args = Arrays.stream(trans.label()
-            .getArguments())
-            .map(a -> a instanceof ValueNode ? Arg.arg(((ValueNode) a).toTerm())
+        List<Arg> args = Arrays
+            .stream(trans.label().getArguments())
+            .map(a -> a instanceof ValueNode
+                ? Arg.arg(((ValueNode) a).toTerm())
                 : Arg.arg(a.toString()))
             .collect(Collectors.toList());
-        return Proposition.prop(trans.getAction()
-            .getQualName(), args);
+        return Proposition.prop(trans.getAction().getQualName(), args);
     }
 
     /**
@@ -336,7 +343,7 @@ public class LTLStrategy extends Strategy {
      * @see ProductState#addTransition(ProductTransition)
      */
     private ProductTransition addTransition(ProductState source, GraphTransition transition,
-        BuchiLocation targetLocation) {
+                                            BuchiLocation targetLocation) {
         ProductTransition result = null;
         if (!source.isClosed()) {
             // we assume that we only add transitions for modifying graph
@@ -357,11 +364,8 @@ public class LTLStrategy extends Strategy {
             // the product-gts contains all transitions and
             // we do not have to add new transitions.
             for (ProductTransition nextTransition : source.outTransitions()) {
-                if (nextTransition.graphTransition()
-                    .equals(transition)
-                    && nextTransition.target()
-                        .getBuchiLocation()
-                        .equals(targetLocation)) {
+                if (nextTransition.graphTransition().equals(transition)
+                    && nextTransition.target().getBuchiLocation().equals(targetLocation)) {
                     result = nextTransition;
                     break;
                 }
@@ -374,7 +378,7 @@ public class LTLStrategy extends Strategy {
      * a Buchi location.
      */
     private ProductState createState(GraphState state, GraphTransition transition,
-        BuchiLocation targetLocation) {
+                                     BuchiLocation targetLocation) {
         if (transition == null) {
             // the system-state is a final one for which we add an artificial
             // self-loop
@@ -385,7 +389,8 @@ public class LTLStrategy extends Strategy {
     }
 
     private ProductTransition createProductTransition(ProductState source,
-        GraphTransition transition, ProductState target) {
+                                                      GraphTransition transition,
+                                                      ProductState target) {
         return new ProductTransition(source, transition, target);
     }
 

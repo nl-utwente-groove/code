@@ -485,6 +485,12 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
         return result != null && result.contains(state);
     }
 
+    /** Convenience method to test whether a given transition is included in the result object. */
+    public boolean isResult(GraphTransition trans) {
+        ExploreResult result = getResult();
+        return result != null && result.contains(trans);
+    }
+
     /** Filters the LTS.
      * @return {@code true} if any cells were added (necessitating a relayout). */
     public boolean refreshFiltering() {
