@@ -85,7 +85,7 @@ public class Version {
      * </ul>
      * The suffix {@link #SNAPSHOT} indicates a development version.
      */
-    public static final String NUMBER = "6.7.2";// + SNAPSHOT;
+    public static final String NUMBER = "6.7.3" + SNAPSHOT;
 
     /** Minimum Java JRE version required. */
     static public final String NUMBER_JAVAMIN = "17";
