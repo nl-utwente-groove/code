@@ -1,0 +1,3 @@
+recipe next() priority 2 {
+	addNext; alap closure;
+}
