@@ -31,7 +31,6 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> impleme
     public void initialise() {
         super.initialise();
         this.visibleFlag = true;
-        setLook(Look.RESULT, isResult());
     }
 
     @Override
@@ -78,6 +77,7 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> impleme
         // updates the look on the basis of the edge
         setLook(Look.RECIPE, isInternal());
         setLook(Look.ABSENT, isAbsent());
+        setLook(Look.RESULT, isResult());
         LTSJVertex sourceVertex = getSourceVertex();
         if (sourceVertex != null && getVisuals().isVisible()) {
             sourceVertex.changeOutVisible(true, 1);
