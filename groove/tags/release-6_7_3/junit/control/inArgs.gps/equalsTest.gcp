@@ -1,0 +1,2 @@
+real rx := inRealOutReal(1.0);
+alap { rx := inRealOutReal(max(rx,(real)1));}

@@ -1,0 +1,20 @@
+// Recursive recipy
+recipe fib(int x, out int result) {
+	try {
+		// if x is zero, output zero
+		zero(x); result := zero();
+	} else try {
+		// if x is one, output one
+		one(x); result := one();
+	} else {
+		// y := fib(x-1)
+		int y := fib(x - 1);
+		// z := fib(x-2)
+		int z := fib(x - 2);
+		// result := y+z
+		result := add(y, z);
+	}
+}
+
+int result := fib(6);
+
