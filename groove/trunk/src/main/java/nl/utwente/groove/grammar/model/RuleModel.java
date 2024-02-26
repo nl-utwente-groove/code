@@ -1506,11 +1506,17 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 boolean argOnThisLevel = this.lhs.nodeSet().contains(argument);
                 if (!(argOnThisLevel || embargo && this.nacNodeSet.contains(argument))) {
                     String nodeName = argModelNode.hasId()
-                        ? argModelNode.getId()
-                        : argModelNode.toString();
-                    throw new FormatException(
-                        "Argument '%s' does not exist on the level of the operator '%s'", nodeName,
-                        operator.getName(), argModelNode, operatorEdge);
+                        ? "'" + argModelNode.getId() + "' "
+                        : "";
+                    if (argModelNode.has(PARAM_ASK)) {
+                        throw new FormatException(
+                            "User input value %s not supported as expression argument", nodeName,
+                            argModelNode, operatorEdge);
+                    } else {
+                        throw new FormatException(
+                            "Argument %s does not exist on the level of the operator '%s'",
+                            nodeName, operator.getName(), argModelNode, operatorEdge);
+                    }
                 }
                 arguments.add(argument);
             }
