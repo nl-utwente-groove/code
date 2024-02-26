@@ -61,7 +61,7 @@ public class Version {
     }
 
     /** Build number (timestamp with format yyyymmdd). */
-    public static final String BUILD = "20240223";
+    public static final String BUILD = "20240226";
 
     /** Release date of this version (date format dd.mm.yyyy). */
     public static final String DATE;
@@ -85,7 +85,7 @@ public class Version {
      * </ul>
      * The suffix {@link #SNAPSHOT} indicates a development version.
      */
-    public static final String NUMBER = "6.7.3" + SNAPSHOT;
+    public static final String NUMBER = "6.7.3";// + SNAPSHOT;
 
     /** Minimum Java JRE version required. */
     static public final String NUMBER_JAVAMIN = "17";
