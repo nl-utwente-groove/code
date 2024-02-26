@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.gui.look;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -231,7 +232,8 @@ public enum Look {
     FINAL() {
         @Override
         void init() {
-            add(VisualKey.BACKGROUND, Values.FINAL_BACKGROUND);
+            add(VisualKey.LINE_WIDTH, 4f);
+            add(VisualKey.INNER_LINE, Color.WHITE);
         }
     },
     /** Change in look due to error state status. */
@@ -248,6 +250,7 @@ public enum Look {
         void init() {
             add(VisualKey.FOREGROUND, Values.RESULT_FOREGROUND);
             add(VisualKey.BACKGROUND, Values.RESULT_BACKGROUND);
+            add(VisualKey.LINE_WIDTH, 3f);
         }
     },
     /** Change in look due to in-recipe status. */
@@ -283,12 +286,9 @@ public enum Look {
         public void apply(VisualMap map) {
             boolean inRecipe = (map.getForeground() == Values.RECIPE_COLOR);
             boolean isStart = (map.getForeground() == Values.START_FOREGROUND);
-            boolean isFinal = (map.getBackground() == Values.FINAL_BACKGROUND);
             super.apply(map);
             if (inRecipe) {
                 map.put(VisualKey.FOREGROUND, Values.ACTIVE_RECIPE_COLOR, false);
-            } else if (isFinal) {
-                map.put(VisualKey.FOREGROUND, Values.ACTIVE_FINAL_COLOR, false);
             } else if (isStart) {
                 map.put(VisualKey.FOREGROUND, Values.ACTIVE_START_COLOR, false);
             }

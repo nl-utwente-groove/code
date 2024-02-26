@@ -390,7 +390,7 @@ public class JVertexView extends VertexView {
             if (innerLineColor != null) {
                 this.twoLines = true;
                 this.line2color = innerLineColor;
-                this.line2width = 1;
+                this.line2width = JAttr.INNER_LINE_WIDTH;
                 this.line2dash = (float[]) VisualKey.DASH.getDefaultValue();
             } else {
                 this.twoLines = false;

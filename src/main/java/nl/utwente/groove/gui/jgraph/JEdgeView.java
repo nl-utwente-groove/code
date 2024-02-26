@@ -456,7 +456,7 @@ public class JEdgeView extends EdgeView {
             if (this.twoLines) {
                 // draw the second line
                 g2.setColor(this.line2color);
-                g2.setStroke(JAttr.createStroke(1, Values.NO_DASH));
+                g2.setStroke(JAttr.createStroke(JAttr.INNER_LINE_WIDTH, Values.NO_DASH));
                 g2.draw(this.view.lineShape);
                 if (this.view.endShape != null) {
                     g2.fill(this.view.endShape);

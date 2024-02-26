@@ -54,6 +54,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.accessibility.AccessibleState;
 import javax.swing.AbstractAction;
@@ -111,6 +112,7 @@ import nl.utwente.groove.gui.menu.ZoomMenu;
 import nl.utwente.groove.gui.tree.LabelTree;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Pair;
 
 /**
@@ -147,9 +149,9 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
      * and installs this JGraph as listener.
      */
     protected void installListeners() {
-        addMouseListener(new MyMouseListener());
+        addMouseListener(getMouseListener());
         addKeyListener(getCancelEditListener());
-        getSelectionModel().addGraphSelectionListener(new MyGraphSelectionListener());
+        getSelectionModel().addGraphSelectionListener(getGraphSelectionListener());
         addOptionListener(SHOW_NODE_IDS_OPTION);
         addOptionListener(SHOW_UNFILTERED_EDGES_OPTION);
         addOptionListener(SHOW_ANCHORS_OPTION);
@@ -162,6 +164,9 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
      * so as to avoid memory leaks.
      */
     public void removeListeners() {
+        removeMouseListener(getMouseListener());
+        removeKeyListener(getCancelEditListener());
+        getSelectionModel().removeGraphSelectionListener(getGraphSelectionListener());
         getActions().removeRefreshable(getExportAction());
         for (Pair<JMenuItem,RefreshListener> record : this.optionListeners) {
             record.one().removeItemListener(record.two());
@@ -1277,11 +1282,45 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         super.startEditingAtCell(cell);
     }
 
+    /** The lazily computed cancel edit listener. */
     private CancelEditListener getCancelEditListener() {
-        if (this.cancelListener == null) {
-            this.cancelListener = new CancelEditListener();
-        }
-        return this.cancelListener;
+        return this.cancelListener.get();
+    }
+
+    /** Lazily computed value for the cancel edit listener. */
+    private Supplier<CancelEditListener> cancelListener
+        = Factory.lazy(this::createCancelEditListener);
+
+    /** Creates the value for {@link #cancelListener}. */
+    CancelEditListener createCancelEditListener() {
+        return new CancelEditListener();
+    }
+
+    /** The lazily computed graph selection listener. */
+    private GraphSelectionListener getGraphSelectionListener() {
+        return this.selectionListener.get();
+    }
+
+    /** Lazily computed value for the graph selection listener. */
+    private Supplier<GraphSelectionListener> selectionListener
+        = Factory.lazy(this::createGraphSelectionListener);
+
+    /** Creates the value for {@link #cancelListener}. */
+    GraphSelectionListener createGraphSelectionListener() {
+        return new MyGraphSelectionListener();
+    }
+
+    /** The lazily computed mouse listener. */
+    private MyMouseListener getMouseListener() {
+        return this.mouseListener.get();
+    }
+
+    /** Lazily computed value for the mouse listener. */
+    private Supplier<MyMouseListener> mouseListener = Factory.lazy(this::createMouseListener);
+
+    /** Creates the value for {@link #mouseListener}. */
+    MyMouseListener createMouseListener() {
+        return new MyMouseListener();
     }
 
     /** Clear all intermediate points from all edges. */
@@ -1354,7 +1393,6 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     private final Options options;
     /** The manipulation mode of the JGraph. */
     private JGraphMode mode;
-    private CancelEditListener cancelListener;
     /** Flag indicating that a model refresh is being executed. */
     private boolean modelRefreshing;
 
@@ -1430,15 +1468,13 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     }
 
     /** Listener that pushes selection values into the visual map. */
-    private class MyGraphSelectionListener implements GraphSelectionListener {
+    class MyGraphSelectionListener implements GraphSelectionListener {
         @Override
         public void valueChanged(GraphSelectionEvent e) {
             Object[] cells = e.getCells();
             for (int i = 0; i < cells.length; i++) {
                 Object c = cells[i];
-                if (c instanceof JCell) {
-                    @SuppressWarnings("unchecked")
-                    JCell<G> jCell = (JCell<G>) c;
+                if (c instanceof JCell jCell) {
                     jCell.putVisual(VisualKey.EMPHASIS, e.isAddedCell(i));
                 }
             }

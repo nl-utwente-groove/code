@@ -330,12 +330,14 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
     public boolean setActive(GraphState activeState, GraphTransition activeTrans) {
         boolean result = false;
         List<JCell<GTS>> activeCells = new ArrayList<>();
-        boolean changed = false;
+        List<JCell<GTS>> changedCells = new ArrayList<>();
         GraphTransition oldActiveTrans = getActiveTransition();
         this.activeTransition = activeTrans;
         if (oldActiveTrans != null) {
             for (LTSJCell jCell : getTransitionCells(oldActiveTrans)) {
-                changed |= jCell.setActive(false);
+                if (jCell.setActive(false)) {
+                    changedCells.add(jCell);
+                }
             }
         }
         if (activeTrans != null) {
@@ -343,14 +345,18 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
                 if (jCell.getVisuals().isVisible()) {
                     activeCells.add(jCell);
                 }
-                changed |= jCell.setActive(true);
+                if (jCell.setActive(true)) {
+                    changedCells.add(jCell);
+                }
             }
         }
         GraphState oldActiveState = this.activeState;
         this.activeState = activeState;
         if (oldActiveState != null) {
             LTSJVertex jCell = (LTSJVertex) getModel().getJCellForNode(oldActiveState);
-            changed |= jCell != null && jCell.setActive(false);
+            if (jCell != null && jCell.setActive(false)) {
+                changedCells.add(jCell);
+            }
         }
         if (activeState != null && getModel() != null) {
             LTSJVertex jCell = (LTSJVertex) getModel().getJCellForNode(activeState);
@@ -359,14 +365,19 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
                 jCell = (LTSJVertex) getModel().getJCellForNode(activeState);
             }
             if (jCell != null) {
-                changed |= jCell.setActive(true);
+                if (jCell.setActive(true)) {
+                    changedCells.add(jCell);
+                }
                 if (jCell.getVisuals().isVisible()) {
                     activeCells.add(jCell);
                 }
             }
         }
-        if (changed) {
+        if (!activeCells.isEmpty()) {
             setSelectionCells(activeCells.toArray());
+        }
+        if (!changedCells.isEmpty()) {
+            refreshCells(changedCells);
         }
         return result;
     }

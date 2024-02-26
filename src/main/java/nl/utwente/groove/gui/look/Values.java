@@ -82,9 +82,9 @@ public class Values {
     /** Background colour of final states. */
     public static final Color FINAL_BACKGROUND = Colors.findColor("0 200 0");
     /** Foreground colour of result states. */
-    public static final Color RESULT_FOREGROUND = JAttr.STATE_BACKGROUND;
+    public static final Color RESULT_FOREGROUND = Colors.findColor("92 125 23");
     /** Background colour of result states. */
-    public static final Color RESULT_BACKGROUND = Colors.findColor("92 125 23");
+    public static final Color RESULT_BACKGROUND = Colors.findColor("0x90EE90");
     /** Background colour of error states. */
     public static final Color ERROR_BACKGROUND = Color.RED;
     /** Foreground colour of the start state. */

@@ -50,6 +50,10 @@ public class JAttr {
      * The line width used for edges and node borders.
      */
     public static final int DEFAULT_LINE_WIDTH = 1;
+    /**
+     * The inner line width for adders and final states.
+     */
+    public static final int INNER_LINE_WIDTH = 2;
 
     /** Default background for active resources. */
     public static final Color ACTIVE_BACKGROUND = Color.WHITE;
