@@ -396,8 +396,8 @@ public class StateTree extends JTree implements SimulatorListener {
 
     private void setStateExpanded(StateTreeNode stateNode) {
         for (int i = 0; i < stateNode.getChildCount(); i++) {
-            var ruleNode = (RuleTreeNode) stateNode.getChildAt(i);
-            expandPath(createPath(ruleNode));
+            var actionNode = (ActionTreeNode) stateNode.getChildAt(i);
+            expandPath(createPath(actionNode));
         }
         if (!stateNode.isExpanded()) {
             collapsePath(createPath((stateNode)));
