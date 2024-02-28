@@ -234,7 +234,7 @@ public class Groove {
      * Returns a URL for a given resource name using the class loader.
      */
     public static URL getResource(String name) {
-        return Groove.class.getClassLoader().getResource(name);
+        return ClassLoader.getSystemResource(name);
     }
 
     /**

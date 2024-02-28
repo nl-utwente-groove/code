@@ -3,6 +3,12 @@
  */
 package nl.utwente.groove.util;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.URISyntaxException;
+
 import javax.swing.JOptionPane;
 
 /**
@@ -61,7 +67,7 @@ public class Version {
     }
 
     /** Build number (timestamp with format yyyymmdd). */
-    public static final String BUILD = "20240226";
+    public static final String BUILD = read("GROOVE_BUILD");
 
     /** Release date of this version (date format dd.mm.yyyy). */
     public static final String DATE;
@@ -74,7 +80,10 @@ public class Version {
     }
 
     /** Suffix to the {@link #NUMBER} that indicates this is a development version. */
-    static private final String SNAPSHOT = "-SNAPSHOT";
+    static private final String SNAPSHOT_SUFFIX = "-SNAPSHOT";
+
+    /** Boolean flag indicating whether this is a snapshot version. */
+    static private final boolean SNAPSHOT = true;
 
     /**
      * Groove Version number of format x.y.z, with
@@ -83,12 +92,14 @@ public class Version {
      * <li>y = minor version
      * <li>z = bug fix version
      * </ul>
-     * The suffix {@link #SNAPSHOT} indicates a development version.
+     * The suffix {@link #SNAPSHOT_SUFFIX} indicates a development version.
      */
-    public static final String NUMBER = "6.7.4" + SNAPSHOT;
+    public static final String NUMBER = read("GROOVE_VERSION") + (SNAPSHOT
+        ? SNAPSHOT_SUFFIX
+        : "");
 
     /** Minimum Java JRE version required. */
-    static public final String NUMBER_JAVAMIN = "17";
+    static public final String NUMBER_JAVAMIN = read("JAVA_VERSION");
 
     /** Title of this project. */
     static public final String TITLE = "GROOVE";
@@ -123,7 +134,7 @@ public class Version {
      *         version, <code>false</code> otherwise
      */
     public static boolean isDevelopmentVersion() {
-        return NUMBER.endsWith(SNAPSHOT);
+        return NUMBER.endsWith(SNAPSHOT_SUFFIX);
     }
 
     /**
@@ -292,4 +303,14 @@ public class Version {
      * {@code false}.
      */
     public static final String GRAMMAR_VERSION_3_10 = "3.10";
+
+    /** Returns the first line of a named resource file. */
+    private static String read(String filename) {
+        try (var file
+            = new BufferedReader(new FileReader(new File(Groove.getResource(filename).toURI())))) {
+            return file.readLine();
+        } catch (URISyntaxException | IOException exc) {
+            throw Exceptions.illegalArg("Can't read from %s", filename);
+        }
+    }
 }
