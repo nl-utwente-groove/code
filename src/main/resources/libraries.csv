@@ -1,5 +1,5 @@
 Antlr;compiling control programs and expressions;http://www.antlr.org;3.5.2
-Apache Batik;exporting images to SVG, EPS, …;https://xmlgraphics.apache.org/batik/;1.17
+Apache Batik;exporting images to SVG, EPS, ...;https://xmlgraphics.apache.org/batik/;1.17
 Apache FOP;exporting displayed graphs to PDF format;https://xmlgraphics.apache.org/fop/;2.9
 Args4J;command-line option parsing;http://args4j.kohsuke.org/;2.0.26
 JAXB;access to an XML document from a Java program;https://javaee.github.io/jaxb-v2/;3.0.2
