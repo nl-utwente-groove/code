@@ -40,7 +40,6 @@ import org.antlr.works.grammar.syntax.GrammarSyntaxParser;
 import nl.utwente.groove.annotation.Help;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.StringHandler;
@@ -77,7 +76,7 @@ public class CtrlDoc {
 
     /** Returns the content of the file that specifies the control grammar. */
     private String readGrammarText() {
-        URL url = Groove.getResource("Ctrl.g");
+        URL url = ClassLoader.getSystemResource("Ctrl.g");
         assert url != null : String.format("%s cannot be found", CTRL_GRAMMAR_FILE);
         String grammarText = "";
 

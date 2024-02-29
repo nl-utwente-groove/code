@@ -231,13 +231,6 @@ public class Groove {
     }
 
     /**
-     * Returns a URL for a given resource name using the class loader.
-     */
-    public static URL getResource(String name) {
-        return ClassLoader.getSystemResource(name);
-    }
-
-    /**
      * Converts a space-separated string value to an <tt>int</tt> array. Returns
      * <tt>null</tt> if the string is <tt>null</tt>, does not decompose into
      * space-separated sub-strings, or does not convert to <tt>int</tt> values.
