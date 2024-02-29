@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import au.com.bytecode.opencsv.CSVReader;
-import nl.utwente.groove.util.Groove;
 
 /**
  * Useful file system functionalities for performing I/O.
@@ -267,7 +266,8 @@ public class Util {
     public final static List<String[]> readCSV(String name, char sep) {
         List<String[]> result = null;
         try (CSVReader reader = new CSVReader(
-            new InputStreamReader(Groove.getResource(name + ".csv").openStream()), sep)) {
+            new InputStreamReader(ClassLoader.getSystemResource(name + ".csv").openStream()),
+            sep)) {
             result = reader.readAll();
         } catch (IOException e) {
             // no result

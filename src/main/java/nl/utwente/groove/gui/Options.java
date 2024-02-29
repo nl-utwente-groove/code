@@ -65,7 +65,6 @@ import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.io.Util;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.StringHandler;
 
@@ -1065,7 +1064,7 @@ public class Options implements Cloneable {
     /** Loads in a TrueType font of a given name. */
     private static Font loadFont(String name) {
         Font result = null;
-        try (InputStream stream = Groove.getResource(name).openStream()) {
+        try (InputStream stream = ClassLoader.getSystemResource("font/" + name).openStream()) {
             result = Font.createFont(Font.TRUETYPE_FONT, stream);
             result = result.deriveFont(getLabelFont().getSize2D());
         } catch (FileNotFoundException e) {

@@ -26,7 +26,6 @@ import javax.swing.ImageIcon;
 
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.io.store.EditType;
-import nl.utwente.groove.util.Groove;
 
 /**
  * List of all icons used in the GUI.
@@ -424,7 +423,7 @@ public final class Icons {
 
     /** Creates a named cursor from a given file. */
     static private ImageIcon createIcon(String filename) {
-        return new ImageIcon(Groove.getResource(filename));
+        return new ImageIcon(ClassLoader.getSystemResource("icon/" + filename));
     }
 
     /** Creates a named cursor from a given file. */

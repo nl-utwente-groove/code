@@ -1474,7 +1474,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
             Object[] cells = e.getCells();
             for (int i = 0; i < cells.length; i++) {
                 Object c = cells[i];
-                if (c instanceof JCell jCell) {
+                if (c instanceof JCell<?> jCell) {
                     jCell.putVisual(VisualKey.EMPHASIS, e.isAddedCell(i));
                 }
             }

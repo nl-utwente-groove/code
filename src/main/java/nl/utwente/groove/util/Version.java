@@ -4,10 +4,8 @@
 package nl.utwente.groove.util;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.io.InputStreamReader;
 
 import javax.swing.JOptionPane;
 
@@ -306,10 +304,10 @@ public class Version {
 
     /** Returns the first line of a named resource file. */
     private static String read(String filename) {
-        try (var file
-            = new BufferedReader(new FileReader(new File(Groove.getResource(filename).toURI())))) {
+        try (var file = new BufferedReader(new InputStreamReader(
+            ClassLoader.getSystemResource("version/" + filename).openStream()))) {
             return file.readLine();
-        } catch (URISyntaxException | IOException exc) {
+        } catch (IOException exc) {
             throw Exceptions.illegalArg("Can't read from %s", filename);
         }
     }
