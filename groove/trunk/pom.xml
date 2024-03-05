@@ -4,6 +4,32 @@
 	<artifactId>groove</artifactId>
 	<version>6.7.4-SNAPSHOT</version>
 	
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>
+		GROOVE: GUI, command-line tools and library for graph transformation and state space exploration.
+  	</description>
+	<url>https://sf.net/projects/groove</url>
+	<licenses>
+		<license>
+    		<name>The Apache License, Version 2.0</name>
+	    	<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+	
+	<developers>
+	    <developer>
+    		<name>Arend Rensink</name>
+			<email>arend.rensink@utwente.nl</email>
+			<organization>University of Twente, The Netherlands</organization>
+			<organizationUrl>http://people.utwente.nl/arend.rensink</organizationUrl>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:svn:https://svn.code.sf.net/p/groove/code/groove/trunk</connection>
+		<developerConnection>scm:svn:https://svn.code.sf.net/p/groove/code/groove/trunk</developerConnection>
+		<url>https://sourceforge.net/projects/groove/files/</url>
+	</scm>
 	
 	<distributionManagement>
 		<snapshotRepository>
@@ -62,7 +88,6 @@
 				<configuration>
 					<additionalOptions>-Xdoclint:none</additionalOptions>
 					<reportOutputDirectory>target</reportOutputDirectory>
-					<destDir>javadoc</destDir>
 				</configuration>
 			</plugin>
 			
@@ -98,7 +123,7 @@
 				<configuration>
 					<serverId>ossrh</serverId>
 					<nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+					<autoReleaseAfterClose>false</autoReleaseAfterClose>
 				</configuration>
 			</plugin>
 			
@@ -227,7 +252,7 @@
 		<dependency>
 			<groupId>xerces</groupId>
 			<artifactId>xercesImpl</artifactId>
-			<version>2.11.0</version>
+			<version>2.12.2</version>
 			<exclusions>
 				<exclusion>
 					<groupId>xml-apis</groupId>
