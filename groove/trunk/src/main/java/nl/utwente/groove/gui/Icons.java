@@ -16,6 +16,9 @@
  */
 package nl.utwente.groove.gui;
 
+import static nl.utwente.groove.util.Groove.RESOURCE_PACKAGE;
+import static nl.utwente.groove.util.Groove.getResource;
+
 import java.awt.Cursor;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
@@ -24,6 +27,7 @@ import java.awt.Toolkit;
 
 import javax.swing.ImageIcon;
 
+import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.io.store.EditType;
 
@@ -186,6 +190,11 @@ public final class Icons {
             return null;
         }
     }
+
+    /** Name of the icon subpackage of the GROOVE resource package. */
+    public static final String ICON_PACKAGE_TOKEN = "icon";
+    /** Absolute qualified name of the icon resource package. */
+    public static final QualName ICON_PACKAGE = RESOURCE_PACKAGE.extend(ICON_PACKAGE_TOKEN);
 
     /** Transparent open up-arrow icon. */
     public static final ImageIcon ARROW_OPEN_UP_ICON = createIcon("arrow-open-up.gif");
@@ -423,7 +432,7 @@ public final class Icons {
 
     /** Creates a named cursor from a given file. */
     static private ImageIcon createIcon(String filename) {
-        return new ImageIcon(ClassLoader.getSystemResource("icon/" + filename));
+        return new ImageIcon(getResource(ICON_PACKAGE.extend(filename)));
     }
 
     /** Creates a named cursor from a given file. */

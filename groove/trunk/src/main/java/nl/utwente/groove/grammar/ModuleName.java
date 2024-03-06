@@ -18,6 +18,7 @@ package nl.utwente.groove.grammar;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNull;
@@ -27,6 +28,7 @@ import nl.utwente.groove.util.Groove;
 /**
  * Name of a module within a grammar.
  * Serves as namespace for qualified names.
+ * in contrast to a qualified name, a module name may be empty.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -36,6 +38,13 @@ public class ModuleName {
      */
     ModuleName() {
         this.tokens = new ArrayList<>();
+    }
+
+    /**
+     * Constructs an module name from a given list of tokens.
+     */
+    ModuleName(List<String> tokens) {
+        this.tokens = new ArrayList<>(tokens);
     }
 
     /**
@@ -72,10 +81,30 @@ public class ModuleName {
     /** The tokens of which this module name consists. */
     final List<@NonNull String> tokens;
 
+    /** Returns a new module name consisting of the tokens of this one,
+     * followed by the tokens of another one.
+     */
+    public ModuleName concat(ModuleName other) {
+        var result = new ModuleName(this.tokens);
+        result.tokens.addAll(other.tokens);
+        return result;
+    }
+
     /** Extends this module name with a child, and returns the result. */
-    public QualName extend(@NonNull String child) {
+    public QualName extend(@NonNull String... children) {
         QualName result = new QualName(tokens());
-        result.tokens.add(child);
+        result.tokens.addAll(Arrays.asList(children));
+        return result;
+    }
+
+    /** Returns a qualified name, extending this module name
+     * with a nested qualified name. The tokens of the resulting name
+     * consist of the tokens of this module name,
+     * followed by the tokens of a given qualified name.
+     */
+    public QualName extend(QualName other) {
+        var result = new QualName(this.tokens);
+        result.tokens.addAll(other.tokens);
         return result;
     }
 
@@ -172,10 +201,20 @@ public class ModuleName {
         return false;
     }
 
+    /** Returns a string representation of this name, using a given separator. */
+    public String toString(char sep) {
+        return toString("" + sep);
+    }
+
+    /** Returns a string representation of this name, using a given separator. */
+    public String toString(String sep) {
+        return Groove.toString(this.tokens.toArray(), "", "", sep, sep);
+    }
+
     @Override
     public String toString() {
         if (this.text == null) {
-            this.text = Groove.toString(this.tokens.toArray(), "", "", SEPARATOR, SEPARATOR);
+            this.text = toString(SEPARATOR);
         }
         return this.text;
     }

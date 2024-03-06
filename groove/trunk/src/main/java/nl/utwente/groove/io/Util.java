@@ -16,6 +16,9 @@
  */
 package nl.utwente.groove.io;
 
+import static nl.utwente.groove.util.Groove.RESOURCE_PACKAGE;
+import static nl.utwente.groove.util.Groove.getResourceStream;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -262,12 +265,14 @@ public class Util {
      */
     private static final long FIFTY_MB = 1024 * 1024 * 50;
 
-    /** Reads a CSV file from the resources dir and returns its contents as a String matrix. */
+    /** Reads a CSV file from the resources dir and returns its contents as a String matrix.
+     * @param name CSV file name, without extension
+     */
     public final static List<String[]> readCSV(String name, char sep) {
         List<String[]> result = null;
-        try (CSVReader reader = new CSVReader(
-            new InputStreamReader(ClassLoader.getSystemResource(name + ".csv").openStream()),
-            sep)) {
+        name = FileType.CSV.addExtension(name);
+        try (CSVReader reader
+            = new CSVReader(getResourceStream(RESOURCE_PACKAGE.extend(name)), sep)) {
             result = reader.readAll();
         } catch (IOException e) {
             // no result
