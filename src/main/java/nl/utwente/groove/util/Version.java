@@ -3,11 +3,15 @@
  */
 package nl.utwente.groove.util;
 
+import static nl.utwente.groove.util.Groove.RESOURCE_PACKAGE;
+import static nl.utwente.groove.util.Groove.getResourceStream;
+
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 import javax.swing.JOptionPane;
+
+import nl.utwente.groove.grammar.QualName;
 
 /**
  * Class to include version info in a maintainable way. Taken from <a
@@ -62,6 +66,21 @@ public class Version {
     /** Tests if a given string represents a known GXL file format. */
     static public boolean isKnownGxlVersion(String version) {
         return version == null || version.isEmpty() || GXL_VERSION.equals(version);
+    }
+
+    /** Name of the version sub-package of the Groove resource package. */
+    public static final String VERSION_PACKAGE_TOKEN = "version";
+
+    /** Qualified absolute name of the version package. */
+    public static final QualName VERSION_PACKAGE = RESOURCE_PACKAGE.extend(VERSION_PACKAGE_TOKEN);
+
+    /** Returns the first line of a named resource file. */
+    private static String read(String filename) {
+        try (var file = new BufferedReader(getResourceStream(VERSION_PACKAGE.extend(filename)))) {
+            return file.readLine();
+        } catch (IOException exc) {
+            throw Exceptions.illegalArg("Can't read from %s", filename);
+        }
     }
 
     /** Build number (timestamp with format yyyymmdd). */
@@ -301,14 +320,4 @@ public class Version {
      * {@code false}.
      */
     public static final String GRAMMAR_VERSION_3_10 = "3.10";
-
-    /** Returns the first line of a named resource file. */
-    private static String read(String filename) {
-        try (var file = new BufferedReader(new InputStreamReader(
-            ClassLoader.getSystemResource("version/" + filename).openStream()))) {
-            return file.readLine();
-        } catch (IOException exc) {
-            throw Exceptions.illegalArg("Can't read from %s", filename);
-        }
-    }
 }

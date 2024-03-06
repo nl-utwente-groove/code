@@ -24,6 +24,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
@@ -43,10 +44,10 @@ import javax.swing.KeyStroke;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.plain.PlainGraph;
-import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.graph.GxlIO;
 import nl.utwente.groove.io.store.SystemStore;
 
@@ -73,20 +74,39 @@ public class Groove {
     /** Default name for property files. */
     public static final String PROPERTY_NAME = "system";
 
-    /** Institution domain as name space. */
-    public static final String UT_NAMESPACE = "nl.utwente";
-    /** Qualified base package name for the GROOVE tool set. */
-    public static final String GROOVE_BASE = UT_NAMESPACE + ".groove";
+    /** Groove package name token. */
+    public static final String GROOVE_PACKAGE_TOKEN = "groove";
+    /** Resource package name token. */
+    public static final String RESOURCE_PACKAGE_TOKEN = "resource";
 
-    /** File name for XML properties. */
-    public static final String XML_PROPERTIES_FILE
-        = GROOVE_BASE + ".xml" + FileType.PROPERTY.getExtension();
+    /** Institution domain name space as string. */
+    public static final String UT_NAMESPACE = "nl.utwente";
+    /** Base package name for the GROOVE tool set as string. */
+    public static final String GROOVE_BASE = UT_NAMESPACE + "." + GROOVE_PACKAGE_TOKEN;
+    /** Institution domain name space as qualified name. */
+    public static final QualName UT_PACKAGE = QualName.parse(UT_NAMESPACE);
+    /** Qualified base package name for the GROOVE tool set. */
+    public static final QualName GROOVE_PACKAGE = QualName.parse(GROOVE_BASE);
+    /** Qualified name of the resource package. */
+    public static final QualName RESOURCE_PACKAGE = GROOVE_PACKAGE.extend(RESOURCE_PACKAGE_TOKEN);
 
     /**
      * Flag to indicate if various types of statistics should be computed. This
      * flag is intended to be used globally.
      */
     static public final boolean GATHER_STATISTICS = true;
+
+    /** Returns the URL for a given resource, given as an absolute qualified name.
+     */
+    static public URL getResource(QualName name) {
+        return ClassLoader.getSystemResource(name.toString('/'));
+    }
+
+    /** Returns an input stream reader to a given resource, given as an absolute qualified name.
+     */
+    static public InputStreamReader getResourceStream(QualName name) throws IOException {
+        return new InputStreamReader(getResource(name).openStream());
+    }
 
     /**
      * Attempts to load in a graph from a given <tt>.gst</tt> file and return

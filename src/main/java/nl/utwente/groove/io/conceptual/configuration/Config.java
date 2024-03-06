@@ -47,9 +47,14 @@ public class Config {
     private JAXBContext jaxbContext = null;
     private Unmarshaller unmarshaller = null;
 
-    /** Location of the XSD for configurations. */
-    public static final String CONFIG_SCHEMA
-        = "groove/io/conceptual/configuration/ConfigSchema.xsd";
+    /** Qualified name of the configuration package. */
+    public static final QualName CONFIG_PACKAGE
+        = QualName.parse(Config.class.getPackage().getName());
+    /** Qualified name of the schema package. */
+    public static final QualName SCHEMA_PACKAGE = CONFIG_PACKAGE.extend("schema");
+
+    /** Qualified name of the XSD for configurations. */
+    public static final QualName CONFIG_SCHEMA = Groove.RESOURCE_PACKAGE.extend("ConfigSchema.xsd");
 
     private HashMap<Id,String> m_mappedIds = new HashMap<>();
     private HashMap<String,Id> m_mappedNames = new HashMap<>();
@@ -64,8 +69,7 @@ public class Config {
         this.m_xmlPath = xmlPath;
 
         try {
-            this.jaxbContext = JAXBContext
-                .newInstance(Groove.GROOVE_BASE + ".io.conceptual.configuration.schema");
+            this.jaxbContext = JAXBContext.newInstance(SCHEMA_PACKAGE.toString());
             this.unmarshaller = this.jaxbContext.createUnmarshaller();
 
             String xmlString
@@ -289,7 +293,11 @@ public class Config {
     }
 
     public boolean useIndex(Container c) {
-        boolean useIndex = this.m_xmlConfig.getTypeModel().getFields().getContainers().getOrdering()
+        boolean useIndex = this.m_xmlConfig
+            .getTypeModel()
+            .getFields()
+            .getContainers()
+            .getOrdering()
             .getType() != OrderType.NONE;
         useIndex &= c.getContainerType() == Kind.ORD || c.getContainerType() == Kind.SEQ;
 

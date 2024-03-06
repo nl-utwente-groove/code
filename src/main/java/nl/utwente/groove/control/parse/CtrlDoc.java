@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.control.parse;
 
+import static nl.utwente.groove.util.Groove.RESOURCE_PACKAGE;
+import static nl.utwente.groove.util.Groove.getResource;
 import static org.antlr.works.ate.syntax.generic.ATESyntaxLexer.TOKEN_SINGLE_COMMENT;
 
 import java.io.File;
@@ -38,6 +40,7 @@ import org.antlr.works.grammar.syntax.GrammarSyntaxLexer;
 import org.antlr.works.grammar.syntax.GrammarSyntaxParser;
 
 import nl.utwente.groove.annotation.Help;
+import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Pair;
@@ -76,7 +79,7 @@ public class CtrlDoc {
 
     /** Returns the content of the file that specifies the control grammar. */
     private String readGrammarText() {
-        URL url = ClassLoader.getSystemResource("Ctrl.g");
+        URL url = getResource(CTRL_GRAMMAR_FILE);
         assert url != null : String.format("%s cannot be found", CTRL_GRAMMAR_FILE);
         String grammarText = "";
 
@@ -322,10 +325,9 @@ public class CtrlDoc {
     /** Comment prefix indicating that the comment is a rule syntax definition. */
     public static final String PARS_PATTERN = "@P ";
 
-    private static final String PACKAGE_NAME = CtrlDoc.class.getPackage().getName();
-    private static final String PACKAGE_PATH = PACKAGE_NAME.replace('.', '/');
-    /** The name of the grammar file providing the documentation. */
-    public static final String CTRL_GRAMMAR_FILE = PACKAGE_PATH + '/' + "Ctrl.g";
+    private static final QualName ANTLR_PACKAGE = RESOURCE_PACKAGE.extend("antlr");
+    /** The qualified name of the grammar file providing the documentation. */
+    public static final QualName CTRL_GRAMMAR_FILE = ANTLR_PACKAGE.extend("Ctrl.g");
 
     private class Line {
         public Line(String text) {

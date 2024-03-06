@@ -16,6 +16,9 @@
  */
 package nl.utwente.groove.gui;
 
+import static nl.utwente.groove.util.Groove.RESOURCE_PACKAGE;
+import static nl.utwente.groove.util.Groove.getResource;
+
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.FontFormatException;
@@ -61,6 +64,7 @@ import org.jgraph.graph.GraphConstants;
 
 import com.jgoodies.looks.plastic.theme.DesertBlue;
 
+import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.io.Util;
 import nl.utwente.groove.io.store.EditType;
@@ -906,6 +910,11 @@ public class Options implements Cloneable {
         intOptionDefaults.put(VERIFY_ALL_STATES_OPTION, BehaviourOption.NEVER);
     }
 
+    /** Name of the font sub-package of the GROOVE resource package. */
+    static public String FONT_PACKAGE_TOKEN = "font";
+    /** Absolute qualified name of the font resource package. */
+    static public QualName FONT_PACKAGE = RESOURCE_PACKAGE.extend(FONT_PACKAGE_TOKEN);
+
     /** Returns the user preferences for a given key, as a list of Strings. */
     public static String[] getUserPrefs(String key) {
         String[] result = {};
@@ -1064,7 +1073,7 @@ public class Options implements Cloneable {
     /** Loads in a TrueType font of a given name. */
     private static Font loadFont(String name) {
         Font result = null;
-        try (InputStream stream = ClassLoader.getSystemResource("font/" + name).openStream()) {
+        try (InputStream stream = getResource(FONT_PACKAGE.extend(name)).openStream()) {
             result = Font.createFont(Font.TRUETYPE_FONT, stream);
             result = result.deriveFont(getLabelFont().getSize2D());
         } catch (FileNotFoundException e) {

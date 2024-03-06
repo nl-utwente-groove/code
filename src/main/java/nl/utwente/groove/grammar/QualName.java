@@ -216,17 +216,15 @@ public class QualName extends ModuleName implements Comparable<QualName>, Fallib
     }
 
     /**
-     * Turns a string into a single-token qualified name.
+     * Turns a number of strings into a qualified name.
      * The name is not tested for validity.
      */
-    public static QualName name(String text) {
-        QualName result = new QualName();
-        result.tokens.add(text);
-        return result;
+    public static QualName name(String... tokens) {
+        return new QualName(tokens);
     }
 
     /**
-     * Parses a string into a qualified name.
+     * Parses a {@link QualName#SEPARATOR_CHAR}-separated string into a qualified name.
      */
     public static QualName parse(String text) {
         return parse(text, SEPARATOR_CHAR);
