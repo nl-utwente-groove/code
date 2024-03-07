@@ -50,7 +50,7 @@ public class GTSFragment extends AGraph<GraphState,GraphTransition> {
     /** Constructs an (initially empty) fragment of a given GTS, with a given name.
      */
     public GTSFragment(GTS gts, String name) {
-        super(name);
+        super(name, false);
         this.gts = gts;
     }
 

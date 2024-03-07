@@ -48,9 +48,9 @@ public class ReteStrategy extends GTSStrategy {
         this.newStates.clear();
         // initialise the rete network
         this.rete = new ReteSearchEngine(gts.getGrammar());
-        this.oldEngine = MatcherFactory.instance(gts.isSimple())
+        this.oldEngine = MatcherFactory.instance(gts.hasSimpleGraphs())
             .getEngine();
-        MatcherFactory.instance(gts.isSimple())
+        MatcherFactory.instance(gts.hasSimpleGraphs())
             .setEngine(this.rete);
         //this.rete.getNetwork().save("e:\\temp\\reg-exp.gst", "reg-exp");
     }
@@ -80,7 +80,7 @@ public class ReteStrategy extends GTSStrategy {
     @Override
     public void finish() {
         super.finish();
-        MatcherFactory.instance(getGTS().isSimple())
+        MatcherFactory.instance(getGTS().hasSimpleGraphs())
             .setEngine(this.oldEngine);
         getGTS().removeLTSListener(this.exploreListener);
     }

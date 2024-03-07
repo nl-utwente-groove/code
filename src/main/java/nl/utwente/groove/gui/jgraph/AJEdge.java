@@ -158,12 +158,6 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
         return String.format("%s wrapping %s", getClass().getSimpleName(), getEdges());
     }
 
-    /**
-     * Adds an edge to the underlying set of edges, if the edge is appropriate.
-     * The edge should be compatible, as tested by {@link #isCompatible(Edge)}.
-     * Indicates in its return value if the edge has indeed been added.
-     * @param edge the edge to be added
-     */
     @Override
     public void addEdge(Edge edge) {
         if (getEdges().isEmpty()) {

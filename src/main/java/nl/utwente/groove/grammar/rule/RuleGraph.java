@@ -43,7 +43,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph<@NonNull RuleNode,@NonNull Ru
      * @param name the name of the new rule graph
      */
     public RuleGraph(String name, boolean injective, RuleFactory factory) {
-        super(name);
+        super(name, true);
         this.factory = factory;
         if (injective) {
             GraphInfo.setInjective(this, true);

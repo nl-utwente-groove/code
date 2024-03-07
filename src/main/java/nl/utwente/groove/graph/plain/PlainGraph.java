@@ -34,7 +34,7 @@ public class PlainGraph extends EdgeMapGraph<PlainNode,PlainEdge> implements Clo
      * @param role the (non-{@code null}) role of the graph.
      */
     public PlainGraph(String name, GraphRole role) {
-        super(name, role);
+        super(name, role, true);
     }
 
     /**

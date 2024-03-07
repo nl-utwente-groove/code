@@ -59,6 +59,11 @@ public interface GraphState extends Node, Phase {
     /** Returns the Graph Transition System of which this is a state. */
     public GTS getGTS();
 
+    /** Indicates if the underlying graph is simple. */
+    default public boolean isSimple() {
+        return !getGTS().hasSimpleGraphs();
+    }
+
     /**
      * Retrieves an outgoing transition with a given match, if it exists. Yields
      * <code>null</code> otherwise.

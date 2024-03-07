@@ -44,13 +44,15 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>>
     extends AbstractCacheHolder<GraphCache<N,E>> implements GGraph<N,E> {
     /**
      * Constructs an abstract named graph.
-     * @param name the (non-{@code null}) name of the graph.
+     * @param name the name of the graph.
+     * @param simple flag indicating whether this is a simple graph.
      */
-    protected AGraph(String name) {
+    protected AGraph(String name, boolean simple) {
         super(null);
         modifiableGraphCount++;
         assert name != null;
         this.name = name;
+        this.simple = simple;
     }
 
     /*
@@ -357,6 +359,14 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>>
     }
 
     private String name = NO_NAME;
+
+    @Override
+    public boolean isSimple() {
+        return this.simple;
+    }
+
+    /** Flag indicating whether this is a simple graph. */
+    private final boolean simple;
 
     // -------------------- REPORTER DEFINITIONS ------------------------
 

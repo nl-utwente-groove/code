@@ -34,7 +34,7 @@ public class MultiGraph extends EdgeMapGraph<MultiNode,MultiEdge> implements Clo
      * @param role the (non-{@code null}) graph role of the new graph.
      */
     public MultiGraph(String name, GraphRole role) {
-        super(name, role);
+        super(name, role, false);
     }
 
     /**

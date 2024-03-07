@@ -102,10 +102,6 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
         return true;
     }
 
-    /**
-     * Returns <tt>true</tt> only if the aspect values of the edge to be
-     * added equal those of this j-edge, and the superclass is also willing.
-     */
     @Override
     public void addEdge(Edge e) {
         AspectEdge edge = (AspectEdge) e;

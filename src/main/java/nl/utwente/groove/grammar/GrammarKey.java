@@ -90,7 +90,14 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         "<body>Flag controlling if all rules should be matched injectively. "
             + "<p>If true, overrules the local rule injectivity property",
         ValueType.BOOLEAN),
-
+    /**
+     * Flag determining whether multi-sorted graphs (with parallel edges) are used for transformation.
+     * Default if {@code false}.
+     */
+    PARALLEL("parallelEdges",
+        "Flag controlling if the host graphs may have parallel edges; in other words, "
+            + "if they are multi-sorted graphs. If false (the default), simple graphs are used instead.",
+        ValueType.BOOLEAN),
     /**
      * Dangling edge check. If <code>true</code>, all
      * matches that leave dangling edges are invalid. Default is
@@ -311,7 +318,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             var inner = switch (this) {
             case ALGEBRA -> new Parser.EnumParser<>(AlgebraFamily.class, AlgebraFamily.DEFAULT);
             case COMMON_LABELS, CONTROL_LABELS -> Parser.splitter;
-            case CREATOR_EDGE, DANGLING, RHS_AS_NAC, INJECTIVE, STORE_OUT_PARS, USE_STORED_NODE_IDS -> Parser.boolFalse;
+            case CREATOR_EDGE, PARALLEL, DANGLING, RHS_AS_NAC, INJECTIVE, STORE_OUT_PARS, USE_STORED_NODE_IDS -> Parser.boolFalse;
             case ISOMORPHISM, LOOPS_AS_LABELS -> Parser.boolTrue;
             case START_GRAPH_NAMES, CONTROL_NAMES, TYPE_NAMES, PROLOG_NAMES -> QualName
                 .listParser();

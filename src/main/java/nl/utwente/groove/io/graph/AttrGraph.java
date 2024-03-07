@@ -59,7 +59,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
      * Creates an empty graph with a given name.
      */
     public AttrGraph(String name) {
-        super(name);
+        super(name, false);
         this.nodeMap = new LinkedHashMap<>();
         this.tuples = new ArrayList<>();
     }

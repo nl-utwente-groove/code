@@ -65,7 +65,7 @@ public class NormalAspectGraph extends AspectGraph {
      * @param source the (non-normalised) source of this normalised aspect graph
      */
     public NormalAspectGraph(AspectGraph source) {
-        super(source.getName(), source.getRole());
+        super(source.getName(), source.getRole(), source.isSimple());
         var toNormalMap = this.sourceToNormalMap = new AspectGraphMorphism(this);
         source.cloneTo(toNormalMap);
         this.source = source;

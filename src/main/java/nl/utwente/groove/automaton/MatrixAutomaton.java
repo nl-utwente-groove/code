@@ -60,7 +60,7 @@ import nl.utwente.groove.util.Exceptions;
 public class MatrixAutomaton extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNull RegEdge>
     implements RegAut {
     private MatrixAutomaton() {
-        super("prototype");
+        super("prototype", true);
         this.start = null;
         this.end = null;
         this.typeGraph = null;
@@ -73,7 +73,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNu
      * to predict the matching of wildcards).
      */
     private MatrixAutomaton(RegNode start, RegNode end, TypeGraph typeGraph) {
-        super("automaton");
+        super("automaton", true);
         this.start = start;
         this.end = end;
         addNode(start);

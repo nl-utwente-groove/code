@@ -88,7 +88,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
      * @param name the (non-{@code null}) name of the type graph
      */
     public TypeGraph(QualName name, boolean implicit) {
-        super(name.toString());
+        super(name.toString(), true);
         this.implicit = implicit;
         this.factory = new TypeFactory(this);
     }

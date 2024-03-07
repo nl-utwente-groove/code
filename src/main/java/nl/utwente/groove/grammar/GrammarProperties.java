@@ -278,6 +278,22 @@ public class GrammarProperties extends Properties {
     }
 
     /**
+     * Sets the parallel edge property to a given value.
+     * @param parallel if <code>true</code>, host graphs may have parallel edges.
+     */
+    public void setHasParallelEdges(boolean parallel) {
+        storeValue(GrammarKey.PARALLEL, parallel);
+    }
+
+    /**
+     * Returns the value of the parallel edge property.
+     * @return if <code>true</code>, host graphs may have parallel edges.
+     */
+    public boolean isHasParallelEdges() {
+        return parsePropertyOrDefault(GrammarKey.PARALLEL).getBoolean();
+    }
+
+    /**
      * Sets the dangling edge check to a certain value.
      * @param dangling if <code>true</code>, matches with dangling edges are
      *        disallowed

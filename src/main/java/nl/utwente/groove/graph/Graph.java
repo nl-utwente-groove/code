@@ -115,6 +115,13 @@ public interface Graph {
         return nodeCount() == 0;
     }
 
+    /** Indicates if this is a simple graph.
+     * A simple graph is one in which edge identity is entirely determined by
+     * source and target node plus label.
+     * @see AEdge#isSimple()
+     */
+    public boolean isSimple();
+
     /**
      * Indicates whether the graph is modifiable, i.e., if the <tt>add</tt> and
      * <tt>remove</tt> methods can change the graph. The graph is modifiable

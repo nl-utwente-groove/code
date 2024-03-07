@@ -38,9 +38,10 @@ abstract public class EdgeMapGraph<N extends Node,E extends GEdge<N>> extends AG
      * Constructs a new, empty Graph with a given graph role.
      * @param name the (non-{@code null}) name of the graph.
      * @param role the (non-{@code null}) role of the graph.
+     * @param simple flag indicating if this is a simple graph
      */
-    protected EdgeMapGraph(String name, GraphRole role) {
-        super(name);
+    protected EdgeMapGraph(String name, GraphRole role, boolean simple) {
+        super(name, simple);
         this.role = role;
     }
 
@@ -51,7 +52,7 @@ abstract public class EdgeMapGraph<N extends Node,E extends GEdge<N>> extends AG
      * @ensure result.equals(graph)
      */
     protected EdgeMapGraph(EdgeMapGraph<N,E> graph) {
-        this(graph.getName(), graph.getRole());
+        this(graph.getName(), graph.getRole(), graph.isSimple());
         for (var edgeEntry : graph.edgeMap.entrySet()) {
             this.edgeMap.put(edgeEntry.getKey(), new LinkedHashSet<>(edgeEntry.getValue()));
         }

@@ -94,7 +94,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      * Constructs a GTS from a (fixed) graph grammar.
      */
     public GTS(Grammar grammar) {
-        super(grammar.getName() + "-gts");
+        super(grammar.getName() + "-gts", false);
         grammar.testFixed(true);
         this.grammar = grammar;
         ValueOracle oracle;
@@ -108,8 +108,8 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     }
 
     /** Indicates if the grammar works with simple or multi-graphs. */
-    public boolean isSimple() {
-        return getGrammar().getStartGraph().isSimple();
+    public boolean hasSimpleGraphs() {
+        return getHostFactory().isSimple();
     }
 
     /**

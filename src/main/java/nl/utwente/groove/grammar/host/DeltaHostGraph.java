@@ -58,12 +58,13 @@ public final class DeltaHostGraph extends AGraph<@NonNull HostNode,@NonNull Host
      * @param name the name of the graph
      * @param delta the delta determining the initial graph
      * @param factory the factory for new graph elements
+     * @param simple flag controlling if the host graph is simple, i.e., without parallel edges
      * @param copyData if <code>true</code>, the data structures will be
      *        copied from one graph to the next; otherwise, they will be reused
      */
-    private DeltaHostGraph(String name, HostElement[] delta, HostFactory factory,
+    private DeltaHostGraph(String name, HostElement[] delta, HostFactory factory, boolean simple,
                            boolean copyData) {
-        super(name);
+        super(name, simple);
         this.factory = factory;
         this.basis = null;
         this.copyData = copyData;
@@ -76,12 +77,13 @@ public final class DeltaHostGraph extends AGraph<@NonNull HostNode,@NonNull Host
      * @param name the name of the graph
      * @param basis the (non-{@code null}) basis for the new delta graph
      * @param delta the delta with respect to the basis; non-<code>null</code>
+     * @param simple flag controlling if the host graph is simple, i.e., without parallel edges
      * @param copyData if <code>true</code>, the data structures will be
      *        copied from one graph to the next; otherwise, they will be reused
      */
     private DeltaHostGraph(String name, @NonNull DeltaHostGraph basis, @NonNull DeltaApplier delta,
-                           boolean copyData) {
-        super(name);
+                           boolean simple, boolean copyData) {
+        super(name, simple);
         this.basis = basis;
         this.factory = basis.getFactory();
         this.copyData = copyData;
@@ -117,14 +119,14 @@ public final class DeltaHostGraph extends AGraph<@NonNull HostNode,@NonNull Host
      * @param name the name of the new graph
      */
     public DeltaHostGraph newGraph(String name, DeltaHostGraph graph, DeltaApplier applier) {
-        return new DeltaHostGraph(name, graph, applier, this.copyData);
+        return new DeltaHostGraph(name, graph, applier, graph.isSimple(), this.copyData);
     }
 
     /** Creates a new delta graph from a given element array.
      * @param name the name of the new graph
      */
     public DeltaHostGraph newGraph(String name, HostElement[] elements, HostFactory factory) {
-        return new DeltaHostGraph(name, elements, factory, this.copyData);
+        return new DeltaHostGraph(name, elements, factory, factory.isSimple(), this.copyData);
     }
 
     /**
@@ -493,24 +495,35 @@ public final class DeltaHostGraph extends AGraph<@NonNull HostNode,@NonNull Host
      */
     static private final boolean ALIAS_SETS = true;
     /** Factory instance of this class, in which data is copied. */
-    static private final DeltaHostGraph copyInstance
-        = new DeltaHostGraph("copy prototype", (HostElement[]) null, null, true);
+    static private final DeltaHostGraph simpleCopyInstance
+        = new DeltaHostGraph("copy prototype", (HostElement[]) null, null, true, true);
     /** Factory instance of this class, in which data is aliased. */
-    static private final DeltaHostGraph swingInstance
-        = new DeltaHostGraph("swing prototype", (HostElement[]) null, null, false);
+    static private final DeltaHostGraph simpleSwingInstance
+        = new DeltaHostGraph("swing prototype", (HostElement[]) null, null, true, false);
+    /** Factory instance of this class, in which data is copied. */
+    static private final DeltaHostGraph multiCopyInstance
+        = new DeltaHostGraph("copy prototype", (HostElement[]) null, null, false, true);
+    /** Factory instance of this class, in which data is aliased. */
+    static private final DeltaHostGraph multiSwingInstance
+        = new DeltaHostGraph("swing prototype", (HostElement[]) null, null, false, false);
 
     /**
      * Returns a fixed factory instance of the {@link DeltaHostGraph} class,
      * which either copies or aliases the data.
+     * @param simple flag controlling if the host graph is simple, i.e., without parallel edges
      * @param copyData if <code>true</code>, the graph produced by the
      *        factory copy their data structure from one graph to the next;
      *        otherwise, data are shared (and hence must be reconstructed more
      *        often)
      */
-    static public DeltaHostGraph getInstance(boolean copyData) {
+    static public DeltaHostGraph getInstance(boolean simple, boolean copyData) {
         return copyData
-            ? copyInstance
-            : swingInstance;
+            ? (simple
+                ? simpleCopyInstance
+                : multiCopyInstance)
+            : (simple
+                ? simpleSwingInstance
+                : multiSwingInstance);
     }
 
     /**
