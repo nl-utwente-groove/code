@@ -54,7 +54,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNull Reg
     implements RegAut {
     /** Constructor for the singleton prototype object. */
     private SimpleNFA() {
-        super("prototype");
+        super("prototype", true);
         this.start = null;
         this.end = null;
         this.typeGraph = null;
@@ -68,7 +68,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNull Reg
      * to predict the matching of wildcards).
      */
     private SimpleNFA(RegNode start, RegNode end, TypeGraph typeGraph) {
-        super("automaton");
+        super("automaton", true);
         this.start = start;
         this.end = end;
         this.typeGraph = typeGraph;

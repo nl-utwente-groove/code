@@ -32,7 +32,7 @@ import nl.utwente.groove.graph.plain.PlainNode;
 public class NodeSetEdgeSetGraphTest extends GraphTest {
     @Override
     NodeSetEdgeSetGraph<@NonNull PlainNode,@NonNull PlainEdge> createGraph(String name) {
-        return new NodeSetEdgeSetGraph<>(name) {
+        return new NodeSetEdgeSetGraph<>(name, true) {
             @Override
             public ElementFactory<PlainNode,PlainEdge> getFactory() {
                 return PlainFactory.instance();

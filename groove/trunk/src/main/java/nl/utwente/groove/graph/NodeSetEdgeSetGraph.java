@@ -36,9 +36,10 @@ public class NodeSetEdgeSetGraph<N extends @NonNull Node,E extends @NonNull GEdg
     /**
      * Creates a new, named empty graph.
      * @param name name of the new graph
+     * @param simple flag indicating if this is a simple graph
      */
-    public NodeSetEdgeSetGraph(String name) {
-        super(name);
+    public NodeSetEdgeSetGraph(String name, boolean simple) {
+        super(name, simple);
         this.graphNodeSet = createNodeSet();
         this.graphEdgeSet = createEdgeSet();
     }
@@ -49,7 +50,7 @@ public class NodeSetEdgeSetGraph<N extends @NonNull Node,E extends @NonNull GEdg
      * @require graph != null
      */
     public NodeSetEdgeSetGraph(GGraph<N,E> graph) {
-        super(graph.getName());
+        super(graph.getName(), graph.isSimple());
         this.graphNodeSet = createNodeSet(graph.nodeSet());
         this.graphEdgeSet = createEdgeSet(graph.edgeSet());
         GraphInfo.transferAll(graph, this, null);
@@ -104,7 +105,7 @@ public class NodeSetEdgeSetGraph<N extends @NonNull Node,E extends @NonNull GEdg
 
     @Override
     public NodeSetEdgeSetGraph<N,E> newGraph(String name) {
-        return new NodeSetEdgeSetGraph<>(getName());
+        return new NodeSetEdgeSetGraph<>(getName(), isSimple());
     }
 
     @Override

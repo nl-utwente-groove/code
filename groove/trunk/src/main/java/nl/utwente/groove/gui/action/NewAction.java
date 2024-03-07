@@ -25,8 +25,9 @@ public class NewAction extends SimulatorAction {
         if (newName != null) {
             try {
                 if (resource.isGraphBased()) {
-                    final AspectGraph newGraph =
-                        AspectGraph.emptyGraph(newName.toString(), resource.getGraphRole());
+                    final AspectGraph newGraph = AspectGraph
+                        .emptyGraph(newName.toString(), resource.getGraphRole(),
+                                    getGrammarModel().getProperties().isHasParallelEdges());
                     getSimulatorModel().doAddGraph(resource, newGraph, false);
                 } else {
                     getSimulatorModel().doAddText(getResourceKind(), newName, "");
@@ -38,10 +39,8 @@ public class NewAction extends SimulatorAction {
                     }
                 });
             } catch (IOException e) {
-                showErrorDialog(e,
-                    "Error creating new %s '%s'",
-                    resource.getDescription(),
-                    newName);
+                showErrorDialog(e, "Error creating new %s '%s'", resource.getDescription(),
+                                newName);
             }
         }
     }

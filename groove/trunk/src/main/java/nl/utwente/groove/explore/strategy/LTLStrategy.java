@@ -58,7 +58,7 @@ public class LTLStrategy extends Strategy {
     protected void prepare(GTS gts, GraphState state, Acceptor acceptor) {
         assert acceptor instanceof CycleAcceptor;
         super.prepare(gts, state, acceptor);
-        MatcherFactory.instance(gts.isSimple()).setDefaultEngine();
+        MatcherFactory.instance(gts.hasSimpleGraphs()).setDefaultEngine();
         this.stateSet = new ProductStateSet();
         this.stateSet.addListener(this.collector);
         this.acceptor = (CycleAcceptor) acceptor;

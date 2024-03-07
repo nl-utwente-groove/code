@@ -113,7 +113,7 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
     }
 
     /**
-     * Array of canonical nodes, such that <code>nodes[i] == 0</code> or
+     * Array of canonical nodes, such that <code>nodes[i] == null</code> or
      * <code>nodes[i].getNumber() == i</code> for all <code>i</code>.
      */
     private N[] nodes;

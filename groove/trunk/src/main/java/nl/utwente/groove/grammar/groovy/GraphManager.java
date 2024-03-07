@@ -67,7 +67,8 @@ public class GraphManager {
             // rest is not permitted
             return null;
         }
-        AspectGraph newGraph = new AspectGraph(name, role);
+        AspectGraph newGraph = new AspectGraph(name, role,
+            !this.simulatorModel.getGrammar().getProperties().isHasParallelEdges());
 
         // Do not insert layout yet, rather postpone until graph is done,
         // otherwise half finished layouts may be created

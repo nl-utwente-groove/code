@@ -47,7 +47,7 @@ public class ControlGraph extends NodeSetEdgeSetGraph<ControlNode,ControlEdge> {
      * Constructs a new graph with a given name.
      */
     private ControlGraph(QualName name) {
-        super(name.toString());
+        super(name.toString(), true);
     }
 
     /** Returns the qualified name of the control automaton wrapped in this graph. */

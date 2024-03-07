@@ -55,7 +55,8 @@ public class StateCache {
         this.state = state;
         this.record = state.getRecord();
         this.freezeGraphs = this.record.isCollapse();
-        this.graphFactory = DeltaHostGraph.getInstance(this.record.isCopyGraphs());
+        this.graphFactory
+            = DeltaHostGraph.getInstance(state.isSimple(), this.record.isCopyGraphs());
         if (DEBUG && state.isDone()) {
             System.out.printf("Recreating cache for done state %s%n", state);
         }

@@ -37,7 +37,7 @@ public abstract class GTSStrategy extends Strategy {
             gts.addLTSListener(acceptor);
             acceptor.addUpdate(gts, this.startState);
         }
-        MatcherFactory.instance(gts.isSimple())
+        MatcherFactory.instance(gts.hasSimpleGraphs())
             .setDefaultEngine();
     }
 

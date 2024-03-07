@@ -82,7 +82,7 @@ public class AbsGraph {
             return this.m_aGraph;
         }
 
-        AspectGraph ag = new AspectGraph(this.name.toString(), this.role);
+        AspectGraph ag = new AspectGraph(this.name.toString(), this.role, false);
 
         for (AbsNode n : this.m_nodes) {
             n.buildAspect(ag);

@@ -64,7 +64,7 @@ public class GraphConverter {
      * from the type graph to the aspect graph.
      */
     static public TypeToAspectMap toAspectMap(TypeGraph type) {
-        AspectGraph target = new AspectGraph(type.getName(), TYPE);
+        AspectGraph target = new AspectGraph(type.getName(), TYPE, type.isSimple());
         TypeToAspectMap result = new TypeToAspectMap(target);
         for (TypeNode node : type.nodeSet()) {
             AspectNode nodeImage = target.addNode(node.getNumber());
@@ -126,7 +126,7 @@ public class GraphConverter {
      * from the host graph to the aspect graph.
      */
     static public HostToAspectMap toAspectMap(HostGraph host) {
-        AspectGraph targetGraph = new AspectGraph(host.getName(), HOST);
+        AspectGraph targetGraph = new AspectGraph(host.getName(), HOST, host.isSimple());
         HostToAspectMap result = new HostToAspectMap(targetGraph);
         for (HostNode node : host.nodeSet()) {
             if (!(node instanceof ValueNode)) {

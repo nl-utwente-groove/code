@@ -42,7 +42,7 @@ import nl.utwente.groove.util.collect.NestedIterator;
 @NonNullByDefault
 public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition> implements Cloneable {
     private BuchiGraph(String name) {
-        super(name);
+        super(name, true);
     }
 
     @Override

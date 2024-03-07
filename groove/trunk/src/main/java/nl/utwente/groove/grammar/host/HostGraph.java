@@ -54,7 +54,7 @@ public interface HostGraph extends GGraph<HostNode,HostEdge>, DeltaTarget {
         return getFactory().getTypeFactory().getGraph();
     }
 
-    /** Indicates if this is a simple or multi-graph. */
+    @Override
     default public boolean isSimple() {
         return getFactory().isSimple();
     }

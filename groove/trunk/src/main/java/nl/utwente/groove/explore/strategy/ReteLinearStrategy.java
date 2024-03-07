@@ -38,9 +38,9 @@ public class ReteLinearStrategy extends LinearStrategy {
         super.prepare(gts, state, acceptor);
         // initialise the RETE network
         this.rete = new ReteSearchEngine(getGTS().getGrammar());
-        this.oldEngine = MatcherFactory.instance(gts.isSimple())
+        this.oldEngine = MatcherFactory.instance(gts.hasSimpleGraphs())
             .getEngine();
-        MatcherFactory.instance(gts.isSimple())
+        MatcherFactory.instance(gts.hasSimpleGraphs())
             .setEngine(this.rete);
     }
 
@@ -61,7 +61,7 @@ public class ReteLinearStrategy extends LinearStrategy {
      */
     @Override
     public void finish() {
-        MatcherFactory.instance(getGTS().isSimple())
+        MatcherFactory.instance(getGTS().hasSimpleGraphs())
             .setEngine(this.oldEngine);
         super.finish();
     }

@@ -60,7 +60,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<@NonNull HostNode,@Non
      * @param name name of the new host graph
      */
     public DefaultHostGraph(String name, HostFactory factory) {
-        super(name);
+        super(name, factory.isSimple());
         assert factory != null;
         this.factory = factory;
     }

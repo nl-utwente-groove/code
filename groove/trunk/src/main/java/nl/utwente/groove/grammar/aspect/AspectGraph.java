@@ -61,6 +61,7 @@ import nl.utwente.groove.graph.plain.PlainNode;
 import nl.utwente.groove.gui.layout.JVertexLayout;
 import nl.utwente.groove.gui.layout.LayoutMap;
 import nl.utwente.groove.gui.list.SearchResult;
+import nl.utwente.groove.util.Dispenser;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Keywords;
 import nl.utwente.groove.util.parse.FormatError;
@@ -76,14 +77,18 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
 public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNull AspectEdge> {
     /**
      * Creates an empty graph, with a given qualified name and graph role.
+     * @param simple TODO
      */
-    public AspectGraph(String name, GraphRole graphRole) {
-        super(name.toString());
+    public AspectGraph(String name, GraphRole graphRole, boolean simple) {
+        super(name.toString(), simple);
         this.qualName = QualName.parse(name);
         assert graphRole.inGrammar() : String
             .format("Cannot create aspect graph for %s", graphRole.toString());
         this.role = graphRole;
         this.normal = true;
+        this.edgeNumber = simple
+            ? Dispenser.single(0)
+            : Dispenser.counter();
         // make sure the properties object is initialised
         addErrors(this.qualName.getErrors());
     }
@@ -426,7 +431,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
 
     @Override
     public AspectGraph newGraph(String name) {
-        return new AspectGraph(name, getRole());
+        return new AspectGraph(name, getRole(), isSimple());
     }
 
     /** Returns a new, empty AspectGraph with the same name and graph role as this one. */
@@ -627,14 +632,21 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         return result;
     }
 
+    /** Returns a number for the next edge to be created for this graph. */
+    int getEdgeNumber() {
+        return this.edgeNumber.getNext();
+    }
+
+    private final Dispenser edgeNumber;
+
     /**
      * Creates an aspect graph from a given (plain) graph.
-     * @param graph the plain graph to convert; non-null
-     * @return the resulting aspect graph; non-null
+     * @param graph the plain graph to convert
+     * @return the resulting aspect graph
      */
-    public static AspectGraph newInstance(Graph graph) {
+    public static @NonNull AspectGraph newInstance(@NonNull Graph graph) {
         GraphRole role = graph.getRole();
-        AspectGraph result = new AspectGraph(graph.getName(), role);
+        AspectGraph result = new AspectGraph(graph.getName(), role, graph.isSimple());
         // map from original graph elements to aspect graph elements
         GraphToAspectMap elementMap = new GraphToAspectMap(result);
         FormatErrorSet errors = new FormatErrorSet();
@@ -681,15 +693,10 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     }
 
     /** Creates an empty, fixed, named aspect graph, with a given graph role. */
-    public static AspectGraph emptyGraph(String name, GraphRole role) {
-        AspectGraph result = new AspectGraph(name, role);
+    public static AspectGraph emptyGraph(String name, GraphRole role, boolean simple) {
+        AspectGraph result = new AspectGraph(name, role, simple);
         result.setFixed();
         return result;
-    }
-
-    /** Creates an empty, fixed aspect graph, with a given graph role. */
-    public static AspectGraph emptyGraph(GraphRole role) {
-        return emptyGraph("", role);
     }
 
     /**
@@ -708,8 +715,12 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         List<Point.Double> dimensions = new ArrayList<>();
         double globalMaxX = 0;
         double globalMaxY = 0;
+        Boolean simple = null;
         for (AspectGraph graph : graphs) {
             assert graph.getRole() == HOST;
+            assert simple == null
+                || simple == graph.isSimple() : "Graphs should have same simplicity property";
+            simple = graph.isSimple();
             if (name.length() != 0) {
                 name.append("_");
             }
@@ -732,8 +743,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             globalMaxX = Math.max(globalMaxX, maxX);
             globalMaxY = Math.max(globalMaxY, maxY);
         }
+        assert simple != null;
         // construct the result graph
-        AspectGraph result = new AspectGraph(name.toString(), HOST);
+        AspectGraph result = new AspectGraph(name.toString(), HOST, simple);
         LayoutMap newLayoutMap = new LayoutMap();
         FormatErrorSet newErrors = new FormatErrorSet();
         // Local bookkeeping.
@@ -825,14 +837,15 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             int nr = 0;
             AspectLabel aLabel = (AspectLabel) label;
             if (aLabel.has(AspectKind.REMARK)) {
-                nr = this.remarkCount;
-                this.remarkCount++;
+                nr = this.remarkCount.getNext();
+            } else {
+                nr = this.graph.getEdgeNumber();
             }
             return new AspectEdge(source, (AspectLabel) label, target, nr);
         }
 
         /** Number of remark edges encountered thus far. */
-        private int remarkCount;
+        private final Dispenser remarkCount = Dispenser.counter();
 
         @Override
         public AspectGraphMorphism createMorphism() {
