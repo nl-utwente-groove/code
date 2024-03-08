@@ -35,7 +35,6 @@ import nl.utwente.groove.automaton.RegExpr.Wildcard;
 import nl.utwente.groove.grammar.rule.RuleLabel;
 import nl.utwente.groove.grammar.type.ImplicitTypeGraph;
 import nl.utwente.groove.grammar.type.TypeGraph;
-import nl.utwente.groove.util.DefaultDispenser;
 import nl.utwente.groove.util.Dispenser;
 
 /**
@@ -69,7 +68,7 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
      * @param typeGraph the type graph for the automaton (non-{@code null})
      */
     public RegAut compute(RegExpr expr, TypeGraph typeGraph) {
-        this.nodeDispenser = new DefaultDispenser();
+        this.nodeDispenser = Dispenser.counter();
         this.typeGraph = typeGraph;
         RegAut result = expr.apply(this);
         result.setFixed();
@@ -292,5 +291,5 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
     /** Label store currently used to build automata. */
     private @Nullable TypeGraph typeGraph;
     /** the dispenser for automaton node identities. */
-    private @Nullable Dispenser nodeDispenser = new DefaultDispenser();
+    private @Nullable Dispenser nodeDispenser = Dispenser.counter();
 }

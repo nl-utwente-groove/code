@@ -77,7 +77,7 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
 public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNull AspectEdge> {
     /**
      * Creates an empty graph, with a given qualified name and graph role.
-     * @param simple TODO
+     * @param simple flag indicating whether this is a simple graph
      */
     public AspectGraph(String name, GraphRole graphRole, boolean simple) {
         super(name.toString(), simple);
@@ -87,7 +87,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         this.role = graphRole;
         this.normal = true;
         this.edgeNumber = simple
-            ? Dispenser.single(0)
+            ? Dispenser.constant(0)
             : Dispenser.counter();
         // make sure the properties object is initialised
         addErrors(this.qualName.getErrors());

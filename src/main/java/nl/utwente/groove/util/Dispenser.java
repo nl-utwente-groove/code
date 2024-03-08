@@ -15,14 +15,24 @@
 package nl.utwente.groove.util;
 
 import java.util.NoSuchElementException;
+import java.util.function.Supplier;
+
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
  * Interface for a number dispenser.
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class Dispenser {
-    /** 
+@NonNullByDefault
+public abstract class Dispenser implements Supplier<Integer> {
+    @Override
+    public @NonNull Integer get() {
+        return getNext();
+    }
+
+    /**
      * Returns a number, according to the policy of this dispenser.
      * This will result in a {@link NoSuchElementException} if
      * {@link #hasNext()} is {@code false}.
@@ -37,7 +47,7 @@ public abstract class Dispenser {
         }
     }
 
-    /** 
+    /**
      * Returns the value of the last successful call to {@link #getNext()},
      * or {@code -1} if {@link #getNext()} has never been called.
      */
@@ -53,7 +63,7 @@ public abstract class Dispenser {
      */
     protected abstract int computeNext();
 
-    /** 
+    /**
      * Indicates if this dispenser has a next number to return.
      * @return if {@code false}, any subsequent call to {@link #getNext()}
      * will fail
@@ -84,12 +94,17 @@ public abstract class Dispenser {
     /** Value returned at the last call of {@link #getNext()}. */
     private int last = -1;
 
-    /** Convenience method to create a {@link SingleDispenser} at a given number. */
+    /** Creates a {@link SingleDispenser} at a given number. */
     public static Dispenser single(int nr) {
         return new SingleDispenser(nr);
     }
 
-    /** Convenience method to create a {@link DefaultDispenser}. */
+    /** Creates a {@link ConstantDispenser} at a given number. */
+    public static Dispenser constant(int nr) {
+        return new ConstantDispenser(nr);
+    }
+
+    /** Creates a {@link DefaultDispenser}. */
     public static Dispenser counter() {
         return new DefaultDispenser();
     }

@@ -20,6 +20,13 @@ package nl.utwente.groove.util;
  * @version $Revision$
  */
 public class DefaultDispenser extends Dispenser {
+    /** Constructs a dispenser.
+     * Visibility restricted; use {@link Dispenser#counter()}
+     */
+    DefaultDispenser() {
+        // empty
+    }
+
     /*
      * Sets the counter to the maximum of the current count and a given number.
      */

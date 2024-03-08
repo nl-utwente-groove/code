@@ -26,7 +26,6 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.iso.CertificateStrategy;
-import nl.utwente.groove.util.DefaultDispenser;
 import nl.utwente.groove.util.Dispenser;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.Groove;
@@ -503,7 +502,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> implements Fixable {
     protected Dispenser getNodeCounter() {
         var result = this.nodeCounter;
         if (result == null) {
-            this.nodeCounter = result = new DefaultDispenser();
+            this.nodeCounter = result = Dispenser.counter();
             // make sure all existing node numbers are accounted for
             for (Node node : getGraph().nodeSet()) {
                 result.notifyUsed(node.getNumber());
