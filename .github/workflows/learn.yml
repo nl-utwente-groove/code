@@ -4,11 +4,12 @@ on:
   push:
     tags:
       - "release-*_*_*"
+
+permissions: write-all
+
 jobs:
   release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - name: Create Release
         id: create_release
