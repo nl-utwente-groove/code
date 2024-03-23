@@ -8,7 +8,7 @@
     <stringAttribute key="M2_PROFILES" value=""/>
     <listAttribute key="M2_PROPERTIES">
         <listEntry value="groove.basedir=${project_loc}"/>
-        <listEntry value="release=${string_prompt:Build version:x.y.z}"/>
+        <listEntry value="revision=${string_prompt:Build version:x.y.z}"/>
     </listAttribute>
     <stringAttribute key="M2_RUNTIME" value="EMBEDDED"/>
     <booleanAttribute key="M2_SKIP_TESTS" value="false"/>

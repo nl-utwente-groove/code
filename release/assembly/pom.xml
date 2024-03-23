@@ -14,7 +14,7 @@
 	</modules>
 
 	<properties>
-		<groove.basedir>${project.basedir}/../../../groove</groove.basedir>
+		<groove.basedir>${project.basedir}/..</groove.basedir>
 		<zip.basedir>groove-${groove-version-underscored}</zip.basedir>
 	</properties>
 
@@ -39,7 +39,7 @@
 							<descriptor>zip.xml</descriptor>
 						</descriptors>
 						<appendAssemblyId>false</appendAssemblyId>
-						<outputDirectory>../../target/${destdir}</outputDirectory>
+						<outputDirectory>../../target</outputDirectory>
 					</configuration>
 					<executions>
 						<execution>
@@ -66,7 +66,7 @@
 						</goals>
 						<configuration>
 							<name>groove-version-underscored</name>
-							<value>${groove-version}</value>
+							<value>${revision}</value>
 							<regex>\.</regex>
 							<replacement>_</replacement>
 							<failIfNoMatch>false</failIfNoMatch>

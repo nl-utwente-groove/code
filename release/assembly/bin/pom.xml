@@ -12,7 +12,6 @@
 	
 	<properties>
 		<output-suffix>bin</output-suffix>
-		<destdir>groove</destdir>
 	</properties>
 
 	<build>			
