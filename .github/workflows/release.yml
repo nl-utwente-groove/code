@@ -1,0 +1,38 @@
+run-name: Building release after push of release tag
+
+on:
+  push:
+    tags:
+      - "release-*_*_*"
+
+permissions: write-all
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+    - name: Install local packages
+      run: |
+        mvn -B install:install-file -DpomFile=lib/pom/gnuprolog.pom -Dfile=lib/gnuprologjava-0.2.6.jar -Dsources=lib/src/gnuprologjava-0.2.6-src.zip
+        mvn -B install:install-file -DpomFile=lib/pom/groove-gxl.pom -Dfile=lib/groove-gxl-3.0.jar -Dsources=lib/src/groove-gxl-3.0-sources.jar
+        mvn -B install:install-file -DpomFile=lib/pom/ltl2buchi.pom -Dfile=lib/ltl2buchi-2010.12.jar -Dsources=lib/src/ltl2buchi-2010.12.zip
+        mvn -B install:install-file -DpomFile=lib/pom/osxadapter.pom -Dfile=lib/osxadapter-2.0.jar -Dsources=lib/src/osxadapter-2.0-src.zip
+    - name: Retrieve VERSION from file
+      run: echo "VERSION=$(<src/main/resources/nl/utwente/groove/resource/version/GROOVE_VERSION)" >> $GITHUB_ENV
+    - name: Build GROOVE
+      run: mvn -B -Drevision=$VERSION clean install
+    - name: Build release
+      run: cd release; mvn -B -Drevision=$VERSION clean package
+    - name: Create release
+      uses: ncipollo/release-action@v1.14.0
+      with:
+        artifacts: "release/target/*.zip"
+        draft: true
+        prerelease: true
