@@ -9,7 +9,7 @@
     <booleanAttribute key="org.eclipse.debug.core.launchGroup.1.adoptIfRunning" value="false"/>
     <booleanAttribute key="org.eclipse.debug.core.launchGroup.1.enabled" value="true"/>
     <stringAttribute key="org.eclipse.debug.core.launchGroup.1.mode" value="inherit"/>
-    <stringAttribute key="org.eclipse.debug.core.launchGroup.1.name" value="GROOVE release - upload all to sourceforge"/>
+    <stringAttribute key="org.eclipse.debug.core.launchGroup.1.name" value="GROOVE release - code to sourceforge"/>
     <listAttribute key="org.eclipse.debug.ui.favoriteGroups">
         <listEntry value="org.eclipse.debug.ui.launchGroup.run"/>
     </listAttribute>

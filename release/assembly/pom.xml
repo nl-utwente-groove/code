@@ -11,8 +11,6 @@
 	<modules>
 		<module>bin</module>
 		<module>bin+doc</module>
-		<module>samples</module>
-		<module>src</module>
 	</modules>
 
 	<properties>
