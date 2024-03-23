@@ -285,7 +285,7 @@ public final class Icons {
     /** Icon for compressed GPS folders. */
     public static final ImageIcon GPS_COMPRESSED_FOLDER_ICON = createIcon("gps-compressed.png");
     /** GROOVE project icon in 16x16 format. */
-    public static final ImageIcon GROOVE_ICON_16x16 = createIcon("groove-g-16x16.gif");
+    public static final ImageIcon GROOVE_ICON_16x16 = createIcon("new-groove-G.gif");
     /** Icon for graph (GXL or GST) files. */
     public static final ImageIcon GRAPH_FILE_ICON = createIcon("graph-file.gif");
     /** Icon for the state panel of the simulator. */

@@ -104,6 +104,10 @@ public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JMo
         if (oldVisuals != null) {
             this.visuals.putAll(oldVisuals);
         }
+        // this is necessary because the call may have been cloned, in case the staleKeys
+        // set is aliased
+        this.staleKeys = EnumSet.copyOf(this.staleKeys);
+        this.staleKeys.addAll(Arrays.asList(VisualKey.refreshables()));
         this.looksChanged = true;
         this.errors = null;
     }
