@@ -1,5 +1,5 @@
 name: learn
-run-name: ${{ github.actor }} is learning fast
+run-name: ${{ github.actor }} is learning faster
 on:
   push:
     tags:
@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ncipollo/release-action@v1.14.0
         with:
-          artifacts: "code/README.md"
+          artifacts: "README.md"
           draft: true
           prerelease: true
 
