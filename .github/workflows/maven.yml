@@ -29,7 +29,7 @@ jobs:
       run: |
         mvn install:install-file -DpomFile=lib/pom/gnuprolog.pom -Dfile=lib/gnuprologjava-0.2.6.jar -Dsources=lib/src/gnuprologjava-0.2.6-src.zip
         mvn install:install-file -DpomFile=lib/pom/groove-gxl.pom -Dfile=lib/groove-gxl-3.0.jar -Dsources=lib/src/groove-gxl-3.0-sources.jar
-        mvn install:install-file -DpomFile=lib/pom/ltl2buchi-2010.12.pom -Dfile=lib/ltl2buchi-2010.12.jar -Dsources=lib/src/ltl2buchi-2010.12.zip
+        mvn install:install-file -DpomFile=lib/pom/ltl2buchi.pom -Dfile=lib/ltl2buchi-2010.12.jar -Dsources=lib/src/ltl2buchi-2010.12.zip
         mvn install:install-file -DpomFile=lib/pom/osxadapter.pom -Dfile=lib/osxadapter-2.0.jar -Dsources=lib/src/osxadapter-2.0-src.zip
     - name: Build with Maven
       run: mvn -B clean install --file pom.xml
