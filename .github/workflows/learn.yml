@@ -1,5 +1,5 @@
 name: learn
-run-name: ${{ github.actor }} is learning
+run-name: ${{ github.actor }} is learning fast
 on:
   push:
     tags:
