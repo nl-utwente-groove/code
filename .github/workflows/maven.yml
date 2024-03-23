@@ -31,5 +31,7 @@ jobs:
         mvn -B install:install-file -DpomFile=lib/pom/groove-gxl.pom -Dfile=lib/groove-gxl-3.0.jar -Dsources=lib/src/groove-gxl-3.0-sources.jar
         mvn -B install:install-file -DpomFile=lib/pom/ltl2buchi.pom -Dfile=lib/ltl2buchi-2010.12.jar -Dsources=lib/src/ltl2buchi-2010.12.zip
         mvn -B install:install-file -DpomFile=lib/pom/osxadapter.pom -Dfile=lib/osxadapter-2.0.jar -Dsources=lib/src/osxadapter-2.0-src.zip
+    - name: Retrieve VERSION from file
+      run: VERSION=$(<src/main/resources/nl/utwente/groove/resource/version/GROOVE_VERSION)
     - name: Build with Maven
-      run: mvn -B clean install --file pom.xml
+      run: mvn -B -Drevision=$VERSION clean install --file pom.xml
