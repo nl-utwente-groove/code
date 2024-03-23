@@ -34,4 +34,7 @@ jobs:
     - name: Retrieve VERSION from file
       run: VERSION=$(<src/main/resources/nl/utwente/groove/resource/version/GROOVE_VERSION)
     - name: Build with Maven
-      run: mvn -B -Drevision=$VERSION clean install --file pom.xml
+      run: |
+        VERSION=$(<src/main/resources/nl/utwente/groove/resource/version/GROOVE_VERSION)
+        echo $VERSION
+        mvn -B -Drevision=$VERSION clean install --file pom.xml
