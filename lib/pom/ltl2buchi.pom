@@ -9,7 +9,7 @@
   Helper POM to install library in maven repository. Use in either of the following ways:
   
   - From the lib directory run
-    mvn install:install-file -Dfile=ltl2buchi-2010.12.jar -DpomFile=pom/ltl2buchi-2010.12.pom -Dsources=src/ltl2buchi-2010.12.zip
+    mvn install:install-file -DpomFile=pom/ltl2buchi.pom -Dfile=ltl2buchi-2010.12.jar -Dsources=src/ltl2buchi-2010.12.zip
 
   - In Eclipse, invoke the "m2 install ltl2buchi" launch configuration
   </description>

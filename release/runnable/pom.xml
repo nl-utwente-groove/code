@@ -1,0 +1,53 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+    <parent>
+  		<groupId>nl.utwente.groove</groupId>
+	    <artifactId>release</artifactId>
+	    <version>1.0</version>
+    </parent>
+	<artifactId>runnable</artifactId>
+	<packaging>pom</packaging>
+
+	<modules>
+		<module>Simulator</module>
+		<module>Generator</module>
+		<module>Imager</module>
+		<module>Viewer</module>
+	</modules>
+	
+	<properties>
+		<runnable.basedir>${project.parent.basedir}</runnable.basedir>
+		<release.basedir>${project.parent.parent.basedir}</release.basedir>
+	</properties>
+	
+	<build>
+		<resources>
+			<resource>
+				<directory>..</directory>
+				<includes>
+					<include>README.txt</include>
+				</includes>
+			</resource>
+		</resources>
+		
+		<plugins>
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.2.2</version>
+			    <configuration>
+			   		<outputDirectory>${runnable.basedir}/target</outputDirectory>
+					<finalName>${project.artifactId}</finalName>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<classpathPrefix>../lib/</classpathPrefix>
+							<mainClass>${project.groupId}.${project.artifactId}</mainClass>
+						</manifest>
+					</archive>
+			    </configuration>  
+			</plugin>
+		</plugins>
+	</build>
+</project>

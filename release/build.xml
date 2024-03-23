@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="/path/to/be/overwritten/via/ant/command/line/flag/" default="test" name="groove">
+
+<property name="src" value="src" />
+<property name="lib" value="lib" />
+<property name="classes" value="bin" />
+<property name="test.class.name" value="groove.test.CheckinTests" />
+<path id="test.classpath">
+  <pathelement location="instr/" />
+  <pathelement location="resources" />
+  <fileset dir="${lib}">
+    <include name="**/*.jar"/>
+  </fileset>
+  <pathelement location="bin/" />
+  <pathelement location="instr/emma.jar" />
+</path>
+<target name="test">
+  <junit fork="yes" haltonfailure="yes">
+    <test name="${test.class.name}" todir="test-reports"/>
+    <formatter type="xml"/>
+    <classpath refid="test.classpath" />
+    <assertions>
+         <enable/>
+    </assertions>
+  </junit>
+</target>
+
+</project>

@@ -1,0 +1,81 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>nl.utwente.groove</groupId>
+		<artifactId>release</artifactId>
+		<version>1.0</version>
+	</parent>
+	<artifactId>assembly</artifactId>
+	<packaging>pom</packaging>
+
+	<modules>
+		<module>bin</module>
+		<module>bin+doc</module>
+		<module>samples</module>
+		<module>src</module>
+	</modules>
+
+	<properties>
+		<groove.basedir>${project.basedir}/../../../groove</groove.basedir>
+		<zip.basedir>groove-${groove-version-underscored}</zip.basedir>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>runnable</artifactId>
+			<version>${project.version}</version>
+			<type>pom</type>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<finalName>groove-${groove-version-underscored}-${output-suffix}</finalName>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>3.3.0</version>
+					<configuration>
+						<descriptors>
+							<descriptor>zip.xml</descriptor>
+						</descriptors>
+						<appendAssemblyId>false</appendAssemblyId>
+						<outputDirectory>../../target/${destdir}</outputDirectory>
+					</configuration>
+					<executions>
+						<execution>
+							<phase>package</phase>
+							<goals>
+								<goal>single</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>3.3.0</version>
+				<executions>
+					<execution>
+						<id>regex-property</id>
+						<goals>
+							<goal>regex-property</goal>
+						</goals>
+						<configuration>
+							<name>groove-version-underscored</name>
+							<value>${groove-version}</value>
+							<regex>\.</regex>
+							<replacement>_</replacement>
+							<failIfNoMatch>false</failIfNoMatch>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

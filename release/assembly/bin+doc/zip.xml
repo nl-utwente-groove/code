@@ -1,0 +1,33 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+	<id>zip</id>
+	<formats>
+		<format>zip</format>
+	</formats>
+	<fileSets>
+	    <fileSet>
+		    <directory>../../include</directory>
+			<outputDirectory></outputDirectory>
+	    </fileSet>
+	    <fileSet>
+		    <directory>../../runnable/target</directory>
+			<outputDirectory>bin</outputDirectory>
+	    </fileSet>
+	    <fileSet>
+		    <directory>${groove.basedir}/target/javadoc</directory>
+			<outputDirectory>doc</outputDirectory>
+	    </fileSet>
+	</fileSets>
+	
+	<dependencySets>
+		<dependencySet>
+			<includes>
+				<include>nl.utwente.groove:groove</include>
+			</includes>
+			<useTransitiveFiltering>true</useTransitiveFiltering>
+			<outputDirectory>lib</outputDirectory>
+			<useProjectArtifact>false</useProjectArtifact>
+		</dependencySet>
+	</dependencySets>
+	
+	<baseDirectory>${zip.basedir}</baseDirectory>
+</assembly>
