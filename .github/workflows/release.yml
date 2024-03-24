@@ -52,6 +52,6 @@ jobs:
     - name: Deploy release
       uses: ncipollo/release-action@v1.14.0
       with:
-        artifacts: "release/target/*.zip"
-        draft: true
+        artifacts: "code/release/target/*.zip"
+        draft: false
         prerelease: true
