@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Assert;
+
 import junit.framework.TestCase;
 import nl.utwente.groove.algebra.PointIntAlgebra;
 import nl.utwente.groove.grammar.host.DefaultHostGraph;
@@ -29,7 +30,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Vincent de Bruijn
  * @version $Revision$
  */
-@SuppressWarnings("all")
+@SuppressWarnings("javadoc")
 public class STSTest extends TestCase {
 
     /** Location of the samples. */
@@ -68,33 +69,24 @@ public class STSTest extends TestCase {
 
         this.n1[0] = this.g1.getFactory().createNode();
         this.n1[1] = this.g1.getFactory().createNode();
-        this.n1[2] =
-            this.g1.getFactory().createNode(PointIntAlgebra.instance, 0);
+        this.n1[2] = this.g1.getFactory().createNode(PointIntAlgebra.instance, 0);
 
-        this.e1[0] =
-            this.g1.getFactory().createEdge(this.n1[0], "a", this.n1[1]);
-        this.e1[1] =
-            this.g1.getFactory().createEdge(this.n1[0], "x", this.n1[2]);
+        this.e1[0] = this.g1.getFactory().createEdge(this.n1[0], "a", this.n1[1]);
+        this.e1[1] = this.g1.getFactory().createEdge(this.n1[0], "x", this.n1[2]);
 
         this.n2[0] = this.g2.getFactory().createNode();
         this.n2[1] = this.g2.getFactory().createNode();
-        this.n2[2] =
-            this.g2.getFactory().createNode(PointIntAlgebra.instance, 0);
+        this.n2[2] = this.g2.getFactory().createNode(PointIntAlgebra.instance, 0);
 
-        this.e2[0] =
-            this.g2.getFactory().createEdge(this.n2[0], "a", this.n2[1]);
-        this.e2[1] =
-            this.g2.getFactory().createEdge(this.n2[0], "x", this.n2[2]);
+        this.e2[0] = this.g2.getFactory().createEdge(this.n2[0], "a", this.n2[1]);
+        this.e2[1] = this.g2.getFactory().createEdge(this.n2[0], "x", this.n2[2]);
 
         this.n3[0] = this.g3.getFactory().createNode();
         this.n3[1] = this.g3.getFactory().createNode();
-        this.n3[2] =
-            this.g3.getFactory().createNode(PointIntAlgebra.instance, 0);
+        this.n3[2] = this.g3.getFactory().createNode(PointIntAlgebra.instance, 0);
 
-        this.e3[0] =
-            this.g3.getFactory().createEdge(this.n3[0], "a", this.n3[1]);
-        this.e3[1] =
-            this.g3.getFactory().createEdge(this.n3[0], "y", this.n3[2]);
+        this.e3[0] = this.g3.getFactory().createEdge(this.n3[0], "a", this.n3[1]);
+        this.e3[1] = this.g3.getFactory().createEdge(this.n3[0], "y", this.n3[2]);
 
         for (int i = 0; i < 3; i++) {
             this.g1.addNode(this.n1[i]);
@@ -126,16 +118,13 @@ public class STSTest extends TestCase {
      */
     public void testSTSException() {
         try {
-            GrammarModel view =
-                Groove.loadGrammar(INPUT_DIR + "/" + "exception");
-            GTS gts =
-                new GTS(view.getStartGraphModel().getGrammar().toGrammar());
+            GrammarModel view = Groove.loadGrammar(INPUT_DIR + "/" + "exception");
+            GTS gts = new GTS(view.getStartGraphModel().getGrammar().toGrammar());
             GraphState state = gts.startState();
             this.sts.hostGraphToStartLocation(state.getGraph());
             for (MatchResult next : state.getMatches()) {
                 try {
-                    this.sts.ruleMatchToSwitchRelation(state.getGraph(), next,
-                        new HashSet<SwitchRelation>());
+                    this.sts.ruleMatchToSwitchRelation(state.getGraph(), next, new HashSet<>());
                     Assert.fail("No STSException thrown.");
                 } catch (STSException e) {
                     Assert.assertFalse(e.getMessage().isEmpty());
@@ -155,7 +144,7 @@ public class STSTest extends TestCase {
         test("testCase");
     }
 
-    /** 
+    /**
      * Tests if the host graphs are correctly generalized to a location.
      */
     public void testHostGraphToLocation() {
@@ -195,10 +184,8 @@ public class STSTest extends TestCase {
      */
     private void test(String grammarName) {
         try {
-            GrammarModel view =
-                Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
-            GTS gts =
-                new GTS(view.getStartGraphModel().getGrammar().toGrammar());
+            GrammarModel view = Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
+            GTS gts = new GTS(view.getStartGraphModel().getGrammar().toGrammar());
             GraphState state = gts.startState();
             for (MatchResult next : state.getMatches()) {
                 testRuleMatchToSwitchRelation(state.getGraph(), next);
@@ -212,33 +199,29 @@ public class STSTest extends TestCase {
     }
 
     private void toJsonTest() {
-        String json = this.sts.toJSON();
+        //  String json = this.sts.toJSON();
         // TODO: Test if json is well-formed
     }
 
-    private void testRuleMatchToSwitchRelation(HostGraph sourceGraph,
-            MatchResult match) {
+    private void testRuleMatchToSwitchRelation(HostGraph sourceGraph, MatchResult match) {
         this.sts.hostGraphToStartLocation(sourceGraph);
         try {
-            SwitchRelation sr =
-                this.sts.ruleMatchToSwitchRelation(sourceGraph, match,
-                    new HashSet<SwitchRelation>());
+            SwitchRelation sr
+                = this.sts.ruleMatchToSwitchRelation(sourceGraph, match, new HashSet<>());
 
             Assert.assertNotNull(sr);
-            Assert.assertEquals(
-                this.sts.getSwitchRelation(SwitchRelation.getSwitchIdentifier(
-                    sr.getGate(), sr.getGuard(), sr.getUpdate())), sr);
+            Assert
+                .assertEquals(this.sts
+                    .getSwitchRelation(SwitchRelation
+                        .getSwitchIdentifier(sr.getGate(), sr.getGuard(), sr.getUpdate())), sr);
 
             // Test with higher priority match
             this.sts.removeSwitchRelation(sr);
-            SwitchRelation higherPriorityRelation =
-                new SwitchRelation(new Gate("gate", new HashSet()), "x > 3", "");
-            Set<SwitchRelation> higherPriorityRelations =
-                new HashSet<>();
+            SwitchRelation higherPriorityRelation
+                = new SwitchRelation(new Gate("gate", new HashSet<>()), "x > 3", "");
+            Set<SwitchRelation> higherPriorityRelations = new HashSet<>();
             higherPriorityRelations.add(higherPriorityRelation);
-            sr =
-                this.sts.ruleMatchToSwitchRelation(sourceGraph, match,
-                    higherPriorityRelations);
+            sr = this.sts.ruleMatchToSwitchRelation(sourceGraph, match, higherPriorityRelations);
             Assert.assertTrue(sr.getGuard().contains("!(x > 3)"));
         } catch (STSException e) {
             Assert.fail(e.getMessage());

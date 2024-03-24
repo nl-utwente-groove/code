@@ -75,13 +75,13 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         "Source of values for unbound value parameters"
             + DocumentedEnum.document(ValueOracleKind.class)
             + "<p>If the algebra family is set to <i>point</i>, the oracle is disregarded",
-        ValueType.ORACLE_FACTORY, new OracleChecker()),
+        ValueType.ORACLE_FACTORY),
 
     /** Name of a class containing user-defined algebraic operations. */
     USER_OPS("userOperations",
         "Qualified class name of a class containing used-defined data operations. "
             + "<p>Static methods annotated with @UserOperation can be used in rules.",
-        ValueType.STRING, new UserOperationsChecker()),
+        ValueType.STRING),
     /**
      * Flag determining the injectivity of the rule system. If <code>true</code>,
      * all rules should be matched injectively. Default is <code>false</code>.
@@ -133,26 +133,22 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
     /**
      * Space-separated list of active start graph names.
      */
-    START_GRAPH_NAMES("startGraph", "List of active start graph names", ValueType.QUAL_NAME_LIST,
-        ResourceChecker.get(ResourceKind.HOST)),
+    START_GRAPH_NAMES("startGraph", "List of active start graph names", ValueType.QUAL_NAME_LIST),
 
     /**
      * Name of the active control program.
      */
-    CONTROL_NAMES("controlProgram", "List of enabled control programs", ValueType.QUAL_NAME_LIST,
-        ResourceChecker.get(ResourceKind.CONTROL)),
+    CONTROL_NAMES("controlProgram", "List of enabled control programs", ValueType.QUAL_NAME_LIST),
 
     /**
      * Space-separated list of active type graph names.
      */
-    TYPE_NAMES("typeGraph", "List of active type graph names", ValueType.QUAL_NAME_LIST,
-        ResourceChecker.get(ResourceKind.TYPE)),
+    TYPE_NAMES("typeGraph", "List of active type graph names", ValueType.QUAL_NAME_LIST),
 
     /**
      * Space-separated list of active prolog program names.
      */
-    PROLOG_NAMES("prolog", "List of active prolog program names", ValueType.QUAL_NAME_LIST,
-        ResourceChecker.get(ResourceKind.PROLOG)),
+    PROLOG_NAMES("prolog", "List of active prolog program names", ValueType.QUAL_NAME_LIST),
 
     /** Policy for rule application. */
     ACTION_POLICY("actionPolicy",
@@ -162,7 +158,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             + "<li> - <i>error</i> (default): applicability is an error"
             + "<li> - <i>remove</i>: applicability causes the state to be removed from the state space"
             + "<p>The last three are only valid for forbidden and invariant properties",
-        ValueType.POLICY_MAP, ActionPolicyChecker.instance),
+        ValueType.POLICY_MAP),
 
     /** Policy for dealing with type violations. */
     TYPE_POLICY("typePolicy",
@@ -184,7 +180,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      * Exploration strategy description.
      */
     EXPLORATION("explorationStrategy", "Default exploration strategy for this grammar",
-        ValueType.EXPLORE_TYPE, ExplorationChecker.instance),
+        ValueType.EXPLORE_TYPE),
 
     /** Flag that determines if output parameters are added to group calls. */
     STORE_OUT_PARS("storeOutParameters",
@@ -219,7 +215,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             + "<li>- <i>false</i>: no arguments are displayed"
             + "<li>- <i>some</i> (default): arguments are only displayed for rules with parameters and for recipes"
             + "<li>- <i>true</i>: arguments are always displayed, also for rules without parameters",
-        ValueType.THREE_VALUED, null),
+        ValueType.THREE_VALUED),
 
     /**
      * Flag that determines if (binary) loops can be shown as vertex labels.
@@ -233,24 +229,13 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         ValueType.BOOLEAN),;
 
     /**
-     * Constructor for a key with a plain string value
-     * @param name name of the key; should be an identifier possibly prefixed by #SYSTEM_KEY_PREFIX
-     * @param explanation short explanation of the meaning of the key
-     */
-    private GrammarKey(String name, String explanation, ValueType keyType) {
-        this(name, null, explanation, keyType, null);
-    }
-
-    /**
      * Constructor for a key with values parsed by a given parser
      * @param name name of the key; should be an identifier possibly prefixed by #SYSTEM_KEY_PREFIX
      * @param explanation short explanation of the meaning of the key
      * {@link StringParser#identity()} is used
-     * @param checker the checker used to test compatibility with a given grammar model; if {@code null},
-     * {@code this} is used
      */
-    private GrammarKey(String name, String explanation, ValueType keyType, GrammarChecker checker) {
-        this(name, null, explanation, keyType, checker);
+    private GrammarKey(String name, String explanation, ValueType keyType) {
+        this(name, null, explanation, keyType);
     }
 
     /**
@@ -260,17 +245,13 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      * the key phrase is constructed from {@code name}
      * @param explanation short explanation of the meaning of the key
      * {@link StringParser#identity()} is used
-     * @param checker the checker used to test compatibility with a given grammar model; if {@code null},
-     * {@code this} is used
      */
-    private GrammarKey(String name, String keyPhrase, String explanation, ValueType keyType,
-                       GrammarChecker checker) {
+    private GrammarKey(String name, String keyPhrase, String explanation, ValueType keyType) {
         this.name = name;
         this.keyPhrase = keyPhrase == null
             ? Strings.unCamel(name, false)
             : keyPhrase;
         this.explanation = explanation;
-        this.checker = checker;
         this.keyType = keyType;
     }
 
@@ -290,18 +271,12 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
 
     @Override
     public boolean isSystem() {
-        return isDerived() || switch (this) {
-        case GROOVE_VERSION, GRAMMAR_VERSION -> true;
-        default -> false;
-        };
+        return isDerived() || this == GROOVE_VERSION || this == GRAMMAR_VERSION;
     }
 
     @Override
     public boolean isDerived() {
-        return switch (this) {
-        case LOCATION -> true;
-        default -> false;
-        };
+        return this == LOCATION;
     }
 
     @Override
@@ -342,13 +317,26 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
     private KeyParser parser;
 
     @Override
-    public FormatErrorSet check(GrammarModel grammar, Entry value) {
-        return this.checker == null
-            ? new FormatErrorSet()
-            : this.checker.check(grammar, value);
+    public FormatErrorSet apply(GrammarModel grammar, Entry value) {
+        return this.checker.get().apply(grammar, value);
     }
 
-    private final GrammarChecker checker;
+    /** Lazily created checker for values of this key. */
+    private final Factory<GrammarChecker> checker = Factory.lazy(this::computeChecker);
+
+    /** Computes the value for {@link #checker}. */
+    private GrammarChecker computeChecker() {
+        return switch (this) {
+        case ACTION_POLICY -> ActionPolicyChecker.instance;
+        case CONTROL_NAMES -> ResourceChecker.get(ResourceKind.CONTROL);
+        case ORACLE -> oracleChecker;
+        case PROLOG_NAMES -> ResourceChecker.get(ResourceKind.PROLOG);
+        case START_GRAPH_NAMES -> ResourceChecker.get(ResourceKind.HOST);
+        case TYPE_NAMES -> ResourceChecker.get(ResourceKind.TYPE);
+        case USER_OPS -> UserOperationsChecker.instance;
+        default -> trueChecker;
+        };
+    }
 
     @Override
     public ValueType getKeyType() {
@@ -370,17 +358,27 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         };
     }
 
+    /** Returns the grammar keys that require a full grammar reload upon value changes. */
+    static public Set<GrammarKey> getReloadKeys() {
+        return reloadKeys.get();
+    }
+
+    /** Lazily created set of keys that require a full grammar reload when their value changes. */
+    static private Factory<Set<GrammarKey>> reloadKeys = Factory.lazy(GrammarKey::createReloadKeys);
+
+    /** Computes the value for {@link #reloadKeys}. */
+    static private Set<GrammarKey> createReloadKeys() {
+        return EnumSet.of(USE_STORED_NODE_IDS, USER_OPS);
+    }
+
     /** Returns the grammar key with a given name, if any; or {@code null} if the name is not a recognisable key */
     static public Optional<GrammarKey> getKey(String name) {
         return Optional.ofNullable(nameKeyMap.get().get(name));
     }
 
-    /** Returns the grammar keys that require a full grammar reload upon value changes. */
-    static public Set<GrammarKey> getReloadKeys() {
-        return reloadKeys;
-    }
-
-    static private Set<GrammarKey> reloadKeys = EnumSet.of(USE_STORED_NODE_IDS, USER_OPS);
+    /** Mapping from key names (as in {@link GrammarKey#getName()}) to keys. */
+    static private final Factory<Map<String,GrammarKey>> nameKeyMap
+        = Factory.lazy(GrammarKey::createNameKeyMap);
 
     /** Creator methods for the {@link #nameKeyMap}*/
     static private Map<String,GrammarKey> createNameKeyMap() {
@@ -388,10 +386,6 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         Arrays.stream(GrammarKey.values()).forEach(k -> result.put(k.getName(), k));
         return result;
     }
-
-    /** Mapping from key names (as in {@link GrammarKey#getName()}) to keys. */
-    static private final Factory<Map<String,GrammarKey>> nameKeyMap
-        = Factory.lazy(GrammarKey::createNameKeyMap);
 
     /** Name of deprecated key for attribute support. */
     static public final String ATTRIBUTE_SUPPORT = "attributeSupport";
@@ -412,7 +406,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         private final ResourceKind kind;
 
         @Override
-        public FormatErrorSet check(GrammarModel grammar, GrammarProperties.Entry value) {
+        public FormatErrorSet apply(GrammarModel grammar, GrammarProperties.Entry value) {
             var unknowns = new ArrayList<>(value.getQualNameList());
             var result = new FormatErrorSet();
             unknowns.removeAll(grammar.getResourceMap(getKind()).keySet());
@@ -429,26 +423,29 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
 
         /** Returns the singleton checker for a given resource kind. */
         public static ResourceChecker get(ResourceKind kind) {
-            return resourceMap.get(kind);
+            return resourceMap.get().get(kind);
         }
 
-        private static final Map<ResourceKind,ResourceChecker> resourceMap;
+        /** Lazily computed mapping from resource kinds to their checkers. */
+        static private Factory<Map<ResourceKind,ResourceChecker>> resourceMap
+            = Factory.lazy(ResourceChecker::createResourceMap);
 
-        static {
-            Map<ResourceKind,ResourceChecker> map = new EnumMap<>(ResourceKind.class);
+        /** Computes the value for #resourceMap. */
+        static private Map<ResourceKind,ResourceChecker> createResourceMap() {
+            Map<ResourceKind,ResourceChecker> result = new EnumMap<>(ResourceKind.class);
             for (ResourceKind kind : ResourceKind.values()) {
                 switch (kind) {
                 case CONTROL:
                 case HOST:
                 case PROLOG:
                 case TYPE:
-                    map.put(kind, new ResourceChecker(kind));
+                    result.put(kind, new ResourceChecker(kind));
                     break;
                 default:
                     // there is no checker
                 }
             }
-            resourceMap = map;
+            return result;
         }
 
     }
@@ -460,7 +457,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         }
 
         @Override
-        public FormatErrorSet check(GrammarModel grammar, Entry value) {
+        public FormatErrorSet apply(GrammarModel grammar, Entry value) {
             FormatErrorSet result = new FormatErrorSet();
             List<QualName> unknowns = new ArrayList<>();
             var map = value.getPolicyMap();
@@ -492,34 +489,10 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         public static ActionPolicyChecker instance = new ActionPolicyChecker();
     }
 
-    /** Checks the value for the {@link GrammarKey#EXPLORATION} key. */
-    private static class ExplorationChecker implements GrammarChecker {
-        @Override
-        public FormatErrorSet check(GrammarModel grammar, GrammarProperties.Entry value) {
-            return new FormatErrorSet();
-        }
-
-        public static ExplorationChecker instance = new ExplorationChecker();
-    }
-
-    /** Checks whether the oracle specified by {@link GrammarKey#ORACLE} can be instantiated. */
-    private static class OracleChecker implements GrammarChecker {
-        @Override
-        public FormatErrorSet check(GrammarModel grammar, Entry value) {
-            FormatErrorSet result = new FormatErrorSet();
-            try {
-                grammar.getProperties().getValueOracle();
-            } catch (FormatException exc) {
-                result.addAll(exc.getErrors());
-            }
-            return result;
-        }
-    }
-
     /** Checks whether the user-defined operations conflict with the algebra family. */
     private static class UserOperationsChecker implements GrammarChecker {
         @Override
-        public FormatErrorSet check(GrammarModel grammar, Entry value) {
+        public FormatErrorSet apply(GrammarModel grammar, Entry value) {
             FormatErrorSet result = new FormatErrorSet();
             var family = grammar.getProperties().getAlgebraFamily();
             String className = value.getString();
@@ -537,7 +510,24 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             }
             return result;
         }
+
+        /** The singleton instance of this class. */
+        public static UserOperationsChecker instance = new UserOperationsChecker();
     }
+
+    /** Checker that tests whether a value oracle can be generated from the grammar properties. */
+    private static GrammarChecker oracleChecker = (g, v) -> {
+        FormatErrorSet result = new FormatErrorSet();
+        try {
+            g.getProperties().getValueOracle();
+        } catch (FormatException exc) {
+            result.addAll(exc.getErrors());
+        }
+        return result;
+    };
+
+    /** Checker that always returns the empty error set. */
+    private static GrammarChecker trueChecker = (g, v) -> FormatErrorSet.EMPTY;
 
     /** Workaround for apparent null annotation bug. */
     private static @Nullable String[] convert(@Nullable String... strings) {

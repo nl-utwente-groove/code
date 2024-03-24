@@ -18,7 +18,8 @@ package nl.utwente.groove.grammar.host;
 
 import static nl.utwente.groove.graph.GraphRole.HOST;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Algebra;
 import nl.utwente.groove.algebra.AlgebraFamily;
@@ -36,8 +37,8 @@ import nl.utwente.groove.graph.NodeSetEdgeSetGraph;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class DefaultHostGraph extends NodeSetEdgeSetGraph<@NonNull HostNode,@NonNull HostEdge>
-    implements HostGraph {
+@NonNullByDefault
+public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge> implements HostGraph {
     /**
      * Constructs an empty simple host graph.
      * @param name name of the new host graph.
@@ -73,7 +74,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<@NonNull HostNode,@Non
      * @param family possibly {@code null} set of algebras to draw
      * data values from
      */
-    public DefaultHostGraph(HostGraph graph, AlgebraFamily family) {
+    public DefaultHostGraph(HostGraph graph, @Nullable AlgebraFamily family) {
         this(graph.getName(), graph.getFactory());
         HostGraphMorphism morphism = getFactory().createMorphism();
         for (HostNode sn : graph.nodeSet()) {
@@ -162,7 +163,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<@NonNull HostNode,@Non
     private final HostFactory factory;
 
     @Override
-    public boolean addNode(@NonNull HostNode node) {
+    public boolean addNode(HostNode node) {
         boolean result = super.addNode(node);
         if (node instanceof ValueNode val && val.getValue() instanceof ErrorValue error) {
             addError(error.getMessage(), node);

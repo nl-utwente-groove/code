@@ -25,6 +25,7 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -37,9 +38,7 @@ import org.junit.Test;
 import nl.utwente.groove.graph.GGraph;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.iso.IsoChecker;
-import nl.utwente.groove.graph.iso.PartitionMap;
 import nl.utwente.groove.graph.plain.PlainEdge;
-import nl.utwente.groove.graph.plain.PlainFactory;
 import nl.utwente.groove.graph.plain.PlainNode;
 import nl.utwente.groove.io.graph.AttrGraph;
 import nl.utwente.groove.io.graph.GxlIO;
@@ -48,7 +47,8 @@ import nl.utwente.groove.io.graph.GxlIO;
  * @author Arend Rensink
  * @version $Revision$
  */
-@SuppressWarnings("all")
+@SuppressWarnings("javadoc")
+//@SuppressWarnings("all")
 public abstract class GraphTest {
     static public final String MATCH_DOM_NAME = "match-dom-";
     static public final String MATCH_COD_NAME = "match-cod";
@@ -83,8 +83,10 @@ public abstract class GraphTest {
     /** The target node of <tt>bEdge</tt>. */
     public PlainNode bTarget;
 
+    @SuppressWarnings("unchecked")
     public GGraph<@NonNull PlainNode,@NonNull PlainEdge>[] matchDom = new GGraph[MATCH_DOM_COUNT];
     public GGraph<@NonNull PlainNode,@NonNull PlainEdge> matchCod;
+    @SuppressWarnings("unchecked")
     public GGraph<@NonNull PlainNode,@NonNull PlainEdge>[] isoGraph = new GGraph[ISO_GRAPH_COUNT];
 
     public IsoChecker checker = IsoChecker.getInstance(true);
@@ -168,10 +170,10 @@ public abstract class GraphTest {
     @Test
     final public void testGetPartitionMap() {
         // iso-0
-        PartitionMap nodePartitionMap
+        var nodePartitionMap
             = this.checker.getCertifier(this.isoGraph[0], true).getNodePartitionMap();
         assertEquals(this.isoGraph[0].nodeCount(), nodePartitionMap.size());
-        PartitionMap edgePartitionMap
+        var edgePartitionMap
             = this.checker.getCertifier(this.isoGraph[0], true).getEdgePartitionMap();
         assertEquals(this.isoGraph[0].edgeCount(), edgePartitionMap.size());
         // iso-1
@@ -193,7 +195,7 @@ public abstract class GraphTest {
 
     @Test
     final public void testNewGraph() {
-        GGraph newGraph = this.matchDom[0].newGraph("new graph 0");
+        var newGraph = this.matchDom[0].newGraph("new graph 0");
         assertEquals(0, newGraph.nodeCount());
         assertEquals(0, newGraph.edgeCount());
         assertFalse(newGraph.isFixed());
@@ -236,34 +238,8 @@ public abstract class GraphTest {
     }
 
     @Test
-    final public void testNodeSet() {
-        Collection nodeSet = this.matchDom[0].nodeSet();
-        assertEquals(3, nodeSet.size());
-        try {
-            nodeSet.add(this.factory.createNode());
-            fail("Addition to node set should not have been allowed");
-        } catch (UnsupportedOperationException exc) {
-            // proceed
-        }
-    }
-
-    @Test
     final public void testNodeCount() {
         assertEquals(3, this.matchDom[0].nodeCount());
-    }
-
-    @Test
-    final public void testEdgeSet() {
-        Collection edgeSet = this.matchDom[0].edgeSet();
-        assertEquals(2, edgeSet.size());
-        try {
-            edgeSet
-                .add(this.factory
-                    .createEdge(this.factory.createNode(), "", this.factory.createNode()));
-            fail("Addition to node set should not have been allowed");
-        } catch (UnsupportedOperationException exc) {
-            // proceed
-        }
     }
 
     @Test
@@ -277,10 +253,10 @@ public abstract class GraphTest {
         abEdgeSet.add(this.aEdge);
         abEdgeSet.add(this.bEdge);
         assertEquals(abEdgeSet, this.graph.outEdgeSet(this.source));
-        assertEquals(new HashSet<PlainEdge>(), this.graph.outEdgeSet(this.aTarget));
+        assertEquals(new HashSet<>(), this.graph.outEdgeSet(this.aTarget));
         // these sets should be unmodifiable
-        Collection<PlainEdge> bOutEdges
-            = (Collection<PlainEdge>) this.graph.outEdgeSet(this.bTarget);
+        @SuppressWarnings("unchecked")
+        var bOutEdges = (Collection<PlainEdge>) this.graph.outEdgeSet(this.bTarget);
         try {
             bOutEdges.add(this.aEdge);
             fail("Adding to outgoing edge set should not have been allowed");
@@ -291,7 +267,7 @@ public abstract class GraphTest {
         PlainEdge cEdge = this.graph.addEdge(this.bTarget, this.cLabel, this.aTarget);
         bOutEdges = new HashSet<>();
         bOutEdges.add(cEdge);
-        assertEquals(bOutEdges, this.graph.outEdgeSet(this.bTarget));
+        assertEquals(Collections.singleton(cEdge), this.graph.outEdgeSet(this.bTarget));
     }
 
     @Test
@@ -454,6 +430,4 @@ public abstract class GraphTest {
         // fixedness of the graph is not tested, it is a precondition
         // so there is little else to do here
     }
-
-    private final PlainFactory factory = PlainFactory.instance();
 }

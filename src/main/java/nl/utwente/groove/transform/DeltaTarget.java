@@ -20,33 +20,12 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostNode;
-import nl.utwente.groove.grammar.host.ValueNode;
+import nl.utwente.groove.graph.GDeltaTarget;
 
 /**
  * Command interface to deal with graph changes.
  */
 @NonNullByDefault
-public interface DeltaTarget {
-    /** Callback method invoked to indicate that a node is to be added.
-     * If the node is not a {@link ValueNode}, it is required to be fresh.
-     * @return {@code true} if the node was added (which can only fail to be true
-     * if the node is a {@link ValueNode})
-     */
-    public boolean addNode(HostNode node);
-
-    /** Callback method invoked to indicate that a node is to be removed.
-     * @return {@code true} if the node was removed
-     */
-    public boolean removeNode(HostNode node);
-
-    /** Callback method invoked to indicate that an edge is to be added.
-     * The edge is required to be fresh.
-     * @return always {@code true}
-     */
-    public boolean addEdge(HostEdge edge);
-
-    /** Callback method invoked to indicate that an edge is to be removed.
-     * @return {@code true} if the edge was removed
-     */
-    public boolean removeEdge(HostEdge edge);
+public interface DeltaTarget extends GDeltaTarget<HostNode,HostEdge> {
+    // specialises the generic interface
 }

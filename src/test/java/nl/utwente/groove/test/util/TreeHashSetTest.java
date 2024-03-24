@@ -35,11 +35,12 @@ import nl.utwente.groove.util.collect.TreeHashSet;
  * @author Arend Rensink
  * @version $Revision$
  */
-@SuppressWarnings("all")
+@SuppressWarnings("javadoc")
 public class TreeHashSetTest {
     static final int INT_LIST_COUNT = 1000;
     final Integer[] intList1 = new Integer[INT_LIST_COUNT];
     final Integer[] intList2 = new Integer[INT_LIST_COUNT];
+    @SuppressWarnings("unchecked")
     final Set<Integer>[] longList = new Set[INT_LIST_COUNT];
     {
         for (int i = 0; i < INT_LIST_COUNT; i++) {
@@ -53,11 +54,12 @@ public class TreeHashSetTest {
 
     TreeHashSet<Object> defaultSet, identitySet, hashcodeSet;
 
+    @SuppressWarnings("unchecked")
     @Before
     public void setUp() {
         this.defaultSet = new TreeHashSet<>();
-        this.identitySet = new TreeHashSet<Object>(TreeHashSet.IDENTITY_EQUATOR);
-        this.hashcodeSet = new TreeHashSet<Object>(TreeHashSet.HASHCODE_EQUATOR);
+        this.identitySet = new TreeHashSet<>(TreeHashSet.IDENTITY_EQUATOR);
+        this.hashcodeSet = new TreeHashSet<>(TreeHashSet.HASHCODE_EQUATOR);
     }
 
     @Test
@@ -136,7 +138,7 @@ public class TreeHashSetTest {
             }
             assertEquals(testSet, this.defaultSet);
         }
-        assertEquals(testSet, new HashSet<Object>(Arrays.asList(this.intList1)));
+        assertEquals(testSet, new HashSet<>(Arrays.asList(this.intList1)));
     }
 
     /*
@@ -280,8 +282,7 @@ public class TreeHashSetTest {
         clone.clear();
         fill(clone, this.intList2);
         fill(clone, this.longList);
-        Iterator<Integer> iter = Arrays.asList(this.intList2)
-            .iterator();
+        Iterator<Integer> iter = Arrays.asList(this.intList2).iterator();
         while (iter.hasNext()) {
             Object next = iter.next();
             clone.remove(next);

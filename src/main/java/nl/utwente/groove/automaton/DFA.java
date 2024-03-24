@@ -105,12 +105,16 @@ public class DFA {
     public String toString() {
         StringBuilder result = new StringBuilder();
         for (DFAState state : getStates()) {
-            result.append(String.format("%s%n", state));
+            result.append(String.format("%s, final=%s%n", state, state.isFinal()));
             for (Direction dir : Direction.values()) {
-                for (Map.Entry<TypeLabel,DFAState> labelEntry : state.getLabelMap()
+                for (Map.Entry<TypeLabel,DFAState> labelEntry : state
+                    .getLabelMap()
                     .get(dir)
                     .entrySet()) {
-                    result.append(dir == OUTGOING ? "   " : "  -");
+                    result
+                        .append(dir == OUTGOING
+                            ? "   "
+                            : "  -");
                     result.append(labelEntry.getKey());
                     result.append(" --> ");
                     result.append(labelEntry.getValue());
@@ -123,19 +127,13 @@ public class DFA {
 
     /** Tests if this DFA has an empty language. */
     public boolean isEmpty() {
-        return getStartState().getLabelMap()
-            .get(OUTGOING)
-            .isEmpty()
-            && getStartState().getLabelMap()
-                .get(INCOMING)
-                .isEmpty()
-            && !getStartState().isFinal();
+        return getStartState().getLabelMap().get(OUTGOING).isEmpty()
+            && getStartState().getLabelMap().get(INCOMING).isEmpty() && !getStartState().isFinal();
     }
 
     /** Tests if this automaton is isomorphic with another. */
     public boolean isEquivalent(DFA other) {
-        if (getStates().size() != other.getStates()
-            .size()) {
+        if (getStates().size() != other.getStates().size()) {
             return false;
         }
         boolean result = true;
@@ -186,10 +184,8 @@ public class DFA {
             return null;
         }
         for (Direction dir : Direction.values()) {
-            Map<TypeLabel,DFAState> oneLabelMap = one.getLabelMap()
-                .get(dir);
-            Map<TypeLabel,DFAState> twoLabelMap = two.getLabelMap()
-                .get(dir);
+            Map<TypeLabel,DFAState> oneLabelMap = one.getLabelMap().get(dir);
+            Map<TypeLabel,DFAState> twoLabelMap = two.getLabelMap().get(dir);
             if (oneLabelMap.size() != twoLabelMap.size()) {
                 return null;
             }
@@ -236,12 +232,8 @@ public class DFA {
                     boolean distinct = i.isFinal() != j.isFinal();
                     if (!distinct) {
                         for (Direction dir : Direction.values()) {
-                            if (areDistinct(i.getLabelMap()
-                                .get(dir),
-                                j.getLabelMap()
-                                    .get(dir),
-                                depSet,
-                                depMap)) {
+                            if (areDistinct(i.getLabelMap().get(dir), j.getLabelMap().get(dir),
+                                            depSet, depMap)) {
                                 distinct = true;
                                 break;
                             }
@@ -262,10 +254,9 @@ public class DFA {
      * corresponding pairs of target states.
      */
     private <K> boolean areDistinct(Map<K,DFAState> iMap, Map<K,DFAState> jMap, Set<Cell> ijDepSet,
-        Map<Cell,Set<Cell>> depMap) {
+                                    Map<Cell,Set<Cell>> depMap) {
         boolean result = false;
-        if (!iMap.keySet()
-            .equals(jMap.keySet())) {
+        if (!iMap.keySet().equals(jMap.keySet())) {
             result = true;
         } else {
             for (Map.Entry<K,DFAState> iEntry : iMap.entrySet()) {
@@ -287,8 +278,7 @@ public class DFA {
     private Map<DFAState,Cell> computePartition(Set<Cell> equivalence) {
         Map<DFAState,Cell> result = new HashMap<>();
         // initially the partition is discrete
-        getStates().stream()
-            .forEach(s -> result.put(s, new Cell(s)));
+        getStates().stream().forEach(s -> result.put(s, new Cell(s)));
         for (Cell equiv : equivalence) {
             assert equiv.size() == 2;
             Iterator<DFAState> distIter = equiv.iterator();
@@ -319,20 +309,17 @@ public class DFA {
         for (Map.Entry<DFAState,Cell> cellEntry : partition.entrySet()) {
             Cell cell = cellEntry.getValue();
             if (!newStateMap.containsKey(cell)) {
-                newStateMap.put(cell,
-                    result.addState(cell.flatten(),
-                        cellEntry.getKey()
-                            .isFinal()));
+                newStateMap
+                    .put(cell, result.addState(cell.flatten(), cellEntry.getKey().isFinal()));
             }
         }
         // copy the successor maps
         for (Map.Entry<Cell,DFAState> newStateEntry : newStateMap.entrySet()) {
-            DFAState oldState = newStateEntry.getKey()
-                .iterator()
-                .next();
+            DFAState oldState = newStateEntry.getKey().iterator().next();
             DFAState newState = newStateEntry.getValue();
             for (Direction dir : Direction.values()) {
-                for (Map.Entry<TypeLabel,DFAState> entry : oldState.getLabelMap()
+                for (Map.Entry<TypeLabel,DFAState> entry : oldState
+                    .getLabelMap()
                     .get(dir)
                     .entrySet()) {
                     DFAState newSucc = newStateMap.get(partition.get(entry.getValue()));

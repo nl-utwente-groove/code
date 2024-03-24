@@ -29,7 +29,8 @@ import nl.utwente.groove.util.Fixable;
  * @version $Revision$ $Date: 2008-01-30 09:32:52 $
  */
 @NonNullByDefault
-public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixable {
+public interface GGraph<N extends Node,E extends GEdge<N>>
+    extends Graph, Fixable, GDeltaTarget<N,E> {
     /* Specialises the return type. */
     @Override
     Set<? extends N> nodeSet();
@@ -97,6 +98,7 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
      * @see #addEdge
      * @see #isFixed()
      */
+    @Override
     boolean addNode(@NonNull N node);
 
     /**
@@ -144,6 +146,7 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
      * @param edge the (non-{@code null}) edge to be added to the graph
      * @return <tt>true</tt> if the graph changed as a result of this call
      */
+    @Override
     boolean addEdge(E edge);
 
     /**
@@ -212,6 +215,7 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
      * @param edge the (non-{@code null}) edge to be removed from the graph
      * @return <tt>true</tt> if the graph changed as a result of this call
      */
+    @Override
     boolean removeEdge(E edge);
 
     /**
@@ -238,6 +242,7 @@ public interface GGraph<N extends Node,E extends GEdge<N>> extends Graph, Fixabl
      * @param node the (non-{@code null}) node to be removed from the graph
      * @return <tt>true</tt> if the graph changed as a result of this call
      */
+    @Override
     boolean removeNode(N node);
 
     /**

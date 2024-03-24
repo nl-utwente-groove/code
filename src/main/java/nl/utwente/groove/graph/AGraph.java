@@ -334,10 +334,10 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>>
      * {@link GraphCache}.
      * @return the graph cache
      */
+    @SuppressWarnings("unused")
     @Override
-    @SuppressWarnings("all")
-    protected GraphCache createCache() {
-        return new GraphCache(this);
+    protected GraphCache<N,E> createCache() {
+        return new GraphCache<N,E>(this);
     }
 
     /** The default is not to create any graph elements. */

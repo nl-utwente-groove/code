@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2023 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -19,6 +19,8 @@ package nl.utwente.groove.test.graph;
 import static org.junit.Assert.fail;
 
 import org.junit.Assert;
+import org.junit.Test;
+
 import nl.utwente.groove.algebra.Algebra;
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.Sort;
@@ -27,8 +29,6 @@ import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.type.LabelPattern;
 import nl.utwente.groove.util.parse.FormatException;
-
-import org.junit.Test;
 
 @SuppressWarnings("all")
 public class LabelPatternTest {
@@ -70,21 +70,14 @@ public class LabelPatternTest {
         // construct the graph
         HostGraph graph = new DefaultHostGraph("test");
         HostNode n1 = graph.addNode();
-        Algebra<?> intAlgebra =
-            AlgebraFamily.getInstance().getAlgebra(Sort.INT);
-        Algebra<?> stringAlgebra =
-            AlgebraFamily.getInstance().getAlgebra(Sort.STRING);
-        HostNode i1 =
-            graph.getFactory().createNode(intAlgebra,
-                intAlgebra.toValueFromJava(11));
+        Algebra<?> intAlgebra = AlgebraFamily.getInstance().getAlgebra(Sort.INT);
+        Algebra<?> stringAlgebra = AlgebraFamily.getInstance().getAlgebra(Sort.STRING);
+        HostNode i1 = graph.getFactory().createNode(intAlgebra, intAlgebra.toValueFromJava(11));
         graph.addNode(i1);
-        HostNode i2 =
-            graph.getFactory().createNode(intAlgebra,
-                intAlgebra.toValueFromJava(22));
+        HostNode i2 = graph.getFactory().createNode(intAlgebra, intAlgebra.toValueFromJava(22));
         graph.addNode(i2);
-        HostNode s =
-            graph.getFactory().createNode(stringAlgebra,
-                stringAlgebra.toValueFromJava("text"));
+        HostNode s
+            = graph.getFactory().createNode(stringAlgebra, stringAlgebra.toValueFromJava("text"));
         graph.addNode(s);
         graph.addEdge(n1, "i1", i1);
         graph.addEdge(n1, "i2", i2);
@@ -94,28 +87,24 @@ public class LabelPatternTest {
         graphInstanceTest("One par: 11", "\"One par: %s\",i1", graph, n1);
         graphInstanceTest("One par: null", "\"One par: %s\",i3", graph, n1);
         graphInstanceTest("One par: \"text\"", "\"One par: %s\",s", graph, n1);
-        graphInstanceTest("Two pars: 22-11", "\"Two pars: %2$s-%1$s\",i1,i2",
-            graph, n1);
+        graphInstanceTest("Two pars: 22-11", "\"Two pars: %2$s-%1$s\",i1,i2", graph, n1);
     }
 
     private void parseTest(String text, boolean succeed) {
         try {
             LabelPattern.parse(text);
             if (!succeed) {
-                fail(String.format(
-                    "Text %s should not parse correctly but does", text));
+                fail(String.format("Text %s should not parse correctly but does", text));
             }
         } catch (FormatException e) {
             if (succeed) {
-                fail(String.format(
-                    "Text %s should parse correctly but throws %s", text,
-                    e.getMessage()));
+                fail(String
+                    .format("Text %s should parse correctly but throws %s", text, e.getMessage()));
             }
         }
     }
 
-    private void directInstanceTest(String label, String format,
-            Object... values) {
+    private void directInstanceTest(String label, String format, Object... values) {
         StringBuilder text = new StringBuilder();
         text.append('"');
         text.append(format);
@@ -128,39 +117,38 @@ public class LabelPatternTest {
         try {
             LabelPattern pattern = LabelPattern.parse(text.toString());
             if (label == null) {
-                fail(String.format(
-                    "Text %s with parameters %s should not expand correctly but does",
-                    text, values));
+                fail(String
+                    .format("Text %s with parameters %s should not expand correctly but does", text,
+                            values));
 
             } else {
                 Assert.assertEquals(label, pattern.getLabel(values));
             }
         } catch (FormatException e) {
             if (label != null) {
-                fail(String.format(
-                    "Text %s with parameters %s should expand correctly but throws %s",
-                    text, values, e.getMessage()));
+                fail(String
+                    .format("Text %s with parameters %s should expand correctly but throws %s",
+                            text, values, e.getMessage()));
             }
         }
     }
 
-    private void graphInstanceTest(String label, String format,
-            HostGraph graph, HostNode node) {
+    private void graphInstanceTest(String label, String format, HostGraph graph, HostNode node) {
         try {
             LabelPattern pattern = LabelPattern.parse(format);
             if (label == null) {
-                fail(String.format(
-                    "Pattern %s evaluated for node %s of graph %s should not expand correctly but does",
-                    format, node, graph));
+                fail(String
+                    .format("Pattern %s evaluated for node %s of graph %s should not expand correctly but does",
+                            format, node, graph));
 
             } else {
                 Assert.assertEquals(label, pattern.getLabel(graph, node));
             }
         } catch (FormatException e) {
             if (label != null) {
-                fail(String.format(
-                    "Pattern %s evaluated for node %s of graph %s should expand correctly but throws %s",
-                    format, node, graph, e.getMessage()));
+                fail(String
+                    .format("Pattern %s evaluated for node %s of graph %s should expand correctly but throws %s",
+                            format, node, graph, e.getMessage()));
             }
         }
     }

@@ -4,5 +4,25 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
+        <node id="n0">
+            <attr name="layout">
+                <string>152 134 30 36</string>
+            </attr>
+        </node>
+        <edge from="n0" to="n0">
+            <attr name="label">
+                <string>type:Type</string>
+            </attr>
+        </edge>
+        <edge from="n0" to="n0">
+            <attr name="label">
+                <string>flag:flag</string>
+            </attr>
+        </edge>
+        <edge from="n0" to="n0">
+            <attr name="label">
+                <string>edge</string>
+            </attr>
+        </edge>
     </graph>
 </gxl>

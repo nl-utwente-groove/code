@@ -309,9 +309,10 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
         return (AspectJObject) super.getUserObject();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    protected Comparator<Edge> edgeComparator() {
-        return COMPARATOR;
+    protected <E extends Edge> Comparator<E> edgeComparator() {
+        return (Comparator<E>) COMPARATOR;
     }
 
     private final static Comparator<Edge> COMPARATOR = new Comparator<>() {

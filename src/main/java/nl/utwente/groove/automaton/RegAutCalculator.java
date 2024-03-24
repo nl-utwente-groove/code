@@ -67,7 +67,7 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
      * Calculates the automaton for a given regular expression and type graph.
      * @param typeGraph the type graph for the automaton (non-{@code null})
      */
-    public RegAut compute(RegExpr expr, TypeGraph typeGraph) {
+    public synchronized RegAut compute(RegExpr expr, TypeGraph typeGraph) {
         this.nodeDispenser = Dispenser.counter();
         this.typeGraph = typeGraph;
         RegAut result = expr.apply(this);

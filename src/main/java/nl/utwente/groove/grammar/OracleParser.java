@@ -22,9 +22,7 @@ import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.transform.oracle.DefaultOracle;
 import nl.utwente.groove.transform.oracle.DialogOracle;
 import nl.utwente.groove.transform.oracle.NoValueOracle;
-import nl.utwente.groove.transform.oracle.RandomOracle;
 import nl.utwente.groove.transform.oracle.RandomOracleFactory;
-import nl.utwente.groove.transform.oracle.ReaderOracle;
 import nl.utwente.groove.transform.oracle.ReaderOracleFactory;
 import nl.utwente.groove.transform.oracle.ValueOracleFactory;
 import nl.utwente.groove.transform.oracle.ValueOracleKind;
@@ -138,18 +136,16 @@ public class OracleParser extends Parser.AParser<ValueOracleFactory> {
     @Override
     public <V extends ValueOracleFactory> String unparse(V value) {
         String result;
-        Class<? extends ValueOracleFactory> oracle = value.getClass();
-        if (oracle == NoValueOracle.class) {
+        if (value instanceof NoValueOracle) {
             result = ValueOracleKind.NONE.getName();
-        } else if (oracle == DefaultOracle.class) {
+        } else if (value instanceof DefaultOracle) {
             result = ValueOracleKind.DEFAULT.getName();
-        } else if (oracle == RandomOracle.class) {
-            RandomOracle random = (RandomOracle) value;
+        } else if (value instanceof RandomOracleFactory random) {
             result = ValueOracleKind.RANDOM + (random.hasSeed()
                 ? ":" + random.getSeed()
                 : "");
-        } else if (oracle == ReaderOracle.class) {
-            result = ValueOracleKind.READER + ":" + ((ReaderOracle) value).getFilename();
+        } else if (value instanceof ReaderOracleFactory factory) {
+            result = ValueOracleKind.READER + ":" + factory.getFilename();
         } else {
             throw Exceptions.UNREACHABLE;
         }

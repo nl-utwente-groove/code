@@ -16,11 +16,11 @@
  */
 package nl.utwente.groove.test.rel;
 
+import static nl.utwente.groove.graph.Direction.INCOMING;
+import static nl.utwente.groove.graph.Direction.OUTGOING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static nl.utwente.groove.graph.Direction.INCOMING;
-import static nl.utwente.groove.graph.Direction.OUTGOING;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -72,13 +72,11 @@ public class DFATest {
     public void setUp() {
         try {
             GrammarModel view = Groove.loadGrammar(GRAMMAR);
-            this.type = view.getTypeModel(TYPE_NAME)
-                .toResource();
+            this.type = view.getTypeModel(TYPE_NAME).toResource();
             this.xVar = new LabelVar("x", EdgeRole.BINARY);
             TypeFactory factory = this.type.getFactory();
             Set<? extends TypeEdge> bEdges = this.type.edgeSet(factory.createLabel("b"));
-            this.bEdge = bEdges.iterator()
-                .next();
+            this.bEdge = bEdges.iterator().next();
             this.aLabel = TypeLabel.createLabel("a");
         } catch (FormatException e) {
             fail(e.getMessage());
@@ -169,28 +167,22 @@ public class DFATest {
         DFAState state = forward.getStartState();
         assertTrue(state.isInitial());
         assertFalse(state.isFinal());
-        Map<TypeLabel,DFAState> succMap = state.getLabelMap()
-            .get(OUTGOING);
-        Map<TypeLabel,DFAState> predMap = state.getLabelMap()
-            .get(INCOMING);
+        Map<TypeLabel,DFAState> succMap = state.getLabelMap().get(OUTGOING);
+        Map<TypeLabel,DFAState> predMap = state.getLabelMap().get(INCOMING);
         assertEquals(Collections.singleton(this.aLabel), succMap.keySet());
         assertTrue(predMap.isEmpty());
         state = succMap.get(this.aLabel);
         assertFalse(state.isInitial());
         assertFalse(state.isFinal());
-        succMap = state.getLabelMap()
-            .get(OUTGOING);
-        predMap = state.getLabelMap()
-            .get(INCOMING);
+        succMap = state.getLabelMap().get(OUTGOING);
+        predMap = state.getLabelMap().get(INCOMING);
         assertTrue(succMap.isEmpty());
         assertEquals(Collections.singleton(this.aLabel), predMap.keySet());
         state = predMap.get(this.aLabel);
         assertFalse(state.isInitial());
         assertTrue(state.isFinal());
-        succMap = state.getLabelMap()
-            .get(OUTGOING);
-        predMap = state.getLabelMap()
-            .get(INCOMING);
+        succMap = state.getLabelMap().get(OUTGOING);
+        predMap = state.getLabelMap().get(INCOMING);
         assertTrue(succMap.isEmpty());
         assertTrue(predMap.isEmpty());
         DFA backward = a.getDFA(INCOMING, null);
@@ -210,8 +202,13 @@ public class DFATest {
      */
     private void assertEmpty(String e, Valuation val, boolean empty) {
         SimpleNFA a = createNFA(e);
-        assertEquals(empty, a.getDFA(OUTGOING, val)
-            .isEmpty());
+        var dfa = a.getDFA(OUTGOING, val);
+        if (DEBUG) {
+            System.out.println("NFA:\n" + a);
+            System.out.println("DFA:\n" + dfa);
+            System.out.println("-------");
+        }
+        assertEquals(empty, dfa.isEmpty());
     }
 
     /**
@@ -229,8 +226,7 @@ public class DFATest {
     private void assertEquivalent(String e1, String e2, Valuation val, boolean equiv) {
         SimpleNFA a1 = createNFA(e1);
         SimpleNFA a2 = createNFA(e2);
-        assertEquals(equiv, a1.getDFA(OUTGOING, val)
-            .isEquivalent(a2.getDFA(OUTGOING, val)));
+        assertEquals(equiv, a1.getDFA(OUTGOING, val).isEquivalent(a2.getDFA(OUTGOING, val)));
     }
 
     /** Creates an NFA for a given regular expression. */
@@ -246,7 +242,10 @@ public class DFATest {
 
     /** Creates an NFA for a given regular expression. */
     private SimpleNFA createNFA(RegExpr expr) {
-        return (SimpleNFA) (this.useType ? this.nfaCalculator.compute(expr, this.type)
+        return (SimpleNFA) (this.useType
+            ? this.nfaCalculator.compute(expr, this.type)
             : this.nfaCalculator.compute(expr));
     }
+
+    static private final boolean DEBUG = false;
 }

@@ -134,7 +134,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
      */
     @Override
     int getRating() {
-        return this.node.hashCode();
+        return 0;
     }
 
     @Override
