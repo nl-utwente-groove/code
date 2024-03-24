@@ -1,5 +1,5 @@
 GROOVE Change Log
------------------
+=================
 
 This document describes the major changes in the GROOVE tool set
 

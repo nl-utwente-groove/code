@@ -13,7 +13,7 @@
 			<outputDirectory>bin</outputDirectory>
 	    </fileSet>
 	    <fileSet>
-		    <directory>${groove.basedir}/target/javadoc</directory>
+		    <directory>../../../target/apidocs</directory>
 			<outputDirectory>doc</outputDirectory>
 	    </fileSet>
 	</fileSets>

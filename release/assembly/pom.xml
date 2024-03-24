@@ -14,7 +14,7 @@
 	</modules>
 
 	<properties>
-		<groove.basedir>${project.basedir}/..</groove.basedir>
+		<groove.basedir>${project.basedir}</groove.basedir>
 		<zip.basedir>groove-${groove-version-underscored}</zip.basedir>
 	</properties>
 

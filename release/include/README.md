@@ -1,5 +1,3 @@
-[](# "This file is in MarkDown format (see daringfireball.net/projects/markdown)")
-
 [The GROOVE Tool Set](http://groove.sf.net)
 =====================
 
@@ -48,9 +46,6 @@ The installation includes the following tools:
    model check rule systems visually;
 *  `Generator(.jar)`: a command line tool that lets you simulate and model check
    rule systems without the performance penalty of the GUI;
-*  `ModelChecker(.jar)`: a command line tool for CTL model checking;
-*  `PrologChecker(.jar)`: a command line tool for executing Prolog queries on an
-   explored grammar;
 *  `Imager(.jar)`: a command line or GUI tool that supports conversions from
    GROOVE graphs and rules to other visual formats.
 *  `Viewer(.jar)`: a stand-alone (GUI) viewer for \GROOVE graphs and rules.

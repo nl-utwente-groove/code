@@ -4,9 +4,15 @@
 	<artifactId>groove</artifactId>
 	<version>${revision}</version>
 	
+	<properties>
+		<revision>0.0.0-SNAPSHOT</revision>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.test.skip>true</maven.test.skip>
+	</properties>
+
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>
-		GROOVE: GUI, command-line tools and library for graph transformation and state space exploration.
+		GROOVE: GUI, command-line tools and library for graph transformation and verification.
   	</description>
 	<url>https://sf.net/projects/groove</url>
 	<licenses>
@@ -187,11 +193,6 @@
 			</resource>
 		</resources>
 	</build>
-
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.test.skip>true</maven.test.skip>
-	</properties>
 
 	<dependencies>
 		<dependency>
