@@ -99,9 +99,6 @@ public class Version {
     /** Suffix to the {@link #NUMBER} that indicates this is a development version. */
     static private final String SNAPSHOT_SUFFIX = "-SNAPSHOT";
 
-    /** Boolean flag indicating whether this is a snapshot version. */
-    static private final boolean SNAPSHOT = true;
-
     /**
      * Groove Version number of format x.y.z, with
      * <ul>
@@ -111,9 +108,7 @@ public class Version {
      * </ul>
      * The suffix {@link #SNAPSHOT_SUFFIX} indicates a development version.
      */
-    public static final String NUMBER = read("GROOVE_VERSION") + (SNAPSHOT
-        ? SNAPSHOT_SUFFIX
-        : "");
+    public static final String NUMBER = read("GROOVE_VERSION");
 
     /** Minimum Java JRE version required. */
     static public final String NUMBER_JAVAMIN = read("JAVA_VERSION");
