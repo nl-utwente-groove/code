@@ -14,11 +14,27 @@ on:
 
 jobs:
   build:
+    defaults:
+      run:
+        working-directory: code
 
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Check out code
+      uses: actions/checkout@v4
+      with:
+        path: 'code'
+    - name: Check out grammars
+      uses: actions/checkout@v4
+      with:
+        repository: 'nl-utwente-groove/grammars'
+        path: 'grammars'
+    - name: Check out samples
+      uses: actions/checkout@v4
+      with:
+        repository: 'nl-utwente-groove/samples'
+        path: 'samples'
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
