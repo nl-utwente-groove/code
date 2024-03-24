@@ -18,8 +18,10 @@
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_ATTR_USE_ARGFILE" value="false"/>
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_SHOW_CODEDETAILS_IN_EXCEPTION_MESSAGES" value="true"/>
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_CLASSPATH_ONLY_JAR" value="false"/>
+    <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
     <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="nl.utwente.groove.test.TestSuite"/>
     <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="nl.utwente.groove"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="groove"/>
+    <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
     <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea &#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.algebra=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.control=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.criticalpair=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.grammar=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.graph=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.match.rete=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.performance=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.prolog=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.rel=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.rule=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.sts=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.type=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.util=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.verify=ALL-UNNAMED"/>
 </launchConfiguration>

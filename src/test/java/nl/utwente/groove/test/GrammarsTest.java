@@ -19,9 +19,9 @@ package nl.utwente.groove.test;
 import java.io.File;
 import java.io.IOException;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-import org.junit.Assert;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.transform.Transformer;
 
@@ -48,11 +48,13 @@ public class GrammarsTest {
         File location = new File(dirName);
         if (!location.isDirectory()) {
             try {
-                Assert.fail(
-                    String.format("Directory %s cannot be found", location.getCanonicalPath()));
+                Assert
+                    .fail(String
+                        .format("Directory %s cannot be found", location.getCanonicalPath()));
             } catch (IOException e) {
-                Assert.fail(
-                    String.format("Directory %s cannot be parsed", location.getAbsolutePath()));
+                Assert
+                    .fail(String
+                        .format("Directory %s cannot be parsed", location.getAbsolutePath()));
             }
         }
         for (File file : location.listFiles()) {
@@ -70,13 +72,15 @@ public class GrammarsTest {
             transformer.explore();
         } catch (Exception e) {
             e.printStackTrace();
-            Assert.fail(String
-                .format("Error while testing %s:%n%s", grammarLocation.getName(), e.getMessage()));
+            Assert
+                .fail(String
+                    .format("Error while testing %s:%n%s", grammarLocation.getName(),
+                            e.getMessage()));
         }
     }
 
     /** Location of the (downloaded) samples module of SourceForge. */
-    private static final String SAMPLE_DIR = "../groove-samples";
+    private static final String SAMPLE_DIR = "../samples";
     /** Location of the (downloaded) grammars module of SourceForge. */
-    private static final String GRAMMAR_DIR = "../groove-grammars";
+    private static final String GRAMMAR_DIR = "../grammars";
 }
