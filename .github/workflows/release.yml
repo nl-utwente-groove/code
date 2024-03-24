@@ -1,5 +1,5 @@
 name: Build release
-run-name: Building release after push of release tag
+run-name: Building ${{ github.ref_name }} after push of release tag
 
 on:
   push:
