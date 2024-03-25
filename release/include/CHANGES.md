@@ -3,6 +3,15 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 6.8.0, 25 March 2024
+-------------------------------
+- Project moved to github.com/nl-utwente-groove
+- Project web site moved to groove.cs.utwente.nl
+- Releases now available at github.com/nl-utwente-groove/code/releases/latest
+- Maven-based testing now working correctly
+- Release repository integrated into code repository
+- Some small bug fixes
+
 Release 6.7.3, 26 February 2024
 -------------------------------
 - Bug fix release (don't use 6.7.2)
