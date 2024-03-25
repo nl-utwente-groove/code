@@ -1,4 +1,4 @@
-[The GROOVE Tool Set](http://groove.sf.net)
+[The GROOVE Tool Set](https://github.com/nl-utwente-groove)
 =====================
 
 Installation and use
@@ -25,7 +25,7 @@ Features
 
 Here is a brief list of the features supported by GROOVE. For details please
 consult the included user manual or quick reference poster,
-or the YouTube demos on [the GROOVE web site](http://groove.sf.net).
+or the YouTube demos on [the GROOVE web site](https://groove.cs.utwente.nl).
 
 *  Visual editing and simulation of graphs and graph transformation rules
 *  Global rule priorities or control program
@@ -53,10 +53,10 @@ The installation includes the following tools:
 Contact
 -------
 
-Any comments, bug reports and reactions are welcome, either through
-[the Sourceforge trackers](http://sf.net/projects/groove) or through an email to
+Any comments, bug reports and reactions are welcome, either as
+[a github issue](http://github.nl/nl-utwente-groove/code/issues) or through an email to
 
 Arend Rensink
 University of Twente
-[http://www.cs.utwente.nl/~rensink](http://www.cs.utwente.nl/~rensink)
+<https://people.utwente.nl/arend.rensink>
 [arend.rensink@utwente.nl](mailto:arend.rensink@utwente.nl)
