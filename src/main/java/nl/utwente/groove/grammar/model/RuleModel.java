@@ -24,6 +24,7 @@ import static nl.utwente.groove.grammar.aspect.AspectKind.PARAM_ASK;
 import static nl.utwente.groove.grammar.aspect.AspectKind.PARAM_BI;
 import static nl.utwente.groove.grammar.aspect.AspectKind.PARAM_IN;
 import static nl.utwente.groove.grammar.aspect.AspectKind.PRODUCT;
+import static nl.utwente.groove.grammar.aspect.AspectKind.REMARK;
 import static nl.utwente.groove.grammar.aspect.AspectKind.Category.ROLE;
 import static nl.utwente.groove.grammar.aspect.AspectKind.Category.SORT;
 import static nl.utwente.groove.grammar.model.ResourceKind.GROOVY;
@@ -899,14 +900,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             }
             // add nodes to nesting data structures
             for (AspectNode node : this.source.nodeSet()) {
-                if (!node.has(Category.NESTING)) {
+                if (!node.has(REMARK) && !node.has(Category.NESTING)) {
                     getLevel(result, node).addNode(node);
                 }
             }
             // add edges to nesting data structures
             for (AspectEdge edge : this.source.edgeSet()) {
                 try {
-                    if (edge.has(CONNECT) || !edge.has(Category.NESTING)) {
+                    if (!edge.has(REMARK) && (edge.has(CONNECT) || !edge.has(Category.NESTING))) {
                         getLevel(result, edge).addEdge(edge);
                     }
                 } catch (FormatException exc) {
