@@ -17,11 +17,9 @@
 package nl.utwente.groove.grammar.rule;
 
 import java.util.List;
-import java.util.Set;
 
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.grammar.AnchorKind;
-import nl.utwente.groove.grammar.type.TypeGuard;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.ANode;
@@ -88,26 +86,6 @@ public class OperatorNode extends ANode implements RuleNode {
     @Override
     public TypeNode getType() {
         return getTarget().getType();
-    }
-
-    @Override
-    public List<TypeGuard> getTypeGuards() {
-        return EMPTY_GUARD_LIST;
-    }
-
-    @Override
-    public Set<LabelVar> getVars() {
-        return EMPTY_VAR_SET;
-    }
-
-    @Override
-    public boolean isSharp() {
-        return true;
-    }
-
-    @Override
-    public Set<TypeNode> getMatchingTypes() {
-        return EMPTY_MATCH_SET;
     }
 
     @Override

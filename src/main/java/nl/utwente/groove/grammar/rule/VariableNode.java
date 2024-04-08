@@ -16,12 +16,7 @@
  */
 package nl.utwente.groove.grammar.rule;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-
-import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Sort;
@@ -29,7 +24,6 @@ import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Variable;
 import nl.utwente.groove.grammar.AnchorKind;
 import nl.utwente.groove.grammar.UnitPar.RulePar;
-import nl.utwente.groove.grammar.type.TypeGuard;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.ANode;
 
@@ -168,26 +162,6 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
         return AnchorKind.NODE;
     }
 
-    @Override
-    public List<TypeGuard> getTypeGuards() {
-        return EMPTY_GUARD_LIST;
-    }
-
-    @Override
-    public Set<LabelVar> getVars() {
-        return EMPTY_VAR_SET;
-    }
-
-    @Override
-    public Set<TypeNode> getMatchingTypes() {
-        return EMPTY_NODES_SET;
-    }
-
-    @Override
-    public boolean isSharp() {
-        return true;
-    }
-
     /** The type of this variable node. */
     private final TypeNode type;
     /** Term (constant or variable) associated with this variable node. */
@@ -195,10 +169,4 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
 
     /** returns the string preceding the node number in the default variable node id. */
     static public final String TO_STRING_PREFIX = "x";
-    /** Predefined empty list of matching types. */
-    static private final @NonNull Set<TypeNode> EMPTY_NODES_SET = Collections.emptySet();
-    /** Predefined empty list of type guards. */
-    static private final @NonNull List<TypeGuard> EMPTY_GUARD_LIST = Collections.emptyList();
-    /** Predefined empty list of type guards. */
-    static private final @NonNull Set<LabelVar> EMPTY_VAR_SET = Collections.emptySet();
 }

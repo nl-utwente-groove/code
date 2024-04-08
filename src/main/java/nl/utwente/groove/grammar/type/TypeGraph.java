@@ -672,7 +672,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
      * @param parentTyping morphism from the untyped rule graph to the typed version
      * of a parent rule graph; used to get a hint for the node types
      * @param typing resulting morphism from the untyped to the typed rule graph;
-     * this is modified the node variables constraints
+     * this is modified using the node variables constraints
      * @return mapping from source rule nodes to typed versions
      * @throws FormatException if any errors were detected while constructing node images
      */
@@ -685,8 +685,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
         FormatErrorSet errors = new FormatErrorSet();
         // mapping from rule nodes to sets of label variables that occur on them
         Map<RuleNode,Set<LabelVar>> nodeVarsMap = new HashMap<>();
+        // mapping from rule nodes to their type guards
         Map<RuleNode,List<TypeGuard>> nodeGuardsMap = new HashMap<>();
-        // auxiliary map to sets of allowed node types
+        // mapping from rule nodes to their allowed types, according to the type guards
         Map<RuleNode,Set<TypeNode>> allowedTypesMap = new HashMap<>();
         // mapping from nodes to declared node type
         Map<RuleNode,TypeNode> declaredTypeMap = new HashMap<>();
@@ -808,7 +809,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                 } else {
                     RuleNode image = parentTyping
                         .getFactory()
-                        .nodes(type, sharpNodes.contains(node), nodeGuardsMap.get(node))
+                        .nodes(type, declaredType != null, sharpNodes.contains(node),
+                               nodeGuardsMap.get(node))
                         .createNode(node.getNumber());
                     image.getMatchingTypes().retainAll(allowedTypes);
                     result.put(node, image);

@@ -61,17 +61,39 @@ public interface RuleNode extends Node, RuleElement {
      * Indicates if the rule node is sharply typed.
      * Returns {@code false} if the node is untyped.
      */
-    public boolean isSharp();
+    default public boolean isSharp() {
+        return true;
+    }
+
+    /** Indicates if the node type is declared explicitly, by a type label.
+     * (If not, it is determined by type variables).
+     */
+    default public boolean isDeclared() {
+        return true;
+    }
 
     /* Specialises the return type. */
     @Override
-    public Set<TypeNode> getMatchingTypes();
+    default public Set<TypeNode> getMatchingTypes() {
+        return Collections.singleton(getType());
+    }
+
+    /** Indicates if this rule node is correctly typed by a given node type.
+     * This is the case if this node has a declared type that is a subtype of
+     * the given node type, or, if this node type is not declared, if any of the
+     * matching node types is a subtype of the given node type.
+     */
+    default public boolean isTypedBy(TypeNode type) {
+        var subtypes = type.getSubtypes();
+        if (isDeclared()) {
+            return subtypes.contains(getType());
+        } else {
+            return getMatchingTypes().stream().anyMatch(subtypes::contains);
+        }
+    }
 
     /** Tests if the matching types and type guards of this node
      * equal that of another. (This is not covered by #equals).
      */
     public boolean stronglyEquals(RuleNode other);
-
-    /** Fixed global empty set of matching types. */
-    final static Set<TypeNode> EMPTY_MATCH_SET = Collections.emptySet();
 }

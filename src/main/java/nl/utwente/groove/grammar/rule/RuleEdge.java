@@ -46,13 +46,13 @@ public class RuleEdge extends AEdge<RuleNode,RuleLabel> implements RuleElement {
                 : emptyList();
             TypeGraph typeGraph = source.getType().getGraph();
             this.matchingTypes = new HashSet<>();
-            for (TypeEdge typeEdge : typeGraph.edgeSet()) {
-                if (typeEdge.source().getSubtypes().contains(source.getType())
-                    && typeEdge.target().getSubtypes().contains(target.getType())
-                    && guard.test(typeEdge)) {
-                    this.matchingTypes.add(typeEdge);
-                }
-            }
+            typeGraph
+                .edgeSet()
+                .stream()
+                .filter(e -> source.isTypedBy(e.source()))
+                .filter(e -> target.isTypedBy(e.target()))
+                .filter(guard::test)
+                .forEach(this.matchingTypes::add);
         } else if (type == null) {
             this.matchingTypes = emptySet();
             this.typeGuards = emptyList();

@@ -680,7 +680,7 @@ public class ReteNetwork {
                     .nodeMap()
                     .put(dn,
                          rfact
-                             .nodes(dn.getType(), n.isSharp(), dn.getTypeGuards())
+                             .nodes(dn.getType(), n.isDeclared(), n.isSharp(), dn.getTypeGuards())
                              .createNode(maxNodeNr++));
             }
 

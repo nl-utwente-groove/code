@@ -44,15 +44,18 @@ public class DefaultRuleNode extends ANode implements RuleNode, AnchorKey {
     /**
      * Constructs a fresh node, with an explicitly given number and node type.
      * @param nr the number for this node
-     * @param type the node type; may be {@code null}
+     * @param type the node type
+     * @param declared flag indicating if the node type is explicitly declared
+     * (by a type label)
      * @param sharp if {@code true}, the node is sharply typed
      * @param typeGuards collection of named and unnamed type guards for this node
      */
-    protected DefaultRuleNode(int nr, TypeNode type, boolean sharp,
+    protected DefaultRuleNode(int nr, TypeNode type, boolean declared, boolean sharp,
                               @Nullable List<TypeGuard> typeGuards) {
         super(nr);
         assert type != null : "Can't instantiate untyped rule node";
         this.type = type;
+        this.declared = declared;
         this.sharp = sharp;
         if (typeGuards == null) {
             this.typeGuards = Collections.emptyList();
@@ -154,6 +157,14 @@ public class DefaultRuleNode extends ANode implements RuleNode, AnchorKey {
 
     /** Flag indicating if this node is sharply typed. */
     private final boolean sharp;
+
+    @Override
+    public boolean isDeclared() {
+        return this.declared;
+    }
+
+    /** Flag indicating the node type is explicitly declared. */
+    private final boolean declared;
 
     @Override
     public AnchorKind getAnchorKind() {

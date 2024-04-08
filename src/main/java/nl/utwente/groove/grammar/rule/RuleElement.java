@@ -39,10 +39,14 @@ public interface RuleElement extends Element, AnchorKey {
     public @Nullable TypeElement getType();
 
     /** Returns the set of label variables associated with this rule element. */
-    public Set<LabelVar> getVars();
+    default public Set<LabelVar> getVars() {
+        return EMPTY_VAR_SET;
+    }
 
     /** Returns the collection of (named) type guards associated with this rule element. */
-    public List<TypeGuard> getTypeGuards();
+    default public List<TypeGuard> getTypeGuards() {
+        return EMPTY_GUARD_LIST;
+    }
 
     /**
      * Returns the set of type elements that are valid matches of this rule element.

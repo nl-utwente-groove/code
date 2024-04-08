@@ -47,27 +47,25 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
 
     @Override
     protected boolean isAllowed(RuleNode node) {
-        return node.getType()
-            .isTopType() && !node.isSharp()
-            && node.getTypeGuards()
-                .isEmpty();
+        return node.getType().isTopType() && !node.isSharp() && node.getTypeGuards().isEmpty();
     }
 
     /** Returns the fixed node factory for the top type. */
     private RuleNodeFactory getTopNodeFactory() {
         if (this.topNodeFactory == null) {
-            this.topNodeFactory =
-                (RuleNodeFactory) nodes(getTypeFactory().getTopNode(), true, null);
+            this.topNodeFactory
+                = (RuleNodeFactory) nodes(getTypeFactory().getTopNode(), false, true, null);
         }
         return this.topNodeFactory;
     }
 
     private RuleNodeFactory topNodeFactory;
 
-    /** Returns a node factory for typed default rule nodes. */
-    public NodeFactory<RuleNode> nodes(@NonNull TypeNode type, boolean sharp,
-        List<TypeGuard> typeGuards) {
-        return new RuleNodeFactory(type, sharp, typeGuards);
+    /** Returns a node factory for typed default rule nodes.
+     * @param declared flag indicating if the node type is explicitly declared (see {@link RuleNode#isDeclared()}). */
+    public NodeFactory<RuleNode> nodes(@NonNull TypeNode type, boolean declared, boolean sharp,
+                                       List<TypeGuard> typeGuards) {
+        return new RuleNodeFactory(type, declared, sharp, typeGuards);
     }
 
     /** Creates a variable node for a given algebra term, and with a given node number. */
@@ -80,7 +78,7 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
 
     /** Creates an operator node for a given node number and arity. */
     public OperatorNode createOperatorNode(int nr, Operator operator, List<VariableNode> arguments,
-        VariableNode target) {
+                                           VariableNode target) {
         OperatorNode result = new OperatorNode(nr, operator, arguments, target);
         registerNode(result);
         return result;
@@ -97,7 +95,8 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
     public RuleEdge createEdge(RuleNode source, Label label, RuleNode target) {
         RuleLabel ruleLabel = (RuleLabel) label;
         TypeLabel typeLabel = ruleLabel.getTypeLabel();
-        TypeEdge type = typeLabel == null ? null
+        TypeEdge type = typeLabel == null
+            ? null
             : getTypeFactory().createEdge(source.getType(), typeLabel, target.getType(), false);
         return new RuleEdge(source, ruleLabel, type, target);
     }
@@ -127,10 +126,14 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
 
     /** Factory for (typed) {@link DefaultHostNode}s. */
     protected class RuleNodeFactory extends DependentNodeFactory {
-        /** Constructor for subclassing. */
-        protected RuleNodeFactory(@NonNull TypeNode type, boolean sharp,
-            List<TypeGuard> typeGuards) {
+        /** Constructor for subclassing.
+         * @param declared flag indicating if the generated nodes are explicitly typed;
+         * see RuleNode#isDeclared()
+         */
+        protected RuleNodeFactory(@NonNull TypeNode type, boolean declared, boolean sharp,
+                                  List<TypeGuard> typeGuards) {
             this.type = type;
+            this.declared = declared;
             this.sharp = sharp;
             this.typeGuards = typeGuards;
         }
@@ -138,13 +141,12 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
         @Override
         protected boolean isAllowed(RuleNode node) {
             return node.getType() == this.type && node.isSharp() == this.sharp
-                && node.getTypeGuards()
-                    .equals(this.typeGuards);
+                && node.getTypeGuards().equals(this.typeGuards);
         }
 
         @Override
         protected RuleNode newNode(int nr) {
-            return new DefaultRuleNode(nr, this.type, this.sharp, this.typeGuards);
+            return new DefaultRuleNode(nr, this.type, this.declared, this.sharp, this.typeGuards);
         }
 
         /** Returns the type wrapped into this factory. */
@@ -154,7 +156,7 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
 
         private final @NonNull TypeNode type;
         private final boolean sharp;
+        private final boolean declared;
         private final List<TypeGuard> typeGuards;
     }
-
 }
