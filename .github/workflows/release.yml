@@ -54,4 +54,4 @@ jobs:
       with:
         artifacts: "code/release/target/*.zip"
         draft: false
-        prerelease: true
+        prerelease: false
