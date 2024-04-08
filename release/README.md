@@ -73,5 +73,3 @@ in two different ways, it is up to the developer to ensure that they are identic
 
 1. In `src/main/resources/nl/utwente/groove/resource/version`, update `GROOVE_VERSION`
    (containing the release version `x.y.z`) by increasing `z` and adding the prefix `-SNAPSHOT`.
-
-12) Commit and tag the new groove and groove-release versions in SVN using release-x_y_z
