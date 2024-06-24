@@ -640,7 +640,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
      * It is guaranteed that the current character is a digit or decimal point;
      * if a decimal point, the next character is a digit.
      */
-    private Token scanNumber() {
+    private Token scanNumber() throws ScanException {
         assert Character.isDigit(curChar()) || curChar() == '.' && Character.isDigit(nextChar());
         int start = this.ix;
         while (!atEnd() && Character.isDigit(curChar())) {
@@ -650,9 +650,24 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
             ? REAL
             : INT;
         if (sort == REAL) {
+            // we are at the decimal point; consume it
             incChar();
             while (!atEnd() && Character.isDigit(curChar())) {
                 incChar();
+            }
+            if (!atEnd() && Character.toUpperCase(curChar()) == 'E') {
+                // we're in an exponent
+                incChar();
+                if (!atEnd() && curChar() == '-') {
+                    // scan the optional minus sign
+                    incChar();
+                }
+                if (atEnd() || !Character.isDigit(curChar())) {
+                    throw new ScanException("Exponent does not specify value");
+                }
+                while (!atEnd() && Character.isDigit(curChar())) {
+                    incChar();
+                }
             }
         }
         return createConstToken(sort, start, this.ix);
