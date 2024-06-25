@@ -92,6 +92,14 @@
 					<additionalOptions>-Xdoclint:none</additionalOptions>
 					<reportOutputDirectory>target</reportOutputDirectory>
 				</configuration>
+				<executions>
+        			<execution>
+		        		<id>attach-javadocs</id>
+        		  		<goals>
+		            		<goal>jar</goal>
+        		  		</goals>
+		        	</execution>
+      			</executions>
 			</plugin>
 			
 			<plugin>
@@ -148,13 +156,26 @@
 				<version>3.1.0</version>
 				<executions>
 					<execution>
-						<id>sign-artifacts</id>
+						<id>deploy-sign-artifacts</id>
 						<phase>deploy</phase>
 						<goals>
 							<goal>sign</goal>
 						</goals>
 					</execution>
+				    <execution>
+					   	<id>verify-sign-artifacts</id>
+				       	<phase>verify</phase>
+				    	<goals>
+	    	        		<goal>sign</goal>
+    	    			</goals>
+			        </execution>
 				</executions>
+				<configuration>
+					<gpgArguments>
+                    	<arg>--pinentry-mode</arg>
+                    	<arg>loopback</arg>
+                	</gpgArguments>
+				</configuration>
 			</plugin>
 			
 			<plugin>

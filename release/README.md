@@ -1,11 +1,13 @@
-# How to build a release
+# How to build a github release
 
-This file explains how to build a release for Groove. The release, as meant here, consists of two zip-files:
+This chapter explains how to build a github release for Groove. A second chapter, below, summarises the actions to create a Maven artifact.
+
+The github release, as meant here, consists of two dedicated zip-files (as well as the complete source code, in `.zip` and `.tar.gz` format):
 
 - `groove-x_y_z-bin.zip`
-- `groove-x_y_z-bon+doc.zip`
+- `groove-x_y_z-bin+doc.zip`
 
-Both of these contain a top-level README.md that explains their structure.
+Both of these contain a top-level README.md that explains their structure and how to install the tool.
 
 ## Preparation
 
@@ -50,6 +52,7 @@ Below, the _release directory_ refers to the project subdirectory (of the `code`
     or by running the Eclipse `GROOVE core - do all` launch configuration.
 
 3. Package GROOVE by running Maven in the release directory, using
+
     `mvn clean package -Drevision=x.y.z`
 
     where `x.y.z` is the same version number as in `GROOVE_VERSION` (see above),
@@ -73,3 +76,45 @@ in two different ways, it is up to the developer to ensure that they are identic
 
 1. In `src/main/resources/nl/utwente/groove/resource/version`, update `GROOVE_VERSION`
    (containing the release version `x.y.z`) by increasing `z` and adding the prefix `-SNAPSHOT`.
+
+# How to build a Maven artefact
+
+The process is quite complicated; although largely automated, many things can go wrong.
+
+## Nexus staging
+
+Invoke the Maven target using
+
+`mvn clean deploy -Drevision=x.y.z`
+
+where `x.y.z` is the version number also used for the github release; see above.
+
+This can alternatively be invoked in Ecliplse using the `GROOVE - maven deploy to Central Repository` launch configuration.
+
+The relevant plugins are `nexus-staging-maven-plugin` for staging, which relies on `maven-gpg-plugin` for signing. Staging consists of signing, uploading and checking the Maven Central constraints. The subsections below should not be necessary once everything is up and running, but are included for completeness and understanding, and may be useful in case part of the configuration is lost.
+
+
+### Signing
+
+The signing phase involves many different components, all of which have to work correctly. The following may help to understand them:
+
+- GPG key: this has to be created, published to one or more keyservers and then used.
+    * To have the required functionality at hand, use `Gpg4win`, which installs itself under `C:\Program Files (x86)` in the eponymous directory, as well as a second directory `gnupg`. The package also comes with a stand-alone GUI-based app `Kleopatra`, which helps in unserstanding which keys are currently known and can also create a key if required.
+    * Since Maven runs in batch mode, the best (probably only) is to use a passphrase-less key. Any other setting results in the error message `no pinentry` during the Maven signing phase.
+    * The intended key should be set as default in the gpg configuration file, which is located in `%APPDATA%\gnupg\gpg.conf`. This file should (at least) contain a line `default-key <fingerprint>`, where the fingerprint, which is the identifier of the key, can be found using (e.g.) Kleopatra.
+    * To upload a key to a keyserver, use `gpg --keyserver <url> --send-keys <fingerprint>`. The Maven staging plugin looks for the key on different servers, among which are `https://keys.openpgp.org` and `http://keyserver.ubuntu.com:11371`, so it's a good idea to publish the key there straight away.
+    * To avoid having to go through this again, use a key without expiration date.
+    * An alternative way of dealing with default keys and passphrases, by setting them as explicit arguments in the Maven configuration, is described [here](https://central.sonatype.org/publish/publish-maven/#gpg-signed-components)
+
+- Pinentry: This is a utility, installed in the `gnupg` directory mentioned above, that interactively requests the passphrase. It should be circumvented by using a key without passphrase. The message `no pinentry` does not necessarily mean that the utility cannot be found, it rather seems to mean that Maven cannot invoke it in batch mode; the fact that it attempts to do this in the first place probably means that the default key it's trying to use for signing has a passphrase.
+
+- GPG agent: this is a daemon that needs to be running, and therefore needs to be installed and findable. On windows, `gpg-agent` is contained in the `gnupg` directory mentioned above. It is advertised as starting up automatically. here is a configuration file `%APPDATA%\gnupg\gpg-agent.conf` (settings are described [here](https://www.gnupg.org/(it)/documentation/manuals/gnupg/Agent-Options.html), but it should not be necessary to use this.
+
+### Authenticating
+
+The uploading phase requires Maven to be able to log into `https://s01.oss.sonatype.org`, but using a User Token rather than the Used ID. This User Token is be generated by the server itself (see <https://central.sonatype.org/publish/generate-token/>) and must then be saved in the Maven `settings.xml` file, which is in the `.m2` directory in `C:\Users\<username>` --- with the understanding that the Server ID, which on that page is given as `${server}`, should be set to the name also used in the stagin plugin --- by default `ossrh`.
+
+## Deployment
+
+The staging is followed by a manual deployment/release step described in <https://central.sonatype.org/publish/release>. (This can be changed into an automatic step by setting the `autoReleaseAfterClose` property in the Nexus staging plugin to `true`.)
+
