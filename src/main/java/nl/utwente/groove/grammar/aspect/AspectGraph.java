@@ -597,7 +597,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
                 if (e.label().hasRole(EdgeRole.NODE_TYPE) && e.source().hasId()) {
                     String id = e.source().getId();
                     var typeLabel = e.getRuleLabel().getTypeLabel();
-                    if (typeLabel != null) {
+                    if (typeLabel != null && typeSortMap.containsKey(typeLabel)) {
                         for (var se : typeSortMap.get(typeLabel).entrySet()) {
                             var fieldName = new QualName(id, se.getKey());
                             result.add(fieldName, se.getValue());
