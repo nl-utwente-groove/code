@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -220,21 +221,35 @@ public class GrammarModel implements PropertyChangeListener {
             : resource.getSource();
     }
 
+    /** Returns the list of active graphs of a given resource kind, alphabetically ordered by (qualified) name. */
+    public List<AspectGraph> getActiveGraphs(ResourceKind kind) {
+        List<AspectGraph> result = new ArrayList<>();
+        getActiveNames(kind).stream().map(n -> getGraph(kind, n)).forEach(result::add);
+        return result;
+    }
+
+    /** Returns the list of active texts of a given resource kind, alphabetically ordered by (qualified) name. */
+    public List<String> getActiveTexts(ResourceKind kind) {
+        List<String> result = new ArrayList<>();
+        getActiveNames(kind).stream().map(n -> getText(kind, n)).forEach(result::add);
+        return result;
+    }
+
     /**
      * Returns the set of resource names of the active resources of a given kind.
      * These are the names stored as active, but can be overridden locally in
      * the grammar model.
      * @see #setLocalActiveNames(ResourceKind, Collection)
      */
-    public Set<QualName> getActiveNames(ResourceKind kind) {
+    public SortedSet<QualName> getActiveNames(ResourceKind kind) {
         // first check for locally stored names
-        Set<QualName> result = this.localActiveNamesMap.get(kind);
+        SortedSet<QualName> result = this.localActiveNamesMap.get(kind);
         if (result == null) {
             // if there are none, check for active names in the store
             result = this.storedActiveNamesMap.get(kind);
         }
         result.retainAll(getNames(kind));
-        return Collections.unmodifiableSet(result);
+        return Collections.unmodifiableSortedSet(result);
     }
 
     /**
@@ -374,14 +389,9 @@ public class GrammarModel implements PropertyChangeListener {
      * @return the start graph model, or <code>null</code> if no start graph is
      *         set.
      */
-
     public HostModel getStartGraphModel() {
         if (this.startGraphModel == null) {
-            TreeMap<QualName,AspectGraph> graphMap = new TreeMap<>();
-            for (QualName name : getActiveNames(HOST)) {
-                graphMap.put(name, getStore().getGraphs(HOST).get(name));
-            }
-            AspectGraph startGraph = AspectGraph.mergeGraphs(graphMap.values());
+            AspectGraph startGraph = AspectGraph.mergeGraphs(getActiveGraphs(HOST));
             if (startGraph != null) {
                 this.startGraphModel = new HostModel(this, startGraph);
             }
@@ -537,8 +547,9 @@ public class GrammarModel implements PropertyChangeListener {
             errors.addAll(e.getErrors());
         }
         // set start graph
-        if (getStartGraphModel() == null) {
-            Set<QualName> startGraphNames = getActiveNames(HOST);
+        var startGraphNames = getActiveNames(HOST);
+        var startGraphModel = getStartGraphModel();
+        if (startGraphModel == null) {
             if (startGraphNames.isEmpty()) {
                 errors.add("No start graph set");
             } else {
@@ -547,14 +558,18 @@ public class GrammarModel implements PropertyChangeListener {
         } else {
             FormatErrorSet startGraphErrors;
             try {
-                HostGraph startGraph = getStartGraphModel().toResource();
+                HostGraph startGraph = startGraphModel.toResource();
                 result.setStartGraph(startGraph);
                 startGraphErrors = startGraph.getErrors();
             } catch (FormatException exc) {
                 startGraphErrors = exc.getErrors();
             }
+            String prefix = startGraphNames.size() > 1
+                ? "combined start graph"
+                : "start graph '" + startGraphModel.getName() + "'";
+            var activeHostGraphs = getActiveGraphs(HOST);
             for (FormatError error : startGraphErrors) {
-                errors.add(error, getStartGraphModel().getSource());
+                errors.add("Error in %s: %s", prefix, error, activeHostGraphs);
             }
         }
         // Set the Prolog environment.

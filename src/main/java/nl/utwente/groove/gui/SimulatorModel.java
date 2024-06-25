@@ -1075,12 +1075,10 @@ public class SimulatorModel implements Cloneable {
 
     /** Changes the selection of a given resource kind. */
     public final boolean doSelect(ResourceKind kind, QualName name) {
-        start();
-        changeSelected(kind, name);
-        if (isSelected(kind) || kind == ResourceKind.HOST && hasState()) {
-            changeDisplay(DisplayKind.toDisplay(kind));
-        }
-        return finish();
+        var names = name == null
+            ? Collections.<QualName>emptySet()
+            : Collections.singleton(name);
+        return doSelectSet(kind, names);
     }
 
     /**
@@ -1091,6 +1089,9 @@ public class SimulatorModel implements Cloneable {
         if (changeSelectedSet(kind, names) && kind == ResourceKind.RULE && !names.isEmpty()) {
             changeMatch(null);
             changeTransition(null);
+        }
+        if (isSelected(kind) || kind == ResourceKind.HOST && hasState()) {
+            changeDisplay(DisplayKind.toDisplay(kind));
         }
         return finish();
     }

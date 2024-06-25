@@ -69,7 +69,6 @@ import javax.swing.WindowConstants;
 
 import apple.dts.samplecode.osxadapter.OSXAdapter;
 import nl.utwente.groove.grammar.GrammarKey;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.SimulatorModel.Change;
@@ -86,7 +85,6 @@ import nl.utwente.groove.gui.display.GraphEditorTab;
 import nl.utwente.groove.gui.display.GraphTab;
 import nl.utwente.groove.gui.display.JGraphPanel;
 import nl.utwente.groove.gui.display.ResourceDisplay;
-import nl.utwente.groove.gui.display.ResourceTab;
 import nl.utwente.groove.gui.display.TextTab;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.JGraph;
@@ -434,31 +432,34 @@ public class Simulator implements SimulatorListener {
      */
     private void selectDisplayPart(SelectableListEntry entry) {
         ResourceKind resource = entry.getResourceKind();
-        QualName name = entry.getResourceName();
+        var names = entry.getResourceNames();
+        Display display = getDisplaysPanel().getDisplayFor(resource);
         if (resource == ResourceKind.PROPERTIES) {
+            assert names.size() == 1;
+            var name = names.first();
             GrammarKey key = GrammarKey.getKey(name.toString()).get();
-            Display display = getDisplaysPanel().getDisplayFor(resource);
             ListPanel panel = display.getListPanel();
             getDisplaysPanel().getUpperListsPanel().setSelectedComponent(panel);
             ((PropertiesTable) panel.getList()).setSelected(key);
-        } else if (resource != null) {
-            getModel().doSelect(resource, name);
-            ResourceDisplay display = (ResourceDisplay) getDisplaysPanel().getDisplayFor(resource);
-            ResourceTab resourceTab = display.getSelectedTab();
-            if (resource.isGraphBased()) {
-                AspectJGraph jGraph;
-                if (resourceTab.isEditor()) {
-                    jGraph = ((GraphEditorTab) resourceTab).getJGraph();
-                } else {
-                    jGraph = ((GraphTab) resourceTab).getJGraph();
-                }
-                // select the error cell and switch to the panel
-                jGraph.setSelectionCells(entry.getElements());
-            } else if (entry instanceof FormatError error) {
-                if (error.getNumbers().size() > 1) {
-                    int line = error.getNumbers().get(0);
-                    int column = error.getNumbers().get(1);
-                    ((TextTab) resourceTab).select(line, column);
+        } else if (resource != null && display instanceof ResourceDisplay resourceDisplay) {
+            getModel().doSelectSet(resource, names);
+            var resourceTab = resourceDisplay.getSelectedTab();
+            if (resourceTab != null) {
+                if (resource.isGraphBased()) {
+                    AspectJGraph jGraph;
+                    if (resourceTab.isEditor()) {
+                        jGraph = ((GraphEditorTab) resourceTab).getJGraph();
+                    } else {
+                        jGraph = ((GraphTab) resourceTab).getJGraph();
+                    }
+                    // select the error cell and switch to the panel
+                    jGraph.setSelectionCells(entry.getElements());
+                } else if (entry instanceof FormatError error) {
+                    if (error.getNumbers().size() > 1) {
+                        int line = error.getNumbers().get(0);
+                        int column = error.getNumbers().get(1);
+                        ((TextTab) resourceTab).select(line, column);
+                    }
                 }
             }
         }

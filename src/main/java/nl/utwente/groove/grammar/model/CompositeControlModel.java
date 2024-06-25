@@ -176,10 +176,7 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
 
     /** Adds a control program-related error. */
     private void addPartError(FormatError error) {
-        QualName key = error.getResourceKind() == CONTROL
-            ? error.getResourceName()
-            : null;
-        getPartErrors(key).add(error);
+        error.getResourceNames().forEach(k -> getPartErrors(k).add(error));
     }
 
     /** Collects and returns all errors found in the partial control models. */

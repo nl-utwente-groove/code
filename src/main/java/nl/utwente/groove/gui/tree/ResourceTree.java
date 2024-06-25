@@ -179,12 +179,12 @@ public class ResourceTree extends AbstractResourceTree {
                     refresh(source.getState());
                 }
             } else if (changes.contains(Change.toChange(getResourceKind()))) {
-                var model = source.getResource(getResourceKind()).getQualName();
-                for (int i = 0; i < getRowCount(); i++) {
+                var model = source.getResource(getResourceKind());
+                for (int i = 0; model != null && i < getRowCount(); i++) {
                     TreePath path = getPathForRow(i);
                     TreeNode node = (TreeNode) path.getLastPathComponent();
                     if (node instanceof ResourceTreeNode rnode
-                        && rnode.getQualName().equals(model)) {
+                        && rnode.getQualName().equals(model.getQualName())) {
                         setSelectionPath(path);
                         break;
                     }

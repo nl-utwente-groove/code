@@ -25,6 +25,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.SortedSet;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
@@ -207,7 +208,7 @@ public abstract class ListPanel extends JPanel {
         public ResourceKind getResourceKind();
 
         /** Returns the resource name for which this entry occurs. */
-        public QualName getResourceName();
+        public SortedSet<QualName> getResourceNames();
 
         /** Returns the list of elements in which the entry occurs. May be empty. */
         public Collection<Element> getElements();

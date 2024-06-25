@@ -19,6 +19,8 @@ package nl.utwente.groove.gui.list;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
@@ -55,8 +57,8 @@ public class SearchResult implements SelectableListEntry {
     private void addContext(Object par) {
         if (par instanceof AspectGraph) {
             this.graph = (AspectGraph) par;
-            this.resourceName = this.graph.getQualName();
-            this.resourceKind = ResourceKind.toResource(this.graph.getRole());
+            this.resourceNames.add(this.graph.getQualName());
+            setResourceKind(ResourceKind.toResource(this.graph.getRole()));
         } else if (par instanceof Element) {
             this.elements.add((Element) par);
         } else if (par instanceof Object[]) {
@@ -88,15 +90,33 @@ public class SearchResult implements SelectableListEntry {
         return this.message;
     }
 
+    /** The result message. */
+    private final String message;
+
     /** Returns the graph in which the error occurs. May be {@code null}. */
     public final AspectGraph getGraph() {
         return this.graph;
     }
 
+    /** The graph in which the result occurs. */
+    private AspectGraph graph;
+
     /** Returns the list of elements in which the error occurs. May be empty. */
     @Override
     public final Collection<Element> getElements() {
         return this.elements;
+    }
+
+    /** List of result elements. */
+    private final List<Element> elements = new ArrayList<>();
+
+    /**
+     * Sets the resource kind field, checking if the new value is not not in conflict
+     * with any existing value.
+     */
+    private final void setResourceKind(ResourceKind kind) {
+        assert this.resourceKind == null || this.resourceKind == kind;
+        this.resourceKind = kind;
     }
 
     /** Returns the resource kind for which this error occurs. */
@@ -105,21 +125,16 @@ public class SearchResult implements SelectableListEntry {
         return this.resourceKind;
     }
 
-    /** Returns the resource name for which this error occurs. */
-    @Override
-    public final QualName getResourceName() {
-        return this.resourceName;
-    }
-
-    /** The graph in which the result occurs. */
-    private AspectGraph graph;
     /** The resource kind for which the result occurs. May be {@code null}. */
     private ResourceKind resourceKind;
+
+    /** Returns the resource name for which this error occurs. */
+    @Override
+    public final SortedSet<QualName> getResourceNames() {
+        return this.resourceNames;
+    }
+
     /** The name of the resource on which the result occurs. May be {@code null}. */
-    private QualName resourceName;
-    /** List of result elements. */
-    private final List<Element> elements = new ArrayList<>();
-    /** The result message. */
-    private final String message;
+    private final SortedSet<QualName> resourceNames = new TreeSet<>();
 
 }

@@ -17,6 +17,7 @@
 package nl.utwente.groove.util.parse;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -24,6 +25,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -69,39 +72,35 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
      */
     private void addContext(Object par) {
         assert !isFixed();
-        if (par instanceof FormatError e) {
-            addContext(e.getArguments());
+        if (par instanceof Object[] a) {
+            Arrays.stream(a).forEach(this::addContext);
+        } else if (par instanceof Collection<?> c) {
+            c.forEach(this::addContext);
+        } else if (par instanceof FormatError e) {
+            e.getArguments().forEach(this::addContext);
         } else if (par instanceof GraphState s) {
             this.state = s;
         } else if (par instanceof AspectGraph g) {
             this.graph = g;
-            setResource(ResourceKind.toResource(g.getRole()), QualName.parse(g.getName()));
+            addResource(ResourceKind.toResource(g.getRole()), g.getQualName());
         } else if (par instanceof ControlModel c) {
             this.control = c;
-            setResource(ResourceKind.CONTROL, c.getQualName());
+            addResource(ResourceKind.CONTROL, c.getQualName());
         } else if (par instanceof PrologModel p) {
             this.prolog = p;
-            setResource(ResourceKind.PROLOG, p.getQualName());
+            addResource(ResourceKind.PROLOG, p.getQualName());
         } else if (par instanceof Element e) {
             this.elements.add(e);
         } else if (par instanceof Integer i) {
             this.numbers.add(i);
-        } else if (par instanceof Object[] a) {
-            for (Object subpar : a) {
-                addContext(subpar);
-            }
-        } else if (par instanceof Collection<?> c) {
-            for (Object subpar : c) {
-                addContext(subpar);
-            }
         } else if (par instanceof Rule r) {
-            setResource(ResourceKind.RULE, r.getQualName());
+            addResource(ResourceKind.RULE, r.getQualName());
         } else if (par instanceof Recipe r) {
-            setResource(ResourceKind.CONTROL, r.getControlName());
+            addResource(ResourceKind.CONTROL, r.getControlName());
         } else if (par instanceof GrammarKey k) {
-            setResource(ResourceKind.PROPERTIES, QualName.name(k.getName()));
+            addResource(ResourceKind.PROPERTIES, QualName.name(k.getName()));
         } else if (par instanceof Resource r) {
-            setResource(r.kind(), r.name());
+            addResource(r.kind(), r.name());
         }
     }
 
@@ -221,9 +220,9 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     private final List<Integer> numbers = new ArrayList<>();
 
     /** Sets the resource in which this error occurs. */
-    private void setResource(ResourceKind kind, QualName name) {
+    private void addResource(ResourceKind kind, QualName name) {
         this.resourceKind = kind;
-        this.resourceName = name;
+        this.resourceNames.add(name);
     }
 
     /** Returns the resource kind for which this error occurs. */
@@ -237,12 +236,12 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
 
     /** Returns the resource kind for which this error occurs. */
     @Override
-    public final QualName getResourceName() {
-        return this.resourceName;
+    public final SortedSet<QualName> getResourceNames() {
+        return this.resourceNames;
     }
 
     /** The name of the resource on which the error occurs. May be {@code null}. */
-    private QualName resourceName;
+    private final SortedSet<QualName> resourceNames = new TreeSet<>();
 
     /** Returns a new format error in which the context information is transferred modulo
      * a graph map. The new error has no parent.
@@ -338,7 +337,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
                 : arg;
             result.addContext(newArg);
         }
-        result.setResource(getResourceKind(), getResourceName());
+        getResourceNames().forEach(n -> result.addResource(getResourceKind(), n));
         return result;
     }
 
