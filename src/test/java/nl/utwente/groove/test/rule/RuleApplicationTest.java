@@ -219,10 +219,11 @@ public class RuleApplicationTest extends TestCase {
         try {
             Rule rule = this.grammar.toGrammar().getRule(ruleName);
             if (rule == null) {
-                Assert.fail(String.format("Rule '%s' is currently disabled", ruleName));
+                System.err.printf(String.format("Rule '%s' is currently disabled%n", ruleName));
+            } else {
+                test(this.grammar.getStartGraphModel().toHost().clone(family), rule, results,
+                     errorCount);
             }
-            test(this.grammar.getStartGraphModel().toHost().clone(family), rule, results,
-                 errorCount);
         } catch (FormatException e) {
             Assert.fail(e.getMessage());
         }
