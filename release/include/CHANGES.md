@@ -3,6 +3,11 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 6.8.3, 25 June 2024
+-------------------------------
+- Bug fixes: GH issues #772
+- New attempt to create Maven artefact
+
 Release 6.8.2, 25 June 2024
 -------------------------------
 - Bug fixes: GH issues 1 and 2 (nl-utwente-groove.github.io)
