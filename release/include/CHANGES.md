@@ -3,6 +3,10 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 6.8.2, 25 June 2024
+-------------------------------
+- Bug fixes: GH issues 1 and 2 (nl-utwente-groove.github.io)
+
 Release 6.8.1, 8 April 2024
 -------------------------------
 - Feature extension: rule nodes _only_ typed by a label variable are treated more
