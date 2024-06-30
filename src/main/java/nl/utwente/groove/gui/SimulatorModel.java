@@ -448,31 +448,36 @@ public class SimulatorModel implements Cloneable {
     public final boolean doSetStateAndMatch(@NonNull GraphState state,
                                             @Nullable GraphTransition trans) {
         assert state != null;
+        boolean result;
         start();
-        var actualState = lastVisiblePredecessor(state);
-        if (actualState == state && trans != null) {
-            assert state == trans.target();
-            // fake the history: the previously selected match is supposed
-            // to have been this transition already
-            this.old.trans = trans;
+        try {
+            var actualState = lastVisiblePredecessor(state);
+            if (actualState == state && trans != null) {
+                assert state == trans.target();
+                // fake the history: the previously selected match is supposed
+                // to have been this transition already
+                this.old.trans = trans;
+            }
+            changeGTS();
+            changeState(actualState);
+            var key = getMatch(actualState);
+            if (key instanceof MatchResult match) {
+                changeMatch(match);
+                changeTransition(match.getTransition());
+            } else if (key instanceof RecipeEvent event) {
+                changeMatch(event.getInitial().getKey());
+                changeTransition(event.toTransition(actualState));
+            } else {
+                changeMatch(null);
+                changeTransition(null);
+            }
+            if (getDisplay() != DisplayKind.LTS) {
+                changeDisplay(DisplayKind.STATE);
+            }
+        } finally {
+            result = finish();
         }
-        changeGTS();
-        changeState(actualState);
-        var key = getMatch(actualState);
-        if (key instanceof MatchResult match) {
-            changeMatch(match);
-            changeTransition(match.getTransition());
-        } else if (key instanceof RecipeEvent event) {
-            changeMatch(event.getInitial().getKey());
-            changeTransition(event.toTransition(actualState));
-        } else {
-            changeMatch(null);
-            changeTransition(null);
-        }
-        if (getDisplay() != DisplayKind.LTS) {
-            changeDisplay(DisplayKind.STATE);
-        }
-        return finish();
+        return result;
     }
 
     /**
@@ -591,19 +596,24 @@ public class SimulatorModel implements Cloneable {
      * @see #setState(GraphState)
      */
     private boolean setGTS(GTS gts) {
+        boolean result;
         start();
-        if (changeGTS(gts)) {
-            changeState(null);
-            changeMatch(null);
-            changeTransition(null);
-            changeExploreResult(gts == null
-                ? null
-                : new ExploreResult(gts));
+        try {
+            if (changeGTS(gts)) {
+                changeState(null);
+                changeMatch(null);
+                changeTransition(null);
+                changeExploreResult(gts == null
+                    ? null
+                    : new ExploreResult(gts));
+            }
+            if (gts != null && getState() == null) {
+                changeState(gts.startState());
+            }
+        } finally {
+            result = finish();
         }
-        if (gts != null && getState() == null) {
-            changeState(gts.startState());
-        }
-        return finish();
+        return result;
     }
 
     /** Currently active GTS. */
@@ -615,8 +625,11 @@ public class SimulatorModel implements Cloneable {
      */
     public void setExploreResult(ExploreResult result) {
         start();
-        changeExploreResult(result);
-        finish();
+        try {
+            changeExploreResult(result);
+        } finally {
+            finish();
+        }
     }
 
     /**
@@ -685,17 +698,22 @@ public class SimulatorModel implements Cloneable {
      * @see #setMatch(GraphState,MatchResult)
      */
     public final boolean setState(GraphState state) {
+        boolean result;
         start();
-        changeGTS();
-        state = lastVisiblePredecessor(state);
-        if (changeState(state)) {
-            changeMatch(null);
-            changeTransition(null);
-            if (state != null && getDisplay() != DisplayKind.LTS) {
-                changeDisplay(DisplayKind.STATE);
+        try {
+            changeGTS();
+            state = lastVisiblePredecessor(state);
+            if (changeState(state)) {
+                changeMatch(null);
+                changeTransition(null);
+                if (state != null && getDisplay() != DisplayKind.LTS) {
+                    changeDisplay(DisplayKind.STATE);
+                }
             }
+        } finally {
+            result = finish();
         }
-        return finish();
+        return result;
     }
 
     /** Returns the last predecessor state of a given state
@@ -770,29 +788,34 @@ public class SimulatorModel implements Cloneable {
      * @return if {@code true}, the match was really changed
      */
     public final boolean setMatch(@Nullable GraphState state, @Nullable MatchResult match) {
+        boolean result;
         start();
-        var newState = lastVisiblePredecessor(state);
-        var newMatch = newState == state
-            ? match
-            : null;
-        boolean stateChanged = changeState(newState);
-        boolean matchChanged = changeMatch(newMatch);
-        if (matchChanged || stateChanged) {
-            if (newMatch != null && newMatch.hasTransitionFrom(newState)) {
-                changeTransition(newMatch.getTransition());
-            } else {
-                changeTransition(null);
+        try {
+            var newState = lastVisiblePredecessor(state);
+            var newMatch = newState == state
+                ? match
+                : null;
+            boolean stateChanged = changeState(newState);
+            boolean matchChanged = changeMatch(newMatch);
+            if (matchChanged || stateChanged) {
+                if (newMatch != null && newMatch.hasTransitionFrom(newState)) {
+                    changeTransition(newMatch.getTransition());
+                } else {
+                    changeTransition(null);
+                }
+                if (getDisplay() != DisplayKind.LTS) {
+                    changeDisplay(DisplayKind.STATE);
+                }
             }
-            if (getDisplay() != DisplayKind.LTS) {
-                changeDisplay(DisplayKind.STATE);
+            if (matchChanged) {
+                changeSelected(ResourceKind.RULE, newMatch == null
+                    ? null
+                    : newMatch.getAction().getQualName());
             }
+        } finally {
+            result = finish();
         }
-        if (matchChanged) {
-            changeSelected(ResourceKind.RULE, newMatch == null
-                ? null
-                : newMatch.getAction().getQualName());
-        }
-        return finish();
+        return result;
     }
 
     /**
@@ -801,12 +824,16 @@ public class SimulatorModel implements Cloneable {
      * @return if {@code true}, the trace was really changed
      */
     public final boolean setTrace(Collection<GraphTransition> trace) {
+        boolean result;
         start();
-        boolean result = !this.trace.equals(trace);
-        if (result) {
-            changeTrace(trace);
+        try {
+            result = !this.trace.equals(trace);
+            if (result) {
+                changeTrace(trace);
+            }
+        } finally {
+            finish();
         }
-        finish();
         return result;
     }
 
@@ -843,18 +870,23 @@ public class SimulatorModel implements Cloneable {
      * if there is now no transition selected
      */
     public final boolean setTransition(GraphTransition trans) {
+        boolean result;
         start();
-        if (changeTransition(trans) && trans != null) {
-            RuleTransition ruleTrans = trans.getInitial();
-            MatchResult match = ruleTrans.getKey();
-            changeMatch(match);
-            changeSelected(ResourceKind.RULE, match.getAction().getQualName());
-            changeState(trans.source());
-            if (getDisplay() != DisplayKind.LTS) {
-                changeDisplay(DisplayKind.STATE);
+        try {
+            if (changeTransition(trans) && trans != null) {
+                RuleTransition ruleTrans = trans.getInitial();
+                MatchResult match = ruleTrans.getKey();
+                changeMatch(match);
+                changeSelected(ResourceKind.RULE, match.getAction().getQualName());
+                changeState(trans.source());
+                if (getDisplay() != DisplayKind.LTS) {
+                    changeDisplay(DisplayKind.STATE);
+                }
             }
+        } finally {
+            result = finish();
         }
-        return finish();
+        return result;
     }
 
     /**
@@ -908,25 +940,28 @@ public class SimulatorModel implements Cloneable {
     /** Updates the model according to a given store. */
     public final void setGrammar(SystemStore store) {
         start();
-        this.store = store;
-        if (changeGrammar(store.toGrammarModel())) {
-            // reset the GTS in any case
-            changeGTS(null);
-            changeState(null);
-            changeMatch(null);
-            changeTransition(null);
-            resetExploreType();
-            clearExplorationStats();
-            for (ResourceKind resource : ResourceKind.all(false)) {
-                changeSelected(resource, null);
+        try {
+            this.store = store;
+            if (changeGrammar(store.toGrammarModel())) {
+                // reset the GTS in any case
+                changeGTS(null);
+                changeState(null);
+                changeMatch(null);
+                changeTransition(null);
+                resetExploreType();
+                clearExplorationStats();
+                for (ResourceKind resource : ResourceKind.all(false)) {
+                    changeSelected(resource, null);
+                }
+                try {
+                    setExploreType(getExploreType());
+                } catch (FormatException e) {
+                    // do nothing
+                }
             }
-            try {
-                setExploreType(getExploreType());
-            } catch (FormatException e) {
-                // do nothing
-            }
+        } finally {
+            finish();
         }
-        finish();
     }
 
     /**
@@ -1039,8 +1074,11 @@ public class SimulatorModel implements Cloneable {
      */
     public final void synchronize(boolean reset) {
         start();
-        changeGrammar(reset);
-        finish();
+        try {
+            changeGrammar(reset);
+        } finally {
+            finish();
+        }
     }
 
     /**
@@ -1085,15 +1123,20 @@ public class SimulatorModel implements Cloneable {
      * Changes the selection of a given resource kind.
      */
     public final boolean doSelectSet(ResourceKind kind, Collection<QualName> names) {
+        boolean result;
         start();
-        if (changeSelectedSet(kind, names) && kind == ResourceKind.RULE && !names.isEmpty()) {
-            changeMatch(null);
-            changeTransition(null);
+        try {
+            if (changeSelectedSet(kind, names) && kind == ResourceKind.RULE && !names.isEmpty()) {
+                changeMatch(null);
+                changeTransition(null);
+            }
+            if (isSelected(kind) || kind == ResourceKind.HOST && hasState()) {
+                changeDisplay(DisplayKind.toDisplay(kind));
+            }
+        } finally {
+            result = finish();
         }
-        if (isSelected(kind) || kind == ResourceKind.HOST && hasState()) {
-            changeDisplay(DisplayKind.toDisplay(kind));
-        }
-        return finish();
+        return result;
     }
 
     /**
@@ -1210,9 +1253,14 @@ public class SimulatorModel implements Cloneable {
 
     /** Changes the display showing in the simulator panel. */
     public final boolean setDisplay(DisplayKind display) {
+        boolean result;
         start();
-        changeDisplay(display);
-        return finish();
+        try {
+            changeDisplay(display);
+        } finally {
+            result = finish();
+        }
+        return result;
     }
 
     /** Changes the display showing in the simulator panel. */
