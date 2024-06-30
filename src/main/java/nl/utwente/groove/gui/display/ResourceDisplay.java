@@ -647,7 +647,8 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * tab component.
      */
     public final String getLabelText(QualName name) {
-        return getLabelText(name, "", getResource(name).isActive());
+        var model = getResource(name);
+        return getLabelText(name, "", model != null && model.isActive());
     }
 
     /**
