@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2023 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -45,7 +45,7 @@ public abstract class AbstractExporter implements Exporter {
 
     private final EnumSet<Kind> formatKinds;
 
-    /** 
+    /**
      * Registers a file type supported by this exporter.
      * The file type is assumed to be suitable for exporting graphs.
      * Should only be called from subclasses, during construction time,
@@ -57,7 +57,7 @@ public abstract class AbstractExporter implements Exporter {
         this.fileTypes.add(fileType);
     }
 
-    /** 
+    /**
      * Registers a file type supported by this exporter, to be used for a given resource kind.
      * Should only be called if {@link #getFormatKinds()} equals {@link Porter.Kind#RESOURCE}.
      */
@@ -65,7 +65,10 @@ public abstract class AbstractExporter implements Exporter {
         assert getFormatKinds().contains(Kind.RESOURCE);
         this.fileTypes.add(fileType);
         this.fileTypeMap.put(kind, fileType);
-        this.resourceKindMap.put(fileType, kind);
+        var oldKind = this.resourceKindMap.put(kind.getFileType(), kind);
+        assert oldKind == null || oldKind.equals(kind) : String
+            .format("Conflicting resource kinds %s and %s for file type %s", oldKind, kind,
+                    fileType);
     }
 
     /** Returns the file type registered for a given resource kind, if any. */
@@ -78,7 +81,7 @@ public abstract class AbstractExporter implements Exporter {
         return this.resourceKindMap.get(fileType);
     }
 
-    /** 
+    /**
      * Registers a resource kind supported by this exporter, with its default file type.
      * Should only be called if {@link #getFormatKinds()} equals {@link Porter.Kind#RESOURCE}.
      */
@@ -88,6 +91,7 @@ public abstract class AbstractExporter implements Exporter {
 
     private final Set<FileType> fileTypes;
     private final Map<ResourceKind,FileType> fileTypeMap;
+    /** Map from file type the native file type. */
     private final Map<FileType,ResourceKind> resourceKindMap;
 
     @Override
@@ -111,7 +115,8 @@ public abstract class AbstractExporter implements Exporter {
             }
         }
         if (supports) {
-            if (exportable.containsKind(Kind.RESOURCE) && getFormatKinds().contains(Kind.RESOURCE)) {
+            if (exportable.containsKind(Kind.RESOURCE)
+                && getFormatKinds().contains(Kind.RESOURCE)) {
                 // check if the specific resource kind is supported
                 FileType fileType = getFileType(exportable.getModel().getKind());
                 if (fileType != null) {
@@ -126,7 +131,9 @@ public abstract class AbstractExporter implements Exporter {
 
     /** Returns the parent component for a dialog. */
     protected final Frame getParent() {
-        return this.simulator == null ? null : this.simulator.getFrame();
+        return this.simulator == null
+            ? null
+            : this.simulator.getFrame();
     }
 
     /** Returns the simulator on which this exporter works. */

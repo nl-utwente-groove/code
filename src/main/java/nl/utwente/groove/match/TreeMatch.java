@@ -29,6 +29,7 @@ import nl.utwente.groove.grammar.rule.Anchor;
 import nl.utwente.groove.grammar.rule.AnchorKey;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
 import nl.utwente.groove.transform.Proof;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.Property;
 import nl.utwente.groove.util.Visitor;
@@ -106,7 +107,9 @@ public class TreeMatch implements Fixable {
         // test a HashBag would be more appropriate, but this collapses
         // matches to a canonical representative which upon union gives
         // the wrong result.
-        return op.isConjunctive() ? new ArrayList<>() : new HashSet<>();
+        return op.isConjunctive()
+            ? new ArrayList<>()
+            : new HashSet<>();
     }
 
     /** Adds a sub-match to this tree match. */
@@ -233,6 +236,11 @@ public class TreeMatch implements Fixable {
             int resultSize = computeProofMatrix(matrix, rowSize);
             if (resultSize == 0) {
                 result = Collections.emptyList();
+            } else if (resultSize > MAX_RESULT_SIZE) {
+                // TODO this is very brute-force, but it will have to do for now
+                throw Exceptions
+                    .illegalState("More than %s matches for %s: giving up...", MAX_RESULT_SIZE,
+                                  this.condition.getRule().getQualName());
             } else {
                 result = new ArrayList<>(resultSize);
                 Visitor<Proof,?> collector = Visitor.newCollector(result);
@@ -358,8 +366,7 @@ public class TreeMatch implements Fixable {
             int patternHashCode = 1;
             if (getCondition().hasRule()) {
                 // only the anchor images matter to equality of the match
-                Anchor anchor = getCondition().getRule()
-                    .getAnchor();
+                Anchor anchor = getCondition().getRule().getAnchor();
                 for (int i = 0; i < anchor.size(); i++) {
                     AnchorKey key = anchor.get(i);
                     AnchorValue value = getPatternMap().get(key);
@@ -381,21 +388,17 @@ public class TreeMatch implements Fixable {
         if (obj == this) {
             return true;
         }
-        if (!(obj instanceof TreeMatch)) {
+        if (!(obj instanceof TreeMatch other)) {
             return false;
         }
-        TreeMatch other = (TreeMatch) obj;
         assert other.isFixed();
-        if (!other.getOp()
-            .equals(getOp())) {
+        if (!other.getOp().equals(getOp())) {
             return false;
         }
-        if (!other.getCondition()
-            .equals(getCondition())) {
+        if (!other.getCondition().equals(getCondition())) {
             return false;
         }
-        if (getSubMatches().size() != other.getSubMatches()
-            .size()) {
+        if (getSubMatches().size() != other.getSubMatches().size()) {
             return false;
         }
         if (getOp().hasPattern()) {
@@ -403,12 +406,10 @@ public class TreeMatch implements Fixable {
             RuleToHostMap hisMap = other.getPatternMap();
             if (getCondition().hasRule()) {
                 // only the anchor images matter to equality of the match
-                Anchor anchor = getCondition().getRule()
-                    .getAnchor();
+                Anchor anchor = getCondition().getRule().getAnchor();
                 for (int i = 0; i < anchor.size(); i++) {
                     AnchorKey key = anchor.get(i);
-                    if (!myMap.get(key)
-                        .equals(hisMap.get(key))) {
+                    if (!myMap.get(key).equals(hisMap.get(key))) {
                         return false;
                     }
                 }
@@ -495,18 +496,16 @@ public class TreeMatch implements Fixable {
         protected boolean process(Proof visitedProof) {
             Proof newProof = createProof();
             if (visitedProof.isComposite()) {
-                newProof.getSubProofs()
-                    .addAll(visitedProof.getSubProofs());
+                newProof.getSubProofs().addAll(visitedProof.getSubProofs());
             } else {
-                newProof.getSubProofs()
-                    .add(visitedProof);
+                newProof.getSubProofs().add(visitedProof);
             }
             return super.process(newProof);
         }
 
         @Override
         protected Collector<Proof,List<Proof>> createInstance(List<Proof> collection,
-            Property<Proof> property) {
+                                                              Property<Proof> property) {
             return new ProofWrapperCollector(collection);
         }
     }
@@ -532,11 +531,9 @@ public class TreeMatch implements Fixable {
         protected boolean process(Proof visitedProof) {
             Proof newProof = createProof();
             if (visitedProof.isComposite()) {
-                newProof.getSubProofs()
-                    .addAll(visitedProof.getSubProofs());
+                newProof.getSubProofs().addAll(visitedProof.getSubProofs());
             } else {
-                newProof.getSubProofs()
-                    .add(visitedProof);
+                newProof.getSubProofs().add(visitedProof);
             }
             return this.visitor.visit(newProof);
         }
@@ -557,4 +554,7 @@ public class TreeMatch implements Fixable {
 
         private Visitor<Proof,R> visitor;
     }
+
+    /** Maximum number of (sub)results in a proof that GROOVE will attempt to calculate. */
+    static public final int MAX_RESULT_SIZE = 10000;
 }

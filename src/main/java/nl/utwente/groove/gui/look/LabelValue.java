@@ -424,10 +424,13 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 assert frame != null;
             }
             Object[] stack = state.getFrameStack(frame);
-            if (!frame.isStart() || stack.length > 0) {
-                result.add(getStackLine(frame.getLocation(), stack));
-                hasControl = true;
-            }
+            // NOTE: the following was surrounded by a condition that causes
+            // no control info to be shown if we're in the start state, which
+            // surely was never intended. See gh issue #775
+            // if (!frame.isStart() || stack.length > 0) {
+            result.add(getStackLine(frame.getLocation(), stack));
+            hasControl = true;
+            // }
             for (var sw : frame.getContext().outIterable()) {
                 stack = CallStack.pop(stack);
                 result.add(getStackLine(sw.onFinish(), stack));

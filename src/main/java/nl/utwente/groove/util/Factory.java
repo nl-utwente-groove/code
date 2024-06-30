@@ -17,6 +17,7 @@
 package nl.utwente.groove.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
@@ -87,6 +88,8 @@ public abstract class Factory<T> implements Supplier<T> {
                 user.removeUsed(this);
             }
             assert getUsers().isEmpty();
+            this.used = EMPTY_SET;
+            this.users = EMPTY_SET;
         }
     }
 
@@ -120,6 +123,9 @@ public abstract class Factory<T> implements Supplier<T> {
 
     /** Adds a user that depends on the value of this factory. */
     private void addUser(Factory<?> user) {
+        if (this.users == EMPTY_SET) {
+            this.users = new HashSet<>();
+        }
         this.users.add(user);
     }
 
@@ -129,7 +135,7 @@ public abstract class Factory<T> implements Supplier<T> {
     }
 
     /** Set of factories that depend on this one. */
-    private final Set<Factory<?>> users = new HashSet<>();
+    private Set<Factory<?>> users = EMPTY_SET;
 
     /** Returns the set of factories that this one depends on. */
     private Set<Factory<?>> getUsed() {
@@ -138,6 +144,9 @@ public abstract class Factory<T> implements Supplier<T> {
 
     /** Adds a dependency to this factory. */
     private void addUsed(Factory<?> used) {
+        if (this.used == EMPTY_SET) {
+            this.used = new HashSet<>();
+        }
         this.used.add(used);
     }
 
@@ -147,7 +156,7 @@ public abstract class Factory<T> implements Supplier<T> {
     }
 
     /** Set of factories that this one depends on. */
-    private final Set<Factory<?>> used = new HashSet<>();
+    private Set<Factory<?>> used = EMPTY_SET;
 
     @Override
     public String toString() {
@@ -207,4 +216,6 @@ public abstract class Factory<T> implements Supplier<T> {
     static private final ReentrantLock lock = new ReentrantLock();
     /** Set of factories currently running their {@link #create()} method. */
     static private @Nullable Set<Factory<?>> builders;
+    /** Shared empty set, to save memory. */
+    static private final Set<Factory<?>> EMPTY_SET = Collections.emptySet();
 }
