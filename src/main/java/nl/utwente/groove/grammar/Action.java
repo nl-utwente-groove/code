@@ -18,13 +18,17 @@ package nl.utwente.groove.grammar;
 
 import java.awt.Color;
 import java.util.HashMap;
+import java.util.IllegalFormatException;
 import java.util.Map;
 import java.util.Optional;
 
+import nl.utwente.groove.grammar.host.HostNode;
+import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.io.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.Strings;
+import nl.utwente.groove.util.ThreeValued;
 import nl.utwente.groove.util.collect.Comparator;
 
 /**
@@ -50,10 +54,65 @@ public interface Action extends Callable, Comparable<Action> {
     public int getPriority();
 
     /**
-     * Returns the label to be used in the LTS when this rule is applied.
-     * Defaults to the rule name, if the property is undefined.
+     * Returns the special label to be used in the LTS when this action is applied.
+     * If this is the empty string, the qualified action name is used.
      */
-    public String getTransitionLabel();
+    default public String getTransitionLabel() {
+        return "";
+    }
+
+    /** Constructs the label string for a transition based on this action,
+     * given a set of arguments.
+     * This takes into account the special transition label (see {@link #getTransitionLabel()};
+     * if that is not set, it takes into account the system property for showing parameters
+     * (see {@link GrammarProperties#isUseParameters()}).
+     */
+    default public String toLabelString(HostNode[] args) {
+        StringBuilder result = new StringBuilder();
+        var specialLabel = getTransitionLabel();
+        // First try to construct a special label
+        if (!specialLabel.isBlank()) {
+            Object[] stringArgs = new Object[args.length];
+            for (int i = 0; i < args.length; i++) {
+                var arg = args[i];
+                stringArgs[i] = arg == null
+                    ? "_"
+                    : arg instanceof ValueNode vn
+                        ? vn.getValue()
+                        : arg;
+            }
+            try {
+                result.append(String.format(specialLabel, stringArgs));
+            } catch (IllegalFormatException e) {
+                // do nothing
+            }
+        }
+        // If that failed, form a regular label
+        if (result.isEmpty()) {
+            result.append(getQualName());
+            ThreeValued useParameters = getGrammarProperties().isUseParameters();
+            if (!useParameters.isFalse() && (args.length > 0 || useParameters.isTrue())) {
+                result.append('(');
+                boolean first = true;
+                for (int i = 0; i < args.length; i++) {
+                    if (!first) {
+                        result.append(',');
+                    }
+                    first = false;
+                    var arg = args[i];
+                    var stringArg = arg == null
+                        ? "_"
+                        : arg instanceof ValueNode vn
+                            ? vn.getSymbol()
+                            : arg.toString();
+                    result.append(stringArg);
+                }
+                result.append(')');
+            }
+        }
+        return result.toString();
+
+    }
 
     /**
      * Returns a format string for the standard output.

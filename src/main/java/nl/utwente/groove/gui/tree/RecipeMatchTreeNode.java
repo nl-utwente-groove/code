@@ -76,12 +76,10 @@ class RecipeMatchTreeNode extends MatchTreeNode {
         StringBuilder result = new StringBuilder();
         result.append(getNumber());
         result.append(": ");
-        result.append(getRecipe().getTransitionLabel());
+        var args = getRecipeArgs(getSimulator(), getSource(), getInitMatch().getStep());
+        result.append(getRecipe().toLabelString(args));
         if (this.anchored) {
             result.append(getKey().getEvent().getAnchorImageString());
-        } else {
-            var args = getRecipeArgs(getSimulator(), getSource(), getInitMatch().getStep());
-            result.append(toArgsString(args));
         }
         result.append(RIGHTARROW);
         result.append('?');

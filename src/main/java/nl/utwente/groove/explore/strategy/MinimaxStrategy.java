@@ -25,8 +25,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.TreeSet;
 
 import nl.utwente.groove.explore.result.Acceptor;
+import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.host.AnchorValue;
 import nl.utwente.groove.grammar.host.ValueNode;
@@ -57,18 +59,9 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
     //configurable parameters
     private final int heuristicparam; //index of the heuristic parameter used
     private final int minmaxparam; //index of the turn parameter used
-    private final ArrayList<String> enabledrules; //names of evaluation rules
-    private final String minmaxRule; //name of the turn rule
+    private final ArrayList<QualName> enabledrules; //names of evaluation rules
+    private final QualName minmaxRule; //name of the turn rule
     private final int maxdepth; //maximum depth of the exploration
-
-    /**
-     * Constructs a strategy which uses the Minimax algorithm to generate a strategy while performing an optionally depth-bound DFS
-     * @param heuristicparam parameter index which will contain the heuristic score
-     * @param maxdepth the maximum depth of the exploration, below 1 is infinite
-     */
-    public MinimaxStrategy(int heuristicparam, int maxdepth, Rule evalrule, int minmaxparam) {
-        this(heuristicparam, maxdepth, null, evalrule, minmaxparam);
-    }
 
     /**
      * Constructs a strategy which uses the Minimax algorithm to generate a strategy while performing an optionally depth-bound DFS
@@ -94,9 +87,9 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
             this.enabledrules = new ArrayList<>(0);
         } else {
             //trim double entries
-            HashSet<String> temp = new HashSet<>();
+            Set<QualName> temp = new TreeSet<>();
             for (Rule r : enabledrules) {
-                temp.add(r.getTransitionLabel());
+                temp.add(r.getQualName());
             }
             this.enabledrules = new ArrayList<>(temp);
 
@@ -107,10 +100,10 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
         }
 
         //check for an empty string and assign rule parameter
-        if ("".equals(evalrule.getTransitionLabel())) {
+        if (evalrule == null) {
             this.minmaxRule = null;
         } else {
-            this.minmaxRule = evalrule.getTransitionLabel();
+            this.minmaxRule = evalrule.getQualName();
         }
     }
 
@@ -267,12 +260,12 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
      * @param r the rule to test for
      * @return true when the label of r is in the list of enabled rules, or when all labels are allowed
      */
-    private boolean isRuleEnabled(String r) {
+    private boolean isRuleEnabled(QualName r) {
         return this.enabledrules == null || this.enabledrules.size() == 0
             || this.enabledrules.contains(r);
     }
 
-    private boolean isMinMaxrule(String r) {
+    private boolean isMinMaxrule(QualName r) {
         return this.minmaxRule.equals(r);
     }
 
@@ -307,12 +300,12 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
             System.out.println("State added: " + transition.target().getNumber());
         }
         //if we have a minmax rule, update the variable in the tree, and dont add tree nodes
-        if (isMinMaxrule(transition.label().getAction().getLastName())) {
+        if (isMinMaxrule(transition.label().getAction().getQualName())) {
             Boolean minmax = getMinMaxParam((RuleTransition) transition);
             mts.setMinMax(minmax);
         } else {
             //update the score
-            if (isRuleEnabled(transition.label().getAction().getLastName())
+            if (isRuleEnabled(transition.label().getAction().getQualName())
                 && target.getMatch() == null) {
                 int score = getHeuristicScore((RuleTransition) transition);
                 mtt.setScore(score);

@@ -370,9 +370,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
 
     @Override
     protected Line computeLine() {
-        StringBuilder text = new StringBuilder(getAction().getTransitionLabel());
-        text.append(RuleTransitionLabel.computeParameters(this));
-        return Line.atom(text.toString());
+        return Line.atom(getAction().toLabelString(getArguments()));
     }
 
     @Override

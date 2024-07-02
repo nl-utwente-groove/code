@@ -253,7 +253,8 @@ public class STS {
         String update = createUpdate(event, iVarMap, lVarMap);
 
         // Create the gate and the switch relation
-        Gate gate = addGate(event.getRule().getTransitionLabel(), new HashSet<>(iVarMap.values()));
+        Gate gate
+            = addGate(event.getRule().getQualName().toString(), new HashSet<>(iVarMap.values()));
         Object obj = SwitchRelation.getSwitchIdentifier(gate, guard, update);
         SwitchRelation switchRelation = this.switchRelationMap.get(obj);
         if (switchRelation == null) {

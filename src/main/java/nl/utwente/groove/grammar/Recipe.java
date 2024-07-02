@@ -86,11 +86,6 @@ public class Recipe extends Procedure implements Action {
     private final int priority;
 
     @Override
-    public String getTransitionLabel() {
-        return getQualName().toString();
-    }
-
-    @Override
     public Optional<String> getFormatString() {
         return Optional.empty();
     }

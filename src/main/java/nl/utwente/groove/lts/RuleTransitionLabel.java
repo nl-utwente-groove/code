@@ -22,21 +22,17 @@ import java.util.List;
 import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.control.CtrlArg;
-import nl.utwente.groove.control.CtrlArg.Wild;
 import nl.utwente.groove.control.instance.Step;
 import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.grammar.Callable.Kind;
-import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.host.HostNode;
-import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.graph.ALabel;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.transform.RuleEvent;
 import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.ThreeValued;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.line.Line.Style;
 
@@ -134,7 +130,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         StringBuilder result = new StringBuilder();
         for (var swt : getStep().getSwitch()) {
             if (swt.getKind() == Kind.RULE) {
-                result.append(getAction().getTransitionLabel());
+                result.append(getAction().toLabelString(getArguments()));
             } else {
                 result.append(swt.getQualName());
                 result.append('/');
@@ -142,8 +138,6 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         }
         if (anchored) {
             result.append(getEvent().getAnchorImageString());
-        } else {
-            result.append(computeParameters(this));
         }
         return result.toString();
     }
@@ -209,44 +203,6 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         return result;
     }
 
-    static StringBuilder computeParameters(ActionLabel label) {
-        StringBuilder result = new StringBuilder();
-        ThreeValued useParameters = label.getAction().getGrammarProperties().isUseParameters();
-        // also show parameters for properties, unless global property is FALSE
-        if (useParameters.isSome() && label.getAction().isProperty()
-            && !label.getAction().getSignature().isEmpty()) {
-            useParameters = ThreeValued.TRUE;
-        }
-        if (!useParameters.isFalse()) {
-            List<? extends CtrlArg> args = label.getSwitch().getCall().getArgs();
-            // test if there is a showable argument
-            boolean showArgs = false;
-            StringBuilder params = new StringBuilder();
-            params.append('(');
-            boolean first = true;
-            for (int i = 0; i < args.size(); i++) {
-                HostNode arg = label.getArguments()[i];
-                if (!first) {
-                    params.append(',');
-                }
-                first = false;
-                if (arg == null) {
-                    params.append('_');
-                } else if (arg instanceof ValueNode) {
-                    params.append(((ValueNode) arg).getSymbol());
-                } else {
-                    params.append(arg);
-                }
-                showArgs |= SHOW_NONEMPTY_ARGS || !(args.get(i) instanceof Wild);
-            }
-            params.append(')');
-            if (showArgs || useParameters.isTrue()) {
-                result.append(params);
-            }
-        }
-        return result;
-    }
-
     /**
      * Returns the label text for the rule label based on a given source state
      * and event. Optionally, the rule parameters are replaced by anchor images.
@@ -280,11 +236,4 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
     public static boolean REUSE_LABELS = true;
     /** Global empty set of nodes. */
     static private final HostNode[] EMPTY_NODE_ARRAY = {};
-    /** Flag controlling the behaviour in case the {@link GrammarKey#TRANSITION_PARAMETERS}
-     * key is set to {@link ThreeValued#SOME}.
-     * If this flag is set to <code>true</code>, then parameters are shown for
-     * all rules that have any; otherwise, only if there is a control program that
-     * specifies at least one non-wildcard argument.
-     */
-    static private final boolean SHOW_NONEMPTY_ARGS = true;
 }

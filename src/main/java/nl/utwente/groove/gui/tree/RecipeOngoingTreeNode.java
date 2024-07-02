@@ -119,9 +119,8 @@ class RecipeOngoingTreeNode extends MatchTreeNode {
         if (trans == null) {
             result.append(HTMLConverter.ITALIC_TAG.on(realSource.toString()));
             result.append(ARROW_TAIL);
-            result.append(getRecipe().getTransitionLabel());
             var args = getRecipeArgs(getSimulator(), getInitSource(), getInitStep().getStep());
-            result.append(toArgsString(args));
+            result.append(getRecipe().toLabelString(args));
             result.append(RIGHTARROW);
             result.append('?');
         } else {

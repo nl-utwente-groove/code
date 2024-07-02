@@ -217,10 +217,9 @@ public class Rule implements Action, Fixable {
     @Override
     public String getTransitionLabel() {
         var result = this.transitionLabel;
-        if (result == null || result.isEmpty()) {
-            result = getQualName().toString();
-        }
-        return result;
+        return result == null
+            ? ""
+            : result;
     }
 
     /** The optional transition label. */

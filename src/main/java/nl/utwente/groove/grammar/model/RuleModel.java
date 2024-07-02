@@ -243,16 +243,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         return GraphInfo.getPriority(getSource());
     }
 
-    /** Convenience method */
-    public String getTransitionLabel() {
-        return GraphInfo.getTransitionLabel(getSource());
-    }
-
-    /** Convenience method */
-    public String getFormatString() {
-        return GraphInfo.getFormatString(getSource());
-    }
-
     @Override
     Rule compute() throws FormatException {
         this.ruleFactory = RuleFactory.newInstance(getTypeGraph().getFactory());

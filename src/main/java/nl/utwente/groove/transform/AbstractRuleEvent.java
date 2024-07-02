@@ -59,7 +59,7 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
-        result.append(getRule().getTransitionLabel());
+        result.append(getRule().getQualName());
         result.append(getAnchorImageString());
         return result.toString();
     }
@@ -170,8 +170,9 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
                 return !hasResult();
             }
         };
-        Proof result = getRule().getEventMatcher(source.isSimple()).traverse(source, getAnchorMap(),
-                                                                             matchVisitor);
+        Proof result = getRule()
+            .getEventMatcher(source.isSimple())
+            .traverse(source, getAnchorMap(), matchVisitor);
         return result;
     }
 
@@ -212,7 +213,7 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
      */
     private int hashCode;
     /** Global empty set of nodes. */
-    static final HostNode[] EMPTY_NODE_ARRAY = new HostNode[0];
+    static final HostNode[] EMPTY_NODE_ARRAY = {};
 
     /** Cache holding the anchor map. */
     abstract protected class AbstractEventCache {
