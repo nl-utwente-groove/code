@@ -715,12 +715,10 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         List<Point.Double> dimensions = new ArrayList<>();
         double globalMaxX = 0;
         double globalMaxY = 0;
-        Boolean simple = null;
+        boolean simple = true;
         for (AspectGraph graph : graphs) {
             assert graph.getRole() == HOST;
-            assert simple == null
-                || simple == graph.isSimple() : "Graphs should have same simplicity property";
-            simple = graph.isSimple();
+            simple &= graph.isSimple();
             if (name.length() != 0) {
                 name.append("_");
             }
@@ -743,7 +741,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             globalMaxX = Math.max(globalMaxX, maxX);
             globalMaxY = Math.max(globalMaxY, maxY);
         }
-        assert simple != null;
         // construct the result graph
         AspectGraph result = new AspectGraph(name.toString(), HOST, simple);
         LayoutMap newLayoutMap = new LayoutMap();
