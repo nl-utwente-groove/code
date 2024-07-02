@@ -179,14 +179,16 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
      * The identifiers must be known at the time of the call.
      * @param nodeIds a non-{@code null}, non-empty list of known node identifiers
      */
-    public void addTuple(List<String> nodeIds) {
+    public AttrTuple addTuple(List<String> nodeIds) {
         List<AttrNode> nodes = new ArrayList<>(nodeIds.size());
         for (String id : nodeIds) {
             AttrNode node = getNode(id);
             assert node != null : String.format("Unknown node id %s", id);
             nodes.add(node);
         }
-        this.tuples.add(new AttrTuple(nodes));
+        AttrTuple result = new AttrTuple(nodes);
+        this.tuples.add(result);
+        return result;
     }
 
     /**

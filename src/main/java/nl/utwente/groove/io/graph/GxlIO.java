@@ -375,6 +375,7 @@ public class GxlIO extends GraphIO<AttrGraph> {
     private AttrGraph gxlToGraph(GraphType gxlGraph) throws FormatException {
         // Initialize the new objects to be created.
         AttrGraph graph = new AttrGraph(gxlGraph.getId());
+        Object latest = null;
         LayoutMap layoutMap = new LayoutMap();
         // Extract nodes out of the gxl elements.
         // First collect an ordered set of all node types
@@ -393,6 +394,7 @@ public class GxlIO extends GraphIO<AttrGraph> {
                 throw new FormatException("The node " + nodeId + " is declared more than once.");
             }
             AttrNode node = graph.addNode(nodeId);
+            latest = node;
             Map<String,String> attrs = loadAttributes(nt);
             // check for the presence of layout information
             String layoutText = attrs.remove(LAYOUT_ATTR_NAME);
@@ -413,7 +415,7 @@ public class GxlIO extends GraphIO<AttrGraph> {
                 for (RelendType relEnd : rt.getRelend()) {
                     nodeIds.add(relEnd.getId());
                 }
-                graph.addTuple(nodeIds);
+                latest = graph.addTuple(nodeIds);
             }
         }
 
@@ -423,7 +425,9 @@ public class GxlIO extends GraphIO<AttrGraph> {
                 // Find the source node of the edge.
                 NodeType gxlSource = (NodeType) gxlEdge.getFrom();
                 if (gxlSource == null) {
-                    throw new FormatException("Unable to find source node of %s", gxlEdge);
+                    throw new FormatException(
+                        "Unspecified source node of %s (last successfully loaded lement was %s)",
+                        gxlEdge.getId(), latest);
                 }
                 String sourceId = gxlSource.getId();
                 AttrNode sourceNode = graph.getNode(sourceId);
@@ -433,9 +437,11 @@ public class GxlIO extends GraphIO<AttrGraph> {
                 // Find the target node of the edge.
                 NodeType gxlTarget = (NodeType) gxlEdge.getTo();
                 if (gxlTarget == null) {
-                    throw new FormatException("Unable to find target node of %s", gxlEdge);
+                    throw new FormatException(
+                        "Unspecified target node of %s (with source node %s; last successfully loaded lement was %s)",
+                        gxlEdge, sourceId, latest);
                 }
-                String targetId = ((NodeType) gxlEdge.getTo()).getId();
+                String targetId = gxlTarget.getId();
                 AttrNode targetNode = graph.getNode(targetId);
                 if (targetNode == null) {
                     throw new FormatException("Unable to find edge target node %s", targetId);
@@ -451,6 +457,7 @@ public class GxlIO extends GraphIO<AttrGraph> {
                 }
                 // Create the edge object.
                 AttrEdge edge = graph.addEdge(sourceNode, labelText, targetNode);
+                latest = edge;
                 // check for the presence of layout information
                 String layoutText = attrs.remove(LAYOUT_ATTR_NAME);
                 if (layoutText != null) {
