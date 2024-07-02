@@ -37,10 +37,26 @@ import nl.utwente.groove.util.line.LineFormat.Builder;
 /**
  * Class wrapping the functionality to convert a multi-line label
  * into a list of labels with orientation decorations.
+ * An flag determines if the count of multiply occurring labels should be shown.
  * @author Arend Rensink
  * @version $Revision$
  */
 public class MultiLabel {
+    /**
+     * Constructs a new {@link MultiLabel}, that does show the edge count.
+     */
+    public MultiLabel() {
+        this(true);
+    }
+
+    /**
+     * Creates a new {@link MultiLabel}, with a parameter determining if the
+     * count of the number of edges should be shown.
+     */
+    public MultiLabel(boolean showCount) {
+        this.showCount = showCount;
+    }
+
     /** Adds an undirected directed line to this multiline label. */
     public void add(Line line) {
         add(line, Direct.NONE);
@@ -82,7 +98,10 @@ public class MultiLabel {
             Line line = entry.getKey();
             DirectBag dirs = entry.getValue();
             DirectBag myDirs = this.parts.get(line);
-            this.parts.put(line, myDirs == null ? dirs : myDirs.add(dirs));
+            this.parts
+                .put(line, myDirs == null
+                    ? dirs
+                    : myDirs.add(dirs));
         }
     }
 
@@ -91,10 +110,15 @@ public class MultiLabel {
         this.parts.putAll(other.parts);
     }
 
+    private final Map<Line,DirectBag> parts = new LinkedHashMap<>();
+
     /** Returns the union of all directions in this label. */
     public Direct getDirect() {
         return this.direct;
     }
+
+    /** The combined direction of this label. */
+    private Direct direct = Direct.NONE;
 
     /** Indicates if the list of lines is empty. */
     public boolean isEmpty() {
@@ -103,18 +127,18 @@ public class MultiLabel {
 
     /** Indicates if the list of lines contains only an Empty line. */
     public boolean isEmptyLine() {
-        return this.parts.size() == 1 && this.parts.keySet()
-            .iterator()
-            .next()
-            .isEmpty();
+        return this.parts.size() == 1 && this.parts.keySet().iterator().next().isEmpty();
     }
+
+    /** Flag determining if the count of the number of edges should be shown. */
+    private final boolean showCount;
 
     /**
      * Computes a string representation of this label, for a given renderer
      * and with or without orientation decorations.
      */
     public <R extends Builder<R>> StringBuilder toString(LineFormat<R> renderer, Point2D start,
-        Point2D end) {
+                                                         Point2D end) {
         R result = renderer.createResult();
         for (Map.Entry<Line,DirectBag> entry : this.parts.entrySet()) {
             Line line = entry.getKey();
@@ -125,7 +149,7 @@ public class MultiLabel {
                     if (!result.isEmpty()) {
                         result.appendLineBreak();
                     }
-                    if (count > 1) {
+                    if (this.showCount && count > 1) {
                         String mult = SP + "[" + count + Util.TIMES + "]";
                         line = line.append(mult);
                     }
@@ -152,10 +176,6 @@ public class MultiLabel {
     public String toString() {
         return this.parts.toString();
     }
-
-    private final Map<Line,DirectBag> parts = new LinkedHashMap<>();
-    /** The combined direction of this label. */
-    private Direct direct = Direct.NONE;
 
     /**
      * Constructs a label with a given line and direction,
@@ -191,11 +211,17 @@ public class MultiLabel {
             public Orient getOrient(int dx, int dy) {
                 if (Math.abs(dx) >= Math.abs(dy) * 3) {
                     // vertical dimension negligible
-                    return dx < 0 ? LEFT : RIGHT;
+                    return dx < 0
+                        ? LEFT
+                        : RIGHT;
                 } else if (dy < 0) {
-                    return dx <= 0 ? UP_LEFT : UP_RIGHT;
+                    return dx <= 0
+                        ? UP_LEFT
+                        : UP_RIGHT;
                 } else {
-                    return dx < 0 ? DOWN_LEFT : DOWN_RIGHT;
+                    return dx < 0
+                        ? DOWN_LEFT
+                        : DOWN_RIGHT;
                 }
             }
         },
@@ -375,14 +401,11 @@ public class MultiLabel {
         }
 
         /** Counts for each of the directions in this multiset. */
-        private final Map<Direct,Integer> values =
-            new EnumMap<>(Direct.class);
+        private final Map<Direct,Integer> values = new EnumMap<>(Direct.class);
         /** Successor multisets after increasing one of the directions. */
-        private final Map<Direct,DirectBag> incMap =
-            new EnumMap<>(Direct.class);
+        private final Map<Direct,DirectBag> incMap = new EnumMap<>(Direct.class);
         /** Successor multisets after decreasing one of the directions. */
-        private final Map<Direct,DirectBag> decMap =
-            new EnumMap<>(Direct.class);
+        private final Map<Direct,DirectBag> decMap = new EnumMap<>(Direct.class);
 
         /** Returns a normalised representation of a given multiset. */
         public static DirectBag norm(DirectBag bag) {
@@ -394,8 +417,7 @@ public class MultiLabel {
         }
 
         /** Pool of representatives. */
-        private final static Map<DirectBag,DirectBag> pool =
-            new HashMap<>();
+        private final static Map<DirectBag,DirectBag> pool = new HashMap<>();
         /** The zero element. */
         public final static DirectBag ZERO = norm(new DirectBag());
     }

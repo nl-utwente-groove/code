@@ -146,7 +146,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
     private MultiLabel getHostNodeLabel(AspectJGraph jGraph, AspectJVertex jVertex) {
         AspectNode node = jVertex.getNode();
         node.testFixed(true);
-        MultiLabel result = new MultiLabel();
+        MultiLabel result = new MultiLabel(false);
         if (!jVertex.getLooks().contains(Look.NODIFIED)) {
             // the following used to include hasError() as a disjunct
             if (jGraph.isShowAspects()) {
