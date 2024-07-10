@@ -3,6 +3,11 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 6.8.4, 10 July 2024
+-------------------------------
+- Errors in property keys now reported by highlighting and switching
+- Bug fixes: GH issues #770, #774, #775, #776, #777, #783
+
 Release 6.8.3, 25 June 2024
 -------------------------------
 - Bug fixes: GH issues #772
