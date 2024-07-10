@@ -295,9 +295,7 @@ public class GraphProperties extends Properties {
         try {
             String.format(formatString, args);
         } catch (IllegalFormatException exc) {
-            result
-                .add("Rule has %s parameters, but format string '%s' expects more", maxPar,
-                     formatString, g);
+            result.add("Rule has %s parameters, but format string '%s' expects more", maxPar, formatString, g);
         }
         return result;
     };

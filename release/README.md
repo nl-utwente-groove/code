@@ -72,6 +72,10 @@ in two different ways, it is up to the developer to ensure that they are identic
 
 2. Create and push a tag of the form `release-x_y_z`
 
+If something goes wrong on github and you have to repeat the last step, you first have to delete the remote tag on the command line, like so:
+
+`git push --delete origin release-x_y_z`
+
 ## Postprocessing
 
 1. In `src/main/resources/nl/utwente/groove/resource/version`, update `GROOVE_VERSION`
@@ -108,7 +112,7 @@ The signing phase involves many different components, all of which have to work 
 
 - Pinentry: This is a utility, installed in the `gnupg` directory mentioned above, that interactively requests the passphrase. It should be circumvented by using a key without passphrase. The message `no pinentry` does not necessarily mean that the utility cannot be found, it rather seems to mean that Maven cannot invoke it in batch mode; the fact that it attempts to do this in the first place probably means that the default key it's trying to use for signing has a passphrase.
 
-- GPG agent: this is a daemon that needs to be running, and therefore needs to be installed and findable. On windows, `gpg-agent` is contained in the `gnupg` directory mentioned above. It is advertised as starting up automatically. here is a configuration file `%APPDATA%\gnupg\gpg-agent.conf` (settings are described [here](https://www.gnupg.org/(it)/documentation/manuals/gnupg/Agent-Options.html), but it should not be necessary to use this.
+- GPG agent: this is a daemon that needs to be running, and therefore needs to be installed and findable. On windows, `gpg-agent` is contained in the `gnupg` directory mentioned above. It is advertised as starting up automatically. There is a configuration file `%APPDATA%\gnupg\gpg-agent.conf` (settings are described [here](https://www.gnupg.org/%28it%29/documentation/manuals/gnupg/Agent-Options.html)), but it should not be necessary to use this. If you get a message `gpg: can't connect to the gpg-agent: IPC connect call failed`, the following may solve this (invoke from command line): `gpg-connect-agent reloadagent /bye`
 
 ### Authenticating
 
