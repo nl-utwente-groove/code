@@ -346,11 +346,6 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
     private final ValueType keyType;
 
     @Override
-    public Entry wrap(Object value) throws IllegalArgumentException {
-        return new Entry(this, value);
-    }
-
-    @Override
     public boolean isNotable() {
         return switch (this) {
         case ACTION_POLICY, ALGEBRA, CREATOR_EDGE, DANGLING, DEAD_POLICY, INJECTIVE, ISOMORPHISM, ORACLE, RHS_AS_NAC, STORE_OUT_PARS, TRANSITION_PARAMETERS, TYPE_POLICY -> true;
@@ -406,7 +401,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         private final ResourceKind kind;
 
         @Override
-        public FormatErrorSet apply(GrammarModel grammar, GrammarProperties.Entry value) {
+        public FormatErrorSet apply(GrammarModel grammar, Entry value) {
             var unknowns = new ArrayList<>(value.getQualNameList());
             var result = new FormatErrorSet();
             unknowns.removeAll(grammar.getResourceMap(getKind()).keySet());

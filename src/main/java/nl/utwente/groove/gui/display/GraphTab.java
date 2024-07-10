@@ -178,6 +178,14 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     /** Tab component of the properties tab in the upper info panel. */
     private final JLabel propertiesHeader = new JLabel();
 
+    /** Loads the properties from a given {@link JModel} into the properties panel. */
+    private void loadProperties(AspectJModel jModel) {
+        var properties = jModel.getProperties();
+        var graph = jModel.getGraph();
+        getPropertiesPanel().setProperties(properties);
+        getPropertiesPanel().setCheckerMap(properties.getCheckers(graph));
+    }
+
     /**
      * Adapt the properties header according to the notability of the properties
      */
@@ -249,7 +257,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
         getJGraph().setModel(jModel);
         if (jModel != null) {
             jModel.addUndoableEditListener(this);
-            getPropertiesPanel().setProperties(jModel.getProperties());
+            loadProperties(jModel);
         }
         setQualName(name);
         String nameString = name == null
@@ -306,7 +314,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
                 AspectGraph graphClone = jModel.getGraph().clone();
                 graphClone.setFixed();
                 getSimulatorModel().doAddGraph(getResourceKind(), graphClone, true);
-                getPropertiesPanel().setProperties(jModel.getProperties());
+                loadProperties(jModel);
             } catch (IOException e1) {
                 // do nothing
             }

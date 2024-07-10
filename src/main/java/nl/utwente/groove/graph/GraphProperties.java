@@ -18,16 +18,24 @@ package nl.utwente.groove.graph;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.IllegalFormatException;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiFunction;
 
 import nl.utwente.groove.grammar.Action.Role;
+import nl.utwente.groove.grammar.aspect.AspectContent.IntegerContent;
+import nl.utwente.groove.grammar.aspect.AspectGraph;
+import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.rule.MethodName.Language;
 import nl.utwente.groove.grammar.rule.MethodNameParser;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.Strings;
+import nl.utwente.groove.util.parse.FormatChecker;
+import nl.utwente.groove.util.parse.FormatErrorSet;
+import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.Parser;
 import nl.utwente.groove.util.parse.StringParser;
 
@@ -59,8 +67,24 @@ public class GraphProperties extends Properties {
         return new GraphProperties(this);
     }
 
+    /** Returns a map from property keys to checkers driven by a given grammar model. */
+    public CheckerMap getCheckers(final AspectGraph graph) {
+        var result = new CheckerMap();
+        for (final var key : Key.values()) {
+            FormatChecker<String> checker = v -> {
+                try {
+                    return key.check(graph, key.parse(v));
+                } catch (FormatException exc) {
+                    return exc.getErrors();
+                }
+            };
+            result.put(key, checker);
+        }
+        return result;
+    }
+
     /** Predefined graph property keys. */
-    public static enum Key implements Properties.Key {
+    public static enum Key implements Properties.Key, Checker {
         /** User-defined comment. */
         REMARK("remark", "One-line explanation of the rule, shown e.g. as tool tip",
             ValueType.STRING),
@@ -199,8 +223,19 @@ public class GraphProperties extends Properties {
         private KeyParser parser;
 
         @Override
-        public Entry wrap(Object value) throws IllegalArgumentException {
-            return new Entry(this, value);
+        public FormatErrorSet apply(AspectGraph graph, Entry value) {
+            return this.checker.get().apply(graph, value);
+        }
+
+        /** Lazily created checker for values of this key. */
+        private final Factory<Checker> checker = Factory.lazy(this::computeChecker);
+
+        /** Computes the value for {@link #checker}. */
+        private Checker computeChecker() {
+            return switch (this) {
+            case FORMAT, TRANSITION_LABEL -> formatChecker;
+            default -> trueChecker;
+            };
         }
 
         @Override
@@ -221,6 +256,49 @@ public class GraphProperties extends Properties {
             }
         }
     }
+
+    /** Checker interface for graph property keys. */
+    public interface Checker extends BiFunction<AspectGraph,Entry,FormatErrorSet> {
+        /**
+         * Checks the consistency of a property with a given model.
+         * @return the (possibly empty) set of errors in the value
+         */
+        default public FormatErrorSet check(AspectGraph graph, Entry value) {
+            return apply(graph, value);
+        }
+    }
+
+    /** Checker that always returns the empty error set. */
+    private static final Checker trueChecker = (g, v) -> FormatErrorSet.EMPTY;
+
+    /** Creates a checker for a formatted output string that should be suitable for the
+     * parameters of a rule model. */
+    private static final Checker formatChecker = (g, v) -> {
+        var result = new FormatErrorSet();
+        // compute the max par: number occurring in the source graph
+        @SuppressWarnings("null")
+        var maxPar = g
+            .nodeSet()
+            .stream()
+            .map(n -> n.get(Category.PARAM))
+            .map(a -> a == null
+                ? null
+                : a.getContent())
+            .map(c -> c instanceof IntegerContent i
+                ? i.get()
+                : 0)
+            .reduce((i1, i2) -> Math.max(i1, i2))
+            .orElse(0);
+        Object[] args = new Object[maxPar];
+        Arrays.fill(args, "");
+        var formatString = v.getString();
+        try {
+            String.format(formatString, args);
+        } catch (IllegalFormatException exc) {
+            result.add("Format '%s' expects more than %s parameters", formatString, maxPar, g);
+        }
+        return result;
+    };
 
     /** Mapping from key names (as in {@link Key#getName()}) to keys. */
     static private final Factory<Map<String,Key>> nameKeyMap

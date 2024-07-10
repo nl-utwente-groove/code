@@ -316,7 +316,9 @@ final public class GraphEditorTab extends ResourceTab
             // get the table first as creating it sets listenToPropertiesPanel to true
             PropertiesTable panel = getPropertiesPanel();
             this.listenToPropertiesPanel = false;
-            panel.setProperties(newGraph.getProperties());
+            var properties = newGraph.getProperties();
+            panel.setProperties(properties);
+            panel.setCheckerMap(properties.getCheckers(newGraph));
             this.listenToPropertiesPanel = true;
         }
     }

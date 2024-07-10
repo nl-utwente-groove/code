@@ -133,6 +133,7 @@ abstract public class ResourceModel<R> {
             this.status = Status.START;
             this.errors.clear();
             try {
+                checkSourceProperties();
                 this.resource = compute();
                 this.status = Status.DONE;
             } catch (FormatException e) {
@@ -141,6 +142,14 @@ abstract public class ResourceModel<R> {
                 this.status = Status.ERROR;
             }
         }
+    }
+
+    /**
+     * Callback method to check the resource properties.
+     * @throws FormatException if the source conflicts with its own declared properties.
+     */
+    void checkSourceProperties() throws FormatException {
+        // empty
     }
 
     /**

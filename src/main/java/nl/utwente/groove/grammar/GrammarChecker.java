@@ -19,16 +19,16 @@ package nl.utwente.groove.grammar;
 import java.util.function.BiFunction;
 
 import nl.utwente.groove.grammar.model.GrammarModel;
+import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /** Functionality to check the consistency of a grammar property with a grammar. */
-public interface GrammarChecker
-    extends BiFunction<GrammarModel,GrammarProperties.Entry,FormatErrorSet> {
+public interface GrammarChecker extends BiFunction<GrammarModel,Properties.Entry,FormatErrorSet> {
     /**
      * Checks the consistency of a property with a given grammar model.
      * @return the (possibly empty) set of errors in the value
      */
-    default public FormatErrorSet check(GrammarModel grammar, GrammarProperties.Entry value) {
+    default public FormatErrorSet check(GrammarModel grammar, Properties.Entry value) {
         return apply(grammar, value);
     }
 }

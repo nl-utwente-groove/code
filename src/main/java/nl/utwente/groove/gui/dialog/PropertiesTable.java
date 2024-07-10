@@ -113,6 +113,7 @@ public class PropertiesTable extends JTable {
     /**
      * Sets a checker map for the properties that were set before.
      * If no checker map is set, the empty map is used.
+     * Should be (re)invoked after {@link #setProperties(Properties)}
      */
     public void setCheckerMap(CheckerMap checkerMap) {
         this.checkerMap = checkerMap;

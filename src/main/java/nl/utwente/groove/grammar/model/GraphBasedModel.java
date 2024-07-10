@@ -33,7 +33,11 @@ import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.AGraphMap;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.ElementFactory;
+import nl.utwente.groove.graph.GraphProperties;
 import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.util.parse.FormatError;
+import nl.utwente.groove.util.parse.FormatErrorSet;
+import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * General interface for resource models constructed from an
@@ -61,6 +65,8 @@ abstract public class GraphBasedModel<R> extends NamedResourceModel<R> {
     public AspectGraph getSource() {
         return this.source;
     }
+
+    private final AspectGraph source;
 
     @Override
     public String getName() {
@@ -98,7 +104,24 @@ abstract public class GraphBasedModel<R> extends NamedResourceModel<R> {
      */
     abstract public TypeGraph getTypeGraph();
 
-    private final AspectGraph source;
+    @Override
+    void checkSourceProperties() throws FormatException {
+        var properties = getSource().getProperties();
+        FormatErrorSet errors = new FormatErrorSet();
+        for (var key : GraphProperties.Key.values()) {
+            try {
+                var value = properties.parseProperty(key);
+                for (FormatError error : key.check(getSource(), value)) {
+                    errors.add("Error in graph property '%s': %s", key.getKeyPhrase(), error, key);
+                }
+            } catch (FormatException exc) {
+                errors
+                    .add("Error in graph property '%s': %s", key.getKeyPhrase(), exc.getMessage(),
+                         key);
+            }
+        }
+        errors.throwException();
+    }
 
     /** Mapping from source graph elements to resource elements. */
     abstract public static class ModelMap<N extends Node,E extends Edge>

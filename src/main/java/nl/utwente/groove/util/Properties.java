@@ -414,7 +414,9 @@ public abstract class Properties implements Fixable {
          * First checks whether the value is of the right type for this key.
          * @throws IllegalArgumentException of {@code value} is not of the right type for this key.
          * */
-        Entry wrap(Object value) throws IllegalArgumentException;
+        default Entry wrap(Object value) throws IllegalArgumentException {
+            return new Entry(this, value);
+        }
 
         /** Checks whether the value is of the right type for this key, using #cast.
          * @throws IllegalArgumentException of {@code value} is not of the right type for this key.

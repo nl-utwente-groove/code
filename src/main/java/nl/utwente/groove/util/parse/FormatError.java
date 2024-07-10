@@ -130,6 +130,25 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
         return this.message;
     }
 
+    /** Returns the message of this format error
+     * in which all '%' characters have been replaced by '%%', so
+     * that it can be used as input to {@link String#format(String, Object...)} without
+     * expecting any arguments.
+     */
+    public String toFormattableString() {
+        var message = this.message;
+        StringBuffer result = new StringBuffer(message.length() + 1);
+        for (int i = 0; i < message.length(); i++) {
+            char c = message.charAt(i);
+            if (c == '%') {
+                result.append("%%");
+            } else {
+                result.append(c);
+            }
+        }
+        return result.toString();
+    }
+
     /** The error message. */
     private final String message;
 
@@ -251,7 +270,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     FormatError transfer(GraphMap map) {
         var result = this;
         if (!map.isEmpty()) {
-            result = new FormatError(toString());
+            result = new FormatError(toFormattableString());
             Map<Object,Object> elementMap = new HashMap<>();
             elementMap.putAll(map.nodeMap());
             elementMap.putAll(map.edgeMap());
@@ -330,7 +349,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
      * An optional graph map determines how the context arguments are mapped.
      */
     private FormatError clone(@Nullable Map<?,?> map) {
-        var result = new FormatError(toString());
+        var result = new FormatError(toFormattableString());
         for (var arg : getArguments()) {
             var newArg = map != null && map.containsKey(arg)
                 ? map.get(arg)
