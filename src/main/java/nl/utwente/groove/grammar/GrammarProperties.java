@@ -22,7 +22,6 @@ import nl.utwente.groove.transform.oracle.DefaultOracle;
 import nl.utwente.groove.transform.oracle.ValueOracle;
 import nl.utwente.groove.transform.oracle.ValueOracleFactory;
 import nl.utwente.groove.transform.oracle.ValueOracleKind;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.ThreeValued;
 import nl.utwente.groove.util.Version;
@@ -257,7 +256,7 @@ public class GrammarProperties extends Properties {
      * @see GrammarKey#COMMON_LABELS
      */
     public void setCommonLabels(List<String> commonLabels) {
-        storeValue(GrammarKey.COMMON_LABELS, Groove.toString(commonLabels.toArray(), "", "", " "));
+        storeValue(GrammarKey.COMMON_LABELS, commonLabels);
     }
 
     /**
@@ -489,22 +488,22 @@ public class GrammarProperties extends Properties {
     public GrammarProperties relabel(TypeLabel oldLabel, TypeLabel newLabel) {
         GrammarProperties result = clone();
         boolean hasChanged = false;
-        String oldText = oldLabel.text();
+        String oldText = oldLabel.toParsableString();
         // change the control labels
         List<String> controlLabels = getControlLabels();
         if (controlLabels != null && controlLabels.contains(oldText)) {
             List<String> newControlLabels = new ArrayList<>(controlLabels);
             int index = controlLabels.indexOf(oldText);
-            newControlLabels.set(index, newLabel.text());
+            newControlLabels.set(index, newLabel.toParsableString());
             result.setControlLabels(newControlLabels);
             hasChanged = true;
         }
         // change the common labels
-        List<String> commonLabels = getControlLabels();
+        List<String> commonLabels = getCommonLabels();
         if (commonLabels != null && commonLabels.contains(oldText)) {
             List<String> newCommonLabels = new ArrayList<>(commonLabels);
             int index = commonLabels.indexOf(oldText);
-            newCommonLabels.set(index, newLabel.text());
+            newCommonLabels.set(index, newLabel.toParsableString());
             result.setCommonLabels(newCommonLabels);
             hasChanged = true;
         }
