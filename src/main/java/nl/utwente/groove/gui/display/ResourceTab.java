@@ -41,6 +41,7 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.NamedResourceModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.ResourceModel;
+import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
@@ -50,6 +51,7 @@ import nl.utwente.groove.gui.action.SaveAction;
 import nl.utwente.groove.gui.action.SimulatorAction;
 import nl.utwente.groove.gui.list.ErrorListPanel;
 import nl.utwente.groove.gui.list.ListPanel;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
@@ -219,7 +221,9 @@ abstract public class ResourceTab extends JPanel {
      * exists (and so the main tab was not changed)
      * @throws UnsupportedOperationException if this is an editor tab
      */
-    abstract public boolean setResource(QualName name);
+    public boolean setResource(QualName name) {
+        throw Exceptions.unsupportedOp();
+    }
 
     /**
      * Removes a resource that is currently being edited from the
@@ -229,7 +233,15 @@ abstract public class ResourceTab extends JPanel {
      * @return {@code true} if this was the currently displayed resource
      * @throws UnsupportedOperationException if this is an editor tab
      */
-    abstract public boolean removeResource(QualName name);
+    public boolean removeResource(QualName name) {
+        throw Exceptions.unsupportedOp();
+    }
+
+    /** Selects a given property key to be displayed.
+     */
+    public void setPropertyKey(Key propertyKey) {
+        throw Exceptions.unsupportedOp();
+    }
 
     /**
      * Indicates if this tab is an editor tab.

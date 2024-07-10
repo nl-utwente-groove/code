@@ -454,6 +454,7 @@ public class Simulator implements SimulatorListener {
                     }
                     // select the error cell and switch to the panel
                     jGraph.setSelectionCells(entry.getElements());
+                    resourceTab.setPropertyKey(entry.getPropertyKey());
                 } else if (entry instanceof FormatError error) {
                     if (error.getNumbers().size() > 1) {
                         int line = error.getNumbers().get(0);

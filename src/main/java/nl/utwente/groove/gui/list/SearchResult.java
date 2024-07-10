@@ -136,5 +136,4 @@ public class SearchResult implements SelectableListEntry {
 
     /** The name of the resource on which the result occurs. May be {@code null}. */
     private final SortedSet<QualName> resourceNames = new TreeSet<>();
-
 }

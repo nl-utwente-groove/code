@@ -75,7 +75,7 @@ public class GraphProperties extends Properties {
                 try {
                     return key.check(graph, key.parse(v));
                 } catch (FormatException exc) {
-                    return exc.getErrors();
+                    return exc.getErrors().extend(key);
                 }
             };
             result.put(key, checker);
@@ -295,7 +295,9 @@ public class GraphProperties extends Properties {
         try {
             String.format(formatString, args);
         } catch (IllegalFormatException exc) {
-            result.add("Format '%s' expects more than %s parameters", formatString, maxPar, g);
+            result
+                .add("Rule has %s parameters, but format string '%s' expects more", maxPar,
+                     formatString, g);
         }
         return result;
     };

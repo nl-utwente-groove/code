@@ -42,6 +42,7 @@ import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.GraphMap;
+import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.NodeComparator;
 import nl.utwente.groove.gui.list.ListPanel.SelectableListEntry;
@@ -78,6 +79,8 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
             c.forEach(this::addContext);
         } else if (par instanceof FormatError e) {
             e.getArguments().forEach(this::addContext);
+        } else if (par instanceof Key k) {
+            this.key = k;
         } else if (par instanceof GraphState s) {
             this.state = s;
         } else if (par instanceof AspectGraph g) {
@@ -174,7 +177,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     }
 
     /** Returns the control view in which the error occurs. May be {@code null}. */
-    public final ControlModel getControl() {
+    public final @Nullable ControlModel getControl() {
         return this.control;
     }
 
@@ -182,7 +185,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     private ControlModel control;
 
     /** Returns the prolog view in which the error occurs. May be {@code null}. */
-    public final PrologModel getProlog() {
+    public final @Nullable PrologModel getProlog() {
         return this.prolog;
     }
 
@@ -190,7 +193,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     private PrologModel prolog;
 
     /** Returns the graph in which the error occurs. May be {@code null}. */
-    public final AspectGraph getGraph() {
+    public final @Nullable AspectGraph getGraph() {
         return this.graph;
     }
 
@@ -198,15 +201,21 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     private AspectGraph graph;
 
     /** Returns the state in which the error occurs. May be {@code null}. */
-    public final GraphState getState() {
+    public final @Nullable GraphState getState() {
         return this.state;
     }
 
-    /** The state in which the error occurs. */
+    /** The (possibly {@code null}) state in which the error occurs. */
     private GraphState state;
 
-    /** List of erroneous elements. */
-    private final Set<Element> elements = new LinkedHashSet<>();
+    /** Returns the property key in which the error occurs. May be {@code null}. */
+    @Override
+    public final @Nullable Key getPropertyKey() {
+        return this.key;
+    }
+
+    /** The (possibly {@code null}) key in which the error occurs. */
+    private Key key;
 
     /** Returns the list of elements in which the error occurs, together
      * with its projections. May be empty. */
@@ -228,6 +237,9 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
         }
         return result;
     }
+
+    /** List of erroneous elements. */
+    private final Set<Element> elements = new LinkedHashSet<>();
 
     /** Returns a list of numbers associated with the error; typically,
      * line and column numbers. May be empty. */
@@ -306,6 +318,9 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
         }
         if (this.state != null) {
             result.add(this.state);
+        }
+        if (this.key != null) {
+            result.add(this.key);
         }
         return result;
     }

@@ -52,6 +52,7 @@ import javax.swing.TransferHandler;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.undo.UndoableEdit;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelEvent.GraphModelChange;
 import org.jgraph.event.GraphModelListener;
@@ -73,6 +74,7 @@ import nl.utwente.groove.grammar.model.NamedResourceModel;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphProperties;
+import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.LongToolTipAdapter;
@@ -324,13 +326,12 @@ final public class GraphEditorTab extends ResourceTab
     }
 
     @Override
-    public boolean setResource(QualName name) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean removeResource(QualName name) {
-        throw new UnsupportedOperationException();
+    public void setPropertyKey(Key propertyKey) {
+        var upperInfoPanel = getUpperInfoPanel();
+        if (upperInfoPanel != null && propertyKey != null) {
+            upperInfoPanel.setSelectedComponent(getPropertiesScrollPanel());
+            getPropertiesPanel().setSelected(propertyKey);
+        }
     }
 
     @Override
@@ -455,13 +456,10 @@ final public class GraphEditorTab extends ResourceTab
             this.upperInfoPanel = result = new JTabbedPane();
             result.add(getLabelPanel());
             if (getResourceKind().hasProperties()) {
-                JComponent propertiesPanel = getPropertiesPanel();
-                JScrollPane scrollPanel = new JScrollPane(propertiesPanel);
-                scrollPanel.setName(propertiesPanel.getName());
-                scrollPanel.getViewport().setBackground(propertiesPanel.getBackground());
-                result.add(scrollPanel);
-                int index = result.indexOfComponent(scrollPanel);
-                this.propertiesHeader.setText(scrollPanel.getName());
+                var propertiesPanel = getPropertiesScrollPanel();
+                result.add(propertiesPanel);
+                int index = result.indexOfComponent(propertiesPanel);
+                this.propertiesHeader.setText(propertiesPanel.getName());
                 result.setTitleAt(index, null);
                 result.setTabComponentAt(index, this.propertiesHeader);
                 updatePropertiesNotable();
@@ -503,7 +501,7 @@ final public class GraphEditorTab extends ResourceTab
 
     private TypeTree labelTree;
 
-    private PropertiesTable getPropertiesPanel() {
+    private @NonNull PropertiesTable getPropertiesPanel() {
         PropertiesTable result = this.propertiesPanel;
         if (result == null) {
             final var panel = new PropertiesTable(GraphProperties.Key.class, true);
@@ -525,6 +523,20 @@ final public class GraphEditorTab extends ResourceTab
 
     /** Properties panel of this tab. */
     private PropertiesTable propertiesPanel;
+
+    private @NonNull JScrollPane getPropertiesScrollPanel() {
+        var result = this.propertiesScrollPanel;
+        if (result == null) {
+            var propertiesPanel = getPropertiesPanel();
+            this.propertiesScrollPanel = result = new JScrollPane(propertiesPanel);
+            result.setName(propertiesPanel.getName());
+            result.getViewport().setBackground(propertiesPanel.getBackground());
+        }
+        return result;
+    }
+
+    private JScrollPane propertiesScrollPanel;
+
     /** Flag indicating if table changes should be propagated to the graph properties. */
     private boolean listenToPropertiesPanel;
 

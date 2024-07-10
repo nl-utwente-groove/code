@@ -15,6 +15,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.jgraph.JGraph;
 import org.jgraph.graph.DefaultGraphModel.GraphModelEdit;
@@ -24,6 +25,7 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.graph.GraphProperties;
+import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.dialog.PropertiesTable;
@@ -120,19 +122,16 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     }
 
     @Override
-    protected JComponent getUpperInfoPanel() {
+    protected JTabbedPane getUpperInfoPanel() {
         JTabbedPane result = this.upperInfoPanel;
         if (result == null) {
             this.upperInfoPanel = result = new JTabbedPane();
             result.add(getLabelPanel());
             if (getResourceKind().hasProperties()) {
-                JComponent propertiesPanel = getPropertiesPanel();
-                JScrollPane scrollPanel = new JScrollPane(propertiesPanel);
-                scrollPanel.setName(propertiesPanel.getName());
-                scrollPanel.getViewport().setBackground(propertiesPanel.getBackground());
-                result.add(scrollPanel);
-                int index = result.indexOfComponent(scrollPanel);
-                this.propertiesHeader.setText(scrollPanel.getName());
+                var propertiesPanel = getPropertiesScrollPanel();
+                result.add(propertiesPanel);
+                int index = result.indexOfComponent(propertiesPanel);
+                this.propertiesHeader.setText(propertiesPanel.getName());
                 result.setTitleAt(index, null);
                 result.setTabComponentAt(index, this.propertiesHeader);
                 updatePropertiesNotable();
@@ -174,6 +173,19 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
 
     /** Properties panel of this tab. */
     private PropertiesTable propertiesPanel;
+
+    private @NonNull JScrollPane getPropertiesScrollPanel() {
+        var result = this.propertiesScrollPanel;
+        if (result == null) {
+            var propertiesPanel = getPropertiesPanel();
+            this.propertiesScrollPanel = result = new JScrollPane(propertiesPanel);
+            result.setName(propertiesPanel.getName());
+            result.getViewport().setBackground(propertiesPanel.getBackground());
+        }
+        return result;
+    }
+
+    private JScrollPane propertiesScrollPanel;
 
     /** Tab component of the properties tab in the upper info panel. */
     private final JLabel propertiesHeader = new JLabel();
@@ -290,6 +302,15 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
             setResource(null);
         }
         return result;
+    }
+
+    @Override
+    public void setPropertyKey(Key propertyKey) {
+        var upperInfoPanel = getUpperInfoPanel();
+        if (upperInfoPanel != null && propertyKey != null) {
+            upperInfoPanel.setSelectedComponent(getPropertiesScrollPanel());
+            getPropertiesPanel().setSelected(propertyKey);
+        }
     }
 
     /**

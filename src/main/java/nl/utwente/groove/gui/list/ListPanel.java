@@ -35,9 +35,13 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.graph.Element;
+import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.look.Values.Mode;
 import nl.utwente.groove.io.HTMLConverter;
@@ -205,13 +209,18 @@ public abstract class ListPanel extends JPanel {
     /** Interface for entries of the list. */
     public interface SelectableListEntry {
         /** Returns the resource kind for which this entry occurs. */
-        public ResourceKind getResourceKind();
+        public @Nullable ResourceKind getResourceKind();
 
         /** Returns the resource name for which this entry occurs. */
-        public SortedSet<QualName> getResourceNames();
+        public @NonNull SortedSet<QualName> getResourceNames();
 
         /** Returns the list of elements in which the entry occurs. May be empty. */
-        public Collection<Element> getElements();
+        public @NonNull Collection<Element> getElements();
+
+        /** Returns the property key in which the entry occurs. May be {@code null}. */
+        default public @Nullable Key getPropertyKey() {
+            return null;
+        }
     }
 
     /** Name of a list selection event. */
