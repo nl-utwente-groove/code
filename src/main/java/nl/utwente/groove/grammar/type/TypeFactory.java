@@ -30,7 +30,10 @@ public class TypeFactory extends ElementFactory<TypeNode,TypeEdge> {
         assert typeGraph.isEmpty();
         this.typeGraph = typeGraph;
         for (Sort sig : Sort.values()) {
-            this.dataTypeMap.put(sig, createNode(TypeLabel.getLabel(sig)));
+            if (sig != Sort.USER) {
+                // user data type just has operations, no values
+                this.dataTypeMap.put(sig, createNode(TypeLabel.getLabel(sig)));
+            }
         }
     }
 

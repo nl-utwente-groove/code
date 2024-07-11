@@ -92,9 +92,6 @@ public class GraphConverter {
         // add type edges
         for (TypeEdge edge : type.edgeSet()) {
             StringBuilder text = new StringBuilder();
-            if (edge.label().getRole() == EdgeRole.FLAG) {
-                text.append(EdgeRole.FLAG.getPrefix());
-            }
             if (edge.isAbstract()) {
                 text.append(ABSTRACT.getPrefix());
             }

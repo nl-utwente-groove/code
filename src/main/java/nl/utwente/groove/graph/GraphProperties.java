@@ -285,7 +285,7 @@ public class GraphProperties extends Properties {
                 ? null
                 : a.getContent())
             .map(c -> c instanceof IntegerContent i
-                ? i.get()
+                ? i.get() + 1
                 : 0)
             .reduce((i1, i2) -> Math.max(i1, i2))
             .orElse(0);
@@ -295,7 +295,9 @@ public class GraphProperties extends Properties {
         try {
             String.format(formatString, args);
         } catch (IllegalFormatException exc) {
-            result.add("Rule has %s parameters, but format string '%s' expects more", maxPar, formatString, g);
+            result
+                .add("Rule has %s parameters, but format string '%s' expects more", maxPar,
+                     formatString, g);
         }
         return result;
     };
