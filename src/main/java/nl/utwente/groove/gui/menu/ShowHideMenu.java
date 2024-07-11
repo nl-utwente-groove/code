@@ -144,7 +144,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
         menu.add(createAllAction(ONLY_MODE));
         menu.add(createSelectedAction(ONLY_MODE));
         menu.add(createShowRegExprAction(ONLY_MODE));
-        menu.add(createContextAction(ADD_MODE));
+        menu.add(createContextAction(ONLY_MODE));
         if (this.jgraph instanceof LTSJGraph) {
             menu.add(createTraceAction(ONLY_MODE));
         }
@@ -298,8 +298,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
         public void actionPerformed(ActionEvent e) {
             Set<JCell<G>> hiddenCells = new HashSet<>();
             Set<JCell<G>> shownCells = new HashSet<>();
-            for (JCell<G> jCell : this.jgraph.getModel()
-                .getRoots()) {
+            for (JCell<G> jCell : this.jgraph.getModel().getRoots()) {
                 if (isHiding(jCell)) {
                     hiddenCells.add(jCell);
                 } else if (isShowing(jCell)) {
@@ -470,8 +469,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
                 if (selectedCellArray.length == 0) {
                     result = !sourceVertex.isGrayedOut() || !targetVertex.isGrayedOut();
                 } else {
-                    Set<Object> selectedCells =
-                        new HashSet<>(Arrays.asList(selectedCellArray));
+                    Set<Object> selectedCells = new HashSet<>(Arrays.asList(selectedCellArray));
                     result = selectedCells.contains(sourceVertex)
                         || selectedCells.contains(targetVertex);
                 }
@@ -494,13 +492,12 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
          * @throws IllegalArgumentException if <tt>cell</tt> does not give rise
          *         to a valid label, i.e., <tt>getLabel(cell) == null</tt>
          */
-        protected LabelAction(JGraph<G> jgraph, int showMode, Label label)
-            throws IllegalArgumentException {
+        protected LabelAction(JGraph<G> jgraph, int showMode,
+                              Label label) throws IllegalArgumentException {
             super(jgraph, showMode, "");
-            putValue(NAME, label.text()
-                .length() == 0 ? Options.EMPTY_LABEL_TEXT
-                    : HTMLConverter.HTML_TAG.on(label.toLine()
-                        .toHTMLString()));
+            putValue(NAME, label.text().length() == 0
+                ? Options.EMPTY_LABEL_TEXT
+                : HTMLConverter.HTML_TAG.on(label.toLine().toHTMLString()));
             this.label = label;
         }
 
@@ -512,8 +509,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
         protected boolean isInvolved(JCell<G> cell) {
             // return getLabel(cell) != null && getLabel(cell).equals(label) ==
             // include;
-            return cell.getKeys()
-                .contains(this.label);
+            return cell.getKeys().contains(this.label);
         }
 
         /**
@@ -541,8 +537,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
 
         @Override
         public void actionPerformed(ActionEvent evt) {
-            Graph graph = this.jgraph.getModel()
-                .getGraph();
+            Graph graph = this.jgraph.getModel().getGraph();
             String exprText = exprDialog.showDialog(null);
             if (exprText != null) {
                 try {
@@ -560,8 +555,9 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
                     }
                     super.actionPerformed(evt);
                 } catch (FormatException exc) {
-                    JOptionPane.showMessageDialog(null,
-                        "Error in regular expression '" + exprText + "': " + exc.getMessage());
+                    JOptionPane
+                        .showMessageDialog(null, "Error in regular expression '" + exprText + "': "
+                            + exc.getMessage());
                 }
             }
         }
@@ -588,8 +584,8 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
          */
         private RelationCalculator calculator;
 
-        private static FormulaDialog exprDialog =
-            FormulaDialog.createStringDialog("Regular Expression: ");
+        private static FormulaDialog exprDialog
+            = FormulaDialog.createStringDialog("Regular Expression: ");
     }
 
     /**
@@ -617,8 +613,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
          */
         @Override
         protected boolean isInvolved(JCell<G> jCell) {
-            return this.jgraph.getSelectionModel()
-                .isCellSelected(jCell);
+            return this.jgraph.getSelectionModel().isCellSelected(jCell);
         }
     }
 
@@ -751,8 +746,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
             if (isIncluded) {
                 // now (re-)fill the menu
                 removeAll();
-                for (Label labelAction : getJGraph().getLabelTree()
-                    .getLabels()) {
+                for (Label labelAction : getJGraph().getLabelTree().getLabels()) {
                     add(new LabelAction<>(getJGraph(), this.showMode, labelAction));
                 }
             }
