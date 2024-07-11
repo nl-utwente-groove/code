@@ -72,13 +72,17 @@ public interface JCell<G extends Graph> extends GraphCell, Serializable {
     public @Nullable Label getKey(Edge edge);
 
     /** Indicates if this cell is currently grayed-out. */
-    boolean isGrayedOut();
+    default boolean isGrayedOut() {
+        return getLooks().contains(Look.GRAYED_OUT);
+    }
 
     /**
      * Sets this cell to grayed-out.
      * @return {@code true} if the grayed-out status changed as a result of this call
      */
-    boolean setGrayedOut(boolean gray);
+    default boolean setGrayedOut(boolean gray) {
+        return setLook(Look.GRAYED_OUT, gray);
+    }
 
     /**
      * Indicates if there are errors in this JCell;

@@ -98,7 +98,11 @@ public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JMo
     @Override
     public void initialise() {
         this.edges = null;
+        boolean grayedOut = isGrayedOut();
         this.looks = null;
+        if (grayedOut) {
+            setGrayedOut(true);
+        }
         VisualMap oldVisuals = this.visuals;
         this.visuals = new VisualMap();
         if (oldVisuals != null) {
@@ -245,16 +249,6 @@ public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JMo
 
     /** The set of (refreshable) visual keys to be refreshed. */
     private Set<VisualKey> staleKeys;
-
-    @Override
-    final public boolean isGrayedOut() {
-        return getLooks().contains(Look.GRAYED_OUT);
-    }
-
-    @Override
-    final public boolean setGrayedOut(boolean grayedOut) {
-        return setLook(Look.GRAYED_OUT, grayedOut);
-    }
 
     @Override
     public boolean hasErrors() {
