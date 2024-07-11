@@ -475,14 +475,14 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
                 }
             }
             JGraph.this.modelRefreshing = true;
-            Object[] visibleArray = visibleCells.toArray();
-            Object[] hiddenArray = hiddenCells.toArray();
-            // unselect all hidden cells
-            getSelectionModel().removeSelectionCells(hiddenArray);
+            // unselect all hidden and grayed-out cells
+            var unselectedCells = new HashSet<>(hiddenCells);
+            visibleCells.stream().filter(JCell::isGrayedOut).forEach(unselectedCells::add);
+            getSelectionModel().removeSelectionCells(unselectedCells.toArray());
             // make sure refreshed cells are not selected
             boolean selectsInsertedCells = cache.isSelectsLocalInsertedCells();
             cache.setSelectsLocalInsertedCells(false);
-            cache.setVisible(visibleArray, hiddenArray);
+            cache.setVisible(visibleCells.toArray(), hiddenCells.toArray());
             cache.setSelectsLocalInsertedCells(selectsInsertedCells);
             if (getSelectionCount() > 0) {
                 Rectangle2D scope = (Rectangle2D) getCellBounds(getSelectionCells()).clone();
