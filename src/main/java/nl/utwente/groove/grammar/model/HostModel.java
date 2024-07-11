@@ -228,8 +228,6 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         }
         // transfer graph info such as layout from model to resource
         GraphInfo.transferProperties(normalSource, result, elementMap);
-        result.setErrors(errors.wrap(elementMap));
-        result.setFixed();
         // for the result value we need a map from the source to the host graph,
         // whereas elementMap goes from the normalised source
         if (normalSource instanceof NormalAspectGraph ng) {
@@ -248,6 +246,8 @@ public class HostModel extends GraphBasedModel<HostGraph> {
             }
             elementMap = sourceMap;
         }
+        result.setErrors(errors.wrap(elementMap));
+        result.setFixed();
         return new Pair<>(result, elementMap);
     }
 

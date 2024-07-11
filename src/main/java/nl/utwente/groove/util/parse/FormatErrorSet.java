@@ -199,7 +199,7 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
      * The method returns this {@link FormatErrorSet} for chaining.
      * @see #wrap(GraphMap)
      * @see #unwrap(Map)
-     * @param map mapping from contextual {@link Element}s to error {@link Element}s
+     * @param map mapping from error {@link Element}s to contextual {@link Element}s
      */
     public FormatErrorSet unwrap(GraphMap map) {
         return unwrap(map.nodeMap()).unwrap(map.edgeMap());

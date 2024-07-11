@@ -593,8 +593,10 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             }
         }
         if (onNode) {
-            Sort type;
-            if (!isLoop()) {
+            Sort type = null;
+            if (isLoop()) {
+                type = getSort();
+            } else if (target().hasSort()) {
                 type = target().getSort();
                 assert type != null;
                 switch (getGraphRole()) {
@@ -620,8 +622,6 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 default:
                     throw Exceptions.UNREACHABLE;
                 }
-            } else {
-                type = getSort();
             }
             if (type != null) {
                 var separator = hasGraphRole(RULE)

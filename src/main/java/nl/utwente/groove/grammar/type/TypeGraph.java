@@ -588,7 +588,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                 if (!sourceType.isTopType()) {
                     errors
                         .add("%s-node has unknown %s-%s to %s", sourceType, edgeLabel,
-                             edge.getRole().getDescription(false), targetType, edge);
+                             edge.getRole().getDescription(false), targetType, sourceImage, edge);
                 }
             } else {
                 result.putEdge(edge, ruleFactory.createEdge(sourceImage, edgeLabel, targetImage));
@@ -923,7 +923,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                     errors
                         .add("%s-node has unknown %s-%s to %s", sourceType, edgeType.text(),
                              edgeType.getRole().getDescription(false), targetType, edge.source(),
-                             edge);
+                             edge, sourceImage);
                 }
             } else if (typeEdge.isAbstract()) {
                 errors
