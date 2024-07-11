@@ -252,7 +252,9 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
             return EnumSet.of(Look.NODIFIED);
         } else if (getNode().hasGraphRole(GraphRole.TYPE)
             && !getAspects().containsKey(Category.SORT)) {
-            return EnumSet.of(Look.TYPE);
+            return getNode().has(REMARK)
+                ? EnumSet.of(Look.TYPE_REMARK)
+                : EnumSet.of(Look.TYPE);
         } else {
             return Look.getLooksFor(getAspects());
         }

@@ -116,7 +116,15 @@ public enum Look {
             add(VisualKey.FOREGROUND, Values.REMARK_FOREGROUND);
             add(VisualKey.BACKGROUND, Values.REMARK_BACKGROUND);
         }
-
+    },
+    /** Remark node and edge look in a type graph. */
+    TYPE_REMARK(true, BASIC) {
+        @Override
+        void init() {
+            add(VisualKey.FOREGROUND, Values.REMARK_FOREGROUND);
+            add(VisualKey.BACKGROUND, Values.REMARK_BACKGROUND);
+            add(VisualKey.NODE_SHAPE, NodeShape.RECTANGLE);
+        }
     },
     /** Embargo node and edge look. */
     EMBARGO(true, BASIC) {
