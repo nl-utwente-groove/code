@@ -17,6 +17,8 @@ package nl.utwente.groove.gui;
 import java.awt.Frame;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import javax.swing.JFrame;
@@ -27,6 +29,7 @@ import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.display.LTSDisplay;
 import nl.utwente.groove.io.GrooveFileChooser;
 import nl.utwente.groove.io.store.SystemStore;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Class that saves some basic information on the status of the Simulator.
@@ -35,10 +38,18 @@ import nl.utwente.groove.io.store.SystemStore;
 public class UserSettings {
     /** Reads and applies previously stored settings. */
     public static void applyUserSettings(Simulator simulator) {
+        if (started) {
+            throw Exceptions.illegalState("User settings initialised multiple times");
+        }
+        started = true;
         applyFrameSettings(simulator);
         applyLocationSettings(simulator);
         applyDisplaySettings(simulator);
+        persistables.forEach(p -> p.apply());
     }
+
+    /** Flag indicating that {@link #applyUserSettings(Simulator)} has been invoked. */
+    static private boolean started;
 
     /** Reads and applies previously stored settings. */
     private static void applyFrameSettings(Simulator simulator) {
@@ -145,10 +156,14 @@ public class UserSettings {
 
     /** Synchronises saved settings with the current ones. */
     public static void syncSettings(Simulator simulator) {
+        if (!started) {
+            throw Exceptions.illegalState("User settings not initialised");
+        }
         syncFrameSettings(simulator);
         syncLocationSettings(simulator);
         syncDisplaySettings(simulator);
         syncFileChoosers();
+        persistables.forEach(p -> p.sync());
     }
 
     /** Synchronises saved settings with the current ones. */
@@ -213,4 +228,69 @@ public class UserSettings {
     static private final String SIM_MAX_KEY = "Simulator maximized";
     static private final String SIM_WIDTH_KEY = "Simulator width";
     static private final String STATE_BOUND_KEY = "Maximum state displayed";
+
+    /**
+     * Registers a persistable object.
+     * This will result in {@link Persistable#apply()} being called upon the object
+     * at initialisation, and {@link Persistable#sync()} upon exit.
+     */
+    static public void register(Persistable persistable) {
+        persistables.add(persistable);
+        if (started) {
+            persistable.apply();
+        }
+    }
+
+    /** List of registered persistables. */
+    static private List<Persistable> persistables = new ArrayList<>();
+
+    /** Interface for classes with persistable information. */
+    static public interface Persistable {
+        /** Callback method to read and apply user preferences. */
+        default public void apply() {
+            // empty by default
+        }
+
+        /** Callback method to save user preferences. */
+        public void sync();
+
+        /** Retrieves the value for a given entry. */
+        default public String getPref(Entry entry) {
+            return getPrefs().get(entry.key(), entry.defaultValue());
+        }
+
+        /** Retrieves the value for a given entry, parsed as a {@link Boolean}. */
+        default public Boolean getBoolPref(Entry entry) {
+            return Boolean.parseBoolean(getPref(entry));
+        }
+
+        /** Inserts a value for a given entry into a given preferences map. */
+        default public void putPref(Entry entry, String value) {
+            getPrefs().put(entry.key(), value);
+        }
+
+        /** Inserts an object-typed value for a given entry into a given preferences map. */
+        default public void putPref(Entry entry, Object value) {
+            getPrefs()
+                .put(entry.key(), value == null
+                    ? ""
+                    : "" + value);
+        }
+
+        /** Returns the preferences object associated with this persistable. */
+        public Preferences getPrefs();
+
+        /** User settings entry. */
+        static public record Entry(String key, String defaultValue) {
+            /** Constructs an entry from a given key and object-typed default value.
+             * The actual default value is obtained from the object by prepending it with the empty string.
+             */
+            public Entry(String key, Object defaultValue) {
+                this(key, defaultValue == null
+                    ? ""
+                    : "" + defaultValue);
+            }
+            // empty
+        }
+    }
 }

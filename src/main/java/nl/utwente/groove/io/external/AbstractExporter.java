@@ -24,6 +24,8 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.io.FileType;
@@ -72,12 +74,12 @@ public abstract class AbstractExporter implements Exporter {
     }
 
     /** Returns the file type registered for a given resource kind, if any. */
-    protected final FileType getFileType(ResourceKind kind) {
+    protected final @Nullable FileType getFileType(ResourceKind kind) {
         return this.fileTypeMap.get(kind);
     }
 
     /** Returns the resource kind associated with a given file type, if any. */
-    protected final ResourceKind getResourceKind(FileType fileType) {
+    protected final @Nullable ResourceKind getResourceKind(FileType fileType) {
         return this.resourceKindMap.get(fileType);
     }
 
@@ -118,7 +120,9 @@ public abstract class AbstractExporter implements Exporter {
             if (exportable.containsKind(Kind.RESOURCE)
                 && getFormatKinds().contains(Kind.RESOURCE)) {
                 // check if the specific resource kind is supported
-                FileType fileType = getFileType(exportable.getModel().getKind());
+                var model = exportable.getModel();
+                assert model != null;
+                FileType fileType = getFileType(model.getKind());
                 if (fileType != null) {
                     result.add(fileType);
                 }

@@ -217,7 +217,10 @@ public class GrooveFileChooser extends JFileChooser {
 
     /** Returns the new preference values to be persisted upon quitting. */
     public String[] newPrefs() {
-        return new String[] {getCurrentDirectory().getAbsolutePath(), getFileType().toString()};
+        var fileType = getFileType();
+        return new String[] {getCurrentDirectory().getAbsolutePath(), fileType == null
+            ? ""
+            : fileType.toString()};
     }
 
     /** Constructs a String representation for a file chooser. */

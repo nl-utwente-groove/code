@@ -266,31 +266,32 @@ public class GxlUtil {
 
     public static String getElemType(TypedElementType elem) {
         String type = null;
-        Map<QName,String> attrMap = elem.getType().getOtherAttributes();
-        for (QName attr : attrMap.keySet()) {
-            if (attr.getPrefix().equals("xlink") && attr.getLocalPart().equals("href")) {
-                if (attrMap.get(attr).startsWith(g_gxlTypeGraphURI)) {
-                    //Found a type attribute
-                    String fullType = attrMap.get(attr);
-                    if (fullType.startsWith(g_gxlTypeGraphURI + "#")) {
-                        type = fullType.substring(g_gxlTypeGraphURI.length() + 1);
+        if (elem.getType() != null) {
+            Map<QName,String> attrMap = elem.getType().getOtherAttributes();
+            for (QName attr : attrMap.keySet()) {
+                if (attr.getPrefix().equals("xlink") && attr.getLocalPart().equals("href")) {
+                    if (attrMap.get(attr).startsWith(g_gxlTypeGraphURI)) {
+                        //Found a type attribute
+                        String fullType = attrMap.get(attr);
+                        if (fullType.startsWith(g_gxlTypeGraphURI + "#")) {
+                            type = fullType.substring(g_gxlTypeGraphURI.length() + 1);
+                            break;
+                        }
+                    } else if (attrMap.get(attr).startsWith("#")) {
+                        //Found a local type attribute
+                        String fullType = attrMap.get(attr);
+                        type = fullType.substring(1);
                         break;
-                    }
-                } else if (attrMap.get(attr).startsWith("#")) {
-                    //Found a local type attribute
-                    String fullType = attrMap.get(attr);
-                    type = fullType.substring(1);
-                    break;
-                } else {
-                    //TODO: paths should be resolved, but for now just assume the schema is provided via the TypeModel system
-                    String fullType = attrMap.get(attr);
-                    if (fullType.indexOf("#") != -1) {
-                        type = fullType.substring(fullType.indexOf("#") + 1);
+                    } else {
+                        //TODO: paths should be resolved, but for now just assume the schema is provided via the TypeModel system
+                        String fullType = attrMap.get(attr);
+                        if (fullType.indexOf("#") != -1) {
+                            type = fullType.substring(fullType.indexOf("#") + 1);
+                        }
                     }
                 }
             }
         }
-
         return type;
     }
 

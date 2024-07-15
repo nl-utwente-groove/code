@@ -27,7 +27,6 @@ import java.util.Set;
 
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.io.external.format.EcorePorter;
-import nl.utwente.groove.io.external.format.GxlPorter;
 import nl.utwente.groove.io.graph.AutIO;
 import nl.utwente.groove.io.graph.ColIO;
 import nl.utwente.groove.io.graph.ConceptualIO;
@@ -80,10 +79,8 @@ public enum FileType {
     COL("DIMACS graph format", ".col"),
     /** Comma-separated value files. */
     CSV("Comma-separated values", ".csv"),
-    /** GraphViz .dot type graph files. */
-    DOT_META("GraphViz type graphs", ".viz"),
-    /** GraphViz .dot instance graph files. */
-    DOT_MODEL("GraphViz instance graphs", ".viz"),
+    /**  DOT (GraphViz) files. */
+    DOT("GraphViz .dot files", ".dot"),
     /** ECore meta-models. */
     ECORE_META("ECore meta-models", ".ecore"),
     /** ECore instance models. */
@@ -313,10 +310,6 @@ public enum FileType {
             return new AutIO();
         case COL:
             return new ColIO();
-        case GXL_META:
-            return new ConceptualIO(GxlPorter.instance(), GXL_META, GraphRole.TYPE);
-        case GXL_MODEL:
-            return new ConceptualIO(GxlPorter.instance(), GXL_META, GraphRole.HOST);
         case ECORE_META:
             return new ConceptualIO(EcorePorter.instance(), GXL_META, GraphRole.TYPE);
         case ECORE_MODEL:

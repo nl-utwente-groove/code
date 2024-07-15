@@ -33,7 +33,8 @@ import nl.utwente.groove.io.external.Porter.Kind;
 import nl.utwente.groove.io.external.format.AutPorter;
 import nl.utwente.groove.io.external.format.EcorePorter;
 import nl.utwente.groove.io.external.format.FsmExporter;
-import nl.utwente.groove.io.external.format.GxlPorter;
+import nl.utwente.groove.io.external.format.GraphExportListener.DotListener;
+import nl.utwente.groove.io.external.format.ListenerExporter;
 import nl.utwente.groove.io.external.format.NativePorter;
 import nl.utwente.groove.io.external.format.RasterExporter;
 import nl.utwente.groove.io.external.format.TikzExporter;
@@ -64,10 +65,11 @@ public class Exporters {
         assert !exporters.isEmpty();
         // choose a file and exporter
         GrooveFileChooser chooser = GrooveFileChooser.getInstance(exporters.keySet());
-        chooser.setSelectedFile(exportable.getQualName()
-            .toFile());
-        File selectedFile =
-            SaveDialog.show(chooser, simulator == null ? null : simulator.getFrame(), null);
+        chooser.setSelectedFile(exportable.getQualName().toFile());
+        File selectedFile = SaveDialog
+            .show(chooser, simulator == null
+                ? null
+                : simulator.getFrame(), null);
         // now save, if so required
         if (selectedFile != null) {
             try {
@@ -77,9 +79,9 @@ public class Exporters {
                 e.setSimulator(simulator);
                 e.doExport(exportable, selectedFile, fileType);
             } catch (PortException e) {
-                showErrorDialog(simulator == null ? null : simulator.getFrame(),
-                    e,
-                    "Error while exporting to " + selectedFile);
+                showErrorDialog(simulator == null
+                    ? null
+                    : simulator.getFrame(), e, "Error while exporting to " + selectedFile);
             }
         }
     }
@@ -89,7 +91,7 @@ public class Exporters {
      * exception.
      */
     private static void showErrorDialog(Component parent, Throwable exc, String message,
-        Object... args) {
+                                        Object... args) {
         new ErrorDialog(parent, String.format(message, args), exc).setVisible(true);
     }
 
@@ -100,8 +102,7 @@ public class Exporters {
     static public Pair<FileType,Exporter> getAcceptingFormat(String filename) {
         Pair<FileType,Exporter> result = null;
         outer: for (Exporter exporter : getExporters()) {
-            if (!exporter.getFormatKinds()
-                .contains(Kind.GRAPH)) {
+            if (!exporter.getFormatKinds().contains(Kind.GRAPH)) {
                 continue;
             }
             for (FileType fileType : exporter.getSupportedFileTypes()) {
@@ -137,7 +138,7 @@ public class Exporters {
         result.add(FsmExporter.getInstance());
         result.add(TikzExporter.getInstance());
         result.add(EcorePorter.instance());
-        result.add(GxlPorter.instance());
+        result.add(ListenerExporter.instance(DotListener.instance()));
         return result;
     }
 
@@ -157,8 +158,8 @@ public class Exporters {
         for (Exporter exporter : getExporters()) {
             for (FileType fileType : exporter.getSupportedFileTypes()) {
                 Exporter oldValue = result.put(fileType, exporter);
-                assert oldValue == null : String.format("Duplicate exporter for file type: %s",
-                    fileType.name());
+                assert oldValue == null : String
+                    .format("Duplicate exporter for file type: %s", fileType.name());
             }
         }
         return Collections.unmodifiableMap(result);

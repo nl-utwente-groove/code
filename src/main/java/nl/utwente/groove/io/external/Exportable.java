@@ -18,6 +18,9 @@ package nl.utwente.groove.io.external;
 
 import java.util.EnumSet;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GraphBasedModel;
 import nl.utwente.groove.grammar.model.NamedResourceModel;
@@ -35,13 +38,8 @@ import nl.utwente.groove.io.external.Porter.Kind;
  * @author Harold Bruijntjes
  * @version $Revision$
  */
+@NonNullByDefault
 public class Exportable {
-    private final EnumSet<Porter.Kind> porterKinds;
-    private final QualName name;
-    private final Graph graph;
-    private final JGraph<?> jGraph;
-    private final ResourceModel<?> model;
-
     /** Constructs an exportable for a given {@link Graph}. */
     public Exportable(Graph graph) {
         this.porterKinds = EnumSet.of(Kind.GRAPH);
@@ -55,21 +53,21 @@ public class Exportable {
     public Exportable(JGraph<?> jGraph) {
         this.porterKinds = EnumSet.of(Kind.GRAPH, Kind.JGRAPH);
         this.jGraph = jGraph;
-        this.graph = jGraph.getModel()
-            .getGraph();
-        this.model = jGraph instanceof AspectJGraph ag ? ag.getModel()
-            .getResourceModel() : null;
+        var graph = jGraph.getModel().getGraph();
+        this.graph = graph;
+        this.model = jGraph instanceof AspectJGraph ag
+            ? ag.getModel().getResourceModel()
+            : null;
         if (this.model != null) {
             this.porterKinds.add(Kind.RESOURCE);
         }
-        this.name = QualName.parse(this.graph.getName());
+        this.name = QualName.parse(graph.getName());
     }
 
     /** Constructs an exportable for a given {@link ResourceModel}. */
     public Exportable(NamedResourceModel<?> model) {
         this.porterKinds = EnumSet.of(Kind.RESOURCE);
-        if (model.getKind()
-            .isGraphBased()) {
+        if (model.getKind().isGraphBased()) {
             this.porterKinds.add(Kind.GRAPH);
             this.graph = ((GraphBasedModel<?>) model).getSource();
         } else {
@@ -86,8 +84,7 @@ public class Exportable {
         this.porterKinds = EnumSet.of(Kind.GRAPH, Kind.JGRAPH, Kind.RESOURCE);
         this.name = model.getQualName();
         this.jGraph = jGraph;
-        this.graph = jGraph.getModel()
-            .getGraph();
+        this.graph = jGraph.getModel().getGraph();
         this.model = model;
     }
 
@@ -96,34 +93,46 @@ public class Exportable {
         return this.porterKinds.contains(kind);
     }
 
+    private final EnumSet<Porter.Kind> porterKinds;
+
     /** Returns the name of the object wrapped by this exportable. */
     public QualName getQualName() {
         return this.name;
     }
 
+    private final QualName name;
+
     /** Returns the {@link GGraph} wrapped by this exportable, if any. */
-    public Graph getGraph() {
+    public @Nullable Graph getGraph() {
         return this.graph;
     }
 
+    private final @Nullable Graph graph;
+
     /** Returns the {@link JGraph} wrapped by this exportable, if any. */
-    public JGraph<?> getJGraph() {
+    public @Nullable JGraph<?> getJGraph() {
         return this.jGraph;
     }
 
+    private final @Nullable JGraph<?> jGraph;
+
     /** Returns the resource kind of the model wrapped by this exportable, if any. */
-    public ResourceKind getKind() {
+    public @Nullable ResourceKind getKind() {
         ResourceKind result = null;
-        if (getModel() != null) {
-            result = getModel().getKind();
-        } else if (getGraph() != null) {
-            result = ResourceKind.toResource(getGraph().getRole());
+        var model = getModel();
+        var graph = getGraph();
+        if (model != null) {
+            result = model.getKind();
+        } else if (graph != null) {
+            result = ResourceKind.toResource(graph.getRole());
         }
         return result;
     }
 
     /** Returns the {@link ResourceModel} wrapped by this exportable, if any. */
-    public ResourceModel<?> getModel() {
+    public @Nullable ResourceModel<?> getModel() {
         return this.model;
     }
+
+    private final @Nullable ResourceModel<?> model;
 }

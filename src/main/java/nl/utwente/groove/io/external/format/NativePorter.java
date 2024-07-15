@@ -61,14 +61,7 @@ public class NativePorter extends AbstractExporter implements Importer {
     @Override
     public Set<FileType> getFileTypes(Exportable exportable) {
         Set<FileType> result = EnumSet.noneOf(FileType.class);
-        ResourceKind resourceKind = null;
-        if (exportable.containsKind(Kind.GRAPH)) {
-            resourceKind = ResourceKind.toResource(exportable.getGraph()
-                .getRole());
-        } else if (exportable.containsKind(Kind.RESOURCE)) {
-            resourceKind = exportable.getModel()
-                .getKind();
-        }
+        ResourceKind resourceKind = exportable.getKind();
         if (resourceKind == ResourceKind.HOST) {
             // host graphs can be exported to any known graph resource type
             result.addAll(FileType.GRAPHS.getSubTypes());
@@ -82,16 +75,19 @@ public class NativePorter extends AbstractExporter implements Importer {
     }
 
     @Override
-    public Set<Resource> doImport(File file, FileType fileType, GrammarModel grammar)
-        throws PortException {
+    public Set<Resource> doImport(File file, FileType fileType,
+                                  GrammarModel grammar) throws PortException {
         Resource result;
         try {
             QualName name = QualName.name(fileType.stripExtension(file.getName()));
             ResourceKind kind = getResourceKind(fileType);
-            if (kind.isGraphBased()) {
+            if (kind == null) {
+                throw new PortException(String
+                    .format("'%s' is not a grammar resource and hence cannot be imported from %s",
+                            name, fileType.getExtension()));
+            } else if (kind.isGraphBased()) {
                 // read graph from file
-                AttrGraph xmlGraph = GxlIO.instance()
-                    .loadGraph(file);
+                AttrGraph xmlGraph = GxlIO.instance().loadGraph(file);
                 xmlGraph.setRole(kind.getGraphRole());
                 xmlGraph.setName(name.toString());
                 result = new Resource(kind, xmlGraph.toAspectGraph());
@@ -107,10 +103,14 @@ public class NativePorter extends AbstractExporter implements Importer {
 
     @Override
     public Set<Resource> doImport(QualName name, InputStream stream, FileType fileType,
-        GrammarModel grammar) throws PortException {
+                                  GrammarModel grammar) throws PortException {
         ResourceKind kind = getResourceKind(fileType);
-        if (kind.isGraphBased()) {
-            throw new PortException("Cannot import from stream");
+        if (kind == null) {
+            throw new PortException(String
+                .format("'%s' is not a grammar resource and hence cannot be imported from %s", name,
+                        fileType.getExtension()));
+        } else if (kind.isGraphBased()) {
+            throw new PortException(String.format("Cannot import '%s' from stream", name));
         }
 
         Resource result;
@@ -125,22 +125,26 @@ public class NativePorter extends AbstractExporter implements Importer {
 
     @Override
     public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
-        ResourceKind kind = exportable.getKind();
-        if (kind.isGraphBased()) {
+        var resourceKind = exportable.getKind();
+        if (resourceKind == null) {
+            throw new PortException(String
+                .format("'%s' is not a grammar resource and hence cannot be exported as %s",
+                        exportable.getQualName(), fileType.getExtension()));
+        } else if (resourceKind.isGraphBased()) {
             AspectGraph graph = GraphConverter.toAspect(exportable.getGraph());
-            if (kind == ResourceKind.HOST && fileType != FileType.STATE) {
+            if (exportable.getKind() == ResourceKind.HOST && fileType != FileType.STATE) {
                 // we are converting a host graph to a rule or type graph
                 // so unwrap any literal labels
                 graph = graph.unwrap();
             }
             try {
-                GxlIO.instance()
-                    .saveGraph(graph.toPlainGraph(), file);
+                GxlIO.instance().saveGraph(graph.toPlainGraph(), file);
             } catch (IOException e) {
                 throw new PortException(e);
             }
         } else {
-            TextBasedModel<?> textModel = (TextBasedModel<?>) exportable.getModel();
+            var textModel = (TextBasedModel<?>) exportable.getModel();
+            assert textModel != null;
             try (Writer writer = new FileWriter(file)) {
                 writer.write(textModel.getSource());
             } catch (IOException e) {

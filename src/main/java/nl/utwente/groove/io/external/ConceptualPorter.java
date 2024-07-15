@@ -57,8 +57,8 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
     }
 
     @Override
-    public Set<Resource> doImport(File file, FileType fileType, GrammarModel grammar)
-        throws PortException {
+    public Set<Resource> doImport(File file, FileType fileType,
+                                  GrammarModel grammar) throws PortException {
         Set<Resource> result = Collections.emptySet();
         Pair<TypeModel,InstanceModel> models = null;
         try {
@@ -81,15 +81,15 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
 
     /** Reads in type and instance models for an instance model import. */
     abstract protected Pair<TypeModel,InstanceModel> importInstanceModel(File file,
-        GrammarModel grammar) throws ImportException;
+                                                                         GrammarModel grammar) throws ImportException;
 
     /** Reads in type and instance models for a type import. */
     abstract protected Pair<TypeModel,InstanceModel> importTypeModel(File file,
-        GrammarModel grammar) throws ImportException;
+                                                                     GrammarModel grammar) throws ImportException;
 
     @Override
     public Set<Resource> doImport(QualName name, InputStream stream, FileType fileType,
-        GrammarModel grammar) throws PortException {
+                                  GrammarModel grammar) throws PortException {
         //TODO: play nice with streams
         throw new UnsupportedOperationException();
     }
@@ -100,6 +100,11 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
         ModuleName namespace = name.parent();
 
         ResourceModel<?> model = exportable.getModel();
+        if (model == null) {
+            throw new PortException(String
+                .format("'%s' is not a grammar resource and hence cannot be exported as %s", name,
+                        fileType.getExtension()));
+        }
         GrammarModel grammar = model.getGrammar();
         Config cfg = loadConfig(grammar);
         if (cfg == null) {
@@ -145,7 +150,7 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
      * @param isHost flag indicating that we want to export an instance model
      */
     abstract protected ExportableResource getResource(File file, boolean isHost, TypeModel tm,
-        InstanceModel im) throws PortException;
+                                                      InstanceModel im) throws PortException;
 
     /**
      * Returns a {@link Config} based on the first configuration file in the grammar.
@@ -155,8 +160,7 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
         Config result = null;
         Set<QualName> configNames = grammar.getNames(ResourceKind.CONFIG);
         if (!configNames.isEmpty()) {
-            result = new Config(grammar, configNames.iterator()
-                .next());
+            result = new Config(grammar, configNames.iterator().next());
         }
         return result;
     }
@@ -170,7 +174,8 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
      * @param instanceModel name of the instance model to be extracted; may be {@code null}
      */
     private Pair<TypeModel,InstanceModel> constructModels(Config cfg, GrammarModel grammar,
-        ModuleName namespace, QualName typeModel, QualName instanceModel) throws PortException {
+                                                          ModuleName namespace, QualName typeModel,
+                                                          QualName instanceModel) throws PortException {
         GrammarVisitor visitor = new GrammarVisitor(cfg, namespace);
         visitor.setFixedType(typeModel);
         visitor.setFixedInstance(instanceModel);
@@ -181,7 +186,9 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
         } catch (ImportException e) {
             throw new PortException(e);
         }
-        return success ? Pair.newPair(visitor.getTypeModel(), visitor.getInstanceModel()) : null;
+        return success
+            ? Pair.newPair(visitor.getTypeModel(), visitor.getInstanceModel())
+            : null;
     }
 
     /**
@@ -192,10 +199,12 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
      * @return Graphs to insert in grammar
      * @throws PortException if an error occurred during loading
      */
-    private Set<Resource> loadModel(Config cfg, TypeModel tm, InstanceModel im)
-        throws PortException {
+    private Set<Resource> loadModel(Config cfg, TypeModel tm,
+                                    InstanceModel im) throws PortException {
         Set<Resource> result = new HashSet<>();
-        SimulatorModel simulatorModel = getSimulator() == null ? null : getSimulator().getModel();
+        SimulatorModel simulatorModel = getSimulator() == null
+            ? null
+            : getSimulator().getModel();
         GrooveResource grooveResource = new GrooveResource(cfg, simulatorModel);
         if (tm != null) {
             TypeToGroove ttg = new TypeToGroove(grooveResource);
@@ -211,13 +220,12 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
             itg.addInstanceModel(im);
         }
 
-        for (Map.Entry<GraphRole,Map<QualName,GrammarGraph>> entry : grooveResource.getGraphs()
+        for (Map.Entry<GraphRole,Map<QualName,GrammarGraph>> entry : grooveResource
+            .getGraphs()
             .entrySet()) {
             ResourceKind kind = ResourceKind.toResource(entry.getKey());
-            for (GrammarGraph graph : entry.getValue()
-                .values()) {
-                AspectGraph aspectGraph = graph.getGraph()
-                    .toAspectGraph();
+            for (GrammarGraph graph : entry.getValue().values()) {
+                AspectGraph aspectGraph = graph.getGraph().toAspectGraph();
                 Resource resource = new Resource(kind, aspectGraph);
                 result.add(resource);
             }
