@@ -61,13 +61,13 @@ public abstract class AbstractExporter implements Exporter {
 
     /**
      * Registers a file type supported by this exporter, to be used for a given resource kind.
-     * Should only be called if {@link #getFormatKinds()} equals {@link Porter.Kind#RESOURCE}.
+     * Should only be called if {@link #getFormatKinds()} includes {@link Porter.Kind#RESOURCE}.
      */
     protected final void register(ResourceKind kind, FileType fileType) {
         assert getFormatKinds().contains(Kind.RESOURCE);
         this.fileTypes.add(fileType);
         this.fileTypeMap.put(kind, fileType);
-        var oldKind = this.resourceKindMap.put(kind.getFileType(), kind);
+        var oldKind = this.resourceKindMap.put(fileType, kind);
         assert oldKind == null || oldKind.equals(kind) : String
             .format("Conflicting resource kinds %s and %s for file type %s", oldKind, kind,
                     fileType);

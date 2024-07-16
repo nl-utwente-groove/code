@@ -49,8 +49,9 @@ public class NativePorter extends AbstractExporter implements Importer {
         super(Kind.GRAPH, Kind.RESOURCE);
         register(ResourceKind.TYPE);
         register(ResourceKind.HOST);
-        register(ResourceKind.HOST, FileType.RULE);
-        register(ResourceKind.HOST, FileType.TYPE);
+        register(ResourceKind.HOST, FileType.GXL);
+        //register(ResourceKind.HOST, FileType.RULE);
+        //register(ResourceKind.HOST, FileType.TYPE);
         register(ResourceKind.RULE);
         register(ResourceKind.CONTROL);
         register(ResourceKind.PROLOG);
