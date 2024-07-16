@@ -22,12 +22,10 @@ import java.io.IOException;
 import nl.utwente.groove.grammar.aspect.GraphConverter;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.Exportable;
-import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.Exporters;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.Groove;
-import nl.utwente.groove.util.Pair;
 
 /**
  * Exploration reporter that saves the result states.
@@ -45,13 +43,14 @@ public class StateReporter extends AExplorationReporter {
 
     @Override
     public void report() throws IOException {
-        Pair<FileType,Exporter> stateFormat = Exporters.getAcceptingFormat(this.statePattern);
-        if (stateFormat == null) {
+        var fileType = FileType.getType(this.statePattern);
+        var exporter = Exporters.getExporter(fileType);
+        if (exporter != null && exporter.getExportableKinds().contains(Exportable.Kind.GRAPH)) {
             this.logger
-                .append("Pattern %s does not specify export format: states saved in native GXL%n",
+                .append("Pattern %s does not specify known export format: states saved in native GXL%n",
                         this.statePattern);
         } else {
-            this.logger.append("States saved as %s%n", stateFormat.one().getDescription());
+            this.logger.append("States saved as %s%n", fileType.getDescription());
         }
         for (GraphState state : getExploration().getResult().getStates()) {
             File savedFile = exportState(state, this.statePattern);
@@ -71,12 +70,11 @@ public class StateReporter extends AExplorationReporter {
     public static File exportState(GraphState state, String pattern) throws IOException {
         String stateFilename = pattern.replace(PLACEHOLDER, "" + state.getNumber());
         File stateFile = new File(stateFilename);
-        Pair<FileType,Exporter> stateFormat = Exporters.getAcceptingFormat(stateFilename);
-        if (stateFormat != null) {
+        var fileType = FileType.getType(stateFile);
+        var exporter = Exporters.getExporter(fileType);
+        if (exporter != null && exporter.supports(Exportable.Kind.GRAPH)) {
             try {
-                stateFormat
-                    .two()
-                    .doExport(new Exportable(state.getGraph()), stateFile, stateFormat.one());
+                exporter.doExport(Exportable.instance(state.getGraph()), stateFile, fileType);
             } catch (PortException e1) {
                 throw new IOException(e1);
             }

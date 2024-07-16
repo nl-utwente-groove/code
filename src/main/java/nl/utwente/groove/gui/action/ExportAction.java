@@ -53,13 +53,13 @@ public class ExportAction extends SimulatorAction {
         if (this.isGraph) {
             // Export graph
             if (getResource() != null) {
-                exportable = new Exportable(getJGraph(), getResource());
+                exportable = Exportable.instance(getJGraph(), getResource());
             } else {
-                exportable = new Exportable(getJGraph());
+                exportable = Exportable.instance(getJGraph());
             }
         } else {
             // Export resource
-            exportable = new Exportable(getResource());
+            exportable = Exportable.instance(getResource());
         }
         Exporters.doExport(exportable, getSimulator());
     }

@@ -33,7 +33,7 @@ import nl.utwente.groove.io.FileType;
 /** Abstract superclass for {@link Exporter}s, containing a few helper methods. */
 public abstract class AbstractExporter implements Exporter {
     /** Constructor for subclassing. */
-    protected AbstractExporter(Kind... formatKinds) {
+    protected AbstractExporter(Exportable.Kind... formatKinds) {
         this.formatKinds = EnumSet.copyOf(Arrays.asList(formatKinds));
         this.fileTypes = EnumSet.noneOf(FileType.class);
         this.fileTypeMap = new EnumMap<>(ResourceKind.class);
@@ -41,30 +41,31 @@ public abstract class AbstractExporter implements Exporter {
     }
 
     @Override
-    public final Set<Kind> getFormatKinds() {
+    public final Set<Exportable.Kind> getExportableKinds() {
         return this.formatKinds;
     }
 
-    private final EnumSet<Kind> formatKinds;
+    private final EnumSet<Exportable.Kind> formatKinds;
 
     /**
      * Registers a file type supported by this exporter.
      * The file type is assumed to be suitable for exporting graphs.
      * Should only be called from subclasses, during construction time,
-     * and only if {@link #getFormatKinds()} equals {@link Porter.Kind#GRAPH}
-     * or {@link Porter.Kind#JGRAPH}.
+     * and only if {@link #getExportableKinds()} equals {@link Exportable.Kind#GRAPH}
+     * or {@link Exportable.Kind#JGRAPH}.
      */
     protected final void register(FileType fileType) {
-        assert getFormatKinds().contains(Kind.GRAPH) || getFormatKinds().contains(Kind.JGRAPH);
+        assert getExportableKinds().contains(Exportable.Kind.GRAPH)
+            || getExportableKinds().contains(Exportable.Kind.JGRAPH);
         this.fileTypes.add(fileType);
     }
 
     /**
      * Registers a file type supported by this exporter, to be used for a given resource kind.
-     * Should only be called if {@link #getFormatKinds()} includes {@link Porter.Kind#RESOURCE}.
+     * Should only be called if {@link #getExportableKinds()} includes {@link Exportable.Kind#RESOURCE}.
      */
     protected final void register(ResourceKind kind, FileType fileType) {
-        assert getFormatKinds().contains(Kind.RESOURCE);
+        assert getExportableKinds().contains(Exportable.Kind.RESOURCE);
         this.fileTypes.add(fileType);
         this.fileTypeMap.put(kind, fileType);
         var oldKind = this.resourceKindMap.put(fileType, kind);
@@ -85,7 +86,7 @@ public abstract class AbstractExporter implements Exporter {
 
     /**
      * Registers a resource kind supported by this exporter, with its default file type.
-     * Should only be called if {@link #getFormatKinds()} equals {@link Porter.Kind#RESOURCE}.
+     * Should only be called if {@link #getExportableKinds()} equals {@link Exportable.Kind#RESOURCE}.
      */
     protected final void register(ResourceKind kind) {
         register(kind, kind.getFileType());
@@ -102,25 +103,20 @@ public abstract class AbstractExporter implements Exporter {
     }
 
     @Override
-    public boolean exports(Exportable exportable) {
-        return !getFileTypes(exportable).isEmpty();
-    }
-
-    @Override
     public Set<FileType> getFileTypes(Exportable exportable) {
         Set<FileType> result = EnumSet.noneOf(FileType.class);
         boolean supports = false;
-        for (Kind porterKind : getFormatKinds()) {
-            if (exportable.containsKind(porterKind)) {
+        for (Exportable.Kind porterKind : getExportableKinds()) {
+            if (exportable.hasKind(porterKind)) {
                 supports = true;
                 break;
             }
         }
         if (supports) {
-            if (exportable.containsKind(Kind.RESOURCE)
-                && getFormatKinds().contains(Kind.RESOURCE)) {
+            if (exportable.hasKind(Exportable.Kind.RESOURCE)
+                && getExportableKinds().contains(Exportable.Kind.RESOURCE)) {
                 // check if the specific resource kind is supported
-                var model = exportable.getModel();
+                var model = exportable.model();
                 assert model != null;
                 FileType fileType = getFileType(model.getKind());
                 if (fileType != null) {

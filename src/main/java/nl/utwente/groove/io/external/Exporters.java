@@ -29,7 +29,6 @@ import nl.utwente.groove.gui.dialog.ErrorDialog;
 import nl.utwente.groove.gui.dialog.SaveDialog;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.GrooveFileChooser;
-import nl.utwente.groove.io.external.Porter.Kind;
 import nl.utwente.groove.io.external.format.AutPorter;
 import nl.utwente.groove.io.external.format.EcorePorter;
 import nl.utwente.groove.io.external.format.FsmExporter;
@@ -39,11 +38,10 @@ import nl.utwente.groove.io.external.format.NativePorter;
 import nl.utwente.groove.io.external.format.RasterExporter;
 import nl.utwente.groove.io.external.format.TikzExporter;
 import nl.utwente.groove.io.external.format.VectorExporter;
-import nl.utwente.groove.util.Pair;
+import nl.utwente.groove.util.Factory;
 
 /**
- * Class used to export various resources and graphs to external formats.
- * Export gets initiated by ExportAction.
+ * Support class for {@link Exporter}s.
  * @author Harold Bruijntjes
  * @version $Revision$
  */
@@ -51,7 +49,7 @@ public class Exporters {
     /**
      * Exports the object contained in an exportable, using an
      * exporter chosen through a dialog.
-     * @param exportable Container with object to export
+     * @param exportable container with object to export
      * @param simulator parent of save dialog; may be {@code null}
      */
     public static void doExport(Exportable exportable, Simulator simulator) {
@@ -65,7 +63,7 @@ public class Exporters {
         assert !exporters.isEmpty();
         // choose a file and exporter
         GrooveFileChooser chooser = GrooveFileChooser.getInstance(exporters.keySet());
-        chooser.setSelectedFile(exportable.getQualName().toFile());
+        chooser.setSelectedFile(exportable.qualName().toFile());
         File selectedFile = SaveDialog
             .show(chooser, simulator == null
                 ? null
@@ -95,38 +93,33 @@ public class Exporters {
         new ErrorDialog(parent, String.format(message, args), exc).setVisible(true);
     }
 
-    /**
-     * Get suitable exporter for a given file name, based on the extension.
-     * Backwards compatibility function for now.
+    /** Returns the exporter for a given filename, if any.
+     * Convenience method for {@code getExporter(FileType.getType(filename))},
+     * taking {@code null} values into account.
      */
-    static public Pair<FileType,Exporter> getAcceptingFormat(String filename) {
-        Pair<FileType,Exporter> result = null;
-        outer: for (Exporter exporter : getExporters()) {
-            if (!exporter.getFormatKinds().contains(Kind.GRAPH)) {
-                continue;
-            }
-            for (FileType fileType : exporter.getSupportedFileTypes()) {
-                if (fileType.hasExtension(filename)) {
-                    result = Pair.newPair(fileType, exporter);
-                    break outer;
-                }
-            }
-        }
-        return result;
+    public static Exporter getExporter(String filename) {
+        var fileType = FileType.getExtension(filename);
+        return fileType == null
+            ? null
+            : getExporter(fileType);
     }
 
-    /** Returns the exporter for a given file type, if any. */
+    /** Returns the exporter for a given file type, if any.
+     * Returns {@code null} if the parameter is {@code null}.
+     */
     public static Exporter getExporter(FileType fileType) {
-        return getExporterMap().get(fileType);
+        return fileType == null
+            ? null
+            : getExporterMap().get(fileType);
     }
 
     /** Returns the list of all known exporters. */
     public static List<Exporter> getExporters() {
-        if (exporters == null) {
-            exporters = createExporters();
-        }
-        return exporters;
+        return exporters.get();
     }
+
+    static private final Factory<List<Exporter>> exporters
+        = Factory.lazy(Exporters::createExporters);
 
     /** Creates the list of all known exporters. */
     private static List<Exporter> createExporters() {
@@ -139,18 +132,16 @@ public class Exporters {
         result.add(TikzExporter.getInstance());
         result.add(EcorePorter.instance());
         result.add(ListenerExporter.instance(DotListener.instance()));
-        return result;
+        return Collections.unmodifiableList(result);
     }
-
-    private static List<Exporter> exporters;
 
     /** Returns the mapping from file types to exporters for those file types. */
     public static Map<FileType,Exporter> getExporterMap() {
-        if (exporterMap == null) {
-            exporterMap = createExporterMap();
-        }
-        return exporterMap;
+        return exporterMap.get();
     }
+
+    private static Factory<Map<FileType,Exporter>> exporterMap
+        = Factory.lazy(Exporters::createExporterMap);
 
     /** Creates the list of all known dedicated exporters. */
     private static Map<FileType,Exporter> createExporterMap() {
@@ -164,6 +155,4 @@ public class Exporters {
         }
         return Collections.unmodifiableMap(result);
     }
-
-    private static Map<FileType,Exporter> exporterMap;
 }

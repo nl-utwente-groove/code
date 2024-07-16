@@ -21,7 +21,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -48,7 +47,8 @@ public class EcoreResource extends nl.utwente.groove.io.conceptual.lang.Exportab
     //files allowed null if instance or type not required
     public EcoreResource(File typeTarget, File instanceTarget) {
         this.m_resourceSet = new ResourceSetImpl();
-        this.m_resourceSet.getResourceFactoryRegistry()
+        this.m_resourceSet
+            .getResourceFactoryRegistry()
             .getExtensionToFactoryMap()
             .put("*", new XMIResourceFactoryImpl());
 
@@ -59,10 +59,10 @@ public class EcoreResource extends nl.utwente.groove.io.conceptual.lang.Exportab
             || this.m_instanceFile == null) {
             this.relPath = "";
         } else {
-            this.relPath =
-                nl.utwente.groove.io.Util.getRelativePath(new File(this.m_instanceFile.getAbsoluteFile()
-                    .getParent()), this.m_typeFile.getAbsoluteFile())
-                    .toString();
+            this.relPath = nl.utwente.groove.io.Util
+                .getRelativePath(new File(this.m_instanceFile.getAbsoluteFile().getParent()),
+                                 this.m_typeFile.getAbsoluteFile())
+                .toString();
         }
     }
 
@@ -75,8 +75,9 @@ public class EcoreResource extends nl.utwente.groove.io.conceptual.lang.Exportab
     }
 
     public Resource getTypeResource(QualName resourceName) {
-        String flatName = this.m_typeFile == null ? resourceName.toFile()
-            .toString() : this.m_typeFile.toString();
+        String flatName = this.m_typeFile == null
+            ? resourceName.toFile().toString()
+            : this.m_typeFile.toString();
         Resource result = this.m_typeResources.get(resourceName);
         if (result == null) {
             result = this.m_resourceSet.createResource(URI.createURI(flatName));
@@ -88,8 +89,8 @@ public class EcoreResource extends nl.utwente.groove.io.conceptual.lang.Exportab
     public Resource getInstanceResource(QualName resourceName) {
         Resource result = this.m_instanceResources.get(resourceName);
         if (result == null) {
-            result = this.m_resourceSet.createResource(URI.createURI(resourceName.toFile()
-                .toString()));
+            result = this.m_resourceSet
+                .createResource(URI.createURI(resourceName.toFile().toString()));
             this.m_instanceResources.put(resourceName, result);
         }
         return result;
@@ -99,18 +100,17 @@ public class EcoreResource extends nl.utwente.groove.io.conceptual.lang.Exportab
     public boolean export() throws ExportException {
         try {
             if (this.m_typeFile != null) {
-                for (Entry<QualName,Resource> resourceEntry : this.m_typeResources.entrySet()) {
+                for (var resourceEntry : this.m_typeResources.entrySet()) {
                     try (FileOutputStream out = new FileOutputStream(this.m_typeFile)) {
                         int timer = Timer.cont("Ecore save");
-                        resourceEntry.getValue()
-                            .save(out, null);
+                        resourceEntry.getValue().save(out, null);
                         Timer.stop(timer);
                     }
                 }
             }
 
             if (this.m_instanceFile != null) {
-                for (Entry<QualName,Resource> resourceEntry : this.m_instanceResources.entrySet()) {
+                for (var resourceEntry : this.m_instanceResources.entrySet()) {
                     try (FileOutputStream out = new FileOutputStream(this.m_instanceFile)) {
                         Map<Object,Object> opts = new HashMap<>();
                         if (this.m_typeFile != null) {
@@ -119,8 +119,7 @@ public class EcoreResource extends nl.utwente.groove.io.conceptual.lang.Exportab
                         }
 
                         int timer = Timer.cont("Ecore save");
-                        resourceEntry.getValue()
-                            .save(out, opts);
+                        resourceEntry.getValue().save(out, opts);
                         Timer.stop(timer);
                     }
                 }

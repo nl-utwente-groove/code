@@ -28,8 +28,8 @@ import nl.utwente.groove.io.conceptual.Name;
 import nl.utwente.groove.io.conceptual.Timer;
 import nl.utwente.groove.io.conceptual.TypeModel;
 import nl.utwente.groove.io.conceptual.lang.Message;
-import nl.utwente.groove.io.conceptual.lang.TypeExporter;
 import nl.utwente.groove.io.conceptual.lang.Message.MessageType;
+import nl.utwente.groove.io.conceptual.lang.TypeExporter;
 import nl.utwente.groove.io.conceptual.property.AbstractProperty;
 import nl.utwente.groove.io.conceptual.property.ContainmentProperty;
 import nl.utwente.groove.io.conceptual.property.DefaultValueProperty;
@@ -39,6 +39,7 @@ import nl.utwente.groove.io.conceptual.property.OppositeProperty;
 import nl.utwente.groove.io.conceptual.type.BoolType;
 import nl.utwente.groove.io.conceptual.type.Class;
 import nl.utwente.groove.io.conceptual.type.Container;
+import nl.utwente.groove.io.conceptual.type.Container.Kind;
 import nl.utwente.groove.io.conceptual.type.CustomDataType;
 import nl.utwente.groove.io.conceptual.type.DataType;
 import nl.utwente.groove.io.conceptual.type.Enum;
@@ -47,7 +48,6 @@ import nl.utwente.groove.io.conceptual.type.RealType;
 import nl.utwente.groove.io.conceptual.type.StringType;
 import nl.utwente.groove.io.conceptual.type.Tuple;
 import nl.utwente.groove.io.conceptual.type.Type;
-import nl.utwente.groove.io.conceptual.type.Container.Kind;
 import nl.utwente.groove.io.external.PortException;
 
 @SuppressWarnings("javadoc")
@@ -149,18 +149,14 @@ public class TypeToEcore extends TypeExporter<EObject> {
 
         // No package yet. If not toplevel Id, recursively get that package
         EPackage idPackage = g_EcoreFactory.createEPackage();
-        idPackage.setName(id.getName()
-            .toString());
-        idPackage.setNsPrefix(id.getName()
-            .toString());
-        idPackage.setNsURI(id.getName()
-            .toString());
+        idPackage.setName(id.getName().toString());
+        idPackage.setNsPrefix(id.getName().toString());
+        idPackage.setNsURI(id.getName().toString());
         this.m_packages.put(id, idPackage);
 
         if (id.getNamespace() != Id.ROOT) {
             EPackage topLevel = packageFromId(id.getNamespace());
-            topLevel.getESubpackages()
-                .add(idPackage);
+            topLevel.getESubpackages().add(idPackage);
         } else {
             this.m_rootPackages.add(idPackage);
         }
@@ -187,16 +183,12 @@ public class TypeToEcore extends TypeExporter<EObject> {
             setElement(t, eDataType);
 
             CustomDataType cmDataType = (CustomDataType) t;
-            eDataType.setName(cmDataType.getId()
-                .getName()
-                .toString());
+            eDataType.setName(cmDataType.getId().getName().toString());
             // Forcing to the string class, as it always has a string representation.
             // This is a limitation of the conceptual model (doesn't store other type information)
             eDataType.setInstanceClass(String.class);
-            EPackage typePackage = packageFromId(cmDataType.getId()
-                .getNamespace());
-            typePackage.getEClassifiers()
-                .add(eDataType);
+            EPackage typePackage = packageFromId(cmDataType.getId().getNamespace());
+            typePackage.getEClassifiers().add(eDataType);
         }
     }
 
@@ -217,26 +209,20 @@ public class TypeToEcore extends TypeExporter<EObject> {
         EClass eClass = g_EcoreFactory.createEClass();
         setElement(cmClass, eClass);
 
-        eClass.setName(cmClass.getId()
-            .getName()
-            .toString());
+        eClass.setName(cmClass.getId().getName().toString());
 
-        EPackage classPackage = packageFromId(cmClass.getId()
-            .getNamespace());
-        classPackage.getEClassifiers()
-            .add(eClass);
+        EPackage classPackage = packageFromId(cmClass.getId().getNamespace());
+        classPackage.getEClassifiers().add(eClass);
 
         // Map supertypes to ecore supertypes
         for (Class superClass : cmClass.getSuperClasses()) {
             EObject eObj = getElement(superClass);
-            eClass.getESuperTypes()
-                .add((EClass) eObj);
+            eClass.getESuperTypes().add((EClass) eObj);
         }
 
         for (Field field : cmClass.getFields()) {
             EStructuralFeature eStructFeat = (EStructuralFeature) getElement(field);
-            eClass.getEStructuralFeatures()
-                .add(eStructFeat);
+            eClass.getEStructuralFeatures().add(eStructFeat);
         }
     }
 
@@ -251,8 +237,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
         // Ecore defaults, only changed if an container
         boolean ordered = true;
         boolean unique = true;
-        if (fieldType instanceof Container) {
-            Container cmContainer = (Container) fieldType;
+        if (fieldType instanceof Container cmContainer) {
             fieldType = cmContainer.getType();
 
             if (cmContainer.getContainerType() == Kind.SET
@@ -277,8 +262,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
         }
         setElement(field, eFieldFeature);
 
-        eFieldFeature.setName(field.getName()
-            .toString());
+        eFieldFeature.setName(field.getName().toString());
         eFieldFeature.setOrdered(ordered);
         eFieldFeature.setUnique(unique);
 
@@ -324,8 +308,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
         } else {
             containerPackage = packageFromId(Id.ROOT);
         }
-        containerPackage.getEClassifiers()
-            .add(eContainerClass);
+        containerPackage.getEClassifiers().add(eContainerClass);
 
         // Create value reference
         EStructuralFeature eContainerFeature = null;
@@ -341,10 +324,12 @@ public class TypeToEcore extends TypeExporter<EObject> {
         eContainerFeature.setName("value");
         if (container.getType() instanceof Container) {
             Container subType = (Container) container.getType();
-            eContainerFeature.setOrdered(
-                subType.getContainerType() == Kind.ORD || subType.getContainerType() == Kind.SEQ);
-            eContainerFeature.setUnique(
-                subType.getContainerType() == Kind.SET || subType.getContainerType() == Kind.ORD);
+            eContainerFeature
+                .setOrdered(subType.getContainerType() == Kind.ORD
+                    || subType.getContainerType() == Kind.SEQ);
+            eContainerFeature
+                .setUnique(subType.getContainerType() == Kind.SET
+                    || subType.getContainerType() == Kind.ORD);
         } else {
             eContainerFeature.setOrdered(false);
             eContainerFeature.setUnique(true);
@@ -356,8 +341,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
         eContainerFeature.setUpperBound(ETypedElement.UNBOUNDED_MULTIPLICITY);
         eContainerFeature.setLowerBound(0);
 
-        eContainerClass.getEStructuralFeatures()
-            .add(eContainerFeature);
+        eContainerClass.getEStructuralFeatures().add(eContainerFeature);
     }
 
     @Override
@@ -369,14 +353,10 @@ public class TypeToEcore extends TypeExporter<EObject> {
         EEnum eEnum = g_EcoreFactory.createEEnum();
         setElement(enum1, eEnum);
 
-        eEnum.setName(enum1.getId()
-            .getName()
-            .toString());
+        eEnum.setName(enum1.getId().getName().toString());
 
-        EPackage enumPackage = packageFromId(enum1.getId()
-            .getNamespace());
-        enumPackage.getEClassifiers()
-            .add(eEnum);
+        EPackage enumPackage = packageFromId(enum1.getId().getNamespace());
+        enumPackage.getEClassifiers().add(eEnum);
 
         List<EEnumLiteral> eLiterals = eEnum.getELiterals();
         for (Name litName : enum1.getLiterals()) {
@@ -394,23 +374,20 @@ public class TypeToEcore extends TypeExporter<EObject> {
             return;
         }
 
-        EPackage firstRoot = this.m_rootPackages.iterator()
-            .next();
+        EPackage firstRoot = this.m_rootPackages.iterator().next();
         EClass eClass = g_EcoreFactory.createEClass();
         setElement(tuple, eClass);
 
         eClass.setName(getTupleName(tuple));
 
-        firstRoot.getEClassifiers()
-            .add(eClass);
+        firstRoot.getEClassifiers().add(eClass);
 
         int typeIndex = 1;
         for (Type type : tuple.getTypes()) {
-            Field typeField =
-                new Field(Name.getName(getTupleElementName(tuple, typeIndex++)), type, 1, 1);
+            Field typeField
+                = new Field(Name.getName(getTupleElementName(tuple, typeIndex++)), type, 1, 1);
             EStructuralFeature eStructFeat = (EStructuralFeature) getElement(typeField);
-            eClass.getEStructuralFeatures()
-                .add(eStructFeat);
+            eClass.getEStructuralFeatures().add(eStructFeat);
         }
     }
 
@@ -433,12 +410,11 @@ public class TypeToEcore extends TypeExporter<EObject> {
         }
 
         EObject obj = getElement(containmentProperty.getField());
-        if (!(obj instanceof EReference)) {
+        if (!(obj instanceof EReference eRef)) {
             //TODO
             return;
         }
 
-        EReference eRef = (EReference) obj;
         eRef.setContainment(true);
 
         // Force containment to be unique. This may cause issues down the road for instances,
@@ -456,12 +432,11 @@ public class TypeToEcore extends TypeExporter<EObject> {
 
         for (Field field : identityProperty.getFields()) {
             EObject obj = getElement(field);
-            if (!(obj instanceof EAttribute)) {
+            if (!(obj instanceof EAttribute eAttr)) {
                 //TODO
                 continue;
             }
 
-            EAttribute eAttr = (EAttribute) obj;
             eAttr.setID(true);
 
             // Only set one field as ID, Ecore doesn't support multiple IDs
@@ -524,14 +499,12 @@ public class TypeToEcore extends TypeExporter<EObject> {
         }
 
         EObject obj = getElement(defaultValueProperty.getField());
-        if (!(obj instanceof EAttribute)) {
+        if (!(obj instanceof EAttribute eAttr)) {
             //TODO
             return;
         }
 
-        EAttribute eAttr = (EAttribute) obj;
-        eAttr.setDefaultValueLiteral(defaultValueProperty.getDefaultValue()
-            .toString());
+        eAttr.setDefaultValueLiteral(defaultValueProperty.getDefaultValue().toString());
 
         setElement(defaultValueProperty, null);
     }

@@ -32,12 +32,12 @@ import nl.utwente.groove.io.conceptual.lang.ecore.EcoreToInstance;
 import nl.utwente.groove.io.conceptual.lang.ecore.EcoreToType;
 import nl.utwente.groove.io.conceptual.lang.ecore.InstanceToEcore;
 import nl.utwente.groove.io.conceptual.lang.ecore.TypeToEcore;
-import nl.utwente.groove.io.external.ConceptualPorter;
+import nl.utwente.groove.io.external.ModelPorter;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.util.Pair;
 
 /** Importer and exporter for the ECORE format. */
-public class EcorePorter extends ConceptualPorter {
+public class EcorePorter extends ModelPorter {
     private EcorePorter() {
         super(FileType.ECORE_META, FileType.ECORE_MODEL);
     }

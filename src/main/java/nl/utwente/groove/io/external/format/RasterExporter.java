@@ -38,7 +38,7 @@ import nl.utwente.groove.io.external.PortException;
  */
 public class RasterExporter extends AbstractExporter {
     private RasterExporter() {
-        super(Kind.JGRAPH);
+        super(Exportable.Kind.JGRAPH);
         addFormat(FileType.PNG, "png");
         addFormat(FileType.JPG, "jpg");
     }
@@ -52,11 +52,11 @@ public class RasterExporter extends AbstractExporter {
 
     @Override
     public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
-        JGraph<?> jGraph = exportable.getJGraph();
+        JGraph<?> jGraph = exportable.jGraph();
         if (jGraph == null) {
             throw new PortException(String
                 .format("'%s' does not contain a rasterable image and hence cannot be exported to %s",
-                        exportable.getQualName(), fileType.getExtension()));
+                        exportable.qualName(), fileType.getExtension()));
         }
         BufferedImage image = jGraph.toImage();
         if (image == null) {

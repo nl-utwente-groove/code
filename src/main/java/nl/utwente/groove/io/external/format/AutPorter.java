@@ -27,12 +27,12 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
-import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
+import nl.utwente.groove.io.external.Imported;
 import nl.utwente.groove.io.external.Importer;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.graph.AutIO;
@@ -43,14 +43,14 @@ import nl.utwente.groove.io.graph.AutIO;
  */
 public final class AutPorter extends AbstractExporter implements Importer {
     private AutPorter() {
-        super(Kind.GRAPH);
+        super(Exportable.Kind.GRAPH);
         register(FileType.AUT);
     }
 
     @Override
-    public Set<Resource> doImport(File file, FileType fileType, GrammarModel grammar)
-        throws PortException {
-        Set<Resource> resources;
+    public Set<Imported> doImport(File file, FileType fileType,
+                                  GrammarModel grammar) throws PortException {
+        Set<Imported> resources;
         try (FileInputStream stream = new FileInputStream(file)) {
             QualName name = QualName.name(fileType.stripExtension(file.getName()));
             resources = doImport(name, stream, fileType, grammar);
@@ -61,14 +61,14 @@ public final class AutPorter extends AbstractExporter implements Importer {
     }
 
     @Override
-    public Set<Resource> doImport(QualName name, InputStream stream, FileType fileType,
-        GrammarModel grammar) throws PortException {
+    public Set<Imported> doImport(QualName name, InputStream stream, FileType fileType,
+                                  GrammarModel grammar) throws PortException {
         try {
             this.io.setGraphName(name.toString());
             this.io.setGraphRole(GraphRole.HOST);
             PlainGraph graph = this.io.loadGraph(stream);
             AspectGraph agraph = AspectGraph.newInstance(graph);
-            return Collections.singleton(new Resource(ResourceKind.HOST, agraph));
+            return Collections.singleton(new Imported(ResourceKind.HOST, agraph));
         } catch (Exception e) {
             throw new PortException(
                 String.format("Format error while reading %s: %s", name, e.getMessage()));
@@ -83,9 +83,8 @@ public final class AutPorter extends AbstractExporter implements Importer {
 
     @Override
     public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
-        Graph graph = exportable.getGraph();
         try {
-            this.io.saveGraph(graph, file);
+            this.io.saveGraph(exportable.graph(), file);
         } catch (IOException e) {
             throw new PortException(e);
         }

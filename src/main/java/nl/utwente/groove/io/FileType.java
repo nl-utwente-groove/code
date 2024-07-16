@@ -21,9 +21,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.io.external.format.EcorePorter;
@@ -32,11 +34,14 @@ import nl.utwente.groove.io.graph.ColIO;
 import nl.utwente.groove.io.graph.ConceptualIO;
 import nl.utwente.groove.io.graph.GraphIO;
 import nl.utwente.groove.io.graph.GxlIO;
+import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Factory;
 
 /**
  * Enumeration of file types supported by Groove.
  * Each element of the enumeration has an associated file filter.
- *
+ * Every file type has a (primary) extension, and zero or more sub-types.
+ * Note that different file types may filter for the same file extension.
  * @author Eduardo Zambon
  */
 public enum FileType {
@@ -90,9 +95,9 @@ public enum FileType {
     /**  FSM (Finite State Machine) files. */
     FSM("FSM layout files", ".fsm"),
     /** GXL type graph files. */
-    GXL_META("GXL type graphs", ".gxl"),
+    GXL_META("GXL type graphs", ".gxltype"),
     /** GXL instance graph files. */
-    GXL_MODEL("GXL instance graphs", ".gxl"),
+    GXL_MODEL("GXL instance graphs", ".gxlinstance"),
     /** JAR files. */
     JAR("JAR files", ".jar"),
     /** JPEG files. */
@@ -352,6 +357,25 @@ public enum FileType {
     /** Extension filter for this file type. */
     private ExtensionFilter filter;
 
+    /** Mapping from extensions to file types. */
+    static private final Factory<Map<String,FileType>> extensionMap
+        = Factory.lazy(FileType::createExtensionMap);
+
+    static private Map<String,FileType> createExtensionMap() {
+        Map<String,FileType> result = new HashMap<>();
+        for (var t : FileType.values()) {
+            if (!t.isMultiple()) {
+                var old = result.put(t.getExtension(), t);
+                if (old != null) {
+                    throw Exceptions
+                        .illegalState("Duplicate file extension '%s' for file types %s and %s",
+                                      t.getExtension(), old, t);
+                }
+            }
+        }
+        return result;
+    }
+
     /** Returns the extension filter associated with the given graph role. */
     public static ExtensionFilter getFilter(GraphRole role) {
         switch (role) {
@@ -369,23 +393,17 @@ public enum FileType {
     }
 
     /**
-     * Returns the set of possible file types of a given file, going by its filename extension.
+     * Returns the unique (primary) file type for a given file, going by its filename extension.
      */
-    static public Set<FileType> getType(File file) {
+    static public @Nullable FileType getType(File file) {
         return getType(file.getName());
     }
 
     /**
-     * Returns the set of possible file types for a given file, going by its filename extension.
+     * Returns the unique (primary) file type for a given file name, going by extension.
      */
-    static public Set<FileType> getType(String filename) {
-        Set<FileType> result = EnumSet.noneOf(FileType.class);
-        for (FileType type : FileType.values()) {
-            if (type.hasExtension(filename)) {
-                result.add(type);
-            }
-        }
-        return result;
+    static public FileType getType(String filename) {
+        return extensionMap.get().get(getExtension(filename));
     }
 
     /**

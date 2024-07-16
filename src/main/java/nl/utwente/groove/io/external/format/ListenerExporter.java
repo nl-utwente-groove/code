@@ -38,7 +38,7 @@ import nl.utwente.groove.lts.GTS;
  */
 public class ListenerExporter extends AbstractExporter {
     private ListenerExporter(GraphExportListener listener) {
-        super(Kind.GRAPH);
+        super(Exportable.Kind.GRAPH);
         listener.setExporter(this);
         register(listener.getFileType());
         this.listener = listener;
@@ -48,11 +48,11 @@ public class ListenerExporter extends AbstractExporter {
 
     @Override
     public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
-        Graph graph = exportable.getGraph();
+        Graph graph = exportable.graph();
         if (graph == null) {
             throw new PortException(String
                 .format("'%s' does not contain a graph and hence cannot be exported to %s",
-                        exportable.getQualName(), fileType));
+                        exportable.qualName(), fileType));
         }
         try (PrintWriter writer = new PrintWriter(file)) {
             this.writer = writer;

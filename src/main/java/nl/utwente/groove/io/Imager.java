@@ -82,8 +82,6 @@ import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.Exporters;
 import nl.utwente.groove.io.external.PortException;
-import nl.utwente.groove.io.external.Porter;
-import nl.utwente.groove.io.external.Porter.Kind;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
@@ -246,7 +244,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
             emit(MEDIUM, "Imaging %s as %s%n", inFile, outFile);
             GraphBasedModel<?> resourceModel
                 = (GraphBasedModel<?>) grammar.getResource(resource.one(), resource.two());
-            final Exportable exportable = toExportable(resourceModel, exporter.getFormatKinds());
+            final Exportable exportable = toExportable(resourceModel, exporter.getExportableKinds());
             // make sure the export happens on the event thread
             Runnable export = new Runnable() {
                 @Override
@@ -277,16 +275,17 @@ public class Imager extends GrooveCmdLineTool<Object> {
     }
 
     /** Converts a resource model to an exportable object of the right kind. */
-    private Exportable toExportable(GraphBasedModel<?> resourceModel, Set<Porter.Kind> outFormats) {
+    private Exportable toExportable(GraphBasedModel<?> resourceModel,
+                                    Set<Exportable.Kind> outFormats) {
         Exportable result;
         AspectGraph aspectGraph = resourceModel.getSource();
         // find out what we have to export
-        if (outFormats.contains(Porter.Kind.GRAPH)) {
-            result = new Exportable(aspectGraph);
-        } else if (outFormats.contains(Porter.Kind.RESOURCE)) {
-            result = new Exportable(resourceModel);
+        if (outFormats.contains(Exportable.Kind.GRAPH)) {
+            result = Exportable.instance(aspectGraph);
+        } else if (outFormats.contains(Exportable.Kind.RESOURCE)) {
+            result = Exportable.instance(resourceModel);
         } else {
-            assert outFormats.contains(Porter.Kind.JGRAPH);
+            assert outFormats.contains(Exportable.Kind.JGRAPH);
             Options options = new Options();
             options.getItem(Options.SHOW_VALUE_NODES_OPTION).setSelected(isEditorView());
             options.getItem(Options.SHOW_ASPECTS_OPTION).setSelected(isEditorView());
@@ -304,7 +303,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
             Dimension oldPrefSize = jGraph.getPreferredSize();
             Dimension newPrefSize = new Dimension(oldPrefSize.width * 2, oldPrefSize.height * 2);
             jGraph.setSize(newPrefSize);
-            result = new Exportable(jGraph);
+            result = Exportable.instance(jGraph);
         }
         return result;
     }
@@ -442,7 +441,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
         if (result == null) {
             result = formatMap = new HashMap<>();
             for (Exporter exporter : Exporters.getExporters()) {
-                if (exporter.getFormatKinds().contains(Kind.RESOURCE)) {
+                if (exporter.getExportableKinds().contains(Exportable.Kind.RESOURCE)) {
                     continue;
                 }
                 for (FileType fileType : exporter.getSupportedFileTypes()) {

@@ -34,6 +34,7 @@ import nl.utwente.groove.grammar.model.TextBasedModel;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
+import nl.utwente.groove.io.external.Imported;
 import nl.utwente.groove.io.external.Importer;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.graph.AttrGraph;
@@ -46,10 +47,10 @@ import nl.utwente.groove.io.graph.GxlIO;
  */
 public class NativePorter extends AbstractExporter implements Importer {
     private NativePorter() {
-        super(Kind.GRAPH, Kind.RESOURCE);
+        super(Exportable.Kind.GRAPH, Exportable.Kind.RESOURCE);
         register(ResourceKind.TYPE);
         register(ResourceKind.HOST);
-        register(ResourceKind.HOST, FileType.GXL);
+        //register(ResourceKind.HOST, FileType.GXL);
         //register(ResourceKind.HOST, FileType.RULE);
         //register(ResourceKind.HOST, FileType.TYPE);
         register(ResourceKind.RULE);
@@ -62,7 +63,7 @@ public class NativePorter extends AbstractExporter implements Importer {
     @Override
     public Set<FileType> getFileTypes(Exportable exportable) {
         Set<FileType> result = EnumSet.noneOf(FileType.class);
-        ResourceKind resourceKind = exportable.getKind();
+        var resourceKind = exportable.getResourceKind();
         if (resourceKind == ResourceKind.HOST) {
             // host graphs can be exported to any known graph resource type
             result.addAll(FileType.GRAPHS.getSubTypes());
@@ -76,9 +77,9 @@ public class NativePorter extends AbstractExporter implements Importer {
     }
 
     @Override
-    public Set<Resource> doImport(File file, FileType fileType,
+    public Set<Imported> doImport(File file, FileType fileType,
                                   GrammarModel grammar) throws PortException {
-        Resource result;
+        Imported result;
         try {
             QualName name = QualName.name(fileType.stripExtension(file.getName()));
             ResourceKind kind = getResourceKind(fileType);
@@ -91,10 +92,10 @@ public class NativePorter extends AbstractExporter implements Importer {
                 AttrGraph xmlGraph = GxlIO.instance().loadGraph(file);
                 xmlGraph.setRole(kind.getGraphRole());
                 xmlGraph.setName(name.toString());
-                result = new Resource(kind, xmlGraph.toAspectGraph());
+                result = new Imported(kind, xmlGraph.toAspectGraph());
             } else {
                 String program = nl.utwente.groove.io.Util.readFileToString(file);
-                result = new Resource(kind, name, program);
+                result = new Imported(kind, name, program);
             }
         } catch (IOException e) {
             throw new PortException(e);
@@ -103,7 +104,7 @@ public class NativePorter extends AbstractExporter implements Importer {
     }
 
     @Override
-    public Set<Resource> doImport(QualName name, InputStream stream, FileType fileType,
+    public Set<Imported> doImport(QualName name, InputStream stream, FileType fileType,
                                   GrammarModel grammar) throws PortException {
         ResourceKind kind = getResourceKind(fileType);
         if (kind == null) {
@@ -114,10 +115,10 @@ public class NativePorter extends AbstractExporter implements Importer {
             throw new PortException(String.format("Cannot import '%s' from stream", name));
         }
 
-        Resource result;
+        Imported result;
         try {
             String resource = nl.utwente.groove.io.Util.readInputStreamToString(stream);
-            result = new Resource(kind, name, resource);
+            result = new Imported(kind, name, resource);
         } catch (IOException e) {
             throw new PortException(e);
         }
@@ -126,14 +127,14 @@ public class NativePorter extends AbstractExporter implements Importer {
 
     @Override
     public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
-        var resourceKind = exportable.getKind();
+        var resourceKind = exportable.getResourceKind();
         if (resourceKind == null) {
             throw new PortException(String
                 .format("'%s' is not a grammar resource and hence cannot be exported as %s",
-                        exportable.getQualName(), fileType.getExtension()));
+                        exportable.qualName(), fileType.getExtension()));
         } else if (resourceKind.isGraphBased()) {
-            AspectGraph graph = GraphConverter.toAspect(exportable.getGraph());
-            if (exportable.getKind() == ResourceKind.HOST && fileType != FileType.STATE) {
+            AspectGraph graph = GraphConverter.toAspect(exportable.graph());
+            if (resourceKind == ResourceKind.HOST && fileType != FileType.STATE) {
                 // we are converting a host graph to a rule or type graph
                 // so unwrap any literal labels
                 graph = graph.unwrap();
@@ -144,7 +145,7 @@ public class NativePorter extends AbstractExporter implements Importer {
                 throw new PortException(e);
             }
         } else {
-            var textModel = (TextBasedModel<?>) exportable.getModel();
+            var textModel = (TextBasedModel<?>) exportable.model();
             assert textModel != null;
             try (Writer writer = new FileWriter(file)) {
                 writer.write(textModel.getSource());

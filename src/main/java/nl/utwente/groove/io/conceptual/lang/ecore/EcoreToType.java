@@ -70,7 +70,9 @@ public class EcoreToType extends TypeImporter {
     public EcoreToType(String typeModel) throws ImportException {
         // Create new ResourceSet and register an XMI model loader (for all filetypes)
         this.rs = new ResourceSetImpl();
-        this.rs.getResourceFactoryRegistry().getExtensionToFactoryMap()
+        this.rs
+            .getResourceFactoryRegistry()
+            .getExtensionToFactoryMap()
             .put("*", new XMIResourceFactoryImpl());
 
         // Load the XMI model containing Ecore type model
@@ -92,7 +94,7 @@ public class EcoreToType extends TypeImporter {
         if (!it.hasNext() || !(topObject = it.next()).eClass().getName().equals("EPackage")) {
             throw new ImportException("Ecore type model has no root package");
         }
-
+        
         m_typeName = ((EPackage) topObject).getName();
         */
 
@@ -275,8 +277,9 @@ public class EcoreToType extends TypeImporter {
         }
 
         // Add the attribute
-        cmClass.addField(new Field(Name.getName(eAttribute.getName()), attribType,
-            eAttribute.getLowerBound(), eAttribute.getUpperBound()));
+        cmClass
+            .addField(new Field(Name.getName(eAttribute.getName()), attribType,
+                eAttribute.getLowerBound(), eAttribute.getUpperBound()));
     }
 
     private void visitReference(TypeModel mm, Class cmClass, EReference eReference) {
@@ -338,8 +341,9 @@ public class EcoreToType extends TypeImporter {
         }
 
         // Add the reference to the class
-        cmClass.addField(new Field(refName, fieldType, eReference.getLowerBound(),
-            eReference.getUpperBound()));
+        cmClass
+            .addField(new Field(refName, fieldType, eReference.getLowerBound(),
+                eReference.getUpperBound()));
     }
 
     // Inserts the package in the resourceset, so it can be used to load instance models

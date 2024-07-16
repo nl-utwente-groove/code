@@ -23,13 +23,11 @@ import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.graph.multi.MultiGraph;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.Exportable;
-import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.Exporters;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Groove;
-import nl.utwente.groove.util.Pair;
 
 /**
  * Exploration reporter that saves the LTS.
@@ -95,10 +93,11 @@ public class LTSReporter extends AExplorationReporter {
         }
         ltsName = ltsName.replace(PLACEHOLDER, lts.getGrammar().getId());
         File outFile = new File(dir, ltsName);
-        Pair<FileType,Exporter> gtsFormat = Exporters.getAcceptingFormat(ltsName);
-        if (gtsFormat != null) {
+        var fileType = FileType.getType(outFile);
+        var exporter = Exporters.getExporter(fileType);
+        if (exporter != null && exporter.supports(Exportable.Kind.GRAPH)) {
             try {
-                gtsFormat.two().doExport(new Exportable(ltsGraph), outFile, gtsFormat.one());
+                exporter.doExport(Exportable.instance(ltsGraph), outFile, fileType);
             } catch (PortException e1) {
                 throw new IOException(e1);
             }

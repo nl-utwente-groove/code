@@ -33,6 +33,7 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.io.FileType;
+import nl.utwente.groove.io.external.Imported;
 import nl.utwente.groove.io.external.Importer;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.graph.ColIO;
@@ -62,17 +63,12 @@ public class ColImporter implements Importer {
 
     private final Set<FileType> fileTypes;
 
-    @Override
-    public Set<Kind> getFormatKinds() {
-        return EnumSet.of(Kind.RESOURCE);
-    }
-
     // Methods from FileFormat.
 
     @Override
-    public Set<Resource> doImport(File file, FileType fileType, GrammarModel grammar)
-        throws PortException {
-        Set<Resource> resources;
+    public Set<Imported> doImport(File file, FileType fileType,
+                                  GrammarModel grammar) throws PortException {
+        Set<Imported> resources;
         try (FileInputStream stream = new FileInputStream(file)) {
             QualName name = QualName.name(fileType.stripExtension(file.getName()));
             resources = doImport(name, stream, fileType, grammar);
@@ -83,13 +79,13 @@ public class ColImporter implements Importer {
     }
 
     @Override
-    public Set<Resource> doImport(QualName name, InputStream stream, FileType fileType,
-        GrammarModel grammar) throws PortException {
+    public Set<Imported> doImport(QualName name, InputStream stream, FileType fileType,
+                                  GrammarModel grammar) throws PortException {
         try {
             this.io.setGraphName(name.toString());
             HostGraph graph = this.io.loadGraph(stream);
             AspectGraph aGraph = GraphConverter.toAspect(graph);
-            Resource res = new Resource(ResourceKind.HOST, aGraph);
+            Imported res = new Imported(ResourceKind.HOST, aGraph);
             return Collections.singleton(res);
         } catch (IOException e) {
             throw new PortException(e);

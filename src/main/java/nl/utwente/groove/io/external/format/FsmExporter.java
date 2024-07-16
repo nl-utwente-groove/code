@@ -39,15 +39,14 @@ import nl.utwente.groove.io.external.PortException;
  */
 public final class FsmExporter extends AbstractExporter {
     private FsmExporter() {
-        super(Kind.GRAPH);
+        super(Exportable.Kind.GRAPH);
         register(FileType.FSM);
     }
 
     @Override
     public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
-        Graph graph = exportable.getGraph();
         try (PrintWriter writer = new PrintWriter(file)) {
-            this.save(graph, writer);
+            this.save(exportable.graph(), writer);
         } catch (FileNotFoundException e) {
             throw new PortException(e);
         }
@@ -66,8 +65,9 @@ public final class FsmExporter extends AbstractExporter {
         }
         writer.println("---");
         for (Edge edge : graph.edgeSet()) {
-            writer.println(nodeMap.get(edge.source()) + " " + nodeMap.get(edge.target()) + " "
-                + "\"" + edge.label() + "\"");
+            writer
+                .println(nodeMap.get(edge.source()) + " " + nodeMap.get(edge.target()) + " " + "\""
+                    + edge.label() + "\"");
         }
     }
 

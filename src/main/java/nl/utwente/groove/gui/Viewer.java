@@ -65,12 +65,9 @@ public class Viewer extends GrooveCmdLineTool<Object> {
     /** Shows a given file as a graph in an optionally modal dialog. */
     public void show(File file, boolean modal) throws IOException, FormatException {
         GraphIO<?> io = null;
-        for (FileType type : FileType.getType(file)) {
-            if (type.hasGraphIO() && type.getGraphIO()
-                .canLoad()) {
-                io = type.getGraphIO();
-                break;
-            }
+        var type = FileType.getType(file);
+        if (type != null && type.hasGraphIO() && type.getGraphIO().canLoad()) {
+            io = type.getGraphIO();
         }
         GrammarModel grammar = getGrammar();
         final Graph graph;
@@ -102,8 +99,7 @@ public class Viewer extends GrooveCmdLineTool<Object> {
      * Tries to find the enclosing grammar of the graph file
      */
     private GrammarModel getGrammar() throws IOException {
-        File dir = this.inFile.getCanonicalFile()
-            .getParentFile();
+        File dir = this.inFile.getCanonicalFile().getParentFile();
         while (dir != null && !FileType.GRAMMAR.hasExtension(dir)) {
             dir = dir.getParentFile();
         }
@@ -117,7 +113,8 @@ public class Viewer extends GrooveCmdLineTool<Object> {
     /** The location of the file to be viewer. */
     @Argument(metaVar = "input",
         usage = "Graph file to be viewed. Its extension is used to guess its format and type",
-        required = true, handler = ExistingFileHandler.class) private File inFile;
+        required = true, handler = ExistingFileHandler.class)
+    private File inFile;
 
     /**
      * Invokes the viewer for a given list of command-line arguments.
@@ -165,8 +162,7 @@ public class Viewer extends GrooveCmdLineTool<Object> {
 
     private class NodeIdsButton extends JButton {
         NodeIdsButton(GraphPreviewPanel panel) {
-            this.nodeIdsItem = panel.getOptions()
-                .getItem(Options.SHOW_NODE_IDS_OPTION);
+            this.nodeIdsItem = panel.getOptions().getItem(Options.SHOW_NODE_IDS_OPTION);
             setText();
             addActionListener(new ActionListener() {
                 @Override

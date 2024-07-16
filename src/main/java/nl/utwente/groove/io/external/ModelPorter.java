@@ -48,18 +48,18 @@ import nl.utwente.groove.io.conceptual.lang.groove.TypeToGroove;
 import nl.utwente.groove.util.Pair;
 
 /** Im- and exporter for conceptual model-based formats. */
-public abstract class ConceptualPorter extends AbstractExporter implements Importer {
+public abstract class ModelPorter extends AbstractExporter implements Importer {
     /** Constructs a porter for a given format, with given instance format and type extensions. */
-    protected ConceptualPorter(FileType typeFileType, FileType instanceFileType) {
-        super(Kind.RESOURCE);
+    protected ModelPorter(FileType typeFileType, FileType instanceFileType) {
+        super(Exportable.Kind.RESOURCE);
         register(ResourceKind.TYPE, typeFileType);
         register(ResourceKind.HOST, instanceFileType);
     }
 
     @Override
-    public Set<Resource> doImport(File file, FileType fileType,
+    public Set<Imported> doImport(File file, FileType fileType,
                                   GrammarModel grammar) throws PortException {
-        Set<Resource> result = Collections.emptySet();
+        Set<Imported> result = Collections.emptySet();
         Pair<TypeModel,InstanceModel> models = null;
         try {
             if (fileType == getFileType(ResourceKind.HOST)) {
@@ -88,7 +88,7 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
                                                                      GrammarModel grammar) throws ImportException;
 
     @Override
-    public Set<Resource> doImport(QualName name, InputStream stream, FileType fileType,
+    public Set<Imported> doImport(QualName name, InputStream stream, FileType fileType,
                                   GrammarModel grammar) throws PortException {
         //TODO: play nice with streams
         throw new UnsupportedOperationException();
@@ -96,10 +96,10 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
 
     @Override
     public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
-        QualName name = exportable.getQualName();
+        QualName name = exportable.qualName();
         ModuleName namespace = name.parent();
 
-        ResourceModel<?> model = exportable.getModel();
+        ResourceModel<?> model = exportable.model();
         if (model == null) {
             throw new PortException(String
                 .format("'%s' is not a grammar resource and hence cannot be exported as %s", name,
@@ -199,9 +199,9 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
      * @return Graphs to insert in grammar
      * @throws PortException if an error occurred during loading
      */
-    private Set<Resource> loadModel(Config cfg, TypeModel tm,
+    private Set<Imported> loadModel(Config cfg, TypeModel tm,
                                     InstanceModel im) throws PortException {
-        Set<Resource> result = new HashSet<>();
+        Set<Imported> result = new HashSet<>();
         SimulatorModel simulatorModel = getSimulator() == null
             ? null
             : getSimulator().getModel();
@@ -226,7 +226,7 @@ public abstract class ConceptualPorter extends AbstractExporter implements Impor
             ResourceKind kind = ResourceKind.toResource(entry.getKey());
             for (GrammarGraph graph : entry.getValue().values()) {
                 AspectGraph aspectGraph = graph.getGraph().toAspectGraph();
-                Resource resource = new Resource(kind, aspectGraph);
+                Imported resource = new Imported(kind, aspectGraph);
                 result.add(resource);
             }
         }

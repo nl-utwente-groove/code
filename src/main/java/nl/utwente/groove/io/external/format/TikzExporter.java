@@ -21,7 +21,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
@@ -43,15 +42,14 @@ public final class TikzExporter extends AbstractExporter {
     }
 
     private TikzExporter() {
-        super(Kind.JGRAPH);
+        super(Exportable.Kind.JGRAPH);
         register(FileType.TIKZ);
     }
 
     @Override
     public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
-        JGraph<?> jGraph = exportable.getJGraph();
         try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
-            GraphToTikz.export(jGraph, writer);
+            GraphToTikz.export(exportable.jGraph(), writer);
         } catch (IOException e) {
             throw new PortException(e);
         }
