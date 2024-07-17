@@ -28,6 +28,7 @@ import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
+import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.PortException;
 
 /**
@@ -38,7 +39,7 @@ import nl.utwente.groove.io.external.PortException;
  */
 public class RasterExporter extends AbstractExporter {
     private RasterExporter() {
-        super(Exportable.Kind.JGRAPH);
+        super(Exporter.ExportKind.JGRAPH);
         addFormat(FileType.PNG, "png");
         addFormat(FileType.JPG, "jpg");
     }

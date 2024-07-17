@@ -34,5 +34,5 @@ public interface Porter {
      * Get list of file types this im-/exporter can handle.
      * @return list of supported file types.
      */
-    public Set<FileType> getSupportedFileTypes();
+    public Set<FileType> getFileTypes();
 }

@@ -56,9 +56,7 @@ public class Exporters {
         // determine the set of suitable file types and exporters
         Map<FileType,Exporter> exporters = new EnumMap<>(FileType.class);
         for (Exporter exporter : getExporters()) {
-            for (FileType fileType : exporter.getFileTypes(exportable)) {
-                exporters.put(fileType, exporter);
-            }
+            exporter.getFileTypes(exportable).forEach(ft -> exporters.put(ft, exporter));
         }
         assert !exporters.isEmpty();
         // choose a file and exporter
@@ -147,7 +145,7 @@ public class Exporters {
     private static Map<FileType,Exporter> createExporterMap() {
         Map<FileType,Exporter> result = new EnumMap<>(FileType.class);
         for (Exporter exporter : getExporters()) {
-            for (FileType fileType : exporter.getSupportedFileTypes()) {
+            for (FileType fileType : exporter.getFileTypes()) {
                 Exporter oldValue = result.put(fileType, exporter);
                 assert oldValue == null : String
                     .format("Duplicate exporter for file type: %s", fileType.name());

@@ -19,26 +19,30 @@ package nl.utwente.groove.io.external;
 import java.io.File;
 import java.util.Set;
 
+import nl.utwente.groove.grammar.model.ResourceModel;
+import nl.utwente.groove.graph.Graph;
+import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.io.FileType;
 
 /**
- * Class used to save exportables to files in a predefined
+ * Class used to save {@link Exportable}s to files in a predefined
  * format (determined by {@link FileType}).
- * An exporter may support multiple (kinds of) {@link Exportable}s, and for a given
- * {@link Exportable} may support multiple {@link FileType}s.
- * However, any {@link FileType} has at most one supporting {@link Exporter}.
+ * An {@link Exporter} supports a single {@link ExportKind}, but may not support every
+ * {@link Exportable} of that kind; this can be tested using {@link #exports(Exportable)}.
+ * If an {@link Exportable} is supported, there may be multiple file types to which it can
+ * be exported; these can be obtained through {@link #getFileTypes(Exportable)}.
+ * For any combination of {@link ExportKind} and {@link FileType}, there is at most
+ * one {@link Exporter} supporting this.
  * @author Arend Rensink
  * @version $Revision$
  */
 public interface Exporter extends Porter {
-    /** Indicates what kind of objects this exporter handles. */
-    public Set<Exportable.Kind> getExportableKinds();
+    /** Returns the export kind supported by this exporter. */
+    public ExportKind getKind();
 
-    /** Indicates if this exporter supports a given exportable kind.
-     * This is true if and only of {@link #getExportableKinds()} contains the given kind.
-     */
-    default public boolean supports(Exportable.Kind exportableKind) {
-        return getExportableKinds().contains(exportableKind);
+    /** Indicates if this exporter supports a given export kind. */
+    default public boolean hasKind(ExportKind exportKind) {
+        return getKind() == exportKind;
     }
 
     /**
@@ -60,4 +64,14 @@ public interface Exporter extends Porter {
      * @throws PortException if something went wrong during export (typically I/O-related)
      */
     public void doExport(Exportable exportable, File file, FileType fileType) throws PortException;
+
+    /** Kinds of objects that can be exported. */
+    enum ExportKind {
+        /** Instances of {@link Graph}. */
+        GRAPH,
+        /** Instances of {@link JGraph}. */
+        JGRAPH,
+        /** Instances of {@link ResourceModel}. */
+        RESOURCE;
+    }
 }

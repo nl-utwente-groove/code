@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.Set;
 
 import nl.utwente.groove.grammar.QualName;
@@ -32,10 +31,8 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.TextBasedModel;
 import nl.utwente.groove.io.FileType;
-import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Imported;
-import nl.utwente.groove.io.external.Importer;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.graph.AttrGraph;
 import nl.utwente.groove.io.graph.GxlIO;
@@ -45,14 +42,10 @@ import nl.utwente.groove.io.graph.GxlIO;
  * @author Harold Bruijntjes
  * @version $Revision$
  */
-public class NativePorter extends AbstractExporter implements Importer {
+public class NativePorter extends AbstractResourcePorter {
     private NativePorter() {
-        super(Exportable.Kind.GRAPH, Exportable.Kind.RESOURCE);
         register(ResourceKind.TYPE);
         register(ResourceKind.HOST);
-        //register(ResourceKind.HOST, FileType.GXL);
-        //register(ResourceKind.HOST, FileType.RULE);
-        //register(ResourceKind.HOST, FileType.TYPE);
         register(ResourceKind.RULE);
         register(ResourceKind.CONTROL);
         register(ResourceKind.PROLOG);
@@ -60,20 +53,9 @@ public class NativePorter extends AbstractExporter implements Importer {
         register(ResourceKind.CONFIG);
     }
 
-    @Override
-    public Set<FileType> getFileTypes(Exportable exportable) {
-        Set<FileType> result = EnumSet.noneOf(FileType.class);
-        var resourceKind = exportable.getResourceKind();
-        if (resourceKind == ResourceKind.HOST) {
-            // host graphs can be exported to any known graph resource type
-            result.addAll(FileType.GRAPHS.getSubTypes());
-        } else if (resourceKind != null) {
-            FileType fileType = getFileType(resourceKind);
-            if (fileType != null) {
-                result.add(fileType);
-            }
-        }
-        return Collections.unmodifiableSet(result);
+    /** Registers a resource kind with its default file type. */
+    private void register(ResourceKind kind) {
+        register(kind, kind.getFileType());
     }
 
     @Override
@@ -145,7 +127,7 @@ public class NativePorter extends AbstractExporter implements Importer {
                 throw new PortException(e);
             }
         } else {
-            var textModel = (TextBasedModel<?>) exportable.model();
+            var textModel = (TextBasedModel<?>) exportable.resourceModel();
             assert textModel != null;
             try (Writer writer = new FileWriter(file)) {
                 writer.write(textModel.getSource());

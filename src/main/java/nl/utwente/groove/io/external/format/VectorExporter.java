@@ -24,6 +24,7 @@ import java.util.Map;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
+import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.external.util.GraphToEPS;
 import nl.utwente.groove.io.external.util.GraphToPDF;
@@ -39,7 +40,7 @@ import nl.utwente.groove.io.external.util.GraphToVector;
 public class VectorExporter extends AbstractExporter {
     /** Private constructor for the singleton instance. */
     private VectorExporter() {
-        super(Exportable.Kind.JGRAPH);
+        super(Exporter.ExportKind.JGRAPH);
         addFormat(FileType.EPS, GraphToEPS.class);
         addFormat(FileType.PDF, GraphToPDF.class);
         addFormat(FileType.SVG, GraphToSVG.class);

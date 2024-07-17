@@ -60,7 +60,7 @@ public class ConceptualIO extends GraphIO<AspectGraph> {
     @Override
     protected void doSaveGraph(Graph graph, File file) throws IOException {
         try {
-            this.porter.doExport(Exportable.instance(graph), file, this.fileType);
+            this.porter.doExport(Exportable.graph(graph), file, this.fileType);
         } catch (PortException e) {
             if (e.getCause() instanceof IOException exc) {
                 throw exc;

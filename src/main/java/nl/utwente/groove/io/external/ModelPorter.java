@@ -45,13 +45,13 @@ import nl.utwente.groove.io.conceptual.lang.groove.GrooveResource;
 import nl.utwente.groove.io.conceptual.lang.groove.InstanceToGroove;
 import nl.utwente.groove.io.conceptual.lang.groove.MetaToGroove;
 import nl.utwente.groove.io.conceptual.lang.groove.TypeToGroove;
+import nl.utwente.groove.io.external.format.AbstractResourcePorter;
 import nl.utwente.groove.util.Pair;
 
 /** Im- and exporter for conceptual model-based formats. */
-public abstract class ModelPorter extends AbstractExporter implements Importer {
+public abstract class ModelPorter extends AbstractResourcePorter {
     /** Constructs a porter for a given format, with given instance format and type extensions. */
     protected ModelPorter(FileType typeFileType, FileType instanceFileType) {
-        super(Exportable.Kind.RESOURCE);
         register(ResourceKind.TYPE, typeFileType);
         register(ResourceKind.HOST, instanceFileType);
     }
@@ -99,7 +99,7 @@ public abstract class ModelPorter extends AbstractExporter implements Importer {
         QualName name = exportable.qualName();
         ModuleName namespace = name.parent();
 
-        ResourceModel<?> model = exportable.model();
+        ResourceModel<?> model = exportable.resourceModel();
         if (model == null) {
             throw new PortException(String
                 .format("'%s' is not a grammar resource and hence cannot be exported as %s", name,

@@ -30,7 +30,6 @@ import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.CtrlJGraph;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.jgraph.JModel;
-import nl.utwente.groove.gui.jgraph.LTSJGraph;
 import nl.utwente.groove.gui.jgraph.PlainJGraph;
 
 /**
@@ -131,9 +130,6 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
             } else {
                 jGraph = null;
             }
-            break;
-        case LTS:
-            jGraph = new LTSJGraph(this.simulator);
             break;
         default:
             jGraph = null;

@@ -22,6 +22,7 @@ import java.io.IOException;
 import nl.utwente.groove.grammar.aspect.GraphConverter;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.Exportable;
+import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.Exporters;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.lts.GraphState;
@@ -45,7 +46,7 @@ public class StateReporter extends AExplorationReporter {
     public void report() throws IOException {
         var fileType = FileType.getType(this.statePattern);
         var exporter = Exporters.getExporter(fileType);
-        if (exporter != null && exporter.getExportableKinds().contains(Exportable.Kind.GRAPH)) {
+        if (exporter != null && exporter.hasKind(Exporter.ExportKind.GRAPH)) {
             this.logger
                 .append("Pattern %s does not specify known export format: states saved in native GXL%n",
                         this.statePattern);
@@ -72,9 +73,9 @@ public class StateReporter extends AExplorationReporter {
         File stateFile = new File(stateFilename);
         var fileType = FileType.getType(stateFile);
         var exporter = Exporters.getExporter(fileType);
-        if (exporter != null && exporter.supports(Exportable.Kind.GRAPH)) {
+        if (exporter != null && exporter.hasKind(Exporter.ExportKind.GRAPH)) {
             try {
-                exporter.doExport(Exportable.instance(state.getGraph()), stateFile, fileType);
+                exporter.doExport(Exportable.graph(state.getGraph()), stateFile, fileType);
             } catch (PortException e1) {
                 throw new IOException(e1);
             }

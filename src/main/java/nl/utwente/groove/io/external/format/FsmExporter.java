@@ -28,6 +28,7 @@ import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
+import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.PortException;
 
 /**
@@ -39,7 +40,7 @@ import nl.utwente.groove.io.external.PortException;
  */
 public final class FsmExporter extends AbstractExporter {
     private FsmExporter() {
-        super(Exportable.Kind.GRAPH);
+        super(Exporter.ExportKind.GRAPH);
         register(FileType.FSM);
     }
 

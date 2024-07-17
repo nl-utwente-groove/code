@@ -17,116 +17,55 @@
 package nl.utwente.groove.io.external;
 
 import java.awt.Frame;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.Nullable;
-
-import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.io.FileType;
 
 /** Abstract superclass for {@link Exporter}s, containing a few helper methods. */
 public abstract class AbstractExporter implements Exporter {
     /** Constructor for subclassing. */
-    protected AbstractExporter(Exportable.Kind... formatKinds) {
-        this.formatKinds = EnumSet.copyOf(Arrays.asList(formatKinds));
+    protected AbstractExporter(ExportKind exportKind) {
+        this.exportKind = exportKind;
         this.fileTypes = EnumSet.noneOf(FileType.class);
-        this.fileTypeMap = new EnumMap<>(ResourceKind.class);
-        this.resourceKindMap = new EnumMap<>(FileType.class);
     }
 
     @Override
-    public final Set<Exportable.Kind> getExportableKinds() {
-        return this.formatKinds;
+    public final ExportKind getKind() {
+        return this.exportKind;
     }
 
-    private final EnumSet<Exportable.Kind> formatKinds;
-
-    /**
-     * Registers a file type supported by this exporter.
-     * The file type is assumed to be suitable for exporting graphs.
-     * Should only be called from subclasses, during construction time,
-     * and only if {@link #getExportableKinds()} equals {@link Exportable.Kind#GRAPH}
-     * or {@link Exportable.Kind#JGRAPH}.
-     */
-    protected final void register(FileType fileType) {
-        assert getExportableKinds().contains(Exportable.Kind.GRAPH)
-            || getExportableKinds().contains(Exportable.Kind.JGRAPH);
-        this.fileTypes.add(fileType);
-    }
-
-    /**
-     * Registers a file type supported by this exporter, to be used for a given resource kind.
-     * Should only be called if {@link #getExportableKinds()} includes {@link Exportable.Kind#RESOURCE}.
-     */
-    protected final void register(ResourceKind kind, FileType fileType) {
-        assert getExportableKinds().contains(Exportable.Kind.RESOURCE);
-        this.fileTypes.add(fileType);
-        this.fileTypeMap.put(kind, fileType);
-        var oldKind = this.resourceKindMap.put(fileType, kind);
-        assert oldKind == null || oldKind.equals(kind) : String
-            .format("Conflicting resource kinds %s and %s for file type %s", oldKind, kind,
-                    fileType);
-    }
-
-    /** Returns the file type registered for a given resource kind, if any. */
-    protected final @Nullable FileType getFileType(ResourceKind kind) {
-        return this.fileTypeMap.get(kind);
-    }
-
-    /** Returns the resource kind associated with a given file type, if any. */
-    protected final @Nullable ResourceKind getResourceKind(FileType fileType) {
-        return this.resourceKindMap.get(fileType);
-    }
-
-    /**
-     * Registers a resource kind supported by this exporter, with its default file type.
-     * Should only be called if {@link #getExportableKinds()} equals {@link Exportable.Kind#RESOURCE}.
-     */
-    protected final void register(ResourceKind kind) {
-        register(kind, kind.getFileType());
-    }
-
-    private final Set<FileType> fileTypes;
-    private final Map<ResourceKind,FileType> fileTypeMap;
-    /** Map from file type the native file type. */
-    private final Map<FileType,ResourceKind> resourceKindMap;
+    /** The export kind of this exporter. */
+    private final ExportKind exportKind;
 
     @Override
-    public Set<FileType> getSupportedFileTypes() {
+    public Set<FileType> getFileTypes() {
         return this.fileTypes;
     }
 
+    /**
+     * Registers a file type supported by this exporter.
+     * Should only be called from subclasses, during construction time.
+     */
+    protected final void register(FileType fileType) {
+        this.fileTypes.add(fileType);
+    }
+
+    /** The set of all supported file types. */
+    private final Set<FileType> fileTypes;
+
+    /** This implementation returns the empty set for exportables that do not
+     * have the export kind required by this exporter; otherwise it calls {@link #getFileTypes()}.
+     */
     @Override
     public Set<FileType> getFileTypes(Exportable exportable) {
-        Set<FileType> result = EnumSet.noneOf(FileType.class);
-        boolean supports = false;
-        for (Exportable.Kind porterKind : getExportableKinds()) {
-            if (exportable.hasKind(porterKind)) {
-                supports = true;
-                break;
-            }
+        if (exportable.hasExportKind(getKind())) {
+            return getFileTypes();
+        } else {
+            return Collections.emptySet();
         }
-        if (supports) {
-            if (exportable.hasKind(Exportable.Kind.RESOURCE)
-                && getExportableKinds().contains(Exportable.Kind.RESOURCE)) {
-                // check if the specific resource kind is supported
-                var model = exportable.model();
-                assert model != null;
-                FileType fileType = getFileType(model.getKind());
-                if (fileType != null) {
-                    result.add(fileType);
-                }
-            } else {
-                result.addAll(getSupportedFileTypes());
-            }
-        }
-        return Collections.unmodifiableSet(result);
     }
 
     /** Returns the parent component for a dialog. */

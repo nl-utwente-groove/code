@@ -158,7 +158,7 @@ public class Importers {
     private static Map<FileType,Importer> createImporterMap() {
         Map<FileType,Importer> result = new EnumMap<>(FileType.class);
         for (Importer ri : getImporters()) {
-            for (FileType fileType : ri.getSupportedFileTypes()) {
+            for (FileType fileType : ri.getFileTypes()) {
                 result.put(fileType, ri);
             }
         }

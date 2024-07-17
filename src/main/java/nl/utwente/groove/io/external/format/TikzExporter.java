@@ -24,6 +24,7 @@ import java.io.PrintWriter;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
+import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.external.util.GraphToTikz;
 
@@ -42,7 +43,7 @@ public final class TikzExporter extends AbstractExporter {
     }
 
     private TikzExporter() {
-        super(Exportable.Kind.JGRAPH);
+        super(Exporter.ExportKind.JGRAPH);
         register(FileType.TIKZ);
     }
 

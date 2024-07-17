@@ -91,8 +91,7 @@ import nl.utwente.groove.util.cli.GrooveCmdLineTool;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
- * Application to create jpeg or gif files for a state or rule graph, or a
- * directory of them.
+ * Application to create image files for one or more graph files in a directory.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -241,10 +240,10 @@ public class Imager extends GrooveCmdLineTool<Object> {
             final Exporter exporter = Exporters.getExporter(fileType);
             final File exportFile = new File(outParent, fileType.addExtension(outFileName));
 
-            emit(MEDIUM, "Imaging %s as %s%n", inFile, outFile);
+            emit(MEDIUM, "Imaging %s as %s%n", inFile, exportFile);
             GraphBasedModel<?> resourceModel
                 = (GraphBasedModel<?>) grammar.getResource(resource.one(), resource.two());
-            final Exportable exportable = toExportable(resourceModel, exporter.getExportableKinds());
+            final Exportable exportable = toExportable(resourceModel, exporter.getKind());
             // make sure the export happens on the event thread
             Runnable export = new Runnable() {
                 @Override
@@ -276,16 +275,13 @@ public class Imager extends GrooveCmdLineTool<Object> {
 
     /** Converts a resource model to an exportable object of the right kind. */
     private Exportable toExportable(GraphBasedModel<?> resourceModel,
-                                    Set<Exportable.Kind> outFormats) {
-        Exportable result;
+                                    Exporter.ExportKind outFormats) {
         AspectGraph aspectGraph = resourceModel.getSource();
         // find out what we have to export
-        if (outFormats.contains(Exportable.Kind.GRAPH)) {
-            result = Exportable.instance(aspectGraph);
-        } else if (outFormats.contains(Exportable.Kind.RESOURCE)) {
-            result = Exportable.instance(resourceModel);
-        } else {
-            assert outFormats.contains(Exportable.Kind.JGRAPH);
+        Exportable result = switch (outFormats) {
+        case GRAPH -> Exportable.graph(aspectGraph);
+        case RESOURCE -> Exportable.resource(resourceModel);
+        case JGRAPH -> {
             Options options = new Options();
             options.getItem(Options.SHOW_VALUE_NODES_OPTION).setSelected(isEditorView());
             options.getItem(Options.SHOW_ASPECTS_OPTION).setSelected(isEditorView());
@@ -303,8 +299,9 @@ public class Imager extends GrooveCmdLineTool<Object> {
             Dimension oldPrefSize = jGraph.getPreferredSize();
             Dimension newPrefSize = new Dimension(oldPrefSize.width * 2, oldPrefSize.height * 2);
             jGraph.setSize(newPrefSize);
-            result = Exportable.instance(jGraph);
+            yield Exportable.jGraph(jGraph);
         }
+        };
         return result;
     }
 
@@ -441,10 +438,10 @@ public class Imager extends GrooveCmdLineTool<Object> {
         if (result == null) {
             result = formatMap = new HashMap<>();
             for (Exporter exporter : Exporters.getExporters()) {
-                if (exporter.getExportableKinds().contains(Exportable.Kind.RESOURCE)) {
+                if (exporter.hasKind(Exporter.ExportKind.RESOURCE)) {
                     continue;
                 }
-                for (FileType fileType : exporter.getSupportedFileTypes()) {
+                for (FileType fileType : exporter.getFileTypes()) {
                     result.put(fileType.getExtensionName(), fileType); //strip dot
                 }
             }

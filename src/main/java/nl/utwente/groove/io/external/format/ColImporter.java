@@ -57,7 +57,7 @@ public class ColImporter implements Importer {
     }
 
     @Override
-    public Set<FileType> getSupportedFileTypes() {
+    public Set<FileType> getFileTypes() {
         return this.fileTypes;
     }
 

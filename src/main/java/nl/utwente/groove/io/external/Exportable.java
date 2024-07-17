@@ -17,6 +17,7 @@
 package nl.utwente.groove.io.external;
 
 import java.util.EnumSet;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -29,80 +30,84 @@ import nl.utwente.groove.grammar.model.ResourceModel;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.io.external.Exporter.ExportKind;
 
 /**
  * Wrapper class for resources to be exported.
- * Can wrap either {@link Graph}s, {@link JGraph}s or {@link ResourceModel}s.
+ * Can wrap either {@link Graph}s, {@link JGraph}s or {@link ResourceModel}s (or a combination).
+ * @param exportKinds the kind of exportable objects that this {@link Exportable} contains
+ * The export kind determines which of the fields of this {@link Exportable} is non-{@code null}:
+ * <ul>
+ * <li> {@link ExportKind#JGRAPH} is an element if and only if {@link #jGraph()} is non-{@code null}
+ * (note that this may but does not have to imply that {@link ExportKind#RESOURCE} is also contained)
+ * <li> {@link ExportKind#RESOURCE} is an element if and only if {@link #resourceModel()} is non-{@code null}
+ * (note that then {@link ExportKind#GRAPH} also holds if and only if the resource is graph-based)
+ * <li> {@link ExportKind#GRAPH} is an element if and only if {@link #graph()} is non-{@code null}
+ * </ul>
+ * @param qualName the name of the exportable object
+ * @param jGraph the optional {@link JGraph} contained in this exportable object
+ * @param graph the optional {@link Graph} contained in this exportable object
+ * @param resourceModel the optional {@link ResourceModel} contained in this exportable object
  * @author Harold Bruijntjes
  * @version $Revision$
  */
-public record Exportable(EnumSet<Kind> kinds, @NonNull QualName qualName, @Nullable JGraph<?> jGraph,
-    @Nullable Graph graph, @Nullable ResourceModel<?> model) {
+public record Exportable(Set<ExportKind> exportKinds, @NonNull QualName qualName,
+    @Nullable JGraph<?> jGraph, @Nullable Graph graph, @Nullable ResourceModel<?> resourceModel) {
 
-    /** Indicates if this exportable contains an object of a given kind. */
-    public boolean hasKind(Kind kind) {
-        return this.kinds.contains(kind);
+    /** Indicates if this exportable contains an object of a given export kind.
+     * The export kind determines which of the fields of this {@link Exportable} is non-{@code null}:
+     * <ul>
+     * <li> {@code hasExportKind(JGRAPH)} holds if and only if {@link #jGraph()} is non-{@code null}
+     * (note that this may but does not have to imply that {@code hasExportKind(RESOURCE)} also holds)
+     * <li> {@code hasExportKind(RESOURCE)} holds if and only if {@link #resourceModel()} is non-{@code null}
+     * (note that then {@code hasExportKind(GRAPH)} also holds if and only if the resource is graph-based)
+     * <li> {@code hasExportKind(GRAPH)} holds if and only if {@link #graph()} is non-{@code null}
+     * </ul>
+     */
+    public boolean hasExportKind(Exporter.ExportKind kind) {
+        return exportKinds().contains(kind);
     }
 
-    /** Returns the kind of the grammar resource wrapped by this exportable, if any. */
+    /** Returns the kind of the grammar resource wrapped by this exportable, if any.
+     * Returns a non-{@code null} value if and only if {@code hasExportKind(RESOURCE)} holds,
+     * in which case also {@link #resourceModel()} is non-{@code null}.
+     */
     public @Nullable ResourceKind getResourceKind() {
-        ResourceKind result = null;
-        var model = model();
-        var graph = graph();
-        if (model != null) {
-            result = model.getKind();
-        } else if (graph != null) {
-            result = ResourceKind.toResource(graph.getRole());
-        }
-        return result;
+        var model = resourceModel();
+        return model == null
+            ? null
+            : model.getKind();
     }
 
     /** Constructs an exportable for a given {@link Graph}. */
-    static public Exportable instance(Graph graph) {
-        return new Exportable(EnumSet.of(Kind.GRAPH), QualName.parse(graph.getName()), null, graph,
-            null);
+    static public Exportable graph(Graph graph) {
+        var kinds = EnumSet.of(ExportKind.GRAPH);
+        return new Exportable(kinds, QualName.parse(graph.getName()), null, graph, null);
     }
 
     /** Constructs an exportable for a given {@link JGraph}. */
-    static public Exportable instance(JGraph<?> jGraph) {
-        var kinds = EnumSet.of(Kind.GRAPH, Kind.JGRAPH);
+    static public Exportable jGraph(JGraph<?> jGraph) {
         var graph = jGraph.getModel().getGraph();
         var model = jGraph instanceof AspectJGraph ag
             ? ag.getModel().getResourceModel()
             : null;
+        var kinds = EnumSet.of(ExportKind.JGRAPH, ExportKind.GRAPH);
         if (model != null) {
-            kinds.add(Kind.RESOURCE);
+            kinds.add(ExportKind.RESOURCE);
         }
         var name = QualName.parse(graph.getName());
         return new Exportable(kinds, name, jGraph, graph, model);
     }
 
     /** Constructs an exportable for a given {@link ResourceModel}. */
-    static public Exportable instance(NamedResourceModel<?> model) {
-        var kinds = EnumSet.of(Kind.RESOURCE);
+    static public Exportable resource(NamedResourceModel<?> resourceModel) {
+        var name = resourceModel.getQualName();
+        var kinds = EnumSet.of(ExportKind.RESOURCE);
         Graph graph = null;
-        if (model.getKind().isGraphBased()) {
-            kinds.add(Kind.GRAPH);
-            graph = ((GraphBasedModel<?>) model).getSource();
+        if (resourceModel instanceof GraphBasedModel graphModel) {
+            graph = graphModel.getSource();
+            kinds.add(ExportKind.GRAPH);
         }
-        var name = model.getQualName();
-        return new Exportable(kinds, name, null, graph, model);
-    }
-
-    /** Constructs an exportable for a given {@link ResourceModel} that is displayed in a {@link JGraph}. */
-    static public Exportable instance(JGraph<?> jGraph, NamedResourceModel<?> model) {
-        var kinds = EnumSet.of(Kind.GRAPH, Kind.JGRAPH, Kind.RESOURCE);
-        var graph = jGraph.getModel().getGraph();
-        return new Exportable(kinds, model.getQualName(), jGraph, graph, model);
-    }
-
-    /** Kinds of objects that can be exported. */
-    public static enum Kind {
-        /** Instances of {@link Graph}. */
-        GRAPH,
-        /** Instances of {@link JGraph}. */
-        JGRAPH,
-        /** Instances of {@link ResourceModel}. */
-        RESOURCE;
+        return new Exportable(kinds, name, null, graph, resourceModel);
     }
 }

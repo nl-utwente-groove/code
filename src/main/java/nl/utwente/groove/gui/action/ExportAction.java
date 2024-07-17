@@ -16,6 +16,7 @@ import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporters;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Action to save the content of a {@link JGraph},
@@ -52,14 +53,10 @@ public class ExportAction extends SimulatorAction {
         Exportable exportable;
         if (this.isGraph) {
             // Export graph
-            if (getResource() != null) {
-                exportable = Exportable.instance(getJGraph(), getResource());
-            } else {
-                exportable = Exportable.instance(getJGraph());
-            }
+            exportable = Exportable.jGraph(getJGraph());
         } else {
             // Export resource
-            exportable = Exportable.instance(getResource());
+            exportable = Exportable.resource(getResource());
         }
         Exporters.doExport(exportable, getSimulator());
     }
@@ -135,8 +132,7 @@ public class ExportAction extends SimulatorAction {
             case LTS:
                 return getLtsDisplay().getJGraph();
             default:
-                assert false;
-                return null;
+                throw Exceptions.UNREACHABLE;
             }
         } else {
             return this.jGraph;

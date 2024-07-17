@@ -32,6 +32,7 @@ import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
+import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.Imported;
 import nl.utwente.groove.io.external.Importer;
 import nl.utwente.groove.io.external.PortException;
@@ -43,7 +44,7 @@ import nl.utwente.groove.io.graph.AutIO;
  */
 public final class AutPorter extends AbstractExporter implements Importer {
     private AutPorter() {
-        super(Exportable.Kind.GRAPH);
+        super(Exporter.ExportKind.GRAPH);
         register(FileType.AUT);
     }
 

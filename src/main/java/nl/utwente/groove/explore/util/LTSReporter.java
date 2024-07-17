@@ -23,6 +23,7 @@ import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.graph.multi.MultiGraph;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.Exportable;
+import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.Exporters;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.lts.Filter;
@@ -95,9 +96,9 @@ public class LTSReporter extends AExplorationReporter {
         File outFile = new File(dir, ltsName);
         var fileType = FileType.getType(outFile);
         var exporter = Exporters.getExporter(fileType);
-        if (exporter != null && exporter.supports(Exportable.Kind.GRAPH)) {
+        if (exporter != null && exporter.hasKind(Exporter.ExportKind.GRAPH)) {
             try {
-                exporter.doExport(Exportable.instance(ltsGraph), outFile, fileType);
+                exporter.doExport(Exportable.graph(ltsGraph), outFile, fileType);
             } catch (PortException e1) {
                 throw new IOException(e1);
             }
