@@ -104,7 +104,7 @@ public record Exportable(Set<ExportKind> exportKinds, @NonNull QualName qualName
         var name = resourceModel.getQualName();
         var kinds = EnumSet.of(ExportKind.RESOURCE);
         Graph graph = null;
-        if (resourceModel instanceof GraphBasedModel graphModel) {
+        if (resourceModel instanceof GraphBasedModel<?> graphModel) {
             graph = graphModel.getSource();
             kinds.add(ExportKind.GRAPH);
         }
