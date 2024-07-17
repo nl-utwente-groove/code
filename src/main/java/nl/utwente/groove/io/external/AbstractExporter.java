@@ -33,7 +33,7 @@ public abstract class AbstractExporter implements Exporter {
     }
 
     @Override
-    public final ExportKind getKind() {
+    public final ExportKind getExportKind() {
         return this.exportKind;
     }
 
@@ -61,7 +61,7 @@ public abstract class AbstractExporter implements Exporter {
      */
     @Override
     public Set<FileType> getFileTypes(Exportable exportable) {
-        if (exportable.hasExportKind(getKind())) {
+        if (exportable.hasExportKind(getExportKind())) {
             return getFileTypes();
         } else {
             return Collections.emptySet();

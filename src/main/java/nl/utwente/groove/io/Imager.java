@@ -243,16 +243,13 @@ public class Imager extends GrooveCmdLineTool<Object> {
             emit(MEDIUM, "Imaging %s as %s%n", inFile, exportFile);
             GraphBasedModel<?> resourceModel
                 = (GraphBasedModel<?>) grammar.getResource(resource.one(), resource.two());
-            final Exportable exportable = toExportable(resourceModel, exporter.getKind());
+            final Exportable exportable = toExportable(resourceModel, exporter.getExportKind());
             // make sure the export happens on the event thread
-            Runnable export = new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        exporter.doExport(exportable, exportFile, fileType);
-                    } catch (PortException e1) {
-                        throw new RuntimeException(e1);
-                    }
+            Runnable export = () -> {
+                try {
+                    exporter.doExport(exportable, exportFile, fileType);
+                } catch (PortException e1) {
+                    throw new RuntimeException(e1);
                 }
             };
             if (SwingUtilities.isEventDispatchThread()) {
@@ -438,7 +435,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
         if (result == null) {
             result = formatMap = new HashMap<>();
             for (Exporter exporter : Exporters.getExporters()) {
-                if (exporter.hasKind(Exporter.ExportKind.RESOURCE)) {
+                if (exporter.hasExportKind(Exporter.ExportKind.RESOURCE)) {
                     continue;
                 }
                 for (FileType fileType : exporter.getFileTypes()) {

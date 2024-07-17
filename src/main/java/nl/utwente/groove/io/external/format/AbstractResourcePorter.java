@@ -87,7 +87,7 @@ public class AbstractResourcePorter extends AbstractExporter implements Importer
 
     @Override
     public Set<FileType> getFileTypes(Exportable exportable) {
-        if (exportable.hasExportKind(getKind())) {
+        if (exportable.hasExportKind(getExportKind())) {
             return Collections.singleton(getFileType(exportable.getResourceKind()));
         } else {
             return Collections.emptySet();

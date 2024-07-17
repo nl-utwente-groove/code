@@ -46,7 +46,7 @@ public class StateReporter extends AExplorationReporter {
     public void report() throws IOException {
         var fileType = FileType.getType(this.statePattern);
         var exporter = Exporters.getExporter(fileType);
-        if (exporter != null && exporter.hasKind(Exporter.ExportKind.GRAPH)) {
+        if (exporter != null && exporter.hasExportKind(Exporter.ExportKind.GRAPH)) {
             this.logger
                 .append("Pattern %s does not specify known export format: states saved in native GXL%n",
                         this.statePattern);
@@ -73,7 +73,7 @@ public class StateReporter extends AExplorationReporter {
         File stateFile = new File(stateFilename);
         var fileType = FileType.getType(stateFile);
         var exporter = Exporters.getExporter(fileType);
-        if (exporter != null && exporter.hasKind(Exporter.ExportKind.GRAPH)) {
+        if (exporter != null && exporter.hasExportKind(Exporter.ExportKind.GRAPH)) {
             try {
                 exporter.doExport(Exportable.graph(state.getGraph()), stateFile, fileType);
             } catch (PortException e1) {

@@ -38,11 +38,11 @@ import nl.utwente.groove.io.FileType;
  */
 public interface Exporter extends Porter {
     /** Returns the export kind supported by this exporter. */
-    public ExportKind getKind();
+    public ExportKind getExportKind();
 
     /** Indicates if this exporter supports a given export kind. */
-    default public boolean hasKind(ExportKind exportKind) {
-        return getKind() == exportKind;
+    default public boolean hasExportKind(ExportKind exportKind) {
+        return getExportKind() == exportKind;
     }
 
     /**
