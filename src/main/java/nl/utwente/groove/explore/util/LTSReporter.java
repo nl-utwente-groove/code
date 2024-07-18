@@ -96,9 +96,10 @@ public class LTSReporter extends AExplorationReporter {
         File outFile = new File(dir, ltsName);
         var fileType = FileType.getType(outFile);
         var exporter = Exporters.getExporter(ExportKind.GRAPH, fileType);
-        if (exporter != null) {
+        var exportable = Exportable.graph(ltsGraph);
+        if (exporter != null && exporter.exports(exportable)) {
             try {
-                exporter.doExport(Exportable.graph(ltsGraph), outFile, fileType);
+                exporter.doExport(exportable, outFile, fileType);
             } catch (PortException e1) {
                 throw new IOException(e1);
             }
