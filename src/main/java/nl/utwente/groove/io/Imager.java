@@ -86,7 +86,6 @@ import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
-import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.cli.ExistingFileHandler;
 import nl.utwente.groove.util.cli.GrooveCmdLineTool;
 import nl.utwente.groove.util.parse.FormatException;
@@ -200,8 +199,8 @@ public class Imager extends GrooveCmdLineTool<Object> {
                     // see if we want to process this file
                     boolean process = element.isDirectory();
                     if (!process) {
-                        Pair<ResourceKind,QualName> resource = parse(element);
-                        process = resource != null && resource.one().isGraphBased();
+                        var resource = parse(element);
+                        process = resource != null && resource.kind().isGraphBased();
                     }
                     if (process) {
                         makeImage(grammar, element, new File(outFile, element.getName()));
@@ -216,7 +215,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
         // --> output-file exists and will be overwritten or the directory in
         // which it will be placed exists or can be created
         else {
-            Pair<ResourceKind,QualName> resource = parse(inFile);
+            var resource = parse(inFile);
             if (resource == null) {
                 throw new IOException("Input file " + inFile + " is not a graph resource");
             }
@@ -251,7 +250,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
 
             emit(MEDIUM, "Imaging %s as %s%n", inFile, exportFile);
             GraphBasedModel<?> resourceModel
-                = (GraphBasedModel<?>) grammar.getResource(resource.one(), resource.two());
+                = (GraphBasedModel<?>) grammar.getResource(resource.kind(), resource.name());
             final Exportable exportable = toExportable(resourceModel, exporter.getExportKind());
             // make sure the export happens on the event thread
             Runnable export = () -> {
@@ -406,7 +405,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
      * into a pair consisting of its resource kind and the qualified name
      * of the resource within the grammar.
      */
-    private static Pair<ResourceKind,QualName> parse(File file) {
+    private static NamedKind parse(File file) {
         ResourceKind kind = null;
         // find out the resource kind
         for (ResourceKind k : ResourceKind.values()) {
@@ -435,7 +434,11 @@ public class Imager extends GrooveCmdLineTool<Object> {
         }
         return qualName == null
             ? null
-            : Pair.newPair(kind, qualName);
+            : new NamedKind(qualName, kind);
+    }
+
+    static private record NamedKind(QualName name, ResourceKind kind) {
+        // empty
     }
 
     /** Collects a mapping from file extensions to formats. */
