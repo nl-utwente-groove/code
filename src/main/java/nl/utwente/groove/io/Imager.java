@@ -80,6 +80,7 @@ import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
+import nl.utwente.groove.io.external.Exporter.ExportKind;
 import nl.utwente.groove.io.external.Exporters;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.store.SystemStore;
@@ -237,7 +238,15 @@ public class Imager extends GrooveCmdLineTool<Object> {
             final FileType fileType = outFileType == null
                 ? getFormatMap().values().iterator().next()
                 : outFileType;
-            final Exporter exporter = Exporters.getExporter(fileType);
+            /** Find the richest exporter for the given file type. */
+            Exporter tmpExp = Exporters.getExporter(ExportKind.JGRAPH, fileType);
+            if (tmpExp == null) {
+                tmpExp = Exporters.getExporter(ExportKind.RESOURCE, fileType);
+            }
+            if (tmpExp == null) {
+                tmpExp = Exporters.getExporter(ExportKind.GRAPH, fileType);
+            }
+            final Exporter exporter = tmpExp;
             final File exportFile = new File(outParent, fileType.addExtension(outFileName));
 
             emit(MEDIUM, "Imaging %s as %s%n", inFile, exportFile);
