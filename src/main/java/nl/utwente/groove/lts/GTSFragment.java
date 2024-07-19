@@ -92,6 +92,11 @@ public class GTSFragment extends AGraph<GraphState,GraphTransition> {
 
     private final Set<GraphTransition> transitions = new LinkedHashSet<>();
 
+    /** Returns the start state of the GTS. */
+    public GraphState startState() {
+        return this.gts.startState();
+    }
+
     @Override
     public @NonNull GGraph<GraphState,GraphTransition> newGraph(String name) {
         return new GTSFragment(gts(), name);

@@ -47,13 +47,12 @@ public interface Exporter extends Porter {
 
     /**
      * Indicates if this exporter is suitable for processing a given exportable.
-     * This is true if and only if {@link #getFileTypes(Exportable)} is non-empty.
      */
-    default public boolean exports(Exportable exportable) {
-        return !getFileTypes(exportable).isEmpty();
-    }
+    public boolean exports(Exportable exportable);
 
-    /** Returns the file types that can be used for a given exportable. */
+    /** Returns the file types that can be used for a given exportable.
+     * This is nonempty if and only if {@link #exports(Exportable)} holds.
+     */
     public Set<FileType> getFileTypes(Exportable exportable);
 
     /**

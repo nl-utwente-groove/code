@@ -96,18 +96,26 @@ public class LTSReporter extends AExplorationReporter {
         File outFile = new File(dir, ltsName);
         var fileType = FileType.getType(outFile);
         var exporter = Exporters.getExporter(ExportKind.GRAPH, fileType);
-        var exportable = Exportable.graph(ltsGraph);
-        if (exporter != null && exporter.exports(exportable)) {
-            try {
-                exporter.doExport(exportable, outFile, fileType);
-            } catch (PortException e1) {
-                throw new IOException(e1);
-            }
-        } else {
+        if (exporter == null) {
             if (!FileType.hasAnyExtension(outFile)) {
                 outFile = FileType.GXL.addExtension(outFile);
             }
             Groove.saveGraph(ltsGraph, outFile);
+        } else {
+            var exportable = Exportable.graph(ltsGraph);
+            if (!exporter.exports(exportable)) {
+                exportable = Exportable.graph(gtsFragment);
+            }
+            if (exporter.exports(exportable)) {
+                try {
+                    exporter.doExport(exportable, outFile, fileType);
+                } catch (PortException e1) {
+                    throw new IOException(e1);
+                }
+            } else {
+                throw new IOException("Exporter for %s refuses to process LTS graph");
+            }
+
         }
         return outFile;
     }

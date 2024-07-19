@@ -38,6 +38,7 @@ import nl.utwente.groove.io.external.format.AutPorter;
 import nl.utwente.groove.io.external.format.EcorePorter;
 import nl.utwente.groove.io.external.format.FsmExporter;
 import nl.utwente.groove.io.external.format.GraphExportListener.DotListener;
+import nl.utwente.groove.io.external.format.LTS2ControlExporter;
 import nl.utwente.groove.io.external.format.ListenerExporter;
 import nl.utwente.groove.io.external.format.NativePorter;
 import nl.utwente.groove.io.external.format.RasterExporter;
@@ -136,6 +137,7 @@ public class Exporters {
         result.add(TikzExporter.getInstance());
         result.add(EcorePorter.instance());
         result.add(ListenerExporter.instance(DotListener.instance()));
+        result.add(LTS2ControlExporter.instance());
         return Collections.unmodifiableList(result);
     }
 

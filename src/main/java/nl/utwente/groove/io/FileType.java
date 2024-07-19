@@ -424,7 +424,10 @@ public enum FileType {
      * @return the extension part of {@code filename}
      */
     static public String getExtension(String filename) {
-        return filename.substring(filename.lastIndexOf(SEPARATOR));
+        int sepIndex = filename.lastIndexOf(SEPARATOR);
+        return sepIndex < 0
+            ? ""
+            : filename.substring(sepIndex);
     }
 
     /** Tests if a given file has a pure name part,

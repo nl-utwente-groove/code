@@ -44,6 +44,11 @@ public abstract class AbstractExporter implements Exporter {
     private final ExportKind exportKind;
 
     @Override
+    public boolean exports(Exportable exportable) {
+        return exportable.hasExportKind(getExportKind());
+    }
+
+    @Override
     public Set<FileType> getFileTypes() {
         return this.fileTypes;
     }
@@ -64,7 +69,7 @@ public abstract class AbstractExporter implements Exporter {
      */
     @Override
     public Set<FileType> getFileTypes(Exportable exportable) {
-        if (exportable.hasExportKind(getExportKind())) {
+        if (exports(exportable)) {
             return getFileTypes();
         } else {
             return Collections.emptySet();
@@ -130,8 +135,24 @@ public abstract class AbstractExporter implements Exporter {
 
         /** Writes a line to the export file. */
         public void emit(String line) {
-            this.writer.println(line);
+            this.writer.println(this.indent + line);
         }
+
+        /** Adds an step to the space indentation prefixed to every {@link #emit(String)} line. */
+        public void increaseIndent() {
+            this.indent.append(INDENT_STEP);
+        }
+
+        /** Removes a step from the space indentation prefixed to every {@link #emit(String)} line. */
+        public void decreaseIndent() {
+            this.indent.delete(0, INDENT_STEP.length());
+        }
+
+        /** Indentation prefixed to every {@link #emit(String)} line. */
+        private final StringBuffer indent = new StringBuffer("");
+
+        /** Increase to the indent upon invocation of {@link #increaseIndent()}. */
+        static private final String INDENT_STEP = "  ";
 
         private PrintWriter writer;
     }

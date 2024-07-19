@@ -33,10 +33,10 @@ import nl.utwente.groove.grammar.aspect.GraphConverter;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.TextBasedModel;
+import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
-import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.Imported;
 import nl.utwente.groove.io.external.Importer;
 import nl.utwente.groove.io.external.PortException;
@@ -52,7 +52,7 @@ import nl.utwente.groove.io.graph.GxlIO;
 public class AbstractResourcePorter extends AbstractExporter implements Importer {
     /** Constructor for subclasses. */
     protected AbstractResourcePorter() {
-        super(Exporter.ExportKind.RESOURCE);
+        super(ExportKind.RESOURCE);
         this.fileTypeMap = new EnumMap<>(ResourceKind.class);
         this.resourceKindMap = new EnumMap<>(FileType.class);
     }
@@ -85,8 +85,20 @@ public class AbstractResourcePorter extends AbstractExporter implements Importer
     private final Map<FileType,ResourceKind> resourceKindMap;
 
     @Override
+    public boolean exports(Exportable exportable) {
+        boolean result = super.exports(exportable);
+        if (result) {
+            var graph = exportable.graph();
+            assert graph != null;
+            var graphRole = graph.getRole();
+            result = graphRole == GraphRole.HOST || graphRole == GraphRole.TYPE;
+        }
+        return result;
+    }
+
+    @Override
     public Set<FileType> getFileTypes(Exportable exportable) {
-        if (exportable.hasExportKind(getExportKind())) {
+        if (exports(exportable)) {
             return Collections.singleton(getFileType(exportable.getResourceKind()));
         } else {
             return Collections.emptySet();
