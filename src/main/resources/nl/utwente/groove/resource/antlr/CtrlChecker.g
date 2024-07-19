@@ -144,6 +144,7 @@ stat
        )*
        { helper.endBranch(); }
      )
+  | HALT
   | ^( STAR
        { helper.startBranch(); }
        stat

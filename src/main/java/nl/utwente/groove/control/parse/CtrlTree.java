@@ -277,6 +277,9 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
                 }
             }
             break;
+        case CtrlParser.HALT:
+            result = prot.delta();
+            break;
         default:
             assert false;
         }

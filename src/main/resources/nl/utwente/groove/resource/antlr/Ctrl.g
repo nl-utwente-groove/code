@@ -253,6 +253,9 @@ stat
 	| //@S expr SEMI
 	  //@B An expression used as a statement.
 	  expr SEMI^ // SEMI retained for token positioning
+  | //@S HALT
+    //@B Stops exploration, without marking the state as final
+    HALT
   ;
 
 /** @H Variable declaration with optional initialisation. */
@@ -506,6 +509,7 @@ DO       : 'do';
 ELSE     : 'else';
 FALSE    : 'false';
 FUNCTION : 'function';
+HALT     : 'halt';
 IF       : 'if';
 IMPORT   : 'import';
 INT      : 'int';
