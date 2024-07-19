@@ -17,6 +17,9 @@
 package nl.utwente.groove.io.external;
 
 import java.awt.Frame;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
@@ -86,4 +89,50 @@ public abstract class AbstractExporter implements Exporter {
     }
 
     private Simulator simulator;
+
+    /** Subclass of AbstractExporter containing functionality to write to a PrintWriter. */
+    static public abstract class Writer extends AbstractExporter {
+        /**
+         * Invokes the super constructor.
+         */
+        protected Writer(ExportKind exportKind) {
+            super(exportKind);
+        }
+
+        /** Prototypical implementation that first calls
+         * #initialise(Exportable,FileType), then opens a PrintWriter on the file
+         * and finally calls doExport(
+         */
+        @Override
+        public void doExport(Exportable exportable, File file,
+                             FileType fileType) throws PortException {
+            initialise(exportable, fileType);
+            try (PrintWriter writer = new PrintWriter(file)) {
+                this.writer = writer;
+                execute();
+            } catch (FileNotFoundException e) {
+                throw new PortException(e);
+            }
+        }
+
+        /** Callback method from {@link #doExport(Exportable, File, FileType)} to initialise exporting a given exportable.
+         * @throws PortException if this exporter is not compatible with the exportable
+         */
+        protected abstract void initialise(Exportable exportable,
+                                           FileType fileType) throws PortException;
+
+        /** Callback method from {@link #doExport(Exportable, File, FileType)} to
+         * do the actual export, based on the initialised values.
+         * In particular, the writer has been opened and should be filled by calls
+         * to {@link #emit(String)}.
+         */
+        protected abstract void execute() throws PortException;
+
+        /** Writes a line to the export file. */
+        public void emit(String line) {
+            this.writer.println(line);
+        }
+
+        private PrintWriter writer;
+    }
 }

@@ -279,7 +279,11 @@ public class Frame implements Position<Frame,Step>, Fixable {
         if (properCalls.isEmpty()) {
             // we only have a constraint attempt
             Frame onVerdict = newFrame(locAttempt.onSuccess());
-            assert onVerdict.getLocation() == locAttempt.onFailure();
+            assert locAttempt.onSuccess() == locAttempt.onFailure();
+            // the above used to be
+            // assert onVerdict.getLocation() == locAttempt.onFailure();
+            // but that is wrong, as the onVerdict.getLocation() may have
+            // popped the call stack in case locAttempt.onSuccess() is final
             result = new StepAttempt(onVerdict);
             for (NestedSwitch sw : constraintCalls) {
                 result.add(createStep(sw));
@@ -305,7 +309,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
             Frame onVerdict = inter.newFrame(locAttempt.onSuccess());
             // we had a location with property switches; this guarantees
             // that the success and failure locations coincide
-            assert onVerdict.getLocation() == locAttempt.onFailure();
+            assert locAttempt.onSuccess() == locAttempt.onFailure();
             StepAttempt interAttempt = new StepAttempt(onVerdict, onVerdict);
             for (NestedSwitch sw : properCalls) {
                 result.add(inter.createStep(sw));

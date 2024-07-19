@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Writer;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
@@ -165,7 +164,7 @@ public class AbstractResourcePorter extends AbstractExporter implements Importer
         } else {
             var textModel = (TextBasedModel<?>) exportable.resourceModel();
             assert textModel != null;
-            try (Writer writer = new FileWriter(file)) {
+            try (var writer = new FileWriter(file)) {
                 writer.write(textModel.getSource());
             } catch (IOException e) {
                 throw new PortException(e);

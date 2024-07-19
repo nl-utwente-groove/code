@@ -53,7 +53,8 @@ public class CtrlJEdge extends AJEdge<ControlGraph,CtrlJGraph,JModel<ControlGrap
 
     @Override
     protected Set<Look> getStructuralLooks() {
-        if (getEdge().isVerdict()) {
+        var edge = getEdge();
+        if (edge != null && edge.isVerdict()) {
             return EnumSet.of(Look.CTRL_VERDICT);
         } else {
             return EnumSet.of(Look.TRANS);

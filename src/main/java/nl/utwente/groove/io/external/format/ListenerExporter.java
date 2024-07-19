@@ -16,9 +16,6 @@
  */
 package nl.utwente.groove.io.external.format;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.util.Collection;
 
 import nl.utwente.groove.graph.Edge;
@@ -37,7 +34,7 @@ import nl.utwente.groove.lts.GTS;
  *
  * @author Arend Rensink
  */
-public class ListenerExporter extends AbstractExporter {
+public class ListenerExporter extends AbstractExporter.Writer {
     private ListenerExporter(GraphExportListener listener) {
         super(Exporter.ExportKind.GRAPH);
         listener.setExporter(this);
@@ -48,39 +45,33 @@ public class ListenerExporter extends AbstractExporter {
     private final GraphExportListener listener;
 
     @Override
-    public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
+    protected void initialise(Exportable exportable, FileType fileType) throws PortException {
         Graph graph = exportable.graph();
         if (graph == null) {
             throw new PortException(String
                 .format("'%s' does not contain a graph and hence cannot be exported to %s",
                         exportable.qualName(), fileType));
         }
-        try (PrintWriter writer = new PrintWriter(file)) {
-            this.writer = writer;
-            this.listener.enterGraph(graph);
-            Collection<? extends Node> nodeSet = graph instanceof GTS gts
-                ? gts.getStates()
-                : graph.nodeSet();
-            nodeSet.forEach(this.listener::visitNode);
-            Collection<? extends Edge> edgeSet = graph instanceof GTS gts
-                ? gts.getTransitions()
-                : graph.edgeSet();
-            edgeSet
-                .stream()
-                .filter(e -> e.hasRole(EdgeRole.BINARY))
-                .forEach(this.listener::visitEdge);
-            this.listener.exitGraph(graph);
-        } catch (FileNotFoundException e) {
-            throw new PortException(e);
-        }
+        this.graph = graph;
     }
 
-    /** Writes a line to the export file. */
-    void emit(String line) {
-        this.writer.println(line);
+    @Override
+    protected void execute() throws PortException {
+        var graph = this.graph;
+        var listener = this.listener;
+        listener.enterGraph(graph);
+        Collection<? extends Node> nodeSet = graph instanceof GTS gts
+            ? gts.getStates()
+            : graph.nodeSet();
+        nodeSet.forEach(listener::visitNode);
+        Collection<? extends Edge> edgeSet = graph instanceof GTS gts
+            ? gts.getTransitions()
+            : graph.edgeSet();
+        edgeSet.stream().filter(e -> e.hasRole(EdgeRole.BINARY)).forEach(listener::visitEdge);
+        listener.exitGraph(graph);
     }
 
-    private PrintWriter writer;
+    private Graph graph;
 
     /** Creates and returns an instance for a given listener. */
     static public ListenerExporter instance(GraphExportListener listener) {
