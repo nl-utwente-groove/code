@@ -131,7 +131,7 @@ public class Version {
      * @return the latest grammar version.
      */
     public static String getCurrentGrammarVersion() {
-        return GRAMMAR_VERSION_3_10;
+        return GRAMMAR_VERSION_3_11;
     }
 
     /**
@@ -315,4 +315,9 @@ public class Version {
      * {@code false}.
      */
     public static final String GRAMMAR_VERSION_3_10 = "3.10";
+    /**
+     * This is the grammar version introduced with Groove version 6.9.0.
+     * The {@code halt} keyword was added to the control language.
+     */
+    public static final String GRAMMAR_VERSION_3_11 = "3.11";
 }

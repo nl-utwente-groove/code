@@ -3,6 +3,13 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 6.9.0, 20 July 2024
+-------------------------------
+- Added .dot export as well as .gcp export for LTSs
+- "halt" added to control language (hence minor version update)
+- Refactored the Im-/Exporter library
+- Bug fixes: GH issues #78, #783 #788-#791
+
 Release 6.8.4, 10 July 2024
 -------------------------------
 - Errors in property keys now reported by highlighting and switching
