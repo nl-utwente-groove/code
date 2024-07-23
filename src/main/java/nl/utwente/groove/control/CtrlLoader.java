@@ -106,7 +106,8 @@ public class CtrlLoader {
         errors.throwException();
         if (!result.hasMain()) {
             // try to parse "any" for static semantic checks
-            Fragment main = addControl(QualName.name(DEFAULT_MAIN_NAME), getDefaultMain()).check()
+            Fragment main = addControl(QualName.name(DEFAULT_MAIN_NAME), getDefaultMain())
+                .check()
                 .toFragment();
             result.add(main);
         }
@@ -170,15 +171,15 @@ public class CtrlLoader {
             CtrlTree tree = this.controlTreeMap.get(controlName);
             assert tree != null : String.format("Parse tree of %s not found", controlName);
             CtrlTree recipeTree = tree.getProcs(Kind.RECIPE).get(recipeName);
-            assert recipeTree != null : String.format("Recipe declaration of %s not found",
-                                                      recipeName);
+            assert recipeTree != null : String
+                .format("Recipe declaration of %s not found", recipeName);
             TokenRewriteStream rewriter = getRewriter(tree);
             boolean changed = false;
             if (recipeTree.getChildCount() == 3) {
                 // no explicit priority
                 if (newPriority != 0) {
-                    rewriter.insertAfter(recipeTree.getChild(1).getToken(),
-                                         "priority " + newPriority);
+                    rewriter
+                        .insertAfter(recipeTree.getChild(1).getToken(), "priority " + newPriority);
                     changed = true;
                 }
             } else {
@@ -198,7 +199,11 @@ public class CtrlLoader {
 
     private TokenRewriteStream getRewriter(CtrlTree tree) {
         CtrlLexer lexer = new CtrlLexer(null);
-        lexer.setCharStream(new ANTLRStringStream(tree.toInputString()));
+        var inputString = tree.toInputString();
+        lexer
+            .setCharStream(new ANTLRStringStream(inputString == null
+                ? ""
+                : inputString));
         TokenRewriteStream rewriter = new TokenRewriteStream(lexer);
         rewriter.fill();
         return rewriter;
@@ -241,8 +246,9 @@ public class CtrlLoader {
             Grammar grammar = Groove.loadGrammar(grammarName).toGrammar();
             for (int i = 1; i < args.length; i++) {
                 String programName = CONTROL.stripExtension(args[1]);
-                System.out.printf("Control automaton for %s:%n%s", programName,
-                                  run(grammar, programName, new File(grammarName)));
+                System.out
+                    .printf("Control automaton for %s:%n%s", programName,
+                            run(grammar, programName, new File(grammarName)));
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -151,7 +151,7 @@ public enum CheckPolicy {
                 if (e.getValue() != ERROR) {
                     result.append(e.getKey());
                     result.append(ASSIGN_CHAR);
-                    result.append(e.getValue());
+                    result.append(e.getValue().getName());
                     result.append(' ');
                 }
             }

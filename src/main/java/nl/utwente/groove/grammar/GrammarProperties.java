@@ -2,9 +2,11 @@ package nl.utwente.groove.grammar;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -341,8 +343,8 @@ public class GrammarProperties extends Properties {
      * @return a (non-{@code null}, but possibly empty) set of active names
      */
     public Set<QualName> getActiveNames(ResourceKind kind) {
-        assert kind != ResourceKind.RULE;
-        if (kind == ResourceKind.CONFIG || kind == ResourceKind.GROOVY) {
+        if (kind == ResourceKind.CONFIG || kind == ResourceKind.GROOVY
+            || kind == ResourceKind.PROPERTIES || kind == ResourceKind.RULE) {
             return Collections.emptySet();
         }
         List<QualName> names = parsePropertyOrDefault(resourceKeyMap.get(kind)).getQualNameList();
@@ -506,6 +508,75 @@ public class GrammarProperties extends Properties {
             newCommonLabels.set(index, newLabel.toParsableString());
             result.setCommonLabels(newCommonLabels);
             hasChanged = true;
+        }
+        return hasChanged
+            ? result
+            : this;
+    }
+
+    /**
+     * Returns a clone of this properties object where all occurrences of a
+     * given collection of resource names are deleted.
+     * @param names the names to be deleted
+     * @return a clone of these properties, or the properties themselves if
+     *         {@code names} did not occur
+     */
+    public GrammarProperties deleteResources(ResourceKind kind, Collection<QualName> names) {
+        GrammarProperties result = clone();
+        boolean hasChanged = false;
+        var activeNames = new HashSet<>(getActiveNames(kind));
+        if (activeNames.removeAll(names)) {
+            hasChanged = true;
+            var orderedActiveNames = new ArrayList<>(activeNames);
+            orderedActiveNames.sort(null);
+            result.setActiveNames(kind, orderedActiveNames);
+            hasChanged = true;
+        }
+        // change the control labels
+        if (kind == ResourceKind.RULE) {
+            var actionPolicy = new PolicyMap();
+            actionPolicy.putAll(getRulePolicy());
+            var policyChanged = actionPolicy.keySet().removeAll(names);
+            if (policyChanged) {
+                result.setRulePolicy(actionPolicy);
+                hasChanged = true;
+            }
+        }
+        return hasChanged
+            ? result
+            : this;
+    }
+
+    /**
+     * Returns a clone of this properties object where all occurrences of a
+     * given resource name are replaced by a new name.
+     * @param oldName the name to be replaced
+     * @param newName the new value for {@code oldName}
+     * @return a clone of these properties, or the properties themselves if
+     *         {@code oldName} did not occur
+     */
+    public GrammarProperties renameResource(ResourceKind kind, QualName oldName, QualName newName) {
+        GrammarProperties result = clone();
+        boolean hasChanged = false;
+        var activeNames = new HashSet<>(getActiveNames(kind));
+        if (activeNames.remove(oldName)) {
+            hasChanged = true;
+            activeNames.add(newName);
+            var orderedActiveNames = new ArrayList<>(activeNames);
+            orderedActiveNames.sort(null);
+            result.setActiveNames(kind, orderedActiveNames);
+            hasChanged = true;
+        }
+        // change the control labels
+        if (kind == ResourceKind.RULE) {
+            var actionPolicy = new PolicyMap();
+            actionPolicy.putAll(getRulePolicy());
+            var namePolicy = actionPolicy.remove(oldName);
+            if (namePolicy != null) {
+                actionPolicy.put(newName, namePolicy);
+                result.setRulePolicy(actionPolicy);
+                hasChanged = true;
+            }
         }
         return hasChanged
             ? result
