@@ -113,14 +113,14 @@ public class VisibleValue implements VisualValue<Boolean> {
         if (levelTree != null && !levelTree.isVisible(jVertex)) {
             return false;
         }
+        // anything declared invisible by the super method is not visible
+        if (!getBasicVertexValue(jGraph, jVertex)) {
+            return false;
+        }
         // identified nodes, parameter nodes, quantifiers and error nodes are always visible
         if (node.hasId() || node.has(Category.PARAM) || node.has(Category.NESTING)
             || jVertex.hasErrors()) {
             return true;
-        }
-        // anything declared invisible by the super method is not visible
-        if (!getBasicVertexValue(jGraph, jVertex)) {
-            return false;
         }
         // All non-sorted nodes should be visible
         var sortAspect = node.get(Category.SORT);

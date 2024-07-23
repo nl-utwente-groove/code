@@ -17,6 +17,7 @@
 package nl.utwente.groove.gui.tree;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import nl.utwente.groove.grammar.aspect.AspectGraph;
@@ -57,6 +58,7 @@ public class TypeFilter extends LabelFilter<AspectGraph> {
             result = this.nodeTypeEntryMap.get(keyLabel);
             if (result == null) {
                 this.nodeTypeEntryMap.put(keyLabel, result = createEntry(key));
+                this.edgeTypeEntryMap.put(keyLabel, new HashMap<>());
             }
         } else if (element instanceof TypeEdge key) {
             TypeLabel nodeKeyLabel = key.source().label();
@@ -71,6 +73,17 @@ public class TypeFilter extends LabelFilter<AspectGraph> {
             }
         }
         return result;
+    }
+
+    @Override
+    public void setSelected(Entry label, boolean selected) {
+        if (!selected && ((TypeEntry) label).getType() instanceof TypeNode tn) {
+            var entries = new HashSet<Entry>(this.edgeTypeEntryMap.get(tn.label()).values());
+            entries.add(label);
+            setSelected(entries, selected);
+        } else {
+            super.setSelected(label, selected);
+        }
     }
 
     /** Constructs a filter entry from a given object. */
