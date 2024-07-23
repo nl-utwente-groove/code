@@ -16,9 +16,7 @@
  */
 package nl.utwente.groove.io.store;
 
-import static nl.utwente.groove.grammar.model.ResourceKind.GROOVY;
 import static nl.utwente.groove.grammar.model.ResourceKind.PROPERTIES;
-import static nl.utwente.groove.grammar.model.ResourceKind.RULE;
 import static nl.utwente.groove.io.FileType.GRAMMAR;
 import static nl.utwente.groove.io.store.EditType.LAYOUT;
 
@@ -255,8 +253,6 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
                                   Collection<QualName> names) throws IOException {
         testInit();
         List<AspectGraph> deletedGraphs = new ArrayList<>(names.size());
-        List<QualName> activeNames = getRecordedActiveNames(kind);
-        boolean activeChanged = false;
         for (QualName name : names) {
             AspectGraph graph = getGraphMap(kind).remove(name);
             assert graph != null;
@@ -264,14 +260,10 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
             this.marshaller.deleteGraph(oldFile);
             deleteEmptyDirectories(oldFile.getParentFile());
             deletedGraphs.add(graph);
-            activeChanged |= activeNames.remove(name);
         }
-        GrammarProperties oldProps = null;
-        GrammarProperties newProps = null;
-        if (activeChanged) {
-            oldProps = getProperties();
-            newProps = getProperties().clone();
-            newProps.setActiveNames(kind, activeNames);
+        GrammarProperties oldProps = getProperties();
+        GrammarProperties newProps = oldProps.deleteResources(kind, names);
+        if (newProps != oldProps) {
             doPutProperties(newProps);
         }
         return new GraphBasedEdit(kind, EditType.DELETE, deletedGraphs,
@@ -355,24 +347,18 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
     TextBasedEdit doDeleteTexts(ResourceKind kind, Collection<QualName> names) throws IOException {
         testInit();
         Map<QualName,String> oldTexts = new HashMap<>();
-        boolean activeChanged = false;
-        var activeNames = getRecordedActiveNames(kind);
         for (QualName name : names) {
             assert name != null;
             String text = getTextMap(kind).remove(name);
             if (text != null) {
                 oldTexts.put(name, text);
                 createFile(kind, name).delete();
-                activeChanged |= activeNames.remove(name);
             }
         }
         // change the control-related system properties, if necessary
-        GrammarProperties oldProps = null;
-        GrammarProperties newProps = null;
-        if (activeChanged) {
-            oldProps = getProperties();
-            newProps = getProperties().clone();
-            newProps.setActiveNames(kind, activeNames);
+        GrammarProperties oldProps = getProperties();
+        GrammarProperties newProps = oldProps.deleteResources(kind, names);
+        if (newProps != oldProps) {
             doPutProperties(newProps);
         }
         return new TextBasedEdit(kind, EditType.DELETE, oldTexts,
@@ -416,14 +402,9 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
         assert previous == null;
         newTexts.put(newName, text);
         // check if this affects the system properties
-        GrammarProperties oldProps = null;
-        GrammarProperties newProps = null;
-        List<QualName> activeNames = getRecordedActiveNames(kind);
-        if (activeNames.remove(oldName)) {
-            oldProps = getProperties();
-            newProps = getProperties().clone();
-            activeNames.add(newName);
-            newProps.setActiveNames(kind, activeNames);
+        GrammarProperties oldProps = getProperties();
+        GrammarProperties newProps = oldProps.renameResource(kind, oldName, newName);
+        if (newProps != oldProps) {
             doPutProperties(newProps);
         }
         return new TextBasedEdit(kind, EditType.RENAME, oldTexts, newTexts, oldProps, newProps);
@@ -447,14 +428,9 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
         this.marshaller.saveGraph(newGraph.toPlainGraph(), createFile(kind, newName));
         deleteEmptyDirectories(oldFile.getParentFile());
         // change the properties if there is a change in the enabled types
-        GrammarProperties oldProps = null;
-        GrammarProperties newProps = null;
-        List<QualName> activeNames = getRecordedActiveNames(kind);
-        if (activeNames.remove(oldName)) {
-            oldProps = getProperties();
-            newProps = oldProps.clone();
-            activeNames.add(newName);
-            newProps.setActiveNames(kind, activeNames);
+        GrammarProperties oldProps = getProperties();
+        GrammarProperties newProps = oldProps.renameResource(kind, oldName, newName);
+        if (newProps != oldProps) {
             doPutProperties(newProps);
         }
         return new GraphBasedEdit(kind, EditType.RENAME, Collections.singleton(oldGraph),
@@ -729,19 +705,6 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
     public String toString() {
         String location = this.file.getParent();
         return getName() + " - " + location;
-    }
-
-    /**
-     * Returns a copy of the currently activated names of a given resource kind,
-     * as stored in the grammar properties.
-     */
-    private List<QualName> getRecordedActiveNames(ResourceKind kind) {
-        List<QualName> result = new ArrayList<>();
-        if (kind != RULE && kind != GROOVY && kind != PROPERTIES) {
-            result.addAll(getProperties().getActiveNames(kind));
-            result.sort(null);
-        }
-        return result;
     }
 
     /**

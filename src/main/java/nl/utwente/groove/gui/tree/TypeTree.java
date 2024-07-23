@@ -342,7 +342,8 @@ public class TypeTree extends LabelTree<AspectGraph> {
         Set<TypeNode> relatedTypes = map.get(type);
         assert relatedTypes != null : String
             .format("Node type '%s' does not occur in type graph '%s'", type, map.keySet());
-        for (TypeNode relType : relatedTypes) {
+        var orderedRelatedTypes = new TreeSet<>(relatedTypes);
+        for (TypeNode relType : orderedRelatedTypes) {
             // test if the node type label exists in the partial type graph
             if (typeNodes.contains(relType)) {
                 TypedEntryNode subTypeNode = new TypedEntryNode(this, relType, false);
