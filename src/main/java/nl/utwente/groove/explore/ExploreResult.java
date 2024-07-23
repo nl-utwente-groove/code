@@ -120,6 +120,12 @@ public class ExploreResult { //implements Iterable<GraphState> {
         return result;
     }
 
+    /** Returns the number of states and transitions found during exploration. */
+    public String getStatistics() {
+        return "Exploration result: %s states, %s transitions"
+            .formatted(this.states.size(), this.transitions.size());
+    }
+
     @Override
     public String toString() {
         return "Result [states=" + this.states + ", " + "transitions=" + this.transitions

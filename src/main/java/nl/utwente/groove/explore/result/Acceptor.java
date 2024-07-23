@@ -114,12 +114,6 @@ public abstract class Acceptor implements GTSListener {
 
     /** Returns a message describing the accepted result. */
     public String getMessage() {
-        String result;
-        if (this.result.isEmpty()) {
-            result = "No result states found";
-        } else {
-            result = this.result.size() + " result states found: " + this.result;
-        }
-        return result;
+        return this.result.getStatistics();
     }
 }
