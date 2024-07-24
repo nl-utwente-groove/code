@@ -46,7 +46,6 @@ import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.GraphBasedModel;
-import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.ResourceModel;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.graph.Edge;
@@ -80,15 +79,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
         this.resource = new Derived<>(this.graphModCount) {
             @Override
             protected GraphBasedModel<?> computeValue() {
-                GraphBasedModel<?> result;
-                ResourceKind kind = ResourceKind.toResource(getJGraph().getGraphRole());
-                if (getJGraph().isEditable() || getJGraph().isForState()
-                    || !getGrammar().hasResource(kind, getQualName())) {
-                    result = getGrammar().createGraphModel(getGraph());
-                } else {
-                    result = getGrammar().getGraphResource(kind, getQualName());
-                }
-                return result;
+                return getGrammar().createGraphModel(getGraph());
             }
         };
         this.typeGraph = new Derived<>(this.graphModCount) {

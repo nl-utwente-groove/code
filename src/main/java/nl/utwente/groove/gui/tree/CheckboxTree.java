@@ -26,6 +26,7 @@ import java.awt.event.MouseEvent;
 import java.util.EventObject;
 
 import javax.swing.AbstractCellEditor;
+import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -210,6 +211,7 @@ public class CheckboxTree extends JTree {
             this.jLabel.setBorder(INSET_BORDER);
             this.checkbox = new JCheckBox();
             this.checkbox.setOpaque(false);
+            this.checkbox.setBorder(BorderFactory.createLineBorder(Color.red));
             setLayout(new BorderLayout());
             add(this.jLabel, BorderLayout.CENTER);
             add(this.checkbox, CheckboxTree.CHECKBOX_ORIENTATION);
@@ -224,10 +226,9 @@ public class CheckboxTree extends JTree {
                                                        boolean hasFocus) {
             this.initialising = true;
             JComponent result;
-            this.jLabel.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row,
-                                                     hasFocus);
+            this.jLabel
+                .getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
             Color background = this.tree.getColor(tree.isEnabled());
-            // this.jLabel.setBackgroundNonSelectionColor(background);
             this.jLabel.setOpaque(!sel);
             this.jLabel.setBackground(background);
             this.labelNode = value instanceof TreeNode
@@ -432,8 +433,8 @@ public class CheckboxTree extends JTree {
         @Override
         public Component getTreeCellEditorComponent(JTree tree, Object value, boolean selected,
                                                     boolean expanded, boolean leaf, int row) {
-            Component result = this.editor.getTreeCellRendererComponent(tree, value, selected,
-                                                                        expanded, leaf, row, false);
+            Component result = this.editor
+                .getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, false);
 
             return result;
         }
@@ -458,6 +459,23 @@ public class CheckboxTree extends JTree {
 
         /** Signals to this node that the corresponding checkbox has been selected. */
         abstract public void setSelected(boolean selected);
+
+        /** Indicates that this node is in a passive state. */
+        public boolean isPassive() {
+            return true;
+        }
+
+        /**
+         * Changes the passive state of this node.
+         * The return value indicates if the state was changed as a result of this call.
+         */
+        public boolean setPassive(boolean passive) {
+            boolean result = passive = this.passive;
+            this.passive = passive;
+            return result;
+        }
+
+        private boolean passive;
     }
 
 }
