@@ -29,6 +29,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.swing.AbstractAction;
@@ -185,21 +187,6 @@ public class TypeTree extends LabelTree<AspectGraph> {
     }
 
     @Override
-    boolean isModelStale() {
-        return super.isModelStale() || this.typeGraph != getTypeGraph();
-    }
-
-    @Override
-    void clearFilter() {
-        if (this.typeGraph == getTypeGraph()) {
-            getFilter().clearJCells();
-        } else {
-            this.typeGraph = getTypeGraph();
-            super.clearFilter();
-        }
-    }
-
-    @Override
     void updateFilter() {
         for (TypeNode node : getTypeGraph().nodeSet()) {
             getFilter().addEntry(node);
@@ -278,34 +265,50 @@ public class TypeTree extends LabelTree<AspectGraph> {
                                     Set<? extends TypeNode> typeNodes,
                                     Set<? extends TypeEdge> typeEdges) {
         List<TreeNode> result = new ArrayList<>();
-        // mapping from type nodes to related types (in the combined type graph)
-        Map<TypeNode,Set<TypeNode>> relatedMap = isShowsSubtypes()
+        // mapping from type nodes to dependent type nodes (in the combined type graph)
+        Map<TypeNode,Set<TypeNode>> tmpDepNodeMap = isShowsSubtypes()
             ? getTypeGraph().getDirectSubtypeMap()
             : getTypeGraph().getDirectSupertypeMap();
-        for (TypeNode node : new TreeSet<TypeNode>(typeNodes)) {
-            if (node.isSort()) {
+        // reduce the type nodes to those that should actually be included in the tree
+        // Include a type node if it or a subtype occurs in typeNodes
+        var subTypeNodes = new HashSet<>();
+        typeNodes.stream().map(TypeNode::getSubtypes).forEach(subTypeNodes::addAll);
+        Map<TypeNode,SortedSet<TypeNode>> depNodeMap = new TreeMap<>();
+        for (var e : tmpDepNodeMap.entrySet()) {
+            var node = e.getKey();
+            if (node.isSort() || !typeNodes.contains(node)) {
                 continue;
             }
+            if (isShowsAllLabels()
+                || node.getSubtypes().stream().anyMatch(getFilter()::hasJCells)) {
+                depNodeMap.put(node, new TreeSet<>(e.getValue()));
+            }
+        }
+        depNodeMap.values().stream().forEach(s -> s.retainAll(depNodeMap.keySet()));
+        for (var e : depNodeMap.entrySet()) {
+            var node = e.getKey();
             TypeEntry entry = getFilter().getEntry(node);
-            if (isShowsAllLabels() || getFilter().hasJCells(entry)) {
-                TypedEntryNode nodeTypeNode = new TypedEntryNode(this, entry, true);
-                topNode.add(nodeTypeNode);
-                result.add(nodeTypeNode);
-                addRelatedTypes(typeNodes, nodeTypeNode, relatedMap, result);
-                if (node.isTopType()) {
-                    // don't show the edges as dependent on the type
-                    continue;
-                }
-                // check duplicates due to equi-labelled edges to different targets
-                Set<Entry> entries = new HashSet<>();
-                for (TypeEdge edge : new TreeSet<TypeEdge>(getTypeGraph().outEdgeSet(node))) {
-                    if (typeEdges.contains(edge)) {
-                        TypeEntry edgeEntry = getFilter().getEntry(edge);
-                        if (entries.add(edgeEntry)) {
-                            TypedEntryNode edgeTypeNode = new TypedEntryNode(this, edgeEntry, true);
-                            nodeTypeNode.add(edgeTypeNode);
-                            result.add(edgeTypeNode);
-                        }
+            TypedEntryNode nodeTypeNode = new TypedEntryNode(this, entry, true);
+            topNode.add(nodeTypeNode);
+            result.add(nodeTypeNode);
+            for (var depNode : e.getValue()) {
+                TypedEntryNode subTypeNode = new TypedEntryNode(this, depNode, false);
+                nodeTypeNode.add(subTypeNode);
+                result.add(subTypeNode);
+            }
+            if (node.isTopType()) {
+                // don't show the edges as dependent on the type
+                continue;
+            }
+            // check duplicates due to equi-labelled edges to different targets
+            Set<Entry> entries = new HashSet<>();
+            for (var edge : new TreeSet<>(getTypeGraph().outEdgeSet(node))) {
+                if (typeEdges.contains(edge)) {
+                    TypeEntry edgeEntry = getFilter().getEntry(edge);
+                    if (entries.add(edgeEntry)) {
+                        TypedEntryNode edgeTypeNode = new TypedEntryNode(this, edgeEntry, true);
+                        nodeTypeNode.add(edgeTypeNode);
+                        result.add(edgeTypeNode);
                     }
                 }
             }
@@ -326,36 +329,6 @@ public class TypeTree extends LabelTree<AspectGraph> {
             }
         }
         return result;
-    }
-
-    /**
-     * Recursively adds related types to a given label node.
-     * Only first level subtypes are added.
-     * @param typeNodes set of type nodes from which the related types are taken
-     * @param typeNode tree node for the key type
-     * @param map mapping from key types to related node type (in the combined type graph)
-     * @param newNodes set that collects all newly created tree nodes
-     */
-    private void addRelatedTypes(Set<? extends TypeNode> typeNodes, TypedEntryNode typeNode,
-                                 Map<TypeNode,Set<TypeNode>> map, List<TreeNode> newNodes) {
-        TypeNode type = (TypeNode) typeNode.getEntry().getType();
-        Set<TypeNode> relatedTypes = map.get(type);
-        assert relatedTypes != null : String
-            .format("Node type '%s' does not occur in type graph '%s'", type, map.keySet());
-        var orderedRelatedTypes = new TreeSet<>(relatedTypes);
-        for (TypeNode relType : orderedRelatedTypes) {
-            // test if the node type label exists in the partial type graph
-            if (typeNodes.contains(relType)) {
-                TypedEntryNode subTypeNode = new TypedEntryNode(this, relType, false);
-                typeNode.add(subTypeNode);
-                if (newNodes != null) {
-                    newNodes.add(typeNode);
-                }
-                // change last parameter to newNodes if subtypes should be added
-                // to arbitrary depth
-                addRelatedTypes(typeNodes, subTypeNode, map, null);
-            }
-        }
     }
 
     /**
@@ -405,8 +378,6 @@ public class TypeTree extends LabelTree<AspectGraph> {
         this.showsAllLabels = show;
     }
 
-    /** The type graph in the model, if any. */
-    private TypeGraph typeGraph;
     /** Mode of the label tree: showing all labels or just those in the graph. */
     private boolean showsAllLabels = false;
     /** Mode of the label tree: showing subtypes or supertypes. */

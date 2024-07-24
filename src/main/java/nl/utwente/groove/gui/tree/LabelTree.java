@@ -253,9 +253,9 @@ public class LabelTree<G extends Graph> extends CheckboxTree
      */
     void updateFilter() {
         for (JCell<G> cell : this.jModel.getRoots()) {
-            if (cell.getVisuals().isVisible()) {
-                getFilter().addJCell(cell);
-            }
+            //            if (cell.getVisuals().isVisible()) {
+            getFilter().addJCell(cell);
+            //            }
         }
     }
 
@@ -319,9 +319,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree
      */
     @Override
     public void graphChanged(GraphModelEvent e) {
-        boolean changed = false;
-        GraphModelEvent.GraphModelChange change = e.getChange();
-        changed = processEdit(change, changed);
+        boolean changed = processEdit(e.getChange());
         if (changed) {
             updateTree();
         }
@@ -330,7 +328,8 @@ public class LabelTree<G extends Graph> extends CheckboxTree
     /**
      * Records the changes imposed by a graph change.
      */
-    private boolean processEdit(GraphModelEvent.GraphModelChange change, boolean changed) {
+    private boolean processEdit(GraphModelEvent.GraphModelChange change) {
+        boolean result = false;
         // insertions double as changes, so we do insertions first
         // and remove them from the change map
         Map<Object,Object> changeMap = new HashMap<>();
@@ -347,7 +346,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree
                 if (element instanceof JCell) {
                     @SuppressWarnings("unchecked")
                     JCell<G> jCell = (JCell<G>) element;
-                    changed |= getFilter().addJCell(jCell);
+                    result |= getFilter().addJCell(jCell);
                 }
                 changeMap.remove(element);
             }
@@ -357,7 +356,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree
             if (element instanceof JCell) {
                 @SuppressWarnings("unchecked")
                 JCell<G> jCell = (JCell<G>) element;
-                changed |= getFilter().modifyJCell(jCell);
+                result |= getFilter().modifyJCell(jCell);
             }
         }
         // removed cells mean removed labels
@@ -369,11 +368,11 @@ public class LabelTree<G extends Graph> extends CheckboxTree
                 if (element instanceof JCell) {
                     @SuppressWarnings("unchecked")
                     JCell<G> jCell = (JCell<G>) element;
-                    changed |= getFilter().removeJCell(jCell);
+                    result |= getFilter().removeJCell(jCell);
                 }
             }
         }
-        return changed;
+        return result;
     }
 
     /**
