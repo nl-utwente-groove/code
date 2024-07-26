@@ -43,6 +43,7 @@ public class TypeFilter extends LabelFilter<AspectGraph> {
      */
     @Override
     public void clear() {
+        super.clear();
         this.stale = true;
     }
 

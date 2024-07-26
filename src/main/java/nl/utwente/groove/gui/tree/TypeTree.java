@@ -239,7 +239,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
             } else {
                 result = new ArrayList<>();
                 for (TypeGraph.Sub subTypeGraph : typeGraphMap) {
-                    TypeGraphTreeNode typeGraphNode = new TypeGraphTreeNode(subTypeGraph);
+                    TypeGraphTreeNode typeGraphNode = new TypeGraphTreeNode(this, subTypeGraph);
                     result
                         .addAll(fillTree(typeGraphNode, subTypeGraph.getNodes(),
                                          subTypeGraph.getEdges()));
@@ -442,7 +442,8 @@ public class TypeTree extends LabelTree<AspectGraph> {
          * Constructs a new node, for a given type graph component
          * @param subTypeGraph the type graph component
          */
-        TypeGraphTreeNode(TypeGraph.Sub subTypeGraph) {
+        TypeGraphTreeNode(TypeTree tree, TypeGraph.Sub subTypeGraph) {
+            this.tree = tree;
             this.name = subTypeGraph.getName();
             for (TypeNode node : subTypeGraph.getNodes()) {
                 this.entries.add(getFilter().getEntry(node));
@@ -451,6 +452,8 @@ public class TypeTree extends LabelTree<AspectGraph> {
                 this.entries.add(getFilter().getEntry(edge));
             }
         }
+
+        private final TypeTree tree;
 
         @Override
         public int hashCode() {
@@ -475,7 +478,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
 
         @Override
         public boolean hasCheckbox() {
-            return true;
+            return this.tree.isFiltering();
         }
 
         @Override

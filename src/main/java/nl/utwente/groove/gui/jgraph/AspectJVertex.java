@@ -227,7 +227,9 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
         TypeModelMap typeMap = getTypeMap();
         if (typeMap != null) {
             TypeNode type = typeMap.getNode(getNode());
-            result.add(type);
+            if (type != null) {
+                result.add(type);
+            }
             //            if (type != null && (!hasEdgeKeys || !type.isTopType())) {
             //                result.addAll(type.getSupertypes());
             //            }
