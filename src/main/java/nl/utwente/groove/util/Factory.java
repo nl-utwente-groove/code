@@ -17,8 +17,10 @@
 package nl.utwente.groove.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
@@ -161,9 +163,9 @@ public abstract class Factory<T> implements Supplier<T> {
     @Override
     public String toString() {
         var value = this.value;
-        return value == null
-            ? "null"
-            : value.toString();
+        return value instanceof Object[] a
+            ? Arrays.toString(a)
+            : Objects.toString(value);
     }
 
     /** Creates an instance of this factory from a given supplier. */

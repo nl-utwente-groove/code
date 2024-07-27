@@ -143,7 +143,8 @@ public class Proof {
         Collection<BasicEvent> eventSet = new ArrayList<>();
         collectEvents(eventSet, record);
         assert !eventSet.isEmpty();
-        if (eventSet.size() == 1 && !getRule().hasSubRules()) {
+        if (!getRule().hasSubRules()) {
+            assert eventSet.size() == 1;
             return eventSet.iterator().next();
         } else {
             return createCompositeEvent(record, eventSet);
@@ -153,12 +154,13 @@ public class Proof {
     /**
      * Recursively collects the events of this proof and all sub-proofs into a
      * given collection.
+     * Events of locally non-modifying rules are skipped except for the top-level rule.
      * @param events the resulting set of events
      * @param record factory for events; may be <code>null</code>, in which case
      * events are not reused among transitions
      */
     private void collectEvents(Collection<BasicEvent> events, @Nullable Record record) {
-        if (hasRule()) {
+        if (hasRule() && (getRule().isTop() || getRule().isLocallyModifying())) {
             BasicEvent myEvent = createSimpleEvent(record);
             events.add(myEvent);
         }

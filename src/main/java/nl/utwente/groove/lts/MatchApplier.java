@@ -168,8 +168,8 @@ public class MatchApplier {
             RuleTransition parentOut = match.getTransition();
             addedNodes = parentOut.getAddedNodes();
         } else if (match.getAction().hasNodeCreators()) {
-            RuleEffect effect
-                = new RuleEffect(source.getGraph(), Fragment.NODE_CREATION, this.gts.getOracle());
+            RuleEffect effect = new RuleEffect(source.getGraph(), Fragment.NODE_CREATION,
+                this.gts.getOracle());
             event.recordEffect(effect);
             effect.setFixed();
             addedNodes = effect.getCreatedNodeArray();

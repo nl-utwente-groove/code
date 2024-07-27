@@ -737,13 +737,26 @@ public class Rule implements Action, Fixable {
         this.colorMap.putAll(colorMap);
     }
 
-    /** Returns a mapping from RHS nodes to colours for those nodes. */
+    /** Returns a mapping from RHS nodes on this rule level to colours for those nodes. */
     public Map<RuleNode,Color> getColorMap() {
         return this.colorMap;
     }
 
     /** Mapping from rule nodes to explicitly declared colours. */
     private final Map<RuleNode,Color> colorMap = new HashMap<>();
+
+    /** Indicates if this rule (or any of its subrules) has any coloring instructions. */
+    public boolean hasColors() {
+        return this.hasColors.get();
+    }
+
+    /** Computes the value of {@link #hasColors}. */
+    private boolean createHasColors() {
+        return !getColorMap().isEmpty() || getSubRules().stream().anyMatch(Rule::hasColors);
+    }
+
+    /** Flag indicating if this rule (or any of its subrules) has any coloring instructions. */
+    private final Supplier<Boolean> hasColors = lazy(this::createHasColors);
 
     /** Returns the anchor of the rule. */
     public Anchor getAnchor() {
@@ -861,7 +874,7 @@ public class Rule implements Action, Fixable {
     private final Supplier<RuleNode[]> isolatedNodes = lazy(this::computeIsolatedNodes);
 
     /**
-     * Indicates if application of this rule actually changes the host graph. If
+     * Indicates if application of this rule (or any of its subrules) actually changes the host graph. If
      * <code>false</code>, this means the rule is essentially a graph
      * condition.
      */
@@ -873,23 +886,36 @@ public class Rule implements Action, Fixable {
      * Computes if the rule is modifying or not.
      */
     private boolean computeIsModifying() {
-        boolean result = getEraserEdges().length > 0 || getEraserNodes().length > 0 || hasMergers()
-            || hasNodeCreators() || hasEdgeCreators() || !getColorMap().isEmpty();
-        if (!result) {
-            for (Rule subRule : getSubRules()) {
-                result = subRule.isModifying();
-                if (result) {
-                    break;
-                }
-            }
-        }
-        return result;
+        return hasNodeErasers() || hasEdgeErasers() || hasMergers() || hasNodeCreators()
+            || hasEdgeCreators() || hasColors();
     }
 
     /**
-     * Indicates if this rule makes changes to a graph at all.
+     * Indicates if this rule (or any of its subrules) makes changes to a graph at all.
      */
     private final Supplier<Boolean> modifying = lazy(this::computeIsModifying);
+
+    /**
+     * Indicates if this rule level modifies a graph to which it is applied,
+     * irregardless of its subrules.
+     */
+    public boolean isLocallyModifying() {
+        return this.locallyModifying.get();
+    }
+
+    /**
+     * Computes the value of {@link #locallyModifying}.
+     */
+    private boolean computeLocallyModifying() {
+        return getCreatorNodes().length > 0 || getCreatorEdges().length > 0
+            || getEraserNodes().length > 0 || getEraserEdges().length > 0
+            || !getColorMap().isEmpty() || !getMergers().isEmpty();
+    }
+
+    /**
+     * Indicates if this rule level modifies a graph to which it is applied.
+     */
+    private final Supplier<Boolean> locallyModifying = lazy(this::computeLocallyModifying);
 
     /**
      * Returns an array of LHS nodes that are endpoints of eraser edges, creator
@@ -972,39 +998,31 @@ public class Rule implements Action, Fixable {
     private final Supplier<Set<LabelVar>> modifierVars = lazy(this::computeModifierVars);
 
     /**
-     * Indicates if the rule creates any nodes.
+     * Indicates if the rule (or one of its subrules) creates any nodes.
      */
     public boolean hasNodeCreators() {
         return this.hasNodeCreators.get();
     }
 
     private boolean computeHasNodeCreators() {
-        boolean result = getCreatorNodes().length > 0;
-        if (!result) {
-            for (Rule subRule : getSubRules()) {
-                result = subRule.hasNodeCreators();
-                if (result) {
-                    break;
-                }
-            }
-        }
-        return result;
+        return getCreatorNodes().length > 0
+            || getSubRules().stream().anyMatch(Rule::hasNodeCreators);
     }
 
     /**
-     * Indicates if this rule has creator nodes.
+     * Indicates if this rule (or one of its subrules) has creator nodes.
      */
     private final Supplier<Boolean> hasNodeCreators = lazy(this::computeHasNodeCreators);
 
     /**
-     * Returns the RHS nodes that are not images of an LHS node.
+     * Returns the RHS nodes on this rule level that are not images of an LHS node.
      */
     final public RuleNode[] getCreatorNodes() {
         return this.creatorNodes.get();
     }
 
     /**
-     * Computes the creator (i.e., RHS-only) nodes.
+     * Computes the creator (i.e., RHS-only) nodes of this rule (excluding its subrules).
      */
     private RuleNode[] computeCreatorNodes() {
         Set<RuleNode> result = new HashSet<>(rhs().nodeSet());
@@ -1017,29 +1035,20 @@ public class Rule implements Action, Fixable {
     }
 
     /**
-     * The rhs nodes that are not ruleMorph images
-     * @invariant creatorNodes \subseteq rhs.nodeSet()
+     * The RHS nodes on this rule level that are not images of an LHS node.
      */
     private final Supplier<RuleNode[]> creatorNodes = lazy(this::computeCreatorNodes);
 
     /**
-     * Indicates if the rule creates any edges.
+     * Indicates if the rule (or one of its subrules) creates any edges.
      */
     public boolean hasEdgeCreators() {
         return this.hasEdgeCreators.get();
     }
 
     private boolean computeHasEdgeCreators() {
-        boolean result = getCreatorEdges().length > 0;
-        if (!result) {
-            for (Rule subRule : getSubRules()) {
-                result = subRule.hasEdgeCreators();
-                if (result) {
-                    break;
-                }
-            }
-        }
-        return result;
+        return getCreatorEdges().length > 0
+            || getSubRules().stream().anyMatch(Rule::hasEdgeCreators);
     }
 
     /**
@@ -1048,7 +1057,7 @@ public class Rule implements Action, Fixable {
     private final Supplier<Boolean> hasEdgeCreators = lazy(this::computeHasEdgeCreators);
 
     /**
-     * Returns the RHS edges that are not images of an LHS edge.
+     * Returns the RHS edges on this rule level that are not images of an LHS edge.
      */
     final public RuleEdge[] getCreatorEdges() {
         return this.creatorEdges.get();
@@ -1070,7 +1079,7 @@ public class Rule implements Action, Fixable {
     }
 
     /**
-     * The rhs edges that are not ruleMorph images
+     * The RHS edges on this rule level that are not images of an LHS edge.
      */
     private final Supplier<RuleEdge[]> creatorEdges = lazy(this::computeCreatorEdges);
 
@@ -1099,8 +1108,7 @@ public class Rule implements Action, Fixable {
     }
 
     /**
-     * The rhs edges that are not ruleMorph images but with all ends morphism
-     * images
+     * The creator edges between reader nodes.
      */
     private final Supplier<RuleEdge[]> simpleCreatorEdges = lazy(this::computeSimpleCreatorEdges);
 
@@ -1121,21 +1129,20 @@ public class Rule implements Action, Fixable {
     }
 
     /**
-     * The rhs edges with at least one end not a morphism image
+     * The creator edges that have at least one creator end.
      */
     private final Supplier<Set<RuleEdge>> complexCreatorEdges
         = lazy(this::computeComplexCreatorEdges);
 
     /**
-     * Returns the variables that occur in creator edges.
-     * @see #getCreatorEdges()
+     * Returns the variables that occur in creator nodes and edges.
      */
     public final LabelVar[] getCreatorVars() {
         return this.creatorVars.get();
     }
 
     /**
-     * Computes the variables occurring in RHS nodes and edges.
+     * Computes the variables that occur in creator nodes and edges.
      */
     private LabelVar[] computeCreatorVars() {
         var result = new ArrayList<LabelVar>();
@@ -1153,7 +1160,7 @@ public class Rule implements Action, Fixable {
     }
 
     /**
-     * Variables occurring in the rhsOnlyEdges
+     * Variables that occur in creator nodes and edges.
      */
     private final Supplier<LabelVar[]> creatorVars = lazy(this::computeCreatorVars);
 
@@ -1166,7 +1173,7 @@ public class Rule implements Action, Fixable {
     }
 
     /**
-     * Computes a creator graph, consisting of the creator nodes together with
+     * Computes the creator graph, consisting of the creator nodes together with
      * the creator edges and their endpoints.
      */
     private RuleGraph computeCreatorGraph() {
@@ -1179,8 +1186,8 @@ public class Rule implements Action, Fixable {
     }
 
     /**
-     * A sub-graph of the production rule's right hand side, consisting only of
-     * the fresh nodes and edges.
+     * The creator graph, consisting of the creator nodes together with
+     * the creator edges and their endpoints.
      */
     private final Supplier<RuleGraph> creatorGraph = lazy(this::computeCreatorGraph);
 
@@ -1193,9 +1200,8 @@ public class Rule implements Action, Fixable {
     }
 
     /**
-     * A map from the nodes of <tt>rhsOnlyGraph</tt> to <tt>lhs</tt>, which is
-     * the restriction of the inverse of <tt>ruleMorph</tt> to
-     * <tt>rhsOnlyGraph</tt>.
+     * The RHS nodes that are not themselves creator nodes but are
+     * the ends of creator edges.
      */
     private final Supplier<Set<RuleNode>> creatorEnds = lazy(() -> {
         var result = new HashSet<>(getCreatorGraph().nodeSet());
@@ -1204,39 +1210,31 @@ public class Rule implements Action, Fixable {
     });
 
     /**
-     * Indicates if the rule creates any nodes.
+     * Indicates if the rule (or one of its subrules) erases any nodes.
      */
     public boolean hasNodeErasers() {
         return this.hasNodeErasers.get();
     }
 
+    /** Computes the value of {@link #hasNodeErasers}. */
     private boolean computeHasNodeErasers() {
-        boolean result = getEraserNodes().length > 0;
-        if (!result) {
-            for (Rule subRule : getSubRules()) {
-                result = subRule.hasNodeErasers();
-                if (result) {
-                    break;
-                }
-            }
-        }
-        return result;
+        return getEraserNodes().length > 0 || getSubRules().stream().anyMatch(Rule::hasNodeErasers);
     }
 
     /**
-     * Indicates if this rule has eraser nodes.
+     * Indicates if this rule (or any of its subrules) has eraser nodes.
      */
     private final Supplier<Boolean> hasNodeErasers = lazy(this::computeHasNodeErasers);
 
     /**
-     * Returns the LHS nodes that are not mapped to the RHS.
+     * Returns the LHS nodes on this rule level that are not mapped to the RHS.
      */
     public final DefaultRuleNode[] getEraserNodes() {
         return this.eraserNodes.get();
     }
 
     /**
-     * Computes the eraser (i.e., lhs-only) nodes.
+     * Computes the LHS nodes on this rule level that are not mapped to the RHS.
      */
     private DefaultRuleNode[] computeEraserNodes() {
         //testFixed(true);
@@ -1246,44 +1244,36 @@ public class Rule implements Action, Fixable {
     }
 
     /**
-     * The lhs nodes that are not ruleMorph keys
-     * @invariant lhsOnlyNodes \subseteq lhs.nodeSet()
+     * The LHS nodes on this rule level that are not mapped to the RHS.
      */
     private final Supplier<DefaultRuleNode[]> eraserNodes = lazy(this::computeEraserNodes);
 
     /**
-     * Indicates if the rule creates any edges.
+     * Indicates if the rule (or any of its subrules) erases any edges.
      */
     public boolean hasEdgeErasers() {
         return this.hasEdgeErasers.get();
     }
 
+    /** Computes the value of {@link #hasEdgeErasers}. */
     private boolean computeHasEdgeErasers() {
-        boolean result = getEraserEdges().length > 0;
-        if (!result) {
-            for (Rule subRule : getSubRules()) {
-                result = subRule.hasEdgeErasers();
-                if (result) {
-                    break;
-                }
-            }
-        }
-        return result;
+        return getEraserEdges().length > 0 || getSubRules().stream().anyMatch(Rule::hasEdgeErasers);
     }
 
     /**
-     * Indicates if this rule has eraser edges.
+     * Indicates if this rule (or any of its subrules) erases any edges.
      */
     private final Supplier<Boolean> hasEdgeErasers = lazy(this::computeHasEdgeErasers);
 
-    /** Returns the eraser (i.e., LHS-only) edges. */
+    /** Returns the LHS edges on this rule level that do not have an image in the RHS,
+     * minus the incident edges of the eraser nodes.
+     */
     public final RuleEdge[] getEraserEdges() {
         return this.eraserEdges.get();
     }
 
     /**
-     * Computes the eraser (i.e., LHS-only) edges.
-     * Note: this does not include the incident edges of the eraser nodes.
+     * Computes the value of {@link #eraserEdges}.
      */
     private RuleEdge[] computeEraserEdges() {
         testFixed(true);
@@ -1297,8 +1287,8 @@ public class Rule implements Action, Fixable {
     }
 
     /**
-     * The lhs edges that are not ruleMorph keys
-     * @invariant lhsOnlyEdges \subseteq lhs.edgeSet()
+     * The LHS edges on this rule level that do not have an image in the RHS,
+     * minus the incident edges of the eraser nodes.
      */
     private final Supplier<RuleEdge[]> eraserEdges = lazy(this::computeEraserEdges);
 
@@ -1308,7 +1298,7 @@ public class Rule implements Action, Fixable {
     }
 
     /**
-     * Computes the array of creator edges that are not themselves anchors.
+     * Computes the value of {@link #eraserNonAnchorEdges}.
      */
     private RuleEdge[] computeEraserNonAnchorEdges() {
         Set<RuleEdge> result = new LinkedHashSet<>(Arrays.asList(getEraserEdges()));
@@ -1317,36 +1307,27 @@ public class Rule implements Action, Fixable {
     }
 
     /**
-     * The lhs edges that are not ruleMorph keys and are not anchors
+     * The eraser edges that are not themselves anchors.
      */
     private final Supplier<RuleEdge[]> eraserNonAnchorEdges
         = lazy(this::computeEraserNonAnchorEdges);
 
     /**
-     * Indicates if this rule has mergers.
+     * Indicates if this rule (or any of its subrules) has (node) mergers.
      */
     final public boolean hasMergers() {
         return this.hasMergers.get();
     }
 
     /**
-     * Computes if the rule has mergers or not.
+     * Computes the value of {@link #hasMergers}.
      */
     private boolean computeHasMergers() {
-        boolean result = !getLhsMergeMap().isEmpty() || !getRhsMergeMap().isEmpty();
-        if (!result) {
-            for (Rule subRule : getSubRules()) {
-                result = subRule.hasMergers();
-                if (result) {
-                    break;
-                }
-            }
-        }
-        return result;
+        return !getMergers().isEmpty() || getSubRules().stream().anyMatch(Rule::hasMergers);
     }
 
     /**
-     * Indicates if this rule has node mergers.
+     * Indicates if this rule (or any of its subrules) has node mergers.
      */
     private final Supplier<Boolean> hasMergers = lazy(this::computeHasMergers);
 
@@ -1356,7 +1337,7 @@ public class Rule implements Action, Fixable {
     }
 
     /**
-     * Returns the set of merger edges in the RHS of which at least one end
+     * Returns the set of merger edges in the RHS of this rule level which at least one end
      * is a creator node.
      */
     public final Set<RuleEdge> getRhsMergers() {
@@ -1364,7 +1345,7 @@ public class Rule implements Action, Fixable {
     }
 
     /**
-     * Returns a map from each LHS node that is merged with
+     * Returns a map from each LHS node of this rule level that is merged with
      * another to the LHS node it is merged with.
      */
     public final Map<RuleNode,RuleNode> getLhsMergeMap() {
@@ -1372,20 +1353,21 @@ public class Rule implements Action, Fixable {
     }
 
     /**
-     * Returns a map from merged nodes to their merge targets,
+     * Returns a map from merged nodes of this rule level to their merge targets,
      * at least one of which is a creator node.
      */
     public final Map<RuleNode,RuleNode> getRhsMergeMap() {
         return getMergers().rhsMergeMap();
     }
 
+    /** Computes the value of {@link #mergers}. */
     private Mergers getMergers() {
         return this.mergers.get();
     }
 
     private final Supplier<Mergers> mergers = lazy(() -> new Mergers(this));
 
-    /** Merger information.
+    /** Merger information for this rule level.
      * @param lhsMergers he set of merger edges in the RHS of which both ends are in the LHS
      * @param rhsMergers the set of merger edges in the RHS of which at least one end
      * is a creator node.
@@ -1398,6 +1380,11 @@ public class Rule implements Action, Fixable {
         Mergers(Rule rule) {
             this(new HashSet<>(), new HashSet<>(), new HashMap<>(), new HashMap<>());
             init(rule);
+        }
+
+        /** Indicates if the merge action represented by this object is empty. */
+        public boolean isEmpty() {
+            return lhsMergers().isEmpty() && rhsMergers().isEmpty();
         }
 
         private void init(Rule rule) {

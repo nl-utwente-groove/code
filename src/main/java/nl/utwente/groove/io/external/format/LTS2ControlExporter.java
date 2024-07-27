@@ -88,9 +88,7 @@ public class LTS2ControlExporter extends AbstractExporter.Writer {
             .filter(t -> this.covered.add(t.target()))
             .toList();
         if (outs.isEmpty()) {
-            emit(state.isFinal()
-                ? "// final state"
-                : "halt");
+            emit("// final state");
         } else if (outs.size() == 1 && !state.isFinal()) {
             var out = outs.get(0);
             emit(out.label() + ";");

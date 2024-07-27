@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -147,12 +148,20 @@ public class RuleEffect extends DefaultFixable {
             this.createdNodeMap = createdNodeMap = new HashMap<>();
         }
         int createdNodeStart = this.createdNodeIndex;
-        int creatorCount = creatorNodes.length;
-        for (int i = 0; i < creatorCount; i++) {
+        int count = creatorNodes.length;
+        for (int i = 0; i < count; i++) {
             createdNodeMap.put(creatorNodes[i], createdNodes.get(createdNodeStart + i));
         }
-        this.createdNodeIndex = createdNodeStart + creatorCount;
+        this.createdNodeIndex = createdNodeStart + count;
     }
+
+    /**
+     * List of created nodes, either predefined or built up during construction
+     */
+    private final List<HostNode> createdNodeList;
+
+    /** Index of the first unused element in {@link #createdNodeList}. */
+    private int createdNodeIndex;
 
     /**
      * Adds information about created nodes to that already stored in the record.
@@ -165,33 +174,49 @@ public class RuleEffect extends DefaultFixable {
         assert !isNodesPredefined();
         int createdNodeCount = createdNodes.length;
         if (createdNodeCount > 0) {
-            Map<RuleNode,HostNode> oldCreatedNodeMap = this.createdNodeMap;
-            if (oldCreatedNodeMap == null) {
-                this.createdNodeMap = oldCreatedNodeMap = new HashMap<>();
+            var createdNodeMap = this.createdNodeMap;
+            var createdNodeList = this.createdNodeList;
+            if (createdNodeMap == null) {
+                this.createdNodeMap = createdNodeMap = new HashMap<>();
             }
-            List<HostNode> oldCreatedNodes = this.createdNodeList;
+            var createdNodeSet = this.createdNodeSet;
             for (int i = 0; i < createdNodeCount; i++) {
                 HostNode createdNode = createdNodes[i];
-                oldCreatedNodes.add(createdNode);
-                oldCreatedNodeMap.put(creatorNodes[i], createdNode);
+                createdNodeMap.put(creatorNodes[i], createdNode);
+                createdNodeList.add(createdNode);
+                if (createdNodeSet != null) {
+                    boolean fresh = createdNodeSet.add(createdNode);
+                    assert fresh : "New node %s was already in created nodes list %s"
+                        .formatted(createdNode, createdNodeSet);
+                }
             }
         }
     }
+
+    /** Mapping from rule node creators to the corresponding created nodes. */
+    private Map<RuleNode,HostNode> createdNodeMap;
+
+    /** Tests if either the source graph contains a given node or this effect record adds it. */
+    boolean containsNode(HostNode node) {
+        if (getSource().containsNode(node)) {
+            return true;
+        }
+        var createdNodeSet = this.createdNodeSet;
+        if (createdNodeSet == null) {
+            this.createdNodeSet = createdNodeSet = new HashSet<>(this.createdNodeList);
+            assert createdNodeSet.size() == this.createdNodeList
+                .size() : "Duplicate node in list %s".formatted(this.createdNodeList);
+        }
+        return createdNodeSet.contains(node);
+    }
+
+    private Set<HostNode> createdNodeSet;
 
     /** Creates and adds an edge by invoking the source graph's factory. */
     void addCreateEdge(HostNode source, TypeLabel label, HostNode target) {
         HostEdge edge = getSource().getFactory().createEdge(source, label, target);
         addCreatedEdge(edge);
     }
-
-    /** Mapping from rule node creators to the corresponding created nodes. */
-    private Map<RuleNode,HostNode> createdNodeMap;
-    /**
-     * List of created nodes, either predefined or built up during construction
-     */
-    private final List<HostNode> createdNodeList;
-    /** Index of the first unused element in {@link #createdNodeList}. */
-    private int createdNodeIndex;
 
     /**
      * Adds a collection of erased nodes to those already stored in this record.

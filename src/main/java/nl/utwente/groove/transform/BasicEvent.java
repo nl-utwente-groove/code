@@ -487,7 +487,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
     /** Computes an array of created nodes that are fresh both
      * with respect to a given set of source graph nodes and with respect
      * to a set of nodes that were already created.
-     * @param record the source graph
+     * @param record object in which the effect of this {@link BasicEvent} (and possibly others) is recorded
      * @return array of fresh nodes, in the order of the node creators
      * @throws InterruptedException if an oracle input was cancelled
      */
@@ -557,7 +557,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
             int previousCount = previous.size();
             for (int i = 0; !added && i < previousCount; i++) {
                 result = previous.get(i);
-                added = !record.getSource().containsNode(result);
+                added = !record.containsNode(result);
             }
         }
         if (!added) {
