@@ -29,7 +29,6 @@ import static nl.utwente.groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_RECIPE_STEPS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_STATE_STATUS_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static nl.utwente.groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import static nl.utwente.groove.io.FileType.GRAMMAR;
@@ -673,7 +672,6 @@ public class Simulator implements SimulatorListener {
             result.add(getOptions().getItem(SHOW_ANCHORS_OPTION));
             result.add(getOptions().getItem(SHOW_ASPECTS_OPTION));
             result.add(getOptions().getItem(SHOW_VALUE_NODES_OPTION));
-            result.add(getOptions().getItem(SHOW_UNFILTERED_EDGES_OPTION));
             result.add(getOptions().getItem(SHOW_BIDIRECTIONAL_EDGES_OPTION));
             result.add(getOptions().getItem(SHOW_ARROWS_ON_LABELS_OPTION));
             break;

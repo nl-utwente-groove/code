@@ -3,6 +3,8 @@ package nl.utwente.groove.gui.jgraph;
 import java.util.EnumSet;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.VisualKey;
@@ -19,7 +21,8 @@ import nl.utwente.groove.util.Groove;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex> implements LTSJCell {
+public class LTSJEdge extends AJEdge<@NonNull GTS,LTSJGraph,LTSJModel,LTSJVertex>
+    implements LTSJCell {
     /**
      * Constructs an uninitialised instance.
      * Call {@link #setJModel(JModel)} to initialise.

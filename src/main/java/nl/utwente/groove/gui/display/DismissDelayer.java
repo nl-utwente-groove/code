@@ -26,7 +26,7 @@ import javax.swing.ToolTipManager;
  * Mouse listener that will set the tool tip dismiss delay to
  * infinite whenever a given component is entered.
  */
-public final class DismissDelayer extends MouseAdapter {
+public class DismissDelayer extends MouseAdapter {
     /**
      * Constructs a delayer for a given component.
      * @param component the component on which this mouse listener works.

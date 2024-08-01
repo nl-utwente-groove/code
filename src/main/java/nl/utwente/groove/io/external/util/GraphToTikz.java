@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.util.Bezier;
 
@@ -56,7 +57,7 @@ import nl.utwente.groove.util.Exceptions;
  * Class to perform the conversion from Groove graphs to Tikz format.
  * @author Eduardo Zambon
  */
-public final class GraphToTikz<G extends Graph> {
+public final class GraphToTikz<G extends @NonNull Graph> {
 
     // ------------------------------------------------------------------------
     // Object fields
@@ -104,7 +105,7 @@ public final class GraphToTikz<G extends Graph> {
      * @param jGraph the graph to be converted.
      * @return a string with the Tikz encoding of the graph.
      */
-    public static <G extends Graph> String convert(JGraph<G> jGraph) {
+    public static <G extends @NonNull Graph> String convert(JGraph<G> jGraph) {
         return new GraphToTikz<>(jGraph).doConvert();
     }
 

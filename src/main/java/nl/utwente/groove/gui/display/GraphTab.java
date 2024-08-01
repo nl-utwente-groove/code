@@ -332,7 +332,9 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
                 assert jModel != null;
                 jModel.syncGraph();
                 // we need to clone the graph to properly freeze the next layout change
-                AspectGraph graphClone = jModel.getGraph().clone();
+                var graph = jModel.getGraph();
+                assert graph != null;
+                AspectGraph graphClone = graph.clone();
                 graphClone.setFixed();
                 getSimulatorModel().doAddGraph(getResourceKind(), graphClone, true);
                 loadProperties(jModel);
@@ -343,7 +345,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     }
 
     /** Returns the underlying JGraph of this tab. */
-    public final AspectJGraph getJGraph() {
+    public final @NonNull AspectJGraph getJGraph() {
         AspectJGraph result = this.jGraph;
         if (result == null) {
             result = this.jGraph = new AspectJGraph(getSimulator(), getDisplay().getKind(), false);

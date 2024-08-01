@@ -19,8 +19,9 @@ package nl.utwente.groove.gui.jgraph;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
+
+import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Node;
@@ -38,7 +39,7 @@ import nl.utwente.groove.lts.Status.Flag;
  * @author Arend Rensink
  * @version $Revision$
  */
-final public class LTSJModel extends JModel<GTS> implements GTSListener {
+final public class LTSJModel extends JModel<@NonNull GTS> implements GTSListener {
     /** Creates a new model from a given LTS and set of display options. */
     LTSJModel(LTSJGraph jGraph) {
         super(jGraph);
@@ -83,9 +84,9 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
             prepareInsert();
             // note that (as per GraphListener contract)
             // source and target Nodes (if any) have already been added
-            JCell<GTS> edgeJCell = addEdge(transition);
+            var edgeJCell = addEdge(transition);
             doInsert(false);
-            JCell<GTS> stateJCell = getJCellForNode(transition.target());
+            var stateJCell = getJCellForNode(transition.target());
             stateJCell.setStale(VisualKey.VISIBLE);
             edgeJCell.setStale(VisualKey.VISIBLE);
             // layout should occur after the transition has been added
@@ -97,7 +98,7 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
 
     @Override
     public void statusUpdate(GTS lts, GraphState explored, int change) {
-        JCell<GTS> jCell = registerChange(explored, change);
+        var jCell = registerChange(explored, change);
         if (jCell != null) {
             if (isExploring()) {
                 this.changedCells.add(jCell);
@@ -112,8 +113,8 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
      * @return the cell that was changed as a consequence to the state change;
      * {@code null} if there was no change.
      */
-    private JCell<GTS> registerChange(GraphState explored, int change) {
-        JVertex<GTS> jCell = getJCellForNode(explored);
+    private JCell<@NonNull GTS> registerChange(GraphState explored, int change) {
+        var jCell = getJCellForNode(explored);
         if (jCell != null) {
             if (Flag.CLOSED.test(change)) {
                 jCell.setLook(Look.OPEN, false);
@@ -124,10 +125,9 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
                 jCell.setLook(Look.FINAL, explored.isFinal());
             }
             if (Flag.ABSENT.test(change)) {
-                Iterator<? extends JEdge<GTS>> iter = jCell.getContext();
+                var iter = jCell.getContext();
                 while (iter.hasNext()) {
-                    iter.next()
-                        .setLook(Look.ABSENT, true);
+                    iter.next().setLook(Look.ABSENT, true);
                 }
                 jCell.setLook(Look.ABSENT, true);
             }
@@ -157,13 +157,14 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
      */
     public boolean reloadGraph() {
         boolean result = false;
-        if (getGraph() != null) {
+        var lts = getGraph();
+        if (lts != null) {
             int nodeCount = nodeCount();
             int bound = getStateBound();
-            if (bound > nodeCount && nodeCount < getGraph().nodeCount()) {
-                result = addElements(getGraph().nodeSet(), getGraph().edgeSet(), false);
+            if (bound > nodeCount && nodeCount < lts.nodeCount()) {
+                result = addElements(lts.nodeSet(), lts.edgeSet(), false);
             } else if (bound < nodeCount) {
-                loadGraph(getGraph());
+                loadGraph(lts);
                 result = true;
             }
         }
@@ -221,8 +222,7 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
         } else {
             for (Edge edge : edgeSet) {
                 GraphTransition trans = (GraphTransition) edge;
-                if (getJGraph().getTransitionClass()
-                    .admits(trans)) {
+                if (getJGraph().getTransitionClass().admits(trans)) {
                     result |= addTransition((GraphTransition) edge);
                 }
             }
@@ -232,8 +232,7 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
 
     /** Tests if a given graph transition is acceptable for addition to the LTS panel. */
     private boolean isAcceptTransition(GraphTransition trans) {
-        return getJGraph().getTransitionClass()
-            .admits(trans);
+        return getJGraph().getTransitionClass().admits(trans);
     }
 
     /**
@@ -323,7 +322,7 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
     /** Set of edges added during the last exploration. */
     private final List<Edge> addedEdges = new ArrayList<>();
     /** Set of JCells with status changes during the last exploration. */
-    private final List<JCell<GTS>> changedCells = new ArrayList<>();
+    private final List<JCell<@NonNull GTS>> changedCells = new ArrayList<>();
 
     /** Default name of an LTS model. */
     static public final String DEFAULT_LTS_NAME = "lts";

@@ -21,6 +21,8 @@ import java.awt.Font;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.util.Exceptions;
@@ -167,7 +169,7 @@ public class HTMLConverter {
     /**
      * Returns a HTML span tag that imposes a given colour on a text.
      */
-    static public HTMLTag createColorTag(Color color) {
+    static public HTMLTag createColorTag(@NonNull Color color) {
         HTMLTag result = colorTagMap.get(color);
         if (result == null) {
             result = HTMLConverter.createSpanTag("color: " + toHtmlColor(color));

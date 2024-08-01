@@ -20,8 +20,8 @@ import static nl.utwente.groove.io.HTMLConverter.HTML_TAG;
 import static nl.utwente.groove.io.HTMLConverter.ITALIC_TAG;
 import static nl.utwente.groove.io.HTMLConverter.STRONG_TAG;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,6 +42,9 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.jgraph.event.GraphModelEvent;
 
 import nl.utwente.groove.grammar.aspect.AspectGraph;
@@ -49,6 +52,7 @@ import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeElement;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeNode;
+import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
@@ -58,6 +62,8 @@ import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.gui.jgraph.JModel;
 import nl.utwente.groove.gui.tree.LabelFilter.Entry;
 import nl.utwente.groove.gui.tree.TypeFilter.TypeEntry;
+import nl.utwente.groove.io.HTMLConverter;
+import nl.utwente.groove.util.Factory;
 
 /**
  * Scroll pane showing the list of labels currently appearing in the graph
@@ -65,6 +71,7 @@ import nl.utwente.groove.gui.tree.TypeFilter.TypeEntry;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class TypeTree extends LabelTree<AspectGraph> {
     /**
      * Constructs a label list associated with a given jgraph. A further
@@ -89,18 +96,11 @@ public class TypeTree extends LabelTree<AspectGraph> {
     }
 
     private PropertyChangeListener getJModelChangeListener() {
-        if (this.jModelChangeListener == null) {
-            this.jModelChangeListener = new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    updateModel();
-                }
-            };
-        }
-        return this.jModelChangeListener;
+        return this.jModelChangeListener.get();
     }
 
-    private PropertyChangeListener jModelChangeListener;
+    private Factory<PropertyChangeListener> jModelChangeListener
+        = Factory.lazy(() -> evt -> updateModel());
 
     /** Creates a tool bar for the label tree. */
     public JToolBar createToolBar() {
@@ -127,57 +127,102 @@ public class TypeTree extends LabelTree<AspectGraph> {
         return (TypeFilter) super.getFilter();
     }
 
+    @Override
+    protected @NonNull StringBuilder getText(Entry entry) {
+        // colour the label, as dictated by the (optional) node colour of this entry or its source node
+        var result = super.getText(entry);
+        var typeEntry = (TypeEntry) entry;
+        TypeElement typeElement = typeEntry.getType();
+        TypeNode typeNode = typeElement instanceof TypeNode
+            ? (TypeNode) typeElement
+            : ((TypeEdge) typeElement).source();
+        Color color = typeNode.getColor();
+        if (color != null) {
+            HTMLConverter.createColorTag(color).on(result);
+        }
+        // if this is an edge, add the target type
+        if (typeEntry.getType() instanceof TypeEdge e && e.getRole() == EdgeRole.BINARY) {
+            var target = e.target();
+            result.append(": ");
+            StringBuilder targetString = new StringBuilder();
+            targetString.append(target.label().toLine().toHTMLString());
+            color = target.getColor();
+            result.append(targetString);
+            if (color != null) {
+                HTMLConverter.createColorTag(color).on(targetString);
+            }
+        }
+        return result;
+    }
+
     /**
      * Returns the button for the show-subtypes action, lazily creating it
      * first.
      */
     private JToggleButton getShowSubtypesButton() {
-        if (this.showSubtypesButton == null) {
-            this.showSubtypesButton = Options.createToggleButton(new ShowModeAction(true));
-            this.showSubtypesButton.setSelected(true);
+        var result = this.showSubtypesButton;
+        if (result == null) {
+            this.showSubtypesButton = result = Options.createToggleButton(new ShowModeAction(true));
+            result.setSelected(true);
         }
-        return this.showSubtypesButton;
+        return result;
     }
+
+    /** Button for setting the show subtypes mode. */
+    private @Nullable JToggleButton showSubtypesButton;
 
     /**
      * Returns the button for the show-supertypes action, lazily creating it
      * first.
      */
     private JToggleButton getShowSupertypesButton() {
-        if (this.showSupertypesButton == null) {
-            this.showSupertypesButton = Options.createToggleButton(new ShowModeAction(false));
+        var result = this.showSupertypesButton;
+        if (result == null) {
+            this.showSupertypesButton
+                = result = Options.createToggleButton(new ShowModeAction(false));
         }
-        return this.showSupertypesButton;
+        return result;
     }
+
+    /** Button for setting the show supertypes mode. */
+    private @Nullable JToggleButton showSupertypesButton;
 
     /**
      * Returns the button for the show-supertypes action, lazily creating it
      * first.
      */
     private JToggleButton getShowAllLabelsButton() {
-        if (this.showAllLabelsButton == null) {
-            this.showAllLabelsButton = Options.createToggleButton(new ShowAllLabelsAction());
+        var result = this.showAllLabelsButton;
+        if (result == null) {
+            this.showAllLabelsButton
+                = result = Options.createToggleButton(new ShowAllLabelsAction());
         }
-        return this.showAllLabelsButton;
+        return result;
     }
+
+    /** Button for setting the show all actions mode. */
+    private @Nullable JToggleButton showAllLabelsButton;
 
     /**
      * Returns the button for the collapse all action, lazily creating it
      * first.
      */
     private JButton getCollapseAllButton() {
-        if (this.collapseAllButton == null) {
-            Action action = new CollapseAllAction(null, this);
-            this.collapseAllButton = Options.createButton(action);
+        var result = this.collapseAllButton;
+        if (result == null) {
+            this.collapseAllButton
+                = result = Options.createButton(new CollapseAllAction(null, this));
         }
-        return this.collapseAllButton;
+        return result;
     }
 
+    /** Button for collapsing the label tree. */
+    private @Nullable JButton collapseAllButton;
+
     /**
-     * Convenience method to return the type graph of the grammar,
-     * or the graph in the jModel if that is a type graph.
+     * Convenience method to return the type graph in the jModel.
      */
-    private TypeGraph getTypeGraph() {
+    private @Nullable TypeGraph getTypeGraph() {
         TypeGraph result = null;
         var jModel = (AspectJModel) getJModel();
         if (jModel != null) {
@@ -188,12 +233,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
 
     @Override
     void updateFilter() {
-        for (TypeNode node : getTypeGraph().nodeSet()) {
-            getFilter().addEntry(node);
-        }
-        for (TypeEdge edge : getTypeGraph().edgeSet()) {
-            getFilter().addEntry(edge);
-        }
+        getFilter().update(getTypeGraph());
         super.updateFilter();
     }
 
@@ -213,8 +253,8 @@ public class TypeTree extends LabelTree<AspectGraph> {
      * Updates the label list according to the change event.
      */
     @Override
-    public void graphChanged(GraphModelEvent e) {
-        if (isModelStale() || getJGraph().getModel().isLoading()) {
+    public void graphChanged(@Nullable GraphModelEvent e) {
+        if (isModelStale() || getNonNullJModel().isLoading()) {
             updateModel();
         } else {
             super.graphChanged(e);
@@ -232,7 +272,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
         if (typeGraph != null) {
             Collection<TypeGraph.Sub> typeGraphMap = typeGraph.getComponentMap().values();
             if (typeGraphMap.isEmpty()) {
-                result = fillTree(getTopNode(), getTypeGraph().nodeSet(), getTypeGraph().edgeSet());
+                result = fillTree(getTopNode(), typeGraph.nodeSet(), typeGraph.edgeSet());
             } else if (typeGraphMap.size() == 1) {
                 TypeGraph.Sub subTypeGraph = typeGraphMap.iterator().next();
                 result = fillTree(getTopNode(), subTypeGraph.getNodes(), subTypeGraph.getEdges());
@@ -266,9 +306,11 @@ public class TypeTree extends LabelTree<AspectGraph> {
                                     Set<? extends TypeEdge> typeEdges) {
         List<TreeNode> result = new ArrayList<>();
         // mapping from type nodes to dependent type nodes (in the combined type graph)
+        var typeGraph = getTypeGraph();
+        assert typeGraph != null;
         Map<TypeNode,Set<TypeNode>> tmpDepNodeMap = isShowsSubtypes()
-            ? getTypeGraph().getDirectSubtypeMap()
-            : getTypeGraph().getDirectSupertypeMap();
+            ? typeGraph.getDirectSubtypeMap()
+            : typeGraph.getDirectSupertypeMap();
         // reduce the type nodes to those that should actually be included in the tree
         // Include a type node if it or a subtype occurs in typeNodes
         var subTypeNodes = new HashSet<>();
@@ -288,11 +330,11 @@ public class TypeTree extends LabelTree<AspectGraph> {
         for (var e : depNodeMap.entrySet()) {
             var node = e.getKey();
             TypeEntry entry = getFilter().getEntry(node);
-            TypedEntryNode nodeTypeNode = new TypedEntryNode(this, entry, true);
+            TypeTreeNode nodeTypeNode = new TypeTreeNode(this, entry, true);
             topNode.add(nodeTypeNode);
             result.add(nodeTypeNode);
             for (var depNode : e.getValue()) {
-                TypedEntryNode subTypeNode = new TypedEntryNode(this, depNode, false);
+                TypeTreeNode subTypeNode = new TypeTreeNode(this, depNode, false);
                 nodeTypeNode.add(subTypeNode);
                 result.add(subTypeNode);
             }
@@ -302,18 +344,18 @@ public class TypeTree extends LabelTree<AspectGraph> {
             }
             // check duplicates due to equi-labelled edges to different targets
             Set<Entry> entries = new HashSet<>();
-            for (var edge : new TreeSet<>(getTypeGraph().outEdgeSet(node))) {
+            for (var edge : new TreeSet<>(typeGraph.outEdgeSet(node))) {
                 if (typeEdges.contains(edge)) {
                     TypeEntry edgeEntry = getFilter().getEntry(edge);
                     if (entries.add(edgeEntry)) {
-                        TypedEntryNode edgeTypeNode = new TypedEntryNode(this, edgeEntry, true);
+                        TypeTreeNode edgeTypeNode = new TypeTreeNode(this, edgeEntry, true);
                         nodeTypeNode.add(edgeTypeNode);
                         result.add(edgeTypeNode);
                     }
                 }
             }
         }
-        if (getTypeGraph().isImplicit()) {
+        if (typeGraph.isImplicit()) {
             // add edge entries
             // check duplicates due to equi-labelled edges
             Set<Entry> entries = new HashSet<>();
@@ -321,7 +363,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
                 TypeEntry edgeEntry = getFilter().getEntry(edge);
                 if (isShowsAllLabels() || getFilter().hasJCells(edgeEntry)) {
                     if (entries.add(edgeEntry)) {
-                        TypedEntryNode edgeTypeNode = new TypedEntryNode(this, edgeEntry, true);
+                        TypeTreeNode edgeTypeNode = new TypeTreeNode(this, edgeEntry, true);
                         topNode.add(edgeTypeNode);
                         result.add(edgeTypeNode);
                     }
@@ -336,8 +378,8 @@ public class TypeTree extends LabelTree<AspectGraph> {
      * returns an HTML-formatted string with the text of the label.
      */
     @Override
-    public String convertValueToText(Object value, boolean selected, boolean expanded, boolean leaf,
-                                     int row, boolean hasFocus) {
+    public String convertValueToText(@Nullable Object value, boolean selected, boolean expanded,
+                                     boolean leaf, int row, boolean hasFocus) {
         if (value instanceof TypeGraphTreeNode) {
             StringBuilder result = new StringBuilder();
             result.append("Type graph '");
@@ -350,17 +392,27 @@ public class TypeTree extends LabelTree<AspectGraph> {
     }
 
     /**
+     * Changes the value of the show-subtype flag.
+     */
+    private void setShowsSubtypes(boolean show) {
+        this.showsSubtypes = show;
+    }
+
+    /**
      * Indicates if this tree is currently showing subtype relations.
      */
     private boolean isShowsSubtypes() {
         return this.showsSubtypes;
     }
 
+    /** Mode of the label tree: showing subtypes or supertypes. */
+    private boolean showsSubtypes = true;
+
     /**
-     * Changes the value of the show-subtype flag.
+     * Changes the value of the show-all-labels flag.
      */
-    private void setShowsSubtypes(boolean show) {
-        this.showsSubtypes = show;
+    private void setShowsAllLabels(boolean show) {
+        this.showsAllLabels = show;
     }
 
     /**
@@ -371,25 +423,8 @@ public class TypeTree extends LabelTree<AspectGraph> {
         return this.showsAllLabels;
     }
 
-    /**
-     * Changes the value of the show-all-labels flag.
-     */
-    private void setShowsAllLabels(boolean show) {
-        this.showsAllLabels = show;
-    }
-
     /** Mode of the label tree: showing all labels or just those in the graph. */
     private boolean showsAllLabels = false;
-    /** Mode of the label tree: showing subtypes or supertypes. */
-    private boolean showsSubtypes = true;
-    /** Button for setting the show subtypes mode. */
-    private JToggleButton showSubtypesButton;
-    /** Button for setting the show supertypes mode. */
-    private JToggleButton showSupertypesButton;
-    /** Button for setting the show all actions mode. */
-    private JToggleButton showAllLabelsButton;
-    /** Button for collapsing the label tree. */
-    private JButton collapseAllButton;
 
     /**
      * Returns the icon for subtype or supertype mode, depending on the
@@ -402,13 +437,13 @@ public class TypeTree extends LabelTree<AspectGraph> {
     }
 
     /** Tree node wrapping a filter entry. */
-    public class TypedEntryNode extends EntryNode {
+    public class TypeTreeNode extends LabelTreeNode {
         /**
          * Constructs a new node, for a given type element.
          * @param key the key element wrapped in this node
          * @param topNode flag indicating if this is a top type node in the tree
          */
-        TypedEntryNode(TypeTree tree, TypeElement key, boolean topNode) {
+        TypeTreeNode(TypeTree tree, TypeElement key, boolean topNode) {
             this(tree, getFilter().getEntry(key), topNode);
         }
 
@@ -417,7 +452,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
          * @param entry The label wrapped in this node
          * @param topNode flag indicating if this is a top type node in the tree
          */
-        TypedEntryNode(TypeTree tree, TypeEntry entry, boolean topNode) {
+        TypeTreeNode(TypeTree tree, TypeEntry entry, boolean topNode) {
             super(tree, entry, topNode);
         }
 
@@ -427,7 +462,12 @@ public class TypeTree extends LabelTree<AspectGraph> {
         }
 
         @Override
-        public Icon getIcon() {
+        public boolean isPassive() {
+            return getEntry().isPassive();
+        }
+
+        @Override
+        public @Nullable Icon getIcon() {
             if (!isTopNode()) {
                 return TypeTree.getModeIcon(isShowsSubtypes());
             } else {
@@ -448,12 +488,14 @@ public class TypeTree extends LabelTree<AspectGraph> {
             for (TypeNode node : subTypeGraph.getNodes()) {
                 this.entries.add(getFilter().getEntry(node));
             }
-            for (TypeEdge edge : subTypeGraph.getEdges()) {
-                this.entries.add(getFilter().getEntry(edge));
-            }
+            this.selected = true;
         }
 
+        /** The type tree this is part of. */
         private final TypeTree tree;
+
+        /** The set of node type entries in under this type graph node. */
+        private final Set<Entry> entries = new HashSet<>();
 
         @Override
         public int hashCode() {
@@ -461,7 +503,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (this == obj) {
                 return true;
             }
@@ -476,6 +518,8 @@ public class TypeTree extends LabelTree<AspectGraph> {
             return this.name;
         }
 
+        private final String name;
+
         @Override
         public boolean hasCheckbox() {
             return this.tree.isFiltering();
@@ -483,21 +527,27 @@ public class TypeTree extends LabelTree<AspectGraph> {
 
         @Override
         public boolean isSelected() {
-            return getFilter().isSelected(this.entries);
+            return this.selected;
         }
 
         @Override
         public void setSelected(boolean selected) {
+            this.selected = selected;
             getFilter().setSelected(this.entries, selected);
+        }
+
+        private boolean selected;
+
+        @Override
+        public boolean isPassive() {
+            boolean selected = this.selected;
+            return this.entries.stream().anyMatch(e -> selected != e.isSelected());
         }
 
         @Override
         public final String toString() {
             return String.format("Type graph '%s'", this.name);
         }
-
-        private final String name;
-        private final Set<Entry> entries = new HashSet<>();
     }
 
     /** Action changing the show mode to showing subtypes or supertypes. */
@@ -515,7 +565,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
+        public void actionPerformed(@Nullable ActionEvent e) {
             if (isShowsSubtypes() != this.subtypes) {
                 setShowsSubtypes(this.subtypes);
                 updateTree();
@@ -547,7 +597,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
+        public void actionPerformed(@Nullable ActionEvent e) {
             setShowsAllLabels(!isShowsAllLabels());
             setName(computeName());
             putValue(Action.SHORT_DESCRIPTION, computeName());

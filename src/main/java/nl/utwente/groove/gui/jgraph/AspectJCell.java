@@ -18,6 +18,8 @@ package nl.utwente.groove.gui.jgraph;
 
 import java.util.Iterator;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.grammar.aspect.Aspect;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 
@@ -27,7 +29,7 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface AspectJCell extends JCell<AspectGraph> {
+public interface AspectJCell extends JCell<@NonNull AspectGraph> {
     @Override
     public Iterator<? extends AspectJCell> getContext();
 

@@ -4,6 +4,8 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.control.instance.Frame;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Node;
@@ -19,7 +21,8 @@ import nl.utwente.groove.lts.StartGraphState;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge> implements LTSJCell {
+public class LTSJVertex extends AJVertex<@NonNull GTS,LTSJGraph,LTSJModel,LTSJEdge>
+    implements LTSJCell {
     /**
      * Creates a new, uninitialised instance.
      * Call {@link #setJModel(JModel)} and {@link #setNode(Node)} to initialise.

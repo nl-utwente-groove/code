@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.gui.jgraph;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
@@ -26,7 +28,7 @@ import nl.utwente.groove.gui.Simulator;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class PlainJGraph extends JGraph<Graph> {
+public class PlainJGraph extends JGraph<@NonNull Graph> {
     /**
      * Private constructor.
      * @param simulator the simulator to which the {@link JGraph} belongs;
@@ -37,7 +39,7 @@ public class PlainJGraph extends JGraph<Graph> {
     }
 
     @Override
-    protected JGraphFactory<Graph> createFactory() {
+    protected JGraphFactory<@NonNull Graph> createFactory() {
         return new JGraphFactory<>(this) {
             @Override
             public PlainJEdge newJEdge(Edge edge) {
@@ -60,11 +62,13 @@ public class PlainJGraph extends JGraph<Graph> {
         return new PlainJGraph(simulator);
     }
 
-    private class PlainJEdge extends AJEdge<Graph,PlainJGraph,JModel<Graph>,PlainJVertex> {
+    private class PlainJEdge
+        extends AJEdge<@NonNull Graph,PlainJGraph,JModel<@NonNull Graph>,PlainJVertex> {
         // empty
     }
 
-    private class PlainJVertex extends AJVertex<Graph,PlainJGraph,JModel<Graph>,PlainJEdge> {
+    private class PlainJVertex
+        extends AJVertex<@NonNull Graph,PlainJGraph,JModel<@NonNull Graph>,PlainJEdge> {
         // empty
     }
 }

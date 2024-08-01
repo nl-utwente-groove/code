@@ -16,6 +16,8 @@ import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.control.graph.ControlGraph;
 import nl.utwente.groove.grammar.aspect.GraphConverter;
 import nl.utwente.groove.grammar.model.GrammarModel;
@@ -36,7 +38,7 @@ import nl.utwente.groove.gui.jgraph.PlainJGraph;
  * Dialog showing an given graph in the most appropriate
  * GUI component.
  */
-public class GraphPreviewDialog<G extends Graph> extends JDialog {
+public class GraphPreviewDialog<G extends @NonNull Graph> extends JDialog {
     /** Constructs a new dialog, for a given graph. */
     public GraphPreviewDialog(GrammarModel grammar, G graph) {
         this(null, grammar, graph);

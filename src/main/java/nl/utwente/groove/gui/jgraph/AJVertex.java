@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.jgraph.graph.DefaultPort;
 
 import nl.utwente.groove.graph.Edge;
@@ -38,7 +39,7 @@ import nl.utwente.groove.io.HTMLConverter;
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class AJVertex<G extends Graph,JG extends JGraph<G>,JM extends JModel<G>,JE extends JEdge<G>>
+public abstract class AJVertex<G extends @NonNull Graph,JG extends JGraph<G>,JM extends JModel<G>,JE extends JEdge<G>>
     extends AJCell<G,JG,JM> implements JVertex<G> {
     /**
      * Constructs a fresh, uninitialised JVertex.
@@ -139,15 +140,14 @@ public abstract class AJVertex<G extends Graph,JG extends JGraph<G>,JM extends J
                 result.add(key);
             }
         }
-        result.addAll(getNodeKeys(!result.isEmpty()));
+        result.addAll(getNodeKeys());
         return result;
     }
 
     /**
      * Returns the keys associated with the node itself.
-     * @param hasEdgeKeys if {@code true}, this vertex has at least one edge key.
      */
-    protected Collection<? extends Label> getNodeKeys(boolean hasEdgeKeys) {
+    protected Collection<? extends Label> getNodeKeys() {
         return Collections.emptySet();
     }
 
@@ -187,8 +187,8 @@ public abstract class AJVertex<G extends Graph,JG extends JGraph<G>,JM extends J
 
     @Override
     public String toString() {
-        return String.format("%s %d with labels %s", getClass().getSimpleName(), getNumber(),
-                             getKeys());
+        return String
+            .format("%s %d with labels %s", getClass().getSimpleName(), getNumber(), getKeys());
     }
 
     /**

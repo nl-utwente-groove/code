@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.gui.look;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.gui.jgraph.AspectJCell;
 import nl.utwente.groove.gui.jgraph.JCell;
@@ -28,7 +30,7 @@ import nl.utwente.groove.gui.jgraph.JGraph;
  */
 public class ErrorValue implements VisualValue<Boolean> {
     @Override
-    public <G extends Graph> Boolean get(JGraph<G> jGraph, JCell<G> cell) {
+    public <G extends @NonNull Graph> Boolean get(JGraph<G> jGraph, JCell<G> cell) {
         return cell.hasErrors();
     }
 }

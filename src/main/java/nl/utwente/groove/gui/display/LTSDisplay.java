@@ -55,6 +55,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
@@ -125,7 +127,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
 
     @Override
     protected JComponent createInfoPanel() {
-        LabelTree<GTS> labelTree = getLabelTree();
+        var labelTree = getLabelTree();
         final TitledPanel result = new TitledPanel("Transition labels", labelTree, null, true);
         result.setEnabledBackground(JAttr.STATE_BACKGROUND);
         getJGraph().addPropertyChangeListener(new PropertyChangeListener() {
@@ -308,7 +310,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
         if (getJModel() == null || counterExamples.isEmpty()) {
             return;
         }
-        Set<JCell<GTS>> jCells = new HashSet<>();
+        Set<JCell<@NonNull GTS>> jCells = new HashSet<>();
         Iterator<GraphState> stateIter = counterExamples.iterator();
         GraphState current = stateIter.next();
         while (current != null) {
@@ -434,8 +436,8 @@ public class LTSDisplay extends Display implements SimulatorListener {
         return getJGraph().getModel();
     }
 
-    private LabelTree<GTS> getLabelTree() {
-        LabelTree<GTS> result = this.labelTree;
+    private LabelTree<@NonNull GTS> getLabelTree() {
+        var result = this.labelTree;
         if (result == null) {
             result = this.labelTree = new LabelTree<>(getJGraph(), true) {
                 @Override
@@ -451,7 +453,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
     }
 
     /** The tree component showing (and allowing filtering of) the transitions in the LTS. */
-    private LabelTree<GTS> labelTree;
+    private LabelTree<@NonNull GTS> labelTree;
 
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
@@ -682,7 +684,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
                     // scale from screen to model
                     java.awt.Point loc = evt.getPoint();
                     // find cell in model coordinates
-                    JCell<GTS> cell = getJGraph().getFirstCellForLocation(loc.x, loc.y);
+                    var cell = getJGraph().getFirstCellForLocation(loc.x, loc.y);
                     var ctrl = (evt.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) != 0;
                     if (cell instanceof LTSJEdge) {
                         GraphTransition trans = ((LTSJEdge) cell).getEdge();

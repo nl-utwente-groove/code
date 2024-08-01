@@ -77,6 +77,8 @@ public class TreeMatch implements Fixable {
         return this.condition;
     }
 
+    private final Condition condition;
+
     /**
      * Returns the operator of this tree match.
      * Note that this may be different from the operator of the condition:
@@ -89,15 +91,21 @@ public class TreeMatch implements Fixable {
         return this.op;
     }
 
+    private final Condition.Op op;
+
     /** Returns the pattern map of this match. */
     public final RuleToHostMap getPatternMap() {
         return this.patternMap;
     }
 
+    private final RuleToHostMap patternMap;
+
     /** Returns the current submatches of this match. */
     public final Collection<TreeMatch> getSubMatches() {
         return this.subMatches;
     }
+
+    private final Collection<TreeMatch> subMatches;
 
     /** Callback factory method for the submatch collection object. */
     private Collection<TreeMatch> createSubMatches(Condition.Op op) {
@@ -466,10 +474,6 @@ public class TreeMatch implements Fixable {
         return this.hashCode != 0;
     }
 
-    private final Condition.Op op;
-    private final Condition condition;
-    private final RuleToHostMap patternMap;
-    private final Collection<TreeMatch> subMatches;
     private final Visitor.Collector<Proof,List<Proof>> collector;
     @SuppressWarnings("rawtypes")
     private final ProofWrapperVisitor wrapper = new ProofWrapperVisitor();

@@ -3,6 +3,8 @@ package nl.utwente.groove.gui.jgraph;
 import java.util.EnumSet;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.control.graph.ControlGraph;
 import nl.utwente.groove.control.graph.ControlNode;
 import nl.utwente.groove.gui.look.Look;
@@ -12,7 +14,8 @@ import nl.utwente.groove.gui.look.Look;
  * @author Tom Staijen
  * @version $Revision$
  */
-public class CtrlJVertex extends AJVertex<ControlGraph,CtrlJGraph,JModel<ControlGraph>,CtrlJEdge> {
+public class CtrlJVertex
+    extends AJVertex<@NonNull ControlGraph,CtrlJGraph,JModel<@NonNull ControlGraph>,CtrlJEdge> {
     /**
      * Creates a new instance.
      * Call {@link #setJModel} and {@link #setNode(nl.utwente.groove.graph.Node)}

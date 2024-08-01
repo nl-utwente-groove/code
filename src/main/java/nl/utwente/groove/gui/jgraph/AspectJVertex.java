@@ -11,6 +11,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.grammar.aspect.Aspect;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectElement;
@@ -38,8 +40,8 @@ import nl.utwente.groove.util.parse.FormatError;
 /**
  * Specialized j-vertex for rule graphs, with its own tool tip text.
  */
-public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJModel,AspectJEdge>
-    implements AspectJCell {
+public class AspectJVertex extends
+    AJVertex<@NonNull AspectGraph,AspectJGraph,AspectJModel,AspectJEdge> implements AspectJCell {
     /**
      * Creates a fresh, uninitialised JVertex.
      * Call {@link #setJModel} and {@link #setNode(Node)}
@@ -210,19 +212,23 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
                     result.add(key);
                 }
             }
-            for (AspectEdge edge : getExtraSelfEdges()) {
-                TypeEdge key = getKey(edge);
-                if (key != null) {
-                    result.add(key);
+            // add incident edges
+            var jEdges = getContext();
+            while (jEdges.hasNext()) {
+                for (var edge : jEdges.next().getEdges()) {
+                    TypeEdge key = getKey(edge);
+                    if (key != null) {
+                        result.add(key);
+                    }
                 }
             }
-            result.addAll(getNodeKeys(!result.isEmpty()));
+            result.addAll(getNodeKeys());
         }
         return result;
     }
 
     @Override
-    protected Collection<TypeNode> getNodeKeys(boolean hasEdgeKeys) {
+    protected Collection<TypeNode> getNodeKeys() {
         List<TypeNode> result = new ArrayList<>();
         TypeModelMap typeMap = getTypeMap();
         if (typeMap != null) {
@@ -230,9 +236,6 @@ public class AspectJVertex extends AJVertex<AspectGraph,AspectJGraph,AspectJMode
             if (type != null) {
                 result.add(type);
             }
-            //            if (type != null && (!hasEdgeKeys || !type.isTopType())) {
-            //                result.addAll(type.getSupertypes());
-            //            }
         }
         return result;
     }

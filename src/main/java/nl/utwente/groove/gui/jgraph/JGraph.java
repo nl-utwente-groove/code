@@ -20,7 +20,6 @@ import static nl.utwente.groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_ARROWS_ON_LABELS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_BIDIRECTIONAL_EDGES_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_NODE_IDS_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static nl.utwente.groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static nl.utwente.groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static nl.utwente.groove.gui.jgraph.JGraphMode.SELECT_MODE;
@@ -72,6 +71,8 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelListener;
 import org.jgraph.event.GraphSelectionEvent;
@@ -120,7 +121,7 @@ import nl.utwente.groove.util.Pair;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-05 13:27:59 $
  */
-abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
+abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph {
     /**
      * Constructs a JGraph for a given simulator.
      * @param simulator simulator to which the JGraph belongs; may be {@code null}
@@ -153,7 +154,6 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         addKeyListener(getCancelEditListener());
         getSelectionModel().addGraphSelectionListener(getGraphSelectionListener());
         addOptionListener(SHOW_NODE_IDS_OPTION);
-        addOptionListener(SHOW_UNFILTERED_EDGES_OPTION);
         addOptionListener(SHOW_ANCHORS_OPTION);
         addOptionListener(SHOW_ARROWS_ON_LABELS_OPTION);
         addOptionListener(SHOW_BIDIRECTIONAL_EDGES_OPTION);
@@ -240,14 +240,6 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
      */
     public boolean isShowNodeIdentities() {
         return getOptionValue(SHOW_NODE_IDS_OPTION);
-    }
-
-    /**
-     * Indicates whether unfiltered edges to filtered nodes should remain
-     * visible.
-     */
-    public boolean isShowUnfilteredEdges() {
-        return getOptionValue(SHOW_UNFILTERED_EDGES_OPTION);
     }
 
     /**
@@ -380,11 +372,13 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
      */
     @Override
     public void updateAutoSize(CellView view) {
+        var model = getModel();
+        assert model != null;
         if (view != null && !isEditing()) {
             Rectangle2D bounds = (view.getAttributes() != null)
                 ? GraphConstants.getBounds(view.getAttributes())
                 : null;
-            AttributeMap attrs = getModel().getAttributes(view.getCell());
+            AttributeMap attrs = model.getAttributes(view.getCell());
             if (bounds == null) {
                 bounds = GraphConstants.getBounds(attrs);
             }
@@ -496,8 +490,9 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
 
     /** Refreshes the visibility and view of all JCells in the model. */
     public void refreshAllCells() {
-        if (getModel() != null) {
-            refreshCells(getModel().getRoots());
+        var model = getModel();
+        if (model != null) {
+            refreshCells(model.getRoots());
         }
     }
 
@@ -508,6 +503,8 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
      * @see JCell#isGrayedOut()
      */
     public void changeGrayedOut(Set<JCell<G>> jCells, boolean grayedOut) {
+        var model = getModel();
+        assert model != null;
         Set<JCell<G>> changedJCells = new HashSet<>();
         for (JCell<G> jCell : jCells) {
             if (jCell.setGrayedOut(grayedOut)) {
@@ -533,7 +530,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
                 }
             }
         }
-        getModel().toBackSilent(changedJCells);
+        model.toBackSilent(changedJCells);
         refreshCells(changedJCells);
     }
 
@@ -654,14 +651,31 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     /** Specialises the return type to a {@link JModel}. */
     @SuppressWarnings("unchecked")
     @Override
-    public JModel<G> getModel() {
+    public @Nullable JModel<G> getModel() {
         return (JModel<G>) this.graphModel;
+    }
+
+    /** Convenience method to retrieve the model as a non-{@code null} object. */
+    protected @NonNull JModel<G> getNonNullModel() {
+        var result = getModel();
+        assert result != null;
+        return result;
+    }
+
+    /** Convenience method to retrieve the graph from the underlying model.
+     * The return value is {@code null} if the model is {@code null} or contains a {@code null} graph.
+     */
+    public @Nullable G getGraph() {
+        var model = getModel();
+        return model == null
+            ? null
+            : model.getGraph();
     }
 
     /** Callback factory method to create an appropriate JModel
      * instance for this JGraph.
      */
-    public JModel<G> newModel() {
+    public @NonNull JModel<G> newModel() {
         return getFactory().newModel();
     }
 
@@ -740,13 +754,13 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
      * previously computed values.
      */
     protected BasicGraphUI createGraphUI() {
-        return new JGraphUI<GTS>();
+        return new JGraphUI<@NonNull GTS>();
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public JGraphUI<GTS> getUI() {
-        return (JGraphUI<GTS>) super.getUI();
+    public JGraphUI<@NonNull GTS> getUI() {
+        return (JGraphUI<@NonNull GTS>) super.getUI();
     }
 
     /**
@@ -869,9 +883,11 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
      * @return the layouter that has been used
      */
     public Layouter doLayout(boolean complete) {
+        var model = getModel();
+        assert model != null;
         Layouter result = null;
         if (complete) {
-            getModel().setLayoutable(true);
+            model.setLayoutable(true);
             result = getLayouter();
         } else {
             result = getLayouter().getIncremental();
@@ -1325,8 +1341,10 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
 
     /** Clear all intermediate points from all edges. */
     public void clearAllEdgePoints() {
+        var model = getModel();
+        assert model != null;
         Map<JCell<G>,AttributeMap> change = new HashMap<>();
-        for (JCell<G> jCell : getModel().getRoots()) {
+        for (JCell<G> jCell : model.getRoots()) {
             if (jCell instanceof JEdge) {
                 VisualMap visuals = jCell.getVisuals();
                 List<Point2D> points = visuals.getPoints();
@@ -1339,16 +1357,18 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
                 change.put(jCell, newAttributes);
             }
         }
-        getModel().edit(change, null, null, null);
+        model.edit(change, null, null, null);
     }
 
     /** Sets the layouting flag to the given value. */
     public void setLayouting(boolean layouting) {
+        var model = getModel();
+        assert model != null;
         if (layouting != this.layouting) {
             this.layouting = layouting;
             if (layouting) {
                 // start the layouting
-                getModel().beginUpdate();
+                model.beginUpdate();
             } else {
                 // reroute the loops
                 GraphLayoutCache cache = getGraphLayoutCache();
@@ -1358,7 +1378,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
                     }
                 }
                 // end the layouting
-                getModel().endUpdate();
+                model.endUpdate();
             }
         }
     }
@@ -1503,7 +1523,9 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
 
         /** Callback option to refresh as this listener demands. */
         protected void doRefresh() {
-            getModel().refreshVisuals();
+            var model = getModel();
+            assert model != null;
+            model.refreshVisuals();
             refreshAllCells();
         }
     }

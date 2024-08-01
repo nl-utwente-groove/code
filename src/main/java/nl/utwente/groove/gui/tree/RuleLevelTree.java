@@ -128,8 +128,9 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
         // clear the list
         getTopNode().removeAllChildren();
         Set<LevelNode> newNodes = new HashSet<>();
-        Map<Index,Set<AspectElement>> levelTree =
-            this.rule == null ? null : this.rule.getLevelTree();
+        Map<Index,Set<AspectElement>> levelTree = this.rule == null
+            ? null
+            : this.rule.getLevelTree();
         boolean enabled = levelTree != null && levelTree.size() > 1;
         if (enabled) {
             assert levelTree != null; // guaranteed by enabled
@@ -147,6 +148,7 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
                 }
                 this.levelNodeMap.put(index, levelNode);
                 AspectJModel jModel = getJGraph().getModel();
+                assert jModel != null;
                 Set<AspectJCell> levelCells = new HashSet<>();
                 // add all cells for this level according to the rule level tree
                 for (AspectElement elem : levelEntry.getValue()) {
@@ -168,8 +170,7 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
                     if (jCell != null) {
                         levelCells.add(jCell);
                     }
-                    for (AspectElement edge : this.rule.getSource()
-                        .edgeSet(ruleLevelNode)) {
+                    for (AspectElement edge : this.rule.getSource().edgeSet(ruleLevelNode)) {
                         jCell = jModel.getJCell(edge);
                         if (jCell != null) {
                             levelCells.add(jCell);
@@ -214,8 +215,7 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
             jCell.setStale(VisualKey.VISIBLE);
             Iterator<? extends AspectJCell> iter = jCell.getContext();
             while (iter.hasNext()) {
-                iter.next()
-                    .setStale(VisualKey.VISIBLE);
+                iter.next().setStale(VisualKey.VISIBLE);
             }
         }
         return result;
@@ -270,12 +270,10 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
 
         public String getName() {
             if (this.name == null) {
-                StringBuilder result = new StringBuilder(this.index.getOperator()
-                    .getSymbol());
+                StringBuilder result = new StringBuilder(this.index.getOperator().getSymbol());
                 String levelName = null;
                 if (this.index.getLevelNode() != null) {
-                    levelName = this.index.getLevelNode()
-                        .getLevelName();
+                    levelName = this.index.getLevelNode().getLevelName();
                 }
                 if (levelName == null) {
                     for (int level : this.index.getIntArray()) {

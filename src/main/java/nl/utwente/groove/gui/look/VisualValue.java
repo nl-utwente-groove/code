@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.gui.look;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.Graph;
@@ -31,5 +32,5 @@ public interface VisualValue<T> {
     /** Computes and returns a new value for the relevant key.
      * @param jGraph the (non-{@code null}) jGraph for the cell.
      */
-    public <G extends Graph> @Nullable T get(JGraph<G> jGraph, JCell<G> cell);
+    public <G extends @NonNull Graph> @Nullable T get(JGraph<G> jGraph, JCell<G> cell);
 }

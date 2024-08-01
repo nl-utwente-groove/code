@@ -50,7 +50,7 @@ import nl.utwente.groove.util.parse.FormatError;
  * @author Arend Rensink
  * @version $Revision$
  */
-abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JModel<G>,JV extends JVertex<G>>
+abstract public class AJEdge<@NonNull G extends Graph,JG extends JGraph<G>,JM extends JModel<G>,JV extends JVertex<G>>
     extends AJCell<G,JG,JM> implements org.jgraph.graph.Edge, JEdge<G> {
     /**
      * Constructs an uninitialised model edge.
@@ -369,13 +369,13 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
     @Override
     public Iterator<JV> getContext() {
         Iterator<JV> result;
-        JV source = getSourceVertex();
-        JV target = getTargetVertex();
+        var source = getSourceVertex();
+        var target = getTargetVertex();
         assert source != null && target != null; // should not be invoked otherwise
         if (isLoop()) {
-            return Collections.singletonList(source).iterator();
+            return ((Collection<JV>) Collections.singletonList(source)).iterator();
         } else {
-            result = Arrays.asList(source, target).iterator();
+            result = ((Collection<JV>) Arrays.asList(source, target)).iterator();
         }
         return result;
     }

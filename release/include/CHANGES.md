@@ -3,6 +3,11 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 6.9.1, 1 August 2024
+-------------------------------
+- Hugely improved behaviour of (label and) type tree (gh issue #786)
+- Bug fixes: GH issues #796, #797
+
 Release 6.9.0, 20 July 2024
 -------------------------------
 - Added .dot export as well as .gcp export for LTSs

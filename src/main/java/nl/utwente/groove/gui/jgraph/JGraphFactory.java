@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.gui.jgraph;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
@@ -35,7 +37,7 @@ import nl.utwente.groove.gui.look.VisualValue;
  * @author Arend Rensink
  * @version $Revision$
  */
-abstract public class JGraphFactory<G extends Graph> {
+abstract public class JGraphFactory<G extends @NonNull Graph> {
     /** Constructs a factory for a given JGraph. */
     public JGraphFactory(JGraph<G> jGraph) {
         this.jGraph = jGraph;

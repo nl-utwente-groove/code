@@ -24,10 +24,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.jgraph.JCell;
+import nl.utwente.groove.gui.jgraph.JVertex;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.util.Observable;
 
@@ -39,7 +42,7 @@ import nl.utwente.groove.util.Observable;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class LabelFilter<G extends Graph> extends Observable {
+public class LabelFilter<G extends @NonNull Graph> extends Observable {
     /** Returns the filter entries on a given jCell. */
     public Set<Entry> getEntries(JCell<G> jCell) {
         Set<Entry> result = this.jCellEntryMap.get(jCell);
@@ -74,8 +77,7 @@ public class LabelFilter<G extends Graph> extends Observable {
             this.jCellEntryMap.put(jCell, entries);
             // also modify the inverse map
             for (Entry entry : entries) {
-                result |= addEntry(entry);
-                this.entryJCellMap.get(entry).add(jCell);
+                result |= this.entryJCellMap.get(entry).add(jCell);
             }
         }
         return result;
@@ -117,8 +119,7 @@ public class LabelFilter<G extends Graph> extends Observable {
             // add the new entries
             for (Entry newEntry : newEntrySet) {
                 if (!oldEntrySet.contains(newEntry)) {
-                    result |= addEntry(newEntry);
-                    this.entryJCellMap.get(newEntry).add(jCell);
+                    result |= this.entryJCellMap.get(newEntry).add(jCell);
                 }
             }
         }
@@ -137,7 +138,7 @@ public class LabelFilter<G extends Graph> extends Observable {
     }
 
     /**
-     * Clears the entire filter, and resets it to label- or type-based.
+     * Clears the entire filter.
      */
     public void clear() {
         this.jCellEntryMap.clear();
@@ -145,39 +146,28 @@ public class LabelFilter<G extends Graph> extends Observable {
         this.labelEntryMap.clear();
     }
 
-    /** Adds an entry to those known in this filter. */
-    public boolean addEntry(Label key) {
-        return addEntry(getEntry(key));
-    }
-
-    /** Adds an entry to those known in this filter. */
-    private boolean addEntry(Entry entry) {
-        boolean result = false;
-        Set<JCell<G>> cells = this.entryJCellMap.get(entry);
-        if (cells == null) {
-            this.entryJCellMap.put(entry, new HashSet<>());
-            result = true;
-        }
-        return result;
-    }
-
     /** Returns the set of all entries known to this filter. */
     public Set<Entry> getEntries() {
         return this.entryJCellMap.keySet();
     }
 
-    /** Lazily creates and returns a filter entry based on a given element. */
+    /** Lazily creates and returns a filter entry based on a given label key. */
     public Entry getEntry(Label key) {
         LabelEntry result = this.labelEntryMap.get(key);
         if (result == null) {
-            this.labelEntryMap.put(key, result = createEntry(key));
+            this.labelEntryMap.put(key, result = new LabelEntry(key));
+            addEntry(result);
         }
         return result;
     }
 
-    /** Constructs a filter entry from a given object. */
-    private LabelEntry createEntry(Label label) {
-        return new LabelEntry(label);
+    /** Adds a newly created entry to the data structures of this filter.
+     * Should be called directly after creation of the entry.
+     */
+    void addEntry(Entry entry) {
+        var old = this.entryJCellMap.put(entry, new HashSet<>());
+        assert old == null : "Duplicate label entry for %s (existing entry contained %s)"
+            .formatted(entry.getLabel(), old);
     }
 
     /** Mapping from entries to {@link JCell}s with that entry. */
@@ -207,8 +197,8 @@ public class LabelFilter<G extends Graph> extends Observable {
      * Sets the selection status of a given label, and notifies
      * the observers of the changed {@link JCell}s.
      */
-    public void setSelected(Entry label, boolean selected) {
-        Set<JCell<G>> changedCells = setSelection(label, selected);
+    public void setSelected(Entry entry, boolean selected) {
+        Set<JCell<G>> changedCells = setSelection(entry, selected);
         notifyIfNonempty(changedCells);
     }
 
@@ -218,8 +208,8 @@ public class LabelFilter<G extends Graph> extends Observable {
      */
     public void setSelected(Collection<Entry> entries, boolean selected) {
         Set<JCell<G>> changedCells = new HashSet<>();
-        for (Entry label : entries) {
-            changedCells.addAll(setSelection(label, selected));
+        for (Entry entry : entries) {
+            changedCells.addAll(setSelection(entry, selected));
         }
         notifyIfNonempty(changedCells);
     }
@@ -229,7 +219,7 @@ public class LabelFilter<G extends Graph> extends Observable {
      * the observers of the changed {@link JCell}s.
      */
     public void changeSelected(Entry entry) {
-        Set<JCell<G>> changedCells = setSelection(entry, !isSelected(entry));
+        Set<JCell<G>> changedCells = setSelection(entry, !entry.isSelected());
         notifyIfNonempty(changedCells);
     }
 
@@ -240,7 +230,7 @@ public class LabelFilter<G extends Graph> extends Observable {
     public void changeSelected(Collection<Entry> entries) {
         Set<JCell<G>> changedCells = new HashSet<>();
         for (Entry entry : entries) {
-            changedCells.addAll(setSelection(entry, !isSelected(entry)));
+            changedCells.addAll(setSelection(entry, !entry.isSelected()));
         }
         notifyIfNonempty(changedCells);
     }
@@ -249,15 +239,13 @@ public class LabelFilter<G extends Graph> extends Observable {
      * Sets the selection status of a given entry, and
      * returns the set of {@link JCell}s for which this results in a change.
      */
-    private Set<JCell<G>> setSelection(Entry entry, boolean selected) {
+    protected Set<JCell<G>> setSelection(Entry entry, boolean selected) {
         Set<JCell<G>> result = Collections.<JCell<G>>emptySet();
-        assert this.entryJCellMap.containsKey(entry) : String
-            .format("Label %s unknown in map %s", entry, this.entryJCellMap);
         var jCellsForEntry = this.entryJCellMap.get(entry);
-        if (jCellsForEntry != null) {
-            if (entry.setSelected(selected)) {
-                result = jCellsForEntry;
-            }
+        assert jCellsForEntry != null : String
+            .format("Label %s unknown in map %s", entry, this.entryJCellMap);
+        if (entry.setSelected(selected)) {
+            result = jCellsForEntry;
         }
         return result;
     }
@@ -280,56 +268,38 @@ public class LabelFilter<G extends Graph> extends Observable {
         }
     }
 
-    /** Indicates if a given entry is currently selected. */
-    public boolean isSelected(Entry entry) {
-        return !this.entryJCellMap.containsKey(entry) || entry.isSelected();
-    }
-
-    /** Indicates if at least one of a given set of entries is currently selected. */
-    public boolean isSelected(Set<Entry> entries) {
-        boolean result = false;
-        for (Entry entry : entries) {
-            if (isSelected(entry)) {
-                result = true;
-                break;
-            }
-        }
-        return result;
-    }
-
     /**
-     * Indicates if a given jCell is currently filtered,
+     * Indicates if a given jCell is currently visible,
      * according to the entry selection.
-     * This is the case if a node type entry is unselected, and either unfiltered
+     * This is the case if no node type entry is actively filtered, and either unfiltered
      * edges need not be shown or all or all edge entries are also unselected.
      * @param jCell the jCell for which the test is performed
-     * @param showUnfilteredEdges if {@code true}, the jCell is only filtered
-     * if all entries are unselected
      * @return {@code true} if {@code jCell} is filtered
      */
-    public boolean isFiltered(JCell<G> jCell, boolean showUnfilteredEdges) {
-        boolean result;
-        boolean hasUnfilteredElements = false;
-        boolean hasFilteredNodeTypes = false;
-        Set<Entry> entrySet = getEntries(jCell);
-        for (Entry entry : entrySet) {
-            if (isSelected(entry)) {
-                hasUnfilteredElements = true;
-            } else {
-                // the entry is unselected
-                if (entry.getLabel().getRole() == EdgeRole.NODE_TYPE) {
-                    hasFilteredNodeTypes = true;
-                }
+    public boolean isIncluded(JCell<G> jCell) {
+        boolean activeShow = false;
+        boolean activeHide = false;
+        boolean passiveHide = false;
+        boolean anyEntry = false;
+        boolean isNode = jCell instanceof JVertex;
+        for (var entry : getEntries(jCell)) {
+            anyEntry = true;
+            if (entry.isPassive()) {
+                passiveHide |= !entry.isSelected();
+            } else if (entry.isSelected()) {
+                activeShow = true;
+                break;
+            } else if (entry.isForNode() == isNode) {
+                activeHide = true;
             }
         }
-        if (hasFilteredNodeTypes && !showUnfilteredEdges) {
-            result = true;
-        } else if (hasUnfilteredElements) {
-            result = false;
+        if (!anyEntry || activeShow) {
+            return true;
+        } else if (activeHide) {
+            return false;
         } else {
-            result = !entrySet.isEmpty();
+            return !passiveHide;
         }
-        return result;
     }
 
     /** The keys that may change if a filter is (de)selected. */
@@ -348,6 +318,16 @@ public class LabelFilter<G extends Graph> extends Observable {
          * The return value indicates if the selection status was changed.
          */
         public boolean setSelected(boolean selected);
+
+        /** Indicates if this entry is passive, i.e., it
+         * does not enforce itse selection status on its parent or children.
+         */
+        public default boolean isPassive() {
+            return false;
+        }
+
+        /** Signals that this is a filter entry for nodes. */
+        public boolean isForNode();
     }
 
     /** Filter entry wrapping a label. */
@@ -361,6 +341,11 @@ public class LabelFilter<G extends Graph> extends Observable {
         @Override
         public Label getLabel() {
             return this.label;
+        }
+
+        @Override
+        public boolean isForNode() {
+            return getLabel().getRole() == EdgeRole.NODE_TYPE;
         }
 
         @Override

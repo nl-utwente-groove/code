@@ -60,8 +60,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.jgraph.graph.GraphConstants;
 
+import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 import nl.utwente.groove.grammar.QualName;
@@ -92,7 +94,6 @@ public class Options implements Cloneable {
         addCheckbox(SHOW_STATE_STATUS_OPTION);
         addCheckbox(SHOW_CONTROL_STATE_OPTION);
         addCheckbox(SHOW_INVARIANTS_OPTION);
-        addCheckbox(SHOW_UNFILTERED_EDGES_OPTION);
         addCheckbox(SHOW_ARROWS_ON_LABELS_OPTION);
         addCheckbox(SHOW_BIDIRECTIONAL_EDGES_OPTION);
         addBehaviour(DELETE_RESOURCE_OPTION, 2);
@@ -276,14 +277,14 @@ public class Options implements Cloneable {
     }
 
     /** Creates a button for a given action with the right look-and-feel. */
-    static public JButton createButton(Action action) {
+    static public @NonNull JButton createButton(Action action) {
         JButton result = new JButton(action);
         setLAF(result);
         return result;
     }
 
     /** Creates a toggle button for a given action with the right look-and-feel. */
-    static public JToggleButton createToggleButton(Action action) {
+    static public @NonNull JToggleButton createToggleButton(Action action) {
         JToggleButton result = new JToggleButton(action);
         setLAF(result);
         return result;
@@ -516,12 +517,10 @@ public class Options implements Cloneable {
     /** Export type action name */
     public static final String EXPORT_TYPE_ACTION_NAME = "Export Type ...";
     /** Export label filter action name */
-    public static final String FILTER_ACTION_NAME = "Filter labels";
-    /** Filter LTS action name */
-    public static final String FILTER_LTS_ACTION_NAME = "Filter LTS";
-    /** Export type-based label filter action name */
-    public static final String FILTER_TYPE_ACTION_NAME = "Filter type graph";
-    /** Back action name */
+    public static final String FILTE_SELECT_ACTION_NAME = "Include selected labels";
+    /** Load grammar action name */
+    public static final String FILTER_UNSELECT_ACTION_NAME = "Exclude selected labels";
+    /** Forward action name */
     public static final String FORWARD_ACTION_NAME = "Step Forward";
     /** Find a final state action name */
     public static final String GOTO_FINAL_STATE_ACTION_NAME = "Go to Final State";
@@ -537,7 +536,7 @@ public class Options implements Cloneable {
     public static final String LOAD_START_STATE_ACTION_NAME = "Load External Start State ...";
     /** Import action name */
     public static final String IMPORT_ACTION_NAME = "Import ...";
-    /** Load grammar action name */
+    /** Unfilter labels action name */
     public static final String LOAD_GRAMMAR_ACTION_NAME = "Load Grammar ...";
     /** Load grammar from url action name */
     public static final String LOAD_URL_GRAMMAR_ACTION_NAME = "Load Grammar from URL ...";
@@ -679,8 +678,6 @@ public class Options implements Cloneable {
     public static final String SYSTEM_PROPERTIES_ACTION_NAME = "Grammar Properties ...";
     /** Undo action name */
     public static final String UNDO_ACTION_NAME = "Undo";
-    /** Unfilter labels action name */
-    public static final String UNFILTER_ACTION_NAME = "Reset label filter";
     /** Unfilter type-based labels action name */
     public static final String UNFILTER_TYPE_ACTION_NAME = "Reset type graph filter";
     /** Pan mode action name */
@@ -873,8 +870,6 @@ public class Options implements Cloneable {
     static public final String SHOW_ABSENT_STATES_OPTION = "Show absent states";
     /** Show recipe steps option */
     static public final String SHOW_RECIPE_STEPS_OPTION = "Show recipe steps";
-    /** Show unfiltered edges to filtered nodes. */
-    static public final String SHOW_UNFILTERED_EDGES_OPTION = "Show all unfiltered edges";
     /** Show data values as nodes rather than assignments. */
     static public final String SHOW_VALUE_NODES_OPTION = "Show data values as nodes";
     /** Show data values as nodes rather than assignments. */
@@ -903,7 +898,6 @@ public class Options implements Cloneable {
         boolOptionDefaults.put(SHOW_ABSENT_STATES_OPTION, true);
         boolOptionDefaults.put(SHOW_ASPECTS_OPTION, false);
         boolOptionDefaults.put(SHOW_VALUE_NODES_OPTION, false);
-        boolOptionDefaults.put(SHOW_UNFILTERED_EDGES_OPTION, false);
         boolOptionDefaults.put(SHOW_ARROWS_ON_LABELS_OPTION, false);
         boolOptionDefaults.put(SHOW_BIDIRECTIONAL_EDGES_OPTION, true);
         intOptionDefaults.put(DELETE_RESOURCE_OPTION, BehaviourOption.ASK);
@@ -1016,7 +1010,7 @@ public class Options implements Cloneable {
                 // go here
                 MetalLookAndFeel.setCurrentTheme(new DesertBlue());
                 // Set the look and feel
-                UIManager.setLookAndFeel(new com.jgoodies.looks.plastic.PlasticLookAndFeel());
+                UIManager.setLookAndFeel(new PlasticLookAndFeel());
             } catch (Exception e) {
                 throw new IllegalStateException(e);
             }

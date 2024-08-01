@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.gui.jgraph;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.control.graph.ControlEdge;
 import nl.utwente.groove.control.graph.ControlGraph;
 import nl.utwente.groove.control.graph.ControlNode;
@@ -32,7 +34,7 @@ import nl.utwente.groove.gui.layout.Layouter;
  * @author Tom Staijen
  * @version $Revision$
  */
-public class CtrlJGraph extends JGraph<ControlGraph> {
+public class CtrlJGraph extends JGraph<@NonNull ControlGraph> {
     /**
      * Creates a ControlJGraph given a ControlJModel
      * @param simulator the simulator that is the context of this jgraph; may be
@@ -54,8 +56,12 @@ public class CtrlJGraph extends JGraph<ControlGraph> {
 
     /** Creates a new model based on a given control automaton. */
     public void setModel(Template template) {
-        if (getModel() == null || getModel().getGraph().getTemplate() != template) {
-            JModel<ControlGraph> newModel = newModel();
+        var model = getModel();
+        var graph = model == null
+            ? null
+            : model.getGraph();
+        if (graph == null || graph.getTemplate() != template) {
+            var newModel = newModel();
             newModel.loadGraph(template.toGraph(true));
             setModel(newModel);
         }
@@ -77,11 +83,11 @@ public class CtrlJGraph extends JGraph<ControlGraph> {
     }
 
     @Override
-    protected JGraphFactory<ControlGraph> createFactory() {
+    protected JGraphFactory<@NonNull ControlGraph> createFactory() {
         return new MyFactory();
     }
 
-    private class MyFactory extends JGraphFactory<ControlGraph> {
+    private class MyFactory extends JGraphFactory<@NonNull ControlGraph> {
         public MyFactory() {
             super(CtrlJGraph.this);
         }

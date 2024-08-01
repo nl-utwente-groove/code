@@ -18,6 +18,8 @@ package nl.utwente.groove.gui.look;
 
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.gui.jgraph.AspectJEdge;
@@ -36,7 +38,7 @@ public class EdgeEndShapeValue implements VisualValue<EdgeEnd> {
     }
 
     @Override
-    public <G extends Graph> EdgeEnd get(JGraph<G> jGraph, JCell<G> cell) {
+    public <G extends @NonNull Graph> EdgeEnd get(JGraph<G> jGraph, JCell<G> cell) {
         // first see what the looks have to say
         VisualMap looksMap = Look.getVisualsFor(cell.getLooks());
         EdgeEnd result = this.source

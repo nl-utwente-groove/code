@@ -39,6 +39,7 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.SwingUtilities;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.jgraph.graph.GraphModel;
 
 import nl.utwente.groove.explore.ExploreResult;
@@ -67,7 +68,7 @@ import nl.utwente.groove.lts.RuleTransition;
  * an instance, setupPopupMenu() should be called after all global final
  * variables have been set.
  */
-public class LTSJGraph extends JGraph<GTS> implements Serializable {
+public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
     /** Constructs an instance of the j-graph for a given simulator. */
     public LTSJGraph(Simulator simulator) {
         super(simulator);
@@ -95,12 +96,9 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
             result = new RefreshListener() {
                 @Override
                 protected void doRefresh() {
-                    LTSJModel model = getModel();
-                    if (model != null) {
-                        GTS gts = getModel().getGraph();
-                        if (gts != null && (gts.hasTransientStates() || gts.hasInternalSteps())) {
-                            reloadJModel();
-                        }
+                    GTS gts = getGraph();
+                    if (gts != null && (gts.hasTransientStates() || gts.hasInternalSteps())) {
+                        reloadJModel();
                     }
                 }
             };
@@ -108,11 +106,9 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
             result = new RefreshListener() {
                 @Override
                 protected void doRefresh() {
-                    if (getModel() != null) {
-                        GTS gts = getModel().getGraph();
-                        if (gts != null && gts.hasAbsentStates()) {
-                            reloadJModel();
-                        }
+                    GTS gts = getGraph();
+                    if (gts != null && gts.hasAbsentStates()) {
+                        reloadJModel();
                     }
                 }
             };
@@ -126,9 +122,12 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
      * a view option has changed.
      */
     private void reloadJModel() {
-        LTSJModel jModel = getModel();
+        var jModel = getModel();
+        assert jModel != null;
         jModel.setLayoutable(false);
-        jModel.loadGraph(jModel.getGraph());
+        var lts = jModel.getGraph();
+        assert lts != null;
+        jModel.loadGraph(lts);
         if (getFilter() != Filter.NONE) {
             refreshFiltering();
         }
@@ -154,7 +153,13 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
     /** Specialises the return type to a {@link LTSJModel}. */
     @Override
     public LTSJModel getModel() {
-        return (LTSJModel) this.graphModel;
+        return (LTSJModel) super.getModel();
+    }
+
+    /* Specialises the return type to a {@link LTSJModel}. */
+    @Override
+    public LTSJModel getNonNullModel() {
+        return (LTSJModel) super.getNonNullModel();
     }
 
     /** Indicates if state identities should be shown on states. */
@@ -207,7 +212,7 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
      * Scrolls the view to a given node or edge of the underlying graph model.
      */
     public void scrollTo(Element nodeOrEdge) {
-        final JCell<GTS> cell = getModel().getJCell(nodeOrEdge);
+        final var cell = getNonNullModel().getJCell(nodeOrEdge);
         if (cell != null) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
@@ -329,8 +334,8 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
      */
     public boolean setActive(GraphState activeState, GraphTransition activeTrans) {
         boolean result = false;
-        List<JCell<GTS>> activeCells = new ArrayList<>();
-        List<JCell<GTS>> changedCells = new ArrayList<>();
+        List<JCell<@NonNull GTS>> activeCells = new ArrayList<>();
+        List<JCell<@NonNull GTS>> changedCells = new ArrayList<>();
         GraphTransition oldActiveTrans = getActiveTransition();
         this.activeTransition = activeTrans;
         if (oldActiveTrans != null) {
@@ -350,19 +355,20 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
                 }
             }
         }
+        var model = getNonNullModel();
         GraphState oldActiveState = this.activeState;
         this.activeState = activeState;
         if (oldActiveState != null) {
-            LTSJVertex jCell = (LTSJVertex) getModel().getJCellForNode(oldActiveState);
+            LTSJVertex jCell = (LTSJVertex) model.getJCellForNode(oldActiveState);
             if (jCell != null && jCell.setActive(false)) {
                 changedCells.add(jCell);
             }
         }
         if (activeState != null && getModel() != null) {
-            LTSJVertex jCell = (LTSJVertex) getModel().getJCellForNode(activeState);
+            LTSJVertex jCell = (LTSJVertex) model.getJCellForNode(activeState);
             if (jCell == null) {
                 result = addToModel(activeState);
-                jCell = (LTSJVertex) getModel().getJCellForNode(activeState);
+                jCell = (LTSJVertex) model.getJCellForNode(activeState);
             }
             if (jCell != null) {
                 if (jCell.setActive(true)) {
@@ -383,6 +389,7 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
     }
 
     private boolean addToModel(GraphState state) {
+        var model = getNonNullModel();
         // add the state and its parents and successors to the jModel
         Set<GraphState> newStates = new HashSet<>();
         Set<GraphTransition> newTransitions = new HashSet<>();
@@ -392,20 +399,20 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
             GraphTransition in = ns.getInTransition();
             newTransitions.add(in);
             parent = in.source();
-            if (getModel().getJCellForNode(parent) == null) {
+            if (model.getJCellForNode(parent) == null) {
                 newStates.add(parent);
             }
         }
         for (GraphTransition trans : state.getTransitions(getTransitionClass())) {
-            if (getModel().getJCellForEdge(trans) == null) {
+            if (model.getJCellForEdge(trans) == null) {
                 newTransitions.add(trans);
                 newStates.add(trans.target());
             }
         }
-        int oldBound = getModel().getStateBound();
-        getModel().setStateBound(Integer.MAX_VALUE);
-        boolean result = getModel().addElements(newStates, newTransitions, false);
-        getModel().setStateBound(oldBound);
+        int oldBound = model.getStateBound();
+        model.setStateBound(Integer.MAX_VALUE);
+        boolean result = model.addElements(newStates, newTransitions, false);
+        model.setStateBound(oldBound);
         return result;
     }
 
@@ -414,10 +421,10 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
      * This is necessary after reloading the LTS.
      */
     void reactivate() {
-        List<JCell<GTS>> activeCells = new ArrayList<>();
+        List<JCell<@NonNull GTS>> activeCells = new ArrayList<>();
         GraphState activeState = getActiveState();
         if (activeState != null) {
-            LTSJCell activeCell = (LTSJCell) getModel().getJCellForNode(activeState);
+            LTSJCell activeCell = (LTSJCell) getNonNullModel().getJCellForNode(activeState);
             if (activeCell != null) {
                 activeCell.setActive(true);
                 activeCells.add(activeCell);
@@ -425,7 +432,7 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
         }
         GraphTransition activeTrans = getActiveTransition();
         if (activeTrans != null) {
-            LTSJCell activeCell = (LTSJCell) getModel().getJCellForEdge(activeTrans);
+            LTSJCell activeCell = (LTSJCell) getNonNullModel().getJCellForEdge(activeTrans);
             if (activeCell != null) {
                 activeCell.setActive(true);
                 activeCells.add(activeCell);
@@ -439,18 +446,19 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
 
     /** Collects all cells for a given transition and its subtransitions. */
     private Collection<LTSJCell> getTransitionCells(GraphTransition trans) {
+        var model = getNonNullModel();
         Collection<LTSJCell> result = new ArrayList<>();
-        LTSJCell jCell = (LTSJCell) getModel().getJCellForEdge(trans);
+        LTSJCell jCell = (LTSJCell) model.getJCellForEdge(trans);
         if (jCell != null) {
             result.add(jCell);
         }
         if (trans instanceof RecipeTransition) {
             for (RuleTransition subTrans : ((RecipeTransition) trans).getSteps()) {
-                jCell = (LTSJCell) getModel().getJCellForEdge(subTrans);
+                jCell = (LTSJCell) model.getJCellForEdge(subTrans);
                 if (jCell != null) {
                     result.add(jCell);
                 }
-                jCell = (LTSJCell) getModel().getJCellForNode(subTrans.source());
+                jCell = (LTSJCell) model.getJCellForNode(subTrans.source());
                 if (jCell != null) {
                     result.add(jCell);
                 }
@@ -463,7 +471,7 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
     public Set<LTSJCell> findTraces(Iterable<GraphState> states) {
         Set<GraphTransition> simulatorTrace = new HashSet<>();
         Set<LTSJCell> result = new HashSet<>();
-        LTSJModel model = getModel();
+        LTSJModel model = getNonNullModel();
         for (GraphState state : states) {
             while (state instanceof GraphNextState) {
                 result.add((LTSJVertex) model.getJCellForNode(state));
@@ -510,8 +518,10 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
         if (getFilter() == Filter.RESULT && hasResult()) {
             fragment = getResult().toFragment(isShowRecipeSteps());
         } else {
-            fragment
-                = getModel().getGraph().toFragment(getFilter() == Filter.NONE, isShowRecipeSteps());
+            var model = getNonNullModel();
+            fragment = model
+                .getNonNullGraph()
+                .toFragment(getFilter() == Filter.NONE, isShowRecipeSteps());
         }
         // first make the vertices (in)visible,
         // as otherwise they may prevent the edges from becoming visible
@@ -557,9 +567,11 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
 
     /** Indicates if there are no states not added or invisible due to node bound or filter. */
     public boolean isComplete() {
-        boolean result = getModel() != null && getFilter() != Filter.SPANNING;
+        var model = getModel();
+        boolean result = model != null && getFilter() != Filter.SPANNING;
         if (result) {
-            if (getModel().getStateBound() < getModel().nodeCount()) {
+            assert model != null;
+            if (model.getStateBound() < model.nodeCount()) {
                 result = false;
             } else if (getFilter() == Filter.RESULT && getSimulatorModel() != null) {
                 result = !hasResult();
@@ -616,11 +628,11 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
     }
 
     @Override
-    protected JGraphFactory<GTS> createFactory() {
+    protected JGraphFactory<@NonNull GTS> createFactory() {
         return new MyFactory();
     }
 
-    private class MyFactory extends JGraphFactory<GTS> {
+    private class MyFactory extends JGraphFactory<@NonNull GTS> {
         public MyFactory() {
             super(LTSJGraph.this);
         }

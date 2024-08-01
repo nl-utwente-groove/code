@@ -37,13 +37,10 @@ import nl.utwente.groove.control.graph.ControlNode;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.NodeComparator;
-import nl.utwente.groove.gui.jgraph.CtrlJGraph;
 import nl.utwente.groove.gui.jgraph.JEdge;
 import nl.utwente.groove.gui.jgraph.JGraph;
-import nl.utwente.groove.gui.jgraph.JModel;
 import nl.utwente.groove.gui.jgraph.JVertex;
-import nl.utwente.groove.gui.jgraph.LTSJGraph;
-import nl.utwente.groove.gui.jgraph.LTSJModel;
+import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Pair;
 
@@ -200,13 +197,15 @@ public class ForestLayouter extends AbstractLayouter {
      */
     protected Collection<?> getSuggestedRoots() {
         Collection<?> result;
-        JGraph<?> jGraph = getJGraph();
-        if (jGraph instanceof LTSJGraph lts) {
-            LTSJModel jModel = lts.getModel();
-            result = Collections.singleton(jModel.getJCellForNode(jModel.getGraph().startState()));
-        } else if (jGraph instanceof CtrlJGraph ctrl) {
-            JModel<ControlGraph> jModel = ctrl.getModel();
-            ControlNode start = jModel.getGraph().getStart();
+        @SuppressWarnings("rawtypes")
+        JGraph jGraph = getJGraph();
+        var jModel = jGraph.getModel();
+        assert jModel != null;
+        var graph = jModel.getGraph();
+        if (graph instanceof GTS lts) {
+            result = Collections.singleton(jModel.getJCellForNode(lts.startState()));
+        } else if (graph instanceof ControlGraph ctrl) {
+            ControlNode start = ctrl.getStart();
             result = Collections.singleton(jModel.getJCellForNode(start));
         } else {
             result = Arrays.asList(jGraph.getSelectionCells());

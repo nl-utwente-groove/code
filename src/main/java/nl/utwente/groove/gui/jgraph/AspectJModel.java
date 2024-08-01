@@ -32,6 +32,7 @@ import java.util.Set;
 
 import javax.swing.undo.UndoableEdit;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.jgraph.event.GraphModelEvent.GraphModelChange;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.ConnectionSet;
@@ -68,7 +69,7 @@ import nl.utwente.groove.util.parse.FormatError;
  * @author Arend Rensink
  * @version $Revision$
  */
-final public class AspectJModel extends JModel<AspectGraph> {
+final public class AspectJModel extends JModel<@NonNull AspectGraph> {
     /**
      * Creates an new model, initially without a graph or grammar loaded.
      * Call {@link #setGrammar(GrammarModel)} to complete construction.
@@ -179,7 +180,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
         if (isLoading()) {
             return;
         }
-        GraphRole role = getGraph().getRole();
+        GraphRole role = getNonNullGraph().getRole();
         Map<AspectNode,AspectJVertex> nodeJVertexMap = new HashMap<>();
         Map<AspectEdge,AspectJCell> edgeJCellMap = new HashMap<>();
         AspectGraph graph
@@ -284,7 +285,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
 
     /** Changes the name of the model (and the underlying graph). */
     public void setQualName(QualName name) {
-        setGraph(getGraph().rename(name));
+        setGraph(getNonNullGraph().rename(name));
     }
 
     /**
@@ -303,7 +304,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
      */
     @Override
     public boolean isMergeBidirectionalEdges() {
-        if (this.beingEdited || getGraph().getRole() != GraphRole.HOST) {
+        if (this.beingEdited || getNonNullGraph().getRole() != GraphRole.HOST) {
             return false;
         } else {
             return super.isMergeBidirectionalEdges();

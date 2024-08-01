@@ -28,7 +28,7 @@ import nl.utwente.groove.grammar.model.NamedResourceModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.ResourceModel;
 import nl.utwente.groove.graph.Graph;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
+import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.io.external.Exporter.ExportKind;
 
@@ -86,17 +86,20 @@ public record Exportable(Set<ExportKind> exportKinds, @NonNull QualName qualName
     }
 
     /** Constructs an exportable for a given {@link JGraph}. */
-    static public Exportable jGraph(JGraph<?> jGraph) {
-        var graph = jGraph.getModel().getGraph();
-        var model = jGraph instanceof AspectJGraph ag
-            ? ag.getModel().getResourceModel()
+    static public <G extends @NonNull Graph> Exportable jGraph(JGraph<G> jGraph) {
+        var jModel = jGraph.getModel();
+        var graph = jModel == null
+            ? null
+            : jModel.getGraph();
+        var resourceModel = jModel instanceof AspectJModel am
+            ? am.getResourceModel()
             : null;
         var kinds = EnumSet.of(ExportKind.JGRAPH, ExportKind.GRAPH);
-        if (model != null) {
+        if (resourceModel != null) {
             kinds.add(ExportKind.RESOURCE);
         }
         var name = QualName.parse(graph.getName());
-        return new Exportable(kinds, name, jGraph, graph, model);
+        return new Exportable(kinds, name, jGraph, graph, resourceModel);
     }
 
     /** Constructs an exportable for a given {@link ResourceModel}. */

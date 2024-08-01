@@ -22,6 +22,7 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.DefaultGraphCell;
 
@@ -42,7 +43,7 @@ import nl.utwente.groove.gui.look.VisualValue;
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JModel<G>>
+public abstract class AJCell<G extends @NonNull Graph,JG extends JGraph<G>,JM extends JModel<G>>
     extends DefaultGraphCell implements JCell<G> {
     /**
      * Constructs a new, uninitialised cell.

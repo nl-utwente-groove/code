@@ -17,7 +17,12 @@
 package nl.utwente.groove.gui.tree;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.type.TypeEdge;
@@ -37,7 +42,7 @@ import nl.utwente.groove.util.Exceptions;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class TypeFilter extends LabelFilter<AspectGraph> {
+public class TypeFilter extends LabelFilter<@NonNull AspectGraph> {
     /**
      * Clears the entire filter, and resets it to label- or type-based.
      */
@@ -58,19 +63,77 @@ public class TypeFilter extends LabelFilter<AspectGraph> {
         throw Exceptions.UNREACHABLE;
     }
 
-    private EntryMap getEntryMap(TypeGraph typeGraph) {
-        if (this.entryMaps == null || this.stale && typeGraph != this.entryMaps.typeGraph()) {
-            this.entryMaps = new EntryMap(typeGraph);
+    @Override
+    protected Set<JCell<@NonNull AspectGraph>> setSelection(Entry entry, boolean selected) {
+        Set<JCell<@NonNull AspectGraph>> result = new HashSet<>();
+        var superResult = super.setSelection(entry, selected);
+        TypeEntry te = (TypeEntry) entry;
+        if (selected) {
+            if (te.isForNode()) {
+                // previously passively selected incident edges may become fully visible
+                for (var ee : te.getEdges()) {
+                    if (ee.getNodes().stream().allMatch(TypeEntry::isSelected)
+                        && ee.setPassive(false)) {
+                        result.addAll(getJCells(ee));
+                    }
+                }
+            } else {
+                // previously filtered source and target nodes become passively filtered
+                te
+                    .getNodes()
+                    .stream()
+                    .filter(ne -> ne.setPassive(true))
+                    .map(this::getJCells)
+                    .forEach(result::addAll);
+            }
+        } else {
+            if (te.isForNode()) {
+                // previously selected incident edges become passively selected
+                te
+                    .getEdges()
+                    .stream()
+                    .filter(ce -> ce.setPassive(true))
+                    .map(this::getJCells)
+                    .forEach(result::addAll);
+            } else {
+                // previously passively filtered incident nodes may become fully filtered
+                for (var ne : te.getNodes()) {
+                    if (ne.getEdges().stream().noneMatch(TypeEntry::isSelected)
+                        && ne.setPassive(false)) {
+                        result.addAll(getJCells(ne));
+                    }
+                }
+            }
         }
-        this.stale = false;
+        if (result.isEmpty()) {
+            result = superResult;
+        } else {
+            result.addAll(superResult);
+        }
+        return result;
+    }
+
+    /** Updates the type graph on which this filter is based. */
+    void update(TypeGraph typeGraph) {
+        if (this.stale) {
+            if (this.entryMaps == null || typeGraph != this.entryMaps.typeGraph()) {
+                this.entryMaps = new EntryMap(typeGraph);
+            }
+            this.entryMaps.entryStream().forEach(this::addEntry);
+            this.stale = false;
+        }
         assert typeGraph == this.entryMaps
             .typeGraph() : "Type graph has silently changed from %s to %s"
                 .formatted(this.entryMaps.typeGraph(), typeGraph);
+    }
+
+    private EntryMap getEntryMap(TypeGraph typeGraph) {
+        update(typeGraph);
         return this.entryMaps;
     }
 
     /** Flag indicating that the {@link #entryMaps} might have to be refreshed. */
-    private boolean stale;
+    private boolean stale = true;
     /** Mapping from known node type labels to corresponding node type entries. */
     private EntryMap entryMaps;
 
@@ -89,8 +152,46 @@ public class TypeFilter extends LabelFilter<AspectGraph> {
                 edgeMap().put(n.label(), new HashMap<>());
             }
             for (var e : typeGraph.edgeSet()) {
-                edgeMap().get(e.source().label()).put(e.label(), new TypeEntry(e));
+                var edgeEntry = new TypeEntry(e);
+                edgeMap().get(e.source().label()).put(e.label(), edgeEntry);
+                // add the subtypes of the source and target to the end nodes
+                e
+                    .source()
+                    .getSubtypes()
+                    .stream()
+                    .map(TypeNode::label)
+                    .map(nodeMap()::get)
+                    .forEach(edgeEntry::addNode);
+                e
+                    .target()
+                    .getSubtypes()
+                    .stream()
+                    .map(TypeNode::label)
+                    .map(nodeMap()::get)
+                    .forEach(edgeEntry::addNode);
+                // add this edge to the incident edges of the subtypes of source and target
+                e
+                    .source()
+                    .getSubtypes()
+                    .stream()
+                    .map(TypeNode::label)
+                    .map(nodeMap()::get)
+                    .forEach(ne -> ne.addEdge(edgeEntry));
+                e
+                    .target()
+                    .getSubtypes()
+                    .stream()
+                    .map(TypeNode::label)
+                    .map(nodeMap()::get)
+                    .forEach(ne -> ne.addEdge(edgeEntry));
             }
+        }
+
+        /** Returns a stream of all the type entries in this map object. */
+        Stream<TypeEntry> entryStream() {
+            return Stream
+                .concat(nodeMap().values().stream(),
+                        edgeMap().values().stream().flatMap(m -> m.values().stream()));
         }
     }
 
@@ -121,13 +222,63 @@ public class TypeFilter extends LabelFilter<AspectGraph> {
 
         @Override
         public boolean setSelected(boolean selected) {
-            boolean result = this.selected != selected;
+            boolean result = this.selected != selected || this.passive;
             this.selected = selected;
+            this.passive = false;
             return result;
         }
 
         /** Flag indicating if this entry is currently selected. */
         private boolean selected;
+
+        /** Sets the passive status to a given value.
+         * This is only carried out if the entry is a filtered node type or a selected edge type.
+         * The return value indicates if the passive status was changed.
+         */
+        boolean setPassive(boolean passive) {
+            boolean result = false;
+            if (isSelected() != isForNode()) {
+                result = this.passive != passive;
+                this.passive = passive;
+            }
+            return result;
+        }
+
+        @Override
+        public boolean isPassive() {
+            return this.passive;
+        }
+
+        private boolean passive;
+
+        @Override
+        public boolean isForNode() {
+            return getType() instanceof TypeNode;
+        }
+
+        /** Returns the (subtype-closed) set of source and target (node) type entry. */
+        Set<TypeEntry> getNodes() {
+            return this.nodes;
+        }
+
+        /** Adds a source or target (node) type entry. */
+        void addNode(TypeEntry source) {
+            this.nodes.add(source);
+        }
+
+        private final Set<TypeEntry> nodes = new HashSet<>();
+
+        /** Returns the set of incident (edge) type entries. */
+        Set<TypeEntry> getEdges() {
+            return this.edges;
+        }
+
+        /** Adds an incident (edge) type entry. */
+        void addEdge(TypeEntry child) {
+            this.edges.add(child);
+        }
+
+        private final Set<TypeEntry> edges = new HashSet<>();
 
         @Override
         public int compareTo(Entry o) {

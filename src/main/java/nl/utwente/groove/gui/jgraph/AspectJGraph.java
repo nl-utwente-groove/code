@@ -41,6 +41,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelListener;
 import org.jgraph.event.GraphSelectionEvent;
@@ -71,7 +72,7 @@ import nl.utwente.groove.util.line.LineStyle;
 /**
  * Extension of {@link JGraph} for {@link AspectGraph}s.
  */
-public class AspectJGraph extends JGraph<AspectGraph> {
+public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
     /**
      * Creates a new instance, for a given graph role.
      * A flag determines whether the graph is editable.
@@ -114,6 +115,11 @@ public class AspectJGraph extends JGraph<AspectGraph> {
     @Override
     public AspectJModel getModel() {
         return (AspectJModel) super.getModel();
+    }
+
+    @Override
+    public AspectJModel getNonNullModel() {
+        return (AspectJModel) super.getNonNullModel();
     }
 
     @Override
@@ -266,15 +272,15 @@ public class AspectJGraph extends JGraph<AspectGraph> {
     }
 
     /** Convenience method to invoke an edit of a single visual attribute. */
-    void edit(JCell<AspectGraph> jCell, VisualKey key, Object value) {
+    void edit(JCell<@NonNull AspectGraph> jCell, VisualKey key, Object value) {
         VisualMap newVisuals = new VisualMap();
         newVisuals.put(key, value);
         edit(jCell, newVisuals);
     }
 
     /** Convenience method to invoke an edit of a set of visual attributes. */
-    void edit(JCell<AspectGraph> jCell, VisualMap newVisuals) {
-        getModel()
+    void edit(JCell<@NonNull AspectGraph> jCell, VisualMap newVisuals) {
+        getNonNullModel()
             .edit(Collections.singletonMap(jCell, newVisuals.getAttributes()), null, null, null);
     }
 
@@ -284,16 +290,16 @@ public class AspectJGraph extends JGraph<AspectGraph> {
      * @param screenPoint the intended central point for the new j-vertex
      */
     void addVertex(Point2D screenPoint) {
+        var model = getNonNullModel();
         stopEditing();
         Point2D atPoint = fromScreen(snap(screenPoint));
         // define the j-cell to be inserted
-        AspectJVertex jVertex
-            = (AspectJVertex) getModel().createJVertex(getModel().createAspectNode());
+        AspectJVertex jVertex = (AspectJVertex) model.createJVertex(model.createAspectNode());
         jVertex.setNodeFixed();
         jVertex.putVisual(VisualKey.NODE_POS, atPoint);
         // add the cell to the jGraph
         Object[] insert = {jVertex};
-        getModel().insert(insert, null, null, null, null);
+        model.insert(insert, null, null, null, null);
         setSelectionCell(jVertex);
         // immediately add a label, if so indicated by startEditingNewNode
         if (this.startEditingNewNode) {
@@ -310,6 +316,7 @@ public class AspectJGraph extends JGraph<AspectGraph> {
      * @param screenTo The end point of the new edge
      */
     void addEdge(Point2D screenFrom, Point2D screenTo) {
+        var model = getNonNullModel();
         stopEditing();
         // translate screen coordinates to real coordinates
         PortView fromPortView = getPortViewAt(screenFrom.getX(), screenFrom.getY());
@@ -328,7 +335,7 @@ public class AspectJGraph extends JGraph<AspectGraph> {
         DefaultPort fromPort = (DefaultPort) fromPortView.getCell();
         DefaultPort toPort = (DefaultPort) toPortView.getCell();
         // define the edge to be inserted
-        AspectJEdge newEdge = (AspectJEdge) getModel().createJEdge(null);
+        AspectJEdge newEdge = (AspectJEdge) model.createJEdge(null);
         // add a single, empty label so the edge will be displayed
         newEdge.getUserObject().add("");
         // to make sure there is at least one graph edge wrapped by this JEdge,
@@ -347,7 +354,7 @@ public class AspectJGraph extends JGraph<AspectGraph> {
         }
         newEdge.putVisual(VisualKey.POINTS, points);
         // add the cell to the jGraph
-        getModel().insert(insert, null, cs, null, null);
+        model.insert(insert, null, cs, null, null);
         setSelectionCell(newEdge);
         // immediately add a label
         if (this.startEditingNewEdge) {
@@ -366,11 +373,12 @@ public class AspectJGraph extends JGraph<AspectGraph> {
      * Selects the cells corresponding to a given collection of graph elements.
      */
     public void setSelectionCells(Collection<Element> elems) {
+        var model = getNonNullModel();
         var errorCells = new HashSet<AspectJCell>();
         for (var elem : elems) {
-            var errorCell = getModel().getJCell(elem);
+            var errorCell = model.getJCell(elem);
             if (errorCell == null && elem instanceof Edge e) {
-                errorCell = getModel().getJCell(e.source());
+                errorCell = model.getJCell(e.source());
             } else if (errorCell instanceof AspectJEdge e && e.isSourceLabel()) {
                 errorCell = e.getSourceVertex();
             }
@@ -867,17 +875,18 @@ public class AspectJGraph extends JGraph<AspectGraph> {
          */
         private void rebuild() {
             AspectJModel oldModel = getModel();
+            assert oldModel != null;
             AspectJModel newModel = oldModel.cloneWithNewGraph(oldModel.getGraph());
             setModel(newModel);
         }
     }
 
     @Override
-    protected JGraphFactory<AspectGraph> createFactory() {
+    protected JGraphFactory<@NonNull AspectGraph> createFactory() {
         return new MyFactory();
     }
 
-    private class MyFactory extends JGraphFactory<AspectGraph> {
+    private class MyFactory extends JGraphFactory<@NonNull AspectGraph> {
         public MyFactory() {
             super(AspectJGraph.this);
         }

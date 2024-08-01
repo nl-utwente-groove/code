@@ -30,7 +30,7 @@ import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.jgraph.JCell;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.tree.LabelTree;
-import nl.utwente.groove.gui.tree.LabelTree.EntryNode;
+import nl.utwente.groove.gui.tree.LabelTree.LabelTreeNode;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -91,8 +91,8 @@ public class SelectColorAction extends SimulatorAction
         if (selection != null) {
             for (TreePath path : selection) {
                 Object treeNode = path.getLastPathComponent();
-                if (treeNode instanceof EntryNode) {
-                    Label selectedLabel = ((EntryNode) treeNode).getEntry().getLabel();
+                if (treeNode instanceof LabelTreeNode) {
+                    Label selectedLabel = ((LabelTreeNode) treeNode).getEntry().getLabel();
                     if (selectedLabel instanceof TypeLabel
                         && selectedLabel.getRole() == EdgeRole.NODE_TYPE) {
                         this.label = (TypeLabel) selectedLabel;

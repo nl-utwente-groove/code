@@ -18,6 +18,8 @@ package nl.utwente.groove.gui.jgraph;
 
 import java.io.Serializable;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.lts.GTS;
 
 /**
@@ -25,7 +27,7 @@ import nl.utwente.groove.lts.GTS;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface LTSJCell extends JCell<GTS>, Serializable {
+public interface LTSJCell extends JCell<@NonNull GTS>, Serializable {
     /**
      * Sets this cell to active. This will result in
      * special display attributes.

@@ -26,7 +26,6 @@ import java.awt.event.MouseEvent;
 import java.util.EventObject;
 
 import javax.swing.AbstractCellEditor;
-import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -209,9 +208,8 @@ public class CheckboxTree extends JTree {
             this.jLabel.setLeafIcon(null);
             this.jLabel.setClosedIcon(null);
             this.jLabel.setBorder(INSET_BORDER);
-            this.checkbox = new JCheckBox();
+            this.checkbox = new JCheckBoxPassive();
             this.checkbox.setOpaque(false);
-            this.checkbox.setBorder(BorderFactory.createLineBorder(Color.red));
             setLayout(new BorderLayout());
             add(this.jLabel, BorderLayout.CENTER);
             add(this.checkbox, CheckboxTree.CHECKBOX_ORIENTATION);
@@ -236,6 +234,7 @@ public class CheckboxTree extends JTree {
                 : null;
             if (this.labelNode != null && this.labelNode.hasCheckbox()) {
                 this.checkbox.setSelected(this.labelNode.isSelected());
+                this.checkbox.setPassive(this.labelNode.isPassive());
                 setBackground(background);
                 // re-add the label (it gets detached if used as a stand-alone
                 // renderer)
@@ -268,12 +267,12 @@ public class CheckboxTree extends JTree {
         private boolean initialising;
 
         /** Returns the checkbox sub-component of this renderer. */
-        public JCheckBox getCheckbox() {
+        public JCheckBoxPassive getCheckbox() {
             return this.checkbox;
         }
 
         /** Checkbox on the right hand side of the panel. */
-        private final JCheckBox checkbox;
+        private final JCheckBoxPassive checkbox;
 
         /** Returns the inner renderer (for the label part). */
         public DefaultTreeCellRenderer getInner() {
@@ -396,7 +395,11 @@ public class CheckboxTree extends JTree {
                     if (!CellEditor.this.editor.isInitialising()) {
                         stopCellEditing();
                         TreeNode editedNode = getInner().getTreeNode();
-                        editedNode.setSelected(itemEvent.getStateChange() == ItemEvent.SELECTED);
+                        boolean selected = itemEvent.getStateChange() == ItemEvent.SELECTED;
+                        editedNode
+                            .setSelected(editedNode.isPassive()
+                                ? editedNode.isSelected()
+                                : selected);
                     }
                 }
             };
@@ -457,25 +460,15 @@ public class CheckboxTree extends JTree {
         /** Indicates if the associated checkbox is currently selected. */
         abstract public boolean isSelected();
 
-        /** Signals to this node that the corresponding checkbox has been selected. */
+        /** Signals to this node that the selection status should be set.
+         * In addition, the node will be set to active.
+         */
         abstract public void setSelected(boolean selected);
 
         /** Indicates that this node is in a passive state. */
         public boolean isPassive() {
-            return true;
+            return false;
         }
-
-        /**
-         * Changes the passive state of this node.
-         * The return value indicates if the state was changed as a result of this call.
-         */
-        public boolean setPassive(boolean passive) {
-            boolean result = passive = this.passive;
-            this.passive = passive;
-            return result;
-        }
-
-        private boolean passive;
     }
 
 }

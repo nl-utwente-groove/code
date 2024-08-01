@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.jgraph.graph.GraphCell;
 
@@ -36,7 +37,7 @@ import nl.utwente.groove.gui.look.VisualMap;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface JCell<G extends Graph> extends GraphCell, Serializable {
+public interface JCell<G extends @NonNull Graph> extends GraphCell, Serializable {
     /** Returns the fixed jGraph on which this jCell is displayed.
      * @return the parent graph of this cell; may be {@code null} if
      * the cell has not yet been fully initialised

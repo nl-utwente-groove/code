@@ -51,7 +51,7 @@ import nl.utwente.groove.lts.GraphTransition;
  */
 public class VisibleValue implements VisualValue<Boolean> {
     @Override
-    public <G extends Graph> Boolean get(JGraph<G> jGraph, JCell<G> cell) {
+    public <G extends @NonNull Graph> Boolean get(JGraph<G> jGraph, JCell<G> cell) {
         boolean result = true;
         boolean isVertex = cell instanceof JVertex;
         assert jGraph != null; // should be the case by the time this method gets called
@@ -71,21 +71,13 @@ public class VisibleValue implements VisualValue<Boolean> {
         return result;
     }
 
-    private <G extends Graph> boolean getBasicVertexValue(JGraph<G> jGraph, JVertex<G> jVertex) {
+    private <G extends @NonNull Graph> boolean getBasicVertexValue(JGraph<G> jGraph,
+                                                                   JVertex<G> jVertex) {
         LabelTree<G> labelTree = jGraph.getLabelTree();
-        if (labelTree == null || !labelTree.isFiltered(jVertex)) {
-            return true;
-        }
-        if (!jGraph.isShowUnfilteredEdges()) {
-            return false;
-        }
-        if (hasVisibleIncidentEdge(jGraph, jVertex)) {
-            return true;
-        }
-        return false;
+        return labelTree == null || labelTree.isIncluded(jVertex);
     }
 
-    private <G extends Graph> boolean getBasicEdgeValue(JGraph<G> jGraph, JEdge<G> jEdge) {
+    private <G extends @NonNull Graph> boolean getBasicEdgeValue(JGraph<G> jGraph, JEdge<G> jEdge) {
         boolean result = true;
         JVertex<?> source = jEdge.getSourceVertex();
         JVertex<?> target = jEdge.getTargetVertex();
@@ -97,7 +89,7 @@ public class VisibleValue implements VisualValue<Boolean> {
         }
         LabelTree<G> labelTree = jGraph.getLabelTree();
         if (labelTree != null) {
-            result = !labelTree.isFiltered(jEdge);
+            result = labelTree.isIncluded(jEdge);
         }
         return result;
     }
@@ -194,8 +186,8 @@ public class VisibleValue implements VisualValue<Boolean> {
      * with nonempty (unfiltered) label text.
      * This is to determine the visibility of the node.
      */
-    private <G extends Graph> boolean hasVisibleIncidentEdge(@NonNull JGraph<G> jGraph,
-                                                             JVertex<G> jVertex) {
+    private <G extends @NonNull Graph> boolean hasVisibleIncidentEdge(@NonNull JGraph<G> jGraph,
+                                                                      JVertex<G> jVertex) {
         boolean result = false;
         LabelTree<G> labelTree = jGraph.getLabelTree();
         if (labelTree == null) {
@@ -203,7 +195,7 @@ public class VisibleValue implements VisualValue<Boolean> {
         } else {
             Iterator<? extends JEdge<G>> iter = jVertex.getContext();
             while (iter.hasNext()) {
-                if (!labelTree.isFiltered(iter.next())) {
+                if (labelTree.isIncluded(iter.next())) {
                     result = true;
                     break;
                 }

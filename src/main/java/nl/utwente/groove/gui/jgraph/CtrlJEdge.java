@@ -3,6 +3,8 @@ package nl.utwente.groove.gui.jgraph;
 import java.util.EnumSet;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.control.graph.ControlEdge;
 import nl.utwente.groove.control.graph.ControlGraph;
 import nl.utwente.groove.control.instance.Step;
@@ -15,7 +17,8 @@ import nl.utwente.groove.util.Groove;
  * @author Tom Staijen
  * @version $Revision$
  */
-public class CtrlJEdge extends AJEdge<ControlGraph,CtrlJGraph,JModel<ControlGraph>,CtrlJVertex> {
+public class CtrlJEdge
+    extends AJEdge<@NonNull ControlGraph,CtrlJGraph,JModel<@NonNull ControlGraph>,CtrlJVertex> {
     /** Constructor for a prototype object. */
     private CtrlJEdge() {
         // empty

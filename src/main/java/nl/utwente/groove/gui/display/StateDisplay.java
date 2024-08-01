@@ -217,7 +217,9 @@ public class StateDisplay extends Display implements SimulatorListener {
 
     /** Returns the currently displayed state graph. */
     public AspectGraph getStateGraph() {
-        return getJGraph().getModel().getGraph();
+        var jModel = getJGraph().getModel();
+        assert jModel != null;
+        return jModel.getGraph();
     }
 
     /** Returns component on which the state graph is displayed. */
@@ -385,6 +387,7 @@ public class StateDisplay extends Display implements SimulatorListener {
         assert match != null : "Match update should not be called with empty match";
         displayState(getSimulatorModel().getState());
         AspectJModel jModel = getJGraph().getModel();
+        assert jModel != null;
         HostToAspectMap aspectMap = getAspectMap(getSimulatorModel().getState());
         Set<AspectJCell> emphElems = new HashSet<>();
         match

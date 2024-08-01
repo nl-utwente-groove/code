@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.gui.jgraph;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.Edge;
@@ -29,7 +30,7 @@ import nl.utwente.groove.gui.look.MultiLabel.Direct;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface JEdge<G extends Graph> extends JCell<G> {
+public interface JEdge<G extends @NonNull Graph> extends JCell<G> {
     /**
      * The cloned object is equal to this one after a reset.
      */

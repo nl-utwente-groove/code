@@ -44,7 +44,9 @@ public class GraphToSVG extends GraphToVector {
 
             // Create an instance of org.w3c.dom.Document.
             String svgNS = "http://www.w3.org/2000/svg";
-            var document = domImpl.createDocument(svgNS, graph.getModel().getName(), null);
+            var model = graph.getModel();
+            assert model != null;
+            var document = domImpl.createDocument(svgNS, model.getName(), null);
 
             var svgDocumentElement = document.getDocumentElement();
             svgDocumentElement.setAttribute("height", String.valueOf(bounds.getHeight()));

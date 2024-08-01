@@ -25,10 +25,12 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
 
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.gui.tree.CheckBoxPassiveIcon;
 import nl.utwente.groove.io.store.EditType;
 
 /**
@@ -210,6 +212,8 @@ public final class Icons {
     public static final ImageIcon ARROW_SIMPLE_UP_ICON = createIcon("arrow-simple-up.gif");
     /** Cancel action icon. */
     public static final ImageIcon CANCEL_ICON = createIcon("cancel.gif");
+    /** Selected checkbox. */
+    public static final Icon CHECKBOX_PASSIVE_ICON = CheckBoxPassiveIcon.instance();
     /** Compass icon. */
     public static final ImageIcon COMPASS_ICON = createIcon("compass.gif");
     /** Control automaton preview icon. */

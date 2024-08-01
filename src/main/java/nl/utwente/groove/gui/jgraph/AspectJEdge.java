@@ -8,7 +8,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
+
+import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.grammar.aspect.Aspect;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
@@ -34,8 +37,8 @@ import nl.utwente.groove.util.parse.FormatError;
 /**
  * Specialized j-edge for rule graphs, with its own tool tip text.
  */
-public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,AspectJVertex>
-    implements AspectJCell {
+public class AspectJEdge extends
+    AJEdge<@NonNull AspectGraph,AspectJGraph,AspectJModel,AspectJVertex> implements AspectJCell {
     /**
      * Creates an uninitialised instance.
      * @param graphRole graph role for which this JEdge is intended
@@ -193,6 +196,13 @@ public class AspectJEdge extends AJEdge<AspectGraph,AspectJGraph,AspectJModel,As
         if (this.aspects.containsKey(Category.NESTING)) {
             return Collections.emptySet();
         } else {
+            Set<Label> result = new HashSet<>();
+            var s = getSourceVertex();
+            assert s != null;
+            result.addAll(s.getNodeKeys());
+            var t = getTargetVertex();
+            assert t != null;
+            result.addAll(t.getNodeKeys());
             return super.getKeys();
         }
     }

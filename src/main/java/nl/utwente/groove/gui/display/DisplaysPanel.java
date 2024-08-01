@@ -44,7 +44,6 @@ import javax.swing.event.ChangeListener;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
-import nl.utwente.groove.gui.LongToolTipAdapter;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorListener;
@@ -156,7 +155,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             });
         }
         this.simulator.getModel().addListener(this, Change.DISPLAY, Change.GRAMMAR);
-        getUpperListsPanel().addMouseListener(new LongToolTipAdapter(getUpperListsPanel()));
+        getUpperListsPanel().addMouseListener(new DismissDelayer(getUpperListsPanel()));
         activateListeners();
     }
 

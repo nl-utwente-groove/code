@@ -53,6 +53,7 @@ import javax.swing.event.UndoableEditEvent;
 import javax.swing.undo.UndoableEdit;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelEvent.GraphModelChange;
 import org.jgraph.event.GraphModelListener;
@@ -77,7 +78,6 @@ import nl.utwente.groove.graph.GraphProperties;
 import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.gui.Icons;
-import nl.utwente.groove.gui.LongToolTipAdapter;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.action.SnapToGridAction;
 import nl.utwente.groove.gui.dialog.PropertiesTable;
@@ -139,7 +139,7 @@ final public class GraphEditorTab extends ResourceTab
 
     /** Returns the graph being edited. */
     public AspectGraph getGraph() {
-        return getJModel().getGraph();
+        return getNonNullJModel().getGraph();
     }
 
     @Override
@@ -217,7 +217,7 @@ final public class GraphEditorTab extends ResourceTab
             if (!properties.equals(getGraph().getProperties())) {
                 changeProperties(properties.entryStream(), true);
             } else {
-                getJModel().setGraphModified();
+                getNonNullJModel().setGraphModified();
                 getJGraph().refresh();
             }
             updateStatus();
@@ -282,7 +282,7 @@ final public class GraphEditorTab extends ResourceTab
     /** Renames the edited graph. */
     public void rename(QualName newName) {
         AspectGraph newGraph = getGraph().rename(newName);
-        getJModel().loadGraph(newGraph);
+        getNonNullJModel().loadGraph(newGraph);
         loadProperties(newGraph, true);
         setQualName(newName);
         updateStatus();
@@ -301,7 +301,7 @@ final public class GraphEditorTab extends ResourceTab
         propertiesStream.forEach(e -> newProperties.setProperty(e.getKey(), e.getValue()));
         GraphInfo.setProperties(newGraph, newProperties);
         newGraph.setFixed();
-        getJModel().loadGraph(newGraph);
+        getNonNullJModel().loadGraph(newGraph);
         loadProperties(newGraph, updatePropertiesPanel);
         updateStatus();
     }
@@ -336,7 +336,7 @@ final public class GraphEditorTab extends ResourceTab
 
     @Override
     protected NamedResourceModel<?> getResource() {
-        return getJModel().getResourceModel();
+        return getNonNullJModel().getResourceModel();
     }
 
     @Override
@@ -346,7 +346,7 @@ final public class GraphEditorTab extends ResourceTab
     }
 
     /** Returns the jgraph component of this editor. */
-    public AspectJGraph getJGraph() {
+    public @NonNull AspectJGraph getJGraph() {
         AspectJGraph result = this.jgraph;
         if (result == null) {
             result = this.jgraph = new AspectJGraph(getSimulator(), getDisplay().getKind(), true);
@@ -362,8 +362,18 @@ final public class GraphEditorTab extends ResourceTab
      * @return the j-model currently being edited, or <tt>null</tt> if no editor
      *         model is set.
      */
-    public AspectJModel getJModel() {
+    public @Nullable AspectJModel getJModel() {
         return getJGraph().getModel();
+    }
+
+    /**
+     * @return the j-model currently being edited, or <tt>null</tt> if no editor
+     *         model is set.
+     */
+    private @NonNull AspectJModel getNonNullJModel() {
+        var result = getJGraph().getModel();
+        assert result != null;
+        return result;
     }
 
     /**
@@ -389,7 +399,7 @@ final public class GraphEditorTab extends ResourceTab
         JGraphMode mode = getJGraph().getMode();
         if (mode == PREVIEW_MODE || evt.getOldValue() == PREVIEW_MODE) {
             this.refreshing = true;
-            getJModel().syncGraph();
+            getNonNullJModel().syncGraph();
             getJGraph().setEditable(mode != PREVIEW_MODE);
             getJGraph().refreshAllCells();
             getJGraph().refresh();
@@ -604,7 +614,7 @@ final public class GraphEditorTab extends ResourceTab
         list.setCellRenderer(new SyntaxCellRenderer());
         list.setBackground(JAttr.EDITOR_BACKGROUND);
         list.setListData(data.toArray(new String[data.size()]));
-        list.addMouseListener(new LongToolTipAdapter(list));
+        list.addMouseListener(new DismissDelayer(list));
         list.setSelectionModel(new DefaultListSelectionModel() {
             @Override
             public void setSelectionInterval(int index0, int index1) {
@@ -966,7 +976,9 @@ final public class GraphEditorTab extends ResourceTab
             if (!getJGraph().isSelectionEmpty()) {
                 Object[] cells = getJGraph().getSelectionCells();
                 cells = getJGraph().getDescendants(cells);
-                getJGraph().getModel().remove(cells);
+                var jModel = getJGraph().getModel();
+                assert jModel != null;
+                jModel.remove(cells);
             }
         }
     }

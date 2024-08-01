@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.jgraph.event.GraphModelEvent.GraphModelChange;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.ConnectionSet;
@@ -54,7 +56,7 @@ import nl.utwente.groove.util.collect.NestedIterator;
  * @author Arend Rensink
  * @version $Revision$
  */
-abstract public class JModel<G extends Graph> extends DefaultGraphModel {
+abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel {
     /**
      * Creates a new GraphJModel instance on top of a given GraphJGraph, with given
      * node and edge attributes, and an indication whether self-edges should be
@@ -112,17 +114,25 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      * graph as set in the graph properties.
      */
     public String getName() {
-        return getGraph() == null
+        var graph = getGraph();
+        return graph == null
             ? null
-            : getGraph().getName();
+            : graph.getName();
     }
 
     /**
      * Returns the underlying Graph of this GraphModel.
      * @ensure result != null
      */
-    public G getGraph() {
+    public @Nullable G getGraph() {
         return this.graph;
+    }
+
+    /** Convenience method to retrieve the underlying graph as a non-{@code null} object. */
+    protected @NonNull G getNonNullGraph() {
+        var result = getGraph();
+        assert result != null;
+        return result;
     }
 
     /**
@@ -577,7 +587,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      * The underlying Graph of this GraphModel.
      * @invariant graph != null
      */
-    private G graph;
+    private @Nullable G graph;
     /**
      * The layout map for the underlying graph. It maps {@link Element}s to
      * {@link JCellLayout}s. This is set to an empty map if the graph is not a

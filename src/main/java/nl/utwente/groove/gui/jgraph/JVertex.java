@@ -29,7 +29,7 @@ import nl.utwente.groove.graph.Node;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface JVertex<G extends Graph> extends JCell<G> {
+public interface JVertex<G extends @NonNull Graph> extends JCell<G> {
     /** Returns the set of incident JEdges. */
     @Override
     public Iterator<? extends JEdge<G>> getContext();
