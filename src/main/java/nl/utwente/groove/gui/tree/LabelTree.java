@@ -29,7 +29,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.swing.AbstractAction;
@@ -186,10 +187,10 @@ public class LabelTree<G extends Graph> extends CheckboxTree
      * Returns the set of labels maintained by this label
      * tree.
      */
-    public SortedSet<Label> getLabels() {
-        TreeSet<Label> result = new TreeSet<>();
+    public SortedMap<Entry,Set<JCell<G>>> getLabels() {
+        TreeMap<Entry,Set<JCell<G>>> result = new TreeMap<>();
         for (Entry entry : getFilter().getEntries()) {
-            result.add(entry.getLabel());
+            result.put(entry, getFilter().getJCells(entry));
         }
         return result;
     }
@@ -448,16 +449,16 @@ public class LabelTree<G extends Graph> extends CheckboxTree
      */
     protected StringBuilder getText(Entry entry) {
         StringBuilder result = new StringBuilder();
-        Label label = entry.getLabel();
+        var line = entry.getLine();
         boolean specialLabelColour = false;
-        if (label.equals(TypeLabel.NODE)) {
+        if (line.toFlatString().equals(TypeLabel.NODE_LABEL_TEXT)) {
             result.append(Options.NO_LABEL_TEXT);
             specialLabelColour = true;
-        } else if (label.text().length() == 0) {
+        } else if (entry.toString().isEmpty()) {
             result.append(Options.EMPTY_LABEL_TEXT);
             specialLabelColour = true;
         } else {
-            result.append(label.toLine().toHTMLString());
+            result.append(line.toHTMLString());
         }
         if (specialLabelColour) {
             HTMLConverter.createColorTag(SPECIAL_COLOR).on(result);

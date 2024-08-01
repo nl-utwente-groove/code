@@ -3,6 +3,10 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 6.9.2, 1 August 2024
+-------------------------------
+- Bug fix release (don't use 6.9.1)
+
 Release 6.9.1, 1 August 2024
 -------------------------------
 - Hugely improved behaviour of (label and) type tree (gh issue #786)

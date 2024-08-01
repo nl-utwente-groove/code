@@ -20,7 +20,6 @@ import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.grammar.type.TypeNode;
-import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.Options;
@@ -30,7 +29,7 @@ import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.jgraph.JCell;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.tree.LabelTree;
-import nl.utwente.groove.gui.tree.LabelTree.LabelTreeNode;
+import nl.utwente.groove.gui.tree.TypeTree.TypeTreeNode;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -91,13 +90,9 @@ public class SelectColorAction extends SimulatorAction
         if (selection != null) {
             for (TreePath path : selection) {
                 Object treeNode = path.getLastPathComponent();
-                if (treeNode instanceof LabelTreeNode) {
-                    Label selectedLabel = ((LabelTreeNode) treeNode).getEntry().getLabel();
-                    if (selectedLabel instanceof TypeLabel
-                        && selectedLabel.getRole() == EdgeRole.NODE_TYPE) {
-                        this.label = (TypeLabel) selectedLabel;
-                        break;
-                    }
+                if (treeNode instanceof TypeTreeNode n && n.getEntry().isForNode()) {
+                    this.label = n.getEntry().getType().label();
+                    break;
                 }
             }
         }

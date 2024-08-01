@@ -33,6 +33,7 @@ import nl.utwente.groove.gui.jgraph.JCell;
 import nl.utwente.groove.gui.jgraph.JVertex;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.util.Observable;
+import nl.utwente.groove.util.line.Line;
 
 /**
  * Class that maintains a set of filtered entries
@@ -144,6 +145,7 @@ public class LabelFilter<G extends @NonNull Graph> extends Observable {
         this.jCellEntryMap.clear();
         this.entryJCellMap.clear();
         this.labelEntryMap.clear();
+        this.normalMap.clear();
     }
 
     /** Returns the set of all entries known to this filter. */
@@ -155,8 +157,15 @@ public class LabelFilter<G extends @NonNull Graph> extends Observable {
     public Entry getEntry(Label key) {
         LabelEntry result = this.labelEntryMap.get(key);
         if (result == null) {
-            this.labelEntryMap.put(key, result = new LabelEntry(key));
-            addEntry(result);
+            result = new LabelEntry(key);
+            // normalise the new entry
+            if (this.normalMap.containsKey(result)) {
+                result = this.normalMap.get(result);
+            } else {
+                this.normalMap.put(result, result);
+                addEntry(result);
+            }
+            this.labelEntryMap.put(key, result);
         }
         return result;
     }
@@ -167,7 +176,7 @@ public class LabelFilter<G extends @NonNull Graph> extends Observable {
     void addEntry(Entry entry) {
         var old = this.entryJCellMap.put(entry, new HashSet<>());
         assert old == null : "Duplicate label entry for %s (existing entry contained %s)"
-            .formatted(entry.getLabel(), old);
+            .formatted(entry, old);
     }
 
     /** Mapping from entries to {@link JCell}s with that entry. */
@@ -176,6 +185,8 @@ public class LabelFilter<G extends @NonNull Graph> extends Observable {
     private final Map<JCell<G>,Set<Entry>> jCellEntryMap = new HashMap<>();
     /** Mapping from known labels to corresponding label entries. */
     private final Map<Label,LabelEntry> labelEntryMap = new HashMap<>();
+    /** Identity mapping for normalised entries. */
+    private final Map<LabelEntry,LabelEntry> normalMap = new HashMap<>();
 
     /** Convenience method to return the JCells for a given label.
      * @see #getEntry(Label)
@@ -190,7 +201,7 @@ public class LabelFilter<G extends @NonNull Graph> extends Observable {
      * @see #getJCells(Entry)
      */
     public boolean hasJCells(Label label) {
-        return !getJCells(getEntry(label)).isEmpty();
+        return !getJCells(label).isEmpty();
     }
 
     /**
@@ -308,8 +319,8 @@ public class LabelFilter<G extends @NonNull Graph> extends Observable {
 
     /** Type of the keys in a label filter. */
     public static interface Entry extends Comparable<Entry> {
-        /** Retrieves the label of the entry. */
-        public Label getLabel();
+        /** Retrieves the line of the entry. */
+        public Line getLine();
 
         /** Indicates if this entry is currently selected. */
         public boolean isSelected();
@@ -334,19 +345,25 @@ public class LabelFilter<G extends @NonNull Graph> extends Observable {
     public static class LabelEntry implements Entry {
         /** Constructs an initially selected fresh label entry from a given label. */
         public LabelEntry(Label label) {
-            this.label = label;
+            this.line = label.toLine();
+            this.role = label.getRole();
             this.selected = true;
         }
 
         @Override
-        public Label getLabel() {
-            return this.label;
+        public Line getLine() {
+            return this.line;
         }
+
+        /** The label wrapped in this entry. */
+        private final Line line;
 
         @Override
         public boolean isForNode() {
-            return getLabel().getRole() == EdgeRole.NODE_TYPE;
+            return this.role == EdgeRole.NODE_TYPE;
         }
+
+        private final EdgeRole role;
 
         @Override
         public boolean isSelected() {
@@ -355,7 +372,7 @@ public class LabelFilter<G extends @NonNull Graph> extends Observable {
 
         @Override
         public boolean setSelected(boolean selected) {
-            boolean result = this.selected == selected;
+            boolean result = this.selected != selected;
             this.selected = selected;
             return result;
         }
@@ -365,13 +382,17 @@ public class LabelFilter<G extends @NonNull Graph> extends Observable {
 
         @Override
         public int compareTo(Entry o) {
-            assert o instanceof LabelEntry;
-            return getLabel().compareTo(o.getLabel());
+            var other = (LabelEntry) o;
+            var result = this.role.compareTo(other.role);
+            if (result == 0) {
+                result = toString().compareTo(other.toString());
+            }
+            return result;
         }
 
         @Override
         public int hashCode() {
-            return this.label.getRole().hashCode() ^ this.label.text().hashCode();
+            return this.role.hashCode() ^ this.line.hashCode();
         }
 
         @Override
@@ -382,14 +403,13 @@ public class LabelFilter<G extends @NonNull Graph> extends Observable {
             if (obj == null) {
                 return false;
             }
-            if (!(obj instanceof LabelEntry)) {
+            if (!(obj instanceof LabelEntry other)) {
                 return false;
             }
-            Label otherLabel = ((LabelEntry) obj).getLabel();
-            if (getLabel().getRole() != otherLabel.getRole()) {
+            if (this.role != other.role) {
                 return false;
             }
-            if (!getLabel().text().equals(otherLabel.text())) {
+            if (!toString().equals(other.toString())) {
                 return false;
             }
             return true;
@@ -397,10 +417,7 @@ public class LabelFilter<G extends @NonNull Graph> extends Observable {
 
         @Override
         public String toString() {
-            return this.label.toString();
+            return this.line.toFlatString();
         }
-
-        /** The label wrapped in this entry. */
-        private final Label label;
     }
 }

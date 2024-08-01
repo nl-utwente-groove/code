@@ -40,7 +40,7 @@ import nl.utwente.groove.gui.jgraph.JCell;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.list.SearchResult;
 import nl.utwente.groove.gui.tree.LabelTree;
-import nl.utwente.groove.gui.tree.LabelTree.LabelTreeNode;
+import nl.utwente.groove.gui.tree.TypeTree.TypeTreeNode;
 
 /**
  * Action for changing one label into another throughout the grammar.
@@ -86,8 +86,10 @@ public class FindReplaceAction extends SimulatorAction
                     try {
                         getSimulatorModel().doRelabel(result.from(), result.to());
                     } catch (IOException exc) {
-                        showErrorDialog(exc, String.format("Error while renaming '%s' into '%s':",
-                                                           result.from(), result.to()));
+                        showErrorDialog(exc,
+                                        String
+                                            .format("Error while renaming '%s' into '%s':",
+                                                    result.from(), result.to()));
                     }
                 }
             }
@@ -116,9 +118,8 @@ public class FindReplaceAction extends SimulatorAction
         TreePath[] selection = ((LabelTree<?>) e.getSource()).getSelectionPaths();
         if (selection != null && selection.length > 0) {
             Object treeNode = selection[0].getLastPathComponent();
-            if (treeNode instanceof LabelTreeNode en
-                && en.getEntry().getLabel() instanceof TypeLabel tl) {
-                this.oldLabel = tl;
+            if (treeNode instanceof TypeTreeNode en) {
+                this.oldLabel = en.getEntry().getType().label();
             }
         }
     }

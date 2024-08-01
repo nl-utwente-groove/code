@@ -33,6 +33,7 @@ import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.jgraph.JCell;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.line.Line;
 
 /**
  * Class that maintains a set of filtered entries
@@ -209,8 +210,8 @@ public class TypeFilter extends LabelFilter<@NonNull AspectGraph> {
         }
 
         @Override
-        public Label getLabel() {
-            return this.type.label();
+        public Line getLine() {
+            return this.type.toLine();
         }
 
         private final TypeElement type;

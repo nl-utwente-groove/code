@@ -303,6 +303,8 @@ public class Util {
     static public final char LC_EPSILON = '\u03B5';
     /** Lower case letter lambda. */
     static public final char LC_LAMBDA = '\u03BB';
+    /** Upper case letter omega. */
+    static public final char UC_OMEGA = '\u03A9';
 
     /** HTML opening << quote symbol. */
     static public final char FRENCH_QUOTES_OPEN = '\u00AB';
