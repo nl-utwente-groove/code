@@ -41,8 +41,8 @@ import nl.utwente.groove.io.graph.GxlIO;
  * @author Harold Bruijntjes
  * @version $Revision$
  */
-public class NativePorter extends AbstractResourcePorter {
-    private NativePorter() {
+public class NativeResourcePorter extends AbstractResourcePorter {
+    private NativeResourcePorter() {
         register(ResourceKind.TYPE);
         register(ResourceKind.HOST);
         register(ResourceKind.RULE);
@@ -137,9 +137,9 @@ public class NativePorter extends AbstractResourcePorter {
     }
 
     /** Returns the singleton instance of this class. */
-    public static final NativePorter getInstance() {
+    public static final NativeResourcePorter getInstance() {
         return instance;
     }
 
-    private static final NativePorter instance = new NativePorter();
+    private static final NativeResourcePorter instance = new NativeResourcePorter();
 }

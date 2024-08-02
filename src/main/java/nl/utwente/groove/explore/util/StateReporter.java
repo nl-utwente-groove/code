@@ -48,8 +48,8 @@ public class StateReporter extends AExplorationReporter {
         var exporter = Exporters.getExporter(ExportKind.GRAPH, fileType);
         if (exporter == null) {
             this.logger
-                .append("Pattern %s does not specify known export format: states saved in native GXL%n",
-                        this.statePattern);
+                .append("Pattern %s does not specify known export format: states saved in native %s%n",
+                        this.statePattern, FileType.STATE.getExtension());
         } else {
             this.logger.append("States saved as %s%n", fileType.getDescription());
         }

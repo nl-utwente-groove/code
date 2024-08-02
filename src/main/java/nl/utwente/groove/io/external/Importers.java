@@ -41,7 +41,7 @@ import nl.utwente.groove.io.GrooveFileChooser;
 import nl.utwente.groove.io.external.format.AutPorter;
 import nl.utwente.groove.io.external.format.ColImporter;
 import nl.utwente.groove.io.external.format.EcorePorter;
-import nl.utwente.groove.io.external.format.NativePorter;
+import nl.utwente.groove.io.external.format.NativeResourcePorter;
 
 /**
  * Utilities for importers.
@@ -131,7 +131,7 @@ public class Importers {
 
     private static List<Importer> createImporters() {
         List<Importer> result = new ArrayList<>();
-        result.add(NativePorter.getInstance());
+        result.add(NativeResourcePorter.getInstance());
         result.add(AutPorter.instance());
         result.add(ColImporter.getInstance());
         result.add(EcorePorter.instance());

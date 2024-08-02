@@ -40,7 +40,8 @@ import nl.utwente.groove.io.external.format.FsmExporter;
 import nl.utwente.groove.io.external.format.GraphExportListener.DotListener;
 import nl.utwente.groove.io.external.format.LTS2ControlExporter;
 import nl.utwente.groove.io.external.format.ListenerExporter;
-import nl.utwente.groove.io.external.format.NativePorter;
+import nl.utwente.groove.io.external.format.NativeGraphExporter;
+import nl.utwente.groove.io.external.format.NativeResourcePorter;
 import nl.utwente.groove.io.external.format.RasterExporter;
 import nl.utwente.groove.io.external.format.TikzExporter;
 import nl.utwente.groove.io.external.format.VectorExporter;
@@ -129,7 +130,8 @@ public class Exporters {
     /** Creates the list of all known exporters. */
     private static List<Exporter> createExporters() {
         List<Exporter> result = new ArrayList<>();
-        result.add(NativePorter.getInstance());
+        result.add(NativeResourcePorter.getInstance());
+        result.add(NativeGraphExporter.getInstance());
         result.add(RasterExporter.getInstance());
         result.add(VectorExporter.getInstance());
         result.add(AutPorter.instance());
