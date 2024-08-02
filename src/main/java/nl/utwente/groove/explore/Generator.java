@@ -484,7 +484,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
             } else if (!property.get().parser().accepts(value)) {
                 this.error = String.format("Incorrect value '%s' for property '%s'", value, key);
             } else {
-                m.put(property, value);
+                m.put(property.get(), value);
             }
         }
 
