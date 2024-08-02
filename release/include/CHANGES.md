@@ -3,6 +3,11 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 6.9.3, 2 August 2024
+-------------------------------
+- Repaired parsing of grammar control properties for Generator
+- Repaired rule level tree functionality
+
 Release 6.9.2, 1 August 2024
 -------------------------------
 - Bug fix release (don't use 6.9.1)
