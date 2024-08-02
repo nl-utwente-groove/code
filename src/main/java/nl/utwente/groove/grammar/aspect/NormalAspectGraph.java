@@ -44,7 +44,6 @@ import nl.utwente.groove.algebra.syntax.FieldExpr;
 import nl.utwente.groove.algebra.syntax.Variable;
 import nl.utwente.groove.grammar.aspect.AspectContent.NestedValue;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
-import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Keywords;
@@ -92,8 +91,8 @@ public class NormalAspectGraph extends AspectGraph {
     private final AspectGraphMorphism sourceToNormalMap;
 
     /** Computes the inverse of {@link #sourceToNormalMap}. */
-    private final Map<Element,Element> initNormalToSourceMap() {
-        Map<Element,Element> result = new HashMap<>();
+    private final Map<AspectElement,AspectElement> initNormalToSourceMap() {
+        Map<AspectElement,AspectElement> result = new HashMap<>();
         var toNormalMap = this.sourceToNormalMap;
         toNormalMap.nodeMap().entrySet().forEach(e -> result.put(e.getValue(), e.getKey()));
         toNormalMap.edgeMap().entrySet().forEach(e -> result.put(e.getValue(), e.getKey()));
@@ -135,13 +134,13 @@ public class NormalAspectGraph extends AspectGraph {
     /** Returns the morphism from this normalised graph to the source {@link AspectGraph}.
      * Should only be called after the normalised graph has been fixed.
      */
-    public Map<Element,Element> normalToSourceMap() {
+    public Map<AspectElement,AspectElement> normalToSourceMap() {
         assert isFixed();
         return this.normalToSourceMap;
     }
 
     /** Inverse of the {@link #sourceToNormalMap} before actual normalisation. */
-    private final Map<Element,Element> normalToSourceMap;
+    private final Map<AspectElement,AspectElement> normalToSourceMap;
 
     private AspectNode addNormalisedNode(AspectElement orig) {
         AspectNode result = addNode();

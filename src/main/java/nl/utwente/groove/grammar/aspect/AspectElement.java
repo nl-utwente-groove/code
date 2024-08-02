@@ -41,6 +41,15 @@ public interface AspectElement extends Element, Fixable {
     /** Returns the aspect graph to which this element belongs. */
     public AspectGraph getGraph();
 
+    /** If */
+    default public AspectElement denormalise() {
+        if (getGraph() instanceof NormalAspectGraph nag) {
+            return nag.normalToSourceMap().get(this);
+        } else {
+            return this;
+        }
+    }
+
     /** Returns the graph role set for this aspect element.
      * Convenience method for {@code getGraph().getRole()}.
      * */

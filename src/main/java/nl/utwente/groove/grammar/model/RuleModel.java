@@ -492,7 +492,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     private @Nullable AspectGraph normalSource;
 
     /** Returns an element map from the normalised graph to the source graph. */
-    private Map<Element,Element> normalToSourceMap() {
+    private Map<AspectElement,AspectElement> normalToSourceMap() {
         var result = this.normalToSourceMap;
         if (result == null) {
             var normal = getNormalSource();
@@ -507,7 +507,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     }
 
     /** Mapping from normalised source model to source model. */
-    private @Nullable Map<Element,Element> normalToSourceMap;
+    private @Nullable Map<AspectElement,AspectElement> normalToSourceMap;
 
     @Override
     protected FormatErrorSet createErrors() {

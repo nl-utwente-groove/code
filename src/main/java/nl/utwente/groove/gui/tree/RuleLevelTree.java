@@ -152,7 +152,8 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
                 Set<AspectJCell> levelCells = new HashSet<>();
                 // add all cells for this level according to the rule level tree
                 for (AspectElement elem : levelEntry.getValue()) {
-                    AspectJCell jCell = jModel.getJCell(elem);
+                    // this is an element from the normalised source, about which the AspectJModel is unaware
+                    AspectJCell jCell = jModel.getJCell(elem.denormalise());
                     if (jCell != null) {
                         levelCells.add(jCell);
                     }
@@ -166,12 +167,12 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
                 // also add the nesting nodes and edges
                 AspectNode ruleLevelNode = index.getLevelNode();
                 if (ruleLevelNode != null) {
-                    AspectJCell jCell = jModel.getJCell(ruleLevelNode);
+                    AspectJCell jCell = jModel.getJCell(ruleLevelNode.denormalise());
                     if (jCell != null) {
                         levelCells.add(jCell);
                     }
                     for (AspectElement edge : this.rule.getSource().edgeSet(ruleLevelNode)) {
-                        jCell = jModel.getJCell(edge);
+                        jCell = jModel.getJCell(edge.denormalise());
                         if (jCell != null) {
                             levelCells.add(jCell);
                         }
