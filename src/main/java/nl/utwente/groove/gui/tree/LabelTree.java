@@ -645,10 +645,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree
                 labelIcon = entryNode.getIcon();
                 // set tool tip text
                 StringBuilder toolTipText = new StringBuilder();
-                Set<JCell<G>> occurrences = getFilter().getJCells(entry);
-                int count = occurrences == null
-                    ? 0
-                    : occurrences.size();
+                int count = getFilter().getCount(entry);
                 toolTipText.append(count);
                 toolTipText.append(" occurrence");
                 if (count != 1) {

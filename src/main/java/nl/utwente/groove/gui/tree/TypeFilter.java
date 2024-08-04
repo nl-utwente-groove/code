@@ -120,7 +120,7 @@ public class TypeFilter extends LabelFilter<@NonNull AspectGraph> {
             if (this.entryMaps == null || typeGraph != this.entryMaps.typeGraph()) {
                 this.entryMaps = new EntryMap(typeGraph);
             }
-            this.entryMaps.entryStream().forEach(this::addEntry);
+            this.entryMaps.entryStream().forEach(this::registerEntry);
             this.stale = false;
         }
         assert typeGraph == this.entryMaps
@@ -255,6 +255,11 @@ public class TypeFilter extends LabelFilter<@NonNull AspectGraph> {
         @Override
         public boolean isForNode() {
             return getType() instanceof TypeNode;
+        }
+
+        @Override
+        public boolean matches(Label label) {
+            return getType().label().equals(label);
         }
 
         /** Returns the (subtype-closed) set of source and target (node) type entry. */

@@ -202,6 +202,29 @@ public class AspectJVertex extends
     }
 
     @Override
+    public Collection<? extends Label> getLabels() {
+        getNode().testFixed(true);
+        Collection<TypeElement> result = new ArrayList<>();
+        if (!getAspects().containsKey(Category.NESTING)) {
+            for (Edge edge : getEdges()) {
+                TypeEdge key = getKey(edge);
+                if (key != null) {
+                    result.add(key);
+                }
+            }
+            // add additional self-edges
+            for (var edge : getExtraSelfEdges()) {
+                TypeEdge key = getKey(edge);
+                if (key != null) {
+                    result.add(key);
+                }
+            }
+            result.addAll(getNodeKeys());
+        }
+        return result;
+    }
+
+    @Override
     public Collection<? extends Label> getKeys() {
         getNode().testFixed(true);
         Collection<TypeElement> result = new ArrayList<>();

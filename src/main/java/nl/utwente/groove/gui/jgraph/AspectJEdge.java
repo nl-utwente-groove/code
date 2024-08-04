@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
@@ -196,13 +195,6 @@ public class AspectJEdge extends
         if (this.aspects.containsKey(Category.NESTING)) {
             return Collections.emptySet();
         } else {
-            Set<Label> result = new HashSet<>();
-            var s = getSourceVertex();
-            assert s != null;
-            result.addAll(s.getNodeKeys());
-            var t = getTargetVertex();
-            assert t != null;
-            result.addAll(t.getNodeKeys());
             return super.getKeys();
         }
     }

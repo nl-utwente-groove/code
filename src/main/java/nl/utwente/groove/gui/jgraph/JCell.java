@@ -66,6 +66,13 @@ public interface JCell<G extends @NonNull Graph> extends GraphCell, Serializable
     public abstract Collection<? extends Label> getKeys();
 
     /**
+     * Returns the set of labels that actually occur in this cell.
+     */
+    default Collection<? extends Label> getLabels() {
+        return getKeys();
+    }
+
+    /**
      * Returns the label tree key for a given graph edge wrapped by this JCell.
      * @return the key for {@code edge}; if {@code null}, the edge
      * has no corresponding key
