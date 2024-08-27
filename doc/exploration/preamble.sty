@@ -1,0 +1,68 @@
+\usepackage{xspace}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{MnSymbol}
+%\usepackage{stmaryrd}
+\usepackage[inline]{enumitem}
+\setlist{itemsep=0pt}
+
+\newcommand{\GROOVE}{GROOVE}
+
+\newcommand{\cls}[1]{{#1}\mskip1mu\triangleright}
+\newcommand{\prm}[1]{\triangleleft\mskip1mu{#1}}
+
+\newcommand{\dom}{\mathop{\mathrm{dom}}}
+
+\newcommand{\Prime}{\ensuremath{\mathit{prime}}}
+\newcommand{\Done}{\ensuremath{\mathit{done}}}
+\newcommand{\Open}{\ensuremath{\mathit{open}}}
+\newcommand{\Closed}{\ensuremath{\mathit{closed}}}
+\newcommand{\Trnt}{\ensuremath{\mathit{trnt}}}
+\newcommand{\Abs}{\ensuremath{\mathit{abs}}}
+\newcommand{\Stable}{\ensuremath{\mathit{stable}}}
+\newcommand{\Tdepth}{\ensuremath{\mathit{tdp}}}
+
+\newcommand{\cC}{\mathcal{C}}
+\newcommand{\natN}{\mathbb{N}}
+
+\newcommand{\setof}[1]{\{{#1}\}}
+\newcommand{\gensetof}[2]{\setof{{#1}\mid{#2}}}
+\newcommand{\tupof}[1]{\langle{#1}\rangle}
+\newcommand{\iffdef}{:\Leftrightarrow}
+
+% Special arrows
+\newcommand{\pto}{\lhook\joinrel\to}
+\newcommand{\goesto}{\rightarrowtail}
+\newcommand{\ngoesto}{\arrownot\rightarrowtail}
+\newcommand{\comesfrom}{\leftarrowtail}
+\newcommand{\ncomesfrom}{\arrownot\leftarrowtail}
+\newcommand{\ra}{\rightarrow}
+\newcommand{\up}{{\uparrow}}
+\newcommand{\Up}{{\Uparrow}}
+
+
+%%%% definition of extensible "transition arrows"
+%
+% auxiliaries
+\newcommand{\linefill}{%
+	\cleaders
+	\hbox{$\smash{\mkern-2mu\mathord-\mkern-2mu}$}%
+	\hfill
+	\vphantom{\lower1pt\hbox{$\rightarrow$}}%
+}
+\newcommand{\Linefill}{%
+	\cleaders
+	\hbox{$\smash{\mkern-2mu\mathord=\mkern-2mu}$}%
+	\hfill
+	\vphantom{\hbox{$\Rightarrow$}}%
+}
+
+% single-arrow transition
+\newcommand{\trans}[1]{\xrightarrow{#1}}%
+% negative single-arrow transition
+\newcommand{\ntrans}[1]{\not\xrightarrow{#1}}
+
+% mapsto-like transition
+\newcommand{\step}[1]{\mapstochar\xrightarrow{#1}}
+% negative mapsto-like transition
+\newcommand{\nstep}[1]{\not\mapstochar\joinrel\xrightarrow{#1}}
