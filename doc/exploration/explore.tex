@@ -104,7 +104,13 @@ Incremental construction means that, if $D=C\oplus(p\goesto p')$, all components
 \Tdepth_D & : s\mapsto\begin{cases}
 \Tdepth(p') & \text{if $s=\prm p$} \\
 \Tdepth(q) & \text{if $s=q\notin S_C$} \\
-\Tdepth_C(s) & \text{otherwise.}
-\end{cases}
+\Tdepth_C(s) & \text{otherwise}
+\end{cases} \\
+\Closed_D & = \Closed_C \cup\gensetof{\prm p}{p'\ngoesto} \\
+\Stable_D & = \Stable_C \cup \gensetof{\prm p}{\Tdepth(p')=0} \enspace.
 \end{align*}
+%
+For $\ttrans_C$, however, the case is less easy. For the purpose of this construction, we introduce several auxiliary data structures.
+
+
 \end{document}
