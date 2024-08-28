@@ -3,3 +3,4 @@
 *.aux
 *.log
 /doc/exploration/explore.pdf
+/doc/exploration/*.gz
