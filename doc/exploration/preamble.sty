@@ -8,8 +8,10 @@
 
 \newcommand{\GROOVE}{GROOVE}
 
-\newcommand{\cls}[1]{{#1}\mskip1mu\triangleright}
-\newcommand{\prm}[1]{\triangleleft\mskip1mu{#1}}
+% Closure of a pseudo-state
+\newcommand{\cls}[1]{{#1}{\triangleright}}
+% Prime of a pseudo-state
+\newcommand{\prm}[1]{{\triangleleft}\mskip-2mu{#1}}
 
 \newcommand{\dom}{\mathop{\mathrm{dom}}}
 
@@ -18,27 +20,39 @@
 \newcommand{\Open}{\ensuremath{\mathit{open}}}
 \newcommand{\Closed}{\ensuremath{\mathit{closed}}}
 \newcommand{\Trnt}{\ensuremath{\mathit{trnt}}}
+% Absence
 \newcommand{\Abs}{\ensuremath{\mathit{abs}}}
+% Stability
 \newcommand{\Stable}{\ensuremath{\mathit{stable}}}
-\newcommand{\Tdepth}{\ensuremath{\mathit{tdp}}}
+% Eventual stability
+\newcommand{\EStable}{\Stable^\diamond}
+% Transient depth
+\newcommand{\Tdepth}{\ensuremath{\mathit{trdp}}}
+% Eventual transient depth
+\newcommand{\ETdepth}{\Tdepth^\diamond}
 
 \newcommand{\cC}{\mathcal{C}}
+\newcommand{\cP}{\mathcal{P}}
+\newcommand{\cS}{\mathcal{S}}
+
 \newcommand{\natN}{\mathbb{N}}
 
 \newcommand{\setof}[1]{\{{#1}\}}
 \newcommand{\gensetof}[2]{\setof{{#1}\mid{#2}}}
 \newcommand{\tupof}[1]{\langle{#1}\rangle}
 \newcommand{\iffdef}{:\Leftrightarrow}
+% Partial function
+\newcommand{\pto}{\hookrightarrow}
 
 % Special arrows
-\newcommand{\pto}{\hookrightarrow}
+
 \newcommand{\goesto}{\rightarrowtail}
 \newcommand{\ngoesto}{\arrownot\rightarrowtail}
+
 \newcommand{\comesfrom}{\leftarrowtail}
 \newcommand{\ncomesfrom}{\arrownot\leftarrowtail}
 \newcommand{\ra}{\rightarrow}
 \newcommand{\up}{{\uparrow}}
-\newcommand{\Up}{{\Uparrow}}
 
 % Typeset the label of an extensible arrow
 \newcommand{\xlabel}[1]{\smash{\mathchoice
@@ -49,6 +63,7 @@
 }}
 % Prepend a negation to an extensible arrow
 \newcommand{\xarrownot}{\mathrel{\arrownot-}\mskip-7mu}
+
 % single-arrow transition
 \newcommand{\trans}[1]{\xrightarrow{\xlabel{#1}}}
 % negative single-arrow transition
@@ -56,9 +71,13 @@
 
 % mapsto-like transition
 \newcommand{\step}[1]{\mapstochar\xrightarrow{\xlabel{#1}}}
-% negative mapsto-like transition
+% negated mapsto-like transition
 \newcommand{\nstep}[1]{\mapstochar\joinrel\xarrownot\xrightarrow{\xlabel{#1}}}
 
+% Transactional transition
+\newcommand{\ttrans}{\twoheadrightarrow}
+% Negated transactional transition
+\newcommand{\nttrans}{\arrownot\ttrans}
 
 %%%% Recapture the mapstochar, which is set to undefined by MnSymbol
 \usepackage{trimclip}

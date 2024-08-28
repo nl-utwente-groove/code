@@ -110,7 +110,7 @@ public class StateMatches extends MatchResultSet {
         boolean result = false;
         Frame frame = getState().getActualFrame();
         // depth of the frame at the start of the method
-        int depth = frame.getTransience();
+        int originalTransience = frame.getTransience();
         if (hasOutstanding()) {
             // the schedule has been tried and has yielded matches;
             // now see if at least one match has resulted
@@ -203,9 +203,9 @@ public class StateMatches extends MatchResultSet {
             addAll(outstanding);
             result = true;
         }
-        int actualDepth = getState().getActualFrame().getTransience();
-        if (actualDepth < depth) {
-            getCache().notifyDepth(actualDepth);
+        int updatedTransience = getState().getActualFrame().getTransience();
+        if (updatedTransience < originalTransience) {
+            getCache().notifyTransience(updatedTransience);
         }
         return result;
     }

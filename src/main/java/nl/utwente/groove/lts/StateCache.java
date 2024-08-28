@@ -97,8 +97,8 @@ public class StateCache {
     /**
      * Callback method invoked when the state has been closed.
      */
-    void notifyClosed() {
-        getExploreData().notifyClosed();
+    void notifyClosure() {
+        getExploreData().notifyClosure();
     }
 
     final AbstractGraphState getState() {
@@ -144,17 +144,17 @@ public class StateCache {
     private ExploreData exploreData;
 
     /**
-     * Returns the lowest known absence depth of the state.
+     * Returns the known eventual transient depth of the state.
      * This is {@link Integer#MAX_VALUE} if the state is erroneous,
      * otherwise it is the minimum transient depth of the reachable states.
      */
-    final int getAbsence() {
-        return getExploreData().getAbsence();
+    final int getEventualTransience() {
+        return getExploreData().getEventualTransience();
     }
 
     /** Notifies the cache of a decrease in transient depth of the control frame. */
-    final void notifyDepth(int depth) {
-        getExploreData().notifyDepth(depth);
+    final void notifyTransience(int depth) {
+        getExploreData().notifyTransience(depth);
     }
 
     /**

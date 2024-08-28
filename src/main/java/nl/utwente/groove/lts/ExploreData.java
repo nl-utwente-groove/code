@@ -48,7 +48,7 @@ class ExploreData {
     ExploreData(StateCache cache) {
         this.cache = cache;
         GraphState state = this.state = cache.getState();
-        this.transience = state.getActualFrame().getTransience();
+        this.eventualTransience = state.getActualFrame().getTransience();
         var internal = this.internal = state.getPrimeFrame().isInternal();
         this.inRecipeInits = internal
             ? new ArrayList<>()
@@ -99,7 +99,7 @@ class ExploreData {
             return;
         }
         ExploreData succData = succ.getCache().getExploreData();
-        this.transience = Math.min(this.transience, succData.transience);
+        this.eventualTransience = Math.min(this.eventualTransience, succData.eventualTransience);
         if (getState().isTransient()) {
             addReachable(partial);
             if (succ.isTransient()) {
@@ -131,7 +131,7 @@ class ExploreData {
     /**
      * Callback method invoked when the state has been closed.
      */
-    void notifyClosed() {
+    void notifyClosure() {
         if (DEBUG) {
             System.out.printf("State closed: %s%n", getState());
         }
@@ -145,16 +145,19 @@ class ExploreData {
     }
 
     /** Notifies the cache of a decrease in transient depth of the control frame. */
-    final void notifyDepth(int transience) {
+    final void notifyTransience(int transience) {
         if (DEBUG) {
             System.out.printf("Transient depth of %s set to %s%n", getState(), transience);
         }
-        if (transience < this.transience) {
-            this.transience = transience;
+        if (transience < this.eventualTransience) {
+            this.eventualTransience = transience;
         }
-        Change change = Change.TRANSIENCE;
-        if (isInternal() && !getState().isInternalState()) {
-            change = Change.TOP_LEVEL;
+        Change change = isInternal() && transience == 0
+            ? Change.STABILIZED
+            : Change.TRANSIENCE;
+        if (isInternal() && transience == 0) {
+            assert transience == 0;
+            change = Change.STABILIZED;
         }
         fireChanged(getState(), change);
     }
@@ -169,7 +172,7 @@ class ExploreData {
             assert parent != this;
             parent.notifyChildChanged(child, change);
         }
-        if (getState().getPrimeFrame().isInternal() && change == Change.TOP_LEVEL) {
+        if (isInternal() && change == Change.STABILIZED) {
             if (DEBUG) {
                 System.out
                     .printf("Top-level reachables of %s augmented by %s%n", getState(), child);
@@ -186,8 +189,8 @@ class ExploreData {
         if ((!child.isTransient() || child.isClosed()) && this.reachableTransients.remove(child)
             || this.reachableTransients.contains(child)) {
             int childAbsence = child.getAbsence();
-            if (childAbsence < this.transience) {
-                this.transience = childAbsence;
+            if (childAbsence < this.eventualTransience) {
+                this.eventualTransience = childAbsence;
             }
             fireChanged(child, change);
             if (this.reachableTransients.isEmpty() && getState().isClosed()) {
@@ -205,7 +208,7 @@ class ExploreData {
         var target = partial.target();
         // add the partial if it was not already known
         if (this.reachablePartials.add(partial)) {
-            this.transience = Math.min(this.transience, target.getAbsence());
+            this.eventualTransience = Math.min(this.eventualTransience, target.getAbsence());
             // notify all parents of the new partial
             for (ExploreData parent : this.parentTransients) {
                 parent.addReachable(partial);
@@ -220,13 +223,13 @@ class ExploreData {
     }
 
     private void setStateDone() {
-        getState().setDone(this.transience);
+        getState().setDone(this.eventualTransience);
         this.parentTransients.clear();
     }
 
     /** Adds recipe transitions from the known recipe sources to a given recipe target. */
     private void addRecipeTarget(RecipeTarget target) {
-        assert getState().getPrimeFrame().isInternal() && !target.state().isInternalState();
+        assert isInternal() && !target.state().isInternalState();
         if (DEBUG) {
             System.out.printf("Recipe targets of %s augmented by %s%n", getState(), target);
         }
@@ -263,26 +266,26 @@ class ExploreData {
     }
 
     /**
-     * Returns the absence level of the state.
+     * Returns the (known) eventual transience of the state.
      * This is {@link Status#MAX_ABSENCE} if the state is erroneous,
      * otherwise it is the minimum transient depth of the reachable states.
      */
-    final int getAbsence() {
-        return this.transience;
+    final int getEventualTransience() {
+        return this.eventualTransience;
     }
 
     /**
-     * Known absence level of the state.
-     * The absence level is the minimum transient depth of the known reachable states.
+     * Known eventual transience of the state.
+     * The eventual transience is the minimum transient depth of the reachable states.
      */
-    private int transience;
+    private int eventualTransience;
 
-    /** Indicates whether this state is internal to a recipe. */
+    /** Indicates whether (the prime frame of) this state is internal to a recipe. */
     private boolean isInternal() {
         return this.internal;
     }
 
-    /** Flag indicating if the prime frame is internal. */
+    /** Flag indicating if (the prime frame of) this state is internal. */
     private final boolean internal;
 
     /**
@@ -435,12 +438,12 @@ class ExploreData {
 
     /** Type of propagated change. */
     enum Change {
-        /** The transient depth decreased because an atomic block was exited. */
+        /** The transient depth decreased (but not to 0) because an atomic block was exited. */
         TRANSIENCE,
         /** The state closed. */
         CLOSURE,
-        /** The state became top-level. */
-        TOP_LEVEL,;
+        /** The state went from internal to stable. */
+        STABILIZED,;
     }
 
     /** Combination of target state and out-parameter values. */

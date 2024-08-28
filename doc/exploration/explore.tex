@@ -10,26 +10,30 @@
 We globally assume a set of labels $A$.
 
 \medskip\noindent 
-A state space is a tuple $\tupof{S,{\ra},{\up},\Tdepth}$ with
+A state space is a tuple $\cS=\tupof{S,\iota,{\ra},{\up},\Tdepth}$ with
 \begin{itemize}
 \item $S$ a set of states;
+\item $\iota\in S$ the initial state;
 \item ${\ra}\subseteq S\times A\times S$ a transition relation;
 \item ${\up}\subseteq S$ a termination predicate;
 \item ${\Tdepth}:S\to \natN$ a \emph{transient depth} (or \emph{transience}) function.
 \end{itemize}
 %
-State $s\in S$ is called \emph{final} if $p\up$, \emph{transient} (denoted $\Trnt(s)$) if $\Tdepth(s)>0$ and \emph{stable} (denoted $\Stable(s)$) if $\Tdepth(s)=0$.
-
-\medskip\noindent State spaces are generated from a \emph{pseudo-state spaces}.
+State $s\in S$ is called \emph{final} if $p\up$, \emph{transient} (denoted $\Trnt(s)$) if $\Tdepth(s)>0$ and \emph{stable} (denoted $\Stable(s)$) if $\Tdepth(s)=0$. There is a derived \emph{transaction relation}:
+%
+\[ s\ttrans s' \enspace\iffdef\enspace \Stable(s) \wedge \Stable(s') \wedge s\trans{}^+ s' \enspace. \]
+%
+State spaces are generated from a \emph{pseudo-state spaces}.
 
 \medskip\noindent
-A pseudo-state space is a tuple $\tupof{P,{\mapsto},{\goesto},{\up},\Tdepth}$ with
+A pseudo-state space is a tuple $\cP=\tupof{P,\iota,{\mapsto},{\goesto},{\up},\Tdepth}$ with
 \begin{itemize}
 \item $P$ a finite set of pseudo-states;
+\item $\iota\in P$ the initial pseudo-state;
 \item ${\step{}}\subseteq P\times A\times P$ a step relation;
-\item ${\goesto}: P\times P$ a partial, acyclic evolution relation;
+\item ${\goesto}: P\times P$ an acyclic evolution relation;
 \item ${\up} \subseteq P$ a termination predicate;
-\item ${\Tdepth}:S\to \natN$ a \emph{transient depth} function.
+\item ${\Tdepth}:P\to \natN$ a transient depth function.
 \end{itemize}
 %
 Pseudo-state $p\in P$ is called \emph{prime} (denoted $\Prime(p)$) if $p\ncomesfrom$, \emph{closed} (denoted $\Closed(p)$) if $p\ngoesto$ and \emph{open} (denoted $\Open(p)$) if it is not closed.
@@ -44,31 +48,63 @@ A pseudo-state space is \emph{well-formed} if it satisfies the following additio
 \item Stepping cannot decrease transience; i.e., $p\step{}q$ implies $\Tdepth(q)\geq \Tdepth(p)$;
 \item Evolution cannot increase transience; i.e., $p\goesto q$ implies $\Tdepth(q)\leq \Tdepth(p)$.
 \end{itemize}
+%
 From now on, we only deal with well-formed pseudo-states spaces. The \emph{prime of} and \emph{closure of} a pseudo-state $p$ are defined as
+%
 \begin{align*}
 	\prm p & = q \quad \text{where $\Prime (q)$ and $q\goesto^* p$} \\
-	\cls p & = q \quad \text{where $\Closed(q)$ and $p\comesfrom^* q$} \enspace.
+	\cls p & = q \quad \text{where $p\goesto^* q$ and $\Closed(q)$} \enspace.
 \end{align*}
 %
-Note that these are well-defined because $P$ is finite and $\goesto$ is acyclic, deterministic and injective.
+Note that these are well-defined because $P$ is finite and $\goesto$ is acyclic, deterministic and injective (implying that it is a union of finite chains of pseudo-states). A pseudo-state space effectively represents a state space in which the states are $\goesto$-related sets of pseudo-states --- which, as remarked above, are actually chains. Rather than formalising the relation in this way, however, we let a state be represented by the initial element of such a chain, i.e., by the (unique) prime pseudo-state.
 
 \medskip\noindent
-A pseudo-state space $\tupof{P,{\mapsto},{\goesto},{\up},\Tdepth}$ gives rise to a state space $\tupof{S,\trans{},\up,\Tdepth_S}$ where
+Given a pseudo-state space $\cP$ as above, a \emph{configuration} is a $\goesto$-left-closed set $C\subseteq P$ of pseudo-states such that, moreover, $\iota\in C$ and if $p\comesfrom\:\step q$ then $p\in C$ implies $q\in C$. (It follows that $P$ is itself a configuration of $\cP$.) Given a configuration $C$, we define $\cS_C= \tupof{S_C,\iota_C,\trans{}_C, \up_C, \Tdepth_C}$ as follows:
+%
+\begin{align*}
+S_C & = \gensetof{\prm p}{p\in C} \\
+\iota_C & = \iota \\
+{\trans{}_C} & = \gensetof{(\prm p,a,q)}{p,q\in C, p\step a q} \\
+\up_C & = \gensetof{\prm p}{p\in C, p\up} \\
+\Tdepth_C & : p \mapsto \min \gensetof{\Tdepth(q)}{q\in C,p=\prm q} \enspace \text{for all $p\in S_C$} \enspace.
+\end{align*}
+%
+The notion of closedness and stability are also extended to configurations (so as to coincide with their counterparts for $S_C$):
+\begin{align*}
+\Closed_C & = \gensetof{\prm p}{p\in C, p\ngoesto} \\
+\Stable_C & = \gensetof{\prm p}{p\in C, \Tdepth(p)=0} \enspace.
+\end{align*}
+%
+We define some further auxiliary notions.
 %
 \begin{itemize}
-\item $s\in S$ if $s$ is a closed pseudo-state; i.e., $S=\cls P$;
-\item $\cls p\trans a \cls{p'}$ for all $p\step a p'$; i.e., $s\trans a s'$ if $s\comesfrom^*\step a \goesto^* s'$;
-\item $\up$ remains unchanged (noting that $p\up$ implies $\Closed(p)$ and hence $p\in S$);
-\item $\Tdepth_S$ restricts $\Tdepth$ to $S$; i.e., $\Tdepth_S=\gensetof{(p,\Tdepth(p))}{p\in S}$.
-\end{itemize}
-%
-Given a pseudo-state space $P$, a \emph{configuration} is a partial function $C:\cls P\pto P$. $C$ gives rise to a state space $\tupof{S_C,\trans{}_C,\up_C,\Tdepth_C}$ where
-%
-\begin{itemize}
-\item $S_C=\dom C$;
-\item For all $s,s'\in S_C$, $s\trans a s'$ if $C(s)\comesfrom^*\step a \goesto^* C(s')$;
-\item For all $s\in S_C$, $s\up_C$ if $C(s)\up$;
-\item For all $s\in S_C$, $\Tdepth_C(s)=\Tdepth(C(s))$.
-\end{itemize}
+\item $\Done_C(s)$ for $s\in S_C$ expresses that $s$ as well as all its discovered $\trans{}_C$-successors are closed, up to and including the first stable state. It is defined as the smallest set such that
+\[ \Done_C = \Closed_C\cap \bigl(\Stable_C \cup \gensetof{p\in S_C}{\forall p\trans{}_C q.\, q\in \Done_C}\bigr) \enspace.
+\]
 
+\item $\ETdepth_C(s)$ for $s\in S_C$ is the \emph{eventual transient depth} in $C$, meaning the minimum transient depth of $s$ and all its $\trans{}_C$-successors. It is defined by
+%
+\[ \ETdepth_C: p\mapsto \min\gensetof{\Tdepth(q)}{p\trans{}_C^* q} \text{ for all $p\in S_C$} \enspace. \]
+
+\item $\EStable_C(s)$ for $s\in S_C$ expresses that $s$ is \emph{eventually stable} in $C$, meaning that it or one of its discovered $\trans{}_C$-successors is stable (i.e., has transient depth 0). It is defined by
+%
+\[ \EStable_C=\gensetof{p\in S_C}{\ETdepth_C(p)=0} \enspace. \]
+
+\item $\Abs_C(s)$ for $s\in S_C$ expresses that $s$ is \emph{absent} in $C$, which is the case if it is done (all reachable stable states have been discovered) but not eventually stable (no reachable stable state has been discovered). It is defined by
+\[ \Abs_C=\Done_C\setminus \EStable_C \enspace. \]
+\end{itemize}
+%
+We want to construct $S_P$ incrementally by approaching $P$ through a sequence of configurations, starting with $\setof{\iota}$ and adding, at each iteration, an evolution $p\goesto p'$ with $p\in C$ and $p'\notin C$. The latter is defined by 
+\[ C\oplus(p\goesto p') = C\cup \setof{p'} \cup \gensetof{q}{p\step a q} \enspace. \]
+Incremental construction means that, if $D=C\oplus(p\goesto p')$, all components of $S_D$ can be constructed from $S_C$ and $\cP$. Indeed, we have
+%
+\begin{align*}
+\trans{}_D & = {\trans{}_C} \cup\gensetof{(\prm p,a,q)}{p\step a q} \\
+\up_D & = \up_C \cup \gensetof{p'}{p'\up} \\
+\Tdepth_D & : s\mapsto\begin{cases}
+\Tdepth(p') & \text{if $s=\prm p$} \\
+\Tdepth(q) & \text{if $s=q\notin S_C$} \\
+\Tdepth_C(s) & \text{otherwise.}
+\end{cases}
+\end{align*}
 \end{document}

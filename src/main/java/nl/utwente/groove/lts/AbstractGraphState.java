@@ -245,7 +245,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
             //            setStatus(Flag.INTERNAL, getActualFrame().isInternal());
             //            setStatus(Flag.ERROR, getActualFrame().isError());
             //            setStatus(Flag.ABSENT, getActualFrame().isRemoved());
-            getCache().notifyClosed();
+            getCache().notifyClosure();
         }
         return result;
     }
@@ -276,7 +276,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         if (isDone()) {
             return Status.getAbsence(getStatus());
         } else {
-            return getCache().getAbsence();
+            return getCache().getEventualTransience();
         }
     }
 
