@@ -2,7 +2,7 @@
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{MnSymbol}
-%\usepackage{stmaryrd}
+\usepackage{stmaryrd}
 \usepackage[inline]{enumitem}
 \setlist{itemsep=0pt}
 
@@ -31,7 +31,7 @@
 \newcommand{\iffdef}{:\Leftrightarrow}
 
 % Special arrows
-\newcommand{\pto}{\lhook\joinrel\to}
+\newcommand{\pto}{\hookrightarrow}
 \newcommand{\goesto}{\rightarrowtail}
 \newcommand{\ngoesto}{\arrownot\rightarrowtail}
 \newcommand{\comesfrom}{\leftarrowtail}
@@ -40,29 +40,34 @@
 \newcommand{\up}{{\uparrow}}
 \newcommand{\Up}{{\Uparrow}}
 
-
-%%%% definition of extensible "transition arrows"
-%
-% auxiliaries
-\newcommand{\linefill}{%
-	\cleaders
-	\hbox{$\smash{\mkern-2mu\mathord-\mkern-2mu}$}%
-	\hfill
-	\vphantom{\lower1pt\hbox{$\rightarrow$}}%
-}
-\newcommand{\Linefill}{%
-	\cleaders
-	\hbox{$\smash{\mkern-2mu\mathord=\mkern-2mu}$}%
-	\hfill
-	\vphantom{\hbox{$\Rightarrow$}}%
-}
-
+% Typeset the label of an extensible arrow
+\newcommand{\xlabel}[1]{\smash{\mathchoice
+		{\raisebox{-1.5pt}{$\scriptstyle#1$}}
+		{\raisebox{-1.5pt}{$\scriptstyle#1$}}
+		{\raisebox{-1pt}{$\scriptstyle#1$}}
+		{\raisebox{-1pt}{$\scriptscriptstyle#1$}}
+}}
+% Prepend a negation to an extensible arrow
+\newcommand{\xarrownot}{\mathrel{\arrownot-}\mskip-7mu}
 % single-arrow transition
-\newcommand{\trans}[1]{\xrightarrow{#1}}%
+\newcommand{\trans}[1]{\xrightarrow{\xlabel{#1}}}
 % negative single-arrow transition
-\newcommand{\ntrans}[1]{\not\xrightarrow{#1}}
+\newcommand{\ntrans}[1]{\mathrel{\xarrownot\trans{#1}}}
 
 % mapsto-like transition
-\newcommand{\step}[1]{\mapstochar\xrightarrow{#1}}
+\newcommand{\step}[1]{\mapstochar\xrightarrow{\xlabel{#1}}}
 % negative mapsto-like transition
-\newcommand{\nstep}[1]{\not\mapstochar\joinrel\xrightarrow{#1}}
+\newcommand{\nstep}[1]{\mapstochar\joinrel\xarrownot\xrightarrow{\xlabel{#1}}}
+
+
+%%%% Recapture the mapstochar, which is set to undefined by MnSymbol
+\usepackage{trimclip}
+
+\makeatletter
+\providecommand{\mapstochar}{\mathrel{\mathpalette\mapstochar@\relax}}
+\newcommand{\mapstochar@}[2]{%
+	\makebox[0pt][l]{%
+		\clipbox{0 0 {0.8\width} 0}{$\m@th#1\mapsto$}%
+	}%
+}
+\makeatother
