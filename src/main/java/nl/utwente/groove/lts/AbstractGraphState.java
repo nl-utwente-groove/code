@@ -181,12 +181,12 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     /**
      * Checks final constraints on the state, in particular deadlock
      * constraints.
-     * This is called at finalisation time, just before the state is set to {@link Flag#DONE}.
+     * This is called at finalisation time, just before the state is set to {@link Flag#COMPLETE}.
      * If any violations are found, they are added as errors to the graph;
      * moreover, depending on the policy, the control frame is set to absent or error.
      */
     public void checkDoneConstraints() {
-        if (isRealState() && getActualFrame().isDead() && getGTS().isCheckDeadlock()) {
+        if (isExposed() && getActualFrame().isDead() && getGTS().isCheckDeadlock()) {
             boolean alive = false;
             for (GraphTransition trans : getTransitions()) {
                 if (trans.getAction().getRole() == Role.TRANSFORMER) {
@@ -273,7 +273,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 
     @Override
     public int getAbsence() {
-        if (isDone()) {
+        if (isComplete()) {
             return Status.getAbsence(getStatus());
         } else {
             return getCache().getEventualTransience();
@@ -281,9 +281,9 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     @Override
-    public boolean setDone(int absence) {
+    public boolean setComplete(int absence) {
         int oldStatus = this.status;
-        boolean result = setStatus(Flag.DONE, true);
+        boolean result = setStatus(Flag.COMPLETE, true);
         if (result) {
             setAbsence(absence);
             // the flag below are set when the actual frame is updated;

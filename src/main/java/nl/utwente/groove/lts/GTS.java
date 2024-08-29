@@ -246,32 +246,32 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     }
 
     /**
-     * Returns a view on the set of <i>real</i> states in the GTS.
-     * A state is real if it is not absent, erroneous or inside a recipe.
-     * @see GraphState#isRealState()
+     * Returns a view on the set of <i>exposed</i> states in the GTS.
+     * A state is exposed if it is not absent, erroneous or inside a recipe.
+     * @see GraphState#isExposed()
      */
     public Set<? extends GraphState> getStates() {
-        var result = this.realStateSet;
+        var result = this.exposedStateSet;
         if (result == null) {
-            this.realStateSet = result = SetView
-                .instance(nodeSet(), obj -> obj instanceof GraphState gs && gs.isRealState());
+            this.exposedStateSet = result = SetView
+                .instance(nodeSet(), obj -> obj instanceof GraphState gs && gs.isExposed());
         }
         return result;
     }
 
-    /** Set of real states, as a view on {@link #allStateSet}. */
-    private @Nullable Set<? extends GraphState> realStateSet;
+    /** Set of exposed states, as a view on {@link #allStateSet}. */
+    private @Nullable Set<? extends GraphState> exposedStateSet;
 
     /**
-     * Returns the number of real states.
+     * Returns the number of exposed states.
      * Calling this is more efficient than {@code getStates().size()}.
      */
     public int getStateCount() {
-        return this.realStateCount;
+        return this.exposedStateCount;
     }
 
-    /** Number of real states, stored separately for efficiency. */
-    private int realStateCount;
+    /** Number of exposed states, stored separately for efficiency. */
+    private int exposedStateCount;
 
     /**
      * Returns the set of error states found so far.
@@ -314,7 +314,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     }
 
     /**
-     * Indicates if the GTS currently has open (real) states.
+     * Indicates if the GTS currently has open (exposed) states.
      * @return <code>true</code> if the GTS currently has open states
      */
     public boolean hasOpenStates() {
@@ -327,7 +327,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     }
 
     /**
-     * Returns the set of real states with a given flag.
+     * Returns the set of exposed states with a given flag.
      */
     private Collection<GraphState> getStates(Flag flag) {
         List<GraphState> result = this.statesMap.get(flag);
@@ -363,7 +363,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     /**
      * Indicates if this GTS has at any point included transient states.
      * Note that the transient nature may have dissipated when the
-     * state was done.
+     * state was completed.
      */
     public boolean hasTransientStates() {
         return this.transients;
@@ -437,24 +437,24 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     private @Nullable TransitionSet allTransitionSet;
 
     /**
-     * Returns a view on the set of real transitions in the GTS.
-     * A transition is real if it is not inside a recipe, and its source
-     * and target states are real.
-     * @see GraphTransition#isRealStep()
+     * Returns a view on the set of exposed transitions in the GTS.
+     * A transition is exposed if it is not inside a recipe, and its source
+     * and target states are exposed.
+     * @see GraphTransition#isExposedStep()
      */
     public Set<? extends GraphTransition> getTransitions() {
-        var result = this.realTransitionSet;
+        var result = this.exposedTransitionSet;
         if (result == null) {
-            this.realTransitionSet = result = SetView
-                .instance(edgeSet(), o -> o instanceof GraphTransition gt && gt.isRealStep());
+            this.exposedTransitionSet = result = SetView
+                .instance(edgeSet(), o -> o instanceof GraphTransition gt && gt.isExposedStep());
         }
         return result;
     }
 
-    private @Nullable Set<? extends GraphTransition> realTransitionSet;
+    private @Nullable Set<? extends GraphTransition> exposedTransitionSet;
 
-    /** Returns the number of real transitions, i.e., those
-     * that satisfy {@link GraphTransition#isRealStep()}.
+    /** Returns the number of exposed transitions, i.e., those
+     * that satisfy {@link GraphTransition#isExposedStep()}.
      * More efficient than calling {@code getTransitions().size()}
      */
     public int getTransitionCount() {
@@ -509,8 +509,8 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     protected void fireAddNode(GraphState state) {
         this.transients |= state.isTransient();
         this.absents |= state.isAbsent();
-        if (state.isRealState()) {
-            this.realStateCount++;
+        if (state.isExposed()) {
+            this.exposedStateCount++;
         }
         super.fireAddNode(state);
         for (GTSListener listener : getGTSListeners()) {
@@ -540,18 +540,18 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     protected void fireUpdateState(GraphState state, int oldStatus) {
         this.transients |= state.isTransient();
         this.absents |= state.isAbsent();
-        boolean wasReal = Status.isReal(oldStatus);
-        boolean isReal = state.isRealState();
-        if (wasReal != isReal) {
-            this.realStateCount += wasReal
+        boolean wasExposed = Status.isExposed(oldStatus);
+        boolean isExposed = state.isExposed();
+        if (wasExposed != isExposed) {
+            this.exposedStateCount += wasExposed
                 ? -1
                 : +1;
         }
         for (Flag recorded : FLAG_ARRAY) {
             var flaggedStates = this.statesMap.get(recorded);
-            boolean had = wasReal && recorded.test(oldStatus);
+            boolean had = wasExposed && recorded.test(oldStatus);
             int index = recorded.ordinal();
-            if (isReal && state.hasFlag(recorded)) {
+            if (isExposed && state.hasFlag(recorded)) {
                 if (!had) {
                     this.stateCounts[index]++;
                     if (flaggedStates != null) {

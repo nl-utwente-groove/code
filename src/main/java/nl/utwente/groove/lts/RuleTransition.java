@@ -90,7 +90,7 @@ public interface RuleTransition extends GraphTransition, RuleTransitionStub {
     }
 
     @Override
-    public default boolean isPartial() {
+    public default boolean isPartialStep() {
         return getStep().isPartial();
     }
 
@@ -100,8 +100,8 @@ public interface RuleTransition extends GraphTransition, RuleTransitionStub {
     }
 
     @Override
-    public default boolean isRealStep() {
-        return !isInternalStep() && source().isRealState() && target().isRealState();
+    public default boolean isExposedStep() {
+        return !isInternalStep() && source().isExposed() && target().isExposed();
     }
 
     @Override

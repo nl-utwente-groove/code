@@ -92,8 +92,8 @@ public class Status {
     /** Array of preconstructed {@link Status} objects. */
     private final static Status[] store = new Status[1 << Flag.values().length];
 
-    /** Indicates if a given integer status representation stands for a real state. */
-    public static boolean isReal(int status) {
+    /** Indicates if a given integer status representation stands for an exposed state. */
+    public static boolean isExposed(int status) {
         return !Flag.INTERNAL.test(status) && !Flag.ABSENT.test(status);
     }
 
@@ -109,11 +109,11 @@ public class Status {
          */
         CLOSED(false, true),
         /**
-         * Flag indicating that exploration of the graph state is done.
+         * Flag indicating that exploration of the graph state is complete.
          * This is the case if and only if it is closed, and all outgoing transition
          * sequences eventually lead to non-transient or absent states.
          */
-        DONE(false, true),
+        COMPLETE(false, true),
         /** Flag indicating that the state has an error. */
         ERROR(false, true),
         /**

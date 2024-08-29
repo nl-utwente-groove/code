@@ -391,7 +391,7 @@ public class StatisticsReporter extends AExplorationReporter {
 
         @Override
         public void addUpdate(GTS gts, GraphTransition transition) {
-            if (transition.isPartial()) {
+            if (transition.isPartialStep()) {
                 this.recipeStepCount++;
             }
         }
@@ -409,7 +409,7 @@ public class StatisticsReporter extends AExplorationReporter {
             if (Flag.ERROR.test(change)) {
                 this.errorStateCount++;
             }
-            if (Flag.DONE.test(change) && explored.isAbsent()) {
+            if (Flag.COMPLETE.test(change) && explored.isAbsent()) {
                 this.absentStateCount++;
             }
         }

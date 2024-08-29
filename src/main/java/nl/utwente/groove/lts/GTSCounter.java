@@ -77,7 +77,7 @@ public class GTSCounter implements GTSListener {
         if (state.isAbsent()) {
             this.absentCount++;
         }
-        if (!state.isDone()) {
+        if (!state.isComplete()) {
             this.inTransMap.put(state, new ArrayList<>());
         } else if (state.isInternalState()) {
             this.recipeStageCount++;
@@ -103,7 +103,7 @@ public class GTSCounter implements GTSListener {
         GraphState target = trans.target();
         if (target.isAbsent()) {
             this.absentTransitionCount++;
-        } else if (trans instanceof RuleTransition rt && !target.isDone()) {
+        } else if (trans instanceof RuleTransition rt && !target.isComplete()) {
             this.inTransMap.get(target).add(rt);
         }
     }
@@ -118,7 +118,7 @@ public class GTSCounter implements GTSListener {
         if (Flag.CLOSED.test(change) && state.isInternalState()) {
             this.recipeStageCount++;
         }
-        if (Flag.DONE.test(change)) {
+        if (Flag.COMPLETE.test(change)) {
             List<RuleTransition> inTrans = this.inTransMap.remove(state);
             if (state.isAbsent()) {
                 this.absentTransitionCount += inTrans.size();

@@ -106,7 +106,7 @@ class RecipeOngoingTreeNode extends MatchTreeNode {
 
     @Override
     Status getStatus() {
-        return getSource().isDone()
+        return getSource().isComplete()
             ? Status.ACTIVE
             : Status.STANDBY;
     }
@@ -133,7 +133,7 @@ class RecipeOngoingTreeNode extends MatchTreeNode {
     String getTip() {
         StringBuilder result = new StringBuilder();
         result.append("Ongoing transition of recipe " + getRecipe().getLastName());
-        if (!getSource().isDone()) {
+        if (!getSource().isComplete()) {
             result.append(" (as yet not fully explored)");
         }
         result.append(",");

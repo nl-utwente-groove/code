@@ -57,8 +57,8 @@ public class StateCache {
         this.freezeGraphs = this.record.isCollapse();
         this.graphFactory
             = DeltaHostGraph.getInstance(state.isSimple(), this.record.isCopyGraphs());
-        if (DEBUG && state.isDone()) {
-            System.out.printf("Recreating cache for done state %s%n", state);
+        if (DEBUG && state.isComplete()) {
+            System.out.printf("Recreating cache for ceomplete state %s%n", state);
         }
     }
 
@@ -71,7 +71,7 @@ public class StateCache {
         }
         if (trans instanceof RuleTransition) {
             getMatches().remove(trans.getKey());
-            if (trans.isPartial() || trans.isInternalStep()) {
+            if (trans.isPartialStep() || trans.isInternalStep()) {
                 getExploreData().notifyOutPartial((RuleTransition) trans);
             }
         }
@@ -209,10 +209,10 @@ public class StateCache {
                 state.setFrozenGraph(computeFrozenGraph(result));
             }
         }
-        if (getState().isDone() && getState().isError()) {
+        if (getState().isComplete() && getState().isError()) {
             if (getState().getGTS().getTypePolicy() != CheckPolicy.OFF) {
                 // apparently we're reconstructing the graph after the state was already
-                // done and found to be erroneous; so reconstruct the type errors
+                // completed and found to be erroneous; so reconstruct the type errors
                 result.addErrors(result.checkTypeConstraints());
             }
             // check the property and deadlock constraints
@@ -221,7 +221,7 @@ public class StateCache {
             boolean alive = false;
             // collect all property matches
             Set<Action> erroneous = new HashSet<>(gts.getGrammar().getActions(Role.INVARIANT));
-            for (GraphTransition trans : getTransitions(GraphTransition.Claz.REAL)) {
+            for (GraphTransition trans : getTransitions(GraphTransition.Claz.EXPOSED)) {
                 Action action = trans.getAction();
                 switch (action.getRole()) {
                 case FORBIDDEN:

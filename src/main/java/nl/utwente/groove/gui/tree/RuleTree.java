@@ -501,7 +501,7 @@ public class RuleTree extends AbstractResourceTree {
                 // we may still need this as a recipe match
                 var match = (MatchResult) key;
                 var trans = match.getTransition();
-                if (trans == null || !trans.target().isDone()) {
+                if (trans == null || !trans.target().isComplete()) {
                     // register a potential initial recipe match
                     potential.add(match);
                 }
@@ -520,7 +520,7 @@ public class RuleTree extends AbstractResourceTree {
                     if (state.isInternalState()) {
                         // register an ongoing transition
                         ongoingRecipeMatch = match;
-                    } else if (trans == null || !trans.target().isDone()) {
+                    } else if (trans == null || !trans.target().isComplete()) {
                         // register a potential initial recipe match
                         potential.add(match);
                     }

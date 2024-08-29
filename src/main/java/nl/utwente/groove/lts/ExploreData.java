@@ -92,7 +92,7 @@ class ExploreData {
                 .printf("Rule transition added: %s--%s-->%s%n", partial.source(), partial.label(),
                         partial.target());
         }
-        assert partial.isPartial() || partial.isInternalStep();
+        assert partial.isPartialStep() || partial.isInternalStep();
         assert partial.source() == getState();
         GraphState succ = partial.target();
         if (succ.getActualFrame().isRemoved()) {
@@ -110,7 +110,7 @@ class ExploreData {
                 for (var succRecipeTarget : succData.getRecipeTargets()) {
                     addRecipeTarget(succRecipeTarget);
                 }
-                if (!succ.isDone()) {
+                if (!succ.isComplete()) {
                     succData.parentTransients.add(this);
                 }
             }
@@ -122,7 +122,7 @@ class ExploreData {
             } else {
                 addRecipeTransition(partial, new RecipeTarget(partial));
             }
-            if (succ.isTransient() && !succ.isDone()) {
+            if (succ.isTransient() && !succ.isComplete()) {
                 succData.inRecipeInits.add(partial);
             }
         }
@@ -140,7 +140,7 @@ class ExploreData {
             fireChanged(getState(), Change.CLOSURE);
         }
         if (this.reachableTransients.isEmpty()) {
-            setStateDone();
+            setStateComplete();
         }
     }
 
@@ -164,10 +164,10 @@ class ExploreData {
 
     /**
      * Callback method invoked when a given reachable (child) state changed.
-     * Notifies all raw parents and adds recipe transitions, as appropriate.
+     * Notifies all incomplete parents and adds recipe transitions, as appropriate.
      */
     private void fireChanged(GraphState child, Change change) {
-        // notify all raw parents of the change
+        // notify all incomplete parents of the change
         for (ExploreData parent : this.parentTransients) {
             assert parent != this;
             parent.notifyChildChanged(child, change);
@@ -194,7 +194,7 @@ class ExploreData {
             }
             fireChanged(child, change);
             if (this.reachableTransients.isEmpty() && getState().isClosed()) {
-                setStateDone();
+                setStateComplete();
             }
         }
     }
@@ -222,8 +222,8 @@ class ExploreData {
         }
     }
 
-    private void setStateDone() {
-        getState().setDone(this.eventualTransience);
+    private void setStateComplete() {
+        getState().setComplete(this.eventualTransience);
         this.parentTransients.clear();
     }
 
@@ -311,7 +311,7 @@ class ExploreData {
 
     /**
      * Helper class to reconstruct the top-level reachable fields
-     * of collected caches (of done but internal states).
+     * of collected caches (of complete but internal states).
      */
     private static class RecipeTargetSearch {
         RecipeTargetSearch(ExploreData data) {
@@ -337,7 +337,7 @@ class ExploreData {
                 ExploreData source = this.queue.poll();
                 for (GraphTransition trans : source.getState().getTransitions(Claz.PRESENT)) {
                     var target = trans.target();
-                    assert !target.isInternalState() || trans.target().isDone();
+                    assert !target.isInternalState() || trans.target().isComplete();
                     if (target.getPrimeFrame().isInternal()) {
                         ExploreData targetData = target.getCache().getExploreData();
                         addData(targetData);

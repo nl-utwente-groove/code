@@ -424,7 +424,7 @@ public class StateTree extends JTree implements SimulatorListener {
             if (!state.isInternalState() && trans.isInternalStep()) {
                 var target = trans.target();
                 // check if the recipe transition is not already fully explored
-                if (target.isInternalState() && !target.isDone()) {
+                if (target.isInternalState() && !target.isComplete()) {
                     recipeInits.add(((RuleTransition) trans).getKey());
                 }
             }

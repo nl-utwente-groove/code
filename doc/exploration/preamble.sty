@@ -5,6 +5,7 @@
 \usepackage{stmaryrd}
 \usepackage[inline]{enumitem}
 \setlist{itemsep=0pt}
+\usepackage{graphicx}
 
 \newcommand{\GROOVE}{GROOVE}
 
@@ -15,21 +16,32 @@
 
 \newcommand{\dom}{\mathop{\mathrm{dom}}}
 
-\newcommand{\Prime}{\ensuremath{\mathit{prime}}}
-\newcommand{\Done}{\ensuremath{\mathit{done}}}
+\newcommand{\Prime}{\ensuremath{\mathit{prim}}}
+\newcommand{\Complete}{\ensuremath{\mathit{cplt}}}
 \newcommand{\Open}{\ensuremath{\mathit{open}}}
-\newcommand{\Closed}{\ensuremath{\mathit{closed}}}
-\newcommand{\Trnt}{\ensuremath{\mathit{trnt}}}
+\newcommand{\Closed}{\ensuremath{\mathit{clsd}}}
+\newcommand{\Transient}{\ensuremath{\mathit{trnt}}}
 % Absence
-\newcommand{\Abs}{\ensuremath{\mathit{abs}}}
+\newcommand{\Absent}{\ensuremath{\mathit{abst}}}
 % Stability
-\newcommand{\Stable}{\ensuremath{\mathit{stable}}}
-% Eventual stability
-\newcommand{\EStable}{\Stable^\diamond}
+\newcommand{\Steady}{\ensuremath{\mathit{stdy}}}
+% Eventual persistence
+\newcommand{\ESteady}{\Steady^\diamond}
 % Transient depth
-\newcommand{\Tdepth}{\ensuremath{\mathit{trdp}}}
+\newcommand{\TDepth}{\ensuremath{\mathit{trdp}}}
 % Eventual transient depth
-\newcommand{\ETdepth}{\Tdepth^\diamond}
+\newcommand{\ETDepth}{\TDepth^\diamond}
+
+% Partiality of a transition
+\newcommand{\Partial}{\ensuremath{\mathit{part}}}
+
+% Reachable transient open states
+\newcommand{\RTO}{\mathit{RTO}}
+% Reachable partial transitions
+\newcommand{\RP}{\mathit{RP}}
+% Reachable steady states
+\newcommand{\RS}{\mathit{RS}}
+
 
 \newcommand{\cC}{\mathcal{C}}
 \newcommand{\cP}{\mathcal{P}}

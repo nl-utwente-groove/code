@@ -72,7 +72,7 @@ public class StateMatches extends MatchResultSet {
 
     /**
      * Returns all unexplored matches of the state, insofar they can be determined
-     * without exploring any currently raw successor states.
+     * without exploring any currently incomplete successor states.
      * @return set of unexplored matches
      */
     MatchResultSet getAll() {
@@ -160,7 +160,7 @@ public class StateMatches extends MatchResultSet {
         } else if (!hasOutstanding()) {
             StepAttempt attempt = frame.getAttempt();
             // Collect the new matches
-            // test whether a match is guaranteed to yield a real successor state
+            // test whether a match is guaranteed to yield an exposed successor state
             boolean matchImpliesSuccessor = !this.removePolicies;
             // keep track of property violations
             CheckPolicy violated = CheckPolicy.SILENT;

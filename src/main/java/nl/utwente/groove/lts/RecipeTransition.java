@@ -60,7 +60,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         super(initial.source(), target);
         this.initial = initial;
         this.arguments = computeArguments(outValues);
-        assert initial.source().isRealState();
+        assert initial.source().isExposed();
     }
 
     /**
@@ -126,12 +126,12 @@ public class RecipeTransition extends ALabelEdge<GraphState>
     }
 
     @Override
-    public final boolean isRealStep() {
-        return source().isRealState() && target().isRealState();
+    public final boolean isExposedStep() {
+        return source().isExposed() && target().isExposed();
     }
 
     @Override
-    public boolean isPartial() {
+    public boolean isPartialStep() {
         return source().getActualFrame().isTransient() || target().getActualFrame().isTransient();
     }
 
@@ -149,7 +149,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         Set<RuleTransition> result = this.steps;
         if (result == null) {
             result = computeSteps();
-            if (source().isDone()) {
+            if (source().isComplete()) {
                 this.steps = result;
             }
         }

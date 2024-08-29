@@ -70,24 +70,24 @@ public interface GraphTransition extends GEdge<GraphState> {
     }
 
     /** Indicates if this transition is part of an atomic block. */
-    public boolean isPartial();
+    public boolean isPartialStep();
 
     /**
      * Indicates if this transition is a step in a recipe transition.
      * If this is the case, then either the step is partial or it represents
      * an atomic recipe execution.
-     * @see #isPartial()
+     * @see #isPartialStep()
      */
     public boolean isInternalStep();
 
     /**'
-     * Indicates if this transition is a real part of the GTS.
+     * Indicates if this transition is an exposed part of the GTS.
      * This is the case if it is not an internal recipe step, and its source and
-     * target states are real (i.e., not absent).
+     * target states are exposed.
      * @see #isInternalStep()
-     * @see GraphState#isRealState()
+     * @see GraphState#isExposed()
      */
-    public boolean isRealStep();
+    public boolean isExposedStep();
 
     /** Returns the corresponding switch from the control template.
      * For rule transitions, this is the inner switch of the control step;
@@ -180,13 +180,13 @@ public interface GraphTransition extends GEdge<GraphState> {
             }
         },
         /**
-         * Only real transitions.
-         * @see GraphTransition#isRealStep()
+         * Only exposed transitions.
+         * @see GraphTransition#isExposedStep()
          */
-        REAL {
+        EXPOSED {
             @Override
             public boolean admits(GraphTransition trans) {
-                return trans.isRealStep();
+                return trans.isExposedStep();
             }
         },
         /**
@@ -216,7 +216,7 @@ public interface GraphTransition extends GEdge<GraphState> {
             } else {
                 return includeAbsent
                     ? COMPLETE
-                    : REAL;
+                    : EXPOSED;
             }
         }
     }

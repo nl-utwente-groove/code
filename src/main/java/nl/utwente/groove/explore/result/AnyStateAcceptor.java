@@ -24,10 +24,10 @@ import nl.utwente.groove.lts.Status.Flag;
 
 /**
  * Acceptor that accepts any new state that is added to the LTS, provided
- * it is done and a real state.
+ * it is complete and external.
  * @author Maarten de Mol
  * @version $Revision$
- * @see Status#isReal(int)
+ * @see Status#isExposed(int)
  */
 public class AnyStateAcceptor extends Acceptor {
     /**
@@ -51,14 +51,14 @@ public class AnyStateAcceptor extends Acceptor {
 
     @Override
     public void addUpdate(GTS gts, GraphState state) {
-        if (state.isRealState()) {
+        if (state.isExposed()) {
             getResult().addState(state);
         }
     }
 
     @Override
     public void statusUpdate(GTS graph, GraphState explored, int change) {
-        if (Flag.DONE.test(change) && explored.isRealState()) {
+        if (Flag.COMPLETE.test(change) && explored.isExposed()) {
             getResult().addState(explored);
         }
     }

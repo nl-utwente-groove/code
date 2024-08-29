@@ -35,20 +35,20 @@ import nl.utwente.groove.transform.Phase;
  * flags:
  * <ul>
  * <li> <b>Closed:</b> A graph state is closed if all rule applications have been explored.
- * <li> <b>Done:</b> A graph state is done if it is closed and all reachable states up
+ * <li> <b>Complete:</b> A graph state is complete if it is closed and all reachable states up
  * until the first non-transient states are also closed. This means that all outgoing
  * transitions (including recipe transitions) are known.
  * <li> <b>Transient:</b> A graph state is transient if it is an intermediate state in
- * the execution of a recipe.
- * <li> <b>Absent:</b> A graph state is absent if it is done and transient and does not
+ * the execution of an atomic block.
+ * <li> <b>Absent:</b> A graph state is absent if it is complete and transient and does not
  * have a path to a non-transient state, or violates a right
  * application condition.
  * <li> <b>Error:</b> A graph state is erroneous if it fails to satisfy an invariant
  * </ul>
  * A derived concept is:
  * <ul>
- * <li> <b>Present:</b> A graph state is (definitely) present if it is done and not absent.
- * (Note that this is <i>not</i> strictly the inverse of being absent: a raw state
+ * <li> <b>Present:</b> A graph state is (definitely) present if it is complete and not absent.
+ * (Note that this is <i>not</i> strictly the inverse of being absent: an incomplete state
  * is neither present nor absent.
  * </ul>
  * @author Arend Rensink
@@ -77,7 +77,7 @@ public interface GraphState extends Node, Phase {
      * @see #getTransitions(GraphTransition.Claz)
      */
     public default Set<? extends GraphTransition> getTransitions() {
-        return getTransitions(GraphTransition.Claz.REAL);
+        return getTransitions(GraphTransition.Claz.EXPOSED);
     }
 
     /**
@@ -157,27 +157,27 @@ public interface GraphState extends Node, Phase {
     }
 
     /**
-     * Declares this state to be done, while also setting its absence.
+     * Declares this state to be complete, while also setting its absence.
      * @param absence level of the state; if positive, the state is absent
-     * @return if {@code false}, the state was already known to be done
-     * @see Flag#DONE
+     * @return if {@code false}, the state was already known to be complete
+     * @see Flag#COMPLETE
      */
-    public boolean setDone(int absence);
+    public boolean setComplete(int absence);
 
     /**
-     * Indicates if this state is done.
+     * Indicates if this state is complete.
      * This is the case if
      * all outgoing paths have been explored up until a non-transient
      * or deadlocked state.
-     * @see Flag#DONE
+     * @see Flag#COMPLETE
      */
-    public default boolean isDone() {
-        return hasFlag(Flag.DONE);
+    public default boolean isComplete() {
+        return hasFlag(Flag.COMPLETE);
     }
 
     /**
      * Indicates if this state is final.
-     * This is the case if and only if the state is done and the actual control frame is final.
+     * This is the case if and only if the state is complete and the actual control frame is final.
      * @see Flag#FINAL
      */
     public default boolean isFinal() {
@@ -196,12 +196,12 @@ public interface GraphState extends Node, Phase {
     }
 
     /**
-     * Indicates if this state is a real part of the GTS.
+     * Indicates if this state is an exposed part of the GTS.
      * This is the case if and only if the state is not internal or absent.
-     * @see Status#isReal(int)
+     * @see Status#isExposed(int)
      */
-    public default boolean isRealState() {
-        return Status.isReal(getStatus());
+    public default boolean isExposed() {
+        return Status.isExposed(getStatus());
     }
 
     /**
@@ -215,10 +215,10 @@ public interface GraphState extends Node, Phase {
 
     /**
      * Indicates if this state is known to be not properly part of the state
-     * space. This is the case if the state is done and has a positive absence
+     * space. This is the case if the state is complete and has a positive absence
      * level, or if it is absent because of the violation of some constraint
      * (in combination with a {@link CheckPolicy#REMOVE} policy).
-     * @see #isDone()
+     * @see #isComplete()
      * @see #getAbsence()
      */
     public default boolean isAbsent() {
@@ -230,8 +230,8 @@ public interface GraphState extends Node, Phase {
      * transient depth of the known reachable states.
      * This is maximal ({@link Status#MAX_ABSENCE}) if the state is
      * erroneous, and 0 if the state is non-transient.
-     * A state that is done and has a positive absence level is absent.
-     * @see #isDone()
+     * A state that is complete and has a positive absence level is absent.
+     * @see #isComplete()
      * @see #isAbsent()
      */
     public int getAbsence();
@@ -239,8 +239,8 @@ public interface GraphState extends Node, Phase {
     /**
      * Indicates if this state is properly part of the state space.
      * Convenience method for <code>getAbsence() == 0 && !isAbsent()</code>.
-     * If a state is done, it is either present or absent.
-     * @see #isDone()
+     * If a state is complete, it is either present or absent.
+     * @see #isComplete()
      * @see #isAbsent()
      * @see #getAbsence()
      */
@@ -259,7 +259,7 @@ public interface GraphState extends Node, Phase {
     /**
      * Changes the value of a given status flag.
      * This is only allowed for exploration strategy-related flags;
-     * for others, (re)setting is done internally.
+     * for others, (re)setting occurs internally.
      * @param flag the flag to be changed
      * @param value new value for the flag
      * @return if {@code true}, the value of the flag was changed as a result of this call

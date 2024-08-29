@@ -307,13 +307,13 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
 
     /** Facade for models, with the functionality required for CTL model checking. */
     public static interface Model {
-        /** Returns the number of (real) nodes of the model. */
+        /** Returns the number of (exposed) nodes of the model. */
         int nodeCount();
 
-        /** Returns the set of (real) nodes of the model. */
+        /** Returns the set of (exposed) nodes of the model. */
         Set<? extends Node> nodeSet();
 
-        /** Returns the set of (real) outgoing edges of a node. */
+        /** Returns the set of (exposed) outgoing edges of a node. */
         Set<? extends Edge> outEdgeSet(Node node);
 
         /** Tests if a given node satisfies the special property expressed by a given flag. */

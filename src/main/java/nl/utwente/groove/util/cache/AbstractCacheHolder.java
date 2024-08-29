@@ -53,9 +53,9 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
         if (result == null && create) {
             assert cacheReference.refersTo(null) : "Old cache reference inconsistent for state "
                 + this;
-            if (DEBUG && (this instanceof GraphState s) && s.isDone()) {
+            if (DEBUG && (this instanceof GraphState s) && s.isComplete()) {
                 System.out
-                    .printf("Recreating cache for done state %s, reference #%s%n", this,
+                    .printf("Recreating cache for complete state %s, reference #%s%n", this,
                             cacheReference);
             }
             result = createCache();

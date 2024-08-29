@@ -500,8 +500,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 main = Flag.TRANSIENT;
             } else if (state.isFinal()) {
                 main = Flag.FINAL;
-            } else if (state.isDone()) {
-                main = Flag.DONE;
+            } else if (state.isComplete()) {
+                main = Flag.COMPLETE;
             } else if (state.isClosed()) {
                 main = Flag.CLOSED;
             }
@@ -527,7 +527,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                     text = "absent";
                     break;
                 case CLOSED:
-                case DONE:
+                case COMPLETE:
                     text = "closed";
                     break;
                 case ERROR:

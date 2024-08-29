@@ -66,7 +66,7 @@ class RecipeMatchTreeNode extends MatchTreeNode {
 
     @Override
     Status getStatus() {
-        return getSource().isDone()
+        return getSource().isComplete()
             ? Status.ACTIVE
             : Status.STANDBY;
     }
