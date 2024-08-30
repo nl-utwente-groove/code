@@ -52,7 +52,7 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      * @param onFinish target frame for the step
      */
     public Step(Frame source, NestedSwitch newSwitches, Frame onFinish) {
-        assert newSwitches.getInner().getUnit().getKind() == Callable.Kind.RULE;
+        assert newSwitches.getInnermost().getUnit().getKind() == Callable.Kind.RULE;
         this.swt = new NestedSwitch(newSwitches);
         this.onFinish = onFinish;
         this.source = source;
@@ -79,12 +79,12 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
 
     /** Convenience method to return the top switch of this step. */
     public Switch getInnerSwitch() {
-        return getSwitch().getInner();
+        return getSwitch().getInnermost();
     }
 
     @Override
-    public Call getInnerCall() {
-        return getSwitch().getInnerCall();
+    public Call getInnermostCall() {
+        return getSwitch().getInnermostCall();
     }
 
     @Override
@@ -111,29 +111,29 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
         return getSwitch().getCall();
     }
 
-    /** Indicates if this step is part of an atomic block. */
+    /** Indicates if this step is part of an atomic block or recipe. */
     public boolean isPartial() {
-        return getSource().isTransient() || onFinish().isTransient();
+        return getSource().isTransient() || onFinish().isTransient() || isInner();
     }
 
     /** Indicates if this step is the initial step of a recipe. */
     public boolean isInitial() {
         // if a recipe step starts in a non-recipe frame, it must be
         // the initial step of a recipe
-        return isInternal() && !getSource().isInternal();
+        return isInner() && !getSource().isInner();
     }
 
     /** Indicates if this step is part of a recipe.
      * @return {@code true} if and only if {@link #getRecipe()} is non-{@code null}
      * @see #getRecipe()
      */
-    public boolean isInternal() {
+    public boolean isInner() {
         return getContext().inRecipe() || getCall().inRecipe();
     }
 
     /**
      * Returns the outermost recipe of which this step is a part, if any.
-     * @see #isInternal()
+     * @see #isInner()
      */
     public Optional<Recipe> getRecipe() {
         var result = getContext().getRecipe();
@@ -144,12 +144,12 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
 
     /** Convenience method to return the called rule of this step. */
     public final Rule getRule() {
-        return getInnerCall().getRule();
+        return getInnermostCall().getRule();
     }
 
     /** Returns the mapping of output variables to argument positions of the called unit. */
     public Map<CtrlVar,@Nullable Integer> getOutVars() {
-        return getInnerCall().getOutVars();
+        return getInnermostCall().getOutVars();
     }
 
     /**
@@ -158,7 +158,7 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      * or the call has out-parameters.
      */
     public boolean isModifying() {
-        return getSource().getPrime() != onFinish() || getInnerCall().hasOutVars();
+        return getSource().getPrime() != onFinish() || getInnermostCall().hasOutVars();
     }
 
     /** Returns an assignment to the parameters of the inner call of this step,

@@ -120,7 +120,7 @@ final public class LTSJModel extends JModel<@NonNull GTS> implements GTSListener
                 jCell.setLook(Look.OPEN, false);
             }
             if (Flag.COMPLETE.test(change)) {
-                jCell.setLook(Look.RECIPE, explored.isInternalState());
+                jCell.setLook(Look.RECIPE, explored.isInner());
                 jCell.setLook(Look.TRANSIENT, explored.isTransient());
                 jCell.setLook(Look.FINAL, explored.isFinal());
             }
@@ -198,7 +198,7 @@ final public class LTSJModel extends JModel<@NonNull GTS> implements GTSListener
 
     /** Tests if a given graph state is acceptable for addition to the LTS panel. */
     private boolean isAcceptState(GraphState state) {
-        if (state.isInternalState() && !getJGraph().isShowRecipeSteps()) {
+        if (state.isInner() && !getJGraph().isShowRecipeSteps()) {
             return false;
         }
         if (state.isAbsent() && !getJGraph().isShowAbsentStates()) {

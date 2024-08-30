@@ -113,24 +113,24 @@ public class NestedSwitch implements Attempt.Stage<Location,NestedSwitch>, Compa
         return () -> outIterator();
     }
 
-    /** Returns the outer (initial) switch of this nested switch. */
+    /** Returns the outermost (initial) switch of this nested switch. */
     public Switch getOuter() {
         return this.switches.getLast();
     }
 
-    /** Returns the outer (initial) call of this nested switch. */
-    public Call getOuterCall() {
+    /** Returns the outermost (initial) call of this nested switch. */
+    public Call getOutermostCall() {
         return getOuter().getCall();
     }
 
-    /** Returns the inner switch of this nested switch. */
-    public Switch getInner() {
+    /** Returns the innermost switch of this nested switch. */
+    public Switch getInnermost() {
         return this.switches.peek();
     }
 
     @Override
-    public Call getInnerCall() {
-        return getInner().getCall();
+    public Call getInnermostCall() {
+        return getInnermost().getCall();
     }
 
     @Override

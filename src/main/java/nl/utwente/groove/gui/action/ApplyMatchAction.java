@@ -66,7 +66,7 @@ public class ApplyMatchAction extends SimulatorAction {
             trans = state.applyMatch(match);
         }
         GraphState target = trans.target();
-        if (target.isExposed() || getLtsDisplay().getJGraph().isShowRecipeSteps()) {
+        if (target.isPublic() || getLtsDisplay().getJGraph().isShowRecipeSteps()) {
             getSimulatorModel().doSetStateAndMatch(target, trans);
         } else {
             Exploration e = getActions().getExploreAction().explore(target, getStateExploration());
@@ -75,12 +75,12 @@ public class ApplyMatchAction extends SimulatorAction {
             } else {
                 // find a recipe transition that just got added that contains trans
                 var source = trans.source();
-                while (!source.isExposed()) {
+                while (!source.isPublic()) {
                     source = ((GraphNextState) source).source();
                 }
                 // this must be the initial state of that recipe transition
                 RecipeTransition recipeTrans = null;
-                for (var outTrans : source.getTransitions(Claz.EXPOSED)) {
+                for (var outTrans : source.getTransitions(Claz.PUBLIC)) {
                     if (outTrans instanceof RecipeTransition r && r.getSteps().contains(trans)) {
                         recipeTrans = r;
                         break;

@@ -71,7 +71,7 @@ public class StateCache {
         }
         if (trans instanceof RuleTransition) {
             getMatches().remove(trans.getKey());
-            if (trans.isPartialStep() || trans.isInternalStep()) {
+            if (trans.isPartialStep()) {
                 getExploreData().notifyOutPartial((RuleTransition) trans);
             }
         }
@@ -144,12 +144,12 @@ public class StateCache {
     private ExploreData exploreData;
 
     /**
-     * Returns the known eventual transient depth of the state.
+     * Returns the known absence level of the state.
      * This is {@link Integer#MAX_VALUE} if the state is erroneous,
      * otherwise it is the minimum transient depth of the reachable states.
      */
-    final int getEventualTransience() {
-        return getExploreData().getEventualTransience();
+    final int getAbsence() {
+        return getExploreData().getAbsence();
     }
 
     /** Notifies the cache of a decrease in transient depth of the control frame. */
@@ -221,7 +221,7 @@ public class StateCache {
             boolean alive = false;
             // collect all property matches
             Set<Action> erroneous = new HashSet<>(gts.getGrammar().getActions(Role.INVARIANT));
-            for (GraphTransition trans : getTransitions(GraphTransition.Claz.EXPOSED)) {
+            for (GraphTransition trans : getTransitions(GraphTransition.Claz.PUBLIC)) {
                 Action action = trans.getAction();
                 switch (action.getRole()) {
                 case FORBIDDEN:

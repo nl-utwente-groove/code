@@ -93,7 +93,7 @@ abstract class MatchTreeNode extends DisplayTreeNode {
             // go back to the last transition of inner with a real source state
             var source = inner.getSource();
             RuleTransition trans = null;
-            while (!source.isInternalState()) {
+            while (!source.isInner()) {
                 trans = (GraphNextState) source;
                 source = trans.source();
             }

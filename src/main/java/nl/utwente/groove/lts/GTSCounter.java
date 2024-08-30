@@ -79,7 +79,7 @@ public class GTSCounter implements GTSListener {
         }
         if (!state.isComplete()) {
             this.inTransMap.put(state, new ArrayList<>());
-        } else if (state.isInternalState()) {
+        } else if (state.isInner()) {
             this.recipeStageCount++;
         }
     }
@@ -94,7 +94,7 @@ public class GTSCounter implements GTSListener {
             System.out.printf("Registering recipe transition %s%n", trans);
         }
 
-        if (trans.isInternalStep()) {
+        if (trans.isInnerStep()) {
             this.recipeStepCount++;
         }
         if (trans instanceof RuleTransition) {
@@ -115,7 +115,7 @@ public class GTSCounter implements GTSListener {
                 this.count[flag.ordinal()]++;
             }
         }
-        if (Flag.CLOSED.test(change) && state.isInternalState()) {
+        if (Flag.CLOSED.test(change) && state.isInner()) {
             this.recipeStageCount++;
         }
         if (Flag.COMPLETE.test(change)) {

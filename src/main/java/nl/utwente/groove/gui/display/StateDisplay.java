@@ -424,7 +424,7 @@ public class StateDisplay extends Display implements SimulatorListener {
             }
             MatchResult match = getSimulatorModel().getMatch();
             boolean brackets = false;
-            if (state.isInternalState()) {
+            if (state.isInner()) {
                 result
                     .append(brackets
                         ? ", "
@@ -432,7 +432,7 @@ public class StateDisplay extends Display implements SimulatorListener {
                 brackets = true;
                 result.append("transient state");
             }
-            if (state.isInternalState()) {
+            if (state.isInner()) {
                 result
                     .append(brackets
                         ? ", "
@@ -440,7 +440,7 @@ public class StateDisplay extends Display implements SimulatorListener {
                 brackets = true;
                 result.append("not included in state space because the enclosing ");
                 result
-                    .append(state.isInternalState()
+                    .append(state.isInner()
                         ? "recipe"
                         : "atomic block");
                 result.append(" does not terminate");
@@ -487,7 +487,7 @@ public class StateDisplay extends Display implements SimulatorListener {
             getJGraph().setModel(model);
             getJGraph().doLayout(false);
             error = state.isError();
-            internal = state.isInternalState();
+            internal = state.isInner();
         }
         if (error) {
             getErrorPanel().setEntries(getAspectGraph(state).getErrors().get());

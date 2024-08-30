@@ -59,7 +59,7 @@ class RuleMatchTreeNode extends MatchTreeNode {
 
     @Override
     boolean isInternal() {
-        return getMatch().getStep().isInternal();
+        return getMatch().getStep().isInner();
     }
 
     @Override

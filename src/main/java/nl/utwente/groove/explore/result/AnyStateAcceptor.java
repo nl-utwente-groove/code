@@ -27,7 +27,7 @@ import nl.utwente.groove.lts.Status.Flag;
  * it is complete and external.
  * @author Maarten de Mol
  * @version $Revision$
- * @see Status#isExposed(int)
+ * @see Status#isPublic(int)
  */
 public class AnyStateAcceptor extends Acceptor {
     /**
@@ -51,14 +51,14 @@ public class AnyStateAcceptor extends Acceptor {
 
     @Override
     public void addUpdate(GTS gts, GraphState state) {
-        if (state.isExposed()) {
+        if (state.isPublic()) {
             getResult().addState(state);
         }
     }
 
     @Override
     public void statusUpdate(GTS graph, GraphState explored, int change) {
-        if (Flag.COMPLETE.test(change) && explored.isExposed()) {
+        if (Flag.COMPLETE.test(change) && explored.isPublic()) {
             getResult().addState(explored);
         }
     }

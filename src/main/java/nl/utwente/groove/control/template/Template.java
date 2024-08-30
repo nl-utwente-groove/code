@@ -201,7 +201,7 @@ public class Template {
                     continue;
                 }
                 for (NestedSwitch swit : loc.getAttempt()) {
-                    Callable unit = swit.getOuterCall().getUnit();
+                    Callable unit = swit.getOutermostCall().getUnit();
                     if (unit instanceof Action a) {
                         result.put(a.getQualName(), a);
                     } else {
@@ -333,7 +333,7 @@ public class Template {
                 for (NestedSwitch swit : attempt) {
                     result
                         .addBackLink(loc, swit.onFinish(),
-                                     swit.getOuterCall().getOutVars().keySet());
+                                     swit.getOutermostCall().getOutVars().keySet());
                 }
             }
         }

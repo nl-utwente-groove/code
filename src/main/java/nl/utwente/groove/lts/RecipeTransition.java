@@ -60,7 +60,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         super(initial.source(), target);
         this.initial = initial;
         this.arguments = computeArguments(outValues);
-        assert initial.source().isExposed();
+        assert initial.source().isPublic();
     }
 
     /**
@@ -121,13 +121,13 @@ public class RecipeTransition extends ALabelEdge<GraphState>
     private @Nullable RecipeEvent event;
 
     @Override
-    public final boolean isInternalStep() {
+    public final boolean isInnerStep() {
         return false;
     }
 
     @Override
-    public final boolean isExposedStep() {
-        return source().isExposed() && target().isExposed();
+    public final boolean isPublicStep() {
+        return source().isPublic() && target().isPublic();
     }
 
     @Override
@@ -168,7 +168,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
             GraphState next = pool.pop();
             for (RuleTransition trans : next.getRuleTransitions()) {
                 GraphState target = trans.target();
-                if (target.isInternalState() || target == target()) {
+                if (target.isInner() || target == target()) {
                     var inSet = inMap.get(target);
                     boolean fresh = inSet == null;
                     if (fresh) {

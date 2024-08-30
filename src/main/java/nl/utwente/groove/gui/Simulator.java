@@ -147,7 +147,7 @@ public class Simulator implements SimulatorListener {
                 GraphState newState = currentState;
                 Predicate<GraphState> stateNOK = e.getSource() == Options.SHOW_ABSENT_STATES_OPTION
                     ? s -> s.isAbsent()
-                    : s -> s.isInternalState();
+                    : s -> s.isInner();
                 while (stateNOK.test(newState)) {
                     newState = ((GraphNextState) newState).source();
                 }

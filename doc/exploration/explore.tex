@@ -9,35 +9,41 @@
 \section*{Terminology}
 
 \begin{description}
-\item[Absent] A state is \emph{absent} if should not be considered to be part of the state space. This is the case for \emph{complete} states that are not \emph{eventually steady}; concretely, states inside a non-terminating atomic block. It follows that an \emph{absent} state is certainly \emph{transient}; it may or may not be \emph{internal}.
+\item[Absence] Equivalent to \emph{absent depth}.
+
+\item[Absent depth] The \emph{absent depth} of a state is the minimal transient depth of that state and all its transitive successors. It follows that the \emph{absent depth} is smaller than or equal to the \emph{transient depth}. As long as a state is not \emph{complete}, its \emph{absent depth} may decrease as a consequence of further exploration.
+
+\item[Absent] A state or transition is \emph{absent} if it should not be considered to be part of the state space. In particular, a state is \emph{absent} if it is \emph{complete} and has positive \emph{absent depth}; a transition is \emph{absent} if its target state is \emph{absent}. It follows that an \emph{absent} state is always \emph{transient}. Whether or not a state or transition is \emph{absent} is independent of whether or not it is \emph{inner}.
 
 \item[Closed] A state is \emph{closed} if it is not \emph{open}. A \emph{closed} state may or may not be \emph{complete}.
 
 \item[Complete] A state is \emph{complete} if it is \emph{closed} and all transitive successors up to (but not necessarily including) the first \emph{steady} state are also \emph{closed}. This means that the status of the state is fully known; in particular, it is possible, on the basis of its successors, to decide whether the state is \emph{absent}.
 
-\item[Exposed] A state is \emph{exposed} if it is not \emph{internal}.
-
-\item[Eventually steady] A state is \emph{eventually steady} if it is itself \emph{steady} or is known to have a \emph{steady} transitive successor. It follows that an \emph{eventually steady} state is not \emph{absent}; however, as long as a state is not \emph{complete}, it can be the case that it is, as yet, neither \emph{eventually steady} nor \emph{absent}.
-
-\item[Eventual transience] Equivalent to \emph{eventual transient depth}.
-
-\item[Eventual transient depth] The \emph{eventual transient depth} of a state is the minimal transient depth of that state and all its transitive successors. As long as a state is not \emph{complete}, its \emph{eventual transient depth} may decrease as a consequence of further exploration.
+\item[Public] A state or transition is \emph{public} if it is both \emph{outer} and \emph{present} (or, in other words, if it is neither \emph{inner} nor \emph{absent}).
 
 \item[Final] A state is \emph{final} if exploration is considered to terminate after reaching it. For instance, if two control blocks are concatenated, the second comes into play after the exploration of the first has reached a final state; also, if a state space is wrapped in an atomic block, the only \emph{steady} states, apart from the \emph{initial} state, are the \emph{final} ones. In other words, \emph{final} has the typical meaning in (regular) automata. A \emph{final} state is certainly \emph{closed} and \emph{steady}; it may or may not have successors.
 
-\item[Initial] The \emph{initial} state is the start state for the exploration. Its \emph{prime} is \emph{steady}.
+\item[Initial] A state is \emph{initial} if it is the start state for the exploration. Its \emph{prime} is \emph{steady}.
 
-\item[Internal] A state is \emph{internal} if it is inside the atomic block that makes up the body of a recipe. Hence, an \emph{internal} state is certainly \emph{transient}; it may or may not be \emph{complete}. An \emph{internal} state that is not \emph{closed} may still evolve into an \emph{exposed} one as a consequence of further exploration.
+\item[Incomplete] A state is \emph{incomplete} if it is not \emph{complete}.
 
-\item[Open] A state is \emph{open} if its outgoing transitions are not fully known. It follows that an open state can cease to be open (i.e., become \emph{closed}) through further exploration of its outgoing transitions.
+\item[Inner] A state is \emph{inner} if it is inside the atomic block that makes up the body of a recipe, and a transition is \emph{inner} if it is a step in the execution of a recipe. Hence, an \emph{inner} state is certainly \emph{transient}, but the inverse does not hold. An \emph{inner} state that is not \emph{closed} may still evolve into an \emph{outer} one as a consequence of further exploration.
 
-\item[Prime] The \emph{prime} of a state is the version of that state when it is just discovered, and no outgoing transitions have been explored. Hence, the prime is open, and may be transient even though (because of further exploration) the state itself has become steady because its transient depth has decreased to zero.
+\item[Open] A state is \emph{open} if its direct outgoing transitions are not fully known. It follows that an open state can become \emph{closed} through further exploration of its outgoing transitions.
+
+\item[Outer] A state or transition is \emph{outer} if it is not \emph{inner}.
+
+\item[Present.] A state or transition is \emph{present} if it is not \emph{absent}. For a state, this means that it either has \emph{absent depth} zero (in which case it will certainly remain \emph{present} under further exploration} or it is \emph{incomplete} (in which case it may become \emph{absent} if, upon becoming \emph{complete}, it has positive \emph{absent depth}).
+
+\item[Prime] The \emph{prime} of a state is the version of that state when it is just discovered, and no outgoing transitions have been explored. Hence, the \emph{prime} is \emph{open}, and may be \tmph{transient} even though (because of further exploration) the state itself has become \emph{steady} because its \emph{transient depth} has decreased to zero.
+
+\item[Public] A state or transition is \emph{public} if it is both \emph{outer} and \emph{present}.
 
 \item[Steady] A state is \emph{steady} if it is not \emph{transient}.
 
-\item[Transient] A state is \emph{transient} if it is inside an atomic block, meaning that it has a positive \emph{transient depth}. A \emph{transient} state may or may not be \emph{internal} or \emph{open}. A transient state that is \emph{open} may still evolve into a \emph{steady} one as a consequence of further exploration.
-
 \item[Transience] Equivalent to \emph{transient depth}.
+
+\item[Transient] A state is \emph{transient} if it is inside an atomic block, meaning that it has a positive \emph{transient depth}. A \emph{transient} state may or may not be \emph{inner}. A transient state that is \emph{open} may still evolve into a \emph{steady} state as a consequence of further exploration.
 
 \item[Transient depth] The \emph{transient depth} of a state is the number of (nested) atomic blocks that it is inside of. A state is \emph{steady} if and only if its \emph{transient depth} is zero; otherwise it is \emph{transient}. As long as a state is not \emph{closed}, its \emph{transient depth} may decrease as a consequence of further exploration.
 \end{description}

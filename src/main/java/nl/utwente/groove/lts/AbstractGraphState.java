@@ -186,7 +186,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
      * moreover, depending on the policy, the control frame is set to absent or error.
      */
     public void checkDoneConstraints() {
-        if (isExposed() && getActualFrame().isDead() && getGTS().isCheckDeadlock()) {
+        if (isPublic() && getActualFrame().isDead() && getGTS().isCheckDeadlock()) {
             boolean alive = false;
             for (GraphTransition trans : getTransitions()) {
                 if (trans.getAction().getRole() == Role.TRANSFORMER) {
@@ -269,15 +269,6 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
             fireStatus(oldStatus);
         }
         return result;
-    }
-
-    @Override
-    public int getAbsence() {
-        if (isComplete()) {
-            return Status.getAbsence(getStatus());
-        } else {
-            return getCache().getEventualTransience();
-        }
     }
 
     @Override
@@ -459,7 +450,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         boolean fresh = this.actualFrame == null;
         this.actualFrame = frame;
         boolean statusChanged = setStatus(Flag.TRANSIENT, frame.isTransient());
-        statusChanged |= setStatus(Flag.INTERNAL, frame.isInternal());
+        statusChanged |= setStatus(Flag.INNER, frame.isInner());
         if (frame.isError()) {
             statusChanged |= setStatus(Flag.ERROR, true);
         }

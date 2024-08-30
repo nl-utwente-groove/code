@@ -517,7 +517,7 @@ public class RuleTree extends AbstractResourceTree {
                 if (recipe.isPresent()) {
                     // the match is part of a recipe, but maybe it is already among the recipe transitions
                     var trans = match.getTransition();
-                    if (state.isInternalState()) {
+                    if (state.isInner()) {
                         // register an ongoing transition
                         ongoingRecipeMatch = match;
                     } else if (trans == null || !trans.target().isComplete()) {

@@ -98,7 +98,7 @@ class RecipeOngoingTreeNode extends MatchTreeNode {
     /** Returns the initial step of the ongoing recipe transition. */
     private RuleTransition getInitStep() {
         var result = (GraphNextState) getSource();
-        while (result.source().isInternalState()) {
+        while (result.source().isInner()) {
             result = (GraphNextState) result.source();
         }
         return result;

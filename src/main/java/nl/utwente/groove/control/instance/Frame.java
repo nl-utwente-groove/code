@@ -269,7 +269,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
         List<NestedSwitch> constraintCalls = new ArrayList<>();
         List<NestedSwitch> properCalls = new ArrayList<>();
         for (NestedSwitch sw : locAttempt) {
-            if (sw.getInnerCall().getRule().getRole().isConstraint()) {
+            if (sw.getInnermostCall().getRule().getRole().isConstraint()) {
                 constraintCalls.add(sw);
             } else {
                 properCalls.add(sw);
@@ -385,11 +385,11 @@ public class Frame implements Position<Frame,Step>, Fixable {
      * Indicates if this frame is inside a recipe.
      * This is the case if and only if the recipe has started
      * and not yet terminated.
-     * A frame can only be inside a recipe if it is transient.
+     * A frame can only be inner if it is transient.
      * @see #getRecipe()
      * @see #isTransient()
      */
-    public boolean isInternal() {
+    public boolean isInner() {
         return getContext().inRecipe();
     }
 
@@ -397,7 +397,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
      * Returns the outer recipe to which this frame belongs, if any.
      * @return the recipe to this this frame belongs, or {@code null}
      * if it is not inside a recipe
-     * @see #isInternal()
+     * @see #isInner()
      */
     public Optional<Recipe> getRecipe() {
         return getContext().getRecipe();

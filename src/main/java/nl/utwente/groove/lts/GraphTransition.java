@@ -69,25 +69,26 @@ public interface GraphTransition extends GEdge<GraphState> {
         return source().getGTS();
     }
 
-    /** Indicates if this transition is part of an atomic block. */
+    /** Indicates if this transition is part of an atomic block.
+     * An inner transition is always partial.
+     */
     public boolean isPartialStep();
 
     /**
-     * Indicates if this transition is a step in a recipe transition.
-     * If this is the case, then either the step is partial or it represents
-     * an atomic recipe execution.
+     * Indicates if this transition is a step (possibly the only) in a recipe transition.
+     * If this is the case, then the step is certainly partial.
      * @see #isPartialStep()
      */
-    public boolean isInternalStep();
+    public boolean isInnerStep();
 
     /**'
      * Indicates if this transition is an exposed part of the GTS.
      * This is the case if it is not an internal recipe step, and its source and
      * target states are exposed.
-     * @see #isInternalStep()
-     * @see GraphState#isExposed()
+     * @see #isInnerStep()
+     * @see GraphState#isPublic()
      */
-    public boolean isExposedStep();
+    public boolean isPublicStep();
 
     /** Returns the corresponding switch from the control template.
      * For rule transitions, this is the inner switch of the control step;
@@ -154,7 +155,7 @@ public interface GraphTransition extends GEdge<GraphState> {
 
     /** Classes of graph transitions. */
     public enum Claz {
-        /** Combination of {@link Claz#RULE} and {@link Claz#COMPLETE}. */
+        /** Combination of {@link Claz#RULE} and {@link Claz#PUBLIC}. */
         ANY {
             @Override
             public boolean admits(GraphTransition trans) {
@@ -169,34 +170,34 @@ public interface GraphTransition extends GEdge<GraphState> {
             }
         },
         /**
-         * Only complete (i.e., non-internal) transitions, be they rule- or recipe-triggered.
+         * Only exposed (i.e., non-internal) transitions, be they rule- or recipe-triggered.
          * This includes transitions between (non-internal) absent states.
-         * @see GraphTransition#isInternalStep()
+         * @see GraphTransition#isInnerStep()
          */
-        COMPLETE {
+        OUTER {
             @Override
             public boolean admits(GraphTransition trans) {
-                return !trans.isInternalStep();
+                return !trans.isInnerStep();
             }
         },
         /**
-         * Only exposed transitions.
-         * @see GraphTransition#isExposedStep()
+         * Only public transitions (i.e., outer transitions that are not absent).
+         * @see GraphTransition#isPublicStep()
          */
-        EXPOSED {
+        PUBLIC {
             @Override
             public boolean admits(GraphTransition trans) {
-                return trans.isExposedStep();
+                return trans.isPublicStep();
             }
         },
         /**
-         * All transitions between non-absent states, including internal transitions.
-         * @see GraphState#isAbsent()
+         * All transitions between present states, including internal transitions.
+         * @see GraphState#isPresent()
          */
         PRESENT {
             @Override
             public boolean admits(GraphTransition trans) {
-                return !trans.source().isAbsent() && !trans.target().isAbsent();
+                return trans.source().isPresent() && trans.target().isPresent();
             }
         },;
 
@@ -205,18 +206,18 @@ public interface GraphTransition extends GEdge<GraphState> {
 
         /** Returns one of four classes of transitions, depending
          * on whether internal and absent transitions are to be included or not.
-         * @param includeInternal if {@code true}, include internal transitions
+         * @param includeInner if {@code true}, include internal transitions
          * @param includeAbsent if {@code true}, include absent transitions
          */
-        public static Claz getClass(boolean includeInternal, boolean includeAbsent) {
-            if (includeInternal) {
+        public static Claz getClass(boolean includeInner, boolean includeAbsent) {
+            if (includeInner) {
                 return includeAbsent
                     ? ANY
                     : PRESENT;
             } else {
                 return includeAbsent
-                    ? COMPLETE
-                    : EXPOSED;
+                    ? OUTER
+                    : PUBLIC;
             }
         }
     }

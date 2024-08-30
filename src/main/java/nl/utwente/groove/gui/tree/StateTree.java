@@ -282,7 +282,7 @@ public class StateTree extends JTree implements SimulatorListener {
                              source.getTransition());
             var state = source.getState();
             var error = state != null && state.isError();
-            var internal = state != null && state.isInternalState();
+            var internal = state != null && state.isInner();
             setBackground(JAttr.getStateBackground(error, internal));
             getSelectionListener().selectSiblings();
             activateListening();
@@ -333,7 +333,7 @@ public class StateTree extends JTree implements SimulatorListener {
                 if (state.isAbsent() && !isShowAbsent()) {
                     continue;
                 }
-                if (state.isInternalState() && !isShowInternal()) {
+                if (state.isInner() && !isShowInternal()) {
                     continue;
                 }
                 int stateNr = state.getNumber();
@@ -417,14 +417,14 @@ public class StateTree extends JTree implements SimulatorListener {
         Claz claz = Claz.getClass(true, isShowAbsent());
         // add the outgoing transitions to the keys
         for (var trans : state.getTransitions(claz)) {
-            if (isShowInternal() || !trans.isInternalStep()) {
+            if (isShowInternal() || !trans.isInnerStep()) {
                 keys.add(trans.getKey());
             }
             // check if this is the initial transition of a recipe
-            if (!state.isInternalState() && trans.isInternalStep()) {
+            if (!state.isInner() && trans.isInnerStep()) {
                 var target = trans.target();
                 // check if the recipe transition is not already fully explored
-                if (target.isInternalState() && !target.isComplete()) {
+                if (target.isInner() && !target.isComplete()) {
                     recipeInits.add(((RuleTransition) trans).getKey());
                 }
             }
@@ -432,11 +432,11 @@ public class StateTree extends JTree implements SimulatorListener {
         // add the unexplored matches to the keys and to the potential recipes
         for (var match : state.getMatches()) {
             var step = match.getStep();
-            if (isShowInternal() || !step.isInternal()) {
+            if (isShowInternal() || !step.isInner()) {
                 keys.add(match);
             }
             var recipe = step.getRecipe();
-            if (recipe.isPresent() && !state.isInternalState()) {
+            if (recipe.isPresent() && !state.isInner()) {
                 recipeInits.add(match);
             }
         }
@@ -739,7 +739,7 @@ public class StateTree extends JTree implements SimulatorListener {
                 return Icons.STATE_RESULT_ICON;
             } else if (state.isFinal()) {
                 return Icons.STATE_FINAL_ICON;
-            } else if (state.isInternalState()) {
+            } else if (state.isInner()) {
                 return state.isAbsent()
                     ? Icons.STATE_INTERNAL_ABSENT_ICON
                     : Icons.STATE_INTERNAL_ICON;

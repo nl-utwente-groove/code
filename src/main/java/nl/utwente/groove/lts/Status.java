@@ -92,9 +92,11 @@ public class Status {
     /** Array of preconstructed {@link Status} objects. */
     private final static Status[] store = new Status[1 << Flag.values().length];
 
-    /** Indicates if a given integer status representation stands for an exposed state. */
-    public static boolean isExposed(int status) {
-        return !Flag.INTERNAL.test(status) && !Flag.ABSENT.test(status);
+    /** Checks if a given integer status representation stands for a public state,
+     * i.e., one that is neither inner nor absent.
+     */
+    public static boolean isPublic(int status) {
+        return !Flag.INNER.test(status) && !Flag.ABSENT.test(status);
     }
 
     /** Changeable status flags of a graph state. */
@@ -121,8 +123,8 @@ public class Status {
          * the underlying (actual) control frame is final.
          */
         FINAL(false, false),
-        /** Flag indicating that the state is internal, i.e., a recipe state. */
-        INTERNAL(false, false),
+        /** Flag indicating that the state is inner, i.e., a recipe state. */
+        INNER(false, false),
         /** Helper flag used during state space exploration. */
         KNOWN(true, false),
         /** Flag indicating that the state is transient, i.e., inside an atomic block. */

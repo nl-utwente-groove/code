@@ -77,7 +77,7 @@ public interface GraphState extends Node, Phase {
      * @see #getTransitions(GraphTransition.Claz)
      */
     public default Set<? extends GraphTransition> getTransitions() {
-        return getTransitions(GraphTransition.Claz.EXPOSED);
+        return getTransitions(GraphTransition.Claz.PUBLIC);
     }
 
     /**
@@ -157,7 +157,7 @@ public interface GraphState extends Node, Phase {
     }
 
     /**
-     * Declares this state to be complete, while also setting its absence.
+     * Declares this state to be complete, while also setting its absence level.
      * @param absence level of the state; if positive, the state is absent
      * @return if {@code false}, the state was already known to be complete
      * @see Flag#COMPLETE
@@ -184,24 +184,24 @@ public interface GraphState extends Node, Phase {
         return hasFlag(Flag.FINAL);
     }
 
-    /** Indicates if this state is inside a recipe.
+    /** Indicates if this state is internal, i.e., inside a recipe.
      * This is the case if and only if the recipe has started
      * and not yet terminated.
-     * A state can only be inside a recipe if it is transient.
+     * A state can only be internal if it is transient.
      * @see #isTransient()
-     * @see Flag#INTERNAL
+     * @see Flag#INNER
      */
-    public default boolean isInternalState() {
-        return hasFlag(Flag.INTERNAL);
+    public default boolean isInner() {
+        return hasFlag(Flag.INNER);
     }
 
     /**
-     * Indicates if this state is an exposed part of the GTS.
-     * This is the case if and only if the state is not internal or absent.
-     * @see Status#isExposed(int)
+     * Indicates if this state is a public part of the GTS.
+     * This is the case if and only if the state is not inner or absent.
+     * @see Status#isPublic(int)
      */
-    public default boolean isExposed() {
-        return Status.isExposed(getStatus());
+    public default boolean isPublic() {
+        return Status.isPublic(getStatus());
     }
 
     /**
@@ -234,18 +234,21 @@ public interface GraphState extends Node, Phase {
      * @see #isComplete()
      * @see #isAbsent()
      */
-    public int getAbsence();
+    public default int getAbsence() {
+        if (isComplete()) {
+            return Status.getAbsence(getStatus());
+        } else {
+            return getCache().getAbsence();
+        }
+    }
 
     /**
      * Indicates if this state is properly part of the state space.
-     * Convenience method for <code>getAbsence() == 0 && !isAbsent()</code>.
-     * If a state is complete, it is either present or absent.
-     * @see #isComplete()
+     * Convenience method for <code>!isAbsent()</code>.
      * @see #isAbsent()
-     * @see #getAbsence()
      */
     public default boolean isPresent() {
-        return getAbsence() == 0 && !isAbsent();
+        return !isAbsent();
     }
 
     /** Returns the integer representation of the status of this state. */

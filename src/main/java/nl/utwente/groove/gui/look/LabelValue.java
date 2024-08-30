@@ -460,7 +460,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 if (edge.getRole() == EdgeRole.BINARY) {
                     line = line.append(LOOP_SUFFIX);
                 }
-                if (trans.isInternalStep()) {
+                if (trans.isInnerStep()) {
                     line = line.color(Values.RECIPE_COLOR);
                 }
                 transLabels.add(line);
@@ -492,8 +492,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
             Flag main = null;
             if (state.isAbsent()) {
                 main = Flag.ABSENT;
-            } else if (state.isInternalState()) {
-                main = Flag.INTERNAL;
+            } else if (state.isInner()) {
+                main = Flag.INNER;
             } else if (state.isError()) {
                 main = Flag.ERROR;
             } else if (state.isTransient()) {
@@ -536,7 +536,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 case FINAL:
                     text = "final";
                     break;
-                case INTERNAL:
+                case INNER:
                     text = "internal";
                     break;
                 case TRANSIENT:

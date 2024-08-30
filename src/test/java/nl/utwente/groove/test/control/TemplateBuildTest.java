@@ -315,7 +315,7 @@ public class TemplateBuildTest extends CtrlTester {
     private Set<Location> getNexts(Location loc, Call call) {
         Set<Location> result = new HashSet<>();
         for (NestedSwitch swit : loc.getAttempt()) {
-            if (swit.getOuterCall().equals(call)) {
+            if (swit.getOutermostCall().equals(call)) {
                 result.add(swit.onFinish());
             }
         }

@@ -159,7 +159,7 @@ public class GTSFragment extends AGraph<GraphState,GraphTransition> {
                 continue;
             }
             // it's not the start state
-            if (target.isInternalState()) {
+            if (target.isInner()) {
                 if (internal) {
                     addEdgeContext(incoming);
                 }
@@ -168,7 +168,7 @@ public class GTSFragment extends AGraph<GraphState,GraphTransition> {
             }
             // it's not an internal state; we have to look for an incoming
             // non-internal transition
-            if (!incoming.isInternalStep()) {
+            if (!incoming.isInnerStep()) {
                 addEdgeContext(incoming);
                 queue.add(incoming.source());
                 continue;
@@ -180,7 +180,7 @@ public class GTSFragment extends AGraph<GraphState,GraphTransition> {
             }
             // traverse back to a non-transient state
             GraphState source = incoming.source();
-            while (source.isInternalState()) {
+            while (source.isInner()) {
                 incoming = (GraphNextState) source;
                 if (internal) {
                     addEdgeContext(incoming);
@@ -217,7 +217,7 @@ public class GTSFragment extends AGraph<GraphState,GraphTransition> {
         Map<GraphState,MultiNode> nodeMap = new HashMap<>();
         for (GraphState state : nodeSet()) {
             // don't include transient states unless forced to
-            if (state.isInternalState() && !flags.showRecipes()) {
+            if (state.isInner() && !flags.showRecipes()) {
                 continue;
             }
             if (state.isAbsent()) {
@@ -247,7 +247,7 @@ public class GTSFragment extends AGraph<GraphState,GraphTransition> {
                     .replaceAll("#", "" + state.getActualFrame().getTransience());
                 result.addEdge(image, label, image);
             }
-            if (flags.showRecipes() && state.isInternalState()) {
+            if (flags.showRecipes() && state.isInner()) {
                 Optional<Recipe> recipe = state.getActualFrame().getRecipe();
                 recipe.map(r -> r.getQualName()).ifPresent(n -> {
                     String label = flags.getRecipeLabel().replaceAll("#", "" + n);
@@ -257,7 +257,7 @@ public class GTSFragment extends AGraph<GraphState,GraphTransition> {
         }
         for (GraphTransition transition : edgeSet()) {
             // don't include partial transitions unless forced to
-            if (transition.isInternalStep() && !flags.showRecipes()) {
+            if (transition.isInnerStep() && !flags.showRecipes()) {
                 continue;
             }
             MultiNode sourceImage = nodeMap.get(transition.source());

@@ -733,7 +733,7 @@ public class SimulatorModel implements Cloneable {
             return true;
         }
         return (getOptions().isSelected(Options.SHOW_RECIPE_STEPS_OPTION)
-            || !state.isInternalState())
+            || !state.isInner())
             && (getOptions().isSelected(Options.SHOW_ABSENT_STATES_OPTION) || !state.isAbsent());
     }
 
@@ -742,7 +742,7 @@ public class SimulatorModel implements Cloneable {
         if (match != null && match.hasTransition()) {
             var trans = match.getTransition();
             return (getOptions().isSelected(Options.SHOW_RECIPE_STEPS_OPTION)
-                || !trans.isInternalStep()) && isVisible(trans.target());
+                || !trans.isInnerStep()) && isVisible(trans.target());
         } else {
             return true;
         }

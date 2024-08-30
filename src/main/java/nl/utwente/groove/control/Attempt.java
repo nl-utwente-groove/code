@@ -119,7 +119,7 @@ public abstract class Attempt<P extends Position<P,A>,A extends Attempt.Stage<P,
          * This is the top element of the call stack.
          * @see #getCall()
          */
-        Call getInnerCall();
+        Call getInnermostCall();
 
         /** Returns the stack of calls of this stage. */
         NestedCall getCall();

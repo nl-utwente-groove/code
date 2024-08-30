@@ -95,13 +95,13 @@ public interface RuleTransition extends GraphTransition, RuleTransitionStub {
     }
 
     @Override
-    public default boolean isInternalStep() {
-        return getStep().isInternal();
+    public default boolean isInnerStep() {
+        return getStep().isInner();
     }
 
     @Override
-    public default boolean isExposedStep() {
-        return !isInternalStep() && source().isExposed() && target().isExposed();
+    public default boolean isPublicStep() {
+        return !isInnerStep() && source().isPublic() && target().isPublic();
     }
 
     @Override

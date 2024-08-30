@@ -86,7 +86,7 @@ public class MatchCollector {
         // save matching time, to reuse added nodes, and to find confluent
         // diamonds. The first is only relevant if the rule is not (re)enabled,
         // the third only if the parent match target is already closed
-        final boolean isDisabled = isDisabled(step.getInnerCall());
+        final boolean isDisabled = isDisabled(step.getInnermostCall());
         boolean isModifying = step.isModifying();
         if (!isDisabled) {
             for (GraphTransition trans : this.parentTransMap) {
@@ -105,7 +105,7 @@ public class MatchCollector {
                 }
             }
         }
-        if (isDisabled || isEnabled(step.getInnerCall())) {
+        if (isDisabled || isEnabled(step.getInnermostCall())) {
             // the rule was possibly enabled afresh, so we have to add the fresh
             // matches
             RuleToHostMap boundMap = extractBinding(step);

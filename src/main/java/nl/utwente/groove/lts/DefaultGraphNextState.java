@@ -150,12 +150,12 @@ public class DefaultGraphNextState extends AbstractGraphState
 
     @Override
     public GraphTransition getInTransition() {
-        if (isInternalState() || !isInternalStep()) {
+        if (isInner() || !isInnerStep()) {
             return this;
         }
         // find the initial rule transition
         RuleTransition initial = this;
-        while (initial.source().isInternalState()) {
+        while (initial.source().isInner()) {
             // recipe states cannot be the initial state, so it's a GraphNextState
             initial = (GraphNextState) initial.source();
         }

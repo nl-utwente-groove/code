@@ -55,7 +55,7 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
     }
 
     @Override
-    public Call getInnerCall() {
+    public Call getInnermostCall() {
         return getCall().getInner();
     }
 

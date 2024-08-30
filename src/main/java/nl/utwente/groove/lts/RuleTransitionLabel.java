@@ -88,7 +88,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
     @Override
     public HostNode[] getArguments() {
         HostNode[] result;
-        List<? extends CtrlArg> callArgs = getStep().getInnerCall().getArgs();
+        List<? extends CtrlArg> callArgs = getStep().getInnermostCall().getArgs();
         if (callArgs.isEmpty()) {
             result = EMPTY_NODE_ARRAY;
         } else {

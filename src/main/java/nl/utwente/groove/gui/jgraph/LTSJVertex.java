@@ -44,7 +44,7 @@ public class LTSJVertex extends AJVertex<@NonNull GTS,LTSJGraph,LTSJModel,LTSJEd
         GraphState state = getNode();
         setLook(Look.OPEN, !state.isClosed());
         setLook(Look.ABSENT, state.isAbsent());
-        setLook(Look.RECIPE, state.isInternalState());
+        setLook(Look.RECIPE, state.isInner());
         setLook(Look.TRANSIENT, state.isTransient());
         setLook(Look.FINAL, state.isFinal());
         setLook(Look.RESULT, isResult());

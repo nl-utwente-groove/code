@@ -88,9 +88,9 @@ public class AutomatonBuildTest {
         Call aCall = call("a");
         Call bCall = call("b");
         assertEquals(2, s.get(0).getSwitch().size());
-        assertEquals(fCall, s.get(0).getSwitch().getOuterCall());
-        assertEquals(bCall, s.get(0).getInnerCall());
-        assertEquals(aCall, s.get(1).getInnerCall());
+        assertEquals(fCall, s.get(0).getSwitch().getOutermostCall());
+        assertEquals(bCall, s.get(0).getInnermostCall());
+        assertEquals(aCall, s.get(1).getInnermostCall());
         assertEquals(s.onFailure(), s.onSuccess());
         //
         Frame fFail = s.onFailure();
@@ -105,7 +105,7 @@ public class AutomatonBuildTest {
         assertEquals(fCall, swFail0Iter.next().getCall());
         assertEquals(rCall, swFail0Iter.next().getCall());
         assertEquals(oNodeCall, swFail0Iter.next().getCall());
-        assertEquals(bNodeCall, sFail.get(1).getInnerCall());
+        assertEquals(bNodeCall, sFail.get(1).getInnermostCall());
         //
         Frame fFailFail = sFail.onFailure();
         assertEquals(0, fFailFail.getContext().size());
@@ -123,7 +123,7 @@ public class AutomatonBuildTest {
         StepAttempt sNext = fNext.getAttempt();
         assertEquals(1, sNext.size());
         Call bIntCall = call("bInt", CtrlArg.inVar(QualName.parse("r"), "p", "int"));
-        assertEquals(bIntCall, sNext.get(0).getInnerCall());
+        assertEquals(bIntCall, sNext.get(0).getInnermostCall());
     }
 
     @Test

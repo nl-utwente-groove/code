@@ -248,13 +248,13 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     /**
      * Returns a view on the set of <i>exposed</i> states in the GTS.
      * A state is exposed if it is not absent, erroneous or inside a recipe.
-     * @see GraphState#isExposed()
+     * @see GraphState#isPublic()
      */
     public Set<? extends GraphState> getStates() {
         var result = this.exposedStateSet;
         if (result == null) {
             this.exposedStateSet = result = SetView
-                .instance(nodeSet(), obj -> obj instanceof GraphState gs && gs.isExposed());
+                .instance(nodeSet(), obj -> obj instanceof GraphState gs && gs.isPublic());
         }
         return result;
     }
@@ -440,13 +440,13 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      * Returns a view on the set of exposed transitions in the GTS.
      * A transition is exposed if it is not inside a recipe, and its source
      * and target states are exposed.
-     * @see GraphTransition#isExposedStep()
+     * @see GraphTransition#isPublicStep()
      */
     public Set<? extends GraphTransition> getTransitions() {
         var result = this.exposedTransitionSet;
         if (result == null) {
             this.exposedTransitionSet = result = SetView
-                .instance(edgeSet(), o -> o instanceof GraphTransition gt && gt.isExposedStep());
+                .instance(edgeSet(), o -> o instanceof GraphTransition gt && gt.isPublicStep());
         }
         return result;
     }
@@ -454,7 +454,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     private @Nullable Set<? extends GraphTransition> exposedTransitionSet;
 
     /** Returns the number of exposed transitions, i.e., those
-     * that satisfy {@link GraphTransition#isExposedStep()}.
+     * that satisfy {@link GraphTransition#isPublicStep()}.
      * More efficient than calling {@code getTransitions().size()}
      */
     public int getTransitionCount() {
@@ -509,7 +509,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     protected void fireAddNode(GraphState state) {
         this.transients |= state.isTransient();
         this.absents |= state.isAbsent();
-        if (state.isExposed()) {
+        if (state.isPublic()) {
             this.exposedStateCount++;
         }
         super.fireAddNode(state);
@@ -524,7 +524,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      */
     @Override
     protected void fireAddEdge(GraphTransition edge) {
-        this.internals |= edge.isInternalStep();
+        this.internals |= edge.isInnerStep();
         this.allTransitionCount++;
         super.fireAddEdge(edge);
         for (GTSListener listener : getGTSListeners()) {
@@ -540,8 +540,8 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     protected void fireUpdateState(GraphState state, int oldStatus) {
         this.transients |= state.isTransient();
         this.absents |= state.isAbsent();
-        boolean wasExposed = Status.isExposed(oldStatus);
-        boolean isExposed = state.isExposed();
+        boolean wasExposed = Status.isPublic(oldStatus);
+        boolean isExposed = state.isPublic();
         if (wasExposed != isExposed) {
             this.exposedStateCount += wasExposed
                 ? -1

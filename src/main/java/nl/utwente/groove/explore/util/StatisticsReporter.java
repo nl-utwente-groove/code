@@ -380,7 +380,7 @@ public class StatisticsReporter extends AExplorationReporter {
 
         @Override
         public void addUpdate(GTS gts, GraphState state) {
-            if (state.isInternalState()) {
+            if (state.isInner()) {
                 if (state.isClosed()) {
                     this.closedRecipeStateCount++;
                 } else {
@@ -391,7 +391,7 @@ public class StatisticsReporter extends AExplorationReporter {
 
         @Override
         public void addUpdate(GTS gts, GraphTransition transition) {
-            if (transition.isPartialStep()) {
+            if (transition.isInnerStep()) {
                 this.recipeStepCount++;
             }
         }
@@ -399,10 +399,10 @@ public class StatisticsReporter extends AExplorationReporter {
         @Override
         public void statusUpdate(GTS graph, GraphState explored, int change) {
             if (Flag.CLOSED.test(change)) {
-                if (explored.getPrimeFrame().isInternal()) {
+                if (explored.getPrimeFrame().isInner()) {
                     this.openRecipeStateCount--;
                 }
-                if (explored.isInternalState()) {
+                if (explored.isInner()) {
                     this.closedRecipeStateCount++;
                 }
             }

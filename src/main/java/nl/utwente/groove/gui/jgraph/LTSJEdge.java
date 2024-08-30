@@ -65,7 +65,7 @@ public class LTSJEdge extends AJEdge<@NonNull GTS,LTSJGraph,LTSJModel,LTSJVertex
             return false;
         }
         GraphTransition trans = (GraphTransition) edge;
-        if (isInternal() != trans.isInternalStep()) {
+        if (isInternal() != trans.isInnerStep()) {
             return false;
         }
         if (isAbsent() != (trans.source().isAbsent() || trans.target().isAbsent())) {
@@ -128,14 +128,14 @@ public class LTSJEdge extends AJEdge<@NonNull GTS,LTSJGraph,LTSJModel,LTSJVertex
         return getLooks().contains(Look.ACTIVE);
     }
 
-    /** Indicates that the node or target of this edge is absent. */
+    /** Indicates that the source or target of this edge is absent. */
     final boolean isAbsent() {
         return getEdge().source().isAbsent() || getEdge().target().isAbsent();
     }
 
     /** Indicates that this edge is part of a recipe. */
     final boolean isInternal() {
-        return getEdge().isInternalStep();
+        return getEdge().isInnerStep();
     }
 
     /**

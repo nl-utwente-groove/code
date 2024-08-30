@@ -507,7 +507,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
             if (getJModel() != null) {
                 GraphState state = source.getState();
                 var error = state != null && state.isError();
-                var internal = state != null && state.isInternalState();
+                var internal = state != null && state.isInner();
                 getJGraph().setBackground(JAttr.getStateBackground(error, internal));
                 GraphTransition transition = source.getTransition();
                 if (getJGraph().setActive(state, transition)) {
