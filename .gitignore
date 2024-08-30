@@ -4,3 +4,4 @@
 *.log
 /doc/exploration/explore.pdf
 /doc/exploration/*.gz
+/doc/exploration/texput.log

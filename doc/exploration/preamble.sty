@@ -6,34 +6,41 @@
 \usepackage[inline]{enumitem}
 \setlist{itemsep=0pt}
 \usepackage{graphicx}
+\usepackage{subcaption}
 
 \newcommand{\GROOVE}{GROOVE}
 
 % Closure of a pseudo-state
-\newcommand{\cls}[1]{{#1}{\triangleright}}
+\newcommand{\cls}[1]{\lceil{#1}\rceil}
+%\newcommand{\cls}[1]{{#1}{\triangleright}}
 % Prime of a pseudo-state
-\newcommand{\prm}[1]{{\triangleleft}\mskip-2mu{#1}}
+\newcommand{\prm}[1]{\lfloor{#1}\rfloor}
+%\newcommand{\prm}[1]{{\triangleleft}\mskip-2mu{#1}}
 
 \newcommand{\dom}{\mathop{\mathrm{dom}}}
 
+\newcommand{\Inner}{\ensuremath{\mathit{inner}}}
+\newcommand{\Outer}{\ensuremath{\mathit{outer}}}
 \newcommand{\Prime}{\ensuremath{\mathit{prim}}}
 \newcommand{\Complete}{\ensuremath{\mathit{cplt}}}
 \newcommand{\Open}{\ensuremath{\mathit{open}}}
 \newcommand{\Closed}{\ensuremath{\mathit{clsd}}}
-\newcommand{\Transient}{\ensuremath{\mathit{trnt}}}
-% Absence
+% Absent
 \newcommand{\Absent}{\ensuremath{\mathit{abst}}}
-% Stability
+\newcommand{\Present}{\ensuremath{\mathit{prst}}}
+% Steady
 \newcommand{\Steady}{\ensuremath{\mathit{stdy}}}
-% Eventual persistence
-\newcommand{\ESteady}{\Steady^\diamond}
-% Transient depth
-\newcommand{\TDepth}{\ensuremath{\mathit{trdp}}}
-% Eventual transient depth
-\newcommand{\ETDepth}{\TDepth^\diamond}
+\newcommand{\Transient}{\ensuremath{\mathit{trnt}}}
+% Transience level
+\newcommand{\TLevel}{\ensuremath{\tau}}
+% Absence depth
+\newcommand{\ALevel}{\ensuremath{\alpha}}
+% Recipe mapping
+\newcommand{\Recipe}{\ensuremath{\rho}}
 
 % Partiality of a transition
 \newcommand{\Partial}{\ensuremath{\mathit{part}}}
+\newcommand{\Atomic}{\ensuremath{\mathit{atom}}}
 
 % Reachable transient open states
 \newcommand{\RTO}{\mathit{RTO}}
@@ -58,11 +65,17 @@
 
 % Special arrows
 
-\newcommand{\goesto}{\rightarrowtail}
-\newcommand{\ngoesto}{\arrownot\rightarrowtail}
+\newcommand{\goestostep}{\mathrel{{\prec}\mskip-3mu{\cdot}}}
+\newcommand{\ngoestostep}{\not\goeststep}
+\newcommand{\goestoplus}{\prec}
+\newcommand{\goesto}{\preccurlyeq}
 
-\newcommand{\comesfrom}{\leftarrowtail}
-\newcommand{\ncomesfrom}{\arrownot\leftarrowtail}
+\newcommand{\comesfromstep}{\mathrel{{\cdot}\mskip-3mu{\succ}}}
+\newcommand{\ncomesfrom}{\not\comesfromstep}
+\newcommand{\comesfromplus}{\succ}
+\newcommand{\comesfrom}{\succcurlyeq}
+
+
 \newcommand{\ra}{\rightarrow}
 \newcommand{\up}{{\uparrow}}
 
@@ -87,9 +100,9 @@
 \newcommand{\nstep}[1]{\mapstochar\joinrel\xarrownot\xrightarrow{\xlabel{#1}}}
 
 % Transactional transition
-\newcommand{\ttrans}{\twoheadrightarrow}
+\newcommand{\ttrans}[1]{\xrightarrow{\xlabel{#1}}\mathrel{\mkern-13mu}\rightarrow}
 % Negated transactional transition
-\newcommand{\nttrans}{\arrownot\ttrans}
+%\newcommand{\nttrans}{\arrownot\ttrans}
 
 %%%% Recapture the mapstochar, which is set to undefined by MnSymbol
 \usepackage{trimclip}
