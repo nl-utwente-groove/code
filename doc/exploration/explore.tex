@@ -95,13 +95,13 @@ Figure~\ref{fig:venn} shows these different concepts in relation to each other.
 We globally assume a set of labels $A$.
 
 \medskip\noindent 
-A \emph{state space fragment} is a tuple $\cS=\tupof{S,\iota,{\ra},{\up},\TLevel,\Open}$ with
+A \emph{state space fragment} is a tuple $\cS=\tupof{S,\Init,{\ra},{\up},\TLevel,\Open}$ with
 \begin{itemize}
 \item $S$ a set of states;
-\item $\iota\in S$ the initial state;
+\item $\Init\in S$ the initial state;
 \item ${\ra}\subseteq S\times A\times S$ a transition relation;
 \item ${\up}\subseteq S$ a termination predicate;
-\item ${\TLevel}:S\to \natN$ a \emph{transience level} function;
+\item ${\TLevel}:S\to \natN$ a \emph{transience level} function, such that $\TLevel(\Init)=0$;
 \item $\Closed\subseteq S$ a set of \emph{closed states}, such that $\up\subseteq \Closed$.
 \end{itemize}
 %
@@ -134,27 +134,45 @@ It follows that, if $\cS$ is complete, $\Complete=S$.
 State spaces are generated from a \emph{pseudo-state spaces}.
 
 \medskip\noindent
-A pseudo-state space is a tuple $\cP=\tupof{P,\iota,{\goesto},{\mapsto},{\up},\TLevel,\Recipe}$ with
+A pseudo-state space is a tuple $\cP=\tupof{P,\Init,{\goesto},{\mapsto},{\up},\TLevel,\Recipe}$ with
 \begin{itemize}
 \item $P$ a finite set of pseudo-states;
-\item $\iota\in P$ the initial pseudo-state;
+\item $\Init\in P$ the initial pseudo-state;
 \item ${\goesto}\subseteq P\times P$ a partial order relation called \emph{evolution};
 \item ${\step{}}\subseteq P\times A\times P$ a ternary \emph{step relation};
 \item ${\up} \subseteq P$ a termination predicate;
 \item ${\TLevel}:P\to \natN$ a transience level function;
+\item ${\OLevel}:P\to \natN$ an \emph{outer level} function such that $\OLevel(p)\leq \TLevel(p)$ for all $p\in P$;
 \item $\Recipe:A\pto A$ a partial \emph{recipe mapping}.
 \end{itemize}
-A pseudo-state $p\in P$ is called \emph{prime} (denoted $\Prime(p)$) if $p$ is a $\goesto$-minimum, \emph{closed} (denoted $\Closed(p)$) if $p$ is a $\goesto$-maximum and \emph{open} (denoted $\Open(p)$) if it is not closed. $\Transient$ and $\Steady$ are defined using $\TLevel$ as for state space fragments.
 %
-A pseudo-state space is \emph{well-formed} if it satisfies the following additional properties:
+Hence, with respect to a state space, the transition relation is replaced by evolution in combination with a step relation, the $\Closed$ predicate has disappeared (instead it is derived from $\goesto$) and there are two new components that encode a special kind of atomic block called a \emph{recipe}. A pseudo-state $p\in P$ is called
+%
+\begin{itemize}
+\item \emph{Prime} (denoted $\Prime(p)$) if $p$ is a $\goesto$-minimum;
+\item \emph{Closed} (denoted $\Closed(p)$) if $p$ is a $\goesto$-maximum;
+\item \emph{Open} (denoted $\Open(p)$) if it is not closed;
+\item \emph{Outer} (denoted $\Outer(p)$) if $\OLevel(p)=\TLevel(p)$;
+\item \emph{Inner} (denoted $\Inner(p)$) if it is not outer (implying $\OLevel(p)<\TLevel(p)$).
+\end{itemize}
+%
+Moreover, \emph{transience} and \emph{steadiness} ($\Transient$ and $\Steady$, respectively) are defined using $\TLevel$ as for state space fragments. A pseudo-state space is \emph{well-formed} if it satisfies the following additional properties:
+%
 \begin{itemize}
 \item Evolution is piecewise linear; i.e., every pseudo-state has at most one direct $\prec$-predecessor and at most one direct $\prec$-successor;
 \item Stepping is deterministic; i.e., $\step{}$ is a partial function from $P$ to $A\times P$;
 \item All steps go from open to prime pseudo-states; i.e., $p\step{}q$ implies $\Open(p)$ and $\Prime(q)$;
 \item All final pseudo-states are steady and closed; i.e., $p\up$ implies $\Steady(p)$ and $\Closed(p)$;
 \item Stepping cannot decrease transience; i.e., $p\step{}q$ implies $\TLevel(q)\geq \TLevel(p)$;
+
+\item The outer level of $\Outer$ pseudo-state successors equals their transience level as long as no recipe is encountered: i.e., if $\Outer(p)$ and either $p\goestostep q$ or $p\step a q$ with $a\notin\dom\Recipe$ then $\OLevel(q)=\TLevel(q)$ (and hence $\Outer$(q));
+
+\item The outer level of $\Outer$ pseudo-state successors is frozen when a recipe is entered, unless it exceeds the transience level: i.e., if $\Outer(p)$ and $p\step a q$ for $a\in\dom\Recipe$ then $\OLevel(q)=\min(\TLevel(p),\TLevel(q))$;
+
+\item The outer level of $\Inner$ pseudo-state successors is kept constant, unless it exceeds the transience level: i.e., if $\Inner(p)$ and either $p\goestostep q$ or $p\step{} q$ then $\OLevel(q)=\min(\OLevel(p),\TLevel(q))$.
 \end{itemize}
 %
+(The last three conditions together with the fact that $\OLevel(\Init)\leq \TLevel(\Init)=0$ completely define $\OLevel$ for all reachable pseudo-states.) 
 From now on, we only deal with well-formed pseudo-states spaces. The \emph{prime of} and \emph{closure of} a pseudo-state $p$ are defined as
 %
 \begin{align*}
@@ -164,33 +182,33 @@ From now on, we only deal with well-formed pseudo-states spaces. The \emph{prime
 %
 Note that these are well-defined because $P$ is finite and $\goesto$ is piecewise linear.
 
-The recipe mapping of a pseudo-state space encodes that an $a$-labelled step for $a\in\dom\Recipe$ kicks off the execution of recipe $\Recipe(a)$ (of which $a$ is the initial partial step). That is, a step $p\step a q$ for which $a\in \dom\Recipe$ gives rise to a $\Recipe(a)$-labelled \emph{recipe transition} in the derived state space, which is considered to be finished upon reaching the first successor $q'$ of $q$ (possibly $q'=q$) for which $\TLevel(q')\leq \TLevel(p)$; unless, that is, $p\step a q$ is itself part of an ongoing recipe transition --- in other words, recipe transitions are not nested. If $a\notin\dom \Recipe$, on the other hand, $p\step a q$ gives rise to an $a$-labelled ``simple'' transition in the derived state space. To capture recipe transitions, we define:
+The recipe mapping of a pseudo-state space encodes that an $a$-labelled step for $a\in\dom\Recipe$ kicks off the execution of recipe $\Recipe(a)$ (of which $a$ is the initial partial step). That is, a step $p\step a q$ for which $a\in \dom\Recipe$ gives rise to a $\Recipe(a)$-labelled \emph{recipe transition} in the derived state space, which is considered to be finished upon reaching the first \Outer successor $q'$ of $q$ (possibly $q'=q$); unless, that is, $p\step a q$ is itself part of an ongoing recipe transition --- in other words, recipe transitions are not nested. If $a\notin\dom \Recipe$, on the other hand, $p\step a q$ gives rise to an $a$-labelled ``simple'' transition in the derived state space. To capture recipe transitions, we define:
 %
-\[ p \ttrans{a} \bar q \;\iffdef\; p\step a q_1\leadsto \cdots \leadsto q_n \text{ with } \forall i<n:\TLevel(q_i)>\TLevel(p) \text{ and } \TLevel(q_n)\leq \TLevel(p)
+\[ p \ttrans{a} \bar q \;\iffdef\; p\in \Outer \wedge \bar q\in \Inner^*\Outer \wedge p\step a q_1\leadsto \cdots \leadsto q_n\leadsto q'
 \]
 %
-in which $\bar q=q_1\cdots q_n$ is a sequence of pseudo-states that the recipe goes through, and $\leadsto$ stands for the union of $\bigcup_{b\in A} \step{b}$ and $\goestostep$ (the direct predecessor relation in $\goesto$).
+in which $\bar q=q_1\cdots q_n$ is a sequence of inner pseudo-states followed by a single outer state that the recipe goes through, and $\leadsto$ stands for the union of $\bigcup_{b\in A} \step{b}$ and $\goestostep$ (the direct predecessor relation in $\goesto$).
 
 \medskip\noindent
 A pseudo-state space represents a state space in which the states effectively correspond to $\goesto$-ordered sets of pseudo-states (which are actually chains because $\goesto$ is piecewise linear). Rather than formalising the relation in this way, however, we let a state be represented by the initial element of such a chain, i.e., by the (unique) prime pseudo-state.
 
 \medskip\noindent
-Given a pseudo-state space $\cP$ as above, a \emph{configuration} is set $C\subseteq P$ of pseudo-states with $\iota\in C$ that is $\goesto$-left-closed (implying, among other things, that $\prm p\in C$ for all $p\in C$) and such that, moreover, $p\in C$ with $p\comesfrom\:\step{} q$ implies $q\in C$. (It follows that $P$ is itself a configuration of $\cP$.) Every configuration $C$ generates a state space $\cS_C= \tupof{S_C,\iota_C,\trans{}_C, \up_C, \TLevel_C}$ as follows:
+Given a pseudo-state space $\cP$ as above, a \emph{configuration} is set $C\subseteq P$ of pseudo-states with $\Init\in C$ that is $\goesto$-left-closed (implying, among other things, that $\prm p\in C$ for all $p\in C$) and such that, moreover, $p\in C$ with $p\comesfrom\:\step{} q$ implies $q\in C$. (It follows that $P$ is itself a configuration of $\cP$.) Every configuration $C$ generates a state space $\cS_C= \tupof{S_C,\Init_C,\trans{}_C, \up_C, \TLevel_C}$ as follows:
 %
 \begin{align*}
-S_C & = \gensetof{\prm p}{p\in C} \\
-\iota_C & = \iota_\cP \\
-{\trans{}_C} & = \gensetof{(\prm p,a,q)}{p,q\in C, a\notin\dom\Recipe, p\step a_\cP q} \\
-&\phantom{=} {}\cup \gensetof{(\prm p,\Recipe(a),\prm{q_n})}{p,q_1,\ldots,q_n\in C, a\in\dom\Recipe, p\ttrans a_\cP \bar q} \\
+S_C & = \gensetof{\prm p}{p\in \Outer_C} \\
+\Init_C & = \Init_\cP \\
+{\trans{}_C} & = \gensetof{(\prm p,a,q)}{p\in \Outer_C, q\in C, a\notin\dom\Recipe, p\step a_\cP q} \\
+&\phantom{=} {}\cup \gensetof{(\prm p,\Recipe(a),\prm{q_n})}{p\in \Outer_C,\bar q\in C^+, a\in\dom\Recipe, p\ttrans a_\cP \bar q} \\
 \up_C & = \gensetof{\prm p}{p\in C, p\up_\cP} \\
 \TLevel_C & : p \mapsto \min \gensetof{\TLevel_\cP(q)}{p\goesto q\in C} \enspace \text{for all $p\in S_C$} \\
-\Closed_C & = \gensetof{\prm p}{p\in C\cap\Closed_\cP} \enspace.
+\Closed_C & = \gensetof{\prm p}{p\in \Outer_C\cap\Closed_\cP} \enspace.
 \end{align*}
 %
 We also use $\Steady_C$, $\Complete_C$, $\ALevel_C$ and $\Absent_C$ to denote $\Steady_{\cS_C}$ etc.
 
 \medskip\noindent
-We want to construct $S_P$ incrementally by approaching $P$ through a sequence of configurations, starting with $\setof{\iota}$ and adding, at each iteration, an evolution step $p\goestostep p'$ (denoting that $p'$ is a direct successor of $p$ according to $\goesto$) from $p\in C$ and $p'\notin C$. The latter is defined by 
+We want to construct $S_P$ incrementally by approaching $P$ through a sequence of configurations, starting with $\setof{\Init}$ and adding, at each iteration, an evolution step $p\goestostep p'$ (denoting that $p'$ is a direct successor of $p$ according to $\goesto$) from $p\in C$ and $p'\notin C$. The latter is defined by 
 \[ C\oplus(p,p') = C\cup \setof{p'} \cup \gensetof{q}{p\step a q} \enspace. \]
 Incremental construction means that, if $D=C\oplus(p,p')$, all components of $S_D$ can be constructed from $S_C$ and $\cP$. Indeed, we have
 %
@@ -198,12 +216,21 @@ Incremental construction means that, if $D=C\oplus(p,p')$, all components of $S_
 \up_D & = \up_C \cup \gensetof{\prm{p'}}{p'\up_\cP} \\
 \TLevel_D & : s\mapsto
   \begin{cases}
-  \TLevel_\cP(p') & \text{if $s=\prm{p'}$} \\
-  \TLevel_\cP(q) & \text{if $s=q\notin S_C$} \\
+  \TLevel_\cP(p') & \text{if $s=\prm{p'}$ and $\Outer_\cP(p')$} \\
+  \TLevel_\cP(q) & \text{if $p\step a q=s\in\Closed_\cP\setminus C$} \\
   \TLevel_C(s) & \text{otherwise}
   \end{cases} \\
-\Closed_D & = \Closed_C \cup\gensetof{\prm{p'}}{p'\in \Closed_\cP} \\
-\Steady_D & = \Steady_C \cup \gensetof{\prm{p'}}{p'\in\Steady_\cP} \enspace.
+\Closed_D & = \Closed_C \cup\gensetof{\prm{p'}}{p'\in \Outer_\cP\cap \Closed_\cP} \\
+\Steady_D & = \Steady_C \cup \gensetof{\prm{p'}}{p'\in \Steady_\cP} \enspace.
+\end{align*}
+%
+\begin{align*}
+\trans{}_D \;=
+& \trans{}_C \\
+& {}\cup \gensetof{(\prm p,a,q)}{\Outer(p), p\step a q,a\notin\dom\Recipe} \\
+& {}\cup \gensetof{(\prm{p},\rho(a),\prm q)}{\Outer(p), p\step a q\in \Outer, a\in\dom\Recipe} \\
+& {}\cup \gensetof{(\prm{p''},\rho(a),\prm q)}{\Inner(p), p\step{} q\in\Outer, p''\ttrans a\bar p\, p\, q} \\
+& {}\cup
 \end{align*}
 %
 The incremental construction of $\Complete_C$, $\ALevel_C$ and especially $\trans{}_C$, however, is less straightforward, because all of those involve paths of unbounded length. In particular, the inclusion (or ``exploration'') of a new step $p\step a q$ of the pseudo-state space into a configuration may generate recipe transitions that start in a predecessor of $p$ and end in a successor of $q$. For the purpose of this construction, we therefore introduce several auxiliary data structures.
