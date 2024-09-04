@@ -17,6 +17,13 @@
 \newcommand{\prm}[1]{\lfloor{#1}\rfloor}
 %\newcommand{\prm}[1]{{\triangleleft}\mskip-2mu{#1}}
 
+% Increment of a pseudo-state (= \goestostep-successor)
+\newcommand{\inc}[1]{p^{\mathsf i}}
+% Successor of a pseudo-state (= \step-successor)
+\newcommand{\scs}[1]{p^{\mathsf s}}
+% Outgoing step-action of a pseudo-state
+\newcommand{\act}[1]{a_p}
+
 \newcommand{\dom}{\mathop{\mathrm{dom}}}
 
 \newcommand{\Inner}{\ensuremath{\mathit{inner}}\xspace}
@@ -45,10 +52,14 @@
 \newcommand{\Partial}{\ensuremath{\mathit{part}}\xspace}
 \newcommand{\Atomic}{\ensuremath{\mathit{atom}}\xspace}
 
-% Reachable transient open states
-\newcommand{\RTO}{\mathit{RTO}}
-% Reachable partial transitions
-\newcommand{\RP}{\mathit{RP}}
+% Past outer pseudo-states
+\newcommand{\PastOut}{\mathit{PO}}
+% Reachable outer pseudo-states
+\newcommand{\ReachOut}{\mathit{RO}}
+% Past inner pseudo-states
+\newcommand{\PastIn}{\mathit{PI}}
+% Reachable inner pseudo-states
+\newcommand{\ReachIn}{\mathit{RI}}
 % Reachable steady states
 \newcommand{\RS}{\mathit{RS}}
 
@@ -105,9 +116,9 @@
 \newcommand{\nstep}[1]{\mapstochar\joinrel\xarrownot\xrightarrow{\xlabel{#1}}}
 
 % Transactional transition
-\newcommand{\ttrans}[1]{\xrightarrow{\xlabel{#1}}\mathrel{\mkern-13mu}\rightarrow}
+\newcommand{\tstep}[1]{\mapstochar\xrightarrow{\xlabel{#1}}\mathrel{\mkern-13mu}\rightarrow}
 % Negated transactional transition
-%\newcommand{\nttrans}{\arrownot\ttrans}
+%\newcommand{\nttrans}{\arrownot\tstep}
 
 %%%% Recapture the mapstochar, which is set to undefined by MnSymbol
 \usepackage{trimclip}

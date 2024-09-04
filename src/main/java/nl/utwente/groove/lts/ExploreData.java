@@ -242,7 +242,7 @@ class ExploreData {
         return this.recipeTargets;
     }
 
-    /** List of reachable top-level states, which can serve as recipe targets
+    /** List of reachable outer states, which can serve as recipe targets
      * if this state appears as target of an in-recipe transition.
      */
     private List<RecipeTarget> recipeTargets;
