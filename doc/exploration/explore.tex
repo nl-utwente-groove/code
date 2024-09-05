@@ -272,7 +272,7 @@ Note that these functions are always defined for all pseudo-states, even outside
 \PastOut_D : q \mapsto {}
  & \begin{cases}
  	\PastOut_C(q) \cup \setof{p} & \text{if } p\in\Outer_C \text{ and } q\in \ReachIn_C(\scs p) \\
- 	\PastOut_C(q) \cup \PastOut_C(p) & \text{if } p\in\Inner_C \text{ and } q\in \set{\inc p} \cup \ReachIn_C(\scs p) \\
+ 	\PastOut_C(q) \cup \PastOut_C(p) & \text{if } p\in\Inner_C \text{ and } q\in \setof{\inc p} \cup \ReachIn_C(\scs p) \\
  	\PastOut_C(q) & \text{otherwise}
  \end{cases} \\
 \ReachOut_D : q \mapsto {}
@@ -282,7 +282,7 @@ Note that these functions are always defined for all pseudo-states, even outside
    \end{cases} \\
 \PastIn_D : q \mapsto {}
 & \begin{cases}
-	\PastIn_C(q) \cup \PastIn_C(p) & \text{if } q\in \set{\inc p}\cup \ReachIn_C(\scs p) \\
+	\PastIn_C(q) \cup \PastIn_C(p) & \text{if } q\in \setof{\inc p}\cup \ReachIn_C(\scs p) \\
 	\PastIn_C(q) & \text{otherwise}
 \end{cases} \\
 \ReachIn_D : q \mapsto {}
