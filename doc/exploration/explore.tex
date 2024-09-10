@@ -13,25 +13,27 @@ The following is a list of properties of states and transitions, marked \textbf{
 \begin{description}
 \item[Absence (S)] Equivalent to \emph{absent depth}.
 
-\item[Absent depth (S)] The \emph{absent depth} of a state is the minimal transient depth of that state and all its transitive successors. It follows that the \emph{absent depth} is smaller than or equal to the \emph{transient depth}. As long as a state is not \emph{complete}, its \emph{absent depth} may decrease as a consequence of further exploration.
+\item[Absent depth (S)] The \emph{absent depth} of a state is the minimal transient depth of that state and all its transitive successors. It follows that the \emph{absent depth} is smaller than or equal to the \emph{transient depth}. As long as a state is not \emph{full}, its \emph{absent depth} may decrease as a consequence of further exploration.
 
-\item[Absent (S,T)] A state or transition is \emph{absent} if it should not be considered to be part of the state space. In particular, a state is \emph{absent} if it is \emph{complete} and has positive \emph{absent depth}; a transition is \emph{absent} if its target state is \emph{absent}. It follows that an \emph{absent} state is always \emph{transient}. Whether or not a state or transition is \emph{absent} is independent of whether or not it is \emph{inner}.
+\item[Absent (S,T)] A state or transition is \emph{absent} if it should not be considered to be part of the state space. In particular, a state is \emph{absent} if it is \emph{full} and has positive \emph{absent depth}; a transition is \emph{absent} if its source or target state is \emph{absent}. It follows that an \emph{absent} state is always \emph{transient}. Whether or not a state or transition is \emph{absent} is independent of whether or not it is \emph{inner}.
 
 \item[Atomic (T)] A transition is \emph{atomic} if it is \emph{outer} and consists of a single step, meaning that its source and target states are \emph{steady}.
 
-\item[Closed (S)] A state is \emph{closed} if it is not \emph{open}. A \emph{closed} state may or may not be \emph{complete}.
-
-\item[Complete (S)] A state is \emph{complete} if it is \emph{closed} and all transitive successors up to (but not necessarily including) the first \emph{steady} state are also \emph{closed}. This means that the status of the state is fully known; in particular, it is possible, on the basis of its successors, to decide whether the state is \emph{absent}.
+\item[Closed (S)] A state is \emph{closed} if it is not \emph{open}. A \emph{closed} state may or may not be \emph{full}.
 
 \item[Public (S,T)] A state or transition is \emph{public} if it is both \emph{outer} and \emph{present} (or, in other words, if it is neither \emph{inner} nor \emph{absent}).
 
 \item[Final (S)] A state is \emph{final} if exploration is considered to terminate after reaching it. For instance, if two control blocks are concatenated, the second comes into play after the exploration of the first has reached a final state; also, if a state space is wrapped in an atomic block, the only \emph{steady} states, apart from the \emph{initial} state, are the \emph{final} ones. In other words, \emph{final} has the typical meaning in (regular) automata. A \emph{final} state is certainly \emph{closed} and \emph{steady}; it may or may not have successors.
 
+\item[Full (S)] A state is \emph{full} if it is \emph{closed} and all transitive successors up to (but not necessarily including) the first \emph{steady} state are also \emph{closed}. This means that the status of the state is fully known; in particular, it is possible, on the basis of its successors, to decide whether the state is \emph{absent}.
+
 \item[Initial (S)] A state is \emph{initial} if it is the start state for the exploration. Its \emph{prime} is \emph{steady}.
 
-\item[Short (S)] A state is \emph{short} if it is not \emph{complete}.
+\item[Short (S)] A state is \emph{short} if it is not \emph{full}.
 
 \item[Inner (S,T)] A state is \emph{inner} if it is inside the atomic block that makes up the body of a recipe, and a transition is \emph{inner} if it is a step in the execution of a recipe. Hence, an \emph{inner} state is certainly \emph{transient}, but the inverse does not hold. An \emph{inner} state that is not \emph{closed} may still evolve into an \emph{outer} one as a consequence of further exploration.
+
+\item[Latent (S)] A state is \emph{latent} if it is neither \emph{present} nor \emph{absent}. Since \emph{full} states are always either \emph{present} or \emph{absent}, \emph{latent} states cannot be \emph{full}.
 
 \item[Open (S)] A state is \emph{open} if its direct outgoing transitions are not fully known. It follows that an open state can become \emph{closed} through further exploration of its outgoing transitions.
 
@@ -39,9 +41,11 @@ The following is a list of properties of states and transitions, marked \textbf{
 
 \item[Partial (T)] A transition is \emph{partial} if it is part of an atomic block. Apart from the \emph{inner} transitions, the \emph{partial} ones include single-step recipe executions.
 
-\item[Present (S,T)] A state or transition is \emph{present} if it is not \emph{absent}. For a state, this means that it either has \emph{absent depth} zero (in which case it will certainly remain \emph{present} under further exploration) or it is \emph{short} (in which case it may become \emph{absent} if, upon becoming \emph{complete}, it has positive \emph{absent depth}).
+\item[Present (S,T)] A state is \emph{present} if it has a transitive successor that is \emph{steady} (in other words, it has \emph{absent depth} zero); a transition is \emph{present} if its source and target are \emph{present}. If a state is not \emph{present}, it is either \emph{latent} or \emph{absent}; if a transition is not \emph{present}, it is \emph{absent}.
 
 \item[Prime (S)] The \emph{prime} of a state is the version of that state when it is just discovered, and no outgoing transitions have been explored. Hence, the \emph{prime} is \emph{open}, and may be \emph{transient} even though (because of further exploration) the state itself has become \emph{steady} because its \emph{transient depth} has decreased to zero.
+
+\item[Private (S,T)] A state or transition is \emph{private} if it is not \emph{public}; in other words, if it is either \emph{inner} or \emph{absent}.
 
 \item[Public (S,T)] A state or transition is \emph{public} if it is both \emph{outer} and \emph{present}.
 
@@ -56,32 +60,34 @@ The following is a list of properties of states and transitions, marked \textbf{
 
 \begin{figure}
 \centering
-\begin{subfigure}{0.45\textwidth}
+\begin{subfigure}{0.4\textwidth}
 \centering
 \includegraphics[scale=.4]{figs/s-venn}
-\caption{Stats}
+\caption{States}
 \end{subfigure}%
 \begin{subfigure}{0.3\textwidth}
 \centering
 \includegraphics[scale=.4]{figs/t-venn}
 
-\bigskip
+\bigskip\bigskip
 \caption{Transitions}
 \end{subfigure}%
 %
 \begin{subfigure}{.25\textwidth}
-\scalebox{.8}{$\begin{array}[b]{@{}r@{{\;\equiv\;}}l@{}}
+\centering
+\scalebox{.7}{$\begin{array}[b]{@{}r@{{\;\equiv\;}}l@{}}
+\mathit{absent} & \mathit{full} \wedge \neg\mathit{present} \\
 \mathit{inner} & \neg\mathit{outer} \\
-\mathit{short} & \neg\mathit{complete} \\
+\mathit{latent} & \neg\mathit{full} \wedge \neg \mathit{present} \\
 \mathit{open} & \neg\mathit{closed} \\
 \mathit{partial} & \neg\mathit{atomic} \\
-\mathit{present} & \neg\mathit{absent} \\
-\mathit{public} & \mathit{outer} \\
-\multicolumn{2}{r}{{}\wedge\mathit{present}} \\
+\mathit{private} & \neg\mathit{public} \\
+\mathit{public} & \mathit{outer} \wedge\mathit{present} \\
+\mathit{short} & \neg\mathit{full} \\
 \mathit{transient} & \neg\mathit{steady}
 \end{array}$}
 
-\bigskip
+\bigskip\bigskip
 \phantomcaption
 \end{subfigure}
 \caption{Properties of states and transitions}
@@ -95,7 +101,7 @@ The following is a list of properties of states and transitions, marked \textbf{
 We globally assume a set of labels $A$.
 
 \medskip\noindent 
-A \emph{state space fragment} is a tuple $\cS=\tupof{S,\Init,{\trans{}},{\final},\TLevel,\Open}$ with
+A \emph{state space fragment} is a tuple $\cS=\tupof{S,\Init,{\trans{}},{\final},\TLevel,\Closed}$ with
 \begin{itemize}
 \item $S$ a set of states;
 \item $\Init\in S$ the initial state;
@@ -114,19 +120,23 @@ $\cS$ is called \emph{complete}, or just a \emph{state space}, if $\Closed=S$. A
 
 \item $\Steady(s)$ expresses that $s$ is \emph{steady}, which is the inverse of $\Transient(s)$.
 
-\item $\Complete(s)$ expresses that $s$ is \emph{complete}, meaning that $s$, as well as all its $\trans{}$-successors up to and including the first steady state are closed. $\Complete$ is defined as the smallest set such that
+\item $\Full(s)$ expresses that $s$ is \emph{full}, meaning that $s$, as well as all its $\trans{}$-successors up to and including the first steady state are closed. $\Full$ is defined as the smallest set such that
 %
-\[ \Complete = \Closed\cap \bigl(\Steady \cup \gensetof{s\in S}{\forall s\trans{} s'.\, s'\in \Complete\cup \Steady}\bigr) \enspace.
+\[ \Full = \Closed\cap \bigl(\Steady \cup \gensetof{s\in S}{\forall s\trans{} s'.\, s'\in \Full\cup \Steady}\bigr) \enspace.
 \]
-It follows that, if $\cS$ is complete, $\Complete=S$.
+It follows that, if $\cS$ is complete, $\Full=S$.
 
 \item $\ALevel[C](s)$ is the \emph{absence level} of $s$, meaning the minimum transient depth of $s$ and all its $\trans{}$-successors. It is defined by
 %
 \[ \ALevel: s\mapsto \min\gensetof{\TLevel(s')}{s\trans{}^* s'} \enspace. \]
 
-\item $\Absent(s)$ expresses that $s$ is \emph{absent}, which is the case if there is no steady state reachable from $s$. It is defined by
+\item $\Present(s)$ expresses that $s$ is \emph{present}, which is the case if there is a steady state reachable from $s$. It is defined by
 %
-\[ \Absent= \gensetof{s}{\ALevel(s)>0} \enspace. \]
+\[ \Present = \gensetof{s}{\ALevel(s)=0} \enspace. \]
+
+\item $\Absent(s)$ expresses that $s$ is \emph{absent}, which is the case if $s$ is \emph{full} and there is no steady state reachable from $s$. It is defined by
+%
+\[ \Absent= \Full \setminus \Present \enspace. \]
 \end{itemize}
 
 \section*{Pseudo-state spaces}
@@ -134,19 +144,21 @@ It follows that, if $\cS$ is complete, $\Complete=S$.
 State spaces are generated from a \emph{pseudo-state spaces}.
 
 \medskip\noindent
-A pseudo-state space is a tuple $\cP=\tupof{P,\Init,{\goto},{\mapsto},{\pfinal},\TLevel,\Recipe}$ with
+A pseudo-state space is a tuple $\cP=\tupof{P,\Init,{\gostep},{\mapsto},{\pfinal},\TLevel,\Recipe}$ with
 \begin{itemize}
 \item $P$ a finite set of pseudo-states;
 \item $\pInit\in P$ the initial pseudo-state;
-\item ${\gotoeq}\subseteq P\times P$ a partial order relation called \emph{evolution};
-\item ${\step{}}\subseteq P\times A\times P$ a ternary \emph{step relation};
+\item ${\gostep}\subseteq P\times P$ a binary relation called \emph{evolution};
+\item ${\stepany}\subseteq P\times A\times P$ a ternary \emph{step relation};
 \item ${\pfinal} \subseteq P$ a pseudo-termination predicate;
 \item ${\pTLevel}:P\to \natN$ a transience level function;
 \item ${\OLevel}:P\to \natN$ an \emph{outer level} function, such that $\OLevel(p)\leq \TLevel(p)$ for all $p\in P$;
 \item $\Recipe:A\pto A$ a partial \emph{recipe mapping}.
 \end{itemize}
 %
-Hence, with respect to a state space, the transition relation is replaced by evolution in combination with a step relation, the $\Closed$ predicate has disappeared (instead it is derived from $\gotoeq$) and there are two new components that encode a special kind of atomic block called a \emph{recipe}. A pseudo-state $p\in P$ is called
+We use $\gotoeq$ to denote the reflexive and transitive closure of $\gostep$ and $\evolequiv$ to denote the symmetric closure of $\gotoeq$. We also use $\gotomin Q$ and $\gotomax Q$ to denote the set of $\gotoeq$-minima and $\gotoeq$-maxima of a set $Q\subseteq P$, treating these as individual pseudo-states if they are singleton sets (which here they will actually always be). Furthermore, we write $p\stepany q$ and $p\stepany$ to denote that there is a label $a$ (and a pseudo-state $q$) such that $p\step a q$. 
+
+With respect to a state space, the transition relation in a pseudo-state space is replaced by evolution in combination with a step relation; the $\Closed$ predicate has disappeared (instead it is derived from $\gotoeq$, as we will see); and there are two new components, $\OLevel$ and $\Recipe$, that encode a special kind of atomic block called a \emph{recipe}. A pseudo-state $p\in P$ is called
 %
 \begin{itemize}
 \item \emph{Prime} (denoted $\pPrime(p)$) if $p$ is a $\gotoeq$-minimum;
@@ -156,28 +168,34 @@ Hence, with respect to a state space, the transition relation is replaced by evo
 \item \emph{Inner} (denoted $\pInner(p)$) if it is not outer.
 \end{itemize}
 %
-Moreover, \emph{transience} and its complement, \emph{steadiness} ($\Transient$ and $\Steady$, respectively) are defined using $\TLevel$ as for state space fragments. A pseudo-state space is \emph{well-formed} if it satisfies the following additional properties:
+(The underlining is used to visually distinguish the analogous predicates for pseudo-state spaces from those for state spaces.) Moreover, \emph{transience} and its complement, \emph{steadiness} ($\pTransient$ and $\pSteady$, respectively) are defined using $\pTLevel$ in analogy to state space fragments. A pseudo-state space is \emph{well-formed} if it satisfies the following additional properties:
 %
 \begin{itemize}
-\item Evolution is piecewise linear; i.e., every pseudo-state has at most one direct $\prec$-predecessor and at most one direct $\prec$-successor. We use ${\gostep}\subseteq {\gotoeq}$ to denote the direct successor-subrelation and $\inc p$ to denote the $\gostep$-successor of $p$ (which is therefore not always defined).
+\item The initial pseudo-state is prime and steady; i.e., $\pPrime(\pInit)$ and $\pTLevel(\pInit)=0$.
 
-\item Stepping is deterministic; i.e., $\step{}$ is a partial function from $P$ to $A\times P$. We use $a_p$ and $\scs p$ to denote the outgoing transition and successor state of $\step{}$, if defined; hence $p\step{a_p} \scs p$ if $\step{}$ is defined for source $p$.
+\item Evolution is acyclic and piecewise linear; i.e., every pseudo-state has at most one $\gostep$-predecessor and at most one $\gostep$-successor, and $\gotoeq$ is a partial order.
+% We use $\inc p$ to denote the $\gostep$-successor of $p$ (which is therefore not always defined).
 
-\item All steps go from open to prime pseudo-states; i.e., $p\step{}q$ implies $\pOpen(p)$ and $\pPrime(q)$.
+\item Stepping is deterministic; i.e., $\stepany$ is a partial function from $P$ to $A\times P$.
+
+\item All steps go from open, non-prime to prime pseudo-states; i.e., $p\stepany q$ implies $\pOpen(p)$, $\neg\pPrime(p)$ and $\pPrime(q)$.
 
 \item All final pseudo-states are steady and closed; i.e., $p\pfinal$ implies $\pSteady(p)$ and $\pClosed(p)$.
 
-\item Evolution cannot increase transience; i.e., $p\goto q$ implies $\pTLevel(q)\leq \pTLevel(p)$.
+\item Evolution cannot increase transience; i.e., $p\gotoeq q$ implies $\pTLevel(q)\leq \pTLevel(p)$.
 
-\item For all $\pOuter$ pseudo-states, all $\gotoeq$- and $\step{}$-successors that do not start a recipe are $\Outer$: i.e., if $\pOuter(p)$ and either $p\gostep q$ or $p\step a q$ with $a\notin\dom\Recipe$ then $\OLevel(q)=\TLevel(q)$ (and hence $\pOuter(q)$).
+\item For all $\pOuter$ pseudo-states, all $\gotoeq$-successors and all $\stepany$-successors that do not start a recipe are $\pOuter$: i.e., if $\pOuter(p)$ and either $p\gostep q$ or $p\step a q$ with $a\notin\dom\Recipe$ then $\OLevel(q)=\TLevel(q)$ (and hence $\pOuter(q)$).
 
-\item For all $\pOuter$ pseudo-states, their outer level is frozen for all $\step{}$-successors that start a recipe, unless it exceeds that successor's transience level: i.e., if $\pOuter(p)$ and $p\step a q$ with $a\in\dom\Recipe$ then $\OLevel(q)=\min(\TLevel(p),\TLevel(q))$.
+\item For all $\pOuter$ pseudo-states, their outer level is frozen for all $\stepany$-successors that start a recipe, unless it exceeds that successor's transience level: i.e., if $\pOuter(p)$ and $p\step a q$ with $a\in\dom\Recipe$ then $\OLevel(q)=\min(\pTLevel(p),\pTLevel(q))$.
 
-\item For all $\pInner$ pseudo-states, their outer level is kept constant for all $\gotoeq$- and $\step{}$-successors, unless it exceeds that successor's transience level: i.e., if $\pInner(p)$ and either $p\gostep q$ or $p\step{} q$ then $\OLevel(q)=\min(\OLevel(p),\pTLevel(q))$.
+\item For all $\pInner$ pseudo-states, their outer level is kept constant for all $\gotoeq$- and $\stepany$-successors, unless it exceeds that successor's transience level: i.e., if $\pInner(p)$ and either $p\gostep q$ or $p\stepany q$ then $\OLevel(q)=\min(\OLevel(p),\pTLevel(q))$.
 \end{itemize}
 %
-(The last three conditions together with the fact that $\OLevel(\Init)\leq \TLevel(\Init)=0$ actually completely define $\OLevel$ for all reachable pseudo-states.) 
-From now on, we only deal with well-formed pseudo-states spaces. The \emph{prime of} and \emph{closure of} an arbitrary pseudo-state $p$ are defined as
+(The last three conditions together with the fact that $\OLevel(\Init)\leq \pTLevel(\Init)=0$ actually completely define $\OLevel$ for all reachable pseudo-states.) 
+From now on, we only deal with well-formed pseudo-states spaces.
+
+\begin{comment}
+The \emph{prime of} and \emph{closure of} an arbitrary pseudo-state $p$ are defined as
 %
 \begin{align*}
 	\prm p & = q \quad \text{where $\pPrime(q)$ and $q\gotoeq p$} \\
@@ -185,25 +203,26 @@ From now on, we only deal with well-formed pseudo-states spaces. The \emph{prime
 \end{align*}
 %
 Note that these are well-defined because $P$ is finite and $\gotoeq$ is piecewise linear.
-
-The recipe mapping $\Recipe$ of a pseudo-state space encodes that an $a$-labelled step for $a\in\dom\Recipe$ kicks off the execution of recipe $\Recipe(a)$ (of which $a$ is the initial partial step). That is, a step $p\step a q$ for which $a\in \dom\Recipe$ gives rise to a $\Recipe(a)$-labelled \emph{recipe transition} in the derived state space, which is considered to be finished upon reaching the first \Outer successor $q'$ of $q$ (possibly $q'=q$); unless, that is, $p\step a q$ is itself part of an ongoing recipe transition --- in other words, recipe transitions are not nested. If $a\notin\dom \Recipe$, on the other hand, $p\step a q$ gives rise to an $a$-labelled ``simple'' transition in the derived state space. To capture recipe transitions, we define:
+\end{comment}
+%
+The recipe mapping $\Recipe$ of a pseudo-state space encodes that an $a$-labelled step for $a\in\dom\Recipe$ kicks off the execution of recipe $\Recipe(a)$ (of which $a$ is the initial partial step). That is, a step $p\step a q$ with $\pOuter(p)$ and $a\in \dom\Recipe$ gives rise to a $\Recipe(a)$-labelled \emph{recipe transition} in the derived state space, which is considered to be finished upon reaching the first \pOuter successor $q'$ of $q$ (possibly $q'=q$). If $\pOuter(p)$ but $a\notin\dom \Recipe$, on the other hand, $p\step a q$ gives rise to an $a$-labelled ``simple'' transition in the derived state space. Note that $\pOuter(p)$ guarantees that $p\step a q$ is itself not part of an ongoing recipe transition: recipe transitions are not nested. To capture recipe transitions, we define:
 %
 \begin{align*}
 p \innerstep q \;\iffdef\; 
- & p\in \pInner \wedge (p\step{} q\vee p\gostep q) \\
+ & p\in \pInner \wedge (p\stepany q\vee p\gostep q) \\
 p \tstep{a} q \;\iffdef\;
  & p\in \pOuter \wedge a\in\dom\Recipe \wedge p\step a{} q \enspace.
 \end{align*}
 %
-Hence, $p\innerstep q$ (``$p$ has an $\Inner$-step to $q$'') if $p$ is an inner pseudo-state that either has a single labelled step or a single evolution step to $q$, and $p\tstep a q$ (``$p$ has an initial recipe-transition to $q$) if $p$ is an outer pseudo-state with an outgoing recipe-initiating step to $q$ --- which may be inner or outer. We write $\innerto$ for the transitive closure and $\innertoeq$ for the transitive and reflexive closure of $\innerstep$. As we will see, every sequence $p\tstep a\:\innertoeq q\in \Outer$ will give rise to a $\Recipe(a)$-labelled recipe transition.
+Hence, $p\innerstep q$ (``$p$ has an inner step to $q$'') if $p$ is an inner pseudo-state that either has a single labelled step or a single evolution step to $q$; and $p\tstep a q$ (``$p$ has an initial recipe-transition to $q$) if $p$ is an outer pseudo-state with an outgoing recipe-initiating step to $q$ --- which may be inner or outer. We write $\innertoeq$ for the transitive and reflexive closure of $\innerstep$. As we will see, every sequence $p\tstep a\:\innertoeq q\in \Outer$ will give rise to a $\Recipe(a)$-labelled recipe transition.
 
-A pseudo-state space represents a state space in which the states effectively correspond to $\gotoeq$-ordered sets of pseudo-states (which are actually chains because $\gotoeq$ is piecewise linear). Rather than formalising the relation in this way, however, we let a state be represented by the initial element of such a chain, i.e., by the (unique) prime pseudo-state.
+A pseudo-state space represents a state space in which the states correspond to $\evolequiv$-related sets of pseudo-states (which are actually chains because $\gostep$ is piecewise linear). We define this not just for full pseudo-state spaces but for \emph{configurations}.
 
 \section*{Configurations}
 
-Given a pseudo-state space $\cP$ as above, a \emph{configuration} is set $C\subseteq P$ of pseudo-states with $\pInit\in C$ that is $\gotoeq$-left-closed and such that, moreover, $p\in C$ with $p\comefrom\:\step{} q$ implies $q\in C$. (It follows that $P$ is itself a configuration of $\cP$.) We use $\step[C]{}$, $\gotoeq[C]$, $\innerstep[C]$ and $\tstep[C]{}$ to denote the restrictions of the corresponding relations $\step[\cP]{}$ etc.\ to $C$.
+Given a pseudo-state space $\cP$ as above, a \emph{configuration} is set $C\subseteq P$ of pseudo-states with $\pInit\in C$ that is $\gotoeq$-left-closed and such that, moreover, $p\in C$ with $p\stepany q$ implies $q\in C$. It follows that $I=\setof\pInit$ is the smallest possible configuration (called \emph{initial}) and $P$ is itself also a configuration of $\cP$. We use $\stepany[C]$, $\gostep[C]$, $\innerstep[C]$ and $\tstep[C]{}$ to denote the restrictions of the corresponding $\cP$-relations $\stepany$ etc.\ to $C$; i.e., the subsets of which the source and target pseudo-states are in $C$. The partial order closure of $\gostep[C]$ and $\innerstep[C]$, however, are always taken over $P$ rather than $C$, meaning that $p\gotoeq[C] p$ and $p\innertoeq[C] p$ for all $p\in P$, also if $p\notin C$.
 
-Every configuration $C$ generates a state space $\cS_C= \tupof{S_C,\Init[C],\trans[C]{}, \final_C, \TLevel[C]}$, in which the states are always $\evolequiv$-equivalence classes of pseudo-states, i.e., elements of $P/{\evolequiv}$. For a given $p\in P$ we use $\stat p$ as an abbreviation of the equivalence classe $\stat p_\evolequiv$. This is extended pointwise to subsetes $Q\subseteq P$, i.e., $\stat Q=\gensetof{\stat p}{p\in Q}$. (Note that this is in general \emph{not} the same as $Q/{\evolequiv}$.)
+Every configuration $C$ generates a state space $\cS_C= \tupof{S_C,\Init[C],\trans[C]{}, \final_C, \TLevel[C], \allowbreak\Closed[C]}$, in which the states are always $\evolequiv$-equivalence classes of pseudo-states, i.e., elements of $P/{\evolequiv}$. For a given $p\in P$ we use $\stat p$ as an abbreviation of the equivalence class $\stat p_\evolequiv$. This is extended pointwise to subsets $Q\subseteq P$, i.e., $\stat Q=\gensetof{\stat p}{p\in Q}$. (Note that this is in general \emph{not} the same as $Q/{\evolequiv}$.)
 
 The components of $\cS_C$ are then defined as follows:
 %
@@ -213,37 +232,38 @@ S_C & = \stat{\pOuter\cap C} \\
 {\trans[C]{}} & = \gensetof{(\stat p,a,\stat q)}{p\in \pOuter, a\notin\dom\Recipe, p\step[C] a q} \\
 &\phantom{=} {}\cup \gensetof{(\stat p,\Recipe(a),\stat{q})}{p\tstep[C]{a}\: \innertoeq[C] q\in \pOuter} \\
 \final_C & = \stat{\pfinal\cap C} \\
-\TLevel[C] & : s \mapsto \min \gensetof{\pTLevel(p)}{p\in s\cap C} \enspace \text{for all $s\in S_C$} \\
+\TLevel[C] & : s \mapsto \pTLevel(\gotomax(s\cap C)) \enspace \text{for all } s\in S_C \\
 \Closed[C] & = \stat{\pClosed \cap \pOuter\cap C} \enspace.
 \end{align*}
 %
-We also use $\Steady[C]$, $\Complete[C]$, $\ALevel[C]$ and $\Absent[C]$ to denote $\Steady[\cS_C]$ etc.
+We also use $\Steady[C]$, $\Full[C]$, $\ALevel[C]$ and $\Absent[C]$ to denote $\Steady[\cS_C]$ etc. For any $s\in S_C$, it follows from the nature of $\gostep$ that $\gotomin s$ and $\gotomax s$ are singletons that themselves are elements of $s$, such that, moreover, $\gotomin s\in C$.
 
 \medskip\noindent
-We want to construct $S_P$ incrementally by approaching $P$ through a sequence of configurations, starting with $\setof{\Init}$ and exploring, at each iteration, an open pseudo-state $p\in\Open[C]$. This exploration step is defined by 
+We want to construct $S_P$ incrementally by approaching $P$ through a sequence of configurations, starting with $\setof{\Init}$ and exploring, at each iteration, a $\gostep$-successor of some open pseudo-state in $C$. 
 %
-\[ C\oplus p = C\cup \setof{\inc p} \cup \gensetof{\scs p}{p\step{}} \enspace. \]
+\[ \addp Cp = C\cup \setof{p} \cup \gensetof{q}{p\stepany q} \enspace \text{if } p\comestep p'\in C \enspace. \]
 %
-Incremental construction means that, if $D=C\oplus p$, all components of $S_D$ can be constructed from $S_C$ and $\cP$. Indeed, we have
+Incremental construction means that, if $D=\addp Cp$, all components of $S_D$ can be constructed from $S_C$ and $\cP$. Indeed, we have
 %
 \begin{align*}
-\final_D & = \final_C \cup \stat{(D\setminus C) \cap \pfinal} \\
-\TLevel[D] & : s\mapsto
+\final_{\addp Cp} & = \final_C \cup \stat{(\addp Cp\setminus C) \cap \pfinal} \\
+\TLevel[\addp Cp] & : s\mapsto
   \begin{cases}
-  \pTLevel(q) & \text{if } s\in\stat{D\setminus C} \\
+  \pTLevel(p) & \text{if } s=[p] \\
+  \pTLevel(q) & \text{if } p\stepany q\notin C \\
   \TLevel[C](s) & \text{otherwise}
   \end{cases} \\
-  \Closed[D] & = \Closed[C] \cup \stat{(D\setminus C)\cap \pClosed} \enspace.
+  \Closed[\addp Cp] & = \Closed[C] \cup \stat{(\addp Cp\setminus C)\cap \pClosed} \enspace.
 \end{align*}
 %
-The incremental constuction of $\trans[D]{}$, however, is much less straightforward, especially for recipe transitions, due to the fact that the relation $\tstep{}$ may go through many intermediate steps. The following equality holds (with $D=C\oplus p$ as before):
+The incremental construction of $\trans[\addp Cp]{}$, however, is much less straightforward, especially for recipe transitions, due to the fact that the relation $\tstep{}$ may go through many intermediate steps. The following equality holds:
 %
 \begin{align}
-{\trans[D]{}}  = {} & {\trans[C]{}} \nonumber \\
+{\trans[\addp Cp]{}}  = {} & {\trans[C]{}} \nonumber \\
 & {}\cup \gensetof{(\stat p,a, \stat q)}{p\in \pOuter, p\step a q,a\notin\dom\Recipe} \\
 & {}\cup \gensetof{(\stat{p},\rho(a), \stat q)}{p\tstep a q\in \pOuter} \\
-& {}\cup \gensetof{(\stat{q_1},\rho(a),\stat{q_2})}{p_1\tstep[C]{a} \:\innertoeq[C] p\in\pInner, \scs p \innerstep[C] q_2 \in\pOuter} \\
-& {}\cup \gensetof{(\stat{q_1},\rho(a),\stat{\inc p})}{p_1\tstep[C]{a} \:\innertoeq[C] p\in\pInner, \inc p\in\pOuter} \enspace.
+& {}\cup \gensetof{(\stat{q_1},\rho(a),\stat{q_2})}{p_1\tstep[C]{a} \:\innertoeq[C] p\in\pInner, p\stepany q \innertoeq[C] q_2 \in\pOuter} \\
+& {}\cup \gensetof{(\stat{q_1},\rho(a),\stat{p})}{p_1\tstep[C]{a} \:\innertoeq[C] p'\gostep p\in\pOuter} \enspace.
 \end{align}
 %
 The cases in this equation can be explained as follows. The evolution of $p$ to $p'$, which may include the discovery of a step $p\step a q$, may give rise to new transitions in $\cS_D$ according to one of these five principles:
@@ -251,107 +271,218 @@ The cases in this equation can be explained as follows. The evolution of $p$ to 
 \begin{enumerate}[label=(\arabic*)]
 \item A ``normal'' (non-recipe) transition $\stat p\trans a \stat q$;
 
-\item A recipe transition $\stat p\trans{\rho(a)} \stat q$ due to a pseudo-state sequence starting at $p$, consisting of a single inner step $p\step a q$ and ending at $q\in \Outer[D]$ (where the latter may or may not have been in $C$ already);
+\item A recipe transition $\stat p\trans{\rho(a)} \stat q$ due to a pseudo-state sequence starting at $p$, consisting of a single inner step $p\step a q$ and ending at $q\in \pOuter$ (where the latter may or may not have been in $C$ already).
 
-\item\label{successor construction} A recipe transition $\stat{q_1} \trans{\rho(a)} \stat{q_2}$ for every previously found outer pseudo-state $q_1\in C$, provided $p$ was already reachable from $q_1$ in $C$ via a sequence $q_1\tstep[C]{a}\:\innertoeq[C]\cdots\innerstep[C] p$ (going only through $\pInner$-pseudo-states) and $q_2$ was already reachable from $\scs p$ via a further sequence $p\step{} \innerstep[C] q_2$ (note that this includes $q_2=\scs p$), such that, moreover, $\pOuter(q_2)$;
+\item\label{successor construction} A recipe transition $\stat{q_1} \trans{\rho(a)} \stat{q_2}$ for every previously found outer pseudo-state $q_1\in C$, provided $p\in\pInner$ was already reachable from $q_1$ in $C$ via a sequence $q_1\tstep[C]{a}\:\innerstep[C]\cdots\innerstep[C] p$ (going only through $\pInner$-pseudo-states), $p\stepany q$, and $q_2$ was already reachable from $q$ via a further sequence $q \innerstep[C]\cdots\innerstep[C] q_2$ (note that this includes $q_2=q$), such that, moreover, $\pOuter(q_2)$.
 
-\item\label{increment construction} A recipe transition $\stat{q_1} \trans{\rho(a)} \stat{\inc p}$ for every previously found outer pseudo-state $q_1\in \pOuter$, provided $p$ was already reachable from $q_1$ in $C$ via a sequence $q_1\tstep[C]{a}\:\innerstep[C]\cdots\innerstep[C] p$ (going only through $\pInner$-pseudo-states) that now gets extended with the evolution $p\gostep[D] \inc p$ with $\pOuter(\inc p)$.
+\item\label{increment construction} A recipe transition $\stat{q_1} \trans{\rho(a)} \stat{p}$ for every previously found outer pseudo-state $q_1\in \pOuter$, provided $p$ was already reachable from $q_1$ in $C$ via a sequence $q_1\tstep[C]{a}\:\innerstep[C]\cdots\innerstep[C] p'$ (going only through $\pInner$-pseudo-states) that now gets extended with the evolution $p'\gostep p$ with $\pOuter(p)$.
 \end{enumerate}
 %
-Clearly, the reason why the above equation does not give rise to a straightforward incremental construction is that the possible values of $q_1$ in Cases \ref{successor construction}--\ref{increment construction} as well as $q_2$ in Case~\ref{successor construction} are not a priori known. This is resolved by introducing auxiliary functions:
+The reason why the above equation does not give rise to a straightforward incremental construction is that the possible values of $q_1$ in Cases \ref{successor construction}--\ref{increment construction} as well as $q_2$ in Case~\ref{successor construction} are not a priori known, given only $C$ and $p$. This is resolved by introducing auxiliary functions:
 %
 \begin{itemize}
-\item $\PastOut[C]:P\to 2^P$, the \emph{past outer pseudo-states}, defined by
-\[ \PastOut[C] : p \mapsto \gensetof{q\in\pOuter}{q\tstep[C]{} \:\innertoeq[C] p\in\pInner} \enspace. \]
-\item $\ReachOut[C]:P\to 2^P$, the \emph{reachable outer pseudo-states}, defined by
-\[ \ReachOut[C] : p \mapsto \gensetof{q\in\pOuter}{p\innertoeq[C] q} \enspace. \]
-\item $\PastIn[C]:P\to 2^P$, the \emph{past inner pseudo-states}, defined by
-\[ \PastIn[C] : p \mapsto \gensetof{q\in\pInner}{q\innertoeq[C] p\in\pInner} \enspace. \]
-\item $\ReachIn[C]:P\to 2^P$, the \emph{reachable inner pseudo-states}, defined by
-\[ \ReachIn[C] : p \mapsto \gensetof{q\in\pInner}{p\innertoeq[C] q} \enspace. \]
+\item $\BackIn[C]:[P]\to 2^{S_C}$, the \emph{backward reachable inner states}, defined by
+\[ \BackIn[C] : s \mapsto \stat{\gensetof{q\in\pInner}{q\innertoeq[C] \prm s\in \pInner}} \enspace. \]
+\item $\ForwIn[C]:[P]\to 2^{S_C}$, the \emph{forward reachable inner states}, defined by
+\[ \ForwIn[C] : s \mapsto \stat{\gensetof{q\in\pInner}{\prm s\innertoeq[C] q}} \enspace. \]
+\item $\BackOut[C]:[P]\to 2^{S_C}$, the \emph{backward reachable outer states}, defined by
+\[ \BackOut[C] : s \mapsto \stat{\gensetof{q\in\pOuter}{q\tstep[C]{} \:\innertoeq[C] \prm s \in \pInner}} \enspace. \]
+\item $\ForwOut[C]:[P]\to 2^{S_C}$, the \emph{forward reachable outer states}, defined by
+\[ \ForwOut[C] : s \mapsto \stat{\gensetof{q\in\pOuter}{\prm s\innertoeq[C] q}} \enspace. \]
 \end{itemize}
 %
-Note that these functions are always defined for all pseudo-states, even outside the configuration $C$; in fact, if $p\in P\setminus C$ then $\PastOut[C](p)= \emptyset$, $ \ReachOut[C](p)=\pOuter\cap \setof p$ whereas $\PastIn[C](p)= \ReachIn[C](p)= \pInner\cap \setof p$. With the help of these functions, Clauses \ref{successor construction}--\ref{increment construction} become straightforward to implement; and these functions themselves can also be constructed incrementally. Indeed, the following properties hold for $D=C\oplus p$:
+Note that these functions are always defined for all states, also those outside $S_C$; in fact, for $s\in [P]\setminus S_C$ we have
 %
 \begin{align*}
-\PastOut[D] : q \mapsto {}
+\BackIn[C](s) = {} & \gensetof{s}{\gotomin s\in \pInner} \\
+\ForwIn[C](s) = {} & \gensetof{s}{\gotomin s\in \pInner} \\
+\BackOut[C](s) = {} & \emptyset \\
+\ForwOut[C](s) = {} & \gensetof{s}{\gotomin s\in \pOuter} 
+\end{align*}
+%
+With the help of these functions, Clauses \ref{successor construction}--\ref{increment construction} become straightforward to implement; and these functions themselves can also be constructed incrementally. Indeed, the following properties hold:
+%
+\begin{align*}
+\BackIn[\addp Cp](s) = {}
+& \begin{array}[t]{@{}ll}
+	\BackIn[C](s) \\
+	{\enspace} \cup \BackIn[C](\stat p) & \text{if } \pInner\ni p\stepany q \text{ and } s\in \ForwIn[C](\stat{q})
+\end{array} \\
+\ForwIn[\addp Cp](s) = {}
+& \begin{array}[t]{@{}ll}
+	\ForwIn[C](s) \\
+	{\enspace} \cup \ForwIn[C](\stat{q}) & \text{if } \pInner\ni p\stepany q \text{ and } s\in \BackIn[C](\stat p)
+\end{array} \\
+\BackOut[\addp Cp](s) = {}
+ & \begin{array}[t]{@{}ll}
+ 	\BackOut[C](s) \\
+ 	{\enspace} \cup \BackOut[C](q) & \text{if } \pInner\ni p\stepany q \text{ and } s\in \ForwIn[C](\stat q) \\
+ 	{\enspace} \cup \setof{\stat p} & \text{if } \pOuter\ni p\tstep{} q \text{ and } s\in \ForwIn[C](\stat{q}) 
+ \end{array} \\
+\ForwOut[\addp Cp](s) = {}
+ & \begin{array}[t]{@{}ll}
+   \ForwOut[C](s) \\
+   {\enspace} \cup \ForwOut[C](\stat{q}) & \text{if } \pInner \ni p\stepany q \text{ and } s\in \BackIn[C](\stat p) \\
+   {\enspace} \cup \setof{\stat{p}} & \text{if } p\in \pOuter \text{ and } s\in \BackIn[C](\stat p) \\
+   \end{array}
+\end{align*}
+%
+The incremental construction of $\Full[C]$, and $\Absent[C]$ requires similar auxiliary functions. We define a step relation ${\transientstep[C]}\subseteq C\times C$
+%
+\begin{align*}
+p \transientstep[C] q \;\iffdef\; & (p\stepany[C] q \vee p\gostep[C] q) \wedge q\in\pTransient
+\end{align*}
+%
+and functions $\BackTrans[C],\ForwTrans[C],\ForwTrOp[C]:[P]\mapsto 2^{S_C}$
+%
+\begin{align*}
+\BackTrans[C] : s\mapsto & \stat{\gensetof{q}{q\transienttoeq[C] \prm s}} \\
+\ForwTrans[C] : s\mapsto & \stat{\gensetof{q}{\prm s\transienttoeq[C] q}}\cap \Transient[C] \\
+\ForwTrOp[C] : s\mapsto & \ForwTrans[C](s) \cap \Open[C]
+\end{align*}
+%
+These functions, too, can be updated incrementally, due to the following properties:
+%
+\begin{align*}
+\BackTrans[\addp Cp](s) = {}
+ & \begin{array}[t]{@{}ll}
+ 	\BackTrans[C](s) \\
+ 	{\enspace} \cup \BackTrans[C]([p]) & \text{if } \pTransient\ni p\stepany q \text{ and } s\in \ForwTrans([q])
+ \end{array} \\
+\ForwTrans[\addp Cp](s) = {}
+ & \begin{array}[t]{@{}ll}
+   \ForwTrans[C](s) \\
+   {\enspace} \cup \ForwTrans[C]([q]) & \text{if } \pTransient\ni p\stepany q \text{ and } s\in \BackTrans[C](\stat p)
+   \end{array} \\
+\ForwTrOp[\addp Cp](s) = {}
+& \begin{array}[t]{@{}ll}
+	\ForwTrOp[C](s) \\
+	{\enspace} \cup \ForwTrOp[C]([q]) & \text{if } \pTransient\ni  p\stepany q \text{ and } s\in \BackTrans[C](\stat p) \\
+	{\enspace} \setminus \setof{\stat p} & \text{if } p\in \pClosed \cap \pSteady \text{ and } s\in \BackTrans[C](\stat p)
+\end{array} 
+\end{align*}
+%
+With the help of these auxiliary functions, we can now characterise the absence level and fullness of states as follows:
+%
+\begin{align*}
+\ALevel[\addp Cp](s) = {}
  & \begin{cases}
- 	\PastOut[C](q) \cup \setof{p} & \text{if } p\in\Outer[C] \text{ and } q\in \ReachIn[C](\scs p) \\
- 	\PastOut[C](q) \cup \PastOut[C](p) & \text{if } p\in\Inner[C] \text{ and } q\in \setof{\inc p} \cup \ReachIn[C](\scs p) \\
- 	\PastOut[C](q) & \text{otherwise}
- \end{cases} \\
-\ReachOut[D] : q \mapsto {}
- & \begin{cases}
-   \ReachOut[C](q) \cup (\Outer[D]\setminus C) \cup \ReachOut[C](\scs p) & \text{if } q\in \PastIn[C](p) \\
-   \ReachOut[C](q) & \text{otherwise} \\
+   \min(\ALevel[C](s),\pTLevel(p)) & \text{if } p\;{\nstepany} \text{ and } s\in \BackTrans[C]([p]) \\
+   \min(\ALevel[C](s),\pTLevel(p),\ALevel[C]([q])) & \text{if } p\stepany q \text{ and } s\in \BackTrans[C]([p]) \\
+   \ALevel[C](s) & \text{otherwise}
    \end{cases} \\
-\PastIn[D] : q \mapsto {}
-& \begin{cases}
-	\PastIn[C](q) \cup \PastIn[C](p) & \text{if } q\in \setof{\inc p}\cup \ReachIn[C](\scs p) \\
-	\PastIn[C](q) & \text{otherwise}
-\end{cases} \\
-\ReachIn[D] : q \mapsto {}
-& \begin{cases}
-	\ReachIn[C](q) \cup (\Inner[D]\setminus C) \cup \ReachIn[C](\scs p) & \text{if } q\in \PastIn[C](p) \\
-	\ReachIn[C](q) & \text{otherwise.}
-\end{cases}
+\Full[\addp Cp] = {}
+  & \begin{array}[t]{@{}ll}
+  	\Full[C] \\
+  	{\enspace}\cup (\Closed[\addp Cp] \cap \gensetof{s}{\ForwTrOp[\addp Cp](s) = \emptyset})
+    \end{array}
 \end{align*}
 %
-\begin{align*}
-\PastOut[D] : q \mapsto {}
- & \begin{cases}
- 	\PastOut[C](q) \cup \setof{p} & \text{if } p\in\Outer[C] \text{ and } q\in \ReachIn[C](\scs p) \\
- 	\PastOut[C](q) \cup \PastOut[C](p) & \text{if } p\in\Inner[C] \text{ and } q\in \setof{\inc p} \cup \ReachIn[C](\scs p) \\
- 	\PastOut[C](q) & \text{otherwise}
- \end{cases} \\
-\ReachOut[D] : q \mapsto {}
- & \begin{cases}
-   \ReachOut[C](q) \cup (\Outer[D]\setminus C) \cup \ReachOut[C](\scs p) & \text{if } q\in \PastIn[C](p) \\
-   \ReachOut[C](q) & \text{otherwise} \\
-   \end{cases} \\
-\PastIn[D] : q \mapsto {}
-& \begin{cases}
-	\PastIn[C](q) \cup \PastIn[C](p) & \text{if } q\in \setof{\inc p}\cup \ReachIn[C](\scs p) \\
-	\PastIn[C](q) & \text{otherwise}
-\end{cases} \\
-\ReachIn[D] : q \mapsto {}
-& \begin{cases}
-	\ReachIn[C](q) \cup (\Inner[D]\setminus C) \cup \ReachIn[C](\scs p) & \text{if } q\in \PastIn[C](p) \\
-	\ReachIn[C](q) & \text{otherwise.}
-\end{cases}
-\end{align*}
+The incremental construction boils down to the following. Given a configuration $C$, we maintain, for every state $s\in [C]$, a record consisting of the following elements:
 %
-The incremental construction of $\Complete[C]$, and $\ALevel[C]$ requires similar auxiliary functions. We define step relations ${\absentstep[C]},{\shortstep[C]}\subseteq P\times P$
+\begin{itemize}
+\item $\BackIn\subseteq S_C$, the backward reachable inner states of $s$. \\ 
+	Initial value: $\BackIn = \gensetof{s}{\prm s\in \pInner}$.
+\item $\ForwIn\subseteq S_C$, the forward reachable inner states of $s$. \\ 
+	Initial value: $\ForwIn = \gensetof{s}{\prm s\in \pInner}$.
+\item $\BackOut\subseteq S_C$, the backward reachable outer states of $s$. \\ 
+	Initial value: $\BackOut = \emptyset$.
+\item $\ForwOut\subseteq S_C$, the forward reachable outer states of $s$. \\ 
+	Initial value: $\ForwOut = \gensetof{s}{\prm s\in \pOuter}$.
+\item $\OutTrans\subseteq A\times S_C$, the outgoing transitions of $s$. \\ 
+	Initial value: $\OutTrans = \emptyset$.
+\item $\BackTrans\subseteq S_C$, the backward reachable transient states of $s$. \\ 
+	Initial value: $\BackTrans = \gensetof{s}{\prm s\in \pTransient}$.
+\item $\ForwTrans\subseteq S_C$, the forward reachable transient states of $s$. \\ 
+	Initial value: $\ForwTrans = \gensetof{s}{\prm s\in \pTransient}$.
+\item $\ForwTrOp\subseteq S_C$, the forward reachable transient open states of $s$. \\ 
+	Initial value: $\ForwTrOp = \gensetof{s}{\prm s\in \pTransient\cap \pOpen}$.
+\item $\ALevel\in \natN$, the absence level of $s$. \\ 
+	Initial value: $\ALevel = \pTLevel(\prm s)$.
+\item $\Full\in \boolB$, a boolean expressing whether $s$ is full. \\ 
+	Initialisation: $\Full = \pOuter(\prm p)$.
+\end{itemize}
 %
-\begin{align*}
-p \absentstep[C] q \;\iffdef\; & \Absent[C](p) \wedge (p\step[C] q \vee p\gostep[C] q) \\
-p \shortstep[C] q \;\iffdef\; & \Short[C](p) \wedge \Transient[C] q\wedge (p\step[C] q \vee p\gostep[C] q)
-\end{align*}
-%
-and functons $\PastAbs[C],\PastShort[C]:P\mapsto 2^P$
-%
-\begin{align*}
-\PastAbs[C] : p\mapsto & \gensetof{q\in \Absent[C]}{q\absenttoeq[C] p} \\
-\PastShort[C] : p\mapsto & \gensetof{q\in \Short[C]}{q\shorttoeq[C] p} \\
-\ReachShort[C] : p\mapsto & \gensetof{q\in \Short[C]}{p\shorttoeq[C] q} \enspace.
-\end{align*}
-%
-These functions can be updated incrementally:
-%
-\begin{align*}
-\PastAbs[D] : q \mapsto {}
- & \begin{cases}
- 	\PastAbs[C](q) & \text{otherwise}
- \end{cases} \\
-\PastShort[D] : q \mapsto {}
- & \begin{cases}
-   \PastShort[C](q) & \text{otherwise} \\
-   \end{cases} \\
-\ReachShort[D] : q \mapsto {}
-& \begin{cases}
-	\ReachShort[C](q) & \text{otherwise}
-\end{cases}
-\end{align*}
+If we have this for $C$, then the record for $\addp Cp$ is constructed as follows, where those sets that are not updated according to any of the assignments below are unchanged:
 
-
+\begin{center}
+\hspace*{-1ex}\scalebox{.9}{\begin{minipage}[t]{.55\textwidth}%
+\begin{algorithmic}
+\State $s_p \gets [p]$\Comment{\sffamily abbreviation}
+\State {\sffamily\itshape Outgoing transitions}
+\If{$p\in \pOuter$ and $p\step a q$}
+	\State $s_q \gets [q]$\Comment{abbreviation}
+	\If{$a\notin\dom\Recipe$}
+		\State $s_p.\OutTrans \gets s_p.\OutTrans \cup \setof{(s_p,a,s_q)}$
+	\ElsIf{$q\in \pOuter$}
+		\State $s_p.\OutTrans \gets s_p.\OutTrans \cup \setof{(s_p,\Recipe(a),s_q)}$
+	\EndIf
+\EndIf
+\State $\BackIn[p]\gets s_p.\BackIn$\Comment{local copy}
+\For{$s_1\in s_p.\BackOut$}
+	\State let $a$ be such that $s_1\tstep a$
+	\If{$p\in \pInner$ and $p\step{} q$}
+		\For{$s_2\in s_q.\ForwOut$}
+			\State $s_p.\OutTrans \gets s_p.\OutTrans \cup \setof{(s_1,\Recipe(a),s_2)}$
+		\EndFor
+	\ElsIf{$p\in \pOuter$}
+		\State $s_p.\OutTrans \gets s_p.\OutTrans \cup \setof{(s_1,\Recipe(a),s_p)}$
+	\EndIf
+\EndFor
+\State \emph{Reachable inner/outer states}
+\State $\BackIn[p]\gets s_p.\ForwIn$\Comment{local copy}
+\If{$\pInner\ni p\gostep q\in \pInner$}
+	\State $s_q \gets [q]$\Comment{abbreviation}
+	\State $\ForwIn[q]\gets s_q.\ForwIn$\Comment{local copy}
+	\For{$s\in \ForwIn[q]$}
+		\State $s.\BackIn\gets s.\BackIn\cup \BackIn[p]$
+		\State $s.\BackOut\gets s.\BackOut\cup s_p.\BackOut$
+	\EndFor
+	\For{$s\in \BackIn[p]$}
+		\State $s.\ForwIn\gets s.\ForwIn\cup \ForwIn[q]$
+		\State $s.\ForwOut\gets s.\ForwOut\cup s_q.\ForwOut$
+	\EndFor
+\ElsIf{$\pOuter\ni p$}
+	\If{$p\comestep q\in \pInner$}
+		\For{$s\in \BackIn[p]$}
+			\State $s.\ForwOut \gets s.\ForwOut \cup \setof{s_p}$
+		\EndFor
+	\EndIf
+	\If{$p\tstep{} q\in \pInner$}
+		\For{$s\in \ForwIn$}
+			\State $s.\BackOut \gets s.\BackOut \cup \setof{s_p}$
+		\EndFor
+	\EndIf
+\EndIf
+\end{algorithmic}\end{minipage}\enspace
+\begin{minipage}[t]{.55\textwidth}\begin{algorithmic}
+\State {\sffamily\itshape Absence level}
+\State $\BackTrans[p] \gets s_p.\BackTrans$\Comment{\sffamily local copy}
+\For{$s\in s_p.\BackTrans$}
+	\State{$\ALevel \gets \min(s.\ALevel,\pTLevel(p)$}
+	\If{$p\step{} q$}
+		\State{$\alpha[s] \gets \min(\alpha[s],\alpha[C](q)$}
+	\EndIf
+	\State $s.\ALevel \gets \ALevel$
+\EndFor
+\State \emph{Reachable transient states \& fullness}
+\If{$\pTransient\ni p\gostep q\in \pTransient$}
+	\State $s_q \gets [q]$\Comment{abbreviation}
+	\State $\ForwTrans[q] \gets s_q.\ForwTrans$\Comment{local copy}
+	\State $\ForwTrOp[q] \gets s_q.\ForwTrOp$\Comment{local copy}
+	\For{$s\in \BackTrans[p]$}
+		\State{$s.\BackTrans \gets s.\BackTrans \cup \BackTrans[p]$}
+		\State{$s.\ForwTrans \gets s.\ForwTrans \cup \ForwTrans[q]$}
+		\State{$s.\ForwTrOp \gets s.\ForwTrOp \cup \ForwTrOp[q]$}
+	\EndFor
+\ElsIf{$\pClosed\cap\pSteady \ni p\comestep q\notin \pClosed\cap\pSteady$}
+	\For{$s\in \BackTrans[p]$}
+		\State{$s.\ForwTrOp \gets s.\BackTrans \setminus \setof{s_p}$}
+		\If{$s.\ForwTrOp=\emptyset$ and $s.\Closed$}
+			\State{$s.\Full \gets s.\Closed$}
+		\EndIf
+	\EndFor
+\EndIf
+\end{algorithmic}\end{minipage}}
+\end{center}
 \end{document}

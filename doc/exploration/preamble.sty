@@ -11,26 +11,30 @@
 \usepackage{ulem}
 \renewcommand{\ULdepth}{.7pt}
 \normalem
+\usepackage{comment}
+\usepackage[noend]{algpseudocode}
+\algrenewcommand{\algorithmicfor}{{\bfseries\sffamily for}}
+\algrenewcommand{\algorithmicif}{{\bfseries\sffamily if}}
+\algrenewcommand{\algorithmicelse}{{\bfseries\sffamily else}}
+\algrenewcommand{\algorithmicthen}{{\bfseries\sffamily then}}
+\algrenewcommand{\algorithmicdo}{{\bfseries\sffamily do}}
+\usepackage{multicol}
 
 \newcommand{\GROOVE}{GROOVE}
 
 % Closure of a pseudo-state
-\newcommand{\cls}[1]{\lceil{#1}\rceil}
+\newcommand{\cls}[1]{\gotomax{#1}}
 %\newcommand{\cls}[1]{{#1}{\triangleright}}
 % Prime of a pseudo-state
-\newcommand{\prm}[1]{\lfloor{#1}\rfloor}
+\newcommand{\prm}[1]{\gotomin{#1}}
 %\newcommand{\prm}[1]{{\triangleleft}\mkern-2mu{#1}}
 % Equivalence relation generated from \goto
 \newcommand{\stat}[1]{[{#1}]}
 
-% Increment of a pseudo-state (= \goestostep-successor)
-\newcommand{\inc}[1]{p^{\mathsf i}}
-% Successor of a pseudo-state (= \step-successor)
-\newcommand{\scs}[1]{p^{\mathsf s}}
-% Outgoing step-action of a pseudo-state
-\newcommand{\act}[1]{a_p}
-
 \newcommand{\dom}{\mathop{\mathrm{dom}}}
+
+% Adding a pseudo-state to a configuration
+\newcommand{\addp}[2]{{#1}{\cdot}{#2}}
 
 % Inner and outer
 \newcommand{\kInner}{innr}
@@ -38,15 +42,19 @@
 \newcommand{\pInner}{\mbox{\textit{\uline{\kInner}}}\xspace}
 \newcommand{\kOuter}{outr}
 \newcommand{\Outer}[1][\,]{\ensuremath{\mathit{\kOuter}_{\!#1}}\xspace}
-\newcommand{\pOuter}{\mbox{\textit{\uline{\kOuter}}}\xspace}
+\newcommand{\pOuter}{\mbox{\uline{$\mathit{\kOuter}$}}\xspace}
 
 \newcommand{\Init}[1][\,]{\ensuremath{\iota}_{\!#1}\xspace}
 \newcommand{\pInit}{\mbox{\uline{$\iota$}}\xspace}
 
 \newcommand{\pPrime}{\mbox{\textit{\uline{prim}}}\xspace}
 
-\newcommand{\Complete}[1][\mkern2mu]{\ensuremath{\mathit{cplt}}_{\mkern-2mu#1}\xspace}
-\newcommand{\Short}[1][]{\ensuremath{\mathit{short}}_{\mkern-2mu#1}\xspace}
+\newcommand{\kFull}{full}
+\newcommand{\Full}[1][\mkern2mu]{\ensuremath{\mathit{\kFull}}_{\mkern-2mu#1}\xspace}
+\newcommand{\pFull}{\mbox{\uline{\textit{\kFull}}}\xspace}
+\newcommand{\kShort}{shrt}
+\newcommand{\Short}[1][]{\ensuremath{\mathit{\kShort}}_{\mkern-2mu#1}\xspace}
+\newcommand{\pShort}{\mbox{\uline{\textit{\kShort}}}\xspace}
 
 % Open and closed
 \newcommand{\Open}[1][\,]{\ensuremath{\mathit{open}}_{\!#1}\xspace}
@@ -55,24 +63,30 @@
 \newcommand{\pOpen}{\mbox{\uline{\textit{open}}}\xspace}
 
 % Absent and presend
-\newcommand{\Absent}[1][]{\ensuremath{\mathit{abst}}_{#1}\xspace}
-\newcommand{\Present}[1][\,]{\ensuremath{\mathit{prst}}_{\!#1}\xspace}
+\newcommand{\kAbsent}{abst}
+\newcommand{\Absent}[1][]{\ensuremath{\mathit{\kAbsent}}_{#1}\xspace}
+\newcommand{\pAbsent}{\mbox{\uline{\textit{\kAbsent}}}\xspace}
+\newcommand{\kPresent}{prst}
+\newcommand{\Present}[1][\,]{\ensuremath{\mathit{\kPresent}}_{\!#1}\xspace}
+\newcommand{\pPresent}{\mbox{\uline{\textit{\kPresent}}}\xspace}
 
 % Steady snt transient
 \newcommand{\kSteady}{stdy}
 \newcommand{\Steady}[1][\mkern1mu]{\ensuremath{\mathit{\kSteady}}_{\mkern-1mu#1}\xspace}
-\newcommand{\pSteady}{\mbox{\uline{\kSteady}}\xspace}
+\newcommand{\pSteady}{\mbox{\textit{\uline{\kSteady}}}\xspace}
 \newcommand{\kTransient}{trnt}
 \newcommand{\Transient}[1][\,]{\ensuremath{\mathit{\kTransient}}_{\!#1}\xspace}
-\newcommand{\pTransient}{\mbox{\uline{\textit{\kTransient}}}\xspace}
+\newcommand{\pTransient}{\mbox{\textit{\uline{\kTransient}}}\xspace}
 
 % Transience level
 \newcommand{\TLevel}[1][]{\ensuremath{\tau}_{#1}\xspace}
 \newcommand{\pTLevel}{\mbox{\uline{$\tau$}}\xspace}
 
-% Absence depth
+% Absence level
 \newcommand{\ALevel}[1][]{\ensuremath{\alpha}_{#1}\xspace}
-% Inner level
+\newcommand{\pALevel}{\mbox{\uline{$\alpha$}}\xspace}
+
+% Outer level
 \newcommand{\OLevel}[1][\,]{\ensuremath{o}_{\!#1}\xspace}
 % Recipe mapping
 \newcommand{\Recipe}[1][\,]{\ensuremath{\rho}_{\!#1}\xspace}
@@ -82,19 +96,22 @@
 \newcommand{\Atomic}[1][]{\ensuremath{\mathit{atom}}_{\!#1}\xspace}
 
 % Past outer pseudo-states
-\newcommand{\PastOut}[1][\mkern2mu]{\mathit{P}^{\smash{\Outer\!}}_{\smash{\mkern-2mu#1}}}
+\newcommand{\BackOut}[1][\mkern2mu]{\mathcal{B}^{\smash{\Outer\!}}_{\smash{\mkern-2mu#1}}}
 % Reachable outer pseudo-states
-\newcommand{\ReachOut}[1][\mkern2mu]{\mathit{R}^{\smash{\Outer\!}}_{\smash{#1}}}
+\newcommand{\ForwOut}[1][\mkern2mu]{\mathcal{F}^{\smash{\Outer\!}}_{\smash{#1}}}
 % Past inner pseudo-states
-\newcommand{\PastIn}[1][\mkern2mu]{\mathit{P}^{\smash{\Inner\!}}_{\smash{\mkern-2mu#1}}}
+\newcommand{\BackIn}[1][\mkern2mu]{\mathcal{B}^{\smash{\Inner\!}}_{\smash{\mkern-2mu#1}}}
 % Reachable inner pseudo-states
-\newcommand{\ReachIn}[1][\mkern2mu]{\mathit{R}^{\smash{\Inner\!}}_{\smash{#1}}}
-% Past absent pseudo-states
-\newcommand{\PastAbs}[1][]{\mathit{P}^{\smash{\Absent}}_{\smash{\mkern-2mu#1}}}
-% Past short pseudo-states
-\newcommand{\PastShort}[1][\mkern2mu]{\mathit{P}^{\smash{\Short}}_{\smash{\mkern-2mu#1}}}
-% Reachable short pseudo-states
-\newcommand{\ReachShort}[1][\mkern2mu]{\mathit{R}^{\smash{\Short}}_{\smash{#1}}}
+\newcommand{\ForwIn}[1][\mkern2mu]{\mathcal{F}^{\smash{\Inner\!}}_{\smash{#1}}}
+% Past transient pseudo-states
+\newcommand{\BackTrans}[1][]{\mathit{B}^{\smash{\kTransient}}_{\smash{\mkern-2mu#1}}}
+% Reachable transient pseudo-states
+\newcommand{\ForwTrans}[1][\mkern2mu]{\mathcal{F}^{\mathit{\kTransient}}_{\smash{#1}}}
+% Reachable transient open pseudo-states
+\newcommand{\ForwTrOp}[1][\mkern2mu]{\mathcal{F}^{\mathit{trop}}_{\smash{#1}}}
+
+% Outgoing transitions
+\newcommand{\OutTrans}[1][\mkern2mu]{\mathcal{T}_{\smash{#1}}}
 
 
 \newcommand{\cC}{\mathcal{C}}
@@ -102,6 +119,7 @@
 \newcommand{\cS}{\mathcal{S}}
 
 \newcommand{\natN}{\mathbb{N}}
+\newcommand{\boolB}{\mathbb{B}}
 
 \newcommand{\setof}[1]{\{{#1}\}}
 \newcommand{\gensetof}[2]{\setof{{#1}\mid{#2}}}
@@ -116,28 +134,33 @@
 
 \newcommand{\gostep}[1][]{\mathrel{{\prec}\mkern-5mu{\cdot}}_{#1}}
 \newcommand{\ngostep}[1][]{\not\goeststep[1]}
-\newcommand{\goto}[1][]{\prec_{#1}}
+%\newcommand{\goto}[1][]{\prec_{#1}}
 \newcommand{\gotoeq}[1][]{\preccurlyeq_{#1}}
-\newcommand{\evolequiv}{\smileeq}
+\newcommand{\evolequiv}{\smilefrown}
+\newcommand{\gotomax}{\curlyvee}
+\newcommand{\biggotomax}{\bigcurlyvee}
+\newcommand{\gotomin}{\curlywedge}
+\newcommand{\biggotomin}{\bigcurlywedge}
 
 \newcommand{\comestep}[1][]{\mathrel{{\cdot}\mkern-5mu{\succ}}_{#1}}
 \newcommand{\ncomestep}[1][]{\not\comesfromstep[1]}
-\newcommand{\comefrom}[1][]{\succ_{#1}}
+%\newcommand{\comefrom}[1][]{\succ_{#1}}
 \newcommand{\comefromeq}[1][]{\succcurlyeq_{#1}}
 
+\newcommand{\sqsubsetdot}{\mathrel{{\sqsubset}\mkern-11mu}{\cdot}\mkern2mu}
 %\newcommand{\innerstep}{\leadsto}
 %\newcommand{\innerstep}[1][]{\mapstochar\xrightarrow{\smash{\xxlabel{\!\Inner\!}}}_{\!#1}}
-\newcommand{\innerstep}[1][]{\mathrel{\gostep[#1]^{\smash{\mkern-1mu\Inner\!}}}}
-\newcommand{\innerto}[1][]{\mathrel{\goto[#1]^{\smash{\mkern-1mu\Inner\!}}}}
-\newcommand{\innertoeq}[1][]{\mathrel{\gotoeq[#1]^{\smash{\mkern-1mu\Inner\!}}}}
+\newcommand{\innerstep}[1][]{\mathrel{\sqsubsetdot_{#1}^{\smash{\mkern-1mu\kInner\!}}}}
+%\newcommand{\innerto}[1][]{\mathrel{\goto[#1]^{\smash{\mkern-1mu\Inner\!}}}}
+\newcommand{\innertoeq}[1][]{\mathrel{\sqsubseteq_{#1}^{\smash{\mkern-1mu\kInner\!}}}}
 
-\newcommand{\absentstep}[1][]{\mathrel{\gostep[#1]^{\smash{\mkern-1mu\Absent\!}}}}
-\newcommand{\absentto}[1][]{\mathrel{\goto[#1]^{\smash{\mkern-1mu\Absent\!}}}}
-\newcommand{\absenttoeq}[1][]{\mathrel{\gotoeq[#1]^{\smash{\mkern-1mu\Absent\!}}}}
+\newcommand{\absentstep}[1][]{\mathrel{\sqsubsetdot_{#1}^{\smash{\mkern-1mu\kAbsent\!}}}}
+%\newcommand{\absentto}[1][]{\mathrel{\goto[#1]^{\smash{\mkern-1mu\Absent\!}}}}
+\newcommand{\absenttoeq}[1][]{\mathrel{\sqsubseteq_{#1}^{\smash{\mkern-1mu\kAbsent\!}}}}
 
-\newcommand{\shortstep}[1][]{\mathrel{\gostep[#1]^{\smash{\mkern-1mu\Short\!}}}}
-\newcommand{\shortto}[1][]{\mathrel{\goto[#1]^{\smash{\mkern-1mu\Short\!}}}}
-\newcommand{\shorttoeq}[1][]{\mathrel{\gotoeq[#1]^{\smash{\mkern-1mu\Short\!}}}}
+\newcommand{\transientstep}[1][]{\mathrel{\sqsubsetdot_{#1}^{\smash{\mkern-1mu\kTransient\!}}}}
+%\newcommand{\shortto}[1][]{\mathrel{\goto[#1]^{\smash{\mkern-1mu\Short\!}}}}
+\newcommand{\transienttoeq}[1][]{\mathrel{\sqsubseteq_{#1}^{\smash{\mkern-1mu\kTransient\!}}}}
 
 \newcommand{\final}{{\uparrow}}
 \newcommand{\pfinal}{{\upmapsto}}
@@ -168,6 +191,10 @@
 \newcommand{\step}[2][\,]{\mapstochar\xrightarrow{\xlabel{#2}}_{\!#1}}
 % negated mapsto-like transition
 \newcommand{\nstep}[2][\,]{\mapstochar\joinrel\xarrownot\xrightarrow{\xlabel{#2}}_{\!#1}}
+% step with unspecified label
+\newcommand{\stepany}[1][\,]{\mapsto_{\!#1}}
+% negated step with unspecified label
+\newcommand{\nstepany}[1][\,]{\mathrel{\!\arrownot\,\mapsto_{\!#1}}}
 
 % Transactional transition
 \newcommand{\tstep}[2][\,]{\mapstochar\xrightarrow{\xlabel{#2}}\mathrel{\mkern-13mu}\rightarrow_{\!#1}}
