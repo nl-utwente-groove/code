@@ -124,14 +124,11 @@ public interface GraphState extends Node, Phase {
      * Closes this state. This announces that no more outgoing transitions will
      * be generated. The return value indicates if the state was already closed.
      * @ensure <tt>isClosed()</tt>
-     * @param finished indicates that all transitions for this state have been added.
-     * This might fail to be the case in an incomplete exploration strategy; e.g.,
-     * linear exploration.
      * @return <code>true</code> if the state was closed as a result of this
      *         call; <code>false</code> if it was already closed
      * @see #isClosed()
      */
-    public boolean setClosed(boolean finished);
+    public boolean setClosed();
 
     /**
      * Tests if this state is fully explored, i.e., all outgoing transitions
@@ -157,22 +154,21 @@ public interface GraphState extends Node, Phase {
     }
 
     /**
-     * Declares this state to be complete, while also setting its absence level.
-     * @param absence level of the state; if positive, the state is absent
-     * @return if {@code false}, the state was already known to be complete
-     * @see Flag#COMPLETE
+     * Declares this state to be full.
+     * @return if {@code false}, the state was already known to be full
+     * @see Flag#FULL
      */
-    public boolean setComplete(int absence);
+    public boolean setFull();
 
     /**
-     * Indicates if this state is complete.
+     * Indicates if this state is full.
      * This is the case if
      * all outgoing paths have been explored up until a non-transient
      * or deadlocked state.
-     * @see Flag#COMPLETE
+     * @see Flag#FULL
      */
-    public default boolean isComplete() {
-        return hasFlag(Flag.COMPLETE);
+    public default boolean isFull() {
+        return hasFlag(Flag.FULL);
     }
 
     /**
@@ -218,12 +214,19 @@ public interface GraphState extends Node, Phase {
      * space. This is the case if the state is complete and has a positive absence
      * level, or if it is absent because of the violation of some constraint
      * (in combination with a {@link CheckPolicy#REMOVE} policy).
-     * @see #isComplete()
+     * @see #isFull()
      * @see #getAbsence()
      */
     public default boolean isAbsent() {
-        return hasFlag(Flag.ABSENT);
+        return Status.isAbsent(getStatus());
     }
+
+    /**
+     * Sets the absence level of this state to an equal or lower value.
+     * @param absence new absence level of the state; if zero, the state is set to present
+     * @return {@code true} if the absence level was decreased
+     */
+    public boolean setAbsence(int absence);
 
     /**
      * Indicates the absence level, which is defined as the lowest
@@ -231,11 +234,11 @@ public interface GraphState extends Node, Phase {
      * This is maximal ({@link Status#MAX_ABSENCE}) if the state is
      * erroneous, and 0 if the state is non-transient.
      * A state that is complete and has a positive absence level is absent.
-     * @see #isComplete()
+     * @see #isFull()
      * @see #isAbsent()
      */
     public default int getAbsence() {
-        if (isComplete()) {
+        if (isFull()) {
             return Status.getAbsence(getStatus());
         } else {
             return getCache().getAbsence();

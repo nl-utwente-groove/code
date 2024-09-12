@@ -490,9 +490,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         } else {
             // determine main flag
             Flag main = null;
-            if (state.isAbsent()) {
-                main = Flag.ABSENT;
-            } else if (state.isInner()) {
+            if (state.isInner()) {
                 main = Flag.INNER;
             } else if (state.isError()) {
                 main = Flag.ERROR;
@@ -500,8 +498,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 main = Flag.TRANSIENT;
             } else if (state.isFinal()) {
                 main = Flag.FINAL;
-            } else if (state.isComplete()) {
-                main = Flag.COMPLETE;
+            } else if (state.isFull()) {
+                main = Flag.FULL;
             } else if (state.isClosed()) {
                 main = Flag.CLOSED;
             }
@@ -523,11 +521,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
             for (Flag f : Flag.values()) {
                 String text = null;
                 switch (f) {
-                case ABSENT:
-                    text = "absent";
-                    break;
                 case CLOSED:
-                case COMPLETE:
+                case FULL:
                     text = "closed";
                     break;
                 case ERROR:

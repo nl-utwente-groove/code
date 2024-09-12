@@ -149,7 +149,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         Set<RuleTransition> result = this.steps;
         if (result == null) {
             result = computeSteps();
-            if (source().isComplete()) {
+            if (source().isFull()) {
                 this.steps = result;
             }
         }

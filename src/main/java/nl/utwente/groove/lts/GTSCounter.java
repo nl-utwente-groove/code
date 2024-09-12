@@ -48,8 +48,8 @@ public class GTSCounter implements GTSListener {
             this.count[flag.ordinal()] = 0;
         }
         this.absentCount = 0;
-        this.recipeStageCount = 0;
-        this.recipeStepCount = 0;
+        this.innerStateCount = 0;
+        this.innerStepCount = 0;
         this.ruleTransitionCount = 0;
         this.absentTransitionCount = 0;
         this.inTransMap.clear();
@@ -77,10 +77,10 @@ public class GTSCounter implements GTSListener {
         if (state.isAbsent()) {
             this.absentCount++;
         }
-        if (!state.isComplete()) {
+        if (!state.isFull()) {
             this.inTransMap.put(state, new ArrayList<>());
         } else if (state.isInner()) {
-            this.recipeStageCount++;
+            this.innerStateCount++;
         }
     }
 
@@ -95,7 +95,7 @@ public class GTSCounter implements GTSListener {
         }
 
         if (trans.isInnerStep()) {
-            this.recipeStepCount++;
+            this.innerStepCount++;
         }
         if (trans instanceof RuleTransition) {
             this.ruleTransitionCount++;
@@ -103,7 +103,7 @@ public class GTSCounter implements GTSListener {
         GraphState target = trans.target();
         if (target.isAbsent()) {
             this.absentTransitionCount++;
-        } else if (trans instanceof RuleTransition rt && !target.isComplete()) {
+        } else if (trans instanceof RuleTransition rt && !target.isFull()) {
             this.inTransMap.get(target).add(rt);
         }
     }
@@ -116,9 +116,9 @@ public class GTSCounter implements GTSListener {
             }
         }
         if (Flag.CLOSED.test(change) && state.isInner()) {
-            this.recipeStageCount++;
+            this.innerStateCount++;
         }
-        if (Flag.COMPLETE.test(change)) {
+        if (Flag.FULL.test(change)) {
             List<RuleTransition> inTrans = this.inTransMap.remove(state);
             if (state.isAbsent()) {
                 this.absentTransitionCount += inTrans.size();
@@ -132,9 +132,9 @@ public class GTSCounter implements GTSListener {
         return this.gts.nodeCount();
     }
 
-    /** Returns the number of high-level states in the GTS. */
-    public int getRecipeStageCount() {
-        return this.recipeStageCount;
+    /** Returns the number of inner states in the GTS. */
+    public int getInnerStateCount() {
+        return this.innerStateCount;
     }
 
     /** Returns the number of final states in the GTS. */
@@ -157,9 +157,9 @@ public class GTSCounter implements GTSListener {
         return this.gts.edgeCount();
     }
 
-    /** Returns the total number of non-partial transitions in the GTS. */
-    public int getRecipeStepCount() {
-        return this.recipeStepCount;
+    /** Returns the total number of inner transitions in the GTS. */
+    public int getInnerStepCount() {
+        return this.innerStepCount;
     }
 
     /** Returns the total number of rule transitions in the GTS. */
@@ -180,8 +180,8 @@ public class GTSCounter implements GTSListener {
     private GTS gts;
     private int absentCount;
     private final int[] count = new int[Flag.values().length];
-    private int recipeStageCount;
-    private int recipeStepCount;
+    private int innerStateCount;
+    private int innerStepCount;
     private int ruleTransitionCount;
     private int absentTransitionCount;
     private final Map<GraphState,List<RuleTransition>> inTransMap = new HashMap<>();

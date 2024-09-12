@@ -155,12 +155,12 @@ public class StateMatches extends MatchResultSet {
         if (!frame.isTrial()) {
             if (isEmpty()) {
                 assert isFinished();
-                getState().setClosed(true);
+                getState().setClosed();
             }
         } else if (!hasOutstanding()) {
             StepAttempt attempt = frame.getAttempt();
             // Collect the new matches
-            // test whether a match is guaranteed to yield an exposed successor state
+            // test whether a match is guaranteed to yield a direct successor with lower or equal transience
             boolean matchImpliesSuccessor = !this.removePolicies;
             // keep track of property violations
             CheckPolicy violated = CheckPolicy.SILENT;
@@ -204,7 +204,7 @@ public class StateMatches extends MatchResultSet {
             result = true;
         }
         int updatedTransience = getState().getActualFrame().getTransience();
-        if (updatedTransience < originalTransience) {
+        if (updatedTransience < originalTransience && !this.state.isClosed()) {
             getCache().notifyTransience(updatedTransience);
         }
         return result;
@@ -215,19 +215,19 @@ public class StateMatches extends MatchResultSet {
      */
     private final boolean removePolicies;
 
-    private MatchCollector getMatchCollector() {
-        if (this.matcher == null) {
-            this.matcher = getCache().createMatchCollector();
-        }
-        return this.matcher;
-    }
-
     /**
      * Indicates that there are no more matches, and the schedule is finished.
      * If this is the case, the state can be closed.
      */
     boolean isFinished() {
         return isEmpty() && !getState().getActualFrame().isTrial();
+    }
+
+    private MatchCollector getMatchCollector() {
+        if (this.matcher == null) {
+            this.matcher = getCache().createMatchCollector();
+        }
+        return this.matcher;
     }
 
     /** Strategy object used to find the matches. */

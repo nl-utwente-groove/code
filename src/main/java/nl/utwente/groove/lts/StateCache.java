@@ -57,8 +57,8 @@ public class StateCache {
         this.freezeGraphs = this.record.isCollapse();
         this.graphFactory
             = DeltaHostGraph.getInstance(state.isSimple(), this.record.isCopyGraphs());
-        if (DEBUG && state.isComplete()) {
-            System.out.printf("Recreating cache for ceomplete state %s%n", state);
+        if (DEBUG && state.isFull()) {
+            System.out.printf("Recreating cache for full state %s%n", state);
         }
     }
 
@@ -76,7 +76,7 @@ public class StateCache {
             }
         }
         if (getMatches().isFinished()) {
-            getState().setClosed(true);
+            getState().setClosed();
         }
         return result;
     }
@@ -105,6 +105,9 @@ public class StateCache {
         return this.state;
     }
 
+    /** The graph state of this cache. */
+    private final AbstractGraphState state;
+
     /**
      * Lazily creates and returns the graph of the underlying state. This is
      * only supported if the state is a {@link GraphNextState}
@@ -123,6 +126,9 @@ public class StateCache {
         return this.graph != null;
     }
 
+    /** Cached graph for this state. */
+    private DeltaHostGraph graph;
+
     /**
      * Lazily creates and returns the delta with respect to the
      * parent state.
@@ -132,6 +138,22 @@ public class StateCache {
             this.delta = createDelta();
         }
         return this.delta;
+    }
+
+    /** The delta with respect to the state's parent. */
+    private DeltaApplier delta;
+
+    /**
+     * Callback factory method for a rule application on the basis of this
+     * state.
+     */
+    private DeltaApplier createDelta() {
+        DeltaApplier result = null;
+        if (this.state instanceof DefaultGraphNextState state) {
+            return new RuleApplication(state.getEvent(), state.source().getGraph(),
+                state.getAddedNodes());
+        }
+        return result;
     }
 
     final ExploreData getExploreData() {
@@ -155,19 +177,6 @@ public class StateCache {
     /** Notifies the cache of a decrease in transient depth of the control frame. */
     final void notifyTransience(int depth) {
         getExploreData().notifyTransience(depth);
-    }
-
-    /**
-     * Callback factory method for a rule application on the basis of this
-     * state.
-     */
-    private DeltaApplier createDelta() {
-        DeltaApplier result = null;
-        if (this.state instanceof DefaultGraphNextState state) {
-            return new RuleApplication(state.getEvent(), state.source().getGraph(),
-                state.getAddedNodes());
-        }
-        return result;
     }
 
     /**
@@ -209,10 +218,10 @@ public class StateCache {
                 state.setFrozenGraph(computeFrozenGraph(result));
             }
         }
-        if (getState().isComplete() && getState().isError()) {
+        if (getState().isFull() && getState().isError()) {
             if (getState().getGTS().getTypePolicy() != CheckPolicy.OFF) {
                 // apparently we're reconstructing the graph after the state was already
-                // completed and found to be erroneous; so reconstruct the type errors
+                // filled and found to be erroneous; so reconstruct the type errors
                 result.addErrors(result.checkTypeConstraints());
             }
             // check the property and deadlock constraints
@@ -328,6 +337,9 @@ public class StateCache {
         return this.transitionMap;
     }
 
+    /** Cached map from events to target transitions. */
+    private KeySet<GraphTransitionKey,GraphTransition> transitionMap;
+
     /**
      * Computes a mapping from the events to the
      * outgoing transitions of this state.
@@ -368,6 +380,12 @@ public class StateCache {
     }
 
     /**
+     * The set of outgoing transitions computed for the underlying graph,
+     * for every class of graph transitions.
+     */
+    private Set<GraphTransitionStub> stubSet;
+
+    /**
      * Reconstructs the set of {@link nl.utwente.groove.lts.RuleTransitionStub}s from the
      * corresponding array in the underlying graph state. It is assumed that
      * <code>getState().isClosed()</code>.
@@ -402,6 +420,7 @@ public class StateCache {
         };
     }
 
+    /** Returns the object keeping track of the explored matches of this state. */
     StateMatches getMatches() {
         if (this.stateMatches == null) {
             this.stateMatches = new StateMatches(this);
@@ -421,21 +440,8 @@ public class StateCache {
         return "StateCache [state=" + this.state + "]";
     }
 
-    /**
-     * The set of outgoing transitions computed for the underlying graph,
-     * for every class of graph transitions.
-     */
-    private Set<GraphTransitionStub> stubSet;
-    /** The graph state of this cache. */
-    private final AbstractGraphState state;
     /** The system record generating this state. */
     private final Record record;
-    /** The delta with respect to the state's parent. */
-    private DeltaApplier delta;
-    /** Cached map from events to target transitions. */
-    private KeySet<GraphTransitionKey,GraphTransition> transitionMap;
-    /** Cached graph for this state. */
-    private DeltaHostGraph graph;
     /**
      * Flag indicating if (a fraction of the) state graphs should be frozen.
      * This is set to <code>true</code> if states in the GTS are collapsed.

@@ -27,10 +27,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNull;
-
 import nl.utwente.groove.control.Assignment;
-import nl.utwente.groove.control.Valuator;
 import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.host.HostNode;
@@ -99,7 +96,7 @@ class ExploreData {
             return;
         }
         ExploreData succData = succ.getCache().getExploreData();
-        this.absence = Math.min(this.absence, succData.absence);
+        setAbsence(succData.absence);
         if (getState().isTransient()) {
             addReachable(partial);
             if (succ.isTransient()) {
@@ -110,7 +107,7 @@ class ExploreData {
                 for (var succRecipeTarget : succData.getRecipeTargets()) {
                     addRecipeTarget(succRecipeTarget);
                 }
-                if (!succ.isComplete()) {
+                if (!succ.isFull()) {
                     succData.parentTransients.add(this);
                 }
             }
@@ -122,7 +119,7 @@ class ExploreData {
             } else {
                 addRecipeTransition(partial, new RecipeTarget(partial));
             }
-            if (succ.isTransient() && !succ.isComplete()) {
+            if (succ.isTransient() && !succ.isFull()) {
                 succData.inRecipeInits.add(partial);
             }
         }
@@ -140,7 +137,7 @@ class ExploreData {
             fireChanged(getState(), Change.CLOSURE);
         }
         if (this.reachableTransients.isEmpty()) {
-            setStateComplete();
+            setStateFull();
         }
     }
 
@@ -149,9 +146,7 @@ class ExploreData {
         if (DEBUG) {
             System.out.printf("Transient depth of %s set to %s%n", getState(), transience);
         }
-        if (transience < this.absence) {
-            this.absence = transience;
-        }
+        setAbsence(transience);
         Change change = isPrimeInternal() && transience == 0
             ? Change.STEADIED
             : Change.TRANSIENCE;
@@ -183,10 +178,10 @@ class ExploreData {
     private void notifyChildChanged(GraphState child, Change change) {
         if ((!child.isTransient() || child.isClosed()) && this.reachableTransients.remove(child)
             || this.reachableTransients.contains(child)) {
-            this.absence = Math.min(this.absence, child.getAbsence());
+            setAbsence(child.getAbsence());
             fireChanged(child, change);
             if (this.reachableTransients.isEmpty() && getState().isClosed()) {
-                setStateComplete();
+                setStateFull();
             }
         }
     }
@@ -200,7 +195,7 @@ class ExploreData {
         var target = partial.target();
         // add the partial if it was not already known
         if (this.reachablePartials.add(partial)) {
-            this.absence = Math.min(this.absence, target.getAbsence());
+            setAbsence(target.getAbsence());
             // notify all parents of the new partial
             for (ExploreData parent : this.parentTransients) {
                 parent.addReachable(partial);
@@ -214,8 +209,8 @@ class ExploreData {
         }
     }
 
-    private void setStateComplete() {
-        getState().setComplete(this.absence);
+    private void setStateFull() {
+        getState().setFull();
         this.parentTransients.clear();
     }
 
@@ -247,13 +242,26 @@ class ExploreData {
      */
     private List<RecipeTarget> recipeTargets;
 
+    private RecipeTransition createRecipeTransition(RuleTransition partial, RecipeTarget target) {
+        return new RecipeTransition(partial, target.outValues, target.state());
+    }
+
     private void addRecipeTransition(RuleTransition partial, RecipeTarget target) {
-        RecipeTransition trans = new RecipeTransition(partial, target.outValues, target.state());
+        var trans = createRecipeTransition(partial, target);
         getState().getGTS().addTransition(trans);
         if (DEBUG) {
             System.out
                 .printf("Recipe transition added: %s--%s-->%s%n", trans.source(), trans.label(),
                         target);
+        }
+    }
+
+    /** Sets the absence value to a new value, if it is lower than the current value. */
+    private void setAbsence(int newAbsence) {
+        int oldAbsence = this.absence;
+        if (newAbsence < oldAbsence) {
+            this.absence = newAbsence;
+            getState().setAbsence(newAbsence);
         }
     }
 
@@ -293,12 +301,6 @@ class ExploreData {
     /** Transitively closed set of reachable partial transitions. */
     private final Set<RuleTransition> reachablePartials = new HashSet<>();
 
-    /** Returns the valuator for this exploration. */
-    @NonNull
-    Valuator getValuator() {
-        return getState().getGTS().getRecord().getValuator();
-    }
-
     private final static boolean DEBUG = false;
 
     /**
@@ -327,9 +329,9 @@ class ExploreData {
         private void build() {
             while (!this.queue.isEmpty()) {
                 ExploreData source = this.queue.poll();
-                for (GraphTransition trans : source.getState().getTransitions(Claz.PRESENT)) {
+                for (GraphTransition trans : source.getState().getTransitions(Claz.NON_ABSENT)) {
                     var target = trans.target();
-                    assert !target.isInner() || trans.target().isComplete();
+                    assert !target.isInner() || trans.target().isFull();
                     if (target.getPrimeFrame().isInner()) {
                         ExploreData targetData = target.getCache().getExploreData();
                         addData(targetData);

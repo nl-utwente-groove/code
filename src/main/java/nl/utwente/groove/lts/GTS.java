@@ -246,32 +246,32 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     }
 
     /**
-     * Returns a view on the set of <i>exposed</i> states in the GTS.
-     * A state is exposed if it is not absent, erroneous or inside a recipe.
+     * Returns a view on the set of <i>public</i> states in the GTS.
+     * A state is public if it is not absent (including erroneous) or inner.
      * @see GraphState#isPublic()
      */
     public Set<? extends GraphState> getStates() {
-        var result = this.exposedStateSet;
+        var result = this.publicStateSet;
         if (result == null) {
-            this.exposedStateSet = result = SetView
-                .instance(nodeSet(), obj -> obj instanceof GraphState gs && gs.isPublic());
+            this.publicStateSet = result
+                = SetView.instance(nodeSet(), obj -> obj instanceof GraphState gs && gs.isPublic());
         }
         return result;
     }
 
-    /** Set of exposed states, as a view on {@link #allStateSet}. */
-    private @Nullable Set<? extends GraphState> exposedStateSet;
+    /** Set of public states, as a view on {@link #allStateSet}. */
+    private @Nullable Set<? extends GraphState> publicStateSet;
 
     /**
-     * Returns the number of exposed states.
+     * Returns the number of public states.
      * Calling this is more efficient than {@code getStates().size()}.
      */
     public int getStateCount() {
-        return this.exposedStateCount;
+        return this.publicStateCount;
     }
 
     /** Number of exposed states, stored separately for efficiency. */
-    private int exposedStateCount;
+    private int publicStateCount;
 
     /**
      * Returns the set of error states found so far.
@@ -384,10 +384,10 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      * Indicates if this GTS has internal steps.
      */
     public boolean hasInternalSteps() {
-        return this.internals;
+        return this.inners;
     }
 
-    private boolean internals;
+    private boolean inners;
 
     /**
      * Adds a transition to the GTS, under the assumption that the source and
@@ -510,7 +510,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         this.transients |= state.isTransient();
         this.absents |= state.isAbsent();
         if (state.isPublic()) {
-            this.exposedStateCount++;
+            this.publicStateCount++;
         }
         super.fireAddNode(state);
         for (GTSListener listener : getGTSListeners()) {
@@ -524,7 +524,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      */
     @Override
     protected void fireAddEdge(GraphTransition edge) {
-        this.internals |= edge.isInnerStep();
+        this.inners |= edge.isInnerStep();
         this.allTransitionCount++;
         super.fireAddEdge(edge);
         for (GTSListener listener : getGTSListeners()) {
@@ -540,18 +540,18 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     protected void fireUpdateState(GraphState state, int oldStatus) {
         this.transients |= state.isTransient();
         this.absents |= state.isAbsent();
-        boolean wasExposed = Status.isPublic(oldStatus);
-        boolean isExposed = state.isPublic();
-        if (wasExposed != isExposed) {
-            this.exposedStateCount += wasExposed
+        boolean wasPublic = Status.isPublic(oldStatus);
+        boolean isPublic = state.isPublic();
+        if (wasPublic != isPublic) {
+            this.publicStateCount += wasPublic
                 ? -1
                 : +1;
         }
         for (Flag recorded : FLAG_ARRAY) {
             var flaggedStates = this.statesMap.get(recorded);
-            boolean had = wasExposed && recorded.test(oldStatus);
+            boolean had = wasPublic && recorded.test(oldStatus);
             int index = recorded.ordinal();
-            if (isExposed && state.hasFlag(recorded)) {
+            if (isPublic && state.hasFlag(recorded)) {
                 if (!had) {
                     this.stateCounts[index]++;
                     if (flaggedStates != null) {

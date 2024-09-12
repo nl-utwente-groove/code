@@ -181,11 +181,11 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     /**
      * Checks final constraints on the state, in particular deadlock
      * constraints.
-     * This is called at finalisation time, just before the state is set to {@link Flag#COMPLETE}.
+     * This is called at the time the state is set to {@link Flag#FULL}.
      * If any violations are found, they are added as errors to the graph;
      * moreover, depending on the policy, the control frame is set to absent or error.
      */
-    public void checkDoneConstraints() {
+    public void checkFullConstraints() {
         if (isPublic() && getActualFrame().isDead() && getGTS().isCheckDeadlock()) {
             boolean alive = false;
             for (GraphTransition trans : getTransitions()) {
@@ -227,24 +227,12 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     @Override
-    public boolean setClosed(boolean complete) {
+    public boolean setClosed() {
         int oldStatus = this.status;
         boolean result = setStatus(Flag.CLOSED, true);
         if (result) {
             setStoredTransitionStubs(getCachedTransitionStubs());
-            // reset the schedule to the beginning if the state was not
-            // completely explored
-            if (!complete && getActualFrame().isTrial()) {
-                setFrame(getPrimeFrame(), oldStatus);
-            } else {
-                fireStatus(oldStatus);
-            }
-            // the flag below are set when the actual frame is updated;
-            // no need to do it again
-            //            setStatus(Flag.TRANSIENT, getActualFrame().isTransient());
-            //            setStatus(Flag.INTERNAL, getActualFrame().isInternal());
-            //            setStatus(Flag.ERROR, getActualFrame().isError());
-            //            setStatus(Flag.ABSENT, getActualFrame().isRemoved());
+            fireStatus(oldStatus);
             getCache().notifyClosure();
         }
         return result;
@@ -272,17 +260,14 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     @Override
-    public boolean setComplete(int absence) {
+    public boolean setFull() {
         int oldStatus = this.status;
-        boolean result = setStatus(Flag.COMPLETE, true);
+        boolean result = setStatus(Flag.FULL, true);
         if (result) {
-            setAbsence(absence);
-            // the flag below are set when the actual frame is updated;
-            // no need to do it again
-            //            setStatus(Flag.ERROR, getActualFrame().isError());
-            //            setStatus(Flag.ABSENT, getActualFrame().isRemoved());
-            setStatus(Flag.FINAL, getActualFrame().isFinal());
-            checkDoneConstraints();
+            if (getAbsence() > 0) {
+                setFrame(getActualFrame().onRemove());
+            }
+            checkFullConstraints();
             setCacheCollectable();
             fireStatus(oldStatus);
         }
@@ -295,15 +280,24 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         return setStatus(flag, value);
     }
 
-    /**
-     * Sets the absence value of this state,
-     * and if the absence value is positive, sets the control frame to absent.
-     */
-    private void setAbsence(int absence) {
-        this.status = Status.setAbsence(this.status, absence);
-        if (absence > 0) {
-            setFrame(getActualFrame().onRemove());
+    @Override
+    public boolean setAbsence(int absence) {
+        assert absence >= 0 : "Negative absence %s not allowed".formatted(absence);
+        assert !isFull() : "Absence %s cannot be set when state is full".formatted(absence);
+        int oldStatus = this.status;
+        int oldAbsence = Status.getAbsence(oldStatus);
+        assert absence <= oldAbsence : "New absence %s exceeds old value %s"
+            .formatted(absence, oldAbsence);
+        boolean result = absence < oldAbsence;
+        if (result) {
+            int newStatus = Status.setAbsence(oldStatus, absence);
+            if (absence == 0) {
+                newStatus = Flag.PRESENT.set(newStatus);
+            }
+            this.status = newStatus;
+            fireStatus(oldStatus);
         }
+        return result;
     }
 
     /**
@@ -335,7 +329,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     /** Field holding status flags of the state. */
-    private int status;
+    private int status = Status.INIT_STATUS;
 
     /**
      * Retrieves a frozen representation of the graph, in the form of all nodes
@@ -453,11 +447,12 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         statusChanged |= setStatus(Flag.INNER, frame.isInner());
         if (frame.isError()) {
             statusChanged |= setStatus(Flag.ERROR, true);
+        } else {
+            statusChanged |= setStatus(Flag.FINAL, frame.isFinal());
         }
-        if (frame.isRemoved()) {
-            statusChanged |= setStatus(Flag.ABSENT, true);
-        }
-        if (!fresh && statusChanged) {
+        if (fresh) {
+            setAbsence(frame.getTransience());
+        } else if (statusChanged) {
             fireStatus(oldStatus);
         }
     }

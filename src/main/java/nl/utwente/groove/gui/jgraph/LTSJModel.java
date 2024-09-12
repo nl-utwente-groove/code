@@ -119,17 +119,17 @@ final public class LTSJModel extends JModel<@NonNull GTS> implements GTSListener
             if (Flag.CLOSED.test(change)) {
                 jCell.setLook(Look.OPEN, false);
             }
-            if (Flag.COMPLETE.test(change)) {
+            if (Flag.FULL.test(change)) {
                 jCell.setLook(Look.RECIPE, explored.isInner());
                 jCell.setLook(Look.TRANSIENT, explored.isTransient());
                 jCell.setLook(Look.FINAL, explored.isFinal());
-            }
-            if (Flag.ABSENT.test(change)) {
-                var iter = jCell.getContext();
-                while (iter.hasNext()) {
-                    iter.next().setLook(Look.ABSENT, true);
+                if (explored.isAbsent()) {
+                    var iter = jCell.getContext();
+                    while (iter.hasNext()) {
+                        iter.next().setLook(Look.ABSENT, true);
+                    }
+                    jCell.setLook(Look.ABSENT, true);
                 }
-                jCell.setLook(Look.ABSENT, true);
             }
             jCell.setStale(VisualKey.refreshables());
         }

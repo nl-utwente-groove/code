@@ -409,7 +409,7 @@ public class StatisticsReporter extends AExplorationReporter {
             if (Flag.ERROR.test(change)) {
                 this.errorStateCount++;
             }
-            if (Flag.COMPLETE.test(change) && explored.isAbsent()) {
+            if (Flag.FULL.test(change) && explored.isAbsent()) {
                 this.absentStateCount++;
             }
         }

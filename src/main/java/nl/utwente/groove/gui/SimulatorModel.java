@@ -496,7 +496,7 @@ public class SimulatorModel implements Cloneable {
     private GraphTransitionKey getMatch(GraphState state) {
         GraphTransitionKey result = null;
         // find an outgoing transition that is in the trace, if any
-        for (var trans : state.getTransitions(Claz.PRESENT)) {
+        for (var trans : state.getTransitions(Claz.NON_ABSENT)) {
             if (getTrace().contains(trans)) {
                 result = trans.getKey();
             }

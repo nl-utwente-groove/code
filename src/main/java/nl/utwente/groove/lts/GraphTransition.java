@@ -191,13 +191,13 @@ public interface GraphTransition extends GEdge<GraphState> {
             }
         },
         /**
-         * All transitions between present states, including internal transitions.
+         * All transitions between non-absent states, including inner ones.
          * @see GraphState#isPresent()
          */
-        PRESENT {
+        NON_ABSENT {
             @Override
             public boolean admits(GraphTransition trans) {
-                return trans.source().isPresent() && trans.target().isPresent();
+                return !trans.source().isAbsent() && !trans.target().isAbsent();
             }
         },;
 
@@ -213,7 +213,7 @@ public interface GraphTransition extends GEdge<GraphState> {
             if (includeInner) {
                 return includeAbsent
                     ? ANY
-                    : PRESENT;
+                    : NON_ABSENT;
             } else {
                 return includeAbsent
                     ? OUTER

@@ -86,20 +86,20 @@ public class RecipeTest {
     }
 
     private void setStateCount(int highLevelCount, int lowLevelCount) {
-        this.highLevelStateCount = highLevelCount;
-        this.lowLevelStateCount = lowLevelCount;
+        this.outerStateCount = highLevelCount;
+        this.nonAbsentStateCount = lowLevelCount;
     }
 
-    private int highLevelStateCount;
-    private int lowLevelStateCount;
+    private int outerStateCount;
+    private int nonAbsentStateCount;
 
     private void setTransitionCount(int highLevelCount, int lowLevelCount) {
-        this.highLevelTransCount = highLevelCount;
-        this.lowLevelTransCount = lowLevelCount;
+        this.outerTransCount = highLevelCount;
+        this.nonAbsentTransCount = lowLevelCount;
     }
 
-    private int lowLevelTransCount;
-    private int highLevelTransCount;
+    private int nonAbsentTransCount;
+    private int outerTransCount;
 
     /**
      *
@@ -146,13 +146,13 @@ public class RecipeTest {
                 Viewer.showGraph(a.toGraph(FULL_GRAPH), true);
             }
             runExploration(gg, strategyDescr);
-            assertEquals(this.highLevelStateCount,
-                         counter.getStateCount() - counter.getRecipeStageCount());
-            assertEquals(this.lowLevelStateCount,
+            assertEquals(this.outerStateCount,
+                         counter.getStateCount() - counter.getInnerStateCount());
+            assertEquals(this.nonAbsentStateCount,
                          counter.getStateCount() - counter.getAbsentStateCount());
-            assertEquals(this.highLevelTransCount,
-                         counter.getTransitionCount() - counter.getRecipeStepCount());
-            assertEquals(this.lowLevelTransCount,
+            assertEquals(this.outerTransCount,
+                         counter.getTransitionCount() - counter.getInnerStepCount());
+            assertEquals(this.nonAbsentTransCount,
                          counter.getRuleTransitionCount() - counter.getAbsentTransitionCount());
         } catch (FormatException exc) {
             fail(exc.toString());

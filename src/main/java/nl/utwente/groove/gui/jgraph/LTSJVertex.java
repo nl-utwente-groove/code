@@ -78,8 +78,7 @@ public class LTSJVertex extends AJVertex<@NonNull GTS,LTSJGraph,LTSJModel,LTSJEd
 
     /** Indicates that all outgoing transitions of this node are also visible. */
     public boolean isAllOutVisible() {
-        var result = getNode().isComplete() && getOutCount() == getOutVisibleCount();
-        return result;
+        return getNode().isFull() && getOutCount() == getOutVisibleCount();
     }
 
     /** Returns the number of outgoing transitions that are in principle shown on the LTS panel. */
