@@ -12,6 +12,7 @@
 \renewcommand{\ULdepth}{.7pt}
 \normalem
 \usepackage{comment}
+\usepackage{algorithm}
 \usepackage[noend]{algpseudocode}
 \algrenewcommand{\algorithmicfor}{{\bfseries\sffamily for}}
 \algrenewcommand{\algorithmicif}{{\bfseries\sffamily if}}
@@ -32,6 +33,8 @@
 \newcommand{\stat}[1]{[{#1}]}
 
 \newcommand{\dom}{\mathop{\mathrm{dom}}}
+\newcommand{\True}{\mathbf{true}}
+\newcommand{\False}{\mathbf{false}}
 
 % Adding a pseudo-state to a configuration
 \newcommand{\addp}[2]{{#1}{\cdot}{#2}}
@@ -70,13 +73,19 @@
 \newcommand{\Present}[1][\,]{\ensuremath{\mathit{\kPresent}}_{\!#1}\xspace}
 \newcommand{\pPresent}{\mbox{\uline{\textit{\kPresent}}}\xspace}
 
-% Steady snt transient
+% Steady and transient
 \newcommand{\kSteady}{stdy}
 \newcommand{\Steady}[1][\mkern1mu]{\ensuremath{\mathit{\kSteady}}_{\mkern-1mu#1}\xspace}
 \newcommand{\pSteady}{\mbox{\textit{\uline{\kSteady}}}\xspace}
 \newcommand{\kTransient}{trnt}
 \newcommand{\Transient}[1][\,]{\ensuremath{\mathit{\kTransient}}_{\!#1}\xspace}
 \newcommand{\pTransient}{\mbox{\textit{\uline{\kTransient}}}\xspace}
+
+% Fertile and barren
+\newcommand{\kFertile}{frtl}
+\newcommand{\pFertile}{\mbox{\textit{\uline{\kFertile}}}\xspace}
+\newcommand{\kBarren}{brrn}
+\newcommand{\pBarren}{\mbox{\textit{\uline{\kBarren}}}\xspace}
 
 % Transience level
 \newcommand{\TLevel}[1][]{\ensuremath{\tau}_{#1}\xspace}
@@ -96,26 +105,28 @@
 \newcommand{\Atomic}[1][]{\ensuremath{\mathit{atom}}_{\!#1}\xspace}
 
 % Past outer pseudo-states
-\newcommand{\BackOut}[1][\mkern2mu]{\mathcal{B}^{\smash{\Outer\!}}_{\smash{\mkern-2mu#1}}}
+\newcommand{\BackOut}[1][\mkern2mu]{\cB^{\smash{\kOuter\!}}_{\smash{\mkern-2mu#1}}}
 % Reachable outer pseudo-states
-\newcommand{\ForwOut}[1][\mkern2mu]{\mathcal{F}^{\smash{\Outer\!}}_{\smash{#1}}}
+\newcommand{\ForwOut}[1][\mkern2mu]{\cF^{\smash{\kOuter\!}}_{\smash{\!#1}}}
 % Past inner pseudo-states
-\newcommand{\BackIn}[1][\mkern2mu]{\mathcal{B}^{\smash{\Inner\!}}_{\smash{\mkern-2mu#1}}}
+\newcommand{\BackIn}[1][\mkern2mu]{\cB^{\smash{\kInner\!}}_{\smash{\mkern-2mu#1}}}
 % Reachable inner pseudo-states
-\newcommand{\ForwIn}[1][\mkern2mu]{\mathcal{F}^{\smash{\Inner\!}}_{\smash{#1}}}
+\newcommand{\ForwIn}[1][\mkern2mu]{\cF^{\smash{\kInner\!}}_{\smash{\!#1}}}
 % Past transient pseudo-states
-\newcommand{\BackTrans}[1][]{\mathit{B}^{\smash{\kTransient}}_{\smash{\mkern-2mu#1}}}
+\newcommand{\BackTrans}[1][]{\cB^{\smash{\kTransient}}_{\smash{\mkern-2mu#1}}}
 % Reachable transient pseudo-states
-\newcommand{\ForwTrans}[1][\mkern2mu]{\mathcal{F}^{\mathit{\kTransient}}_{\smash{#1}}}
+\newcommand{\ForwTrans}[1][\mkern2mu]{\cF^{\kTransient}_{\smash{\!#1}}}
 % Reachable transient open pseudo-states
-\newcommand{\ForwTrOp}[1][\mkern2mu]{\mathcal{F}^{\mathit{trop}}_{\smash{#1}}}
+\newcommand{\ForwTrOp}[1][\mkern2mu]{\cF^{\mathit{trop}}_{\smash{\!#1}}}
 
 % Outgoing transitions
-\newcommand{\OutTrans}[1][\mkern2mu]{\mathcal{T}_{\smash{#1}}}
+\newcommand{\OutTrans}[1][\mkern2mu]{T_{\smash{#1}}}
 
 
 \newcommand{\cC}{\mathcal{C}}
 \newcommand{\cP}{\mathcal{P}}
+\newcommand{\cB}{\mathcal{B}}
+\newcommand{\cF}{\mathcal{F}}
 \newcommand{\cS}{\mathcal{S}}
 
 \newcommand{\natN}{\mathbb{N}}

@@ -11,51 +11,45 @@
 The following is a list of properties of states and transitions, marked \textbf{S} and/or \text{T} to signify whether they apply to states, transitions or both. Figure~\ref{fig:venn} shows these different concepts in relation to each other.
 
 \begin{description}
-\item[Absence (S)] Equivalent to \emph{absent depth}.
+\item[Absence level (S)] The \emph{absence level} of a state is the minimal transience level of that state and all its transitive successors. It follows that the \emph{absence level} is smaller than or equal to the \emph{transience level}. As long as a state is not \emph{full}, its \emph{absence level} may decrease as a consequence of further exploration.
 
-\item[Absent depth (S)] The \emph{absent depth} of a state is the minimal transient depth of that state and all its transitive successors. It follows that the \emph{absent depth} is smaller than or equal to the \emph{transient depth}. As long as a state is not \emph{full}, its \emph{absent depth} may decrease as a consequence of further exploration.
+\item[Absent (S,T)] A state or transition is \emph{absent} if it should not be considered to be part of the state space. In particular, a state is \emph{absent} if it is \emph{full} and has positive \emph{absence level}; a transition is \emph{absent} if its source or target state is \emph{absent}. It follows that an \emph{absent} state is always \emph{transient}. Whether or not a state or transition is \emph{absent} is independent of whether or not it is \emph{inner}.
 
-\item[Absent (S,T)] A state or transition is \emph{absent} if it should not be considered to be part of the state space. In particular, a state is \emph{absent} if it is \emph{full} and has positive \emph{absent depth}; a transition is \emph{absent} if its source or target state is \emph{absent}. It follows that an \emph{absent} state is always \emph{transient}. Whether or not a state or transition is \emph{absent} is independent of whether or not it is \emph{inner}.
-
-\item[Atomic (T)] A transition is \emph{atomic} if it is \emph{outer} and consists of a single step, meaning that its source and target states are \emph{steady}.
+\item[Atomic (T)] A transition is \emph{atomic} if it is \emph{outer} and its source and target states are \emph{steady}.
 
 \item[Closed (S)] A state is \emph{closed} if it is not \emph{open}. A \emph{closed} state may or may not be \emph{full}.
 
-\item[Public (S,T)] A state or transition is \emph{public} if it is both \emph{outer} and \emph{present} (or, in other words, if it is neither \emph{inner} nor \emph{absent}).
-
 \item[Final (S)] A state is \emph{final} if exploration is considered to terminate after reaching it. For instance, if two control blocks are concatenated, the second comes into play after the exploration of the first has reached a final state; also, if a state space is wrapped in an atomic block, the only \emph{steady} states, apart from the \emph{initial} state, are the \emph{final} ones. In other words, \emph{final} has the typical meaning in (regular) automata. A \emph{final} state is certainly \emph{closed} and \emph{steady}; it may or may not have successors.
 
-\item[Full (S)] A state is \emph{full} if it is \emph{closed} and all transitive successors up to (but not necessarily including) the first \emph{steady} state are also \emph{closed}. This means that the status of the state is fully known; in particular, it is possible, on the basis of its successors, to decide whether the state is \emph{absent}.
+\item[Full (S)] A state is \emph{full} if it is \emph{closed} and all successors up to (but not necessarily including) the first \emph{steady} state are also \emph{closed}. This means that the status of the state is fully known; in particular, it is possible, on the basis of its successors, to decide whether the state is \emph{absent}.
 
 \item[Initial (S)] A state is \emph{initial} if it is the start state for the exploration. Its \emph{prime} is \emph{steady}.
 
-\item[Short (S)] A state is \emph{short} if it is not \emph{full}.
-
 \item[Inner (S,T)] A state is \emph{inner} if it is inside the atomic block that makes up the body of a recipe, and a transition is \emph{inner} if it is a step in the execution of a recipe. Hence, an \emph{inner} state is certainly \emph{transient}, but the inverse does not hold. An \emph{inner} state that is not \emph{closed} may still evolve into an \emph{outer} one as a consequence of further exploration.
 
-\item[Latent (S)] A state is \emph{latent} if it is neither \emph{present} nor \emph{absent}. Since \emph{full} states are always either \emph{present} or \emph{absent}, \emph{latent} states cannot be \emph{full}.
+\item[Latent (S)] A state is \emph{latent} if it is neither \emph{present} nor \emph{absent}. Since \emph{full} states are always either \emph{present} or \emph{absent}, \emph{latent} are certainly \emph{short}.
 
 \item[Open (S)] A state is \emph{open} if its direct outgoing transitions are not fully known. It follows that an open state can become \emph{closed} through further exploration of its outgoing transitions.
 
 \item[Outer (S,T)] A state or transition is \emph{outer} if it is not \emph{inner}.
 
-\item[Partial (T)] A transition is \emph{partial} if it is part of an atomic block. Apart from the \emph{inner} transitions, the \emph{partial} ones include single-step recipe executions.
+\item[Partial (T)] A transition is \emph{partial} if it is not \emph{atomic}, meaning that it is a proper (sub)part of an atomic block. These include \emph{inner} transitions that constitute single-step recipe executions.
 
-\item[Present (S,T)] A state is \emph{present} if it has a transitive successor that is \emph{steady} (in other words, it has \emph{absent depth} zero); a transition is \emph{present} if its source and target are \emph{present}. If a state is not \emph{present}, it is either \emph{latent} or \emph{absent}; if a transition is not \emph{present}, it is \emph{absent}.
+\item[Present (S,T)] A state is \emph{present} if it has a transitive successor that is \emph{steady} (in other words, it has \emph{absence level} zero); a transition is \emph{present} if its source and target are \emph{present}. If a state is not \emph{present}, it is either \emph{latent} or \emph{absent}; if a transition is not \emph{present}, it is \emph{absent}.
 
-\item[Prime (S)] The \emph{prime} of a state is the version of that state when it is just discovered, and no outgoing transitions have been explored. Hence, the \emph{prime} is \emph{open}, and may be \emph{transient} even though (because of further exploration) the state itself has become \emph{steady} because its \emph{transient depth} has decreased to zero.
+\item[Prime (S)] The \emph{prime} of a state is the version of that state when it is just discovered, and no outgoing transitions have been explored. Hence, the \emph{prime} may be \emph{transient} even though (because of further exploration) the state itself has become \emph{steady} because its \emph{transience level} has decreased to zero.
 
 \item[Private (S,T)] A state or transition is \emph{private} if it is not \emph{public}; in other words, if it is either \emph{inner} or \emph{absent}.
 
-\item[Public (S,T)] A state or transition is \emph{public} if it is both \emph{outer} and \emph{present}.
+\item[Public (S,T)] A state or transition is \emph{public} if it is both \emph{outer} and \emph{present} (or, in other words, if it is neither \emph{inner} nor \emph{absent}).
+
+\item[Short (S)] A state is \emph{short} if it is not \emph{full}.
 
 \item[Steady (S)] A state is \emph{steady} if it is not \emph{transient}.
 
-\item[Transience (S)] Equivalent to \emph{transient depth}.
+\item[Transience level (S)] The \emph{transience level} of a state is the number of (nested) atomic blocks that it is inside of. A state is \emph{steady} if and only if its \emph{transience level} is zero; otherwise it is \emph{transient}. As long as a state is not \emph{closed}, its \emph{transiene level} may decrease as a consequence of further exploration.
 
-\item[Transient (S)] A state is \emph{transient} if it is inside an atomic block, meaning that it has a positive \emph{transient depth}. A \emph{transient} state may or may not be \emph{inner}. A transient state that is \emph{open} may still evolve into a \emph{steady} state as a consequence of further exploration.
-
-\item[Transient depth (S)] The \emph{transient depth} of a state is the number of (nested) atomic blocks that it is inside of. A state is \emph{steady} if and only if its \emph{transient depth} is zero; otherwise it is \emph{transient}. As long as a state is not \emph{closed}, its \emph{transient depth} may decrease as a consequence of further exploration.
+\item[Transient (S)] A state is \emph{transient} if it is inside an atomic block, meaning that it has a positive \emph{transience level}. A \emph{transient} state may or may not be \emph{inner}. A transient state that is \emph{open} may still evolve into a \emph{steady} state as a consequence of further exploration.
 \end{description}
 
 \begin{figure}
@@ -106,7 +100,7 @@ A \emph{state space fragment} is a tuple $\cS=\tupof{S,\Init,{\trans{}},{\final}
 \item $S$ a set of states;
 \item $\Init\in S$ the initial state;
 \item ${\trans{}}\subseteq S\times A\times S$ a transition relation;
-\item ${\final}\subseteq S$ a termination predicate;
+\item ${\final}\subseteq S$ a termination predicate, such that $p\trans a q$ implies $\neg p\final$;
 \item ${\TLevel}:S\to \natN$ a \emph{transience level} function, such that $\TLevel(\Init)=0$;
 \item $\Closed\subseteq S$ a set of \emph{closed states}, such that $\final\subseteq \Closed$.
 \end{itemize}
@@ -124,9 +118,9 @@ $\cS$ is called \emph{complete}, or just a \emph{state space}, if $\Closed=S$. A
 %
 \[ \Full = \Closed\cap \bigl(\Steady \cup \gensetof{s\in S}{\forall s\trans{} s'.\, s'\in \Full\cup \Steady}\bigr) \enspace.
 \]
-It follows that, if $\cS$ is complete, $\Full=S$.
+It follows that, if $\cS$ is complete, then $\Full=S$.
 
-\item $\ALevel[C](s)$ is the \emph{absence level} of $s$, meaning the minimum transient depth of $s$ and all its $\trans{}$-successors. It is defined by
+\item $\ALevel[C](s)$ is the \emph{absence level} of $s$, meaning the minimum transience level of $s$ and all its $\trans{}$-successors. It is defined by
 %
 \[ \ALevel: s\mapsto \min\gensetof{\TLevel(s')}{s\trans{}^* s'} \enspace. \]
 
@@ -165,7 +159,9 @@ With respect to a state space, the transition relation in a pseudo-state space i
 \item \emph{Closed} (denoted $\pClosed(p)$) if $p$ is a $\gotoeq$-maximum;
 \item \emph{Open} (denoted $\pOpen(p)$) if it is not closed;
 \item \emph{Outer} (denoted $\pOuter(p)$) if $\OLevel(p)=\TLevel(p)$;
-\item \emph{Inner} (denoted $\pInner(p)$) if it is not outer.
+\item \emph{Inner} (denoted $\pInner(p)$) if it is not outer;
+\item \emph{Fertile} (denoted $\pFertile(p)$) if $p\comefromeq\step{}q$ for some $q$;
+\item \emph{Barren} (denoted $\pBarren(p)$) if it is not fertile.
 \end{itemize}
 %
 (The underlining is used to visually distinguish the analogous predicates for pseudo-state spaces from those for state spaces.) Moreover, \emph{transience} and its complement, \emph{steadiness} ($\pTransient$ and $\pSteady$, respectively) are defined using $\pTLevel$ in analogy to state space fragments. A pseudo-state space is \emph{well-formed} if it satisfies the following additional properties:
@@ -174,21 +170,20 @@ With respect to a state space, the transition relation in a pseudo-state space i
 \item The initial pseudo-state is prime and steady; i.e., $\pPrime(\pInit)$ and $\pTLevel(\pInit)=0$.
 
 \item Evolution is acyclic and piecewise linear; i.e., every pseudo-state has at most one $\gostep$-predecessor and at most one $\gostep$-successor, and $\gotoeq$ is a partial order.
-% We use $\inc p$ to denote the $\gostep$-successor of $p$ (which is therefore not always defined).
 
 \item Stepping is deterministic; i.e., $\stepany$ is a partial function from $P$ to $A\times P$.
 
-\item All steps go from open, non-prime to prime pseudo-states; i.e., $p\stepany q$ implies $\pOpen(p)$, $\neg\pPrime(p)$ and $\pPrime(q)$.
+\item All steps go from open, non-prime pseudo-states to prime pseudo-states; i.e., $p\stepany q$ implies $\pOpen(p)$, $\neg\pPrime(p)$ and $\pPrime(q)$.
 
-\item All final pseudo-states are steady and closed; i.e., $p\pfinal$ implies $\pSteady(p)$ and $\pClosed(p)$.
+\item All final pseudo-states are steady, closed and barren; i.e., $p\pfinal$ implies $\pSteady(p)$, $\pClosed(p)$ and $\pBarren(p)$.
 
-\item Evolution cannot increase transience; i.e., $p\gotoeq q$ implies $\pTLevel(q)\leq \pTLevel(p)$.
+\item Transience cannot increase during evolution, and remains constant after an outgoing step is discovered; i.e., $p\gostep q$ implies $\pTLevel(q)\leq \pTLevel(p)$ and if in addition $\pFertile(q)$ then $\pTLevel(q)=\pTLevel(p)$.
 
 \item For all $\pOuter$ pseudo-states, all $\gotoeq$-successors and all $\stepany$-successors that do not start a recipe are $\pOuter$: i.e., if $\pOuter(p)$ and either $p\gostep q$ or $p\step a q$ with $a\notin\dom\Recipe$ then $\OLevel(q)=\TLevel(q)$ (and hence $\pOuter(q)$).
 
 \item For all $\pOuter$ pseudo-states, their outer level is frozen for all $\stepany$-successors that start a recipe, unless it exceeds that successor's transience level: i.e., if $\pOuter(p)$ and $p\step a q$ with $a\in\dom\Recipe$ then $\OLevel(q)=\min(\pTLevel(p),\pTLevel(q))$.
 
-\item For all $\pInner$ pseudo-states, their outer level is kept constant for all $\gotoeq$- and $\stepany$-successors, unless it exceeds that successor's transience level: i.e., if $\pInner(p)$ and either $p\gostep q$ or $p\stepany q$ then $\OLevel(q)=\min(\OLevel(p),\pTLevel(q))$.
+\item For all $\pInner$ pseudo-states, their outer level is constant for all $\gotoeq$- and $\stepany$-successors, unless it exceeds that successor's transience level: i.e., if $\pInner(p)$ and either $p\gostep q$ or $p\stepany q$ then $\OLevel(q)=\min(\OLevel(p),\pTLevel(q))$.
 \end{itemize}
 %
 (The last three conditions together with the fact that $\OLevel(\Init)\leq \pTLevel(\Init)=0$ actually completely define $\OLevel$ for all reachable pseudo-states.) 
@@ -286,7 +281,7 @@ The reason why the above equation does not give rise to a straightforward increm
 \item $\ForwIn[C]:[P]\to 2^{S_C}$, the \emph{forward reachable inner states}, defined by
 \[ \ForwIn[C] : s \mapsto \stat{\gensetof{q\in\pInner}{\prm s\innertoeq[C] q}} \enspace. \]
 \item $\BackOut[C]:[P]\to 2^{S_C}$, the \emph{backward reachable outer states}, defined by
-\[ \BackOut[C] : s \mapsto \stat{\gensetof{q\in\pOuter}{q\tstep[C]{} \:\innertoeq[C] \prm s \in \pInner}} \enspace. \]
+\[ \BackOut[C] : s \mapsto \gensetof{(\stat q,a)}{q\tstep[C]a \:\innertoeq[C] \prm s \in \pInner} \enspace. \]
 \item $\ForwOut[C]:[P]\to 2^{S_C}$, the \emph{forward reachable outer states}, defined by
 \[ \ForwOut[C] : s \mapsto \stat{\gensetof{q\in\pOuter}{\prm s\innertoeq[C] q}} \enspace. \]
 \end{itemize}
@@ -317,7 +312,7 @@ With the help of these functions, Clauses \ref{successor construction}--\ref{inc
  & \begin{array}[t]{@{}ll}
  	\BackOut[C](s) \\
  	{\enspace} \cup \BackOut[C](q) & \text{if } \pInner\ni p\stepany q \text{ and } s\in \ForwIn[C](\stat q) \\
- 	{\enspace} \cup \setof{\stat p} & \text{if } \pOuter\ni p\tstep{} q \text{ and } s\in \ForwIn[C](\stat{q}) 
+ 	{\enspace} \cup \setof{(\stat p,a)} & \text{if } \pOuter\ni p\tstep a q \text{ and } s\in \ForwIn[C](\stat{q}) 
  \end{array} \\
 \ForwOut[\addp Cp](s) = {}
  & \begin{array}[t]{@{}ll}
@@ -347,7 +342,8 @@ These functions, too, can be updated incrementally, due to the following propert
 \BackTrans[\addp Cp](s) = {}
  & \begin{array}[t]{@{}ll}
  	\BackTrans[C](s) \\
- 	{\enspace} \cup \BackTrans[C]([p]) & \text{if } \pTransient\ni p\stepany q \text{ and } s\in \ForwTrans([q])
+ 	{\enspace} \cup \BackTrans[C]([p]) & \text{if } \pTransient\ni p\stepany q \text{ and } s\in \ForwTrans([q]) \\
+ 	{\enspace} \cup \setof{[p]} & \text{if } \pSteady\ni p\stepany q \text{ and } s\in \ForwTrans([q])
  \end{array} \\
 \ForwTrans[\addp Cp](s) = {}
  & \begin{array}[t]{@{}ll}
@@ -357,7 +353,7 @@ These functions, too, can be updated incrementally, due to the following propert
 \ForwTrOp[\addp Cp](s) = {}
 & \begin{array}[t]{@{}ll}
 	\ForwTrOp[C](s) \\
-	{\enspace} \cup \ForwTrOp[C]([q]) & \text{if } \pTransient\ni  p\stepany q \text{ and } s\in \BackTrans[C](\stat p) \\
+	{\enspace} \cup \ForwTrOp[C]([q]) & \text{if } \pTransient\ni p\stepany q \text{ and } s\in \BackTrans[C](\stat p) \\
 	{\enspace} \setminus \setof{\stat p} & \text{if } p\in \pClosed \cap \pSteady \text{ and } s\in \BackTrans[C](\stat p)
 \end{array} 
 \end{align*}
@@ -372,117 +368,143 @@ With the help of these auxiliary functions, we can now characterise the absence 
    \ALevel[C](s) & \text{otherwise}
    \end{cases} \\
 \Full[\addp Cp] = {}
-  & \begin{array}[t]{@{}ll}
-  	\Full[C] \\
-  	{\enspace}\cup (\Closed[\addp Cp] \cap \gensetof{s}{\ForwTrOp[\addp Cp](s) = \emptyset})
-    \end{array}
+  & \Full[C] \cup \gensetof{s\in \BackTrans[C]([p])\cup [\addp Cp\setminus C]}{\Closed[\addp Cp](s) \wedge \ForwTrOp[\addp Cp](s) = \emptyset}) \\
+\Present[\addp Cp] = {}
+  & \Present[C] \cup \gensetof{s\in \BackTrans[C]([p])}{\ALevel[\addp Cp](s) = 0} \\
+\Absent[\addp Cp] = {}
+  & \Absent[C] \cup \gensetof{s\in \BackTrans[C]([p])}{\Full[\addp Cp]\wedge \neg\Present[\addp Cp]}
 \end{align*}
 %
 The incremental construction boils down to the following. Given a configuration $C$, we maintain, for every state $s\in [C]$, a record consisting of the following elements:
 %
 \begin{itemize}
-\item $\BackIn\subseteq S_C$, the backward reachable inner states of $s$. \\ 
-	Initial value: $\BackIn = \gensetof{s}{\prm s\in \pInner}$.
-\item $\ForwIn\subseteq S_C$, the forward reachable inner states of $s$. \\ 
-	Initial value: $\ForwIn = \gensetof{s}{\prm s\in \pInner}$.
-\item $\BackOut\subseteq S_C$, the backward reachable outer states of $s$. \\ 
-	Initial value: $\BackOut = \emptyset$.
-\item $\ForwOut\subseteq S_C$, the forward reachable outer states of $s$. \\ 
-	Initial value: $\ForwOut = \gensetof{s}{\prm s\in \pOuter}$.
 \item $\OutTrans\subseteq A\times S_C$, the outgoing transitions of $s$. \\ 
-	Initial value: $\OutTrans = \emptyset$.
-\item $\BackTrans\subseteq S_C$, the backward reachable transient states of $s$. \\ 
-	Initial value: $\BackTrans = \gensetof{s}{\prm s\in \pTransient}$.
-\item $\ForwTrans\subseteq S_C$, the forward reachable transient states of $s$. \\ 
-	Initial value: $\ForwTrans = \gensetof{s}{\prm s\in \pTransient}$.
-\item $\ForwTrOp\subseteq S_C$, the forward reachable transient open states of $s$. \\ 
-	Initial value: $\ForwTrOp = \gensetof{s}{\prm s\in \pTransient\cap \pOpen}$.
+	Initial value: $\OutTrans \gets \emptyset$.
+\item $\Closed\in \boolB$, a boolean expressing whether $s$ is closed. \\ 
+	Initialisation: $\Closed \gets \pClosed(\prm s)$.
 \item $\ALevel\in \natN$, the absence level of $s$. \\ 
-	Initial value: $\ALevel = \pTLevel(\prm s)$.
+	Initial value: $\ALevel \gets \pTLevel(\prm s)$.
 \item $\Full\in \boolB$, a boolean expressing whether $s$ is full. \\ 
-	Initialisation: $\Full = \pOuter(\prm p)$.
+	Initialisation: $\Full \gets \pSteady(\prm s) \wedge \pClosed(\prm s)$.
+\item $\Present\in \boolB$, a boolean expressing whether $s$ is present. \\ 
+	Initialisation: $\Present \gets \pSteady(\prm s)$.
+\item $\Absent\in \boolB$, a boolean expressing whether $s$ is absent. \\ 
+	Initialisation: $\Absent \gets \False$.
+\item $\BackIn\subseteq S_C$, the backward reachable inner states of $s$. \\ 
+	Initial value: $\BackIn \gets \gensetof{s}{\prm s\in \pInner}$.
+\item $\ForwIn\subseteq S_C$, the forward reachable inner states of $s$. \\ 
+	Initial value: $\ForwIn \gets \gensetof{s}{\prm s\in \pInner}$.
+\item $\BackOut\subseteq S_C$, the backward reachable initial recipe transitions of $s$. \\ 
+	Initial value: $\BackOut \gets \emptyset$.
+\item $\ForwOut\subseteq S_C$, the forward reachable outer states of $s$. \\ 
+	Initial value: $\ForwOut \gets \gensetof{s}{\prm s\in \pOuter}$.
+\item $\BackTrans\subseteq S_C$, the backward reachable transient states of $s$. \\ 
+	Initial value: $\BackTrans \gets \gensetof{s}{\prm s\in \pTransient}$.
+\item $\ForwTrans\subseteq S_C$, the forward reachable transient states of $s$. \\ 
+	Initial value: $\ForwTrans \gets \gensetof{s}{\prm s\in \pTransient}$.
+\item $\ForwTrOp\subseteq S_C$, the forward reachable transient open states of $s$. \\ 
+	Initial value: $\ForwTrOp \gets \gensetof{s}{\prm s\in \pTransient\cap \pOpen}$.
 \end{itemize}
 %
-If we have this for $C$, then the record for $\addp Cp$ is constructed as follows, where those sets that are not updated according to any of the assignments below are unchanged:
+If we have this for $C$, then the record for $\addp Cp$ is constructed as follows, where those fields that are not updated according to any of the assignments below are unchanged:
 
-\begin{center}
+\begin{algorithm}
+\caption{Update for $p\step{a} q$ (left) or $p\comestep q$ with $\pTLevel(p)<\pTLevel(q)$ or $p\in \pClosed$ (right)}
+\centering
 \hspace*{-1ex}\scalebox{.9}{\begin{minipage}[t]{.55\textwidth}%
-\begin{algorithmic}
-\State $s_p \gets [p]$\Comment{\sffamily abbreviation}
+\begin{algorithmic}[1]
+\State $s_p \gets [p]$ and $s_q \gets [q]$\Comment{\sffamily abbreviation}
 \State {\sffamily\itshape Outgoing transitions}
-\If{$p\in \pOuter$ and $p\step a q$}
-	\State $s_q \gets [q]$\Comment{abbreviation}
+\If{$p\in \pInner$}
+	\For{$(s_1,b)\in s_p.\BackOut, s_2\in s_q.\ForwOut$}
+		\State $s_1.\OutTrans \gets s_1.\OutTrans \cup \setof{(\Recipe(b),s_2)}$
+	\EndFor
+\Else
 	\If{$a\notin\dom\Recipe$}
-		\State $s_p.\OutTrans \gets s_p.\OutTrans \cup \setof{(s_p,a,s_q)}$
+		\State $s_p.\OutTrans \gets s_p.\OutTrans \cup \setof{(a,s_q)}$
 	\ElsIf{$q\in \pOuter$}
-		\State $s_p.\OutTrans \gets s_p.\OutTrans \cup \setof{(s_p,\Recipe(a),s_q)}$
+		\State $s_p.\OutTrans \gets s_p.\OutTrans \cup \setof{(\Recipe(a),s_q)}$
 	\EndIf
 \EndIf
-\State $\BackIn[p]\gets s_p.\BackIn$\Comment{local copy}
-\For{$s_1\in s_p.\BackOut$}
-	\State let $a$ be such that $s_1\tstep a$
-	\If{$p\in \pInner$ and $p\step{} q$}
-		\For{$s_2\in s_q.\ForwOut$}
-			\State $s_p.\OutTrans \gets s_p.\OutTrans \cup \setof{(s_1,\Recipe(a),s_2)}$
-		\EndFor
-	\ElsIf{$p\in \pOuter$}
-		\State $s_p.\OutTrans \gets s_p.\OutTrans \cup \setof{(s_1,\Recipe(a),s_p)}$
-	\EndIf
-\EndFor
 \State \emph{Reachable inner/outer states}
-\State $\BackIn[p]\gets s_p.\ForwIn$\Comment{local copy}
-\If{$\pInner\ni p\gostep q\in \pInner$}
-	\State $s_q \gets [q]$\Comment{abbreviation}
-	\State $\ForwIn[q]\gets s_q.\ForwIn$\Comment{local copy}
-	\For{$s\in \ForwIn[q]$}
-		\State $s.\BackIn\gets s.\BackIn\cup \BackIn[p]$
-		\State $s.\BackOut\gets s.\BackOut\cup s_p.\BackOut$
-	\EndFor
-	\For{$s\in \BackIn[p]$}
-		\State $s.\ForwIn\gets s.\ForwIn\cup \ForwIn[q]$
-		\State $s.\ForwOut\gets s.\ForwOut\cup s_q.\ForwOut$
-	\EndFor
-\ElsIf{$\pOuter\ni p$}
-	\If{$p\comestep q\in \pInner$}
-		\For{$s\in \BackIn[p]$}
-			\State $s.\ForwOut \gets s.\ForwOut \cup \setof{s_p}$
+\If{$q\in\pInner$}
+	\If{$p\in \pInner$}
+		\State $\BackIn[p]\gets s_p.\BackIn$\Comment{local copy}
+		\For{$s\in s_q.\ForwIn$}
+			\State $s.\BackIn\gets s.\BackIn\cup \BackIn[p]$
+			\State $s.\BackOut\gets s.\BackOut\cup s_p.\BackOut$
 		\EndFor
-	\EndIf
-	\If{$p\tstep{} q\in \pInner$}
-		\For{$s\in \ForwIn$}
-			\State $s.\BackOut \gets s.\BackOut \cup \setof{s_p}$
+		\For{$s\in \BackIn[p]$}
+			\State $s.\ForwIn\gets s.\ForwIn\cup s_q.\ForwIn$
+			\State $s.\ForwOut\gets s.\ForwOut\cup s_q.\ForwOut$
+		\EndFor
+	\Else
+		\For{$s\in s_q.\ForwIn$}
+			\State $s.\BackOut \gets s.\BackOut \cup \setof{(s_p,a)}$
 		\EndFor
 	\EndIf
 \EndIf
-\end{algorithmic}\end{minipage}\enspace
-\begin{minipage}[t]{.55\textwidth}\begin{algorithmic}
-\State {\sffamily\itshape Absence level}
-\State $\BackTrans[p] \gets s_p.\BackTrans$\Comment{\sffamily local copy}
-\For{$s\in s_p.\BackTrans$}
-	\State{$\ALevel \gets \min(s.\ALevel,\pTLevel(p)$}
-	\If{$p\step{} q$}
-		\State{$\alpha[s] \gets \min(\alpha[s],\alpha[C](q)$}
-	\EndIf
-	\State $s.\ALevel \gets \ALevel$
-\EndFor
-\State \emph{Reachable transient states \& fullness}
-\If{$\pTransient\ni p\gostep q\in \pTransient$}
-	\State $s_q \gets [q]$\Comment{abbreviation}
-	\State $\ForwTrans[q] \gets s_q.\ForwTrans$\Comment{local copy}
-	\State $\ForwTrOp[q] \gets s_q.\ForwTrOp$\Comment{local copy}
-	\For{$s\in \BackTrans[p]$}
-		\State{$s.\BackTrans \gets s.\BackTrans \cup \BackTrans[p]$}
-		\State{$s.\ForwTrans \gets s.\ForwTrans \cup \ForwTrans[q]$}
-		\State{$s.\ForwTrOp \gets s.\ForwTrOp \cup \ForwTrOp[q]$}
+\State {\sffamily\itshape Absence level and presence}
+\If{$\pTLevel(q)<\pTLevel(p)$}
+	\For{$s\in s_p.\BackTrans$}
+		\If{$\pTLevel(q)<s.\ALevel$}
+			\State $s.\ALevel \gets \pTLevel(q)$
+			\State $s.\Present \gets s.\ALevel = 0$
+		\EndIf
 	\EndFor
-\ElsIf{$\pClosed\cap\pSteady \ni p\comestep q\notin \pClosed\cap\pSteady$}
-	\For{$s\in \BackTrans[p]$}
-		\State{$s.\ForwTrOp \gets s.\BackTrans \setminus \setof{s_p}$}
-		\If{$s.\ForwTrOp=\emptyset$ and $s.\Closed$}
-			\State{$s.\Full \gets s.\Closed$}
+\EndIf
+\State \emph{Reachable transient (open) states}
+\If{$q\in \pTransient$}
+	\State $\ForwTrans[q] \gets s_q.\ForwTrans$\Comment{local copy}
+	\For{$s\in s_p.\BackTrans$}
+		\State{$s.\ForwTrans \gets s.\ForwTrans \cup \ForwTrans[q]$}
+		\State{$s.\ForwTrOp \gets s.\ForwTrOp \cup s_q.\ForwTrOp$}
+	\EndFor
+	\For{$s\in \ForwTrans[q]$}
+		\If{$p\in \pTransient$}
+			\State{$s.\BackTrans \gets s.\BackTrans \cup s_p.\BackTrans$}
+		\Else
+			\State{$s.\BackTrans \gets s.\BackTrans \cup \setof{s_p}$}
 		\EndIf
 	\EndFor
 \EndIf
 \end{algorithmic}\end{minipage}}
-\end{center}
+\enspace
+\hspace*{-1ex}\scalebox{.9}{\begin{minipage}[t]{.55\textwidth}%
+\begin{algorithmic}[1]
+\State $s_p \gets [p]$\Comment{\sffamily abbreviation; note $[p]=[q]$}
+\If{$q\in\pInner, p\in \pOuter$}
+	\State {\sffamily\itshape Outgoing transitions}
+	\For{$(s_1,a)\in s_p.\BackOut$}
+		\State $s_1.\OutTrans \gets s_1.\OutTrans \cup \setof{(\Recipe(a),s_p)}$
+	\EndFor
+	\State \emph{Reachable inner/outer states}
+	\For{$s\in s_p.\BackIn$}
+		\State $s.\ForwOut \gets s.\ForwOut \cup \setof{s_p}$
+	\EndFor
+\EndIf
+\State {\sffamily\itshape Absence level and presence}
+\If{$\pTLevel(p)<\pTLevel(q)$}
+	\For{$s\in s_p.\BackTrans$}
+		\If{$\pTLevel(p)<s.\ALevel$}
+			\State $s.\ALevel \gets \pTLevel(p)$
+			\State $s.\Present \gets s.\ALevel = 0$
+		\EndIf
+	\EndFor
+\EndIf
+\State \emph{Closure, fullness and absence}
+\If{$p\in \pClosed$}
+	\State $s_p.\Closed \gets \True$
+	\If{$p\in \pSteady$}
+		\For{$s\in \BackTrans[p] \cup \setof{s_p}$}
+			\State{$s.\ForwTrOp \gets s.\ForwTrOp \setminus \setof{s_p}$}
+			\If{$s.\ForwTrOp=\emptyset$ and $s.\Closed$}
+				\State{$s.\Full \gets \True$}
+				\State{$s.\Absent \gets \neg s.\Present$}
+			\EndIf
+		\EndFor
+	\EndIf
+\EndIf
+\end{algorithmic}\end{minipage}}
+\end{algorithm}
 \end{document}
