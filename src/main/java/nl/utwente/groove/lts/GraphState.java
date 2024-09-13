@@ -154,11 +154,12 @@ public interface GraphState extends Node, Phase {
     }
 
     /**
-     * Declares this state to be full.
+     * Declares this state to be full, while also setting its absence level as part of the status.
+     * @param absence the absence level of the state
      * @return if {@code false}, the state was already known to be full
      * @see Flag#FULL
      */
-    public boolean setFull();
+    public boolean setFull(int absence);
 
     /**
      * Indicates if this state is full.
@@ -222,13 +223,6 @@ public interface GraphState extends Node, Phase {
     }
 
     /**
-     * Sets the absence level of this state to an equal or lower value.
-     * @param absence new absence level of the state; if zero, the state is set to present
-     * @return {@code true} if the absence level was decreased
-     */
-    public boolean setAbsence(int absence);
-
-    /**
      * Indicates the absence level, which is defined as the lowest
      * transient depth of the known reachable states.
      * This is maximal ({@link Status#MAX_ABSENCE}) if the state is
@@ -238,20 +232,9 @@ public interface GraphState extends Node, Phase {
      * @see #isAbsent()
      */
     public default int getAbsence() {
-        if (isFull()) {
-            return Status.getAbsence(getStatus());
-        } else {
-            return getCache().getAbsence();
-        }
-    }
-
-    /**
-     * Indicates if this state is properly part of the state space.
-     * Convenience method for <code>!isAbsent()</code>.
-     * @see #isAbsent()
-     */
-    public default boolean isPresent() {
-        return !isAbsent();
+        return isFull()
+            ? Status.getAbsence(getStatus())
+            : getCache().getAbsence();
     }
 
     /** Returns the integer representation of the status of this state. */

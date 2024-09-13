@@ -260,11 +260,12 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     @Override
-    public boolean setFull() {
+    public boolean setFull(int absence) {
         int oldStatus = this.status;
         boolean result = setStatus(Flag.FULL, true);
         if (result) {
-            if (getAbsence() > 0) {
+            setAbsence(absence);
+            if (absence > 0) {
                 setFrame(getActualFrame().onRemove());
             }
             checkFullConstraints();
@@ -280,24 +281,9 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         return setStatus(flag, value);
     }
 
-    @Override
-    public boolean setAbsence(int absence) {
+    private void setAbsence(int absence) {
         assert absence >= 0 : "Negative absence %s not allowed".formatted(absence);
-        assert !isFull() : "Absence %s cannot be set when state is full".formatted(absence);
-        int oldStatus = this.status;
-        int oldAbsence = Status.getAbsence(oldStatus);
-        assert absence <= oldAbsence : "New absence %s exceeds old value %s"
-            .formatted(absence, oldAbsence);
-        boolean result = absence < oldAbsence;
-        if (result) {
-            int newStatus = Status.setAbsence(oldStatus, absence);
-            if (absence == 0) {
-                newStatus = Flag.PRESENT.set(newStatus);
-            }
-            this.status = newStatus;
-            fireStatus(oldStatus);
-        }
-        return result;
+        this.status = Status.setAbsence(this.status, absence);
     }
 
     /**

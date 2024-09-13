@@ -192,7 +192,6 @@ public interface GraphTransition extends GEdge<GraphState> {
         },
         /**
          * All transitions between non-absent states, including inner ones.
-         * @see GraphState#isPresent()
          */
         NON_ABSENT {
             @Override
