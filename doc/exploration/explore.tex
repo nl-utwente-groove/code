@@ -283,7 +283,7 @@ The reason why the above equation does not give rise to a straightforward increm
 \item $\BackOut[C]:[P]\to 2^{S_C}$, the \emph{backward reachable outer states}, defined by
 \[ \BackOut[C] : s \mapsto \gensetof{(\stat q,a)}{q\tstep[C]a \:\innertoeq[C] \prm s \in \pInner} \enspace. \]
 \item $\ForwOut[C]:[P]\to 2^{S_C}$, the \emph{forward reachable outer states}, defined by
-\[ \ForwOut[C] : s \mapsto \stat{\gensetof{q\in\pOuter}{\prm s\innertoeq[C] q}} \enspace. \]
+\[ \ForwOut[C] : s \mapsto \stat{\gensetof{q\in\pOuter}{\prm s\innerto[C] q}} \enspace. \]
 \end{itemize}
 %
 Note that these functions are always defined for all states, also those outside $S_C$; in fact, for $s\in [P]\setminus S_C$ we have
@@ -292,7 +292,7 @@ Note that these functions are always defined for all states, also those outside 
 \BackIn[C](s) = {} & \gensetof{s}{\gotomin s\in \pInner} \\
 \ForwIn[C](s) = {} & \gensetof{s}{\gotomin s\in \pInner} \\
 \BackOut[C](s) = {} & \emptyset \\
-\ForwOut[C](s) = {} & \gensetof{s}{\gotomin s\in \pOuter} 
+\ForwOut[C](s) = {} & \emptyset
 \end{align*}
 %
 With the help of these functions, Clauses \ref{successor construction}--\ref{increment construction} become straightforward to implement; and these functions themselves can also be constructed incrementally. Indeed, the following properties hold:
@@ -348,12 +348,14 @@ These functions, too, can be updated incrementally, due to the following propert
 \ForwTrans[\addp Cp](s) = {}
  & \begin{array}[t]{@{}ll}
    \ForwTrans[C](s) \\
-   {\enspace} \cup \ForwTrans[C]([q]) & \text{if } \pTransient\ni p\stepany q \text{ and } s\in \BackTrans[C](\stat p)
+   {\enspace} \cup \ForwTrans[C]([q]) & \text{if } \pTransient\ni p\stepany q \text{ and } s\in \BackTrans[C](\stat p) \\
+   {\enspace} \cup \ForwTrans[C]([q]) & \text{if } \pSteady\ni p\stepany q \text{ and } s=[p] 
    \end{array} \\
 \ForwTrOp[\addp Cp](s) = {}
 & \begin{array}[t]{@{}ll}
 	\ForwTrOp[C](s) \\
 	{\enspace} \cup \ForwTrOp[C]([q]) & \text{if } \pTransient\ni p\stepany q \text{ and } s\in \BackTrans[C](\stat p) \\
+	{\enspace} \cup \ForwTrOp[C]([q]) & \text{if } \pSteady\ni p\stepany q \text{ and } s=[p] \\
 	{\enspace} \setminus \setof{\stat p} & \text{if } p\in \pClosed \cap \pSteady \text{ and } s\in \BackTrans[C](\stat p)
 \end{array} 
 \end{align*}
@@ -416,8 +418,14 @@ If we have this for $C$, then the record for $\addp Cp$ is constructed as follow
 \State $s_p \gets [p]$ and $s_q \gets [q]$\Comment{\sffamily abbreviation}
 \State {\sffamily\itshape Outgoing transitions}
 \If{$p\in \pInner$}
-	\For{$(s_1,b)\in s_p.\BackOut, s_2\in s_q.\ForwOut$}
-		\State $s_1.\OutTrans \gets s_1.\OutTrans \cup \setof{(\Recipe(b),s_2)}$
+	\For{$(s_1,b)\in s_p.\BackOut$}
+		\If{$q\in \pInner$}
+			\For{$s_2\in s_q.\ForwOut$}
+				\State $s_1.\OutTrans \gets s_1.\OutTrans \cup \setof{(\Recipe(b),s_2)}$
+			\EndFor
+		\Else
+			\State $s_1.\OutTrans \gets s_1.\OutTrans \cup \setof{(\Recipe(b),q)}$
+		\EndIf
 	\EndFor
 \Else
 	\If{$a\notin\dom\Recipe$}
@@ -456,17 +464,21 @@ If we have this for $C$, then the record for $\addp Cp$ is constructed as follow
 \State \emph{Reachable transient (open) states}
 \If{$q\in \pTransient$}
 	\State $\ForwTrans[q] \gets s_q.\ForwTrans$\Comment{local copy}
-	\For{$s\in s_p.\BackTrans$}
-		\State{$s.\ForwTrans \gets s.\ForwTrans \cup \ForwTrans[q]$}
-		\State{$s.\ForwTrOp \gets s.\ForwTrOp \cup s_q.\ForwTrOp$}
-	\EndFor
-	\For{$s\in \ForwTrans[q]$}
-		\If{$p\in \pTransient$}
+	\If{$p\in \pTransient$}
+		\For{$s\in s_p.\BackTrans$}
+			\State{$s.\ForwTrans \gets s.\ForwTrans \cup \ForwTrans[q]$}
+			\State{$s.\ForwTrOp \gets s.\ForwTrOp \cup s_q.\ForwTrOp$}
+		\EndFor
+		\For{$s\in \ForwTrans[q]$}
 			\State{$s.\BackTrans \gets s.\BackTrans \cup s_p.\BackTrans$}
-		\Else
+		\EndFor
+	\Else
+		\State $s_p.\ForwTrans\gets s_p.\ForwTrans \cup \ForwTrans[q]$
+		\State $s_p.\ForwTrOp\gets s_p.\ForwTrOp \cup s_q.\ForwTrOp$
+		\For{$s\in \ForwTrans[q]$}
 			\State{$s.\BackTrans \gets s.\BackTrans \cup \setof{s_p}$}
-		\EndIf
-	\EndFor
+		\EndFor
+	\EndIf
 \EndIf
 \end{algorithmic}\end{minipage}}
 \enspace
@@ -492,18 +504,19 @@ If we have this for $C$, then the record for $\addp Cp$ is constructed as follow
 		\EndIf
 	\EndFor
 \EndIf
-\State \emph{Closure, fullness and absence}
+\State \emph{Closure}
 \If{$p\in \pClosed$}
 	\State $s_p.\Closed \gets \True$
-	\If{$p\in \pSteady$}
-		\For{$s\in \BackTrans[p] \cup \setof{s_p}$}
-			\State{$s.\ForwTrOp \gets s.\ForwTrOp \setminus \setof{s_p}$}
-			\If{$s.\ForwTrOp=\emptyset$ and $s.\Closed$}
-				\State{$s.\Full \gets \True$}
-				\State{$s.\Absent \gets \neg s.\Present$}
-			\EndIf
-		\EndFor
-	\EndIf
+\EndIf
+\State \emph{Fullness and absence}
+\If{$p\in\pClosed$ or $q\in\pTransient, p\in \pSteady$}
+	\For{$s\in \BackTrans[p] \cup \setof{s_p}$}
+		\State{$s.\ForwTrOp \gets s.\ForwTrOp \setminus \setof{s_p}$}
+		\If{$s.\ForwTrOp=\emptyset$ and $s.\Closed$}
+			\State{$s.\Full \gets \True$}
+			\State{$s.\Absent \gets \neg s.\Present$}
+		\EndIf
+	\EndFor
 \EndIf
 \end{algorithmic}\end{minipage}}
 \end{algorithm}
