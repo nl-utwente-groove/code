@@ -3,6 +3,12 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 6.9.4, 14 September 2024
+-------------------------------
+- Complete reimplementation of transient state exploration
+- Theory documented in doc/exploration
+- Resolved gh issue #800
+
 Release 6.9.3, 2 August 2024
 -------------------------------
 - Repaired parsing of grammar control properties for Generator
