@@ -105,9 +105,9 @@
 \newcommand{\Atomic}[1][]{\ensuremath{\mathit{atom}}_{\!#1}\xspace}
 
 % Past outer pseudo-states
-\newcommand{\BackOut}[1][\mkern2mu]{\cB^{\smash{\kOuter\!}}_{\smash{\mkern-2mu#1}}}
+\newcommand{\BackOut}[1][\mkern2mu]{\cB^{\smash{\mathit{lnch}\!}}_{\smash{\mkern-2mu#1}}}
 % Reachable outer pseudo-states
-\newcommand{\ForwOut}[1][\mkern2mu]{\cF^{\smash{\kOuter\!}}_{\smash{\!#1}}}
+\newcommand{\ForwOut}[1][\mkern2mu]{\cF^{\smash{\mathit{rtgt}\!}}_{\smash{\!#1}}}
 % Past inner pseudo-states
 \newcommand{\BackIn}[1][\mkern2mu]{\cB^{\smash{\kInner\!}}_{\smash{\mkern-2mu#1}}}
 % Reachable inner pseudo-states
@@ -145,7 +145,7 @@
 
 \newcommand{\gostep}[1][]{\mathrel{{\prec}\mkern-5mu{\cdot}}_{#1}}
 \newcommand{\ngostep}[1][]{\not\goeststep[1]}
-%\newcommand{\goto}[1][]{\prec_{#1}}
+\newcommand{\goto}[1][]{\prec_{#1}}
 \newcommand{\gotoeq}[1][]{\preccurlyeq_{#1}}
 \newcommand{\evolequiv}{\smilefrown}
 \newcommand{\gotomax}{\curlyvee}

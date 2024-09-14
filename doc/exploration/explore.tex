@@ -256,9 +256,9 @@ The incremental construction of $\trans[\addp Cp]{}$, however, is much less stra
 \begin{align}
 {\trans[\addp Cp]{}}  = {} & {\trans[C]{}} \nonumber \\
 & {}\cup \gensetof{(\stat p,a, \stat q)}{p\in \pOuter, p\step a q,a\notin\dom\Recipe} \\
-& {}\cup \gensetof{(\stat{p},\rho(a), \stat q)}{p\tstep a q\in \pOuter} \\
-& {}\cup \gensetof{(\stat{q_1},\rho(a),\stat{q_2})}{p_1\tstep[C]{a} \:\innertoeq[C] p\in\pInner, p\stepany q \innertoeq[C] q_2 \in\pOuter} \\
-& {}\cup \gensetof{(\stat{q_1},\rho(a),\stat{p})}{p_1\tstep[C]{a} \:\innertoeq[C] p'\gostep p\in\pOuter} \enspace.
+& {}\cup \gensetof{(\stat{p},\rho(a), \stat{q_2})}{p\tstep a q \innertoeq[C] q_2 \in \pOuter} \\
+& {}\cup \gensetof{(\stat{q_1},\rho(b),\stat{q_2})}{p_1\tstep[C]{b} \:\innertoeq[C] p\in\pInner, p\stepany q \innertoeq[C] q_2 \in\pOuter} \\
+& {}\cup \gensetof{(\stat{q_1},\rho(b),\stat{p})}{q_1\tstep[C]{b} \:\innertoeq[C] q\in \pInner, q \gostep p\in\pOuter} \enspace.
 \end{align}
 %
 The cases in this equation can be explained as follows. The evolution of $p$ to $p'$, which may include the discovery of a step $p\step a q$, may give rise to new transitions in $\cS_D$ according to one of these five principles:
@@ -266,11 +266,11 @@ The cases in this equation can be explained as follows. The evolution of $p$ to 
 \begin{enumerate}[label=(\arabic*)]
 \item A ``normal'' (non-recipe) transition $\stat p\trans a \stat q$;
 
-\item A recipe transition $\stat p\trans{\rho(a)} \stat q$ due to a pseudo-state sequence starting at $p$, consisting of a single inner step $p\step a q$ and ending at $q\in \pOuter$ (where the latter may or may not have been in $C$ already).
+\item A recipe transition $\stat p\trans{\rho(a)} \stat{q_2}$ due to a pseudo-state sequence starting at $p\in \pOuter$, with initial inner step $p\step a q$, such that either $q_2=q\in \pOuter$ (in which case $q$ may be new w.r.t.\ $C$) or $q_2\in \pOuter$ was already reachable in $C$ from $q$ via a non-empty sequence $q\:\innerstep[C]\cdots\innerstep[C] q_2$ (going only through $\pInner$-pseudo-states).
 
-\item\label{successor construction} A recipe transition $\stat{q_1} \trans{\rho(a)} \stat{q_2}$ for every previously found outer pseudo-state $q_1\in C$, provided $p\in\pInner$ was already reachable from $q_1$ in $C$ via a sequence $q_1\tstep[C]{a}\:\innerstep[C]\cdots\innerstep[C] p$ (going only through $\pInner$-pseudo-states), $p\stepany q$, and $q_2$ was already reachable from $q$ via a further sequence $q \innerstep[C]\cdots\innerstep[C] q_2$ (note that this includes $q_2=q$), such that, moreover, $\pOuter(q_2)$.
+\item\label{successor construction} A recipe transition $\stat{q_1} \trans{\rho(b)} \stat{q_2}$ for every previously found outer pseudo-state $q_1\in C$, provided $p\in\pInner$ was already reachable in $C$ from $q_1$ via a sequence $q_1\tstep[C]{b}\:\innerstep[C]\cdots\innerstep[C] p$ (going only through $\pInner$-pseudo-states), $p\stepany q$, and $q_2\in \pOuter$ was already reachable from $q$ via a further sequence $q \innerstep[C]\cdots\innerstep[C] q_2$ (note that this includes $q_2=q$).
 
-\item\label{increment construction} A recipe transition $\stat{q_1} \trans{\rho(a)} \stat{p}$ for every previously found outer pseudo-state $q_1\in \pOuter$, provided $p$ was already reachable from $q_1$ in $C$ via a sequence $q_1\tstep[C]{a}\:\innerstep[C]\cdots\innerstep[C] p'$ (going only through $\pInner$-pseudo-states) that now gets extended with the evolution $p'\gostep p$ with $\pOuter(p)$.
+\item\label{increment construction} A recipe transition $\stat{q_1} \trans{\rho(b)} \stat{p}$ for every previously found outer pseudo-state $q_1\in \pOuter$, provided the direct $\gostep$-predecessor $q\in \pInner$ of $p\in \pOuter$ was already reachable in $C$ from $q_1$ via a sequence $q_1\tstep[C]{b}\:\innerstep[C]\cdots\innerstep[C] q$ (going through and ending up in $\pInner$-pseudo-states), which now gets extended with the evolution $q\gostep p$.
 \end{enumerate}
 %
 The reason why the above equation does not give rise to a straightforward incremental construction is that the possible values of $q_1$ in Cases \ref{successor construction}--\ref{increment construction} as well as $q_2$ in Case~\ref{successor construction} are not a priori known, given only $C$ and $p$. This is resolved by introducing auxiliary functions:
@@ -280,10 +280,10 @@ The reason why the above equation does not give rise to a straightforward increm
 \[ \BackIn[C] : s \mapsto \stat{\gensetof{q\in\pInner}{q\innertoeq[C] \prm s\in \pInner}} \enspace. \]
 \item $\ForwIn[C]:[P]\to 2^{S_C}$, the \emph{forward reachable inner states}, defined by
 \[ \ForwIn[C] : s \mapsto \stat{\gensetof{q\in\pInner}{\prm s\innertoeq[C] q}} \enspace. \]
-\item $\BackOut[C]:[P]\to 2^{S_C}$, the \emph{backward reachable outer states}, defined by
+\item $\BackOut[C]:[P]\to 2^{S_C}$, the \emph{backward reachable recipe launches}, defined by
 \[ \BackOut[C] : s \mapsto \gensetof{(\stat q,a)}{q\tstep[C]a \:\innertoeq[C] \prm s \in \pInner} \enspace. \]
-\item $\ForwOut[C]:[P]\to 2^{S_C}$, the \emph{forward reachable outer states}, defined by
-\[ \ForwOut[C] : s \mapsto \stat{\gensetof{q\in\pOuter}{\prm s\innerto[C] q}} \enspace. \]
+\item $\ForwOut[C]:[P]\to 2^{S_C}$, the \emph{forward reachable recipe targets}, defined by
+\[ \ForwOut[C] : s \mapsto \stat{\gensetof{q\in\pOuter}{\prm s\innertoeq[C] q}} \enspace. \]
 \end{itemize}
 %
 Note that these functions are always defined for all states, also those outside $S_C$; in fact, for $s\in [P]\setminus S_C$ we have
@@ -292,7 +292,7 @@ Note that these functions are always defined for all states, also those outside 
 \BackIn[C](s) = {} & \gensetof{s}{\gotomin s\in \pInner} \\
 \ForwIn[C](s) = {} & \gensetof{s}{\gotomin s\in \pInner} \\
 \BackOut[C](s) = {} & \emptyset \\
-\ForwOut[C](s) = {} & \emptyset
+\ForwOut[C](s) = {} & \gensetof{s}{\gotomin s\in \pOuter}
 \end{align*}
 %
 With the help of these functions, Clauses \ref{successor construction}--\ref{increment construction} become straightforward to implement; and these functions themselves can also be constructed incrementally. Indeed, the following properties hold:
@@ -366,7 +366,7 @@ With the help of these auxiliary functions, we can now characterise the absence 
 \ALevel[\addp Cp](s) = {}
  & \begin{cases}
    \min(\ALevel[C](s),\pTLevel(p)) & \text{if } p\;{\nstepany} \text{ and } s\in \BackTrans[C]([p]) \\
-   \min(\ALevel[C](s),\pTLevel(p),\ALevel[C]([q])) & \text{if } p\stepany q \text{ and } s\in \BackTrans[C]([p]) \\
+   \min(\ALevel[C](s),\ALevel[C]([q])) & \text{if } p\stepany q \text{ and } s\in \BackTrans[C]([p]) \\
    \ALevel[C](s) & \text{otherwise}
    \end{cases} \\
 \Full[\addp Cp] = {}
@@ -430,7 +430,7 @@ If we have this for $C$, then the record for $\addp Cp$ is constructed as follow
 \Else
 	\If{$a\notin\dom\Recipe$}
 		\State $s_p.\OutTrans \gets s_p.\OutTrans \cup \setof{(a,s_q)}$
-	\ElsIf{$q\in \pOuter$}
+	\Else
 		\State $s_p.\OutTrans \gets s_p.\OutTrans \cup \setof{(\Recipe(a),s_q)}$
 	\EndIf
 \EndIf
