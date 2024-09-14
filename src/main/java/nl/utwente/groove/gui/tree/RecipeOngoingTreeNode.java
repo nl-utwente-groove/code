@@ -68,7 +68,7 @@ class RecipeOngoingTreeNode extends MatchTreeNode {
         RecipeTransition result = null;
         for (var trans : getInitSource().getTransitions()) {
             if (trans instanceof RecipeTransition recipeTrans
-                && recipeTrans.getInitial() == getInitStep()) {
+                && recipeTrans.getLaunch() == getInitStep()) {
                 result = recipeTrans;
                 break;
             }

@@ -166,7 +166,7 @@ public class DefaultGraphNextState extends AbstractGraphState
                 continue;
             }
             result = rt;
-            if (result.target() == this && result.getInitial() == initial) {
+            if (result.target() == this && result.getLaunch() == initial) {
                 break;
             } else {
                 result = null;

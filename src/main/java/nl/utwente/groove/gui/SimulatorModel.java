@@ -874,7 +874,7 @@ public class SimulatorModel implements Cloneable {
         start();
         try {
             if (changeTransition(trans) && trans != null) {
-                RuleTransition ruleTrans = trans.getInitial();
+                RuleTransition ruleTrans = trans.getLaunch();
                 MatchResult match = ruleTrans.getKey();
                 changeMatch(match);
                 changeSelected(ResourceKind.RULE, match.getAction().getQualName());

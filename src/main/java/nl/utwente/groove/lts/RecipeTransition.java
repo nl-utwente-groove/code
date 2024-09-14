@@ -54,13 +54,13 @@ public class RecipeTransition extends ALabelEdge<GraphState>
     /**
      * Constructs a recipe transition between
      * a given source and target state, on the basis of
-     * an initial underlying rule transition.
+     * a launching rule transition.
      */
-    public RecipeTransition(RuleTransition initial, HostNode[] outValues, GraphState target) {
-        super(initial.source(), target);
-        this.initial = initial;
+    public RecipeTransition(RuleTransition launch, HostNode[] outValues, GraphState target) {
+        super(launch.source(), target);
+        this.launch = launch;
         this.arguments = computeArguments(outValues);
-        assert initial.source().isPublic();
+        assert launch.source().isPublic();
     }
 
     /**
@@ -68,7 +68,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
      */
     public RecipeTransition(GraphState source, RecipeEvent event) {
         super(source, event.getTarget());
-        this.initial = event.getInitial().toTransition(source);
+        this.launch = event.getInitial().toTransition(source);
         this.arguments = event.getArguments();
     }
 
@@ -96,7 +96,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
     public Switch getSwitch() {
         var result = this.recipeSwitch;
         if (result == null) {
-            result = this.recipeSwitch = getInitial()
+            result = this.recipeSwitch = getLaunch()
                 .getStep()
                 .getSwitch()
                 .stream()
@@ -135,13 +135,12 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         return source().getActualFrame().isTransient() || target().getActualFrame().isTransient();
     }
 
-    /** Returns the initial rule transition of the recipe transition. */
     @Override
-    public RuleTransition getInitial() {
-        return this.initial;
+    public RuleTransition getLaunch() {
+        return this.launch;
     }
 
-    private final RuleTransition initial;
+    private final RuleTransition launch;
 
     /** Returns the collection of rule transitions comprising this label. */
     @Override
@@ -163,7 +162,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         Map<GraphState,@Nullable Set<RuleTransition>> inMap = new HashMap<>();
         // build the incoming transition map
         Stack<GraphState> pool = new Stack<>();
-        pool.add(getInitial().target());
+        pool.add(getLaunch().target());
         while (!pool.isEmpty()) {
             GraphState next = pool.pop();
             for (RuleTransition trans : next.getRuleTransitions()) {
@@ -182,10 +181,10 @@ public class RecipeTransition extends ALabelEdge<GraphState>
                 }
             }
         }
-        assert getInitial().target().equals(target()) || inMap.containsKey(target());
+        assert getLaunch().target().equals(target()) || inMap.containsKey(target());
         // backward reachability to build up the result set
         Set<RuleTransition> result = new HashSet<>();
-        result.add(getInitial());
+        result.add(getLaunch());
         pool.add(target());
         while (!pool.isEmpty()) {
             GraphState next = pool.pop();
@@ -207,7 +206,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         List<RuleTransition> result = null;
         // all paths of the current length
         List<List<RuleTransition>> paths = new ArrayList<>();
-        paths.add(Arrays.asList(getInitial()));
+        paths.add(Arrays.asList(getLaunch()));
         // do the following for paths of increasing length
         while (result == null) {
             List<List<RuleTransition>> newPaths = new ArrayList<>();
@@ -253,7 +252,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
             return EMPTY_OUT_VALUES;
         }
         // the transition has at least one argument
-        var initStep = getInitial().getStep();
+        var initStep = getLaunch().getStep();
         var sourceFrame = initStep.getSource();
         Object[] stack = source().getFrameStack(sourceFrame);
         // construct the parameter assignment from the source frame of the initial step
@@ -375,7 +374,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
 
     @Override
     protected int computeLabelHash() {
-        return Objects.hash(this.initial, Arrays.hashCode(getArguments()));
+        return Objects.hash(this.launch, Arrays.hashCode(getArguments()));
     }
 
     @Override
@@ -386,7 +385,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         if (!(other instanceof RecipeTransition trans)) {
             return false;
         }
-        if (!getInitial().equals(trans.getInitial())) {
+        if (!getLaunch().equals(trans.getLaunch())) {
             return false;
         }
         return Arrays.equals(getArguments(), trans.getArguments());

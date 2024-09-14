@@ -116,10 +116,9 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
         return getSource().isTransient() || onFinish().isTransient() || isInner();
     }
 
-    /** Indicates if this step is the initial step of a recipe. */
-    public boolean isInitial() {
-        // if a recipe step starts in a non-recipe frame, it must be
-        // the initial step of a recipe
+    /** Indicates if this step is the launch (initial step) of a recipe. */
+    public boolean isLaunch() {
+        // if an inner step starts in an outer frame, it must be a launch
         return isInner() && !getSource().isInner();
     }
 

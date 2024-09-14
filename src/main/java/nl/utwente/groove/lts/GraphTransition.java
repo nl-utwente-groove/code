@@ -97,12 +97,12 @@ public interface GraphTransition extends GEdge<GraphState> {
     public Switch getSwitch();
 
     /**
-     * Returns the initial rule transition of this graph transition.
+     * Returns the launch of this graph transition.
      * For rule transitions, this is
      * the object itself; for recipe transitions, it is the initial internal
      * rule transition from the source state.
      */
-    public RuleTransition getInitial();
+    public RuleTransition getLaunch();
 
     /**
      * Returns an iterator over the steps comprising this transition.

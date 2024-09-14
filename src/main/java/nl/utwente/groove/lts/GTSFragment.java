@@ -194,7 +194,7 @@ public class GTSFragment extends AGraph<GraphState,GraphTransition> {
                 if (!(outgoing instanceof RecipeTransition candidate)) {
                     continue;
                 }
-                if (candidate.getInitial() == incoming && candidate.target() == target) {
+                if (candidate.getLaunch() == incoming && candidate.target() == target) {
                     addEdgeContext(candidate);
                     break;
                 }

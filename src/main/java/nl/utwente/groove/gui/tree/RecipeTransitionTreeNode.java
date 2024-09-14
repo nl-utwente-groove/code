@@ -56,7 +56,7 @@ class RecipeTransitionTreeNode extends MatchTreeNode {
 
     @Override
     MatchResult getInitMatch() {
-        return getTransition().getInitial().getKey();
+        return getTransition().getLaunch().getKey();
     }
 
     /**

@@ -16,22 +16,28 @@
  */
 package nl.utwente.groove.lts;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 
+import nl.utwente.groove.control.Assignment;
 import nl.utwente.groove.control.NestedCall;
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Action.Role;
+import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.host.DeltaHostGraph;
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostElement;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
+import nl.utwente.groove.lts.GraphTransition.Claz;
 import nl.utwente.groove.transform.DeltaApplier;
 import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.transform.RuleApplication;
@@ -60,9 +66,10 @@ public class StateCache {
         if (DEBUG && state.isFull()) {
             System.out.printf("Recreating cache for full state %s%n", state);
         }
+        initTransientExploration();
     }
 
-    /** Adds a transition stub to the data structures stored in this cache. */
+    /** Adds a graph transition to the data structures stored in this cache. */
     boolean addTransition(GraphTransition trans) {
         assert trans.source() == getState();
         boolean result = getStubSet().add(trans.toStub());
@@ -72,7 +79,7 @@ public class StateCache {
         if (trans instanceof RuleTransition) {
             getMatches().remove(trans.getKey());
             if (trans.isPartialStep()) {
-                getExploreData().notifyOutPartial((RuleTransition) trans);
+                registerOutPartial((RuleTransition) trans);
             }
         }
         if (getMatches().isFinished()) {
@@ -92,13 +99,6 @@ public class StateCache {
                 }
             };
         }
-    }
-
-    /**
-     * Callback method invoked when the state has been closed.
-     */
-    void notifyClosure() {
-        getExploreData().notifyClosure();
     }
 
     final AbstractGraphState getState() {
@@ -154,29 +154,6 @@ public class StateCache {
                 state.getAddedNodes());
         }
         return result;
-    }
-
-    final ExploreData getExploreData() {
-        if (this.exploreData == null) {
-            this.exploreData = new ExploreData(this);
-        }
-        return this.exploreData;
-    }
-
-    private ExploreData exploreData;
-
-    /**
-     * Returns the known absence level of the state.
-     * This is {@link Integer#MAX_VALUE} if the state is erroneous,
-     * otherwise it is the minimum transient depth of the reachable states.
-     */
-    final int getAbsence() {
-        return getExploreData().getAbsence();
-    }
-
-    /** Notifies the cache of a decrease in transient depth of the control frame. */
-    final void notifyTransience(int depth) {
-        getExploreData().notifyTransience(depth);
     }
 
     /**
@@ -453,6 +430,350 @@ public class StateCache {
      * The depth of the graph above which the underlying graph will be frozen.
      */
     static private final int FREEZE_BOUND = 10;
+
+    private void initTransientExploration() {
+        GraphState state = getState();
+        boolean stateIsFull = state.isFull();
+        assert stateIsFull
+            || state.getActualFrame().getTransience() == state.getPrimeFrame().getTransience();
+        var knownInner = this.knownInner = state.isInner();
+        if (!knownInner || stateIsFull) {
+            this.backInner = this.forwInner = EMPTY_CACHE_SET;
+            this.backLaunch = EMPTY_TRANS_SET;
+        } else {
+            this.backInner = new HashSet<>();
+            this.backInner.add(this);
+            this.forwInner = new HashSet<>();
+            this.forwInner.add(this);
+            this.backLaunch = new HashSet<>();
+        }
+        if (!state.getPrimeFrame().isInner()) {
+            this.forwTarget = EMPTY_TARGET_SET;
+        } else if (stateIsFull) {
+            this.forwTarget = computeForwOuter();
+        } else {
+            this.forwTarget = new HashSet<>();
+            if (!knownInner) {
+                this.forwTarget.add(new RecipeTarget(state));
+            }
+        }
+        this.backTransient = new HashSet<>();
+        int knownTransience = this.knownTransience = state.getActualFrame().getTransience();
+        this.knownAbsence = stateIsFull
+            ? state.getAbsence()
+            : knownTransience;
+        if (!stateIsFull) {
+            this.forwTransient = new HashSet<>();
+            this.forwTransientOpen = new HashSet<>();
+            if (knownTransience > 0) {
+                this.backTransient.add(this);
+                this.forwTransient.add(this);
+                if (!state.isClosed()) {
+                    this.forwTransientOpen.add(this);
+                }
+            }
+        } else {
+            this.forwTransient = EMPTY_CACHE_SET;
+            this.forwTransientOpen = EMPTY_CACHE_SET;
+        }
+    }
+
+    private Set<RecipeTarget> computeForwOuter() {
+        assert getState().isFull() && getState().getPrimeFrame().isInner();
+        Set<RecipeTarget> result = new LinkedHashSet<>();
+        Set<GraphState> known = new HashSet<>();
+        Queue<StateCache> queue = new LinkedList<>();
+        queue.add(this);
+        while (!queue.isEmpty()) {
+            var source = queue.poll();
+            var state = source.getState();
+            assert state.getPrimeFrame().isInner();
+            if (state.isInner()) {
+                for (var trans : source.getState().getTransitions(Claz.NON_ABSENT)) {
+                    assert trans.isInnerStep();
+                    var target = trans.target();
+                    if (!known.add(target)) {
+                        if (target.getPrimeFrame().isInner()) {
+                            queue.add(target.getCache());
+                        } else {
+                            result.add(new RecipeTarget((RuleTransition) trans));
+                        }
+                    }
+                }
+            } else {
+                result.add(new RecipeTarget(state));
+            }
+        }
+        return result;
+    }
+
+    /** The backward reachable inner states. */
+    private Set<StateCache> backInner;
+
+    /** The forward reachable inner states. */
+    private Set<StateCache> forwInner;
+
+    /** The backward reachable recipe launches. */
+    private Set<RuleTransition> backLaunch;
+
+    /** The forward reachable recipe targets. */
+    private Set<RecipeTarget> forwTarget;
+
+    /** The backward reachable transient states, up to and including the first steady state. */
+    private Set<StateCache> backTransient;
+
+    /** The forward reachable transient states. */
+    private Set<StateCache> forwTransient;
+
+    /** The forward reachable transient open states. */
+    private Set<StateCache> forwTransientOpen;
+
+    /**
+     * Notifies the cache of the addition of an outgoing partial transition.
+     * @param partial new outgoing partial rule transition from this state
+     */
+    void registerOutPartial(RuleTransition partial) {
+        assert partial.isPartialStep();
+        assert partial.source() == getState();
+        GraphState target = partial.target();
+        if (target.getActualFrame().isRemoved()) {
+            return;
+        }
+        var targetCache = target.getCache();
+        // add recipe transitions
+        if (this.knownInner) {
+            for (var back : this.backLaunch) {
+                if (target.getPrimeFrame().isInner()) {
+                    targetCache.forwTarget.forEach(t -> addRecipeTransition(back, t));
+                } else {
+                    addRecipeTransition(back, new RecipeTarget(partial));
+                }
+            }
+        } else if (partial.getStep().isLaunch()) {
+            if (target.getPrimeFrame().isInner()) {
+                targetCache.forwTarget.forEach(t -> addRecipeTransition(partial, t));
+            } else {
+                // it's a single-step recipe transition
+                addRecipeTransition(partial, new RecipeTarget(partial));
+            }
+        }
+        // modify the reachable inner and outer sets
+        if (target.getPrimeFrame().isInner()) {
+            var backInner = new HashSet<>(this.backInner);
+            if (!this.state.isInner()) {
+                for (var forw : targetCache.forwInner) {
+                    forw.backLaunch.add(partial);
+                }
+            } else if (!this.forwInner.contains(targetCache)) {
+                // if targetCache is already known, then the assignments below
+                // will have no effect
+                for (var forw : targetCache.forwInner) {
+                    forw.backInner.addAll(backInner);
+                    forw.backLaunch.addAll(this.backLaunch);
+                }
+                for (var back : backInner) {
+                    back.forwInner.addAll(targetCache.forwInner);
+                    back.forwTarget.addAll(targetCache.forwTarget);
+                }
+            }
+        } else if (partial.isInnerStep()) {
+            var rTarget = new RecipeTarget(partial);
+            this.backInner.forEach(back -> back.forwTarget.add(rTarget));
+        }
+        // modify the absence level
+        var targetAbsence = target.getAbsence();
+        this.backTransient.forEach(back -> back.setAbsence(targetAbsence));
+        // modify the reachable transient sets
+        if (target.isTransient()) {
+            var targetForwTransient = new HashSet<>(targetCache.forwTransient);
+            if (getState().isTransient()) {
+                for (var back : this.backTransient) {
+                    back.forwTransient.addAll(targetForwTransient);
+                    back.forwTransientOpen.addAll(targetCache.forwTransientOpen);
+                }
+                for (var forw : targetForwTransient) {
+                    forw.backTransient.addAll(this.backTransient);
+                }
+            } else {
+                this.forwTransient.addAll(targetForwTransient);
+                this.forwTransientOpen.addAll(targetCache.forwTransientOpen);
+                for (var forw : targetForwTransient) {
+                    forw.backTransient.add(this);
+                }
+            }
+        }
+    }
+
+    /**
+     * Callback method invoked when the state has been closed.
+     * This may involve a simultaneous change in (known) transience.
+     */
+    void regiterClosure() {
+        int transience = getState().getActualFrame().getTransience();
+        if (transience < this.knownTransience) {
+            registerTransienceChange();
+        }
+        testSetFull();
+        registerSteadyOrClosed();
+    }
+
+    /** Removes this cache from the {@link #forwTransientOpen} of all backward transients. */
+    private void registerSteadyOrClosed() {
+        this.backTransient.forEach(back -> back.removeFromForwTransientOpen(this));
+        removeFromForwTransientOpen(this);
+    }
+
+    /** Remove a given state from the {@link #forwTransientOpen} and possibly sets this state to full. */
+    private void removeFromForwTransientOpen(StateCache forw) {
+        if (this.forwTransientOpen.remove(forw)) {
+            testSetFull();
+        }
+    }
+
+    /**
+     * Sets this state to full, also modifying the inner and transient reachable sets.
+     */
+    private void testSetFull() {
+        assert !getState().isFull();
+        if (getState().isClosed() && this.forwTransientOpen.isEmpty()) {
+            getState().setFull(this.knownAbsence);
+            // reset the auxiliary sets, they are no longer needed
+            this.backInner.forEach(d -> d.forwInner.remove(this));
+            this.backInner = EMPTY_CACHE_SET;
+            this.forwInner = EMPTY_CACHE_SET;
+            this.backLaunch = EMPTY_TRANS_SET;
+            this.backTransient.forEach(d -> d.forwTransient.remove(this));
+            this.backTransient = EMPTY_CACHE_SET;
+            this.forwTransient = EMPTY_CACHE_SET;
+            this.forwTransientOpen = EMPTY_CACHE_SET;
+        }
+    }
+
+    /** Notifies the cache of a decrease in transient depth of the control frame. */
+    final void registerTransienceChange() {
+        var transience = getState().getActualFrame().getTransience();
+        assert transience < this.knownTransience;
+        this.knownTransience = transience;
+        var state = getState();
+        if (this.knownInner && !state.isInner()) {
+            // the state changed from outer to inner
+            this.knownInner = false;
+            // add incoming recipe transitions
+            var target = new RecipeTarget(state);
+            this.backLaunch.forEach(launch -> addRecipeTransition(launch, target));
+            // update reachable recipe targets
+            this.backInner.forEach(back -> back.forwTarget.add(target));
+        }
+        this.backTransient.forEach(back -> back.setAbsence(transience));
+        if (transience == 0) {
+            registerSteadyOrClosed();
+        }
+    }
+
+    /** Adds a new recipe transition to the GTS, with a given initial (partial) rule transition
+     * and to a given recipe target.
+     */
+    private void addRecipeTransition(RuleTransition partial, RecipeTarget target) {
+        var trans = new RecipeTransition(partial, target.outValues(), target.state());
+        getState().getGTS().addTransition(trans);
+    }
+
+    /** Sets the known absence to a given level, if it is lower than the current level. */
+    private void setAbsence(int newAbsence) {
+        if (newAbsence < this.knownAbsence) {
+            this.knownAbsence = newAbsence;
+        }
+    }
+
+    /**
+     * Returns the (known) absence level of the state.
+     * This is {@link Status#MAX_ABSENCE} if the state is erroneous,
+     * otherwise it is the minimum absence level of the reachable states.
+     */
+    final int getAbsence() {
+        return this.knownAbsence;
+    }
+
+    /** Flag indicating if this state is known to be inner. */
+    private boolean knownInner;
+
+    /** Known transience level. */
+    private int knownTransience;
+
+    /** Known absence level. */
+    private int knownAbsence;
+
+    /** Shared unmodifiable empty set of states. */
+    static private final Set<StateCache> EMPTY_CACHE_SET = Collections.emptySet();
+    /** Shared unmodifiable empty set of transitions. */
+    static private final Set<RuleTransition> EMPTY_TRANS_SET = Collections.emptySet();
+    /** Shared unmodifiable empty set of recipe targets. */
+    static private final Set<RecipeTarget> EMPTY_TARGET_SET = Collections.emptySet();
+
+    /** Combination of target state and out-parameter values. */
+    private record RecipeTarget(Recipe recipe, HostNode[] outValues, GraphState state) {
+        /** Creates a recipe target from a graph state whose prime call stack contains the
+         * out-parameter values.
+         */
+        RecipeTarget(GraphState target) {
+            this(target.getPrimeFrame().getRecipe().get(), getOutValuesFromTarget(target), target);
+        }
+
+        /** Creates a recipe target from the last partial transition in the recipe.
+         */
+        RecipeTarget(RuleTransition partial) {
+            this(partial.getStep().getRecipe().get(), getOutValuesFromFinalTrans(partial),
+                 partial.target());
+        }
+
+        /** Computes the recipe out-parameter values by reconstructing the final transition. */
+        static private HostNode[] getOutValuesFromFinalTrans(RuleTransition partial) {
+            assert partial.isInnerStep() && !partial.target().getPrimeFrame().isInner();
+            var step = partial.getStep();
+            var valuator = partial.getGTS().getRecord().getValuator();
+            // apply the transition's push change; for this we need the rule arguments
+            var anchorImages = partial.getEvent().getAnchorImages();
+            valuator.setAnchorInfo(i -> (HostNode) anchorImages[i]);
+            var addedNodes = partial.getAddedNodes();
+            valuator.setCreatorInfo(i -> addedNodes[i]);
+            Object[] stack = partial.source().getFrameStack(step.getSource());
+            stack = step.getPush().apply(stack, valuator);
+            // pop until the (final) switch within the outer recipe body
+            var recipeFinal = step
+                .getSwitch()
+                .stream()
+                .filter(s -> s.getTemplate().filter(t -> t.hasOwner(Kind.RECIPE)).isPresent())
+                .findFirst()
+                .get();
+            stack = step.getPopUntil(s -> s == recipeFinal).apply(stack);
+            // now obtain the parameter values
+            var result = recipeFinal.onFinish().assignFinal2Par().lookup(stack);
+            // apply the transition's permutation, if it is not the identity
+            if (!partial.getMorphism().isIdentity()) {
+                var nodeMap = partial.getMorphism().nodeMap();
+                result = Assignment.map(result, n -> nodeMap.get(n));
+            }
+            return result;
+        }
+
+        /** Computes the recipe out-parameter values from the prime frame of the target state. */
+        static private HostNode[] getOutValuesFromTarget(GraphState target) {
+            assert target.getPrimeFrame().isInner() && !target.isInner();
+            // look for the last frame between the state's prime and actual frames
+            // that was still internal; the corresponding stack contains the out-parameter values
+            var frame = target.getActualFrame();
+            while (!frame.isInner()) {
+                var pred = frame.getPred();
+                assert pred != null;
+                frame = pred;
+            }
+            // get the stack at that frame
+            Object[] stack = target.getFrameStack(frame);
+            // get the out-parameter assignment
+            return frame.getLocation().assignFinal2Par().lookup(stack);
+        }
+    }
+
     /** Debug flag. */
     private static final boolean DEBUG = false;
 }

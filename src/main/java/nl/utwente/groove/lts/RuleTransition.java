@@ -105,7 +105,7 @@ public interface RuleTransition extends GraphTransition, RuleTransitionStub {
     }
 
     @Override
-    public default RuleTransition getInitial() {
+    public default RuleTransition getLaunch() {
         return this;
     }
 

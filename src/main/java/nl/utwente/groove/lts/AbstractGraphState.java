@@ -233,7 +233,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         if (result) {
             setStoredTransitionStubs(getCachedTransitionStubs());
             fireStatus(oldStatus);
-            getCache().notifyClosure();
+            getCache().regiterClosure();
         }
         return result;
     }

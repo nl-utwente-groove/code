@@ -29,7 +29,7 @@ public class RecipeEvent
     /** Constructs an instance from a recipe transition. */
     public RecipeEvent(RecipeTransition trans) {
         this.recipe = (Recipe) trans.getSwitch().getUnit();
-        this.initial = trans.getInitial().toStub();
+        this.initial = trans.getLaunch().toStub();
         this.target = trans.target();
         this.arguments = trans.getArguments();
     }

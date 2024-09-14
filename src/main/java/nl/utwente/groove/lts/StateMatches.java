@@ -205,7 +205,7 @@ public class StateMatches extends MatchResultSet {
         }
         int updatedTransience = getState().getActualFrame().getTransience();
         if (updatedTransience < originalTransience && !this.state.isClosed()) {
-            getCache().notifyTransience(updatedTransience);
+            getCache().registerTransienceChange();
         }
         return result;
     }
