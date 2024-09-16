@@ -94,7 +94,7 @@ abstract public class GraphExportListener {
             var typeLabels = new ArrayList<String>();
             var flagLabels = new ArrayList<String>();
             StringBuilder label = new StringBuilder();
-            if (node instanceof AspectNode an) {
+            if (node instanceof AspectNode) {
                 // empty
             } else {
                 label.append("\\N<br/>");

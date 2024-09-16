@@ -24,7 +24,6 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision$
  */
-@SuppressWarnings("rawtypes")
 public sealed abstract class BoolSignature<BOOL> implements GSignature<BOOL,Void,Void,BOOL,Void>
     permits BoolAlgebra {
     @Override

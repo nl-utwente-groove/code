@@ -236,7 +236,7 @@ public class DefaultGraphNextState extends AbstractGraphState
      * {@link nl.utwente.groove.lts.RuleTransitionStub}.
      */
     protected Optional<HostNode[]> getSourceAddedNodes() {
-        return source() instanceof GraphNextState gns
+        return source() instanceof GraphNextState
             ? Optional.of(getAddedNodes())
             : Optional.empty();
     }

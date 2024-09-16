@@ -27,7 +27,6 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision$
  */
-@SuppressWarnings("rawtypes")
 public sealed abstract class RealSignature<INT,REAL,BOOL,STRING>
     implements GSignature<REAL,INT,REAL,BOOL,STRING> permits RealAlgebra {
     @Override

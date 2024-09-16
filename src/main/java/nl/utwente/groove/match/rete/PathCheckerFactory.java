@@ -83,10 +83,9 @@ public class PathCheckerFactory {
         if (exp.isAtom()) {
             operands = Collections.emptyList();
             result = new AtomPathChecker(this.owner, (Atom) exp, isLoop);
-            this.owner.getRoot()
-                .addSuccessor(result);
+            this.owner.getRoot().addSuccessor(result);
         } else if (exp.isChoice()) {
-            operands = ((Choice) exp).getChoiceOperands();
+            operands = exp.getChoiceOperands();
             result = new ChoicePathChecker(this.owner, (RegExpr.Choice) exp, isLoop);
         } else if (exp.isInv()) {
             operands = new ArrayList<>();
@@ -96,7 +95,10 @@ public class PathCheckerFactory {
             throw Exceptions.unsupportedOp("Negation is not supported by this factory.");
         } else if (exp.isPlus() || exp.isStar()) {
             operands = new ArrayList<>();
-            operands.add(exp.isPlus() ? exp.getPlusOperand() : exp.getStarOperand());
+            operands
+                .add(exp.isPlus()
+                    ? exp.getPlusOperand()
+                    : exp.getStarOperand());
             result = new ClosurePathChecker(this.owner, exp, isLoop);
         } else if (exp.isSeq()) {
             operands = exp.getSeqOperands();
@@ -109,24 +111,23 @@ public class PathCheckerFactory {
         } else if (exp.isEmpty()) {
             operands = Collections.emptyList();
             result = EmptyPathChecker.getInstance(this.owner);
-            this.owner.getRoot()
-                .addSuccessor(result);
+            this.owner.getRoot().addSuccessor(result);
         } else if (exp.isWildcard()) {
             operands = Collections.emptyList();
-            if (this.owner.getTypeGraph()
-                .isNodeType(exp.getWildcardKind())) {
+            if (this.owner.getTypeGraph().isNodeType(exp.getWildcardKind())) {
                 // node type variables not yet supported
                 throw new UnsupportedOperationException();
             } else {
                 result = new WildcardEdgePathChecker(this.owner, (Wildcard) exp, isLoop);
             }
-            this.owner.getRoot()
-                .addSuccessor(result);
+            this.owner.getRoot().addSuccessor(result);
         }
 
         if (result != null) {
             assert operands != null; // implied by result != null
-            boolean loop = (operands.size() == 1) ? isLoop : false;
+            boolean loop = (operands.size() == 1)
+                ? isLoop
+                : false;
             for (RegExpr operand : operands) {
                 AbstractPathChecker pc = getPathCheckerFor(operand, loop);
                 result.addAntecedent(pc);
@@ -159,9 +160,12 @@ public class PathCheckerFactory {
             List<RegExpr> ops = new ArrayList<>();
             ops.add(pc1.getExpression());
             ops.add(pc2.getExpression());
-            RegExpr e = (exp.isSeq()) ? new RegExpr.Seq(ops) : new RegExpr.Choice(ops);
-            AbstractPathChecker combined =
-                getPathCheckerFor(e, (checkers.size() == 0) ? isLoop : false);
+            RegExpr e = (exp.isSeq())
+                ? new RegExpr.Seq(ops)
+                : new RegExpr.Choice(ops);
+            AbstractPathChecker combined = getPathCheckerFor(e, (checkers.size() == 0)
+                ? isLoop
+                : false);
             checkers.push(combined);
         }
         return checkers.pop();

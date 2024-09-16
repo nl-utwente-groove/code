@@ -2,6 +2,7 @@ package nl.utwente.groove.gui.action;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import javax.swing.JOptionPane;
@@ -26,13 +27,12 @@ public class LoadGrammarFromURLAction extends SimulatorAction {
         String input = JOptionPane.showInputDialog("Input Grammar URL:");
         if (input != null) {
             try {
-                URL url = new URL(input);
+                URL url = new java.net.URI(input).toURL();
                 final SystemStore store = SystemStore.newStore(url, false);
                 //                String startGraphName = url.getQuery();
                 getActions().getLoadGrammarAction().load(store);
-            } catch (MalformedURLException e) {
-                showErrorDialog(e,
-                    String.format("Invalid URL '%s'", e.getMessage()));
+            } catch (URISyntaxException | MalformedURLException e) {
+                showErrorDialog(e, String.format("Invalid URL '%s'", e.getMessage()));
             } catch (IOException exc) {
                 showErrorDialog(exc, exc.getMessage());
             }

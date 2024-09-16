@@ -613,8 +613,7 @@ abstract sealed public class RegExpr { // implements VarSetSupport {
         } else if (operator1 instanceof Constant) {
             return false;
         } else {
-            return bindsWeaker(((Composite) operator1).getOperator(),
-                               ((Composite) operator2).getOperator());
+            return bindsWeaker(operator1.getOperator(), operator2.getOperator());
         }
     }
 

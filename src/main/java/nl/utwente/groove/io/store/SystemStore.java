@@ -1500,9 +1500,9 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
      * @throws IOException if a store can be created but not loaded
      */
     static public SystemStore newStore(String location) throws IllegalArgumentException,
-                                                        IOException {
+                                                        URISyntaxException, IOException {
         try {
-            return newStore(new URL(location), true);
+            return newStore(new java.net.URI(location).toURL(), true);
         } catch (IllegalArgumentException exc) {
             return newStore(new File(location), false, true);
         }

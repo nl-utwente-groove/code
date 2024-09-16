@@ -23,6 +23,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -50,8 +52,8 @@ public class Unzipper {
      */
     public Path unzip(String input) throws IOException {
         try {
-            return unzip(new URL(input));
-        } catch (MalformedURLException exc) {
+            return unzip(new URI(input).toURL());
+        } catch (MalformedURLException | URISyntaxException exc) {
             return unzip(new File(input));
         }
     }

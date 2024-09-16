@@ -25,7 +25,6 @@ package nl.utwente.groove.algebra;
  * @author Arend Rensink
  * @version $Revision$
  */
-@SuppressWarnings("rawtypes")
 public sealed abstract class StringSignature<INT,REAL,BOOL,STRING>
     implements GSignature<STRING,INT,REAL,BOOL,STRING> permits StringAlgebra {
     @Override

@@ -29,6 +29,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
@@ -145,8 +146,8 @@ public class LibrariesTable extends JTable {
             @Override
             public java.net.URL format(String value) {
                 try {
-                    return new java.net.URL(value);
-                } catch (MalformedURLException e) {
+                    return new java.net.URI(value).toURL();
+                } catch (URISyntaxException | MalformedURLException e) {
                     return null;
                 }
             }
@@ -211,14 +212,15 @@ public class LibrariesTable extends JTable {
      * Taken from {@link "http://java-swing-tips.blogspot.nl/2009/02/hyperlink-in-jtable-cell.html"}
      * @author TERAI Atsuhiro
      */
-    private static class URLRenderer extends DefaultTableCellRenderer implements MouseListener,
-        MouseMotionListener {
+    private static class URLRenderer extends DefaultTableCellRenderer
+        implements MouseListener, MouseMotionListener {
         private int row = -1;
         private int col = -1;
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
-            boolean isSelected, boolean hasFocus, int row, int column) {
+                                                       boolean isSelected, boolean hasFocus,
+                                                       int row, int column) {
             super.getTableCellRendererComponent(table, value, isSelected, false, row, column);
             StringBuilder text = new StringBuilder(value.toString());
             BLUE_TAG.on(text);
@@ -259,8 +261,7 @@ public class LibrariesTable extends JTable {
             int ccol = table.columnAtPoint(pt);
             int crow = table.rowAtPoint(pt);
             Object value = table.getValueAt(crow, ccol);
-            if (value instanceof URL) {
-                URL url = (URL) value;
+            if (value instanceof URL url) {
                 Desktop desktop = null;
                 try {
                     if (Desktop.isDesktopSupported()) {
@@ -299,7 +300,7 @@ public class LibrariesTable extends JTable {
             // do nothing
         }
 
-        private static final HTMLConverter.HTMLTag BLUE_TAG =
-            HTMLConverter.createColorTag(Color.BLUE);
+        private static final HTMLConverter.HTMLTag BLUE_TAG
+            = HTMLConverter.createColorTag(Color.BLUE);
     }
 }

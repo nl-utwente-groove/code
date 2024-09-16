@@ -98,14 +98,12 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
      *        are passed down the network.
      */
     protected SubgraphCheckerNode(ReteNetwork network, ReteStaticMapping left,
-        ReteStaticMapping right, boolean keepPrefix) {
+                                  ReteStaticMapping right, boolean keepPrefix) {
         super(network);
         this.shouldPreservePrefix = keepPrefix;
-        left.getNNode()
-            .addSuccessor(this);
+        left.getNNode().addSuccessor(this);
         this.addAntecedent(left.getNNode());
-        right.getNNode()
-            .addSuccessor(this);
+        right.getNNode().addSuccessor(this);
         this.addAntecedent(right.getNNode());
         copyPatternsFromAntecedents();
         staticJoin(left, right);
@@ -124,69 +122,60 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
         if ((!(left.getNNode() instanceof AbstractPathChecker)
             && !(right.getNNode() instanceof AbstractPathChecker))) {
 
-            this.joinStrategy =
-                (JoinStrategy<LeftMatchType,RightMatchType>) new AbstractSimpleTestJoinStrategy<ReteSimpleMatch,ReteSimpleMatch>(
+            this.joinStrategy
+                = (JoinStrategy<LeftMatchType,RightMatchType>) new AbstractSimpleTestJoinStrategy<ReteSimpleMatch,ReteSimpleMatch>(
                     this) {
 
                     @Override
                     public AbstractReteMatch construct(ReteSimpleMatch left,
-                        ReteSimpleMatch right) {
+                                                       ReteSimpleMatch right) {
 
-                        return ReteSimpleMatch.merge(this.subgraphChecker,
-                            left,
-                            right,
-                            this.subgraphChecker.getOwner()
-                                .isInjective(),
-                            this.subgraphChecker.shouldPreservePrefix);
+                        return ReteSimpleMatch
+                            .merge(this.subgraphChecker, left, right,
+                                   this.subgraphChecker.getOwner().isInjective(),
+                                   this.subgraphChecker.shouldPreservePrefix);
                     }
 
                 };
 
         } else if (right.getNNode() instanceof AbstractPathChecker) {
-            this.joinStrategy =
-                (JoinStrategy<LeftMatchType,RightMatchType>) new AbstractJoinWithPathStrategy<AbstractReteMatch>(
+            this.joinStrategy
+                = (JoinStrategy<LeftMatchType,RightMatchType>) new AbstractJoinWithPathStrategy<>(
                     this) {
 
                     @Override
                     public AbstractReteMatch construct(AbstractReteMatch left,
-                        RetePathMatch right) {
+                                                       RetePathMatch right) {
                         return (right == null || right.isEmpty())
                             ? this.mergeWithEmptyPath(left, right)
-                            : ReteSimpleMatch.merge(this.subgraphChecker,
-                                left,
-                                right,
-                                this.subgraphChecker.getOwner()
-                                    .isInjective(),
-                                this.subgraphChecker.shouldPreservePrefix);
+                            : ReteSimpleMatch
+                                .merge(this.subgraphChecker, left, right,
+                                       this.subgraphChecker.getOwner().isInjective(),
+                                       this.subgraphChecker.shouldPreservePrefix);
                     }
 
                 };
 
         } else if (left.getNNode() instanceof AbstractPathChecker) {
-            this.joinStrategy =
-                (JoinStrategy<LeftMatchType,RightMatchType>) new AbstractSimpleTestJoinStrategy<RetePathMatch,AbstractReteMatch>(
+            this.joinStrategy
+                = (JoinStrategy<LeftMatchType,RightMatchType>) new AbstractSimpleTestJoinStrategy<RetePathMatch,AbstractReteMatch>(
                     this) {
 
                     @Override
                     public AbstractReteMatch construct(RetePathMatch left,
-                        AbstractReteMatch right) {
+                                                       AbstractReteMatch right) {
 
-                        return ReteSimpleMatch.merge(this.subgraphChecker,
-                            left,
-                            right,
-                            this.subgraphChecker.getOwner()
-                                .isInjective(),
-                            this.subgraphChecker.shouldPreservePrefix);
+                        return ReteSimpleMatch
+                            .merge(this.subgraphChecker, left, right,
+                                   this.subgraphChecker.getOwner().isInjective(),
+                                   this.subgraphChecker.shouldPreservePrefix);
                     }
                 };
         } else {
-            throw Exceptions.unsupportedOp("Left is of type %s and right is of type %s",
-                left.getNNode()
-                    .getClass()
-                    .toString(),
-                right.getNNode()
-                    .getClass()
-                    .toString());
+            throw Exceptions
+                .unsupportedOp("Left is of type %s and right is of type %s",
+                               left.getNNode().getClass().toString(),
+                               right.getNNode().getClass().toString());
         }
     }
 
@@ -198,7 +187,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
      * @param right The right antecedent.
      */
     public SubgraphCheckerNode(ReteNetwork network, ReteStaticMapping left,
-        ReteStaticMapping right) {
+                               ReteStaticMapping right) {
         this(network, left, right, false);
     }
 
@@ -207,16 +196,11 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
      * on that of the antecedents'.
      */
     protected void copyPatternsFromAntecedents() {
-        assert this.getAntecedents()
-            .size() == 2;
-        RuleElement[] leftAntecedentPattern = this.getAntecedents()
-            .get(0)
-            .getPattern();
-        RuleElement[] rightAntecedentPattern = this.getAntecedents()
-            .get(1)
-            .getPattern();
-        this.pattern =
-            new RuleElement[leftAntecedentPattern.length + rightAntecedentPattern.length];
+        assert this.getAntecedents().size() == 2;
+        RuleElement[] leftAntecedentPattern = this.getAntecedents().get(0).getPattern();
+        RuleElement[] rightAntecedentPattern = this.getAntecedents().get(1).getPattern();
+        this.pattern
+            = new RuleElement[leftAntecedentPattern.length + rightAntecedentPattern.length];
         int i = 0;
         for (; i < leftAntecedentPattern.length; i++) {
             this.pattern[i] = leftAntecedentPattern[i];
@@ -283,7 +267,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
      */
     @SuppressWarnings("unchecked")
     protected boolean unbufferMatch(ReteNetworkNode source, boolean first,
-        AbstractReteMatch subgraph) {
+                                    AbstractReteMatch subgraph) {
         assert !subgraph.isDeleted();
         return isLeftAntecedent(source, first)
             ? this.unbufferMatch(source, this.leftOnDemandBuffer, (LeftMatchType) subgraph)
@@ -291,7 +275,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
     }
 
     private <E extends AbstractReteMatch> boolean unbufferMatch(ReteNetworkNode source,
-        HashSet<E> memory, E match) {
+                                                                HashSet<E> memory, E match) {
         assert !match.isDeleted();
         boolean result = memory.remove(match);
         if (result) {
@@ -317,7 +301,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
      * Buffers the given match in the given ondemand buffer
      */
     protected <E extends AbstractReteMatch> void bufferMatch(ReteNetworkNode source,
-        HashSet<E> memory, E match) {
+                                                             HashSet<E> memory, E match) {
         memory.add(match);
         match.addContainerCollection(memory);
         this.invalidate();
@@ -350,8 +334,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
      */
     @Override
     public void receive(ReteNetworkNode source, int repeatIndex, AbstractReteMatch subgraph) {
-        if (this.getOwner()
-            .isInOnDemandMode()) {
+        if (this.getOwner().isInOnDemandMode()) {
             bufferMatch(source, repeatIndex == 0, subgraph);
         } else {
             receiveAndProcess(source, repeatIndex == 0, subgraph);
@@ -372,22 +355,29 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
      */
     @SuppressWarnings("unchecked")
     protected int receiveAndProcess(ReteNetworkNode source, boolean first,
-        AbstractReteMatch subgraph) {
+                                    AbstractReteMatch subgraph) {
         int result = 0;
         HashSet<AbstractReteMatch> memory;
         HashSet<AbstractReteMatch> otherMemory;
         boolean sourceIsLeft = isLeftAntecedent(source, first);
 
-        memory = (HashSet<AbstractReteMatch>) (sourceIsLeft ? this.leftMemory : this.rightMemory);
+        memory = (HashSet<AbstractReteMatch>) (sourceIsLeft
+            ? this.leftMemory
+            : this.rightMemory);
 
-        otherMemory = (HashSet<AbstractReteMatch>) ((memory == this.leftMemory) ? this.rightMemory
+        otherMemory = (HashSet<AbstractReteMatch>) ((memory == this.leftMemory)
+            ? this.rightMemory
             : this.leftMemory);
 
         memory.add(subgraph);
         subgraph.addContainerCollection(memory);
         for (AbstractReteMatch gOther : otherMemory) {
-            LeftMatchType left = (LeftMatchType) (sourceIsLeft ? subgraph : gOther);
-            RightMatchType right = (RightMatchType) (sourceIsLeft ? gOther : subgraph);
+            LeftMatchType left = (LeftMatchType) (sourceIsLeft
+                ? subgraph
+                : gOther);
+            RightMatchType right = (RightMatchType) (sourceIsLeft
+                ? gOther
+                : subgraph);
 
             if (this.joinStrategy.test(left, right)) {
                 result++;
@@ -434,11 +424,9 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
      * @return {@literal true} if the combination is possible, {@literal false} otherwise.
      */
     public boolean checksValidSubgraph(ReteStaticMapping oneMapping,
-        ReteStaticMapping otherMapping) {
-        assert this.getAntecedents()
-            .contains(oneMapping.getNNode())
-            && this.getAntecedents()
-                .contains(otherMapping.getNNode());
+                                       ReteStaticMapping otherMapping) {
+        assert this.getAntecedents().contains(oneMapping.getNNode())
+            && this.getAntecedents().contains(otherMapping.getNNode());
 
         //the two mappings <code>oneMapping</code> and <code>otherMapping
         //could be taken as the mapping for the left antecedent and right successor
@@ -447,14 +435,17 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
         ReteStaticMapping[][] combinationChoices;
 
         if (oneMapping.getNNode() != otherMapping.getNNode()) {
-            ReteStaticMapping lm = (this.getAntecedents()
-                .get(0) == oneMapping.getNNode()) ? oneMapping : otherMapping;
-            ReteStaticMapping rm = (lm == oneMapping) ? otherMapping : oneMapping;
+            ReteStaticMapping lm = (this.getAntecedents().get(0) == oneMapping.getNNode())
+                ? oneMapping
+                : otherMapping;
+            ReteStaticMapping rm = (lm == oneMapping)
+                ? otherMapping
+                : oneMapping;
 
             combinationChoices = new ReteStaticMapping[][] {{lm, rm}};
         } else {
-            combinationChoices =
-                new ReteStaticMapping[][] {{oneMapping, otherMapping}, {otherMapping, oneMapping}};
+            combinationChoices = new ReteStaticMapping[][] {{oneMapping, otherMapping},
+                    {otherMapping, oneMapping}};
         }
         boolean result = true;
 
@@ -539,18 +530,24 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
         sb.append("--  Edge Set-\n");
 
         for (int i = 0; i < this.pattern.length; i++) {
-            sb.append("-- " + i + " -" + this.pattern[i].toString()
-                .replace(':', '-') + "\n");
+            sb.append("-- " + i + " -" + this.pattern[i].toString().replace(':', '-') + "\n");
         }
         sb.append("--- Equalities-\n");
         for (int i = 0; i < this.leftLookupTable.length; i++) {
-            sb.append(String.format("--- left[%d]%s = right[%d]%s \n",
-                this.leftLookupTable[i].pos(),
-                (this.leftLookupTable[i].role() == Role.NODE) ? ""
-                    : ((this.leftLookupTable[i].role() == Role.SOURCE) ? ".source" : ".target"),
-                this.rightLookupTable[i].pos(),
-                (this.rightLookupTable[i].role() == Role.NODE) ? ""
-                    : ((this.rightLookupTable[i].role() == Role.SOURCE) ? ".source" : ".target")));
+            sb
+                .append(String
+                    .format("--- left[%d]%s = right[%d]%s \n", this.leftLookupTable[i].pos(),
+                            (this.leftLookupTable[i].role() == Role.NODE)
+                                ? ""
+                                : ((this.leftLookupTable[i].role() == Role.SOURCE)
+                                    ? ".source"
+                                    : ".target"),
+                            this.rightLookupTable[i].pos(),
+                            (this.rightLookupTable[i].role() == Role.NODE)
+                                ? ""
+                                : ((this.rightLookupTable[i].role() == Role.SOURCE)
+                                    ? ".source"
+                                    : ".target")));
         }
         return sb.toString();
     }
@@ -572,8 +569,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
     public boolean demandUpdate() {
         boolean result = false;
         if (!this.isUpToDate()) {
-            if (this.getOwner()
-                .isInOnDemandMode()) {
+            if (this.getOwner().isInOnDemandMode()) {
 
                 for (ReteNetworkNode nnode : this.getAntecedents()) {
                     nnode.demandUpdate();
@@ -589,9 +585,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
                         newMatchCounter += this.receiveAndProcess(m.getOrigin(), true, m);
                     }
                     this.leftOnDemandBuffer.clear();
-                    boolean first = (this.getAntecedents()
-                        .get(0) != this.getAntecedents()
-                            .get(1));
+                    boolean first = (this.getAntecedents().get(0) != this.getAntecedents().get(1));
                     for (AbstractReteMatch m : this.rightOnDemandBuffer) {
                         assert !m.isDeleted();
                         m.removeContainerCollection(this.rightOnDemandBuffer);
@@ -610,16 +604,12 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
     public int demandOneMatch() {
         int result = 0;
         if (!this.isUpToDate()) {
-            if (this.getOwner()
-                .isInOnDemandMode()) {
+            if (this.getOwner().isInOnDemandMode()) {
                 HashSet<? extends AbstractReteMatch> theBuffer;
                 ReteNetworkNode theAntecedent;
                 theBuffer = this.rightOnDemandBuffer;
-                theAntecedent = this.getAntecedents()
-                    .get(1);
-                boolean first = (this.getAntecedents()
-                    .get(0) != this.getAntecedents()
-                        .get(1));
+                theAntecedent = this.getAntecedents().get(1);
+                boolean first = (this.getAntecedents().get(0) != this.getAntecedents().get(1));
                 do {
                     do {
                         if (theBuffer.size() == 0) {
@@ -627,8 +617,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
                                 break;
                             }
                         }
-                        AbstractReteMatch m = theBuffer.iterator()
-                            .next();
+                        AbstractReteMatch m = theBuffer.iterator().next();
                         theBuffer.remove(m);
                         m.removeContainerCollection(theBuffer);
                         result += this.receiveAndProcess(m.getOrigin(), first, m);
@@ -636,8 +625,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
 
                     if ((result == 0) && (theBuffer == this.rightOnDemandBuffer)) {
                         theBuffer = this.leftOnDemandBuffer;
-                        theAntecedent = this.getAntecedents()
-                            .get(0);
+                        theAntecedent = this.getAntecedents().get(0);
                         first = true;
                     } else {
                         break;
@@ -674,13 +662,16 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
         @Override
         public boolean test(LT left, RT right) {
             boolean allEqualitiesSatisfied = true;
-            boolean injective = this.subgraphChecker.getOwner()
-                .isInjective();
+            boolean injective = this.subgraphChecker.getOwner().isInjective();
 
             Object[] leftUnits = left.getAllUnits();
             Object[] rightUnits = right.getAllUnits();
-            HostNodeSet nodesLeft = (injective) ? left.getNodes() : null;
-            HostNodeSet nodesRight = (injective) ? right.getNodes() : null;
+            HostNodeSet nodesLeft = (injective)
+                ? left.getNodes()
+                : null;
+            HostNodeSet nodesRight = (injective)
+                ? right.getNodes()
+                : null;
 
             int i = 0;
             for (; i < this.subgraphChecker.leftLookupTable.length; i++) {
@@ -704,8 +695,8 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
                 //if any of the nodes that do not participate in the equalities
                 //of this subgraph checker map to the same host nodes
                 //then injectivity is violated
-                allEqualitiesSatisfied =
-                    AbstractReteMatch.checkInjectiveOverlap(nodesLeft, nodesRight);
+                allEqualitiesSatisfied
+                    = AbstractReteMatch.checkInjectiveOverlap(nodesLeft, nodesRight);
             }
 
             return allEqualitiesSatisfied;
@@ -810,8 +801,8 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
             HostNode node1 = (HostNode) this.leftPathStartEntry.lookup(leftUnits);
             assert node1 == this.leftPathEndEntry.lookup(leftUnits);
 
-            return new ReteSimpleMatch(this.subgraphChecker, this.subgraphChecker.getOwner()
-                .isInjective(), left,
+            return new ReteSimpleMatch(this.subgraphChecker,
+                this.subgraphChecker.getOwner().isInjective(), left,
                 new Object[] {new RetePathMatch.EmptyPathMatch(emptyMatch.getOrigin(), node1)});
         }
     }
@@ -827,7 +818,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
      *        are passed down the network.
      */
     public static SubgraphCheckerNode<?,?> create(ReteNetwork network, ReteStaticMapping left,
-        ReteStaticMapping right, boolean keepPrefix) {
+                                                  ReteStaticMapping right, boolean keepPrefix) {
         if ((left.getNNode() instanceof AbstractPathChecker)
             && (right.getNNode() instanceof AbstractPathChecker)) {
             return new SubgraphCheckerNode<RetePathMatch,RetePathMatch>(network, left, right,

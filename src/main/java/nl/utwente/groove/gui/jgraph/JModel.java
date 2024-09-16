@@ -277,7 +277,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
         LayoutMap layoutMap = getLayoutMap();
         assert layoutMap == GraphInfo.getLayoutMap(getGraph());
         if (jCell instanceof JEdge) {
-            for (Edge edge : ((JEdge<G>) jCell).getEdges()) {
+            for (Edge edge : jCell.getEdges()) {
                 layoutMap.putEdge(edge, jCell.getVisuals());
             }
         } else if (jCell instanceof JVertex) {

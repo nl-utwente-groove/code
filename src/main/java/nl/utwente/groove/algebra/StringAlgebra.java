@@ -24,7 +24,6 @@ import nl.utwente.groove.util.Exceptions;
  * @param <BOOL> The representation type of the boolean algebra
  * @param <STRING> The representation type of the string algebra
  */
-@SuppressWarnings("rawtypes")
 public sealed abstract class StringAlgebra<INT,REAL,BOOL,STRING>
     extends StringSignature<INT,REAL,BOOL,STRING> implements Algebra<STRING>
     permits AbstractStringAlgebra, PointStringAlgebra, TermStringAlgebra {

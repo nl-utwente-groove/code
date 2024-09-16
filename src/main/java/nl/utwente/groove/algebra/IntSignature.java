@@ -28,7 +28,6 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision$
  */
-@SuppressWarnings("rawtypes")
 public sealed abstract class IntSignature<INT,REAL,BOOL,STRING>
     implements GSignature<INT,INT,REAL,BOOL,STRING> permits IntAlgebra {
     @Override

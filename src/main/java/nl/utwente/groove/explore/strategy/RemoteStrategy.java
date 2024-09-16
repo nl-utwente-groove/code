@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2023
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package nl.utwente.groove.explore.strategy;
@@ -23,6 +23,8 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import nl.utwente.groove.lts.GraphState;
@@ -64,10 +66,10 @@ public class RemoteStrategy extends SymbolicStrategy {
     /**
      * Connects to the remote server.
      */
-    private void connect() throws MalformedURLException, IOException {
+    private void connect() throws MalformedURLException, IOException, URISyntaxException {
         System.out.println("Connecting...");
         // Create a URLConnection object for a URL
-        URL url = new URL(this.host);
+        URL url = new URI(this.host).toURL();
         this.conn = (HttpURLConnection) url.openConnection();
         this.conn.setDoOutput(true);
         this.conn.setRequestMethod("POST");
@@ -81,7 +83,7 @@ public class RemoteStrategy extends SymbolicStrategy {
          * InputStreamReader(conn.getErrorStream())); StringBuffer buf = new
          * StringBuffer(); String line; while ((line = error.readLine()) !=
          * null) { buf.append(line); }
-         * 
+         *
          * if (buf.length() > 0) {
          * System.out.println("Error in connection to: "+url);
          * System.out.println(buf); } else { this.out = new
@@ -92,7 +94,7 @@ public class RemoteStrategy extends SymbolicStrategy {
 
     /**
      * Sends a JSON message to the remote server.
-     * 
+     *
      * @param message A JSON formatted message
      */
     private void send(String message) {
@@ -117,7 +119,7 @@ public class RemoteStrategy extends SymbolicStrategy {
                 buf.append(line);
             }
             System.out.println(buf);
-        } catch (IOException e) {
+        } catch (URISyntaxException | IOException e) {
             throw new IllegalStateException(e);
         }
     }

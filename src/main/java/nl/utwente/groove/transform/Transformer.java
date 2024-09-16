@@ -18,6 +18,7 @@ package nl.utwente.groove.transform;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -58,7 +59,7 @@ public class Transformer {
      * The location is given as a string that could either be a URL or a filename.
      * @throws IOException if the grammar cannot be loaded from the given location
      */
-    public Transformer(String grammarFileName) throws IOException {
+    public Transformer(String grammarFileName) throws IOException, URISyntaxException {
         this(SystemStore.newStore(grammarFileName));
     }
 
