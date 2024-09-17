@@ -837,7 +837,7 @@ public class CtrlHelper {
     /**Adds an error to the name space, if possible prefixed with the line and
      * column of a given control tree. */
     void emitErrorMessage(CtrlTree marker, String message, Object... args) {
-        if (marker == null) {
+        if (marker == null || this.namespace.isArtificial()) {
             this.namespace.addError(message, args);
         } else {
             this.namespace.addError(marker.createError(message, args));

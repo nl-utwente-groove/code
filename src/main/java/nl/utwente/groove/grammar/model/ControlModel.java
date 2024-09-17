@@ -49,8 +49,7 @@ public class ControlModel extends TextBasedModel<Program> {
             if (model.hasErrors()) {
                 model.getPartErrors(getQualName()).throwException();
                 // there were errors in the composite model but not in this particular part
-                new FormatErrorSet(
-                    "The composite control model cannot be built due to the following errors:")
+                new FormatErrorSet("The control model cannot be built due to the following errors:")
                     .addAll(model.getErrors())
                     .throwException();
                 throw Exceptions.UNREACHABLE;

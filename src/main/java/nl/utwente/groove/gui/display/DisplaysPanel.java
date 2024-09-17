@@ -41,6 +41,9 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -88,7 +91,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
      * Shows or hides one of the optional tabs.
      * @return {@code true} if the tab is now shown
      */
-    private boolean showOrHideTab(ResourceKind resource) {
+    private boolean showOrHideTab(@NonNull ResourceKind resource) {
         String optionName = Options.getShowTabOption(resource);
         boolean show = this.simulator.getOptions().isSelected(optionName);
         if (!show) {
@@ -96,6 +99,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             show = grammar != null && !grammar.getResourceSet(resource).isEmpty();
         }
         Display display = getDisplayFor(resource);
+        assert display != null;
         DisplayKind displayKind = DisplayKind.toDisplay(resource);
         if (show) {
             if (!this.detachedMap.containsKey(displayKind)) {
@@ -343,8 +347,10 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     }
 
     /** Returns the panel corresponding to a certain tab kind. */
-    public Display getDisplayFor(ResourceKind resource) {
-        return getDisplay(DisplayKind.toDisplay(resource));
+    public @Nullable Display getDisplayFor(ResourceKind resource) {
+        return resource == null
+            ? null
+            : getDisplay(DisplayKind.toDisplay(resource));
     }
 
     /** Reattaches a component at its proper place. */

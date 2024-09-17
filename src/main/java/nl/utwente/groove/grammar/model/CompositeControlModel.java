@@ -59,7 +59,7 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
 
     @Override
     public String getName() {
-        return "Composite control program";
+        return COMPOSITE_NAME;
     }
 
     @Override
@@ -176,13 +176,18 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
 
     /** Adds a control program-related error. */
     private void addPartError(FormatError error) {
-        error.getResourceNames().forEach(k -> getPartErrors(k).add(error));
+        var names = error.getResourceNames();
+        if (names.isEmpty()) {
+            getPartErrors(null).add(error);
+        } else {
+            names.forEach(k -> getPartErrors(k).add(error));
+        }
     }
 
     /** Collects and returns all errors found in the partial control models. */
     private FormatErrorSet getAllPartErrors() {
         FormatErrorSet result = createErrors();
-        for (Map.Entry<QualName,FormatErrorSet> entry : getPartErrorsMap().entrySet()) {
+        for (var entry : getPartErrorsMap().entrySet()) {
             for (FormatError error : entry.getValue()) {
                 if (entry.getKey() == null) {
                     result.add("Error in implicit control: %s", error);
@@ -213,4 +218,7 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
     }
 
     private Map<QualName,FormatErrorSet> partErrorsMap;
+
+    /** Default name of the composite control program. */
+    static private final String COMPOSITE_NAME = "Composite control program";
 }

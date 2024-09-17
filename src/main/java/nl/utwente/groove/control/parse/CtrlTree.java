@@ -91,6 +91,22 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
 
     private QualName controlName;
 
+    /** Registers whether this control tree is artificially synthesised. */
+    public void setArtificial(boolean artificial) {
+        this.artificial = artificial;
+    }
+
+    /** Checks whether this is an artificially synthesised control tree
+     * (as opposed to a user-programmed one).
+     * This affects the wording of any error that is emitted.
+     */
+    public boolean isArtificial() {
+        return this.artificial;
+    }
+
+    /** Flag indicating that this is an artificially synthesised control tree. */
+    private boolean artificial;
+
     /** Returns the control variable stored in this tree node, if any. */
     public CtrlVar getCtrlVar() {
         return this.var;
@@ -440,7 +456,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
             return this;
         } else {
             try {
-                getInfo().setControlName(getControlName());
+                getInfo().setControlInfo(getControlName(), isArtificial());
                 CtrlChecker checker = createChecker();
                 CtrlTree result = checker.program().getTree();
                 getInfo().getErrors().throwException();

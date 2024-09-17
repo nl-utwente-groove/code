@@ -146,8 +146,9 @@ public class Namespace implements ParseInfo, Fallible {
     /** Mapping from function names to other functions invoking it. */
     private final Map<QualName,@Nullable Set<QualName>> callerMap = new HashMap<>();
 
-    /** Sets the full name of the control program currently being explored. */
-    public void setControlName(QualName controlName) {
+    /** Sets the full name of the control program currently being explored,
+     * as well as a flag indicating whether the program has been artificially synthesised. */
+    public void setControlInfo(QualName controlName, boolean artificial) {
         assert !controlName.hasErrors() : String
             .format("Errors in control: %s", controlName.getErrors());
         if (!this.importedMap.containsKey(controlName)) {
@@ -155,6 +156,7 @@ public class Namespace implements ParseInfo, Fallible {
             this.importMap.put(controlName, new HashMap<>());
         }
         this.controlName = controlName;
+        this.artificial = artificial;
     }
 
     /** Returns the full name of the control program being parsed.
@@ -178,6 +180,15 @@ public class Namespace implements ParseInfo, Fallible {
 
     /** Full name of the program file being parsed. */
     private @Nullable QualName controlName;
+
+    /** Indicates if the control program currently being parsed is artificially synthesised.
+     * This affects the wording of the error messages.
+     */
+    boolean isArtificial() {
+        return this.artificial;
+    }
+
+    private boolean artificial;
 
     /** Adds an import to the map of the current control program. */
     public void addImport(QualName fullName) {

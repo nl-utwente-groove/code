@@ -434,13 +434,14 @@ public class Simulator implements SimulatorListener {
         var names = entry.getResourceNames();
         Display display = getDisplaysPanel().getDisplayFor(resource);
         if (resource == ResourceKind.PROPERTIES) {
-            assert names.size() == 1;
+            assert display != null && names.size() == 1;
             var name = names.first();
             GrammarKey key = GrammarKey.getKey(name.toString()).get();
             ListPanel panel = display.getListPanel();
             getDisplaysPanel().getUpperListsPanel().setSelectedComponent(panel);
             ((PropertiesTable) panel.getList()).setSelected(key);
-        } else if (resource != null && display instanceof ResourceDisplay resourceDisplay) {
+        } else if (display instanceof ResourceDisplay resourceDisplay) {
+            assert resource != null;
             getModel().doSelectSet(resource, names);
             var resourceTab = resourceDisplay.getSelectedTab();
             if (resourceTab != null) {

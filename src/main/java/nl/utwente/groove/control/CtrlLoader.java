@@ -74,14 +74,30 @@ public class CtrlLoader {
      * @param program the control program
      */
     public CtrlTree addControl(QualName controlName, String program) throws FormatException {
+        return addControl(controlName, program, false);
+    }
+
+    /**
+     * Parses a given, named control program and returns the corresponding control tree.
+     * With respect to {@link #addControl(QualName, String)}, has a flag to indicate
+     * that the control program is artificially synthesised.
+     */
+    private CtrlTree addControl(QualName controlName, String program,
+                                boolean artificial) throws FormatException {
         if (this.controlTreeMap.containsKey(controlName)) {
             throw new FormatException("Duplicate program name %s", controlName);
         }
-        this.namespace.setControlName(controlName);
+        this.namespace.setControlInfo(controlName, artificial);
         CtrlTree tree = CtrlTree.parse(this.namespace, program);
+        tree.setArtificial(artificial);
         Object oldRecord = this.controlTreeMap.put(controlName, tree);
         assert oldRecord == null;
         return tree;
+    }
+
+    /** Adds an artificially synthesised main program. */
+    private CtrlTree addDefaultMain() throws FormatException {
+        return addControl(new QualName(DEFAULT_MAIN_NAME), getDefaultMain(), true);
     }
 
     /** Returns a control program constructed from the collection of previously parsed program names. */
@@ -106,9 +122,7 @@ public class CtrlLoader {
         errors.throwException();
         if (!result.hasMain()) {
             // try to parse "any" for static semantic checks
-            Fragment main = addControl(QualName.name(DEFAULT_MAIN_NAME), getDefaultMain())
-                .check()
-                .toFragment();
+            Fragment main = addDefaultMain().check().toFragment();
             result.add(main);
         }
         result.setProperties(this.namespace.getProperties());
@@ -221,9 +235,7 @@ public class CtrlLoader {
 
     /** Returns the default main program text. */
     private String getDefaultMain() {
-        return this.defaultMain == null
-            ? DEFAULT_MAIN
-            : this.defaultMain;
+        return this.defaultMain;
     }
 
     /** Sets the default main program text. */
@@ -231,7 +243,7 @@ public class CtrlLoader {
         this.defaultMain = defaultMain;
     }
 
-    private String defaultMain;
+    private String defaultMain = DEFAULT_MAIN;
 
     /** The default main program name, used if a (combined) program does not declare a main. */
     public static final String DEFAULT_MAIN_NAME = "main";
