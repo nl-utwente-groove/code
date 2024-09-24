@@ -587,8 +587,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                 // throw it
                 if (!sourceType.isTopType()) {
                     errors
-                        .add("%s-node has unknown %s-%s to %s", sourceType, edgeLabel,
-                             edge.getRole().getDescription(false), targetType, sourceImage, edge);
+                        .add(unknownEdgeTypeText(sourceType, edge, targetType), sourceImage, edge);
                 }
             } else {
                 result.putEdge(edge, ruleFactory.createEdge(sourceImage, edgeLabel, targetImage));
@@ -921,14 +920,11 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                 // throw it
                 if (!sourceType.isTopType()) {
                     errors
-                        .add("%s-node has unknown %s-%s to %s", sourceType, edgeType.text(),
-                             edgeType.getRole().getDescription(false), targetType, edge.source(),
-                             edge, sourceImage);
+                        .add(unknownEdgeTypeText(sourceType, edge, targetType), edge.source(), edge,
+                             sourceImage);
                 }
             } else if (typeEdge.isAbstract()) {
-                errors
-                    .add("%s-node has abstract %s-%s", sourceType, edgeType.text(),
-                         edgeType.getRole().getDescription(false), edge.source());
+                errors.add(abstractEdgeTypeText(sourceType, edge), edge.source());
             } else {
                 morphism.putEdge(edge, hostFactory.createEdge(sourceImage, edgeType, targetImage));
             }
@@ -1410,6 +1406,28 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
     }
 
     private List<TypeChecker> checkers;
+
+    /** Returns the error message text for an edge of unknown type. */
+    static private String abstractEdgeTypeText(TypeNode source, Edge edge) {
+        var role = edge.getRole();
+        return ABSTRACT_EDGE_TYPE.formatted(source, edge, role.getDescription(false));
+    }
+
+    /** Returns the error message text for an edge of unknown type. */
+    static private String unknownEdgeTypeText(TypeNode source, Edge edge, TypeNode target) {
+        var role = edge.getRole();
+        var text = role == EdgeRole.BINARY
+            ? UNKNOWN_BINARY_EDGE_TYPE
+            : UNKNOWN_EDGE_TYPE;
+        return text.formatted(source, edge.label(), role.getDescription(false), target);
+    }
+
+    /** Error message for an abstract edge. */
+    static private final String ABSTRACT_EDGE_TYPE = "%s-node has abstract %s-%s";
+    /** Error message for a (non-binary) edge of unknown type. */
+    static private final String UNKNOWN_EDGE_TYPE = "%s-node has unknown %s-%s";
+    /** Error message for a binary edge of unknown type. */
+    static private final String UNKNOWN_BINARY_EDGE_TYPE = UNKNOWN_EDGE_TYPE + " to %s";
 
     /** Returns a map from node type labels to the sort map of those node types.
      * The sort map is a mapping from attribute field names (of the node type or any of
