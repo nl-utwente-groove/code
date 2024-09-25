@@ -27,7 +27,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * @version $Revision$
  */
 @NonNullByDefault
-public interface Position<P extends Position<P,A>,A extends Attempt.Stage<P,A>> {
+public interface Position<P extends Position<P,A>,A extends Attempt.Stage<P,A>> extends Transient {
     /** Indicates if this is a start position. */
     public abstract boolean isStart();
 
@@ -57,9 +57,6 @@ public interface Position<P extends Position<P,A>,A extends Attempt.Stage<P,A>> 
      * @see Type#TRIAL
      */
     public abstract boolean isTrial();
-
-    /** Returns the transient depth of this position. */
-    public abstract int getTransience();
 
     /**
      * Returns the attempt of this position.

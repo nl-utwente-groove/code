@@ -105,18 +105,23 @@ public class Program implements Fixable {
 
     private final Map<QualName,Procedure> procs = new LinkedHashMap<>();
 
-    /** Sets the property actions to be checked at each non-transient state. */
+    /** Sets the property actions to be checked at each steady state. */
     public void setProperties(Collection<Action> properties) {
         assert this.properties.isEmpty();
         this.properties.addAll(properties);
     }
 
-    /** Returns the list of property actions to be checked at each non-transient state. */
+    /** Indicates if there are properties to be checked at each steady state. */
+    public boolean hasProperties() {
+        return !getProperties().isEmpty();
+    }
+
+    /** Returns the list of property actions to be checked at each steady state. */
     public List<Action> getProperties() {
         return this.properties;
     }
 
-    /** The property actions to be checked at each non-transient state. */
+    /** The property actions to be checked at each steady state. */
     private final List<Action> properties;
 
     /** Returns the main template of this program, if any.
@@ -146,8 +151,7 @@ public class Program implements Fixable {
         } else if (other.hasMain()) {
             errors.add("Duplicate main: %s and %s", getMainName(), other.getControlName());
         }
-        for (Procedure proc : other.getProcs()
-            .values()) {
+        for (Procedure proc : other.getProcs().values()) {
             try {
                 addProc(proc);
             } catch (FormatException exc) {
@@ -183,10 +187,7 @@ public class Program implements Fixable {
             // check that procedure bodies satisfy their requirements
             for (Procedure proc : this.procs.values()) {
                 QualName name = proc.getQualName();
-                String error = String.format("%s %s",
-                    proc.getKind()
-                        .getName(true),
-                    name);
+                String error = String.format("%s %s", proc.getKind().getName(true), name);
                 if (getRecursion().contains(name)) {
                     errors.add(error + " has unguarded recursion", proc);
                 }
@@ -202,8 +203,7 @@ public class Program implements Fixable {
                 }
             }
             errors.throwException();
-            this.template = TemplateBuilder.instance(getProperties())
-                .build(this);
+            this.template = TemplateBuilder.instance(getProperties()).build(this);
         }
         return result;
     }
@@ -275,12 +275,19 @@ public class Program implements Fixable {
     /** Recursively collects the initial calls of a term, after zero or more verdicts. */
     private Set<Call> getInitCalls(Term term) {
         Set<Call> result = new HashSet<>();
-        int arity = term.getOp()
-            .getArity();
-        Term arg0 = arity >= 1 ? term.getArgs()[0] : null;
-        Term arg1 = arity >= 2 ? term.getArgs()[1] : null;
-        Term arg2 = arity >= 3 ? term.getArgs()[2] : null;
-        Term arg3 = arity >= 4 ? term.getArgs()[3] : null;
+        int arity = term.getOp().getArity();
+        Term arg0 = arity >= 1
+            ? term.getArgs()[0]
+            : null;
+        Term arg1 = arity >= 2
+            ? term.getArgs()[1]
+            : null;
+        Term arg2 = arity >= 3
+            ? term.getArgs()[2]
+            : null;
+        Term arg3 = arity >= 4
+            ? term.getArgs()[3]
+            : null;
         switch (term.getOp()) {
         case ALAP:
         case ATOM:
@@ -344,8 +351,7 @@ public class Program implements Fixable {
     /** Indicates, for a given procedure, if it can potentially
      * immediately evolve (via verdict transitions only) to a final position. */
     public boolean mayFinalise(Procedure proc) {
-        return getFinalityMap().get(proc)
-            .may();
+        return getFinalityMap().get(proc).may();
     }
 
     /** Indicates, for a given term, if it can potentially
@@ -357,8 +363,7 @@ public class Program implements Fixable {
     /** Indicates, for a given procedure, if it will certainly
      * immediately evolve (via verdict transitions only) to a final position. */
     public boolean willFinalise(Procedure proc) {
-        return getFinalityMap().get(proc)
-            .will();
+        return getFinalityMap().get(proc).will();
     }
 
     /** Returns a mapping from procedures to their potential and certain immediate termination. */
@@ -407,12 +412,19 @@ public class Program implements Fixable {
         Finality result = null;
         boolean may = false;
         boolean will = false;
-        int arity = term.getOp()
-            .getArity();
-        Term arg0 = arity >= 1 ? term.getArgs()[0] : null;
-        Term arg1 = arity >= 2 ? term.getArgs()[1] : null;
-        Term arg2 = arity >= 3 ? term.getArgs()[2] : null;
-        Term arg3 = arity >= 4 ? term.getArgs()[3] : null;
+        int arity = term.getOp().getArity();
+        Term arg0 = arity >= 1
+            ? term.getArgs()[0]
+            : null;
+        Term arg1 = arity >= 2
+            ? term.getArgs()[1]
+            : null;
+        Term arg2 = arity >= 3
+            ? term.getArgs()[2]
+            : null;
+        Term arg3 = arity >= 4
+            ? term.getArgs()[3]
+            : null;
         switch (term.getOp()) {
         case ALAP:
             assert arg0 != null; // alap has 1 argument
@@ -420,8 +432,7 @@ public class Program implements Fixable {
             will = arg0.isDead();
             break;
         case CALL:
-            Callable unit = ((CallTerm) term).getCall()
-                .getUnit();
+            Callable unit = ((CallTerm) term).getCall().getUnit();
             if (unit instanceof Rule) {
                 may = will = false;
             } else {
@@ -487,7 +498,9 @@ public class Program implements Fixable {
         default:
             assert false;
         }
-        return result == null ? new Finality(may, will) : result;
+        return result == null
+            ? new Finality(may, will)
+            : result;
     }
 
     /** Class storing potential and certain finality values. */
@@ -572,8 +585,7 @@ public class Program implements Fixable {
         case STAR:
             return r[0];
         case CALL:
-            Callable unit = ((CallTerm) term).getCall()
-                .getUnit();
+            Callable unit = ((CallTerm) term).getCall().getUnit();
             return unit.getKind() == Callable.Kind.RULE || terminationSet.contains(unit);
         case DELTA:
             return false;
@@ -621,8 +633,7 @@ public class Program implements Fixable {
         case BODY:
             return r[0];
         case CALL:
-            Callable unit = ((CallTerm) term).getCall()
-                .getUnit();
+            Callable unit = ((CallTerm) term).getCall().getUnit();
             return unit.getKind() == Callable.Kind.RULE || terminationSet.contains(unit);
         case DELTA:
             return false;

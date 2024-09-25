@@ -81,6 +81,18 @@ public class Frame implements Position<Frame,Step>, Fixable {
             }
             loc = done.onFinish();
         }
+        if (loc.isTrial() && loc.getAttempt().isPropertiesOnly()) {
+            // we might have to use the success/failure alternate of loc,
+            // if loc is a property-only trial location and we do need to test for properties
+            // first determine the transience if we were to use loc
+            var transience = context.getTransience() + loc.getTransience();
+            // now determine if this would be a property trial (without calling #isPropertyTrial,
+            // as that depends on the as yet uninitialised location of this frame)
+            var isPropertyTrial = transience == 0 && (pred == null || !pred.isPropertiesTested());
+            if (!isPropertyTrial) {
+                loc = loc.getAttempt().onSuccess();
+            }
+        }
         this.pops = pops;
         this.context = context;
         this.location = loc;
@@ -253,6 +265,29 @@ public class Frame implements Position<Frame,Step>, Fixable {
         return getType() == Type.TRIAL;
     }
 
+    /** Indicates if this frame is a property trial. */
+    private boolean isPropertyTrial() {
+        var pred = getPred();
+        boolean result = isTrial() && isSteady() && getAut().getProgram().hasProperties()
+            && (pred == null || !pred.isPropertiesTested());
+        assert !result || getLocation().getAttempt().hasProperties();
+        return result;
+    }
+
+    /** Indicates if the grammar properties were tested
+     * in this frame or one of its predecessors.
+     * This is also the case if there are no testable properties.
+     */
+    private boolean isPropertiesTested() {
+        return this.propertiesTested.get();
+    }
+
+    private final Factory<Boolean> propertiesTested = Factory.lazy(() -> {
+        var pred = getPred();
+        return !getAut().getProgram().hasProperties() || isPropertyTrial()
+            || (pred != null && pred.isPropertiesTested());
+    });
+
     @Override
     public StepAttempt getAttempt() {
         assert isFixed();
@@ -262,6 +297,59 @@ public class Frame implements Position<Frame,Step>, Fixable {
     private final Factory<StepAttempt> attempt = lazy(this::computeAttempt);
 
     /** Computes the attempt of this frame. */
+    private StepAttempt computeAttempt() {
+        StepAttempt result;
+        SwitchAttempt locAttempt = getLocation().getAttempt();
+        if (isPropertyTrial()) {
+            // include the properties in the attempt
+            // since the attempt includes properties, this guarantees
+            // that the success and failure locations coincide
+            assert locAttempt.onSuccess() == locAttempt.onFailure();
+            if (locAttempt.isPropertiesOnly()) {
+                // the property attempt is all there is
+                Frame onVerdict = newFrame(locAttempt.onSuccess());
+                // the above used to be
+                // assert onVerdict.getLocation() == locAttempt.onFailure();
+                // but that is wrong, as the onVerdict.getLocation() may have
+                // popped the call stack in case locAttempt.onSuccess() is final
+                result = new StepAttempt(onVerdict);
+                for (NestedSwitch sw : locAttempt) {
+                    result.add(createStep(sw));
+                }
+            } else {
+                // first test for properties only;
+                // the verdict leads to an intermediate frame from which the rest is tested
+                Frame inter = newFrame(getLocation());
+                // this is followed by an attempt for the proper steps
+                // which is set as the attempt of the intermediate frame
+                Frame onVerdict = inter.newFrame(locAttempt.onSuccess());
+                result = new StepAttempt(inter);
+                var interAttempt = new StepAttempt(onVerdict, onVerdict);
+                for (int i = 0; i < locAttempt.size(); i++) {
+                    var step = createStep(locAttempt.get(i));
+                    if (i < locAttempt.getPropertyCount()) {
+                        result.add(step);
+                    } else {
+                        interAttempt.add(step);
+                    }
+                }
+                inter.attempt.set(interAttempt);
+            }
+        } else {
+            // ignore the properties in the attempt
+            assert !locAttempt.isPropertiesOnly();
+            Frame onSuccess = newFrame(locAttempt.onSuccess());
+            Frame onFailure = newFrame(locAttempt.onFailure());
+            result = new StepAttempt(onSuccess, onFailure);
+            for (int i = locAttempt.getPropertyCount(); i < locAttempt.size(); i++) {
+                NestedSwitch sw = locAttempt.get(i);
+                result.add(createStep(sw));
+            }
+        }
+        return result;
+    }
+
+    /** Computes the attempt of this frame.
     private StepAttempt computeAttempt() {
         SwitchAttempt locAttempt = getLocation().getAttempt();
         // divide the switches of the control location
@@ -317,7 +405,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
             inter.attempt.set(interAttempt);
         }
         return result;
-    }
+    } */
 
     /** Constructs a step from this frame, based on a given nested switch. */
     private Step createStep(NestedSwitch sw) {
@@ -401,14 +489,6 @@ public class Frame implements Position<Frame,Step>, Fixable {
      */
     public Optional<Recipe> getRecipe() {
         return getContext().getRecipe();
-    }
-
-    /**
-     * Indicates if this frame is inside an atomic block.
-     * Convenience method for <code>getTransience() > 0</code>
-     */
-    public boolean isTransient() {
-        return getTransience() > 0;
     }
 
     @Override

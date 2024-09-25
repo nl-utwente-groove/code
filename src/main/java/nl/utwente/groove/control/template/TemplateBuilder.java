@@ -61,9 +61,14 @@ public class TemplateBuilder {
         this.properties = properties;
     }
 
-    /** Returns property actions to be tested at each non-internal location. */
+    /** Returns property actions to be tested at each steady location. */
     private List<Action> getProperties() {
         return this.properties;
+    }
+
+    /** Indicates if there are property actions to be tested at each steady location. */
+    private boolean hasProperties() {
+        return !getProperties().isEmpty();
     }
 
     /** The property actions to be tested at each non-internal location. */
@@ -154,7 +159,7 @@ public class TemplateBuilder {
                 ? new Template(proc)
                 : new Template(name);
             // set the initial location
-            TermKey initKey = new TermKey(init, new HashSet<>(), new HashSet<>());
+            TermKey initKey = new TermKey(init, new HashSet<>(), new HashSet<>(), true);
             Location start = this.result.getStart();
             Map<TermKey,Location> locMap = this.locMap = new HashMap<>();
             locMap.put(initKey, start);
@@ -172,6 +177,11 @@ public class TemplateBuilder {
         }
 
         private final @NonNull Template result;
+
+        /** Indicates whether we are building a procedure template. */
+        private boolean isProcedure() {
+            return getResult().hasOwner();
+        }
 
         /**
          * Builds the next attempt, plus all reachable verdict attempts.
@@ -200,18 +210,16 @@ public class TemplateBuilder {
         /**
          * Builds the attempt for a location belonging to a given term key.
          */
-        private void buildAttempt(TermKey next) {
-            Location loc = getLocMap().get(next);
-            Term term = next.term();
+        private void buildAttempt(TermKey termKey) {
+            Location loc = getLocMap().get(termKey);
+            Term term = termKey.term();
             Type locType = term.getType();
             // property switches
             Set<NestedSwitch> switches = new LinkedHashSet<>();
             // see if we need a property test
             // start states of procedures are exempt
-            boolean isProcStartOrFinal
-                = (loc.isStart() || term.isFinal()) && getResult().hasOwner();
-            if (!isProcStartOrFinal && loc.getTransience() == 0 && next.preds().isEmpty()
-                && !getProperties().isEmpty()) {
+            boolean isProcStart = loc.isStart() && isProcedure();
+            if (hasProperties() && !isProcStart && termKey.isFirstSteady()) {
                 for (Action prop : getProperties()) {
                     assert prop.isProperty() && prop instanceof Rule;
                     if (((Rule) prop).getPolicy() != CheckPolicy.OFF) {
@@ -221,10 +229,10 @@ public class TemplateBuilder {
                     }
                 }
                 if (locType != Type.TRIAL || !term.getAttempt().sameVerdict()) {
-                    // we need an intermediate location to go to after the property test
+                    // we need an intermediate location to go to after the property attempt
                     Location aux = getResult().addLocation(0);
-                    SwitchAttempt locAttempt
-                        = new SwitchAttempt(loc, aux, aux, switches.size(), switches.stream());
+                    SwitchAttempt locAttempt = new SwitchAttempt(loc, aux, aux, switches.size(),
+                        switches.size(), switches.stream());
                     loc.setType(Type.TRIAL);
                     loc.setAttempt(locAttempt);
                     loc = aux;
@@ -234,15 +242,16 @@ public class TemplateBuilder {
             loc.setType(locType);
             if (locType == Type.TRIAL) {
                 DerivationAttempt termAttempt = term.getAttempt();
+                int propertyCount = switches.size();
                 // add switches for the term derivations
                 for (Derivation deriv : termAttempt) {
                     // build the (possibly nested) switch
                     switches.add(getSwitch(loc, deriv));
                 }
-                Location succTarget = addLocation(termAttempt.onSuccess(), next, null);
-                Location failTarget = addLocation(termAttempt.onFailure(), next, null);
+                Location succTarget = addLocation(termAttempt.onSuccess(), termKey, null);
+                Location failTarget = addLocation(termAttempt.onFailure(), termKey, null);
                 SwitchAttempt locAttempt = new SwitchAttempt(loc, succTarget, failTarget,
-                    switches.size(), switches.stream());
+                    switches.size(), propertyCount, switches.stream());
                 loc.setAttempt(locAttempt);
             }
         }
@@ -278,7 +287,7 @@ public class TemplateBuilder {
                 assert predKey == null;
                 vars = incoming.getOutVars().keySet();
             }
-            TermKey key = new TermKey(term, predTerms, vars);
+            TermKey key = new TermKey(term, predTerms, vars, !isProcedure() || !hasProperties());
             Location result = locMap.get(key);
             if (result == null) {
                 getFresh(incoming == null).add(key);
@@ -493,9 +502,22 @@ public class TemplateBuilder {
      * Type serving to distinguish freshly generated locations.
      * The distinction is made on the basis of underlying term,
      * set of verdict predecessor terms, and set of control variables.
+     * @param term the term for which this is a key
+     * @param preds predecessor terms along a verdict-only path
+     * @param ctrlVars free control variables in the term
+     * @param reuseStart flag to ensure distinctness from a procedure start location; set to {@code true}
+     * for a procedure start location or if the program has no properties to be tested at each location
      */
-    private static record TermKey(Term term, Set<Term> preds, Set<CtrlVar> ctrlVars) {
-        // empty by design
+    private static record TermKey(Term term, Set<Term> preds, Set<CtrlVar> ctrlVars,
+        boolean reuseStart) {
+        /** Checks if this is the first steady term among it and its predecessors. */
+        private boolean isFirstSteady() {
+            boolean result = this.term.isSteady();
+            if (result) {
+                result = this.preds.stream().allMatch(Term::isTransient);
+            }
+            return result;
+        }
     }
 
     /**

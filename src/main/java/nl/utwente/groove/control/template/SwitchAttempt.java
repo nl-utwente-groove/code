@@ -29,11 +29,14 @@ import nl.utwente.groove.control.Attempt;
  */
 @NonNullByDefault
 public class SwitchAttempt extends Attempt<Location,NestedSwitch> implements Relocatable {
-    /** Constructs a switch attempt for a given source location. */
+    /** Constructs a switch attempt for a given source location.
+     * @param propertyCount the number of property switches (which are always the first in the list)
+     */
     public SwitchAttempt(Location source, Location onSuccess, Location onFailure, int switchCount,
-                         Stream<NestedSwitch> switches) {
+                         int propertyCount, Stream<NestedSwitch> switches) {
         super(switchCount);
         this.source = source;
+        this.propertyCount = propertyCount;
         setSuccess(onSuccess);
         setFailure(onFailure);
         assert source.getTemplate().equals(onSuccess.getTemplate());
@@ -48,12 +51,32 @@ public class SwitchAttempt extends Attempt<Location,NestedSwitch> implements Rel
 
     private final Location source;
 
+    /** Indicates if this switch only tests for properties. */
+    public boolean isPropertiesOnly() {
+        return getPropertyCount() == size();
+    }
+
+    /** Indicates if this switch has a positive property count. */
+    public boolean hasProperties() {
+        return getPropertyCount() > 0;
+    }
+
+    /** Returns the number of switches in this attempt that are property invocations.
+     * The property switches are always the first in the list.
+     */
+    public int getPropertyCount() {
+        return this.propertyCount;
+    }
+
+    /** The number of switches in this attempt that are property invocations. */
+    private final int propertyCount;
+
     @Override
     public SwitchAttempt relocate(Relocation map) {
         Location newSource = map.get(source());
         Location newSuccess = map.get(onSuccess());
         Location newFailure = map.get(onFailure());
-        return new SwitchAttempt(newSource, newSuccess, newFailure, size(),
+        return new SwitchAttempt(newSource, newSuccess, newFailure, size(), getPropertyCount(),
             stream().map(s -> s.relocate(map)));
     }
 }

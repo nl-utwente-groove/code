@@ -59,6 +59,7 @@ public class NestedSwitch implements Attempt.Stage<Location,NestedSwitch>, Compa
         if (this.nestedCall != null) {
             this.nestedCall.push(swt.getCall());
         }
+        // only modify the transience if it has been computed
         if (this.transience >= 0) {
             this.transience += swt.getTransience();
         }
@@ -70,6 +71,7 @@ public class NestedSwitch implements Attempt.Stage<Location,NestedSwitch>, Compa
         if (this.nestedCall != null) {
             this.nestedCall.pop();
         }
+        // only modify the transience if it has been computed
         if (this.transience >= 0) {
             this.transience -= result.getTransience();
         }
@@ -154,6 +156,9 @@ public class NestedSwitch implements Attempt.Stage<Location,NestedSwitch>, Compa
         return result;
     }
 
+    /** Transient depth entered by this switch. The initial value of -1 indicates
+     * that the proper value has not yet been computed.
+     */
     private int transience = -1;
 
     /** Returns the nested call corresponding to this nested switch. */

@@ -50,14 +50,14 @@ public class Location
      * Constructs a numbered location for a given template, or a dead location.
      * @param template the template for which this is a location, or {@code null} if this is the universal dead location
      * @param nr the location number
-     * @param depth the location depth
+     * @param transience the transient depth
      */
-    public Location(@Nullable Template template, int nr, int depth) {
+    public Location(@Nullable Template template, int nr, int transience) {
         this.nr = nr;
         this.template = template == null
             ? Optional.empty()
             : Optional.of(template);
-        this.depth = depth;
+        this.transience = transience;
         if (template == null) {
             this.type = Type.DEAD;
         }
@@ -91,10 +91,10 @@ public class Location
 
     @Override
     public int getTransience() {
-        return this.depth;
+        return this.transience;
     }
 
-    private final int depth;
+    private final int transience;
 
     /** Returns the number of this location within the template.
      * The number is non-negative except if this is a special location.

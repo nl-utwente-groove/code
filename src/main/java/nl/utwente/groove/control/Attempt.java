@@ -127,7 +127,7 @@ public abstract class Attempt<P extends Position<P,A>,A extends Attempt.Stage<P,
         /** The target position. */
         P onFinish();
 
-        /** Returns the transient depth entered by this stage. */
+        /** Returns the (additional) transient depth entered by this stage. */
         int getTransience();
     }
 }
