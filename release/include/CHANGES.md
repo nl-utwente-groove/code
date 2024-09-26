@@ -3,6 +3,11 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 7.0.0, 26 September 2024
+-------------------------------
+- Changed to Java 21
+- Improved control automaton construction for functions, esp. i.c.w. properties
+
 Release 6.9.4, 14 September 2024
 -------------------------------
 - Complete reimplementation of transient state exploration
