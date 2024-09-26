@@ -80,7 +80,7 @@ import nl.utwente.groove.util.parse.StringHandler;
  */
 public class Options implements Cloneable {
     /** Creates an initialised options object. */
-    public Options() {
+    private Options() {
         for (ResourceKind resource : getOptionalTabs()) {
             addCheckbox(getShowTabOption(resource));
         }
@@ -93,6 +93,7 @@ public class Options implements Cloneable {
         addCheckbox(SHOW_STATE_IDS_OPTION);
         addCheckbox(SHOW_STATE_STATUS_OPTION);
         addCheckbox(SHOW_CONTROL_STATE_OPTION);
+        addCheckbox(SHOW_CALL_NESTING_OPTION);
         addCheckbox(SHOW_INVARIANTS_OPTION);
         addCheckbox(SHOW_ARROWS_ON_LABELS_OPTION);
         addCheckbox(SHOW_BIDIRECTIONAL_EDGES_OPTION);
@@ -242,6 +243,18 @@ public class Options implements Cloneable {
      * Map from option names to menu items.
      */
     private final Map<String,JMenuItem> itemMap = new LinkedHashMap<>();
+
+    /** Returns the singleton instance of this class. */
+    static public @NonNull Options instance() {
+        var result = INSTANCE;
+        if (result == null) {
+            INSTANCE = result = new Options();
+        }
+        return result;
+    }
+
+    /** The singleton instance of this class. */
+    static private Options INSTANCE;
 
     /**
      * Tests if the font used for rendering labels supports
@@ -862,6 +875,8 @@ public class Options implements Cloneable {
     static public final String SHOW_STATE_IDS_OPTION = "Show state identities";
     /** Show state status option */
     static public final String SHOW_STATE_STATUS_OPTION = "Show state status";
+    /** Show call nesting option */
+    static public final String SHOW_CALL_NESTING_OPTION = "Show call nesting on transitions";
     /** Show control state option */
     static public final String SHOW_CONTROL_STATE_OPTION = "Show control information";
     /** Show invariants option */
@@ -892,6 +907,7 @@ public class Options implements Cloneable {
         boolOptionDefaults.put(SHOW_NODE_IDS_OPTION, false);
         boolOptionDefaults.put(SHOW_STATE_IDS_OPTION, true);
         boolOptionDefaults.put(SHOW_STATE_STATUS_OPTION, true);
+        boolOptionDefaults.put(SHOW_CALL_NESTING_OPTION, false);
         boolOptionDefaults.put(SHOW_CONTROL_STATE_OPTION, true);
         boolOptionDefaults.put(SHOW_INVARIANTS_OPTION, true);
         boolOptionDefaults.put(SHOW_RECIPE_STEPS_OPTION, true);

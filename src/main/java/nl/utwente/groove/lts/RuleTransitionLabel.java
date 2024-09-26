@@ -30,6 +30,7 @@ import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.graph.ALabel;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
+import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.transform.RuleEvent;
 import nl.utwente.groove.util.Exceptions;
@@ -131,7 +132,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         for (var swt : getStep().getSwitch()) {
             if (swt.getKind() == Kind.RULE) {
                 result.append(getAction().toLabelString(getArguments()));
-            } else {
+            } else if (Options.instance().isSelected(Options.SHOW_CALL_NESTING_OPTION)) {
                 result.append(swt.getQualName());
                 result.append('/');
             }

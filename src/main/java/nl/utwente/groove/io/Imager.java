@@ -287,7 +287,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
         case GRAPH -> Exportable.graph(aspectGraph);
         case RESOURCE -> Exportable.resource(resourceModel);
         case JGRAPH -> {
-            Options options = new Options();
+            Options options = Options.instance();
             options.getItem(Options.SHOW_VALUE_NODES_OPTION).setSelected(isEditorView());
             options.getItem(Options.SHOW_ASPECTS_OPTION).setSelected(isEditorView());
             DisplayKind displayKind

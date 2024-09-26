@@ -24,6 +24,7 @@ import static nl.utwente.groove.graph.EdgeRole.NODE_TYPE;
 import static nl.utwente.groove.util.line.Line.Style.ITALIC;
 import static nl.utwente.groove.util.line.Line.Style.UNDERLINE;
 
+import java.awt.Color;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -422,22 +423,24 @@ public class LabelValue implements VisualValue<MultiLabel> {
         boolean hasControl = false;
         if (jGraph.isShowControlStates()) {
             GraphState state = jVertex.getNode();
-            Frame frame = state.getActualFrame();
-            if (frame.isDead()) {
-                frame = frame.getPred();
-                assert frame != null;
-            }
+            Frame frame = state.getPrimeFrame();
+            //if (frame.isDead()) {
+            //    frame = frame.getPred();
+            //    assert frame != null;
+            //}
             Object[] stack = state.getFrameStack(frame);
             // NOTE: the following was surrounded by a condition that causes
             // no control info to be shown if we're in the start state, which
             // surely was never intended. See gh issue #775
             // if (!frame.isStart() || stack.length > 0) {
-            result.add(getStackLine(frame.getLocation(), stack));
+            int popCount = state.getActualFrame().getPopCount();
+            result.add(getStackLine(frame.getLocation(), stack, popCount <= 0));
             hasControl = true;
             // }
             for (var sw : frame.getContext().outIterable()) {
                 stack = CallStack.pop(stack);
-                result.add(getStackLine(sw.onFinish(), stack));
+                popCount--;
+                result.add(getStackLine(sw.onFinish(), stack, popCount <= 0));
                 hasControl = true;
             }
         }
@@ -557,7 +560,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
     /** State line for an open state. */
     private final Line openLine = Line.atom("open").style(Style.BOLD);
 
-    private Line getStackLine(Location loc, Object[] values) {
+    private Line getStackLine(Location loc, Object[] values, boolean actual) {
         Line result = Line.empty();
         if (loc != null) {
             result = formatExternalId(loc.toString());
@@ -582,7 +585,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 result = result.append(content.toString());
             }
         }
-        return result;
+        return actual
+            ? result
+            : result.color(Color.gray);
     }
 
     /**

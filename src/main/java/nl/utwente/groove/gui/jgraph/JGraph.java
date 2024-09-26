@@ -129,9 +129,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     protected JGraph(Simulator simulator) {
         super((JModel<G>) null);
         this.simulator = simulator;
-        this.options = simulator == null
-            ? new Options()
-            : simulator.getOptions();
+        this.options = Options.instance();
         // make sure the layout cache has been created
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         setMarqueeHandler(createMarqueeHandler());

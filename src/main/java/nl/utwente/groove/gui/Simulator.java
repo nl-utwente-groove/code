@@ -23,6 +23,7 @@ import static nl.utwente.groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_ARROWS_ON_LABELS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_BIDIRECTIONAL_EDGES_OPTION;
+import static nl.utwente.groove.gui.Options.SHOW_CALL_NESTING_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_CONTROL_STATE_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_INVARIANTS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_NODE_IDS_OPTION;
@@ -681,6 +682,7 @@ public class Simulator implements SimulatorListener {
             result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
             result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
             result.add(getOptions().getItem(SHOW_STATE_STATUS_OPTION));
+            result.add(getOptions().getItem(SHOW_CALL_NESTING_OPTION));
             result.add(getOptions().getItem(SHOW_CONTROL_STATE_OPTION));
             result.add(getOptions().getItem(SHOW_INVARIANTS_OPTION));
             result.add(getOptions().getItem(SHOW_RECIPE_STEPS_OPTION));
@@ -989,7 +991,7 @@ public class Simulator implements SimulatorListener {
     public Options getOptions() {
         // lazily creates the options
         if (this.options == null) {
-            this.options = new Options();
+            this.options = Options.instance();
             this.options.getItem(SHOW_STATE_IDS_OPTION).setSelected(true);
         }
         return this.options;

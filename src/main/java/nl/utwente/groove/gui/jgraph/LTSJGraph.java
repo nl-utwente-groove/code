@@ -18,6 +18,7 @@ package nl.utwente.groove.gui.jgraph;
 
 import static nl.utwente.groove.gui.Options.SHOW_ABSENT_STATES_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_ANCHORS_OPTION;
+import static nl.utwente.groove.gui.Options.SHOW_CALL_NESTING_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_CONTROL_STATE_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_INVARIANTS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_RECIPE_STEPS_OPTION;
@@ -82,6 +83,7 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
         super.installListeners();
         addOptionListener(SHOW_STATE_IDS_OPTION);
         addOptionListener(SHOW_STATE_STATUS_OPTION);
+        addOptionListener(SHOW_CALL_NESTING_OPTION);
         addOptionListener(SHOW_CONTROL_STATE_OPTION);
         addOptionListener(SHOW_INVARIANTS_OPTION);
         addOptionListener(SHOW_ABSENT_STATES_OPTION);

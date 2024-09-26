@@ -228,6 +228,11 @@ public class Frame implements Position<Frame,Step>, Fixable {
         return this.pops;
     }
 
+    /** Returns the number of pop actions since the prime frame. */
+    public int getPopCount() {
+        return this.pops.size();
+    }
+
     private final List<CallStackChange> pops;
 
     /**
