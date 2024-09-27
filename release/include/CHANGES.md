@@ -5,8 +5,10 @@ This document describes the major changes in the GROOVE tool set
 
 Release 7.0.0, 26 September 2024
 -------------------------------
-- Changed to Java 21
+- Changed to Java 21 (hence the major version update)
 - Improved control automaton construction for functions, esp. i.c.w. properties
+- Improvements in display of LTS (popped stack locations included in grey, start call nesting optional
+- Improvements in error reporting for control programs & type errors
 
 Release 6.9.4, 14 September 2024
 -------------------------------
