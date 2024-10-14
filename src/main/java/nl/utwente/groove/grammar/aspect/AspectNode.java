@@ -140,7 +140,9 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         assert !isParsed();
         getNodeLabels().add(label);
         addErrors(label.getErrors());
-        label.getAspects().forEach(this::set);
+        if (!label.hasErrors()) {
+            label.getAspects().forEach(this::set);
+        }
     }
 
     /**
