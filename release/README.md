@@ -18,8 +18,8 @@ Below, the _release directory_ refers to the project subdirectory (of the `code`
 
     - `GROOVE_BUILD`: the build date, in format `YYYYMMDD`. Update to the build date.
     - `GROOVE_VERSION`: a semantic version `x.y.z` with the optional suffix `-SNAPSHOT`. The number might already be correct (it is updated in postprocessing, see below) but the changes in this revision may necessitate the `x` or `y` values. In any case remove the `-SNAPSHOT` suffix.
-    - `GXL_VERSION`: the name of the version of GXL currently used for the encoding of graphs. (This will rarely change.)
-    - `JAVA_VERSION`: the version of Java to be used for the build.  
+    - [Optional] `GXL_VERSION`: the name of the version of GXL currently used for the encoding of graphs. (This will rarely change.)
+    - [Optional] `JAVA_VERSION`: the version of Java to be used for the build.  
 
 2. Update the `include/CHANGES.md` file in the release directory
    to reflect all changes with respect to the previous release.
@@ -35,7 +35,7 @@ Below, the _release directory_ refers to the project subdirectory (of the `code`
 ## Testing
 
 1. Run the JUnit tests on the GROOVE source project, using the
-   `GROOVE core - all JUnit tests` launch configuration.
+   `GROOVE - all JUnit tests` launch configuration.
    If you get errors complaining that the test packages are not in the module,
    in Eclipse do `Project -> Clean -> groove` and try again. Only proceed if all tests pass.
 

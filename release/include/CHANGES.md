@@ -3,6 +3,10 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 7.0.1, 31 October 2024
+-------------------------------
+- Solved regression bug in combination of recipes + properties
+
 Release 7.0.0, 26 September 2024
 -------------------------------
 - Changed to Java 21 (hence the major version update)
