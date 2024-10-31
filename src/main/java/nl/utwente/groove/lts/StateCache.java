@@ -432,6 +432,9 @@ public class StateCache {
     static private final int FREEZE_BOUND = 10;
 
     private void initTransientExploration() {
+        if (this.transientInitialised) {
+            return;
+        }
         GraphState state = getState();
         boolean stateIsFull = state.isFull();
         assert stateIsFull
@@ -476,7 +479,11 @@ public class StateCache {
             this.forwTransient = EMPTY_CACHE_SET;
             this.forwTransientOpen = EMPTY_CACHE_SET;
         }
+        this.transientInitialised = true;
     }
+
+    /** Flag indicating that {@link #initTransientExploration()} has been invoked. */
+    private boolean transientInitialised = false;
 
     private Set<RecipeTarget> computeForwOuter() {
         assert getState().isFull() && getState().getPrimeFrame().isInner();
@@ -533,6 +540,7 @@ public class StateCache {
      * @param partial new outgoing partial rule transition from this state
      */
     void registerOutPartial(RuleTransition partial) {
+        initTransientExploration();
         assert partial.isPartialStep();
         assert partial.source() == getState();
         GraphState target = partial.target();
@@ -608,7 +616,8 @@ public class StateCache {
      * Callback method invoked when the state has been closed.
      * This may involve a simultaneous change in (known) transience.
      */
-    void regiterClosure() {
+    void registerClosure() {
+        initTransientExploration();
         int transience = getState().getActualFrame().getTransience();
         if (transience < this.knownTransience) {
             registerTransienceChange();
@@ -651,6 +660,7 @@ public class StateCache {
 
     /** Notifies the cache of a decrease in transient depth of the control frame. */
     final void registerTransienceChange() {
+        initTransientExploration();
         var transience = getState().getActualFrame().getTransience();
         assert transience < this.knownTransience;
         this.knownTransience = transience;
@@ -680,6 +690,7 @@ public class StateCache {
 
     /** Sets the known absence to a given level, if it is lower than the current level. */
     private void setAbsence(int newAbsence) {
+        initTransientExploration();
         if (newAbsence < this.knownAbsence) {
             this.knownAbsence = newAbsence;
         }

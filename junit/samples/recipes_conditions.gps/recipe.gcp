@@ -1,0 +1,4 @@
+recipe step() {
+  delete;
+  create;
+}

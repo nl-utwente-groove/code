@@ -151,9 +151,9 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
                 if (subrules != null) {
                     for (Rule subrule : subrules) {
                         QualName subruleName = subrule.getQualName();
-                        Set<QualName> recipes = this.ruleRecipeMap.get(subruleName);
+                        Set<QualName> recipes = result.get(subruleName);
                         if (recipes == null) {
-                            this.ruleRecipeMap.put(subruleName, recipes = new HashSet<>());
+                            result.put(subruleName, recipes = new HashSet<>());
                         }
                         recipes.add(recipe.getQualName());
                     }

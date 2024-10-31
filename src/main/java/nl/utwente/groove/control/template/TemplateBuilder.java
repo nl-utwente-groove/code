@@ -219,7 +219,8 @@ public class TemplateBuilder {
             // see if we need a property test
             // start states of procedures are exempt
             boolean isProcStart = loc.isStart() && isProcedure();
-            if (hasProperties() && !isProcStart && termKey.isFirstSteady()) {
+            if (hasProperties() && !isProcStart && locType != Type.FINAL
+                && termKey.isFirstSteady()) {
                 for (Action prop : getProperties()) {
                     assert prop.isProperty() && prop instanceof Rule;
                     if (((Rule) prop).getPolicy() != CheckPolicy.OFF) {

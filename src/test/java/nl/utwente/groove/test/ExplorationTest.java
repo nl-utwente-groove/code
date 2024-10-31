@@ -161,7 +161,7 @@ public class ExplorationTest {
         testExploration("priorities.gps", "start", "dfs", 13, 34);
         testExploration("priorities.gps", "start", "linear", 8, 8);
         //testExploration("recipe-priorities.gps", "start", "bfs", 13, 56);
-        testExploration("recipe-priorities.gps", "start", "linear", 8, 11);
+        testExploration("recipe-priorities.gps", "start", "linear", 5, 5, 3);
     }
 
     /** Tests the variables sample. */
@@ -198,7 +198,7 @@ public class ExplorationTest {
         testExploration("attributed-graphs.gps", "start", "rete", 6, 16);
     }
 
-    /** Tests the attributes sample. */
+    /** Tests the Siespinsky sample. */
     @Test
     public void testSierpinsky() {
         GTS lts = testExploration("sierpinsky.gps", "start7", "linear", 8, 7);
@@ -218,7 +218,9 @@ public class ExplorationTest {
     /** Tests the fibonacci sample. */
     @Test
     public void testFibonacci() {
-        testExploration("fibonacci.gps", 63, 63);
+        GTS gts = testExploration("fibonacci.gps", 2, 1);
+        assertEquals(63, gts.nodeCount());
+        assertEquals(63, gts.edgeCount());
     }
 
     /** Tests the wildcards sample. */
@@ -245,8 +247,10 @@ public class ExplorationTest {
     /** tests recipes */
     @Test
     public void testSubsets() {
-        testExploration("subsets.gps", "start-small", "bfs", 8, 10);
-        testExploration("subsets.gps", "start", "bfs", 306, 712);
+        testExploration("subsets.gps", "start-small", "bfs", 2, 1);
+        testExploration("subsets.gps", "start", "bfs", 34, 74);
+        testExploration("recipes_conditions.gps", "start", "bfs", 3, 15);
+        testExploration("recipes_conditions.gps", "start1", "bfs", 1, 2);
     }
 
     /** Tests various parameters settable through the system properties. */
@@ -324,10 +328,10 @@ public class ExplorationTest {
                 }
             }
             if (nodeCount >= 0) {
-                assertEquals(nodeCount, gts.nodeCount());
+                assertEquals(nodeCount, gts.getStateCount());
             }
             if (edgeCount >= 0) {
-                assertEquals(edgeCount, gts.edgeCount());
+                assertEquals(edgeCount, gts.getTransitionCount());
             }
             if (openCount >= 0) {
                 assertEquals(openCount, gts.getOpenStateCount());
