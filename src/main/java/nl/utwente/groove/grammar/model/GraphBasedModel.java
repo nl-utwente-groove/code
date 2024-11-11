@@ -66,7 +66,15 @@ abstract public class GraphBasedModel<R> extends NamedResourceModel<R> {
         return this.source;
     }
 
-    private final AspectGraph source;
+    /**
+     * Replaces the source with a new one, without rebuilding the model.
+     * This is <em>only</em> allowed if the layout changed, and nothing else!
+     */
+    void setSource(AspectGraph newSource) {
+        this.source = newSource;
+    }
+
+    private AspectGraph source;
 
     @Override
     public String getName() {

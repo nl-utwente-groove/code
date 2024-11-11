@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -639,6 +640,17 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
 
     private final Dispenser edgeNumber;
 
+    /** Returns a hash code for this graph based on normal status, name and role. */
+    int externalHashCode() {
+        return Objects.hash(isNormal(), getRole(), getName());
+    }
+
+    /** Compares this graph to another one on the basis of normal status, name and role. */
+    boolean externalEquals(AspectGraph other) {
+        return isNormal() == other.isNormal() && getRole() == other.getRole()
+            && Objects.equals(getName(), other.getName());
+    }
+
     /**
      * Creates an aspect graph from a given (plain) graph.
      * @param graph the plain graph to convert
@@ -836,7 +848,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             if (aLabel.has(AspectKind.REMARK)) {
                 nr = this.remarkCount.getNext();
             } else {
-                nr = this.graph.getEdgeNumber();
+                // non-remark edges are all numbered 0
+                // nr = this.graph.getEdgeNumber();
             }
             return new AspectEdge(source, (AspectLabel) label, target, nr);
         }

@@ -289,7 +289,7 @@ public class LabelFilter<G extends @NonNull Graph> extends Observable {
      * This is the case if no node type entry is actively filtered, and either unfiltered
      * edges need not be shown or all or all edge entries are also unselected.
      * @param jCell the jCell for which the test is performed
-     * @return {@code true} if {@code jCell} is filtered
+     * @return {@code true} if {@code jCell} is visible
      */
     public boolean isIncluded(JCell<G> jCell) {
         boolean activeShow = false;

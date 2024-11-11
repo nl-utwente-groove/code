@@ -47,7 +47,15 @@ public class TypeEdge extends AEdge<TypeNode,TypeLabel> implements TypeElement {
             .format("Can't create %s label %s between distinct nodes %s and %s",
                     label.getRole().getDescription(false), label, source, target);
         this.graph = graph;
+        this.key = new TypeEdgeKey(this);
     }
+
+    @Override
+    public TypeEdgeKey key() {
+        return this.key;
+    }
+
+    private final TypeEdgeKey key;
 
     @Override
     public boolean isSimple() {

@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.gui.tree;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -28,7 +29,7 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeElement;
 import nl.utwente.groove.grammar.type.TypeGraph;
-import nl.utwente.groove.grammar.type.TypeLabel;
+import nl.utwente.groove.grammar.type.TypeKey;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.jgraph.JCell;
@@ -56,10 +57,8 @@ public class TypeFilter extends LabelFilter<@NonNull AspectGraph> {
     /** Lazily creates and returns a filter entry based on a given element. */
     @Override
     public TypeEntry getEntry(Label label) {
-        if (label instanceof TypeNode key) {
-            return getEntryMap(key.getGraph()).nodeMap().get(key.label());
-        } else if (label instanceof TypeEdge key) {
-            return getEntryMap(key.getGraph()).edgeMap().get(key.source().label()).get(key.label());
+        if (label instanceof TypeElement type) {
+            return getEntryMap(type.getGraph()).keyMap().get(type.key());
         }
         throw Exceptions.UNREACHABLE;
     }
@@ -117,82 +116,106 @@ public class TypeFilter extends LabelFilter<@NonNull AspectGraph> {
     /** Updates the type graph on which this filter is based. */
     void update(TypeGraph typeGraph) {
         if (this.stale) {
-            if (this.entryMaps == null || typeGraph != this.entryMaps.typeGraph()) {
-                this.entryMaps = new EntryMap(typeGraph);
+            var entryMap = this.entryMap;
+            if (entryMap == null) {
+                this.entryMap = entryMap = new EntryMap(typeGraph);
+            } else if (typeGraph != entryMap.typeGraph()) {
+                // retrieve the selection status from the previous entry map
+                this.entryMap = entryMap = new EntryMap(typeGraph, entryMap.getSelected());
             }
-            this.entryMaps.entryStream().forEach(this::registerEntry);
+            entryMap.entryStream().forEach(this::registerEntry);
             this.stale = false;
         }
-        assert typeGraph == this.entryMaps
+        assert typeGraph == this.entryMap
             .typeGraph() : "Type graph has silently changed from %s to %s"
-                .formatted(this.entryMaps.typeGraph(), typeGraph);
+                .formatted(this.entryMap.typeGraph(), typeGraph);
     }
 
     private EntryMap getEntryMap(TypeGraph typeGraph) {
         update(typeGraph);
-        return this.entryMaps;
+        return this.entryMap;
     }
 
-    /** Flag indicating that the {@link #entryMaps} might have to be refreshed. */
+    /** Flag indicating that the {@link #entryMap} might have to be refreshed. */
     private boolean stale = true;
     /** Mapping from known node type labels to corresponding node type entries. */
-    private EntryMap entryMaps;
+    private EntryMap entryMap;
 
     /** Type graph-dependent map from type labels to filter entries.
      * @param typeGraph type graph on which this map is based
-     * @param nodeMap mapping from node type labels to entries
-     * @param edgeMap mapping from node type labels to edge type labels-to-entries maps
+     * @param keyMap mapping from node type keys to entries
      */
-    static private record EntryMap(TypeGraph typeGraph, Map<TypeLabel,TypeEntry> nodeMap,
-        Map<TypeLabel,Map<TypeLabel,TypeEntry>> edgeMap) {
-        /** Constructs a fresh empty map pair. */
+    static private record EntryMap(TypeGraph typeGraph, Map<TypeKey,TypeEntry> keyMap) {
+
+        /** Constructs a fresh map from a given type graph. */
         EntryMap(TypeGraph typeGraph) {
-            this(typeGraph, new HashMap<>(), new HashMap<>());
+            this(typeGraph, new HashMap<>());
             for (var n : typeGraph.nodeSet()) {
-                nodeMap().put(n.label(), new TypeEntry(n));
-                edgeMap().put(n.label(), new HashMap<>());
+                keyMap().put(n.key(), new TypeEntry(n));
             }
             for (var e : typeGraph.edgeSet()) {
                 var edgeEntry = new TypeEntry(e);
-                edgeMap().get(e.source().label()).put(e.label(), edgeEntry);
+                keyMap().put(e.key(), edgeEntry);
                 // add the subtypes of the source and target to the end nodes
                 e
                     .source()
                     .getSubtypes()
                     .stream()
-                    .map(TypeNode::label)
-                    .map(nodeMap()::get)
+                    .map(TypeNode::key)
+                    .map(keyMap()::get)
                     .forEach(edgeEntry::addNode);
                 e
                     .target()
                     .getSubtypes()
                     .stream()
-                    .map(TypeNode::label)
-                    .map(nodeMap()::get)
+                    .map(TypeNode::key)
+                    .map(keyMap()::get)
                     .forEach(edgeEntry::addNode);
                 // add this edge to the incident edges of the subtypes of source and target
                 e
                     .source()
                     .getSubtypes()
                     .stream()
-                    .map(TypeNode::label)
-                    .map(nodeMap()::get)
+                    .map(TypeNode::key)
+                    .map(keyMap()::get)
                     .forEach(ne -> ne.addEdge(edgeEntry));
                 e
                     .target()
                     .getSubtypes()
                     .stream()
-                    .map(TypeNode::label)
-                    .map(nodeMap()::get)
+                    .map(TypeNode::key)
+                    .map(keyMap()::get)
                     .forEach(ne -> ne.addEdge(edgeEntry));
+            }
+        }
+
+        /** Constructs a fresh map from a given type graph,
+         * taking a set of previously selected elements into account. */
+        EntryMap(TypeGraph typeGraph, Collection<TypeKey> selected) {
+            this(typeGraph);
+            keyMap().values().forEach(e -> e.setSelected(false));
+            for (var key : selected) {
+                var entry = keyMap().get(key);
+                if (entry != null) {
+                    entry.setSelected(true);
+                }
             }
         }
 
         /** Returns a stream of all the type entries in this map object. */
         Stream<TypeEntry> entryStream() {
-            return Stream
-                .concat(nodeMap().values().stream(),
-                        edgeMap().values().stream().flatMap(m -> m.values().stream()));
+            return keyMap().values().stream();
+        }
+
+        /** Returns the set of currently selected type entries. */
+        Collection<TypeKey> getSelected() {
+            return keyMap()
+                .values()
+                .stream()
+                .filter(TypeEntry::isSelected)
+                .map(TypeEntry::getType)
+                .map(TypeElement::key)
+                .toList();
         }
     }
 

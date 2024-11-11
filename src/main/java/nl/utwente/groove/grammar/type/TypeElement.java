@@ -36,7 +36,14 @@ public interface TypeElement extends Element, AnchorValue, Label {
      * Note that for type edges, the label does not completely determine
      * the edge, whereas for type nodes it does.
      */
-    public TypeLabel label();
+    default public TypeLabel label() {
+        return key().label();
+    }
+
+    /** Returns the type key for this type element, consisting of
+     * just the label information and not the type graph or sub- or supertypes.
+     */
+    public TypeKey key();
 
     /**
      * Returns the type graph to which this type element belongs.

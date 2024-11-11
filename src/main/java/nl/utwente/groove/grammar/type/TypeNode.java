@@ -21,6 +21,7 @@ import static nl.utwente.groove.graph.EdgeRole.NODE_TYPE;
 import java.awt.Color;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -52,8 +53,8 @@ public class TypeNode implements Node, TypeElement {
         assert graph != null;
         assert type.getRole() == NODE_TYPE : String
             .format("Can't create type node for non-type label '%s'", type);
+        this.key = new TypeNodeKey(type);
         this.nr = nr;
-        this.type = type;
         this.graph = graph;
     }
 
@@ -133,11 +134,12 @@ public class TypeNode implements Node, TypeElement {
         return EdgeRole.NODE_TYPE;
     }
 
-    /** Returns the type of this node. */
     @Override
-    public TypeLabel label() {
-        return this.type;
+    public @NonNull TypeKey key() {
+        return this.key;
     }
+
+    private final TypeKey key;
 
     /** Indicates if this node type is abstract. */
     public final boolean isAbstract() {
@@ -151,7 +153,7 @@ public class TypeNode implements Node, TypeElement {
 
     /** Returns true if this node if of top type. */
     public final boolean isTopType() {
-        return this.type == TypeLabel.NODE;
+        return label() == TypeLabel.NODE;
     }
 
     /** Changes the importedness status of this node.
@@ -173,12 +175,12 @@ public class TypeNode implements Node, TypeElement {
 
     /** Indicates if this node type stands for a data type. */
     public final boolean isSort() {
-        return this.type.isSort();
+        return label().isSort();
     }
 
     /** Returns the data type of this node type, if any. */
     public final @Nullable Sort getSort() {
-        return this.type.getSort();
+        return label().getSort();
     }
 
     /** Returns the (possibly {@code null}) label pattern associated with this type node. */
@@ -248,6 +250,4 @@ public class TypeNode implements Node, TypeElement {
 
     /** Flag indicating if this node type is abstract. */
     private boolean abstracted;
-    /** The type of this node. */
-    private final TypeLabel type;
 }

@@ -39,8 +39,6 @@ import static nl.utwente.groove.graph.GraphRole.RULE;
 import static nl.utwente.groove.graph.GraphRole.TYPE;
 import static nl.utwente.groove.util.Factory.lazy;
 
-import java.util.Objects;
-
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -1035,18 +1033,16 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     @Override
     protected int computeHashCode() {
-        return super.computeHashCode() + Objects.hashCode(getGraph());
+        return super.computeHashCode() + 31 * getGraph().externalHashCode();
     }
 
     @Override
     public boolean equals(@Nullable Object obj) {
-        boolean result = super.equals(obj);
-        if (!result) {
+        if (!super.equals(obj)) {
             return false;
         }
-        var other = (AspectEdge) obj;
-        assert other != null;
-        return getGraph() == other.getGraph();
+        assert obj != null;
+        return getGraph().externalEquals(((AspectEdge) obj).getGraph());
     }
 
     /** Separator between level name and edge label. */

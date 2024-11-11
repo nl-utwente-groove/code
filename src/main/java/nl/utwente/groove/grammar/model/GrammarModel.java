@@ -636,7 +636,16 @@ public class GrammarModel implements PropertyChangeListener {
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         SystemStore.Edit edit = (SystemStore.Edit) evt.getNewValue();
-        if (edit.getType() != EditType.LAYOUT) {
+        if (edit.getType() == EditType.LAYOUT) {
+            // replace the sources of the resource models
+            for (var kind : edit.getChange()) {
+                for (var name : getNames(kind)) {
+                    var graph = getStore().getGraphs(kind).get(name);
+                    assert graph != null;
+                    getGraphResource(kind, name).setSource(graph);
+                }
+            }
+        } else {
             syncResources(edit.getChange());
         }
     }

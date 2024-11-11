@@ -93,7 +93,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
      */
     @Override
     protected int computeHashCode() {
-        return Objects.hash(getNumber(), getGraph().getClass(), getGraph().getName());
+        return super.computeHashCode() + 31 * getGraph().externalHashCode();
     }
 
     /**
@@ -111,8 +111,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         if (other.getNumber() != getNumber()) {
             return false;
         }
-        return Objects.equals(getGraph().getClass(), other.getGraph().getClass())
-            && Objects.equals(getGraph().getName(), other.getGraph().getName());
+        return getGraph().externalEquals(((AspectNode) obj).getGraph());
     }
 
     /**

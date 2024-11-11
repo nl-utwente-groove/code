@@ -469,13 +469,17 @@ public class LabelTree<G extends Graph> extends CheckboxTree
         return result;
     }
 
-    /** Indicates if a given jCell is entirely filtered. */
+    /** Indicates if a given jCell is entirely filtered.
+     * @return {@code true} if the jCell is currently visible
+     */
     public boolean isIncluded(JCell<G> jCell) {
         synchroniseModel();
         return getFilter().isIncluded(jCell);
     }
 
-    /** Indicates if a given key is actively filtered. */
+    /** Indicates if a given key is actively filtered.
+     * @return {@code true} if the key is currently visible
+     */
     public boolean isIncluded(Label key) {
         synchroniseModel();
         return getFilter().getEntry(key).isSelected();
