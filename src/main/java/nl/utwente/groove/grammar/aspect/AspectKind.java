@@ -1194,7 +1194,7 @@ public enum AspectKind {
         /** Colour declaration. */
         COLOR(ROLE, ID, PARAM),
         /** Node type-related aspects. */
-        TYPE(LABEL),
+        TYPE(COLOR, LABEL),
         /** Import aspect. */
         IMPORT,
         /** Nodified edge declaration. */
