@@ -8,7 +8,6 @@
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
         <listEntry value="1"/>
     </listAttribute>
-    <mapAttribute key="org.eclipse.debug.core.environmentVariables"/>
     <listAttribute key="org.eclipse.debug.ui.favoriteGroups">
         <listEntry value="org.eclipse.debug.ui.launchGroup.run"/>
     </listAttribute>
@@ -19,10 +18,18 @@
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_ATTR_USE_ARGFILE" value="false"/>
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_SHOW_CODEDETAILS_IN_EXCEPTION_MESSAGES" value="true"/>
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_CLASSPATH_ONLY_JAR" value="false"/>
+    <listAttribute key="org.eclipse.jdt.launching.CLASSPATH">
+        <listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#13;&#10;&lt;runtimeClasspathEntry containerPath=&quot;org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER&quot; path=&quot;5&quot; type=&quot;4&quot;/&gt;&#13;&#10;"/>
+    </listAttribute>
     <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
+    <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="false"/>
     <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="nl.utwente.groove.test.TestSuite"/>
+    <listAttribute key="org.eclipse.jdt.launching.MODULEPATH">
+        <listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#13;&#10;&lt;runtimeClasspathEntry containerPath=&quot;org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-21&quot; path=&quot;4&quot; type=&quot;4&quot;/&gt;&#13;&#10;"/>
+        <listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#13;&#10;&lt;runtimeClasspathEntry path=&quot;4&quot; projectName=&quot;groove&quot; type=&quot;1&quot;/&gt;&#13;&#10;"/>
+    </listAttribute>
     <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="nl.utwente.groove"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="groove"/>
     <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
-    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea"/>
+    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.algebra=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.control=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.criticalpair=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.grammar=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.graph=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.match.rete=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.performance=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.prolog=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.rel=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.rule=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.sts=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.type=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.util=ALL-UNNAMED&#13;&#10;--add-opens nl.utwente.groove/nl.utwente.groove.test.verify=ALL-UNNAMED"/>
 </launchConfiguration>

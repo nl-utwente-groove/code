@@ -37,16 +37,5 @@
 			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/Rensink/.m2/repository/org/eclipse/jdt/org.eclipse.jdt.annotation/2.2.700/org.eclipse.jdt.annotation-2.2.700.jar" sourcepath="C:/Users/Rensink/.m2/repository/org/eclipse/jdt/org.eclipse.jdt.annotation/2.2.700/org.eclipse.jdt.annotation-2.2.700-sources.jar">
-		<attributes>
-			<attribute name="maven.pomderived" value="true"/>
-			<attribute name="module" value="true"/>
-			<attribute name="javadoc_location" value="jar:file:/C:/Users/Rensink/.m2/repository/org/eclipse/jdt/org.eclipse.jdt.annotation/2.2.700/org.eclipse.jdt.annotation-2.2.700-javadoc.jar!/"/>
-			<attribute name="maven.groupId" value="org.eclipse.jdt"/>
-			<attribute name="maven.artifactId" value="org.eclipse.jdt.annotation"/>
-			<attribute name="maven.version" value="2.2.700"/>
-			<attribute name="maven.scope" value="compile"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

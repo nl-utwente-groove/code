@@ -71,6 +71,11 @@ public class NormalAspectGraph extends AspectGraph {
         this.normalToSourceMap = initNormalToSourceMap();
     }
 
+    @Override
+    public boolean isNormal() {
+        return true;
+    }
+
     /** Returns the (non-normalised) source of this normalised aspect graph. */
     public AspectGraph getSource() {
         return this.source;
