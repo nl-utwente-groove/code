@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -121,7 +122,7 @@ public class TypeFilter extends LabelFilter<@NonNull AspectGraph> {
                 this.entryMap = entryMap = new EntryMap(typeGraph);
             } else if (typeGraph != entryMap.typeGraph()) {
                 // retrieve the selection status from the previous entry map
-                this.entryMap = entryMap = new EntryMap(typeGraph, entryMap.getSelected());
+                this.entryMap = entryMap = new EntryMap(typeGraph, entryMap.getSelected(false));
             }
             entryMap.entryStream().forEach(this::registerEntry);
             this.stale = false;
@@ -191,13 +192,12 @@ public class TypeFilter extends LabelFilter<@NonNull AspectGraph> {
 
         /** Constructs a fresh map from a given type graph,
          * taking a set of previously selected elements into account. */
-        EntryMap(TypeGraph typeGraph, Collection<TypeKey> selected) {
+        EntryMap(TypeGraph typeGraph, Collection<TypeKey> unselected) {
             this(typeGraph);
-            keyMap().values().forEach(e -> e.setSelected(false));
-            for (var key : selected) {
+            for (var key : unselected) {
                 var entry = keyMap().get(key);
                 if (entry != null) {
-                    entry.setSelected(true);
+                    entry.setSelected(false);
                 }
             }
         }
@@ -207,12 +207,12 @@ public class TypeFilter extends LabelFilter<@NonNull AspectGraph> {
             return keyMap().values().stream();
         }
 
-        /** Returns the set of currently selected type entries. */
-        Collection<TypeKey> getSelected() {
+        /** Returns the set of currently (un)selected type entries. */
+        Collection<TypeKey> getSelected(boolean selected) {
             return keyMap()
                 .values()
                 .stream()
-                .filter(TypeEntry::isSelected)
+                .filter(e -> e.isSelected() == selected)
                 .map(TypeEntry::getType)
                 .map(TypeElement::key)
                 .toList();
@@ -335,7 +335,7 @@ public class TypeFilter extends LabelFilter<@NonNull AspectGraph> {
                 return this.type.hashCode();
             } else {
                 TypeEdge edge = (TypeEdge) this.type;
-                return edge.source().label().hashCode() ^ edge.label().hashCode();
+                return Objects.hash(edge.source().label(), edge.label(), edge.target().label());
             }
         }
 
@@ -350,15 +350,16 @@ public class TypeFilter extends LabelFilter<@NonNull AspectGraph> {
             if (!this.type.label().equals(other.type.label())) {
                 return false;
             }
-            if (this.type instanceof TypeNode) {
+            if (!(this.type instanceof TypeEdge edge)) {
                 return other.type instanceof TypeNode;
             }
-            if (other.type instanceof TypeNode) {
+            if (!(other.type instanceof TypeEdge otherEdge)) {
                 return false;
             }
-            TypeEdge edge = (TypeEdge) this.type;
-            TypeEdge otherEdge = (TypeEdge) other.type;
             if (!edge.source().label().equals(otherEdge.source().label())) {
+                return false;
+            }
+            if (!edge.target().label().equals(otherEdge.target().label())) {
                 return false;
             }
             return true;
