@@ -142,6 +142,13 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
     }
 
     /**
+     * Indicates whether aspect prefixes should be shown for nodes and edges.
+     */
+    public final boolean isShowUserIds() {
+        return getOptionValue(Options.SHOW_USER_NODE_IDS_OPTION);
+    }
+
+    /**
      * Indicates whether data nodes should be shown in the JGraph.
      * This is certainly the case if this model is editable.
      */

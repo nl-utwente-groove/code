@@ -25,11 +25,12 @@ import static nl.utwente.groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_BIDIRECTIONAL_EDGES_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_CALL_NESTING_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_CONTROL_STATE_OPTION;
+import static nl.utwente.groove.gui.Options.SHOW_INTERNAL_NODE_IDS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_INVARIANTS_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_RECIPE_STEPS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_STATE_STATUS_OPTION;
+import static nl.utwente.groove.gui.Options.SHOW_USER_NODE_IDS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static nl.utwente.groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import static nl.utwente.groove.io.FileType.GRAMMAR;
@@ -670,16 +671,16 @@ public class Simulator implements SimulatorListener {
         case STATE:
         case TYPE:
             result.addSeparator();
-            result.add(getOptions().getItem(SHOW_NODE_IDS_OPTION));
             result.add(getOptions().getItem(SHOW_ANCHORS_OPTION));
             result.add(getOptions().getItem(SHOW_ASPECTS_OPTION));
+            result.add(getOptions().getItem(SHOW_INTERNAL_NODE_IDS_OPTION));
+            result.add(getOptions().getItem(SHOW_USER_NODE_IDS_OPTION));
             result.add(getOptions().getItem(SHOW_VALUE_NODES_OPTION));
             result.add(getOptions().getItem(SHOW_BIDIRECTIONAL_EDGES_OPTION));
             result.add(getOptions().getItem(SHOW_ARROWS_ON_LABELS_OPTION));
             break;
         case LTS:
             result.addSeparator();
-            result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
             result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
             result.add(getOptions().getItem(SHOW_STATE_STATUS_OPTION));
             result.add(getOptions().getItem(SHOW_CALL_NESTING_OPTION));

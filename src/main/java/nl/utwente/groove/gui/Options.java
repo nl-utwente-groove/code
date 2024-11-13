@@ -84,7 +84,8 @@ public class Options implements Cloneable {
         for (ResourceKind resource : getOptionalTabs()) {
             addCheckbox(getShowTabOption(resource));
         }
-        addCheckbox(SHOW_NODE_IDS_OPTION);
+        addCheckbox(SHOW_INTERNAL_NODE_IDS_OPTION);
+        addCheckbox(SHOW_USER_NODE_IDS_OPTION);
         addCheckbox(SHOW_ANCHORS_OPTION);
         addCheckbox(SHOW_ASPECTS_OPTION);
         addCheckbox(SHOW_VALUE_NODES_OPTION);
@@ -863,20 +864,24 @@ public class Options implements Cloneable {
     private static final Set<ResourceKind> optionalTabs = EnumSet
         .of(ResourceKind.CONTROL, ResourceKind.PROLOG, ResourceKind.TYPE, ResourceKind.GROOVY);
 
+    // Host graph show options
     /** Show anchors option */
     static public final String SHOW_ANCHORS_OPTION = "Show anchors";
     /** Show aspects in graphs and rules option */
     static public final String SHOW_ASPECTS_OPTION = "Show aspect prefixes";
     /** Show bidirectional edges. */
     static public final String SHOW_BIDIRECTIONAL_EDGES_OPTION = "Show bidirectional edges";
-    /** Show node ids option */
-    static public final String SHOW_NODE_IDS_OPTION = "Show node identities";
+    /** Show call nesting option */
+    static public final String SHOW_CALL_NESTING_OPTION = "Show call nesting on transitions";
+    /** Show internal node ids option */
+    static public final String SHOW_INTERNAL_NODE_IDS_OPTION = "Show internal node identities";
     /** Show state ids option */
     static public final String SHOW_STATE_IDS_OPTION = "Show state identities";
     /** Show state status option */
     static public final String SHOW_STATE_STATUS_OPTION = "Show state status";
-    /** Show call nesting option */
-    static public final String SHOW_CALL_NESTING_OPTION = "Show call nesting on transitions";
+    /** Show used-defined node ids option */
+    static public final String SHOW_USER_NODE_IDS_OPTION = "Show user-defined node identities";
+    // LTS show options
     /** Show control state option */
     static public final String SHOW_CONTROL_STATE_OPTION = "Show control information";
     /** Show invariants option */
@@ -904,7 +909,8 @@ public class Options implements Cloneable {
             boolOptionDefaults.put(getShowTabOption(optionalTab), false);
         }
         boolOptionDefaults.put(SHOW_ANCHORS_OPTION, false);
-        boolOptionDefaults.put(SHOW_NODE_IDS_OPTION, false);
+        boolOptionDefaults.put(SHOW_INTERNAL_NODE_IDS_OPTION, false);
+        boolOptionDefaults.put(SHOW_USER_NODE_IDS_OPTION, true);
         boolOptionDefaults.put(SHOW_STATE_IDS_OPTION, true);
         boolOptionDefaults.put(SHOW_STATE_STATUS_OPTION, true);
         boolOptionDefaults.put(SHOW_CALL_NESTING_OPTION, false);

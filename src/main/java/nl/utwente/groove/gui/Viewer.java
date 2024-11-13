@@ -162,7 +162,7 @@ public class Viewer extends GrooveCmdLineTool<Object> {
 
     private class NodeIdsButton extends JButton {
         NodeIdsButton(GraphPreviewPanel panel) {
-            this.nodeIdsItem = panel.getOptions().getItem(Options.SHOW_NODE_IDS_OPTION);
+            this.nodeIdsItem = panel.getOptions().getItem(Options.SHOW_INTERNAL_NODE_IDS_OPTION);
             setText();
             addActionListener(new ActionListener() {
                 @Override

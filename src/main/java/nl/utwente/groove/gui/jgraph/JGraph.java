@@ -19,7 +19,8 @@ package nl.utwente.groove.gui.jgraph;
 import static nl.utwente.groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_ARROWS_ON_LABELS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_BIDIRECTIONAL_EDGES_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_NODE_IDS_OPTION;
+import static nl.utwente.groove.gui.Options.SHOW_INTERNAL_NODE_IDS_OPTION;
+import static nl.utwente.groove.gui.Options.SHOW_USER_NODE_IDS_OPTION;
 import static nl.utwente.groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static nl.utwente.groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static nl.utwente.groove.gui.jgraph.JGraphMode.SELECT_MODE;
@@ -151,7 +152,8 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         addMouseListener(getMouseListener());
         addKeyListener(getCancelEditListener());
         getSelectionModel().addGraphSelectionListener(getGraphSelectionListener());
-        addOptionListener(SHOW_NODE_IDS_OPTION);
+        addOptionListener(SHOW_INTERNAL_NODE_IDS_OPTION);
+        addOptionListener(SHOW_USER_NODE_IDS_OPTION);
         addOptionListener(SHOW_ANCHORS_OPTION);
         addOptionListener(SHOW_ARROWS_ON_LABELS_OPTION);
         addOptionListener(SHOW_BIDIRECTIONAL_EDGES_OPTION);
@@ -237,7 +239,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * Indicates whether node identities should be shown on node labels.
      */
     public boolean isShowNodeIdentities() {
-        return getOptionValue(SHOW_NODE_IDS_OPTION);
+        return getOptionValue(SHOW_INTERNAL_NODE_IDS_OPTION);
     }
 
     /**

@@ -169,7 +169,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                     if (isVisible(jGraph, jVertex, edge)) {
                         Line line = edge.toLine(true, jVertex.getAspects());
                         if (edge.getRole() == NODE_TYPE) {
-                            line = insertId(idLine, line);
+                            line = insertId(jGraph, idLine, line);
                             idLine = null;
                         }
                         if (idLine != null) {
@@ -216,8 +216,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
     }
 
     /** Inserts an external node identifier in front of a given line, if the node identifier is not {@code null}. */
-    private Line insertId(Line id, Line line) {
-        return id == null
+    private Line insertId(AspectJGraph jGraph, Line id, Line line) {
+        var showId = jGraph.getGraphRole() != GraphRole.HOST || jGraph.isShowUserIds();
+        return !showId || id == null
             ? line
             : id.append(TYPED_AS).append(line);
     }
@@ -319,7 +320,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 if (isVisible(jGraph, jVertex, edge)) {
                     Line line = edge.toLine(true, jVertex.getAspects());
                     if (edge.getRole() == NODE_TYPE) {
-                        line = insertId(idLine, line);
+                        line = insertId(jGraph, idLine, line);
                         idLine = null;
                     }
                     if (idLine != null) {
