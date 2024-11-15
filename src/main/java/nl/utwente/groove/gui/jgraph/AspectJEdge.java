@@ -125,7 +125,7 @@ public class AspectJEdge extends
         }
         super.addEdge(edge);
         updateLook(edge);
-        refreshVisual(COLOR);
+        setStale(COLOR);
     }
 
     /** Update this cell's look due to the addition of an edge. */

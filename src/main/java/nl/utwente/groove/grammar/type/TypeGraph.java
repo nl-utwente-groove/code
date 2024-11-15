@@ -246,8 +246,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
      */
     public void test() throws FormatException {
         FormatErrorSet errors = new FormatErrorSet();
-        // Set of edge labels occurring in the type graph
         Set<TypeLabel> edgeLabels = new HashSet<>();
+        // test for outgoing edges or flags on data types
         for (TypeEdge typeEdge : edgeSet()) {
             if (typeEdge.getRole() != NODE_TYPE && !typeEdge.isAbstract()) {
                 TypeNode source = typeEdge.source();
@@ -265,6 +265,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                 edgeLabels.add(typeEdge.label());
             }
         }
+        // check for type confusion
         for (TypeLabel edgeLabel : edgeLabels) {
             // non-abstract edge types must be distinguishable
             // either in source type or in target type
@@ -294,6 +295,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                 }
             }
         }
+        // check for inconsistent color specifications in the type hierarchy
+        // this occurs if a node type has no color specification, whereas two
+        // of its supertypes have distinct ones.
+
         errors.throwException();
     }
 
@@ -325,38 +330,41 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                     }
                 }
             }
-            // propagate colours and edge patterns to subtypes
-            for (TypeNode node : nodeSet()) {
+            // propagate colours to subtypes
+            var coloredNodes = nodeSet().stream().filter(TypeNode::hasColor).toList();
+            for (TypeNode node : coloredNodes) {
                 // propagate colours
-                Color nodeColour = node.getColor();
-                if (nodeColour != null) {
-                    Set<TypeNode> propagatees = new HashSet<>(this.nodeSubtypeMap.get(node));
-                    propagatees.remove(node);
-                    while (!propagatees.isEmpty()) {
-                        Iterator<TypeNode> subNodeIter = propagatees.iterator();
-                        TypeNode subNode = subNodeIter.next();
-                        subNodeIter.remove();
-                        if (subNode.getColor() == null) {
-                            subNode.setColor(nodeColour);
-                        } else {
-                            propagatees.removeAll(this.nodeSubtypeMap.get(subNode));
-                        }
+                Color color = node.getColor();
+                assert color != null;
+                Set<TypeNode> propagatees = new HashSet<>(this.nodeSubtypeMap.get(node));
+                propagatees.remove(node);
+                while (!propagatees.isEmpty()) {
+                    Iterator<TypeNode> subNodeIter = propagatees.iterator();
+                    TypeNode subNode = subNodeIter.next();
+                    subNodeIter.remove();
+                    if (subNode.getColor() == null) {
+                        subNode.setColor(color);
+                    } else {
+                        propagatees.removeAll(this.nodeSubtypeMap.get(subNode));
                     }
                 }
+            }
+            // propagate patterns to subtypes
+            var patternedNodes = nodeSet().stream().filter(TypeNode::hasLabelPattern).toList();
+            for (TypeNode node : patternedNodes) {
                 // propagate label patterns
                 LabelPattern nodePattern = node.getLabelPattern();
-                if (nodePattern != null) {
-                    Set<TypeNode> propagatees = new HashSet<>(this.nodeSubtypeMap.get(node));
-                    propagatees.remove(node);
-                    while (!propagatees.isEmpty()) {
-                        Iterator<TypeNode> subNodeIter = propagatees.iterator();
-                        TypeNode subNode = subNodeIter.next();
-                        subNodeIter.remove();
-                        if (subNode.getLabelPattern() == null) {
-                            subNode.setLabelPattern(nodePattern);
-                        } else {
-                            propagatees.removeAll(this.nodeSubtypeMap.get(subNode));
-                        }
+                assert nodePattern != null;
+                Set<TypeNode> propagatees = new HashSet<>(this.nodeSubtypeMap.get(node));
+                propagatees.remove(node);
+                while (!propagatees.isEmpty()) {
+                    Iterator<TypeNode> subNodeIter = propagatees.iterator();
+                    TypeNode subNode = subNodeIter.next();
+                    subNodeIter.remove();
+                    if (subNode.getLabelPattern() == null) {
+                        subNode.setLabelPattern(nodePattern);
+                    } else {
+                        propagatees.removeAll(this.nodeSubtypeMap.get(subNode));
                     }
                 }
             }
@@ -1201,6 +1209,11 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
         }
         assert result != null;
         return result;
+    }
+
+    /** Returns the set of direct supertypes of a given node type. */
+    public Set<TypeNode> getDirectSupertypes(TypeNode node) {
+        return getDirectSupertypeMap().get(node);
     }
 
     /**

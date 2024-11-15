@@ -106,7 +106,6 @@ import nl.utwente.groove.gui.layout.SpringLayouter;
 import nl.utwente.groove.gui.look.MultiLabel;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
-import nl.utwente.groove.gui.look.VisualValue;
 import nl.utwente.groove.gui.menu.MyJMenu;
 import nl.utwente.groove.gui.menu.SetLayoutMenu;
 import nl.utwente.groove.gui.menu.ShowHideMenu;
@@ -1390,22 +1389,6 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
 
     /** Flag indicating if the JGraph is being layouted. */
     private boolean layouting;
-
-    /** Sets the visual refreshed to be used for a given visual key. */
-    final protected void setVisualValue(VisualKey key, VisualValue<?> value) {
-        this.visualValueMap.put(key, value);
-    }
-
-    /** Returns the visual refresher used for a given visual key. */
-    final public VisualValue<?> getVisualValue(VisualKey key) {
-        VisualValue<?> result = this.visualValueMap.get(key);
-        if (result == null) {
-            this.visualValueMap.put(key, result = getFactory().newVisualValue(key));
-        }
-        return result;
-    }
-
-    private final Map<VisualKey,VisualValue<?>> visualValueMap = new EnumMap<>(VisualKey.class);
 
     /** Simulator tool to which this JGraph belongs. */
     private final Simulator simulator;

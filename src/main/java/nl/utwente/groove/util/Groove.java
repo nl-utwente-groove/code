@@ -489,6 +489,13 @@ public class Groove {
         return value.orElse(alt);
     }
 
+    /** convenience method for {@code value.orElse(null)}
+     * but circumvents the spurious {@code null} check of the argument
+     */
+    static public <T> @Nullable T orElseNull(Optional<T> value) {
+        return value.orElse(null);
+    }
+
     /** Returns a given value if it is {@code null}, or an alternative (non-{@code null}) value otherwise. */
     static public <T> @NonNull T orElse(@Nullable T value, @NonNull T alt) {
         return value == null

@@ -154,6 +154,13 @@ public interface JCell<G extends @NonNull Graph> extends GraphCell, Serializable
     public VisualMap getVisuals();
 
     /**
+     * Returns the layout-related visual aspects of this JCell.
+     * Use this method in preference to {@link #getVisuals()} if it is too
+     * early to refresh the non-layout visuals.
+     */
+    public VisualMap getLayoutVisuals();
+
+    /**
      * Sets a number of refreshable visual keys to stale, meaning that
      * their values in the visual map should be refreshed.
      * @param keys the keys to be refreshed

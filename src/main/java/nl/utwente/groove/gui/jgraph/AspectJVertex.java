@@ -96,7 +96,7 @@ public class AspectJVertex extends
             setLook(Look.getLookFor(PRODUCT), true);
         }
         getErrors().addErrors(node.getErrors(), true);
-        refreshVisual(COLOR);
+        setStale(COLOR);
     }
 
     @Override

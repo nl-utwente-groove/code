@@ -740,7 +740,6 @@ public class JEdgeView extends EdgeView {
                 result = computeLabelSize(view, label);
                 edge.putVisual(VisualKey.TEXT_SIZE, result);
             } else {
-                result = new Dimension();
                 Dimension2D textSize = edge.getVisuals().getTextSize();
                 result = new Dimension((int) textSize.getWidth(), (int) textSize.getHeight());
             }

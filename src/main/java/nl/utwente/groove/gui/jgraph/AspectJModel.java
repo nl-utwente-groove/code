@@ -213,13 +213,13 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         LayoutMap layoutMap = new LayoutMap();
         for (AspectJCell jCell : getRoots()) {
             if (jCell instanceof AspectJVertex jVertex) {
-                layoutMap.putNode(jVertex.getNode(), jVertex.getVisuals());
+                layoutMap.putNode(jVertex.getNode(), jVertex.getLayoutVisuals());
             } else {
                 AspectJEdge jEdge = (AspectJEdge) jCell;
-                VisualMap visuals = jEdge.getVisuals();
-                if (!JEdgeLayout.newInstance(visuals).isDefault()) {
+                VisualMap layoutVisuals = jEdge.getLayoutVisuals();
+                if (!JEdgeLayout.newInstance(layoutVisuals).isDefault()) {
                     for (AspectEdge edge : jEdge.getEdges()) {
-                        layoutMap.putEdge(edge, visuals);
+                        layoutMap.putEdge(edge, layoutVisuals);
                     }
                 }
             }

@@ -17,12 +17,16 @@
 package nl.utwente.groove.gui.look;
 
 import java.awt.Color;
+import java.util.Objects;
+
+import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.gui.jgraph.AspectJEdge;
 import nl.utwente.groove.gui.jgraph.AspectJVertex;
+import nl.utwente.groove.util.Groove;
 
 /**
  * Refresher for the controlled colour value of a JCell.
@@ -40,9 +44,24 @@ public class ColorValue extends AspectValue<Color> {
             } else {
                 TypeNode nodeType = jVertex.getNodeType();
                 if (nodeType != null) {
-                    result = nodeType.getColor();
+                    result = getColor(nodeType);
                 }
             }
+        }
+        return result;
+    }
+
+    /** Recursively finds the "closest" color specification among this node type and its supertypes. */
+    private Color getColor(@NonNull TypeNode nodeType) {
+        Color result = nodeType.getColor();
+        if (result == null) {
+            result = Groove
+                .orElseNull(nodeType
+                    .getDirectSupertypes()
+                    .stream()
+                    .map(this::getColor)
+                    .filter(Objects::nonNull)
+                    .findFirst());
         }
         return result;
     }

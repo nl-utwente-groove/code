@@ -28,9 +28,11 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import nl.utwente.groove.gui.layout.JCellLayout;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.NodeShape;
 import nl.utwente.groove.util.line.LineStyle;
 
@@ -48,7 +50,7 @@ public enum VisualKey {
      */
     BACKGROUND(Color.class, Values.DEFAULT_BACKGROUND, DERIVED),
     /** Controlled foreground colour, overriding {@link #FOREGROUND} if set. Defaults to {@code null}. */
-    COLOR(Color.class, null, CONTROLLED),
+    COLOR(Color.class, null, REFRESHABLE),
     /** Edge dash pattern. Defaults to no dash. */
     DASH(float[].class, Values.NO_DASH, DERIVED),
     /** Edge source decoration. Defaults to {@link EdgeEnd#NONE}. */
@@ -93,17 +95,17 @@ public enum VisualKey {
      */
     LABEL(MultiLabel.class, new MultiLabel(), REFRESHABLE),
     /** Position of the main edge label. Defaults to {@link JCellLayout#defaultLabelPosition}. */
-    LABEL_POS(Point2D.class, JCellLayout.defaultLabelPosition, CONTROLLED),
+    LABEL_POS(Point2D.class, JCellLayout.defaultLabelPosition, CONTROLLED, true),
     /** Edge layout line style. Defaults to {@link LineStyle#ORTHOGONAL}. */
-    LINE_STYLE(LineStyle.class, LineStyle.ORTHOGONAL, CONTROLLED),
+    LINE_STYLE(LineStyle.class, LineStyle.ORTHOGONAL, CONTROLLED, true),
     /** Line width. Defaults to {@code 1}. */
     LINE_WIDTH(Float.class, 1f, DERIVED),
     /** Node position, corresponding to the centre of the node bounds. */
-    NODE_POS(Point2D.class, new Point2D.Double(10, 10), CONTROLLED),
+    NODE_POS(Point2D.class, new Point2D.Double(10, 10), CONTROLLED, true),
     /** Node shape. Defaults to {@link NodeShape#RECTANGLE} */
     NODE_SHAPE(NodeShape.class, NodeShape.RECTANGLE, DERIVED),
     /** Size of the node inscription. The rendered node adds insets to the size. */
-    NODE_SIZE(Dimension2D.class, new Dimension(19, 19), REFRESHABLE),
+    NODE_SIZE(Dimension2D.class, new Dimension(19, 19), REFRESHABLE, true),
     /** Node opacity. Defaults to {@code false}. */
     OPAQUE(Boolean.class, false, DERIVED),
     /**
@@ -113,7 +115,7 @@ public enum VisualKey {
      */
     PAR_ADORNMENT(String.class, null, REFRESHABLE),
     /** Intermediate edge points. */
-    POINTS(List.class, Arrays.asList(new Point2D.Double(), new Point2D.Double()), CONTROLLED),
+    POINTS(List.class, Arrays.asList(new Point2D.Double(), new Point2D.Double()), CONTROLLED, true),
     /** Computed text bounds. */
     TEXT_SIZE(Dimension2D.class, null, REFRESHABLE),
     /** Node or edge visibility. Defaults to {@code true}. */
@@ -121,9 +123,17 @@ public enum VisualKey {
 
     /** Constructs a visual key that is possibly derived from a looks value. */
     private VisualKey(Class<?> type, Object defaultValue, Nature nature) {
+        this(type, defaultValue, nature, false);
+    }
+
+    /** Constructs a visual key of a give nature, with a flag indicating
+     * whether it is part of the layout information.
+     */
+    private VisualKey(Class<?> type, Object defaultValue, Nature nature, boolean layout) {
         this.type = type;
         this.defaultValue = defaultValue;
         this.nature = nature;
+        this.layout = layout;
         test(defaultValue);
     }
 
@@ -144,19 +154,53 @@ public enum VisualKey {
         }
     }
 
+    private final Class<?> type;
+
     /** Returns the default value for this attribute. */
     public Object getDefaultValue() {
         return this.defaultValue;
     }
+
+    private final Object defaultValue;
 
     /** Returns the nature of this key. */
     public Nature getNature() {
         return this.nature;
     }
 
-    private final Class<?> type;
-    private final Object defaultValue;
     private final Nature nature;
+
+    /** Indicates if this key provides layout information. */
+    public boolean isLayout() {
+        return this.layout;
+    }
+
+    private final boolean layout;
+
+    /**
+     * Returns the refresher for this key, if any.
+     * The refresher can only be non-{@code null} if the key is {@link Nature#REFRESHABLE}.
+     */
+    public Optional<VisualValue<?>> getRefresher() {
+        return this.refresher.get();
+    }
+
+    private final Factory<Optional<VisualValue<?>>> refresher = Factory.lazy(() -> {
+        var result = switch (this) {
+        case COLOR -> new ColorValue();
+        case EDGE_SOURCE_LABEL -> new EdgeEndLabelValue(true);
+        case EDGE_SOURCE_SHAPE -> new EdgeEndShapeValue(true);
+        case EDGE_TARGET_LABEL -> new EdgeEndLabelValue(false);
+        case EDGE_TARGET_SHAPE -> new EdgeEndShapeValue(false);
+        case ERROR -> new ErrorValue();
+        case ID_ADORNMENT -> new IdAdornmentValue();
+        case LABEL -> new LabelValue();
+        case PAR_ADORNMENT -> new ParAdornmentValue();
+        case VISIBLE -> new VisibleValue();
+        default -> null;
+        };
+        return Optional.ofNullable(result);
+    });
 
     /**
      * Returns an array of automatically refreshable controlled keys.
@@ -182,17 +226,28 @@ public enum VisualKey {
         return CONTROLLEDS;
     }
 
+    /**
+     * Returns an array of layout-related keys.
+     * The list consists of all keys for which {@link VisualKey#isLayout()} returns {@code true}.
+     */
+    public static VisualKey[] layouts() {
+        return LAYOUTS;
+    }
+
     /** The array of refreshable keys. */
     private static final VisualKey[] REFRESHABLES;
     /** The array of derived keys. */
     private static final VisualKey[] DERIVEDS;
     /** The array of controlled keys. */
     private static final VisualKey[] CONTROLLEDS;
+    /** The array of layout-related keys. */
+    private static final VisualKey[] LAYOUTS;
 
     static {
         List<VisualKey> deriveds = new ArrayList<>();
         List<VisualKey> refreshables = new ArrayList<>();
         List<VisualKey> controlleds = new ArrayList<>();
+        List<VisualKey> layouts = new ArrayList<>();
         for (VisualKey key : VisualKey.values()) {
             var list = switch (key.getNature()) {
             case CONTROLLED -> controlleds;
@@ -200,10 +255,14 @@ public enum VisualKey {
             case REFRESHABLE -> refreshables;
             };
             list.add(key);
+            if (key.isLayout()) {
+                layouts.add(key);
+            }
         }
         DERIVEDS = deriveds.toArray(new VisualKey[deriveds.size()]);
         REFRESHABLES = refreshables.toArray(new VisualKey[refreshables.size()]);
         CONTROLLEDS = controlleds.toArray(new VisualKey[controlleds.size()]);
+        LAYOUTS = controlleds.toArray(new VisualKey[layouts.size()]);
     }
 
     /** Nature of a visible key. */

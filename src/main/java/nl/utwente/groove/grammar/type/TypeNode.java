@@ -188,6 +188,11 @@ public class TypeNode implements Node, TypeElement {
         return this.pattern;
     }
 
+    /** Checks if there is a label pattern associated with this type node. */
+    public final boolean hasLabelPattern() {
+        return this.pattern != null;
+    }
+
     /** Sets the label pattern of this type node. */
     public final void setLabelPattern(@Nullable LabelPattern pattern) {
         this.pattern = pattern;
@@ -199,6 +204,11 @@ public class TypeNode implements Node, TypeElement {
     /** Returns the (possibly {@code null}) colour of this type node. */
     public final @Nullable Color getColor() {
         return this.colour;
+    }
+
+    /** Indicates if this type node has an explicitly set colour. */
+    public final boolean hasColor() {
+        return this.colour != null;
     }
 
     /** Sets the colour of this type node. */
@@ -225,6 +235,11 @@ public class TypeNode implements Node, TypeElement {
     @Override
     public Set<TypeNode> getSupertypes() {
         return getGraph().getSupertypes(this);
+    }
+
+    /** Returns the set of direct supertypes of this type node. */
+    public Set<TypeNode> getDirectSupertypes() {
+        return getGraph().getDirectSupertypes(this);
     }
 
     /** Tests if another type satisfies the constraints of this one.

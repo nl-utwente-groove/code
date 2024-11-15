@@ -21,16 +21,6 @@ import org.eclipse.jdt.annotation.NonNull;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.gui.look.ColorValue;
-import nl.utwente.groove.gui.look.EdgeEndLabelValue;
-import nl.utwente.groove.gui.look.EdgeEndShapeValue;
-import nl.utwente.groove.gui.look.ErrorValue;
-import nl.utwente.groove.gui.look.IdAdornmentValue;
-import nl.utwente.groove.gui.look.LabelValue;
-import nl.utwente.groove.gui.look.ParAdornmentValue;
-import nl.utwente.groove.gui.look.VisibleValue;
-import nl.utwente.groove.gui.look.VisualKey;
-import nl.utwente.groove.gui.look.VisualValue;
 
 /**
  * Factory for {@link JGraph}.
@@ -70,43 +60,6 @@ abstract public class JGraphFactory<G extends @NonNull Graph> {
         return new JModel<>(getJGraph()) {
             // empty
         };
-    }
-
-    /** Creates a visual value refresher for a given key. */
-    public VisualValue<?> newVisualValue(VisualKey key) {
-        switch (key) {
-        case COLOR:
-            return new ColorValue();
-        case EDGE_SOURCE_LABEL:
-            return new EdgeEndLabelValue(true);
-        case EDGE_SOURCE_SHAPE:
-            return new EdgeEndShapeValue(true);
-        case EDGE_TARGET_LABEL:
-            return new EdgeEndLabelValue(false);
-        case EDGE_TARGET_SHAPE:
-            return new EdgeEndShapeValue(false);
-        case ERROR:
-            return new ErrorValue();
-        case ID_ADORNMENT:
-            return new IdAdornmentValue();
-        case LABEL:
-            return new LabelValue();
-        case NODE_SIZE:
-            // this cannot be computed; instead it is refreshed
-            // in the vertex view, when the UI is around
-            return null;
-        case PAR_ADORNMENT:
-            return new ParAdornmentValue();
-        case TEXT_SIZE:
-            // this cannot be computed; instead it is refreshed
-            // in the vertex view, when the UI is around
-            return null;
-        case VISIBLE:
-            return new VisibleValue();
-        default:
-            assert false;
-            return null;
-        }
     }
 
     private final JGraph<G> jGraph;

@@ -157,7 +157,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
             if (jGraph.isShowAspects()) {
                 result.add(jVertex.getUserObject().toLines());
             } else {
-                Line idLine = getExternalIdLine(node);
+                Line idLine = jGraph.isShowUserIds()
+                    ? getUserIdLine(node)
+                    : null;
                 // show data constants correctly
                 Line dataLine = getDataLine(node, idLine);
                 if (dataLine != null) {
@@ -169,7 +171,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                     if (isVisible(jGraph, jVertex, edge)) {
                         Line line = edge.toLine(true, jVertex.getAspects());
                         if (edge.getRole() == NODE_TYPE) {
-                            line = insertId(jGraph, idLine, line);
+                            line = insertUserId(idLine, line);
                             idLine = null;
                         }
                         if (idLine != null) {
@@ -202,25 +204,24 @@ public class LabelValue implements VisualValue<MultiLabel> {
     /**
      * Constructs an external node ID line for an aspect node, if the node has an ID aspect.
      */
-    private Line getExternalIdLine(AspectNode node) {
+    private Line getUserIdLine(AspectNode node) {
         return node.hasId()
-            ? formatExternalId(node.getId())
+            ? formatUserId(node.getId())
             : null;
     }
 
     /**
      * Constructs an external node ID line from a given string.
      */
-    private Line formatExternalId(String id) {
+    private Line formatUserId(String id) {
         return Line.atom(id).style(ITALIC).style(UNDERLINE);
     }
 
     /** Inserts an external node identifier in front of a given line, if the node identifier is not {@code null}. */
-    private Line insertId(AspectJGraph jGraph, Line id, Line line) {
-        var showId = jGraph.getGraphRole() != GraphRole.HOST || jGraph.isShowUserIds();
-        return !showId || id == null
+    private Line insertUserId(Line idLine, Line line) {
+        return idLine == null
             ? line
-            : id.append(TYPED_AS).append(line);
+            : idLine.append(TYPED_AS).append(line);
     }
 
     /** Recomputes the set of node lines for this aspect node.
@@ -303,7 +304,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 result.add(Line.atom(color.toString()));
             }
         } else {
-            Line idLine = getExternalIdLine(node);
+            Line idLine = getUserIdLine(node);
             // show the quantifier aspect correctly
             if (node.has(Category.NESTING)) {
                 result.add(getQuantifierLines(node, idLine));
@@ -320,7 +321,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 if (isVisible(jGraph, jVertex, edge)) {
                     Line line = edge.toLine(true, jVertex.getAspects());
                     if (edge.getRole() == NODE_TYPE) {
-                        line = insertId(jGraph, idLine, line);
+                        line = insertUserId(idLine, line);
                         idLine = null;
                     }
                     if (idLine != null) {
@@ -408,7 +409,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         if (jGraph.isShowStateIdentities()) {
             GraphState state = jVertex.getNode();
             StringBuilder id = new StringBuilder(state.toString());
-            idLine = formatExternalId(id.toString());
+            idLine = formatUserId(id.toString());
         }
         if (jGraph.isShowStateStatus()) {
             Line statusLine = getStatus(jGraph, jVertex.getNode());
@@ -564,7 +565,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
     private Line getStackLine(Location loc, Object[] values, boolean actual) {
         Line result = Line.empty();
         if (loc != null) {
-            result = formatExternalId(loc.toString());
+            result = formatUserId(loc.toString());
             if (loc.hasVars()) {
                 List<CtrlVar> vars = loc.getVars();
                 StringBuilder content = new StringBuilder();
@@ -597,7 +598,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
      */
     private MultiLabel getCtrlJVertexLabel(CtrlJGraph jGraph, CtrlJVertex jVertex) {
         MultiLabel result = new MultiLabel();
-        result.add(formatExternalId(jVertex.getNode().toString()));
+        result.add(formatUserId(jVertex.getNode().toString()));
         Position<?,?> state = jVertex.getNode().getPosition();
         // add start/final/depth qualifiers
         Line qualifiers = Line.empty();

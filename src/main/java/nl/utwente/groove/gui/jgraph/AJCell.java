@@ -36,7 +36,6 @@ import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualKey.Nature;
 import nl.utwente.groove.gui.look.VisualMap;
-import nl.utwente.groove.gui.look.VisualValue;
 
 /**
  * Abstract JCell implementation, providing some of the basic functionality.
@@ -197,43 +196,49 @@ public abstract class AJCell<G extends @NonNull Graph,JG extends JGraph<G>,JM ex
         }
     }
 
-    /** Recomputes and stores the value for a given visual key. */
-    final protected void refreshVisual(VisualKey key) {
-        VisualValue<?> refresher = getRefresher(key);
-        if (refresher != null) {
-            this.visuals.put(key, refresher.get(getJGraph(), this));
-            this.staleKeys.remove(key);
-        }
-    }
-
     @Override
     final public VisualMap getVisuals() {
-        if (this.looksChanged || this.looks == null) {
-            // refresh the derived part of the visual map
-            this.visuals.setLooks(getLooks());
-            this.looksChanged = false;
-        }
+        refreshLooks();
         if (!this.staleKeys.isEmpty()) {
+            // refresh all
             for (VisualKey key : VisualKey.refreshables()) {
-                if (this.staleKeys.contains(key)) {
-                    refreshVisual(key);
-                }
+                refreshVisual(key);
             }
         }
         return this.visuals;
     }
 
+    @Override
+    public VisualMap getLayoutVisuals() {
+        refreshLooks();
+        VisualMap result = new VisualMap();
+        for (var key : VisualKey.layouts()) {
+            refreshVisual(key);
+            result.put(key, this.visuals.get(key));
+        }
+        return result;
+    }
+
+    /** Refreshes the looks-related visuals. */
+    private void refreshLooks() {
+        if (this.looksChanged || this.looks == null) {
+            // refresh the derived part of the visual map
+            this.visuals.setLooks(getLooks());
+            this.looksChanged = false;
+        }
+    }
+
+    /** Refreshes the value for a given key, refreshing it if necessary and possible. */
+    private void refreshVisual(VisualKey key) {
+        key.getRefresher().ifPresent(r -> {
+            if (this.staleKeys.remove(key)) {
+                this.visuals.put(key, r.get(getJGraph(), this));
+            }
+        });
+    }
+
     /** The visual aspects of this JVertex. */
     private VisualMap visuals;
-
-    /** Returns the visual refresher for a given (refreshable) key. */
-    protected final VisualValue<?> getRefresher(VisualKey key) {
-        // if this is called early, maybe there is no JGraph yet
-        JGraph<G> jGraph = getJGraph();
-        return jGraph == null
-            ? null
-            : jGraph.getVisualValue(key);
-    }
 
     @Override
     public void setStale(VisualKey... keys) {
