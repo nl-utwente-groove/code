@@ -100,6 +100,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree
             .addPropertyChangeListener(org.jgraph.JGraph.GRAPH_MODEL_PROPERTY,
                                        evt -> updateModel());
         getJGraph().addGraphSelectionListener(evt -> clearSelection());
+
         getFilter().addObserver(evt -> {
             LabelTree.this.repaint();
             getJGraph().refreshCells((Set<JCell<G>>) evt.getNewValue());

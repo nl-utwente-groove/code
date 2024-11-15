@@ -18,6 +18,7 @@ package nl.utwente.groove.gui.look;
 
 import java.awt.Color;
 
+import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.GraphRole;
@@ -50,10 +51,14 @@ public class ColorValue extends AspectValue<Color> {
     @Override
     protected Color getForJEdge(AspectJEdge jEdge) {
         Color result = null;
-        AspectNode edgeSource = jEdge.getEdge().source();
-        AspectJVertex jEdgeSource = jEdge.getJModel().getJCellForNode(edgeSource);
-        if (jEdgeSource != null) {
-            result = getForJVertex(jEdgeSource);
+        var edge = jEdge.getEdge();
+        // determine the node that determines the colour
+        AspectNode node = edge.has(AspectKind.SUBTYPE)
+            ? edge.target()
+            : edge.source();
+        AspectJVertex jNode = jEdge.getJModel().getJCellForNode(node);
+        if (jNode != null) {
+            result = getForJVertex(jNode);
         }
         return result;
     }

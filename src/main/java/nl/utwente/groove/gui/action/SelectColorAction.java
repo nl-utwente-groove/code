@@ -1,8 +1,6 @@
 package nl.utwente.groove.gui.action;
 
 import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 
 import javax.swing.JColorChooser;
@@ -24,8 +22,6 @@ import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
-import nl.utwente.groove.gui.display.GraphTab;
-import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.jgraph.JCell;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.tree.LabelTree;
@@ -42,28 +38,8 @@ public class SelectColorAction extends SimulatorAction
     public SelectColorAction(Simulator simulator) {
         super(simulator, Options.SELECT_COLOR_ACTION_NAME, null);
         putValue(SHORT_DESCRIPTION, Options.SELECT_COLOR_ACTION_NAME);
-        addAsListener(getHostDisplay());
-        addAsListener(getRuleDisplay());
-        addAsListener(getTypeDisplay());
         refresh();
         this.chooser = new JColorChooser();
-    }
-
-    /** Adds this action as a listener to the JGraph and label tree of a
-     * given JGraphPanel.
-     */
-    private void addAsListener(ResourceDisplay display) {
-        assert display.getResourceKind().isGraphBased();
-        JGraph<?> jGraph = ((GraphTab) display.getMainTab()).getJGraph();
-        jGraph.addGraphSelectionListener(this);
-        if (this.label == null) {
-            checkJGraph(jGraph);
-        }
-        LabelTree<?> labelTree = jGraph.getLabelTree();
-        labelTree.addTreeSelectionListener(this);
-        if (this.label == null) {
-            checkLabelTree(labelTree);
-        }
     }
 
     /** Checks if in a given JGraph a type label is selected. */
@@ -109,12 +85,7 @@ public class SelectColorAction extends SimulatorAction
         }
         JDialog dialog = JColorChooser
             .createDialog(getFrame(), "Choose colour for type", false, this.chooser,
-                          new ActionListener() {
-                              @Override
-                              public void actionPerformed(ActionEvent e) {
-                                  setColour(SelectColorAction.this.chooser.getColor());
-                              }
-                          }, null);
+                          e -> setColour(SelectColorAction.this.chooser.getColor()), null);
         dialog.setVisible(true);
     }
 

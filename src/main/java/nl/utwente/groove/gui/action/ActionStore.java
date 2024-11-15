@@ -739,7 +739,7 @@ public class ActionStore implements SimulatorListener {
     /**
      * Returns the colour selection action permanently associated with this simulator.
      */
-    public Action getSelectColorAction() {
+    public SelectColorAction getSelectColorAction() {
         if (this.selectColorAction == null) {
             this.selectColorAction = new SelectColorAction(this.simulator);
         }

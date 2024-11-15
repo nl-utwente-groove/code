@@ -411,6 +411,7 @@ final public class GraphEditorTab extends ResourceTab
     public void dispose() {
         super.dispose();
         // unregister listeners
+        getJGraph().removeJGraphModeListener(this);
         getSnapToGridAction().removeSnapListener(this);
         getJGraph().removeListeners();
     }
@@ -430,6 +431,7 @@ final public class GraphEditorTab extends ResourceTab
             }
         });
         getJGraph().addJGraphModeListener(this);
+        getJGraph().addGraphSelectionListener(getSimulator().getActions().getSelectColorAction());
         getSnapToGridAction().addSnapListener(this);
     }
 

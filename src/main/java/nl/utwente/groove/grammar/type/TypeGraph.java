@@ -314,6 +314,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                 if (n1Color.equals(n2.getDeclaredColor())) {
                     continue;
                 }
+                if (getSubtypes(n1).contains(n2) || getSubtypes(n2).contains(n1)) {
+                    continue;
+                }
                 if (hasCommonSubtype(n1, n2)) {
                     errors.add("Incompatible color declarations on %s and %s", n1, n2);
                 }

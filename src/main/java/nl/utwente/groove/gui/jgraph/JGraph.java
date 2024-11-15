@@ -151,6 +151,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         addMouseListener(getMouseListener());
         addKeyListener(getCancelEditListener());
         getSelectionModel().addGraphSelectionListener(getGraphSelectionListener());
+        addGraphSelectionListener(getActions().getSelectColorAction());
         addOptionListener(SHOW_INTERNAL_NODE_IDS_OPTION);
         addOptionListener(SHOW_USER_NODE_IDS_OPTION);
         addOptionListener(SHOW_ANCHORS_OPTION);
@@ -166,6 +167,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         removeMouseListener(getMouseListener());
         removeKeyListener(getCancelEditListener());
         getSelectionModel().removeGraphSelectionListener(getGraphSelectionListener());
+        removeGraphSelectionListener(getActions().getSelectColorAction());
         getActions().removeRefreshable(getExportAction());
         for (Pair<JMenuItem,RefreshListener> record : this.optionListeners) {
             record.one().removeItemListener(record.two());
@@ -1143,9 +1145,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         boolean itemAdded = false;
         if (cells != null && cells.length > 0 && getActions() != null) {
             result.add(getActions().getFindReplaceAction());
-            if (getActions().getSelectColorAction().isEnabled()) {
-                result.add(getActions().getSelectColorAction());
-            }
+            result.add(getActions().getSelectColorAction());
             itemAdded = true;
         }
         LabelTree<G> labelTree = getLabelTree();

@@ -158,7 +158,7 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
         }
     }
 
-    /** Convenience method to retrieve the state panel of the simulator. */
+    /** Convenience method to retrieve the host graph panel of the simulator. */
     protected final ResourceDisplay getHostDisplay() {
         return (ResourceDisplay) getDisplaysPanel().getDisplay(DisplayKind.HOST);
     }
