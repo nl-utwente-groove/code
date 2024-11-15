@@ -103,7 +103,7 @@ public class SelectColorAction extends SimulatorAction
     public void execute() {
         TypeNode typeNode = getGrammarModel().getTypeGraph().getNode(this.label);
         assert typeNode != null; // ensured by the label
-        Color initColour = typeNode.getColor();
+        Color initColour = typeNode.getDeclaredColor();
         if (initColour != null) {
             this.chooser.setColor(initColour);
         }

@@ -249,8 +249,9 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             if (modelNode.has(IMPORT)) {
                 typeNode.setImported(true);
             }
-            if (modelNode.hasColor()) {
-                typeNode.setColor(modelNode.getColor());
+            var color = modelNode.getColor();
+            if (color != null) {
+                typeNode.setDeclaredColor(color);
             }
             if (modelNode.has(EDGE)) {
                 typeNode.setLabelPattern(modelNode.getEdgePattern());

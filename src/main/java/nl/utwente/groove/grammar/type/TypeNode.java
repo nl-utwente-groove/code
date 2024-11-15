@@ -201,23 +201,41 @@ public class TypeNode implements Node, TypeElement {
     /** The label pattern of this node, if any. */
     private @Nullable LabelPattern pattern;
 
+    /** Sets the declared (and derived) colour of this type node. */
+    public void setDeclaredColor(Color colour) {
+        this.declaredColour = this.derivedColour = colour;
+    }
+
+    /** Indicates if this type node has a declared display colour. */
+    public boolean hasDeclaredColor() {
+        return this.declaredColour != null;
+    }
+
+    /** Returns the declared colour of this type node, if any. */
+    public @Nullable Color getDeclaredColor() {
+        return this.declaredColour;
+    }
+
+    /** The declared display colour of this node, if any. */
+    private @Nullable Color declaredColour;
+
     /** Returns the (possibly {@code null}) colour of this type node. */
     public final @Nullable Color getColor() {
-        return this.colour;
+        return this.derivedColour;
     }
 
-    /** Indicates if this type node has an explicitly set colour. */
+    /** Indicates if this type node has a (declared or derived) display colour. */
     public final boolean hasColor() {
-        return this.colour != null;
+        return this.derivedColour != null;
     }
 
-    /** Sets the colour of this type node. */
-    public final void setColor(@Nullable Color colour) {
-        this.colour = colour;
+    /** Sets the derived colour of this type node. */
+    void setDerivedColor(Color colour) {
+        this.derivedColour = colour;
     }
 
-    /** The display colour of this node, if any. */
-    private @Nullable Color colour;
+    /** The derived display colour of this node, if any. */
+    private @Nullable Color derivedColour;
 
     @Override
     public TypeGraph getGraph() {

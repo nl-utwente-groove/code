@@ -121,8 +121,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
             if (source.isAbstract()) {
                 image.setAbstract();
             }
-            if (source.getColor() != null) {
-                image.setColor(source.getColor());
+            var color = source.getDeclaredColor();
+            if (color != null) {
+                image.setDeclaredColor(color);
             }
             image.setLabelPattern(source.getLabelPattern());
             boolean imported = source.isImported() && (oldImage == null || oldImage.isImported());
@@ -296,9 +297,28 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
             }
         }
         // check for inconsistent color specifications in the type hierarchy
-        // this occurs if a node type has no color specification, whereas two
-        // of its supertypes have distinct ones.
-
+        // this occurs if two node types with declared colours share a subtype.
+        var coloredNodes = nodeSet().stream().filter(TypeNode::hasDeclaredColor).toList();
+        for (var n1 : coloredNodes) {
+            var n1Color = n1.getDeclaredColor();
+            assert n1Color != null;
+            boolean start = false;
+            for (var n2 : coloredNodes) {
+                if (n1 == n2) {
+                    start = true;
+                    continue;
+                }
+                if (!start) {
+                    continue;
+                }
+                if (n1Color.equals(n2.getDeclaredColor())) {
+                    continue;
+                }
+                if (hasCommonSubtype(n1, n2)) {
+                    errors.add("Incompatible color declarations on %s and %s", n1, n2);
+                }
+            }
+        }
         errors.throwException();
     }
 
@@ -331,7 +351,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                 }
             }
             // propagate colours to subtypes
-            var coloredNodes = nodeSet().stream().filter(TypeNode::hasColor).toList();
+            var coloredNodes = nodeSet().stream().filter(TypeNode::hasDeclaredColor).toList();
             for (TypeNode node : coloredNodes) {
                 // propagate colours
                 Color color = node.getColor();
@@ -343,7 +363,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                     TypeNode subNode = subNodeIter.next();
                     subNodeIter.remove();
                     if (subNode.getColor() == null) {
-                        subNode.setColor(color);
+                        subNode.setDerivedColor(color);
                     } else {
                         propagatees.removeAll(this.nodeSubtypeMap.get(subNode));
                     }
