@@ -313,10 +313,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
      */
     public AspectGraph colour(TypeLabel label, Aspect colour) {
         assert getRole() == TYPE;
-        // create a plain graph under relabelling
         PlainGraph result = createPlainGraph();
         AspectToPlainMap elementMap = new AspectToPlainMap();
-        // flag registering if anything changed due to relabelling
+        // flag registering if anything changed due to the colour change
         boolean graphChanged = false;
         // construct the plain graph for the aspect nodes,
         // except for the colour aspects
@@ -357,6 +356,56 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             GraphInfo.transferProperties(this, result, elementMap);
             result.setFixed();
             return newInstance(result);
+        }
+    }
+
+    /**
+     * Returns an aspect graph obtained from this one by changing the colour aspect
+     * of one or more nodes.
+     * @param changedNodes the nodes to be changed (guaranteed to be nodes of this graph)
+     * @param colour the new colour for the node; may be {@code null}
+     * if the colour is to be reset to default
+     * @return a clone of this aspect graph with changed node colour, or this graph
+     *         if {@code node} already had the required colour
+     */
+    public AspectGraph colour(Collection<AspectNode> changedNodes, Aspect colour) {
+        boolean graphChanged = false;
+        // create a plain graph
+        PlainGraph result = createPlainGraph();
+        AspectToPlainMap elementMap = new AspectToPlainMap();
+        // construct the plain graph for the aspect nodes,
+        // except for the colour aspects of the changed node
+        for (AspectNode node : nodeSet()) {
+            boolean isChangedNode = changedNodes.contains(node);
+            graphChanged |= isChangedNode && !Objects.equals(node.get(COLOR), colour);
+            PlainNode image = result.addNode(node.getNumber());
+            elementMap.putNode(node, image);
+            node
+                .getNodeLabels()
+                .stream()
+                .filter(l -> !isChangedNode || !l.has(COLOR))
+                .forEach(l -> result.addEdge(image, l.toString(), image));
+            if (isChangedNode && colour != null) {
+                result.addEdge(image, colour.toString(), image);
+            }
+        }
+        if (graphChanged) {
+            // copy the edges over
+            for (AspectEdge edge : edgeSet()) {
+                AspectLabel edgeLabel = edge.label();
+                PlainNode sourceImage = elementMap.getNode(edge.source());
+                assert sourceImage != null;
+                PlainNode targetImage = elementMap.getNode(edge.target());
+                assert targetImage != null;
+                PlainEdge edgeImage
+                    = result.addEdge(sourceImage, edgeLabel.toString(), targetImage);
+                elementMap.putEdge(edge, edgeImage);
+            }
+            GraphInfo.transferProperties(this, result, elementMap);
+            result.setFixed();
+            return newInstance(result);
+        } else {
+            return this;
         }
     }
 

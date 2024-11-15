@@ -151,7 +151,6 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         addMouseListener(getMouseListener());
         addKeyListener(getCancelEditListener());
         getSelectionModel().addGraphSelectionListener(getGraphSelectionListener());
-        addGraphSelectionListener(getActions().getSelectColorAction());
         addOptionListener(SHOW_INTERNAL_NODE_IDS_OPTION);
         addOptionListener(SHOW_USER_NODE_IDS_OPTION);
         addOptionListener(SHOW_ANCHORS_OPTION);
@@ -167,7 +166,6 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         removeMouseListener(getMouseListener());
         removeKeyListener(getCancelEditListener());
         getSelectionModel().removeGraphSelectionListener(getGraphSelectionListener());
-        removeGraphSelectionListener(getActions().getSelectColorAction());
         getActions().removeRefreshable(getExportAction());
         for (Pair<JMenuItem,RefreshListener> record : this.optionListeners) {
             record.one().removeItemListener(record.two());

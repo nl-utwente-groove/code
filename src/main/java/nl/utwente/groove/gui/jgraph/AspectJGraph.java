@@ -96,8 +96,15 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
     @Override
     protected void installListeners() {
         super.installListeners();
+        addGraphSelectionListener(getActions().getSelectColorAction());
         addOptionListener(SHOW_ASPECTS_OPTION);
         addOptionListener(SHOW_VALUE_NODES_OPTION);
+    }
+
+    @Override
+    public void removeListeners() {
+        super.removeListeners();
+        removeGraphSelectionListener(getActions().getSelectColorAction());
     }
 
     @Override
