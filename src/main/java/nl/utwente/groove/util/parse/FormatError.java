@@ -38,6 +38,7 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.ControlModel;
 import nl.utwente.groove.grammar.model.PrologModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.Element;
@@ -79,6 +80,8 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
             c.forEach(this::addContext);
         } else if (par instanceof FormatError e) {
             e.getArguments().forEach(this::addContext);
+            this.resourceKind = e.getResourceKind();
+            e.getResourceNames().forEach(n -> addResource(getResourceKind(), n));
         } else if (par instanceof Key k) {
             this.key = k;
         } else if (par instanceof GraphState s) {
@@ -96,6 +99,8 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
             this.elements.add(e);
         } else if (par instanceof Integer i) {
             this.numbers.add(i);
+        } else if (par instanceof TypeGraph tg) {
+            addResource(ResourceKind.TYPE, tg.getQualName());
         } else if (par instanceof Rule r) {
             addResource(ResourceKind.RULE, r.getQualName());
         } else if (par instanceof Recipe r) {
@@ -282,7 +287,6 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     FormatError transfer(GraphMap map) {
         var result = this;
         if (!map.isEmpty()) {
-            result = new FormatError(toFormattableString());
             Map<Object,Object> elementMap = new HashMap<>();
             elementMap.putAll(map.nodeMap());
             elementMap.putAll(map.edgeMap());
@@ -371,6 +375,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
                 : arg;
             result.addContext(newArg);
         }
+        result.resourceKind = getResourceKind();
         getResourceNames().forEach(n -> result.addResource(getResourceKind(), n));
         return result;
     }

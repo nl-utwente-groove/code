@@ -286,12 +286,25 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                     }
                     if (hasCommonSubtype(edge1.source(), edge2.source())
                         && hasCommonSubtype(edge1.target(), edge2.target())) {
-                        errors
-                            .add("Potential type confusion of %s-%ss: both source and target types have a common subtype",
-                                 edgeLabel.text(), edgeLabel.getRole() == FLAG
-                                     ? "flag"
-                                     : "edge",
-                                 edge1, edge2);
+                        var sourceSubtype = getCommonSubtypes(edge1.source(), edge2.source())
+                            .stream()
+                            .findFirst()
+                            .get();
+                        if (edgeLabel.hasRole(FLAG)) {
+                            errors
+                                .add("Potential type confusion: Declared flags %3$s:%1$s and %4$s:%1$s cause %2$s:%1$s to be ambiguously typed",
+                                     edgeLabel.text(), sourceSubtype, edge1.source(),
+                                     edge2.source(), edge1, edge2, edge1.getGraph(),
+                                     edge2.getGraph());
+                        } else {
+                            var targetSubtype = getCommonSubtypes(edge1.target(), edge2.target())
+                                .stream()
+                                .findFirst()
+                                .get();
+                            errors
+                                .add("Potential type confusion: Declared edges %4$s and %5$s cause %2$s--%1$s->%3$s to be ambiguously typed",
+                                     edgeLabel.text(), sourceSubtype, targetSubtype, edge1, edge2);
+                        }
                     }
                 }
             }
@@ -1115,7 +1128,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
         return result;
     }
 
-    /** Tests if two nodes have a common subtype. */
+    /** Tests if two nodes have a common (not necessarily proper) subtype. */
     private boolean hasCommonSubtype(TypeNode node1, TypeNode node2) {
         // check for common subtypes
         if (node1.equals(node2)) {
@@ -1138,6 +1151,13 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
             return sub1.contains(node2);
         }
         return !Collections.disjoint(sub1, sub2);
+    }
+
+    /** Returns the set of all (not necessarily proper) subtypes. */
+    private Set<TypeNode> getCommonSubtypes(TypeNode node1, TypeNode node2) {
+        Set<TypeNode> result = new HashSet<>(getSubtypes(node1));
+        result.retainAll(getSubtypes(node2));
+        return result;
     }
 
     /** Returns the set of all type labels occurring in the type graph. */
