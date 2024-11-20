@@ -91,7 +91,7 @@ public sealed interface AspectContent
     /** Returns a parsable string for the aspect
      * consisting of a given aspect kind and this content.
      * @param aspectKind the aspect kind
-     * @return a string that, when given to {@link Aspect#newInstance(String, GraphRole)},
+     * @return a string that, when given to {@link AspectKind#newAspect(String, GraphRole)},
      * returns an aspect with this content
      */
     default String toParsableString(AspectKind aspectKind) {
@@ -107,7 +107,7 @@ public sealed interface AspectContent
      * occurrences of a certain label into another.
      * @param oldLabel the label to be changed
      * @param newLabel the new value for {@code oldLabel}
-     * @param typing TODO
+     * @param typing map to distinguish field names and their sorts
      * @return a clone of this content with changed labels, or
      * the original content if {@code oldLabel} did not occur
      */
@@ -137,6 +137,15 @@ public sealed interface AspectContent
                 }
                 return new NullContent(this);
             }
+
+            @Override
+            AspectContent wrapContent(Object content) {
+                if (content == null) {
+                    return new NullContent(this);
+                } else {
+                    return errorContent(content);
+                }
+            }
         },
         /** Empty content: no text may precede or follow the separator. */
         EMPTY {
@@ -161,6 +170,15 @@ public sealed interface AspectContent
                     throw new FormatException("Malformed null content '%s'", text);
                 }
                 return new NullContent(this);
+            }
+
+            @Override
+            AspectContent wrapContent(Object content) {
+                if (content == null) {
+                    return new NullContent(this);
+                } else {
+                    return errorContent(content);
+                }
             }
         },
         /** Quantifier level name. */
@@ -191,6 +209,14 @@ public sealed interface AspectContent
                 return new IdContent(this, text);
             }
 
+            @Override
+            AspectContent wrapContent(Object content) {
+                if (content instanceof String text) {
+                    return new IdContent(this, text);
+                } else {
+                    return errorContent(content);
+                }
+            }
         },
         /**
          * String constant or operation, used in a typed value aspect.
@@ -233,6 +259,15 @@ public sealed interface AspectContent
             MultiplicityContent parseContent(String text, GraphRole role,
                                              Status status) throws FormatException {
                 return new MultiplicityContent(Multiplicity.parse(text));
+            }
+
+            @Override
+            AspectContent wrapContent(Object content) {
+                if (content instanceof Multiplicity mult) {
+                    return new MultiplicityContent(mult);
+                } else {
+                    return errorContent(content);
+                }
             }
         },
         /**
@@ -310,6 +345,17 @@ public sealed interface AspectContent
                 }
                 return result;
             }
+
+            @Override
+            AspectContent wrapContent(Object content) {
+                if (content instanceof Integer nr) {
+                    return new IntegerContent(this, nr);
+                } else if (content == null) {
+                    return new NullContent(this);
+                } else {
+                    return errorContent(content);
+                }
+            }
         },
         /**
          * Argument number.
@@ -342,6 +388,15 @@ public sealed interface AspectContent
                 }
                 return new IntegerContent(this, result);
             }
+
+            @Override
+            AspectContent wrapContent(Object content) {
+                if (content instanceof Integer nr) {
+                    return new IntegerContent(this, nr);
+                } else {
+                    return errorContent(content);
+                }
+            }
         },
         /** Content must be a {@link NestedValue}. */
         NESTED {
@@ -363,6 +418,15 @@ public sealed interface AspectContent
                 }
                 return new NestedValueContent(this, content);
             }
+
+            @Override
+            AspectContent wrapContent(Object content) {
+                if (content instanceof NestedValue value) {
+                    return new NestedValueContent(this, value);
+                } else {
+                    return errorContent(content);
+                }
+            }
         },
         /** Colour name or RGB value. */
         COLOR {
@@ -382,7 +446,16 @@ public sealed interface AspectContent
                 if (result == null) {
                     throw new FormatException("Can't parse '%s' as colour", text);
                 }
-                return new ColorContent(this, result);
+                return new ColorContent(result);
+            }
+
+            @Override
+            AspectContent wrapContent(Object content) {
+                if (content instanceof Color color) {
+                    return new ColorContent(color);
+                } else {
+                    return errorContent(content);
+                }
             }
         },
         /** Node identifier. */
@@ -410,6 +483,15 @@ public sealed interface AspectContent
                 }
                 return new IdContent(this, text);
             }
+
+            @Override
+            AspectContent wrapContent(Object content) {
+                if (content instanceof String text) {
+                    return new IdContent(this, text);
+                } else {
+                    return errorContent(content);
+                }
+            }
         },
         /** Predicate (attribute) value. */
         TEST_EXPR {
@@ -426,6 +508,15 @@ public sealed interface AspectContent
             ExprContent parseContent(String text, GraphRole role,
                                      Status status) throws FormatException {
                 return new ExprContent(this, Expression.parseTest(text));
+            }
+
+            @Override
+            AspectContent wrapContent(Object content) {
+                if (content instanceof ExprTree tree) {
+                    return new ExprContent(this, tree);
+                } else {
+                    return errorContent(content);
+                }
             }
         },
         /** Let expression content. */
@@ -444,6 +535,15 @@ public sealed interface AspectContent
                                      Status status) throws FormatException {
                 return new ExprContent(this, Assignment.parse(text));
             }
+
+            @Override
+            AspectContent wrapContent(Object content) {
+                if (content instanceof ExprTree tree) {
+                    return new ExprContent(this, tree);
+                } else {
+                    return errorContent(content);
+                }
+            }
         },
 
         /** Edge declaration content. */
@@ -461,6 +561,15 @@ public sealed interface AspectContent
             LabelPatternContent parseContent(String text, GraphRole role,
                                              Status status) throws FormatException {
                 return new LabelPatternContent(this, LabelPattern.parse(text));
+            }
+
+            @Override
+            AspectContent wrapContent(Object content) {
+                if (content instanceof LabelPattern pattern) {
+                    return new LabelPatternContent(this, pattern);
+                } else {
+                    return errorContent(content);
+                }
             }
         };
 
@@ -546,6 +655,24 @@ public sealed interface AspectContent
                 }
             }
             return result;
+        }
+
+        /** Returns a content instance of this kind, wrapping a given object.
+         * There is no static type check, so use only if it is clear that the runtime type
+         * of the object is compatible with the content type.
+         */
+        AspectContent wrapContent(Object content) {
+            return switch (content) {
+            case String text -> new IdContent(this, text);
+            case Constant cons -> new ConstContent(this, cons);
+            case ExprTree tree -> new ExprContent(this, tree);
+            default -> errorContent(content);
+            };
+        }
+
+        AspectContent errorContent(Object content) {
+            throw Exceptions
+                .illegalArg("Can't create %s content from a %s object", this, content.getClass());
         }
 
         /**
@@ -751,8 +878,8 @@ public sealed interface AspectContent
 
     /** Aspect content consisting of a colour. */
     static public final class ColorContent extends AAspectContent<Color> implements AspectContent {
-        ColorContent(ContentKind kind, Color color) {
-            super(kind, color);
+        ColorContent(Color color) {
+            super(ContentKind.COLOR, color);
         }
 
         @Override

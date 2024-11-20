@@ -77,6 +77,9 @@ public class GraphConverter {
             if (node.isAbstract()) {
                 nodeImage.set(ABSTRACT.getAspect());
             }
+            if (node.hasColor()) {
+                nodeImage.set(AspectKind.COLOR.newAspect(node.getColor()));
+            }
         }
         Map<TypeNode,Set<TypeNode>> superMap = type.getDirectSupertypeMap();
         // add subtype relations
