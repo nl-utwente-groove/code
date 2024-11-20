@@ -96,7 +96,10 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
     @Override
     protected void installListeners() {
         super.installListeners();
-        addGraphSelectionListener(getActions().getSelectColorAction());
+        var actions = getActions();
+        if (actions != null) {
+            addGraphSelectionListener(actions.getSelectColorAction());
+        }
         addOptionListener(SHOW_ASPECTS_OPTION);
         addOptionListener(SHOW_VALUE_NODES_OPTION);
     }
@@ -104,6 +107,10 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
     @Override
     public void removeListeners() {
         super.removeListeners();
+        var actions = getActions();
+        if (actions != null) {
+            addGraphSelectionListener(actions.getSelectColorAction());
+        }
         removeGraphSelectionListener(getActions().getSelectColorAction());
     }
 
