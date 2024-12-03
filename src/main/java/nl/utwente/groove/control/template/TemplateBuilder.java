@@ -217,10 +217,9 @@ public class TemplateBuilder {
             // property switches
             Set<NestedSwitch> switches = new LinkedHashSet<>();
             // see if we need a property test
-            // start states of procedures are exempt
-            boolean isProcStart = loc.isStart() && isProcedure();
-            if (hasProperties() && !isProcStart && locType != Type.FINAL
-                && termKey.isFirstSteady()) {
+            // start and final states of procedures are exempt
+            boolean isProcStartOrFinal = (loc.isStart() || locType == Type.FINAL) && isProcedure();
+            if (hasProperties() && !isProcStartOrFinal && termKey.isFirstSteady()) {
                 for (Action prop : getProperties()) {
                     assert prop.isProperty() && prop instanceof Rule;
                     if (((Rule) prop).getPolicy() != CheckPolicy.OFF) {
