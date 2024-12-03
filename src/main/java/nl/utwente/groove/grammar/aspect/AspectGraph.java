@@ -18,7 +18,6 @@ package nl.utwente.groove.grammar.aspect;
 
 import static nl.utwente.groove.grammar.aspect.AspectKind.COLOR;
 import static nl.utwente.groove.graph.GraphRole.HOST;
-import static nl.utwente.groove.graph.GraphRole.TYPE;
 import static nl.utwente.groove.util.Factory.lazy;
 
 import java.awt.Point;
@@ -291,64 +290,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             assert targetImage != null;
             PlainEdge edgeImage = result.addEdge(sourceImage, edgeLabel.toString(), targetImage);
             elementMap.putEdge(edge, edgeImage);
-        }
-        if (!graphChanged) {
-            return this;
-        } else {
-            GraphInfo.transferProperties(this, result, elementMap);
-            result.setFixed();
-            return newInstance(result);
-        }
-    }
-
-    /**
-     * Returns an aspect graph obtained from this one by changing the colour
-     * of one of the node types.
-     * This is only valid for type graphs.
-     * @param label the node type label to be changed; must be a {@link EdgeRole#NODE_TYPE}.
-     * @param colour the new colour for the node type; may be {@code null}
-     * if the colour is to be reset to default
-     * @return a clone of this aspect graph with changed labels, or this graph
-     *         if {@code label} did not occur
-     */
-    public AspectGraph colour(TypeLabel label, Aspect colour) {
-        assert getRole() == TYPE;
-        PlainGraph result = createPlainGraph();
-        AspectToPlainMap elementMap = new AspectToPlainMap();
-        // flag registering if anything changed due to the colour change
-        boolean graphChanged = false;
-        // construct the plain graph for the aspect nodes,
-        // except for the colour aspects
-        for (AspectNode node : nodeSet()) {
-            PlainNode image = result.addNode(node.getNumber());
-            elementMap.putNode(node, image);
-            node
-                .getNodeLabels()
-                .stream()
-                .filter(l -> !l.has(COLOR))
-                .forEach(l -> result.addEdge(image, l, image));
-        }
-        // construct the plain edges, adding colour edges when a node
-        // type is found
-        for (AspectEdge edge : edgeSet()) {
-            AspectLabel edgeLabel = edge.label();
-            PlainNode sourceImage = elementMap.getNode(edge.source());
-            assert sourceImage != null;
-            PlainNode targetImage = elementMap.getNode(edge.target());
-            assert targetImage != null;
-            PlainEdge edgeImage = result.addEdge(sourceImage, edgeLabel.toString(), targetImage);
-            elementMap.putEdge(edge, edgeImage);
-            if (edge.getRole() == EdgeRole.NODE_TYPE) {
-                TypeLabel nodeType = edge.getTypeLabel();
-                boolean labelChanged = nodeType.equals(label);
-                graphChanged |= labelChanged;
-                Aspect newColour = labelChanged
-                    ? colour
-                    : edge.source().get(COLOR);
-                if (newColour != null) {
-                    result.addEdge(sourceImage, newColour.toString(), targetImage);
-                }
-            }
         }
         if (!graphChanged) {
             return this;

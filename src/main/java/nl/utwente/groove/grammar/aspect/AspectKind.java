@@ -211,6 +211,14 @@ public enum AspectKind {
         return new Aspect(this, getContentKind().parseContent(text, role, Status.INIT));
     }
 
+    /** Returns a new aspect of this aspect kind, wrapping a given content object.
+     * There is no static type check, so use only if it is clear that the runtime type
+     * of the object is compatible with the content type.
+     */
+    public Aspect newAspect(Object content) {
+        return new Aspect(this, getContentKind().wrapContent(content));
+    }
+
     /**
      * Parses a given string into an aspect of this kind, and the remainder.
      * The string is guaranteed to start with the name of this aspect, and

@@ -51,10 +51,9 @@ import nl.utwente.groove.util.parse.FormatException;
  */
 @NonNullByDefault
 public class Aspect {
-    /** Creates a prototype (i.e., empty) aspect for a given aspect kind. */
+    /** Creates an empty aspect for a given aspect kind. */
     Aspect(AspectKind kind) {
         this.aspectKind = kind;
-        this.prototype = true;
         this.content = new NullContent(kind.getContentKind());
     }
 
@@ -63,7 +62,6 @@ public class Aspect {
         assert kind.getContentKind() == content.kind();
         this.aspectKind = kind;
         this.content = content;
-        this.prototype = false;
     }
 
     @Override
@@ -99,22 +97,6 @@ public class Aspect {
     @Override
     public String toString() {
         return getContent().toParsableString(getKind());
-    }
-
-    /**
-     * Creates a new aspect, of the same kind of this one (which must be a prototype),
-     * wrapping content derived from given (non-{@code null} text.
-     * @param role intended graph role of the new aspect
-     * @throws UnsupportedOperationException if this aspect is itself already
-     * instantiated
-     * @throws FormatException if the text cannot be correctly parsed as content
-     * for this aspect
-     */
-    public Aspect newInstance(String text, GraphRole role) throws FormatException {
-        if (!this.prototype) {
-            throw Exceptions.unsupportedOp("New aspects can only be created from prototypes");
-        }
-        return getKind().newAspect(text, role);
     }
 
     /**
@@ -218,9 +200,6 @@ public class Aspect {
         }
         return result;
     }
-
-    /** Flag indicating that this aspect is a prototype. */
-    private final boolean prototype;
 
     /** Returns the prototypical aspect for a given aspect name. */
     public static Aspect getAspect(String name) {

@@ -17,14 +17,11 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.model.ResourceKind;
-import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJVertex;
 import nl.utwente.groove.gui.jgraph.JGraph;
-import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * Action for selecting a colour for a type node.
@@ -70,15 +67,7 @@ public class SelectColorAction extends SimulatorAction implements GraphSelection
     private void setColour(Color newColour) {
         Aspect colourAspect = null;
         if (!newColour.equals(Color.black)) {
-            String colourString = String
-                .format("%s,%s,%s", newColour.getRed(), newColour.getGreen(), newColour.getBlue());
-            try {
-                colourAspect
-                    = AspectKind.COLOR.getAspect().newInstance(colourString, GraphRole.TYPE);
-            } catch (FormatException e) {
-                // this can't happen, as the colour string is constructed correctly
-                throw Exceptions.UNREACHABLE;
-            }
+            colourAspect = AspectKind.COLOR.newAspect(newColour);
         }
         var hostGraph = this.graph;
         assert hostGraph != null;
