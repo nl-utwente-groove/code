@@ -57,7 +57,7 @@ public class GraphPreviewDialog<G extends @NonNull Graph> extends JDialog {
         this.simulator = simulator;
         this.grammar = grammar;
         this.graph = graph;
-        setTitle(graph.getName());
+        setTitle(graph.getRole().getDescription() + ": " + graph.getName());
         if (simulator != null) {
             Point p = simulator.getFrame().getLocation();
             setLocation(new Point(p.x + 50, p.y + 50));
