@@ -182,19 +182,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     }
 
     /** Returns the default role for this rule.
-     * The default is {@link Role#TRANSFORMER} if the rule has a positive priority,
-     * or has parameters, or modifies the graph; otherwise it is {@link Role#CONDITION}.
+     * The default is {@link Role#CONDITION} if the rule has no qualities that change the graph.
      */
     private Role getDefaultRole() {
-        Role result;
-        if (getSource().nodeSet().stream().anyMatch(n -> n.has(Category.PARAM))) {
-            result = Role.TRANSFORMER;
-        } else {
-            result = testAsProperty() == null
-                ? Role.CONDITION
-                : Role.TRANSFORMER;
-        }
-        return result;
+        return testAsProperty() == null
+            ? Role.CONDITION
+            : Role.TRANSFORMER;
     }
 
     /**
