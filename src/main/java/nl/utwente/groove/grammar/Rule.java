@@ -504,9 +504,9 @@ public class Rule implements Action, Fixable {
      * and has zero priority.
      */
     private boolean isPropertyLike() {
-        boolean result = !isModifying() && getPriority() == 0 && getHiddenPars().isEmpty();
+        boolean result = !isModifying() && getPriority() == 0;
         if (result) {
-            result = getSignature().stream().allMatch(v -> !v.isInOnly());
+            result = getSignature().stream().noneMatch(UnitPar::isInOnly);
         }
         return result;
     }

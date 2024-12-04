@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="rule" id="b">
+    <graph role="rule" edgeids="false" edgemode="directed" id="b">
+        <attr name="actionRole">
+            <string>transformer</string>
+        </attr>
         <attr name="$version">
             <string>curly</string>
         </attr>
@@ -9,7 +12,7 @@
                 <string>90 53 19 19</string>
             </attr>
         </node>
-        <edge to="n0" from="n0">
+        <edge from="n0" to="n0">
             <attr name="label">
                 <string>par:</string>
             </attr>
