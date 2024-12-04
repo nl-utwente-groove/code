@@ -263,7 +263,10 @@ final public class TextTab extends ResourceTab {
         return new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                updateDirty();
+                // possibly the resource has been disposed, in which case we shouldn't do anything
+                if (getResource() != null) {
+                    updateDirty();
+                }
             }
         };
     }
