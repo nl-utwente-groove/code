@@ -37,6 +37,7 @@ import nl.utwente.groove.annotation.Help;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.util.parse.ATermTreeParser;
 import nl.utwente.groove.util.parse.FormatException;
+import nl.utwente.groove.util.parse.IdValidator;
 import nl.utwente.groove.util.parse.OpKind;
 import nl.utwente.groove.verify.Proposition.Arg;
 
@@ -51,6 +52,7 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
      */
     private FormulaParser(String description) {
         super(description, new Formula(LogicOp.PROP));
+        setIdValidator(IdValidator.GROOVE_ID);
         setQualIds(true);
     }
 

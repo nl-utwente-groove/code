@@ -125,9 +125,7 @@ public class Proposition {
             if (other.getKind() == CALL) {
                 result = getId().equals(other.getId()) && other.arity() == arity();
                 for (int i = 0; result && i < arity(); i++) {
-                    result = getArgs().get(i)
-                        .matches(other.getArgs()
-                            .get(i));
+                    result = getArgs().get(i).matches(other.getArgs().get(i));
                 }
             } else {
                 result = false;
@@ -137,11 +135,15 @@ public class Proposition {
             result = equals(other);
             // An Id proposition without arguments matches all calls of that Id
             if (!result && other.getKind() == CALL) {
-                return getId().equals(other.getId());
+                result = getId().equals(other.getId());
             }
             break;
         case LABEL:
             result = getLabel().equals(other.toString());
+            // A Label proposition without arguments matches all calls of that Id
+            if (!result && other.getKind() == CALL) {
+                result = getLabel().equals(other.getId().toString());
+            }
             break;
         default:
             throw Exceptions.UNREACHABLE;
@@ -176,10 +178,9 @@ public class Proposition {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof Proposition)) {
+        if (!(obj instanceof Proposition other)) {
             return false;
         }
-        Proposition other = (Proposition) obj;
         if (this.kind != other.kind) {
             return false;
         }
@@ -247,7 +248,11 @@ public class Proposition {
             boolean firstArg = true;
             for (Arg arg : getArgs()) {
                 if (!firstArg) {
-                    lines.add(Line.atom(spaces ? ", " : ","));
+                    lines
+                        .add(Line
+                            .atom(spaces
+                                ? ", "
+                                : ","));
                 } else {
                     firstArg = false;
                 }
@@ -340,8 +345,12 @@ public class Proposition {
             final int prime = 31;
             int result = 1;
             result = prime * result + this.kind.hashCode();
-            result = prime * result + ((this.expr == null) ? 0 : this.expr.hashCode());
-            result = prime * result + ((this.name == null) ? 0 : this.name.hashCode());
+            result = prime * result + ((this.expr == null)
+                ? 0
+                : this.expr.hashCode());
+            result = prime * result + ((this.name == null)
+                ? 0
+                : this.name.hashCode());
             return result;
         }
 
@@ -350,10 +359,9 @@ public class Proposition {
             if (this == obj) {
                 return true;
             }
-            if (!(obj instanceof Arg)) {
+            if (!(obj instanceof Arg other)) {
                 return false;
             }
-            Arg other = (Arg) obj;
             if (this.kind != other.kind) {
                 return false;
             }
