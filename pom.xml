@@ -5,7 +5,7 @@
 	<version>${revision}</version>
 	
 	<properties>
-		<revision>0.0.0-SNAPSHOT</revision>
+		<revision>7.0.3-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.test.skip>false</maven.test.skip>
 	</properties>
@@ -151,7 +151,18 @@
     		<id>maven</id>
 	<build>
 		<plugins>
-			<plugin>
+	        <plugin>
+    	        <groupId>org.sonatype.central</groupId>
+        	    <artifactId>central-publishing-maven-plugin</artifactId>
+	            <version>0.6.0</version>
+    	        <extensions>true</extensions>
+        	    <configuration>
+            	    <publishingServerId>central</publishingServerId>
+        	        <autoPublish>true</autoPublish>
+	            </configuration>
+    	    </plugin>
+
+			<!--plugin>
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nexus-staging-maven-plugin</artifactId>
 				<version>1.7.0</version>
@@ -159,9 +170,9 @@
 				<configuration>
 					<serverId>ossrh</serverId>
 					<nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-					<!--autoReleaseAfterClose>false</autoReleaseAfterClose-->
+					<autoReleaseAfterClose>false</autoReleaseAfterClose>
 				</configuration>
-			</plugin>
+			</plugin-->
 			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
