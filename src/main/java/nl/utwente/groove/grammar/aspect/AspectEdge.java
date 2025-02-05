@@ -461,6 +461,8 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     public void fixDataStructures() {
         this.aspects.setFixed();
         this.aspects = Aspect.normalise(this.aspects);
+        // generate label before errors are fixed
+        getMatchLabel();
         // generate derived terms before errors are fixed
         if (isTest()) {
             this.test.get();
