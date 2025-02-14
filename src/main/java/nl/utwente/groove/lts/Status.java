@@ -44,7 +44,7 @@ public class Status {
      * @see #getAbsence(int)
      */
     static public boolean isAbsent(int status) {
-        return Flag.FULL.test(status) && getAbsence(status) > 0;
+        return Flag.REMOVED.test(status) || Flag.FULL.test(status) && getAbsence(status) > 0;
     }
 
     /** Number of bits by which a status value has be right-shifted to get
@@ -88,8 +88,8 @@ public class Status {
         FULL(false, true),
         /** Indicates that a state is inner, i.e., a recipe state. */
         INNER(false, false),
-        /** Indicates that a state is present, i.e., has absence level zero. */
-        PRESENT(false, false),
+        /** Indicates that a state has been explicitly removed because of some policy, and hence is absent regardless of its absence level. */
+        REMOVED(false, false),
         /** Flag indicating that the state is transient, i.e., inside an atomic block. */
         TRANSIENT(false, false),
         /** Flag indicating that the state has an error. */

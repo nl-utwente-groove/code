@@ -431,6 +431,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         this.actualFrame = frame;
         boolean statusChanged = setStatus(Flag.TRANSIENT, frame.isTransient());
         statusChanged |= setStatus(Flag.INNER, frame.isInner());
+        statusChanged |= setStatus(Flag.REMOVED, frame.isRemoved());
         if (frame.isError()) {
             statusChanged |= setStatus(Flag.ERROR, true);
         } else {

@@ -65,11 +65,6 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     public HostModel(GrammarModel grammar, AspectGraph source) {
         super(grammar, source);
         source.testFixed(true);
-        if (grammar == null) {
-            this.typeGraph = ImplicitTypeGraph.newInstance(getLabels());
-        } else {
-            this.typeGraph = grammar.getTypeGraph();
-        }
         setDependencies(ResourceKind.TYPE, ResourceKind.PROPERTIES);
     }
 
@@ -92,10 +87,19 @@ public class HostModel extends GraphBasedModel<HostGraph> {
 
     @Override
     public @NonNull TypeGraph getTypeGraph() {
-        return this.typeGraph;
+        return this.typeGraph.get();
     }
 
-    private final TypeGraph typeGraph;
+    private final Factory<TypeGraph> typeGraph = Factory.lazy(() -> {
+        TypeGraph result;
+        var grammar = getGrammar();
+        if (grammar == null) {
+            result = ImplicitTypeGraph.newInstance(getLabels());
+        } else {
+            result = grammar.getTypeGraph();
+        }
+        return result;
+    });
 
     @Override
     public TypeModelMap getTypeMap() {
