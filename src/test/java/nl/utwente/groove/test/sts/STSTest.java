@@ -119,7 +119,7 @@ public class STSTest extends TestCase {
     public void testSTSException() {
         try {
             GrammarModel view = Groove.loadGrammar(INPUT_DIR + "/" + "exception");
-            GTS gts = new GTS(view.getStartGraphModel().getGrammar().toGrammar());
+            GTS gts = new GTS(view.toGrammar());
             GraphState state = gts.startState();
             this.sts.hostGraphToStartLocation(state.getGraph());
             for (MatchResult next : state.getMatches()) {
@@ -185,7 +185,7 @@ public class STSTest extends TestCase {
     private void test(String grammarName) {
         try {
             GrammarModel view = Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
-            GTS gts = new GTS(view.getStartGraphModel().getGrammar().toGrammar());
+            GTS gts = new GTS(view.toGrammar());
             GraphState state = gts.startState();
             for (MatchResult next : state.getMatches()) {
                 testRuleMatchToSwitchRelation(state.getGraph(), next);

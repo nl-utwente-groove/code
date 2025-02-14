@@ -138,6 +138,13 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     }
 
     @Override
+    public @NonNull GrammarModel getGrammar() {
+        var result = super.getGrammar();
+        assert result != null;
+        return result;
+    }
+
+    @Override
     public boolean isActive() {
         return GraphInfo.isEnabled(getSource()) || hasRecipes();
     }

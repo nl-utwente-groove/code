@@ -29,6 +29,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.control.CtrlLoader;
 import nl.utwente.groove.control.instance.Automaton;
 import nl.utwente.groove.control.parse.CtrlTree;
@@ -47,9 +49,16 @@ import nl.utwente.groove.util.parse.FormatException;
  */
 public class CompositeControlModel extends ResourceModel<Automaton> {
     /** Constructs an instance for a given grammar model. */
-    CompositeControlModel(GrammarModel grammar) {
+    CompositeControlModel(@NonNull GrammarModel grammar) {
         super(grammar, CONTROL);
         setDependencies(RULE, TYPE, PROPERTIES);
+    }
+
+    @Override
+    public @NonNull GrammarModel getGrammar() {
+        var result = super.getGrammar();
+        assert result != null;
+        return result;
     }
 
     @Override

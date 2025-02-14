@@ -24,6 +24,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.algebra.Algebra;
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.ErrorValue;
+import nl.utwente.groove.grammar.type.TypeFactory;
 import nl.utwente.groove.graph.AGraphMap;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
@@ -45,6 +46,14 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge> imp
      */
     public DefaultHostGraph(String name) {
         this(name, true);
+    }
+
+    /**
+     * Constructs an empty simple host graph, based on a given type factory.
+     * @param name name of the new host graph.
+     */
+    public DefaultHostGraph(String name, TypeFactory typeFactory) {
+        this(name, HostFactory.newInstance(typeFactory, true));
     }
 
     /**

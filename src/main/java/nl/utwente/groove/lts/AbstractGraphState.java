@@ -415,7 +415,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         setFrame(frame, this.status);
     }
 
-    /** Changes the frame and reports the changed status.
+    /** Changes the actual (current) frame and reports the changed status.
      * @param frame the new control frame
      * @param oldStatus status value before any changes were made.
      * {@link #fireStatus(int)} will be called with {@code oldStatus}
@@ -441,6 +441,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         } else if (statusChanged) {
             fireStatus(oldStatus);
         }
+        assert !frame.isRemoved() || isAbsent();
     }
 
     @Override

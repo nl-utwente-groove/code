@@ -18,10 +18,13 @@ package nl.utwente.groove.grammar.model;
 
 import java.util.Collections;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.control.CtrlLoader;
 import nl.utwente.groove.control.template.Program;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -29,6 +32,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * Bridge between control program texts and control program.
  * @author Arend Rensink
  */
+@NonNullByDefault
 public class ControlModel extends TextBasedModel<Program> {
     /**
      * Constructs a control model from a given control program.
@@ -65,18 +69,16 @@ public class ControlModel extends TextBasedModel<Program> {
 
     /** Returns the control loader used in this control model. */
     public CtrlLoader getLoader() {
-        if (this.loader == null) {
-            this.loader = new CtrlLoader(getGrammar().getProperties(), getGrammar().getRules());
-        }
-        return this.loader;
+        return this.loader.get();
     }
 
     @Override
     void notifyWillRebuild() {
-        this.loader = null;
+        this.loader.reset();
         super.notifyWillRebuild();
     }
 
     /** The control parser. */
-    private CtrlLoader loader;
+    private Factory<CtrlLoader> loader
+        = Factory.lazy(() -> new CtrlLoader(getGrammar().getProperties(), getGrammar().getRules()));
 }

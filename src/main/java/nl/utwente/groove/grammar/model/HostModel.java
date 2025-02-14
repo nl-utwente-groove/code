@@ -45,6 +45,7 @@ import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.gui.dialog.GraphPreviewDialog;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -64,6 +65,11 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     public HostModel(GrammarModel grammar, AspectGraph source) {
         super(grammar, source);
         source.testFixed(true);
+        if (grammar == null) {
+            this.typeGraph = ImplicitTypeGraph.newInstance(getLabels());
+        } else {
+            this.typeGraph = grammar.getTypeGraph();
+        }
         setDependencies(ResourceKind.TYPE, ResourceKind.PROPERTIES);
     }
 
@@ -86,13 +92,10 @@ public class HostModel extends GraphBasedModel<HostGraph> {
 
     @Override
     public @NonNull TypeGraph getTypeGraph() {
-        var typeMap = getTypeMap();
-        if (typeMap == null) {
-            return ImplicitTypeGraph.newInstance(getLabels());
-        } else {
-            return typeMap.getFactory().getGraph();
-        }
+        return this.typeGraph;
     }
+
+    private final TypeGraph typeGraph;
 
     @Override
     public TypeModelMap getTypeMap() {
@@ -103,16 +106,21 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     /** Returns the set of labels used in this graph. */
     @Override
     public Set<TypeLabel> getLabels() {
-        if (this.labelSet == null) {
-            this.labelSet = new HashSet<>();
-            for (AspectEdge edge : getNormalSource().edgeSet()) {
-                TypeLabel label = edge.getTypeLabel();
-                if (label != null) {
-                    this.labelSet.add(label);
-                }
+        return this.labelSet.get();
+    }
+
+    /** Set of labels occurring in this graph. */
+    private final Factory<Set<TypeLabel>> labelSet = Factory.lazy(this::createLabels);
+
+    private Set<TypeLabel> createLabels() {
+        Set<TypeLabel> result = new HashSet<>();
+        for (AspectEdge edge : getNormalSource().edgeSet()) {
+            TypeLabel label = edge.getTypeLabel();
+            if (label != null) {
+                result.add(label);
             }
         }
-        return this.labelSet;
+        return result;
     }
 
     /**
@@ -127,16 +135,16 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     }
 
     private AspectGraph getNormalSource() {
-        if (this.normalSource == null) {
-            this.normalSource = getSource().normalise();
-        }
-        return this.normalSource;
+        return this.normalSource.get();
     }
+
+    /** The normalised source model. */
+    private final Factory<AspectGraph> normalSource = Factory.lazy(() -> getSource().normalise());
 
     @Override
     void notifyWillRebuild() {
         super.notifyWillRebuild();
-        this.labelSet = null;
+        this.labelSet.reset();
         this.typeMap = null;
     }
 
@@ -172,6 +180,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
             GraphPreviewDialog.showGraph(normalSource);
         }
         FormatErrorSet errors = new FormatErrorSet(normalSource.getErrors());
+        // start with an untyped host graph; this will be typed later on
         DefaultHostGraph result = new DefaultHostGraph(normalSource.getName());
         // we need to record the normal-source-to-host element map for layout transfer
         HostModelMap elementMap = new HostModelMap(result.getFactory());
@@ -199,10 +208,11 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                 result.removeNode(modelNode);
             }
         }
-        if (getGrammar() != null) {
+        var grammar = getGrammar();
+        if (grammar != null) {
             try {
                 // test against the type graph
-                TypeGraph type = getGrammar().getTypeGraph();
+                TypeGraph type = grammar.getTypeGraph();
                 var typing = type.analyzeHost(result);
                 result = typing.createImage(result.getName());
                 HostModelMap newElementMap = new HostModelMap(result.getFactory());
@@ -222,7 +232,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
             } catch (FormatException e) {
                 errors.addAll(e.getErrors());
             }
-            if (getGrammar().getProperties().getTypePolicy() != CheckPolicy.OFF) {
+            if (grammar.getProperties().getTypePolicy() != CheckPolicy.OFF) {
                 errors.addAll(result.checkTypeConstraints());
             }
         }
@@ -300,10 +310,6 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     private HostModelMap hostModelMap;
     /** Map from source model to types. */
     private TypeModelMap typeMap;
-    /** The normalised source model. */
-    private AspectGraph normalSource;
-    /** Set of labels occurring in this graph. */
-    private Set<TypeLabel> labelSet;
     /** The attribute element factory for this model. */
     private AlgebraFamily algebraFamily;
 

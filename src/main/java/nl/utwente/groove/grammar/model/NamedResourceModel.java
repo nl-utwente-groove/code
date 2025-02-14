@@ -17,6 +17,7 @@
 package nl.utwente.groove.grammar.model;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.QualName;
 
@@ -34,7 +35,7 @@ abstract public class NamedResourceModel<R> extends ResourceModel<R> {
      * @param kind the kind of resource
      * @param name the name of the resource; must be unique for the resource kind
      */
-    protected NamedResourceModel(GrammarModel grammar, ResourceKind kind, QualName name) {
+    protected NamedResourceModel(@Nullable GrammarModel grammar, ResourceKind kind, QualName name) {
         super(grammar, kind);
         this.name = name;
     }
@@ -65,7 +66,7 @@ abstract public class NamedResourceModel<R> extends ResourceModel<R> {
      * Indicates if this resource is currently active in the grammar.
      */
     public boolean isActive() {
-        return getGrammar() == null
-            || getGrammar().getActiveNames(getKind()).contains(getQualName());
+        var grammar = getGrammar();
+        return grammar == null || grammar.getActiveNames(getKind()).contains(getQualName());
     }
 }

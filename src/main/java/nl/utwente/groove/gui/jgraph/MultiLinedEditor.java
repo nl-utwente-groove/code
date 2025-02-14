@@ -67,7 +67,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
      */
     @Override
     public Component getGraphCellEditorComponent(org.jgraph.JGraph graph, Object cell,
-        boolean isSelected) {
+                                                 boolean isSelected) {
         Component component = super.getGraphCellEditorComponent(graph, cell, isSelected);
         return component;
     }
@@ -100,24 +100,22 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
          */
         @Override
         public Component getGraphCellEditorComponent(org.jgraph.JGraph graph, Object value,
-            boolean isSelected) {
+                                                     boolean isSelected) {
             AspectJCell jCell = (AspectJCell) value;
             // fill the set of labels for autocompletion
             this.labels.clear();
             this.labels.addAll(prefixes);
             AspectJModel jmodel = (AspectJModel) graph.getModel();
-            TypeGraph type = jmodel.getResourceModel()
-                .getGrammar()
-                .getTypeGraph();
+            TypeGraph type = jmodel.getTypeGraph();
             for (TypeLabel label : type.getLabels()) {
                 this.labels.add(label.text());
             }
             JTextArea result = getEditorComponent();
             // scale with the jGraph
-            Font font = Options.getLabelFont()
-                .deriveFont(jCell.getVisuals()
-                    .getFont());
-            font = (font != null) ? font : graph.getFont();
+            Font font = Options.getLabelFont().deriveFont(jCell.getVisuals().getFont());
+            font = (font != null)
+                ? font
+                : graph.getFont();
             if (graph.getScale() != 1) {
                 double scale = graph.getScale();
                 Dimension size = result.getSize();
@@ -127,8 +125,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
                 font = font.deriveFont((float) (font.getSize() * scale));
             }
             result.setFont(font);
-            String editString = ((AspectJCell) value).getUserObject()
-                .toEditString();
+            String editString = ((AspectJCell) value).getUserObject().toEditString();
             result.setText(editString);
             result.selectAll();
             return result;
@@ -161,12 +158,9 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             focusedInputMap.put(NEWLINE_KEY_1, NEWLINE_STRING);
             focusedInputMap.put(NEWLINE_KEY_2, NEWLINE_STRING);
             focusedInputMap.put(AUTOCOMPLETE_KEY, AUTOCOMPLETE_STRING);
-            result.getActionMap()
-                .put(STOP_EDIT_STRING, new StopEditAction());
-            result.getActionMap()
-                .put(NEWLINE_STRING, new NewlineAction());
-            result.getActionMap()
-                .put(AUTOCOMPLETE_STRING, new AutocompleteAction());
+            result.getActionMap().put(STOP_EDIT_STRING, new StopEditAction());
+            result.getActionMap().put(NEWLINE_STRING, new NewlineAction());
+            result.getActionMap().put(AUTOCOMPLETE_STRING, new AutocompleteAction());
             result.addCaretListener(this);
             return result;
         }
@@ -210,8 +204,8 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             try {
                 // only do completion if the selection runs up to the end of a label
                 Document document = getDocument();
-                if (max < document.getLength() && Character.isLetterOrDigit(document.getText(max, 1)
-                    .charAt(0))) {
+                if (max < document.getLength()
+                    && Character.isLetterOrDigit(document.getText(max, 1).charAt(0))) {
                     return result;
                 }
                 content = document.getText(0, min);
@@ -261,16 +255,16 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
         private final static String AUTOCOMPLETE_STRING = "autocomplete";
         private final static String NEWLINE_STRING = "newline";
         private final static String STOP_EDIT_STRING = "stop";
-        private final static KeyStroke AUTOCOMPLETE_KEY =
-            KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK);
-        private final static KeyStroke NEWLINE_KEY_1 =
-            KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_DOWN_MASK);
-        private final static KeyStroke NEWLINE_KEY_2 =
-            KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
-        private final static KeyStroke STOP_EDIT_KEY_1 =
-            KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
-        private final static KeyStroke STOP_EDIT_KEY_2 =
-            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        private final static KeyStroke AUTOCOMPLETE_KEY
+            = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK);
+        private final static KeyStroke NEWLINE_KEY_1
+            = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_DOWN_MASK);
+        private final static KeyStroke NEWLINE_KEY_2
+            = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
+        private final static KeyStroke STOP_EDIT_KEY_1
+            = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+        private final static KeyStroke STOP_EDIT_KEY_2
+            = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
 
         /** The existing aspect prefixes. */
         private final static List<String> prefixes = new LinkedList<>();
@@ -354,10 +348,9 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
                     maxw = getParent().getWidth();
                 }
                 w = Math.max(minw, Math.min(w, maxw));
-                getEditingComponent().setBounds(MultiLinedEditor.this.offsetX,
-                    MultiLinedEditor.this.offsetY,
-                    w,
-                    size.height);
+                getEditingComponent()
+                    .setBounds(MultiLinedEditor.this.offsetX, MultiLinedEditor.this.offsetY, w,
+                               size.height);
 
                 // reset container's size based on a potentially new preferred size
                 // of the editing component

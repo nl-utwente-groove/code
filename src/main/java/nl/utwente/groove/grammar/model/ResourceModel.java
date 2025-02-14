@@ -55,12 +55,17 @@ abstract public class ResourceModel<R> {
     }
 
     /** Returns the grammar model to which this resource belongs. */
-    public final GrammarModel getGrammar() {
+    public @Nullable GrammarModel getGrammar() {
         return this.grammar;
     }
 
+    /** Tests if this resource model has an enclosing grammar. */
+    public boolean hasGrammar() {
+        return this.grammar != null;
+    }
+
     /** The grammar model to which this resource belongs. */
-    private final GrammarModel grammar;
+    private final @Nullable GrammarModel grammar;
 
     /** Returns the kind of this resource model. */
     public final ResourceKind getKind() {
@@ -179,10 +184,11 @@ abstract public class ResourceModel<R> {
 
     /** Adds a tracker for a given resource kind. */
     private void addTracker(ResourceKind kind) {
+        var grammar = getGrammar();
         this.resourceTrackers
-            .put(kind, getGrammar() == null
+            .put(kind, grammar == null
                 ? ChangeCount.DUMMY_TRACKER
-                : getGrammar().createChangeTracker(kind));
+                : grammar.createChangeTracker(kind));
     }
 
     /** Returns the tracker of a given kind.

@@ -19,6 +19,9 @@ package nl.utwente.groove.grammar.model;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.grammar.QualName;
 
 /**
@@ -26,6 +29,7 @@ import nl.utwente.groove.grammar.QualName;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public abstract class TextBasedModel<M> extends NamedResourceModel<M> {
     /**
      * Constructs a new text-based resource model, of a given kind.
@@ -37,6 +41,13 @@ public abstract class TextBasedModel<M> extends NamedResourceModel<M> {
     public TextBasedModel(GrammarModel grammar, ResourceKind kind, QualName name, String text) {
         super(grammar, kind, name);
         this.text = text;
+    }
+
+    @Override
+    public @NonNull GrammarModel getGrammar() {
+        var result = super.getGrammar();
+        assert result != null;
+        return result;
     }
 
     /**

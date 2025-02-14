@@ -11,6 +11,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import nl.utwente.groove.algebra.syntax.SortMap;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.type.ImplicitTypeGraph;
@@ -26,11 +28,18 @@ import nl.utwente.groove.util.parse.FormatException;
 public class CompositeTypeModel extends ResourceModel<TypeGraph> {
     /**
      * Constructs a composite type model
-     * @param grammar the underlying graph grammar; non-{@code null}
+     * @param grammar the underlying graph grammar
      */
-    CompositeTypeModel(GrammarModel grammar) {
+    CompositeTypeModel(@NonNull GrammarModel grammar) {
         super(grammar, TYPE);
         setDependencies(PROPERTIES);
+    }
+
+    @Override
+    public @NonNull GrammarModel getGrammar() {
+        var result = super.getGrammar();
+        assert result != null;
+        return result;
     }
 
     @Override
