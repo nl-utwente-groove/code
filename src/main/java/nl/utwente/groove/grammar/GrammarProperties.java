@@ -662,4 +662,55 @@ public class GrammarProperties extends Properties {
         resourceKeyMap.put(ResourceKind.PROLOG, GrammarKey.PROLOG_NAMES);
         resourceKeyMap.put(ResourceKind.HOST, GrammarKey.START_GRAPH_NAMES);
     }
+
+    /** Repair this properties bundle, as necessitated because of version changes. */
+    public GrammarProperties repairVersion() {
+        GrammarProperties result = this;
+        String version = getGrammarVersion();
+        if (Version.compareGrammarVersions(version, Version.GRAMMAR_VERSION_3_4) == -1) {
+            result = result.clone();
+            result.setCurrentVersionProperties();
+            result.remove(GrammarKey.ATTRIBUTE_SUPPORT);
+            result.remove(GrammarKey.TRANSITION_BRACKETS);
+            // convert numeric value of TRANSITION_PARAMETERS
+            GrammarKey paramsKey = GrammarKey.TRANSITION_PARAMETERS;
+            String paramsVal = getProperty(paramsKey.getName());
+            if (paramsVal != null && !paramsKey.parser().accepts(paramsVal)) {
+                try {
+                    int paramsIntVal = Integer.parseInt(paramsVal);
+                    result
+                        .setUseParameters(paramsIntVal == 0
+                            ? ThreeValued.FALSE
+                            : ThreeValued.TRUE);
+                } catch (NumberFormatException exc) {
+                    // it was not a number either; remove the key altogether
+                    result.remove(paramsKey.getName());
+                }
+            }
+        }
+        if (Version.compareGrammarVersions(version, Version.GRAMMAR_VERSION_3_10) == -1) {
+            result = result.clone();
+            result.setUseStoredNodeIds(true);
+        }
+        return result;
+    }
+
+    /** Returns a clone of this properties bundle where the derived properties have been added. */
+    public GrammarProperties addDerivedProperties(Path location) {
+        GrammarProperties result = clone();
+        result.setLocation(location);
+        return result;
+    }
+
+    /** Returns a clone of a given properties bundle where all derived properties have been removed. */
+    public GrammarProperties removeDerivedProperties() {
+        GrammarProperties result = clone();
+        for (GrammarKey key : GrammarKey.values()) {
+            if (key.isDerived()) {
+                result.remove(key.toString());
+            }
+        }
+        return result;
+    }
+
 }

@@ -550,8 +550,10 @@ public class Options implements Cloneable {
     public static final String LOAD_START_STATE_ACTION_NAME = "Load External Start State ...";
     /** Import action name */
     public static final String IMPORT_ACTION_NAME = "Import ...";
-    /** Unfilter labels action name */
+    /** Load grammar action name */
     public static final String LOAD_GRAMMAR_ACTION_NAME = "Load Grammar ...";
+    /** Load system properties action name */
+    public static final String LOAD_SYSTEM_PROPERTIES_ACTION_NAME = "Load System Properties ...";
     /** Load grammar from url action name */
     public static final String LOAD_URL_GRAMMAR_ACTION_NAME = "Load Grammar from URL ...";
     /** Name of the "Lower Priority" action. */
@@ -656,6 +658,8 @@ public class Options implements Cloneable {
      * Save lts action name
      */
     public static final String SAVE_LTS_ACTION_NAME = "Save LTS As ...";
+    /** Save system properties action name */
+    public static final String SAVE_SYSTEM_PROPERTIES_ACTION_NAME = "Save System Properties As ...";
     /**
      * Scroll to action name
      */

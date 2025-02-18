@@ -65,6 +65,8 @@ public class PropertiesDisplay extends Display implements SimulatorListener {
     protected JToolBar createListToolBar() {
         JToolBar result = Options.createToolBar();
         result.add(getActions().getEditSystemPropertiesAction());
+        result.add(getActions().getLoadSystemPropertiesAction());
+        result.add(getActions().getSaveSystemPropertiesAction());
         return result;
     }
 

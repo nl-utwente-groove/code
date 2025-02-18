@@ -369,6 +369,13 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
     }
 
     /**
+     * Returns the file chooser for system properties (GPR) files, lazily creating it first.
+     */
+    final protected JFileChooser getSystemPropertiesFileChooser() {
+        return GrooveFileChooser.getInstance(FileType.PROPERTY);
+    }
+
+    /**
      * Returns the file chooser for rule (GPR) files, lazily creating it first.
      */
     final protected JFileChooser getRuleFileChooser() {

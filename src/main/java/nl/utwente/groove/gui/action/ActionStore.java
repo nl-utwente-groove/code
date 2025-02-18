@@ -463,6 +463,21 @@ public class ActionStore implements SimulatorListener {
     /** The grammar load action permanently associated with this simulator. */
     private LoadGrammarFromURLAction loadGrammarFromURLAction;
 
+    /**
+     * Returns the system properties load action permanently associated with this
+     * simulator.
+     */
+    public LoadSystemPropertiesAction getLoadSystemPropertiesAction() {
+        // lazily create the action
+        if (this.loadSystemPropertiesAction == null) {
+            this.loadSystemPropertiesAction = new LoadSystemPropertiesAction(this.simulator);
+        }
+        return this.loadSystemPropertiesAction;
+    }
+
+    /** The system properties load action permanently associated with this simulator. */
+    private LoadSystemPropertiesAction loadSystemPropertiesAction;
+
     /** Returns the delete action appropriate for a given resource kind. */
     public SimulatorAction getNewAction(ResourceKind resource) {
         SimulatorAction result = this.newActionMap.get(resource);
@@ -701,6 +716,21 @@ public class ActionStore implements SimulatorListener {
      * Mapping from graph roles to corresponding save actions.
      */
     private Map<ResourceKind,SaveAction> saveAsActionMap = new EnumMap<>(ResourceKind.class);
+
+    /**
+     * Returns the system properties save action permanently associated with this
+     * simulator.
+     */
+    public SaveSystemPropertiesAction getSaveSystemPropertiesAction() {
+        // lazily create the action
+        if (this.saveSystemPropertiesAction == null) {
+            this.saveSystemPropertiesAction = new SaveSystemPropertiesAction(this.simulator);
+        }
+        return this.saveSystemPropertiesAction;
+    }
+
+    /** The system properties save action permanently associated with this simulator. */
+    private SaveSystemPropertiesAction saveSystemPropertiesAction;
 
     /** Returns the state save action. */
     public SaveStateAction getSaveStateAction() {

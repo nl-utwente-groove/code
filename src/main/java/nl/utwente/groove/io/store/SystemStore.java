@@ -74,9 +74,7 @@ import nl.utwente.groove.io.graph.NodeNrDispenser;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Observable;
-import nl.utwente.groove.util.ThreeValued;
 import nl.utwente.groove.util.Unzipper;
-import nl.utwente.groove.util.Version;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -822,8 +820,7 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
                 grammarProperties.load(s);
             }
             result.putAll(grammarProperties);
-            result = repairProperties(result);
-            result = addDerivedProperties(result);
+            result = result.repairVersion().addDerivedProperties(this.file.toPath());
             this.hasSystemPropertiesFile = true;
         } else {
             this.hasSystemPropertiesFile = false;
@@ -878,7 +875,7 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
 
     /** Overwrites the grammar properties file. */
     private void saveProperties(GrammarProperties properties) throws IOException {
-        properties = removeDerivedProperties(properties);
+        properties = properties.removeDerivedProperties();
         File propertiesFile = getDefaultPropertiesFile();
         try (Writer propertiesWriter = new FileWriter(propertiesFile)) {
             properties.store(propertiesWriter);
@@ -891,55 +888,6 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
     }
 
     private GrammarProperties properties;
-
-    /** Repair properties, as necessitated because of version changes. */
-    private GrammarProperties repairProperties(GrammarProperties props) {
-        GrammarProperties result = props;
-        String version = props.getGrammarVersion();
-        if (Version.compareGrammarVersions(version, Version.GRAMMAR_VERSION_3_4) == -1) {
-            result = result.clone();
-            result.remove(GrammarKey.ATTRIBUTE_SUPPORT);
-            result.remove(GrammarKey.TRANSITION_BRACKETS);
-            // convert numeric value of TRANSITION_PARAMETERS
-            GrammarKey paramsKey = GrammarKey.TRANSITION_PARAMETERS;
-            String paramsVal = props.getProperty(paramsKey.getName());
-            if (paramsVal != null && !paramsKey.parser().accepts(paramsVal)) {
-                try {
-                    int paramsIntVal = Integer.parseInt(paramsVal);
-                    result
-                        .setUseParameters(paramsIntVal == 0
-                            ? ThreeValued.FALSE
-                            : ThreeValued.TRUE);
-                } catch (NumberFormatException exc) {
-                    // it was not a number either; remove the key altogether
-                    result.remove(paramsKey.getName());
-                }
-            }
-        }
-        if (Version.compareGrammarVersions(version, Version.GRAMMAR_VERSION_3_10) == -1) {
-            result = result.clone();
-            result.setUseStoredNodeIds(true);
-        }
-        return result;
-    }
-
-    /** Returns a clone of a given properties bundle where the derived properties have been added. */
-    private GrammarProperties addDerivedProperties(GrammarProperties properties) {
-        GrammarProperties result = properties.clone();
-        result.setLocation(this.file.toPath());
-        return result;
-    }
-
-    /** Returns a clone of a given properties bundle where all derived properties have been removed. */
-    private GrammarProperties removeDerivedProperties(GrammarProperties properties) {
-        GrammarProperties result = properties.clone();
-        for (GrammarKey key : GrammarKey.values()) {
-            if (key.isDerived()) {
-                result.remove(key.toString());
-            }
-        }
-        return result;
-    }
 
     private void testInit() throws IllegalStateException {
         if (!this.initialised) {
