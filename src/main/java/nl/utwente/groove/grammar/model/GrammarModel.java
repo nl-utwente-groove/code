@@ -555,6 +555,12 @@ public class GrammarModel implements PropertyChangeListener {
             } else {
                 errors.add("Start graphs '%s' cannot be loaded", startGraphNames);
             }
+        } else if (startGraphModel.getSource().hasErrors()) {
+            // these are low-level errors; don't even try to build the model
+            var activeHostGraphs = getActiveGraphs(HOST);
+            for (FormatError error : startGraphModel.getSource().getErrors()) {
+                errors.add(error, activeHostGraphs);
+            }
         } else {
             FormatErrorSet startGraphErrors;
             try {
@@ -572,9 +578,9 @@ public class GrammarModel implements PropertyChangeListener {
                 errors.add("Error in %s: %s", prefix, error, activeHostGraphs);
             }
         }
+        errors.throwException();
         // Set the Prolog environment.
         result.setPrologEnvironment(this.getPrologEnvironment());
-        errors.throwException();
         assert result.getControl() != null : "Grammar must have control";
         result.setFixed();
         return result;

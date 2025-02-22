@@ -393,7 +393,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
                 node.setFixed();
                 errors.addAll(node.getErrors());
             }
-            if (!errors.isEmpty()) {
+            if (!hasErrors() && !errors.isEmpty()) {
                 addErrors(errors);
             }
             // create the node id map to check for duplicate IDs
@@ -651,7 +651,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         AspectGraph result = new AspectGraph(graph.getName(), role, graph.isSimple());
         // map from original graph elements to aspect graph elements
         GraphToAspectMap elementMap = new GraphToAspectMap(result);
-        FormatErrorSet errors = new FormatErrorSet();
         assert elementMap != null && elementMap.isEmpty();
         // first do the nodes;
         for (Node node : graph.nodeSet()) {
@@ -682,14 +681,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             assert targetImage != null;
             AspectEdge edgeImage = result.addEdge(sourceImage, label, targetImage);
             elementMap.putEdge(edge, edgeImage);
-            if (!edge.source().equals(edge.target()) && edgeImage.getRole() != EdgeRole.BINARY) {
-                errors
-                    .add("%s %s must be a node label", label.getRole().getDescription(true), label,
-                         edgeImage);
-            }
         }
         GraphInfo.transferAll(graph, result, elementMap);
-        result.addErrors(errors);
         result.setFixed();
         return result;
     }
@@ -790,7 +783,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             }
             // Copy the errors
             for (FormatError oldError : graph.getErrors()) {
-                newErrors.add("Error in start graph '%s': %s", name, oldError);
+                newErrors.add("Error in start graph '%s': %s", graph.getName(), oldError);
             }
             // Move the offsets
             if (globalMaxX > globalMaxY) {

@@ -130,7 +130,7 @@ abstract public class ResourceModel<R> {
      * @see #getStatus()
      */
     final void synchronise() {
-        if (isShouldRebuild()) {// || this.resource == null && this.errors.isEmpty()) {
+        if (isShouldRebuild()) {
             if (DEBUG) {
                 System.out.println("Building " + getKind() + " " + getName());
             }

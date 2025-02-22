@@ -46,7 +46,7 @@ import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.gui.dialog.GraphPreviewDialog;
 import nl.utwente.groove.util.Factory;
-import nl.utwente.groove.util.Pair;
+import nl.utwente.groove.util.Status;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -82,11 +82,11 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         if (hasErrors()) {
             throw new IllegalStateException();
         }
-        return this.hostModelMap;
+        return this.mappedModel.get().map();
     }
 
     @Override
-    public @NonNull TypeGraph getTypeGraph() {
+    public TypeGraph getTypeGraph() {
         return this.typeGraph.get();
     }
 
@@ -103,11 +103,30 @@ public class HostModel extends GraphBasedModel<HostGraph> {
 
     @Override
     public TypeModelMap getTypeMap() {
-        synchronise();
-        return this.typeMap;
+        return this.typeMap.get();
     }
 
-    /** Returns the set of labels used in this graph. */
+    /** Map from source model to types. */
+    private final Factory<TypeModelMap> typeMap = Factory.lazy(this::createTypeMap);
+
+    private TypeModelMap createTypeMap() {
+        synchronise();
+        TypeModelMap result = null;
+        if (getStatus() == Status.DONE) {
+            var mappedModel = this.mappedModel.get();
+            var hostModelMap = mappedModel.map();
+            // create the type map
+            result = new TypeModelMap(mappedModel.getTypeGraph().getFactory());
+            for (var ne : hostModelMap.nodeMap().entrySet()) {
+                result.putNode(ne.getKey(), ne.getValue().getType());
+            }
+            for (var ee : hostModelMap.edgeMap().entrySet()) {
+                result.putEdge(ee.getKey(), ee.getValue().getType());
+            }
+        }
+        return result;
+    }
+
     @Override
     public Set<TypeLabel> getLabels() {
         return this.labelSet.get();
@@ -149,35 +168,24 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     void notifyWillRebuild() {
         super.notifyWillRebuild();
         this.labelSet.reset();
-        this.typeMap = null;
+        this.mappedModel.reset();
+        this.typeMap.reset();
     }
 
     @Override
     HostGraph compute() throws FormatException {
-        this.algebraFamily = getFamily();
         getSource().getErrors().throwException();
-        var modelPlusMap = computeModel();
-        var result = modelPlusMap.one();
-        var hostModelMap = modelPlusMap.two();
-        // create the type map
-        var typeMap = new TypeModelMap(result.getTypeGraph().getFactory());
-        for (var ne : hostModelMap.nodeMap().entrySet()) {
-            typeMap.putNode(ne.getKey(), ne.getValue().getType());
-        }
-        for (var ee : hostModelMap.edgeMap().entrySet()) {
-            typeMap.putEdge(ee.getKey(), ee.getValue().getType());
-        }
-        this.typeMap = typeMap;
-        this.hostModelMap = hostModelMap;
+        var result = this.mappedModel.get().target();
         result.getErrors().throwException();
         return result;
     }
 
+    private final Factory<MappedModel> mappedModel = Factory.lazy(this::computeMappedModel);
+
     /**
-     * Computes a host graph from the source aspect graph, together with a mapping
-     * from the aspect graph's node to the (fresh) graph nodes.
+     * Computes the host model, together with a mapping from original source aspect graph to host model.
      */
-    private Pair<DefaultHostGraph,HostModelMap> computeModel() {
+    private MappedModel computeMappedModel() {
         // actually, we start with the normalised source graph
         AspectGraph normalSource = getNormalSource();
         if (debug) {
@@ -218,6 +226,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                 // test against the type graph
                 TypeGraph type = grammar.getTypeGraph();
                 var typing = type.analyzeHost(result);
+                // typing was successful; adapt the result and element map
                 result = typing.createImage(result.getName());
                 HostModelMap newElementMap = new HostModelMap(result.getFactory());
                 for (var nodeEntry : elementMap.nodeMap().entrySet()) {
@@ -262,7 +271,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         }
         result.setErrors(errors.wrap(elementMap));
         result.setFixed();
-        return new Pair<>(result, elementMap);
+        return new MappedModel(elementMap, result);
     }
 
     /**
@@ -277,7 +286,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
             Aspect sortAspect = modelNode.get(Category.SORT);
             if (sortAspect != null) {
                 Algebra<?> nodeAlgebra
-                    = this.algebraFamily.getAlgebra(sortAspect.getContentKind().getSort());
+                    = getFamily().getAlgebra(sortAspect.getContentKind().getSort());
                 Constant term = ((ConstContent) sortAspect.getContent()).get();
                 nodeImage = result.getFactory().createNode(nodeAlgebra, nodeAlgebra.toValue(term));
                 result.addNode(nodeImage);
@@ -310,13 +319,6 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         elementMap.putEdge(modelEdge, hostEdge);
     }
 
-    /** Map from source model to resource nodes. */
-    private HostModelMap hostModelMap;
-    /** Map from source model to types. */
-    private TypeModelMap typeMap;
-    /** The attribute element factory for this model. */
-    private AlgebraFamily algebraFamily;
-
     /** Sets the debug mode, causing the normalised graphs to be shown in a dialog. */
     public static void setDebug(boolean debug) {
         HostModel.debug = debug;
@@ -324,7 +326,15 @@ public class HostModel extends GraphBasedModel<HostGraph> {
 
     private static boolean debug;
 
-    /** Mapping from aspect graph to type graph. */
+    /** Record consisting of (non-{@code null} model map from normal source to host graph, together with the host graph itself. */
+    static private record MappedModel(@NonNull HostModelMap map, @NonNull HostGraph target) {
+        /** Convenience method to retrieve the associated type graph. */
+        TypeGraph getTypeGraph() {
+            return this.target.getTypeGraph();
+        }
+    }
+
+    /** Mapping from aspect graph to host graph. */
     public static class HostModelMap extends ModelMap<@NonNull HostNode,@NonNull HostEdge> {
         /**
          * Creates a new, empty map.
