@@ -669,7 +669,6 @@ public class GrammarProperties extends Properties {
         String version = getGrammarVersion();
         if (Version.compareGrammarVersions(version, Version.GRAMMAR_VERSION_3_4) == -1) {
             result = result.clone();
-            result.setCurrentVersionProperties();
             result.remove(GrammarKey.ATTRIBUTE_SUPPORT);
             result.remove(GrammarKey.TRANSITION_BRACKETS);
             // convert numeric value of TRANSITION_PARAMETERS
