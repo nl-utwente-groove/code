@@ -232,8 +232,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
             result = new LinkedHashSet<>();
             var parent = getParent();
             for (var e : elements) {
-                while (e != null) {
-                    result.add(e);
+                while (e != null && result.add(e)) {
                     e = parent == null
                         ? null
                         : parent.getProjection().get(e);

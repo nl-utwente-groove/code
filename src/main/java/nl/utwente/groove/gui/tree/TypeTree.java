@@ -223,12 +223,10 @@ public class TypeTree extends LabelTree<AspectGraph> {
      * Convenience method to return the type graph in the jModel.
      */
     private @Nullable TypeGraph getTypeGraph() {
-        TypeGraph result = null;
         var jModel = (AspectJModel) getJModel();
-        if (jModel != null) {
-            result = jModel.getTypeGraph();
-        }
-        return result;
+        return jModel == null
+            ? null
+            : jModel.getTypeGraph();
     }
 
     @Override

@@ -3,9 +3,13 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 7.0.4, 14 February 2025
+-------------------------------
+- Resolved gh issues #813 and #814
+
 Release 7.0.3, 5 February 2025
 -------------------------------
-- Resolved gh issue #881
+- Resolved gh issue #811
 
 Release 7.0.2, 12 December 2024
 -------------------------------

@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.io.FileType;
@@ -29,6 +31,7 @@ import nl.utwente.groove.io.FileType;
  * @author Harold Bruijntjes
  * @version $Revision$
  */
+@NonNullByDefault
 public interface Importer extends Porter {
     /**
      * Imports resource from file.
@@ -40,7 +43,7 @@ public interface Importer extends Porter {
      * @throws PortException if an error (typically IO-related) occurred during import
      */
     public Set<Imported> doImport(File file, FileType fileType,
-                                    GrammarModel grammar) throws PortException;
+                                  GrammarModel grammar) throws PortException;
 
     /**
      * Imports resource from data stream.
@@ -53,5 +56,5 @@ public interface Importer extends Porter {
      * @throws PortException if an error (typically IO-related) occurred during import
      */
     public Set<Imported> doImport(QualName name, InputStream stream, FileType fileType,
-                                    GrammarModel grammar) throws PortException;
+                                  GrammarModel grammar) throws PortException;
 }

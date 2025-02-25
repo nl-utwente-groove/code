@@ -47,8 +47,10 @@ import nl.utwente.groove.util.Groove;
  */
 public class GrooveFileChooser extends JFileChooser {
     /** File chooser for Groove tools.
-     * The initial directory is calculated using {@link #getStartDirectory} */
-    private GrooveFileChooser(Set<FileType> fileTypes) {
+     * The initial directory is calculated using {@link #getStartDirectory}
+     * @param multi flag determining if multiple file selection is allowed.
+     */
+    private GrooveFileChooser(Set<FileType> fileTypes, boolean multi) {
         super(getStartDirectory(fileTypes));
         this.fileTypes = fileTypes;
         setFileView(createFileView());
@@ -68,6 +70,7 @@ public class GrooveFileChooser extends JFileChooser {
             setApproveButtonText("Select");
         }
         setFileFilter(selectedFilter);
+        setMultiSelectionEnabled(multi);
     }
 
     /** Returns the file types associated with this chooser. */
@@ -290,9 +293,16 @@ public class GrooveFileChooser extends JFileChooser {
      * of file types. If the set is empty, the chooser will accept
      * directories only. */
     public static GrooveFileChooser getInstance(Set<FileType> fileTypes) {
+        return getInstance(fileTypes, false);
+    }
+
+    /** Returns the file chooser object associated with the given set
+     * of file types. If the set is empty, the chooser will accept
+     * directories only. A flag controls whether multiple selection is allowed. */
+    public static GrooveFileChooser getInstance(Set<FileType> fileTypes, boolean multi) {
         GrooveFileChooser result = listMap.get(fileTypes);
         if (result == null) {
-            result = new GrooveFileChooser(fileTypes);
+            result = new GrooveFileChooser(fileTypes, multi);
             listMap.put(fileTypes, result);
         }
         return result;

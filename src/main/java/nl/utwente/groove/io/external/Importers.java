@@ -17,13 +17,13 @@
 package nl.utwente.groove.io.external;
 
 import java.awt.Component;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -68,12 +68,14 @@ public class Importers {
     private static void doChosenImport(Simulator simulator,
                                        GrammarModel grammar) throws PortException, IOException {
         FileType fileType = getFormatChooser().getFileType();
-        File file = getFormatChooser().getSelectedFile();
         Importer ri = getImporter(fileType);
         ri.setSimulator(simulator);
         var store = simulator.getModel().getStore();
-        Set<Imported> resources = ri.doImport(file, fileType, grammar);
-        if (resources != null) {
+        Set<Imported> resources = new HashSet<>();
+        for (var file : getFormatChooser().getSelectedFiles()) {
+            resources.addAll(ri.doImport(file, fileType, grammar));
+        }
+        if (!resources.isEmpty()) {
             Map<ResourceKind,Collection<AspectGraph>> newGraphs = new EnumMap<>(ResourceKind.class);
             Map<ResourceKind,Map<QualName,String>> newTexts = new EnumMap<>(ResourceKind.class);
             for (Imported resource : resources) {
@@ -171,7 +173,7 @@ public class Importers {
     /** Returns the file chooser for all importers. */
     private static GrooveFileChooser getFormatChooser() {
         if (formatChooser == null) {
-            formatChooser = GrooveFileChooser.getInstance(getImporterMap().keySet());
+            formatChooser = GrooveFileChooser.getInstance(getImporterMap().keySet(), true);
         }
         return formatChooser;
     }
