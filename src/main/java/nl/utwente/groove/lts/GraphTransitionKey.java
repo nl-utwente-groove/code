@@ -37,7 +37,7 @@ public interface GraphTransitionKey {
     /** Fixed comparator for graph transition keys.
      */
     public static final Comparator<GraphTransitionKey> COMPARATOR
-        = new nl.utwente.groove.util.collect.Comparator<>() {
+        = new nl.utwente.groove.util.collect.AbstractComparator<>() {
             @Override
             public int compare(GraphTransitionKey o1, GraphTransitionKey o2) {
                 // Recipe transitions come before match results

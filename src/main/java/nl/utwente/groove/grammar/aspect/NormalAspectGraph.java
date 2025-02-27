@@ -51,9 +51,10 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
- * Normalised version of an AspectGraph.
+ * Normalised version of an {@link AspectGraph}.
  * In a normal aspect graph, all let-, test- or role:sort:field-edges
- * are substituted by primitive attribute syntax (prod-nodes with argi and sort:op-edges)
+ * are substituted by primitive attribute syntax (prod-nodes with arg:i and sort:op-edges).
+ * The errors in this normalised graph are reported on the level of the
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -61,6 +62,7 @@ import nl.utwente.groove.util.parse.FormatException;
 public class NormalAspectGraph extends AspectGraph {
     /**
      * Creates the normalised version of a given aspect graph.
+     * Normalisation occurs upon the call if {@link #setFixed()}.
      * @param source the (non-normalised) source of this normalised aspect graph
      */
     public NormalAspectGraph(AspectGraph source) {
@@ -77,8 +79,13 @@ public class NormalAspectGraph extends AspectGraph {
     }
 
     /** Returns the (non-normalised) source of this normalised aspect graph. */
-    public AspectGraph getSource() {
+    public AspectGraph getOriginal() {
         return this.source;
+    }
+
+    /** Returns the (non-normalised) source of this normalised aspect graph. */
+    public FormatErrorSet getOriginalErrors() {
+        return getErrors().apply(this.normalToSourceMap);
     }
 
     /** The (non-normalised) source of this normalised aspect graph. */
@@ -324,7 +331,7 @@ public class NormalAspectGraph extends AspectGraph {
             removeNode(node);
         }
         addErrors(errors);
-        getErrors().unwrap(this.normalToSourceMap);
+        getErrors().apply(this.normalToSourceMap);
     }
 
     /**

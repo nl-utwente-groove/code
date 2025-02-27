@@ -188,6 +188,17 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
      * attribute elements.
      */
     public AspectGraph normalise() {
+        return this.normalGraph.get();
+    }
+
+    /** The lazily grated normalised graph. */
+    private final Factory<AspectGraph> normalGraph = Factory.lazy(this::createNormalGraph);
+
+    /**
+     * Computes the normalised aspect graph.
+     * @see #normalise()
+     */
+    public AspectGraph createNormalGraph() {
         assert isFixed();
         AspectGraph result;
         if (isNormal() || hasErrors()) {
@@ -796,7 +807,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
 
         // Finalise combined graph.
         GraphInfo.setLayoutMap(result, newLayoutMap);
-        result.setErrors(newErrors.unwrap(transfer));
+        result.setErrors(newErrors.apply(transfer));
         result.setFixed();
         return result;
     }

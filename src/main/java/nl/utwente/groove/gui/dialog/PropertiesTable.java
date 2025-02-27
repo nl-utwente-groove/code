@@ -48,7 +48,7 @@ import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.Properties.CheckerMap;
 import nl.utwente.groove.util.Properties.Key;
 import nl.utwente.groove.util.Strings;
-import nl.utwente.groove.util.collect.ListComparator;
+import nl.utwente.groove.util.collect.IndexComparator;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -74,7 +74,7 @@ public class PropertiesTable extends JTable {
         for (var key : defaultKeys.getEnumConstants()) {
             this.defaultKeys.put(key.getName(), key);
         }
-        this.properties = new TreeMap<>(new ListComparator<>(this.defaultKeys.keySet()));
+        this.properties = new TreeMap<>(new IndexComparator<>(this.defaultKeys.keySet()));
         this.keyIndexMap = new HashMap<>();
         this.errorMap = new HashMap<>();
         final TableModel model = getTableModel();

@@ -56,7 +56,7 @@ import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.host.HostNodeSet;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.HostModel;
-import nl.utwente.groove.grammar.model.HostModel.HostModelMap;
+import nl.utwente.groove.grammar.model.HostModelMap;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.gui.Options;

@@ -21,7 +21,7 @@ package nl.utwente.groove.util.collect;
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class Comparator<T> implements java.util.Comparator<T> {
+public abstract class AbstractComparator<T> implements java.util.Comparator<T> {
     /** Returns a negative number if the first argument is {@code true}
      * and the second isn't, or a positive number if the first is {@code false}
      * and the second isn't; or zero otherwise.

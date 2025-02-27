@@ -21,10 +21,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -48,14 +46,17 @@ import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.NodeComparator;
 import nl.utwente.groove.gui.list.ListPanel.SelectableListEntry;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
+import nl.utwente.groove.util.collect.ListComparator;
 
 /**
  * Class encoding a single message reporting an error in a graph view.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class FormatError implements Comparable<FormatError>, SelectableListEntry, Fixable {
+public class FormatError
+    implements Comparable<FormatError>, SelectableListEntry, Fixable, Cloneable {
     /**
      * Constructs an error consisting of a message to be formatted.
      * The actual message is constructed by calling {@link String#format(String, Object...)}
@@ -168,15 +169,8 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     public int compareTo(FormatError other) {
         int result = toString().compareTo(other.toString());
         // establish lexicographical ordering of error objects
-        var myElems = getElements();
-        var myIter = myElems.iterator();
-        var otherElems = other.getElements();
-        var otherIter = otherElems.iterator();
-        while (result == 0 && myIter.hasNext() && otherIter.hasNext()) {
-            result = compare(myIter.next(), otherIter.next());
-        }
         if (result == 0) {
-            result = myElems.size() - otherElems.size();
+            result = elemListComparator.compare(getElements(), other.getElements());
         }
         return result;
     }
@@ -225,25 +219,30 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     /** Returns the list of elements in which the error occurs, together
      * with its projections. May be empty. */
     @Override
-    public Collection<Element> getElements() {
-        var result = this.elements;
-        if (!isFixed()) {
-            var elements = result;
-            result = new LinkedHashSet<>();
-            var parent = getParent();
-            for (var e : elements) {
-                while (e != null && result.add(e)) {
-                    e = parent == null
-                        ? null
-                        : parent.getProjection().get(e);
-                }
-            }
-        }
-        return result;
+    public List<Element> getElements() {
+        return this.elements;
     }
 
     /** List of erroneous elements. */
-    private final Set<Element> elements = new LinkedHashSet<>();
+    private List<Element> elements = new ArrayList<>();
+
+    /** Modifies the list of elements in this error by applying a mapping to it.
+     * Returns this error for chaining.
+     */
+    FormatError apply(Map<? extends Element,? extends Element> map) {
+        if (!map.isEmpty()) {
+            var elements = this.elements;
+            List<Element> newElements = new ArrayList<>(elements.size());
+            for (var e : elements) {
+                var i = map.get(e);
+                if (i != null) {
+                    newElements.add(i);
+                }
+            }
+            this.elements.addAll(newElements);
+        }
+        return this;
+    }
 
     /** Returns a list of numbers associated with the error; typically,
      * line and column numbers. May be empty. */
@@ -328,39 +327,9 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
         return result;
     }
 
-    /** Returns the parent error set, if any. */
-    FormatErrorSet getParent() {
-        return this.parent;
-    }
-
-    /** Assigns the parent error set, if the parent was {@code null} or already
-     * identical to the parameter.
-     * Returns {@code true} if the parent was assigned as a result of this call.
-     */
-    boolean setParent(FormatErrorSet parent) {
-        boolean result = false;
-        var current = this.parent;
-        if (current == null || current == parent) {
-            this.parent = parent;
-            result = true;
-        }
-        return result;
-    }
-
-    private FormatErrorSet parent;
-
-    /** Returns a clone of this error for a given (parent) error set.
-     * This is the error itself if there was not parent error set, or a copy
-     * otherwise.
-     * @param set the new parent error set
-     */
-    FormatError cloneFor(FormatErrorSet set) {
-        FormatError result = this;
-        if (!setParent(set)) {
-            result = clone(null);
-            result.setParent(set);
-        }
-        return result;
+    @Override
+    public FormatError clone() {
+        return clone(null);
     }
 
     /** Returns a clone of this error, with no parent.
@@ -399,21 +368,23 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     /** Flag indicating if this object is fixed. */
     private boolean fixed;
 
-    private static int compare(Element o1, Element o2) {
-        int result = o1.getClass().getName().compareTo(o2.getClass().getName());
+    private static final NodeComparator nodeComparator = NodeComparator.instance();
+    private static final Comparator<Edge> edgeComparator = EdgeComparator.instance();
+    /** Comparator for graph elements. */
+    private static final Comparator<Element> elemComparator = (el1, el2) -> {
+        int result = el1.getClass().getName().compareTo(el2.getClass().getName());
         if (result != 0) {
             return result;
         }
-        if (o1 instanceof Node) {
-            result = nodeComparator.compare((Node) o1, (Node) o2);
-        } else {
-            result = edgeComparator.compare((Edge) o1, (Edge) o2);
-        }
-        return result;
-    }
-
-    private static final NodeComparator nodeComparator = NodeComparator.instance();
-    private static final Comparator<Edge> edgeComparator = EdgeComparator.instance();
+        return switch (el1) {
+        case Node n1 -> nodeComparator.compare(n1, (Node) el2);
+        case Edge e1 -> edgeComparator.compare(e1, (Edge) el2);
+        default -> throw Exceptions.UNREACHABLE;
+        };
+    };
+    /** Comparator for lists of graph elements. */
+    private static final Comparator<List<Element>> elemListComparator
+        = ListComparator.<Element>instance(elemComparator);
 
     /** Constructs a control parameter from a given name. */
     public static Resource control(QualName name) {

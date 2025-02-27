@@ -1,44 +1,81 @@
+/* GROOVE: GRaphs for Object Oriented VErification
+ * Copyright 2003--2023 University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * $Id$
+ */
 package nl.utwente.groove.util.collect;
 
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
- * Compares two objects based on their appearance in a given list. All other
- * objects are compared according to their natural ordering, coming after the
- * list elements.
+ * Compares two lists lexicographically, under their natural order or a dedicated comparator for the elements.
+ * @author Arend Rensink
+ * @version $Revision$
  */
-public class ListComparator<T extends Comparable<T>> implements Comparator<T> {
-    /**
-     * Constructs a comparator based on a given list of keys. These keys are
-     * ordered first, in the order given; other keys are ordered alphabetically.
-     */
-    public ListComparator(Iterable<T> defaultKeys) {
-        int index = 0;
-        for (T key : defaultKeys) {
-            this.knownKeyIndexMap.put(key, index);
-            index++;
-        }
+public class ListComparator<T> implements Comparator<List<T>> {
+    /** Creates a list comparator based on a given element comparator. */
+    private ListComparator(Comparator<T> elemComparator) {
+        this.elemComparator = elemComparator;
     }
 
-    /**
-     * First compares the objects as to their position in the known objects,
-     * then in their natural order.
-     */
+    /** Creates a list comparator based on the elements' natural ordering. */
+    private ListComparator() {
+        this.elemComparator = null;
+    }
+
+    /** The element comparator. */
+    private final @Nullable Comparator<T> elemComparator;
+
     @Override
-    public int compare(T o1, T o2) {
-        Integer index1Value = this.knownKeyIndexMap.get(o1);
-        int index1 = index1Value == null ? Integer.MAX_VALUE : index1Value;
-        Integer index2Value = this.knownKeyIndexMap.get(o2);
-        int index2 = index2Value == null ? Integer.MAX_VALUE : index2Value;
-        int result = index1 - index2;
+    public int compare(List<T> o1, List<T> o2) {
+        int result = 0;
+        var bound = Math.min(o1.size(), o2.size());
+        for (int i = 0; result == 0 & i < bound; i++) {
+            result = compareElems(o1.get(i), o2.get(i));
+        }
         if (result == 0) {
-            result = o1.compareTo(o2);
+            result = o1.size() - o2.size();
         }
         return result;
+
     }
 
-    /** Map of keys to display priority. */
-    private final Map<T,Integer> knownKeyIndexMap = new HashMap<>();
+    /** Compares two list elements. */
+    @SuppressWarnings("unchecked")
+    private int compareElems(T e1, T e2) {
+        var elemComparator = this.elemComparator;
+        if (elemComparator == null) {
+            return ((Comparable<T>) e1).compareTo(e2);
+        } else {
+            return elemComparator.compare(e1, e2);
+        }
+    }
+
+    /** Returns an instance of this comparator for a given element type {@code T},
+     * based on {@code T}'s natural ordering.
+     */
+    static public <T extends Comparable<T>> ListComparator<T> instance() {
+        return new ListComparator<>();
+    }
+
+    /** Returns an instance of this comparator for a given element type {@code T},
+     * based on a given comparator for the list elements.
+     */
+    static public <T> ListComparator<T> instance(Comparator<T> elemComparator) {
+        return new ListComparator<>(elemComparator);
+    }
 }

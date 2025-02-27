@@ -80,12 +80,13 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
         return this;
     }
 
-    /** Adds a format error to the set.
+    /** Adds a format error to the set, after applying the projection of this set to
+     * modify the elements.
     * @return this object itself, for chaining
     */
     public FormatErrorSet add(FormatError e) {
         assert !isFixed();
-        getErrorSet().add(e.cloneFor(this));
+        getErrorSet().add(e.clone().apply(getProjection()));
         return this;
     }
 
@@ -93,8 +94,8 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
     * @return this object itself, for chaining
     */
     public FormatErrorSet addAll(FormatErrorSet other) {
-        other.getErrorSet().forEach(this::add);
         getProjection().putAll(other.getProjection());
+        other.getErrorSet().forEach(this::add);
         return this;
     }
 
@@ -154,58 +155,68 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
         return result;
     }
 
-    /** Adds a mapping from context elements to error elements.
-     * The inverse of this mapping is used to generate the elements returned by {@link FormatError#getElements()}
-     * called on the errors in this set.
+    /**
+     * Modifies the errors currently in this set, as well as all errors added in the future,
+     * by applying the inverse a given element map to their graph elements.
      * The method returns this {@link FormatErrorSet} for chaining.
-     * @see #wrap(GraphMap)
-     * @see #unwrap(Map)
-     * @param map mapping from contextual {@link Element}s to error {@link Element}s
+     * @see #applyInverse(GraphMap)
+     * @see #apply(Map)
+     * @param map mapping from contextual {@link Element}s to current error {@link Element}s
      */
-    public FormatErrorSet wrap(Map<? extends Element,? extends Element> map) {
-        var projection = getProjection();
-        map.entrySet().forEach(e -> projection.put(e.getValue(), e.getKey()));
-        return this;
+    public FormatErrorSet applyInverse(Map<? extends Element,? extends Element> map) {
+        var inverse = new HashMap<Element,Element>();
+        map.entrySet().forEach(e -> inverse.put(e.getValue(), e.getKey()));
+        return apply(inverse);
     }
 
-    /** Adds a {@link GraphMap} from context elements to error elements.
-     * The inverse of this mapping is used to generate the elements returned by {@link FormatError#getElements()}
-     * called on the errors in this set.
+    /**
+     * Modifies the errors in this set, as well as all errors added in the future,
+     * by applying the inverse of a given graph map to their graph elements.
      * The method returns this {@link FormatErrorSet} for chaining.
-     * @see #wrap(Map)
-     * @see #unwrap(Map)
-     * @param map mapping from contextual {@link Element}s to error {@link Element}s
+     * @see #applyInverse(Map)
+     * @see #apply(Map)
+     * @param map mapping from contextual {@link Element}s to current error {@link Element}s
      */
-    public FormatErrorSet wrap(GraphMap map) {
-        return wrap(map.nodeMap()).wrap(map.edgeMap());
+    public FormatErrorSet applyInverse(GraphMap map) {
+        var inverse = new HashMap<Element,Element>();
+        map.nodeMap().entrySet().forEach(e -> inverse.put(e.getValue(), e.getKey()));
+        map.edgeMap().entrySet().forEach(e -> inverse.put(e.getValue(), e.getKey()));
+        return apply(inverse);
     }
 
-    /** Adds a mapping from error elements to context elements.
-     * This mapping is used to generate the elements returned by {@link FormatError#getElements()}
-     * called on the errors in this set.
+    /**
+     * Modifies the errors in this set, as well as all errors added in the future,
+     * by applying a given element map to their graph elements.
      * The method returns this {@link FormatErrorSet} for chaining.
-     * @see #wrap(Map)
-     * @see #unwrap(GraphMap)
-     * @param map mapping from error {@link Element}s to contextual {@link Element}s
+     * @see #applyInverse(Map)
+     * @see #apply(GraphMap)
+     * @param map mapping from current error {@link Element}s to contextual {@link Element}s
      */
-    public FormatErrorSet unwrap(Map<? extends Element,? extends Element> map) {
+    public FormatErrorSet apply(Map<? extends Element,? extends Element> map) {
+        getErrorSet().forEach(e -> e.apply(map));
         getProjection().putAll(map);
         return this;
     }
 
-    /** Adds a {@link GraphMap} from error elements to context elements.
-     * This mapping is used to generate the elements returned by {@link FormatError#getElements()}
-     * called on the errors in this set.
+    /**
+     * Modifies the errors in this set, as well as all errors added in the future,
+     * by applying a given graph map to their graph elements.
      * The method returns this {@link FormatErrorSet} for chaining.
-     * @see #wrap(GraphMap)
-     * @see #unwrap(Map)
-     * @param map mapping from error {@link Element}s to contextual {@link Element}s
+     * @see #applyInverse(GraphMap)
+     * @see #apply(Map)
+     * @param map mapping from current error {@link Element}s to contextual {@link Element}s
      */
-    public FormatErrorSet unwrap(GraphMap map) {
-        return unwrap(map.nodeMap()).unwrap(map.edgeMap());
+    public FormatErrorSet apply(GraphMap map) {
+        var combinedMap = new HashMap<Element,Element>();
+        combinedMap.putAll(map.nodeMap());
+        combinedMap.putAll(map.edgeMap());
+        return apply(combinedMap);
     }
 
-    /** Lazily creates and returns the projection map from error elements to context elements. */
+    /**
+     * Lazily creates and returns the projection map from current error elements to context elements.
+     * This is applied to any error added to the set.
+     */
     Map<Element,Element> getProjection() {
         var result = this.projection;
         if (result == null) {

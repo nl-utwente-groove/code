@@ -128,7 +128,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         try {
             result.test();
         } catch (FormatException exc) {
-            exc.getErrors().wrap(typeModelMap).throwException();
+            exc.getErrors().applyInverse(typeModelMap).throwException();
         }
         this.typeModelMap = typeModelMap;
         return result;
@@ -188,7 +188,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
                     }
                 }
             }
-            errors.wrap(modelMap).throwException();
+            errors.applyInverse(modelMap).throwException();
             // check if there are untyped, non-virtual nodes
             for (var node : source.nodeSet()) {
                 if (!modelMap.nodeMap().containsKey(node) && !node.has(REMARK)) {
@@ -211,7 +211,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
                     }
                 }
             }
-            errors.wrap(modelMap).throwException();
+            errors.applyInverse(modelMap).throwException();
             // transfer graph info such as layout from model to resource
             GraphInfo.transferProperties(source, result, modelMap);
             setModelMap(modelMap);
