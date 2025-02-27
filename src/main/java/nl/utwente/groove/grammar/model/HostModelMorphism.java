@@ -45,24 +45,17 @@ import nl.utwente.groove.util.parse.FormatException;
 
 /** Record consisting of mapping from aspect graph to host graph, together with the host graph itself. */
 @NonNullByDefault
-record HostModelMorphism(HostModelMap map, HostGraph target) {
-    /** Creates a new instance for a given target graph, with an initially empty map. */
-    private HostModelMorphism(HostGraph target) {
-        this(new HostModelMap(target.getFactory()), target);
-    }
-
-    /** Creates a new, empty instance with a given name. */
-    private HostModelMorphism(String name) {
-        this(new DefaultHostGraph(name));
-    }
-
+class HostModelMorphism {
     /** Converts a given (normal) aspect graph to an implicitly typed mapped model.
      */
     private HostModelMorphism(@Nullable GrammarModel grammar, AspectGraph source) {
-        this(source.getName());
-        assert source.isNormal();
-        if (HostModel.debug) {
-            GraphPreviewDialog.showGraph(source);
+        this.source = source;
+        var target = new DefaultHostGraph(source.getName());
+        var map = new HostModelMap(target.getFactory());
+        var normalSource = source.normalise();
+        var errors = new FormatErrorSet();
+        if (debug) {
+            GraphPreviewDialog.showGraph(normalSource);
         }
         // copy the nodes from source to target
         // first the non-value nodes because their numbers are fixed
@@ -70,38 +63,132 @@ record HostModelMorphism(HostModelMap map, HostGraph target) {
             ? AlgebraFamily.DEFAULT
             : AlgebraFamily.TERM;
 
-        for (AspectNode modelNode : source.nodeSet()) {
+        for (AspectNode modelNode : normalSource.nodeSet()) {
             if (!modelNode.has(Category.SORT)) {
-                processModelNode(family, modelNode);
+                processModelNode(family, modelNode, map, target);
             }
         }
         // then the value nodes because their numbers are generated
-        for (AspectNode modelNode : source.nodeSet()) {
+        for (AspectNode modelNode : normalSource.nodeSet()) {
             if (modelNode.has(Category.SORT)) {
-                processModelNode(family, modelNode);
+                processModelNode(family, modelNode, map, target);
             }
         }
         // copy the edges from source to target
-        for (AspectEdge modelEdge : source.edgeSet()) {
-            processModelEdge(modelEdge);
+        for (AspectEdge modelEdge : normalSource.edgeSet()) {
+            processModelEdge(modelEdge, map, target);
         }
         // remove isolated value nodes from the target graph
-        for (HostNode modelNode : map().nodeMap().values()) {
-            if (modelNode instanceof ValueNode && target().edgeSet(modelNode).isEmpty()) {
+        for (HostNode modelNode : map.nodeMap().values()) {
+            if (modelNode instanceof ValueNode && target.edgeSet(modelNode).isEmpty()) {
                 // the node is an isolated value node; remove it
-                target().removeNode(modelNode);
+                target.removeNode(modelNode);
             }
         }
+        if (normalSource instanceof NormalAspectGraph ng) {
+            errors.addAll(ng.getOriginErrors());
+            // modify the map so it goes from source rather than normalSource
+            var originMap = new HostModelMap(target.getFactory());
+            for (var ne : ng.originToNormalMap().nodeMap().entrySet()) {
+                var hostNode = map.getNode(ne.getValue());
+                if (hostNode != null) {
+                    originMap.putNode(ne.getKey(), hostNode);
+                }
+            }
+            for (var ee : ng.originToNormalMap().edgeMap().entrySet()) {
+                var hostEdge = map.getEdge(ee.getValue());
+                if (hostEdge != null) {
+                    originMap.putEdge(ee.getKey(), hostEdge);
+                }
+            }
+            map = originMap;
+        } else {
+            errors.addAll(source.getErrors());
+        }
+        // possibly add typing
+        if (errors.isEmpty() && grammar != null) {
+            try {
+                var type = grammar.getTypeGraph();
+                var typing = type.analyzeHost(target);
+                // typing was successful; adapt the target and map
+                target = typing.createImage(target.getName());
+                var typeMap = new HostModelMap(target.getFactory());
+                for (var nodeEntry : map.nodeMap().entrySet()) {
+                    HostNode typedNode = typing.getNode(nodeEntry.getValue());
+                    if (typedNode != null) {
+                        typeMap.putNode(nodeEntry.getKey(), typedNode);
+                    }
+                }
+                for (var edgeEntry : map.edgeMap().entrySet()) {
+                    var typedEdge = typing.getEdge(edgeEntry.getValue());
+                    if (typedEdge != null) {
+                        typeMap.putEdge(edgeEntry.getKey(), typedEdge);
+                    }
+                }
+                if (grammar.getProperties().getTypePolicy() != CheckPolicy.OFF) {
+                    errors.addAll(target.checkTypeConstraints());
+                }
+                map = typeMap;
+            } catch (FormatException exc) {
+                errors.addAll(exc.getErrors().transfer(map));
+            }
+        }
+        // transfer graph info such as layout from model to resource
+        GraphInfo.transferProperties(source, target, map);
+        target.setFixed();
+        errors.setFixed();
+        this.map = map;
+        this.target = target;
+        this.errors = errors;
     }
+
+    /** Returns the source aspect graph of this morphism. */
+    AspectGraph source() {
+        return this.source;
+    }
+
+    private final AspectGraph source;
+
+    /**
+     * Returns the source-to-target map of this morphism.
+     */
+    HostModelMap map() {
+        return this.map;
+    }
+
+    private final HostModelMap map;
+
+    /**
+     * @return Returns the target host graph of this morphism.
+     */
+    HostGraph target() {
+        return this.target;
+    }
+
+    private final HostGraph target;
+
+    /** Checks whether the set of errors is non-empty. */
+    boolean hasErrors() {
+        return !getErrors().isEmpty();
+    }
+
+    /**
+     * Returns the errors (which are in the context of the source graph).
+     */
+    FormatErrorSet getErrors() {
+        return this.errors;
+    }
+
+    private final FormatErrorSet errors;
 
     /**
      * Processes the information in a model node by updating the model and
      * element map.
      */
-    private void processModelNode(AlgebraFamily family, AspectNode modelNode) {
+    private void processModelNode(AlgebraFamily family, AspectNode modelNode, HostModelMap map,
+                                  HostGraph target) {
         // include the node in the model if it is not virtual
         if (!modelNode.has(Category.NESTING) && !modelNode.has(REMARK)) {
-            var target = target();
             HostNode nodeImage = null;
             Aspect sortAspect = modelNode.get(Category.SORT);
             if (sortAspect != null) {
@@ -112,7 +199,7 @@ record HostModelMorphism(HostModelMap map, HostGraph target) {
             } else {
                 nodeImage = target.addNode(modelNode.getNumber());
             }
-            map().putNode(modelNode, nodeImage);
+            map.putNode(modelNode, nodeImage);
         }
     }
 
@@ -120,11 +207,10 @@ record HostModelMorphism(HostModelMap map, HostGraph target) {
      * Processes the information in a model edge by updating the resource, element
      * map and subtypes.
      */
-    private void processModelEdge(AspectEdge modelEdge) {
+    private void processModelEdge(AspectEdge modelEdge, HostModelMap map, HostGraph target) {
         if (!modelEdge.has(Category.LABEL)) {
             return;
         }
-        var map = map();
         HostNode hostSource = map.getNode(modelEdge.source());
         assert hostSource != null : String
             .format("Source of '%s' is not in element map %s", modelEdge.source(), map);
@@ -134,88 +220,27 @@ record HostModelMorphism(HostModelMap map, HostGraph target) {
         TypeLabel hostLabel = modelEdge.getTypeLabel();
         assert hostLabel != null && !hostLabel.isSort() : String
             .format("Inappropriate label %s", hostLabel);
-        HostEdge hostEdge = target().addEdge(hostSource, hostLabel, hostNode);
+        HostEdge hostEdge = target.addEdge(hostSource, hostLabel, hostNode);
         assert hostEdge != null;
         map.putEdge(modelEdge, hostEdge);
     }
 
     /** Convenience method to retrieve the associated type graph. */
     TypeGraph getTypeGraph() {
-        return this.target.getTypeGraph();
+        return target().getTypeGraph();
     }
 
-    /** Converts this (implicitly typed) mapped model to a typed one.
-     * @throws FormatException if there are typing errors in the host graph
-     */
-    private HostModelMorphism toTyped(TypeGraph type) throws FormatException {
-        var typing = type.analyzeHost(target());
-        // typing was successful; adapt the result and element map
-        var target = typing.createImage(target().getName());
-        var typeMap = new HostModelMap(this.target.getFactory());
-        for (var nodeEntry : map().nodeMap().entrySet()) {
-            HostNode typedNode = typing.getNode(nodeEntry.getValue());
-            if (typedNode != null) {
-                typeMap.putNode(nodeEntry.getKey(), typedNode);
-            }
-        }
-        for (var edgeEntry : map().edgeMap().entrySet()) {
-            var typedEdge = typing.getEdge(edgeEntry.getValue());
-            if (typedEdge != null) {
-                typeMap.putEdge(edgeEntry.getKey(), typedEdge);
-            }
-        }
-        return new HostModelMorphism(typeMap, target);
+    /** Sets the debug mode, causing the normalised graphs to be shown in a dialog. */
+    public static void setDebug(boolean debug) {
+        HostModelMorphism.debug = debug;
     }
 
-    private HostModelMorphism toDenormalised(NormalAspectGraph normalSource) {
-        var elementMap = map();
-        var sourceMap = new HostModelMap(target().getFactory());
-        for (var ne : normalSource.sourceToNormalMap().nodeMap().entrySet()) {
-            var hostNode = elementMap.getNode(ne.getValue());
-            if (hostNode != null) {
-                sourceMap.putNode(ne.getKey(), hostNode);
-            }
-        }
-        for (var ee : normalSource.sourceToNormalMap().edgeMap().entrySet()) {
-            var hostEdge = elementMap.getEdge(ee.getValue());
-            if (hostEdge != null) {
-                sourceMap.putEdge(ee.getKey(), hostEdge);
-            }
-        }
-        return new HostModelMorphism(sourceMap, target());
-    }
-
-    /** Transfers properties from given source to target and adds errors computed over the target. */
-    private void transferProperties(AspectGraph source, FormatErrorSet errors) {
-        // transfer graph info such as layout from model to resource
-        GraphInfo.transferProperties(source, target(), map());
-        target().setErrors(errors.applyInverse(map()));
-        target().setFixed();
-    }
+    static private boolean debug;
 
     /**
      * Constructor method to compute a mapped model from a given aspect graph.
      */
     static HostModelMorphism instance(@Nullable GrammarModel grammar, AspectGraph source) {
-        var normalSource = source.normalise();
-        var result = new HostModelMorphism(grammar, normalSource);
-        var errors = new FormatErrorSet(normalSource.getErrors());
-        if (grammar != null) {
-            try {
-                result = result.toTyped(grammar.getTypeGraph());
-                if (grammar.getProperties().getTypePolicy() != CheckPolicy.OFF) {
-                    result.target().checkTypeConstraints().throwException();
-                }
-            } catch (FormatException e) {
-                errors.addAll(e.getErrors());
-            }
-        }
-        // for the result value we need a map from the source to the host graph,
-        // whereas elementMap goes from the normalised source
-        if (normalSource instanceof NormalAspectGraph ng) {
-            result = result.toDenormalised(ng);
-        }
-        result.transferProperties(source, errors);
-        return result;
+        return new HostModelMorphism(grammar, source);
     }
 }

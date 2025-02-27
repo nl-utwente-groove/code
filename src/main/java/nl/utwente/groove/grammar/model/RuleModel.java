@@ -497,7 +497,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         if (result == null) {
             var normal = getNormalSource();
             if (normal instanceof NormalAspectGraph ng) {
-                result = ng.normalToSourceMap();
+                result = ng.normalToOriginalMap();
             } else {
                 result = new HashMap<>();
             }

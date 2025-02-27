@@ -23,7 +23,6 @@ import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.ValueNode;
-import nl.utwente.groove.grammar.type.ImplicitTypeGraph;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.util.Factory;
@@ -62,24 +61,13 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         if (hasErrors()) {
             throw new IllegalStateException();
         }
-        return this.mappedModel.get().map();
+        return this.morphism.get().map();
     }
 
     @Override
     public TypeGraph getTypeGraph() {
-        return this.typeGraph.get();
+        return this.morphism.get().getTypeGraph();
     }
-
-    private final Factory<TypeGraph> typeGraph = Factory.lazy(() -> {
-        TypeGraph result;
-        var grammar = getGrammar();
-        if (grammar == null) {
-            result = ImplicitTypeGraph.newInstance(getLabels());
-        } else {
-            result = grammar.getTypeGraph();
-        }
-        return result;
-    });
 
     @Override
     public TypeModelMap getTypeMap() {
@@ -93,10 +81,10 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         synchronise();
         TypeModelMap result = null;
         if (getStatus() == Status.DONE) {
-            var mappedModel = this.mappedModel.get();
-            var hostModelMap = mappedModel.map();
+            var morphism = this.morphism.get();
+            var hostModelMap = morphism.map();
             // create the type map
-            result = new TypeModelMap(mappedModel.getTypeGraph().getFactory());
+            result = new TypeModelMap(morphism.getTypeGraph().getFactory());
             for (var ne : hostModelMap.nodeMap().entrySet()) {
                 result.putNode(ne.getKey(), ne.getValue().getType());
             }
@@ -130,25 +118,18 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     void notifyWillRebuild() {
         super.notifyWillRebuild();
         this.labelSet.reset();
-        this.mappedModel.reset();
+        this.morphism.reset();
         this.typeMap.reset();
     }
 
     @Override
     HostGraph compute() throws FormatException {
         getSource().getErrors().throwException();
-        var result = this.mappedModel.get().target();
-        result.getErrors().throwException();
-        return result;
+        var morphism = this.morphism.get();
+        morphism.getErrors().throwException();
+        return morphism.target();
     }
 
-    private final Factory<HostModelMorphism> mappedModel
+    private final Factory<HostModelMorphism> morphism
         = Factory.lazy(() -> HostModelMorphism.instance(getGrammar(), getSource()));
-
-    /** Sets the debug mode, causing the normalised graphs to be shown in a dialog. */
-    public static void setDebug(boolean debug) {
-        HostModel.debug = debug;
-    }
-
-    static boolean debug;
 }

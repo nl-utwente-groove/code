@@ -63,14 +63,14 @@ public class NormalAspectGraph extends AspectGraph {
     /**
      * Creates the normalised version of a given aspect graph.
      * Normalisation occurs upon the call if {@link #setFixed()}.
-     * @param source the (non-normalised) source of this normalised aspect graph
+     * @param origin the (non-normalised) source of this normalised aspect graph
      */
-    public NormalAspectGraph(AspectGraph source) {
-        super(source.getName(), source.getRole(), source.isSimple());
-        var toNormalMap = this.sourceToNormalMap = new AspectGraphMorphism(this);
-        source.cloneTo(toNormalMap);
-        this.source = source;
-        this.normalToSourceMap = initNormalToSourceMap();
+    public NormalAspectGraph(AspectGraph origin) {
+        super(origin.getName(), origin.getRole(), origin.isSimple());
+        var toNormalMap = this.originToNormalMap = new AspectGraphMorphism(this);
+        origin.cloneTo(toNormalMap);
+        this.origin = origin;
+        this.normalToOriginMap = initNormalToOriginalMap();
     }
 
     @Override
@@ -78,81 +78,81 @@ public class NormalAspectGraph extends AspectGraph {
         return true;
     }
 
-    /** Returns the (non-normalised) source of this normalised aspect graph. */
-    public AspectGraph getOriginal() {
-        return this.source;
+    /** Returns the (non-normalised) origin of this normalised aspect graph. */
+    public AspectGraph getOrigin() {
+        return this.origin;
     }
 
-    /** Returns the (non-normalised) source of this normalised aspect graph. */
-    public FormatErrorSet getOriginalErrors() {
-        return getErrors().apply(this.normalToSourceMap);
+    /** Returns the errors in this normal graph, transferred to the context of the origin. */
+    public FormatErrorSet getOriginErrors() {
+        return getErrors().apply(this.normalToOriginMap);
     }
 
     /** The (non-normalised) source of this normalised aspect graph. */
-    private final AspectGraph source;
+    private final AspectGraph origin;
 
     /** Returns the morphism from the source {@link AspectGraph} to this normalised {@link AspectGraph}.
      * Should only be called after the normalised graph has been fixed.
      */
-    public AspectGraphMorphism sourceToNormalMap() {
+    public AspectGraphMorphism originToNormalMap() {
         assert isFixed();
-        return this.sourceToNormalMap;
+        return this.originToNormalMap;
     }
 
     /** Morphism from the source {@link AspectGraph} to the normalised {@link AspectGraph}. */
-    private final AspectGraphMorphism sourceToNormalMap;
+    private final AspectGraphMorphism originToNormalMap;
 
-    /** Computes the inverse of {@link #sourceToNormalMap}. */
-    private final Map<AspectElement,AspectElement> initNormalToSourceMap() {
+    /** Computes the inverse of {@link #originToNormalMap}. */
+    private final Map<AspectElement,AspectElement> initNormalToOriginalMap() {
         Map<AspectElement,AspectElement> result = new HashMap<>();
-        var toNormalMap = this.sourceToNormalMap;
+        var toNormalMap = this.originToNormalMap;
         toNormalMap.nodeMap().entrySet().forEach(e -> result.put(e.getValue(), e.getKey()));
         toNormalMap.edgeMap().entrySet().forEach(e -> result.put(e.getValue(), e.getKey()));
         return result;
     }
 
-    /** Adds an entry to the {@link #normalToSourceMap} for a new element in the
+    /** Adds an entry to the {@link #normalToOriginMap} for a new element in the
      * normalised graph, based on an original element (also of this graph).
      */
     private void addNormalToSource(AspectElement orig, AspectElement added) {
-        var normalToSourceMap = this.normalToSourceMap;
+        var normalToSourceMap = this.normalToOriginMap;
         normalToSourceMap.put(added, normalToSourceMap.get(orig));
     }
 
     /** Replaces a given aspect edge in this normalised graph by another, in the
-     * {@link #sourceToNormalMap} and {@link #normalToSourceMap}.
+     * {@link #originToNormalMap} and {@link #normalToOriginMap}.
      * Does not remove or add either of the edges from or to the graph
      * @param orig the original edge
      * @param replacement the new edge
      */
     private void replaceNormalisedEdge(AspectEdge orig, AspectEdge replacement) {
-        var source = this.normalToSourceMap.remove(orig);
+        var source = this.normalToOriginMap.remove(orig);
         if (source instanceof AspectEdge edge) {
-            this.sourceToNormalMap.putEdge(edge, replacement);
+            this.originToNormalMap.putEdge(edge, replacement);
         }
     }
 
     /** Replaces a given aspect node in this normalised graph by another, in the
-     * {@link #sourceToNormalMap} and {@link #normalToSourceMap}.
+     * {@link #originToNormalMap} and {@link #normalToOriginMap}.
      * Does not remove or add either of the nodes from or to the graph
      * @param orig the original node
      * @param replacement the new node
      */
     private void replaceNormalisedNode(AspectNode orig, AspectNode replacement) {
-        var source = (AspectNode) this.normalToSourceMap.remove(orig);
-        this.sourceToNormalMap.putNode(source, replacement);
+        var source = (AspectNode) this.normalToOriginMap.remove(orig);
+        this.originToNormalMap.putNode(source, replacement);
     }
 
     /** Returns the morphism from this normalised graph to the source {@link AspectGraph}.
      * Should only be called after the normalised graph has been fixed.
      */
-    public Map<AspectElement,AspectElement> normalToSourceMap() {
+    public Map<AspectElement,AspectElement> normalToOriginalMap() {
         assert isFixed();
-        return this.normalToSourceMap;
+        return this.normalToOriginMap;
     }
 
-    /** Inverse of the {@link #sourceToNormalMap} before actual normalisation. */
-    private final Map<AspectElement,AspectElement> normalToSourceMap;
+    /** Inverse of the {@link #originToNormalMap} before actual normalisation. */
+    private final Map<AspectElement,AspectElement> normalToOriginMap;
 
     private AspectNode addNormalisedNode(AspectElement orig) {
         AspectNode result = addNode();
@@ -331,7 +331,7 @@ public class NormalAspectGraph extends AspectGraph {
             removeNode(node);
         }
         addErrors(errors);
-        getErrors().apply(this.normalToSourceMap);
+        getErrors().apply(this.normalToOriginMap);
     }
 
     /**
