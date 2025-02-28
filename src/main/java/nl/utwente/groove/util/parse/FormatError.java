@@ -49,6 +49,7 @@ import nl.utwente.groove.gui.list.ListPanel.SelectableListEntry;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
+import nl.utwente.groove.util.Relation;
 import nl.utwente.groove.util.collect.CollectionComparator;
 
 /**
@@ -238,6 +239,24 @@ public class FormatError
                 var i = map.get(e);
                 if (i != null) {
                     newElements.add(i);
+                }
+            }
+            this.elements.addAll(newElements);
+        }
+        return this;
+    }
+
+    /** Modifies the list of elements in this error by applying a relation to it.
+     * Returns this error for chaining.
+     */
+    FormatError apply(Relation<? extends Element,? extends Element> relation) {
+        if (!relation.isEmpty()) {
+            var elements = this.elements;
+            var newElements = new ArrayList<Element>(elements.size());
+            for (var e : elements) {
+                var i = relation.get(e);
+                if (i != null) {
+                    newElements.addAll(i);
                 }
             }
             this.elements.addAll(newElements);
