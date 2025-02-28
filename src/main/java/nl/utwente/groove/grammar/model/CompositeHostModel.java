@@ -62,6 +62,11 @@ public class CompositeHostModel extends ResourceModel<HostGraph> {
 
     private final boolean implicit;
 
+    /** Indicates if there are multiple active host graphs underlying this composite one. */
+    public boolean isMultiple() {
+        return getHostModels().size() > 1;
+    }
+
     @Override
     public @Nullable AspectGraph getSource() {
         return this.source.get();
@@ -167,9 +172,8 @@ public class CompositeHostModel extends ResourceModel<HostGraph> {
         var hostModels = getHostModels();
         if (hostModels.size() == 1) {
             result = hostModels.getFirst();
-        } else {
+        } else if (hostModels.size() > 1) {
             result = new HostModel(getGrammar(), getSource());
-
         }
         return result;
     });
