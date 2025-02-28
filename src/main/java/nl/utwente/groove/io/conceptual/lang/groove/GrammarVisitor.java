@@ -12,6 +12,7 @@ import java.util.Set;
 import nl.utwente.groove.grammar.ModuleName;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.host.HostGraph;
+import nl.utwente.groove.grammar.model.CompositeHostModel;
 import nl.utwente.groove.grammar.model.CompositeTypeModel;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.HostModel;
@@ -300,11 +301,11 @@ public class GrammarVisitor {
         try {
             CompositeTypeModel tm = grammar.getTypeModel();
             //hm might be null if no start graph selected
-            HostModel hm = grammar.getStartGraphModel();
+            CompositeHostModel hm = grammar.getStartGraphModel();
 
             TypeGraph tg = tm.getTypeGraph();
             HostGraph hg = (hm != null)
-                ? hm.toHost()
+                ? hm.toResource()
                 : null;
 
             result = new Pair<>(tg, hg);

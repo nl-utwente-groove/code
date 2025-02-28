@@ -5,9 +5,11 @@ import static nl.utwente.groove.grammar.model.ResourceKind.PROPERTIES;
 import static nl.utwente.groove.grammar.model.ResourceKind.RULE;
 import static nl.utwente.groove.grammar.model.ResourceKind.TYPE;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -118,12 +120,12 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
     @Override
     TypeGraph compute() throws FormatException {
         TypeGraph result = null;
-        Map<QualName,TypeModel> typeModelMap = computeTypeModelMap();
+        var typeModels = computeTypeModels();
         // first test if there is something to be done
-        if (typeModelMap.isEmpty()) {
+        if (typeModels.isEmpty()) {
             result = getImplicitTypeGraph();
-        } else if (typeModelMap.size() == 1) {
-            result = typeModelMap.values().iterator().next().toResource();
+        } else if (typeModels.size() == 1) {
+            result = typeModels.iterator().next().toResource();
         } else {
             result = new TypeGraph(QualName.name(NAME));
             FormatErrorSet errors = createErrors();
@@ -131,7 +133,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
             // type graph.
             Map<TypeNode,TypeNode> nodeMergeMap = new HashMap<>();
             Map<TypeNode,TypeModel> importModels = new HashMap<>();
-            for (TypeModel model : typeModelMap.values()) {
+            for (TypeModel model : typeModels) {
                 try {
                     TypeGraph graph = model.toResource();
                     nodeMergeMap.putAll(result.add(graph));
@@ -176,18 +178,18 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
      * Computes the mapping from names to active type models.
      * @throws FormatException if there are format errors in the active type models
      */
-    private Map<QualName,TypeModel> computeTypeModelMap() throws FormatException {
+    private List<TypeModel> computeTypeModels() throws FormatException {
         FormatErrorSet errors = new FormatErrorSet();
-        Map<QualName,TypeModel> typeModelMap = new HashMap<>();
+        var result = new ArrayList<TypeModel>();
         for (QualName activeTypeName : getGrammar().getActiveNames(TYPE)) {
             ResourceModel<?> typeModel = getGrammar().getResource(TYPE, activeTypeName);
-            typeModelMap.put(activeTypeName, (TypeModel) typeModel);
+            result.add((TypeModel) typeModel);
             for (FormatError error : typeModel.getErrors()) {
                 errors.add("Error in type '%s': %s", activeTypeName, error, typeModel.getSource());
             }
         }
         errors.throwException();
-        return typeModelMap;
+        return result;
     }
 
     /**
@@ -199,7 +201,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
 
     /** The implicit type graph. */
     private final Factory<TypeGraph> implicitTypeGraph
-        = Factory.lazy(() -> ImplicitTypeGraph.newInstance(getLabels()));
+        = Factory.lazy(() -> ImplicitTypeGraph.newInstance(getTypeLabels()));
 
     @Override
     void notifyWillRebuild() {
@@ -207,22 +209,22 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
     }
 
     /**
-     * Computes the set of all labels occurring in the rules and host graph.
+     * Computes the set of all type labels occurring in the rules and host graph.
      * This is used to construct the implicit type graph,
      * if no type graphs are enabled.
      */
-    private Set<TypeLabel> getLabels() {
+    private Set<TypeLabel> getTypeLabels() {
         Set<TypeLabel> result = new HashSet<>();
         // get the labels from the rules and host graphs
         for (ResourceKind kind : EnumSet.of(RULE, HOST)) {
             for (ResourceModel<?> model : getGrammar().getResourceSet(kind)) {
-                result.addAll(((GraphBasedModel<?>) model).getLabels());
+                result.addAll(((GraphBasedModel<?>) model).getTypeLabels());
             }
         }
         // get the labels from the external start graph
-        HostModel host = getGrammar().getStartGraphModel();
+        var host = getGrammar().getStartGraphModel();
         if (host != null) {
-            result.addAll(host.getLabels());
+            result.addAll(host.getTypeLabels());
         }
         return result;
     }

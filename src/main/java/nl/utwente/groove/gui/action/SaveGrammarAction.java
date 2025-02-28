@@ -1,14 +1,11 @@
 package nl.utwente.groove.gui.action;
 
-import static nl.utwente.groove.grammar.model.ResourceKind.HOST;
-
 import java.io.File;
 import java.io.IOException;
 
 import javax.swing.JFileChooser;
 
 import nl.utwente.groove.grammar.model.GrammarModel;
-import nl.utwente.groove.grammar.model.HostModel;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.io.store.SystemStore;
@@ -49,9 +46,10 @@ public class SaveGrammarAction extends SimulatorAction {
             SystemStore newStore = getSimulatorModel().getStore().save(grammarFile, clearDir);
             GrammarModel oldGrammar = getSimulatorModel().getGrammar();
             GrammarModel newGrammar = newStore.toGrammarModel();
-            if (oldGrammar.getActiveNames(HOST).isEmpty()) {
+            var startGraphModel = oldGrammar.getStartGraphModel();
+            if (startGraphModel.isImplicit()) {
                 // remember external start graph, if grammar has one
-                HostModel startGraph = oldGrammar.getStartGraphModel();
+                var startGraph = oldGrammar.getStartGraphModel();
                 if (startGraph != null) {
                     newGrammar.setStartGraph(startGraph.getSource());
                 }

@@ -51,7 +51,6 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
-import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphRole;
@@ -101,7 +100,7 @@ public class GrammarModel implements PropertyChangeListener {
         return Grammar
             .buildId(getName(), getStartGraphModel() == null
                 ? null
-                : getStartGraphModel().getQualName().toString());
+                : getStartGraphModel().getName());
     }
 
     /** Returns the backing system store. */
@@ -389,12 +388,9 @@ public class GrammarModel implements PropertyChangeListener {
      * @return the start graph model, or <code>null</code> if no start graph is
      *         set.
      */
-    public HostModel getStartGraphModel() {
+    public CompositeHostModel getStartGraphModel() {
         if (this.startGraphModel == null) {
-            AspectGraph startGraph = AspectGraph.mergeGraphs(getActiveGraphs(HOST));
-            if (startGraph != null) {
-                this.startGraphModel = new HostModel(this, startGraph);
-            }
+            this.startGraphModel = new CompositeHostModel(this);
         }
         return this.startGraphModel;
     }
@@ -409,9 +405,10 @@ public class GrammarModel implements PropertyChangeListener {
     public void setStartGraph(AspectGraph startGraph) {
         assert startGraph != null;
         if (startGraph.getRole() != GraphRole.HOST) {
-            throw Exceptions.illegalArg("Prospective start graph '%s' is not a graph", startGraph);
+            throw Exceptions
+                .illegalArg("Prospective start graph '%s' is not a host graph", startGraph);
         }
-        this.startGraphModel = new HostModel(this, startGraph);
+        this.startGraphModel = new CompositeHostModel(this, startGraph);
         this.isExternalStartGraphModel = true;
         this.resourceChangeCounts.get(HOST).increase();
         invalidate();
@@ -517,16 +514,16 @@ public class GrammarModel implements PropertyChangeListener {
         errors.addAll(getTypeModel().getErrors());
         // set rules
         for (NamedResourceModel<?> ruleModel : getResourceSet(RULE)) {
-            try {
-                // only add the active rules
-                if (ruleModel.isActive()) {
+            // only add the active rules
+            if (ruleModel.isActive()) {
+                try {
                     result.add(((RuleModel) ruleModel).toResource());
-                }
-            } catch (FormatException exc) {
-                for (FormatError error : exc.getErrors()) {
-                    errors
-                        .add("Error in rule '%s': %s", ruleModel.getQualName(), error,
-                             ruleModel.getSource());
+                } catch (FormatException exc) {
+                    for (FormatError error : exc.getErrors()) {
+                        errors
+                            .add("Error in rule '%s': %s", ruleModel.getQualName(), error,
+                                 ruleModel.getSource());
+                    }
                 }
             }
         }
@@ -547,36 +544,10 @@ public class GrammarModel implements PropertyChangeListener {
             errors.addAll(e.getErrors());
         }
         // set start graph
-        var startGraphNames = getActiveNames(HOST);
-        var startGraphModel = getStartGraphModel();
-        if (startGraphModel == null) {
-            if (startGraphNames.isEmpty()) {
-                errors.add("No start graph set");
-            } else {
-                errors.add("Start graphs '%s' cannot be loaded", startGraphNames);
-            }
-        } else if (startGraphModel.getSource().hasErrors()) {
-            // these are low-level errors; don't even try to build the model
-            var activeHostGraphs = getActiveGraphs(HOST);
-            for (FormatError error : startGraphModel.getSource().getErrors()) {
-                errors.add(error, activeHostGraphs);
-            }
-        } else {
-            FormatErrorSet startGraphErrors;
-            try {
-                HostGraph startGraph = startGraphModel.toResource();
-                result.setStartGraph(startGraph);
-                startGraphErrors = startGraph.getErrors();
-            } catch (FormatException exc) {
-                startGraphErrors = exc.getErrors();
-            }
-            String prefix = startGraphNames.size() > 1
-                ? "combined start graph"
-                : "start graph '" + startGraphModel.getName() + "'";
-            var activeHostGraphs = getActiveGraphs(HOST);
-            for (FormatError error : startGraphErrors) {
-                errors.add("Error in %s: %s", prefix, error, activeHostGraphs);
-            }
+        try {
+            result.setStartGraph(getStartGraphModel().toResource());
+        } catch (FormatException e) {
+            errors.addAll(e.getErrors());
         }
         errors.throwException();
         // Set the Prolog environment.
@@ -800,7 +771,7 @@ public class GrammarModel implements PropertyChangeListener {
     /** Flag to indicate if the start graph is external. */
     private boolean isExternalStartGraphModel = false;
     /** The start graph of the grammar. */
-    private HostModel startGraphModel;
+    private CompositeHostModel startGraphModel;
     /** The type model composed from the individual elements. */
     private CompositeTypeModel typeModel;
     /** The control model composed from the individual control programs. */

@@ -23,6 +23,7 @@ import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.ValueNode;
+import nl.utwente.groove.grammar.type.ImplicitTypeGraph;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.util.Factory;
@@ -66,8 +67,19 @@ public class HostModel extends GraphBasedModel<HostGraph> {
 
     @Override
     public TypeGraph getTypeGraph() {
-        return this.morphism.get().getTypeGraph();
+        return this.typeGraph.get();
     }
+
+    private final Factory<TypeGraph> typeGraph = Factory.lazy(() -> {
+        TypeGraph result;
+        var grammar = getGrammar();
+        if (grammar == null) {
+            result = ImplicitTypeGraph.newInstance(getTypeLabels());
+        } else {
+            result = grammar.getTypeGraph();
+        }
+        return result;
+    });
 
     @Override
     public TypeModelMap getTypeMap() {
@@ -96,12 +108,12 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     }
 
     @Override
-    public Set<TypeLabel> getLabels() {
-        return this.labelSet.get();
+    public Set<TypeLabel> getTypeLabels() {
+        return this.typeLabelSet.get();
     }
 
     /** Set of labels occurring in this graph. */
-    private final Factory<Set<TypeLabel>> labelSet = Factory.lazy(this::createLabels);
+    private final Factory<Set<TypeLabel>> typeLabelSet = Factory.lazy(this::createLabels);
 
     private Set<TypeLabel> createLabels() {
         Set<TypeLabel> result = new HashSet<>();
@@ -117,7 +129,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     @Override
     void notifyWillRebuild() {
         super.notifyWillRebuild();
-        this.labelSet.reset();
+        this.typeLabelSet.reset();
         this.morphism.reset();
         this.typeMap.reset();
     }

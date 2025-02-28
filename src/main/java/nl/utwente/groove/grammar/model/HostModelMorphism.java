@@ -130,7 +130,8 @@ class HostModelMorphism {
                 }
                 map = typeMap;
             } catch (FormatException exc) {
-                errors.addAll(exc.getErrors().transfer(map));
+                errors.applyInverse(map);
+                errors.addAll(exc.getErrors());
             }
         }
         // transfer graph info such as layout from model to resource

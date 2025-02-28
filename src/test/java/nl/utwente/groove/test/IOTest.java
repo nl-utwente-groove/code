@@ -128,7 +128,7 @@ public class IOTest {
             Grammar gg = view.toGrammar();
 
             assertEquals(grammarName, gg.getName());
-            assertEquals(startName, view.getStartGraphModel().getQualName().toString());
+            assertEquals(startName, view.getStartGraphModel().getName());
             //            assertEquals(controlName, gg.getCtrlAut().getName());
             assertEquals(rulecount, gg.getActions().size());
 
