@@ -531,6 +531,11 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     /** Flag indicating whether the graph is normal. */
     private boolean normal;
 
+    /** Returns the node with a given ID, if any. */
+    AspectNode getNodeForId(String id) {
+        return getNodeIdMap().get(id);
+    }
+
     /** Returns the mapping from declared node identities to nodes.
      * Once this method has been called, no new node IDs should be added
      */
@@ -539,14 +544,16 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     }
 
     /** Resets the previously computed mapping from node IDs to nodes.
-     * This has to be done after normalisation, because ID nodes may have changed.
+     * This has to be called after normalisation, because ID nodes may have changed.
      */
     void resetNodeIdMap() {
         this.nodeIdMap.reset();
     }
 
-    /** Creates the mapping from declared node identities to nodes.
-     * Once this method has been called, no new node IDs should be added
+    /** Mapping from node identifiers to nodes. */
+    private final Factory<Map<String,AspectNode>> nodeIdMap = lazy(this::createNodeIdMap);
+
+    /** Computes the value for {@link #getNodeIdMap()}
      */
     private Map<String,AspectNode> createNodeIdMap() {
         this.sortMap.reset();
@@ -560,21 +567,17 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         return result;
     }
 
-    /** Mapping from node identifiers to nodes. */
-    private Factory<Map<String,AspectNode>> nodeIdMap = lazy(this::createNodeIdMap);
-
-    /** Returns the node with a given ID, if any. */
-    AspectNode getNodeForId(String id) {
-        return getNodeIdMap().get(id);
-    }
-
-    /** Returns a mapping from variables and field to primitive node sorts.
+    /** Returns a mapping from named variables and fields of named nodes to primitive node sorts.
      * Once this method has been called, no new node IDs may be added.
      */
     SortMap getSortMap() {
         return this.sortMap.get();
     }
 
+    /** The factory for {@link #getSortMap()}. */
+    private final Factory<SortMap> sortMap = lazy(this::createSortMap);
+
+    /** Computes the value for {@link #getSortMap()}. */
     @SuppressWarnings("cast")
     private SortMap createSortMap() {
         SortMap result = new SortMap();
@@ -610,9 +613,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         }
         return result;
     }
-
-    /** Mapping from node identifiers to sorts. */
-    private Factory<SortMap> sortMap = lazy(this::createSortMap);
 
     /** Returns the mapping from variables and field to primitive node sorts,
      * extended with self-fields for a given node type label.
