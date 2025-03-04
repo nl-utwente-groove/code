@@ -31,9 +31,9 @@ public enum LogicOp implements Op {
     @Syntax("rule [LPAR arg_list RPAR] | string_constant")
     @ToolTipHeader("Atomic or rule call proposition")
     @ToolTipBody({"Holds if %s is enabled in the current state.",
-        "Note that this does <i>not</i> mean that %1$s has just been executed.",
-        "Without arguments, only the rule name is checked.",
-        "Arguments may include the wildcard '_', which matches everything."})
+            "Note that this does <i>not</i> mean that %1$s has just been executed.",
+            "Without arguments, only the rule name is checked.",
+            "Arguments may include the wildcard '_', which matches everything."})
     PROP("", OpKind.ATOM),
 
     /** True. */
@@ -76,7 +76,7 @@ public enum LogicOp implements Op {
     @Syntax("post FOLLOWS pre")
     @ToolTipHeader("Inverse implication")
     @ToolTipBody({"Either %2$s fails to hold, or %1$s holds;",
-        "in other words, %1$s is implied by %2$s."})
+            "in other words, %1$s is implied by %2$s."})
     FOLLOWS("<-", OpKind.IMPLIES),
 
     /** Equivalence. */
@@ -95,20 +95,28 @@ public enum LogicOp implements Op {
     @Syntax("first UNTIL second")
     @ToolTipHeader("Until")
     @ToolTipBody({"%1$s holds up until one state before %2$s holds,",
-        "and %2$s will indeed eventually hold."})
+            "and %2$s will indeed eventually hold."})
     UNTIL("U", OpKind.TEMP_INFIX),
 
     /** Weak temporal until (second operand may never hold). */
     @Syntax("first W_UNTIL second")
     @ToolTipHeader("Weak until")
     @ToolTipBody({"Either %1$s holds up until one state before %2$s holds,",
-        "or %1$s holds forever."})
+            "or %1$s holds forever."})
     W_UNTIL("W", OpKind.TEMP_INFIX),
 
     /** Temporal release. */
+    @Syntax("first RELEASE second")
+    @ToolTipHeader("Release")
+    @ToolTipBody({"%2$s holds up until a state where %1$s also holds,", "or %2$s holds forever."})
     RELEASE("R", OpKind.TEMP_INFIX),
 
     /** Strong temporal release (second operand must eventually hold). */
+
+    @Syntax("first RELEASE second")
+    @ToolTipHeader("Strong release")
+    @ToolTipBody({"%2$s holds up until a state where %1$s also holds,",
+            "and %1$s will indeed eventually hold."})
     S_RELEASE("M", OpKind.TEMP_INFIX),
 
     /** Everywhere along a path. */
