@@ -82,9 +82,9 @@ public interface GraphTransition extends GEdge<GraphState> {
     public boolean isInnerStep();
 
     /**'
-     * Indicates if this transition is an exposed part of the GTS.
+     * Indicates if this transition is a public part of the GTS.
      * This is the case if it is not an internal recipe step, and its source and
-     * target states are exposed.
+     * target states are public.
      * @see #isInnerStep()
      * @see GraphState#isPublic()
      */

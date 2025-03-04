@@ -73,7 +73,7 @@ public interface GraphState extends Node, Phase {
     /**
      * Returns the set of currently generated outgoing
      * complete transitions starting in this state.
-     * Convenience method for {@code getTransitions(COMPLETE)}.
+     * Convenience method for {@code getTransitions(PUBLIC)}.
      * @see #getTransitions(GraphTransition.Claz)
      */
     public default Set<? extends GraphTransition> getTransitions() {
