@@ -17,6 +17,18 @@
 
 package nl.utwente.groove.verify;
 
+import static gov.nasa.ltl.trans.Formula.Always;
+import static gov.nasa.ltl.trans.Formula.And;
+import static gov.nasa.ltl.trans.Formula.Eventually;
+import static gov.nasa.ltl.trans.Formula.False;
+import static gov.nasa.ltl.trans.Formula.Next;
+import static gov.nasa.ltl.trans.Formula.Not;
+import static gov.nasa.ltl.trans.Formula.Or;
+import static gov.nasa.ltl.trans.Formula.Proposition;
+import static gov.nasa.ltl.trans.Formula.Release;
+import static gov.nasa.ltl.trans.Formula.True;
+import static gov.nasa.ltl.trans.Formula.Until;
+import static gov.nasa.ltl.trans.Formula.WUntil;
 import static nl.utwente.groove.verify.LogicOp.ALWAYS;
 import static nl.utwente.groove.verify.LogicOp.AND;
 import static nl.utwente.groove.verify.LogicOp.EQUIV;
@@ -375,31 +387,31 @@ public class Formula extends ATermTree<LogicOp,Formula> {
         case EXISTS:
             throw new FormatException("Path quantifier '%s' not allowed in LTL formula", getOp());
         case PROP:
-            return gov.nasa.ltl.trans.Formula.Proposition(getProp());
+            return Proposition(getProp());
         case TRUE:
-            return gov.nasa.ltl.trans.Formula.True();
+            return True();
         case FALSE:
-            return gov.nasa.ltl.trans.Formula.False();
+            return False();
         case NOT:
-            return gov.nasa.ltl.trans.Formula.Not(arg1);
+            return Not(arg1);
         case OR:
-            return gov.nasa.ltl.trans.Formula.Or(arg1, arg2);
+            return Or(arg1, arg2);
         case AND:
-            return gov.nasa.ltl.trans.Formula.And(arg1, arg2);
+            return And(arg1, arg2);
         case NEXT:
-            return gov.nasa.ltl.trans.Formula.Next(arg1);
+            return Next(arg1);
         case RELEASE:
-            return gov.nasa.ltl.trans.Formula.WRelease(arg1, arg2);
+            return Release(arg1, arg2);
         case S_RELEASE:
-            return gov.nasa.ltl.trans.Formula.Release(arg1, arg2);
+            return Not(WUntil(Not(arg1), Not(arg2)));
         case UNTIL:
-            return gov.nasa.ltl.trans.Formula.Until(arg1, arg2);
+            return Until(arg1, arg2);
         case W_UNTIL:
-            return gov.nasa.ltl.trans.Formula.WUntil(arg1, arg2);
+            return WUntil(arg1, arg2);
         case ALWAYS:
-            return gov.nasa.ltl.trans.Formula.Always(arg1);
+            return Always(arg1);
         case EVENTUALLY:
-            return gov.nasa.ltl.trans.Formula.Eventually(arg1);
+            return Eventually(arg1);
         case EQUIV:
             return and(implies(getArg1(), getArg2()), follows(getArg1(), getArg2())).toLtlFormula();
         case FOLLOWS:

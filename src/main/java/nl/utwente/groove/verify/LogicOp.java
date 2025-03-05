@@ -108,14 +108,14 @@ public enum LogicOp implements Op {
     /** Temporal release. */
     @Syntax("first RELEASE second")
     @ToolTipHeader("Release")
-    @ToolTipBody({"%2$s holds up until a state where %1$s also holds,", "or %2$s holds forever."})
+    @ToolTipBody({"%2$s holds up until (and including) a state where %1$s also holds,",
+            "or %2$s holds forever."})
     RELEASE("R", OpKind.TEMP_INFIX),
 
-    /** Strong temporal release (second operand must eventually hold). */
-
+    /** Strong temporal release (first operand must eventually hold). */
     @Syntax("first RELEASE second")
     @ToolTipHeader("Strong release")
-    @ToolTipBody({"%2$s holds up until a state where %1$s also holds,",
+    @ToolTipBody({"%2$s holds up until (and including) a state where %1$s also holds,",
             "and %1$s will indeed eventually hold."})
     S_RELEASE("M", OpKind.TEMP_INFIX),
 
