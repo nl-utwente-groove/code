@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.GraphMap;
 import nl.utwente.groove.util.Fixable;
+import nl.utwente.groove.util.Relation;
 
 /**
  * Set of format errors, with additional functionality for
@@ -94,7 +95,6 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
     * @return this object itself, for chaining
     */
     public FormatErrorSet addAll(FormatErrorSet other) {
-        getProjection().putAll(other.getProjection());
         other.getErrorSet().forEach(this::add);
         return this;
     }
@@ -140,7 +140,10 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
 
     /** Returns a new format error set in which the context information is transferred.
      * @param map mapping from the context of this error to the context
-     * of the result error; or {@code null} if there is no mapping
+     * of the result error; or {@code null} if there is no mapping.
+     * The resulting error set is equal to that obtained by {@link #apply(GraphMap)},
+     * except that this method creates a new {@link FormatErrorSet} instead of
+     * modifying {@code this}, and hence also works if {@code this} is fixed.
      */
     public FormatErrorSet transfer(GraphMap map) {
         FormatErrorSet result = new FormatErrorSet();
@@ -159,13 +162,14 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
      * Modifies the errors currently in this set, as well as all errors added in the future,
      * by applying the inverse a given element map to their graph elements.
      * The method returns this {@link FormatErrorSet} for chaining.
+     * Should not be invoked after {@link #setFixed()}.
      * @see #applyInverse(GraphMap)
      * @see #apply(Map)
      * @param map mapping from contextual {@link Element}s to current error {@link Element}s
      */
     public FormatErrorSet applyInverse(Map<? extends Element,? extends Element> map) {
-        var inverse = new HashMap<Element,Element>();
-        map.entrySet().forEach(e -> inverse.put(e.getValue(), e.getKey()));
+        var inverse = new Relation<Element,Element>();
+        inverse.addInverse(map);
         return apply(inverse);
     }
 
@@ -173,14 +177,15 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
      * Modifies the errors in this set, as well as all errors added in the future,
      * by applying the inverse of a given graph map to their graph elements.
      * The method returns this {@link FormatErrorSet} for chaining.
+     * Should not be invoked after {@link #setFixed()}.
      * @see #applyInverse(Map)
      * @see #apply(Map)
      * @param map mapping from contextual {@link Element}s to current error {@link Element}s
      */
     public FormatErrorSet applyInverse(GraphMap map) {
-        var inverse = new HashMap<Element,Element>();
-        map.nodeMap().entrySet().forEach(e -> inverse.put(e.getValue(), e.getKey()));
-        map.edgeMap().entrySet().forEach(e -> inverse.put(e.getValue(), e.getKey()));
+        var inverse = new Relation<Element,Element>();
+        inverse.addInverse(map.nodeMap());
+        inverse.addInverse(map.edgeMap());
         return apply(inverse);
     }
 
@@ -188,13 +193,29 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
      * Modifies the errors in this set, as well as all errors added in the future,
      * by applying a given element map to their graph elements.
      * The method returns this {@link FormatErrorSet} for chaining.
+     * Should not be invoked after {@link #setFixed()}.
      * @see #applyInverse(Map)
      * @see #apply(GraphMap)
      * @param map mapping from current error {@link Element}s to contextual {@link Element}s
      */
     public FormatErrorSet apply(Map<? extends Element,? extends Element> map) {
         getErrorSet().forEach(e -> e.apply(map));
-        getProjection().putAll(map);
+        getProjection().addAll(map);
+        return this;
+    }
+
+    /**
+     * Modifies the errors in this set, as well as all errors added in the future,
+     * by applying a given relation to their graph elements.
+     * The method returns this {@link FormatErrorSet} for chaining.
+     * Should not be invoked after {@link #setFixed()}.
+     * @see #applyInverse(Map)
+     * @see #apply(GraphMap)
+     * @param relation relation between current error {@link Element}s to contextual {@link Element}s
+     */
+    public FormatErrorSet apply(Relation<? extends Element,? extends Element> relation) {
+        getErrorSet().forEach(e -> e.apply(relation));
+        getProjection().addAll(relation);
         return this;
     }
 
@@ -202,6 +223,7 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
      * Modifies the errors in this set, as well as all errors added in the future,
      * by applying a given graph map to their graph elements.
      * The method returns this {@link FormatErrorSet} for chaining.
+     * Should not be invoked after {@link #setFixed()}.
      * @see #applyInverse(GraphMap)
      * @see #apply(Map)
      * @param map mapping from current error {@link Element}s to contextual {@link Element}s
@@ -214,19 +236,19 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
     }
 
     /**
-     * Lazily creates and returns the projection map from current error elements to context elements.
+     * Returns the projection map from error elements to (sets of) context elements.
      * This is applied to any error added to the set.
      */
-    Map<Element,Element> getProjection() {
+    Relation<Element,Element> getProjection() {
         var result = this.projection;
         if (result == null) {
-            result = this.projection = new HashMap<>();
+            result = this.projection = new Relation<>();
         }
         return result;
     }
 
-    /** Projection from (inner) graph elements to (outer, contextual) graph elements. */
-    private Map<Element,Element> projection;
+    /** Projection from (inner) graph elements to sets of (outer, contextual) graph elements. */
+    private Relation<Element,Element> projection;
 
     @Override
     public int hashCode() {

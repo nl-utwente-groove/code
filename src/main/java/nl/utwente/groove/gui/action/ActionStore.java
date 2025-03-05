@@ -509,6 +509,17 @@ public class ActionStore implements SimulatorListener {
      */
     private NewGrammarAction newGrammarAction;
 
+    /** Returns the singleton preview action for a given resource kind. */
+    public SimulatorAction getPreviewAction(ResourceKind type) {
+        return switch (type) {
+        case HOST -> getPreviewHostAction();
+        case TYPE -> getPreviewTypeAction();
+        case CONTROL -> getPreviewControlAction();
+        case RULE -> getPreviewRuleAction();
+        default -> null;
+        };
+    }
+
     /**
      * Lazily creates and returns the singleton instance of the
      * {@link PreviewControlAction}.
@@ -520,8 +531,22 @@ public class ActionStore implements SimulatorListener {
         return this.previewControlAction;
     }
 
-    /** Singular instance of the CtrlPreviewAction. */
+    /** Singular instance of the {@link PreviewControlAction}. */
     private SimulatorAction previewControlAction;
+
+    /**
+     * Lazily creates and returns the singleton instance of the
+     * {@link PreviewHostAction}.
+     */
+    public SimulatorAction getPreviewHostAction() {
+        if (this.previewHostAction == null) {
+            this.previewHostAction = new PreviewHostAction(this.simulator);
+        }
+        return this.previewHostAction;
+    }
+
+    /** Singular instance of the {@link PreviewHostAction}. */
+    private SimulatorAction previewHostAction;
 
     /**
      * Lazily creates and returns the singleton instance of the
@@ -534,7 +559,7 @@ public class ActionStore implements SimulatorListener {
         return this.previewRuleAction;
     }
 
-    /** Singular instance of the CtrlPreviewAction. */
+    /** Singular instance of the {@link PreviewRuleAction}. */
     private SimulatorAction previewRuleAction;
 
     /**
@@ -548,7 +573,7 @@ public class ActionStore implements SimulatorListener {
         return this.previewTypeAction;
     }
 
-    /** Singular instance of the CtrlPreviewAction. */
+    /** Singular instance of the {@link PreviewTypeAction}. */
     private SimulatorAction previewTypeAction;
 
     /** Returns the quit action permanently associated with this simulator. */

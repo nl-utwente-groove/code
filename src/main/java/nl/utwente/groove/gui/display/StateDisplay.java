@@ -55,7 +55,6 @@ import nl.utwente.groove.grammar.host.HostGraphMorphism;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.host.HostNodeSet;
 import nl.utwente.groove.grammar.model.GrammarModel;
-import nl.utwente.groove.grammar.model.HostModel;
 import nl.utwente.groove.grammar.model.HostModelMap;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.graph.Element;
@@ -416,11 +415,9 @@ public class StateDisplay extends Display implements SimulatorListener {
             String stateID = state.toString();
             result.append(HTMLConverter.UNDERLINE_TAG.on(stateID));
             if (stateID.equals("s0")) {
-                HostModel startGraph = getSimulatorModel().getGrammar().getStartGraphModel();
-                if (startGraph != null) {
-                    result.append("=");
-                    result.append(startGraph.getLastName());
-                }
+                var startGraph = getSimulatorModel().getGrammar().getStartGraphModel();
+                result.append("=");
+                result.append(startGraph.getName());
             }
             MatchResult match = getSimulatorModel().getMatch();
             boolean brackets = false;
@@ -548,6 +545,7 @@ public class StateDisplay extends Display implements SimulatorListener {
         var result = createAspectJModel(stateMap.getAspectGraph());
         var startHostModel = getGrammar().getStartGraphModel();
         AspectGraph startGraph = startHostModel.getSource();
+        assert startGraph != null;
         HostModelMap startGraphMap = startHostModel.getMap();
         // the AspectGraph in result does not equal startGraph, we have to convert
         var startJModel = createAspectJModel(startGraph);

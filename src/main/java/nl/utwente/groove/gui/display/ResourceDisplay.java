@@ -158,13 +158,13 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         if (kind == ResourceKind.GROOVY) {
             result.add(getActions().getExecGroovyAction());
         }
-        if (kind == ResourceKind.TYPE) {
+        if (kind == ResourceKind.TYPE || kind == ResourceKind.HOST) {
             if (separation >= 0) {
                 result.addSeparator(new Dimension(separation, 0));
             } else {
                 result.addSeparator();
             }
-            result.add(getActions().getPreviewTypeAction());
+            result.add(getActions().getPreviewAction(kind));
         }
         return result;
     }

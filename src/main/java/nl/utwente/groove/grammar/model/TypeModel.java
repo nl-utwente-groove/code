@@ -80,7 +80,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         try {
             return toResource();
         } catch (FormatException exc) {
-            return ImplicitTypeGraph.newInstance(getLabels());
+            return ImplicitTypeGraph.newInstance(getTypeLabels());
         }
     }
 
@@ -95,7 +95,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
      * @return the set of labels, or {@code null} if the model could not be computed
      */
     @Override
-    public Set<TypeLabel> getLabels() {
+    public Set<TypeLabel> getTypeLabels() {
         TypeGraph typeGraph = getResource();
         return typeGraph == null
             ? Collections.<TypeLabel>emptySet()

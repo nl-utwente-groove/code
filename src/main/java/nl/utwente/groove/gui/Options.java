@@ -572,9 +572,11 @@ public class Options implements Cloneable {
     public static final String PASTE_ACTION_NAME = "Paste";
     /** Preview control action name */
     public static final String PREVIEW_CONTROL_ACTION_NAME = "Inspect Control ...";
+    /** Preview host action name */
+    public static final String PREVIEW_HOST_ACTION_NAME = "Inspect Composite Start Graph ...";
     /** Preview rule action name */
     public static final String PREVIEW_RULE_ACTION_NAME = "Inspect Rule ...";
-    /** Preview rule action name */
+    /** Preview type action name */
     public static final String PREVIEW_TYPE_ACTION_NAME = "Inspect Composite Type ...";
     /** Quit action name */
     public static final String QUIT_ACTION_NAME = "Quit";

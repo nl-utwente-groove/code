@@ -291,7 +291,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
     /** Returns the set of labels occurring in this rule. */
     @Override
-    public @NonNull Set<@NonNull TypeLabel> getLabels() {
+    public @NonNull Set<@NonNull TypeLabel> getTypeLabels() {
         Set<TypeLabel> result = this.labelSet;
         if (result == null) {
             Set<TypeLabel> labelSet = new HashSet<>();

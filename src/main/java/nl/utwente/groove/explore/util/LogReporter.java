@@ -109,11 +109,8 @@ public class LogReporter extends AExplorationReporter {
                 this.log.append("\n\n");
                 this.log.append(getExploration().getLastMessage());
             }
-            String logId = getGTS().getGrammar()
-                .getId() + "-"
-                + this.startTime.toString()
-                    .replace(' ', '_')
-                    .replace(':', '-');
+            String logId = getGTS().getGrammar().getId() + "-"
+                + this.startTime.toString().replace(' ', '_').replace(':', '-');
             String logFileName = FileType.LOG.addExtension(logId);
             try (PrintWriter logFile = new PrintWriter(new File(this.logDir, logFileName))) {
                 // copy the initial messages
@@ -143,16 +140,12 @@ public class LogReporter extends AExplorationReporter {
 
     /** Emits the message announcing the parameters of the exploration. */
     protected void emitStartMessage() {
-        emit("Grammar:\t%s%n", getGTS().getGrammar()
-            .getName());
-        emit("Start graph:\t%s%n", getGTS().getGrammar()
-            .getStartGraph()
-            .getName());
-        emit("Control:\t%s%n", getGTS().getGrammar()
-            .getControl()
-            .getQualName());
-        emit("Exploration:\t%s%n", getExploration().getType()
-            .getIdentifier());
+        emit("Grammar:\t%s%n", getGTS().getGrammar().getName());
+        emit("Start graph:\t%s%n", getGTS().getGrammar().getStartGraph().getName());
+        emit("Control:\t%s%n", getGTS().getGrammar().getControl().getQualName());
+        emit("Exploration:\t%s%n", getExploration().getType().getIdentifier());
+        emit("Exploration:\t%s%n", getExploration().getType().getIdentifier());
+        emit("Max memory (-Xmx):\t%s%n", Runtime.getRuntime().maxMemory() / B_PER_MB);
         emit("Timestamp:\t%s%n", this.startTime);
     }
 
@@ -187,4 +180,9 @@ public class LogReporter extends AExplorationReporter {
      * logging is switched on, the gc log is appended to the generator log.
      */
     static public final String GC_LOG_NAME = "gc.log";
+    /** Number of bytes per kB */
+    static private long B_PER_KB = 1024;
+    /** Number of bytes per MB */
+    static private long B_PER_MB = B_PER_KB * B_PER_KB;
+
 }

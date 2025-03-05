@@ -90,12 +90,12 @@ abstract public class GraphBasedModel<R> extends NamedResourceModel<R> {
     abstract public ModelMap<?,?> getMap();
 
     /**
-     * Returns the set of labels occurring in this resource.
+     * Returns the set of type labels occurring in this resource.
      * This method never returns {@code null}, and does a best-effort computation
      * even if the resource contains errors.
      * @return the set of labels occurring in the resource.
      */
-    abstract public Set<TypeLabel> getLabels();
+    abstract public Set<TypeLabel> getTypeLabels();
 
     /**
      * Returns a mapping from elements of the source aspect graph to their corresponding

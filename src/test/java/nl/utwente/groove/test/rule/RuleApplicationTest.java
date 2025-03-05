@@ -221,7 +221,7 @@ public class RuleApplicationTest extends TestCase {
             if (rule == null) {
                 System.err.printf(String.format("Rule '%s' is currently disabled%n", ruleName));
             } else {
-                test(this.grammar.getStartGraphModel().toHost().clone(family), rule, results,
+                test(this.grammar.getStartGraphModel().toResource().clone(family), rule, results,
                      errorCount);
             }
         } catch (FormatException e) {

@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
@@ -48,7 +49,8 @@ import nl.utwente.groove.gui.list.ListPanel.SelectableListEntry;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
-import nl.utwente.groove.util.collect.ListComparator;
+import nl.utwente.groove.util.Relation;
+import nl.utwente.groove.util.collect.CollectionComparator;
 
 /**
  * Class encoding a single message reporting an error in a graph view.
@@ -170,7 +172,7 @@ public class FormatError
         int result = toString().compareTo(other.toString());
         // establish lexicographical ordering of error objects
         if (result == 0) {
-            result = elemListComparator.compare(getElements(), other.getElements());
+            result = elemsComparator.compare(getElements(), other.getElements());
         }
         return result;
     }
@@ -219,12 +221,12 @@ public class FormatError
     /** Returns the list of elements in which the error occurs, together
      * with its projections. May be empty. */
     @Override
-    public List<Element> getElements() {
+    public Collection<Element> getElements() {
         return this.elements;
     }
 
     /** List of erroneous elements. */
-    private List<Element> elements = new ArrayList<>();
+    private Collection<Element> elements = new LinkedHashSet<>();
 
     /** Modifies the list of elements in this error by applying a mapping to it.
      * Returns this error for chaining.
@@ -232,11 +234,29 @@ public class FormatError
     FormatError apply(Map<? extends Element,? extends Element> map) {
         if (!map.isEmpty()) {
             var elements = this.elements;
-            List<Element> newElements = new ArrayList<>(elements.size());
+            var newElements = new ArrayList<Element>(elements.size());
             for (var e : elements) {
                 var i = map.get(e);
                 if (i != null) {
                     newElements.add(i);
+                }
+            }
+            this.elements.addAll(newElements);
+        }
+        return this;
+    }
+
+    /** Modifies the list of elements in this error by applying a relation to it.
+     * Returns this error for chaining.
+     */
+    FormatError apply(Relation<? extends Element,? extends Element> relation) {
+        if (!relation.isEmpty()) {
+            var elements = this.elements;
+            var newElements = new ArrayList<Element>(elements.size());
+            for (var e : elements) {
+                var i = relation.get(e);
+                if (i != null) {
+                    newElements.addAll(i);
                 }
             }
             this.elements.addAll(newElements);
@@ -352,9 +372,6 @@ public class FormatError
     public boolean setFixed() {
         boolean result = !isFixed();
         if (result) {
-            var allElements = getElements();
-            this.elements.clear();
-            this.elements.addAll(allElements);
             this.fixed = true;
         }
         return result;
@@ -383,8 +400,8 @@ public class FormatError
         };
     };
     /** Comparator for lists of graph elements. */
-    private static final Comparator<List<Element>> elemListComparator
-        = ListComparator.<Element>instance(elemComparator);
+    private static final Comparator<Collection<Element>> elemsComparator
+        = CollectionComparator.<Element>instance(elemComparator);
 
     /** Constructs a control parameter from a given name. */
     public static Resource control(QualName name) {
