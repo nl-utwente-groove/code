@@ -53,6 +53,7 @@ import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.cli.GrooveCmdLineParser;
 import nl.utwente.groove.util.cli.GrooveCmdLineTool;
+import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -123,6 +124,19 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             emit("Model: %s%n", this.modelGraph);
             model = new GraphModel(Groove.loadGraph(this.modelGraph), this.ltsLabels);
         }
+        // check if the formulas match the model
+        if (model instanceof GTSModel gtsModel) {
+            var grammar = gtsModel.gts.getGrammar();
+            var errors = new FormatErrorSet();
+            for (var formula : this.ctlProps) {
+                try {
+                    formula.check(grammar);
+                } catch (FormatException e) {
+                    errors.addAll(e.getErrors());
+                }
+            }
+            errors.throwException();
+        }
         long mcStartTime = System.currentTimeMillis();
         int maxWidth = 0;
         Map<Formula,Boolean> outcome = new HashMap<>();
@@ -148,7 +162,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
     /**
      * Generates a model by invoking the Generator with a given list of arguments.
      */
-    private Model generateModel(String... genArgs) throws Exception {
+    private GTSModel generateModel(String... genArgs) throws Exception {
         List<String> args = new ArrayList<>();
         args.add("-v");
         args.add("" + getVerbosity().getLevel());

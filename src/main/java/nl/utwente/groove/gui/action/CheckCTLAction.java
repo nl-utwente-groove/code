@@ -28,8 +28,9 @@ import nl.utwente.groove.verify.Logic;
 public class CheckCTLAction extends SimulatorAction {
     /** Constructs an instance of the action. */
     public CheckCTLAction(Simulator simulator, boolean full) {
-        super(simulator,
-            full ? Options.CHECK_CTL_FULL_ACTION_NAME : Options.CHECK_CTL_AS_IS_ACTION_NAME, null);
+        super(simulator, full
+            ? Options.CHECK_CTL_FULL_ACTION_NAME
+            : Options.CHECK_CTL_AS_IS_ACTION_NAME, null);
         this.full = full;
     }
 
@@ -41,8 +42,7 @@ public class CheckCTLAction extends SimulatorAction {
             GTS gts = getSimulatorModel().getGTS();
             // completely re-explore if the GTS has open states
             if (gts.hasOpenStates() && this.full && getSimulatorModel().resetGTS()) {
-                getActions().getExploreAction()
-                    .explore(getGrammarModel().getDefaultExploreType());
+                getActions().getExploreAction().explore(getGrammarModel().getDefaultExploreType());
                 gts = getSimulatorModel().getGTS();
                 doCheck = !gts.hasOpenStates();
             }
@@ -60,8 +60,8 @@ public class CheckCTLAction extends SimulatorAction {
     /** Returns a dialog that will ask for a formula to be entered. */
     private StringDialog getCtlFormulaDialog() {
         if (this.ctlFormulaDialog == null) {
-            this.ctlFormulaDialog =
-                new StringDialog("Enter the CTL Formula", FormulaParser.getDocMap(Logic.CTL)) {
+            this.ctlFormulaDialog
+                = new StringDialog("Enter the CTL Formula", FormulaParser.getDocMap(Logic.CTL)) {
                     @Override
                     public String parse(String text) throws FormatException {
                         Formula.parse(Logic.CTL, text);
@@ -77,8 +77,8 @@ public class CheckCTLAction extends SimulatorAction {
      * @throws FormatException if the property is not a properly formatted CTL property
      */
     private void doCheckProperty(ExploreResult result, String property) throws FormatException {
-        Formula formula = Formula.parse(property)
-            .toCtlFormula();
+        Formula formula = Formula.parse(property).toCtlFormula();
+        formula.check(result.getGTS().getGrammar());
         CTLMarker modelChecker = new CTLMarker(formula, CTLModelChecker.newModel(result));
         int counterExampleCount = modelChecker.getCount(false);
         List<GraphState> counterExamples = new ArrayList<>(counterExampleCount);
@@ -86,21 +86,20 @@ public class CheckCTLAction extends SimulatorAction {
         if (counterExampleCount == 0) {
             message = String.format("The property '%s' holds for all states", property);
         } else {
-            boolean allStates = confirmBehaviour(VERIFY_ALL_STATES_OPTION,
-                "Verify all states? Choosing 'No' will report only on the start state.");
+            boolean allStates
+                = confirmBehaviour(VERIFY_ALL_STATES_OPTION,
+                                   "Verify all states? Choosing 'No' will report only on the start state.");
             if (allStates) {
                 for (Node state : modelChecker.getStates(false)) {
                     counterExamples.add((GraphState) state);
                 }
-                message =
-                    String.format("The property '%s' fails to hold in the %d highlighted states",
-                        property,
-                        counterExampleCount);
+                message = String
+                    .format("The property '%s' fails to hold in the %d highlighted states",
+                            property, counterExampleCount);
             } else if (modelChecker.hasValue(false)) {
-                counterExamples.add(result.getGTS()
-                    .startState());
-                message =
-                    String.format("The property '%s' fails to hold in the initial state", property);
+                counterExamples.add(result.getGTS().startState());
+                message = String
+                    .format("The property '%s' fails to hold in the initial state", property);
             } else {
                 message = String.format("The property '%s' holds in the initial state", property);
             }
