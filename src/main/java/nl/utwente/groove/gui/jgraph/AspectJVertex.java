@@ -203,7 +203,6 @@ public class AspectJVertex extends
 
     @Override
     public Collection<? extends Label> getLabels() {
-        getNode().testFixed(true);
         Collection<TypeElement> result = new ArrayList<>();
         if (!getAspects().containsKey(Category.NESTING)) {
             for (Edge edge : getEdges()) {
@@ -226,7 +225,6 @@ public class AspectJVertex extends
 
     @Override
     public Collection<? extends Label> getKeys() {
-        getNode().testFixed(true);
         Collection<TypeElement> result = new ArrayList<>();
         if (!getAspects().containsKey(Category.NESTING)) {
             for (Edge edge : getEdges()) {

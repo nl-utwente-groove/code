@@ -151,7 +151,6 @@ public class AspectJEdge extends
     @SuppressWarnings("null")
     @Override
     StringBuilder getEdgeDescription() {
-        getEdge().testFixed(true);
         StringBuilder result = new StringBuilder();
         if (hasErrors()) {
             for (FormatError error : getErrors()) {
