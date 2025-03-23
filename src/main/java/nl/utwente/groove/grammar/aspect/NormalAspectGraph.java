@@ -467,7 +467,7 @@ public class NormalAspectGraph extends AspectGraph {
         return result;
     }
 
-    /** Looks for an outgoing edge matching a given field expression.
+    /** Looks for an outgoing edge matching a given field expression, to a non-expression node.
      * @param owner the node that should have the outgoing edge
      * @param fieldName expected label of the edge
      * @param sort expected target source of the edge
@@ -479,11 +479,12 @@ public class NormalAspectGraph extends AspectGraph {
             .filter(e -> allEdgesOK || e.has(Category.ROLE, AspectKind::inLHS))
             .filter(e -> e.getInnerText().equals(fieldName))
             .filter(e -> e.target().has(Category.SORT, k -> k.hasSort(sort)))
+            .filter(e -> e.target().hasConstant() || !e.target().hasExpression())
             .findAny();
         return Groove.orElse(result, null);
     }
 
-    /** Looks for an outgoing edge matching a given field expression.
+    /** Looks for an outgoing edge matching a given field expression, to a non-expression node.
      * @param owner the node that should have the outgoing edge
      * @param fieldName expected label of the edge
      * @param sort expected target source of the edge
