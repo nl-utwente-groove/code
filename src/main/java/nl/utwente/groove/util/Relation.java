@@ -32,6 +32,7 @@ public class Relation<K,V> extends HashMap<K,HashSet<V>> {
         var result = get(key);
         if (result == null) {
             result = new HashSet<>();
+            put(key, result);
         }
         result.add(value);
         return result;
@@ -42,6 +43,7 @@ public class Relation<K,V> extends HashMap<K,HashSet<V>> {
         var result = get(key);
         if (result == null) {
             result = new HashSet<>();
+            put(key, result);
         }
         result.addAll(values);
         return result;

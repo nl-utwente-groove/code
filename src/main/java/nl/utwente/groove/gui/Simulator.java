@@ -43,7 +43,6 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
@@ -418,12 +417,9 @@ public class Simulator implements SimulatorListener {
      * erroneous part of the resource upon selection of an error.
      */
     private PropertyChangeListener createListListener() {
-        return new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getNewValue() instanceof SelectableListEntry arg) {
-                    selectDisplayPart(arg);
-                }
+        return evt -> {
+            if (evt.getNewValue() instanceof SelectableListEntry arg) {
+                selectDisplayPart(arg);
             }
         };
     }
