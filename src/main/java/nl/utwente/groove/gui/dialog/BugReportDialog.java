@@ -58,10 +58,9 @@ public class BugReportDialog extends JDialog implements ActionListener, Hyperlin
         + "Oops, it seems that GROOVE just crashed on you. Sorry...<BR>"
         + "This undesired behaviour was probably caused by a bug in the code.<BR>"
         + "Please help the developers to improve the tool by submitting a "
-        + "<I>Bug Report</i> at the GROOVE project page on SourceForge: "
-        + "<A HREF=\"http://sourceforge.net/projects/groove/develop\">http://sourceforge.net/projects/groove/develop</A><BR>"
-        + "In the link given, select menu 'Tickets' and option 'Bugs' to "
-        + "create a new entry.<BR>"
+        + "<I>Bug Report</i> at the GROOVE project page on Github: "
+        + "<A HREF=\"https://github.com/nl-utwente-groove/code/issues\">https://github.com/nl-utwente-groove/code/issues</A><BR>"
+        + "In the link given, select 'New Issue' to create a new entry.<BR>"
         + "While submitting your report please describe the steps that led "
         + "to the crash and include the exception stack trace shown below." + "</FONT></HTML>";
 
@@ -145,10 +144,11 @@ public class BugReportDialog extends JDialog implements ActionListener, Hyperlin
         // Pane to create the scroll bars.
         JScrollPane scrollPane = new JScrollPane();
         scrollPane.setPreferredSize(new Dimension(700, 300));
-        scrollPane.setBorder(BorderFactory.createTitledBorder(null,
-            "Exception Stack Trace:",
-            TitledBorder.DEFAULT_JUSTIFICATION,
-            TitledBorder.DEFAULT_POSITION));
+        scrollPane
+            .setBorder(BorderFactory
+                .createTitledBorder(null, "Exception Stack Trace:",
+                                    TitledBorder.DEFAULT_JUSTIFICATION,
+                                    TitledBorder.DEFAULT_POSITION));
         scrollPane.setViewportView(noWrapPanel);
 
         return scrollPane;
@@ -172,8 +172,7 @@ public class BugReportDialog extends JDialog implements ActionListener, Hyperlin
      */
     @Override
     public void actionPerformed(ActionEvent event) {
-        if (event.getActionCommand()
-            .equals(CANCEL_COMMAND)) {
+        if (event.getActionCommand().equals(CANCEL_COMMAND)) {
             this.closeDialog();
         }
     }
@@ -185,9 +184,7 @@ public class BugReportDialog extends JDialog implements ActionListener, Hyperlin
     public void hyperlinkUpdate(HyperlinkEvent evt) {
         if (evt.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
             try {
-                Desktop.getDesktop()
-                    .browse(evt.getURL()
-                        .toURI());
+                Desktop.getDesktop().browse(evt.getURL().toURI());
             } catch (Exception e) {
                 // Silently fail if we can't open a web-browser.
             }
