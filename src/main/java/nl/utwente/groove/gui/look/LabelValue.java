@@ -24,7 +24,6 @@ import static nl.utwente.groove.graph.EdgeRole.NODE_TYPE;
 import static nl.utwente.groove.util.line.Line.Style.ITALIC;
 import static nl.utwente.groove.util.line.Line.Style.UNDERLINE;
 
-import java.awt.Color;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -562,10 +561,18 @@ public class LabelValue implements VisualValue<MultiLabel> {
     /** State line for an open state. */
     private final Line openLine = Line.atom("open").style(Style.BOLD);
 
+    /** Adds a stack line to the control information on a state.
+     * @param loc The control location
+     * @param values The values of the control variables
+     * @param actual Flag indicating if this is the actual frame level
+     */
     private Line getStackLine(Location loc, Object[] values, boolean actual) {
         Line result = Line.empty();
         if (loc != null) {
-            result = formatUserId(loc.toString());
+            if (!actual) {
+                result = result.append("(");
+            }
+            result = result.append(formatUserId(loc.toString()));
             if (loc.hasVars()) {
                 List<CtrlVar> vars = loc.getVars();
                 StringBuilder content = new StringBuilder();
@@ -586,10 +593,11 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 content.append(']');
                 result = result.append(content.toString());
             }
+            if (!actual) {
+                result = result.append(")");
+            }
         }
-        return actual
-            ? result
-            : result.color(Color.gray);
+        return result;
     }
 
     /**

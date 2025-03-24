@@ -29,6 +29,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.control.Attempt;
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.NestedCall;
+import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.util.Groove;
 
@@ -151,7 +152,9 @@ public class NestedSwitch implements Attempt.Stage<Location,NestedSwitch>, Compa
     private int computeTransience() {
         int result = 0;
         for (Switch swit : this.switches) {
-            this.transience += swit.getTransience();
+            result += swit.getTransience() + (swit.getUnit().getKind() == Kind.RECIPE
+                ? 1
+                : 0);
         }
         return result;
     }

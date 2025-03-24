@@ -649,10 +649,15 @@ public class StateCache {
             // reset the auxiliary sets, they are no longer needed
             this.backInner.forEach(d -> d.forwInner.remove(this));
             this.backInner = EMPTY_CACHE_SET;
+            //            assert this.forwInner.isEmpty() : "Full state %s reports reachable inner states %s"
+            //                .formatted(this, this.forwInner);
             this.forwInner = EMPTY_CACHE_SET;
             this.backLaunch = EMPTY_TRANS_SET;
             this.backTransient.forEach(d -> d.forwTransient.remove(this));
             this.backTransient = EMPTY_CACHE_SET;
+            //            assert this.forwTransient
+            //                .isEmpty() : "Full state %s reports reachable transient states %s"
+            //                    .formatted(this, this.forwTransient);
             this.forwTransient = EMPTY_CACHE_SET;
             this.forwTransientOpen = EMPTY_CACHE_SET;
         }

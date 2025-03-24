@@ -52,16 +52,16 @@ public class Switch implements Comparable<Switch>, Relocatable {
      * Constructs a new switch.
      * @param source source location of the switch; non-{@code null}
      * @param call call to be used as label
-     * @param transience the additional transient depth entered by this switch
+     * @param transienceIncr the additional transient depth entered by this switch
      * @param onFinish target location of the switch
      */
-    public Switch(Location source, Call call, int transience, Location onFinish) {
+    public Switch(Location source, Call call, int transienceIncr, Location onFinish) {
         assert onFinish != null;
         this.source = source;
         this.onFinish = onFinish;
         this.kind = call.getUnit().getKind();
         this.call = call.bind(getSourceBindMap());
-        this.transience = transience;
+        this.transience = transienceIncr;
     }
 
     /** Returns the source location of this switch. */

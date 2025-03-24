@@ -167,7 +167,9 @@ public abstract class Line {
             return this;
         } else if (this instanceof Atomic) {
             char c = ((Atomic) this).text.charAt(0);
-            char modC = upper ? Character.toUpperCase(c) : Character.toLowerCase(c);
+            char modC = upper
+                ? Character.toUpperCase(c)
+                : Character.toLowerCase(c);
             if (c != modC) {
                 StringBuffer content = new StringBuffer(((Atomic) this).text);
                 content.setCharAt(0, modC);
@@ -195,7 +197,9 @@ public abstract class Line {
             if (newSubline != oldSubLine) {
                 ColorType type = ((Colored) this).type;
                 Color color = ((Colored) this).color;
-                return type == ColorType.RGB ? newSubline.color(color) : newSubline.color(type);
+                return type == ColorType.RGB
+                    ? newSubline.color(color)
+                    : newSubline.color(type);
             }
         }
         return result;
@@ -249,7 +253,8 @@ public abstract class Line {
 
         @Override
         public <R extends Builder<R>> R toString(LineFormat<R> renderer) {
-            @SuppressWarnings("unchecked") R[] fragments = (R[]) new Builder[this.fragments.length];
+            @SuppressWarnings("unchecked")
+            R[] fragments = (R[]) new Builder[this.fragments.length];
             for (int i = 0; i < fragments.length; i++) {
                 fragments[i] = this.fragments[i].toString(renderer);
             }
@@ -481,9 +486,9 @@ public abstract class Line {
         BOLD,
         /** Italic font. */
         ITALIC,
-        /** Strikethrough font. */
-        UNDERLINE,
         /** Underline font. */
+        UNDERLINE,
+        /** Strikethrough font. */
         STRIKE,
         /** Superscript. */
         SUPER;
