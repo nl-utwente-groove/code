@@ -40,6 +40,7 @@ import nl.utwente.groove.grammar.Rule;
 
 /**
  * Run-time control step, instantiating a control edge.
+ * The step consists of a stack of switches, the innermost of which is a rule call.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -48,12 +49,15 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
     /**
      * Constructs a step from the given parameters.
      * @param source source frame for the step
-     * @param newSwitches stack of new switches invoked from the source frame
+     * @param stack stack of new switches invoked from the source frame
      * @param onFinish target frame for the step
      */
-    public Step(Frame source, NestedSwitch newSwitches, Frame onFinish) {
-        assert newSwitches.getInnermost().getUnit().getKind() == Callable.Kind.RULE;
-        this.swt = new NestedSwitch(newSwitches);
+    public Step(Frame source, NestedSwitch stack, Frame onFinish) {
+        assert stack.getInnermost().getUnit().getKind() == Callable.Kind.RULE;
+        this.stack = new NestedSwitch(stack);
+        var fullStack = new NestedSwitch(source.getContextStack());
+        stack.forEach(fullStack::push);
+        this.fullStack = fullStack;
         this.onFinish = onFinish;
         this.source = source;
     }
@@ -72,43 +76,44 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
 
     private final Frame onFinish;
 
-    /** Returns the contextual nested switch within which this step takes place. */
-    public NestedSwitch getContext() {
-        return getSource().getContext();
-    }
-
     /** Convenience method to return the top switch of this step. */
     public Switch getInnerSwitch() {
-        return getSwitch().getInnermost();
+        return getStack().getInnermost();
     }
 
     @Override
     public Call getInnermostCall() {
-        return getSwitch().getInnermostCall();
+        return getStack().getInnermostCall();
     }
 
     @Override
     public int getTransience() {
-        return getSwitch().getTransience();
+        return getStack().getTransience();
     }
 
     /** Returns the number of levels by which the call stack depth changes from source
      * to target frame. */
     public int getCallDepthChange() {
-        return onFinish().getContext().size() - getContext().size();
+        return onFinish().getContextStack().size() - getSource().getContextStack().size();
     }
 
-    /** Returns the stack of switches in the source frame, extended with the ones
-     * entered by this step. */
-    public final NestedSwitch getSwitch() {
-        return this.swt;
+    /** Returns the stack of switches of this step (not including the context). */
+    public final NestedSwitch getStack() {
+        return this.stack;
     }
 
-    private NestedSwitch swt;
+    private final NestedSwitch stack;
+
+    /** Returns the combined stack of switches of this step and its context. */
+    public final NestedSwitch getFullStack() {
+        return this.fullStack;
+    }
+
+    private final NestedSwitch fullStack;
 
     @Override
     public NestedCall getCall() {
-        return getSwitch().getCall();
+        return getStack().getCall();
     }
 
     /** Indicates if this step is part of an atomic block or recipe. */
@@ -127,7 +132,7 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      * @see #getRecipe()
      */
     public boolean isInner() {
-        return getContext().inRecipe() || getCall().inRecipe();
+        return getFullStack().inRecipe();
     }
 
     /**
@@ -135,10 +140,7 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      * @see #isInner()
      */
     public Optional<Recipe> getRecipe() {
-        var result = getContext().getRecipe();
-        return result.isPresent()
-            ? result
-            : getCall().getRecipe();
+        return getFullStack().getRecipe();
     }
 
     /** Convenience method to return the called rule of this step. */
@@ -174,7 +176,7 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
 
     /** Computes the value for {@link #assignSource2Par}. */
     private Assignment computeParAssign() {
-        var switchIter = getSwitch().outIterator();
+        var switchIter = getStack().outIterator();
         var result = switchIter.next().assignSource2Par();
         while (switchIter.hasNext()) {
             result = result.after(switchIter.next().assignSource2Init());
@@ -207,7 +209,7 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      * Computes the value for {@link #push}
      */
     private CallStackChange computePush() {
-        NestedSwitch swt = getSwitch();
+        NestedSwitch swt = getStack();
         Assignment[] result = new Assignment[swt.size()];
         Assignment sourceAssign = Assignment.identity(getSource().getVars());
         int i = 0;
@@ -231,7 +233,7 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
     public CallStackChange getPopUntil(Predicate<Switch> stop) {
         var result = CallStackChange.none();
         var outIter = Stream
-            .concat(getSwitch().outStream(), getSource().getContext().outStream())
+            .concat(getStack().outStream(), getSource().getContextStack().outStream())
             .iterator();
         var callee = outIter.next();
         while (!stop.test(callee) && outIter.hasNext()) {
@@ -277,7 +279,7 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
         if (result != 0) {
             return result;
         }
-        result = getSwitch().compareTo(other.getSwitch());
+        result = getStack().compareTo(other.getStack());
         if (result != 0) {
             return result;
         }
@@ -297,6 +299,6 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
 
     @Override
     public String toString() {
-        return "Step " + this.source + "--" + this.swt + "-> " + this.onFinish;
+        return "Step " + this.source + "--" + this.stack + "-> " + this.onFinish;
     }
 }

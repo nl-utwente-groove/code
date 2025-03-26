@@ -94,7 +94,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
             }
         }
         this.pops = pops;
-        this.context = context;
+        this.contextStack = context;
         this.location = loc;
     }
 
@@ -121,12 +121,12 @@ public class Frame implements Position<Frame,Step>, Fixable {
         return getAut().getStart() == this;
     }
 
-    /** Returns the contextual nested switch of this frame. */
-    public NestedSwitch getContext() {
-        return this.context;
+    /** Returns the contextual call stack of this frame. */
+    public NestedSwitch getContextStack() {
+        return this.contextStack;
     }
 
-    private final NestedSwitch context;
+    private final NestedSwitch contextStack;
 
     /**
      * Returns the top (non-{@code null}) control location instantiated by this frame.
@@ -240,7 +240,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
      * being the sum of the nested switch depth and number of pop actions.
      */
     public int getNestingDepth() {
-        return getContext().size() + getPops().size();
+        return getContextStack().size() + getPops().size();
     }
 
     @Override
@@ -354,67 +354,9 @@ public class Frame implements Position<Frame,Step>, Fixable {
         return result;
     }
 
-    /** Computes the attempt of this frame.
-    private StepAttempt computeAttempt() {
-        SwitchAttempt locAttempt = getLocation().getAttempt();
-        // divide the switches of the control location
-        // into constraints and "proper" calls
-        List<NestedSwitch> constraintCalls = new ArrayList<>();
-        List<NestedSwitch> properCalls = new ArrayList<>();
-        for (NestedSwitch sw : locAttempt) {
-            if (sw.getInnermostCall().getRule().getRole().isConstraint()) {
-                constraintCalls.add(sw);
-            } else {
-                properCalls.add(sw);
-            }
-        }
-        StepAttempt result;
-        if (properCalls.isEmpty()) {
-            // we only have a constraint attempt
-            Frame onVerdict = newFrame(locAttempt.onSuccess());
-            assert locAttempt.onSuccess() == locAttempt.onFailure();
-            // the above used to be
-            // assert onVerdict.getLocation() == locAttempt.onFailure();
-            // but that is wrong, as the onVerdict.getLocation() may have
-            // popped the call stack in case locAttempt.onSuccess() is final
-            result = new StepAttempt(onVerdict);
-            for (NestedSwitch sw : constraintCalls) {
-                result.add(createStep(sw));
-            }
-        } else if (constraintCalls.isEmpty()) {
-            // we only have a proper attempt
-            Frame onSuccess = newFrame(locAttempt.onSuccess());
-            Frame onFailure = newFrame(locAttempt.onFailure());
-            result = new StepAttempt(onSuccess, onFailure);
-            for (NestedSwitch sw : properCalls) {
-                result.add(createStep(sw));
-            }
-        } else {
-            // the initial attempt tests for constraints only;
-            // the verdict leads to an intermediate frame
-            Frame inter = newFrame(getLocation());
-            result = new StepAttempt(inter);
-            for (NestedSwitch sw : constraintCalls) {
-                result.add(createStep(sw));
-            }
-            // this is followed by an attempt for the proper steps
-            // which is set as the attempt of the intermediate frame
-            Frame onVerdict = inter.newFrame(locAttempt.onSuccess());
-            // we had a location with property switches; this guarantees
-            // that the success and failure locations coincide
-            assert locAttempt.onSuccess() == locAttempt.onFailure();
-            StepAttempt interAttempt = new StepAttempt(onVerdict, onVerdict);
-            for (NestedSwitch sw : properCalls) {
-                result.add(inter.createStep(sw));
-            }
-            inter.attempt.set(interAttempt);
-        }
-        return result;
-    } */
-
     /** Constructs a step from this frame, based on a given nested switch. */
     private Step createStep(NestedSwitch sw) {
-        NestedSwitch targetSwitch = new NestedSwitch(getContext());
+        NestedSwitch targetSwitch = new NestedSwitch(getContextStack());
         sw.forEach(targetSwitch::push);
         Switch callSwitch = targetSwitch.pop();
         Frame onFinish = new Frame(getAut(), callSwitch.onFinish(), targetSwitch, null).normalise();
@@ -483,7 +425,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
      * @see #isTransient()
      */
     public boolean isInner() {
-        return getContext().inRecipe();
+        return getContextStack().inRecipe();
     }
 
     /**
@@ -493,12 +435,12 @@ public class Frame implements Position<Frame,Step>, Fixable {
      * @see #isInner()
      */
     public Optional<Recipe> getRecipe() {
-        return getContext().getRecipe();
+        return getContextStack().getRecipe();
     }
 
     @Override
     public int getTransience() {
-        return getContext().getTransience() + getLocation().getTransience();
+        return getContextStack().getTransience() + getLocation().getTransience();
     }
 
     @Override
@@ -516,7 +458,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
      * with the same prime frame and context switch as this frame.
      */
     private Frame newFrame(Location loc) {
-        Frame result = new Frame(getAut(), loc, getContext(), this);
+        Frame result = new Frame(getAut(), loc, getContextStack(), this);
         return result.normalise();
     }
 
@@ -537,7 +479,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
         result = prime * result + System.identityHashCode(this.pred);
         result = prime * result + this.location.hashCode();
         result = prime * result + this.pops.hashCode();
-        result = prime * result + this.context.hashCode();
+        result = prime * result + this.contextStack.hashCode();
         return result;
     }
 
@@ -564,7 +506,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
         if (!this.location.equals(other.location)) {
             return false;
         }
-        if (!this.context.equals(other.context)) {
+        if (!this.contextStack.equals(other.contextStack)) {
             return false;
         }
         return true;
@@ -594,7 +536,7 @@ public class Frame implements Position<Frame,Step>, Fixable {
                 }
             }
             result += "\nLocation: " + getLocation();
-            result += "\nCall stack: " + getContext();
+            result += "\nCall stack: " + getContextStack();
         }
         return result;
     }

@@ -134,7 +134,7 @@ abstract class MatchTreeNode extends DisplayTreeNode {
         Object[] stack = source.getFrameStack(sourceFrame);
         // construct the parameter assignment from the source frame of the initial step
         var assign = Assignment.identity(sourceFrame.getVars());
-        for (Switch swt : initStep.getSwitch()) {
+        for (Switch swt : initStep.getStack()) {
             if (swt.getKind() == Kind.RECIPE) {
                 assign = swt.assignSource2Par().after(assign);
                 break;

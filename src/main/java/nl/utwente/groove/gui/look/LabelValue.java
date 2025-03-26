@@ -438,7 +438,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             result.add(getStackLine(frame.getLocation(), stack, popCount <= 0));
             hasControl = true;
             // }
-            for (var sw : frame.getContext().outIterable()) {
+            for (var sw : frame.getContextStack().outIterable()) {
                 stack = CallStack.pop(stack);
                 popCount--;
                 result.add(getStackLine(sw.onFinish(), stack, popCount <= 0));

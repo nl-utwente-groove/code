@@ -129,7 +129,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
      */
     public String text(boolean anchored) {
         StringBuilder result = new StringBuilder();
-        for (var swt : getStep().getSwitch()) {
+        for (var swt : getStep().getStack()) {
             if (swt.getKind() == Kind.RULE) {
                 result.append(getAction().toLabelString(getArguments()));
             } else if (Options.instance().isSelected(Options.SHOW_CALL_NESTING_OPTION)) {

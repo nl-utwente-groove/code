@@ -756,7 +756,7 @@ public class StateCache {
             stack = step.getPush().apply(stack, valuator);
             // pop until the (final) switch within the outer recipe body
             var recipeFinal = step
-                .getSwitch()
+                .getFullStack()
                 .stream()
                 .filter(s -> s.getTemplate().filter(t -> t.hasOwner(Kind.RECIPE)).isPresent())
                 .findFirst()

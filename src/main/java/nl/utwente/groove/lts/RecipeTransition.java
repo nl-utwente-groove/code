@@ -98,7 +98,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         if (result == null) {
             result = this.recipeSwitch = getLaunch()
                 .getStep()
-                .getSwitch()
+                .getFullStack()
                 .stream()
                 .filter(swt -> swt.getKind() == Kind.RECIPE)
                 .findFirst()
@@ -257,7 +257,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         Object[] stack = source().getFrameStack(sourceFrame);
         // construct the parameter assignment from the source frame of the initial step
         var assign = Assignment.identity(sourceFrame.getVars());
-        for (Switch swt : initStep.getSwitch()) {
+        for (Switch swt : initStep.getStack()) {
             if (swt == getSwitch()) {
                 assign = swt.assignSource2Par().after(assign);
                 break;

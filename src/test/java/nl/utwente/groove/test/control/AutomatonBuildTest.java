@@ -87,8 +87,8 @@ public class AutomatonBuildTest {
         Call fCall = call("f");
         Call aCall = call("a");
         Call bCall = call("b");
-        assertEquals(2, s.get(0).getSwitch().size());
-        assertEquals(fCall, s.get(0).getSwitch().getOutermostCall());
+        assertEquals(2, s.get(0).getStack().size());
+        assertEquals(fCall, s.get(0).getStack().getOutermostCall());
         assertEquals(bCall, s.get(0).getInnermostCall());
         assertEquals(aCall, s.get(1).getInnermostCall());
         assertEquals(s.onFailure(), s.onSuccess());
@@ -100,7 +100,7 @@ public class AutomatonBuildTest {
                           CtrlArg.outVar(QualName.parse("f"), "arg", "node"));
         Call oNodeCall = call("oNode", CtrlArg.outVar(QualName.parse("r"), "q", "node"));
         Call bNodeCall = call("bNode", CtrlArg.outVar(QualName.parse("r"), "q", "node"));
-        NestedSwitch swFail0 = sFail.get(0).getSwitch();
+        NestedSwitch swFail0 = sFail.get(0).getStack();
         var swFail0Iter = swFail0.iterator();
         assertEquals(fCall, swFail0Iter.next().getCall());
         assertEquals(rCall, swFail0Iter.next().getCall());
@@ -108,14 +108,14 @@ public class AutomatonBuildTest {
         assertEquals(bNodeCall, sFail.get(1).getInnermostCall());
         //
         Frame fFailFail = sFail.onFailure();
-        assertEquals(0, fFailFail.getContext().size());
+        assertEquals(0, fFailFail.getContextStack().size());
         assertTrue(fFailFail.isFinal());
         //
         Frame fFailSucc = sFail.onSuccess();
         assertTrue(fFailSucc.isDead());
         assertTrue(sFail.get(0).onFinish().isFinal());
         Frame fNext = sFail.get(1).onFinish();
-        NestedSwitch swNext = fNext.getContext();
+        NestedSwitch swNext = fNext.getContextStack();
         assertEquals(2, swNext.size());
         var swNextIter = swNext.iterator();
         assertEquals(fCall, swNextIter.next().getCall());
@@ -246,7 +246,7 @@ public class AutomatonBuildTest {
         assertTrue(a0.onSuccess().isDead());
         assertEquals(a0.onFailure(), a0.onSuccess());
         Step s0 = a0.get(0);
-        assertEquals(swt, s0.getSwitch());
+        assertEquals(swt, s0.getStack());
         Frame f1 = s0.onFinish();
         StepAttempt a1 = f1.getAttempt();
         assertTrue(a1.onSuccess().isDead());
@@ -256,7 +256,7 @@ public class AutomatonBuildTest {
         assertDistinct(f1Switch, f0Switch);
         NestedSwitch f1Stack = new NestedSwitch();
         f1Stack.push(f1Switch);
-        assertEquals(f1Stack, s1.getSwitch());
+        assertEquals(f1Stack, s1.getStack());
         assertEquals(f1, s1.onFinish());
         Frame f2 = a1.onFailure();
         StepAttempt a2 = f2.getAttempt();
@@ -266,7 +266,7 @@ public class AutomatonBuildTest {
         NestedSwitch r2Stack = new NestedSwitch();
         r2Stack.push(r2Switch);
         r2Stack.push(f0Switch);
-        assertEquals(r2Stack, s2.getSwitch());
+        assertEquals(r2Stack, s2.getStack());
         assertDistinct(f1, s2.onFinish());
         assertTrue(a2.onSuccess().isDead());
         assertTrue(a2.onFailure().isFinal());
@@ -287,7 +287,7 @@ public class AutomatonBuildTest {
         assertEquals(proc("f"), s0Iter.next().getUnit());
         assertEquals(rule("a"), s0Iter.next().getUnit());
         Frame f1 = s0.onFinish();
-        var f1Call = f1.getContext().getCall();
+        var f1Call = f1.getContextStack().getCall();
         assertEquals(1, f1Call.depth());
         assertEquals(proc("f"), f1Call.getOuter().getUnit());
         StepAttempt a1 = f1.getAttempt();
