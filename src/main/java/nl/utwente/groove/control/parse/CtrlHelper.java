@@ -299,9 +299,9 @@ public class CtrlHelper {
      * Extracts the parameter declarations of a function or recipe.
      */
     private Signature<UnitPar.ProcedurePar> getPars(QualName procName, CtrlTree parListTree) {
-        assert parListTree.getType() == CtrlChecker.PARS;
         List<UnitPar.ProcedurePar> result = new ArrayList<>();
         if (!this.namespace.hasErrors()) {
+            assert parListTree.getType() == CtrlChecker.PARS;
             for (int i = 0; i < parListTree.getChildCount(); i++) {
                 CtrlTree parTree = parListTree.getChild(i);
                 boolean out = parTree.getChildCount() == 3;
