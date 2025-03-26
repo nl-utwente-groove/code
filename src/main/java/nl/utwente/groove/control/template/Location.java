@@ -246,6 +246,14 @@ public class Location
      * this location is the start location.
      */
     public Assignment assignPar2Init() {
+        return this.assignPar2Init.get();
+    }
+
+    /** Lazy factory for {@link #assignPar2Init()}. */
+    private final Factory<Assignment> assignPar2Init = Factory.lazy(this::computeAssignPar2Init);
+
+    /** Computes the value of {@link #assignPar2Init}. */
+    private Assignment computeAssignPar2Init() {
         Procedure owner = getTemplate().get().getOwner();
         assert owner != null && isStart();
         List<Binding> bindings = new ArrayList<>();
@@ -262,6 +270,14 @@ public class Location
      * The resulting assignment is {@link Source#NONE} for input parameters.
      */
     public Assignment assignFinal2Par() {
+        return this.assignFinal2Par.get();
+    }
+
+    /** Lazy factory for {@link #assignFinal2Par()}. */
+    private final Factory<Assignment> assignFinal2Par = Factory.lazy(this::computeAssignFinal2Par);
+
+    /** Computes the value of {@link #assignFinal2Par}. */
+    private Assignment computeAssignFinal2Par() {
         Procedure owner = getTemplate().get().getOwner();
         assert owner != null;
         var signature = owner.getSignature();

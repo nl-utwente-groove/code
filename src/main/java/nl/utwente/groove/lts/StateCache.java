@@ -774,19 +774,23 @@ public class StateCache {
 
         /** Computes the recipe out-parameter values from the prime frame of the target state. */
         static private HostNode[] getOutValuesFromTarget(GraphState target) {
+            HostNode[] result = null;
             assert target.getPrimeFrame().isInner() && !target.isInner();
             // look for the last frame between the state's prime and actual frames
-            // that was still internal; the corresponding stack contains the out-parameter values
-            var frame = target.getActualFrame();
-            while (!frame.isInner()) {
-                var pred = frame.getPred();
-                assert pred != null;
-                frame = pred;
+            // that was still internal
+            var stack = target.getPrimeStack();
+            var context = target.getPrimeFrame().getContextStack();
+            var loc = target.getPrimeFrame().getLocation();
+            for (var call : context.outIterable()) {
+                if (call.getCall().getUnit().getKind() == Kind.RECIPE) {
+                    result = loc.assignFinal2Par().lookup(stack);
+                    break;
+                } else {
+                    stack = call.assignFinal2Target(loc).toPop().apply(stack);
+                    loc = call.onFinish();
+                }
             }
-            // get the stack at that frame
-            Object[] stack = target.getFrameStack(frame);
-            // get the out-parameter assignment
-            return frame.getLocation().assignFinal2Par().lookup(stack);
+            return result;
         }
     }
 

@@ -41,6 +41,7 @@ import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.Signature;
 import nl.utwente.groove.grammar.UnitPar;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Factory;
 
 /**
  * Transition between control locations, bearing a call.
@@ -300,6 +301,14 @@ public class Switch implements Comparable<Switch>, Relocatable {
      * This is only valid if the callee is a procedure.
      */
     public Assignment assignSource2Init() {
+        return this.assignSource2Init.get();
+    }
+
+    /** The lazily constructed outcome of #assignSource2Init. */
+    private final Factory<Assignment> assignSource2Init = lazy(this::computeAssignSource2Init);
+
+    /** Computes the value for {@link #assignSource2Init}. */
+    private Assignment computeAssignSource2Init() {
         Procedure callee = (Procedure) getUnit();
         Template template = callee.getTemplate();
         return template.getStart().assignPar2Init().after(assignSource2Par());
