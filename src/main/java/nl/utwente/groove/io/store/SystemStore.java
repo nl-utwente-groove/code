@@ -1138,11 +1138,8 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
             this.oldGraphs = oldGraphs;
             this.newGraphs = newGraphs;
             this.newProps = newProps;
-            // properties only changed if newProps is non-null
-            if (newProps == null) {
-                this.oldProps = null;
-            } else {
-                this.oldProps = oldProps;
+            this.oldProps = oldProps;
+            if (newProps != null && newProps != oldProps) {
                 addChange(PROPERTIES);
             }
         }

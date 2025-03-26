@@ -365,6 +365,17 @@ public class GrammarModel implements PropertyChangeListener {
         return this.typeModel;
     }
 
+    /** The type model composed from the individual elements. */
+    private CompositeTypeModel typeModel;
+
+    /**
+     * Lazily creates the type graph for this grammar.
+     * @return the explicit or implicit type graph of the grammar
+     */
+    public TypeGraph getTypeGraph() {
+        return getTypeModel().getTypeGraph();
+    }
+
     /**
      * Lazily creates the composite control model for this grammar.
      */
@@ -375,13 +386,8 @@ public class GrammarModel implements PropertyChangeListener {
         return this.controlModel;
     }
 
-    /**
-     * Lazily creates the type graph for this grammar.
-     * @return the explicit or implicit type graph of the grammar
-     */
-    public TypeGraph getTypeGraph() {
-        return getTypeModel().getTypeGraph();
-    }
+    /** The control model composed from the individual control programs. */
+    private CompositeControlModel controlModel;
 
     /**
      * Returns the start graph of this grammar model.
@@ -394,6 +400,9 @@ public class GrammarModel implements PropertyChangeListener {
         }
         return this.startGraphModel;
     }
+
+    /** The start graph of the grammar. */
+    private CompositeHostModel startGraphModel;
 
     /**
      * Sets the start graph to a given graph. This implies that the start graph
@@ -770,13 +779,6 @@ public class GrammarModel implements PropertyChangeListener {
     private GrammarProperties localProperties;
     /** Flag to indicate if the start graph is external. */
     private boolean isExternalStartGraphModel = false;
-    /** The start graph of the grammar. */
-    private CompositeHostModel startGraphModel;
-    /** The type model composed from the individual elements. */
-    private CompositeTypeModel typeModel;
-    /** The control model composed from the individual control programs. */
-    private CompositeControlModel controlModel;
-
     {
         for (ResourceKind kind : ResourceKind.values()) {
             this.resourceMap.put(kind, new TreeMap<>());
