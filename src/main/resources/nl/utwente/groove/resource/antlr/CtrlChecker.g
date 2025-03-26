@@ -100,7 +100,14 @@ stat
   : block
   | ^(SEMI var_decl)
   | ^(SEMI stat)
-  | ^(ALAP stat)
+  | ^( ALAP 
+       { helper.startBranch(); }
+       stat
+       // since the alap may fail straight away, this equates
+       // an empty else branch, in which no variables are initialised
+       { helper.nextBranch(); }
+       { helper.endBranch(); }
+     )
   | ^(ATOM stat)
   | ^( WHILE
        stat
