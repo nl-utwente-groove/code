@@ -2,6 +2,8 @@ package nl.utwente.groove.grammar.model;
 
 import static nl.utwente.groove.grammar.model.ResourceKind.HOST;
 import static nl.utwente.groove.grammar.model.ResourceKind.PROPERTIES;
+import static nl.utwente.groove.grammar.model.ResourceKind.RULE;
+import static nl.utwente.groove.grammar.model.ResourceKind.TYPE;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,7 +41,7 @@ public class CompositeHostModel extends ResourceModel<HostGraph> {
      */
     CompositeHostModel(GrammarModel grammar, @Nullable AspectGraph source) {
         super(grammar, HOST);
-        setDependencies(PROPERTIES);
+        addDependencies(TYPE, PROPERTIES);
         this.implicit = source == null;
         this.hostModels = this.implicit
             ? null // to be initialised later
@@ -115,6 +117,17 @@ public class CompositeHostModel extends ResourceModel<HostGraph> {
         return source == null
             ? ""
             : source.getName();
+    }
+
+    @Override
+    boolean isShouldRebuild() {
+        boolean result = super.isShouldRebuild();
+        if (getGrammar().getTypeGraph().isImplicit()) {
+            // this is an implicit type graph; look also at the rules
+            // this is not a dependency by default, to avoid cyclic dependencies between TYPE and HOST
+            result |= isStale(RULE);
+        }
+        return result;
     }
 
     @Override

@@ -50,7 +50,9 @@ class HostModelMorphism {
      */
     private HostModelMorphism(@Nullable GrammarModel grammar, AspectGraph source) {
         this.source = source;
-        var target = new DefaultHostGraph(source.getName());
+        var target = grammar == null
+            ? new DefaultHostGraph(source.getName())
+            : new DefaultHostGraph(source.getName(), grammar.getTypeGraph().getFactory());
         var map = new HostModelMap(target.getFactory());
         var normalSource = source.normalise();
         var errors = new FormatErrorSet();

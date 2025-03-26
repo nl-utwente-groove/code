@@ -42,7 +42,7 @@ public class ControlModel extends TextBasedModel<Program> {
      */
     public ControlModel(GrammarModel grammar, QualName name, String program) {
         super(grammar, ResourceKind.CONTROL, name, program);
-        setDependencies(ResourceKind.RULE, ResourceKind.TYPE);
+        addDependencies(ResourceKind.RULE, ResourceKind.TYPE);
     }
 
     @Override

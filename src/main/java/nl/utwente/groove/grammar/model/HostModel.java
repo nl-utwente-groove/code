@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.grammar.model;
 
+import static nl.utwente.groove.grammar.model.ResourceKind.RULE;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -45,7 +47,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     public HostModel(GrammarModel grammar, AspectGraph source) {
         super(grammar, source);
         source.testFixed(true);
-        setDependencies(ResourceKind.TYPE, ResourceKind.PROPERTIES);
+        addDependencies(ResourceKind.TYPE, ResourceKind.PROPERTIES);
     }
 
     /**
@@ -122,6 +124,18 @@ public class HostModel extends GraphBasedModel<HostGraph> {
             if (label != null) {
                 result.add(label);
             }
+        }
+        return result;
+    }
+
+    @Override
+    boolean isShouldRebuild() {
+        boolean result = super.isShouldRebuild();
+        var grammar = getGrammar();
+        if (grammar != null && grammar.getTypeGraph().isImplicit()) {
+            // this is an implicit type graph; look also at the rules
+            // this is not a dependency by default, to avoid cyclic dependencies between TYPE and HOST
+            result |= isStale(RULE);
         }
         return result;
     }

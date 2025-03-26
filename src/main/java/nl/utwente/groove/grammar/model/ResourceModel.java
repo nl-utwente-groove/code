@@ -82,7 +82,7 @@ abstract public class ResourceModel<R> {
      * The "own" resource kind is a dependency by default.
      * @see GrammarModel#createChangeTracker
      */
-    protected void setDependencies(ResourceKind... kinds) {
+    protected void addDependencies(ResourceKind... kinds) {
         Arrays.stream(kinds).forEach(this.dependencies::add);
     }
 
@@ -167,7 +167,7 @@ abstract public class ResourceModel<R> {
      * Tests if this resource model is stale w.r.t. the grammar
      * in any of a set of resource kind.
      */
-    public final boolean isStale(ResourceKind... kinds) {
+    final boolean isStale(ResourceKind... kinds) {
         boolean result = false;
         for (ResourceKind kind : kinds) {
             if (getTracker(kind).isStale()) {
@@ -177,6 +177,7 @@ abstract public class ResourceModel<R> {
                             + " is stale");
                 }
                 result = true;
+                // don't break here, we want to reset staleness of all resource kinds
             }
         }
         return result;

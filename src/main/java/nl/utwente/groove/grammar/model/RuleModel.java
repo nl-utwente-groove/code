@@ -132,7 +132,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
      */
     public RuleModel(GrammarModel grammar, AspectGraph graph) {
         super(grammar, graph);
-        setDependencies(PROPERTIES, GROOVY);
+        addDependencies(PROPERTIES, GROOVY);
         assert grammar != null;
         graph.testFixed(true);
     }
@@ -267,16 +267,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     @Override
     boolean isShouldRebuild() {
         boolean result = super.isShouldRebuild();
-        if (!result) {
-            if (getGrammar().getTypeModel().isImplicit()) {
-                // the implicit type graph gets rebuilt when the start graph changes
-                // so we must also rebuild, otherwise the type graphs will diverge
-                result = isStale(ResourceKind.HOST);
-            } else {
-                // the type graph is a dependency only if it is not implicit
-                // if it is implicit, then instead it depends on the set of rules
-                result = isStale(ResourceKind.TYPE);
-            }
+        if (getGrammar().getTypeModel().isImplicit()) {
+            // the implicit type graph gets rebuilt when the start graph changes
+            // so we must also rebuild, otherwise the type graphs will diverge
+            result |= isStale(ResourceKind.HOST);
+        } else {
+            // the type graph is a dependency only if it is not implicit
+            // if it is implicit, then instead it depends on the set of rules
+            result |= isStale(ResourceKind.TYPE);
         }
         return result;
     }

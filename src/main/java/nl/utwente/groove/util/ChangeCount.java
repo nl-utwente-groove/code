@@ -83,6 +83,11 @@ public class ChangeCount extends Observable {
             return result;
         }
 
+        /** Changes the status to fresh by updating the last value to the current value. */
+        public void setFresh() {
+            this.last = this.count.getValue();
+        }
+
         @Override
         public String toString() {
             return "Tracker = " + this.last + " for " + this.count;

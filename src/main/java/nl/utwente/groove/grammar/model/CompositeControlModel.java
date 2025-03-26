@@ -51,7 +51,7 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
     /** Constructs an instance for a given grammar model. */
     CompositeControlModel(@NonNull GrammarModel grammar) {
         super(grammar, CONTROL);
-        setDependencies(RULE, TYPE, PROPERTIES);
+        addDependencies(RULE, TYPE, PROPERTIES);
     }
 
     @Override
@@ -74,14 +74,21 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
     @Override
     boolean isShouldRebuild() {
         boolean result = super.isShouldRebuild();
-        if (!result) {
-            if (getGrammar().getTypeModel().isImplicit()) {
-                // the implicit type graph gets rebuilt when the start graph changes
-                // the rules then also get rebuilt, and hence so must the control graph
-                result = isStale(ResourceKind.HOST);
-            }
+        if (getGrammar().getTypeModel().isImplicit()) {
+            // the implicit type graph gets rebuilt when the start graph changes
+            // the rules then also get rebuilt, and hence so must the control graph
+            result |= isStale(ResourceKind.HOST);
         }
         return result;
+    }
+
+    @Override
+    void notifyWillRebuild() {
+        this.ruleRecipeMap = null;
+        this.loader = null;
+        this.partErrorsMap = null;
+        this.program = null;
+        super.notifyWillRebuild();
     }
 
     @Override
@@ -173,15 +180,6 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
     }
 
     private Map<QualName,Set<QualName>> ruleRecipeMap;
-
-    @Override
-    void notifyWillRebuild() {
-        this.ruleRecipeMap = null;
-        this.loader = null;
-        this.partErrorsMap = null;
-        this.program = null;
-        super.notifyWillRebuild();
-    }
 
     /** Adds a control program-related error. */
     private void addPartError(FormatError error) {

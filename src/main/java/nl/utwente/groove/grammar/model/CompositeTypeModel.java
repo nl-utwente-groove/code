@@ -34,7 +34,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
      */
     CompositeTypeModel(@NonNull GrammarModel grammar) {
         super(grammar, TYPE);
-        setDependencies(PROPERTIES);
+        addDependencies(PROPERTIES);
     }
 
     @Override

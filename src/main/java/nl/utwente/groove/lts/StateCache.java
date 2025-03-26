@@ -671,7 +671,7 @@ public class StateCache {
         this.knownTransience = transience;
         var state = getState();
         if (this.knownInner && !state.isInner()) {
-            // the state changed from outer to inner
+            // the state changed from inner to outer
             this.knownInner = false;
             // add incoming recipe transitions
             var target = new RecipeTarget(state);
