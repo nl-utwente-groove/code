@@ -52,13 +52,15 @@ public class ColorValue extends AspectValue<Color> {
     protected Color getForJEdge(AspectJEdge jEdge) {
         Color result = null;
         var edge = jEdge.getEdge();
-        // determine the node that determines the colour
-        AspectNode node = edge.has(AspectKind.SUBTYPE)
-            ? edge.target()
-            : edge.source();
-        AspectJVertex jNode = jEdge.getJModel().getJCellForNode(node);
-        if (jNode != null) {
-            result = getForJVertex(jNode);
+        if (edge != null) {
+            // determine the node that determines the colour
+            AspectNode node = edge.has(AspectKind.SUBTYPE)
+                ? edge.target()
+                : edge.source();
+            AspectJVertex jNode = jEdge.getJModel().getJCellForNode(node);
+            if (jNode != null) {
+                result = getForJVertex(jNode);
+            }
         }
         return result;
     }
