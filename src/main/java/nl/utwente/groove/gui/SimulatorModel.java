@@ -1,5 +1,7 @@
 package nl.utwente.groove.gui;
 
+import static nl.utwente.groove.grammar.model.ResourceKind.TYPE;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -76,28 +78,21 @@ public class SimulatorModel implements Cloneable {
 
     /**
      * Deletes a set of named resources from the grammar.
-     * @param resource the kind of the resources
+     * @param kind the kind of the resources
      * @param names the names of the resources to be deleted
      * @throws IOException if the action failed due to an IO error
      */
-    public void doDelete(ResourceKind resource, Set<QualName> names) throws IOException {
+    public void doDelete(ResourceKind kind, Set<QualName> names) throws IOException {
         start();
         try {
-            boolean change = new HashSet<>(names).removeAll(getGrammar().getActiveNames(resource));
-            switch (resource) {
-            case CONTROL:
-            case PROLOG:
-            case GROOVY:
-                getStore().deleteTexts(resource, names);
-                break;
-            case HOST:
-            case RULE:
-            case TYPE:
-                getStore().deleteGraphs(resource, names);
-                break;
-            case PROPERTIES:
-            default:
-                assert false;
+            boolean change = invalidateGTSUponChangeOf(kind)
+                || names.stream().anyMatch(n -> isEnabled(kind, n));
+            if (kind.isTextBased()) {
+                getStore().deleteTexts(kind, names);
+            } else if (kind.isGraphBased()) {
+                getStore().deleteGraphs(kind, names);
+            } else {
+                throw Exceptions.UNREACHABLE;
             }
             changeGrammar(change);
         } finally {
@@ -107,20 +102,20 @@ public class SimulatorModel implements Cloneable {
 
     /**
      * Renames a resource of a given kind.
-     * @param resource the kind of the resource to be renamed
+     * @param kind the kind of the resource to be renamed
      * @param oldName the name of the resource to be renamed
      * @param newName the new name for the rule
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the action failed due to an IO error
      */
-    public boolean doRename(ResourceKind resource, QualName oldName,
+    public boolean doRename(ResourceKind kind, QualName oldName,
                             QualName newName) throws IOException {
         boolean result = false;
         start();
         try {
-            result = getGrammar().getActiveNames(resource).contains(oldName);
-            getStore().rename(resource, oldName, newName);
-            if (resource == ResourceKind.RULE) {
+            result = invalidateGTSUponChangeOf(kind) || isEnabled(kind, oldName);
+            getStore().rename(kind, oldName, newName);
+            if (kind == ResourceKind.RULE) {
                 // rename rules in control programs
                 Map<QualName,String> renamedControl
                     = getGrammar().getControlModel().getLoader().rename(oldName, newName);
@@ -128,9 +123,9 @@ public class SimulatorModel implements Cloneable {
                     getStore().putTexts(ResourceKind.CONTROL, renamedControl);
                 }
             }
-            changeSelected(resource, newName);
+            changeSelected(kind, newName);
             changeGrammar(result);
-            changeDisplay(DisplayKind.toDisplay(resource));
+            changeDisplay(DisplayKind.toDisplay(kind));
         } finally {
             finish();
         }
@@ -222,7 +217,6 @@ public class SimulatorModel implements Cloneable {
             newProperties.setActiveNames(kind, Collections.singletonList(name));
             getStore().putProperties(newProperties);
             break;
-        case PROPERTIES:
         default:
             throw Exceptions.UNREACHABLE;
         }
@@ -242,12 +236,15 @@ public class SimulatorModel implements Cloneable {
         start();
         try {
             QualName name = newGraph.getQualName();
-            boolean oldEnabled = isEnabled(kind, name);
+            boolean wasEnabled = isEnabled(kind, name);
             getStore().putGraphs(kind, Collections.singleton(newGraph), layout);
             if (layout) {
                 return false;
             } else {
-                boolean result = isEnabled(kind, name) || oldEnabled;
+                // invalidate the GTS if the type graph is implicit, since that means
+                // it gets recalculated even for disabled graphs
+                boolean result
+                    = wasEnabled || isEnabled(kind, name) || invalidateGTSUponChangeOf(kind);
                 changeGrammar(result);
                 changeSelected(kind, name);
                 changeDisplay(DisplayKind.toDisplay(kind));
@@ -283,6 +280,13 @@ public class SimulatorModel implements Cloneable {
         } finally {
             finish();
         }
+    }
+
+    /** Checks whether a change in a resource of a given kind should cause the GTS to be invalidated,
+     * whether or not the resource is itself enabled.
+     */
+    private boolean invalidateGTSUponChangeOf(ResourceKind kind) {
+        return kind.isGraphBased() && kind != TYPE && getGrammar().getTypeGraph().isImplicit();
     }
 
     /**
@@ -732,8 +736,7 @@ public class SimulatorModel implements Cloneable {
         if (state == null) {
             return true;
         }
-        return (getOptions().isSelected(Options.SHOW_RECIPE_STEPS_OPTION)
-            || !state.isInner())
+        return (getOptions().isSelected(Options.SHOW_RECIPE_STEPS_OPTION) || !state.isInner())
             && (getOptions().isSelected(Options.SHOW_ABSENT_STATES_OPTION) || !state.isAbsent());
     }
 
