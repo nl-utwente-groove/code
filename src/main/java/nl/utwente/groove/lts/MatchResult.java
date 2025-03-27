@@ -49,6 +49,18 @@ public class MatchResult implements GraphTransitionKey {
         return hasTransition() && getTransition().source() == state;
     }
 
+    /** Returns the rule transition wrapped in this match result, if
+     * that starts at a given source state; or {@code null} otherwise
+     * @param state the source state for the transition
+     */
+    public RuleTransition getTransitionFrom(GraphState state) {
+        var result = getTransition();
+        if (result.source() != state) {
+            result = null;
+        }
+        return result;
+    }
+
     /**
      * Indicates if this match result is based on an already explored rule transition.
      * Note that, in case the match is reused from a parent state,
@@ -60,7 +72,12 @@ public class MatchResult implements GraphTransitionKey {
         return this.ruleTrans != null;
     }
 
-    /** Returns the rule transition wrapped in this match result, if any. */
+    /** Returns the rule transition wrapped in this match result, if any.
+     * Note that, in case the match is reused from a parent state,
+     * the source of this transition (if any) may differ from
+     * the state to which the match is to be applied.
+     * @see #getTransitionFrom(GraphState)
+     */
     public RuleTransition getTransition() {
         return this.ruleTrans;
     }

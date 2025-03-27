@@ -467,7 +467,7 @@ public class SimulatorModel implements Cloneable {
             var key = getMatch(actualState);
             if (key instanceof MatchResult match) {
                 changeMatch(match);
-                changeTransition(match.getTransition());
+                changeTransition(match.getTransitionFrom(state));
             } else if (key instanceof RecipeEvent event) {
                 changeMatch(event.getInitial().getKey());
                 changeTransition(event.toTransition(actualState));
