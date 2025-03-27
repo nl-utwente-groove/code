@@ -3,6 +3,10 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 7.0.7, 27 March 2025
+-------------------------------
+- Resolved gh issues #810, #831, #832
+
 Release 7.0.6, 24 March 2025
 -------------------------------
 - Adapted the error dialog upon Simulator crash so that it instructs to submit to
