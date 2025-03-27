@@ -31,6 +31,7 @@ import nl.utwente.groove.grammar.rule.RuleToHostMap;
 import nl.utwente.groove.match.TreeMatch;
 import nl.utwente.groove.util.Visitor;
 import nl.utwente.groove.util.cache.AbstractCacheHolder;
+import nl.utwente.groove.util.cache.Cache;
 import nl.utwente.groove.util.cache.CacheReference;
 
 /**
@@ -216,7 +217,7 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
     static final HostNode[] EMPTY_NODE_ARRAY = {};
 
     /** Cache holding the anchor map. */
-    abstract protected class AbstractEventCache {
+    abstract protected class AbstractEventCache implements Cache {
         // nothing here
     }
 }

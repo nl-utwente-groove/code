@@ -13,7 +13,7 @@ import nl.utwente.groove.lts.GraphState;
  * @author Arend Rensink
  * @version $Revision$
  */
-abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
+abstract public class AbstractCacheHolder<C extends Cache> implements CacheHolder<C> {
     /**
      * Creates a holder initialised on a given cache reference. The reference of
      * this holder is initialised to a null reference, through a call of
@@ -63,6 +63,7 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
             assert cacheReference.refersTo(result) : "New cache reference inconsistent for state "
                 + this;
             setCacheReference(cacheReference);
+            result.init();
         }
         return result;
     }

@@ -376,6 +376,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 
     /**
      * Callback factory method for a new cache based on this state.
+     * After invocation, {@link StateCache#init()} should be invoked.
      */
     @Override
     protected StateCache createCache() {

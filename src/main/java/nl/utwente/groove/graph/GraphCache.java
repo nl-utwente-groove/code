@@ -29,6 +29,7 @@ import nl.utwente.groove.graph.iso.CertificateStrategy;
 import nl.utwente.groove.util.Dispenser;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.cache.Cache;
 import nl.utwente.groove.util.collect.TreeHashSet;
 
 /**
@@ -39,7 +40,7 @@ import nl.utwente.groove.util.collect.TreeHashSet;
  * @version $Revision$
  */
 @NonNullByDefault
-public class GraphCache<N extends Node,E extends GEdge<N>> implements Fixable {
+public class GraphCache<N extends Node,E extends GEdge<N>> implements Fixable, Cache {
     /**
      * Constructs a dynamic graph cache for a given graph.
      * @param graph the graph for which the cache is to be created.
