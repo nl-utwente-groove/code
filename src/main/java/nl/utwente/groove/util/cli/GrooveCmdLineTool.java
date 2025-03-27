@@ -94,8 +94,8 @@ public abstract class GrooveCmdLineTool<T> {
         return this.help;
     }
 
-    @Option(name = HelpHandler.NAME, usage = HelpHandler.USAGE,
-        handler = HelpHandler.class) private boolean help;
+    @Option(name = HelpHandler.NAME, usage = HelpHandler.USAGE, handler = HelpHandler.class)
+    private boolean help;
 
     /** Returns the verbosity of the tool. */
     protected final Verbosity getVerbosity() {
@@ -108,8 +108,8 @@ public abstract class GrooveCmdLineTool<T> {
     }
 
     @Option(name = VerbosityHandler.NAME, metaVar = VerbosityHandler.VAR,
-        usage = VerbosityHandler.USAGE,
-        handler = VerbosityHandler.class) private Verbosity verbosity = Verbosity.MEDIUM;
+        usage = VerbosityHandler.USAGE, handler = VerbosityHandler.class)
+    private Verbosity verbosity = Verbosity.MEDIUM;
 
     /**
      * Returns the parser used for parsing the command-line arguments
@@ -182,7 +182,14 @@ public abstract class GrooveCmdLineTool<T> {
             if (cause instanceof RuntimeException) {
                 cause.printStackTrace();
             } else {
-                System.err.println(cause.getMessage());
+                String message = cause.getMessage();
+                if (message == null) {
+                    message = cause.toString();
+                }
+                System.err.printf("%nExecution terminated with error: %s%n", message);
+                if (DEBUG) {
+                    cause.printStackTrace();
+                }
             }
             System.exit(1);
         } catch (Exception e) {
@@ -209,4 +216,6 @@ public abstract class GrooveCmdLineTool<T> {
             }
         } while (!exit);
     }
+
+    static private final boolean DEBUG = false;
 }
