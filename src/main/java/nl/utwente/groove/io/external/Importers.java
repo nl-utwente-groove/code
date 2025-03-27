@@ -42,6 +42,7 @@ import nl.utwente.groove.io.external.format.AutPorter;
 import nl.utwente.groove.io.external.format.ColImporter;
 import nl.utwente.groove.io.external.format.EcorePorter;
 import nl.utwente.groove.io.external.format.NativeResourcePorter;
+import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * Utilities for importers.
@@ -59,14 +60,15 @@ public class Importers {
         if (approve == JFileChooser.APPROVE_OPTION) {
             try {
                 doChosenImport(simulator, grammar);
-            } catch (PortException e) {
+            } catch (PortException | FormatException e) {
                 throw new IOException(e);
             }
         }
     }
 
     private static void doChosenImport(Simulator simulator,
-                                       GrammarModel grammar) throws PortException, IOException {
+                                       GrammarModel grammar) throws PortException, FormatException,
+                                                             IOException {
         FileType fileType = getFormatChooser().getFileType();
         Importer ri = getImporter(fileType);
         ri.setSimulator(simulator);
@@ -80,6 +82,7 @@ public class Importers {
             Map<ResourceKind,Map<QualName,String>> newTexts = new EnumMap<>(ResourceKind.class);
             for (Imported resource : resources) {
                 QualName name = resource.qualName();
+                name.getErrors().throwException();
                 ResourceKind kind = resource.kind();
                 if (grammar.getResource(kind, name) == null
                     || confirmOverwrite(simulator.getFrame(), kind, name)) {
