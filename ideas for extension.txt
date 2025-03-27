@@ -1,0 +1,2 @@
+- Python as scripting language 
+- GPUs for GT
