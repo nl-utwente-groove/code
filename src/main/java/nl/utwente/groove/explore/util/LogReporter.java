@@ -144,7 +144,7 @@ public class LogReporter extends AExplorationReporter {
         emit("Start graph:\t%s%n", getGTS().getGrammar().getStartGraph().getName());
         emit("Control:\t%s%n", getGTS().getGrammar().getControl().getQualName());
         emit("Exploration:\t%s%n", getExploration().getType().getIdentifier());
-        emit("Max memory (-Xmx):\t%s%n", Runtime.getRuntime().maxMemory() / B_PER_MB);
+        emit("Max mem (-Xmx):\t%sM%n", Runtime.getRuntime().maxMemory() / B_PER_MB);
         emit("Timestamp:\t%s%n", this.startTime);
     }
 

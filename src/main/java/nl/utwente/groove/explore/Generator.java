@@ -17,7 +17,9 @@
 package nl.utwente.groove.explore;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +42,8 @@ import nl.utwente.groove.explore.util.LTSReporter;
 import nl.utwente.groove.explore.util.LogReporter;
 import nl.utwente.groove.explore.util.StateReporter;
 import nl.utwente.groove.grammar.GrammarKey;
+import nl.utwente.groove.grammar.GrammarProperties;
+import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.transform.Transformer;
 import nl.utwente.groove.util.Groove;
@@ -105,6 +109,26 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         }
         if (hasAcceptor()) {
             result.setAcceptor(AcceptorEnumerator.parseCommandLineAcceptor(getAcceptor()));
+        }
+        String propertiesFileName = getPropertiesFile();
+        if (propertiesFileName != null) {
+            propertiesFileName = FileType.PROPERTY.addExtension(propertiesFileName);
+            File propertiesFile = new File(propertiesFileName);
+            if (!propertiesFile.exists()) {
+                throw new FormatException("Properties file %s does not exist", propertiesFileName);
+            }
+            var properties = new GrammarProperties();
+            try (InputStream s = new FileInputStream(propertiesFile)) {
+                properties.load(s);
+            }
+            var propIter = properties.entryStream().iterator();
+            while (propIter.hasNext()) {
+                var property = propIter.next();
+                var key = GrammarKey.getKey(property.getKey()).get();
+                if (!key.isSystem()) {
+                    result.setProperty(key, property.getValue());
+                }
+            }
         }
         Map<GrammarKey,String> properties = getGrammarProperties();
         if (properties != null) {
@@ -183,6 +207,16 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
 
     @Option(name = RESULT_NAME, metaVar = RESULT_VAR, usage = RESULT_USAGE)
     private int resultCount;
+
+    /** Returns the name of the properties file, if any. */
+    public String getPropertiesFile() {
+        return this.propertiesFile;
+    }
+
+    @Option(name = "-P", metaVar = "file",
+        usage = "Read the system properties from a given properties file.\n"
+            + "The default extension is '.properties'. Absolute and relative paths can be used.")
+    private String propertiesFile;
 
     /** Returns the locally set grammar properties, if any. */
     public Map<GrammarKey,String> getGrammarProperties() {
