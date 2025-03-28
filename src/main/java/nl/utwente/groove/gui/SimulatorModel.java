@@ -166,10 +166,7 @@ public class SimulatorModel implements Cloneable {
             }
             getStore().putGraphs(ResourceKind.RULE, newRules, false);
             break;
-        case HOST:
-        case TYPE:
-        case PROLOG:
-        case CONTROL:
+        case HOST, TYPE, PROLOG, CONTROL:
             GrammarProperties newProperties = getGrammar().getProperties().clone();
             List<QualName> actives = new ArrayList<>(newProperties.getActiveNames(kind));
             actives.sort(null);
@@ -181,7 +178,6 @@ public class SimulatorModel implements Cloneable {
             newProperties.setActiveNames(kind, actives);
             getStore().putProperties(newProperties);
             break;
-        case PROPERTIES:
         default:
             throw Exceptions.UNREACHABLE;
         }

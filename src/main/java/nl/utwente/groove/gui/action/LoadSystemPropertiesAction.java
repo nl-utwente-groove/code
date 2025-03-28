@@ -53,7 +53,8 @@ public class LoadSystemPropertiesAction extends SimulatorAction {
         try (InputStream s = new FileInputStream(propertiesFile)) {
             properties.load(s);
         }
+        properties.check(getGrammarModel());
         properties = properties.repairVersion().addDerivedProperties(grammarPath);
-        getGrammarModel().setProperties(properties);
+        getSimulatorModel().doSetProperties(properties);
     }
 }
