@@ -20,6 +20,7 @@ import static nl.utwente.groove.gui.SimulatorModel.Change.GRAMMAR;
 import static nl.utwente.groove.gui.SimulatorModel.Change.GTS;
 import static nl.utwente.groove.gui.SimulatorModel.Change.MATCH;
 import static nl.utwente.groove.gui.SimulatorModel.Change.STATE;
+import static nl.utwente.groove.gui.SimulatorModel.Change.TRACE;
 import static nl.utwente.groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static nl.utwente.groove.gui.jgraph.JGraphMode.SELECT_MODE;
 
@@ -107,7 +108,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
     @Override
     protected void installListeners() {
         getJGraph().addMouseListener(new MyMouseListener());
-        getSimulatorModel().addListener(this, GRAMMAR, GTS, STATE, MATCH);
+        getSimulatorModel().addListener(this, GRAMMAR, GTS, TRACE, STATE, MATCH);
     }
 
     @Override
@@ -457,7 +458,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
 
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
-        if (changes.contains(GTS) || changes.contains(GRAMMAR)) {
+        if (changes.contains(GTS) || changes.contains(GRAMMAR) || changes.contains(TRACE)) {
             GTS gts = source.getGTS();
             if (gts == null) {
                 getJGraph().setModel(null);

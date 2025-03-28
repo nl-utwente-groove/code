@@ -50,8 +50,9 @@ public abstract class EncodedTypeEditor<A,B> extends JPanel {
     /**
      * Setter for the current value. Will be ignored if B is not a valid
      * encoding of an A.
+     * @return {@code true} if the value was successfully set
      */
-    public abstract void setCurrentValue(B value);
+    public abstract boolean setCurrentValue(B value);
 
     /** Reloads the content of the editor. */
     public abstract void refresh();

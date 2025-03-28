@@ -78,8 +78,9 @@ public abstract class EncodedEnumeratedType<A> implements EncodedType<A,String> 
             this.keys = new String[options.size()];
             this.nrKeys = 0;
             if (this.nrKeys == 0) {
-                this.selector.addItem("<HTML><FONT color=red>"
-                    + "Error! No valid options available." + "</FONT></HTML>");
+                this.selector
+                    .addItem("<HTML><FONT color=red>" + "Error! No valid options available."
+                        + "</FONT></HTML>");
             }
             refresh();
             add(this.selector);
@@ -91,12 +92,16 @@ public abstract class EncodedEnumeratedType<A> implements EncodedType<A,String> 
             int selected = this.selector.getSelectedIndex();
             this.selector.removeAllItems();
             for (Map.Entry<String,String> optionEntry : generateOptions(getGrammar()).entrySet()) {
-                this.selector.addItem("<HTML><FONT color=" + ExplorationDialog.INFO_COLOR + ">"
-                    + optionEntry.getValue() + "</FONT></HTML>");
+                this.selector
+                    .addItem("<HTML><FONT color=" + ExplorationDialog.INFO_COLOR + ">"
+                        + optionEntry.getValue() + "</FONT></HTML>");
                 this.keys[this.nrKeys] = optionEntry.getKey();
                 this.nrKeys++;
             }
-            this.selector.setSelectedIndex(selected < 0 ? 0 : selected);
+            this.selector
+                .setSelectedIndex(selected < 0
+                    ? 0
+                    : selected);
             //            revalidate();
             //            repaint();
         }
@@ -111,12 +116,13 @@ public abstract class EncodedEnumeratedType<A> implements EncodedType<A,String> 
         }
 
         @Override
-        public void setCurrentValue(String value) {
+        public boolean setCurrentValue(String value) {
             for (int i = 0; i < this.nrKeys; i++) {
                 if (this.keys[i].equals(value)) {
                     this.selector.setSelectedIndex(i);
                 }
             }
+            return true;
         }
     }
 }

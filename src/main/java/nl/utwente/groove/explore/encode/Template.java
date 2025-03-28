@@ -73,7 +73,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
      * set later by calls to setArgumentType().
      */
     public Template(ParsableValue value, SerializedParser commandlineParser,
-        String... argumentNames) {
+                    String... argumentNames) {
         this.value = value;
         this.commandlineParser = commandlineParser;
         this.argumentNames = argumentNames;
@@ -207,8 +207,8 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         return desc.toString();
     }
 
-    private static final HTMLTag INFO_FONT = new HTMLTag("FONT", "color",
-        ExplorationDialog.INFO_COLOR);
+    private static final HTMLTag INFO_FONT
+        = new HTMLTag("FONT", "color", ExplorationDialog.INFO_COLOR);
 
     /**
      * <!--------------------------------------------------------------------->
@@ -218,8 +218,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
      * <!--------------------------------------------------------------------->
      */
     private class TemplateEditor<X> extends EncodedTypeEditor<X,Serialized> {
-        private final Map<String,EncodedTypeEditor<?,String>> editors =
-            new TreeMap<>();
+        private final Map<String,EncodedTypeEditor<?,String>> editors = new TreeMap<>();
 
         public TemplateEditor(GrammarModel grammar) {
             super(grammar, new SpringLayout());
@@ -233,13 +232,8 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
             for (String argName : Template.this.argumentNames) {
                 addArgument(argName);
             }
-            SpringUtilities.makeCompactGrid(this,
-                6 + Template.this.argumentNames.length,
-                1,
-                2,
-                2,
-                0,
-                0);
+            SpringUtilities
+                .makeCompactGrid(this, 6 + Template.this.argumentNames.length, 1, 2, 2, 0, 0);
             refresh();
         }
 
@@ -274,16 +268,18 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         }
 
         private void addNrArguments() {
-            add(new JLabel("<HTML><FONT color=" + ExplorationDialog.INFO_COLOR
-                + ">Additional arguments: <B>"
-                + Integer.toString(Template.this.argumentNames.length) + "</B>"
-                + ((Template.this.argumentNames.length == 0) ? "." : " (select values below).")
-                + "</FONT></HTML>"));
+            add(new JLabel(
+                "<HTML><FONT color=" + ExplorationDialog.INFO_COLOR + ">Additional arguments: <B>"
+                    + Integer.toString(Template.this.argumentNames.length) + "</B>"
+                    + ((Template.this.argumentNames.length == 0)
+                        ? "."
+                        : " (select values below).")
+                    + "</FONT></HTML>"));
         }
 
         private void addArgument(String argName) {
-            EncodedTypeEditor<?,String> editor =
-                Template.this.argumentTypes.get(argName).createEditor(getGrammar());
+            EncodedTypeEditor<?,String> editor
+                = Template.this.argumentTypes.get(argName).createEditor(getGrammar());
             JPanel line = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
             line.setBackground(ExplorationDialog.INFO_BG_COLOR);
             if (editor != null) {
@@ -291,8 +287,9 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
                 line.add(editor);
             }
             line.add(Box.createRigidArea(new Dimension(5, 0)));
-            line.add(new JLabel("<HTML><B><FONT color=" + ExplorationDialog.INFO_COLOR + ">("
-                + argName + ")</B></HTML>"));
+            line
+                .add(new JLabel("<HTML><B><FONT color=" + ExplorationDialog.INFO_COLOR + ">("
+                    + argName + ")</B></HTML>"));
             add(line);
         }
 
@@ -310,13 +307,15 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         }
 
         @Override
-        public void setCurrentValue(Serialized value) {
-            if (!value.getKeyword().equals(getKeyword())) {
-                return;
+        public boolean setCurrentValue(Serialized value) {
+            boolean result = false;
+            if (value.getKeyword().equals(getKeyword())) {
+                result = true;
+                for (String argName : Template.this.argumentNames) {
+                    result &= this.editors.get(argName).setCurrentValue(value.getArgument(argName));
+                }
             }
-            for (String argName : Template.this.argumentNames) {
-                this.editors.get(argName).setCurrentValue(value.getArgument(argName));
-            }
+            return result;
         }
 
         @Override
@@ -392,7 +391,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
          * Localized creation of the Template class (with 1 argument).
          */
         public Template1(ParsableValue value, SerializedParser commandlineParser, String arg1Name,
-            EncodedType<P1,String> arg1Type) {
+                         EncodedType<P1,String> arg1Type) {
             super(value, commandlineParser, arg1Name);
             this.type1 = arg1Type;
             this.name1 = arg1Name;
@@ -452,7 +451,8 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
          * Localized creation of the Template class (with 1 argument).
          */
         public Template2(ParsableValue value, SerializedParser commandlineParser, String arg1Name,
-            EncodedType<P1,String> arg1Type, String arg2Name, EncodedType<P2,String> arg2Type) {
+                         EncodedType<P1,String> arg1Type, String arg2Name,
+                         EncodedType<P2,String> arg2Type) {
             super(value, commandlineParser, arg1Name, arg2Name);
             this.type1 = arg1Type;
             this.name1 = arg1Name;
@@ -524,7 +524,8 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
          */
         @SafeVarargs
         public TemplateN(ParsableValue value, SerializedParser commandlineParser,
-            String[] argumentNames, EncodedType<? extends Object,String>... argumentTypes) {
+                         String[] argumentNames,
+                         EncodedType<? extends Object,String>... argumentTypes) {
             super(value, commandlineParser, argumentNames);
             this.typenames = argumentNames;
             this.encodedtypes = argumentTypes;

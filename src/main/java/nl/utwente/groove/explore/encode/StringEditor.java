@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2023 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -43,8 +43,7 @@ public class StringEditor<A> extends EncodedTypeEditor<A,String> {
      * Build the editor using a comment prefix, an initial value and a display
      * size (number of columns).
      */
-    public StringEditor(GrammarModel grammar, String syntax, String initValue,
-            int nrColumns) {
+    public StringEditor(GrammarModel grammar, String syntax, String initValue, int nrColumns) {
         super(grammar, new SpringLayout());
         if (!syntax.equals("")) {
             this.nr_components = 2;
@@ -86,8 +85,8 @@ public class StringEditor<A> extends EncodedTypeEditor<A,String> {
     public void refresh() {
         removeAll();
         if (!this.syntax.equals("")) {
-            add(new JLabel("<HTML><FONT color=" + ExplorationDialog.INFO_COLOR
-                + "><B>Syntax:</B> " + this.syntax + "</FONT></HTML>"));
+            add(new JLabel("<HTML><FONT color=" + ExplorationDialog.INFO_COLOR + "><B>Syntax:</B> "
+                + this.syntax + "</FONT></HTML>"));
         }
         add(this.editor);
         SpringUtilities.makeCompactGrid(this, this.nr_components, 1, 0, 0, 0, 0);
@@ -99,7 +98,8 @@ public class StringEditor<A> extends EncodedTypeEditor<A,String> {
     }
 
     @Override
-    public void setCurrentValue(String value) {
+    public boolean setCurrentValue(String value) {
         this.editor.setText(value);
+        return true;
     }
 }

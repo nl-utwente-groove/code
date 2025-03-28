@@ -109,15 +109,15 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
     @Override
     public A parse(Grammar rules, Serialized source) throws FormatException {
         for (Template<A> template : this.templates) {
-            if (template.getKeyword()
-                .equals(source.getKeyword())) {
+            if (template.getKeyword().equals(source.getKeyword())) {
                 return template.parse(rules, source);
             }
         }
 
         StringBuffer error = new StringBuffer();
-        error.append(
-            "Unknown keyword '" + source.getKeyword() + "' for the " + this.typeIdentifier + ".\n");
+        error
+            .append("Unknown keyword '" + source.getKeyword() + "' for the " + this.typeIdentifier
+                + ".\n");
         error.append("Expected one of the following keywords:");
         for (Template<A> template : this.templates) {
             error.append(" '");
@@ -148,8 +148,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
     public String toParsableString(Serialized source) {
         source = source.clone();
         for (Template<A> template : this.templates) {
-            if (template.getKeyword()
-                .equals(source.getKeyword())) {
+            if (template.getKeyword().equals(source.getKeyword())) {
                 return template.toParsableString(source);
             }
         }
@@ -184,8 +183,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
     private class TemplateListEditor<X> extends EncodedTypeEditor<X,Serialized>
         implements ListSelectionListener {
 
-        private final Map<String,EncodedTypeEditor<A,Serialized>> editors =
-            new TreeMap<>();
+        private final Map<String,EncodedTypeEditor<A,Serialized>> editors = new TreeMap<>();
         private ArrayList<String> templateKeywords;
         private JList<String> nameSelector;
         private JPanel infoPanel;
@@ -205,11 +203,9 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
             int nrTemplates = TemplateList.this.templates.size();
             List<String> templateNames = new ArrayList<>(nrTemplates);
             for (Template<A> template : TemplateList.this.templates) {
-                if (Version.isDevelopmentVersion() || !template.getValue()
-                    .isDevelopment()) {
+                if (Version.isDevelopmentVersion() || !template.getValue().isDevelopment()) {
                     String templateName = template.getName();
-                    if (template.getValue()
-                        .isDefault(getGrammar())) {
+                    if (template.getValue().isDefault(getGrammar())) {
                         templateName = HTML_TAG.on(STRONG_TAG.on(templateName + " (default)"));
                     }
                     templateNames.add(templateName);
@@ -228,8 +224,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
             int nrTemplates = TemplateList.this.templates.size();
             this.templateKeywords = new ArrayList<>(nrTemplates);
             for (Template<A> template : TemplateList.this.templates) {
-                if (Version.isDevelopmentVersion() || !template.getValue()
-                    .isDevelopment()) {
+                if (Version.isDevelopmentVersion() || !template.getValue().isDevelopment()) {
                     this.templateKeywords.add(template.getKeyword());
                     this.editors.put(template.getKeyword(), template.createEditor(getGrammar()));
                 }
@@ -300,14 +295,14 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
             int selectedIndex = this.nameSelector.getSelectedIndex();
             if (selectedIndex >= 0) {
                 String selectedKeyword = this.templateKeywords.get(selectedIndex);
-                result = this.editors.get(selectedKeyword)
-                    .getCurrentValue();
+                result = this.editors.get(selectedKeyword).getCurrentValue();
             }
             return result;
         }
 
         @Override
-        public void setCurrentValue(Serialized value) {
+        public boolean setCurrentValue(Serialized value) {
+            boolean result = false;
             String keyword = value.getKeyword();
             if (this.templateKeywords.contains(keyword)) {
                 this.nameSelector.setSelectedIndex(this.templateKeywords.indexOf(keyword));
@@ -317,7 +312,9 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
                 this.infoPanel.setPreferredSize(new Dimension(0, editorHeight));
                 CardLayout cards = (CardLayout) (this.infoPanel.getLayout());
                 cards.show(this.infoPanel, value.getKeyword());
+                result = true;
             }
+            return result;
         }
     }
 }

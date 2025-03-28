@@ -92,6 +92,12 @@ public class LTSJEdge extends AJEdge<@NonNull GTS,LTSJGraph,LTSJModel,LTSJVertex
         return (GraphTransition) super.getEdge();
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<? extends GraphTransition> getEdges() {
+        return (Set<? extends GraphTransition>) super.getEdges();
+    }
+
     @Override
     StringBuilder getEdgeKindDescription() {
         return new StringBuilder("transition");
@@ -144,7 +150,7 @@ public class LTSJEdge extends AJEdge<@NonNull GTS,LTSJGraph,LTSJModel,LTSJVertex
     boolean isResult() {
         LTSJGraph jGraph = getJGraph();
         assert jGraph != null; // guaranteed by now
-        return jGraph.isResult(getEdge());
+        return getEdges().stream().anyMatch(jGraph::isResult);
     }
 
     @Override

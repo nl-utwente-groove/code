@@ -21,6 +21,7 @@ import static nl.utwente.groove.gui.SimulatorModel.Change.GTS;
 import static nl.utwente.groove.gui.SimulatorModel.Change.MATCH;
 import static nl.utwente.groove.gui.SimulatorModel.Change.RULE;
 import static nl.utwente.groove.gui.SimulatorModel.Change.STATE;
+import static nl.utwente.groove.gui.SimulatorModel.Change.TRACE;
 
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
@@ -120,7 +121,7 @@ public class RuleTree extends AbstractResourceTree {
     @Override
     void installListeners() {
         super.installListeners();
-        getSimulatorModel().addListener(this, STATE, MATCH, RULE);
+        getSimulatorModel().addListener(this, STATE, MATCH, RULE, TRACE);
         getOptions().getItem(Options.SHOW_ANCHORS_OPTION).addItemListener(getOptionsListener());
         getOptions()
             .getItem(Options.SHOW_RECIPE_STEPS_OPTION)
@@ -201,7 +202,7 @@ public class RuleTree extends AbstractResourceTree {
                 refresh(source.getState());
                 renewSelection = true;
             } else {
-                if (changes.contains(GTS) || changes.contains(STATE)) {
+                if (changes.contains(GTS) || changes.contains(STATE) || changes.contains(TRACE)) {
                     // if the GTS has changed, this may mean that the state
                     // displayed here has been closed, in which case we have to refresh
                     // since the rule events have been changed into transitions

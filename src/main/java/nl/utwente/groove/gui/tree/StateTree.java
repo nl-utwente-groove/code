@@ -17,6 +17,10 @@
 package nl.utwente.groove.gui.tree;
 
 import static nl.utwente.groove.grammar.model.ResourceKind.RULE;
+import static nl.utwente.groove.gui.SimulatorModel.Change.GTS;
+import static nl.utwente.groove.gui.SimulatorModel.Change.MATCH;
+import static nl.utwente.groove.gui.SimulatorModel.Change.STATE;
+import static nl.utwente.groove.gui.SimulatorModel.Change.TRACE;
 
 import java.awt.Graphics;
 import java.awt.event.FocusEvent;
@@ -116,7 +120,7 @@ public class StateTree extends JTree implements SimulatorListener {
 
     /** Installs all listeners, and sets the listening status to {@code true}. */
     protected void installListeners() {
-        getSimulatorModel().addListener(this, Change.GTS, Change.STATE, Change.MATCH, Change.TRACE);
+        getSimulatorModel().addListener(this, GTS, STATE, MATCH, TRACE);
         addFocusListener(new FocusListener() {
             @Override
             public void focusLost(FocusEvent e) {
