@@ -78,7 +78,7 @@ final public class GroovyDisplay extends ResourceDisplay {
      * @param name Name of script resource to execute
      */
     public void executeGroovy(QualName name) {
-        String program = getSimulatorModel().getGrammar().getText(getResourceKind(), name);
+        String program = getSimulatorModel().getGrammar().getModelText(getResourceKind(), name);
         GraphManager manager = new GraphManager(getSimulatorModel());
         Binding binding = new Binding();
 

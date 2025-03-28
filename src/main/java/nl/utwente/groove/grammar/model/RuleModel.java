@@ -146,7 +146,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
     @Override
     public boolean isActive() {
-        return GraphInfo.isEnabled(getSource()) || hasRecipes();
+        return getGrammar().getActiveNames(ResourceKind.RULE).contains(getQualName())
+            || hasRecipes();
     }
 
     /** Returns the set of recipe names in which this rule is called. */

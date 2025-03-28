@@ -1058,7 +1058,7 @@ public class SimulatorModel implements Cloneable {
                 continue;
             }
             for (QualName name : getGrammar().getNames(kind)) {
-                AspectGraph graph = getGrammar().getGraph(kind, name);
+                AspectGraph graph = getGrammar().getModelGraph(kind, name);
                 graph.getSearchResults(label, searchResults);
             }
         }

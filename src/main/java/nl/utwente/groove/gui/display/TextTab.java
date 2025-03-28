@@ -125,7 +125,7 @@ final public class TextTab extends ResourceTab {
     public boolean setResource(QualName name) {
         String program = null;
         if (name != null) {
-            program = getSimulatorModel().getGrammar().getText(getResourceKind(), name);
+            program = getSimulatorModel().getGrammar().getModelText(getResourceKind(), name);
         }
         if (program != null) {
             setQualName(name);

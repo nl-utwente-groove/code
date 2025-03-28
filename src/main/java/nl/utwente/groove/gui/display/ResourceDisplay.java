@@ -371,12 +371,12 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     protected ResourceTab createEditorTab(QualName name) {
         ResourceKind kind = getResourceKind();
         if (kind.isGraphBased()) {
-            AspectGraph graph = getSimulatorModel().getGrammar().getGraph(getResourceKind(), name);
+            AspectGraph graph = getSimulatorModel().getGrammar().getModelGraph(getResourceKind(), name);
             GraphEditorTab result = new GraphEditorTab(this, graph.getRole());
             result.setGraph(graph);
             return result;
         } else {
-            String program = getSimulatorModel().getGrammar().getText(getResourceKind(), name);
+            String program = getSimulatorModel().getGrammar().getModelText(getResourceKind(), name);
             return new TextTab(this, name, program);
         }
     }

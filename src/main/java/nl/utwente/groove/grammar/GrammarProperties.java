@@ -1,5 +1,7 @@
 package nl.utwente.groove.grammar;
 
+import static nl.utwente.groove.grammar.GrammarKey.DISABLED_RULES;
+
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -343,11 +345,27 @@ public class GrammarProperties extends Properties {
      * @return a (non-{@code null}, but possibly empty) set of active names
      */
     public Set<QualName> getActiveNames(ResourceKind kind) {
-        if (kind == ResourceKind.CONFIG || kind == ResourceKind.GROOVY
-            || kind == ResourceKind.PROPERTIES || kind == ResourceKind.RULE) {
-            return Collections.emptySet();
-        }
-        List<QualName> names = parsePropertyOrDefault(resourceKeyMap.get(kind)).getQualNameList();
+        var names = switch (kind) {
+        case CONFIG, GROOVY, PROPERTIES, RULE -> Collections.<QualName>emptyList();
+        default -> parsePropertyOrDefault(resourceKeyMap.get(kind)).getQualNameList();
+        };
+        return new TreeSet<>(names);
+    }
+
+    /**
+     * Sets the disabled rules property.
+     * @param names the (non-{@code null}, but possible empty) list of explicitly disabled rules
+     */
+    public void setDisabledRules(List<QualName> names) {
+        storeValue(DISABLED_RULES, names);
+    }
+
+    /**
+     * Returns a list of explicitly disabled rules.
+     * @return a (non-{@code null}, but possibly empty) set of active names
+     */
+    public Set<QualName> getDisabledRules() {
+        var names = parsePropertyOrDefault(DISABLED_RULES).getQualNameList();
         return new TreeSet<>(names);
     }
 

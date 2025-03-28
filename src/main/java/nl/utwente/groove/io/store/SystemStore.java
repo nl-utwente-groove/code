@@ -1210,22 +1210,25 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
 
     /** Edit consisting of changing the grammar properties. */
     class PutPropertiesEdit extends MyEdit {
-        public PutPropertiesEdit(GrammarProperties oldProperties, GrammarProperties newProperties,
+        public PutPropertiesEdit(GrammarProperties oldProps, GrammarProperties newProps,
                                  boolean reload) {
             super(EditType.MODIFY, reload
                 ? EnumSet.allOf(ResourceKind.class)
                 : EnumSet.of(PROPERTIES));
-            for (ResourceKind kind : EnumSet
-                .of(ResourceKind.PROLOG, ResourceKind.TYPE, ResourceKind.HOST,
-                    ResourceKind.CONTROL)) {
-                Set<QualName> oldNames = oldProperties.getActiveNames(kind);
-                Set<QualName> newNames = newProperties.getActiveNames(kind);
-                if (!oldNames.equals(newNames)) {
+            for (var kind : ResourceKind.values()) {
+                var equal = switch (kind) {
+                case PROLOG, TYPE, HOST, CONTROL -> oldProps
+                    .getActiveNames(kind)
+                    .equals(newProps.getActiveNames(kind));
+                case RULE -> oldProps.getDisabledRules().equals(newProps.getDisabledRules());
+                default -> true;
+                };
+                if (!equal) {
                     addChange(kind);
                 }
             }
-            this.oldProperties = oldProperties;
-            this.newProperties = newProperties;
+            this.oldProperties = oldProps;
+            this.newProperties = newProps;
         }
 
         @Override

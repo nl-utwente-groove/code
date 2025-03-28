@@ -150,6 +150,11 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      */
     PROLOG_NAMES("prolog", "List of active prolog program names", ValueType.QUAL_NAME_LIST),
 
+    /**
+     * Space-separated list of disabled rule names.
+     */
+    DISABLED_RULES("disabledRules", "List of explicitly disabled rules", ValueType.QUAL_NAME_LIST),
+
     /** Policy for rule application. */
     ACTION_POLICY("actionPolicy",
         "<body>List of <i>key=value</i> pairs, where <i>key</i> is an action name and <i>value</i> is one of:"
@@ -295,7 +300,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             case COMMON_LABELS, CONTROL_LABELS -> Parser.splitter;
             case CREATOR_EDGE, PARALLEL, DANGLING, RHS_AS_NAC, INJECTIVE, STORE_OUT_PARS, USE_STORED_NODE_IDS -> Parser.boolFalse;
             case ISOMORPHISM, LOOPS_AS_LABELS -> Parser.boolTrue;
-            case START_GRAPH_NAMES, CONTROL_NAMES, TYPE_NAMES, PROLOG_NAMES -> QualName
+            case START_GRAPH_NAMES, CONTROL_NAMES, TYPE_NAMES, PROLOG_NAMES, DISABLED_RULES -> QualName
                 .listParser();
             case TYPE_POLICY -> new Parser.EnumParser<>(CheckPolicy.class, CheckPolicy.ERROR,
                 convert("off", null, "error", "remove"));
@@ -333,6 +338,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         case PROLOG_NAMES -> ResourceChecker.get(ResourceKind.PROLOG);
         case START_GRAPH_NAMES -> ResourceChecker.get(ResourceKind.HOST);
         case TYPE_NAMES -> ResourceChecker.get(ResourceKind.TYPE);
+        case DISABLED_RULES -> ResourceChecker.get(ResourceKind.RULE);
         case USER_OPS -> UserOperationsChecker.instance;
         default -> trueChecker;
         };
@@ -348,7 +354,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
     @Override
     public boolean isNotable() {
         return switch (this) {
-        case ACTION_POLICY, ALGEBRA, CREATOR_EDGE, DANGLING, DEAD_POLICY, INJECTIVE, ISOMORPHISM, ORACLE, RHS_AS_NAC, STORE_OUT_PARS, TRANSITION_PARAMETERS, TYPE_POLICY -> true;
+        case ACTION_POLICY, ALGEBRA, CREATOR_EDGE, DANGLING, DEAD_POLICY, INJECTIVE, ISOMORPHISM, ORACLE, RHS_AS_NAC, STORE_OUT_PARS, TRANSITION_PARAMETERS, DISABLED_RULES, TYPE_POLICY -> true;
         default -> false;
         };
     }
@@ -434,6 +440,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
                 case HOST:
                 case PROLOG:
                 case TYPE:
+                case RULE:
                     result.put(kind, new ResourceChecker(kind));
                     break;
                 default:

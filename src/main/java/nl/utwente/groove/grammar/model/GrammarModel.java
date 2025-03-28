@@ -17,7 +17,6 @@
 package nl.utwente.groove.grammar.model;
 
 import static nl.utwente.groove.grammar.model.ResourceKind.CONTROL;
-import static nl.utwente.groove.grammar.model.ResourceKind.GROOVY;
 import static nl.utwente.groove.grammar.model.ResourceKind.HOST;
 import static nl.utwente.groove.grammar.model.ResourceKind.PROLOG;
 import static nl.utwente.groove.grammar.model.ResourceKind.RULE;
@@ -137,7 +136,7 @@ public class GrammarModel implements PropertyChangeListener {
         invalidate();
     }
 
-    /** Returns all names of grammar resources of a given kind. */
+    /** Returns all names of grammar resources of a given kind in the store. */
     public Set<QualName> getNames(ResourceKind kind) {
         if (kind == ResourceKind.PROPERTIES) {
             return null;
@@ -185,34 +184,19 @@ public class GrammarModel implements PropertyChangeListener {
      * Returns a version of the stored graph of a given type and name
      * as used in the appropriate model.
      */
-    public AspectGraph getGraph(ResourceKind kind, QualName name) {
+    public AspectGraph getModelGraph(ResourceKind kind, QualName name) {
         assert kind.isGraphBased();
         var resource = getGraphResource(kind, name);
         return resource == null
             ? null
             : resource.getSource();
-        //        var map = this.typedGraphs.get(kind);
-        //        // always test typeTracker for staleness, otherwise we'll do this twice
-        //        if (map == null | this.typeTracker.isStale()) {
-        //            this.typedGraphs.put(kind, map = new HashMap<>());
-        //        }
-        //        assert map != null;
-        //        AspectGraph result = map.get(name);
-        //        if (result == null) {
-        //            result = getStore().getGraphs(kind).get(name);
-        //            if (result != null) {
-        //                result = toTypedGraph(result);
-        //                map.put(name, result);
-        //            }
-        //        }
-        //        return result;
     }
 
     /**
      * Returns a version of the stored text of a given type and name
      * ready for use in the grammar.
      */
-    public String getText(ResourceKind kind, QualName name) {
+    public String getModelText(ResourceKind kind, QualName name) {
         assert kind.isTextBased();
         var resource = getTextResource(kind, name);
         return resource == null
@@ -223,14 +207,14 @@ public class GrammarModel implements PropertyChangeListener {
     /** Returns the list of active graphs of a given resource kind, alphabetically ordered by (qualified) name. */
     public List<AspectGraph> getActiveGraphs(ResourceKind kind) {
         List<AspectGraph> result = new ArrayList<>();
-        getActiveNames(kind).stream().map(n -> getGraph(kind, n)).forEach(result::add);
+        getActiveNames(kind).stream().map(n -> getModelGraph(kind, n)).forEach(result::add);
         return result;
     }
 
     /** Returns the list of active texts of a given resource kind, alphabetically ordered by (qualified) name. */
     public List<String> getActiveTexts(ResourceKind kind) {
         List<String> result = new ArrayList<>();
-        getActiveNames(kind).stream().map(n -> getText(kind, n)).forEach(result::add);
+        getActiveNames(kind).stream().map(n -> getModelText(kind, n)).forEach(result::add);
         return result;
     }
 
@@ -336,7 +320,7 @@ public class GrammarModel implements PropertyChangeListener {
         for (ResourceModel<?> model : ruleModels) {
             RuleModel ruleModel = (RuleModel) model;
             try {
-                if (GraphInfo.isEnabled(ruleModel.getSource())) {
+                if (ruleModel.isActive()) {
                     result.add(ruleModel.toResource());
                 }
             } catch (FormatException exc) {
@@ -481,7 +465,9 @@ public class GrammarModel implements PropertyChangeListener {
             initGrammar();
         }
         this.errors.throwException();
-        return this.grammar;
+        var result = this.grammar;
+        assert result != null;
+        return result;
     }
 
     /** Initialises the {@link #grammar} and {@link #errors} fields. */
@@ -662,22 +648,27 @@ public class GrammarModel implements PropertyChangeListener {
         // update the set of resource models
         Map<QualName,NamedResourceModel<?>> modelMap = this.resourceMap.get(kind);
         Set<QualName> names = getNames(kind);
-        // restrict the resources to those whose names are in the store
-        modelMap.keySet().retainAll(names);
         // collect the new active names
         SortedSet<QualName> newActiveNames = new TreeSet<>();
-        if (kind != RULE && kind != ResourceKind.CONFIG) {
+        switch (kind) {
+        case GROOVY:
+            newActiveNames.addAll(names);
+            break;
+        case RULE:
+            var disabledRules = getProperties().getDisabledRules();
+            names
+                .stream()
+                .filter(n -> !disabledRules.contains(n))
+                .filter(n -> GraphInfo.isEnabled(getStore().getGraphs(RULE).get(n)))
+                .forEach(newActiveNames::add);
+            break;
+        case CONFIG:
+            break;
+        default:
             newActiveNames.addAll(getProperties().getActiveNames(kind));
         }
         // now synchronise the models with the sources in the store
-        for (var name : names) {
-            var model = createModel(kind, name);
-            modelMap.put(name, model);
-            if (kind == GROOVY
-                || kind == RULE && GraphInfo.isEnabled((AspectGraph) model.getSource())) {
-                newActiveNames.add(name);
-            }
-        }
+        names.forEach(n -> modelMap.put(n, createModel(kind, n)));
         // update the active names set
         Set<QualName> oldActiveNames = this.storedActiveNamesMap.get(kind);
         if (!oldActiveNames.equals(newActiveNames)) {

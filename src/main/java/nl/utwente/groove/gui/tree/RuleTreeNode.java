@@ -119,12 +119,12 @@ class RuleTreeNode extends ActionTreeNode {
             result.append(HTML_LINEBREAK);
             result.append(rulePolicy.getExplanation());
         }
-        if (!GraphInfo.isEnabled(source)) {
+        if (!getRuleModel().isActive()) {
             result.append(HTML_LINEBREAK);
-            result.append("Explicitly disabled in the rule properties");
+            result.append("Explicitly disabled in the rule or system properties");
         } else if (rulePolicy == CheckPolicy.OFF) {
             result.append(HTML_LINEBREAK);
-            result.append("Turned off by the rule policy in the grammar properties");
+            result.append("Turned off by the rule policy in the system properties");
         } else if (getStatus() == Status.STANDBY) {
             result.append(HTML_LINEBREAK);
             result.append("Not scheduled in this state, due to rule priorities or control");
