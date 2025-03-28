@@ -3,6 +3,10 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 7.1.1, 28 March 2025
+-------------------------------
+- Resolved gh issues #822
+
 Release 7.1.0, 28 March 2025
 -------------------------------
 - Added Disabled Rules to the system properties, overriding the rule-specific enabledness
