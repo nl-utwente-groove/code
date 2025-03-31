@@ -2066,6 +2066,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             RuleGraph result = createGraph(graph.getName());
             try {
                 RuleGraphMorphism typing = getTypeGraph().analyzeRule(graph, parentTypeMap);
+                this.errors.applyInverse(typing);
                 if (typeMap != null) {
                     typeMap.putAll(typing);
                 }
