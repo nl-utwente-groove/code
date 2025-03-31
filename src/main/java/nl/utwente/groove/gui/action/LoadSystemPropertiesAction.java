@@ -12,7 +12,6 @@ import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
-import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * Action for loading a new rule system.
@@ -36,7 +35,7 @@ public class LoadSystemPropertiesAction extends SimulatorAction {
             } else {
                 try {
                     load(selectedFile);
-                } catch (IOException | FormatException exc) {
+                } catch (IOException exc) {
                     showErrorDialog(exc, exc.getMessage());
                 }
             }
@@ -47,13 +46,12 @@ public class LoadSystemPropertiesAction extends SimulatorAction {
      * Loads in new system properties from a given file.
      * @throws IOException if the load action failed
      */
-    public void load(File propertiesFile) throws IOException, FormatException {
+    public void load(File propertiesFile) throws IOException {
         var grammarPath = getGrammarModel().getProperties().getLocation();
         var properties = new GrammarProperties();
         try (InputStream s = new FileInputStream(propertiesFile)) {
             properties.load(s);
         }
-        properties.check(getGrammarModel());
         properties = properties.repairVersion().addDerivedProperties(grammarPath);
         getSimulatorModel().doSetProperties(properties);
     }
