@@ -16,6 +16,9 @@
  */
 package nl.utwente.groove.lts;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.control.instance.Step;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.transform.RuleEvent;
@@ -24,6 +27,7 @@ import nl.utwente.groove.transform.RuleEvent;
  * Class encoding the result of matching the rule in a control transition.
  * This essentially consists of a rule event and the control transition.
  */
+@NonNullByDefault
 public class MatchResult implements GraphTransitionKey {
     /** Constructs a result from a given rule transition. */
     public MatchResult(RuleTransition ruleTrans) {
@@ -46,16 +50,17 @@ public class MatchResult implements GraphTransitionKey {
      * @see #hasTransition()
      */
     public boolean hasTransitionFrom(GraphState state) {
-        return hasTransition() && getTransition().source() == state;
+        var trans = getTransition();
+        return trans != null && trans.source() == state;
     }
 
     /** Returns the rule transition wrapped in this match result, if
      * that starts at a given source state; or {@code null} otherwise
      * @param state the source state for the transition
      */
-    public RuleTransition getTransitionFrom(GraphState state) {
+    public @Nullable RuleTransition getTransitionFrom(GraphState state) {
         var result = getTransition();
-        if (result.source() != state) {
+        if (result != null && result.source() != state) {
             result = null;
         }
         return result;
@@ -78,10 +83,12 @@ public class MatchResult implements GraphTransitionKey {
      * the state to which the match is to be applied.
      * @see #getTransitionFrom(GraphState)
      */
+    @Nullable
     public RuleTransition getTransition() {
         return this.ruleTrans;
     }
 
+    @Nullable
     private final RuleTransition ruleTrans;
 
     @Override
@@ -126,7 +133,7 @@ public class MatchResult implements GraphTransitionKey {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }

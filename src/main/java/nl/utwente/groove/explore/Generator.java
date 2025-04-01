@@ -21,8 +21,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -489,6 +491,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         public PropertiesHandler(CmdLineParser parser, OptionDef option,
                                  Setter<? super Map<?,?>> setter) {
             super(parser, option, setter);
+            this.pluses = new HashSet<>();
         }
 
         @SuppressWarnings("rawtypes")
@@ -510,6 +513,10 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         @Override
         protected void addToMap(Map m, String key, String value) {
             this.error = null;
+            boolean plus = !key.isEmpty() && key.charAt(key.length() - 1) == '+';
+            if (plus) {
+                key = key.substring(0, key.length() - 1);
+            }
             var property = GrammarKey.getKey(key);
             if (property.isEmpty()) {
                 this.error = String.format("Unknown property key '%s'", key);
@@ -519,8 +526,14 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
                 this.error = String.format("Incorrect value '%s' for property '%s'", value, key);
             } else {
                 m.put(property.get(), value);
+                if (plus) {
+                    this.pluses.add(key);
+                }
             }
         }
+
+        /** Property keys that are set with '+=' rather than '+' */
+        private Set<String> pluses;
 
         /**
          * Error detected in {@link #addToMap(Map, String, String)}
