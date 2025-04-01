@@ -492,6 +492,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 setEnabled(true);
                 getJGraph().scrollToActive();
                 setFilterResultItem(source.hasExploreResult());
+                updateStatus(gts);
             }
             if (gts != oldModel.getGTS()) {
                 if (oldModel.getGTS() != null) {
