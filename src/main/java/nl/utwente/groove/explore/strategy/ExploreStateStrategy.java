@@ -49,6 +49,13 @@ public class ExploreStateStrategy extends ClosingStrategy {
     }
 
     @Override
+    protected void putBackInPool(GraphState state) {
+        if (state == getStartState()) {
+            this.state = state;
+        }
+    }
+
+    @Override
     protected void clearPool() {
         this.state = null;
     }

@@ -1,5 +1,8 @@
 package nl.utwente.groove.explore;
 
+import static nl.utwente.groove.explore.strategy.ClosingStrategy.ConditionMoment.AFTER;
+import static nl.utwente.groove.explore.strategy.ClosingStrategy.ConditionMoment.AT;
+
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +38,6 @@ import nl.utwente.groove.explore.strategy.BFSStrategy;
 import nl.utwente.groove.explore.strategy.Boundary;
 import nl.utwente.groove.explore.strategy.BoundedLTLStrategy;
 import nl.utwente.groove.explore.strategy.BoundedPocketLTLStrategy;
-import nl.utwente.groove.explore.strategy.ConditionalBFSStrategy;
 import nl.utwente.groove.explore.strategy.DFSStrategy;
 import nl.utwente.groove.explore.strategy.ExploreStateStrategy;
 import nl.utwente.groove.explore.strategy.LTLStrategy;
@@ -84,23 +86,34 @@ public enum StrategyValue implements ParsableValue {
     RETE_RANDOM("reterandom", "Rete Random Linear Exploration",
         "This strategy chooses one transition from each open state. "
             + "The transition is chosen randomly."),
-    /** Rule conditional strategy. */
-    CONDITIONAL("crule", "Conditional Exploration (Rule Condition)",
+    /** BFS strategy up to and including a rule-based condition. */
+    BFS_UNTIL_RULE("bfsurule", "BFS Exploration Until Rule Application",
         "This strategy performs a conditional breadth-first exploration. "
-            + "If a given rule is applicable in a newly reached state, it "
-            + " is not explored further. " + "All other states are explored normally."),
-    /** Node bound conditional strategy. */
-    CONDITIONAL_NODE_BOUND("cnbound", "Conditional Exploration (Node Bound)",
+            + "If a given rule is applicable in a newly reached state, its successors are not explored. "
+            + "The rule does not have to be scheduled to be used for this purpose. "
+            + "All other states are explored normally."),
+    /** BFS strategy up to and including a rule-based condition. */
+    DFS_UNTIL_RULE("dfsurule", "DFS Exploration Until Rule Application",
+        "This strategy performs a conditional depth-first exploration. "
+            + "If a given rule is applicable in a newly reached state, its successors are not explored. "
+            + "The rule does not have to be scheduled to be used for this purpose. "
+            + "All other states are explored normally."),
+    /** BFS strategy up to (and not including) a rule-based condition. */
+    BFS_UPTO_RULE("crule", "BFS Exploration Up To Rule Application",
+        "This strategy performs a conditional breadth-first exploration. "
+            + "If a given rule is applicable in a newly reached state, the state is not explored. "
+            + "The rule does not have to be scheduled to be used for this purpose. "
+            + "All other states are explored normally."),
+    /** BFS strategy up to (and not including) a number of nodes. */
+    BFS_UPTO_NCOUNT("cnbound", "BFS Exploration Up To Node Bound",
         "This strategy performs a conditional breadth-first exploration. "
             + "If the number of nodes in a newly reached state exceeds a "
-            + "given bound, it is not explored further. "
-            + "All other states are explored normally."),
-    /** Edge bound conditional strategy. */
-    CONDITIONAL_EDGE_BOUND("cebound", "Conditional Exploration (Edge Bound)",
+            + "given bound, it is not explored. " + "All other states are explored normally."),
+    /** BFS strategy up to (and not including) a number of edges. */
+    BFS_UPTO_ECOUNT("cebound", "BFS Exploration Up To Edge Bound",
         "This strategy performs a conditional breadth-first exploration. "
             + "If the number of edges in a newly reached state exceeds a "
-            + "given bound, it is not explored further. "
-            + "All other states are explored normally."),
+            + "given bound, it is not explored. " + "All other states are explored normally."),
     /** LTL model checking strategy. */
     LTL("ltl", "LTL Model Checking", "Nested Depth-First Search for a given LTL formula."),
     /** Bounded LTL model checking  strategy. */
@@ -227,7 +240,7 @@ public enum StrategyValue implements ParsableValue {
                 }
             };
 
-        case CONDITIONAL:
+        case BFS_UNTIL_RULE:
             return new MyTemplate2<>(
                 new PSequence(
                     new POptional("!", "mode", EncodedRuleMode.NEGATIVE, EncodedRuleMode.POSITIVE),
@@ -236,37 +249,54 @@ public enum StrategyValue implements ParsableValue {
 
                 @Override
                 public Strategy create(Rule rule, Boolean mode) {
-                    IsRuleApplicableCondition condition = new IsRuleApplicableCondition(rule, mode);
-                    ConditionalBFSStrategy strategy = new ConditionalBFSStrategy();
-                    strategy.setExploreCondition(condition);
-                    return strategy;
+                    return new BFSStrategy(AFTER, new IsRuleApplicableCondition(rule, mode));
                 }
             };
 
-        case CONDITIONAL_NODE_BOUND:
+        case DFS_UNTIL_RULE:
+            return new MyTemplate2<>(
+                new PSequence(
+                    new POptional("!", "mode", EncodedRuleMode.NEGATIVE, EncodedRuleMode.POSITIVE),
+                    new PIdentifier("rule")),
+                "rule", new EncodedEnabledRule(), "mode", new EncodedRuleMode()) {
+
+                @Override
+                public Strategy create(Rule rule, Boolean mode) {
+                    return new DFSStrategy(AFTER, new IsRuleApplicableCondition(rule, mode));
+                }
+            };
+
+        case BFS_UPTO_RULE:
+            return new MyTemplate2<>(
+                new PSequence(
+                    new POptional("!", "mode", EncodedRuleMode.NEGATIVE, EncodedRuleMode.POSITIVE),
+                    new PIdentifier("rule")),
+                "rule", new EncodedEnabledRule(), "mode", new EncodedRuleMode()) {
+
+                @Override
+                public Strategy create(Rule rule, Boolean mode) {
+                    return new BFSStrategy(AT, new IsRuleApplicableCondition(rule, mode));
+                }
+            };
+
+        case BFS_UPTO_NCOUNT:
             return new MyTemplate1<>(new PNumber("node-bound"), "node-bound",
                 new EncodedInt(0, -1)) {
 
                 @Override
                 public Strategy create(Integer bound) {
-                    NodeBoundCondition condition = new NodeBoundCondition(bound);
-                    ConditionalBFSStrategy strategy = new ConditionalBFSStrategy();
-                    strategy.setExploreCondition(condition);
-                    return strategy;
+                    return new BFSStrategy(AT, new NodeBoundCondition(bound));
                 }
             };
 
-        case CONDITIONAL_EDGE_BOUND:
+        case BFS_UPTO_ECOUNT:
             return new MyTemplate1<>(new PSeparated(new PSequence(new PIdentifier("edge-bound"),
                 new PLiteral(">", "edge-bound"), new PNumber("edge-bound")),
                 new PLiteral(",", "edge-bound")), "edge-bound", new EncodedEdgeMap()) {
 
                 @Override
                 public Strategy create(Map<TypeLabel,Integer> bounds) {
-                    EdgeBoundCondition condition = new EdgeBoundCondition(bounds);
-                    ConditionalBFSStrategy strategy = new ConditionalBFSStrategy();
-                    strategy.setExploreCondition(condition);
-                    return strategy;
+                    return new BFSStrategy(AT, new EdgeBoundCondition(bounds));
                 }
             };
 

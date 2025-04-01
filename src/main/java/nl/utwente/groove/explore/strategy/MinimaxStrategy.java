@@ -135,6 +135,11 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
     }
 
     @Override
+    protected void putBackInPool(GraphState state) {
+        this.explorationStack.push(state);
+    }
+
+    @Override
     protected void clearPool() {
         this.nodes.clear();
         this.explorationStack.clear();
