@@ -45,21 +45,13 @@ import nl.utwente.groove.explore.Verbosity;
 public abstract class GrooveCmdLineTool<T> {
     /**
      * Constructs an instance of a tool,
-     * with a given application name.
-     */
-    public GrooveCmdLineTool(String appName) {
-        this.parser = createParser(appName);
-    }
-
-    /**
-     * Constructs an instance of a tool,
      * with a given application name and list of arguments.
      * Parsing the arguments is deferred to {@link #start()},
      * in order to avoid that they are overridden by
      * default initialisers in the field declarations.
      */
     public GrooveCmdLineTool(String appName, String... args) {
-        this(appName);
+        this.parser = createParser(appName);
         this.args = args;
     }
 
@@ -133,14 +125,22 @@ public abstract class GrooveCmdLineTool<T> {
      * @throws CmdLineException if such an exception occurred while parsing
      */
     protected void parseArguments() throws CmdLineException {
-        if (this.args != null) {
+        if (!this.parsed) {
             getParser().parseArgument(this.args);
-            this.args = null;
+            this.parsed = true;
         }
     }
 
+    /** Boolean indicating that the arguments have been parsed. */
+    private boolean parsed;
+
+    /** Returns the original arguments of the command line invocation. */
+    public String[] getArgs() {
+        return this.args;
+    }
+
     /** The arguments originally provided for the tool. */
-    private String[] args;
+    private final String[] args;
 
     /**
      * Convenience method for {@link #emit(Verbosity, String, String...)}

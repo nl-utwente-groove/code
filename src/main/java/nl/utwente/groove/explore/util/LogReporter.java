@@ -31,6 +31,7 @@ import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.Verbosity;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.lts.GTS;
+import nl.utwente.groove.util.Groove;
 
 /**
  * Reporter that logs the exploration process.
@@ -44,7 +45,8 @@ public class LogReporter extends AExplorationReporter {
      * @param verbosity the verbosity with which messages are printed on standard output
      * @param logDir if not {@code null}, the name of a directory into which a log file should be written
      */
-    public LogReporter(Verbosity verbosity, File logDir) {
+    public LogReporter(String[] args, Verbosity verbosity, File logDir) {
+        this.args = args;
         this.verbosity = verbosity;
         this.logDir = logDir;
         this.exploreStats = new StatisticsReporter(verbosity);
@@ -146,6 +148,7 @@ public class LogReporter extends AExplorationReporter {
         emit("Exploration:\t%s%n", getExploration().getType().getIdentifier());
         emit("Max mem (-Xmx):\t%sM%n", Runtime.getRuntime().maxMemory() / B_PER_MB);
         emit("Timestamp:\t%s%n", this.startTime);
+        emit("Command line:\t%s%n", Groove.toString(this.args, "", "", " "));
     }
 
     /** Outputs a diagnostic message if allowed by the verbosity, and optionally logs it. */
@@ -164,6 +167,7 @@ public class LogReporter extends AExplorationReporter {
         emit(Verbosity.MEDIUM, message, args);
     }
 
+    private final String[] args;
     private final Verbosity verbosity;
     private final File logDir;
     private final StatisticsReporter exploreStats;
