@@ -24,6 +24,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -32,6 +33,7 @@ import nl.utwente.groove.explore.Verbosity;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.parse.StringHandler;
 
 /**
  * Reporter that logs the exploration process.
@@ -148,7 +150,13 @@ public class LogReporter extends AExplorationReporter {
         emit("Exploration:\t%s%n", getExploration().getType().getIdentifier());
         emit("Max mem (-Xmx):\t%sM%n", Runtime.getRuntime().maxMemory() / B_PER_MB);
         emit("Timestamp:\t%s%n", this.startTime);
-        emit("Command line:\t%s%n", Groove.toString(this.args, "", "", " "));
+        String[] args = Arrays.copyOf(this.args, this.args.length);
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].indexOf(' ') >= 0) {
+                args[i] = StringHandler.toQuoted(args[i], '"');
+            }
+        }
+        emit("Command line:\t%s%n", Groove.toString(args, "", "", " "));
     }
 
     /** Outputs a diagnostic message if allowed by the verbosity, and optionally logs it. */
