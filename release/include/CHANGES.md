@@ -3,6 +3,11 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 7.3.0, 1 April 2025
+-------------------------------
+- Added conditional exploration strategies for stopping after, rather than at, 
+  a condition determined by the applicability of a rule, for BFS as well as DFS
+
 Release 7.2.0, 1 April 2025
 -------------------------------
 - Added '-D key+=value' to the command line options of the Generator
