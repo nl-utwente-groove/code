@@ -58,11 +58,9 @@ public class ApplyMatchAction extends SimulatorAction {
      */
     private void applySelectedMatch() throws InterruptedException {
         GraphState state = getSimulatorModel().getState();
-        RuleTransition trans;
         MatchResult match = getSimulatorModel().getMatch();
-        if (match.hasTransitionFrom(state)) {
-            trans = match.getTransition();
-        } else {
+        RuleTransition trans = match.getTransitionFrom(state);
+        if (trans == null) {
             trans = state.applyMatch(match);
         }
         GraphState target = trans.target();

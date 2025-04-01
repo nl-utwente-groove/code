@@ -76,13 +76,13 @@ public class MatchApplier {
                 // the parent state is the source of source
                 // the sibling is the child reached by the virtual event
                 assert source instanceof GraphNextState;
-                RuleTransition parentTrans = match.getTransition();
-                assert source != parentTrans.source();
+                var parentOut = match.getTransition();
+                assert parentOut != null && source != parentOut.source();
                 boolean sourceModifiesCtrl = ((GraphNextState) source).getStep().isModifying();
                 MatchResult sourceKey = ((GraphNextState) source).getKey();
-                if (!sourceModifiesCtrl && !parentTrans.isSymmetry()
+                if (!sourceModifiesCtrl && !parentOut.isSymmetry()
                     && !match.getEvent().conflicts(sourceKey.getEvent())) {
-                    GraphState sibling = parentTrans.target();
+                    GraphState sibling = parentOut.target();
                     RuleTransitionStub siblingOut = sibling.getOutStub(sourceKey);
                     if (siblingOut != null) {
                         transition = createTransition(source, match, siblingOut.getTarget(sibling),
@@ -126,6 +126,7 @@ public class MatchApplier {
         RuleEffect effectRecord = null;
         if (reuseCreatedNodes(source, match)) {
             RuleTransition parentOut = match.getTransition();
+            assert parentOut != null;
             addedNodes = parentOut.getAddedNodes();
         } else if (event.getRule().hasNodeCreators()) {
             // compute the frame values at the same time, if there are any
@@ -165,11 +166,12 @@ public class MatchApplier {
         HostNode[] addedNodes;
         RuleEvent event = match.getEvent();
         if (reuseCreatedNodes(source, match)) {
-            RuleTransition parentOut = match.getTransition();
+            var parentOut = match.getTransition();
+            assert parentOut != null;
             addedNodes = parentOut.getAddedNodes();
         } else if (match.getAction().hasNodeCreators()) {
-            RuleEffect effect = new RuleEffect(source.getGraph(), Fragment.NODE_CREATION,
-                this.gts.getOracle());
+            RuleEffect effect
+                = new RuleEffect(source.getGraph(), Fragment.NODE_CREATION, this.gts.getOracle());
             event.recordEffect(effect);
             effect.setFixed();
             addedNodes = effect.getCreatedNodeArray();
@@ -190,7 +192,9 @@ public class MatchApplier {
         if (!(source instanceof GraphNextState)) {
             return false;
         }
-        HostNode[] addedNodes = match.getTransition().getAddedNodes();
+        var parentOut = match.getTransition();
+        assert parentOut != null;
+        HostNode[] addedNodes = parentOut.getAddedNodes();
         if (addedNodes.length == 0) {
             return true;
         }

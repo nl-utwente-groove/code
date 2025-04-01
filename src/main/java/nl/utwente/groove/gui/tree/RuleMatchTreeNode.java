@@ -64,7 +64,8 @@ class RuleMatchTreeNode extends MatchTreeNode {
 
     @Override
     boolean isAbsent() {
-        return isTransition() && getTransition().target().isAbsent();
+        var trans = getTransition();
+        return trans != null && trans.target().isAbsent();
     }
 
     @Override
@@ -85,7 +86,7 @@ class RuleMatchTreeNode extends MatchTreeNode {
     }
 
     /** Convenience method to returns the transition in this match, if any. */
-    private RuleTransition getTransition() {
+    private @Nullable RuleTransition getTransition() {
         return getMatch().getTransition();
     }
 
@@ -109,7 +110,9 @@ class RuleMatchTreeNode extends MatchTreeNode {
             result.append(String.format("Property '%s' is satisfied", actionName));
         } else if (isTransition()) {
             result.append(String.format("Explored transition of '%s'", actionName));
-            GraphState target = getTransition().target();
+            var trans = getTransition();
+            assert trans != null;
+            var target = trans.target();
             if (target.isAbsent()) {
                 result.append(HTMLConverter.HTML_LINEBREAK);
                 result.append(String.format("Target state %s is not real", target));
@@ -129,8 +132,8 @@ class RuleMatchTreeNode extends MatchTreeNode {
         result.append(": ");
         boolean showArrow
             = !getMatch().getAction().isProperty() || getMatch().getStep().isModifying();
-        if (isTransition()) {
-            RuleTransition trans = getTransition();
+        RuleTransition trans = getTransition();
+        if (trans != null) {
             result.append(trans.text(this.anchored));
             if (showArrow) {
                 result.append(RIGHTARROW);

@@ -21,10 +21,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -132,10 +130,20 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
                 }
             }
         }
-        Map<GrammarKey,String> properties = getGrammarProperties();
+        var properties = getGrammarProperties();
         if (properties != null) {
-            for (Map.Entry<GrammarKey,String> e : properties.entrySet()) {
-                result.setProperty(e.getKey(), e.getValue());
+            var oldProps = result.getGrammarModel().getProperties();
+            for (var e : properties.entrySet()) {
+                var key = e.getKey();
+                var value = e.getValue().value();
+                // add the parameter to the old property value if it is an increment
+                if (e.getValue().incr()) {
+                    var oldValue = oldProps.getProperty(key);
+                    if (oldValue != null) {
+                        value = oldValue + " " + value;
+                    }
+                }
+                result.setProperty(e.getKey(), value);
             }
         }
         result.setResultCount(getResultCount());
@@ -221,18 +229,17 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     private String propertiesFile;
 
     /** Returns the locally set grammar properties, if any. */
-    public Map<GrammarKey,String> getGrammarProperties() {
+    public Map<GrammarKey,PropertySetting> getGrammarProperties() {
         return this.grammarProperties;
     }
 
-    @Option(name = "-D", metaVar = "key=val",
-        usage = "" + "Set grammar property <key> to <val>. Legal settings are:\n"
-            + "  - checkIsomorphism=boolean - switch isomorphism checking on or off\n"
-            + "  - controlProgram=names - set the control program(s) to be used\n" + "See "
-            + Groove.GROOVE_BASE + ".grammar.GrammarProperties "
-            + "for other allowed key/value pairs",
+    @Option(name = "-D", metaVar = "key[+]=val", usage = ""
+        + "Set grammar property <key> to <val> (for =), or appends <val> to the current value (for +=). Examples:\n"
+        + "  - checkIsomorphism=boolean - switch isomorphism checking on or off\n"
+        + "  - typeGraph+=names - extends the type graphs to be used\n" + "See "
+        + Groove.GROOVE_BASE + ".grammar.GrammarProperties " + "for other allowed key/value pairs",
         handler = PropertiesHandler.class)
-    private Map<GrammarKey,String> grammarProperties;
+    private Map<GrammarKey,PropertySetting> grammarProperties;
 
     /**
      * Returns the settings to be used in storing the LTS.
@@ -491,7 +498,6 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         public PropertiesHandler(CmdLineParser parser, OptionDef option,
                                  Setter<? super Map<?,?>> setter) {
             super(parser, option, setter);
-            this.pluses = new HashSet<>();
         }
 
         @SuppressWarnings("rawtypes")
@@ -525,20 +531,19 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
             } else if (!property.get().parser().accepts(value)) {
                 this.error = String.format("Incorrect value '%s' for property '%s'", value, key);
             } else {
-                m.put(property.get(), value);
-                if (plus) {
-                    this.pluses.add(key);
-                }
+                m.put(property.get(), new PropertySetting(plus, value));
             }
         }
-
-        /** Property keys that are set with '+=' rather than '+' */
-        private Set<String> pluses;
 
         /**
          * Error detected in {@link #addToMap(Map, String, String)}
          * and to be reported in {@link #addToMap(String, Map)}.
          */
         private String error;
+    }
+
+    /** Parsed value of a -D option. */
+    public record PropertySetting(boolean incr, String value) {
+        // empty
     }
 }

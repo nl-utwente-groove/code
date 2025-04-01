@@ -738,10 +738,14 @@ public class SimulatorModel implements Cloneable {
 
     /** Checks if a given match result is visible according to the current options setting. */
     private boolean isVisible(@Nullable MatchResult match) {
-        if (match != null && match.hasTransition()) {
+        if (match != null) {
             var trans = match.getTransition();
-            return (getOptions().isSelected(Options.SHOW_RECIPE_STEPS_OPTION)
-                || !trans.isInnerStep()) && isVisible(trans.target());
+            if (trans == null) {
+                return true;
+            } else {
+                return (getOptions().isSelected(Options.SHOW_RECIPE_STEPS_OPTION)
+                    || !trans.isInnerStep()) && isVisible(trans.target());
+            }
         } else {
             return true;
         }
