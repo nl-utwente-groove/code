@@ -429,9 +429,10 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
             + "  bfs         - Breadth-first Exploration\n"
             + "  dfs         - Depth-first Exploration\n" + "  linear      - Linear\n" //
             + "  random      - Random linear\n" + "  state       - Single-State\n" //
-            + "  rete        - Rete-based DFS\n" + "  retelinear  - Rete-based Linear\n"
-            + "  reterandom  - Rete-based Random Linear\n"
-            + "  crule:[!]id - Conditional: stop when rule <id> [not] applicable\n"
+            //            + "  rete        - Rete-based DFS\n" + "  retelinear  - Rete-based Linear\n"
+            //            + "  reterandom  - Rete-based Random Linear\n"
+            + "  crule:[!]id - Conditional: stop when rule <id> [not] applicable\n" //
+            + "  crule:[!]id - Conditional: stop when rule <id> [not] applicable\n" //
             + "  cnbound:n   - Conditional: up to <n> nodes\n" + "  cebound:id>n,...\n"
             + "              - Conditional: up to <n> edges labelled <id>\n"
             + "  ltl:prop    - LTL Model Checking\n" //
