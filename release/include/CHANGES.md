@@ -3,6 +3,12 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 7.2.0, 1 April 2025
+-------------------------------
+- Added '-D key+=value' to the command line options of the Generator
+- Generator now reports max memory value and command line arguments
+- Resolved gh issues #836
+
 Release 7.1.1, 28 March 2025
 -------------------------------
 - Resolved gh issues #822

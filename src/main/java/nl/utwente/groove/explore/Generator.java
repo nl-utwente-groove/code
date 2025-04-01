@@ -366,7 +366,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     /** Factory method for the reporters associated with this invocation. */
     private CompositeReporter computeReporter() {
         CompositeReporter result = new CompositeReporter();
-        LogReporter logger = new LogReporter(getVerbosity(), getLogDir());
+        LogReporter logger = new LogReporter(getArgs(), getVerbosity(), getLogDir());
         if (isSaveLts()) {
             result.add(new LTSReporter(getLtsPattern(), getLtsLabels(), logger, getFilter()));
         }
