@@ -41,8 +41,8 @@ public enum AcceptorValue implements ParsableValue {
     RULE("ruleapp", "Rule Application",
         "This acceptor succeeds when a transition of the indicated rule is "
             + "added to the LTS. Note that this is detected <I>after</I> "
-            + "the rule has been applied (which means that rule priorities "
-            + "are taken into account)."),
+            + "the rule has been applied (which means that rule scheduling "
+            + "is taken into account)."),
     /** Acceptor for states that satisfy a given rule formula. */
     FORMULA("formula", "Rule Formula",
         "This acceptor is a variant of Check Invariant that succeeds when a"

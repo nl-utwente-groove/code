@@ -78,7 +78,7 @@ public class PredicateAcceptor extends Acceptor {
     @Override
     public void addUpdate(GTS gts, GraphTransition transition) {
         if (this.Q != null && this.Q.eval(transition)) {
-            getResult().addState(transition.target());
+            getResult().addState(transition.source());
         }
     }
 }
