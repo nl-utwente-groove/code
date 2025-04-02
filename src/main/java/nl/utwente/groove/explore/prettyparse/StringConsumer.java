@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2023 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -20,7 +20,7 @@ package nl.utwente.groove.explore.prettyparse;
  * A <code>StringConsumer</code> is a wrapper around a <code>String</code> that
  * allows the beginning of the string to be parsed for literals, identifiers
  * and numbers.
- * 
+ *
  * @author Maarten de Mol
  */
 public class StringConsumer {
@@ -81,7 +81,7 @@ public class StringConsumer {
      * Ident :== SingleQuotedText | Letter IdentChar*
      *IdentChar :== Letter | Digit | DOLLAR | UNDERSCORE
      * }</pre>
-     * 
+     *
      * @see StringConsumer#getLastConsumed
      */
     public boolean consumeIdentifier() {
@@ -107,7 +107,7 @@ public class StringConsumer {
      * The returned <code>boolean</code> indicates if a number was found (in
      * which case it is removed from text), or not (in which case the text is
      * not changed in any way).
-     * 
+     *
      * @see StringConsumer#getLastConsumed
      */
     public boolean consumeNumber() {
@@ -129,17 +129,21 @@ public class StringConsumer {
      * Ident :== SingleQuotedText | Letter IdentChar*
      *IdentChar :== Letter | Digit | DOLLAR | UNDERSCORE
      * }</pre>
-     * 
+     *
      * @see StringConsumer#getLastConsumed
      */
     public static String parseIdentifier(String text) {
         if (text.length() == 0) {
             return null;
-        } else if (Character.isLetter(text.charAt(0))) {
+        } else if (isIdentStartChar(text.charAt(0))) {
             int endOfIdentifier = 0;
             while (endOfIdentifier + 1 < text.length()
                 && isIdentChar(text.charAt(endOfIdentifier + 1))) {
                 endOfIdentifier++;
+            }
+            /** Identifiers should not end with hyphen */
+            while (endOfIdentifier > 0 && !isIdentEndChar(text.charAt(endOfIdentifier))) {
+                endOfIdentifier--;
             }
             return text.substring(0, endOfIdentifier + 1);
         } else if (text.charAt(0) == '\'') {
@@ -154,11 +158,27 @@ public class StringConsumer {
     }
 
     /**
+     * Convenience method for determining if a character is valid at the start of an
+     * identifier.
+     */
+    private static boolean isIdentStartChar(char c) {
+        return (Character.isLetter(c) || c == '_');
+    }
+
+    /**
+     * Convenience method for determining if a character is valid at the end of an
+     * identifier.
+     */
+    private static boolean isIdentEndChar(char c) {
+        return isIdentStartChar(c) || Character.isDigit(c) || c == '_' || c == '$';
+    }
+
+    /**
      * Convenience method for determining if a character is valid within an
      * identifier.
      */
     private static boolean isIdentChar(char c) {
-        return (Character.isLetterOrDigit(c) || c == '_' || c == '$' || c == '-');
+        return isIdentEndChar(c) || c == '-';
     }
 
     /**

@@ -430,11 +430,11 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
             + "  dfs         - Depth-first Exploration\n" //
             + "  linear      - Linear\n" //
             + "  random      - Random linear\n" //
-            + "  uptorule:[dfs|bds][<=|<][!]id\n" //
-            + "              - BFS or DFS up to (<) or including (<=) states where rule <id> is or is not (!) applicable\n" //
-            + "  cnbound:n   - BFS up to (but not including) graphs with <n> nodes\n" //
-            + "  cebound:id>n,...\n" //
-            + "              - BFS up to (but not including) graphs with <n> <id>-edges\n"
+            + "  uptorule:[dfs|bds][->|=>][!]id\n" //
+            + "              - BFS or DFS up to (->) or including (=>) states where rule <id> is or is not (!) applicable\n" //
+            + "  cnbound:n   - BFS up to (but not including) graphs with more than <n> nodes\n" //
+            + "  cebound:id_1>n_1,...,id_k>n_k\n" //
+            + "              - BFS up to (but not including) graphs with more than <n_i> <id_i>-edges, for all i in 1..k\n"
             + "  ltl:prop    - LTL Model Checking\n" //
             + "  ltlbounded:idn,...;prop\n" //
             + "              - Bounded LTL Model Checking\n" //

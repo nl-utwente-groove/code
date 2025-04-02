@@ -90,7 +90,7 @@ public enum StrategyValue implements ParsableValue {
         "This strategy chooses one transition from each open state. "
             + "The transition is chosen randomly."),
     /** BFS or DFS exploration up to (and possibly including) a rule-based condition. */
-    UPTO_RULE("uptorule", "Exploration Up To Rule Application",
+    UPTO_RULE("uptorule", "Exploration Up To Rule Applicability",
         "This strategy performs a conditional (depth- or breadth-first) exploration. "
             + "A state is <i>hit</i> if a given rule is [not] applicable. "
             + "A hit state is either not explored ('up to') or the last one to be explored ('include'). "
@@ -243,7 +243,7 @@ public enum StrategyValue implements ParsableValue {
         case UPTO_RULE:
             return new MyTemplate4<>(
                 new PSequence(new PIdentifier("search"),
-                    new PChoice(new PLiteral("<=", "stop"), new PLiteral("<", "stop")),
+                    new PChoice(new PLiteral("=>", "stop"), new PLiteral("->", "stop")),
                     new POptional("!", "polarity", EncodedPolarity.NEGATIVE,
                         EncodedPolarity.POSITIVE),
                     new PIdentifier("rule")),
