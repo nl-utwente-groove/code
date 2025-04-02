@@ -35,8 +35,8 @@ public class EncodedSearchMode extends EncodedFixedEnumeratedType<EncodedSearchM
     */
     public static final String BFS_KEY = "bfs";
 
-    private static final String DFS_TEXT = "Depth-First Search: newest state first.";
-    private static final String BFS_TEXT = "Breadth-First Search: oldest state first.";
+    private static final String DFS_TEXT = "Depth-First search (newest state first)";
+    private static final String BFS_TEXT = "Breadth-First search (oldest state first)";
 
     @Override
     public Map<String,String> fixedOptions() {
