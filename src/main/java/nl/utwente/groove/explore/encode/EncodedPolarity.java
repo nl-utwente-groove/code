@@ -20,26 +20,26 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * An {@link EncodedRuleMode} describes an encoding of a RuleMode (which is either
+ * An {@link EncodedPolarity} describes an encoding of a polarity (which is either
  * 'positive' or 'negative') by means of a String.
  * @author Maarten de Mol
  */
-public class EncodedRuleMode extends EncodedFixedEnumeratedType<Boolean> {
+public class EncodedPolarity extends EncodedFixedEnumeratedType<Boolean> {
 
     /**
-     * Keyword for a 'positive' rule mode, meaning that the corresponding
+     * Keyword for a 'positive' polarity, meaning that the corresponding
      * acceptor succeeds when the rule matches.
      */
     public static final String POSITIVE = "Positive";
 
     /**
-    * Keyword for a 'negative' rule mode, meaning that the corresponding
+    * Keyword for a 'negative' polarity, meaning that the corresponding
     * acceptor succeeds when the rule does not match.
     */
     public static final String NEGATIVE = "Negative";
 
-    private static final String POSITIVE_TEXT = "Positive: when the rule matches.";
-    private static final String NEGATIVE_TEXT = "Negative: when the rule does not match.";
+    private static final String POSITIVE_TEXT = "Positive: when the rule matches";
+    private static final String NEGATIVE_TEXT = "Negative: when the rule does not match";
 
     @Override
     public Map<String,String> fixedOptions() {

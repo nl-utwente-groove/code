@@ -38,7 +38,7 @@ public class DFSStrategy extends ClosingStrategy {
      * @param moment moment at which to apply the condition
      * @param exploreCondition exploration continues for every state satisfying it
      */
-    public DFSStrategy(ConditionMoment moment, Predicate<GraphState> exploreCondition) {
+    public DFSStrategy(StopMode moment, Predicate<GraphState> exploreCondition) {
         super(moment, exploreCondition);
     }
 

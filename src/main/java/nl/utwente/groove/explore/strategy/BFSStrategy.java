@@ -28,11 +28,11 @@ import nl.utwente.groove.lts.GraphState;
 public class BFSStrategy extends ClosingStrategy {
     /** Instantiates a conditional breadth-first strategy, with a given continuation condition
      * and a moment at which to apply it.
-     * @param moment moment at which to apply the condition
+     * @param stopMode moment at which to apply the condition
      * @param exploreCondition exploration continues for every state satisfying it
      */
-    public BFSStrategy(ConditionMoment moment, Predicate<GraphState> exploreCondition) {
-        super(moment, exploreCondition);
+    public BFSStrategy(StopMode stopMode, Predicate<GraphState> exploreCondition) {
+        super(stopMode, exploreCondition);
     }
 
     /** Instantiates an unconditional breadth-first strategy. */

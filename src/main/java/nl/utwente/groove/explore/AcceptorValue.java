@@ -1,8 +1,8 @@
 package nl.utwente.groove.explore;
 
 import nl.utwente.groove.explore.encode.EncodedEnabledRule;
+import nl.utwente.groove.explore.encode.EncodedPolarity;
 import nl.utwente.groove.explore.encode.EncodedRuleFormula;
-import nl.utwente.groove.explore.encode.EncodedRuleMode;
 import nl.utwente.groove.explore.encode.EncodedType;
 import nl.utwente.groove.explore.encode.Serialized;
 import nl.utwente.groove.explore.encode.Template;
@@ -136,15 +136,15 @@ public enum AcceptorValue implements ParsableValue {
 
         case INVARIANT:
             PSequence parser = new PSequence(
-                new POptional("!", "mode", EncodedRuleMode.NEGATIVE, EncodedRuleMode.POSITIVE),
+                new POptional("!", "polarity", EncodedPolarity.NEGATIVE, EncodedPolarity.POSITIVE),
                 new PIdentifier("rule"));
-            return new MyTemplate2<>(parser, "rule", new EncodedEnabledRule(), "mode",
-                new EncodedRuleMode()) {
+            return new MyTemplate2<>(parser, "rule", new EncodedEnabledRule(), "polarity",
+                new EncodedPolarity()) {
 
                 @Override
-                public Acceptor create(Rule rule, Boolean mode) {
+                public Acceptor create(Rule rule, Boolean polarity) {
                     Predicate<GraphState> P = new Predicate.RuleApplicable(rule);
-                    if (!mode) {
+                    if (!polarity) {
                         P = new Predicate.Not<>(P);
                     }
                     return new PredicateAcceptor(P);

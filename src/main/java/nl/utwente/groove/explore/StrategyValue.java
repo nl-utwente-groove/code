@@ -1,7 +1,6 @@
 package nl.utwente.groove.explore;
 
-import static nl.utwente.groove.explore.strategy.ClosingStrategy.ConditionMoment.AFTER;
-import static nl.utwente.groove.explore.strategy.ClosingStrategy.ConditionMoment.AT;
+import static nl.utwente.groove.explore.strategy.StopMode.UP_TO;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -13,8 +12,11 @@ import nl.utwente.groove.explore.encode.EncodedEnabledRule;
 import nl.utwente.groove.explore.encode.EncodedHostName;
 import nl.utwente.groove.explore.encode.EncodedInt;
 import nl.utwente.groove.explore.encode.EncodedLtlProperty;
+import nl.utwente.groove.explore.encode.EncodedPolarity;
 import nl.utwente.groove.explore.encode.EncodedRuleList;
-import nl.utwente.groove.explore.encode.EncodedRuleMode;
+import nl.utwente.groove.explore.encode.EncodedSearchMode;
+import nl.utwente.groove.explore.encode.EncodedSearchMode.SearchMode;
+import nl.utwente.groove.explore.encode.EncodedStopMode;
 import nl.utwente.groove.explore.encode.EncodedType;
 import nl.utwente.groove.explore.encode.Serialized;
 import nl.utwente.groove.explore.encode.Template;
@@ -48,6 +50,7 @@ import nl.utwente.groove.explore.strategy.RemoteStrategy;
 import nl.utwente.groove.explore.strategy.ReteLinearStrategy;
 import nl.utwente.groove.explore.strategy.ReteRandomLinearStrategy;
 import nl.utwente.groove.explore.strategy.ReteStrategy;
+import nl.utwente.groove.explore.strategy.StopMode;
 import nl.utwente.groove.explore.strategy.Strategy;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.model.GrammarModel;
@@ -86,19 +89,16 @@ public enum StrategyValue implements ParsableValue {
     RETE_RANDOM("reterandom", "Rete Random Linear Exploration",
         "This strategy chooses one transition from each open state. "
             + "The transition is chosen randomly."),
-    /** BFS strategy up to and including a rule-based condition. */
-    BFS_UNTIL_RULE("bfsurule", "BFS Exploration Until Rule Application",
-        "This strategy performs a conditional breadth-first exploration. "
-            + "If a given rule is applicable in a newly reached state, its successors are not explored. "
-            + "The rule does not have to be scheduled to be used for this purpose. "
+    /** BFS or DFS exploration up to (and possibly including) a rule-based condition. */
+    UPTO_RULE("uptorule", "Exploration Up To Rule Application",
+        "This strategy performs a conditional (depth- or breadth-first) exploration. "
+            + "A state is <i>hit</i> if a given rule is [not] applicable. "
+            + "A hit state is either not explored ('up to') or the last one to be explored ('include'). "
+            + "The rule in question does not have to be scheduled to be used for this purpose. "
             + "All other states are explored normally."),
-    /** BFS strategy up to and including a rule-based condition. */
-    DFS_UNTIL_RULE("dfsurule", "DFS Exploration Until Rule Application",
-        "This strategy performs a conditional depth-first exploration. "
-            + "If a given rule is applicable in a newly reached state, its successors are not explored. "
-            + "The rule does not have to be scheduled to be used for this purpose. "
-            + "All other states are explored normally."),
-    /** BFS strategy up to (and not including) a rule-based condition. */
+    /** BFS strategy up to (and not including) a rule-based condition.
+     * This is the "old" version; preferably use {@link #UPTO_RULE}.
+     */
     BFS_UPTO_RULE("crule", "BFS Exploration Up To Rule Application",
         "This strategy performs a conditional breadth-first exploration. "
             + "If a given rule is applicable in a newly reached state, the state is not explored. "
@@ -240,42 +240,39 @@ public enum StrategyValue implements ParsableValue {
                 }
             };
 
-        case BFS_UNTIL_RULE:
-            return new MyTemplate2<>(
-                new PSequence(
-                    new POptional("!", "mode", EncodedRuleMode.NEGATIVE, EncodedRuleMode.POSITIVE),
+        case UPTO_RULE:
+            return new MyTemplate4<>(
+                new PSequence(new PIdentifier("search"),
+                    new PChoice(new PLiteral("<=", "stop"), new PLiteral("<", "stop")),
+                    new POptional("!", "polarity", EncodedPolarity.NEGATIVE,
+                        EncodedPolarity.POSITIVE),
                     new PIdentifier("rule")),
-                "rule", new EncodedEnabledRule(), "mode", new EncodedRuleMode()) {
+                "rule", new EncodedEnabledRule(), "polarity", new EncodedPolarity(), "search",
+                new EncodedSearchMode(), "stop", new EncodedStopMode()) {
 
                 @Override
-                public Strategy create(Rule rule, Boolean mode) {
-                    return new BFSStrategy(AFTER, new IsRuleApplicableCondition(rule, mode));
-                }
-            };
-
-        case DFS_UNTIL_RULE:
-            return new MyTemplate2<>(
-                new PSequence(
-                    new POptional("!", "mode", EncodedRuleMode.NEGATIVE, EncodedRuleMode.POSITIVE),
-                    new PIdentifier("rule")),
-                "rule", new EncodedEnabledRule(), "mode", new EncodedRuleMode()) {
-
-                @Override
-                public Strategy create(Rule rule, Boolean mode) {
-                    return new DFSStrategy(AFTER, new IsRuleApplicableCondition(rule, mode));
+                public Strategy create(Object[] arguments) {
+                    var rule = (Rule) arguments[0];
+                    var polarity = (Boolean) arguments[1];
+                    var search = (SearchMode) arguments[2];
+                    var stop = (StopMode) arguments[3];
+                    var condition = new IsRuleApplicableCondition(rule, polarity);
+                    return switch (search) {
+                    case BFS -> new BFSStrategy(stop, condition);
+                    case DFS -> new DFSStrategy(stop, condition);
+                    };
                 }
             };
 
         case BFS_UPTO_RULE:
             return new MyTemplate2<>(
-                new PSequence(
-                    new POptional("!", "mode", EncodedRuleMode.NEGATIVE, EncodedRuleMode.POSITIVE),
-                    new PIdentifier("rule")),
-                "rule", new EncodedEnabledRule(), "mode", new EncodedRuleMode()) {
+                new PSequence(new POptional("!", "polarity", EncodedPolarity.NEGATIVE,
+                    EncodedPolarity.POSITIVE), new PIdentifier("rule")),
+                "rule", new EncodedEnabledRule(), "polarity", new EncodedPolarity()) {
 
                 @Override
-                public Strategy create(Rule rule, Boolean mode) {
-                    return new BFSStrategy(AT, new IsRuleApplicableCondition(rule, mode));
+                public Strategy create(Rule rule, Boolean polarity) {
+                    return new BFSStrategy(UP_TO, new IsRuleApplicableCondition(rule, polarity));
                 }
             };
 
@@ -285,7 +282,7 @@ public enum StrategyValue implements ParsableValue {
 
                 @Override
                 public Strategy create(Integer bound) {
-                    return new BFSStrategy(AT, new NodeBoundCondition(bound));
+                    return new BFSStrategy(UP_TO, new NodeBoundCondition(bound));
                 }
             };
 
@@ -296,7 +293,7 @@ public enum StrategyValue implements ParsableValue {
 
                 @Override
                 public Strategy create(Map<TypeLabel,Integer> bounds) {
-                    return new BFSStrategy(AT, new EdgeBoundCondition(bounds));
+                    return new BFSStrategy(UP_TO, new EdgeBoundCondition(bounds));
                 }
             };
 
@@ -395,7 +392,7 @@ public enum StrategyValue implements ParsableValue {
     public final static EnumSet<StrategyValue> DIALOG_STRATEGIES;
     /** Special mask for development strategies only. Treated specially. */
     public final static EnumSet<StrategyValue> DEVELOPMENT_ONLY_STRATEGIES
-        = EnumSet.of(RETE, RETE_LINEAR, RETE_RANDOM, MINIMAX);
+        = EnumSet.of(RETE, RETE_LINEAR, RETE_RANDOM, BFS_UPTO_RULE, MINIMAX);
 
     static {
         DIALOG_STRATEGIES = EnumSet.complementOf(LTL_STRATEGIES);
@@ -421,6 +418,17 @@ public enum StrategyValue implements ParsableValue {
         public MyTemplate2(SerializedParser parser, String name1, EncodedType<T1,String> type1,
                            String name2, EncodedType<T2,String> type2) {
             super(StrategyValue.this, parser, name1, type1, name2, type2);
+        }
+    }
+
+    /** Specialised 4-parameter template that uses the strategy value's keyword, name and description. */
+    abstract private class MyTemplate4<T1,T2,T3,T4> extends TemplateN<Strategy> {
+        public MyTemplate4(SerializedParser parser, String name1, EncodedType<T1,String> type1,
+                           String name2, EncodedType<T2,String> type2, String name3,
+                           EncodedType<T3,String> type3, String name4,
+                           EncodedType<T4,String> type4) {
+            super(StrategyValue.this, parser, new String[] {name1, name2, name3, name4}, type1,
+                  type2, type3, type4);
         }
     }
 

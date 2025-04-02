@@ -25,6 +25,7 @@ import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.Parser;
@@ -90,32 +91,10 @@ public class ExploreType {
     }
 
     /**
-     * Returns the strategy, instantiated for a given graph grammar.
-     * @throws FormatException if the grammar is incompatible with the (serialised)
-     * strategy.
-     */
-    public Strategy getParsedStrategy(Grammar grammar) throws FormatException {
-        return StrategyEnumerator.parseStrategy(grammar, this.strategy);
-    }
-
-    /**
      * Getter for the serialised acceptor.
      */
     public Serialized getAcceptor() {
         return this.acceptor;
-    }
-
-    /**
-     * Returns a prototype acceptor, instantiated for a given graph grammar.
-     * @throws FormatException if the grammar is incompatible with the (serialised)
-     * acceptor.
-     */
-    public Acceptor getParsedAcceptor(Grammar grammar) throws FormatException {
-        if (getParsedStrategy(grammar) instanceof LTLStrategy) {
-            return CycleAcceptor.PROTOTYPE;
-        } else {
-            return AcceptorEnumerator.parseAcceptor(grammar, this.acceptor);
-        }
     }
 
     /**
@@ -145,24 +124,66 @@ public class ExploreType {
     }
 
     /**
+     * Returns the strategy, instantiated for a given graph grammar.
+     * @throws FormatException if the grammar is incompatible with the (serialised)
+     * strategy.
+     */
+    public Strategy getParsedStrategy(Grammar grammar) throws FormatException {
+        return StrategyEnumerator.parseStrategy(grammar, this.strategy);
+    }
+
+    /**
+     * Returns a prototype acceptor, instantiated for a given graph grammar.
+     * @throws FormatException if the grammar is incompatible with the (serialised)
+     * acceptor.
+     */
+    public Acceptor getParsedAcceptor(Grammar grammar) throws FormatException {
+        if (getParsedStrategy(grammar) instanceof LTLStrategy) {
+            return CycleAcceptor.PROTOTYPE;
+        } else {
+            return AcceptorEnumerator.parseAcceptor(grammar, this.acceptor);
+        }
+    }
+
+    /**
      * Tests if this exploration is compatible with a given rule system.
      * If this method does not throw an exception, then neither will {@link #newExploration}.
      * @throws FormatException if the rule system is not compatible
      */
     public void test(Grammar grammar) throws FormatException {
+        setTestGrammar(grammar);
+        this.grammarErrors.get().throwException();
+    }
+
+    private void setTestGrammar(Grammar grammar) {
+        if (this.testGrammar != grammar) {
+            this.testGrammar = grammar;
+            this.grammarErrors.reset();
+        }
+    }
+
+    private Grammar getTestGrammar() {
+        var result = this.testGrammar;
+        assert result != null;
+        return result;
+    }
+
+    private Grammar testGrammar;
+
+    private Factory<FormatErrorSet> grammarErrors = Factory.lazy(() -> {
         FormatErrorSet errors = new FormatErrorSet();
         try {
-            getParsedStrategy(grammar);
+            getParsedStrategy(getTestGrammar());
         } catch (FormatException exc) {
             errors.addAll(exc.getErrors());
         }
         try {
-            getParsedAcceptor(grammar);
+            getParsedAcceptor(getTestGrammar());
         } catch (FormatException exc) {
             errors.addAll(exc.getErrors());
         }
-        errors.throwException();
-    }
+        return errors;
+    });
 
     /**
      * Factory method for an exploration based on this type.

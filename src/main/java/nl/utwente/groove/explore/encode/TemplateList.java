@@ -23,6 +23,7 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,9 +57,8 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Maarten de Mol
  */
 public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
-
-    /** The list of templates. */
-    private final ArrayList<Template<A>> templates;
+    /** Map of template keywords to templates */
+    private final Map<String,Template<A>> templateMap;
     /** String identifying the type. */
     private final String typeIdentifier;
     /** The tool tip string. */
@@ -71,7 +71,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
      * Creates an empty list of held templates.
      */
     public TemplateList(String typeIdentifier, String typeToolTip) {
-        this.templates = new ArrayList<>(15);
+        this.templateMap = new LinkedHashMap<>();
         this.typeIdentifier = typeIdentifier;
         this.typeToolTip = typeToolTip;
     }
@@ -89,8 +89,8 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
      */
     protected void addTemplate(Template<A> template) {
         if (this.mask == null || this.mask.contains(template.getValue())) {
-            boolean fresh = this.templates.add(template);
-            assert fresh;
+            var oldTemplate = this.templateMap.put(template.getKeyword(), template);
+            assert oldTemplate == null;
         }
     }
 
@@ -108,24 +108,24 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
      */
     @Override
     public A parse(Grammar rules, Serialized source) throws FormatException {
-        for (Template<A> template : this.templates) {
-            if (template.getKeyword().equals(source.getKeyword())) {
-                return template.parse(rules, source);
+        var template = this.templateMap.get(source.getKeyword());
+        if (template == null) {
+            StringBuffer error = new StringBuffer();
+            error
+                .append("Unknown keyword '" + source.getKeyword() + "' for the "
+                    + this.typeIdentifier + ".\n");
+            error.append("Expected one of the following keywords:");
+            for (var key : this.templateMap.keySet()) {
+                error.append(" '");
+                error.append(key);
+                error.append("'");
             }
-        }
+            error.append(".");
+            throw new FormatException(error.toString());
 
-        StringBuffer error = new StringBuffer();
-        error
-            .append("Unknown keyword '" + source.getKeyword() + "' for the " + this.typeIdentifier
-                + ".\n");
-        error.append("Expected one of the following keywords:");
-        for (Template<A> template : this.templates) {
-            error.append(" '");
-            error.append(template.getKeyword());
-            error.append("'");
+        } else {
+            return template.parse(rules, source);
         }
-        error.append(".");
-        throw new FormatException(error.toString());
     }
 
     /**
@@ -135,7 +135,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
      */
     public Serialized parseCommandline(String text) {
         Serialized result = null;
-        for (Template<A> template : this.templates) {
+        for (var template : this.templateMap.values()) {
             result = template.parseCommandline(text);
             if (result != null) {
                 break;
@@ -147,12 +147,10 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
     /** Inverse operation to {@link #parseCommandline(String)}. */
     public String toParsableString(Serialized source) {
         source = source.clone();
-        for (Template<A> template : this.templates) {
-            if (template.getKeyword().equals(source.getKeyword())) {
-                return template.toParsableString(source);
-            }
-        }
-        return null;
+        var template = this.templateMap.get(source.getKeyword());
+        return template == null
+            ? null
+            : template.toParsableString(source);
     }
 
     /**
@@ -161,10 +159,10 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
      * array of regular expressions, one for each available template.
      */
     public String[] describeCommandlineGrammar() {
-        String[] desc = new String[this.templates.size()];
+        String[] desc = new String[this.templateMap.size()];
         int index = 0;
 
-        for (Template<A> template : this.templates) {
+        for (var template : this.templateMap.values()) {
             desc[index] = template.describeCommandlineGrammar();
             index++;
         }
@@ -200,9 +198,8 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
 
         @Override
         public void refresh() {
-            int nrTemplates = TemplateList.this.templates.size();
-            List<String> templateNames = new ArrayList<>(nrTemplates);
-            for (Template<A> template : TemplateList.this.templates) {
+            List<String> templateNames = new ArrayList<>();
+            for (var template : TemplateList.this.templateMap.values()) {
                 if (Version.isDevelopmentVersion() || !template.getValue().isDevelopment()) {
                     String templateName = template.getName();
                     if (template.getValue().isDefault(getGrammar())) {
@@ -221,9 +218,8 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
         }
 
         private void extractFromTemplates() {
-            int nrTemplates = TemplateList.this.templates.size();
-            this.templateKeywords = new ArrayList<>(nrTemplates);
-            for (Template<A> template : TemplateList.this.templates) {
+            this.templateKeywords = new ArrayList<>();
+            for (var template : TemplateList.this.templateMap.values()) {
                 if (Version.isDevelopmentVersion() || !template.getValue().isDevelopment()) {
                     this.templateKeywords.add(template.getKeyword());
                     this.editors.put(template.getKeyword(), template.createEditor(getGrammar()));
@@ -243,7 +239,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
             this.nameSelector.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             this.nameSelector.setSelectedIndex(0);
             JScrollPane listScroller = new JScrollPane(this.nameSelector);
-            listScroller.setPreferredSize(new Dimension(350, 200));
+            listScroller.setPreferredSize(new Dimension(400, 200));
             add(listScroller);
         }
 
@@ -253,7 +249,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
             JScrollPane infoScroller = new JScrollPane(this.infoPanel);
             infoScroller
                 .setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-            infoScroller.setPreferredSize(new Dimension(350, 200));
+            infoScroller.setPreferredSize(new Dimension(400, 250));
             for (String keyword : this.templateKeywords) {
                 this.infoPanel.add(this.editors.get(keyword), keyword);
             }

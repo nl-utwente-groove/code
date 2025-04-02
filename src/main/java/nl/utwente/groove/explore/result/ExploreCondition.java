@@ -35,15 +35,15 @@ public abstract class ExploreCondition<C> extends Property<GraphState> {
      * The condition is not negated.
      */
     protected ExploreCondition(C criterion) {
-        this(criterion, false);
+        this(criterion, true);
     }
 
     /** Constructor to initialise the condition, to be used by subclasses.
      * The condition is optionally negated.
      */
-    protected ExploreCondition(C criterion, boolean negated) {
+    protected ExploreCondition(C criterion, boolean polarity) {
         this.criterion = criterion;
-        this.negated = negated;
+        this.negated = !polarity;
     }
 
     /** Indicates whether the condition is negated or not. */

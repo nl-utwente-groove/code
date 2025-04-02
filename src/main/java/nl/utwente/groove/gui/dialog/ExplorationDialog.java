@@ -183,6 +183,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
 
         // Add the dialogContent to the dialog.
         add(dialogContent);
+        setResizable(true);
         pack();
         setLocationRelativeTo(owner);
         this.buttons = createButtons();

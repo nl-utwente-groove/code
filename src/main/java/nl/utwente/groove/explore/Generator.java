@@ -425,22 +425,25 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     public final static String STRATEGY_VAR = "strgy";
     /** Usage message for the strategy option. */
     public final static String STRATEGY_USAGE
-        = "" + "Set the exploration strategy to <strgy>. Legal values are:\n"
-            + "  bfs            - Breadth-first Exploration\n"
-            + "  dfs            - Depth-first Exploration\n" + "  linear      - Linear\n" //
+        = "Set the exploration strategy to <strgy>. Legal values are:\n"
+            + "  bfs            - Breadth-first Exploration\n" //
+            + "  dfs            - Depth-first Exploration\n" //
+            + "  linear      - Linear\n" //
             + "  random         - Random linear\n" + "  state       - Single-State\n" //
             //            + "  rete        - Rete-based DFS\n" + "  retelinear  - Rete-based Linear\n"
             //            + "  reterandom  - Rete-based Random Linear\n"
-            + "  bfsurule:[!]id - BFS until (and including) rule <id> [not] applicable\n" //
-            + "  dfsurule:[!]id - DFS until (and including) rule <id> [not] applicable\n" //
-            + "  crule:[!]id    - BFS up to (and not including) rule <id> [not] applicable\n"
-            + "  cnbound:n      - BFS up to (and not including) <n> nodes\n" //
+            + "  bfsurule:[!]id - BFS until (and including) where rule <id> is [not] applicable\n" //
+            + "  dfsurule:[!]id - DFS until (and including) rule <id> is [not] applicable\n" //
+            + "  crule:[!]id    - BFS up to (but not including) where rule <id> is [not] applicable\n"
+            + "  cnbound:n      - BFS up to (but not including) graphs with <n> nodes\n" //
             + "  cebound:id>n,...\n" //
-            + "                 - BFS up to (and not including) <n> edges labelled <id>\n"
+            + "                 - BFS up to (and not including) graphs with <n> <id>-edges\n"
             + "  ltl:prop       - LTL Model Checking\n" //
-            + "  ltlbounded:idn,...;prop\n" + //
-            "              - Bounded LTL Model Checking\n" + "  ltlpocket:idn,...;prop\n" + //
-            "              - Pocket LTL Model Checking\n" + "  remote:host    - Remote";
+            + "  ltlbounded:idn,...;prop\n" //
+            + "                   - Bounded LTL Model Checking\n" //
+            + "  ltlpocket:idn,...;prop\n" //
+            + "                   - Pocket LTL Model Checking\n" //
+            + "  remote:host      - Remote";
 
     /**
      * Attempts to load a graph grammar from a given location provided as a

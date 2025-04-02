@@ -16,9 +16,9 @@
  */
 package nl.utwente.groove.explore.strategy;
 
-import static nl.utwente.groove.explore.strategy.ClosingStrategy.ConditionMoment.AFTER;
-import static nl.utwente.groove.explore.strategy.ClosingStrategy.ConditionMoment.AT;
-import static nl.utwente.groove.explore.strategy.ClosingStrategy.ConditionMoment.NONE;
+import static nl.utwente.groove.explore.strategy.StopMode.INCLUDE;
+import static nl.utwente.groove.explore.strategy.StopMode.NONE;
+import static nl.utwente.groove.explore.strategy.StopMode.UP_TO;
 
 import java.util.List;
 import java.util.Stack;
@@ -41,11 +41,11 @@ import nl.utwente.groove.lts.Status.Flag;
 abstract public class ClosingStrategy extends GTSStrategy {
     /** Instantiates a conditional closing strategy, with a given continuation condition
      * and a moment at which to apply it.
-     * @param moment Moment at which to apply the condition
+     * @param stopMode Moment at which to apply the condition
      * @param exploreCondition exploration continues for every state satisfying it
      */
-    protected ClosingStrategy(ConditionMoment moment, Predicate<GraphState> exploreCondition) {
-        this.moment = moment;
+    protected ClosingStrategy(StopMode stopMode, Predicate<GraphState> exploreCondition) {
+        this.stopMode = stopMode;
         this.exploreCondition = exploreCondition;
     }
 
@@ -73,7 +73,7 @@ abstract public class ClosingStrategy extends GTSStrategy {
                 }
             }
         }
-        boolean stopAfter = isStop(AFTER, state);
+        boolean stopAfter = isStop(INCLUDE, state);
         if (stopAfter) {
             setExploring(false);
         }
@@ -109,7 +109,7 @@ abstract public class ClosingStrategy extends GTSStrategy {
         GraphState result;
         if (this.transientStack.isEmpty()) {
             result = getFromPool();
-            while (result != null && isStop(AT, result)) {
+            while (result != null && isStop(UP_TO, result)) {
                 result = getFromPool();
             }
         } else {
@@ -121,11 +121,11 @@ abstract public class ClosingStrategy extends GTSStrategy {
     /** Indicates if the successors of a given state should be explored.
      * This is a hook for conditional exploration.
      */
-    protected boolean isStop(ConditionMoment moment, GraphState state) {
-        return this.moment == moment && !this.exploreCondition.test(state);
+    protected boolean isStop(StopMode stopMode, GraphState state) {
+        return this.stopMode == stopMode && this.exploreCondition.test(state);
     }
 
-    private final ConditionMoment moment;
+    private final StopMode stopMode;
 
     private final Predicate<GraphState> exploreCondition;
 
@@ -198,14 +198,4 @@ abstract public class ClosingStrategy extends GTSStrategy {
 
     /** Local stack of transient states; these should be explored first. */
     private final Stack<GraphState> transientStack = new Stack<>();
-
-    /** Setting for the condition of this strategy. */
-    public enum ConditionMoment {
-        /** Unconditonal: never stop. */
-        NONE,
-        /** Stop at a state not satisfying the condition. */
-        AT,
-        /** Stop after a state not satisfying the condition. */
-        AFTER;
-    }
 }

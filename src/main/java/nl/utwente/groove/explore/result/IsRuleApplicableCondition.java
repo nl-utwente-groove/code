@@ -30,10 +30,10 @@ public class IsRuleApplicableCondition extends ExploreCondition<Rule> {
     /**
      * Complete constructor with all parameters of the condition.
      * @param condition the rule to be checked
-     * @param negated flag to indicate whether this condition is negated or not.
+     * @param polarity flag to indicate whether this condition is positive or negative.
      */
-    public IsRuleApplicableCondition(Rule condition, boolean negated) {
-        super(condition, negated);
+    public IsRuleApplicableCondition(Rule condition, boolean polarity) {
+        super(condition, polarity);
     }
 
     @Override
