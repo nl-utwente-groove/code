@@ -272,9 +272,6 @@ public abstract class Properties implements Fixable {
             if (oldValue != null) {
                 refreshNotable();
             }
-        } else if (!key.get().parser().accepts(value)) {
-            throw Exceptions
-                .illegalArg("Value '%s' is not appropriate for key '%s'", value, keyword);
         } else {
             oldValue = (String) getProperties().setProperty(keyword, value);
             if (key.get().isNotable()) {
@@ -316,7 +313,17 @@ public abstract class Properties implements Fixable {
         var newProps = new java.util.Properties();
         newProps.load(stream);
         for (var e : newProps.entrySet()) {
-            setProperty((String) e.getKey(), (String) e.getValue());
+            var k = (String) e.getKey();
+            var v = (String) e.getValue();
+            //            Optional<? extends Key> key = getKey(k);
+            //            if (key.isPresent()) {
+            //                try {
+            //                    key.get().parse(v);
+            //                } catch (FormatException exc) {
+            //                    throw new IOException(exc);
+            //                }
+            //            }
+            setProperty(k, v);
         }
     }
 
