@@ -48,8 +48,12 @@ import nl.utwente.groove.util.parse.FormatException;
 public class ExploreAction extends SimulatorAction {
     /** Constructs a new action, for a given simulator. */
     public ExploreAction(Simulator simulator, boolean animated) {
-        super(simulator, animated ? Options.ANIMATE_ACTION_NAME : Options.EXPLORE_ACTION_NAME,
-            animated ? Icons.GO_START_ICON : Icons.GO_FORWARD_ICON);
+        super(simulator, animated
+            ? Options.ANIMATE_ACTION_NAME
+            : Options.EXPLORE_ACTION_NAME,
+              animated
+                  ? Icons.GO_START_ICON
+                  : Icons.GO_FORWARD_ICON);
         if (!animated) {
             putValue(ACCELERATOR_KEY, Options.DEFAULT_EXPLORATION_KEY);
         }
@@ -58,11 +62,10 @@ public class ExploreAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        Exploration e =
-            explore(getSimulatorModel().getState(), getSimulatorModel().getExploreType());
+        Exploration e
+            = explore(getSimulatorModel().getState(), getSimulatorModel().getExploreType());
         if (e != null) {
-            getLtsDisplay().emphasiseStates(e.getResult()
-                .getStates(), true);
+            getLtsDisplay().emphasiseStates(e.getResult().getStates(), true);
         }
     }
 
@@ -71,8 +74,7 @@ public class ExploreAction extends SimulatorAction {
         GraphState state = getSimulatorModel().getState();
         Exploration e = explore(state, getStateExploration());
         if (e != null) {
-            getLtsDisplay().emphasiseStates(e.getResult()
-                .getStates(), true);
+            getLtsDisplay().emphasiseStates(e.getResult().getStates(), true);
         }
         getSimulatorModel().doSetStateAndMatch(state, null);
     }
@@ -129,9 +131,8 @@ public class ExploreAction extends SimulatorAction {
         } catch (FormatException exc) {
             // this should not occur, as the exploration and the
             // grammar in the simulator model should always be compatible
-            showErrorDialog(exc,
-                "Exploration strategy %s incompatible with grammar",
-                exploreType.getIdentifier());
+            showErrorDialog(exc, "Exploration strategy %s incompatible with grammar",
+                            exploreType.getIdentifier());
         }
         return result;
     }
@@ -154,9 +155,11 @@ public class ExploreAction extends SimulatorAction {
             }
         }
         setEnabled(enabled);
-        String toolTipText = String.format("%s (%s)",
-            this.animated ? Options.ANIMATE_ACTION_NAME : Options.EXPLORE_ACTION_NAME,
-            HTMLConverter.STRONG_TAG.on(exploreType.getIdentifier()));
+        String toolTipText = String
+            .format("%s (%s)", this.animated
+                ? Options.ANIMATE_ACTION_NAME
+                : Options.EXPLORE_ACTION_NAME,
+                    HTMLConverter.STRONG_TAG.on(HTMLConverter.toHtml(exploreType.getIdentifier())));
         if (compatibilityError != null) {
             toolTipText += HTMLConverter.HTML_LINEBREAK + HTMLConverter.EMBARGO_TAG
                 .on(HTMLConverter.toHtml(compatibilityError.getMessage()));
@@ -300,8 +303,7 @@ public class ExploreAction extends SimulatorAction {
                 throw new IllegalStateException(e.getCause());
             }
             if (isInterrupted()) {
-                Thread.currentThread()
-                    .interrupt();
+                Thread.currentThread().interrupt();
             }
         }
     }
@@ -353,8 +355,7 @@ public class ExploreAction extends SimulatorAction {
                 }
                 Thread.sleep(getPause());
             } catch (InterruptedException e) {
-                Thread.currentThread()
-                    .interrupt();
+                Thread.currentThread().interrupt();
             }
         }
 
@@ -432,9 +433,9 @@ public class ExploreAction extends SimulatorAction {
         private JDialog createCancelDialog() {
             JDialog result;
             // create message dialog
-            JOptionPane message = new JOptionPane(
-                isAnimated() ? getAnimationPanel()
-                    : new Object[] {getStateCountLabel(), getTransitionCountLabel()},
+            JOptionPane message = new JOptionPane(isAnimated()
+                ? getAnimationPanel()
+                : new Object[] {getStateCountLabel(), getTransitionCountLabel()},
                 JOptionPane.PLAIN_MESSAGE);
             message.setOptions(new Object[] {getCancelButton()});
             result = message.createDialog(getFrame(), "Exploring state space");
@@ -498,7 +499,9 @@ public class ExploreAction extends SimulatorAction {
          * thread on the cancel dialog.
          */
         private GTSChangeListener createProgressListener() {
-            return isAnimated() ? new AnimateListener() : new ExploreListener();
+            return isAnimated()
+                ? new AnimateListener()
+                : new ExploreListener();
         }
 
         /** Exploration to be used. */

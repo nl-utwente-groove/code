@@ -33,12 +33,12 @@ public class EncodedStopMode extends EncodedFixedEnumeratedType<StopMode> {
     /**
      * Keyword for Depth-First search
      */
-    public static final String UP_TO_KEY = "<";
+    public static final String UP_TO_KEY = "->";
 
     /**
     * Keyword for Breadth-First search
     */
-    public static final String INCLUDE_KEY = "<=";
+    public static final String INCLUDE_KEY = "=>";
 
     private static final String UP_TO_TEXT = "Up to: Hit states are not explored";
     private static final String INCLUDE_TEXT = "Include: Hit states are the last to be explored";

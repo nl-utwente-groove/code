@@ -254,12 +254,12 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
     private void setDefaultExploreType() {
         try {
             ExploreType exploreType = createExploreType();
-            exploreType.test(getGrammar().toGrammar());
+            //exploreType.test(getGrammar().toGrammar());
             getSimulatorModel().doSetDefaultExploreType(exploreType);
             this.strategyEditor.refresh();
             this.acceptorEditor.refresh();
-        } catch (FormatException exc) {
-            showError(exc);
+            //        } catch (FormatException exc) {
+            //            showError(exc);
         } catch (IOException exc) {
             // do nothing
         }
@@ -335,7 +335,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
         return result;
     }
 
-    /** Initialises and returns the start button. */
+    /** Initialises and returns the default exploration button. */
     private RefreshButton getDefaultButton() {
         if (this.defaultButton == null) {
             // Create the explore button (reference is needed when setting the
@@ -344,11 +344,12 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
                 @Override
                 public void execute() {
                     setDefaultExploreType();
+                    refreshButtons();
                 }
 
                 @Override
                 public void refresh(ExploreType exploreType) {
-                    setEnabled(DEFAULT_TOOLTIP, exploreType);
+                    setEnabled(DEFAULT_TOOLTIP, exploreType, false);
                 }
             };
             this.defaultButton.setToolTipText(DEFAULT_TOOLTIP);
@@ -369,7 +370,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
 
                 @Override
                 public void refresh(ExploreType exploreType) {
-                    setEnabled(START_TOOLTIP, exploreType);
+                    setEnabled(START_TOOLTIP, exploreType, true);
                 }
             };
         }
@@ -389,7 +390,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
 
                 @Override
                 public void refresh(ExploreType exploreType) {
-                    setEnabled(EXPLORE_TOOLTIP, exploreType);
+                    setEnabled(EXPLORE_TOOLTIP, exploreType, true);
                 }
             };
         }
@@ -461,12 +462,16 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
          * to the tooltip.
          * @param toolTipText bare tooltip text (without error)
          * @param exploreType the exploration strategy
+         * @param testGrammarErrors if {@code true}, only enable if the grammar does not have errors
          */
-        protected void setEnabled(String toolTipText, ExploreType exploreType) {
+        @SuppressWarnings("null")
+        protected void setEnabled(String toolTipText, ExploreType exploreType,
+                                  boolean testGrammarErrors) {
             GrammarModel grammar = getGrammar();
-            boolean enabled = exploreType != null && grammar != null && !grammar.hasErrors();
+            boolean enabled = exploreType != null && grammar != null
+                && !(testGrammarErrors && grammar.hasErrors());
             StringBuilder toolTip = new StringBuilder(toolTipText);
-            if (enabled) {
+            if (enabled && !grammar.hasErrors()) {
                 assert exploreType != null && grammar != null;
                 try {
                     exploreType.test(grammar.toGrammar());

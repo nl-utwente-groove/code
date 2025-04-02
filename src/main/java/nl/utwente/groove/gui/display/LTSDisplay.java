@@ -31,7 +31,6 @@ import java.awt.Graphics;
 import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -671,10 +670,10 @@ public class LTSDisplay extends Display implements SimulatorListener {
      * Mouse listener that creates the popup menu and switches the view to the
      * rule panel on double-clicks.
      */
-    private class MyMouseListener extends MouseAdapter {
+    private class MyMouseListener extends DismissDelayer {
         /** Empty constructor with the correct visibility. */
         MyMouseListener() {
-            // empty
+            super(LTSDisplay.this);
         }
 
         @Override

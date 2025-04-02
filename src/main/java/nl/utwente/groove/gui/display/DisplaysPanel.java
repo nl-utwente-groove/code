@@ -56,6 +56,7 @@ import nl.utwente.groove.gui.display.Display.ListPanel;
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Properties;
+import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * The main panel of the simulator.
@@ -241,11 +242,16 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             var propertiesIndex
                 = propertiesTabPane.indexOfComponent(propertiesDisplay.getListPanel());
             boolean notable = properties.isNotable();
+            boolean error = false;
+            try {
+                properties.check(source.getGrammar());
+            } catch (FormatException exc) {
+                error = true;
+            }
             propertiesTabPane.setIconAt(propertiesIndex, null);
             propertiesTabPane
-                .setTabComponentAt(propertiesIndex, notable
-                    ? PropertiesDisplay.NOTABLE_TAB_COMPONENT
-                    : PropertiesDisplay.NORMAL_TAB_COMPONENT);
+                .setTabComponentAt(propertiesIndex,
+                                   PropertiesDisplay.getTabComponent(notable, error));
             var toolTipText = DisplayKind.PROPERTIES.getTip();
             if (notable) {
                 toolTipText += HTMLConverter.HTML_PAR_5PT;

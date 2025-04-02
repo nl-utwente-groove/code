@@ -321,6 +321,14 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
 
     private KeyParser parser;
 
+    /**
+     * Checks the consistency of a value for this property with a given grammar model.
+     * @return the (possibly empty) set of errors in the value
+     */
+    public FormatErrorSet check(GrammarModel grammar, Object value) {
+        return check(grammar, new Properties.Entry(this, value));
+    }
+
     @Override
     public FormatErrorSet apply(GrammarModel grammar, Entry value) {
         return this.checker.get().apply(grammar, value);

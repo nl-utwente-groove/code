@@ -216,6 +216,8 @@ public final class Icons {
     public static final Icon CHECKBOX_PASSIVE_ICON = CheckBoxPassiveIcon.instance();
     /** Compass icon. */
     public static final ImageIcon COMPASS_ICON = createIcon("compass.gif");
+    /** Compass icon with error background. */
+    public static final ImageIcon COMPASS_ERROR_ICON = createIcon("compass-error.png");
     /** Control automaton preview icon. */
     public static final ImageIcon CONTROL_MODE_ICON = createIcon("control-mode.gif");
     /** Icon for Control Panel. */
@@ -364,7 +366,13 @@ public final class Icons {
     public static final ImageIcon GROOVY_LIST_ICON = createIcon("groovy-file.gif");
     /** Icon for Properties Panel. */
     public static final ImageIcon PROPERTIES_FRAME_ICON = createIcon("properties-frame.gif");
-    /** Icon for Properties Panel. */
+    /** Icon for Properties Panel with errors. */
+    public static final ImageIcon PROPERTIES_ERROR_FRAME_ICON
+        = createIcon("properties-error-frame.gif");
+    /** Icon for notable Properties Panel with errors. */
+    public static final ImageIcon PROPERTIES_NOTABLE_ERROR_FRAME_ICON
+        = createIcon("properties-notable-error-frame.gif");
+    /** Icon for notable Properties Panel. */
     public static final ImageIcon PROPERTIES_NOTABLE_FRAME_ICON
         = createIcon("properties-notable-frame.gif");
     /** Redo action icon. */
