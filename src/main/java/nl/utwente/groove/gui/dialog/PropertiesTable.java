@@ -28,7 +28,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import javax.swing.DefaultCellEditor;
-import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.event.TableModelEvent;
@@ -36,8 +35,6 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
-
-import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.gui.display.DismissDelayer;
 import nl.utwente.groove.gui.look.Values;
@@ -47,12 +44,9 @@ import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.Properties.CheckerMap;
 import nl.utwente.groove.util.Properties.Key;
-import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.collect.IndexComparator;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
-import nl.utwente.groove.util.parse.FormatException;
-import nl.utwente.groove.util.parse.IdValidator;
 import nl.utwente.groove.util.parse.Parser;
 
 /**
@@ -312,7 +306,7 @@ public class PropertiesTable extends JTable {
     private static final int ROW_HEIGHT = 15;
 
     /** Editor for the cells of the property table. */
-    private class CellEditor extends DefaultCellEditor {
+    public class CellEditor extends DefaultCellEditor {
         /** Constructs a new property cell editor. */
         public CellEditor() {
             super(new JTextField());
@@ -335,87 +329,6 @@ public class PropertiesTable extends JTable {
                 }
             }
             return result;
-        }
-
-        @Override
-        public boolean stopCellEditing() {
-            boolean result;
-            String editedValue = (String) getCellEditorValue();
-            if (editedValue.length() == 0 || isEditedValueCorrect(editedValue)) {
-                result = super.stopCellEditing();
-            } else {
-                if (showContinueDialog(editedValue)) {
-                    getComponent().setSelectionStart(0);
-                    getComponent().setSelectionEnd(getComponent().getText().length());
-                    result = false;
-                } else {
-                    super.cancelCellEditing();
-                    result = true;
-                }
-            }
-            return result;
-        }
-
-        @Override
-        public void cancelCellEditing() {
-            super.cancelCellEditing();
-        }
-
-        /**
-         * Tests if a given non-empty string value is correct. The answer
-         * depends on what kind of cell the editor is currently editing.
-         */
-        private boolean isEditedValueCorrect(String value) {
-            if (this.editingValueForKey == null) {
-                return IdValidator.GROOVE_ID.isValid(value)
-                    && !PropertiesTable.this.defaultKeys.containsKey(value);
-            } else {
-                var key = getKey(this.editingValueForKey);
-                return key == null
-                    ? true
-                    : key.parser().accepts(value);
-            }
-        }
-
-        /**
-         * Creates and shows a confirmation dialog for continuing the current
-         * edit.
-         */
-        private boolean showContinueDialog(String value) {
-            int response = JOptionPane
-                .showConfirmDialog(PropertiesTable.this, getContinueQuestion(value), null,
-                                   JOptionPane.YES_NO_OPTION);
-            return response == JOptionPane.YES_OPTION;
-        }
-
-        /** Returns the string to display in the abandon dialog. */
-        private String getContinueQuestion(@NonNull String value) {
-            StringBuilder result = new StringBuilder();
-            if (this.editingValueForKey == null) {
-                // editing a key
-                if (PropertiesTable.this.properties.containsKey(value)) {
-                    result.append(String.format("Property key '%s' already exists", value));
-                } else {
-                    result
-                        .append(String
-                            .format("Property key '%s' is not a valid identifier.", value));
-                }
-            } else {
-                // editing a value
-                var key = getKey(this.editingValueForKey);
-                String message;
-                try {
-                    key.parser().parse(value);
-                    message = String
-                        .format("Key '%s' expects %s", this.editingValueForKey,
-                                Strings.toLower(key.parser().getDescription()));
-                } catch (FormatException exc) {
-                    message = exc.getMessage();
-                }
-                result.append(message);
-            }
-            result = result.append("<br>Continue?");
-            return HTMLConverter.HTML_TAG.on(result).toString();
         }
 
         /** Sets the editor to edit the value for a given key. */

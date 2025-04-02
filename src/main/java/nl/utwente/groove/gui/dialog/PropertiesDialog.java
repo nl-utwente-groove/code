@@ -36,7 +36,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.table.TableCellEditor;
 
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.util.Properties;
@@ -120,9 +119,9 @@ public class PropertiesDialog {
      * edited graph.
      */
     private int showAbandonDialog() {
-        int response =
-            JOptionPane.showConfirmDialog(getContentPane(), "Use changed properties?", null,
-                JOptionPane.YES_NO_CANCEL_OPTION);
+        int response = JOptionPane
+            .showConfirmDialog(getContentPane(), "Use changed properties?", null,
+                               JOptionPane.YES_NO_CANCEL_OPTION);
         return response;
     }
 
@@ -136,8 +135,8 @@ public class PropertiesDialog {
             Object[] buttons;
             mode = JOptionPane.OK_CANCEL_OPTION;
             buttons = new Object[] {getOkButton(), createCancelButton()};
-            this.pane =
-                new JOptionPane(createTablePane(), JOptionPane.PLAIN_MESSAGE, mode, null, buttons);
+            this.pane = new JOptionPane(createTablePane(), JOptionPane.PLAIN_MESSAGE, mode, null,
+                buttons);
         }
         return this.pane;
     }
@@ -153,15 +152,7 @@ public class PropertiesDialog {
     JButton getOkButton() {
         if (this.okButton == null) {
             this.okButton = new JButton("OK");
-            this.okButton.addActionListener(new CloseListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    TableCellEditor editor = getInnerTable().getCellEditor();
-                    if (editor == null || editor.stopCellEditing()) {
-                        super.actionPerformed(e);
-                    }
-                }
-            });
+            this.okButton.addActionListener(new CloseListener());
         }
         return this.okButton;
     }
@@ -204,8 +195,9 @@ public class PropertiesDialog {
             this.errorLabel.setBorder(new EmptyBorder(new Insets(5, 0, 0, 0)));
             this.errorLabel.setForeground(Values.ERROR_NORMAL_FOREGROUND);
             this.errorLabel.setText(null);
-            getInnerTable().getSelectionModel().addListSelectionListener(
-                new ListSelectionListener() {
+            getInnerTable()
+                .getSelectionModel()
+                .addListSelectionListener(new ListSelectionListener() {
                     @Override
                     public void valueChanged(ListSelectionEvent e) {
                         setErrorText();
