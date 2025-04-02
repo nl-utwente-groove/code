@@ -48,7 +48,7 @@ public class EdgeBoundCondition extends ExploreCondition<Map<TypeLabel,Integer>>
         result = criterion()
             .entrySet()
             .stream()
-            .anyMatch(e -> g.edgeSet(e.getKey()).size() <= e.getValue());
+            .allMatch(e -> g.edgeSet(e.getKey()).size() > e.getValue());
         return isNegated()
             ? !result
             : result;

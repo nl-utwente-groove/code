@@ -39,7 +39,7 @@ public class NodeBoundCondition extends ExploreCondition<Integer> {
 
     @Override
     public boolean test(GraphState state) {
-        boolean result = state.getGraph().nodeCount() <= criterion();
+        boolean result = state.getGraph().nodeCount() > criterion();
         return isNegated()
             ? !result
             : result;
