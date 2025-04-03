@@ -122,14 +122,14 @@ public class PropertiesDisplay extends Display implements SimulatorListener {
     static public final JLabel NOTABLE_TAB_COMPONENT = new JLabel("" + Util.INFO_SYMBOL,
         Icons.PROPERTIES_NOTABLE_FRAME_ICON, SwingConstants.LEFT);
     /** The error tab component to be used for a notable property set. */
-    static public final JLabel NOTABLE_ERROR_TAB_COMPONENT = new JLabel("" + Util.INFO_SYMBOL,
-        Icons.PROPERTIES_NOTABLE_ERROR_FRAME_ICON, SwingConstants.LEFT);
+    static public final JLabel NOTABLE_ERROR_TAB_COMPONENT
+        = new JLabel("" + Util.INFO_SYMBOL, Icons.PROPERTIES_ERROR_FRAME_ICON, SwingConstants.LEFT);
 
     {
         NOTABLE_TAB_COMPONENT.setFont(new Font("Dialog", Font.BOLD, 16));
         NOTABLE_TAB_COMPONENT.setForeground(Values.INFO_NORMAL_FOREGROUND);
         NOTABLE_ERROR_TAB_COMPONENT.setFont(new Font("Dialog", Font.BOLD, 16));
-        NOTABLE_ERROR_TAB_COMPONENT.setForeground(Values.ERROR_SELECT_FOREGROUND.darker());
+        NOTABLE_ERROR_TAB_COMPONENT.setForeground(Values.INFO_NORMAL_FOREGROUND);
     }
 
     /** Returns the appropriate tab component for a display that may be notable and erroneous. */

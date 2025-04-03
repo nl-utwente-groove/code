@@ -217,7 +217,7 @@ public final class Icons {
     /** Compass icon. */
     public static final ImageIcon COMPASS_ICON = createIcon("compass.gif");
     /** Compass icon with error background. */
-    public static final ImageIcon COMPASS_ERROR_ICON = createIcon("compass-error.png");
+    public static final ImageIcon COMPASS_ERROR_ICON = createIcon("compass-error.gif");
     /** Control automaton preview icon. */
     public static final ImageIcon CONTROL_MODE_ICON = createIcon("control-mode.gif");
     /** Icon for Control Panel. */

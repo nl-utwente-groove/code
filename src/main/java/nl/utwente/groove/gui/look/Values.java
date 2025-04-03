@@ -124,8 +124,12 @@ public class Values {
         NORMAL_COLORS.putColors(NONE, NORMAL_FOREGROUND, NORMAL_BACKGROUND);
     }
 
-    /** Colour used for indicating errors in graphs. */
+    /** Transparent colour used for indicating errors in graphs. */
     static public final Color ERROR_COLOR = new Color(255, 50, 0, 40);
+    /** Opaque colour used for indicating errors in graphs.
+     * Chosen so it resembles {@link #ERROR_COLOR} on a white background
+     */
+    static public final Color ERROR_COLOR_OPAQUE = new Color(245, 215, 205);
     /** Background colour used for focused error items in lists. */
     static public final Color ERROR_FOCUS_BACKGROUND = Color.RED.darker().darker();
     /** Text colour used for focused error items in lists. */
