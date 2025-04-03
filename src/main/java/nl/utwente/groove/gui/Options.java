@@ -68,6 +68,7 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.gui.display.DismissDelayer;
 import nl.utwente.groove.io.Util;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.util.Exceptions;
@@ -318,6 +319,7 @@ public class Options implements Cloneable {
         result.setAlignmentX(Component.LEFT_ALIGNMENT);
         // make sure tool tips get displayed
         ToolTipManager.sharedInstance().registerComponent(result);
+        result.addMouseListener(new DismissDelayer(result));
         return result;
     }
 

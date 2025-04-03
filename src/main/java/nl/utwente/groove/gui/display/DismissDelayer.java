@@ -38,14 +38,14 @@ public class DismissDelayer extends MouseAdapter {
     @Override
     public void mouseEntered(MouseEvent e) {
         if (e.getSource() == this.component) {
-            this.manager.setDismissDelay(Integer.MAX_VALUE);
+            manager.setDismissDelay(Integer.MAX_VALUE);
         }
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
         if (e.getSource() == this.component) {
-            this.manager.setDismissDelay(this.standardDelay);
+            manager.setDismissDelay(standardDelay);
         }
     }
 
@@ -54,7 +54,7 @@ public class DismissDelayer extends MouseAdapter {
      */
     private final JComponent component;
     /** The shared tool tip manager. */
-    private final ToolTipManager manager = ToolTipManager.sharedInstance();
+    static private final ToolTipManager manager = ToolTipManager.sharedInstance();
     /** The standard dismiss delay, used to restore upon exit. */
-    private final int standardDelay = this.manager.getDismissDelay();
+    static private final int standardDelay = manager.getDismissDelay();
 }

@@ -369,9 +369,6 @@ public final class Icons {
     /** Icon for Properties Panel with errors. */
     public static final ImageIcon PROPERTIES_ERROR_FRAME_ICON
         = createIcon("properties-error-frame.gif");
-    /** Icon for notable Properties Panel with errors. */
-    public static final ImageIcon PROPERTIES_NOTABLE_ERROR_FRAME_ICON
-        = createIcon("properties-notable-error-frame.gif");
     /** Icon for notable Properties Panel. */
     public static final ImageIcon PROPERTIES_NOTABLE_FRAME_ICON
         = createIcon("properties-notable-frame.gif");
