@@ -379,7 +379,7 @@ public class PropertiesTable extends JTable {
                         assert errors != null; // guaranteed by error
                         for (FormatError err : errors) {
                             tip += HTMLConverter.HTML_LINEBREAK;
-                            tip += this.errorTag.on(err.toString());
+                            tip += this.errorTag.on(HTMLConverter.toHtml(err));
                         }
                     } else {
                         isNotable = hasNotableValue(key);

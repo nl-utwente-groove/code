@@ -22,7 +22,6 @@ import nl.utwente.groove.explore.result.CycleAcceptor;
 import nl.utwente.groove.explore.strategy.LTLStrategy;
 import nl.utwente.groove.explore.strategy.Strategy;
 import nl.utwente.groove.grammar.Grammar;
-import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.Factory;
@@ -258,15 +257,16 @@ public class ExploreType {
     static public ExploreType parse(String description) throws FormatException {
         String[] parts = description.split("\\s");
         if (parts.length < 2 || parts.length > 3) {
-            throw new FormatException(SYNTAX_MESSAGE);
+            throw new FormatException("Can't parse exploration descriptor '%s'. " + SYNTAX_MESSAGE,
+                description);
         }
         Serialized strategy = StrategyEnumerator.instance().parseCommandline(parts[0]);
         if (strategy == null) {
-            throw new FormatException("Can't parse strategy %s", parts[0]);
+            throw new FormatException("Can't parse strategy '%s'", parts[0]);
         }
         Serialized acceptor = AcceptorEnumerator.instance().parseCommandline(parts[1]);
         if (acceptor == null) {
-            throw new FormatException("Can't parse acceptor %s", parts[1]);
+            throw new FormatException("Can't parse acceptor '%s'", parts[1]);
         }
         int resultCount = 0;
         if (parts.length == 3) {
@@ -286,7 +286,7 @@ public class ExploreType {
 
     /** Message describing the syntax of a parsable exploration strategy. */
     static public final String SYNTAX_MESSAGE
-        = HTMLConverter.toHtml("Exploration syntax: \"<strategy> <acceptor> [<resultcount>]\"");
+        = "Required format: \"<strategy> <acceptor> [<resultcount>]\"";
     /** Default exploration (DFS, final states, infinite). */
     static public final ExploreType DEFAULT = new ExploreType();
 }
