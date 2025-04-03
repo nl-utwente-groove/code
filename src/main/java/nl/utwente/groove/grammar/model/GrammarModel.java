@@ -611,7 +611,7 @@ public class GrammarModel implements PropertyChangeListener {
         if (edit.getType() == EditType.LAYOUT) {
             // replace the sources of the resource models
             for (var kind : edit.getChange()) {
-                for (var name : getNames(kind)) {
+                for (var name : getActiveNames(kind)) {
                     var graph = getStore().getGraphs(kind).get(name);
                     assert graph != null;
                     getGraphResource(kind, name).setSource(graph);
