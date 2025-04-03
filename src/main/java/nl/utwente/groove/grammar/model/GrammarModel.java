@@ -646,8 +646,11 @@ public class GrammarModel implements PropertyChangeListener {
             // proceed
         }
         // update the set of resource models
-        Map<QualName,NamedResourceModel<?>> modelMap = this.resourceMap.get(kind);
+        // don't call getResourceMap beause the return type is not what we want here
+        var modelMap = this.resourceMap.get(kind);
         Set<QualName> names = getNames(kind);
+        // restrict the resources to those whose names are in the store
+        modelMap.keySet().retainAll(names);
         // collect the new active names
         SortedSet<QualName> newActiveNames = new TreeSet<>();
         switch (kind) {
