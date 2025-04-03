@@ -3,10 +3,12 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
-Release 7.3.0, 1 April 2025
+Release 7.3.0, 3 April 2025
 -------------------------------
-- Added conditional exploration strategies for stopping after, rather than at, 
+- Added conditional exploration strategy for stopping after, rather than at, 
   a condition determined by the applicability of a rule, for BFS as well as DFS
+- Improved error highlighting and processing for exploration strategies
+- Partially addressed (but did not resolve) gh issue #815
 
 Release 7.2.0, 1 April 2025
 -------------------------------
