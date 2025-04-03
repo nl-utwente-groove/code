@@ -50,6 +50,13 @@ public class FinalStateAcceptor extends Acceptor {
         }
     }
 
+    @Override
+    public void addUpdate(GTS gts, GraphState state) {
+        if (state.isFinal()) {
+            getResult().addState(state);
+        }
+    }
+
     /** Prototype acceptor. */
     public static final FinalStateAcceptor PROTOTYPE = new FinalStateAcceptor();
 }
