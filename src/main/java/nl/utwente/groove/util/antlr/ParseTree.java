@@ -46,8 +46,7 @@ abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo> ex
     final T newNode(CommonTokenStream tokenStream, I info) {
         T result;
         try {
-            result = (T) getClass().getConstructor()
-                .newInstance();
+            result = (T) getClass().getConstructor().newInstance();
             ((ParseTree<T,I>) result).tokenStream = tokenStream;
             ((ParseTree<T,I>) result).info = info;
         } catch (Exception e) {
@@ -113,6 +112,11 @@ abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo> ex
     /** Returns the first token among the root and its children. */
     private Token findFirstToken() {
         Token result = getToken();
+        var tokenStream = getTokenStream();
+        var tokenStartIndex = getTokenStartIndex();
+        if (tokenStream != null && tokenStartIndex >= 0 && tokenStartIndex <= tokenStream.size()) {
+            result = getMin(result, tokenStream.get(tokenStartIndex));
+        }
         for (int i = 0; i < getChildCount(); i++) {
             Token childFirst = ((ParseTree<T,I>) getChild(i)).findFirstToken();
             result = getMin(result, childFirst);
@@ -123,6 +127,11 @@ abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo> ex
     /** Returns the last token among the root and its children. */
     private Token findLastToken() {
         Token result = getToken();
+        var tokenStream = getTokenStream();
+        var tokenStopIndex = getTokenStopIndex();
+        if (tokenStream != null && tokenStopIndex >= 0 && tokenStopIndex <= tokenStream.size()) {
+            result = getMax(result, tokenStream.get(tokenStopIndex));
+        }
         for (int i = 0; i < getChildCount(); i++) {
             Token childLast = ((ParseTree<T,I>) getChild(i)).findLastToken();
             result = getMax(result, childLast);
@@ -179,10 +188,10 @@ abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo> ex
         try {
             // find the lexer type
             String parserName = parserType.getName();
-            String lexerName = parserName.substring(0, parserName.indexOf("Parser"))
-                .concat("Lexer");
-            @SuppressWarnings("unchecked") Class<? extends Lexer> lexerType =
-                (Class<? extends Lexer>) Class.forName(lexerName);
+            String lexerName
+                = parserName.substring(0, parserName.indexOf("Parser")).concat("Lexer");
+            @SuppressWarnings("unchecked")
+            Class<? extends Lexer> lexerType = (Class<? extends Lexer>) Class.forName(lexerName);
             Lexer lexer = createLexer(lexerType, info, term);
             // instantiate the parser
             CommonTokenStream tokenStream = new CommonTokenStream(lexer);
@@ -202,8 +211,8 @@ abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo> ex
         try {
             // instantiate the lexer
             ANTLRStringStream input = new ANTLRStringStream(term);
-            Constructor<? extends Lexer> lexerConstructor =
-                lexerType.getConstructor(CharStream.class);
+            Constructor<? extends Lexer> lexerConstructor
+                = lexerType.getConstructor(CharStream.class);
             Lexer result = lexerConstructor.newInstance(input);
             callInitialise(result, info);
             return result;
@@ -218,8 +227,7 @@ abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo> ex
      */
     private void callInitialise(BaseRecognizer recognizer, I info) {
         try {
-            Method initialise = recognizer.getClass()
-                .getMethod("initialise", ParseInfo.class);
+            Method initialise = recognizer.getClass().getMethod("initialise", ParseInfo.class);
             initialise.invoke(recognizer, info);
         } catch (NoSuchMethodException e) {
             // the method does not exist; do nothing

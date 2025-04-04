@@ -252,6 +252,10 @@ public class CtrlHelper {
 
     /** Sets the control name (from the name space) of this given program tree. */
     void declareProgram(CtrlTree programTree) {
+        /** Make the program start at index 0, so the token indices aren't off
+         * when requesting a corresponding input stream
+         */
+        programTree.setTokenStartIndex(0);
         programTree.setControlName(this.namespace.getControlName());
     }
 
