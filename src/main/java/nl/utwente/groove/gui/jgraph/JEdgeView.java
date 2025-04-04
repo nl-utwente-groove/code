@@ -706,10 +706,10 @@ public class JEdgeView extends EdgeView {
                     text = lines.toString(HTMLLineFormat.instance());
                 }
                 this.jLabel.setText(HTMLLineFormat.toHtml(text, foreground));
-                this.jLabelLines = lines;
-                this.jLabelColor = foreground;
                 result = this.jLabelSize = this.jLabel.getPreferredSize();
             }
+            this.jLabelLines = lines;
+            this.jLabelColor = foreground;
             return result;
         }
 

@@ -99,27 +99,14 @@ public class LabelValue implements VisualValue<MultiLabel> {
      */
     protected <G extends @NonNull Graph> MultiLabel getJVertexLabel(JGraph<G> jGraph,
                                                                     JVertex<G> jVertex) {
-        MultiLabel result;
-        switch (jGraph.getGraphRole()) {
-        case HOST:
-            result = getHostNodeLabel((AspectJGraph) jGraph, (AspectJVertex) jVertex);
-            break;
-        case RULE:
-            result = getRuleNodeLabel((AspectJGraph) jGraph, (AspectJVertex) jVertex);
-            break;
-        case TYPE:
-            result = getTypeNodeLabel((AspectJGraph) jGraph, (AspectJVertex) jVertex);
-            break;
-        case LTS:
-            result = getLTSJVertexLabel((LTSJGraph) jGraph, (LTSJVertex) jVertex);
-            break;
-        case CTRL:
-            result = getCtrlJVertexLabel((CtrlJGraph) jGraph, (CtrlJVertex) jVertex);
-            break;
-        default:
-            result = getBasicVertexLabel(jGraph, jVertex);
-        }
-        return result;
+        return switch (jGraph.getGraphRole()) {
+        case HOST -> getHostNodeLabel((AspectJGraph) jGraph, (AspectJVertex) jVertex);
+        case RULE -> getRuleNodeLabel((AspectJGraph) jGraph, (AspectJVertex) jVertex);
+        case TYPE -> getTypeNodeLabel((AspectJGraph) jGraph, (AspectJVertex) jVertex);
+        case LTS -> getLTSJVertexLabel((LTSJGraph) jGraph, (LTSJVertex) jVertex);
+        case CTRL -> getCtrlJVertexLabel((CtrlJGraph) jGraph, (CtrlJVertex) jVertex);
+        default -> getBasicVertexLabel(jGraph, jVertex);
+        };
     }
 
     /** This implementation adds the data edges to the super result.
@@ -646,20 +633,11 @@ public class LabelValue implements VisualValue<MultiLabel> {
      */
     protected <G extends @NonNull Graph> MultiLabel getJEdgeLabel(JGraph<G> jGraph,
                                                                   JEdge<G> jEdge) {
-        MultiLabel result;
-        switch (jGraph.getGraphRole()) {
-        case HOST:
-        case RULE:
-        case TYPE:
-            result = getAspectJEdgeLabel((AspectJGraph) jGraph, (AspectJEdge) jEdge);
-            break;
-        case LTS:
-            result = getLTSJEdgeLabel((LTSJGraph) jGraph, (LTSJEdge) jEdge);
-            break;
-        default:
-            result = getBasicJEdgeLabel(jGraph, jEdge);
-        }
-        return result;
+        return switch (jGraph.getGraphRole()) {
+        case HOST, RULE, TYPE -> getAspectJEdgeLabel((AspectJGraph) jGraph, (AspectJEdge) jEdge);
+        case LTS -> getLTSJEdgeLabel((LTSJGraph) jGraph, (LTSJEdge) jEdge);
+        default -> getBasicJEdgeLabel(jGraph, jEdge);
+        };
     }
 
     private MultiLabel getBasicJEdgeLabel(JGraph<?> jGraph, JEdge<?> jEdge) {
@@ -692,13 +670,10 @@ public class LabelValue implements VisualValue<MultiLabel> {
     }
 
     private MultiLabel getAspectJEdgeLabel(AspectJGraph jGraph, AspectJEdge jEdge) {
-        MultiLabel result = null;
+        MultiLabel result = new MultiLabel();
         // if both source and target nodes are nodified,
         // test for source node first
-        if (jEdge.isNodeEdgeOut()) {
-            result = new MultiLabel();
-        } else if (jEdge.isNodeEdgeIn()) {
-            result = new MultiLabel();
+        if (jEdge.isNodeEdgeIn()) {
             AspectJVertex targetVertex = jEdge.getTargetVertex();
             assert targetVertex != null; // model has been initialised by now
             LabelPattern pattern = targetVertex.getEdgeLabelPattern();
@@ -712,10 +687,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             } catch (FormatException e) {
                 // assert false;
             }
-        } else if (jEdge.isSourceLabel()) {
-            result = new MultiLabel();
-        } else {
-            result = new MultiLabel();
+        } else if (!jEdge.isNodeEdgeOut() && !jEdge.isSourceLabel()) {
             for (AspectEdge edge : jEdge.getEdges()) {
                 // only add edges that have an unfiltered label
                 if (isVisible(jGraph, jEdge, edge)) {
