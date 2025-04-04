@@ -3,6 +3,10 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 7.3.1, 4 April 2025
+-------------------------------
+- Resolved gh #837, #838, #839, #840, #841, #842
+
 Release 7.3.0, 3 April 2025
 -------------------------------
 - Added conditional exploration strategy for stopping after, rather than at, 
