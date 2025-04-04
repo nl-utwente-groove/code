@@ -626,9 +626,11 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
                 clearSelection();
                 oldJModel.removeGraphModelListener(getCancelEditListener());
             }
-            if (newJModel != null) {
-                newJModel.refreshVisuals();
-            }
+            // refreshing the visuals here makes manually set colours go away.
+            // It seems more reasonable to ask callers of setModel to do this
+            // if (newJModel != null) {
+            //     newJModel.refreshVisuals();
+            // }
             super.setModel(newJModel);
             if (newJModel != null) {
                 setName(newJModel.getName());
