@@ -186,7 +186,7 @@ public abstract class GrooveCmdLineTool<T> {
                 if (message == null) {
                     message = cause.toString();
                 }
-                System.err.printf("Execution failed with \"%s%n\"", message);
+                System.err.printf("Execution failed with message:%n%s", message);
                 if (DEBUG) {
                     cause.printStackTrace();
                 }
