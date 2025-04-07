@@ -366,12 +366,16 @@ public class Groove {
     static public <T> String toString(T[] array, String start, String end, String separator,
                                       String finalSeparator) {
         StringBuffer result = new StringBuffer(start);
-        for (int i = 0; i < array.length; i++) {
-            result.append(array[i]);
-            if (i < array.length - 2) {
-                result.append(separator);
-            } else if (i == array.length - 2) {
-                result.append(finalSeparator);
+        if (array == null) {
+            result.append("null");
+        } else {
+            for (int i = 0; i < array.length; i++) {
+                result.append(array[i]);
+                if (i < array.length - 2) {
+                    result.append(separator);
+                } else if (i == array.length - 2) {
+                    result.append(finalSeparator);
+                }
             }
         }
         result.append(end);

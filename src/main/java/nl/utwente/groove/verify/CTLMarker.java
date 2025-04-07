@@ -280,6 +280,9 @@ public class CTLMarker {
             .illegalArg("Top level operator '%s' in formula %s not allowed", token, property);
         };
         this.marking[nr] = result;
+        if (DEBUG) {
+            System.out.printf("Formula %s holds in %s%n", property, result);
+        }
         return result;
     }
 
@@ -353,7 +356,7 @@ public class CTLMarker {
         BitSet result = (BitSet) arg2.clone();
         for (int i = 0; i < this.nodeCount; i++) {
             if (!result.get(i)) {
-                result.set(i, arg1.get(i));
+                result.set(i, !arg1.get(i));
             }
         }
         return result;
@@ -649,4 +652,6 @@ public class CTLMarker {
 
     /** Proposition text expressing that a node is the start state of the GTS. */
     static public final Proposition START_ATOM = flagProps.get(Flag.START);
+    /** Debug flag */
+    static private boolean DEBUG = true;
 }

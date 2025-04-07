@@ -113,16 +113,19 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         long genStartTime = System.currentTimeMillis();
         Model model;
         if (genArgs != null) {
+            emit("Generator:\t%s%n", Groove.toString(genArgs, " ", ""));
             model = generateModel(genArgs);
         } else if (this.modelGraph == null) {
             throw new Exception(
                 "Either generator argument -g or model file name should be provided");
         } else if (this.modelGraph.isDirectory()) {
+            emit("Rule system:\t%s%n", this.modelGraph);
             // we have to generate the transition system
             model = generateModel(this.modelGraph.getPath());
         } else {
-            emit("Model: %s%n", this.modelGraph);
+            emit("Model:\t%s%n", this.modelGraph);
             model = new GraphModel(Groove.loadGraph(this.modelGraph), this.ltsLabels);
+            emit("Model loaded:\t%s states%n", model.nodeSet().size());
         }
         // check if the formulas match the model
         if (model instanceof GTSModel gtsModel) {
