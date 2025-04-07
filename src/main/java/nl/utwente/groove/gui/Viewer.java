@@ -129,14 +129,6 @@ public class Viewer extends GrooveCmdLineTool<Object> {
     }
 
     /**
-     * Tries to show a given file as a graph in a modeless dialog,
-     * Convenience method for {@code showGraph(file,false)}.
-     */
-    static public void showGraph(File file) throws IOException, FormatException {
-        showGraph(file, false);
-    }
-
-    /**
      * Tries to show a given graph in a modeless dialog.
      * Convenience method for {@code showGraph(graph,false)}.
      */

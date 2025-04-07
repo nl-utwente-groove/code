@@ -16,10 +16,17 @@
  */
 package nl.utwente.groove.graph.plain;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
+import nl.utwente.groove.graph.AGraphMap;
+import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeMapGraph;
+import nl.utwente.groove.graph.ElementFactory;
+import nl.utwente.groove.graph.Graph;
+import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphRole;
+import nl.utwente.groove.graph.Node;
 
 /**
  * Simple graph with plain nodes and edges.
@@ -59,5 +66,35 @@ public class PlainGraph extends EdgeMapGraph<PlainNode,PlainEdge> implements Clo
     @Override
     public PlainFactory getFactory() {
         return PlainFactory.instance();
+    }
+
+    /**
+     * Creates a {@link PlainGraph} from an arbitrary graph,
+     * using {@link PlainLabel}s based on the string values of the edge labels.
+     */
+    static public PlainGraph instance(Graph source) {
+        var result = new PlainGraph(source.getName(), source.getRole());
+        var map = new PlainGraphMap(result.getFactory());
+        source.nodeSet().forEach(n -> map.putNode(n, result.addNode(n.getNumber())));
+        source.edgeSet().forEach(e -> result.addEdge(map.mapEdge(e)));
+        GraphInfo.transferAll(source, result, map);
+        return result;
+    }
+
+    static private class PlainGraphMap extends AGraphMap<Node,Edge,PlainNode,PlainEdge> {
+        public PlainGraphMap(ElementFactory<PlainNode,PlainEdge> factory) {
+            super(factory);
+        }
+
+        @Override
+        public @NonNull PlainEdge mapEdge(Edge key) {
+            var sourceImage = getNode(key.source());
+            var targetImage = getNode(key.target());
+            // we only use this in a context where all incident nodes have been mapped
+            assert sourceImage != null && targetImage != null;
+            var result = getFactory().createEdge(sourceImage, key.label().toString(), targetImage);
+            putEdge(key, result);
+            return result;
+        }
     }
 }

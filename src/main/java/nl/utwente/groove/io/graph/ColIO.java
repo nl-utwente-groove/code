@@ -31,6 +31,7 @@ import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Graph;
+import nl.utwente.groove.graph.plain.PlainGraph;
 
 /**
  * Reader for graphs in the DIMACS .col graph format.
@@ -66,16 +67,15 @@ public class ColIO extends GraphIO<HostGraph> {
     public HostGraph loadGraph(InputStream in) throws IOException {
         DefaultHostGraph result = new DefaultHostGraph(getGraphName());
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
-            Algebra<?> intAlgebra = AlgebraFamily.getInstance()
-                .getAlgebra(Sort.INT);
+            Algebra<?> intAlgebra = AlgebraFamily.getInstance().getAlgebra(Sort.INT);
             TypeLabel valueLabel = TypeLabel.createBinaryLabel("value");
-            for (String nextLine = reader.readLine(); nextLine != null; nextLine =
-                reader.readLine()) {
+            for (String nextLine = reader.readLine(); nextLine != null;
+                 nextLine = reader.readLine()) {
                 String[] fragments = nextLine.split(" ");
                 if (fragments[0].equals("n")) {
                     HostNode node = addNode(result, fragments[1]);
-                    HostNode valueNode =
-                        result.addNode(intAlgebra, intAlgebra.toValueFromJava(fragments[2]));
+                    HostNode valueNode
+                        = result.addNode(intAlgebra, intAlgebra.toValueFromJava(fragments[2]));
                     result.addEdge(node, valueLabel, valueNode);
                 } else if (fragments[0].equals("e")) {
                     HostNode source = addNode(result, fragments[1]);
@@ -87,9 +87,13 @@ public class ColIO extends GraphIO<HostGraph> {
         return result;
     }
 
+    @Override
+    public PlainGraph loadPlainGraph(InputStream in) throws IOException {
+        return PlainGraph.instance(loadGraph(in));
+    }
+
     private HostNode addNode(HostGraph result, String id) {
-        HostNode node = result.getFactory()
-            .createNode(Integer.parseInt(id));
+        HostNode node = result.getFactory().createNode(Integer.parseInt(id));
         result.addEdge(node, TypeLabel.createLabel(EdgeRole.FLAG, "i" + id), node);
         return node;
     }

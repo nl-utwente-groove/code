@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.graph;
 
+import java.util.HashSet;
 import java.util.Map;
 
 /**
@@ -30,37 +31,57 @@ public interface GraphMap {
      * @return <code>true</code> if the entire map (both the node and the edge
      *         part) is empty.
      */
-    public boolean isEmpty();
+    default public boolean isEmpty() {
+        return nodeMap().isEmpty() && edgeMap().isEmpty();
+    }
 
     /**
      * Returns the combined number of node end edge entries in the map.
      */
-    public int size();
+    default public int size() {
+        return nodeMap().size() + edgeMap().size();
+    }
 
     /**
      * Returns the image for a given node key.
      */
-    public Node getNode(Node key);
+    default public Node getNode(Node key) {
+        return nodeMap().get(key);
+    }
 
     /**
      * Checks if this map contains a given node key.
      */
-    public boolean containsNode(Node key);
+    default public boolean containsNode(Node key) {
+        return nodeMap().containsKey(key);
+    }
 
     /**
      * Returns the image for a given edge key.
      */
-    public Edge getEdge(Edge key);
+    default public Edge getEdge(Edge key) {
+        return edgeMap().get(key);
+    }
 
     /**
      * Checks if this map contains a given edge key.
      */
-    public boolean containsEdge(Edge key);
+    default public boolean containsEdge(Edge key) {
+        return edgeMap().containsKey(key);
+    }
 
     /**
      * Tests whether all keys are mapped to different elements.
      */
-    public boolean isInjective();
+    default public boolean isInjective() {
+        var nodeValues = new HashSet<>(nodeMap().values());
+        var result = nodeMap().size() == nodeValues.size();
+        if (result) {
+            var edgeValues = new HashSet<>(edgeMap().values());
+            result = edgeMap().size() == edgeValues.size();
+        }
+        return result;
+    }
 
     /**
      * Returns the built-in node map.
@@ -72,4 +93,11 @@ public interface GraphMap {
      */
     public Map<? extends Edge,? extends Edge> edgeMap();
 
+    /**
+     * Clears the entire map.
+     */
+    default public void clear() {
+        nodeMap().clear();
+        edgeMap().clear();
+    }
 }

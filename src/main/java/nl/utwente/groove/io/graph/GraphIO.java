@@ -23,6 +23,7 @@ import java.io.InputStream;
 
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
+import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -81,6 +82,13 @@ public abstract class GraphIO<G extends Graph> {
      * Loads a graph from an input stream.
      */
     abstract public G loadGraph(InputStream in) throws FormatException, IOException;
+
+    /**
+     * Loads a {@link PlainGraph} from an input stream.
+     * This is the graph loaded by {@link #loadGraph(InputStream)},
+     * appropriately converted to a {@link PlainGraph}.
+     */
+    abstract public PlainGraph loadPlainGraph(InputStream in) throws IOException;
 
     /** Deletes a file together with further information (such as layout info). */
     public void deleteGraph(File file) {

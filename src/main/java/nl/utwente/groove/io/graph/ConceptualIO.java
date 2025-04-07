@@ -25,10 +25,11 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
+import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.io.FileType;
-import nl.utwente.groove.io.external.ModelPorter;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Imported;
+import nl.utwente.groove.io.external.ModelPorter;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatException;
@@ -76,7 +77,12 @@ public class ConceptualIO extends GraphIO<AspectGraph> {
     }
 
     @Override
-    public AspectGraph loadGraph(InputStream in) throws FormatException, IOException {
+    public AspectGraph loadGraph(InputStream in) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public PlainGraph loadPlainGraph(InputStream in) throws IOException {
         throw new UnsupportedOperationException();
     }
 

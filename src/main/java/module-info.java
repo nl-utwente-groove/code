@@ -112,6 +112,7 @@ module nl.utwente.groove {
     requires transitive fop.core;
 
     opens nl.utwente.groove.explore to args4j;
+    opens nl.utwente.groove.verify to args4j;
     opens nl.utwente.groove.gui to args4j;
     opens nl.utwente.groove.io to args4j;
     opens nl.utwente.groove.match.rete to args4j;

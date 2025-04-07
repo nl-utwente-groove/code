@@ -49,6 +49,7 @@ import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphProperties;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.gui.layout.JEdgeLayout;
 import nl.utwente.groove.gui.layout.JVertexLayout;
 import nl.utwente.groove.gui.layout.LayoutMap;
@@ -319,9 +320,6 @@ public class GxlIO extends GraphIO<AttrGraph> {
         AttrGraph result;
         try (InputStream in = new FileInputStream(file)) {
             result = loadGraph(in);
-        } catch (FormatException exc) {
-            throw new IOException(
-                String.format("Format error while loading '%s':\n%s", file, exc.getMessage()), exc);
         } catch (IOException exc) {
             throw new IOException(
                 String.format("Error while loading '%s':\n%s", file, exc.getMessage()), exc);
@@ -350,10 +348,15 @@ public class GxlIO extends GraphIO<AttrGraph> {
      * <code>loadGraphWithMap(in).first()</code>.
      */
     @Override
-    public AttrGraph loadGraph(InputStream in) throws IOException, FormatException {
+    public AttrGraph loadGraph(InputStream in) throws IOException {
         try {
             GraphType gxlGraph = unmarshal(in);
-            AttrGraph graph = gxlToGraph(gxlGraph);
+            AttrGraph graph;
+            try {
+                graph = gxlToGraph(gxlGraph);
+            } catch (FormatException exc) {
+                throw new IOException(String.format("Format error: %s", exc.getMessage()), exc);
+            }
             String version = GraphInfo.getVersion(graph);
             if (!Version.isKnownGxlVersion(version)) {
                 graph
@@ -364,6 +367,11 @@ public class GxlIO extends GraphIO<AttrGraph> {
         } finally {
             in.close();
         }
+    }
+
+    @Override
+    public PlainGraph loadPlainGraph(InputStream in) throws IOException {
+        return loadGraph(in).toPlainGraph();
     }
 
     /**

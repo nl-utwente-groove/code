@@ -23,6 +23,7 @@ import static nl.utwente.groove.io.FileType.STATE;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -48,6 +49,8 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.plain.PlainGraph;
+import nl.utwente.groove.io.FileType;
+import nl.utwente.groove.io.graph.GraphIO;
 import nl.utwente.groove.io.graph.GxlIO;
 import nl.utwente.groove.io.store.SystemStore;
 
@@ -138,7 +141,17 @@ public class Groove {
      * @throws IOException if <code>file</code> cannot be parsed as a graph
      */
     static public PlainGraph loadGraph(File file) throws IOException {
-        return GxlIO.instance().loadGraph(file).toPlainGraph();
+        GraphIO<?> io = null;
+        var type = FileType.getType(file);
+        if (type != null && type.hasGraphIO() && type.getGraphIO().canLoad()) {
+            io = type.getGraphIO();
+        }
+        if (io == null) {
+            io = GxlIO.instance();
+        }
+        try (var stream = new FileInputStream(file);) {
+            return io.loadPlainGraph(stream);
+        }
     }
 
     /**

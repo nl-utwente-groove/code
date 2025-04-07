@@ -79,17 +79,14 @@ public class AutIO extends GraphIO<PlainGraph> {
             writer.printf("des (%d, %d, %d)%n", 0, graph.edgeCount(), graph.nodeCount());
             for (Edge edge : graph.edgeSet()) {
                 String format;
-                if (edge.label()
-                    .text()
-                    .indexOf(',') >= 0) {
+                if (edge.label().text().indexOf(',') >= 0) {
                     format = "(%d,\"%s\",%d)%n";
                 } else {
                     format = "(%d,%s,%d)%n";
                 }
-                writer.printf(format,
-                    nodeNrMap.get(edge.source()),
-                    edge.label(),
-                    nodeNrMap.get(edge.target()));
+                writer
+                    .printf(format, nodeNrMap.get(edge.source()), edge.label(),
+                            nodeNrMap.get(edge.target()));
             }
         }
     }
@@ -107,24 +104,22 @@ public class AutIO extends GraphIO<PlainGraph> {
             int rootStart = line.indexOf('(') + 1;
             int edgeCountStart = line.indexOf(',') + 1;
             Map<Integer,PlainNode> nodeMap = new HashMap<>();
-            int root = Integer.parseInt(line.substring(rootStart, edgeCountStart - 1)
-                .trim());
+            int root = Integer.parseInt(line.substring(rootStart, edgeCountStart - 1).trim());
             PlainNode rootNode = result.addNode(root);
             nodeMap.put(root, rootNode);
             if (this.rootLabel != null) {
                 result.addEdge(rootNode, this.rootLabel, rootNode);
             }
             for (line = reader.readLine(); line != null; line = reader.readLine()) {
-                if (line.trim()
-                    .length() > 0) {
+                if (line.trim().length() > 0) {
                     int sourceStart = line.indexOf('(') + 1;
                     int labelStart = line.indexOf(',') + 1;
                     int targetStart = line.lastIndexOf(',') + 1;
-                    int source = Integer.parseInt(line.substring(sourceStart, labelStart - 1)
-                        .trim());
+                    int source
+                        = Integer.parseInt(line.substring(sourceStart, labelStart - 1).trim());
                     String label = line.substring(labelStart, targetStart - 1);
-                    int target = Integer.parseInt(line.substring(targetStart, line.lastIndexOf(')'))
-                        .trim());
+                    int target = Integer
+                        .parseInt(line.substring(targetStart, line.lastIndexOf(')')).trim());
                     PlainNode sourceNode = nodeMap.get(source);
                     if (sourceNode == null) {
                         sourceNode = result.addNode(source);
@@ -140,6 +135,11 @@ public class AutIO extends GraphIO<PlainGraph> {
             }
         }
         return result;
+    }
+
+    @Override
+    public PlainGraph loadPlainGraph(InputStream in) throws IOException {
+        return loadGraph(in);
     }
 
     /**

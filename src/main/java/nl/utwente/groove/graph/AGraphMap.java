@@ -17,9 +17,7 @@
 package nl.utwente.groove.graph;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -42,47 +40,12 @@ abstract public class AGraphMap<SN extends Node,SE extends Edge,TN extends Node,
         this.identity = true;
     }
 
-    /**
-     * Clears the entire map.
-     */
-    public void clear() {
-        nodeMap().clear();
-        edgeMap().clear();
-    }
-
-    /**
-     * Tests if the entire map is empty.
-     * @return <code>true</code> if the entire map (both the node and the edge
-     *         part) is empty.
-     */
-    @Override
-    public boolean isEmpty() {
-        return nodeMap().isEmpty() && edgeMap().isEmpty();
-    }
-
-    /**
-     * Returns the combined number of node end edge entries in the map.
-     */
-    @Override
-    public int size() {
-        return nodeMap().size() + edgeMap().size();
-    }
-
-    @Override
-    public boolean containsNode(Node key) {
-        return nodeMap().containsKey(key);
-    }
-
-    @Override
-    public boolean containsEdge(Edge key) {
-        return edgeMap().containsKey(key);
-    }
-
     @Override
     public @Nullable TN getNode(Node key) {
         return nodeMap().get(key);
     }
 
+    /* Specializes the return type. */
     @Override
     public @Nullable TE getEdge(Edge key) {
         return edgeMap().get(key);
@@ -131,15 +94,6 @@ abstract public class AGraphMap<SN extends Node,SE extends Edge,TN extends Node,
     }
 
     private boolean identity;
-
-    /**
-     * Indicates if all keys are mapped to different elements.
-     */
-    @Override
-    public boolean isInjective() {
-        Set<TN> nodeValues = new HashSet<>(nodeMap().values());
-        return nodeMap().size() == nodeValues.size();
-    }
 
     /**
      * Tests for equality of the node and edge maps.
