@@ -78,6 +78,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
             transformer.addListener(new GenerateProgressListener());
         }
         ExploreResult result = transformer.explore(getStartGraphs());
+        emit("%nExploration finished%n");
         getReporter().report();
         return result;
     }
@@ -426,15 +427,20 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     /** Usage message for the strategy option. */
     public final static String STRATEGY_USAGE
         = "Set the exploration strategy to <strgy>. Legal values are:\n"
-            + "  bfs         - Breadth-first Exploration\n" //
-            + "  dfs         - Depth-first Exploration\n" //
+            + "  bfs[:n]     - Optionally bounded Breadth-First exploration: "
+            + "                if n>0, exploration stops at depth n\n" //
+            + "  dfs[:n]     - Optionally bounded Depth-First exploration: "
+            + "                if n>0, exploration stops at depth n\n" //
             + "  linear      - Linear\n" //
             + "  random      - Random linear\n" //
             + "  uptorule:[dfs|bds][->|=>][!]id\n" //
-            + "              - BFS or DFS up to (->) or including (=>) states where rule <id> is or is not (!) applicable\n" //
-            + "  cnbound:n   - BFS up to (but not including) graphs with more than <n> nodes\n" //
+            + "              - BFS or DFS up to (for ->) or including (for =>) states "
+            + "                where rule <id> is or is not (!) applicable\n" //
+            + "  cnbound:n   - BFS up to (but not including) graphs with "
+            + "                more than <n> nodes\n" //
             + "  cebound:id_1>n_1,...,id_k>n_k\n" //
-            + "              - BFS up to (but not including) graphs with more than <n_i> <id_i>-edges, for all i in 1..k\n"
+            + "              - BFS up to (but not including) graphs with "
+            + "                more than <n_i> <id_i>-edges, for all i in 1..k\n"
             + "  ltl:prop    - LTL Model Checking\n" //
             + "  ltlbounded:idn,...;prop\n" //
             + "              - Bounded LTL Model Checking\n" //

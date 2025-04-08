@@ -73,11 +73,10 @@ public class SymbolicStrategy extends GTSStrategy {
         super.prepare(gts, state, acceptor);
         // Check if the point algebra is set. This should be moved to the hook
         // in an upcoming feature
-        if (getGTS().getGrammar()
-            .getProperties()
-            .getAlgebraFamily() != AlgebraFamily.POINT) {
-            System.err.print("Grammar AlgebraFamily property should be point,"
-                + "if the SymbolicStrategy is used.");
+        if (getGTS().getGrammar().getProperties().getAlgebraFamily() != AlgebraFamily.POINT) {
+            System.err
+                .print("Grammar AlgebraFamily property should be point,"
+                    + "if the SymbolicStrategy is used.");
             return;
         }
 
@@ -86,8 +85,7 @@ public class SymbolicStrategy extends GTSStrategy {
         }
         this.strategy.prepare(gts, state, acceptor);
         this.sts = new STS();
-        this.sts.hostGraphToStartLocation(getGTS().getGrammar()
-            .getStartGraph());
+        this.sts.hostGraphToStartLocation(getGTS().getGrammar().getStartGraph());
     }
 
     @Override
@@ -109,21 +107,19 @@ public class SymbolicStrategy extends GTSStrategy {
                 for (MatchResult next : matches) {
                     SwitchRelation sr = null;
                     try {
-                        sr = this.sts.ruleMatchToSwitchRelation(getNextState().getGraph(),
-                            next,
-                            higherPriorityRelations);
+                        sr = this.sts
+                            .ruleMatchToSwitchRelation(getNextState().getGraph(), next,
+                                                       higherPriorityRelations);
                     } catch (STSException e) {
                         // TODO: handle this exception
                         throw new IllegalStateException(e);
                     }
-                    if (sr.getGuard()
-                        .isEmpty()) {
+                    if (sr.getGuard().isEmpty()) {
                         emptyGuard = true;
                     }
                     temp.add(sr);
                     RuleTransition transition = getNextState().applyMatch(next);
-                    Location l = this.sts.hostGraphToLocation(transition.target()
-                        .getGraph());
+                    Location l = this.sts.hostGraphToLocation(transition.target().getGraph());
                     current.addSwitchRelation(sr, l);
                 }
                 if (emptyGuard) {
@@ -154,23 +150,17 @@ public class SymbolicStrategy extends GTSStrategy {
      * Turns a collection of match results into a list of collections of match
      * results, ordered by rule priority.
      */
-    private List<Collection<? extends MatchResult>> createPriorityGroups(
-        Collection<? extends MatchResult> matches) {
+    private List<Collection<? extends MatchResult>> createPriorityGroups(Collection<? extends MatchResult> matches) {
         List<MatchResult> sortedMatches = new ArrayList<>(matches);
         Collections.sort(sortedMatches, new PriorityComparator());
-        List<Collection<? extends MatchResult>> priorityGroups =
-            new ArrayList<>();
-        int priority = sortedMatches.get(0)
-            .getAction()
-            .getPriority();
+        List<Collection<? extends MatchResult>> priorityGroups = new ArrayList<>();
+        int priority = sortedMatches.get(0).getAction().getPriority();
         Collection<MatchResult> current = new HashSet<>();
         for (MatchResult match : sortedMatches) {
-            if (match.getAction()
-                .getPriority() != priority) {
+            if (match.getAction().getPriority() != priority) {
                 priorityGroups.add(current);
                 current = new HashSet<>();
-                priority = match.getAction()
-                    .getPriority();
+                priority = match.getAction().getPriority();
             }
             current.add(match);
         }
@@ -182,10 +172,7 @@ public class SymbolicStrategy extends GTSStrategy {
     private class PriorityComparator implements Comparator<MatchResult> {
         @Override
         public int compare(MatchResult res1, MatchResult res2) {
-            return res2.getAction()
-                .getPriority()
-                - res1.getAction()
-                    .getPriority();
+            return res2.getAction().getPriority() - res1.getAction().getPriority();
         }
 
         @Override

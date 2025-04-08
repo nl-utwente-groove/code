@@ -121,6 +121,11 @@ public class StringConsumer {
         }
     }
 
+    @Override
+    public String toString() {
+        return "StringConsumer [text=" + this.text + ", lastConsumed=" + this.lastConsumed + "]";
+    }
+
     /**
      * Returns an identifier at the beginning of a string.
      * Returns {@code null} if no identifier was found.

@@ -37,6 +37,7 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.gui.dialog.ExplorationDialog;
 import nl.utwente.groove.gui.layout.SpringUtilities;
 import nl.utwente.groove.io.HTMLConverter.HTMLTag;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -79,6 +80,31 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         this.argumentNames = argumentNames;
         this.argumentTypes = new TreeMap<>();
     }
+
+    /**
+     * Indicates if arguments for this template are optional.
+     * If arguments are optional, an absent ':' in the strategy descriptor
+     * means there are no arguments.
+     */
+    public boolean isOptional() {
+        return this.optional;
+    }
+
+    /**
+     * Sets the template to optional.
+     * @see #isOptional()
+     */
+    public void setOptional() {
+        if (!this.commandlineParser.hasDefault()) {
+            throw Exceptions.illegalState("Optional template needs a parser with default value");
+        }
+        this.optional = true;
+    }
+
+    /** Flag indicating that arguments are optional.
+     * @see #isOptional()
+     */
+    private boolean optional;
 
     /**
      * Sets the type of an argument, which can be an arbitrary type that has a
@@ -168,6 +194,10 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
                 return null;
             }
         }
+        if (isOptional() && stream.isEmpty()) {
+            this.commandlineParser.setDefault(result);
+            return result;
+        }
         if (!stream.consumeLiteral(":")) {
             return null;
         }
@@ -184,8 +214,9 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
      */
     String toParsableString(Serialized source) {
         String result = getKeyword();
-        if (this.commandlineParser != null) {
-            result += ":" + this.commandlineParser.toParsableString(source);
+        var parser = this.commandlineParser;
+        if (parser != null && !parser.containsDefault(source)) {
+            result += ":" + parser.toParsableString(source);
         }
         return result;
     }

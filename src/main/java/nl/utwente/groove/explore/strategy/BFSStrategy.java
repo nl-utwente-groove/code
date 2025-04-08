@@ -33,21 +33,44 @@ public class BFSStrategy extends ClosingStrategy {
      */
     public BFSStrategy(StopMode stopMode, Predicate<GraphState> exploreCondition) {
         super(stopMode, exploreCondition);
+        this.bound = 0;
     }
 
-    /** Instantiates an unconditional breadth-first strategy. */
+    /**
+     * Instantiates an unconditional, unbounded breadth-first strategy.
+     */
     public BFSStrategy() {
-        // empty
+        this(0);
     }
+
+    /**
+     * Instantiates an unconditional, optionally bounded breadth-first strategy.
+     * @param bound depth to which BFS continues; if 0, exploration is unbounded
+     */
+    public BFSStrategy(int bound) {
+        this.bound = bound;
+    }
+
+    private final int bound;
 
     @Override
     protected GraphState getFromPool() {
-        return this.stateQueue.poll();
+        var result = this.stateQueue.poll();
+        if (result == null) {
+            // go to the next-depth queue
+            this.stateQueue = this.nextDepthStateQueue;
+            this.nextDepthStateQueue = new LinkedList<>();
+            this.depth++;
+            result = this.stateQueue.poll();
+        }
+        return result;
     }
 
     @Override
     protected void putInPool(GraphState state) {
-        this.stateQueue.offer(state);
+        if (this.bound == 0 || this.depth < this.bound - 1) {
+            this.nextDepthStateQueue.offer(state);
+        }
     }
 
     @Override
@@ -59,11 +82,17 @@ public class BFSStrategy extends ClosingStrategy {
     @Override
     protected void clearPool() {
         this.stateQueue.clear();
+        this.nextDepthStateQueue.clear();
     }
 
     /**
-     * Queue of states to be explored. The set of outgoing transitions of the
-     * parent state is included with each state.
+     * Queue of current-depth states to be explored.
      */
-    private final LinkedList<GraphState> stateQueue = new LinkedList<>();
+    private LinkedList<GraphState> stateQueue = new LinkedList<>();
+    /**
+     * Queue of next-depth states to be explored.
+     */
+    private LinkedList<GraphState> nextDepthStateQueue = new LinkedList<>();
+    /** Exploration depth of the current state queue. */
+    private int depth;
 }

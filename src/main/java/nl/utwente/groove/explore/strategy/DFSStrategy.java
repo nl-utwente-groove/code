@@ -16,7 +16,8 @@
  */
 package nl.utwente.groove.explore.strategy;
 
-import java.util.Stack;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.function.Predicate;
 
 import nl.utwente.groove.lts.GraphState;
@@ -40,12 +41,22 @@ public class DFSStrategy extends ClosingStrategy {
      */
     public DFSStrategy(StopMode moment, Predicate<GraphState> exploreCondition) {
         super(moment, exploreCondition);
+        this.bound = 0;
     }
 
-    /** Instantiates an unconditional depth-first strategy. */
+    /** Instantiates an unconditional, unbounded depth-first strategy. */
     public DFSStrategy() {
-        // empty
+        this(0);
     }
+
+    /** Instantiates an unconditional, optionally bounded depth-first strategy.
+     * @param bound depth to which DFS continues; if 0, exploration is unbounded
+     */
+    public DFSStrategy(int bound) {
+        this.bound = bound;
+    }
+
+    private final int bound;
 
     @Override
     protected GraphState getFromPool() {
@@ -58,7 +69,9 @@ public class DFSStrategy extends ClosingStrategy {
 
     @Override
     protected void putInPool(GraphState state) {
-        this.stack.push(state);
+        if (this.bound == 0 || this.stack.size() < this.bound) {
+            this.stack.push(state);
+        }
     }
 
     @Override
@@ -72,5 +85,5 @@ public class DFSStrategy extends ClosingStrategy {
         this.stack.clear();
     }
 
-    private final Stack<GraphState> stack = new Stack<>();
+    private final Deque<GraphState> stack = new LinkedList<>();
 }

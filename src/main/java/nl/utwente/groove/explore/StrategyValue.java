@@ -61,11 +61,13 @@ public enum StrategyValue implements ParsableValue {
     /** Standard breadth-first strategy. */
     BFS("bfs", "Breadth-First Exploration",
         "This strategy first generates all possible transitions from each "
-            + "open state, and then continues in a breadth-first fashion."),
+            + "open state, and then continues in a breadth-first fashion. "
+            + "A non-zero bound makes exploration stop at the indicated depth."),
     /** Standard depth-first strategy. */
     DFS("dfs", "Depth-First Exploration",
         "This strategy first generates all possible transitions from each "
-            + "open state, and then continues in a depth-first fashion."),
+            + "open state, and then continues in a depth-first fashion. "
+            + "A non-zero bound makes exploration stop at the indicated depth."),
     /** Linear strategy. */
     LINEAR("linear", "Linear Exploration",
         "This strategy chooses one transition from each open state. "
@@ -201,18 +203,24 @@ public enum StrategyValue implements ParsableValue {
             };
 
         case BFS:
-            return new MyTemplate0() {
+            return new MyTemplate1<>(new PNumber("bound", 0), "bound", new EncodedInt(0, -1),
+                true) {
                 @Override
-                public Strategy create() {
-                    return new BFSStrategy();
+                public Strategy create(Integer arg) {
+                    return new BFSStrategy(arg == null
+                        ? 0
+                        : arg);
                 }
             };
 
         case DFS:
-            return new MyTemplate0() {
+            return new MyTemplate1<>(new PNumber("bound", 0), "bound", new EncodedInt(0, -1),
+                true) {
                 @Override
-                public Strategy create() {
-                    return new DFSStrategy();
+                public Strategy create(Integer arg) {
+                    return new DFSStrategy(arg == null
+                        ? 0
+                        : arg);
                 }
             };
 
@@ -408,8 +416,17 @@ public enum StrategyValue implements ParsableValue {
 
     /** Specialised 1-parameter template that uses the strategy value's keyword, name and description. */
     abstract private class MyTemplate1<T1> extends Template1<Strategy,T1> {
-        public MyTemplate1(SerializedParser parser, String name, EncodedType<T1,String> type) {
+        MyTemplate1(SerializedParser parser, String name, EncodedType<T1,String> type) {
+            this(parser, name, type, false);
+        }
+
+        /** Constructor with flag to make arguments optional. */
+        MyTemplate1(SerializedParser parser, String name, EncodedType<T1,String> type,
+                    boolean optional) {
             super(StrategyValue.this, parser, name, type);
+            if (optional) {
+                setOptional();
+            }
         }
     }
 
