@@ -467,7 +467,7 @@ public class Rule implements Action, Fixable {
      * Convenience method for <code>getMatchIter(host, null).hasNext()</code>
      */
     final public boolean hasMatch(HostGraph host) {
-        return this.condition.isGround() && getMatch(host, null) != null;
+        return this.condition.getInputNodes().isEmpty() && getMatch(host, null) != null;
     }
 
     @Override

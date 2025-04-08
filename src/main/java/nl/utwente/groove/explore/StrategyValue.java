@@ -30,6 +30,7 @@ import nl.utwente.groove.explore.prettyparse.PIdentifier;
 import nl.utwente.groove.explore.prettyparse.PLiteral;
 import nl.utwente.groove.explore.prettyparse.PNumber;
 import nl.utwente.groove.explore.prettyparse.POptional;
+import nl.utwente.groove.explore.prettyparse.POptionalNumber;
 import nl.utwente.groove.explore.prettyparse.PSeparated;
 import nl.utwente.groove.explore.prettyparse.PSequence;
 import nl.utwente.groove.explore.prettyparse.SerializedParser;
@@ -93,7 +94,7 @@ public enum StrategyValue implements ParsableValue {
             + "The transition is chosen randomly."),
     /** BFS or DFS exploration up to (and possibly including) a rule-based condition. */
     UPTO_RULE("uptorule", "Exploration Up To Rule Applicability",
-        "This strategy performs a conditional (depth- or breadth-first) exploration. "
+        "This strategy performs a conditional, optionally bounded, depth- or breadth-first exploration. "
             + "A state is <i>hit</i> if a given rule is [not] applicable. "
             + "A hit state is either not explored ('up to') or the last one to be explored ('include'). "
             + "The rule in question does not have to be scheduled to be used for this purpose. "
@@ -249,14 +250,17 @@ public enum StrategyValue implements ParsableValue {
             };
 
         case UPTO_RULE:
-            return new MyTemplate4<>(
-                new PSequence(new PIdentifier("search"),
+            return new MyTemplate5<>(
+                new PSequence(
+                    new PChoice(new PLiteral("bfs", "search"), new PLiteral("dfs", "search")),
+                    new POptionalNumber("bound", 0),
                     new PChoice(new PLiteral("=>", "stop"), new PLiteral("->", "stop")),
                     new POptional("!", "polarity", EncodedPolarity.NEGATIVE,
                         EncodedPolarity.POSITIVE),
                     new PIdentifier("rule")),
                 "rule", new EncodedEnabledRule(), "polarity", new EncodedPolarity(), "search",
-                new EncodedSearchMode(), "stop", new EncodedStopMode()) {
+                new EncodedSearchMode(), "stop", new EncodedStopMode(), "bound",
+                new EncodedInt(0, -1)) {
 
                 @Override
                 public Strategy create(Object[] arguments) {
@@ -264,10 +268,15 @@ public enum StrategyValue implements ParsableValue {
                     var polarity = (Boolean) arguments[1];
                     var search = (SearchMode) arguments[2];
                     var stop = (StopMode) arguments[3];
+                    var bound = (Integer) arguments[4];
                     var condition = new IsRuleApplicableCondition(rule, polarity);
                     return switch (search) {
-                    case BFS -> new BFSStrategy(stop, condition);
-                    case DFS -> new DFSStrategy(stop, condition);
+                    case BFS -> new BFSStrategy(stop, condition, bound == null
+                        ? 0
+                        : bound);
+                    case DFS -> new DFSStrategy(stop, condition, bound == null
+                        ? 0
+                        : bound);
                     };
                 }
             };
@@ -280,7 +289,7 @@ public enum StrategyValue implements ParsableValue {
 
                 @Override
                 public Strategy create(Rule rule, Boolean polarity) {
-                    return new BFSStrategy(UP_TO, new IsRuleApplicableCondition(rule, polarity));
+                    return new BFSStrategy(UP_TO, new IsRuleApplicableCondition(rule, polarity), 0);
                 }
             };
 
@@ -290,7 +299,7 @@ public enum StrategyValue implements ParsableValue {
 
                 @Override
                 public Strategy create(Integer bound) {
-                    return new BFSStrategy(UP_TO, new NodeBoundCondition(bound));
+                    return new BFSStrategy(UP_TO, new NodeBoundCondition(bound), 0);
                 }
             };
 
@@ -301,7 +310,7 @@ public enum StrategyValue implements ParsableValue {
 
                 @Override
                 public Strategy create(Map<TypeLabel,Integer> bounds) {
-                    return new BFSStrategy(UP_TO, new EdgeBoundCondition(bounds));
+                    return new BFSStrategy(UP_TO, new EdgeBoundCondition(bounds), 0);
                 }
             };
 
@@ -439,6 +448,7 @@ public enum StrategyValue implements ParsableValue {
     }
 
     /** Specialised 4-parameter template that uses the strategy value's keyword, name and description. */
+    @SuppressWarnings("unused")
     abstract private class MyTemplate4<T1,T2,T3,T4> extends TemplateN<Strategy> {
         public MyTemplate4(SerializedParser parser, String name1, EncodedType<T1,String> type1,
                            String name2, EncodedType<T2,String> type2, String name3,

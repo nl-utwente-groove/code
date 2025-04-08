@@ -38,10 +38,11 @@ public class DFSStrategy extends ClosingStrategy {
      * and a moment at which to apply it.
      * @param moment moment at which to apply the condition
      * @param exploreCondition exploration continues for every state satisfying it
+     * @param bound depth to which DFS continues; if 0, exploration is unbounded
      */
-    public DFSStrategy(StopMode moment, Predicate<GraphState> exploreCondition) {
+    public DFSStrategy(StopMode moment, Predicate<GraphState> exploreCondition, int bound) {
         super(moment, exploreCondition);
-        this.bound = 0;
+        this.bound = bound;
     }
 
     /** Instantiates an unconditional, unbounded depth-first strategy. */

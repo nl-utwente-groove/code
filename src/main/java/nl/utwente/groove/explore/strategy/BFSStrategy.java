@@ -30,10 +30,11 @@ public class BFSStrategy extends ClosingStrategy {
      * and a moment at which to apply it.
      * @param stopMode moment at which to apply the condition
      * @param exploreCondition exploration continues for every state satisfying it
+     * @param bound depth to which BFS continues; if 0, exploration is unbounded
      */
-    public BFSStrategy(StopMode stopMode, Predicate<GraphState> exploreCondition) {
+    public BFSStrategy(StopMode stopMode, Predicate<GraphState> exploreCondition, int bound) {
         super(stopMode, exploreCondition);
-        this.bound = 0;
+        this.bound = bound;
     }
 
     /**
