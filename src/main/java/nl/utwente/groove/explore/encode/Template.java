@@ -438,11 +438,16 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
                     + "' and '" + getKeyword() + "'.");
             }
 
-            try {
-                v1 = this.type1.parse(rules, source.getArgument(this.name1));
-            } catch (FormatException exc) {
-                exc.insert(new FormatException(argumentError(this.name1)));
-                throw exc;
+            var arg = source.getArgument(this.name1);
+            if (arg.isEmpty() && isOptional()) {
+                v1 = null;
+            } else {
+                try {
+                    v1 = this.type1.parse(rules, arg);
+                } catch (FormatException exc) {
+                    exc.insert(new FormatException(argumentError(this.name1)));
+                    throw exc;
+                }
             }
 
             return create(v1);
@@ -450,9 +455,11 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
 
         @Override
         public Serialized toSerialized(Object... args) {
-            assert args.length == 1;
+            assert isOptional() && args.length == 0 || args.length == 1;
             Serialized result = getValue().toSerialized();
-            result.setArgument(this.name1, args[0].toString());
+            if (args.length == 1) {
+                result.setArgument(this.name1, args[0].toString());
+            }
             return result;
         }
 
