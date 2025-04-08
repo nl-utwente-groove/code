@@ -60,17 +60,25 @@ public class DFSStrategy extends ClosingStrategy {
 
     @Override
     protected GraphState getFromPool() {
-        if (this.stack.isEmpty()) {
-            return null;
-        } else {
-            return this.stack.pop();
+        var result = this.stack.poll();
+        if (result != null) {
+            int remaining;
+            do {
+                remaining = this.levelCount.pop();
+                if (remaining > 0) {
+                    this.levelCount.push(remaining - 1);
+                    this.levelCount.push(0);
+                }
+            } while (remaining == 0);
         }
+        return result;
     }
 
     @Override
     protected void putInPool(GraphState state) {
-        if (this.bound == 0 || this.stack.size() < this.bound) {
+        if (this.bound == 0 || this.levelCount.size() - 1 < this.bound) {
             this.stack.push(state);
+            this.levelCount.push(this.levelCount.pop() + 1);
         }
     }
 
@@ -78,6 +86,7 @@ public class DFSStrategy extends ClosingStrategy {
     protected void putBackInPool(GraphState state) {
         // the same as putInPool
         this.stack.push(state);
+        this.levelCount.push(this.levelCount.pop() + 1);
     }
 
     @Override
@@ -85,5 +94,9 @@ public class DFSStrategy extends ClosingStrategy {
         this.stack.clear();
     }
 
+    private final Deque<Integer> levelCount = new LinkedList<>();
+    {
+        this.levelCount.push(0);
+    }
     private final Deque<GraphState> stack = new LinkedList<>();
 }
