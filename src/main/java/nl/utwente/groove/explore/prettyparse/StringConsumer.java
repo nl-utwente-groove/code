@@ -183,7 +183,7 @@ public class StringConsumer {
      * identifier.
      */
     private static boolean isIdentChar(char c) {
-        return isIdentEndChar(c) || c == '-';
+        return isIdentEndChar(c) || c == '-' || c == '.';
     }
 
     /**
