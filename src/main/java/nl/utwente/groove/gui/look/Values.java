@@ -184,6 +184,8 @@ public class Values {
     static public final Color FORBIDDEN_COLOR = ERROR_COLOR;
     /** Colour of invariant property labels. */
     static public final Color INVARIANT_COLOR = CREATOR_FOREGROUND;
+    /** Grayed-out foreground color. */
+    static public final Color GRAYED_OUT_COLOR = Colors.findColor("200 200 200 100");
 
     /** Line style that always makes right edges. */
     public static final int STYLE_MANHATTAN = 14;

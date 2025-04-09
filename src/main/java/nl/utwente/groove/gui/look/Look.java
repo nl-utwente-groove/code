@@ -28,7 +28,6 @@ import java.util.Set;
 import nl.utwente.groove.grammar.aspect.Aspect;
 import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.gui.look.VisualKey.Nature;
-import nl.utwente.groove.util.Colors;
 import nl.utwente.groove.util.NodeShape;
 
 /**
@@ -323,7 +322,7 @@ public enum Look {
     GRAYED_OUT {
         @Override
         void init() {
-            add(VisualKey.FOREGROUND, Colors.findColor("200 200 200 100"));
+            add(VisualKey.FOREGROUND, Values.GRAYED_OUT_COLOR);
             add(VisualKey.OPAQUE, false);
         }
     };
