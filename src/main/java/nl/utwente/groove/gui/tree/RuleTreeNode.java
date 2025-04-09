@@ -223,7 +223,8 @@ class RuleTreeNode extends ActionTreeNode {
             : isFragment()
                 ? INGREDIENT_SUFFIX
                 : RULE_SUFFIX;
-        var result = getDisplay().getLabelText(getQualName(), suffix, getStatus().isEnabled());
+        var result
+            = getDisplay().getLabelText(getQualName(), suffix, getStatus().isEnabled(), false);
         if (getRuleGraph().getProperties().isNotable()) {
             result += "  " + INFO_SYMBOL;
         }

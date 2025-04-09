@@ -420,8 +420,10 @@ public class VisualMap extends DefaultFixable {
      */
     public Color getForeground() {
         Color result = getColor();
-        if (result == null) {
-            result = (Color) get(VisualKey.FOREGROUND);
+        Color mapColor = (Color) get(VisualKey.FOREGROUND);
+        if (result == null || mapColor == Values.GRAYED_OUT_COLOR) {
+            // graying out trumps special colour
+            result = mapColor;
         }
         return result;
     }
