@@ -21,6 +21,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
+import nl.utwente.groove.gui.tree.AbstractResourceTree.FolderTreeNode;
+
 /** Superclass for tree nodes in a display-related list. */
 class DisplayTreeNode extends DefaultMutableTreeNode {
     /** Constructor for an empty node. */
@@ -75,13 +77,22 @@ class DisplayTreeNode extends DefaultMutableTreeNode {
         while (lower < upper) {
             int mid = (lower + upper) / 2;
             TreeNode midChild = getChildAt(mid);
-            if (child.toString().compareTo(midChild.toString()) < 0) {
+            if (smallerThan(child, midChild)) {
                 upper = mid;
             } else {
                 lower = mid + 1;
             }
         }
         insert(child, lower);
+    }
+
+    private boolean smallerThan(TreeNode one, TreeNode two) {
+        boolean oneIsDir = one instanceof FolderTreeNode;
+        boolean twoIsDir = two instanceof FolderTreeNode;
+        if (oneIsDir != twoIsDir) {
+            return oneIsDir;
+        }
+        return one.toString().compareTo(two.toString()) < 0;
     }
 
     /** Diaplay status of a tree node. */
