@@ -45,13 +45,14 @@ public class LogReporter extends AExplorationReporter {
      * Constructs a log reporter with a verbosity level
      * and a (possibly empty) file name
      * @param verbosity the verbosity with which messages are printed on standard output
-     * @param logDir if not {@code null}, the name of a directory into which a log file should be written
+     * @param logDir if not {@code null}, the name of a directory into which a log file should be written.
+     * Providing a log dir will also set the space profiling precision flag, meaning longer reporting time
      */
     public LogReporter(String[] args, Verbosity verbosity, File logDir) {
         this.args = args;
         this.verbosity = verbosity;
         this.logDir = logDir;
-        this.exploreStats = new StatisticsReporter(verbosity);
+        this.exploreStats = new StatisticsReporter(verbosity, logDir != null);
     }
 
     @Override
@@ -97,6 +98,9 @@ public class LogReporter extends AExplorationReporter {
 
     @Override
     public void report() throws IOException {
+        if (TIME) {
+            time("Reporting statistics");
+        }
         this.exploreStats.report();
         // First report the statistics on the standard output
         // Note that this is not done using emit because the log
@@ -106,6 +110,9 @@ public class LogReporter extends AExplorationReporter {
         }
         // now write to the log file, if any
         if (this.log != null) {
+            if (TIME) {
+                emit("Exporting log to " + this.log);
+            }
             // copy the (high-verbosity) exploration statistics to the log
             String report = this.exploreStats.getReport(HIGH);
             if (report.length() > 0) {
