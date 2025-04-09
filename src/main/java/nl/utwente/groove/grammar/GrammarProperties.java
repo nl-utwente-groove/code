@@ -578,7 +578,6 @@ public class GrammarProperties extends Properties {
         boolean hasChanged = false;
         var activeNames = new HashSet<>(getActiveNames(kind));
         if (activeNames.remove(oldName)) {
-            hasChanged = true;
             activeNames.add(newName);
             var orderedActiveNames = new ArrayList<>(activeNames);
             orderedActiveNames.sort(null);
@@ -587,12 +586,22 @@ public class GrammarProperties extends Properties {
         }
         // change the control labels
         if (kind == ResourceKind.RULE) {
+            // change rule names in the policy map
             var actionPolicy = new PolicyMap();
             actionPolicy.putAll(getRulePolicy());
             var namePolicy = actionPolicy.remove(oldName);
             if (namePolicy != null) {
                 actionPolicy.put(newName, namePolicy);
                 result.setRulePolicy(actionPolicy);
+                hasChanged = true;
+            }
+            // change rule names in the disabled rules
+            var disabledRules = new HashSet<>(getDisabledRules());
+            if (disabledRules.remove(oldName)) {
+                disabledRules.add(newName);
+                var orderedDisabledRules = new ArrayList<>(disabledRules);
+                orderedDisabledRules.sort(null);
+                result.setDisabledRules(orderedDisabledRules);
                 hasChanged = true;
             }
         }
