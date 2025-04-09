@@ -58,9 +58,6 @@ public class StatisticsReporter extends AExplorationReporter {
     // Static Fields
     // ------------------------------------------------------------------------
 
-    /** Number of bytes in a kilobyte. */
-    private static final int BYTES_PER_KB = 1024;
-
     // ------------------------------------------------------------------------
     // Object Fields
     // ------------------------------------------------------------------------
@@ -84,17 +81,32 @@ public class StatisticsReporter extends AExplorationReporter {
     /**
      * Constructs a exploration statistics object at a
      * given verbosity level.
+     * @param preciseSpace flag determining whether space usage is reported precisely
+     * (which may consume a lot of time in case of large state space)
      */
-    public StatisticsReporter(Verbosity verbosity) {
+    public StatisticsReporter(Verbosity verbosity, boolean preciseSpace) {
         this.verbosity = verbosity;
+        this.preciseSpace = preciseSpace;
     }
 
     /**
      * Constructs a exploration statistics object with high verbosity.
+     * @param preciseSpace flag determining whether space usage is reported precisely
+     * (which may consume a lot of time in case of large state space)
+     */
+    public StatisticsReporter(boolean preciseSpace) {
+        this(Verbosity.HIGH, preciseSpace);
+    }
+
+    /**
+     * Constructs a exploration statistics object with high verbosity
+     * but low space precision.
      */
     public StatisticsReporter() {
-        this(Verbosity.HIGH);
+        this(false);
     }
+
+    private final boolean preciseSpace;
 
     /** Starts up the reporter, for a given GTS. */
     @Override
@@ -157,6 +169,9 @@ public class StatisticsReporter extends AExplorationReporter {
     }
 
     private void reportProfiling() {
+        if (TIME) {
+            time("Reporting the profile");
+        }
         emit(HIGH, "%n");
         if (this.sbVerbosity.isHigh()) {
             StringWriter sw = new StringWriter();
@@ -169,6 +184,9 @@ public class StatisticsReporter extends AExplorationReporter {
 
     private void reportStatistics() {
         if (Groove.GATHER_STATISTICS) {
+            if (TIME) {
+                time("Reporting detailed statistics");
+            }
             reportGraphStatistics();
             reportGraphElementStatistics();
             reportTransitionStatistics();
@@ -196,23 +214,44 @@ public class StatisticsReporter extends AExplorationReporter {
 
     /** Reports data on the LTS generated. */
     private void reportLTS() {
+        if (TIME) {
+            time("Reporting LTS data");
+        }
         String formatString = "%-14s%d%n";
         String subFormatString = "    " + formatString;
         emit(MEDIUM, "%n");
+        if (TIME) {
+            time("Reporting state count");
+        }
         emit(MEDIUM, formatString, "States:", getGTS().getStateCount());
         if (getGTS().hasOpenStates()) {
+            if (TIME) {
+                time("Reporting closed states");
+            }
             emit(HIGH, subFormatString, "Closed:",
                  getGTS().getStateCount() - getGTS().getOpenStateCount());
         }
         ExploreResult result = getExploration().getResult();
         if (!result.isEmpty()) {
+            if (TIME) {
+                time("Reporting result size");
+            }
             emit(HIGH, subFormatString, "Result:", result.size());
         }
         if (getGTS().hasErrorStates()) {
+            if (TIME) {
+                time("Reporting error states");
+            }
             emit(HIGH, subFormatString, "Errors:", getGTS().getErrorStateCount());
         }
         if (getGTS().hasFinalStates()) {
+            if (TIME) {
+                time("Reporting final state count");
+            }
             emit(HIGH, subFormatString, "Final:", getGTS().getFinalStateCount());
+        }
+        if (TIME) {
+            time("Reporting transition count");
         }
         emit(MEDIUM, formatString, "Transitions:", getGTS().getTransitionCount());
     }
@@ -299,6 +338,9 @@ public class StatisticsReporter extends AExplorationReporter {
 
     /** Reports on the time usage. */
     private void reportTime() {
+        if (TIME) {
+            time("Reporting time usage");
+        }
         // Timing figures.
         long total = Exploration.getRunningTime();
         long matching = Rule.getMatchingTime();
@@ -342,14 +384,19 @@ public class StatisticsReporter extends AExplorationReporter {
      * Reports on the space usage.
      */
     private void reportSpace() {
+        if (TIME) {
+            time("Reporting space usage");
+        }
         final Runtime runTime = Runtime.getRuntime();
-        // Clear all caches to see all available memory.
-        for (GraphState state : getGTS().nodeSet()) {
-            if (state instanceof AbstractCacheHolder<?> ch) {
-                ch.clearCache();
-            }
-            if (state instanceof GraphNextState ns) {
-                ((AbstractCacheHolder<?>) ns.getEvent()).clearCache();
+        if (this.preciseSpace) {
+            // Clear all caches to see all available memory.
+            for (GraphState state : getGTS().nodeSet()) {
+                if (state instanceof AbstractCacheHolder<?> ch) {
+                    ch.clearCache();
+                }
+                if (state instanceof GraphNextState ns) {
+                    ((AbstractCacheHolder<?>) ns.getEvent()).clearCache();
+                }
             }
         }
         // The following is to make sure that the graph reference queue gets
@@ -471,5 +518,12 @@ public class StatisticsReporter extends AExplorationReporter {
 
         private int nodeCount;
         private int edgeCount;
+        // ------------------------------------------------------------------------
+        // Static Fields
+        // ------------------------------------------------------------------------
+
     }
+
+    /** Number of bytes in a kilobyte. */
+    private static final int BYTES_PER_KB = 1024;
 }
