@@ -62,6 +62,7 @@ import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Version;
+import nl.utwente.groove.util.collect.DeltaMap.Delta;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -658,12 +659,13 @@ public class GrammarModel implements PropertyChangeListener {
             newActiveNames.addAll(names);
             break;
         case RULE:
-            var disabledRules = getProperties().getDisabledRules();
             names
                 .stream()
-                .filter(n -> !disabledRules.contains(n))
                 .filter(n -> GraphInfo.isEnabled(getStore().getGraphs(RULE).get(n)))
                 .forEach(newActiveNames::add);
+            newActiveNames.removeAll(getProperties().getDisabledRules());
+            newActiveNames.removeAll(getProperties().getRuleEnabling().getKeys(Delta.REMOVE));
+            newActiveNames.addAll(getProperties().getRuleEnabling().getKeys(Delta.ADD));
             break;
         case CONFIG:
             break;

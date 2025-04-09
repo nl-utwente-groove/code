@@ -1,6 +1,7 @@
 package nl.utwente.groove.grammar;
 
 import static nl.utwente.groove.grammar.GrammarKey.DISABLED_RULES;
+import static nl.utwente.groove.grammar.GrammarKey.RULE_ENABLING;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import nl.utwente.groove.transform.oracle.ValueOracleKind;
 import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.ThreeValued;
 import nl.utwente.groove.util.Version;
+import nl.utwente.groove.util.collect.DeltaMap;
 import nl.utwente.groove.util.parse.FormatChecker;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -354,6 +356,22 @@ public class GrammarProperties extends Properties {
 
     /**
      * Sets the disabled rules property.
+     * @param enabling the (non-{@code null}, but possible empty) rule delta map
+     */
+    public void setRuleEnabling(DeltaMap<QualName> enabling) {
+        storeValue(RULE_ENABLING, enabling);
+    }
+
+    /**
+     * Returns a list of explicitly disabled rules.
+     * @return a (non-{@code null}, but possibly empty) rule delta map
+     */
+    public DeltaMap<QualName> getRuleEnabling() {
+        return parsePropertyOrDefault(RULE_ENABLING).getQualNameDeltaMap();
+    }
+
+    /**
+     * Sets the disabled rules property.
      * @param names the (non-{@code null}, but possible empty) list of explicitly disabled rules
      */
     public void setDisabledRules(List<QualName> names) {
@@ -602,6 +620,14 @@ public class GrammarProperties extends Properties {
                 var orderedDisabledRules = new ArrayList<>(disabledRules);
                 orderedDisabledRules.sort(null);
                 result.setDisabledRules(orderedDisabledRules);
+                hasChanged = true;
+            }
+            // change rule names in the disabled rules
+            var ruleEnabling = new DeltaMap<>(getRuleEnabling());
+            var delta = ruleEnabling.remove(oldName);
+            if (delta != null) {
+                ruleEnabling.set(newName, delta);
+                result.setRuleEnabling(ruleEnabling);
                 hasChanged = true;
             }
         }

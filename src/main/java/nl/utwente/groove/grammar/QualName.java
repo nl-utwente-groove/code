@@ -305,7 +305,7 @@ public class QualName extends ModuleName implements Comparable<QualName>, Fallib
         if (result == null) {
             LIST_PARSER = result = new Parser.SplitParser<>(parser());
         }
-        return LIST_PARSER;
+        return result;
     }
 
     /** The singleton parser for space-separated lists of qualified names. */

@@ -42,6 +42,7 @@ import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.io.HTMLConverter.HTMLTag;
 import nl.utwente.groove.transform.oracle.ValueOracleFactory;
+import nl.utwente.groove.util.collect.DeltaMap;
 import nl.utwente.groove.util.parse.FormatChecker;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.ParsableKey;
@@ -491,8 +492,10 @@ public abstract class Properties implements Fixable {
         INTEGER(Integer.class),
         /** Value for type {@link Integer}. */
         STRING(String.class),
-        /** Value for type {@link List}. */
+        /** Value for type {@link List} of {@link QualName}s. */
         QUAL_NAME_LIST(List.class),
+        /** Value for type {@link DeltaMap} of {@link QualName}s. */
+        QUAL_NAME_DELTA_MAP(DeltaMap.class),
         /** Value for type {@link MethodName}. */
         CLAZ(Optional.class),
         /** Value for type {@link MethodName}. */
@@ -672,6 +675,17 @@ public abstract class Properties implements Fixable {
         public List<QualName> getQualNameList() {
             check(ValueType.QUAL_NAME_LIST);
             return (List<QualName>) value();
+        }
+
+        /**
+         * Casts the wrapped value to a {@link DeltaMap} of {@link QualName}s.
+         * This is only valid if this entry's key type is {@link ValueType#QUAL_NAME_DELTA_MAP}
+         * @throws UnsupportedOperationException if this entry's key type is inappropriate
+         */
+        @SuppressWarnings("unchecked")
+        public DeltaMap<QualName> getQualNameDeltaMap() {
+            check(ValueType.QUAL_NAME_DELTA_MAP);
+            return (DeltaMap<QualName>) value();
         }
 
         /**

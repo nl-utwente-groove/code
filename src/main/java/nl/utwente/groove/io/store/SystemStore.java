@@ -1220,7 +1220,8 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
                 case PROLOG, TYPE, HOST, CONTROL -> oldProps
                     .getActiveNames(kind)
                     .equals(newProps.getActiveNames(kind));
-                case RULE -> oldProps.getDisabledRules().equals(newProps.getDisabledRules());
+                case RULE -> oldProps.getDisabledRules().equals(newProps.getDisabledRules())
+                    && oldProps.getRuleEnabling().equals(newProps.getRuleEnabling());
                 default -> true;
                 };
                 if (!equal) {

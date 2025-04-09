@@ -44,6 +44,7 @@ import nl.utwente.groove.util.Properties.KeyParser;
 import nl.utwente.groove.util.Properties.ValueType;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.ThreeValued;
+import nl.utwente.groove.util.collect.DeltaMap;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.Parser;
@@ -154,6 +155,14 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      * Space-separated list of disabled rule names.
      */
     DISABLED_RULES("disabledRules", "List of explicitly disabled rules", ValueType.QUAL_NAME_LIST),
+
+    /**
+     * Space-separated list of disabled rule names.
+     */
+    RULE_ENABLING("ruleEnabling",
+        "List of force-enabled and -disabled rules (prefixed '+' or '-', respectively).<br>"
+            + "This overrides the 'Enabled' rule property.",
+        ValueType.QUAL_NAME_DELTA_MAP),
 
     /** Policy for rule application. */
     ACTION_POLICY("actionPolicy",
@@ -302,6 +311,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             case ISOMORPHISM, LOOPS_AS_LABELS -> Parser.boolTrue;
             case START_GRAPH_NAMES, CONTROL_NAMES, TYPE_NAMES, PROLOG_NAMES, DISABLED_RULES -> QualName
                 .listParser();
+            case RULE_ENABLING -> DeltaMap.parser(QualName.parser());
             case TYPE_POLICY -> new Parser.EnumParser<>(CheckPolicy.class, CheckPolicy.ERROR,
                 convert("off", null, "error", "remove"));
             case ACTION_POLICY -> CheckPolicy.multiParser;
@@ -347,6 +357,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         case START_GRAPH_NAMES -> ResourceChecker.get(ResourceKind.HOST);
         case TYPE_NAMES -> ResourceChecker.get(ResourceKind.TYPE);
         case DISABLED_RULES -> ResourceChecker.get(ResourceKind.RULE);
+        case RULE_ENABLING -> RuleDeltaChecker.instance();
         case USER_OPS -> UserOperationsChecker.instance;
         default -> trueChecker;
         };
@@ -362,7 +373,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
     @Override
     public boolean isNotable() {
         return switch (this) {
-        case ACTION_POLICY, ALGEBRA, CREATOR_EDGE, DANGLING, DEAD_POLICY, INJECTIVE, ISOMORPHISM, ORACLE, RHS_AS_NAC, STORE_OUT_PARS, TRANSITION_PARAMETERS, DISABLED_RULES, TYPE_POLICY -> true;
+        case ACTION_POLICY, ALGEBRA, CREATOR_EDGE, DANGLING, DEAD_POLICY, INJECTIVE, ISOMORPHISM, ORACLE, RHS_AS_NAC, STORE_OUT_PARS, TRANSITION_PARAMETERS, RULE_ENABLING, DISABLED_RULES, TYPE_POLICY -> true;
         default -> false;
         };
     }
@@ -400,6 +411,33 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
     static public final String ATTRIBUTE_SUPPORT = "attributeSupport";
     /** Name of deprecated key for transition brackets. */
     static public final String TRANSITION_BRACKETS = "transitionBrackets";
+
+    /** Checks whether a value is a {@link DeltaMap} of rule names. */
+    private static class RuleDeltaChecker implements GrammarChecker {
+        @Override
+        public FormatErrorSet apply(GrammarModel grammar, Entry value) {
+            var deltaMap = value.getQualNameDeltaMap();
+            var unknowns = new ArrayList<>();
+            deltaMap.entrySet().stream().map(Map.Entry::getKey).forEach(unknowns::add);
+            var result = new FormatErrorSet();
+            unknowns.removeAll(grammar.getResourceMap(ResourceKind.RULE).keySet());
+            if (!unknowns.isEmpty()) {
+                result
+                    .add("Unknown rule name%s %s", unknowns.size() == 1
+                        ? ""
+                        : "s", Groove.toString(unknowns.toArray(), "'", "'", "', '", "' and '"));
+            }
+            return result;
+        }
+
+        /** Returns the singleton instance of this class. */
+        static public RuleDeltaChecker instance() {
+            return INSTANCE;
+        }
+
+        /** The singleton instance of this class. */
+        static final RuleDeltaChecker INSTANCE = new RuleDeltaChecker();
+    }
 
     /** Checks whether a value is a list of names of a given resource kind. */
     private static class ResourceChecker implements GrammarChecker {
