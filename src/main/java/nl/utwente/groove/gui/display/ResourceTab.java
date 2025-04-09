@@ -329,7 +329,7 @@ abstract public class ResourceTab extends JPanel {
      * Callback method to notify the editor of a change in dirty status.
      */
     protected void updateDirty() {
-        getTabLabel().setTitle(this.display.getLabelText(getQualName()));
+        getTabLabel().setTitle(this.display.getLabelText(getQualName(), true));
         getSaveAction().refresh();
         Display.ListPanel listPanel = this.display.getListPanel();
         if (listPanel != null) {

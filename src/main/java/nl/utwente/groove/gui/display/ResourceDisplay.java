@@ -371,7 +371,8 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     protected ResourceTab createEditorTab(QualName name) {
         ResourceKind kind = getResourceKind();
         if (kind.isGraphBased()) {
-            AspectGraph graph = getSimulatorModel().getGrammar().getModelGraph(getResourceKind(), name);
+            AspectGraph graph
+                = getSimulatorModel().getGrammar().getModelGraph(getResourceKind(), name);
             GraphEditorTab result = new GraphEditorTab(this, graph.getRole());
             result.setGraph(graph);
             return result;
@@ -621,7 +622,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
                 getTabPane().setTabComponentAt(index, tabLabel);
             }
             tabLabel.setEnabled(true);
-            tabLabel.setTitle(getLabelText(name));
+            tabLabel.setTitle(getLabelText(name, true));
             tabLabel.setError(hasError(name));
             getTabPane().setSelectedIndex(index);
         }
@@ -645,23 +646,27 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * Callback method to construct the string description for a
      * given (named) resource that should be used in the label list and
      * tab component.
+     * @param full flag indicating if the full name should be used
      */
-    public final String getLabelText(QualName name) {
+    public final String getLabelText(QualName name, boolean full) {
         var model = getResource(name);
-        return getLabelText(name, "", model != null && model.isActive());
+        return getLabelText(name, "", model != null && model.isActive(), full);
     }
 
     /**
      * Adds HTML formatting to the label text for the main display.
-     * Callback method from {@link #getLabelText(QualName)}.
+     * Callback method from {@link #getLabelText(QualName, boolean)}.
      * @param name the name of the displayed object. This determines the
      * decoration
      * @param suffix text to appear after the name
      * @param enabled flag indicating if the name should be shown as enabled
+     * @param full flag indicating if the full name should be used
      */
-    public String getLabelText(QualName name, String suffix, boolean enabled) {
+    public String getLabelText(QualName name, String suffix, boolean enabled, boolean full) {
         NamedResourceModel<?> model = getResource(name);
-        StringBuilder result = new StringBuilder(model.getLastName());
+        StringBuilder result = new StringBuilder(full
+            ? model.getName()
+            : model.getLastName());
         if (model instanceof RuleModel && ((RuleModel) model).isProperty()) {
             HTMLConverter.ITALIC_TAG.on(result);
             Action.Role actionRole = ((RuleModel) model).getRole();

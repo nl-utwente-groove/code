@@ -75,7 +75,7 @@ class ResourceTreeNode extends DisplayTreeNode {
     /** Returns the text to be displayed on the tree node. */
     @Override
     String getText() {
-        return getDisplay().getLabelText(getQualName());
+        return getDisplay().getLabelText(getQualName(), false);
     }
 
     @Override
