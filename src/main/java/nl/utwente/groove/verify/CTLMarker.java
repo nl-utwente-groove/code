@@ -653,5 +653,5 @@ public class CTLMarker {
     /** Proposition text expressing that a node is the start state of the GTS. */
     static public final Proposition START_ATOM = flagProps.get(Flag.START);
     /** Debug flag */
-    static private boolean DEBUG = true;
+    static private boolean DEBUG = false;
 }
