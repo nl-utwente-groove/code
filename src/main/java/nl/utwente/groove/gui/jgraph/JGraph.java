@@ -1475,11 +1475,19 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         @Override
         public void valueChanged(GraphSelectionEvent e) {
             Object[] cells = e.getCells();
+            Object selectedCell = null;
             for (int i = 0; i < cells.length; i++) {
                 Object c = cells[i];
+                boolean selected = e.isAddedCell(i);
                 if (c instanceof JCell<?> jCell) {
-                    jCell.putVisual(VisualKey.EMPHASIS, e.isAddedCell(i));
+                    jCell.putVisual(VisualKey.EMPHASIS, selected);
                 }
+                if (selected) {
+                    selectedCell = c;
+                }
+            }
+            if (selectedCell != null) {
+                scrollCellToVisible(selectedCell);
             }
         }
     }
