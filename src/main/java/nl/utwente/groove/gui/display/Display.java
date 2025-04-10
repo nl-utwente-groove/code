@@ -31,6 +31,7 @@ import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.action.ActionStore;
@@ -50,6 +51,8 @@ abstract public class Display extends JPanel {
         this.kind = kind;
         this.resource = kind.getResource();
     }
+
+    private final ResourceKind resource;
 
     /** Tests if this display is part of an active top-level window. */
     public boolean isActive() {
@@ -82,6 +85,9 @@ abstract public class Display extends JPanel {
         return this.listPanel;
     }
 
+    /** Panel with the label list. */
+    private ListPanel listPanel;
+
     /** Factory method for the list panel corresponding to this display; may be {@code null}. */
     protected ListPanel createListPanel() {
         return new ListPanel(getList(), getListToolBar(), getKind());
@@ -95,6 +101,9 @@ abstract public class Display extends JPanel {
         return this.listToolBar;
     }
 
+    /** Toolbar for the {@link #listPanel}. */
+    private JToolBar listToolBar;
+
     /**
      * Callback method to creates a tool bar for the list panel.
      */
@@ -107,6 +116,9 @@ abstract public class Display extends JPanel {
         }
         return this.resourceList;
     }
+
+    /** Production system control program list. */
+    private JComponent resourceList;
 
     /** Callback method to create the resource list. */
     abstract protected JComponent createList();
@@ -140,6 +152,8 @@ abstract public class Display extends JPanel {
         return this.kind;
     }
 
+    private final DisplayKind kind;
+
     /** Returns the kind of resource displayed here,
      * or {@code null} if this display is not for a resource.
      */
@@ -165,6 +179,8 @@ abstract public class Display extends JPanel {
         return this.simulator;
     }
 
+    private final Simulator simulator;
+
     /** Convenience method to retrieve the simulator model. */
     final public SimulatorModel getSimulatorModel() {
         return getSimulator().getModel();
@@ -181,15 +197,10 @@ abstract public class Display extends JPanel {
         getInfoPanel().setEnabled(enabled);
     }
 
-    private final Simulator simulator;
-    private final DisplayKind kind;
-    private final ResourceKind resource;
-    /** Panel with the label list. */
-    private ListPanel listPanel;
-    /** Production system control program list. */
-    private JComponent resourceList;
-    /** Toolbar for the {@link #listPanel}. */
-    private JToolBar listToolBar;
+    /** Executes a repeat action, invoked by a press of {@link Options#REPEAT_KEY}. */
+    public void doRepeat() {
+        // this does nothing; to be overridden
+    }
 
     /**
      * Minimum height of the rule tree component.

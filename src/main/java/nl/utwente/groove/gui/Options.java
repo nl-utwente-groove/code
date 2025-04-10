@@ -722,9 +722,11 @@ public class Options implements Cloneable {
     /** Cancel keystroke */
     public static final KeyStroke CANCEL_KEY = KeyStroke.getKeyStroke("ESCAPE");
 
-    /** Cancel keystroke */
+    /** Close (Ctrl-W) keystroke */
     public static final KeyStroke CLOSE_KEY = KeyStroke.getKeyStroke("control W");
 
+    /** Repeat Search (F3) keystroke */
+    public static final KeyStroke REPEAT_KEY = KeyStroke.getKeyStroke("F3");
     /**
      * Copy keystroke
      */

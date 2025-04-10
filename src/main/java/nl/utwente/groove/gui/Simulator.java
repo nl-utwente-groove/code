@@ -285,6 +285,7 @@ public class Simulator implements SimulatorListener {
             addDisplayKey(result, KeyEvent.VK_Y, DisplayKind.GROOVY);
             addDisplayKey(result, KeyEvent.VK_S, DisplayKind.STATE);
             addDisplayKey(result, KeyEvent.VK_L, DisplayKind.LTS);
+            addRepeatKey(result);
             result.setJMenuBar(createMenuBar());
             result.setContentPane(getContentPanel());
             // make sure tool tips get displayed
@@ -301,11 +302,29 @@ public class Simulator implements SimulatorListener {
         pane.getActionMap().put(display, switchTo(display));
     }
 
-    private AbstractAction switchTo(DisplayKind display) {
+    private Action switchTo(DisplayKind display) {
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 getModel().setDisplay(display);
+            }
+        };
+    }
+
+    private void addRepeatKey(JFrame frame) {
+        var pane = frame.getRootPane();
+        pane
+            .getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+            .put(Options.REPEAT_KEY, "repeat");
+        pane.getActionMap().put("repeat", repeat());
+    }
+
+    /** Repeat action, to be invoked by F# key press. */
+    private Action repeat() {
+        return new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                getDisplaysPanel().getSelectedDisplay().doRepeat();
             }
         };
     }

@@ -825,6 +825,14 @@ public class StateDisplay extends Display implements SimulatorListener {
     /** Flag indicating if there is any match selected. */
     private boolean matchSelected;
 
+    @Override
+    public void doRepeat() {
+        var jGraph = getJGraph();
+        if (jGraph != null) {
+            jGraph.scrollToNextSelectedRoot();
+        }
+    }
+
     /** Temporary record of graph element attributes. */
     private static class Attributes {
         Attributes(AspectJVertex jVertex) {
