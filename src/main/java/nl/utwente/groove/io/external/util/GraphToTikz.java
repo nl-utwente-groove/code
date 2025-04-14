@@ -325,12 +325,14 @@ public final class GraphToTikz<G extends @NonNull Graph> {
 
         for (Node node : this.graph.nodeSet()) {
             JVertex<G> vertex = this.model.getJCellForNode(node);
-            this.model.synchroniseLayout(vertex);
-            JVertexLayout layout = null;
-            if (this.layoutMap != null) {
-                layout = this.layoutMap.getLayout(node);
+            if (vertex != null) {
+                this.model.synchroniseLayout(vertex);
+                JVertexLayout layout = null;
+                if (this.layoutMap != null) {
+                    layout = this.layoutMap.getLayout(node);
+                }
+                appendTikzNode(vertex, layout);
             }
-            appendTikzNode(vertex, layout);
         }
 
         append(ENTER);
@@ -342,7 +344,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
                 layout = this.layoutMap.getLayout(edge);
             }
             JCell<G> jCell = this.model.getJCellForEdge(edge);
-            if (!consumedEdges.contains(jCell)) {
+            if (jCell != null && !consumedEdges.contains(jCell)) {
                 appendTikzEdge(jCell, layout);
                 consumedEdges.add(jCell);
             }

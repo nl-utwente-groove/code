@@ -21,6 +21,7 @@ import java.io.IOException;
 
 import nl.utwente.groove.grammar.aspect.GraphConverter;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
@@ -47,9 +48,13 @@ public class NativeGraphExporter extends AbstractExporter {
 
     @Override
     public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
-        var graph = GraphConverter.toAspect(exportable.graph());
+        var graph = exportable.graph();
+        assert graph != null;
+        var plainGraph = graph.getRole().inGrammar()
+            ? GraphConverter.toAspect(graph).toPlainGraph()
+            : PlainGraph.instance(graph);
         try {
-            GxlIO.instance().saveGraph(graph.toPlainGraph(), file);
+            GxlIO.instance().saveGraph(plainGraph, file);
         } catch (IOException e) {
             throw new PortException(e);
         }
