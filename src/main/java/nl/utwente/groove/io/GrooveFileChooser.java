@@ -126,7 +126,7 @@ public class GrooveFileChooser extends JFileChooser {
      * {@link ExtensionFilter}.
      */
     @Override
-    public File getSelectedFile() {
+    public @Nullable File getSelectedFile() {
         // Set the current directory to be reused later
         File currDir = super.getCurrentDirectory();
         if (currDir != null) {
@@ -163,7 +163,7 @@ public class GrooveFileChooser extends JFileChooser {
         if (getDialogType() == SAVE_DIALOG && isAskOverwrite()) {
             File f = getSelectedFile();
             // When saving, check if file already exists. If so, ask for overwrite confirmation
-            if (f.exists()) {
+            if (f != null && f.exists()) {
                 int result = JOptionPane
                     .showConfirmDialog(this, f.getName() + " already exists, overwrite?",
                                        "Overwrite existing file", JOptionPane.YES_NO_OPTION);
