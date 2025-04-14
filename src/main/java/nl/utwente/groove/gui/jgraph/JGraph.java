@@ -1524,29 +1524,33 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         @Override
         public void valueChanged(GraphSelectionEvent e) {
             Object[] cells = e.getCells();
-            getGraphLayoutCache().setVisible(cells, true);
-            // reorder the roots so the selected cells come last
-            var model = getModel();
-            assert model != null;
-            @SuppressWarnings("rawtypes")
-            List roots = model.getRoots();
-            Object[] newRoots = new Object[roots.size()];
-            int pos = 0;
-            for (int i = 0; i < roots.size(); i++) {
-                var cell = roots.get(i);
-                if (!isCellSelected(cell)) {
-                    newRoots[pos] = cell;
-                    pos++;
-                }
-            }
-            for (int i = 0; i < pos; i++) {
-                roots.set(i, newRoots[i]);
-            }
             Object[] selectedCells = getSelectionCells();
-            for (int i = 0; i < selectedCells.length; i++) {
-                roots.set(pos + i, selectedCells[i]);
+            if (selectedCells.length > 0) {
+                getSelectionModel().removeGraphSelectionListener(this);
+                getGraphLayoutCache().setVisible(selectedCells, true);
+                // reorder the roots so the selected cells come last
+                var model = getModel();
+                assert model != null;
+                @SuppressWarnings("rawtypes")
+                List roots = model.getRoots();
+                Object[] newRoots = new Object[roots.size()];
+                int pos = 0;
+                for (int i = 0; i < roots.size(); i++) {
+                    var cell = roots.get(i);
+                    if (!isCellSelected(cell)) {
+                        newRoots[pos] = cell;
+                        pos++;
+                    }
+                }
+                for (int i = 0; i < pos; i++) {
+                    roots.set(i, newRoots[i]);
+                }
+                for (int i = 0; i < selectedCells.length; i++) {
+                    roots.set(pos + i, selectedCells[i]);
+                }
+                getGraphLayoutCache().reloadRoots();
+                getSelectionModel().addGraphSelectionListener(this);
             }
-            getGraphLayoutCache().reloadRoots();
             Object selectedCell = null;
             var viewBounds = getViewPortBounds();
             for (int i = 0; i < cells.length; i++) {
