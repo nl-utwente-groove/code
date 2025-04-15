@@ -100,3 +100,13 @@ in a version of the GROOVE project where the pom has a release version (and not 
 
 (I have not found a way to make the `javadoc:aggregate-jar` part of the deploy project, though I'm
 pretty sure it can be done.)
+
+## Support
+
+The development of GROOVE was assisted by the use of the [Yourkit Java Profiler](http://www.yourkit.com)
+
+![yklogo](https://github.com/user-attachments/assets/8692e3b4-e0d9-42b5-bb47-a4fdd4bae01f)
+
+YourKit supports open source projects with innovative and intelligent tools 
+for monitoring and profiling Java and .NET applications.
+
