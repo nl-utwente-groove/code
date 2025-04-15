@@ -27,6 +27,8 @@ import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSFragment;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.lts.GraphTransition;
+import nl.utwente.groove.util.Groove;
 
 /**
  * Class that exports an LTS to a control program that enforces precisely the transitions in that LTS.
@@ -80,7 +82,7 @@ public class LTS2ControlExporter extends AbstractExporter.Writer {
             .stream()
             .filter(t -> t.getRole() == EdgeRole.FLAG)
             .filter(t -> !t.label().getAction().getRole().isConstraint())
-            .forEach(t -> emit(t.label() + ";"));
+            .forEach(this::emitTransition);
         var outs = state
             .getTransitions()
             .stream()
@@ -88,10 +90,15 @@ public class LTS2ControlExporter extends AbstractExporter.Writer {
             .filter(t -> this.covered.add(t.target()))
             .toList();
         if (outs.isEmpty()) {
-            emit("// final state");
+            if (state.isFinal()) {
+                emit("// final state");
+            } else {
+                emit("// deadlocked state");
+                emit("halt");
+            }
         } else if (outs.size() == 1 && !state.isFinal()) {
             var out = outs.get(0);
-            emit(out.label() + ";");
+            emitTransition(out);
             emit(out.target());
         } else {
             boolean first = true;
@@ -103,7 +110,7 @@ public class LTS2ControlExporter extends AbstractExporter.Writer {
                     emit("} or {");
                 }
                 increaseIndent();
-                emit(out.label() + ";");
+                emitTransition(out);
                 emit(out.target());
                 decreaseIndent();
             }
@@ -112,6 +119,19 @@ public class LTS2ControlExporter extends AbstractExporter.Writer {
             }
             emit("}");
         }
+    }
+
+    /** Emits a transition label with out-parameters adjusted to don't-care. */
+    private void emitTransition(GraphTransition trans) {
+        // out-parameters must be don't care
+        var args = Groove.clone(trans.getArguments());
+        var sig = trans.getAction().getSignature();
+        for (int i = 0; i < sig.size(); i++) {
+            if (sig.getPar(i).isOutOnly()) {
+                args[i] = null;
+            }
+        }
+        emit(trans.getAction().toLabelString(args) + ";");
     }
 
     /** The set of currently covered states. */

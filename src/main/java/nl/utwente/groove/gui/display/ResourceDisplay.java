@@ -760,6 +760,14 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     /** Tool tip text for a disabled resource. */
     private String inactiveText;
 
+    @Override
+    public void doRepeat() {
+        var tab = getSelectedTab();
+        if (tab instanceof GraphTab graphTab) {
+            graphTab.getJGraph().scrollToNextSelectedRoot();
+        }
+    }
+
     private class MyTabbedPane extends JTabbedPane {
         /** Constructs an instance of the panel. */
         public MyTabbedPane() {

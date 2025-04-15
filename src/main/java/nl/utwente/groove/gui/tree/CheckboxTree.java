@@ -71,6 +71,7 @@ public class CheckboxTree extends JTree {
         this.treeModel = new DefaultTreeModel(this.topNode);
         setModel(this.treeModel);
         // set selection mode
+        //setSelectionModel(new MySelectionModel());
         getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
     }
 
@@ -470,5 +471,4 @@ public class CheckboxTree extends JTree {
             return false;
         }
     }
-
 }

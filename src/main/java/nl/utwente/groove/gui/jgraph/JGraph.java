@@ -1011,16 +1011,64 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         scrollRectToVisible(newBounds);
     }
 
-    /** This implementation makes sure the rectangle gets centred on the viewport,
+    /** This implementation makes sure the rectangle gets centered on the viewport,
      * if it is not already contained in the viewport. */
     @Override
     public void scrollRectToVisible(Rectangle aRect) {
         Rectangle viewBounds = getViewPortBounds().getBounds();
-        if (!viewBounds.contains(aRect)) {
+        if (!isRectInView(viewBounds, aRect, 1)) {
             int newX = aRect.x - (viewBounds.width - aRect.width) / 2;
             int newY = aRect.y - (viewBounds.height - aRect.height) / 2;
             Rectangle newRect = new Rectangle(newX, newY, viewBounds.width, viewBounds.height);
             super.scrollRectToVisible(newRect);
+        }
+    }
+
+    /** Scrolls a given root cell into view. */
+    public void scrollToRoot(Object root) {
+        var roots = getRoots();
+        for (int i = 0; i < roots.length; i++) {
+            if (roots[i] == root) {
+                scrollCellToVisible(root);
+                this.lastSelectedRoot = i;
+                break;
+            }
+        }
+    }
+
+    private int lastSelectedRoot;
+
+    /** Searches for the next selected root and scrolls it into view. */
+    public void scrollToNextSelectedRoot() {
+        int lastSelectedRoot = this.lastSelectedRoot;
+        int rootCount = getRoots().length;
+        var viewBounds = getViewPortBounds();
+        int nextSelectedRoot = (lastSelectedRoot + 1) % rootCount;
+        while (nextSelectedRoot != lastSelectedRoot) {
+            Object root = getRoots()[nextSelectedRoot];
+            if (!isCellSelected(root) || isCellInView(viewBounds, root)) {
+                nextSelectedRoot = (nextSelectedRoot + 1) % rootCount;
+            } else {
+                scrollCellToVisible(root);
+                this.lastSelectedRoot = nextSelectedRoot;
+                break;
+            }
+        }
+    }
+
+    /** Indicates if a given cell is currently in view. */
+    public boolean isCellInView(Rectangle2D viewBounds, Object cell) {
+        return isRectInView(viewBounds, getCellBounds(cell), getScale());
+    }
+
+    /** Indicates if a given rectangle, corrected for negative x and y coordinates and scale factor, is currently in view. */
+    public boolean isRectInView(Rectangle2D viewBounds, Rectangle2D rect, double scale) {
+        if (rect != null) {
+            return viewBounds
+                .contains(Math.max(rect.getX(), 0) * scale, Math.max(rect.getY(), 0) * scale,
+                          rect.getWidth() * scale, rect.getHeight() * scale);
+        } else {
+            return false;
         }
     }
 
@@ -1472,22 +1520,51 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
 
     /** Listener that pushes selection values into the visual map. */
     class MyGraphSelectionListener implements GraphSelectionListener {
+        @SuppressWarnings("unchecked")
         @Override
         public void valueChanged(GraphSelectionEvent e) {
             Object[] cells = e.getCells();
+            Object[] selectedCells = getSelectionCells();
+            if (selectedCells.length > 0) {
+                getSelectionModel().removeGraphSelectionListener(this);
+                getGraphLayoutCache().setVisible(selectedCells, true);
+                // reorder the roots so the selected cells come last
+                var model = getModel();
+                assert model != null;
+                @SuppressWarnings("rawtypes")
+                List roots = model.getRoots();
+                Object[] newRoots = new Object[roots.size()];
+                int pos = 0;
+                for (int i = 0; i < roots.size(); i++) {
+                    var cell = roots.get(i);
+                    if (!isCellSelected(cell)) {
+                        newRoots[pos] = cell;
+                        pos++;
+                    }
+                }
+                for (int i = 0; i < pos; i++) {
+                    roots.set(i, newRoots[i]);
+                }
+                for (int i = 0; i < selectedCells.length; i++) {
+                    roots.set(pos + i, selectedCells[i]);
+                }
+                getGraphLayoutCache().reloadRoots();
+                getSelectionModel().addGraphSelectionListener(this);
+            }
             Object selectedCell = null;
+            var viewBounds = getViewPortBounds();
             for (int i = 0; i < cells.length; i++) {
                 Object c = cells[i];
                 boolean selected = e.isAddedCell(i);
                 if (c instanceof JCell<?> jCell) {
                     jCell.putVisual(VisualKey.EMPHASIS, selected);
                 }
-                if (selected) {
+                if (selected && (selectedCell == null || isCellInView(viewBounds, c))) {
                     selectedCell = c;
                 }
             }
             if (selectedCell != null) {
-                scrollCellToVisible(selectedCell);
+                scrollToRoot(selectedCell);
             }
         }
     }

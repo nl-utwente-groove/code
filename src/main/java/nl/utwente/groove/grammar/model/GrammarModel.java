@@ -663,7 +663,6 @@ public class GrammarModel implements PropertyChangeListener {
                 .stream()
                 .filter(n -> GraphInfo.isEnabled(getStore().getGraphs(RULE).get(n)))
                 .forEach(newActiveNames::add);
-            newActiveNames.removeAll(getProperties().getDisabledRules());
             newActiveNames.removeAll(getProperties().getRuleEnabling().getKeys(Delta.REMOVE));
             newActiveNames.addAll(getProperties().getRuleEnabling().getKeys(Delta.ADD));
             break;

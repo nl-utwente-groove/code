@@ -82,8 +82,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     public AspectGraph(String name, GraphRole graphRole, boolean simple) {
         super(name.toString(), simple);
         this.qualName = QualName.parse(name);
-        assert graphRole.inGrammar() : String
-            .format("Cannot create aspect graph for %s", graphRole.toString());
+        //        assert graphRole.inGrammar() : String
+        //            .format("Cannot create aspect graph for %s", graphRole.toString());
         this.role = graphRole;
         this.normal = true;
         this.edgeNumber = simple
@@ -652,7 +652,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     }
 
     /**
-     * Creates an aspect graph from a given (plain) graph.
+     * Creates an aspect graph from a given (plain) grammar-related graph.
      * @param graph the plain graph to convert
      * @return the resulting aspect graph
      */

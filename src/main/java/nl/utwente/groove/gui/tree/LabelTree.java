@@ -252,6 +252,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree
     void updateTree() {
         // temporarily remove this component as selection listener
         removeTreeSelectionListener(this);
+        getUI().uninstallUI(this);
         // remember the collapsed paths
         Set<TreeNode> collapsedNodes = new HashSet<>();
         for (int i = 0; i < getRowCount(); i++) {
@@ -285,6 +286,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree
                 expandPath(path);
             }
         }
+        getUI().installUI(this);
         addTreeSelectionListener(this);
     }
 

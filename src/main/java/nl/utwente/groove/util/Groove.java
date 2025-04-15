@@ -27,6 +27,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.lang.reflect.Array;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -326,6 +327,15 @@ public class Groove {
         for (int i = 0; i < array.length; i++) {
             result[i] = array[i];
         }
+        return result;
+    }
+
+    /** Clones and returns a given array. */
+    static public <T> T[] clone(T[] array) {
+        var type = array.getClass().getComponentType();
+        @SuppressWarnings("unchecked")
+        var result = (T[]) Array.newInstance(type, array.length);
+        System.arraycopy(array, 0, result, 0, array.length);
         return result;
     }
 

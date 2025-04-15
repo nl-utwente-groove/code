@@ -1,6 +1,5 @@
 package nl.utwente.groove.grammar;
 
-import static nl.utwente.groove.grammar.GrammarKey.DISABLED_RULES;
 import static nl.utwente.groove.grammar.GrammarKey.RULE_ENABLING;
 
 import java.nio.file.Path;
@@ -371,23 +370,6 @@ public class GrammarProperties extends Properties {
     }
 
     /**
-     * Sets the disabled rules property.
-     * @param names the (non-{@code null}, but possible empty) list of explicitly disabled rules
-     */
-    public void setDisabledRules(List<QualName> names) {
-        storeValue(DISABLED_RULES, names);
-    }
-
-    /**
-     * Returns a list of explicitly disabled rules.
-     * @return a (non-{@code null}, but possibly empty) set of active names
-     */
-    public Set<QualName> getDisabledRules() {
-        var names = parsePropertyOrDefault(DISABLED_RULES).getQualNameList();
-        return new TreeSet<>(names);
-    }
-
-    /**
      * Sets the algebra family to a given value.
      */
     public void setAlgebraFamily(AlgebraFamily family) {
@@ -611,15 +593,6 @@ public class GrammarProperties extends Properties {
             if (namePolicy != null) {
                 actionPolicy.put(newName, namePolicy);
                 result.setRulePolicy(actionPolicy);
-                hasChanged = true;
-            }
-            // change rule names in the disabled rules
-            var disabledRules = new HashSet<>(getDisabledRules());
-            if (disabledRules.remove(oldName)) {
-                disabledRules.add(newName);
-                var orderedDisabledRules = new ArrayList<>(disabledRules);
-                orderedDisabledRules.sort(null);
-                result.setDisabledRules(orderedDisabledRules);
                 hasChanged = true;
             }
             // change rule names in the disabled rules

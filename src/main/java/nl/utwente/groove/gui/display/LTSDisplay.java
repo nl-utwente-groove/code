@@ -556,6 +556,14 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 : null);
     }
 
+    @Override
+    public void doRepeat() {
+        var jGraph = getJGraph();
+        if (jGraph != null) {
+            jGraph.scrollToNextSelectedRoot();
+        }
+    }
+
     /** Returns an LTS display for a given simulator. */
     public static LTSDisplay newInstance(Simulator simulator) {
         LTSDisplay result = new LTSDisplay(simulator);
