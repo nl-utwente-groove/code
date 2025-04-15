@@ -18,6 +18,7 @@ package nl.utwente.groove.io.graph;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -50,7 +51,8 @@ public class AutIO extends GraphIO<PlainGraph> {
 
     @Override
     protected void doSaveGraph(Graph graph, File file) throws IOException {
-        try (PrintWriter writer = new PrintWriter(file)) {
+        // create a PrintWriter with autoflush
+        try (PrintWriter writer = new PrintWriter(new FileOutputStream(file), true)) {
             // collect the node numbers, to be able to number them consecutively
             int nodeCount = graph.nodeCount();
             // list marking which node numbers have been used
