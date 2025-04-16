@@ -24,6 +24,9 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.Fallible;
 import nl.utwente.groove.util.parse.FormatError;
@@ -42,6 +45,7 @@ import nl.utwente.groove.util.parse.Parser;
  * @author Angela Lozano and Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 09:32:37 $
  */
+@NonNullByDefault
 public class QualName extends ModuleName implements Comparable<QualName>, Fallible {
     /**
      * Creates a new qualified name, on the basis of a given non-empty list of tokens.
@@ -79,10 +83,11 @@ public class QualName extends ModuleName implements Comparable<QualName>, Fallib
 
     @Override
     public FormatErrorSet getErrors() {
-        if (this.errors == null) {
-            this.errors = new FormatErrorSet();
+        FormatErrorSet result = this.errors;
+        if (result == null) {
+            this.errors = result = new FormatErrorSet();
             if (this.tokens.isEmpty()) {
-                this.errors.add("Qualified name is empty");
+                result.add("Qualified name is empty");
             }
             for (String token : this.tokens) {
                 if (token.equals(WILDCARD)) {
@@ -92,16 +97,16 @@ public class QualName extends ModuleName implements Comparable<QualName>, Fallib
                     tokenValidator.testValid(token);
                 } catch (FormatException exc) {
                     for (FormatError err : exc.getErrors()) {
-                        this.errors.add("Error in qualified name %s: %s", this, err);
+                        result.add("Error in qualified name %s: %s", this, err);
                     }
                 }
             }
         }
-        return this.errors;
+        return result;
     }
 
     /** Non-{@code null} exception in case this name has been found to be invalid. */
-    private FormatErrorSet errors;
+    private @Nullable FormatErrorSet errors;
 
     /** Returns the line consisting of the flattened qualified name. */
     public Line toLine() {
@@ -136,7 +141,7 @@ public class QualName extends ModuleName implements Comparable<QualName>, Fallib
      * name iff the qualified name consists of a single token only.
      * @return the parent qualified name
      */
-    public ModuleName parent() {
+    public @Nullable ModuleName parent() {
         if (this.parent == null) {
             ModuleName parent;
             if (size() == 1) {
@@ -153,7 +158,7 @@ public class QualName extends ModuleName implements Comparable<QualName>, Fallib
     }
 
     /** The parent qualified name (may be {@code null}). */
-    private ModuleName parent;
+    private @Nullable ModuleName parent;
 
     /**
      * Returns the last token of this qualified name.
@@ -212,7 +217,12 @@ public class QualName extends ModuleName implements Comparable<QualName>, Fallib
 
     /** Turns this qualified name into a {@link File} object with a given extension. */
     public File toFile(String extension) {
-        return new File(parent().toFile(), last() + extension);
+        var parent = parent();
+        if (parent == null) {
+            return new File(last() + extension);
+        } else {
+            return new File(parent.toFile(), last() + extension);
+        }
     }
 
     /**
@@ -297,7 +307,7 @@ public class QualName extends ModuleName implements Comparable<QualName>, Fallib
     }
 
     /** Parser for qualified names. */
-    private static Parser<QualName> PARSER;
+    private static @Nullable Parser<QualName> PARSER;
 
     /** Returns a parser for space-separated lists of qualified names. */
     public static final Parser<List<QualName>> listParser() {
@@ -309,5 +319,5 @@ public class QualName extends ModuleName implements Comparable<QualName>, Fallib
     }
 
     /** The singleton parser for space-separated lists of qualified names. */
-    private static Parser<List<QualName>> LIST_PARSER;
+    private static @Nullable Parser<List<QualName>> LIST_PARSER;
 }

@@ -195,7 +195,8 @@ public class Transformer {
         AspectGraph result = null;
         if (startGraphName != null) {
             // first see if the name refers to a local host graph
-            result = getGrammarModel().getModelGraph(ResourceKind.HOST, QualName.name(startGraphName));
+            result = getGrammarModel()
+                .getModelGraph(ResourceKind.HOST, QualName.parse(startGraphName));
             if (result == null) {
                 // try to load the graph as a standalone file
                 startGraphName = FileType.STATE.addExtension(startGraphName);
