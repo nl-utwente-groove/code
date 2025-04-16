@@ -77,11 +77,13 @@ public class LTSReporter extends AExplorationReporter {
                                  ExploreResult answer) throws IOException {
         // Create the LTS view to be exported.
         boolean internal = labels.showRecipes();
+        ExplorationReporter.time("Create LTS fragment to be exported");
         var gtsFragment = switch (filter) {
         case NONE -> lts.toFragment(true, internal);
         case SPANNING -> lts.toFragment(false, internal);
         case RESULT -> answer.toFragment(internal);
         };
+        ExplorationReporter.time("Turn LTS fragment into plain graph");
         MultiGraph ltsGraph = gtsFragment.toPlainGraph(labels, answer);
         // Export GTS.
         String ltsName;
@@ -108,6 +110,7 @@ public class LTSReporter extends AExplorationReporter {
             }
             if (exporter.exports(exportable)) {
                 try {
+                    ExplorationReporter.time("Do export");
                     exporter.doExport(exportable, outFile, fileType);
                 } catch (PortException e1) {
                     throw new IOException(e1);
