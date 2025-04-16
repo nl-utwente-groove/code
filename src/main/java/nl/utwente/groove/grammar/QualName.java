@@ -141,20 +141,20 @@ public class QualName extends ModuleName implements Comparable<QualName>, Fallib
      * name iff the qualified name consists of a single token only.
      * @return the parent qualified name
      */
-    public @Nullable ModuleName parent() {
-        if (this.parent == null) {
-            ModuleName parent;
+    public ModuleName parent() {
+        var result = this.parent;
+        if (result == null) {
             if (size() == 1) {
-                parent = ModuleName.TOP;
+                result = ModuleName.TOP;
             } else {
-                parent = new QualName();
+                result = new QualName();
                 for (int i = 0; i < size() - 1; i++) {
-                    parent.tokens.add(get(i));
+                    result.tokens.add(get(i));
                 }
             }
-            this.parent = parent;
+            this.parent = result;
         }
-        return this.parent;
+        return result;
     }
 
     /** The parent qualified name (may be {@code null}). */
@@ -217,12 +217,7 @@ public class QualName extends ModuleName implements Comparable<QualName>, Fallib
 
     /** Turns this qualified name into a {@link File} object with a given extension. */
     public File toFile(String extension) {
-        var parent = parent();
-        if (parent == null) {
-            return new File(last() + extension);
-        } else {
-            return new File(parent.toFile(), last() + extension);
-        }
+        return new File(parent().toFile(), last() + extension);
     }
 
     /**
