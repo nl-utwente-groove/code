@@ -21,7 +21,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.util.Groove;
 
@@ -32,6 +33,7 @@ import nl.utwente.groove.util.Groove;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class ModuleName {
     /**
      * Constructs an initially empty module name.
@@ -50,7 +52,7 @@ public class ModuleName {
     /**
      * Returns the tokens in this module name as an array of strings.
      */
-    public List<@NonNull String> tokens() {
+    public List<String> tokens() {
         return this.tokens;
     }
 
@@ -74,12 +76,12 @@ public class ModuleName {
      * @require <tt>0 <= i && i < size()</tt>
      * @ensure </tt>return == tokens[i]</tt>
      */
-    public @NonNull String get(int i) {
+    public String get(int i) {
         return tokens().get(i);
     }
 
     /** The tokens of which this module name consists. */
-    final List<@NonNull String> tokens;
+    final List<String> tokens;
 
     /** Returns a new module name consisting of the tokens of this one,
      * followed by the tokens of another one.
@@ -91,7 +93,7 @@ public class ModuleName {
     }
 
     /** Extends this module name with a child, and returns the result. */
-    public QualName extend(@NonNull String... children) {
+    public QualName extend(String... children) {
         QualName result = new QualName(tokens());
         result.tokens.addAll(Arrays.asList(children));
         return result;
@@ -109,7 +111,7 @@ public class ModuleName {
     }
 
     /** Nests this module name inside a new outer token, and returns the result. */
-    public QualName nest(@NonNull String parent) {
+    public QualName nest(String parent) {
         QualName result = new QualName();
         result.tokens.add(parent);
         result.tokens.addAll(tokens());
@@ -174,6 +176,7 @@ public class ModuleName {
             for (String token : tokens()) {
                 result = new File(result, token);
             }
+            assert result != null;
         }
         return result;
     }
@@ -184,7 +187,7 @@ public class ModuleName {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }
@@ -213,14 +216,15 @@ public class ModuleName {
 
     @Override
     public String toString() {
-        if (this.text == null) {
-            this.text = toString(SEPARATOR);
+        var result = this.text;
+        if (result == null) {
+            this.text = result = toString(SEPARATOR);
         }
-        return this.text;
+        return result;
     }
 
     /** The text returned by {@link #toString()}. */
-    private String text;
+    private @Nullable String text;
 
     /**
      * Character to separate constituent tokens.
