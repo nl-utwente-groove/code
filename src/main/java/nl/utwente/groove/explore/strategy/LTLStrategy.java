@@ -24,6 +24,8 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import gov.nasa.ltl.trans.Formula;
 import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.explore.result.Acceptor;
@@ -205,10 +207,13 @@ public class LTLStrategy extends Strategy {
      * Callback method to determine the next state to be explored.
      * @return The next state to be explored, or {@code null} if exploration is done.
      */
-    protected ProductState computeNextState() {
+    protected @Nullable ProductState computeNextState() {
         ProductState result = getFreshState();
         if (result == null) {
-            result = backtrack().target();
+            var backtrack = backtrack();
+            result = backtrack == null
+                ? null
+                : backtrack.target();
         }
         return result;
     }
@@ -219,7 +224,7 @@ public class LTLStrategy extends Strategy {
      * @return the topmost incompletely explored transition on the
      * state stack, or {@code null} if there is none.
      */
-    protected ProductTransition backtrack() {
+    protected @Nullable ProductTransition backtrack() {
         ProductTransition result = null;
         ProductState parent = null;
 
