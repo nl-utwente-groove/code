@@ -64,11 +64,6 @@ public class Recipe extends Procedure implements Action {
     }
 
     @Override
-    public boolean isProperty() {
-        return getRole().isProperty();
-    }
-
-    @Override
     public CheckPolicy getPolicy() {
         return null;
     }

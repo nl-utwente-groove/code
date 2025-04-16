@@ -41,7 +41,9 @@ public interface Action extends Callable, Comparable<Action> {
      * Convenience method for {@code getRole().isProperty()}.
      * @see Role#isProperty()
      */
-    public boolean isProperty();
+    default public boolean isProperty() {
+        return getRole().isProperty();
+    }
 
     /** Indicates if this is a partial action.
      * A partial action is a rule that serves as a sub-rule of some recipe.
@@ -147,13 +149,14 @@ public interface Action extends Callable, Comparable<Action> {
      * A comparator for priorities, encoded as {@link Integer} objects. This
      * implementation orders priorities from high to low.
      */
-    public static final AbstractComparator<Integer> PRIORITY_COMPARATOR = new AbstractComparator<>() {
-        @Override
-        public int compare(Integer o1, Integer o2) {
-            return o2.intValue() - o1.intValue();
-        }
+    public static final AbstractComparator<Integer> PRIORITY_COMPARATOR
+        = new AbstractComparator<>() {
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                return o2.intValue() - o1.intValue();
+            }
 
-    };
+        };
 
     /**
      * A comparator for actions. This

@@ -511,11 +511,6 @@ public class Rule implements Action, Fixable {
         return result;
     }
 
-    @Override
-    public boolean isProperty() {
-        return getRole().isProperty();
-    }
-
     /**
      * Returns a match of this condition into a given host graph, given a
      * matching of the root graph.

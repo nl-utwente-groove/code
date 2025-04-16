@@ -19,6 +19,7 @@ package nl.utwente.groove.explore.strategy;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
@@ -175,7 +176,7 @@ public class LTLStrategy extends Strategy {
         Set<Proposition> satisfiedProps = getProps(outTransitions);
         trans: for (BuchiTransition buchiTrans : prodState.getBuchiLocation().outTransitions()) {
             if (buchiTrans.isEnabled(satisfiedProps)) {
-                boolean finalState = true;
+                boolean finalState = prodState.getGraphState().isFinal();
                 for (GraphTransition trans : outTransitions) {
                     if (trans.getRole() == EdgeRole.BINARY) {
                         finalState = false;
@@ -207,19 +208,19 @@ public class LTLStrategy extends Strategy {
     protected ProductState computeNextState() {
         ProductState result = getFreshState();
         if (result == null) {
-            result = backtrack();
+            result = backtrack().target();
         }
         return result;
     }
 
     /**
      * Backtracks the state stack, and returns the
-     * topmost unexplored state.
-     * @return the topmost incompletely explored state on the
+     * topmost unexplored outgoing transition.
+     * @return the topmost incompletely explored transition on the
      * state stack, or {@code null} if there is none.
      */
-    protected ProductState backtrack() {
-        ProductState result = null;
+    protected ProductTransition backtrack() {
+        ProductTransition result = null;
         ProductState parent = null;
 
         do {
@@ -261,18 +262,23 @@ public class LTLStrategy extends Strategy {
                 var next = stackState.getGraphState();
                 exploreResult.addState(next);
                 if (previous != null) {
-                    var inTrans = previous
-                        .getTransitions()
-                        .stream()
-                        .filter(t -> t.target().equals(next))
-                        .findAny()
-                        .get();
-                    exploreResult.add(inTrans);
+                    var inTrans = findTransitionTo(previous, next);
+                    exploreResult.add(inTrans.get());
                 }
                 previous = next;
             }
+            if (previous != null) {
+                var inTrans = findTransitionTo(previous, target.getGraphState());
+                exploreResult.add(inTrans.get());
+            }
         }
         return result;
+    }
+
+    /** Returns a transition from a given source state to a given target state, if any. */
+    private Optional<? extends GraphTransition> findTransitionTo(GraphState source,
+                                                                 GraphState target) {
+        return source.getTransitions().stream().filter(t -> t.target().equals(target)).findAny();
     }
 
     /**
@@ -288,12 +294,13 @@ public class LTLStrategy extends Strategy {
      * Returns a random open successor of a state, if any. Returns null
      * otherwise.
      */
-    protected ProductState getNextSuccessor(ProductState state) {
-        RandomChooserInSequence<ProductState> chooser = new RandomChooserInSequence<>();
+    protected ProductTransition getNextSuccessor(ProductState state) {
+        RandomChooserInSequence<ProductTransition> chooser = new RandomChooserInSequence<>();
         for (ProductTransition trans : state.outTransitions()) {
-            ProductState s = trans.target();
-            if (!s.isClosed()) {
-                chooser.show(s);
+            if (!trans.graphTransition().getAction().isProperty()) {
+                if (!trans.target().isClosed()) {
+                    chooser.show(trans);
+                }
             }
         }
         return chooser.pickRandom();
