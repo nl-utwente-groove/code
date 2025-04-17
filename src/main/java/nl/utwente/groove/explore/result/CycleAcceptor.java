@@ -78,15 +78,14 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
                     result.addState(next);
                     if (previous != null) {
                         var inTrans = findTransitionTo(previous, next);
-                        result.add(inTrans.get());
+                        result.addTransition(inTrans.get());
                     }
                     previous = next;
                 }
-                if (previous == null) {
-                    result.addState(state.getGraphState());
-                } else {
+                result.addState(state.getGraphState());
+                if (previous != null) {
                     var inTrans = findTransitionTo(previous, state.getGraphState());
-                    result.add(inTrans.get());
+                    result.addTransition(inTrans.get());
                 }
             }
         }

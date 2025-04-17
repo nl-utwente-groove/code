@@ -93,9 +93,9 @@ public class ExploreResult { //implements Iterable<GraphState> {
     private final Set<GraphTransition> transitions = new LinkedHashSet<>();
 
     /**
-     * Adds a state to the result.
+     * Adds a transition to the result.
      */
-    public void add(GraphTransition t) {
+    public void addTransition(GraphTransition t) {
         this.transitions.add(t);
     }
 

@@ -469,7 +469,7 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
         return result;
     }
 
-    /** Returns the traces from the given set of states to the start state. */
+    /** Returns the traces to the given set of states from the start state. */
     public Set<GraphTransition> findTraces(Iterable<GraphState> states) {
         Set<GraphTransition> result = new HashSet<>();
         for (GraphState state : states) {

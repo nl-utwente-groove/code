@@ -268,13 +268,13 @@ public class LTLStrategy extends Strategy {
                 exploreResult.addState(next);
                 if (previous != null) {
                     var inTrans = findTransitionTo(previous, next);
-                    exploreResult.add(inTrans.get());
+                    exploreResult.addTransition(inTrans.get());
                 }
                 previous = next;
             }
             if (previous != null) {
                 var inTrans = findTransitionTo(previous, target.getGraphState());
-                exploreResult.add(inTrans.get());
+                exploreResult.addTransition(inTrans.get());
             }
         }
         return result;
