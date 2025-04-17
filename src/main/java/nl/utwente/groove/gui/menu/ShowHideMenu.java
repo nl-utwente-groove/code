@@ -57,6 +57,7 @@ import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.GrooveFileChooser;
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.lts.GTS;
+import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -699,10 +700,19 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
 
         @Override
         protected boolean isInvolved(JCell<@NonNull GTS> jCell) {
-            return this.trace.contains(jCell);
+            boolean result = false;
+            if (jCell instanceof LTSJCell ltsJCell) {
+                for (var t : ltsJCell.getEdges()) {
+                    result = this.trace.contains(t);
+                    if (result) {
+                        break;
+                    }
+                }
+            }
+            return result;
         }
 
-        private Set<LTSJCell> trace;
+        private Set<GraphTransition> trace;
     }
 
     /**
