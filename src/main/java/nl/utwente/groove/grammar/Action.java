@@ -76,7 +76,7 @@ public interface Action extends Callable, Comparable<Action> {
         StringBuilder result = new StringBuilder();
         var specialLabel = getSpecialLabel();
         // First try to construct a special label
-        if (!specialLabel.isBlank()) {
+        if (special & !specialLabel.isBlank()) {
             Object[] stringArgs = new Object[args.length];
             for (int i = 0; i < args.length; i++) {
                 var arg = args[i];
@@ -96,7 +96,8 @@ public interface Action extends Callable, Comparable<Action> {
         if (result.isEmpty()) {
             result.append(getQualName());
             ThreeValued useParameters = getGrammarProperties().isUseParameters();
-            if (!useParameters.isFalse() && (args.length > 0 || useParameters.isTrue())) {
+            if (!special
+                || !useParameters.isFalse() && (args.length > 0 || useParameters.isTrue())) {
                 result.append('(');
                 boolean first = true;
                 for (int i = 0; i < args.length; i++) {
