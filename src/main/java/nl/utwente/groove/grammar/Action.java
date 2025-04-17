@@ -59,19 +59,22 @@ public interface Action extends Callable, Comparable<Action> {
      * Returns the special label to be used in the LTS when this action is applied.
      * If this is the empty string, the qualified action name is used.
      */
-    default public String getTransitionLabel() {
+    default public String getSpecialLabel() {
         return "";
     }
 
     /** Constructs the label string for a transition based on this action,
      * given a set of arguments.
-     * This takes into account the special transition label (see {@link #getTransitionLabel()};
-     * if that is not set, it takes into account the system property for showing parameters
+     * A flag determines it this takes into account the special transition label
+     * (see {@link #getSpecialLabel()} or, if that is not set, the system property for showing parameters
      * (see {@link GrammarProperties#isUseParameters()}).
+     * @param args the arguments to be used in producing the label
+     * @param special flag to determine if the special transition label and the show-parameters
+     * property are to be regarded
      */
-    default public String toLabelString(HostNode[] args) {
+    default public String toLabelString(HostNode[] args, boolean special) {
         StringBuilder result = new StringBuilder();
-        var specialLabel = getTransitionLabel();
+        var specialLabel = getSpecialLabel();
         // First try to construct a special label
         if (!specialLabel.isBlank()) {
             Object[] stringArgs = new Object[args.length];

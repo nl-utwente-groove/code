@@ -215,7 +215,7 @@ public class Rule implements Action, Fixable {
     }
 
     @Override
-    public String getTransitionLabel() {
+    public String getSpecialLabel() {
         var result = this.transitionLabel;
         return result == null
             ? ""

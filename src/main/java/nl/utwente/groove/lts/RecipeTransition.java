@@ -369,7 +369,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
 
     @Override
     protected Line computeLine() {
-        return Line.atom(getAction().toLabelString(getArguments()));
+        return Line.atom(getAction().toLabelString(getArguments(), true));
     }
 
     @Override

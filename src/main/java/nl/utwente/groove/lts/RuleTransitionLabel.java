@@ -131,7 +131,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         StringBuilder result = new StringBuilder();
         for (var swt : getStep().getStack()) {
             if (swt.getKind() == Kind.RULE) {
-                result.append(getAction().toLabelString(getArguments()));
+                result.append(getAction().toLabelString(getArguments(), true));
             } else if (Options.instance().isSelected(Options.SHOW_CALL_NESTING_OPTION)) {
                 result.append(swt.getQualName());
                 result.append('/');

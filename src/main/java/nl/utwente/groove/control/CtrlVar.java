@@ -79,10 +79,11 @@ public record CtrlVar(@Nullable QualName scope, @NonNull String name, @NonNull C
                 return -1;
             }
         } else {
-            if (o.scope() == null) {
+            var oScope = o.scope();
+            if (oScope == null) {
                 return 1;
             } else {
-                result = scope.compareTo(o.scope());
+                result = scope.compareTo(oScope);
             }
         }
         if (result != 0) {

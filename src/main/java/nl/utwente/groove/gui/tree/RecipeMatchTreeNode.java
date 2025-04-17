@@ -77,7 +77,7 @@ class RecipeMatchTreeNode extends MatchTreeNode {
         result.append(getNumber());
         result.append(": ");
         var args = getRecipeArgs(getSimulator(), getSource(), getInitMatch().getStep());
-        result.append(getRecipe().toLabelString(args));
+        result.append(getRecipe().toLabelString(args, true));
         if (this.anchored) {
             result.append(getKey().getEvent().getAnchorImageString());
         }

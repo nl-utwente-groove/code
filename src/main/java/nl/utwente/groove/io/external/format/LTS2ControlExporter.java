@@ -131,7 +131,7 @@ public class LTS2ControlExporter extends AbstractExporter.Writer {
                 args[i] = null;
             }
         }
-        emit(trans.getAction().toLabelString(args) + ";");
+        emit(trans.getAction().toLabelString(args, false) + ";");
     }
 
     /** The set of currently covered states. */
