@@ -43,7 +43,7 @@ public interface ExplorationReporter extends ExplorationListener {
     }
 
     /** Flag determining whether timing information should be emitted. */
-    static final boolean TIME = true;
+    static final boolean TIME = false;
     /** Formatter for the time stamp of timing information. */
     static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss:SSS");
 }
