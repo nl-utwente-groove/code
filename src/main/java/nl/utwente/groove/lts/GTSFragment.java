@@ -42,6 +42,7 @@ import nl.utwente.groove.graph.multi.MultiNode;
 /**
  * Fragment of a GTS, consisting of a subset of the states and transitions
  * of a given GTS.
+ * A GTS fragment has a final state predicate that possibly diverges from that of the GTS itself.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -95,6 +96,27 @@ public class GTSFragment extends AGraph<GraphState,GraphTransition> {
     /** Returns the start state of the GTS. */
     public GraphState startState() {
         return this.gts.startState();
+    }
+
+    /** Explicitly sets the final states of this fragment. */
+    public void setFinal(Set<GraphState> finalStates) {
+        this.finalStates = finalStates;
+    }
+
+    private @Nullable Set<GraphState> finalStates;
+
+    /** Indicates if a given graph state is final according to this GTS.
+     * If the set of final states has been set explicitly (by #setFinal) then the
+     * state is looked up in that set, otherwise finality is determined by {@link GraphState#isFinal()}.
+     * @param state The state to be tested
+     * @return {@code true} if either final states have been set for this fragment
+     * (through #setFinal) and this state is in the set, or the state was originally final.
+     */
+    public boolean isFinal(GraphState state) {
+        var finalStates = this.finalStates;
+        return finalStates == null
+            ? state.isFinal()
+            : finalStates.contains(state);
     }
 
     @Override

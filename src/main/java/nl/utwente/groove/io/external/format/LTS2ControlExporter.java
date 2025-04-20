@@ -90,13 +90,13 @@ public class LTS2ControlExporter extends AbstractExporter.Writer {
             .filter(t -> this.covered.add(t.target()))
             .toList();
         if (outs.isEmpty()) {
-            if (state.isFinal()) {
+            if (this.gts.isFinal(state)) {
                 emit("// final state");
             } else {
                 emit("// deadlocked state");
                 emit("halt");
             }
-        } else if (outs.size() == 1 && !state.isFinal()) {
+        } else if (outs.size() == 1 && !this.gts.isFinal(state)) {
             var out = outs.get(0);
             emitTransition(out);
             emit(out.target());
@@ -114,7 +114,7 @@ public class LTS2ControlExporter extends AbstractExporter.Writer {
                 emit(out.target());
                 decreaseIndent();
             }
-            if (state.isFinal()) {
+            if (this.gts.isFinal(state)) {
                 emit("} or { // final state");
             }
             emit("}");
