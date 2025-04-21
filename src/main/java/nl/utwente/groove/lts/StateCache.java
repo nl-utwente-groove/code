@@ -749,53 +749,66 @@ public class StateCache implements Cache {
         /** Computes the recipe out-parameter values by reconstructing the final transition. */
         static private HostNode[] getOutValuesFromFinalTrans(RuleTransition partial) {
             assert partial.isInnerStep() && !partial.target().getPrimeFrame().isInner();
+            HostNode[] result;
             var step = partial.getStep();
-            var valuator = partial.getGTS().getRecord().getValuator();
-            // apply the transition's push change; for this we need the rule arguments
-            var anchorImages = partial.getEvent().getAnchorImages();
-            valuator.setAnchorInfo(i -> (HostNode) anchorImages[i]);
-            var addedNodes = partial.getAddedNodes();
-            valuator.setCreatorInfo(i -> addedNodes[i]);
-            Object[] stack = partial.source().getFrameStack(step.getSource());
-            stack = step.getPush().apply(stack, valuator);
-            // pop until the (final) switch within the outer recipe body
-            var recipeFinal = step
-                .getFullStack()
-                .stream()
-                .filter(s -> s.getTemplate().filter(t -> t.hasOwner(Kind.RECIPE)).isPresent())
-                .findFirst()
-                .get();
-            stack = step.getPopUntil(s -> s == recipeFinal).apply(stack);
-            // now obtain the parameter values
-            var result = recipeFinal.onFinish().assignFinal2Par().lookup(stack);
-            // apply the transition's permutation, if it is not the identity
-            if (!partial.getMorphism().isIdentity()) {
-                var nodeMap = partial.getMorphism().nodeMap();
-                result = Assignment.map(result, n -> nodeMap.get(n));
+            if (step.getRecipe().get().getSignature().isEmpty()) {
+                result = EMPTY_OUT_VALUES;
+            } else {
+                var valuator = partial.getGTS().getRecord().getValuator();
+                // apply the transition's push change; for this we need the rule arguments
+                var anchorImages = partial.getEvent().getAnchorImages();
+                valuator.setAnchorInfo(i -> (HostNode) anchorImages[i]);
+                var addedNodes = partial.getAddedNodes();
+                valuator.setCreatorInfo(i -> addedNodes[i]);
+                Object[] stack = partial.source().getFrameStack(step.getSource());
+                stack = step.getPush().apply(stack, valuator);
+                // pop until the (final) switch within the outer recipe body
+                var recipeFinal = step
+                    .getFullStack()
+                    .stream()
+                    .filter(s -> s.getTemplate().filter(t -> t.hasOwner(Kind.RECIPE)).isPresent())
+                    .findFirst()
+                    .get();
+                stack = step.getPopUntil(s -> s == recipeFinal).apply(stack);
+                // now obtain the parameter values
+                result = recipeFinal.onFinish().assignFinal2Par().lookup(stack);
+                // apply the transition's permutation, if it is not the identity
+                if (!partial.getMorphism().isIdentity()) {
+                    var nodeMap = partial.getMorphism().nodeMap();
+                    result = Assignment.map(result, n -> nodeMap.get(n));
+                }
             }
             return result;
         }
 
         /** Computes the recipe out-parameter values from the prime frame of the target state. */
         static private HostNode[] getOutValuesFromTarget(GraphState target) {
-            HostNode[] result = null;
-            assert target.getPrimeFrame().isInner() && !target.isInner();
-            // look for the last frame between the state's prime and actual frames
-            // that was still internal
-            var stack = target.getPrimeStack();
-            var context = target.getPrimeFrame().getContextStack();
-            var loc = target.getPrimeFrame().getLocation();
-            for (var call : context.outIterable()) {
-                if (call.getCall().getUnit().getKind() == Kind.RECIPE) {
-                    result = loc.assignFinal2Par().lookup(stack);
-                    break;
-                } else {
-                    stack = call.assignFinal2Target(loc).toPop().apply(stack);
-                    loc = call.onFinish();
+            HostNode[] result;
+            var primeFrame = target.getPrimeFrame();
+            assert primeFrame.isInner() && !target.isInner();
+            if (primeFrame.getRecipe().get().getSignature().isEmpty()) {
+                result = EMPTY_OUT_VALUES;
+            } else {
+                result = null;
+                // look for the last frame between the state's prime and actual frames
+                // that was still internal
+                var stack = target.getPrimeStack();
+                var context = primeFrame.getContextStack();
+                var loc = primeFrame.getLocation();
+                for (var call : context.outIterable()) {
+                    if (call.getCall().getUnit().getKind() == Kind.RECIPE) {
+                        result = loc.assignFinal2Par().lookup(stack);
+                        break;
+                    } else {
+                        stack = call.assignFinal2Target(loc).toPop().apply(stack);
+                        loc = call.onFinish();
+                    }
                 }
             }
             return result;
         }
+
+        static private final HostNode[] EMPTY_OUT_VALUES = {};
     }
 
     /** Debug flag. */

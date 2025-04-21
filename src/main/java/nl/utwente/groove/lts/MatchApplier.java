@@ -100,8 +100,10 @@ public class MatchApplier {
             if (isoTarget == null) {
                 transition = freshTarget;
             } else {
+                // if iso checking is enabled, we don't really know if there is a non-trivial isomorphism
+                // involved in this transition; we have to assume the worst
                 transition = new DefaultRuleTransition(source, match, freshTarget.getAddedNodes(),
-                    isoTarget, true);
+                    isoTarget, getGTS().getRecord().isCheckIso());
             }
         }
         // add transition to gts
