@@ -122,7 +122,7 @@ abstract public class ClosingStrategy extends GTSStrategy {
      * This is a hook for conditional exploration.
      */
     protected boolean isStop(StopMode stopMode, GraphState state) {
-        return this.stopMode == stopMode && this.exploreCondition.test(state);
+        return this.stopMode == stopMode && !state.isInner() && this.exploreCondition.test(state);
     }
 
     private final StopMode stopMode;
