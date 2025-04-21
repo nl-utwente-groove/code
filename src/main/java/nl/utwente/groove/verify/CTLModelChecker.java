@@ -111,7 +111,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
 
     private void ctlCheck(String[] genArgs) throws Exception {
         long genStartTime = System.currentTimeMillis();
-        Model model;
+        ModelFacade model;
         if (genArgs != null) {
             emit("Generator:\t%s%n", Groove.toString(genArgs, " ", ""));
             model = generateModel(genArgs);
@@ -124,11 +124,11 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             model = generateModel(this.modelGraph.getPath());
         } else {
             emit("Model:\t%s%n", this.modelGraph);
-            model = new GraphModel(Groove.loadGraph(this.modelGraph), this.ltsLabels);
+            model = new GraphFacade(Groove.loadGraph(this.modelGraph), this.ltsLabels);
             emit("Model loaded:\t%s states%n", model.nodeSet().size());
         }
         // check if the formulas match the model
-        if (model instanceof GTSModel gtsModel) {
+        if (model instanceof GTSFacade gtsModel) {
             var grammar = gtsModel.gts.getGrammar();
             var errors = new FormatErrorSet();
             for (var formula : this.ctlProps) {
@@ -144,9 +144,12 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         int maxWidth = 0;
         Map<Formula,Boolean> outcome = new HashMap<>();
         for (Formula property : this.ctlProps) {
+            emit("Formula %s: ", property.toString());
             maxWidth = Math.max(maxWidth, property.getParseString().length());
             CTLMarker marker = new CTLMarker(property, model);
+            emit("[initialised] ");
             outcome.put(property, marker.hasValue(true));
+            emit("[checked]\n");
         }
         emit("%n");
         emit(LOW, "Model checking outcome (for the initial state of the model):%n");
@@ -165,13 +168,13 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
     /**
      * Generates a model by invoking the Generator with a given list of arguments.
      */
-    private GTSModel generateModel(String... genArgs) throws Exception {
+    private GTSFacade generateModel(String... genArgs) throws Exception {
         List<String> args = new ArrayList<>();
         args.add("-v");
         args.add("" + getVerbosity().getLevel());
         args.addAll(Arrays.asList(genArgs));
         try {
-            return new GTSModel(Generator.execute(args.toArray(new String[] {})));
+            return new GTSFacade(Generator.execute(args.toArray(new String[] {})));
         } catch (Exception e) {
             throw new Exception("Error in state space generation:\n" + e.getMessage(), e);
         }
@@ -238,7 +241,8 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             try {
                 return Formula.parse(Logic.CTL, argument).toCtlFormula();
             } catch (FormatException e) {
-                throw new CmdLineException(this.owner, e);
+                throw new CmdLineException(this.owner,
+                    "Error while parsing '%s': %s".formatted(argument, e.getMessage()));
             }
         }
     }
@@ -309,21 +313,21 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
     }
 
     /** Creates a CTL-checkable model from an exploration result. */
-    public static Model newModel(ExploreResult result) {
-        return new GTSModel(result);
+    public static ModelFacade newModel(ExploreResult result) {
+        return new GTSFacade(result);
     }
 
     /** Creates a CTL-checkable model from a graph plus special labels mapping.
      * @throws FormatException if the graph is not compatible with the special labels.
      */
-    public static Model newModel(Graph graph, LTSLabels ltsLabels) throws FormatException {
-        return new GraphModel(graph, ltsLabels == null
+    public static ModelFacade newModel(Graph graph, LTSLabels ltsLabels) throws FormatException {
+        return new GraphFacade(graph, ltsLabels == null
             ? LTSLabels.DEFAULT
             : ltsLabels);
     }
 
     /** Facade for models, with the functionality required for CTL model checking. */
-    public static interface Model {
+    public static interface ModelFacade {
         /** Returns the number of (exposed) nodes of the model. */
         int nodeCount();
 
@@ -355,10 +359,10 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
      * change touched just a few parts of the code and mainly at the
      * initialization. So I'd say that this is not so bad...
      */
-    /** Model built from an exploration result. */
-    private static class GTSModel implements Model {
+    /** Model facade built from an exploration result. */
+    private static class GTSFacade implements ModelFacade {
         /** Maps an exploration result into a model. */
-        public GTSModel(ExploreResult result) {
+        public GTSFacade(ExploreResult result) {
             this.gts = result.getGTS();
             this.result = result;
             if (this.gts.hasAbsentStates() || this.gts.hasTransientStates()) {
@@ -413,6 +417,9 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             }
         }
 
+        /** Mapping from nodes to their numbers,
+         * used in preference to the natural node number in case of absent or transient states
+         */
         private final Map<GraphState,Integer> nodeIdxMap;
 
         @Override
@@ -421,12 +428,12 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         }
     }
 
-    /** Model built from a graph and a special labels mapping. */
-    private static class GraphModel implements Model {
+    /** Model facade from a graph and a special labels mapping. */
+    private static class GraphFacade implements ModelFacade {
         /** Wraps a graph and a special labels mapping into a model.
          * @throws FormatException if the graph is not compatible with the special labels.
          */
-        public GraphModel(Graph graph, LTSLabels ltsLabels) throws FormatException {
+        public GraphFacade(Graph graph, LTSLabels ltsLabels) throws FormatException {
             this.graph = graph;
             this.ltsLabels = ltsLabels == null
                 ? LTSLabels.DEFAULT

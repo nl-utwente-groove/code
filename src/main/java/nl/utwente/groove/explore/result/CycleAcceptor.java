@@ -17,9 +17,12 @@
 
 package nl.utwente.groove.explore.result;
 
+import java.util.Optional;
+
 import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.explore.strategy.LTLStrategy;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.verify.ModelChecking.Outcome;
 import nl.utwente.groove.verify.ModelChecking.Record;
 import nl.utwente.groove.verify.ProductListener;
@@ -74,19 +77,24 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
                     var next = stackState.getGraphState();
                     result.addState(next);
                     if (previous != null) {
-                        var inTrans = previous
-                            .getTransitions()
-                            .stream()
-                            .filter(t -> t.target().equals(next))
-                            .findAny()
-                            .get();
-                        result.add(inTrans);
+                        var inTrans = findTransitionTo(previous, next);
+                        result.addTransition(inTrans.get());
                     }
                     previous = next;
                 }
                 result.addState(state.getGraphState());
+                if (previous != null) {
+                    var inTrans = findTransitionTo(previous, state.getGraphState());
+                    result.addTransition(inTrans.get());
+                }
             }
         }
+    }
+
+    /** Returns a transition from a given source state to a given target state, if any. */
+    private Optional<? extends GraphTransition> findTransitionTo(GraphState source,
+                                                                 GraphState target) {
+        return source.getTransitions().stream().filter(t -> t.target().equals(target)).findAny();
     }
 
     private Outcome redDFS(ProductState state) {

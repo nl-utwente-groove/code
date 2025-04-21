@@ -18,6 +18,7 @@ package nl.utwente.groove.explore.util;
 
 import static nl.utwente.groove.explore.Verbosity.HIGH;
 import static nl.utwente.groove.explore.Verbosity.MEDIUM;
+import static nl.utwente.groove.explore.util.ExplorationReporter.time;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -169,9 +170,7 @@ public class StatisticsReporter extends AExplorationReporter {
     }
 
     private void reportProfiling() {
-        if (TIME) {
-            time("Reporting the profile");
-        }
+        time("Reporting the profile");
         emit(HIGH, "%n");
         if (this.sbVerbosity.isHigh()) {
             StringWriter sw = new StringWriter();
@@ -184,9 +183,7 @@ public class StatisticsReporter extends AExplorationReporter {
 
     private void reportStatistics() {
         if (Groove.GATHER_STATISTICS) {
-            if (TIME) {
-                time("Reporting detailed statistics");
-            }
+            time("Reporting detailed statistics");
             reportGraphStatistics();
             reportGraphElementStatistics();
             reportTransitionStatistics();
@@ -214,45 +211,31 @@ public class StatisticsReporter extends AExplorationReporter {
 
     /** Reports data on the LTS generated. */
     private void reportLTS() {
-        if (TIME) {
-            time("Reporting LTS data");
-        }
+        time("Reporting LTS data");
         String formatString = "%-14s%d%n";
         String subFormatString = "    " + formatString;
         emit(MEDIUM, "%n");
-        if (TIME) {
-            time("Reporting state count");
-        }
+        time("Reporting state count");
         emit(MEDIUM, formatString, "States:", getGTS().getStateCount());
         if (getGTS().hasOpenStates()) {
-            if (TIME) {
-                time("Reporting closed states");
-            }
+            time("Reporting closed states");
             emit(HIGH, subFormatString, "Closed:",
                  getGTS().getStateCount() - getGTS().getOpenStateCount());
         }
         ExploreResult result = getExploration().getResult();
         if (!result.isEmpty()) {
-            if (TIME) {
-                time("Reporting result size");
-            }
+            time("Reporting result size");
             emit(HIGH, subFormatString, "Result:", result.size());
         }
         if (getGTS().hasErrorStates()) {
-            if (TIME) {
-                time("Reporting error states");
-            }
+            time("Reporting error states");
             emit(HIGH, subFormatString, "Errors:", getGTS().getErrorStateCount());
         }
         if (getGTS().hasFinalStates()) {
-            if (TIME) {
-                time("Reporting final state count");
-            }
+            time("Reporting final state count");
             emit(HIGH, subFormatString, "Final:", getGTS().getFinalStateCount());
         }
-        if (TIME) {
-            time("Reporting transition count");
-        }
+        time("Reporting transition count");
         emit(MEDIUM, formatString, "Transitions:", getGTS().getTransitionCount());
     }
 
@@ -338,9 +321,7 @@ public class StatisticsReporter extends AExplorationReporter {
 
     /** Reports on the time usage. */
     private void reportTime() {
-        if (TIME) {
-            time("Reporting time usage");
-        }
+        time("Reporting time usage");
         // Timing figures.
         long total = Exploration.getRunningTime();
         long matching = Rule.getMatchingTime();
@@ -384,9 +365,7 @@ public class StatisticsReporter extends AExplorationReporter {
      * Reports on the space usage.
      */
     private void reportSpace() {
-        if (TIME) {
-            time("Reporting space usage");
-        }
+        time("Reporting space usage");
         final Runtime runTime = Runtime.getRuntime();
         if (this.preciseSpace) {
             // Clear all caches to see all available memory.

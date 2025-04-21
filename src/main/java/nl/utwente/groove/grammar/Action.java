@@ -41,7 +41,9 @@ public interface Action extends Callable, Comparable<Action> {
      * Convenience method for {@code getRole().isProperty()}.
      * @see Role#isProperty()
      */
-    public boolean isProperty();
+    default public boolean isProperty() {
+        return getRole().isProperty();
+    }
 
     /** Indicates if this is a partial action.
      * A partial action is a rule that serves as a sub-rule of some recipe.
@@ -57,21 +59,24 @@ public interface Action extends Callable, Comparable<Action> {
      * Returns the special label to be used in the LTS when this action is applied.
      * If this is the empty string, the qualified action name is used.
      */
-    default public String getTransitionLabel() {
+    default public String getSpecialLabel() {
         return "";
     }
 
     /** Constructs the label string for a transition based on this action,
      * given a set of arguments.
-     * This takes into account the special transition label (see {@link #getTransitionLabel()};
-     * if that is not set, it takes into account the system property for showing parameters
+     * A flag determines it this takes into account the special transition label
+     * (see {@link #getSpecialLabel()} or, if that is not set, the system property for showing parameters
      * (see {@link GrammarProperties#isUseParameters()}).
+     * @param args the arguments to be used in producing the label
+     * @param special flag to determine if the special transition label and the show-parameters
+     * property are to be regarded
      */
-    default public String toLabelString(HostNode[] args) {
+    default public String toLabelString(HostNode[] args, boolean special) {
         StringBuilder result = new StringBuilder();
-        var specialLabel = getTransitionLabel();
+        var specialLabel = getSpecialLabel();
         // First try to construct a special label
-        if (!specialLabel.isBlank()) {
+        if (special & !specialLabel.isBlank()) {
             Object[] stringArgs = new Object[args.length];
             for (int i = 0; i < args.length; i++) {
                 var arg = args[i];
@@ -91,7 +96,8 @@ public interface Action extends Callable, Comparable<Action> {
         if (result.isEmpty()) {
             result.append(getQualName());
             ThreeValued useParameters = getGrammarProperties().isUseParameters();
-            if (!useParameters.isFalse() && (args.length > 0 || useParameters.isTrue())) {
+            if (!special
+                || !useParameters.isFalse() && (args.length > 0 || useParameters.isTrue())) {
                 result.append('(');
                 boolean first = true;
                 for (int i = 0; i < args.length; i++) {
@@ -147,13 +153,14 @@ public interface Action extends Callable, Comparable<Action> {
      * A comparator for priorities, encoded as {@link Integer} objects. This
      * implementation orders priorities from high to low.
      */
-    public static final AbstractComparator<Integer> PRIORITY_COMPARATOR = new AbstractComparator<>() {
-        @Override
-        public int compare(Integer o1, Integer o2) {
-            return o2.intValue() - o1.intValue();
-        }
+    public static final AbstractComparator<Integer> PRIORITY_COMPARATOR
+        = new AbstractComparator<>() {
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                return o2.intValue() - o1.intValue();
+            }
 
-    };
+        };
 
     /**
      * A comparator for actions. This

@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.explore.util;
 
+import static nl.utwente.groove.explore.util.ExplorationReporter.time;
+
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -53,13 +55,9 @@ public class CompositeReporter extends ArrayList<ExplorationReporter>
     @Override
     public void report() throws IOException {
         for (ExplorationReporter reporter : this) {
-            if (TIME) {
-                time(reporter.getClass().getSimpleName());
-            }
+            time(reporter.getClass().getSimpleName());
             reporter.report();
         }
-        if (TIME) {
-            time("Done reporting");
-        }
+        time("Done reporting");
     }
 }

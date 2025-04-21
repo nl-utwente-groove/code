@@ -215,7 +215,7 @@ public class Rule implements Action, Fixable {
     }
 
     @Override
-    public String getTransitionLabel() {
+    public String getSpecialLabel() {
         var result = this.transitionLabel;
         return result == null
             ? ""
@@ -509,11 +509,6 @@ public class Rule implements Action, Fixable {
             result = getSignature().stream().noneMatch(UnitPar::isInOnly);
         }
         return result;
-    }
-
-    @Override
-    public boolean isProperty() {
-        return getRole().isProperty();
     }
 
     /**

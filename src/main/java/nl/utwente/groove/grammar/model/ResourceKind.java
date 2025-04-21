@@ -59,13 +59,15 @@ public enum ResourceKind {
 
     /** Constructs a value with a given graph role. */
     private ResourceKind(String name, String description, GraphRole graphRole, FileType fileType,
-        String defaultName) {
+                         String defaultName) {
         this.graphRole = graphRole;
         this.description = description;
         this.name = name;
         this.fileType = fileType;
-        this.defaultName =
-            Optional.ofNullable(defaultName == null ? null : QualName.name(defaultName));
+        this.defaultName = Groove
+            .ofNullable(defaultName == null
+                ? null
+                : QualName.name(defaultName));
     }
 
     /** Returns the graph role associated with this resource kind,
@@ -161,7 +163,9 @@ public enum ResourceKind {
      * in the result.
      */
     public static Set<ResourceKind> all(boolean withProperties) {
-        return withProperties ? allResources : allNonProperties;
+        return withProperties
+            ? allResources
+            : allNonProperties;
     }
 
     /** Set of all resource kinds. */

@@ -169,6 +169,9 @@ public class Namespace implements ParseInfo, Fallible {
         return result;
     }
 
+    /** Full name of the program file being parsed. */
+    private @Nullable QualName controlName;
+
     /** Returns the module name of this name space,
      * being the parent of the control name.
      * This should only be called if the a control program has been loaded,
@@ -177,9 +180,6 @@ public class Namespace implements ParseInfo, Fallible {
     public ModuleName getModuleName() {
         return getControlName().parent();
     }
-
-    /** Full name of the program file being parsed. */
-    private @Nullable QualName controlName;
 
     /** Indicates if the control program currently being parsed is artificially synthesised.
      * This affects the wording of the error messages.

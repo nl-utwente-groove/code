@@ -469,22 +469,17 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
         return result;
     }
 
-    /** Returns the traces from the given set of states to the start state. */
-    public Set<LTSJCell> findTraces(Iterable<GraphState> states) {
-        Set<GraphTransition> simulatorTrace = new HashSet<>();
-        Set<LTSJCell> result = new HashSet<>();
-        LTSJModel model = getNonNullModel();
+    /** Returns the traces to the given set of states from the start state. */
+    public Set<GraphTransition> findTraces(Iterable<GraphState> states) {
+        Set<GraphTransition> result = new HashSet<>();
         for (GraphState state : states) {
             while (state instanceof GraphNextState) {
-                result.add((LTSJVertex) model.getJCellForNode(state));
                 GraphTransition trans = ((GraphNextState) state).getInTransition();
-                result.add((LTSJEdge) model.getJCellForEdge(trans));
-                simulatorTrace.add(trans);
+                result.add(trans);
                 state = trans.source();
             }
-            result.add((LTSJCell) model.getJCellForNode(state));
         }
-        getSimulatorModel().setTrace(simulatorTrace);
+        getSimulatorModel().setTrace(result);
         return result;
     }
 

@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2023 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -43,23 +43,23 @@ public class EcorePorter extends ModelPorter {
     }
 
     @Override
-    protected Pair<TypeModel,InstanceModel> importTypeModel(File file, GrammarModel grammar)
-        throws ImportException {
+    protected Pair<TypeModel,InstanceModel> importTypeModel(File file,
+                                                            GrammarModel grammar) throws ImportException {
         EcoreToType ett = new EcoreToType(file.toString());
         TypeModel tm = ett.getTypeModel();
         return Pair.newPair(tm, null);
     }
 
     @Override
-    protected Pair<TypeModel,InstanceModel> importInstanceModel(File file, GrammarModel grammar)
-        throws ImportException {
+    protected Pair<TypeModel,InstanceModel> importInstanceModel(File file,
+                                                                GrammarModel grammar) throws ImportException {
         //Request ecore type model file
         int approve = getTypeModelChooser().showDialog(null, "Import Ecore type model");
         if (approve != JFileChooser.APPROVE_OPTION) {
             return null;
         }
         File typeFile = getTypeModelChooser().getSelectedFile();
-
+        assert typeFile != null;
         EcoreToType ett = new EcoreToType(typeFile.toString());
         EcoreToInstance eti = new EcoreToInstance(ett, file.toString());
 
@@ -75,7 +75,7 @@ public class EcorePorter extends ModelPorter {
 
     @Override
     protected ExportableResource getResource(File file, boolean isHost, TypeModel tm,
-            InstanceModel im) throws PortException {
+                                             InstanceModel im) throws PortException {
         File typeFile = file;
         File instanceFile = file;
         if (isHost) {

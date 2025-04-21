@@ -17,7 +17,9 @@
 package nl.utwente.groove.io.graph;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -28,6 +30,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import nl.utwente.groove.explore.util.ExplorationReporter;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
@@ -50,7 +53,8 @@ public class AutIO extends GraphIO<PlainGraph> {
 
     @Override
     protected void doSaveGraph(Graph graph, File file) throws IOException {
-        try (PrintWriter writer = new PrintWriter(file)) {
+        // create a PrintWriter with autoflush
+        try (PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(file)), true)) {
             // collect the node numbers, to be able to number them consecutively
             int nodeCount = graph.nodeCount();
             // list marking which node numbers have been used
@@ -59,6 +63,7 @@ public class AutIO extends GraphIO<PlainGraph> {
             Map<Node,Integer> nodeNrMap = new HashMap<>();
             // nodes that do not have a valid number (in the range 0..nodeCount-1)
             Set<Node> restNodes = new HashSet<>();
+            ExplorationReporter.time("Building model for aut export");
             // iterate over the existing nodes
             for (Node node : graph.nodeSet()) {
                 int nodeNr = node.getNumber();
@@ -76,6 +81,8 @@ public class AutIO extends GraphIO<PlainGraph> {
                 } while (nodeList.get(nextNodeNr));
                 nodeNrMap.put(restNode, nextNodeNr);
             }
+            ExplorationReporter.time("Starting aut export");
+            int lines = 0;
             writer.printf("des (%d, %d, %d)%n", 0, graph.edgeCount(), graph.nodeCount());
             for (Edge edge : graph.edgeSet()) {
                 String format;
@@ -87,6 +94,12 @@ public class AutIO extends GraphIO<PlainGraph> {
                 writer
                     .printf(format, nodeNrMap.get(edge.source()), edge.label(),
                             nodeNrMap.get(edge.target()));
+                lines = (lines + 1) % MAX_LINES;
+                if (lines == 0) {
+                    ExplorationReporter
+                        .time("Flushing after writing %s lines to aut".formatted(MAX_LINES));
+                    writer.flush();
+                }
             }
         }
     }
@@ -162,4 +175,6 @@ public class AutIO extends GraphIO<PlainGraph> {
         PlainGraph result = new PlainGraph(getGraphName(), getGraphRole());
         return result;
     }
+
+    static private final int MAX_LINES = 100000;
 }

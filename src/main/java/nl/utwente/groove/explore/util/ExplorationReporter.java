@@ -35,9 +35,11 @@ public interface ExplorationReporter extends ExplorationListener {
      */
     public abstract void report() throws IOException;
 
-    /** Prints a times message on stdout. */
-    public default void time(String message) {
-        System.out.println(formatter.format(LocalTime.now()) + ": " + message);
+    /** Prints a timed message on stdout. */
+    static public void time(String message) {
+        if (TIME) {
+            System.out.println(formatter.format(LocalTime.now()) + ": " + message);
+        }
     }
 
     /** Flag determining whether timing information should be emitted. */

@@ -53,7 +53,7 @@ public class CTLMarker {
      * graph, where certain special LTS-related properties may be indicated
      * by special labels.
      */
-    public CTLMarker(Formula formula, CTLModelChecker.Model model) {
+    public CTLMarker(Formula formula, CTLModelChecker.ModelFacade model) {
         assert model != null;
         this.formula = formula;
         this.model = model;
@@ -604,7 +604,7 @@ public class CTLMarker {
     /** The (top-level) formula to check. */
     private final Formula formula;
     /** The GTS on which to check the formula. */
-    private final CTLModelChecker.Model model;
+    private final CTLModelChecker.ModelFacade model;
     /**
      * Mapping from subformulas to (consecutive) numbers
      */

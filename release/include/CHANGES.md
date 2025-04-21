@@ -3,6 +3,24 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 7.4.2, 20 April 2025
+-------------------------------
+- GTS export as control program now treats final result state as final
+
+Release 7.4.1, 18 April 2025
+-------------------------------
+- Resolved gh #849
+- Many small bugs resolved
+
+Release 7.4.0, 14 April 2025
+-------------------------------
+- Replaced Disabled Rules (introduced in 7.1.0) by Rule Enabling
+- Cell selection in a graph editor now brings the selected element in view (gh #845)
+- Improved support for qualified names
+- Depth-bounded exploration added (`dfs:n`, `bfs:n`, `uptorule:[dfs|bfs][n][->|=>][!]id`)
+- Import from `.aut` format
+- Many small bugs resolved (bypassing github)
+
 Release 7.3.1, 4 April 2025
 -------------------------------
 - Resolved gh #837, #838, #839, #840, #841, #842

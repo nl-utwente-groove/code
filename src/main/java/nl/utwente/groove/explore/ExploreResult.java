@@ -17,6 +17,7 @@
 package nl.utwente.groove.explore;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -93,9 +94,9 @@ public class ExploreResult { //implements Iterable<GraphState> {
     private final Set<GraphTransition> transitions = new LinkedHashSet<>();
 
     /**
-     * Adds a state to the result.
+     * Adds a transition to the result.
      */
-    public void add(GraphTransition t) {
+    public void addTransition(GraphTransition t) {
         this.transitions.add(t);
     }
 
@@ -117,6 +118,10 @@ public class ExploreResult { //implements Iterable<GraphState> {
     public GTSFragment toFragment(boolean internal) {
         var result = new GTSFragment(getGTS(), getStates(), getTransitions());
         result.complete(internal);
+        // Declare states without outgoing transitions to be final
+        var finalStates = new HashSet<>(getStates());
+        result.edgeSet().forEach(t -> finalStates.remove(t.source()));
+        result.setFinal(finalStates);
         return result;
     }
 

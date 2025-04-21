@@ -17,6 +17,7 @@
 package nl.utwente.groove.explore.util;
 
 import static nl.utwente.groove.explore.Verbosity.HIGH;
+import static nl.utwente.groove.explore.util.ExplorationReporter.time;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -98,9 +99,7 @@ public class LogReporter extends AExplorationReporter {
 
     @Override
     public void report() throws IOException {
-        if (TIME) {
-            time("Reporting statistics");
-        }
+        time("Reporting statistics");
         this.exploreStats.report();
         // First report the statistics on the standard output
         // Note that this is not done using emit because the log
@@ -110,9 +109,7 @@ public class LogReporter extends AExplorationReporter {
         }
         // now write to the log file, if any
         if (this.log != null) {
-            if (TIME) {
-                emit("Exporting log to " + this.log);
-            }
+            time("Exporting log to " + this.log);
             // copy the (high-verbosity) exploration statistics to the log
             String report = this.exploreStats.getReport(HIGH);
             if (report.length() > 0) {
