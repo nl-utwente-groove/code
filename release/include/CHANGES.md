@@ -3,9 +3,15 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 7.4.3, 21 April 2025
+-------------------------------
+- Improved exploration for recipes in the absence of parameters
+- GTS exploration bound & acceptor now disregards inner states & steps
+
+
 Release 7.4.2, 20 April 2025
 -------------------------------
-- GTS export as control program now treats final result state as final
+- GTS export as control program now treats ultimate result state as final
 
 Release 7.4.1, 18 April 2025
 -------------------------------
