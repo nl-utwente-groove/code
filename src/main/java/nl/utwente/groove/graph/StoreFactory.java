@@ -22,6 +22,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.graph.plain.PlainEdge;
 import nl.utwente.groove.util.Dispenser;
+import nl.utwente.groove.util.collect.Likeness;
 import nl.utwente.groove.util.collect.TreeHashSet;
 
 /**
@@ -169,14 +170,15 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
              * we need to weaken the set's equality test.
              */
             @Override
-            final protected boolean areEqual(E o1, E o2) {
-                return o1.source().equals(o2.source()) && o1.target().equals(o2.target())
-                    && o1.label().equals(o2.label());
-            }
-
-            @Override
-            final protected boolean allEqual() {
-                return false;
+            final protected Likeness areEqual(E o1, E o2) {
+                if (o1 == o2) {
+                    return Likeness.SAME;
+                } else if (o1.source().equals(o2.source()) && o1.target().equals(o2.target())
+                    && o1.label().equals(o2.label())) {
+                    return Likeness.EQUAL;
+                } else {
+                    return Likeness.DISTINCT;
+                }
             }
         };
     }

@@ -2,10 +2,11 @@ package nl.utwente.groove.grammar.host;
 
 import java.util.Collection;
 
+import nl.utwente.groove.util.collect.Likeness;
 import nl.utwente.groove.util.collect.TreeHashSet;
 
 /**
- * Specialisation of a set of edges that relies on the 
+ * Specialisation of a set of edges that relies on the
  * edge hashcode uniquely identifying the edge.
  */
 abstract public class HostEdgeTreeHashSet extends TreeHashSet<HostEdge> {
@@ -31,14 +32,14 @@ abstract public class HostEdgeTreeHashSet extends TreeHashSet<HostEdge> {
     }
 
     @Override
-    protected boolean allEqual() {
-        return true;
+    protected Likeness allEqual() {
+        return Likeness.EQUAL;
     }
 
     @Override
-    protected boolean areEqual(HostEdge newKey, HostEdge oldKey) {
+    protected Likeness areEqual(HostEdge newKey, HostEdge oldKey) {
         assert newKey.equals(oldKey);
-        return true;
+        return Likeness.EQUAL;
     }
 
     @Override

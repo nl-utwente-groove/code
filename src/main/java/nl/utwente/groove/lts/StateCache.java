@@ -45,6 +45,7 @@ import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.cache.Cache;
 import nl.utwente.groove.util.collect.KeySet;
+import nl.utwente.groove.util.collect.Likeness;
 import nl.utwente.groove.util.collect.SetView;
 import nl.utwente.groove.util.collect.TreeHashSet;
 
@@ -382,8 +383,14 @@ public class StateCache implements Cache {
     private Set<GraphTransitionStub> createStubSet() {
         return new TreeHashSet<>() {
             @Override
-            protected boolean areEqual(GraphTransitionStub stub, GraphTransitionStub otherStub) {
-                return getKey(stub).equals(getKey(otherStub));
+            protected Likeness areEqual(GraphTransitionStub stub, GraphTransitionStub otherStub) {
+                if (stub == otherStub) {
+                    return Likeness.SAME;
+                } else if (getKey(stub).equals(getKey(otherStub))) {
+                    return Likeness.EQUAL;
+                } else {
+                    return Likeness.DISTINCT;
+                }
             }
 
             @Override

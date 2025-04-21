@@ -16,6 +16,11 @@
  */
 package nl.utwente.groove.graph.iso;
 
+import static nl.utwente.groove.util.collect.Likeness.DISTINCT;
+import static nl.utwente.groove.util.collect.Likeness.EQUAL;
+import static nl.utwente.groove.util.collect.Likeness.ISO;
+import static nl.utwente.groove.util.collect.Likeness.SAME;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,6 +53,7 @@ import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Reporter;
 import nl.utwente.groove.util.collect.Bag;
 import nl.utwente.groove.util.collect.HashBag;
+import nl.utwente.groove.util.collect.Likeness;
 import nl.utwente.groove.util.collect.SmallCollection;
 
 /**
@@ -79,25 +85,28 @@ public class IsoChecker {
      * @return <code>true</code> only if <code>dom</code> and
      *         <code>cod</code> are isomorphic
      */
-    public <N extends Node,E extends Edge> boolean areIsomorphic(Graph dom, Graph cod) {
+    public <N extends Node,E extends Edge> Likeness areIsomorphic(Graph dom, Graph cod) {
         return areIsomorphic(dom, cod, null, null);
     }
 
     /** Tests if two graphs, together with corresponding lists of nodes, are isomorphic. */
-    public boolean areIsomorphic(Graph dom, Graph cod, Object[] domValues, Object[] codValues) {
+    public Likeness areIsomorphic(Graph dom, Graph cod, Object[] domValues, Object[] codValues) {
         if (ISO_PRINT) {
             System.out.printf("Comparing: %n   %s%n   %s", dom, cod);
         }
-        boolean result;
+        Likeness result;
         if ((domValues == null) != (codValues == null)
             || (domValues != null && codValues != null && domValues.length != codValues.length)) {
-            result = false;
+            result = DISTINCT;
             if (ISO_PRINT) {
                 System.out.printf("DIFFERENT NODE COUNTS%n", dom, cod);
             }
+        } else if (dom == cod && domValues == codValues) {
+            equalGraphsCount++;
+            result = SAME;
         } else if (areGraphEqual(dom, cod, domValues, codValues)) {
             equalGraphsCount++;
-            result = true;
+            result = EQUAL;
         } else {
             if (ISO_PRINT) {
                 System.out.printf("GRAPHS NOT EQUAL%n", dom, cod);
@@ -111,12 +120,12 @@ public class IsoChecker {
                 assert result == hasIsomorphism(new Bisimulator(dom), new Bisimulator(cod),
                                                 domValues, codValues);
             }
-            if (TEST_FALSE_NEGATIVES && result) {
+            if (TEST_FALSE_NEGATIVES && result.isAlike()) {
                 CertificateStrategy altDomCert
                     = this.certificateFactory.newInstance(dom, this.strong);
                 CertificateStrategy altCodCert
                     = this.certificateFactory.newInstance(cod, this.strong);
-                if (!areIsomorphic(altDomCert, altCodCert, domValues, codValues)) {
+                if (areIsomorphic(altDomCert, altCodCert, domValues, codValues) == DISTINCT) {
                     System.out
                         .printf("Certifier '%s' gives a false negative on%n%s%n%s%n",
                                 altDomCert.getClass(), dom, cod);
@@ -190,11 +199,12 @@ public class IsoChecker {
      * in addition to the graphs themselves
      * @param codValues list of nodes (from the codomain) to compare
      * in addition to the graphs themselves
+     * @return {@link #ISO} if the graphs are isomorphic, {@link #DISTINCT} otherwise
      */
-    private boolean areIsomorphic(CertificateStrategy domCertifier,
-                                  CertificateStrategy codCertifier, Object[] domValues,
-                                  Object[] codValues) {
-        boolean result;
+    private Likeness areIsomorphic(CertificateStrategy domCertifier,
+                                   CertificateStrategy codCertifier, Object[] domValues,
+                                   Object[] codValues) {
+        Likeness result;
         if (!domCertifier.getGraphCertificate().equals(codCertifier.getGraphCertificate())) {
             if (ISO_PRINT) {
                 System.out
@@ -202,7 +212,7 @@ public class IsoChecker {
                             domCertifier.getGraphCertificate(), codCertifier.getGraphCertificate());
             }
             intCertOverlap++;
-            result = false;
+            result = DISTINCT;
         } else if (hasDiscreteCerts(codCertifier)) {
             isoCertCheckReporter.start();
             if (hasDiscreteCerts(domCertifier)) {
@@ -212,10 +222,10 @@ public class IsoChecker {
                     System.out.println("Codomain has discrete partition but domain has not");
                 }
                 distinctCertsCount++;
-                result = false;
+                result = DISTINCT;
             }
             isoCertCheckReporter.stop();
-            if (result) {
+            if (result == ISO) {
                 equalCertsCount++;
             } else {
                 distinctCertsCount++;
@@ -229,7 +239,7 @@ public class IsoChecker {
                 result = hasIsomorphism(domCertifier, codCertifier, domValues, codValues);
                 isoSimCheckReporter.stop();
                 // EZ: Moved the count here.
-                if (result) {
+                if (result == ISO) {
                     equalSimCount++;
                 } else {
                     distinctSimCount++;
@@ -239,7 +249,7 @@ public class IsoChecker {
                     System.out.println("Unequal node partition counts");
                 }
                 distinctCertsCount++;
-                result = false;
+                result = DISTINCT;
             }
             // isoSimCheckReporter.stop();
             // EZ: We can't count this here because there are times when
@@ -263,20 +273,22 @@ public class IsoChecker {
      * in addition to the graphs themselves
      * @param codValues list of nodes (from the codomain) to compare
      * in addition to the graphs themselves
+     * @return {@link Likeness#ISO} if the graphs are isomorphic, {@link #DISTINCT} otherwise
      */
-    private boolean areCertEqual(CertificateStrategy dom, CertificateStrategy cod,
-                                 Object[] domValues, Object[] codValues) {
-        boolean result;
+    private Likeness areCertEqual(CertificateStrategy dom, CertificateStrategy cod,
+                                  Object[] domValues, Object[] codValues) {
+        Likeness result;
         // map to store dom-to-cod node mapping
         Morphism<Node,Edge> iso = getCertEqualIsomorphism(dom, cod);
-        result = iso != null;
-        if (result && domValues != null) {
-            assert iso != null;
-            // now test correspondence of the node arrays
-            result = CallStack.areEqual(domValues, codValues, iso.nodeMap());
+        if (iso == null) {
+            result = DISTINCT;
+        } else if (domValues == null || CallStack.areEqual(domValues, codValues, iso.nodeMap())) {
+            result = ISO;
+        } else {
+            result = DISTINCT;
         }
         if (ISO_PRINT) {
-            if (!result) {
+            if (result == DISTINCT) {
                 System.out.printf("Graphs have distinct but unequal certificates%n");
             }
         }
@@ -333,23 +345,26 @@ public class IsoChecker {
         return result;
     }
 
-    private boolean hasIsomorphism(CertificateStrategy domCertifier,
-                                   CertificateStrategy codCertifier, Object[] domValues,
-                                   Object[] codValues) {
-        boolean result;
+    private Likeness hasIsomorphism(CertificateStrategy domCertifier,
+                                    CertificateStrategy codCertifier, Object[] domValues,
+                                    Object[] codValues) {
+        Likeness result;
         IsoCheckerState state = new IsoCheckerState();
         // repeatedly look for the next isomorphism until one is found
         // that also maps the domain and codomain nodes correctly
         do {
             Morphism<Node,Edge> iso = computeIsomorphism(domCertifier, codCertifier, state);
-            result = iso != null;
-            if (result && domValues != null) {
-                assert iso != null;
-                result = CallStack.areEqual(domValues, codValues, iso.nodeMap());
-            } else {
+            if (iso == null) {
+                result = DISTINCT;
                 break;
+            } else if (domValues == null
+                || CallStack.areEqual(domValues, codValues, iso.nodeMap())) {
+                result = ISO;
+                break;
+            } else {
+                result = DISTINCT;
             }
-        } while (!result);
+        } while (result == DISTINCT);
         return result;
     }
 
@@ -823,8 +838,8 @@ public class IsoChecker {
     }
 
     /** Method to be used in an assert on the correctness of isomorphism. */
-    private boolean checkBisimulator(Graph dom, Graph cod, boolean result) {
-        if (result && isStrong()) {
+    private boolean checkBisimulator(Graph dom, Graph cod, Likeness result) {
+        if (result.isAlike() && isStrong()) {
             CertificateStrategy domBis = new PartitionRefiner(dom, isStrong());
             CertificateStrategy codBis = new PartitionRefiner(cod, isStrong());
             Bag<NodeCertificate> domNodes
@@ -1034,7 +1049,7 @@ public class IsoChecker {
                 assert image != null;
                 graph2.addEdgeContext(image);
             }
-            if (!checker.areIsomorphic(graph1, graph2)) {
+            if (checker.areIsomorphic(graph1, graph2) == DISTINCT) {
                 System.out.println("Error! Graph not isomorphic to itself");
             }
         }

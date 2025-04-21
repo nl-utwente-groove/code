@@ -21,14 +21,16 @@ public interface Equator<T> {
      * @return <code>true</code> if <code>newKey</code> is considered equal
      *         to <code>oldKey</code>.
      */
-    public boolean areEqual(T newKey, T oldKey);
+    public Likeness areEqual(T newKey, T oldKey);
 
     /**
      * Signals if all objects with the same code are considered equal, i.e., if
-     * {@link #areEqual(Object, Object)} always returns <code>true</code>. If
+     * {@link #areEqual(Object, Object)} always returns something else than {@link Likeness#DISTINCT}. If
      * so, the equality test can be skipped.
-     * @return if <code>true</code>, {@link #areEqual(Object, Object)} always
-     *         returns <code>true</code>
+     * @return if Equality#DISTINCT, {@link #areEqual(Object, Object)} must be called;
+     * otherwise, {@link #areEqual(Object, Object)} always returns this value
      */
-    public boolean allEqual();
+    default public Likeness allEqual() {
+        return Likeness.DISTINCT;
+    }
 }

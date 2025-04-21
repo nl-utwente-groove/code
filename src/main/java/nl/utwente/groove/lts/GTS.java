@@ -19,6 +19,9 @@ package nl.utwente.groove.lts;
 import static nl.utwente.groove.lts.GTS.CollapseMode.COLLAPSE_EQUAL;
 import static nl.utwente.groove.lts.GTS.CollapseMode.COLLAPSE_ISO_STRONG;
 import static nl.utwente.groove.lts.GTS.CollapseMode.COLLAPSE_NONE;
+import static nl.utwente.groove.util.collect.Likeness.DISTINCT;
+import static nl.utwente.groove.util.collect.Likeness.EQUAL;
+import static nl.utwente.groove.util.collect.Likeness.SAME;
 
 import java.util.AbstractSet;
 import java.util.ArrayList;
@@ -54,6 +57,7 @@ import nl.utwente.groove.lts.Status.Flag;
 import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.transform.oracle.NoValueOracle;
 import nl.utwente.groove.transform.oracle.ValueOracle;
+import nl.utwente.groove.util.collect.Likeness;
 import nl.utwente.groove.util.collect.NestedIterator;
 import nl.utwente.groove.util.collect.SetView;
 import nl.utwente.groove.util.collect.TreeHashSet;
@@ -185,7 +189,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      */
     public @Nullable GraphState addState(GraphState newState) {
         // see if isomorphic graph is already in the LTS
-        GraphState result = allStateSet().put(newState);
+        var result = allStateSet().put(newState);
         if (result == null) {
             // otherwise, add it to the GTS
             fireAddNode(newState);
@@ -723,12 +727,14 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
          * {@link IsoChecker#areIsomorphic(Graph, Graph)}.
          */
         @Override
-        protected boolean areEqual(GraphState myState, GraphState otherState) {
+        protected Likeness areEqual(GraphState myState, GraphState otherState) {
             if (this.collapse == COLLAPSE_NONE) {
-                return myState == otherState;
+                return myState == otherState
+                    ? SAME
+                    : DISTINCT;
             }
             if (CHECK_CONTROL_LOCATION && myState.getPrimeFrame() != otherState.getPrimeFrame()) {
-                return false;
+                return DISTINCT;
             }
             Object[] myCallStack = myState.getPrimeStack();
             Object[] otherCallStack = otherState.getPrimeStack();
@@ -737,13 +743,15 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             if (this.collapse == COLLAPSE_EQUAL) {
                 // check for equality of the bound nodes
                 if (!CallStack.areEqual(myCallStack, otherCallStack)) {
-                    return false;
+                    return DISTINCT;
                 }
                 // check for graph equality
                 Set<?> myNodeSet = new HostNodeSet(myGraph.nodeSet());
                 Set<?> myEdgeSet = new HostEdgeSet(myGraph.edgeSet());
                 return myNodeSet.equals(otherGraph.nodeSet())
-                    && myEdgeSet.equals(otherGraph.edgeSet());
+                    && myEdgeSet.equals(otherGraph.edgeSet())
+                        ? EQUAL
+                        : DISTINCT;
             } else {
                 return this.checker.areIsomorphic(myGraph, otherGraph, myCallStack, otherCallStack);
             }
@@ -814,8 +822,8 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     /** Set of states that only tests for state number as equality. */
     public static class NormalisedStateSet extends TreeHashSet<GraphState> {
         @Override
-        protected boolean areEqual(GraphState newKey, GraphState oldKey) {
-            return true;
+        protected Likeness areEqual(GraphState newKey, GraphState oldKey) {
+            return Likeness.SAME;
         }
 
         @Override
@@ -824,8 +832,8 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         }
 
         @Override
-        protected boolean allEqual() {
-            return true;
+        protected Likeness allEqual() {
+            return Likeness.SAME;
         }
     }
 

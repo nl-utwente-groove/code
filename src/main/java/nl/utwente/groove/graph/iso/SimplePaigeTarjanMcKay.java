@@ -33,6 +33,7 @@ import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.util.collect.Likeness;
 import nl.utwente.groove.util.collect.TreeHashSet;
 
 /**
@@ -123,8 +124,9 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
         // first iteration
         split(splitters);
         if (TRACE) {
-            System.out.printf("First iteration done; %d partitions for %d nodes in %d iterations%n",
-                              this.nodePartitionCount, this.nodeCertCount, this.iterateCount);
+            System.out
+                .printf("First iteration done; %d partitions for %d nodes in %d iterations%n",
+                        this.nodePartitionCount, this.nodeCertCount, this.iterateCount);
         }
     }
 
@@ -282,8 +284,8 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
          * importance.
          */
         @Override
-        protected boolean allEqual() {
-            return true;
+        protected Likeness allEqual() {
+            return Likeness.EQUAL;
         }
 
         @Override
@@ -655,8 +657,9 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
                     if (block == null || block.value != node.getValue()) {
                         block = blockMap.get(node.getValue());
                         if (block == null) {
-                            blockMap.put(node.getValue(),
-                                         block = new Block(this.strategy, node.getValue()));
+                            blockMap
+                                .put(node.getValue(),
+                                     block = new Block(this.strategy, node.getValue()));
                         }
                     }
                     block.append(node);

@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.graph.iso;
 
+import static nl.utwente.groove.util.collect.Likeness.EQUAL;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,6 +36,7 @@ import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.util.collect.Likeness;
 import nl.utwente.groove.util.collect.TreeHashSet;
 
 /**
@@ -890,11 +893,12 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
                 nodeCert.setNextValue();
                 // create a new block and try to insert it into the result
                 Block block = new Block(nodeCert.getValue());
-                Block previous = put(block);
+                var previous = put(block);
                 // if there was already a block with this value, use that
                 // instead
                 if (previous != null) {
                     block = previous;
+                    assert block != null;
                 }
                 block.add(nodeCert);
             }
@@ -902,8 +906,8 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
 
         /** Block equality is determined entirely by hash code. */
         @Override
-        protected boolean allEqual() {
-            return true;
+        protected Likeness allEqual() {
+            return EQUAL;
         }
 
         /**

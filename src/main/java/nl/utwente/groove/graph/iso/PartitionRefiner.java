@@ -26,6 +26,7 @@ import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.util.collect.Likeness;
 import nl.utwente.groove.util.collect.TreeHashSet;
 
 /**
@@ -118,8 +119,9 @@ public class PartitionRefiner extends CertificateStrategy {
         } while (goOn);
         recordIterateCount(this.iterateCount);
         if (TRACE) {
-            System.out.printf("First iteration done; %d partitions for %d nodes in %d iterations%n",
-                              this.nodePartitionCount, this.nodeCertCount, this.iterateCount);
+            System.out
+                .printf("First iteration done; %d partitions for %d nodes in %d iterations%n",
+                        this.nodePartitionCount, this.nodeCertCount, this.iterateCount);
         }
     }
 
@@ -205,7 +207,7 @@ public class PartitionRefiner extends CertificateStrategy {
                     tmpCertIxs[tmpSize] = i;
                     tmpSize++;
                 } else {
-                    MyNodeCert oldCertForValue = certStore.put(nodeCert);
+                    var oldCertForValue = certStore.put(nodeCert);
                     if (oldCertForValue == null) {
                         // assume this certificate is singular
                         nodeCert.setSingular(this.iterateCount);
@@ -344,8 +346,8 @@ public class PartitionRefiner extends CertificateStrategy {
          * importance.
          */
         @Override
-        protected boolean allEqual() {
-            return true;
+        protected Likeness allEqual() {
+            return Likeness.EQUAL;
         }
 
         @Override

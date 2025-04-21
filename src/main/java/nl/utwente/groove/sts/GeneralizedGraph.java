@@ -5,7 +5,7 @@ import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.graph.iso.IsoChecker;
 
 /**
- * A graph where the data values are always of a default value. 
+ * A graph where the data values are always of a default value.
  * Two GeneralizedGraphs are considered equal if they are isomorphic.
  * TODO: change to using a PointAlgebra.
  * @author Vincent de Bruijn
@@ -26,7 +26,7 @@ public class GeneralizedGraph extends DefaultHostGraph {
     @Override
     public boolean equals(Object o) {
         HostGraph graph = (HostGraph) o;
-        return isoChecker.areIsomorphic(this, graph);
+        return isoChecker.areIsomorphic(this, graph).isAlike();
     }
 
     @Override

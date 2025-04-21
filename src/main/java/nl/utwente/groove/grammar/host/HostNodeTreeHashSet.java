@@ -1,23 +1,27 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2023
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package nl.utwente.groove.grammar.host;
 
+import static nl.utwente.groove.util.collect.Likeness.EQUAL;
+import static nl.utwente.groove.util.collect.Likeness.SAME;
+
 import java.util.Collection;
 
+import nl.utwente.groove.util.collect.Likeness;
 import nl.utwente.groove.util.collect.TreeHashSet;
 
 /**
@@ -50,14 +54,16 @@ abstract public class HostNodeTreeHashSet extends TreeHashSet<HostNode> {
     }
 
     @Override
-    protected boolean allEqual() {
-        return true;
+    protected Likeness allEqual() {
+        return EQUAL;
     }
 
     @Override
-    protected boolean areEqual(HostNode newKey, HostNode oldKey) {
+    protected Likeness areEqual(HostNode newKey, HostNode oldKey) {
         assert newKey.equals(oldKey);
-        return true;
+        return newKey == oldKey
+            ? SAME
+            : EQUAL;
     }
 
     @Override

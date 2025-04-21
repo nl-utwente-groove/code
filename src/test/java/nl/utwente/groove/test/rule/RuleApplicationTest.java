@@ -268,7 +268,7 @@ public class RuleApplicationTest extends TestCase {
             } else {
                 // look up this graph in the intended results
                 for (int i = 0; target != null && i < results.size(); i++) {
-                    if (!found.get(i) && checker.areIsomorphic(target, results.get(i))) {
+                    if (!found.get(i) && checker.areIsomorphic(target, results.get(i)).isAlike()) {
                         found.set(i);
                         target = null;
                     }

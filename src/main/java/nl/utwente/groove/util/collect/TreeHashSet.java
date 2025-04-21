@@ -58,8 +58,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
             throw Exceptions.illegalArg("Invalid root resolution %d (min %d)", rootResolution, 1);
         }
         if (resolution > MAX_RESOLUTION) {
-            throw Exceptions.illegalArg("Invalid resolution %d (max %d)", resolution,
-                                        MAX_RESOLUTION);
+            throw Exceptions
+                .illegalArg("Invalid resolution %d (max %d)", resolution, MAX_RESOLUTION);
         }
         this.resolution = resolution;
         this.mask = (1 << resolution) - 1;
@@ -163,8 +163,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         this.recordCount = other.recordCount;
         this.freeKeyIx = other.freeKeyIx;
         this.keyCount = other.keyCount;
-        assert containsAll(other) : String.format("Clone    %s does not equal%noriginal %s", this,
-                                                  other);
+        assert containsAll(other) : String
+            .format("Clone    %s does not equal%noriginal %s", this, other);
     }
 
     /**
@@ -182,8 +182,9 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         this.freeKeyIx = -1;
         // clean the record tree
         Arrays.fill(this.tree, 0, getRecordIx(this.recordCount), 0);
-        Arrays.fill(this.tree, getRecordIx(this.fill.length),
-                    getRecordIx(this.fill.length) + this.recordCount, 0);
+        Arrays
+            .fill(this.tree, getRecordIx(this.fill.length),
+                  getRecordIx(this.fill.length) + this.recordCount, 0);
         Arrays.fill(this.fill, 0, this.recordCount, (byte) 0);
         this.recordCount = 1;
         this.freeRecordNr = 0;
@@ -382,25 +383,29 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     }
 
     /**
-     * Tries to insert a new object in the set. If an equal object is already in
-     * the set, returns that object (and doesn't change the set). If the new key
-     * is really inserted, the method returns <code>null</code> The difference
-     * with {@link #add(Object)} is thus only in the return value.
-     * @param key the object to be inserted
-     * @return <code>null</code> if <code>key</code> is inserted, otherwise an
-     *         object that was already present, such that
-     *         <code>areEqual(key, result)</code>.
+     * Convenience method for {@code putLike(key).get()}.
      */
     public @Nullable T put(T key) {
-        @Nullable
-        T result;
+        return putLike(key).value();
+    }
+
+    /**
+     * Tries to insert a new object in the set. If an equal object is already in
+     * the set, returns that object (and doesn't change the set), together with
+     * its degree of equality. If the new key
+     * is really inserted, the return value satisfies {@link Alike#isDistinct()}. The difference
+     * with {@link #add(Object)} is thus only in the return value.
+     * @param key the object to be inserted
+     * @return An {@link Alike} that, if not {@link Alike#isDistinct()}, contains a previously present value
+     */
+    public Alike<T> putLike(T key) {
+        Alike<T> result = Alike.distinct();
         int code = getCode(key);
         if (this.size == 0) {
             // at the first key, we still have to create the root of the tree
             // int index = 0;//newRecordIx(0);
             // assert index == 0;
             this.tree[code & this.rootMask] = -newKeyIx(code, key) - 1;
-            result = null;
         } else {
             // local copy of store, for efficiency
             int[] tree = this.tree;
@@ -423,7 +428,6 @@ public class TreeHashSet<T> extends AbstractSet<T> {
             if (index == 0) {
                 // we're at an empty place of the tree
                 setTreeSlot(indexPlusOffset, -newKeyIx(code, key) - 1);
-                result = null;
             } else {
                 // we've found an existing key
                 int oldCode = this.codes[-index - 1];
@@ -449,7 +453,6 @@ public class TreeHashSet<T> extends AbstractSet<T> {
                     // we've found a difference, so store.
                     setTreeSlot(index + oldOffset, oldKeyIndex);
                     setTreeSlot(index + newOffset, -newKeyIx(code, key) - 1);
-                    result = null;
                 }
             }
         }
@@ -465,7 +468,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         final int index = indexOf(code);
         if (index < 0) {
             return Collections.<T>emptySet().iterator();
-        } else if (allEqual()) {
+        } else if (allEqual().isAlike()) {
             int keyIndex = -this.tree[index] - 1;
             return Collections.<T>singleton((T) this.keys[keyIndex]).iterator();
         } else {
@@ -510,24 +513,32 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public boolean remove(Object obj) {
-        boolean result;
+        return removeLike(obj).isAlike();
+    }
+
+    /**
+     * Implements the functionality of {@link #remove(Object)},
+     * but rather than returning a boolean, it indicates how equal the removed object
+     * was to the parameter, if an object was indeed removed.
+     */
+    @SuppressWarnings("unchecked")
+    public Likeness removeLike(Object obj) {
+        Likeness result;
         if (this.size == 0) {
-            return false;
+            return Likeness.DISTINCT;
         }
         T key = (T) obj;
         int index = indexOf(getCode(key));
         if (index < 0) {
             // the key is a new one
-            result = false;
-        } else if (allEqual()) {
+            result = Likeness.DISTINCT;
+        } else if ((result = allEqual()).isAlike()) {
             // we've found an existing key code and we're only looking at codes
             // so the key found at index should be removed
             int keyIndex = -this.tree[index] - 1;
             disposeTreeSlot(index);
             disposeKey(keyIndex);
-            result = true;
         } else {
             // we've found an existing key code but now we're going to compare
             Object[] keys = this.keys;
@@ -541,10 +552,11 @@ public class TreeHashSet<T> extends AbstractSet<T> {
             while (knownKey instanceof MyListEntry) {
                 MyListEntry<T> entry = (MyListEntry<T>) knownKey;
                 int nextKeyIndex = entry.getNext();
-                if (areEqual(key, entry.getValue())) {
+                result = areEqual(key, entry.getValue());
+                if (result.isAlike()) {
                     keys[keyIndex] = keys[nextKeyIndex];
                     disposeKey(nextKeyIndex);
-                    return true;
+                    return result;
                 } else {
                     prevKeyIndex = keyIndex;
                     knownKey = keys[keyIndex = nextKeyIndex];
@@ -552,7 +564,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
             }
             assert knownKey != null;
             // we're at a key that is not a MyListEntry
-            if (areEqual(key, (T) knownKey)) {
+            result = areEqual(key, (T) knownKey);
+            if (result.isAlike()) {
                 // maybe we have to adapt the tree
                 if (prevKeyIndex < 0) {
                     // there is no chain, so we have to adapt the tree
@@ -563,12 +576,9 @@ public class TreeHashSet<T> extends AbstractSet<T> {
                     keys[prevKeyIndex] = ((MyListEntry<?>) keys[prevKeyIndex]).getValue();
                 }
                 disposeKey(keyIndex);
-                result = true;
                 if (DEBUG) {
                     testConsistent();
                 }
-            } else {
-                result = false;
             }
         }
         if (DEBUG) {
@@ -579,19 +589,27 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 
     @Override
     public boolean contains(Object obj) {
-        if (this.size == 0) {
-            return false;
+        return containsLike(obj).isAlike();
+    }
+
+    /** Implements the functionality of {@link #contains(Object)},
+     * but returns a value that indicates how equal the contained value is to the parameter.
+     */
+    public Likeness containsLike(Object obj) {
+        var result = Likeness.DISTINCT;
+        if (this.size > 0) {
+            @SuppressWarnings("unchecked")
+            T key = (T) obj;
+            int index = indexOf(getCode(key));
+            if (index >= 0) {
+                // the key is an existing one
+                result = allEqual();
+                if (result.isAlike()) {
+                    result = containsAt(key, -this.tree[index] - 1);
+                }
+            }
         }
-        @SuppressWarnings("unchecked")
-        T key = (T) obj;
-        int index = indexOf(getCode(key));
-        if (index < 0) {
-            // the key is a new one
-            return false;
-        } else {
-            // we've found an existing key code
-            return allEqual() || containsAt(key, -this.tree[index] - 1);
-        }
+        return result;
     }
 
     /**
@@ -614,7 +632,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * the equator. If a the {@link #HASHCODE_EQUATOR} is set during
      * construction time, this method is <i>not</i> called.
      */
-    protected boolean areEqual(T newKey, T oldKey) {
+    protected Likeness areEqual(T newKey, T oldKey) {
         return this.equator.areEqual(newKey, oldKey);
     }
 
@@ -633,7 +651,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * @return if <code>true</code>, {@link #areEqual(Object, Object)} always
      *         returns <code>true</code>
      */
-    protected boolean allEqual() {
+    protected Likeness allEqual() {
         return this.equator.allEqual();
     }
 
@@ -680,14 +698,15 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * @return <code>true</code> if <code>key</code> is found
      */
     @SuppressWarnings("unchecked")
-    private boolean containsAt(T newKey, int keyIndex) {
+    private Likeness containsAt(T newKey, int keyIndex) {
         Object[] keys = this.keys;
         Object oldKey = keys[keyIndex];
         // walk the list of MyListEntries, if any
         while (oldKey instanceof MyListEntry) {
             MyListEntry<T> entry = (MyListEntry<T>) oldKey;
-            if (areEqual(newKey, entry.getValue())) {
-                return true;
+            var result = areEqual(newKey, entry.getValue());
+            if (result.isAlike()) {
+                return result;
             } else {
                 oldKey = keys[entry.getNext()];
             }
@@ -701,10 +720,11 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * The value should not be <code>null</code>.
      */
     private void setTreeSlot(int treeIx, int value) {
-        assert this.tree[treeIx] == 0 : String.format("Tree value %d at index %d overwritten by %d",
-                                                      this.tree[treeIx], treeIx, value);
-        assert value < 0 : String.format("Tree value at %d set to positive value %d", treeIx,
-                                         value);
+        assert this.tree[treeIx] == 0 : String
+            .format("Tree value %d at index %d overwritten by %d", this.tree[treeIx], treeIx,
+                    value);
+        assert value < 0 : String
+            .format("Tree value at %d set to positive value %d", treeIx, value);
         this.tree[treeIx] = value;
         setFilled(treeIx);
     }
@@ -715,8 +735,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * reference to another tree record, then the record is freed.
      */
     private void disposeTreeSlot(int treeIx) {
-        assert this.tree[treeIx] < 0 : String.format("tree[%d] == %d cannot be disposed", treeIx,
-                                                     this.tree[treeIx]);
+        assert this.tree[treeIx] < 0 : String
+            .format("tree[%d] == %d cannot be disposed", treeIx, this.tree[treeIx]);
         this.tree[treeIx] = 0;
         resetFilled(treeIx);
         // dispose records
@@ -778,10 +798,10 @@ public class TreeHashSet<T> extends AbstractSet<T> {
                 this.tree = newTree;
                 this.fill = newFill;
                 if (FILL_PRINT) {
-                    System.out.printf("Extending: %d records (%d slots) for %d keys (average %f)%n",
-                                      this.recordCount, getRecordIx(this.recordCount),
-                                      this.size + 1,
-                                      getAverageFill(getRecordIx(this.recordCount), this.size + 1));
+                    System.out
+                        .printf("Extending: %d records (%d slots) for %d keys (average %f)%n",
+                                this.recordCount, getRecordIx(this.recordCount), this.size + 1,
+                                getAverageFill(getRecordIx(this.recordCount), this.size + 1));
                 }
             }
             setParentIx(resultNr, parentIx);
@@ -837,9 +857,10 @@ public class TreeHashSet<T> extends AbstractSet<T> {
                 int newLength = (int) (GROWTH_FACTOR * this.keyCount + 1);
                 Object[] newKeys = new Object[newLength];
                 if (SIZE_PRINT) {
-                    System.out.printf("Set %s (size %d) from %d to %d keys %n",
-                                      System.identityHashCode(this), this.size, this.keys.length,
-                                      newKeys.length);
+                    System.out
+                        .printf("Set %s (size %d) from %d to %d keys %n",
+                                System.identityHashCode(this), this.size, this.keys.length,
+                                newKeys.length);
                 }
                 System.arraycopy(this.keys, 0, newKeys, 0, oldLength);
                 this.keys = newKeys;
@@ -862,12 +883,15 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * chain.
      * @param keyIx the index that we want to free
      */
-    private void disposeKey(int keyIx) {
+    private T disposeKey(int keyIx) {
+        @SuppressWarnings("unchecked")
+        T result = (T) this.keys[keyIx];
         this.keys[keyIx] = null;
         this.codes[keyIx] = this.freeKeyIx;
         this.freeKeyIx = keyIx;
         this.size--;
         this.modCount++;
+        return result;
         // if (size == 0) {
         // clear();
         // }
@@ -885,9 +909,10 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      *         <code>key</code>, according to {@link #areEqual(Object, Object)}.
      */
     @SuppressWarnings("unchecked")
-    private @Nullable T putEqualKey(int code, T newKey, int keyIndex) {
-        if (allEqual()) {
-            return (T) this.keys[keyIndex];
+    private Alike<T> putEqualKey(int code, T newKey, int keyIndex) {
+        var equality = allEqual();
+        if (equality.isAlike()) {
+            return new Alike<>((T) this.keys[keyIndex], equality);
         } else {
             // get local copies for efficiency
             Object[] keys = this.keys;
@@ -896,9 +921,10 @@ public class TreeHashSet<T> extends AbstractSet<T> {
             while (key instanceof MyListEntry) {
                 MyListEntry<T> entry = (MyListEntry<T>) key;
                 T value = entry.getValue();
-                if (areEqual(newKey, value)) {
+                equality = areEqual(newKey, value);
+                if (equality.isAlike()) {
                     // the key existed already
-                    return value;
+                    return new Alike<>(value, equality);
                 } else {
                     // walk on
                     key = keys[keyIndex = entry.getNext()];
@@ -907,13 +933,14 @@ public class TreeHashSet<T> extends AbstractSet<T> {
             assert key != null;
             T oldKey = (T) key;
             // we've reached the end of the list
-            if (areEqual(newKey, oldKey)) {
-                return oldKey;
+            equality = areEqual(newKey, oldKey);
+            if (equality.isAlike()) {
+                return new Alike<>(oldKey, equality);
             } else {
                 // it's really a new key
                 MyListEntry<T> newEntry = new MyListEntry<>(oldKey, newKeyIx(code, newKey));
                 this.keys[keyIndex] = newEntry;
-                return null;
+                return Alike.distinct();
             }
         }
     }
@@ -974,8 +1001,9 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         int freeRecordNr = this.freeRecordNr;
         while (freeRecordNr > 0) {
             if (freeRecordNr >= this.recordCount) {
-                throw Exceptions.illegalState("Free record %d > record count %d", freeRecordNr,
-                                              this.recordCount);
+                throw Exceptions
+                    .illegalState("Free record %d > record count %d", freeRecordNr,
+                                  this.recordCount);
             }
             freeRecordNrs.add(freeRecordNr);
             freeRecordNr = getParentIx(freeRecordNr);
@@ -1004,17 +1032,19 @@ public class TreeHashSet<T> extends AbstractSet<T> {
                 if (recordFill == 0) {
                     throw Exceptions.illegalState("Non-empty record %d has no entries", recordNr);
                 } else if (this.fill[recordNr] != recordFill) {
-                    throw Exceptions.illegalState("Record fill of %d should be %d rather than %d",
-                                                  recordNr, recordFill, this.fill[recordNr]);
+                    throw Exceptions
+                        .illegalState("Record fill of %d should be %d rather than %d", recordNr,
+                                      recordFill, this.fill[recordNr]);
                 }
                 int parentIx = getParentIx(recordNr);
                 int parentNr = getRecordNr(parentIx);
                 if (parentNr >= this.recordCount) {
-                    throw Exceptions.illegalState("Parent %d of record %d larger than count %d",
-                                                  parentNr, recordNr, this.recordCount);
+                    throw Exceptions
+                        .illegalState("Parent %d of record %d larger than count %d", parentNr,
+                                      recordNr, this.recordCount);
                 } else if (freeRecordNrs.contains(parentNr)) {
-                    throw Exceptions.illegalState("Parent %d of record %d is free record", parentNr,
-                                                  recordNr);
+                    throw Exceptions
+                        .illegalState("Parent %d of record %d is free record", parentNr, recordNr);
                 } else if (getRecordNr(this.tree[parentIx]) != recordNr) {
                     throw Exceptions
                         .illegalState("Parent index %d of record %d points to record %d", parentIx,
@@ -1156,17 +1186,13 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         }
 
         /**
-         * @return <code>true</code> if <code>o1.equals(o2)</code>.
+         * @return {@link Likeness#EQUAL} if <code>o1.equals(o2)</code>.
          */
         @Override
-        public boolean areEqual(Object o1, Object o2) {
-            return o1.equals(o2);
-        }
-
-        /** This implementation returns <code>false</code> always. */
-        @Override
-        public boolean allEqual() {
-            return false;
+        public Likeness areEqual(Object o1, Object o2) {
+            return o1.equals(o2)
+                ? Likeness.EQUAL
+                : Likeness.DISTINCT;
         }
     };
 
@@ -1189,14 +1215,10 @@ public class TreeHashSet<T> extends AbstractSet<T> {
          * @return <code>true</code> if <code>o1 == o2</code>.
          */
         @Override
-        public boolean areEqual(Object o1, Object o2) {
-            return o1 == o2;
-        }
-
-        /** This implementation returns <code>false</code> always. */
-        @Override
-        public boolean allEqual() {
-            return false;
+        public Likeness areEqual(Object o1, Object o2) {
+            return o1 == o2
+                ? Likeness.SAME
+                : Likeness.DISTINCT;
         }
     };
 
@@ -1219,14 +1241,14 @@ public class TreeHashSet<T> extends AbstractSet<T> {
          * @return <code>true</code> always.
          */
         @Override
-        public boolean areEqual(Object o1, Object o2) {
-            return true;
+        public Likeness areEqual(Object o1, Object o2) {
+            return Likeness.EQUAL;
         }
 
         /** This implementation returns <code>true</code> always. */
         @Override
-        public boolean allEqual() {
-            return true;
+        public Likeness allEqual() {
+            return Likeness.EQUAL;
         }
     };
 

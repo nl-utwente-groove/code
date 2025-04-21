@@ -17,6 +17,7 @@
 package nl.utwente.groove.test.graph;
 
 import static nl.utwente.groove.io.FileType.GXL;
+import static nl.utwente.groove.util.collect.Likeness.DISTINCT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -150,7 +151,8 @@ public abstract class GraphTest {
         for (int i = 0; i < codes.length; i++) {
             for (int j = 0; j < codes.length; j++) {
                 if (!codes[i].equals(codes[j])) {
-                    assertFalse(this.checker.areIsomorphic(this.matchDom[i], this.matchDom[j]));
+                    assertEquals(DISTINCT,
+                                 this.checker.areIsomorphic(this.matchDom[i], this.matchDom[j]));
                 }
             }
         }
@@ -161,7 +163,8 @@ public abstract class GraphTest {
         for (int i = 0; i < codes.length; i++) {
             for (int j = 0; j < codes.length; j++) {
                 if (!codes[i].equals(codes[j])) {
-                    assertFalse(this.checker.areIsomorphic(this.isoGraph[i], this.isoGraph[j]));
+                    assertEquals(DISTINCT,
+                                 this.checker.areIsomorphic(this.isoGraph[i], this.isoGraph[j]));
                 }
             }
         }

@@ -100,8 +100,9 @@ public class MatchApplier {
             if (isoTarget == null) {
                 transition = freshTarget;
             } else {
+                // we don't actually know for sure if the old state graph is equal or merely isomorphic
                 transition = new DefaultRuleTransition(source, match, freshTarget.getAddedNodes(),
-                    isoTarget, true);
+                    isoTarget, getGTS().getRecord().isCheckIso());
             }
         }
         // add transition to gts
