@@ -368,6 +368,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                              targetRole);
                 }
             }
+            var source = source();
             var target = target();
             if (has(ARGUMENT)) {
                 if (!target.has(Category.SORT)) {
@@ -376,6 +377,8 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 }
             } else if ((isNestedAt() || isNestedIn()) && !target.has(Category.NESTING)) {
                 throw new FormatException("Target node of %s-edge should be quantifier", label());
+            } else if (isNestedIn() && !source.has(Category.NESTING)) {
+                throw new FormatException("Source node of %s-edge should be quantifier", label());
             } else if (isNestedCount()) {
                 if (!target.has(INT)) {
                     throw new FormatException("Target node of %s-edge should be int-node", label());
