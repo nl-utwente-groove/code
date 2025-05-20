@@ -52,6 +52,6 @@ public class BuchiTransition extends AEdge<BuchiLocation,BuchiLabel> {
             .guard()
             .stream()
             .allMatch(a -> a
-                .isNegated() == !satisfiedProps.stream().anyMatch(r -> a.getAtom().matches(r)));
+                .isNegated() == satisfiedProps.stream().noneMatch(r -> a.getAtom().matches(r)));
     }
 }
