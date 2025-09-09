@@ -15,7 +15,7 @@
 		<module>Generator</module>
 		<module>Imager</module>
 		<module>Viewer</module>
-    <module>ModelChecker</module>
+		<module>ModelChecker</module>
 	</modules>
 	
 	<properties>
