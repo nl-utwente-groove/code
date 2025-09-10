@@ -416,8 +416,7 @@ public class JEdgeView extends EdgeView {
                 .format("This renderer is only meant for %s", JEdgeView.class);
 
             JEdgeView view = this.jView = (JEdgeView) v;
-            this.cell = this.jView.getCell();
-            VisualMap visuals = this.visuals = this.cell.getVisuals();
+            VisualMap visuals = view.getCell().getVisuals();
             this.line2color = visuals.getInnerLine();
             this.twoLines = this.line2color != null;
             this.error = visuals.isError();
@@ -428,7 +427,7 @@ public class JEdgeView extends EdgeView {
             }
             super.getRendererComponent(jGraph, v, sel, focus, preview);
             // treat selection as emphasis
-            float lineWidth = this.visuals.getLineWidth();
+            float lineWidth = visuals.getLineWidth();
             if (visuals.isEmphasised()) {
                 lineWidth += JAttr.EMPH_INCREMENT;
             }
@@ -757,8 +756,6 @@ public class JEdgeView extends EdgeView {
         }
 
         private JEdgeView jView;
-        private JEdge<?> cell;
-        private VisualMap visuals;
         // properties for drawing a second line
         private boolean twoLines = false;
         private Color line2color;
