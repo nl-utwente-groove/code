@@ -458,7 +458,7 @@ public class NormalAspectGraph extends AspectGraph {
         Sort exprSort = expr.getSort();
         AspectNode result = findTarget(owner, expr.getField(), exprSort);
         if (result == null) {
-            result = addNestedNode(level, holder);
+            result = addNestedNode(owner.getLevelNode(), holder);
             result.set(Aspect.getAspect(exprSort));
             // add edge to newly created field
             AspectLabel idLabel = parser.parse(expr.getField(), getRole());
