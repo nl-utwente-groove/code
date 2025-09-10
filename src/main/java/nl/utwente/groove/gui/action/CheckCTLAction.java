@@ -80,31 +80,31 @@ public class CheckCTLAction extends SimulatorAction {
         Formula formula = Formula.parse(property).toCtlFormula();
         formula.check(result.getGTS().getGrammar());
         CTLMarker modelChecker = new CTLMarker(formula, CTLModelChecker.newModel(result));
-        int counterExampleCount = modelChecker.getCount(false);
-        List<GraphState> counterExamples = new ArrayList<>(counterExampleCount);
+        int witnesscCount = modelChecker.getCount(true);
+        List<GraphState> witnesses = new ArrayList<>(witnesscCount);
         String message;
-        if (counterExampleCount == 0) {
+        if (witnesscCount == 0) {
             message = String.format("The property '%s' holds for all states", property);
         } else {
             boolean allStates
                 = confirmBehaviour(VERIFY_ALL_STATES_OPTION,
                                    "Verify all states? Choosing 'No' will report only on the start state.");
             if (allStates) {
-                for (Node state : modelChecker.getStates(false)) {
-                    counterExamples.add((GraphState) state);
+                for (Node state : modelChecker.getStates(true)) {
+                    witnesses.add((GraphState) state);
                 }
                 message = String
-                    .format("The property '%s' fails to hold in the %d highlighted states",
-                            property, counterExampleCount);
+                    .format("The property '%s' holds in the %d highlighted states", property,
+                            witnesscCount);
             } else if (modelChecker.hasValue(false)) {
-                counterExamples.add(result.getGTS().startState());
+                witnesses.add(result.getGTS().startState());
+                message = String.format("The property '%s' holds in the initial state", property);
+            } else {
                 message = String
                     .format("The property '%s' fails to hold in the initial state", property);
-            } else {
-                message = String.format("The property '%s' holds in the initial state", property);
             }
         }
-        getLtsDisplay().emphasiseStates(counterExamples, false);
+        getLtsDisplay().emphasiseStates(witnesses, false);
         getSimulatorModel().setDisplay(DisplayKind.LTS);
         JOptionPane.showMessageDialog(getFrame(), message);
     }
