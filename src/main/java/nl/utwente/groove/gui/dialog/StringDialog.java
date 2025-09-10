@@ -89,7 +89,10 @@ abstract public class StringDialog {
         }
         this.dialog = createDialog(frame);
         getChoiceBox().setSelectedIndex(0);
-        getTextArea().setText("");
+        getTextArea()
+            .setText(this.history.isEmpty()
+                ? ""
+                : this.history.getFirst());
         processTextChange();
         getChoiceBox().revalidate();
         getTextArea().selectAll();
@@ -106,7 +109,7 @@ abstract public class StringDialog {
      * Creates and returns a fresh dialog for the given frame.
      */
     private JDialog createDialog(Component frame) {
-        Object[] buttons = new Object[] {getOkButton(), getCancelButton()};
+        Object[] buttons = {getOkButton(), getCancelButton()};
         // input panel with text area and choice box
         JPanel input = new JPanel();
         input.setLayout(new BorderLayout());
@@ -156,8 +159,7 @@ abstract public class StringDialog {
     private JTextArea getTextArea() {
         if (this.textArea == null) {
             this.textArea = new JTextArea();
-            this.textArea.getDocument()
-                .addDocumentListener(this.changeListener);
+            this.textArea.getDocument().addDocumentListener(this.changeListener);
         }
         return this.textArea;
     }
@@ -422,9 +424,9 @@ abstract public class StringDialog {
         @SuppressWarnings("rawtypes")
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index,
-            boolean isSelected, boolean cellHasFocus) {
-            Component result =
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                                                      boolean isSelected, boolean cellHasFocus) {
+            Component result
+                = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             if (result == this) {
                 setToolTipText(this.tipMap.get(value));
             }
