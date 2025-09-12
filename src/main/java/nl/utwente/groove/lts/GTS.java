@@ -253,8 +253,17 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     public Set<? extends GraphState> getStates() {
         var result = this.publicStateSet;
         if (result == null) {
-            this.publicStateSet = result
-                = SetView.instance(nodeSet(), obj -> obj instanceof GraphState gs && gs.isPublic());
+            this.publicStateSet = result = new SetView<>(nodeSet()) {
+                @Override
+                public int size() {
+                    return GTS.this.publicStateCount;
+                }
+
+                @Override
+                public boolean approves(@Nullable Object obj) {
+                    return obj instanceof GraphState gs && gs.isPublic();
+                }
+            };
         }
         return result;
     }
@@ -443,22 +452,35 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      * @see GraphTransition#isPublicStep()
      */
     public Set<? extends GraphTransition> getTransitions() {
-        var result = this.exposedTransitionSet;
+        var result = this.publicTransitionSet;
         if (result == null) {
-            this.exposedTransitionSet = result = SetView
-                .instance(edgeSet(), o -> o instanceof GraphTransition gt && gt.isPublicStep());
+            this.publicTransitionSet = result = new SetView<>(edgeSet()) {
+                @Override
+                public boolean approves(@Nullable Object obj) {
+                    return obj instanceof GraphTransition gt && gt.isPublicStep();
+                }
+
+                @Override
+                public int size() {
+                    return GTS.this.publicTransitionCount;
+                }
+            };
         }
         return result;
     }
 
-    private @Nullable Set<? extends GraphTransition> exposedTransitionSet;
+    /** The set of public transitions (as a view on the set of all transitions). */
+    private @Nullable Set<? extends GraphTransition> publicTransitionSet;
 
-    /** Returns the number of exposed transitions, i.e., those
+    /** The number of public transitions, stored separately for efficiency. */
+    private int publicTransitionCount;
+
+    /** Returns the number of public transitions, i.e., those
      * that satisfy {@link GraphTransition#isPublicStep()}.
      * More efficient than calling {@code getTransitions().size()}
      */
     public int getTransitionCount() {
-        return getTransitions().size();
+        return this.publicTransitionCount;
     }
 
     /**
@@ -526,6 +548,9 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     protected void fireAddEdge(GraphTransition edge) {
         this.inners |= edge.isInnerStep();
         this.allTransitionCount++;
+        if (edge.isPublicStep()) {
+            this.publicTransitionCount++;
+        }
         super.fireAddEdge(edge);
         for (GTSListener listener : getGTSListeners()) {
             listener.addUpdate(this, edge);
