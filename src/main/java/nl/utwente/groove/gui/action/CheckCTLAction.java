@@ -104,6 +104,10 @@ public class CheckCTLAction extends SimulatorAction {
                     .format("The property '%s' fails to hold in the initial state", property);
             }
         }
+        // Create a fresh result to be independent on whatever result states were there
+        result = new ExploreResult(result.getGTS());
+        witnesses.forEach(result::addState);
+        getSimulatorModel().setExploreResult(result);
         getLtsDisplay().emphasiseStates(witnesses, false);
         getSimulatorModel().setDisplay(DisplayKind.LTS);
         JOptionPane.showMessageDialog(getFrame(), message);
