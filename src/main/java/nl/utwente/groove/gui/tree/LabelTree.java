@@ -103,7 +103,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree
 
         getFilter().addObserver(evt -> {
             LabelTree.this.repaint();
-            getJGraph().refreshCells((Set<JCell<G>>) evt.getNewValue());
+            getJGraph().refreshCells((Set<JCell<G>>) evt.getNewValue(), false);
         });
         addMouseListener(new MyMouseListener());
     }

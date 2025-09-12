@@ -401,7 +401,7 @@ final public class GraphEditorTab extends ResourceTab
             this.refreshing = true;
             getNonNullJModel().syncGraph();
             getJGraph().setEditable(mode != PREVIEW_MODE);
-            getJGraph().refreshAllCells();
+            getJGraph().refreshAllCells(true);
             getJGraph().refresh();
             this.refreshing = false;
         }

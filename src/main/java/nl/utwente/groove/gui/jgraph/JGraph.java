@@ -338,7 +338,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     }
 
     /**
-     * Overrides the super method to make sure hidden cells ae never editable.
+     * Overrides the super method to make sure hidden cells are never editable.
      * If the specified cell is hidden (according to the underlying model),
      * returns false; otherwise, passes on the query to super.
      * @see JCell#isGrayedOut()
@@ -437,8 +437,10 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         return getCellBounds(getRoots());
     }
 
-    /** Refreshes the visibility and view of a given set of JCells. */
-    public void refreshCells(Collection<? extends JCell<G>> jCellSet) {
+    /** Refreshes the visibility and view of a given set of JCells.
+     * @param unselectGrayedOut if {@code true}, unselect all grayed-out cells.
+     */
+    public void refreshCells(Collection<? extends JCell<G>> jCellSet, boolean unselectGrayedOut) {
         if (!jCellSet.isEmpty()) {
             JGraphLayoutCache cache = getGraphLayoutCache();
             Collection<JCell<G>> visibleCells = new HashSet<>(jCellSet.size());
@@ -468,10 +470,12 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
                 }
             }
             JGraph.this.modelRefreshing = true;
-            // unselect all hidden and grayed-out cells
-            var unselectedCells = new HashSet<>(hiddenCells);
-            visibleCells.stream().filter(JCell::isGrayedOut).forEach(unselectedCells::add);
-            getSelectionModel().removeSelectionCells(unselectedCells.toArray());
+            if (unselectGrayedOut) {
+                // unselect all hidden and grayed-out cells
+                var unselectedCells = new HashSet<>(hiddenCells);
+                visibleCells.stream().filter(JCell::isGrayedOut).forEach(unselectedCells::add);
+                getSelectionModel().removeSelectionCells(unselectedCells.toArray());
+            }
             // make sure refreshed cells are not selected
             boolean selectsInsertedCells = cache.isSelectsLocalInsertedCells();
             cache.setSelectsLocalInsertedCells(false);
@@ -487,11 +491,14 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         }
     }
 
-    /** Refreshes the visibility and view of all JCells in the model. */
-    public void refreshAllCells() {
+    /**
+     * Refreshes the visibility and view of all JCells in the model.
+     * @param unselectGrayedOut if {@code true}, unselect all grayed-out cells.
+     */
+    public void refreshAllCells(boolean unselectGrayedOut) {
         var model = getModel();
         if (model != null) {
-            refreshCells(model.getRoots());
+            refreshCells(model.getRoots(), unselectGrayedOut);
         }
     }
 
@@ -529,13 +536,15 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
                 }
             }
         }
-        model.toBackSilent(changedJCells);
-        refreshCells(changedJCells);
+        if (grayedOut) {
+            model.toBackSilent(changedJCells);
+        }
+        refreshCells(changedJCells, false);
     }
 
     /**
      * Indicates if this {@link JGraph} is in the course of processing
-     * a {@link #refreshCells(Collection)}. This allows listeners to ignore the
+     * a {@link #refreshCells(Collection, boolean)}. This allows listeners to ignore the
      * resulting graph view update, if they wish.
      */
     public boolean isModelRefreshing() {
@@ -1523,7 +1532,6 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         @SuppressWarnings("unchecked")
         @Override
         public void valueChanged(GraphSelectionEvent e) {
-            Object[] cells = e.getCells();
             Object[] selectedCells = getSelectionCells();
             if (selectedCells.length > 0) {
                 getSelectionModel().removeGraphSelectionListener(this);
@@ -1552,6 +1560,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
                 getSelectionModel().addGraphSelectionListener(this);
             }
             Object selectedCell = null;
+            Object[] cells = e.getCells();
             var viewBounds = getViewPortBounds();
             for (int i = 0; i < cells.length; i++) {
                 Object c = cells[i];
@@ -1594,7 +1603,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
             var model = getModel();
             assert model != null;
             model.refreshVisuals();
-            refreshAllCells();
+            refreshAllCells(true);
         }
     }
 

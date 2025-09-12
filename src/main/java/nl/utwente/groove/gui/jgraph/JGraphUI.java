@@ -45,6 +45,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JViewport;
@@ -448,16 +450,20 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
          * the selection changes.
          */
         private void selectCellsForEvent(Collection<JCell<G>> cells, MouseEvent evt) {
-            if (cells.isEmpty()) {
+            List<JCell<G>> nonGrayCells = new LinkedList<>();
+            cells.stream().filter(c -> !c.isGrayedOut()).forEach(nonGrayCells::add);
+            if (nonGrayCells.isEmpty()) {
                 getJGraph().clearSelection();
             } else if (isToggleSelectionEvent(evt)) {
-                for (JCell<G> jCell : cells) {
-                    toggleSelectionCellForEvent(jCell, evt);
+                for (JCell<G> jCell : nonGrayCells) {
+                    if (!jCell.isGrayedOut()) {
+                        toggleSelectionCellForEvent(jCell, evt);
+                    }
                 }
             } else if (isAddToSelectionEvent(evt)) {
-                getJGraph().addSelectionCells(cells.toArray());
+                getJGraph().addSelectionCells(nonGrayCells.toArray());
             } else {
-                getJGraph().setSelectionCells(cells.toArray());
+                getJGraph().setSelectionCells(nonGrayCells.toArray());
             }
         }
 

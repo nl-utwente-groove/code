@@ -363,7 +363,8 @@ public class StateDisplay extends Display implements SimulatorListener {
             }
             // all cells repainted, even though everything but the
             // edge colour seems to be OK even without doing this
-            getJGraph().refreshAllCells();
+            // Grayed-out selected elements should remain selected
+            getJGraph().refreshAllCells(false);
         }
         updateStatus();
         activateListening();

@@ -133,7 +133,7 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
         if (getFilter() != Filter.NONE) {
             refreshFiltering();
         }
-        refreshAllCells();
+        refreshAllCells(true);
         refreshActive();
         doLayout(true);
         scrollToActive();
@@ -385,7 +385,7 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
             setSelectionCells(activeCells.toArray());
         }
         if (!changedCells.isEmpty()) {
-            refreshCells(changedCells);
+            refreshCells(changedCells, false);
         }
         return result;
     }
@@ -442,7 +442,7 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
         }
         if (!activeCells.isEmpty()) {
             setSelectionCells(activeCells.toArray());
-            refreshCells(activeCells);
+            refreshCells(activeCells, false);
         }
     }
 
@@ -507,8 +507,9 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
         return result != null && result.contains(trans);
     }
 
-    /** Filters the LTS.
-     * @return {@code true} if any cells were added (necessitating a relayout). */
+    /** Filters the LTS according to the current value of {@link #getFilter()}.
+     * @return {@code true} if any cells were added (necessitating a relayout).
+     */
     public boolean refreshFiltering() {
         boolean result = false;
         GTSFragment fragment;

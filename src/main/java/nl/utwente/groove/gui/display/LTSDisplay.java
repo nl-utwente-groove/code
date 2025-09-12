@@ -252,7 +252,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
                             if (getJModel().reloadGraph()) {
                                 getJGraph().refreshFiltering();
                                 getJGraph().refreshActive();
-                                getJGraph().refreshAllCells();
+                                getJGraph().refreshAllCells(true);
                                 getJGraph().doLayout(false);
                                 getJGraph().scrollToActive();
                             }
@@ -526,7 +526,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
         if (getJGraph().setFilter(getFilter())) {
             boolean layout = getJGraph().refreshFiltering();
             layout |= getJGraph().refreshActive();
-            getJGraph().refreshAllCells();
+            getJGraph().refreshAllCells(false);
             if (layout) {
                 getJGraph().doLayout(false);
             }
