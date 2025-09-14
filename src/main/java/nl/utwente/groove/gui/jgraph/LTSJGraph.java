@@ -64,6 +64,7 @@ import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.GraphTransition.Claz;
 import nl.utwente.groove.lts.RecipeTransition;
 import nl.utwente.groove.lts.RuleTransition;
+import nl.utwente.groove.util.collect.Matrix;
 import nl.utwente.groove.util.line.MatrixFormat;
 
 /**
@@ -586,42 +587,17 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
         JVertex<?> vertex = view.getCell();
         var label = vertex.getVisuals().getLabel();
         var matrix = label.toBuilder(MatrixFormat.instance());
-        result = lookup(matrix.getWidth(), matrix.getHeight());
+        result = this.sizeMatrix.lookup(matrix.getWidth(), matrix.getHeight());
         if (result == null) {
             result = super.computePreferredSize(view);
-            store(matrix.getWidth(), matrix.getHeight(), result);
+            this.sizeMatrix.store(matrix.getWidth(), matrix.getHeight(), result);
         }
         return result;
     }
 
-    /** Look up the entry in sizeMatrix at a given width and height, if defined. */
-    private Dimension2D lookup(int width, int height) {
-        Dimension2D result = null;
-        if (width < this.sizeMatrix.size()) {
-            var forWidth = this.sizeMatrix.get(width);
-            if (height < forWidth.size()) {
-                result = forWidth.get(height);
-            }
-        }
-        return result;
-    }
-
-    /** Store an entry in sizeMatrix at a given width and height. */
-    private void store(int width, int height, Dimension2D entry) {
-        for (int i = this.sizeMatrix.size(); i <= width; i++) {
-            this.sizeMatrix.add(new ArrayList<>());
-        }
-        var forWidth = this.sizeMatrix.get(width);
-        for (int i = forWidth.size(); i <= height; i++) {
-            forWidth.add(null);
-        }
-        forWidth.set(height, entry);
-    }
-
-    private final List<List<Dimension2D>> sizeMatrix = new ArrayList<>();
+    private final Matrix<Dimension2D> sizeMatrix = new Matrix<>();
 
     @Override
-
     public Layouter getDefaultLayouter() {
         return ForestLayouter.PROTOTYPE;
     }

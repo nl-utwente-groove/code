@@ -56,8 +56,10 @@ import nl.utwente.groove.gui.look.MultiLabel;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
+import nl.utwente.groove.util.collect.Matrix;
 import nl.utwente.groove.util.line.HTMLLineFormat;
 import nl.utwente.groove.util.line.LineStyle;
+import nl.utwente.groove.util.line.MatrixFormat;
 
 /**
  * An edge view that uses the <tt>getText()</tt> of the underlying edge as a
@@ -694,23 +696,33 @@ public class JEdgeView extends EdgeView {
                 result = this.jLabelSize = new Dimension();
             } else if (lines != this.jLabelLines || foreground != this.jLabelColor) {
                 // no, the text or colour have changed; reload the jLabel component
-                StringBuilder text;
                 JGraph<?> jGraph = view.getCell().getJGraph();
                 assert jGraph != null; // guaranteed by now
+                Point2D start = null;
+                Point2D end = null;
                 if (jGraph.isShowArrowsOnLabels()) {
-                    Point2D start = view.getPoint(0);
-                    Point2D end = view.getPoint(view.getPointCount() - 1);
-                    text = lines.toString(HTMLLineFormat.instance(), start, end);
-                } else {
-                    text = lines.toString(HTMLLineFormat.instance());
+                    start = view.getPoint(0);
+                    end = view.getPoint(view.getPointCount() - 1);
                 }
+                // set the text in the label
+                var text = lines.toString(HTMLLineFormat.instance(), start, end);
                 this.jLabel.setText(HTMLLineFormat.toHtml(text, foreground));
-                result = this.jLabelSize = this.jLabel.getPreferredSize();
+                // look up the size
+                var matrix = lines.toBuilder(MatrixFormat.instance(), start, end);
+                result = this.sizeMatrix.lookup(matrix.getWidth(), matrix.getHeight());
+                if (result == null) {
+                    // there was no lookup value; compute and store the size
+                    result = this.jLabel.getPreferredSize();
+                    this.sizeMatrix.store(matrix.getWidth(), matrix.getHeight(), result);
+                }
+                this.jLabelSize = result;
             }
             this.jLabelLines = lines;
             this.jLabelColor = foreground;
             return result;
         }
+
+        private final Matrix<Dimension> sizeMatrix = new Matrix<>();
 
         /* Overwritten so the bounds get computed correctly even
          * before {@link #getRendererComponent}
