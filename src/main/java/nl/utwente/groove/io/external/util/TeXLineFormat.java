@@ -219,7 +219,7 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
     /**
      * {@link nl.utwente.groove.util.line.LineFormat.Builder} implementation for {@link TeXBuilder}
      */
-    public static class TeXBuilder implements LineFormat.Builder<TeXBuilder> {
+    public static class TeXBuilder extends LineFormat.Builder<TeXBuilder> {
         /* Make sure the result does not need math mode. */
         @Override
         public StringBuilder getResult() {

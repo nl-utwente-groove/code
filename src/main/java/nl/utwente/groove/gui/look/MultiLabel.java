@@ -134,11 +134,10 @@ public class MultiLabel {
     private final boolean showCount;
 
     /**
-     * Computes a string representation of this label, for a given renderer
+     * Computes a line builder this label, for a given renderer
      * and with or without orientation decorations.
      */
-    public <R extends Builder<R>> StringBuilder toString(LineFormat<R> renderer, Point2D start,
-                                                         Point2D end) {
+    public <R extends Builder<R>> R toBuilder(LineFormat<R> renderer, Point2D start, Point2D end) {
         R result = renderer.createResult();
         for (Map.Entry<Line,DirectBag> entry : this.parts.entrySet()) {
             Line line = entry.getKey();
@@ -161,7 +160,24 @@ public class MultiLabel {
                 }
             }
         }
-        return result.getResult();
+        return result;
+    }
+
+    /**
+     * Computes a line builder for this label, for a given renderer
+     * and without orientation decorations.
+     */
+    public <R extends Builder<R>> R toBuilder(LineFormat<R> renderer) {
+        return toBuilder(renderer, null, null);
+    }
+
+    /**
+     * Computes a string representation of this label, for a given renderer
+     * and with or without orientation decorations.
+     */
+    public <R extends Builder<R>> StringBuilder toString(LineFormat<R> renderer, Point2D start,
+                                                         Point2D end) {
+        return toBuilder(renderer, start, end).getResult();
     }
 
     /**
@@ -169,7 +185,7 @@ public class MultiLabel {
      * and without orientation decorations.
      */
     public <R extends Builder<R>> StringBuilder toString(LineFormat<R> renderer) {
-        return toString(renderer, null, null);
+        return toBuilder(renderer).getResult();
     }
 
     @Override

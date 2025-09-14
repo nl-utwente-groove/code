@@ -66,7 +66,7 @@ public class StringFormat extends LineFormat<StringFormat.Builder> {
     /**
      * {@link LineFormat.Builder} implementation for the {@link StringFormat}
      */
-    public static class Builder implements LineFormat.Builder<Builder> {
+    public static class Builder extends LineFormat.Builder<Builder> {
         @Override
         public boolean isEmpty() {
             return this.content.length() == 0;
@@ -85,11 +85,6 @@ public class StringFormat extends LineFormat<StringFormat.Builder> {
         @Override
         public void appendLineBreak() {
             this.content.append("\n");
-        }
-
-        @Override
-        public String toString() {
-            return this.content.toString();
         }
 
         private final StringBuilder content = new StringBuilder();

@@ -42,6 +42,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.jgraph.graph.CellView;
 import org.jgraph.graph.CellViewRenderer;
 import org.jgraph.graph.EdgeView;
@@ -94,7 +95,7 @@ public class JVertexView extends VertexView {
      * Specialises the return type.
      */
     @Override
-    public JVertex<?> getCell() {
+    public @NonNull JVertex<?> getCell() {
         return (JVertex<?>) super.getCell();
     }
 

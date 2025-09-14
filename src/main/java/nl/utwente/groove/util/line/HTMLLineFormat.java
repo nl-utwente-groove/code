@@ -75,11 +75,7 @@ public class HTMLLineFormat extends LineFormat<HTMLLineFormat.HTMLBuilder> {
 
     @Override
     public HTMLBuilder applyAtomic(String text) {
-        HTMLBuilder result = createResult();
-        StringBuilder content = result.getResult();
-        content.append(text);
-        HTMLConverter.toHtml(content);
-        return result;
+        return new HTMLBuilder(text);
     }
 
     @Override
@@ -110,8 +106,7 @@ public class HTMLLineFormat extends LineFormat<HTMLLineFormat.HTMLBuilder> {
             if (color != null && !color.equals(Color.BLACK)) {
                 createColorTag(color).on(text);
             }
-            return HTML_TAG.on(HTMLConverter.CENTER_TAG.on(getFontTag().on(text)))
-                .toString();
+            return HTML_TAG.on(HTMLConverter.CENTER_TAG.on(getFontTag().on(text))).toString();
         } else {
             return "";
         }
@@ -135,7 +130,18 @@ public class HTMLLineFormat extends LineFormat<HTMLLineFormat.HTMLBuilder> {
     private static HTMLTag fontTag;
 
     /** Helper class in HTML line formatting. */
-    static public class HTMLBuilder implements LineFormat.Builder<HTMLBuilder> {
+    static public class HTMLBuilder extends LineFormat.Builder<HTMLBuilder> {
+        /** Constructs an initially empty builder. */
+        HTMLBuilder() {
+            // empty
+        }
+
+        /** Constructs a builder initialised with a given (non-HTML) string. */
+        HTMLBuilder(String text) {
+            this.content.append(text);
+            HTMLConverter.toHtml(this.content);
+        }
+
         @Override
         public StringBuilder getResult() {
             return this.content;
@@ -159,11 +165,6 @@ public class HTMLLineFormat extends LineFormat<HTMLLineFormat.HTMLBuilder> {
         /** Appends a horizontal rule to the content. */
         public void appendHRule() {
             this.content.append("<hr noshade>");
-        }
-
-        @Override
-        public String toString() {
-            return this.content.toString();
         }
 
         private final StringBuilder content = new StringBuilder();

@@ -412,19 +412,53 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
             .setFrame(bounds.getX() + shiftX, bounds.getY() + shiftY, d.getWidth(), d.getHeight());
     }
 
+    /** Retrieves the preferred size of a given cell view. */
     private Dimension2D getPreferredSize(CellView view) {
         Dimension2D result;
-        JVertex<?> vertex = view instanceof JVertexView
-            ? ((JVertexView) view).getCell()
-            : null;
-        if (vertex == null) {
-            result = getUI().getPreferredSize(this, view);
-        } else {
+        if (view instanceof JVertexView jView) {
+            var vertex = jView.getCell();
             if (vertex.isStale(VisualKey.TEXT_SIZE)) {
-                result = getUI().getPreferredSize(this, view);
+                result = computePreferredSize(jView);
                 vertex.putVisual(VisualKey.TEXT_SIZE, result);
             } else {
                 result = vertex.getVisuals().getTextSize();
+            }
+        } else {
+            result = getUI().getPreferredSize(this, view);
+        }
+        return result;
+    }
+
+    /** Computes the preferred size of a given cell view with an underlying vertex. */
+    Dimension2D computePreferredSize(JVertexView view) {
+        return getUI().getPreferredSize(this, view);
+    }
+
+    /*
+     * Overwritten to improve performance
+     */
+    @Override
+    public Rectangle2D getCellBounds(Object[] cells) {
+        Rectangle2D result = null;
+        if (cells != null && cells.length > 0) {
+            double minX = Double.MIN_VALUE;
+            double minY = Double.MIN_VALUE;
+            double maxX = Double.MAX_VALUE;
+            double maxY = Double.MAX_VALUE;
+            for (int i = 0; i < cells.length; i++) {
+                var r = getCellBounds(cells[i]);
+                if (r != null) {
+                    if (result == null) {
+                        result = (Rectangle2D) r.clone();
+                    }
+                    minX = Math.min(minX, r.getMinX());
+                    minY = Math.min(minY, r.getMinY());
+                    maxX = Math.max(maxX, r.getMaxX());
+                    maxY = Math.max(maxY, r.getMaxY());
+                }
+            }
+            if (result != null) {
+                result.setFrame(minX, minY, maxX - minX, maxY - minY);
             }
         }
         return result;

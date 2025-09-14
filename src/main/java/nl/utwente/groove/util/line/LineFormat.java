@@ -84,19 +84,24 @@ abstract public class LineFormat<R extends LineFormat.Builder<R>> {
     abstract public R createResult();
 
     /** Result type, to be passed around during the construction. */
-    public interface Builder<R extends Builder<R>> {
+    static public abstract class Builder<R extends Builder<R>> {
         /** Indicates if the result is as yet empty. */
-        boolean isEmpty();
+        abstract public boolean isEmpty();
 
         /** Returns a string representation of the result. */
-        StringBuilder getResult();
+        abstract public StringBuilder getResult();
 
         /**
          * Appends another result to this one.
          */
-        void append(R other);
+        abstract public void append(R other);
 
         /** Appends a line break to this result. */
-        void appendLineBreak();
+        abstract public void appendLineBreak();
+
+        @Override
+        public String toString() {
+            return getResult().toString();
+        }
     }
 }
