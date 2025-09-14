@@ -441,10 +441,10 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     public Rectangle2D getCellBounds(Object[] cells) {
         Rectangle2D result = null;
         if (cells != null && cells.length > 0) {
-            double minX = Double.MIN_VALUE;
-            double minY = Double.MIN_VALUE;
-            double maxX = Double.MAX_VALUE;
-            double maxY = Double.MAX_VALUE;
+            double minX = Double.MAX_VALUE;
+            double minY = Double.MAX_VALUE;
+            double maxX = Double.MIN_VALUE;
+            double maxY = Double.MIN_VALUE;
             for (int i = 0; i < cells.length; i++) {
                 var r = getCellBounds(cells[i]);
                 if (r != null) {
