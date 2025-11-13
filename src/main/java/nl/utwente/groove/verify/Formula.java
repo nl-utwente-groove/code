@@ -47,6 +47,7 @@ import static nl.utwente.groove.verify.LogicOp.S_RELEASE;
 import static nl.utwente.groove.verify.LogicOp.TRUE;
 import static nl.utwente.groove.verify.LogicOp.UNTIL;
 import static nl.utwente.groove.verify.LogicOp.W_UNTIL;
+import static nl.utwente.groove.verify.Proposition.prop;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -328,10 +329,17 @@ public class Formula extends ATermTree<LogicOp,Formula> {
                     = new Formula(getOp(), until(subArg1.toCtlFormula(), subArg2.toCtlFormula()));
                 break;
             case W_UNTIL:
+                result
+                    = new Formula(getOp(), wUntil(subArg1.toCtlFormula(), subArg2.toCtlFormula()));
+                break;
             case RELEASE:
+                result
+                    = new Formula(getOp(), release(subArg1.toCtlFormula(), subArg2.toCtlFormula()));
+                break;
             case S_RELEASE:
-                throw new FormatException("Temporal operator '%s' not allowed in CTL formula",
-                    subKind);
+                result = new Formula(getOp(),
+                    sRelease(subArg1.toCtlFormula(), subArg2.toCtlFormula()));
+                break;
             default:
                 throw new FormatException(
                     "Path quantifier '%s' must have nested temporal operator in CTL formula",
@@ -553,6 +561,151 @@ public class Formula extends ATermTree<LogicOp,Formula> {
         return result;
     }
 
+    /** Returns the formula for {@code !this}. */
+    public Formula neg() {
+        return not(this);
+    }
+
+    /** Returns the formula for {@code this & arg}. */
+    public Formula and(Formula arg) {
+        return and(this, arg);
+    }
+
+    /** Returns the formula for {@code this | arg}. */
+    public Formula or(Formula arg) {
+        return or(this, arg);
+    }
+
+    /** Returns the formula for {@code this -> arg}. */
+    public Formula implies(Formula arg) {
+        return implies(this, arg);
+    }
+
+    /** Returns the formula for {@code this <- arg}. */
+    public Formula follows(Formula arg) {
+        return follows(this, arg);
+    }
+
+    /** Returns the formula for {@code this <-> arg}. */
+    public Formula equiv(Formula arg) {
+        return equiv(this, arg);
+    }
+
+    /** Returns the formula for {@code this U arg}. */
+    public Formula U(Formula arg) {
+        return until(this, arg);
+    }
+
+    /** Returns the formula for {@code this W arg}. */
+    public Formula W(Formula arg) {
+        return wUntil(this, arg);
+    }
+
+    /** Returns the formula for {@code this R arg}. */
+    public Formula R(Formula arg) {
+        return release(this, arg);
+    }
+
+    /** Returns the formula for {@code this M arg}. */
+    public Formula M(Formula arg) {
+        return sRelease(this, arg);
+    }
+
+    /** Returns the formula for {@code X this}. */
+    public Formula X() {
+        return next(this);
+    }
+
+    /** Returns the formula for {@code G this}. */
+    public Formula F() {
+        return eventually(this);
+    }
+
+    /** Returns the formula for {@code G this}. */
+    public Formula G() {
+        return always(this);
+    }
+
+    /** Returns the formula for {@code A this}. */
+    public Formula A() {
+        return forall(this);
+    }
+
+    /** Returns the formula for {@code E this}. */
+    public Formula E() {
+        return exists(this);
+    }
+
+    /** Returns the formula for {@code AX this}. */
+    public Formula AX() {
+        return this.X().A();
+    }
+
+    /** Returns the formula for {@code EX this}. */
+    public Formula EX() {
+        return this.X().E();
+    }
+
+    /** Returns the formula for {@code AF this}. */
+    public Formula AF() {
+        return this.F().A();
+    }
+
+    /** Returns the formula for {@code EF this}. */
+    public Formula EF() {
+        return this.F().E();
+    }
+
+    /** Returns the formula for {@code AG this}. */
+    public Formula AG() {
+        return this.G().A();
+    }
+
+    /** Returns the formula for {@code EG this}. */
+    public Formula EG() {
+        return this.G().E();
+    }
+
+    /** Returns the formula for {@code A(this U arg)}. */
+    public Formula AU(Formula arg) {
+        return this.U(arg).A();
+    }
+
+    /** Returns the formula for {@code E(this U arg)}. */
+    public Formula EU(Formula arg) {
+        return this.U(arg).A();
+    }
+
+    /** Returns the formula for {@code A(this W arg)}. */
+    public Formula AW(Formula arg) {
+        return this.W(arg).A();
+    }
+
+    /** Returns the formula for {@code E(this W arg)}. */
+    public Formula EW(Formula arg) {
+        return this.W(arg).E();
+    }
+
+    /** Returns the formula for {@code A(this R arg)}. */
+    public Formula AR(Formula arg) {
+        return this.R(arg).A();
+    }
+
+    /** Returns the formula for {@code E(this R arg)}. */
+    public Formula ER(Formula arg) {
+        return this.R(arg).E();
+    }
+
+    /** Returns the formula for {@code A(this M arg)}. */
+    public Formula AM(Formula arg) {
+        return this.M(arg).A();
+    }
+
+    /** Returns the formula for {@code E(this M arg)}. */
+    public Formula EM(Formula arg) {
+        return this.M(arg).E();
+    }
+
     /** Tests if a given string can be understood as an atom without
      * being quoted.
      * This is the case if the string is a valid identifier.
@@ -565,12 +718,12 @@ public class Formula extends ATermTree<LogicOp,Formula> {
 
     /** Factory method for an atomic proposition testing for a label constant. */
     public static Formula atom(String label) {
-        return atom(new Proposition(label));
+        return atom(prop(label));
     }
 
     /** Factory method for an atomic proposition testing for an identifier. */
     public static Formula atom(QualName id) {
-        return atom(new Proposition(id));
+        return atom(prop(id));
     }
 
     /** Factory method for a propositional formula consisting of a rule call.
@@ -595,7 +748,7 @@ public class Formula extends ATermTree<LogicOp,Formula> {
             }
             callArgs.add(callArg);
         }
-        return atom(new Proposition(id, callArgs));
+        return atom(prop(id, callArgs));
     }
 
     /** Factory method for an atomic formula wrapping a given proposition. */

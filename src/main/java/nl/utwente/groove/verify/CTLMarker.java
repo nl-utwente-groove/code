@@ -16,30 +16,20 @@
  */
 package nl.utwente.groove.verify;
 
-import static nl.utwente.groove.verify.LogicOp.NOT;
-import static nl.utwente.groove.verify.Proposition.Kind.CALL;
-import static nl.utwente.groove.verify.Proposition.Kind.ID;
-import static nl.utwente.groove.verify.Proposition.Kind.LABEL;
-
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
-import java.util.Set;
 
 import nl.utwente.groove.explore.util.LTSLabels.Flag;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Exceptions;
 
 /**
@@ -58,7 +48,6 @@ public class CTLMarker {
         this.formula = formula;
         this.model = model;
         init();
-        assert hasRoot();
     }
 
     /**
@@ -67,21 +56,15 @@ public class CTLMarker {
      */
     private void init() {
         // initialise the formula numbering
-        registerFormula(this.formula);
-        registerFormula(Formula.atom(START_ATOM));
-        // initialise the markings array
+        registerPropositions(this.formula);
         int nodeCount = this.nodeCount = this.model.nodeCount();
-        this.marking = new BitSet[this.formulaNr.size()];
-        for (int i : this.propNr.values()) {
-            this.marking[i] = new BitSet(nodeCount);
-        }
         // initialise the forward count and backward structure
         // & initialise the outgoing transition count
         // as well as the satisfaction of the atoms
-        this.states = new Node[nodeCount];
         @SuppressWarnings("unchecked")
         List<Integer>[] backward = new List[nodeCount];
         this.outCount = new int[nodeCount];
+        /*
         // collect the special flag labels used in the formula
         Map<Flag,Integer> flagNrs = new EnumMap<>(Flag.class);
         for (Flag flag : Flag.values()) {
@@ -90,47 +73,31 @@ public class CTLMarker {
                 flagNrs.put(flag, flagIx);
             }
         }
+        */
         // build the backward reachability matrix and mark the atomic propositions
         for (Node node : this.model.nodeSet()) {
-            Set<? extends Edge> outEdges = this.model.outEdgeSet(node);
             // EZ says: change for SF bug #442.
             // int nodeNr = node.getNumber();
-            int nodeNr = this.model.nodeIndex(node);
-            this.states[nodeNr] = node;
+            int nodeIx = this.model.toIndex(node);
+            this.model.toProps(node).forEach(p -> testProposition(p, nodeIx));
             int outCount = 0;
-            for (Edge outEdge : outEdges) {
-                String label = outEdge.label().text();
-                Flag flag = this.model.getFlag(label);
-                if (flag == null) {
-                    // AR: don't treat flags as edges for model checking (SF bug #503)
-                    if (outEdge.getRole() != EdgeRole.FLAG) {
-                        Node target = outEdge.target();
-                        // EZ says: change for SF bug #442.
-                        // int targetNr = target.getNumber();
-                        int targetNr = this.model.nodeIndex(target);
-                        if (backward[targetNr] == null) {
-                            backward[targetNr] = new ArrayList<>();
-                        }
-                        backward[targetNr].add(nodeNr);
-                        outCount++;
+            for (Edge outEdge : this.model.outEdges(node)) {
+                if (outEdge.getRole() == EdgeRole.BINARY) {
+                    Node target = outEdge.target();
+                    // EZ says: change for SF bug #442.
+                    // int targetNr = target.getNumber();
+                    int targetNr = this.model.toIndex(target);
+                    if (backward[targetNr] == null) {
+                        backward[targetNr] = new ArrayList<>();
                     }
-                    markAtom(nodeNr, label);
-                } else {
-                    assert outEdge.isLoop() : String
-                        .format("Special state marker '%s' occurs as edge label in model",
-                                outEdge.label());
-                    markSpecialAtom(nodeNr, flag);
+                    backward[targetNr].add(nodeIx);
+                    outCount++;
                 }
+                testProposition(this.model.toProp(outEdge), nodeIx);
             }
             // subtract the special atoms from the outgoing edge count,
             // if the model is not a GTS
-            this.outCount[nodeNr] = outCount;
-            // Test the state markers in case we are in a GTS
-            for (Map.Entry<Flag,Integer> flagEntry : flagNrs.entrySet()) {
-                if (this.model.isSpecial(node, flagEntry.getKey())) {
-                    this.marking[flagEntry.getValue()].set(nodeNr);
-                }
-            }
+            this.outCount[nodeIx] = outCount;
         }
         // Calculate the backward structure
         this.backward = new int[nodeCount][];
@@ -146,62 +113,40 @@ public class CTLMarker {
         }
     }
 
+    /** Mapping from subformulas to satisfaction vectors. */
+    private final Map<Formula,BitSet> marking = new HashMap<>();
+
     /**
-     * Registers a formula and all its subformulas
-     * into the {@link #formulaNr} and {@link #propNr} maps.
+     * Registers all propositions in the {@link #marking} map,
+     * so they can be precomputed.
      */
-    private void registerFormula(Formula formula) {
-        if (!this.formulaNr.containsKey(formula)) {
-            Integer index = this.formulaNr.size();
-            this.formulaNr.put(formula, index);
-            switch (formula.getOp().getArity()) {
-            case 0:
-                if (formula.getOp() == LogicOp.PROP) {
-                    registerProposition(formula.getProp(), index);
-                }
-                break;
-            case 1:
-                registerFormula(formula.getArg1());
-                break;
-            case 2:
-                registerFormula(formula.getArg1());
-                registerFormula(formula.getArg2());
-                break;
-            default:
-                throw new IllegalStateException();
-            }
+    private void registerPropositions(Formula formula) {
+        if (formula.getOp() == LogicOp.PROP) {
+            var propVector = new PropSatVector(formula.getProp(), createVector());
+            this.propVectors.add(propVector);
+            this.marking.put(formula, propVector.vector());
+        } else {
+            formula.getArgs().forEach(this::registerPropositions);
         }
     }
 
-    /**
-     * Registers a proposition.
+    /** Tests a given proposition against all stored propositions
      */
-    private void registerProposition(Proposition prop, Integer index) {
-        this.propNr.put(prop, index);
-        if (prop.getKind() == CALL || prop.getKind() == ID) {
-            QualName callId = prop.getId();
-            Set<Proposition> callsForId = this.calls.get(callId);
-            if (callsForId == null) {
-                this.calls.put(callId, callsForId = new HashSet<>());
-            }
-            callsForId.add(prop);
-        }
+    private void testProposition(Proposition prop, int nodeIx) {
+        this.propVectors
+            .stream()
+            .filter(pv -> pv.matches(prop))
+            .map(PropSatVector::vector)
+            .forEach(b -> b.set(nodeIx));
     }
 
-    /**
-     * Verifies the top-level property.
-     */
-    private void verify() {
-        mark(this.formula);
-        setVerified();
-    }
+    private final List<PropSatVector> propVectors = new LinkedList<>();
 
     /**
      * Marks a given node as satisfying the atomic proposition(s) corresponding
      * to a given label text.
      * @param nodeNr the node to be marked
      * @param label the proposition text
-     */
     private void markAtom(int nodeNr, String label) {
         // First look up the label as a complete proposition
         Integer propIx = this.propNr.get(new Proposition(label));
@@ -222,13 +167,13 @@ public class CTLMarker {
             }
         }
     }
+     */
 
     /**
      * Marks a given node as satisfying the atomic proposition corresponding
      * to a given special LTS flag.
      * @param nodeNr the node to be marked
      * @param flag the proposition text
-     */
     private void markSpecialAtom(int nodeNr, Flag flag) {
         Integer atomIx = this.propNr.get(flagProps.get(flag));
         // possibly the flag does not occur in the formula, in which case nothing needs to be done
@@ -236,89 +181,138 @@ public class CTLMarker {
             this.marking[atomIx].set(nodeNr);
         }
     }
+     */
 
     /**
-     * Delegates the marking process to the given CTL-expression.
-     * @param property the CTL-expression to which the marking is delegated
+     * Returns the satisfaction vector for a given formula.
      */
-    private BitSet mark(Formula property) {
-        int nr = this.formulaNr.get(property);
+    private BitSet mark(Formula formula) {
         // use the existing result, if any
-        BitSet result = this.marking[nr];
-        if (result != null) {
-            return result;
-        }
-        LogicOp token = property.getOp();
-        // compute the arguments, if any
-        BitSet arg1 = null;
-        BitSet arg2 = null;
-        switch (token.getArity()) {
-        case 1:
-            if (token == NOT) {
-                arg1 = mark(property.getArg1());
+        BitSet result = this.marking.get(formula);
+        if (result == null) {
+            result = switch (formula.getOp()) {
+            case FORALL -> markForall(formula.getArg1());
+            case EXISTS -> markExists(formula.getArg1());
+            default -> markLocal(formula);
+            };
+            this.marking.put(formula, result);
+            if (DEBUG) {
+                System.out.printf("Formula %s holds in %s%n", formula, result);
             }
-            break;
-        case 2:
-            arg1 = mark(property.getArg1());
-            arg2 = mark(property.getArg2());
-            break;
-        default: // nothing needs to be set
         }
-        // compose the arguments according to the top level operator
-        result = switch (token) {
-        case TRUE -> computeTrue();
-        case FALSE -> computeFalse();
-        case NOT -> computeNeg(arg1);
-        case OR -> computeOr(arg1, arg2);
-        case AND -> computeAnd(arg1, arg2);
-        case IMPLIES -> computeImplies(arg1, arg2);
-        case FOLLOWS -> computeImplies(arg2, arg1);
-        case EQUIV -> computeEquiv(arg1, arg2);
-        case FORALL -> markForall(property.getArg1());
-        case EXISTS -> markExists(property.getArg1());
-        default -> throw Exceptions
-            .illegalArg("Top level operator '%s' in formula %s not allowed", token, property);
+        return result;
+    }
+
+    /**
+     * Returns the satisfaction vector for a given local formula.
+     */
+    private BitSet markLocal(Formula formula) {
+        BitSet result;
+        LogicOp token = formula.getOp();
+        var illegalOp = Exceptions
+            .illegalArg("Top level operator '%s' in formula %s not allowed", token, formula);
+        result = switch (token.getArity()) {
+        case 0 -> {
+            yield switch (token) {
+            case TRUE -> computeTrue();
+            case FALSE -> computeFalse();
+            // the only other nullary operator is PROP, which is pre-computed
+            default -> throw illegalOp;
+            };
+        }
+        case 1 -> {
+            BitSet arg1 = mark(formula.getArg1());
+            yield switch (token) {
+            case NOT -> computeNeg(arg1);
+            // other unary operators do not exist
+            default -> throw illegalOp;
+            };
+        }
+        case 2 -> {
+            BitSet arg1 = mark(formula.getArg1());
+            BitSet arg2 = mark(formula.getArg2());
+            yield switch (token) {
+            case OR -> computeOr(arg1, arg2);
+            case AND -> computeAnd(arg1, arg2);
+            case IMPLIES -> computeImplies(arg1, arg2);
+            case FOLLOWS -> computeImplies(arg2, arg1);
+            case EQUIV -> computeEquiv(arg1, arg2);
+            // other binary operators do not exist
+            default -> throw illegalOp;
+            };
+        }
+        // other arities do not exist
+        default -> throw Exceptions.UNREACHABLE;
         };
-        this.marking[nr] = result;
         if (DEBUG) {
-            System.out.printf("Formula %s holds in %s%n", property, result);
+            System.out.printf("Formula %s holds in %s%n", formula, result);
         }
         return result;
     }
 
     private BitSet markExists(Formula property) {
-        return switch (property.getOp()) {
-        case NEXT -> computeEX(mark(property.getArg1()));
-        case UNTIL -> computeEU(mark(property.getArg1()), mark(property.getArg2()));
-        case EVENTUALLY -> throw Exceptions
-            .unsupportedOp("The EF(phi) construction in %s should have been rewritten to a E(true U phi) construction",
-                           property);
-        case ALWAYS -> throw Exceptions
-            .unsupportedOp("The EG(phi) construction in %s should have been rewritten to a !(AF(!phi)) construction",
-                           property);
-        default -> throw Exceptions
-            .illegalArg("Operator '%s' should not occur here", property.getOp());
-        };
+        var op = property.getOp();
+        var arg1 = property.getArg1();
+        switch (op.getArity()) {
+        case 1:
+            return switch (op) {
+            case NEXT -> computeEX(mark(arg1));
+            // EF a -> E(false U a)
+            case EVENTUALLY -> mark(Formula.ff().EU(arg1));
+            // EG a -> !AF !a
+            case ALWAYS -> mark(arg1.neg().AF().neg());
+            default -> throw Exceptions.UNREACHABLE;
+            };
+        case 2:
+            var arg2 = property.getArg2();
+            return switch (op) {
+            case UNTIL -> computeEU(mark(arg1), mark(arg2));
+            // E(a W b) = !A(!b U !a)
+            case W_UNTIL -> mark(arg2.neg().AU(arg1.neg()).neg());
+            // E(a R b) = E(b W a&b)
+            case RELEASE -> mark(arg2.EW(arg1.and(arg2)));
+            // E(a M b) = E(b U a&b)
+            case S_RELEASE -> mark(arg2.EU(arg1.and(arg2)));
+            default -> throw Exceptions.UNREACHABLE;
+            };
+        default:
+            throw Exceptions.UNREACHABLE;
+        }
     }
 
     private BitSet markForall(Formula property) {
-        return switch (property.getOp()) {
-        case NEXT -> computeAX(mark(property.getArg1()));
-        case UNTIL -> computeAU(mark(property.getArg1()), mark(property.getArg2()));
-        case EVENTUALLY -> throw Exceptions
-            .unsupportedOp("The AF(phi) construction in %s should have been rewritten to a A(true U phi) construction",
-                           property);
-        case ALWAYS -> throw Exceptions
-            .unsupportedOp("The AG(phi) construction in %s should have been rewritten to a !(EF(!phi)) construction",
-                           property);
-        default -> throw Exceptions
-            .illegalArg("Operator %s should not occur here", property.getOp());
-        };
+        var op = property.getOp();
+        var arg1 = property.getArg1();
+        switch (op.getArity()) {
+        case 1:
+            return switch (op) {
+            case NEXT -> computeAX(mark(arg1));
+            // AF a -> A(false U a)
+            case EVENTUALLY -> mark(Formula.ff().AU(arg1));
+            // AG a -> !EF !a
+            case ALWAYS -> mark(arg1.neg().EF().neg());
+            default -> throw Exceptions.UNREACHABLE;
+            };
+        case 2:
+            var arg2 = property.getArg2();
+            return switch (op) {
+            case UNTIL -> computeAU(mark(arg1), mark(arg2));
+            // A(a W b) = !E(!b U !a)
+            case W_UNTIL -> mark(arg2.neg().EU(arg1.neg()).neg());
+            // A(a R b) = A(b W a&b)
+            case RELEASE -> mark(arg2.AW(arg1.and(arg2)));
+            // A(a M b) = A(b U a&b)
+            case S_RELEASE -> mark(arg2.AU(arg1.and(arg2)));
+            default -> throw Exceptions.UNREACHABLE;
+            };
+        default:
+            throw Exceptions.UNREACHABLE;
+        }
     }
 
     /** Returns the (bit) set of all states. */
     private BitSet computeTrue() {
-        BitSet result = new BitSet(this.nodeCount);
+        BitSet result = createVector();
         for (int i = 0; i < this.nodeCount; i++) {
             result.set(i);
         }
@@ -327,7 +321,7 @@ public class CTLMarker {
 
     /** Returns the empty (bit) set. */
     private BitSet computeFalse() {
-        return new BitSet(this.nodeCount);
+        return createVector();
     }
 
     /** Returns the negation of a (bit) set. */
@@ -364,7 +358,7 @@ public class CTLMarker {
 
     /** Returns the implication of two bit sets */
     private BitSet computeEquiv(BitSet arg1, BitSet arg2) {
-        BitSet result = new BitSet(this.nodeCount);
+        BitSet result = createVector();
         for (int i = 0; i < this.nodeCount; i++) {
             result.set(i, arg1.get(i) == arg1.get(i));
         }
@@ -375,7 +369,7 @@ public class CTLMarker {
      * Returns the bit set for the EX operator.
      */
     private BitSet computeEX(BitSet arg) {
-        BitSet result = new BitSet(this.nodeCount);
+        BitSet result = createVector();
         for (int i = 0; i < this.nodeCount; i++) {
             if (arg.get(i)) {
                 int[] preds = this.backward[i];
@@ -391,7 +385,7 @@ public class CTLMarker {
      * Returns the bit set for the AX operator.
      */
     private BitSet computeAX(BitSet arg) {
-        BitSet result = new BitSet(this.nodeCount);
+        BitSet result = createVector();
         int[] nextCounts = new int[this.nodeCount];
         for (int i = 0; i < this.nodeCount; i++) {
             if (arg.get(i)) {
@@ -416,7 +410,7 @@ public class CTLMarker {
      * Constructs the bit set for the EU operator.
      */
     private BitSet computeEU(BitSet arg1, BitSet arg2) {
-        BitSet result = new BitSet(this.nodeCount);
+        BitSet result = createVector();
         BitSet arg1Marking = arg1;
         BitSet arg2Marking = arg2;
         // mark the states that satisfy the second operand
@@ -448,7 +442,7 @@ public class CTLMarker {
      * Constructs the bit set for the AU operator.
      */
     private BitSet computeAU(BitSet arg1, BitSet arg2) {
-        BitSet result = new BitSet(this.nodeCount);
+        BitSet result = createVector();
         int[] markedNextCount = new int[this.nodeCount];
         // mark the states that satisfy the second operand
         Queue<Integer> newStates = new LinkedList<>();
@@ -480,73 +474,25 @@ public class CTLMarker {
         return result;
     }
 
+    /** Callback method to create a satisfaction vector. */
+    private BitSet createVector() {
+        return new BitSet(this.nodeCount);
+    }
+
     /**
      * Tests if the top-level formula has a given boolean value for the initial state.
      * @param value the value for which the top-level formula is tested
      */
     public boolean hasValue(boolean value) {
-        return hasValue(this.formula, value);
-    }
-
-    /** Tests if the top-level formula has a given boolean value for a given state.
-     * @param state the state that is being tested
-     * @param value the value for which the top-level formula is tested
-     */
-    public boolean hasValue(Node state, boolean value) {
-        return hasValue(this.formula, state, value);
-    }
-
-    /** Tests the satisfaction of a given subformula in the initial state. */
-    private boolean hasValue(Formula formula, boolean value) {
-        assert this.formulaNr.containsKey(formula);
-        return hasValue(formula, getRoot(), value);
-    }
-
-    /** Tests the satisfaction of a given subformula in a given state. */
-    private boolean hasValue(Formula formula, Node state, boolean value) {
-        assert this.formulaNr.containsKey(formula);
-        if (!isVerified()) {
-            verify();
-        }
         // EZ says: change for SF bug #442.
-        int stateIdx = this.model.nodeIndex(state);
-        // return this.marking[this.formulaNr.get(formula)].get(state.getNumber()) == value;
-        return this.marking[this.formulaNr.get(formula)].get(stateIdx) == value;
-    }
-
-    /** Indicates if the model has an unambiguous root. */
-    private boolean hasRoot() {
-        return this.marking[this.propNr.get(START_ATOM)].cardinality() == 1;
-    }
-
-    /** Returns the (unambiguous) root node of the model, if there is any.
-     */
-    private Node getRoot() {
-        Node result = null;
-        if (this.model instanceof GTS gts) {
-            result = gts.startState();
-        } else {
-            BitSet startNodes = this.marking[this.propNr.get(START_ATOM)];
-            if (startNodes.cardinality() == 1) {
-                result = this.states[startNodes.nextSetBit(0)];
-            }
-        }
-        return result;
+        int rootIx = this.model.toIndex(this.model.getRoot());
+        return mark(this.formula).get(rootIx) == value;
     }
 
     /** Reports the number of states that satisfy or fail to satisfy the top-level formula. */
     public int getCount(boolean value) {
-        return getCount(this.formula, value);
-    }
-
-    /** Reports the number of states that satisfy or fail to satisfy a given subformula. */
-    private int getCount(Formula formula, boolean value) {
-        assert this.formulaNr.containsKey(formula);
-        if (!isVerified()) {
-            verify();
-        }
         int result = 0;
-        BitSet sat = this.marking[this.formulaNr.get(formula)];
+        BitSet sat = mark(this.formula);
         for (int i = 0; i < this.nodeCount; i++) {
             if (sat.get(i) == value) {
                 result++;
@@ -557,23 +503,16 @@ public class CTLMarker {
 
     /** Returns an iterable over the states that satisfy or fail to satisfy the top-level formula. */
     public Iterable<Node> getStates(boolean value) {
-        return getStates(this.formula, value);
-    }
-
-    /** Returns an iterable over the states that satisfy or fail to satisfy a given subformula. */
-    public Iterable<Node> getStates(Formula formula, final boolean value) {
-        assert this.formulaNr.containsKey(formula);
-        if (!isVerified()) {
-            verify();
-        }
-        final BitSet sat = this.marking[this.formulaNr.get(formula)];
+        final BitSet sat = mark(this.formula);
+        var model = CTLMarker.this.model;
+        var nodeCount = this.nodeCount;
         return new Iterable<>() {
             @Override
             public Iterator<Node> iterator() {
                 return new Iterator<>() {
                     @Override
                     public boolean hasNext() {
-                        return this.stateIx >= 0 && this.stateIx < CTLMarker.this.nodeCount;
+                        return this.stateIx >= 0 && this.stateIx < nodeCount;
                     }
 
                     @Override
@@ -581,7 +520,7 @@ public class CTLMarker {
                         if (!hasNext()) {
                             throw new NoSuchElementException();
                         }
-                        Node result = CTLMarker.this.states[this.stateIx];
+                        Node result = model.toNode(this.stateIx);
                         this.stateIx = value
                             ? sat.nextSetBit(this.stateIx + 1)
                             : sat.nextClearBit(this.stateIx + 1);
@@ -605,53 +544,25 @@ public class CTLMarker {
     private final Formula formula;
     /** The GTS on which to check the formula. */
     private final CTLModelChecker.ModelFacade model;
-    /**
-     * Mapping from subformulas to (consecutive) numbers
-     */
-    private final Map<Formula,Integer> formulaNr = new HashMap<>();
-    /** Mapping from propositions (as literal strings) to formula numbers. */
-    private final Map<Proposition,Integer> propNr = new HashMap<>();
-    /** Mapping from called action names to sets of propositions occurring in the formula
-     * that potentially match a call of that action. */
-    private final Map<QualName,Set<Proposition>> calls = new HashMap<>();
-    /** Marking matrix: 1st dimension = state, 2nd dimension = formula. */
-    private BitSet[] marking;
     /** Backward reachability matrix. */
     private int[][] backward;
     /** Number of outgoing non-special-label edges. */
     private int[] outCount;
-    /** State number-indexed array of states in the GTS. */
-    private Node[] states;
     /** State count of the transition system. */
     private int nodeCount;
 
-    /** Indicates if the {@link #verify()} method has been invoked. */
-    private boolean isVerified() {
-        return this.verified;
-    }
-
-    /** Sets the {@link #isVerified()} property tp {@code true}. */
-    private void setVerified() {
-        this.verified = true;
-    }
-
-    private boolean verified;
-    /** Mapping from flags to the corresponding proposition. */
-    static final Map<Flag,Proposition> flagProps = new EnumMap<>(Flag.class);
-    /** Mapping from special atomic formulae to the corresponding flags. */
-    static final Map<Formula,Flag> formulaFlag = new HashMap<>();
-
-    static {
-        for (Flag flag : Flag.values()) {
-            String text = "$" + flag.getDefault();
-            Formula atom = Formula.atom(QualName.name(text));
-            flagProps.put(flag, atom.getProp());
-            formulaFlag.put(atom, flag);
-        }
-    }
-
     /** Proposition text expressing that a node is the start state of the GTS. */
-    static public final Proposition START_ATOM = flagProps.get(Flag.START);
+    static public final Proposition START_ATOM = Proposition.prop(Flag.START);
     /** Debug flag */
     static private boolean DEBUG = false;
+
+    /** Satisfaction vector for a given proposition. */
+    static private record PropSatVector(Proposition prop, BitSet vector) {
+        /** Tests whether the proposition of this vector matches another.
+         * @see Proposition#matches(Proposition)
+         */
+        boolean matches(Proposition other) {
+            return this.prop.matches(other);
+        }
+    }
 }

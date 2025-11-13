@@ -31,6 +31,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -54,6 +55,7 @@ import nl.utwente.groove.lts.Status.Flag;
 import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.transform.oracle.NoValueOracle;
 import nl.utwente.groove.transform.oracle.ValueOracle;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.collect.NestedIterator;
 import nl.utwente.groove.util.collect.SetView;
 import nl.utwente.groove.util.collect.TreeHashSet;
@@ -151,6 +153,12 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     public Grammar getGrammar() {
         return this.grammar;
     }
+
+    /**
+     * The rule system generating this LTS.
+     * @invariant <tt>ruleSystem != null</tt>
+     */
+    private final Grammar grammar;
 
     /**
      * Returns the host element factory associated with this GTS.
@@ -483,6 +491,46 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         return this.publicTransitionCount;
     }
 
+    /** Tests if this GTS has a state predicate with a given name. */
+    public boolean hasStatePredicate(String name) {
+        return this.statePredicates.containsKey(name);
+    }
+
+    /** Returns a state predicate with a given name. */
+    public @Nullable StateProperty getStatePredicate(String name) {
+        return this.statePredicates.get(name);
+    }
+
+    /** Adds a named state predicate to this LTS.
+     * @throws IllegalArgumentException if a state predicate with this name already exists.
+     * @see #hasStatePredicate
+     */
+    public void addStatePredicate(String name, StateProperty pred) {
+        if (hasStatePredicate(name)) {
+            throw Exceptions.illegalArg("Predicate '%s' already exists", name);
+        }
+        this.statePredicates.put(name, pred);
+    }
+
+    /** Resets the set of state predicates associated with this GTS. */
+    public void clearStatePredicates() {
+        this.statePredicates.clear();
+    }
+
+    /** Returns the set of state predicate names satisfied by a given state. */
+    public Set<String> getSatisfiedPreds(GraphState state) {
+        Set<String> result = new LinkedHashSet<>();
+        this.statePredicates
+            .entrySet()
+            .stream()
+            .filter(e -> e.getValue().test(state))
+            .map(Map.Entry::getKey)
+            .forEach(result::add);
+        return result;
+    }
+
+    private final Map<String,StateProperty> statePredicates = new TreeMap<>();
+
     /**
      * Returns the (fixed) derivation record for this GTS.
      */
@@ -522,6 +570,12 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     public void removeLTSListener(GTSListener listener) {
         this.listeners.remove(listener);
     }
+
+    /**
+     * Set of {@link GTSListener} s to be identified of changes in this graph.
+     * Set to <tt>null</tt> when the graph is fixed.
+     */
+    private Set<GTSListener> listeners = new LinkedHashSet<>();
 
     /**
      * Notifies the {@link GTSListener}s, in addition to
@@ -687,17 +741,6 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     }
 
     private final ValueOracle oracle;
-    /**
-     * The rule system generating this LTS.
-     * @invariant <tt>ruleSystem != null</tt>
-     */
-    private final Grammar grammar;
-    /**
-     * Set of {@link GTSListener} s to be identified of changes in this graph.
-     * Set to <tt>null</tt> when the graph is fixed.
-     */
-    private Set<GTSListener> listeners = new LinkedHashSet<>();
-
     /** Set of all flags of which state sets are recorded. */
     private static final Set<Flag> FLAG_SET = EnumSet.of(Flag.CLOSED, Flag.FINAL, Flag.ERROR);
     /** Array of all flags of which state sets are recorded. */

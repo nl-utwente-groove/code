@@ -16,10 +16,17 @@
  */
 package nl.utwente.groove.explore.util;
 
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.explore.Generator;
 import nl.utwente.groove.util.Pair;
@@ -34,7 +41,7 @@ import nl.utwente.groove.util.parse.StringHandler;
 public class LTSLabels {
     /** Constructs a flag object with default values for selected flags. */
     public LTSLabels(boolean showStart, boolean showOpen, boolean showFinal, boolean showResult,
-        boolean showNumber, boolean showTransience) {
+                     boolean showNumber, boolean showTransience) {
         try {
             if (showStart) {
                 setDefaultValue(Flag.START);
@@ -97,7 +104,7 @@ public class LTSLabels {
         while (charIx < flagPart.length()) {
             char c = flagPart.charAt(charIx);
             charIx++;
-            Flag flag = getFlag(c);
+            Flag flag = flag(c);
             if (flag == null) {
                 throw new FormatException("Unknown flag '%c' in %s", c, spec);
             }
@@ -242,12 +249,28 @@ public class LTSLabels {
         if (oldFlag != null) {
             throw new FormatException("Label '%s' used for two different special labels");
         }
+        this.flags.add(value);
         return this.flagToLabelMap.put(flag, value) == null;
     }
 
+    /**
+     * Adds further flag labels to this labels object.
+     * These are treated as flags rather than binary edges during model checking.
+     */
+    public void addFlags(String... flags) {
+        Arrays.stream(flags).forEach(this.flags::add);
+    }
+
+    /** Returns the set of all strings to be treated as flags (including special ones). */
+    public Set<String> getFlags() {
+        return this.flags;
+    }
+
+    private final Set<String> flags = new LinkedHashSet<>();
+
     @Override
     public int hashCode() {
-        return this.flagToLabelMap.hashCode();
+        return Objects.hash(this.flagToLabelMap, this.flags);
     }
 
     @Override
@@ -255,11 +278,10 @@ public class LTSLabels {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof LTSLabels)) {
+        if (!(obj instanceof LTSLabels other)) {
             return false;
         }
-        LTSLabels other = (LTSLabels) obj;
-        return this.flagToLabelMap.equals(other.flagToLabelMap);
+        return this.flagToLabelMap.equals(other.flagToLabelMap) && this.flags.equals(other.flags);
     }
 
     @Override
@@ -282,27 +304,38 @@ public class LTSLabels {
     private final Map<Flag,String> flagToLabelMap = new EnumMap<>(Flag.class);
     private final Map<String,Flag> labelToFlagMap = new HashMap<>();
 
-    /** Returns the flag for a given identifying character. */
-    private static Flag getFlag(char c) {
-        return flagMap.get(c);
-    }
-
     /** Placeholder text for state and transience numbers. */
     public static final String PLACEHOLDER = "#";
     /** Flags object with all labels set to null. */
     public static final LTSLabels EMPTY = new LTSLabels();
     /** Flags object with all labels set to default. */
-    public static final LTSLabels DEFAULT = new LTSLabels(Flag.START, Flag.OPEN, Flag.RESULT);
+    public static final LTSLabels DEFAULT
+        = new LTSLabels(Flag.START, Flag.OPEN, Flag.RESULT, Flag.FINAL);
 
     private static final char SINGLE_QUOTE = StringHandler.SINGLE_QUOTE_CHAR;
-    private static final StringHandler FLAG_PARSER = new StringHandler(SINGLE_QUOTE, ""
-        + SINGLE_QUOTE);
+    private static final StringHandler FLAG_PARSER
+        = new StringHandler(SINGLE_QUOTE, "" + SINGLE_QUOTE);
 
-    private static final Map<Character,Flag> flagMap = new HashMap<>();
+    /** Returns the flag for a given identifying character. */
+    private static Flag flag(char c) {
+        return flagMap.get(c);
+    }
+
+    /** Mapping from flag IDs to flags. */
+    static private final Map<Character,Flag> flagMap = new HashMap<>();
+
+    /** Returns the flag associated with a given default label. */
+    static public @Nullable Flag flag(String label) {
+        return nameFlagMap.get(label);
+    }
+
+    /** Mapping from flag names to flags. */
+    static private final Map<String,Flag> nameFlagMap = new LinkedHashMap<>();
 
     static {
         for (Flag f : Flag.values()) {
             flagMap.put(f.getId(), f);
+            nameFlagMap.put(f.getDefault(), f);
         }
     }
 
@@ -318,10 +351,10 @@ public class LTSLabels {
         RESULT('r', "result", "Result states"),
         /** Labelling of state numbers. */
         NUMBER('n', "s" + PLACEHOLDER, "State number"),
-        /** Labelling of recipes. */
-        RECIPE('p', PLACEHOLDER, "Recipe"),
-        /** Labelling of state numbers. */
-        TRANSIENT('t', "t" + PLACEHOLDER, "Transience"), ;
+        /** Labelling of encompassing recipes for inner states. */
+        RECIPE('p', "inner", "Recipe"),
+        /** Labelling of transient depth for transient states. */
+        TRANSIENT('t', "t" + PLACEHOLDER, "Transience"),;
 
         private Flag(char id, String def, String descr) {
             this.id = id;

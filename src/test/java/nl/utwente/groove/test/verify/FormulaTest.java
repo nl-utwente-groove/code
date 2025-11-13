@@ -90,7 +90,7 @@ public class FormulaTest {
         testParse("a->(b<->c)", implies(aId, equiv(bId, cId)));
         //
         testParse("(a U b) M c R (d M e)",
-            sRelease(until(aId, bId), release(cId, sRelease(dId, eId))));
+                  sRelease(until(aId, bId), release(cId, sRelease(dId, eId))));
         //
         testParse("AFG X true", forall(eventually(always(next(tt())))));
         testParse("AG(get|put)", forall(always(or(atom(name("get")), atom(name("put"))))));
@@ -108,18 +108,15 @@ public class FormulaTest {
     }
 
     private void testParse(String text, Formula expected) {
-        Formula result = FormulaParser.instance()
-            .parse(text);
+        Formula result = FormulaParser.instance().parse(text);
         assertEquals(expected, result);
         if (result.hasErrors()) {
-            fail(result.getErrors()
-                .toString());
+            fail(result.getErrors().toString());
         }
     }
 
     private void testParseError(String text) {
-        Formula result = FormulaParser.instance()
-            .parse(text);
+        Formula result = FormulaParser.instance().parse(text);
         assertTrue(result.hasErrors());
     }
 
@@ -165,8 +162,7 @@ public class FormulaTest {
     }
 
     private void testEquals(String s, Formula f) {
-        assertEquals(s, f.toLine()
-            .toFlatString());
+        assertEquals(s, f.toLine().toFlatString());
     }
 
     /** Tests if a given formula is ripe for CTL verification. */
@@ -187,14 +183,16 @@ public class FormulaTest {
         // No next without path quantifier
         assertFalse(next(a).isCtlFormula());
         assertTrue(exists(next(a)).isCtlFormula());
-        // No until without path quantifier
+        // No until/release without path quantifier
         assertFalse(until(a, b).isCtlFormula());
+        assertFalse(wUntil(a, b).isCtlFormula());
+        assertFalse(release(a, b).isCtlFormula());
+        assertFalse(sRelease(a, b).isCtlFormula());
+        // until or release with path quantifier is fine
         assertTrue(forall(until(a, b)).isCtlFormula());
-        // no weak until or release
-        assertFalse(forall(wUntil(a, b)).isCtlFormula());
-        assertFalse(forall(release(a, b)).isCtlFormula());
-        assertFalse(forall(sRelease(a, b)).isCtlFormula());
-        assertTrue(forall(until(a, b)).isCtlFormula());
+        assertTrue(forall(wUntil(a, b)).isCtlFormula());
+        assertTrue(forall(release(a, b)).isCtlFormula());
+        assertTrue(forall(sRelease(a, b)).isCtlFormula());
         // No isolated path quantifier
         assertFalse(forall(a).isCtlFormula());
     }
@@ -212,8 +210,7 @@ public class FormulaTest {
 
     private void testToCtlFormula(String expected, Formula f) {
         try {
-            assertEquals(FormulaParser.instance()
-                .parse(expected), f.toCtlFormula());
+            assertEquals(FormulaParser.instance().parse(expected), f.toCtlFormula());
         } catch (FormatException e) {
             fail(e.getMessage());
         }

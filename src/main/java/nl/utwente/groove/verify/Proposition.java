@@ -17,13 +17,20 @@
 package nl.utwente.groove.verify;
 
 import static nl.utwente.groove.verify.Proposition.Kind.CALL;
+import static nl.utwente.groove.verify.Proposition.Kind.FLAG;
 import static nl.utwente.groove.verify.Proposition.Kind.ID;
 import static nl.utwente.groove.verify.Proposition.Kind.LABEL;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.algebra.syntax.Expression;
+import nl.utwente.groove.explore.util.LTSLabels;
+import nl.utwente.groove.explore.util.LTSLabels.Flag;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.util.Exceptions;
@@ -31,38 +38,63 @@ import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /** Proposition, wrapped inside a formula of type {@link LogicOp#PROP}. */
+@NonNullByDefault
 public class Proposition {
     /** Creates an identifier proposition.
      * @see Kind#ID
      */
-    Proposition(QualName id) {
+    private Proposition(QualName id) {
         assert id != null;
         this.kind = ID;
         this.id = id;
         this.label = null;
+        this.flag = null;
         this.args = null;
     }
 
     /** Creates call proposition.
-     * @see Kind#ID
+     * @see Kind#CALL
      */
-    Proposition(QualName id, List<Arg> args) {
+    private Proposition(QualName id, List<Arg> args) {
         assert id != null;
         assert args != null;
         this.kind = CALL;
         this.id = id;
         this.label = null;
+        this.flag = null;
         this.args = args;
     }
 
     /** Creates a label proposition.
      * @see Kind#LABEL
      */
-    Proposition(String label) {
+    private Proposition(String label) {
         assert label != null;
-        this.kind = LABEL;
         this.id = null;
-        this.label = label;
+        this.args = null;
+        if (label.startsWith(FLAG_PREFIX)) {
+            this.kind = FLAG;
+            this.label = null;
+            var flag = this.flag = LTSLabels.flag(label);
+            if (flag == null) {
+                throw Exceptions.illegalArg("Label '%s' is not a flag", label);
+            }
+        } else {
+            this.kind = LABEL;
+            this.label = label;
+            this.flag = null;
+        }
+    }
+
+    /** Creates a flag proposition.
+     * @see Kind#FLAG
+     */
+    private Proposition(Flag flag) {
+        assert flag != null;
+        this.kind = FLAG;
+        this.id = null;
+        this.label = null;
+        this.flag = flag;
         this.args = null;
     }
 
@@ -70,13 +102,14 @@ public class Proposition {
      * @throws UnsupportedOperationException if this proposition is not an {@link #ID} or {@link #CALL}
      */
     public QualName getId() {
-        if (getKind() == LABEL) {
+        var result = this.id;
+        if (result == null) {
             throw new UnsupportedOperationException();
         }
-        return this.id;
+        return result;
     }
 
-    private final QualName id;
+    private final @Nullable QualName id;
 
     /** Returns the kind of this proposition. */
     public Kind getKind() {
@@ -89,22 +122,37 @@ public class Proposition {
      * @throws UnsupportedOperationException if this proposition is not a {@link #LABEL}
      */
     public String getLabel() {
-        if (getKind() != LABEL) {
+        var result = this.label;
+        if (result == null) {
             throw new UnsupportedOperationException();
         }
-        return this.label;
+        return result;
     }
 
-    private final String label;
+    private final @Nullable String label;
+
+    /** Returns the constant in this proposition if the proposition is a {@link #FLAG}.
+     * @throws UnsupportedOperationException if this proposition is not a {@link #FLAG}
+     */
+    public Flag getFlag() {
+        var result = this.flag;
+        if (result == null) {
+            throw new UnsupportedOperationException();
+        }
+        return result;
+    }
+
+    private final @Nullable Flag flag;
 
     /** Returns the array of call arguments.
      * @throws UnsupportedOperationException if this proposition is not a {@link #CALL}
      */
     public List<Arg> getArgs() {
-        if (getKind() != CALL) {
+        var result = this.args;
+        if (result == null) {
             throw new UnsupportedOperationException();
         }
-        return this.args;
+        return result;
     }
 
     /** Returns the argument count of the call. */
@@ -112,11 +160,11 @@ public class Proposition {
         return getArgs().size();
     }
 
-    private final List<Arg> args;
+    private final @Nullable List<Arg> args;
 
     /**
      * Tests if this proposition matches another.
-     * This is the case of the two are equal, or if this is a parameterless {@link #ID}
+     * This is the case of the two are equal, or if this is a {@link #LABEL} or parameterless {@link #ID}
      * and the other a call of that action, or this is a call with wildcards and the other
      * a call that only differs in providing values for the wildcards.
      */
@@ -147,6 +195,9 @@ public class Proposition {
                 result = getLabel().equals(other.getId().toString());
             }
             break;
+        case FLAG:
+            result = equals(other);
+            break;
         default:
             throw Exceptions.UNREACHABLE;
         }
@@ -158,25 +209,20 @@ public class Proposition {
         final int prime = 31;
         int result = 1;
         result = prime * result + this.kind.hashCode();
-        switch (this.kind) {
-        case CALL:
-            result = prime * result + this.id.hashCode();
-            result = prime * result + this.args.hashCode();
-            break;
-        case ID:
-            result = prime * result + this.id.hashCode();
-            break;
-        case LABEL:
-            result = prime * result + this.label.hashCode();
-            break;
-        default:
-            throw Exceptions.UNREACHABLE;
+        result = switch (this.kind) {
+        case CALL -> {
+            var tmp = prime * result + getId().hashCode();
+            yield prime * tmp + getArgs().hashCode();
         }
+        case ID -> prime * result + getId().hashCode();
+        case LABEL -> prime * result + getLabel().hashCode();
+        case FLAG -> prime * result + getFlag().hashCode();
+        };
         return result;
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }
@@ -186,36 +232,19 @@ public class Proposition {
         if (this.kind != other.kind) {
             return false;
         }
-        switch (this.kind) {
-        case CALL:
-            if (!this.id.equals(other.id)) {
-                return false;
-            }
-            if (!this.args.equals(other.args)) {
-                return false;
-            }
-            break;
-        case ID:
-            if (!this.id.equals(other.id)) {
-                return false;
-            }
-            break;
-        case LABEL:
-            if (!this.label.equals(other.label)) {
-                return false;
-            }
-            break;
-        default:
-            throw Exceptions.UNREACHABLE;
-        }
-        return true;
+        return switch (this.kind) {
+        case CALL -> getId().equals(other.getId()) && getArgs().equals(other.getArgs());
+        case ID -> getId().equals(other.getId());
+        case LABEL -> getLabel().equals(other.getLabel());
+        case FLAG -> getFlag().equals(other.getFlag());
+        };
     }
 
     @Override
     public String toString() {
-        switch (getKind()) {
-        case CALL:
-            StringBuilder result = new StringBuilder(this.id.toString());
+        return switch (getKind()) {
+        case CALL -> {
+            StringBuilder result = new StringBuilder(getId().toString());
             result.append('(');
             boolean first = true;
             for (Arg arg : getArgs()) {
@@ -227,14 +256,12 @@ public class Proposition {
                 result.append(arg);
             }
             result.append(')');
-            return result.toString();
-        case ID:
-            return this.id.toString();
-        case LABEL:
-            return this.label;
-        default:
-            throw Exceptions.UNREACHABLE;
+            yield result.toString();
         }
+        case ID -> getId().toString();
+        case LABEL -> getLabel();
+        case FLAG -> getFlag().toString();
+        };
     }
 
     /** Constructs a display line for this proposition.
@@ -281,61 +308,94 @@ public class Proposition {
         return result;
     }
 
-    /** Returns a proposition consisting of a given identifier and list of arguments. */
+    /** Returns a {@link Kind#LABEL} proposition consisting of a given label text. */
+    public static Proposition prop(String label) {
+        return new Proposition(label);
+    }
+
+    /** Returns a {@link Kind#ID} proposition consisting of a given identifier. */
+    public static Proposition prop(QualName id) {
+        return new Proposition(id);
+    }
+
+    /** Returns a {@link Kind#CALL} proposition consisting of a given identifier and list of arguments. */
     public static Proposition prop(QualName id, List<Arg> args) {
         return new Proposition(id, args);
     }
+
+    /** Returns a {@link Kind#FLAG} proposition for a given flag. */
+    public static Proposition prop(Flag flag) {
+        var result = flagPropMap.get(flag);
+        if (result == null) {
+            flagPropMap.put(flag, result = new Proposition(flag));
+        }
+        return result;
+    }
+
+    static private final EnumMap<Flag,@Nullable Proposition> flagPropMap
+        = new EnumMap<>(Flag.class);
+
+    /** Prefix for {@link #FLAG}-type propositions. */
+    static public final String FLAG_PREFIX = "$";
 
     /**
      * Call argument.
      * Types of call arguments are given by {@link Arg#kind}.
      */
     public static class Arg {
-        /** Constructs a new {@link Kind#NAME} argument. */
+        /** Constructs a new {@link ArgKind#NAME} argument. */
         private Arg(String name) {
             assert name != null;
             this.name = name;
             this.expr = null;
-            this.kind = Kind.NAME;
+            this.kind = ArgKind.NAME;
         }
 
-        /** Constructs a new {@link Kind#CONST} argument. */
+        /** Constructs a new {@link ArgKind#CONST} argument. */
         private Arg(Expression expr) {
             assert expr != null;
             this.name = null;
             this.expr = expr;
-            this.kind = Kind.CONST;
+            this.kind = ArgKind.CONST;
         }
 
-        /** Constructs a new {@link Kind#WILD} argument. */
+        /** Constructs a new {@link ArgKind#WILD} argument. */
         private Arg() {
             this.name = null;
             this.expr = null;
-            this.kind = Kind.WILD;
+            this.kind = ArgKind.WILD;
         }
 
-        /** Returns the identifier in this argument if the argument is a {@link Kind#NAME},
-         * or {@code null} otherwise.
+        /** Returns the identifier in this argument if the argument is a {@link ArgKind#NAME}.
+        * @throws UnsupportedOperationException if this proposition is not a {@link ArgKind#NAME}
          */
         public String getName() {
-            return this.name;
+            var result = this.name;
+            if (result == null) {
+                throw Exceptions.unsupportedOp();
+            }
+            return result;
         }
 
-        /** Returns the constant in this argument if the argument is a {@link Kind#CONST},
-         * or {@code null} otherwise.
+        /** Returns the constant in this argument if the argument is a {@link ArgKind#CONST}.
+        * @throws UnsupportedOperationException if this proposition is not a {@link ArgKind#CONST}
          */
         public Expression getExpr() {
-            return this.expr;
+            var result = this.expr;
+            if (result == null) {
+                throw Exceptions.unsupportedOp();
+            }
+            return result;
         }
 
         /** Returns the kind of this argument. */
-        public Kind getKind() {
+        public ArgKind getKind() {
             return this.kind;
         }
 
-        private final Kind kind;
-        private final String name;
-        private final Expression expr;
+        private final ArgKind kind;
+        private final @Nullable String name;
+        private final @Nullable Expression expr;
 
         /** Tests if this argument matches another. */
         public boolean matches(Arg other) {
@@ -365,7 +425,7 @@ public class Proposition {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (this == obj) {
                 return true;
             }
@@ -375,51 +435,36 @@ public class Proposition {
             if (this.kind != other.kind) {
                 return false;
             }
-            switch (this.kind) {
-            case CONST:
-                return this.expr.equals(other.expr);
-            case NAME:
-                return this.name.equals(other.name);
-            case WILD:
-                return true;
-            default:
-                throw Exceptions.UNREACHABLE;
-            }
+            return switch (this.kind) {
+            case CONST -> getExpr().equals(other.expr);
+            case NAME -> getName().equals(other.name);
+            case WILD -> true;
+            };
         }
 
         @Override
         public String toString() {
-            switch (this.kind) {
-            case NAME:
-                return this.name;
-            case CONST:
-                return this.expr.toDisplayString();
-            case WILD:
-                return WILD_TEXT;
-            default:
-                throw Exceptions.UNREACHABLE;
-            }
+            return switch (this.kind) {
+            case NAME -> getName();
+            case CONST -> getExpr().toDisplayString();
+            case WILD -> WILD_TEXT;
+            };
         }
 
         Line toLine() {
-            switch (getKind()) {
-            case CONST:
-                return getExpr().toLine();
-            case NAME:
-                return Line.atom(getName());
-            case WILD:
-                return Line.atom("_");
-            default:
-                throw Exceptions.UNREACHABLE;
-            }
+            return switch (getKind()) {
+            case CONST -> getExpr().toLine();
+            case NAME -> Line.atom(getName());
+            case WILD -> Line.atom(WILD_TEXT);
+            };
         }
 
-        /** Constructs and returns a {@link Kind#NAME}-argument. */
+        /** Constructs and returns a {@link ArgKind#NAME}-argument. */
         public static Arg arg(String name) {
             return new Arg(name);
         }
 
-        /** Constructs and returns a {@link Kind#CONST}-argument. */
+        /** Constructs and returns a {@link ArgKind#CONST}-argument. */
         public static Arg arg(Expression expr) {
             return new Arg(expr);
         }
@@ -431,7 +476,7 @@ public class Proposition {
         public static final Arg WILD_ARG = new Arg();
 
         /** Call argument kind. */
-        public static enum Kind {
+        public static enum ArgKind {
             /** Identifier argument. */
             NAME,
             /** Constant argument. */
@@ -449,5 +494,7 @@ public class Proposition {
         LABEL,
         /** Call proposition. */
         CALL,
+        /** Flag proposition. */
+        FLAG,
     }
 }

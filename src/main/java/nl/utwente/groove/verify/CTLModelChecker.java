@@ -24,6 +24,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -45,16 +46,21 @@ import nl.utwente.groove.explore.Generator;
 import nl.utwente.groove.explore.Generator.LTSLabelsHandler;
 import nl.utwente.groove.explore.util.LTSLabels;
 import nl.utwente.groove.explore.util.LTSLabels.Flag;
+import nl.utwente.groove.grammar.host.DefaultHostNode;
+import nl.utwente.groove.grammar.host.HostNode;
+import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.cli.GrooveCmdLineParser;
 import nl.utwente.groove.util.cli.GrooveCmdLineTool;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
+import nl.utwente.groove.verify.Proposition.Arg;
 
 /**
  * Command-line tool directing the model checking process.
@@ -328,17 +334,21 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
 
     /** Facade for models, with the functionality required for CTL model checking. */
     public static interface ModelFacade {
+        /** Returns the root node of the model. */
+        public Node getRoot();
+
         /** Returns the number of (exposed) nodes of the model. */
-        int nodeCount();
+        default public int nodeCount() {
+            return nodeSet().size();
+        }
 
         /** Returns the set of (exposed) nodes of the model. */
-        Set<? extends Node> nodeSet();
+        public Set<? extends Node> nodeSet();
 
-        /** Returns the set of (exposed) outgoing edges of a node. */
-        Set<? extends Edge> outEdgeSet(Node node);
-
-        /** Tests if a given node satisfies the special property expressed by a given flag. */
-        boolean isSpecial(Node node, Flag flag);
+        /**
+         * Returns the exposed outgoing edges of a node.
+         */
+        public Iterable<? extends Edge> outEdges(Node node);
 
         // EZ says: change for SF bug #442. See below.
         /**
@@ -346,10 +356,19 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
          * Usually the index is the same as the node number, but this can change
          * when the GTS has absent states.
          */
-        int nodeIndex(Node node);
+        public int toIndex(Node node);
 
-        /** Returns the special-label-flag corresponding to a given edge label, if any. */
-        Flag getFlag(String label);
+        /** Returns the node for a given index. */
+        public Node toNode(int ix);
+
+        /** Converts a model edge to a proposition that holds for its source. */
+        public Proposition toProp(Edge edge);
+
+        /**
+         * Converts a model node to a set of propositions that hold for it,
+         * without investigating its outgoing edges.
+         */
+        public List<Proposition> toProps(Node node);
     }
 
     /*
@@ -365,15 +384,13 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         public GTSFacade(ExploreResult result) {
             this.gts = result.getGTS();
             this.result = result;
-            if (this.gts.hasAbsentStates() || this.gts.hasTransientStates()) {
-                this.nodeIdxMap = new HashMap<>();
-                int nr = 0;
-                for (GraphState state : this.gts.getStates()) {
-                    this.nodeIdxMap.put(state, nr);
-                    nr++;
-                }
-            } else {
-                this.nodeIdxMap = null;
+            this.nodeIdxMap = new HashMap<>();
+            this.ixNodeArray = new GraphState[this.gts.getStates().size()];
+            int nr = 0;
+            for (GraphState state : this.gts.getStates()) {
+                this.nodeIdxMap.put(state, nr);
+                this.ixNodeArray[nr] = state;
+                nr++;
             }
         }
 
@@ -381,35 +398,22 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         private final GTS gts;
 
         @Override
-        public int nodeCount() {
-            return this.nodeSet().size();
+        public GraphState getRoot() {
+            return this.gts.startState();
         }
 
         @Override
-        public Set<? extends Node> nodeSet() {
+        public Set<? extends GraphState> nodeSet() {
             return this.gts.getStates();
         }
 
         @Override
-        public Set<? extends Edge> outEdgeSet(Node node) {
+        public Iterable<? extends Edge> outEdges(Node node) {
             return ((GraphState) node).getTransitions();
         }
 
         @Override
-        public boolean isSpecial(Node node, Flag flag) {
-            GraphState state = (GraphState) node;
-            boolean result = switch (flag) {
-            case FINAL -> state.isFinal();
-            case OPEN -> !state.isClosed();
-            case START -> state == this.gts.startState();
-            case RESULT -> this.result != null && this.result.contains(state);
-            default -> false;
-            };
-            return result;
-        }
-
-        @Override
-        public int nodeIndex(Node node) {
+        public int toIndex(Node node) {
             if (this.nodeIdxMap == null) {
                 return node.getNumber();
             } else {
@@ -423,8 +427,50 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         private final Map<GraphState,Integer> nodeIdxMap;
 
         @Override
-        public Flag getFlag(String label) {
-            return null;
+        public GraphState toNode(int ix) {
+            return this.ixNodeArray[ix];
+        }
+
+        /** Graph states, in the order of their index. */
+        private final GraphState[] ixNodeArray;
+
+        /** Converts a model edge to a proposition that holds for its source. */
+        @Override
+        public Proposition toProp(Edge edge) {
+            var trans = (GraphTransition) edge;
+            var label = trans.label();
+            var id = label.getAction().getQualName();
+            var args = new LinkedList<Arg>();
+            Arrays.stream(label.getArguments()).map(this::toArg).forEach(args::add);
+            return Proposition.prop(id, args);
+        }
+
+        /** Returns a proposition argument for a host node. */
+        private Arg toArg(HostNode n) {
+            return switch (n) {
+            case DefaultHostNode d -> Arg.arg(d.toString());
+            case ValueNode v -> Arg.arg(v.toTerm());
+            };
+        }
+
+        @Override
+        public List<Proposition> toProps(Node node) {
+            var result = new LinkedList<Proposition>();
+            GraphState state = (GraphState) node;
+            if (state.isFinal()) {
+                result.add(Proposition.prop(Flag.FINAL));
+            }
+            if (!state.isClosed()) {
+                result.add(Proposition.prop(Flag.OPEN));
+            }
+            if (state == this.gts.startState()) {
+                result.add(Proposition.prop(Flag.START));
+            }
+            if (this.result.contains(state)) {
+                result.add(Proposition.prop(Flag.RESULT));
+            }
+            this.gts.getSatisfiedPreds(state).stream().map(Proposition::prop).forEach(result::add);
+            return result;
         }
     }
 
@@ -435,22 +481,29 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
          */
         public GraphFacade(Graph graph, LTSLabels ltsLabels) throws FormatException {
             this.graph = graph;
+            this.ixNodeArray = new Node[graph.nodeCount()];
+            for (var node : graph.nodeSet()) {
+                this.ixNodeArray[node.getNumber()] = node;
+            }
             this.ltsLabels = ltsLabels == null
                 ? LTSLabels.DEFAULT
                 : ltsLabels;
-            testFormat();
+            this.root = testFormat();
         }
 
+        private final LTSLabels ltsLabels;
+
         /** Tests if the model is consistent with the special state markers.
+         * Returns the (unique) root node of the model.
          * @throws FormatException if the model has special state markers that occur
          * on edge labels
          */
-        private void testFormat() throws FormatException {
-            boolean startFound = false;
+        private Node testFormat() throws FormatException {
+            Node result = null;
             for (Node node : nodeSet()) {
-                Set<? extends Edge> outEdges = outEdgeSet(node);
+                Set<? extends Edge> outEdges = this.graph.outEdgeSet(node);
                 for (Edge outEdge : outEdges) {
-                    Flag flag = getFlag(outEdge.label().text());
+                    Flag flag = getSpecialFlag(outEdge.label().text());
                     if (flag == null) {
                         continue;
                     }
@@ -460,51 +513,77 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
                             outEdge.label());
                     }
                     if (flag == Flag.START) {
-                        if (startFound) {
+                        if (result != null) {
                             throw new FormatException(
                                 "Start state marker '%s' occurs more than once in model",
                                 outEdge.label());
                         } else {
-                            startFound = true;
+                            result = node;
                         }
                     }
                 }
             }
-            if (!startFound) {
+            if (result == null) {
                 throw new FormatException("Start state marker '%s' does not occur in model",
                     this.ltsLabels.getLabel(Flag.START));
             }
+            return result;
         }
 
         @Override
-        public int nodeCount() {
-            return this.graph.nodeCount();
+        public Node getRoot() {
+            return this.root;
         }
+
+        private final Node root;
 
         @Override
         public Set<? extends Node> nodeSet() {
             return this.graph.nodeSet();
         }
 
+        @SuppressWarnings({"unchecked", "rawtypes"})
         @Override
-        public Set<? extends Edge> outEdgeSet(Node node) {
-            return this.graph.outEdgeSet(node);
-        }
-
-        @Override
-        public boolean isSpecial(Node node, Flag flag) {
-            return false;
+        public Iterable outEdges(Node node) {
+            return () -> this.graph
+                .outEdgeSet(node)
+                .stream()
+                .filter(e -> !isFlag(e.label().text()))
+                .iterator();
         }
 
         private final Graph graph;
 
         @Override
-        public int nodeIndex(Node node) {
+        public int toIndex(Node node) {
             return node.getNumber();
         }
 
         @Override
-        public Flag getFlag(String label) {
+        public Node toNode(int ix) {
+            return this.ixNodeArray[ix];
+        }
+
+        /** Graph states, in the order of their index. */
+        private final Node[] ixNodeArray;
+
+        @Override
+        public Proposition toProp(Edge edge) {
+            var label = edge.label().toString();
+            // try the label as a parsable ID or CALL
+            return FormulaParser.instance().parse(label).getProp();
+        }
+
+        /** Checks whether a given label is a flag according to {@link #ltsLabels}. */
+        private boolean isFlag(String label) {
+            return this.ltsLabels.getFlags().contains(label);
+        }
+
+        /**
+         * Returns the flag corresponding to a given label string,
+         * or {@code null} if no special flags are set.
+         */
+        private Flag getSpecialFlag(String label) {
             Flag result = null;
             if (this.ltsLabels != null) {
                 return this.ltsLabels.getFlag(label);
@@ -512,6 +591,20 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             return result;
         }
 
-        private final LTSLabels ltsLabels;
+        @Override
+        public List<Proposition> toProps(Node node) {
+            var result = new LinkedList<Proposition>();
+            for (var e : this.graph.outEdgeSet(node)) {
+                var label = e.label().text();
+                if (isFlag(label)) {
+                    result.add(Proposition.prop(label));
+                    var flag = getSpecialFlag(label);
+                    if (flag != null) {
+                        result.add(Proposition.prop(flag));
+                    }
+                }
+            }
+            return result;
+        }
     }
 }

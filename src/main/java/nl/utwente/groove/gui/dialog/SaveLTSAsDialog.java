@@ -396,7 +396,7 @@ public class SaveLTSAsDialog implements Persistable {
                 break;
             case NUMBER:
                 message = String
-                    .format("%s label must contain placeholde '%s'", flag.getDescription(),
+                    .format("%s label must contain placeholder '%s'", flag.getDescription(),
                             PLACEHOLDER);
                 listener = new PlaceholderFieldListener(textField, message);
                 break;
