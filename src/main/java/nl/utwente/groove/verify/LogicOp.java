@@ -28,12 +28,13 @@ import nl.utwente.groove.util.parse.OpKind;
 /** The kind (i.e., top level operator) of a formula. */
 public enum LogicOp implements Op {
     /** Proposition, wrapped in an object of type {@link Proposition}. */
-    @Syntax("rule [LPAR arg_list RPAR] | string_constant")
-    @ToolTipHeader("Atomic or rule call proposition")
-    @ToolTipBody({"Holds if %s is enabled in the current state.",
-            "Note that this does <i>not</i> mean that %1$s has just been executed.",
-            "Without arguments, only the rule name is checked.",
-            "Arguments may include the wildcard '_', which matches everything."})
+    @Syntax("rule [LPAR arg_list RPAR] | $.special")
+    @ToolTipHeader("Atomic or rule call proposition, or special flag")
+    @ToolTipBody({"Holds if %s (with optional %2$s) is enabled in the current state",
+            "(note that this does <i>not</i> mean that %1$s has just been executed),",
+            "or the special property encoded by %4$s holds.",
+            "Without %2$s, only the rule name (%1$s) is checked.",
+            "%2$s may include the wildcard '_', which matches everything."})
     PROP("", OpKind.ATOM),
 
     /** True. */
