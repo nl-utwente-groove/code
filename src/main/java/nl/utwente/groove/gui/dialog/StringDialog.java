@@ -27,6 +27,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,6 +51,9 @@ import javax.swing.event.DocumentListener;
 
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.display.DismissDelayer;
+import nl.utwente.groove.gui.look.Values;
+import nl.utwente.groove.io.HTMLConverter;
+import nl.utwente.groove.io.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -176,8 +180,9 @@ abstract public class StringDialog {
                 @Override
                 public void itemStateChanged(ItemEvent e) {
                     if (StringDialog.this.choiceBox.getSelectedIndex() != 0) {
-                        getTextArea()
-                            .setText((String) StringDialog.this.choiceBox.getSelectedItem());
+                        var value = StringDialog.this.choiceItems
+                            .get(StringDialog.this.choiceBox.getSelectedItem());
+                        getTextArea().setText(value);
                         getTextArea().selectAll();
                         getTextArea().requestFocus();
                     }
@@ -190,16 +195,39 @@ abstract public class StringDialog {
     private void loadChoiceBox() {
         String[] storedValues = Options.getUserPrefs(this.title);
         this.history.clear();
+        this.choiceItems.clear();
         getChoiceBox().removeAllItems();
         this.choiceBox.addItem("<html><i>Select a previously entered value</i>");
         for (String value : storedValues) {
-            String parsedValue = parseText(value);
-            if (value != null && parsedValue != null) {
-                getChoiceBox().addItem(value);
-                this.history.add(value);
-            }
+            // also add unparsable formulas
+            String representation = parseText(value) == null
+                ? error(value)
+                : value;
+            getChoiceBox().addItem(representation);
+            this.choiceItems.put(representation, value);
+            this.history.add(value);
         }
     }
+
+    /** Mapping from items in the choice box to the original value. */
+    private final Map<String,String> choiceItems = new HashMap<>();
+
+    /** Adds HTML error formatting to a text. */
+    private String error(String text) {
+        return HTMLConverter.HTML_TAG.on(errorColorTag().on(text));
+    }
+
+    /** Lazily creates and returns the error colour tag. */
+    private HTMLTag errorColorTag() {
+        var result = this.errorColorTag;
+        if (result == null) {
+            this.errorColorTag = result = HTMLConverter.createColorTag(Values.ERROR_COLOR);
+        }
+        return result;
+    }
+
+    /** Error colour tag; call {@link #errorColorTag()} to access. */
+    private HTMLTag errorColorTag;
 
     private void storeChoiceBox() {
         String[] storedValues = new String[Math.min(this.history.size(), MAX_PERSISTENT_SIZE)];
@@ -229,7 +257,7 @@ abstract public class StringDialog {
                 result = parse(text);
                 getErrorLabel().setText(null);
             } catch (FormatException e) {
-                getErrorLabel().setText(e.getMessage());
+                getErrorLabel().setText(e.getErrors().iterator().next().toString());
                 result = null;
             }
         } else {

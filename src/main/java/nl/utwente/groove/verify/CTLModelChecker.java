@@ -135,11 +135,10 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         }
         // check if the formulas match the model
         if (model instanceof GTSFacade gtsModel) {
-            var grammar = gtsModel.gts.getGrammar();
             var errors = new FormatErrorSet();
             for (var formula : this.ctlProps) {
                 try {
-                    formula.check(grammar);
+                    formula.check(gtsModel.gts);
                 } catch (FormatException e) {
                     errors.addAll(e.getErrors());
                 }

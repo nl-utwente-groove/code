@@ -63,7 +63,8 @@ public class CheckCTLAction extends SimulatorAction {
                 = new StringDialog("Enter the CTL Formula", FormulaParser.getDocMap(Logic.CTL)) {
                     @Override
                     public String parse(String text) throws FormatException {
-                        Formula.parse(Logic.CTL, text);
+                        var formula = Formula.parse(Logic.CTL, text);
+                        formula.check(getSimulatorModel().getGTS());
                         return text;
                     }
                 };
@@ -77,7 +78,7 @@ public class CheckCTLAction extends SimulatorAction {
      */
     private void doCheckProperty(ExploreResult result, String property) throws FormatException {
         Formula formula = Formula.parse(property).toCtlFormula();
-        formula.check(result.getGTS().getGrammar());
+        formula.check(result.getGTS());
         CTLMarker modelChecker = new CTLMarker(formula, CTLModelChecker.newModel(result));
         int witnesscCount = modelChecker.getCount();
         List<GraphState> witnesses = new ArrayList<>(witnesscCount);
