@@ -276,6 +276,9 @@ public class GTSFragment extends AGraph<GraphState,GraphTransition> {
                     result.addEdge(image, label, image);
                 });
             }
+            for (var prop : this.gts.getSatisfiedProps(state)) {
+                result.addEdge(image, prop, image);
+            }
         }
         for (GraphTransition transition : edgeSet()) {
             // don't include partial transitions unless forced to

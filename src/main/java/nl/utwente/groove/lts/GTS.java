@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Predicate;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -491,36 +492,45 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         return this.publicTransitionCount;
     }
 
-    /** Tests if this GTS has a state predicate with a given name. */
-    public boolean hasStatePredicate(String name) {
-        return this.statePredicates.containsKey(name);
+    /** Tests if this GTS has a state property with a given name. */
+    public boolean hasStateProperty(String name) {
+        return this.stateProperties.containsKey(name);
     }
 
-    /** Returns a state predicate with a given name. */
-    public @Nullable StateProperty getStatePredicate(String name) {
-        return this.statePredicates.get(name);
+    /** Returns a state property with a given name. */
+    public @Nullable StateProperty getStateProperty(String name) {
+        return this.stateProperties.get(name);
     }
 
     /** Adds a named state predicate to this LTS.
      * @throws IllegalArgumentException if a state predicate with this name already exists.
-     * @see #hasStatePredicate
+     * @see #hasStateProperty
      */
-    public void addStatePredicate(String name, StateProperty pred) {
-        if (hasStatePredicate(name)) {
+    public void addStateProperty(String name, Predicate<GraphState> prop) {
+        addStateProperty(new StateProperty(name, prop));
+    }
+
+    /** Adds a named state properties to this LTS.
+     * @throws IllegalArgumentException if a state properties with this name already exists.
+     * @see #hasStateProperty
+     */
+    public void addStateProperty(StateProperty pred) {
+        var name = pred.name();
+        if (hasStateProperty(name)) {
             throw Exceptions.illegalArg("Predicate '%s' already exists", name);
         }
-        this.statePredicates.put(name, pred);
+        this.stateProperties.put(name, pred);
     }
 
-    /** Resets the set of state predicates associated with this GTS. */
-    public void clearStatePredicates() {
-        this.statePredicates.clear();
+    /** Resets the set of state properties associated with this GTS. */
+    public void clearStateProperties() {
+        this.stateProperties.clear();
     }
 
-    /** Returns the set of state predicate names satisfied by a given state. */
-    public Set<String> getSatisfiedPreds(GraphState state) {
+    /** Returns the set of state property names satisfied by a given state. */
+    public Set<String> getSatisfiedProps(GraphState state) {
         Set<String> result = new LinkedHashSet<>();
-        this.statePredicates
+        this.stateProperties
             .entrySet()
             .stream()
             .filter(e -> e.getValue().test(state))
@@ -529,7 +539,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         return result;
     }
 
-    private final Map<String,StateProperty> statePredicates = new TreeMap<>();
+    private final Map<String,StateProperty> stateProperties = new TreeMap<>();
 
     /**
      * Returns the (fixed) derivation record for this GTS.

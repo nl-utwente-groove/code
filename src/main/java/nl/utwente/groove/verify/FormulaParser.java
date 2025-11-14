@@ -79,7 +79,7 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
                 }
                 result = Formula.atom(prop(flag));
             } else if (consume(LPAR) == null) {
-                // it's an (unquoted) string constant: create an atomic proposition
+                // it's an (unquoted) identifier: create an atomic proposition
                 result = Formula.atom(id);
             } else {
                 result = createTree(LogicOp.PROP);

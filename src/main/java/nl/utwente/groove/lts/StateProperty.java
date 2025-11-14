@@ -23,26 +23,15 @@ import java.util.function.Predicate;
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class StateProperty implements Predicate<GraphState>, Comparable<StateProperty> {
-    /**
-     * Constructs a predicate with a given name.
-     */
-    public StateProperty(String name) {
-        this.name = name;
-    }
-
-    /** Returns the name of this predicate. */
-    public String getName() {
-        return this.name;
-    }
-
-    private final String name;
-
+public record StateProperty(String name, Predicate<GraphState> prop)
+    implements Predicate<GraphState>, Comparable<StateProperty> {
     @Override
     public int compareTo(StateProperty o) {
-        return getName().compareTo(o.getName());
+        return name().compareTo(o.name());
     }
 
     @Override
-    abstract public boolean test(GraphState t);
+    public boolean test(GraphState t) {
+        return this.prop.test(t);
+    }
 }

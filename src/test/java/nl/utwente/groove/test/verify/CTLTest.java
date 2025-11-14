@@ -60,7 +60,7 @@ public class CTLTest {
     /** Test on a specially designed transition system. */
     @Test
     public void testMC() {
-        setGTS("mc", null);
+        setGTS("mc", "start");
         testFormula("p & !q", 1);
         testFormula("E(p U r)", 3);
         testFormula("A(p U r)", 1);
@@ -118,7 +118,7 @@ public class CTLTest {
         testFormula("EF $open", 3);
         testFormula("EF $final", 3);
         testFormula("EF $result", 3);
-        setGTS("mc", null, "-s", "crule:r", "-a", "any");
+        setGTS("mc", "start", "-s", "crule:r", "-a", "any");
         testFormula("EF $start", 1);
         testFormula("EF $open", 3);
         testFormula("EF $final", 0);
@@ -157,10 +157,10 @@ public class CTLTest {
             // all states satisfy the following property
             Formula property = Formula.parse(formula).toCtlFormula();
             CTLMarker marker = new CTLMarker(property, CTLModelChecker.newModel(this.result));
-            assertEquals(stateCount, marker.getCount(true));
+            assertEquals(stateCount, marker.getCount());
             marker
                 = new CTLMarker(property, CTLModelChecker.newModel(this.gtsGraph, this.ltsLabels));
-            assertEquals(stateCount, marker.getCount(true));
+            assertEquals(stateCount, marker.getCount());
         } catch (Exception efe) {
             fail(efe.getMessage());
         }

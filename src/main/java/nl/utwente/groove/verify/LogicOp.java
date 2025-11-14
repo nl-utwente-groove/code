@@ -150,7 +150,7 @@ public enum LogicOp implements Op {
     LPAR("(", OpKind.NONE),
 
     /** Right parenthesis. */
-    RPAR(")", OpKind.NONE);
+    RPAR(")", OpKind.NONE),;
 
     /** Private constructor for an operator token. */
     private LogicOp(String symbol, OpKind kind) {

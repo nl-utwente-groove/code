@@ -19,14 +19,12 @@ package nl.utwente.groove.verify;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Queue;
+import java.util.stream.Stream;
 
-import nl.utwente.groove.explore.util.LTSLabels.Flag;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Node;
@@ -49,6 +47,11 @@ public class CTLMarker {
         this.model = model;
         init();
     }
+
+    /** The (top-level) formula to check. */
+    private final Formula formula;
+    /** The GTS on which to check the formula. */
+    private final CTLModelChecker.ModelFacade model;
 
     /**
      * Creates and initialises the internal data structures for marking.
@@ -113,6 +116,12 @@ public class CTLMarker {
         }
     }
 
+    /** Backward reachability matrix. */
+    private int[][] backward;
+    /** Number of outgoing non-special-label edges. */
+    private int[] outCount;
+    /** State count of the transition system. */
+    private int nodeCount;
     /** Mapping from subformulas to satisfaction vectors. */
     private final Map<Formula,BitSet> marking = new HashMap<>();
 
@@ -141,47 +150,6 @@ public class CTLMarker {
     }
 
     private final List<PropSatVector> propVectors = new LinkedList<>();
-
-    /**
-     * Marks a given node as satisfying the atomic proposition(s) corresponding
-     * to a given label text.
-     * @param nodeNr the node to be marked
-     * @param label the proposition text
-    private void markAtom(int nodeNr, String label) {
-        // First look up the label as a complete proposition
-        Integer propIx = this.propNr.get(new Proposition(label));
-        if (propIx != null) {
-            this.marking[propIx].set(nodeNr);
-        }
-        // Additionally try the label as a parsable ID or CALL
-        Proposition prop = FormulaParser.instance().parse(label).getProp();
-        if (prop != null && prop.getKind() != LABEL) {
-            // retrieve the action name being called
-            QualName callId = prop.getId();
-            if (this.calls.containsKey(callId)) {
-                this.calls
-                    .get(callId)
-                    .stream()
-                    .filter(c -> c.matches(prop))
-                    .forEach(c -> this.marking[this.propNr.get(c)].set(nodeNr));
-            }
-        }
-    }
-     */
-
-    /**
-     * Marks a given node as satisfying the atomic proposition corresponding
-     * to a given special LTS flag.
-     * @param nodeNr the node to be marked
-     * @param flag the proposition text
-    private void markSpecialAtom(int nodeNr, Flag flag) {
-        Integer atomIx = this.propNr.get(flagProps.get(flag));
-        // possibly the flag does not occur in the formula, in which case nothing needs to be done
-        if (atomIx != null) {
-            this.marking[atomIx].set(nodeNr);
-        }
-    }
-     */
 
     /**
      * Returns the satisfaction vector for a given formula.
@@ -480,79 +448,24 @@ public class CTLMarker {
     }
 
     /**
-     * Tests if the top-level formula has a given boolean value for the initial state.
-     * @param value the value for which the top-level formula is tested
+     * Tests if the top-level formula holds for the initial state.
      */
-    public boolean hasValue(boolean value) {
+    public boolean hasValue() {
         // EZ says: change for SF bug #442.
         int rootIx = this.model.toIndex(this.model.getRoot());
-        return mark(this.formula).get(rootIx) == value;
+        return mark(this.formula).get(rootIx);
     }
 
-    /** Reports the number of states that satisfy or fail to satisfy the top-level formula. */
-    public int getCount(boolean value) {
-        int result = 0;
-        BitSet sat = mark(this.formula);
-        for (int i = 0; i < this.nodeCount; i++) {
-            if (sat.get(i) == value) {
-                result++;
-            }
-        }
-        return result;
+    /** Reports the number of states that satisfy the top-level formula. */
+    public int getCount() {
+        return mark(this.formula).cardinality();
     }
 
-    /** Returns an iterable over the states that satisfy or fail to satisfy the top-level formula. */
-    public Iterable<Node> getStates(boolean value) {
-        final BitSet sat = mark(this.formula);
-        var model = CTLMarker.this.model;
-        var nodeCount = this.nodeCount;
-        return new Iterable<>() {
-            @Override
-            public Iterator<Node> iterator() {
-                return new Iterator<>() {
-                    @Override
-                    public boolean hasNext() {
-                        return this.stateIx >= 0 && this.stateIx < nodeCount;
-                    }
-
-                    @Override
-                    public Node next() {
-                        if (!hasNext()) {
-                            throw new NoSuchElementException();
-                        }
-                        Node result = model.toNode(this.stateIx);
-                        this.stateIx = value
-                            ? sat.nextSetBit(this.stateIx + 1)
-                            : sat.nextClearBit(this.stateIx + 1);
-                        return result;
-                    }
-
-                    @Override
-                    public void remove() {
-                        throw new UnsupportedOperationException();
-                    }
-
-                    int stateIx = value
-                        ? sat.nextSetBit(0)
-                        : sat.nextClearBit(0);
-                };
-            }
-        };
+    /** Returns a stream over the nodes that satisfy the top-level formula. */
+    public Stream<Node> stateStream() {
+        return mark(this.formula).stream().mapToObj(this.model::toNode);
     }
 
-    /** The (top-level) formula to check. */
-    private final Formula formula;
-    /** The GTS on which to check the formula. */
-    private final CTLModelChecker.ModelFacade model;
-    /** Backward reachability matrix. */
-    private int[][] backward;
-    /** Number of outgoing non-special-label edges. */
-    private int[] outCount;
-    /** State count of the transition system. */
-    private int nodeCount;
-
-    /** Proposition text expressing that a node is the start state of the GTS. */
-    static public final Proposition START_ATOM = Proposition.prop(Flag.START);
     /** Debug flag */
     static private boolean DEBUG = false;
 

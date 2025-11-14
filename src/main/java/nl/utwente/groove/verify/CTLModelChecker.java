@@ -154,7 +154,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             maxWidth = Math.max(maxWidth, property.getParseString().length());
             CTLMarker marker = new CTLMarker(property, model);
             emit("[initialised] ");
-            outcome.put(property, marker.hasValue(true));
+            outcome.put(property, marker.hasValue());
             emit("[checked]\n");
         }
         emit("%n");
@@ -469,7 +469,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             if (this.result.contains(state)) {
                 result.add(Proposition.prop(Flag.RESULT));
             }
-            this.gts.getSatisfiedPreds(state).stream().map(Proposition::prop).forEach(result::add);
+            this.gts.getSatisfiedProps(state).stream().map(Proposition::prop).forEach(result::add);
             return result;
         }
     }

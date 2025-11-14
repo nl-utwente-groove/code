@@ -408,9 +408,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
         if (idLine != null) {
             result.add(idLine);
         }
+        GraphState state = jVertex.getNode();
         boolean hasControl = false;
         if (jGraph.isShowControlStates()) {
-            GraphState state = jVertex.getNode();
             Frame frame = state.getPrimeFrame();
             //if (frame.isDead()) {
             //    frame = frame.getPred();
@@ -456,6 +456,11 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 }
                 transLabels.add(line);
             }
+        }
+        var gts = jGraph.getGraph();
+        assert gts != null;
+        for (var prop : gts.getSatisfiedProps(state)) {
+            transLabels.add(Line.atom(prop));
         }
         if (!jVertex.isAllOutVisible()) {
             transLabels.add(RESIDUAL_LINE);

@@ -8,7 +8,6 @@ import java.util.List;
 import javax.swing.JOptionPane;
 
 import nl.utwente.groove.explore.ExploreResult;
-import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.dialog.StringDialog;
@@ -80,23 +79,21 @@ public class CheckCTLAction extends SimulatorAction {
         Formula formula = Formula.parse(property).toCtlFormula();
         formula.check(result.getGTS().getGrammar());
         CTLMarker modelChecker = new CTLMarker(formula, CTLModelChecker.newModel(result));
-        int witnesscCount = modelChecker.getCount(true);
+        int witnesscCount = modelChecker.getCount();
         List<GraphState> witnesses = new ArrayList<>(witnesscCount);
         String message;
         if (witnesscCount == 0) {
-            message = String.format("The property '%s' holds for all states", property);
+            message = String.format("The property '%s' does not hold anywhere", property);
         } else {
             boolean allStates
                 = confirmBehaviour(VERIFY_ALL_STATES_OPTION,
                                    "Verify all states? Choosing 'No' will report only on the start state.");
             if (allStates) {
-                for (Node state : modelChecker.getStates(true)) {
-                    witnesses.add((GraphState) state);
-                }
+                modelChecker.stateStream().map(n -> (GraphState) n).forEach(witnesses::add);
                 message = String
                     .format("The property '%s' holds in the %d highlighted states", property,
                             witnesscCount);
-            } else if (modelChecker.hasValue(false)) {
+            } else if (modelChecker.hasValue()) {
                 witnesses.add(result.getGTS().startState());
                 message = String.format("The property '%s' holds in the initial state", property);
             } else {
@@ -105,8 +102,11 @@ public class CheckCTLAction extends SimulatorAction {
             }
         }
         // Create a fresh result to be independent on whatever result states were there
-        result = new ExploreResult(result.getGTS());
+        formula_count++;
+        var name = "f" + formula_count;
+        result = new ExploreResult(name, result.getGTS());
         witnesses.forEach(result::addState);
+        result.push();
         getSimulatorModel().setExploreResult(result);
         getLtsDisplay().emphasiseStates(witnesses, false);
         getSimulatorModel().setDisplay(DisplayKind.LTS);
@@ -124,4 +124,6 @@ public class CheckCTLAction extends SimulatorAction {
      */
     private StringDialog ctlFormulaDialog;
 
+    /** Count of all invocations of #execute, used to give unique names to formulas. */
+    static private int formula_count;
 }

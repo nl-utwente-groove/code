@@ -29,17 +29,26 @@ import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSFragment;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
+import nl.utwente.groove.lts.StateProperty;
 
 /**
  * A set of graph states that constitute the result of the execution of some
  * exploration.
  */
 @NonNullByDefault
-public class ExploreResult { //implements Iterable<GraphState> {
+public class ExploreResult {
     /**
      * Creates a fresh, empty result for a given (non-{@code null}) GTS.
      */
     public ExploreResult(GTS gts) {
+        this(null, gts);
+    }
+
+    /**
+     * Creates a fresh, empty named result for a given (non-{@code null}) GTS.
+     */
+    public ExploreResult(@Nullable String name, GTS gts) {
+        this.name = name;
         this.gts = gts;
     }
 
@@ -49,6 +58,13 @@ public class ExploreResult { //implements Iterable<GraphState> {
     }
 
     private final GTS gts;
+
+    /** Returns the name of this result. */
+    public @Nullable String getName() {
+        return this.name;
+    }
+
+    private final @Nullable String name;
 
     /**
      * Adds a state to the result.
@@ -123,6 +139,17 @@ public class ExploreResult { //implements Iterable<GraphState> {
         result.edgeSet().forEach(t -> finalStates.remove(t.source()));
         result.setFinal(finalStates);
         return result;
+    }
+
+    /** Pushes the this result to the underlying GTS,
+     * meaning that (if this is a named result) the GTS will get
+     * a corresponding {@link StateProperty}.
+     */
+    public void push() {
+        var name = getName();
+        if (name != null) {
+            getGTS().addStateProperty(name, state -> getStates().contains(state));
+        }
     }
 
     /** Returns the number of states and transitions found during exploration. */

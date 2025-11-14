@@ -19,7 +19,6 @@ package nl.utwente.groove.verify;
 import static nl.utwente.groove.verify.Proposition.Kind.CALL;
 import static nl.utwente.groove.verify.Proposition.Kind.FLAG;
 import static nl.utwente.groove.verify.Proposition.Kind.ID;
-import static nl.utwente.groove.verify.Proposition.Kind.LABEL;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -47,7 +46,6 @@ public class Proposition {
         assert id != null;
         this.kind = ID;
         this.id = id;
-        this.label = null;
         this.flag = null;
         this.args = null;
     }
@@ -60,30 +58,8 @@ public class Proposition {
         assert args != null;
         this.kind = CALL;
         this.id = id;
-        this.label = null;
         this.flag = null;
         this.args = args;
-    }
-
-    /** Creates a label proposition.
-     * @see Kind#LABEL
-     */
-    private Proposition(String label) {
-        assert label != null;
-        this.id = null;
-        this.args = null;
-        if (label.startsWith(FLAG_PREFIX)) {
-            this.kind = FLAG;
-            this.label = null;
-            var flag = this.flag = LTSLabels.flag(label);
-            if (flag == null) {
-                throw Exceptions.illegalArg("Label '%s' is not a flag", label);
-            }
-        } else {
-            this.kind = LABEL;
-            this.label = label;
-            this.flag = null;
-        }
     }
 
     /** Creates a flag proposition.
@@ -93,7 +69,6 @@ public class Proposition {
         assert flag != null;
         this.kind = FLAG;
         this.id = null;
-        this.label = null;
         this.flag = flag;
         this.args = null;
     }
@@ -117,19 +92,6 @@ public class Proposition {
     }
 
     private final Kind kind;
-
-    /** Returns the constant in this proposition if the proposition is a {@link #LABEL}.
-     * @throws UnsupportedOperationException if this proposition is not a {@link #LABEL}
-     */
-    public String getLabel() {
-        var result = this.label;
-        if (result == null) {
-            throw new UnsupportedOperationException();
-        }
-        return result;
-    }
-
-    private final @Nullable String label;
 
     /** Returns the constant in this proposition if the proposition is a {@link #FLAG}.
      * @throws UnsupportedOperationException if this proposition is not a {@link #FLAG}
@@ -164,7 +126,7 @@ public class Proposition {
 
     /**
      * Tests if this proposition matches another.
-     * This is the case of the two are equal, or if this is a {@link #LABEL} or parameterless {@link #ID}
+     * This is the case of the two are equal, or if this is a parameterless {@link #ID}
      * and the other a call of that action, or this is a call with wildcards and the other
      * a call that only differs in providing values for the wildcards.
      */
@@ -187,12 +149,9 @@ public class Proposition {
             if (!result && other.getKind() == CALL) {
                 result = getId().equals(other.getId());
             }
-            break;
-        case LABEL:
-            result = getLabel().equals(other.toString());
-            // A Label proposition without arguments matches all calls of that Id
-            if (!result && other.getKind() == CALL) {
-                result = getLabel().equals(other.getId().toString());
+            // A single-token ID also matches everything with the same string representation
+            if (!result && getId().size() == 1) {
+                result = getId().get(0).equals(other.toString());
             }
             break;
         case FLAG:
@@ -215,7 +174,6 @@ public class Proposition {
             yield prime * tmp + getArgs().hashCode();
         }
         case ID -> prime * result + getId().hashCode();
-        case LABEL -> prime * result + getLabel().hashCode();
         case FLAG -> prime * result + getFlag().hashCode();
         };
         return result;
@@ -235,7 +193,6 @@ public class Proposition {
         return switch (this.kind) {
         case CALL -> getId().equals(other.getId()) && getArgs().equals(other.getArgs());
         case ID -> getId().equals(other.getId());
-        case LABEL -> getLabel().equals(other.getLabel());
         case FLAG -> getFlag().equals(other.getFlag());
         };
     }
@@ -259,7 +216,6 @@ public class Proposition {
             yield result.toString();
         }
         case ID -> getId().toString();
-        case LABEL -> getLabel();
         case FLAG -> getFlag().toString();
         };
     }
@@ -290,8 +246,6 @@ public class Proposition {
             lines.add(Line.atom(")"));
             result = Line.composed(lines);
             break;
-        case LABEL:
-            return Line.atom(getLabel());
         case ID:
             return getId().toLine();
         default:
@@ -308,9 +262,21 @@ public class Proposition {
         return result;
     }
 
-    /** Returns a {@link Kind#LABEL} proposition consisting of a given label text. */
+    /** Returns a {@link Kind#ID} or {@link Kind#FLAG} proposition consisting of a given label text.
+     * @throws IllegalArgumentException if {@code label} starts with {@link #FLAG_PREFIX}
+     * but is not a flag.
+     */
     public static Proposition prop(String label) {
-        return new Proposition(label);
+        if (label.startsWith(FLAG_PREFIX)) {
+            var flagText = label.substring(FLAG_PREFIX.length());
+            var flag = LTSLabels.flag(flagText);
+            if (flag == null) {
+                throw Exceptions.illegalArg("Label '%s' is not a flag", flagText);
+            }
+            return prop(flag);
+        } else {
+            return prop(QualName.name(label));
+        }
     }
 
     /** Returns a {@link Kind#ID} proposition consisting of a given identifier. */
@@ -490,8 +456,6 @@ public class Proposition {
     public static enum Kind {
         /** Identifier proposition. */
         ID,
-        /** Constant proposition. */
-        LABEL,
         /** Call proposition. */
         CALL,
         /** Flag proposition. */
