@@ -35,10 +35,7 @@ import java.util.Map;
 
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.annotation.Help;
-import nl.utwente.groove.explore.util.LTSLabels;
-import nl.utwente.groove.explore.util.LTSLabels.Flag;
 import nl.utwente.groove.grammar.QualName;
-import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.ATermTreeParser;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.IdValidator;
@@ -70,15 +67,7 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
         List<LogicOp> prefixOps = findPrefixOps(firstToken.substring());
         if (prefixOps == null) {
             QualName id = parseId();
-            if (id.toString().startsWith(FLAG_PREFIX)) {
-                // it's a special flag
-                var flagText = id.toString().substring(1);
-                var flag = LTSLabels.DEFAULT.getFlag(flagText);
-                if (flag == null) {
-                    throw Exceptions.illegalArg("Unknown special flag '%s'", flagText);
-                }
-                result = Formula.atom(prop(flag));
-            } else if (consume(LPAR) == null) {
+            if (consume(LPAR) == null) {
                 // it's an (unquoted) identifier: create an atomic proposition
                 result = Formula.atom(id);
             } else {
@@ -159,9 +148,6 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
         }
         return result;
     }
-
-    /** Prefix of a proposition label that stands for a special flag (see {@link Flag}). */
-    static public final String FLAG_PREFIX = "$";
 
     /**
      * Returns a mapping from syntax documentation lines to associated (possibly {@code null}) tooltips.

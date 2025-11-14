@@ -94,7 +94,7 @@ public class CTLTest {
         testFormula("EX set_name", 1);
         testFormula("EX set_name( 'attributes  test' )", 0);
         testFormula("EX 'set_name(_)'", 0);
-        testFormula("EX 'set_name'", 1);
+        testFormula("EX 'set_name'", 0);
         testFormula("EX set_name()", 0);
         testFormula("EX set_name(test)", 0);
         // two parameters

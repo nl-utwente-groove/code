@@ -60,13 +60,13 @@ public class FormulaTest {
     /** Tests {@link FormulaParser#parse(String)}. */
     @Test
     public void testParse() {
-        Formula aId = atom(name("a"));
+        Formula aId = idAtom("a");
         Formula aString = atom("a");
-        Formula bId = atom(name("b"));
-        Formula cId = atom(name("c"));
-        Formula dcId = atom(name("dc"));
-        Formula dId = atom(name("d"));
-        Formula eId = atom(name("e"));
+        Formula bId = idAtom("b");
+        Formula cId = idAtom("c");
+        Formula dcId = idAtom("dc");
+        Formula dId = idAtom("d");
+        Formula eId = idAtom("e");
         testParse("a", aId);
         testParse("'a'", aString);
         testParse("\"a\"", aString);
@@ -93,7 +93,7 @@ public class FormulaTest {
                   sRelease(until(aId, bId), release(cId, sRelease(dId, eId))));
         //
         testParse("AFG X true", forall(eventually(always(next(tt())))));
-        testParse("AG(get|put)", forall(always(or(atom(name("get")), atom(name("put"))))));
+        testParse("AG(get|put)", forall(always(or(idAtom("get"), idAtom("put")))));
         // errors
         testParseError("EXEX add_score(n0, __)");
         testParseError("a=");
@@ -199,9 +199,9 @@ public class FormulaTest {
 
     @Test
     public void testToCtlFormula() {
-        Formula a = atom(name("a"));
-        Formula b = atom(name("b"));
-        Formula c = atom(name("c"));
+        Formula a = idAtom("a");
+        Formula b = idAtom("b");
+        Formula c = idAtom("c");
         testToCtlFormula("a->b", implies(a, b));
         testToCtlFormula("AX a", forall(next(a)));
         testToCtlFormula("E(true U a)", exists(eventually(a)));
@@ -213,6 +213,15 @@ public class FormulaTest {
             assertEquals(FormulaParser.instance().parse(expected), f.toCtlFormula());
         } catch (FormatException e) {
             fail(e.getMessage());
+        }
+    }
+
+    private Formula idAtom(String label) {
+        try {
+            return Formula.atom(name(label));
+        } catch (FormatException exc) {
+            fail(exc.getMessage());
+            return null;
         }
     }
 }

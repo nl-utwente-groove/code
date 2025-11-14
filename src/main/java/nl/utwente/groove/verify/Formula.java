@@ -721,8 +721,8 @@ public class Formula extends ATermTree<LogicOp,Formula> {
         return atom(prop(label));
     }
 
-    /** Factory method for an atomic proposition testing for an identifier. */
-    public static Formula atom(QualName id) {
+    /** Factory method for an atomic proposition testing for an identifier (without arguments). */
+    public static Formula atom(QualName id) throws FormatException {
         return atom(prop(id));
     }
 

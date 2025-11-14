@@ -16,13 +16,10 @@
  */
 package nl.utwente.groove.verify;
 
-import static nl.utwente.groove.verify.Proposition.Kind.CALL;
-import static nl.utwente.groove.verify.Proposition.Kind.FLAG;
-import static nl.utwente.groove.verify.Proposition.Kind.ID;
-
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Objects;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -35,273 +32,86 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.FormatErrorSet;
+import nl.utwente.groove.util.parse.FormatException;
+import nl.utwente.groove.verify.Proposition.CallProp;
+import nl.utwente.groove.verify.Proposition.FlagProp;
+import nl.utwente.groove.verify.Proposition.LabelProp;
 
 /** Proposition, wrapped inside a formula of type {@link LogicOp#PROP}. */
 @NonNullByDefault
-public class Proposition {
-    /** Creates an identifier proposition.
-     * @see Kind#ID
-     */
-    private Proposition(QualName id) {
-        assert id != null;
-        this.kind = ID;
-        this.id = id;
-        this.flag = null;
-        this.args = null;
-    }
-
-    /** Creates call proposition.
-     * @see Kind#CALL
-     */
-    private Proposition(QualName id, List<Arg> args) {
-        assert id != null;
-        assert args != null;
-        this.kind = CALL;
-        this.id = id;
-        this.flag = null;
-        this.args = args;
-    }
-
-    /** Creates a flag proposition.
-     * @see Kind#FLAG
-     */
-    private Proposition(Flag flag) {
-        assert flag != null;
-        this.kind = FLAG;
-        this.id = null;
-        this.flag = flag;
-        this.args = null;
-    }
-
-    /** Returns the identifier in this proposition if the proposition is an {@link #ID} or {@link #CALL}
-     * @throws UnsupportedOperationException if this proposition is not an {@link #ID} or {@link #CALL}
-     */
-    public QualName getId() {
-        var result = this.id;
-        if (result == null) {
-            throw new UnsupportedOperationException();
-        }
-        return result;
-    }
-
-    private final @Nullable QualName id;
-
-    /** Returns the kind of this proposition. */
-    public Kind getKind() {
-        return this.kind;
-    }
-
-    private final Kind kind;
-
-    /** Returns the constant in this proposition if the proposition is a {@link #FLAG}.
-     * @throws UnsupportedOperationException if this proposition is not a {@link #FLAG}
-     */
-    public Flag getFlag() {
-        var result = this.flag;
-        if (result == null) {
-            throw new UnsupportedOperationException();
-        }
-        return result;
-    }
-
-    private final @Nullable Flag flag;
-
-    /** Returns the array of call arguments.
-     * @throws UnsupportedOperationException if this proposition is not a {@link #CALL}
-     */
-    public List<Arg> getArgs() {
-        var result = this.args;
-        if (result == null) {
-            throw new UnsupportedOperationException();
-        }
-        return result;
-    }
-
-    /** Returns the argument count of the call. */
-    public int arity() {
-        return getArgs().size();
-    }
-
-    private final @Nullable List<Arg> args;
-
+public abstract sealed class Proposition permits LabelProp, FlagProp, CallProp {
     /**
      * Tests if this proposition matches another.
-     * This is the case of the two are equal, or if this is a parameterless {@link #ID}
+     * This is the case if the two are equal, or if this is a parameterless {@link CallProp}
      * and the other a call of that action, or this is a call with wildcards and the other
      * a call that only differs in providing values for the wildcards.
      */
-    public boolean matches(Proposition other) {
-        boolean result;
-        switch (getKind()) {
-        case CALL:
-            if (other.getKind() == CALL) {
-                result = getId().equals(other.getId()) && other.arity() == arity();
-                for (int i = 0; result && i < arity(); i++) {
-                    result = getArgs().get(i).matches(other.getArgs().get(i));
-                }
-            } else {
-                result = false;
-            }
-            break;
-        case ID:
-            result = equals(other);
-            // An Id proposition without arguments matches all calls of that Id
-            if (!result && other.getKind() == CALL) {
-                result = getId().equals(other.getId());
-            }
-            // A single-token ID also matches everything with the same string representation
-            if (!result && getId().size() == 1) {
-                result = getId().get(0).equals(other.toString());
-            }
-            break;
-        case FLAG:
-            result = equals(other);
-            break;
-        default:
-            throw Exceptions.UNREACHABLE;
-        }
-        return result;
-    }
+    abstract public boolean matches(Proposition other);
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + this.kind.hashCode();
-        result = switch (this.kind) {
-        case CALL -> {
-            var tmp = prime * result + getId().hashCode();
-            yield prime * tmp + getArgs().hashCode();
-        }
-        case ID -> prime * result + getId().hashCode();
-        case FLAG -> prime * result + getFlag().hashCode();
-        };
-        return result;
-    }
+    abstract public int hashCode();
 
     @Override
-    public boolean equals(@Nullable Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof Proposition other)) {
-            return false;
-        }
-        if (this.kind != other.kind) {
-            return false;
-        }
-        return switch (this.kind) {
-        case CALL -> getId().equals(other.getId()) && getArgs().equals(other.getArgs());
-        case ID -> getId().equals(other.getId());
-        case FLAG -> getFlag().equals(other.getFlag());
-        };
-    }
+    abstract public boolean equals(@Nullable Object obj);
 
     @Override
-    public String toString() {
-        return switch (getKind()) {
-        case CALL -> {
-            StringBuilder result = new StringBuilder(getId().toString());
-            result.append('(');
-            boolean first = true;
-            for (Arg arg : getArgs()) {
-                if (first) {
-                    first = false;
-                } else {
-                    result.append(',');
-                }
-                result.append(arg);
-            }
-            result.append(')');
-            yield result.toString();
-        }
-        case ID -> getId().toString();
-        case FLAG -> getFlag().toString();
-        };
-    }
+    abstract public String toString();
 
     /** Constructs a display line for this proposition.
      * @param spaces flag indicating if spaces should be used for layout.
      */
-    public Line toLine(boolean spaces) {
-        Line result;
-        switch (getKind()) {
-        case CALL:
-            List<Line> lines = new ArrayList<>();
-            lines.add(getId().toLine());
-            lines.add(Line.atom("("));
-            boolean firstArg = true;
-            for (Arg arg : getArgs()) {
-                if (!firstArg) {
-                    lines
-                        .add(Line
-                            .atom(spaces
-                                ? ", "
-                                : ","));
-                } else {
-                    firstArg = false;
-                }
-                lines.add(arg.toLine());
-            }
-            lines.add(Line.atom(")"));
-            result = Line.composed(lines);
-            break;
-        case ID:
-            return getId().toLine();
-        default:
-            throw Exceptions.UNREACHABLE;
-        }
-        return result;
-    }
+    abstract public Line toLine(boolean spaces);
 
     /** Checks if this proposition can be generated by the given grammar,
      * and returns a (possibly empty) set of errors found in this check. */
-    FormatErrorSet computeErrors(Grammar grammar) {
+    public FormatErrorSet computeErrors(Grammar grammar) {
         var result = new FormatErrorSet();
         // TODO implement
         return result;
     }
 
-    /** Returns a {@link Kind#ID} or {@link Kind#FLAG} proposition consisting of a given label text.
-     * @throws IllegalArgumentException if {@code label} starts with {@link #FLAG_PREFIX}
-     * but is not a flag.
+    /** Returns an {@link LabelProp} or {@link FlagProp} consisting of a given label text.
      */
     public static Proposition prop(String label) {
-        if (label.startsWith(FLAG_PREFIX)) {
-            var flagText = label.substring(FLAG_PREFIX.length());
+        return new LabelProp(label);
+    }
+
+    /** Returns a parameterless {@link CallProp} or a {@link FlagProp}.
+     * @throws IllegalArgumentException if {@code label} starts with {@link #FLAG_PREFIX}
+     * but is not a flag. */
+    public static Proposition prop(QualName id) throws FormatException {
+        if (id.get(0).startsWith(FLAG_PREFIX)) {
+            if (id.size() != 1) {
+                throw new FormatException("Qualified name '%s' is not a flag", id);
+            }
+            var flagText = id.get(0).substring(FLAG_PREFIX.length());
             var flag = LTSLabels.flag(flagText);
             if (flag == null) {
-                throw Exceptions.illegalArg("Label '%s' is not a flag", flagText);
+                throw new FormatException("Label '%s' is not a flag", flagText);
             }
             return prop(flag);
         } else {
-            return prop(QualName.name(label));
+            return new CallProp(id);
         }
     }
 
-    /** Returns a {@link Kind#ID} proposition consisting of a given identifier. */
-    public static Proposition prop(QualName id) {
-        return new Proposition(id);
-    }
-
-    /** Returns a {@link Kind#CALL} proposition consisting of a given identifier and list of arguments. */
+    /** Returns a {@link CallProp} consisting of a given identifier and list of arguments. */
     public static Proposition prop(QualName id, List<Arg> args) {
-        return new Proposition(id, args);
+        return new CallProp(id, args);
     }
 
-    /** Returns a {@link Kind#FLAG} proposition for a given flag. */
+    /** Returns a {@link FlagProp} for a given flag. */
     public static Proposition prop(Flag flag) {
         var result = flagPropMap.get(flag);
         if (result == null) {
-            flagPropMap.put(flag, result = new Proposition(flag));
+            flagPropMap.put(flag, result = new FlagProp(flag));
         }
         return result;
     }
 
-    static private final EnumMap<Flag,@Nullable Proposition> flagPropMap
-        = new EnumMap<>(Flag.class);
+    static private final EnumMap<Flag,@Nullable FlagProp> flagPropMap = new EnumMap<>(Flag.class);
 
-    /** Prefix for {@link #FLAG}-type propositions. */
+    /** Prefix for the label of a {@link FlagProp}. */
     static public final String FLAG_PREFIX = "$";
 
     /**
@@ -452,13 +262,226 @@ public class Proposition {
         }
     }
 
-    /** Atomic proposition kind. */
-    public static enum Kind {
-        /** Identifier proposition. */
-        ID,
-        /** Call proposition. */
-        CALL,
-        /** Flag proposition. */
-        FLAG,
+    /** Proposition wrapping a literal label. */
+    static public final class LabelProp extends Proposition {
+        private LabelProp(String label) {
+            this.label = label;
+        }
+
+        /** Returns the label in this proposition.
+         */
+        public String getLabel() {
+            return this.label;
+        }
+
+        private final String label;
+
+        @Override
+        public boolean matches(Proposition other) {
+            return getLabel().equals(other.toString());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getClass(), getLabel());
+        }
+
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof LabelProp other)) {
+                return false;
+            }
+            return getLabel().equals(other.getLabel());
+        }
+
+        @Override
+        public String toString() {
+            return getLabel();
+        }
+
+        @Override
+        public Line toLine(boolean spaces) {
+            return Line.atom(getLabel());
+        }
+    }
+
+    /** Proposition wrapping a special flag. */
+    static public final class FlagProp extends Proposition {
+        private FlagProp(Flag flag) {
+            this.flag = flag;
+        }
+
+        /** Returns the flag in this proposition.
+         */
+        public Flag getFlag() {
+            var result = this.flag;
+            if (result == null) {
+                throw new UnsupportedOperationException();
+            }
+            return result;
+        }
+
+        private final @Nullable Flag flag;
+
+        @Override
+        public boolean matches(Proposition other) {
+            return equals(other);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getClass(), getFlag());
+        }
+
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof FlagProp other)) {
+                return false;
+            }
+            return getFlag().equals(other.getFlag());
+        }
+
+        @Override
+        public String toString() {
+            return getFlag().toString();
+        }
+
+        /** Constructs a display line for this proposition.
+         * @param spaces flag indicating if spaces should be used for layout.
+         */
+        @Override
+        public Line toLine(boolean spaces) {
+            return Line.atom(toString());
+        }
+
+    }
+
+    /** Proposition wrapping a rule call. */
+    static public final class CallProp extends Proposition {
+        private CallProp(QualName id) {
+            this.id = id;
+            this.args = null;
+        }
+
+        private CallProp(QualName id, List<Arg> args) {
+            this.id = id;
+            this.args = args;
+        }
+
+        /** Returns the identifier in this proposition.
+         */
+        public QualName getId() {
+            return this.id;
+        }
+
+        private final QualName id;
+
+        /** Returns the optional array of call arguments.
+         */
+        public @Nullable List<Arg> getArgs() {
+            return this.args;
+        }
+
+        /** Returns the argument count of the call,
+         * or {@code -1} if the proposition is parameterless. */
+        public int arity() {
+            var args = getArgs();
+            return args == null
+                ? -1
+                : args.size();
+        }
+
+        private final @Nullable List<Arg> args;
+
+        @Override
+        public boolean matches(Proposition other) {
+            boolean result = false;
+            if (other instanceof CallProp call) {
+                result = getId().equals(call.getId());
+                var args = getArgs();
+                if (result && args != null) {
+                    var otherArgs = call.getArgs();
+                    if (otherArgs == null) {
+                        result = false;
+                    } else {
+                        result = call.arity() == arity();
+                        for (int i = 0; result && i < arity(); i++) {
+                            result = args.get(i).matches(otherArgs.get(i));
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getClass(), getId(), getArgs());
+        }
+
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof CallProp other)) {
+                return false;
+            }
+            return getId().equals(other.getId()) && Objects.equals(getArgs(), other.getArgs());
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder result = new StringBuilder(getId().toString());
+            result.append('(');
+            boolean first = true;
+            var args = getArgs();
+            if (args != null) {
+                for (Arg arg : args) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        result.append(',');
+                    }
+                    result.append(arg);
+                }
+                result.append(')');
+            }
+            return result.toString();
+        }
+
+        /** Constructs a display line for this proposition.
+         * @param spaces flag indicating if spaces should be used for layout.
+         */
+        @Override
+        public Line toLine(boolean spaces) {
+            List<Line> lines = new ArrayList<>();
+            lines.add(getId().toLine());
+            lines.add(Line.atom("("));
+            var args = getArgs();
+            if (args != null) {
+                boolean firstArg = true;
+                for (Arg arg : args) {
+                    if (!firstArg) {
+                        lines
+                            .add(Line
+                                .atom(spaces
+                                    ? ", "
+                                    : ","));
+                    } else {
+                        firstArg = false;
+                    }
+                    lines.add(arg.toLine());
+                }
+                lines.add(Line.atom(")"));
+            }
+            return Line.composed(lines);
+        }
     }
 }
